@@ -43,7 +43,6 @@ def transportable_object(obj):
 
 
 def validate_data(unpickled_object):
-
     """Validate unpickled object"""
     if isinstance(unpickled_object, list):
         if not (unpickled_object):
@@ -105,7 +104,6 @@ class FileHandler:
     def read_from_pickle(self, path):
         """Return data from pickle file"""
         try:
-            print("Sam path ", path)
             unpickled_object = self.__unpickle_file(path)
             return validate_data(unpickled_object)
         except Exception as e:
@@ -131,14 +129,11 @@ class FileHandler:
 
     def __unpickle_file(self, path):
         try:
-            print("sam unpick ", self.location + "/" + path)
             with open(self.location + "/" + path, "rb") as read_file:
-                print("sam read_file ", read_file)
                 unpickled_object = pickle.load(read_file)
                 read_file.close()
                 return unpickled_object
         except EOFError:
-            print("Sam eoferror")
             return None
         except Exception as e_1:
-            print("sam exception ", e_1)
+            return None

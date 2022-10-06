@@ -22,7 +22,7 @@ def test_logs(mocker):
     """Test Logs"""
     mocker.patch(
         "covalent_ui.api.v1.data_layer.logs_dal.UI_LOGFILE",
-        "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_a.log",
+        "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_1.log",
     )
     test_data = output_data["test_logs"]["case1"]
     response = object_test_template(
@@ -39,7 +39,7 @@ def test_logs_with_queries(mocker):
     """Test Logs With Queries"""
     mocker.patch(
         "covalent_ui.api.v1.data_layer.logs_dal.UI_LOGFILE",
-        "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_b.log",
+        "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_2.log",
     )
     test_cases = ["case2", "case3", "case4"]
     json_data = [__get_custom_response(case) for case in test_cases]
@@ -63,7 +63,7 @@ def test_non_existing_logs(mocker):
     """Test Missing Logs"""
     mocker.patch(
         "covalent_ui.api.v1.data_layer.logs_dal.UI_LOGFILE",
-        "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_c.log",
+        "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_3.log",
     )
     test_data = output_data["test_logs"]["case5"]
     response = object_test_template(

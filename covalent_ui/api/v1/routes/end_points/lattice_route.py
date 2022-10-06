@@ -25,8 +25,8 @@ import uuid
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import Session
 
+import covalent_ui.api.v1.database.config.db as db
 from covalent_ui.api.v1.data_layer.lattice_dal import Lattices
-from covalent_ui.api.v1.database.config.db import engine
 from covalent_ui.api.v1.models.lattices_model import (
     LatticeDetailResponse,
     LatticeExecutorResponse,
@@ -50,7 +50,7 @@ def get_lattice_details(dispatch_id: uuid.UUID):
         Returns the lattice data with the dispatch id provided
     """
 
-    with Session(engine) as session:
+    with Session(db.engine) as session:
         electron = Lattices(session)
         data = electron.get_lattices_id(dispatch_id)
         if data is not None:
@@ -89,7 +89,7 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
     Returns:
         Returns the lattice file data with the dispatch id and file_module provided provided
     """
-    with Session(engine) as session:
+    with Session(db.engine) as session:
         electron = Lattices(session)
         lattice_data = electron.get_lattices_id_storage_file(dispatch_id)
         if lattice_data is not None:

@@ -2,11 +2,15 @@ import json
 import os
 from datetime import datetime
 
+import cloudpickle
 from sqlalchemy.orm import Session
 
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.electron_dependency import ElectronDependency
 from covalent_ui.api.v1.database.schema.lattices import Lattice
+from tests.covalent_ui_backend_tests.utils.data.mock_files import mock_files_data
+
+log_output_data = mock_files_data()
 
 
 def seed(engine):
@@ -117,6 +121,24 @@ def seed(engine):
         session.bulk_save_objects(electron_records)
         session.bulk_save_objects(electron_dependency_records)
         session.commit()
+
+
+def seed_files():
+    """Seed Log Files"""
+    for section_key, _ in log_output_data.items():
+        logs_section = log_output_data[section_key]
+        log_dir = logs_section["path"]
+        dir_exists = os.path.exists(log_dir)
+        if not dir_exists:
+            os.makedirs(log_dir)
+        for file in logs_section["files"]:
+            log_file_path = f"{log_dir}/{file['file_name']}"
+            if file["file_name"].endswith(".pkl"):
+                with open(log_file_path, "wb") as log_file:
+                    cloudpickle.dump(file["data"], log_file)
+            else:
+                with open(log_file_path, "w") as log_file:
+                    log_file.write(file["data"])
 
 
 def convert_to_date(date_str: str):

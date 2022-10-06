@@ -3,9 +3,6 @@ from tests.covalent_ui_backend_tests.utils.assert_data.electrons import seed_ele
 from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
 
 object_test_template = TestClientTemplate()
-# output_path = dirname(abspath(__file__)) + "/utils/assert_data/electrons_data.json"
-# with open(output_path, "r") as output_json:
-#     output_data = json.load(output_json)
 output_data = seed_electron_data()
 
 
@@ -18,7 +15,6 @@ def test_electrons():
         method_type=MethodType.GET,
         path=test_data["path"],
     )
-    print(response.json())
     assert response.status_code == test_data["status_code"]
     if "response_data" in test_data:
         assert response.json() == test_data["response_data"]

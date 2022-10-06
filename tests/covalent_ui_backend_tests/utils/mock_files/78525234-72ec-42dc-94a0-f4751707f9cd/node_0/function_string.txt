@@ -1,2 +1,0 @@
-@ct.electron
-def hello(): return "Hello "

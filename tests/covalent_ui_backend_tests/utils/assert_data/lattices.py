@@ -34,7 +34,10 @@ def seed_lattice_data():
             "case_results_1": {
                 "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd", "name": "result"},
                 "status_code": 200,
-                "response_data": {"data": '"Hello shore  !!"'},
+                "response_data": {
+                    "data": '"Hello shore  !!"',
+                    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x13\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x8c\\x0fHello shore  !!\\x94.')",
+                },
             },
             "case_function_string_1": {
                 "status_code": 200,
@@ -43,19 +46,22 @@ def seed_lattice_data():
                     "name": "function_string",
                 },
                 "response_data": {
-                    "data": """@ct.lattice\ndef workflow(name):\n\tresult=join(hello(),moniker(name))\n\treturn result+\" !!\"
-"""
+                    "data": """@ct.lattice\ndef workflow(name):\n\tresult=join(hello(),moniker(name))\n\treturn result+\" !!\"""",
+                    "python_object": None,
                 },
             },
             "case_inputs_1": {
                 "status_code": 200,
                 "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd", "name": "inputs"},
-                "response_data": {"data": '{"args": [], "kwargs": {"name": "shore"}}'},
+                "response_data": {
+                    "data": "{'args': (), 'kwargs': {'name': 'shore'}}",
+                    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95(\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94)\\x8c\\x06kwargs\\x94}\\x94\\x8c\\x04name\\x94\\x8c\\x05shore\\x94su.')",
+                },
             },
             "case_error_1": {
                 "status_code": 200,
                 "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd", "name": "error"},
-                "response_data": {"data": ""},
+                "response_data": {"data": "", "python_object": None},
             },
             "case_executor_1": {
                 "status_code": 200,

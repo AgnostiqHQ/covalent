@@ -36,7 +36,10 @@ def seed_electron_data():
                     "electron_id": 0,
                     "name": "function_string",
                 },
-                "response_data": {"data": '@ct.electron\ndef hello(): return "Hello "\n'},
+                "response_data": {
+                    "data": '@ct.electron\ndef hello(): return "Hello "\n"\n                    ',
+                    "python_object": None,
+                },
             },
             "case_executor_1": {
                 "status_code": 200,
@@ -54,7 +57,10 @@ def seed_electron_data():
                     "electron_id": 0,
                     "name": "result",
                 },
-                "response_data": {"data": '"Hello "'},
+                "response_data": {
+                    "data": '"Hello shore  !!"',
+                    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x13\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x8c\\x0fHello shore  !!\\x94.')",
+                },
             },
             "case_value_1": {
                 "status_code": 200,
@@ -63,7 +69,7 @@ def seed_electron_data():
                     "electron_id": 0,
                     "name": "value",
                 },
-                "response_data": {"data": None},
+                "response_data": {"data": "(None, None)", "python_object": None},
             },
             "case_stdout_1": {
                 "status_code": 200,
@@ -73,7 +79,8 @@ def seed_electron_data():
                     "name": "stdout",
                 },
                 "response_data": {
-                    "data": "DEBUG: update_electrons_data called on node 5\nDEBUG: update_electrons_data called on node 1\n"
+                    "data": "DEBUG: update_electrons_data called on node 5\nDEBUG: update_electrons_data called on node 1",
+                    "python_object": None,
                 },
             },
             "case_deps_1": {
@@ -83,7 +90,7 @@ def seed_electron_data():
                     "electron_id": 0,
                     "name": "deps",
                 },
-                "response_data": {"data": None},
+                "response_data": {"data": None, "python_object": None},
             },
             "case_call_before_1": {
                 "status_code": 200,
@@ -92,7 +99,7 @@ def seed_electron_data():
                     "electron_id": 0,
                     "name": "call_before",
                 },
-                "response_data": {"data": ""},
+                "response_data": {"data": "", "python_object": None},
             },
             "case_call_after_1": {
                 "status_code": 200,
@@ -101,7 +108,7 @@ def seed_electron_data():
                     "electron_id": 0,
                     "name": "call_after",
                 },
-                "response_data": {"data": ""},
+                "response_data": {"data": "", "python_object": None},
             },
             "case_error_1": {
                 "status_code": 200,
@@ -110,7 +117,7 @@ def seed_electron_data():
                     "electron_id": 0,
                     "name": "error",
                 },
-                "response_data": {"data": ""},
+                "response_data": {"data": "", "python_object": None},
             },
             "case_info_1": {
                 "status_code": 200,
@@ -119,7 +126,7 @@ def seed_electron_data():
                     "electron_id": 0,
                     "name": "info",
                 },
-                "response_data": {"data": ""},
+                "response_data": {"data": "", "python_object": None},
             },
             "case_inputs_1": {
                 "status_code": 200,
