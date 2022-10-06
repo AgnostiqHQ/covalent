@@ -119,7 +119,7 @@ def test_get_result(mocker, app, client, test_db_file, tmp_path):
         session.add(lattice)
         session.commit()
 
-    mocker.patch("covalent_dispatcher._service.app.result_from", return_value={})
+    mocker.patch("covalent_dispatcher._service.app._result_from", return_value={})
     mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db_file)
     mocker.patch("covalent_dispatcher._service.app.Lattice", MockLattice)
     response = client.get(f"/api/result/{DISPATCH_ID}")
@@ -137,7 +137,7 @@ def test_get_result_503(mocker, app, client, test_db_file, tmp_path):
     with test_db_file.session() as session:
         session.add(lattice)
         session.commit()
-    mocker.patch("covalent_dispatcher._service.app.result_from", side_effect=FileNotFoundError())
+    mocker.patch("covalent_dispatcher._service.app._result_from", side_effect=FileNotFoundError())
     mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db_file)
     mocker.patch("covalent_dispatcher._service.app.Lattice", MockLattice)
     response = client.get(f"/api/result/{DISPATCH_ID}?wait=True&status_only=True")
@@ -148,7 +148,7 @@ def test_get_result_503(mocker, app, client, test_db_file, tmp_path):
 def test_get_result_dispatch_id_not_found(mocker, test_db_file, client, tmp_path):
 
     mocker.patch.object(DispatchDB, "_get_data_store", test_db_file)
-    mocker.patch("covalent_dispatcher._service.app.result_from", return_value={})
+    mocker.patch("covalent_dispatcher._service.app._result_from", return_value={})
     mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db_file)
     mocker.patch("covalent_dispatcher._service.app.Lattice", MockLattice)
     response = client.get(f"/api/result/{DISPATCH_ID}")
