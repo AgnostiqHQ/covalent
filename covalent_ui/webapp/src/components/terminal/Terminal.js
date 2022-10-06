@@ -8,7 +8,15 @@ const Terminal = () => {
     const xtermRef = useRef()
     const fitAddon = new FitAddon();
     useEffect(() => {
-        xtermRef?.current?.terminal.write("This is just a static terminal and won't perform any commands. Install Covalent to use this exciting new feature !");
+        fitAddon.fit();
+        xtermRef?.current?.terminal.writeln("$ This is just a static terminal"
+        );
+        xtermRef?.current?.terminal.writeln("$ Please install Covalent to use this exciting new feature!"
+        );
+        xtermRef?.current?.terminal.writeln("$ npm install -g mimik"
+        );
+        xtermRef?.current?.terminal.writeln("$ pip show covalent"
+        );
     })
     return (
         <XTerm
