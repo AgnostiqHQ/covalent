@@ -104,13 +104,13 @@ While each plugin can be seperately installed installing the above pip package i
 3. Usage Example
 ===========================================
 
-- Firstly, import covalent.
+- Firstly, import covalent
 
 .. code-block:: python
 
     import covalent as ct
 
-- Secondly, define your executor (expand any of the below plugins).
+- Secondly, define your executor
 
 .. tabbed:: Batch
 
