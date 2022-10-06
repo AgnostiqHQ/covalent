@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Fixed the docstring for `get_node_error`
+
 ## [0.200.0] - 2022-10-05
 
 ### Authors
