@@ -244,7 +244,7 @@ def get_electron_kwargs(
 def test_update_lattice_completed_electron_num(test_db, mocker):
     """Test the funtion used to update the number of completed electrons for a lattice by 1."""
 
-    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     cur_time = dt.now(timezone.utc)
     insert_lattices_data(
         **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
@@ -259,7 +259,7 @@ def test_update_lattice_completed_electron_num(test_db, mocker):
 def test_insert_lattices_data(test_db, mocker):
     """Test the function that inserts the lattices data in the DB."""
 
-    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
 
     timestamps = []
     for i in range(2):
@@ -329,7 +329,7 @@ def test_insert_lattices_data(test_db, mocker):
 def test_insert_electrons_data(test_db, mocker):
     """Test the function that inserts the electron data to the Electrons table."""
 
-    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     cur_time = dt.now(timezone.utc)
     insert_lattices_data(
         **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
@@ -366,7 +366,7 @@ def test_insert_electrons_data(test_db, mocker):
 def test_insert_electrons_data_missing_lattice_record(test_db, mocker):
     """Test the function that inserts the electron data to the Electrons table."""
 
-    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
 
     cur_time = dt.now(timezone.utc)
     electron_kwargs = {
@@ -382,7 +382,7 @@ def test_insert_electrons_data_missing_lattice_record(test_db, mocker):
 def test_insert_electron_dependency_data(test_db, workflow_lattice, mocker):
     """Test the function that adds the electron dependencies of the lattice to the DB."""
 
-    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     cur_time = dt.now(timezone.utc)
     insert_lattices_data(
         **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
@@ -450,7 +450,7 @@ def test_insert_electron_dependency_data(test_db, workflow_lattice, mocker):
 def test_update_lattices_data(test_db, mocker):
     """Test the function that updates the lattice data."""
 
-    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     cur_time = dt.now(timezone.utc)
     with pytest.raises(MissingLatticeRecordError):
         update_lattices_data(
@@ -490,7 +490,7 @@ def test_update_lattices_data(test_db, mocker):
 def test_update_electrons_data(test_db, mocker):
     """Test the function that updates the data in the Electrons table."""
 
-    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     insert_lattices_data(
         **get_lattice_kwargs(
             created_at=dt.now(timezone.utc),
@@ -559,7 +559,7 @@ def test_get_electron_type(node_name, electron_type):
 def test_write_sublattice_electron_id(test_db, mocker):
     """Test that the sublattice electron id is written in the lattice record."""
 
-    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     cur_time = dt.now(timezone.utc)
     insert_lattices_data(
         **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
