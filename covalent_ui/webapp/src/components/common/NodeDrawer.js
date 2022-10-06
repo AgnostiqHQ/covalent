@@ -257,7 +257,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
           {electronInputResult && (<InputSection
             inputs={electronInputResult}
             data-testid="node__input_sec"
-            sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg, cursor: 'pointer' })}
+            sx={(theme) => ({ bgcolor: theme.palette.background.outRunBg, cursor: 'pointer' })}
           />)}
 
           {/* Result */}
@@ -266,7 +266,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
               results={electronResultData}
               data-testid="node__result_sec"
               sx={(theme) => ({
-                bgcolor: theme.palette.background.darkblackbg,
+                bgcolor: theme.palette.background.outRunBg,
                 cursor: 'pointer',
               })}
               isFetching={electronResultDataIsFetching}
@@ -278,7 +278,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
             <ExecutorSection
               metadata={electronExecutorResult}
               sx={(theme) => ({
-                bgcolor: theme.palette.background.darkblackbg,
+                bgcolor: theme.palette.background.outRunBg,
               })}
               isFetching={electronExecutorResultIsFetching}
             />
@@ -296,7 +296,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
               <Paper
                 elevation={0}
                 sx={(theme) => ({
-                  bgcolor: theme.palette.background.darkblackbg,
+                  bgcolor: theme.palette.background.outRunBg,
                 })}
               >
                 <SyntaxHighlighter src={electronFunctionResult?.data} />

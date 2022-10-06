@@ -54,7 +54,7 @@ import FormLabel from '@mui/material/FormLabel';
 import { isDemo } from '../../utils/demo/setup'
 import { settingsResults } from '../../redux/settingsSlice';
 import { useDispatch, useSelector } from 'react-redux';
-import _, { capitalize } from 'lodash'
+import _ from 'lodash'
 import Skeleton from '@mui/material/Skeleton';
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import { toggleLatticeDrawer } from '../../redux/popupSlice'
@@ -418,26 +418,15 @@ const SettingsCard = () => {
                   onChange={(e) => handleInputChange(e)}
                   placeholder="Search"
                 />
-                <Typography
-                  variant="h6"
-                  component="h6"
-                  sx={(theme) => ({
-                    color: theme.palette.primary.white,
-                    fontWeight: 'bold',
-                    mb: 2,
-                  })}
-                >
-                  {capitalize(accName)}
-                </Typography>
                 {_.map(clientDetail, function (menuValue, menuKey) {
                   return (
                     <StyledList sx={{ pb: 0, pt: 0 }} key={menuKey}>
-                      <ListItem disablePadding>
+                      <ListItem disablePadding sx={{ lineHeight: '18px' }}>
                         <ListItemButton
                           onClick={
                             isChildHasList
                               ? () => handleClick(menuValue)
-                              : () => {}
+                              : () => { }
                           }
                           sx={{
                             right: '0px',
@@ -486,7 +475,7 @@ const SettingsCard = () => {
                       {_.map(subMenu, function (value, key) {
                         return (
                           <StyledList sx={{ pb: 0, pt: 0 }} key={key}>
-                            <ListItem disablePadding>
+                            <ListItem disablePadding sx={{ lineHeight: '18px' }}>
                               <ListItemButton
                                 sx={{ pl: 7, pt: 0.3, pb: 0.3 }}
                                 onClick={() => handleSubmenuClick(subMenu, key)}
@@ -510,27 +499,15 @@ const SettingsCard = () => {
               </Box>
 
               <Box>
-                <Typography
-                  variant="h6"
-                  component="h6"
-                  sx={(theme) => ({
-                    color: theme.palette.primary.white,
-                    fontWeight: 'bold',
-                    mb: 2,
-                    mt: 2,
-                  })}
-                >
-                  {capitalize(serverName)}
-                </Typography>
                 {_.map(serverDetail, function (menuValue, menuKey) {
                   return (
                     <StyledList sx={{ pb: 0, pt: 0 }} key={menuKey}>
-                      <ListItem disablePadding>
+                      <ListItem disablePadding sx={{ lineHeight: '18px' }}>
                         <ListItemButton
                           onClick={
                             isChildHasList
                               ? () => handleClick(menuValue)
-                              : () => {}
+                              : () => { }
                           }
                           sx={{
                             right: '0px',
@@ -581,6 +558,7 @@ const SettingsCard = () => {
                   fontWeight: 'bold',
                   fontSize: '24px',
                   color: (theme) => theme.palette.primary.white,
+                  lineHeight: '31px'
                 }}
               >
                 {formatUnderscoreConcatenatedString(resultKey)}
@@ -605,13 +583,15 @@ const SettingsCard = () => {
                         return (
                           <Box sx={{ mb: 3 }} key={key}>
                             {_.isObject(value) ? (
-                              <Box key={key} id={key}>
+                              <Box key={key} id={key} sx={{ mb: '50px' }}>
                                 <Typography
                                   variant="h6"
                                   component="h6"
                                   sx={(theme) => ({
                                     color: theme.palette.primary.light,
                                     fontWeight: 'bold',
+                                    lineHeight: '16px',
+                                    fontSize:'16px'
                                   })}
                                 >
                                   {formatUnderscoreConcatenatedString(key)}

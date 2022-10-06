@@ -149,7 +149,9 @@ const ElectronNode = ({
             />
             {nodeLabelIcon(data.nodeType)}
             {statusIcon(data.status)}
-            <Typography sx={{ fontSize: 14, mb: 0.3 }}>{data.label}</Typography>
+            <Typography sx={{ fontSize: 14, mb: 0.3, mt: 0.3 }}>
+              {data.label}
+            </Typography>
             <Handle
               data-testid="sourcehandleelectronNode"
               type="source"
@@ -158,7 +160,7 @@ const ElectronNode = ({
             />
             {data.nodeType === 'sublattice' && (
               <CopyButton
-                sx={{ ml: 1, color: 'text.tertiary' }}
+                sx={{ ml: 1, color: 'text.tertiary', pt: 0.3 }}
                 fontSize="10"
                 content={data.sublattices_id}
                 size="small"
