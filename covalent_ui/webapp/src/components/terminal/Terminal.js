@@ -1,6 +1,6 @@
 
 
-import React, { useRef, useEffect } from 'react'
+import React, { useRef, useEffect,memo } from 'react'
 import { XTerm } from 'xterm-for-react'
 import { FitAddon } from 'xterm-addon-fit';
 import './index.css';
@@ -33,4 +33,4 @@ const Terminal = () => {
             addons={[fitAddon]} />
     )
 }
-export default Terminal
+export default memo(Terminal)

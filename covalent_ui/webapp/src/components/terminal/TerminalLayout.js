@@ -20,8 +20,6 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-//  import { Container } from '@mui/material'
-//  import ResultListing from '../dispatches/ResultListing'
 import { Box } from '@mui/system'
 import { Container, Grid, Chip,Typography } from '@mui/material';
 import NavDrawer from '../common/NavDrawer'
@@ -37,7 +35,6 @@ const TerminalLayout = () => {
             Terminal
           </Typography>
           <Chip sx={{ height: '24px', ml: 1, mb: 1.5, fontSize: '0.75rem', color: '#FFFFFF' }} label='BETA' variant='outlined' />
-          {/* <Chip sx={{ height: '24px', ml: 1, mb: 1.5, fontSize: '0.75rem', color: socket.id ? 'green' : 'red' }} label={socket.id ? 'Connected' : 'Disconnected'} variant='outlined' /> */}
         </Grid>
         <Terminal />
       </Container>
