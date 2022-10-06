@@ -290,7 +290,7 @@ export const nodeLabelIcon = (type) => {
   switch (type) {
     case 'function':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon sx={{ mt: 1.2 }}>
           <FunctionSvg />
         </SvgIcon>
       )
@@ -351,19 +351,19 @@ export const sublatticeIcon = (type, sub) => {
   switch (type) {
     case 'COMPLETED':
       return (
-        <SvgIcon sx={{ mr: 1,  fontSize: '28px' }}>
+        <SvgIcon sx={{ mr: 1, fontSize: '28px' }}>
           <SuccessSvg />
         </SvgIcon>
       )
     case 'FAILED':
       return (
-        <SvgIcon sx={{ mr: 1,  fontSize: '28px' }}>
+        <SvgIcon sx={{ mr: 1, fontSize: '28px' }}>
           <FailedSvg />
         </SvgIcon>
       )
     case 'RUNNING':
       return (
-        <SvgIcon sx={{ mr: 1,  fontSize: '28px' }}>
+        <SvgIcon sx={{ mr: 1, fontSize: '28px' }}>
           <RunningSvg />
         </SvgIcon>
       )
@@ -377,19 +377,19 @@ export const sublatticeIconTopBar = (type, sub) => {
   switch (type) {
     case 'COMPLETED':
       return (
-        <SvgIcon sx={{ mr: 1, mt: 1 , ml: 1, fontSize: '28px' }}>
+        <SvgIcon sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}>
           <SuccessTopBarSvg />
         </SvgIcon>
       )
     case 'FAILED':
       return (
-        <SvgIcon sx={{ mr: 1, mt: 1 , ml: 1, fontSize: '28px' }}>
+        <SvgIcon sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}>
           <FailedTopBarSvg />
         </SvgIcon>
       )
     case 'RUNNING':
       return (
-        <SvgIcon sx={{ mr: 1, mt: 1 , ml: 1, fontSize: '28px' }}>
+        <SvgIcon sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}>
           <RunningTopBarSvg />
         </SvgIcon>
       )
