@@ -20,6 +20,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - move `get_unique_id()` to dispatcher
 - move `initialize_result_object()` to dispatcher
 
+### Operations
+
+- Adding a new `aws_ami` job to `release.yml` to build the Covalent self-hosted AMI using packer
+
 ## [0.200.0] - 2022-10-05
 
 ### Authors
@@ -72,7 +76,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added CI for Centos 7 / Python 3.9
 - Added experimental CI for Debian 11 / Python 3.11rc2
 - Renamed Ubuntu images to Debian for accuracy
-- Adding a new `aws_ami` job to `release.yml` to build the Covalent self-hosted AMI using packer
 - Adding boilerplate workflow
 - Syntax fixes in release.yml
 - Verbose failure messages in boilerplate workflow
