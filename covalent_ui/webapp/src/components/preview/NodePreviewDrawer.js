@@ -135,7 +135,7 @@ const NodeDrawer = ({ node,setSelectedElectron }) => {
           <ExecutorSection
             preview
             metadata={_.get(preview, 'lattice.metadata')}
-            sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
+            sx={(theme) => ({ bgcolor: theme.palette.background.outRunBg })}
           />
 
           <Divider sx={{ my: 2 }} />
@@ -144,7 +144,7 @@ const NodeDrawer = ({ node,setSelectedElectron }) => {
           <Heading />
           <Paper
             elevation={0}
-            sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
+            sx={(theme) => ({ bgcolor: theme.palette.background.outRunBg })}
           >
             <SyntaxHighlighter src={src} />
           </Paper>

@@ -58,6 +58,7 @@ const defaultTheme = createTheme({
       darkblackbg: '#101820',
       buttonBg: '#10102C',
       executorBg: '#1E1E2E',
+      outRunBg:'#0B0B11'
     },
     error: {
       main: '#FF6464',
