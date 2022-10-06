@@ -438,7 +438,8 @@ jobs:
   aws_ami:
     needs: pypi
     if: >
-      github.event.inputs.stable_version
+      !inputs.prerelease
+      && github.event.inputs.stable_version
       && contains(env.PAUL_BLART, github.actor)
       && !github.event.inputs.test_release
     runs-on: ubuntu-latest
