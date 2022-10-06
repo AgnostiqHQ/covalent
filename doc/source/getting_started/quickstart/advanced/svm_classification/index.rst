@@ -244,17 +244,7 @@ SVM Classification
 ==================
 
 In this example, we use the classic MNIST dataset and build a SVM (Support Vector Machine) classifier using ``scikit-learn`` tools. We will decompose the entire machine learning pipeline
-into several stages and use Covalent to execute the corresponding workflows.
-
-Generally speaking, ML workflows can be largely decomposed into the 3 stages
-
-1) Data pre-processing
-2) Model training/Cross Validation
-3) Inference
-
-All of these stages are unique on their own and depending on the problem at hand each one of them can be quite computationally expensive. Training very large ML models require vast amounts of data all of which needs pre-processing.
-
-With Covalent, we can tackle each of these stages as separate workflows and dispatch computationally intensive parts of each to remote backends using suitable executors.
+into multiple workflows and use Covalent to execute each one
 
 Data pre-processing
 ~~~~~~~~~~~~~~~~~~~~~
@@ -286,7 +276,7 @@ The first step is trivial and is expressed by the following electron. We flatten
         nsamples = len(data.images)
         return data.images.reshape((nsamples, -1)), data.target
 
-For the second stage of the pre-processing workflow we are going to use the ``SSHExecutor`` to offload the task of generating the images to a remote virtual machine. The source code for this ``plot_images`` stage
+For the second stage of the pre-processing workflow we are going to use the ``SSHExecutor`` to offload the task of generating the images to a remote machine. The source code for this ``plot_images`` stage
 is the following
 
 .. code:: python

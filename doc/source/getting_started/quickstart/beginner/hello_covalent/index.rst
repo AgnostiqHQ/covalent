@@ -50,7 +50,7 @@ Next, open a Jupyter notebook or Python console and create a simple workflow:
       return r3
 
    # Dispatch the workflow
-   dispatch_id = ct.dispatch(simple_workflow)("Hello", "World")
+   dispatch_id = ct.dispatch(workflow)(1, 2)
 
 After Covalent is started, users can navigate to `<http://localhost:48008>`_ to see the UI in their own browsers. In the UI,  users can take a look at the workflow queue
 and several metadata associated with each such as current status, dispatch id, runtime etc.
