@@ -65,7 +65,7 @@ Workflow level details can be viewed by clicking on the dispatch ID
 .. image:: hello_covalent_graph.png
    :align: center
 
-The UI is very interactive and users can inspect electron level metadata by simply clicking on the nodes.
+The UI is very interactive and users can inspect electron level metadata by simply clicking on the nodes. Users and experience it for themselves by visiting our demo page `here <http://demo.covalent.xyz>`
 
 .. note::
 
