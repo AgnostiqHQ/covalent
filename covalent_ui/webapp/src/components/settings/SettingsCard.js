@@ -53,7 +53,7 @@ import FormControl from '@mui/material/FormControl'
 import FormLabel from '@mui/material/FormLabel'
 import { settingsResults, updateSettings } from '../../redux/settingsSlice'
 import { useDispatch, useSelector } from 'react-redux'
-import _, { capitalize } from 'lodash'
+import _ from 'lodash'
 import Skeleton from '@mui/material/Skeleton'
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import { toggleLatticeDrawer } from '../../redux/popupSlice'
@@ -612,7 +612,8 @@ const SettingsCard = () => {
                                   sx={(theme) => ({
                                     color: theme.palette.primary.light,
                                     fontWeight: 'bold',
-                                    lineHeight: '16px'
+                                    lineHeight: '16px',
+                                    fontSize:'16px'
                                   })}
                                 >
                                   {formatUnderscoreConcatenatedString(key)}
