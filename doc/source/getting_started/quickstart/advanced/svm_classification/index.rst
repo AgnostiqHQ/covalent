@@ -185,6 +185,8 @@ Before going into details, we first provide the entire workflow source code
 
     # Save the results obtained from cross_validate_classifier and evaluate_model.
     # Ensure that the RESULTS_DIR exists before executing the save_results electron
+    setup_results_dir = lambda results_dir: os.mkdir(results_dir) if not os.path.exists(results_dir) else None
+
     @ct.electron(
         call_before=[ct.DepsCall(setup_results_dir, args=[RESULTS_DIR])]
     )
