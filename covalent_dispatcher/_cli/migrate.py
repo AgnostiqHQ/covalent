@@ -36,6 +36,8 @@ from covalent._workflow.electron import to_decoded_electron_collection
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 
+from .._db import update
+
 
 def process_node(node: dict) -> dict:
     """Convert a node from a 0.110.2-vintage transport graph
@@ -204,4 +206,4 @@ def migrate_pickled_result_object(path: str) -> None:
         result_object = pickle.load(f)
 
     process_result_object(result_object)
-    result_object.persist()
+    update.persist(result_object)
