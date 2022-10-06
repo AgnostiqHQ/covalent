@@ -81,7 +81,7 @@ While the workflow is being processed by the dispatch server, users are free to 
    Make sure the Covalent server remains in the "running" state while you have running workflows. The status of the Covalent server can be queried from the command line
 
    .. code:: bash
-      
+
          covalent status
 
 
