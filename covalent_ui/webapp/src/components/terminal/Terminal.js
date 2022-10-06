@@ -4,8 +4,6 @@ import React, { useRef, useEffect, useState } from 'react'
 import { XTerm } from 'xterm-for-react'
 import { FitAddon } from 'xterm-addon-fit';
 import io from 'socket.io-client'
-import { Container, Grid, Chip } from '@mui/material';
-import Typography from '@mui/material/Typography';
 import './index.css';
 const Terminal = () => {
     const xtermRef = useRef()
@@ -43,14 +41,7 @@ const Terminal = () => {
         }
     })
     return (
-        <Container sx={{ mb: 4, mt: 7.5, ml: 5 }}>
-            <Grid xs={12} sx={{ mb: 4 }}>
-                <Typography sx={{ fontSize: '2rem' }} component="h4" display="inline">
-                    Terminal
-                </Typography>
-                <Chip sx={{ height: '24px', ml: 1, mb: 1.5, fontSize: '0.75rem', color: '#FFFFFF' }} label='BETA' variant='outlined' />
-                {/* <Chip sx={{ height: '24px', ml: 1, mb: 1.5, fontSize: '0.75rem', color: socket.id ? 'green' : 'red' }} label={socket.id ? 'Connected' : 'Disconnected'} variant='outlined' /> */}
-            </Grid>
+        <>
             {socket && (
                 <XTerm
                     options={{
@@ -68,8 +59,7 @@ const Terminal = () => {
                     }}
                     addons={[fitAddon]} />
             )}
-        </Container>
-
+        </>
     )
 }
 export default Terminal

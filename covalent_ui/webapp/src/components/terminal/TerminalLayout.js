@@ -20,17 +20,24 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-//  import { Container } from '@mui/material'
-//  import ResultListing from '../dispatches/ResultListing'
 import { Box } from '@mui/system'
+import { Container, Grid, Chip,Typography } from '@mui/material';
 import NavDrawer from '../common/NavDrawer'
 import Terminal from '../terminal/Terminal'
 
 const TerminalLayout = () => {
   return (
-    <Box sx={{ display: 'flex' }} data-testid="terminal">
-       <NavDrawer />
-       <Terminal />
+    <Box sx={{ display: 'flex' }} data-testid="dashboard">
+      <NavDrawer />
+      <Container maxWidth="xl" sx={{ mb: 4, mt: '32px' }}>
+        <Grid xs={12} sx={{ mb: 4 }}>
+          <Typography sx={{ fontSize: '2rem' }} component="h4" display="inline">
+            Terminal
+          </Typography>
+          <Chip sx={{ height: '24px', ml: 1, mb: 1.5, fontSize: '0.75rem', color: '#FFFFFF' }} label='BETA' variant='outlined' />
+        </Grid>
+        <Terminal />
+      </Container>
     </Box>
   )
 }
