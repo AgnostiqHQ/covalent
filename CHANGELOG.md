@@ -9,7 +9,54 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
-- Updated EC2 RTD with config & cloud resources table
+- Fixed the docstring for `get_node_error`
+
+### Changed
+
+- move `upsert_lattice_data()` to dispatcher
+- move `upsert_electron_data()` to dispatcher
+- move `insert_electron_dependency_data()` to dispatcher
+- move `persist()` to dispatcher
+- move `get_unique_id()` to dispatcher
+- move `initialize_result_object()` to dispatcher
+
+## [0.200.0] - 2022-10-05
+
+### Authors
+
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Aravind <100823292+Aravind-psiog@users.noreply.github.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+
+
+## Docs
+
+- Updated ECS Executor RTD with config & cloud resources table
+
+### Added
+
+- Ability to view the configuration file on the GUI as settings
+- Ability to copy python objects for inputs and results for lattice and electrons
+
+### Fixed
+
+- Minor GUI bugs and improvements
+
+### Docs
+
+- Updated Lambda Executor RTD with config & cloud resources table
+- Updated EC2, Braket, and Batch AWS Executors RTD with config & cloud resources table
 
 ### Operations
 
@@ -29,6 +76,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adding boilerplate workflow
 - Syntax fixes in release.yml
 - Verbose failure messages in boilerplate workflow
+- Change license.yml to pip-license-checker action
 
 ## [0.199.0] - 2022-09-29
 

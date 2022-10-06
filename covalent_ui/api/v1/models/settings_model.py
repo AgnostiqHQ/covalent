@@ -18,16 +18,31 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""
-Unit tests for DataStore object
-"""
+"""Settings request and response model"""
 
-from covalent._data_store.datastore import DataStore
-from covalent._shared_files.config import get_config
+import enum
+from typing import Union
+
+from pydantic import BaseModel
 
 
-def test_datastore_init():
-    """Test data store initialization method."""
+class GetSettingsResponseModel(BaseModel):
+    """Get Settings response model"""
 
-    ds = DataStore(db_URL=None)
-    assert ds.db_URL == "sqlite+pysqlite:///" + get_config("dispatcher.db_path")
+    client: Union[dict, None] = None
+    server: Union[dict, None] = None
+
+
+class UpdateSettingsResponseModel(BaseModel):
+    """Update Settings response model"""
+
+    data: str
+
+
+class Validators(enum.Enum):
+    """Validate settings overwrite"""
+
+    DISPATCHER = "dispatcher"
+    DASK = "dask"
+    WORKFLOW_DATA = "workflow_data"
+    USER_INTERFACE = "user_interface"

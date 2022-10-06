@@ -27,6 +27,7 @@ import CopyButton from '../common/CopyButton'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import Heading from '../common/Heading'
 import InputSection from '../common/InputSection'
+import ResultSection from '../common/ResultSection'
 import ExecutorSection from '../common/ExecutorSection'
 import {
   latticeResults,
@@ -134,37 +135,37 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       {/* Input */}
       {Object.keys(drawerInput).length !== 0 && (
         <InputSection
-        isFetching={
-          drawerInputListFetching && Object.keys(drawerInput).length === 0
-        }
-        inputs={drawerInput.data}
-      />
+          isFetching={
+            drawerInputListFetching && Object.keys(drawerInput).length === 0
+          }
+          sx={() => ({ cursor: 'pointer' })}
+          inputs={drawerInput}
+        />
       )}
 
 
       {/* Result */}
       {Object.keys(drawerResult).length !== 0 && result.status === 'COMPLETED' && (
         <>
-          <Heading>Result</Heading>
-          {drawerResultListFetching ? (
-            <Skeleton height={60} style={{ mt: 1 }} />
-          ) : (
-            <Paper elevation={0}>
-              <SyntaxHighlighter language="python" src={drawerResult.data} />
-            </Paper>
-          )}
+          <ResultSection
+            isFetching={
+              drawerResultListFetching && Object.keys(drawerResult).length === 0
+            }
+            sx={() => ({ cursor: 'pointer' })}
+            results={drawerResult}
+          />
         </>
       )}
 
       {/* Executor */}
       {Object.keys(drawerExecutorDetail).length !== 0 && (
         <ExecutorSection
-        isFetching={
-          Object.keys(drawerExecutorDetail).length === 0 &&
-          drawerExecutorDetailListFetching
-        }
-        metadata={drawerExecutorDetail}
-      />
+          isFetching={
+            Object.keys(drawerExecutorDetail).length === 0 &&
+            drawerExecutorDetailListFetching
+          }
+          metadata={drawerExecutorDetail}
+        />
       )}
 
       <Divider sx={{ my: 3 }} />
