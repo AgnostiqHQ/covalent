@@ -374,3 +374,13 @@ def test_result_persist_rehydrate(test_db, result_1, mocker):
     assert tg_1.edges == tg_2.edges
     for e in tg_1.edges:
         assert tg_1.edges[e] == tg_2.edges[e]
+
+
+def test_lattice_persist(result_1):
+    update.persist(result_1.lattice)
+    assert result_1.lattice.transport_graph.dirty_nodes == []
+
+
+def test_transport_graph_persist(result_1):
+    update.persist(result_1.lattice.transport_graph)
+    assert result_1.lattice.transport_graph.dirty_nodes == []
