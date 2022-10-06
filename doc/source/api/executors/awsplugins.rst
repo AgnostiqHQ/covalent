@@ -52,6 +52,9 @@ To use the AWS plugin ecosystem with Covalent, simply install it with :code:`pip
 
    pip install covalent-aws-plugins
 
+This will ensure that all the AWS executor plugins listed below are installed.
+
+
 .. note::
 
    Users may require `Docker <https://docs.docker.com/get-docker/>`_ and `Terraform <https://www.terraform.io/downloads>`_ to be installed to use the Braket & EC2 plugins respectively.
@@ -180,7 +183,7 @@ While each plugin can be seperately installed installing the above pip package i
 
     .. code-block:: python
 
-        executor = AWSLambdaExecutor(
+        executor = ct.executor.AWSLambdaExecutor(
             lambda_role_name="CovalentLambdaExecutionRole",
             s3_bucket_name="covalent-lambda-job-resources",
             timeout=60,
