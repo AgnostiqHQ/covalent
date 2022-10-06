@@ -24,7 +24,6 @@ import fcntl
 import os
 import pty
 import select
-import signal
 import struct
 import subprocess
 import termios
@@ -49,15 +48,12 @@ address = get_config("user_interface.address")
 port = str(get_config("user_interface.dev_port"))
 socket_port = str(get_config("user_interface.port"))
 origins = [f"http://{address}:{port}"]
-socket_origins = [f"http://{address}:{port}", f"http://{address}:{socket_port}"]
 
 app_log = logger.app_log
 log_to_file = get_config("sdk.enable_logging").upper() == "TRUE"
 
 app = FastAPI()
-sio = socketio.AsyncServer(
-    cors_allowed_origins=socket_origins, async_mode="asgi", logger=log_to_file
-)
+sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi", logger=log_to_file)
 
 
 @sio.on("message")
@@ -128,8 +124,6 @@ async def chat_message(*args):
 async def stop_terminal(*args):
     global terminal_subprocess
     terminal_subprocess = False
-    os.killpg(child_process_id, signal.SIGKILL)
-    await sio.sleep(0.01)
 
 
 @app.exception_handler(RequestValidationError)
