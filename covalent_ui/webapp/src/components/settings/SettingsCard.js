@@ -201,6 +201,8 @@ const SettingsCard = () => {
         ...currValue,
         [resultKey]: resultOutput
       }))
+      setResultKey(key)
+      setResultOutput(value)
       setHandle('')
       setIsDisabled(false)
     } else {
