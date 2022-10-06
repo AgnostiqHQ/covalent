@@ -26,7 +26,7 @@ from pathlib import Path
 from covalent._results_manager import Result
 from covalent._shared_files.defaults import attr_prefix, generator_prefix, subscript_prefix
 from covalent._workflow.transport import TransportableObject, _TransportGraph
-from covalent.utils.migrate import (
+from covalent_dispatcher._cli.migrate import (
     migrate_pickled_result_object,
     process_lattice,
     process_node,
@@ -255,8 +255,8 @@ def test_process_result_object():
 def test_migrate_pickled_result_object(mocker):
     """Test migrate_pickled_result_object"""
 
-    mock_process_ro = mocker.patch("covalent.utils.migrate.process_result_object")
-    mock_persist = mocker.patch("covalent._results_manager.Result.persist")
+    mock_process_ro = mocker.patch("covalent_dispatcher._cli.migrate.process_result_object")
+    mock_persist = mocker.patch("covalent_dispatcher._db.update.persist")
 
     migrate_pickled_result_object(result_pkl)
     mock_process_ro.assert_called_once()
