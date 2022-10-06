@@ -37,7 +37,7 @@ In this section we cover and highlight how the following Covalent features can b
       - Covalent integrates very well with AWS cloud services and provides easy to use cloud plugins to dispatch workloads on AWS compute backends. Users can install all the AWS supported plugins from PYPI via pip
 
         .. code:: bash
-    
+
             pip install covalent-aws-plugins
 
         The following AWS cloud services are supported in Covalent currently
@@ -157,7 +157,7 @@ Before going into details, we first provide the entire workflow source code
     def build_classifier(gamma: float):
         return SVC(gamma = gamma)
 
-    
+
     # Split the entire dataset into training and test sets with a test set fraction
     # defined by `fraction` (defaults to 20%)
     @ct.electron
