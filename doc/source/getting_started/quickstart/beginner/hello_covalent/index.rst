@@ -61,16 +61,6 @@ When you are done using Covalent, stop the server:
    $ covalent stop
    Covalent server has stopped.
 
-Even if you forget to query or save your workflow results, Covalent saves them after each task's execution. The full results, including metadata, are stored on disk in the format shown below:
-
-.. code:: text
-
-    📂 my_project/
-    ├─ 📙 my_experiment.ipynb
-    ├─ 📂 results/
-    │  ├─ 📂 8a7bfe54-d3c7-4ca1-861b-f55af6d5964a/
-    │  │  ├─ 📄 result.pkl
-    │  │  ├─ 🗒️ dispatch_script.py
-    │  │  ├─ 🧾 result_info.yaml
+Even if you forget to query or save your workflow results, Covalent saves them after each task's execution. The full results, including metadata, are stored on disk.
 
 Read more about how Covalent works on the Covalent :doc:`concepts <../concepts/concepts>` page.

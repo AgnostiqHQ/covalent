@@ -6,6 +6,241 @@ feature rich and allows users to customize execution of their workflows at a ver
 files can be uploaded and downloaded from remote machines, AWS S3 buckets before the tasks consuming them even begin execution. Users can also specify custom synchronization points in their workflows in order
 to enforce dependencies between electrons. This feature is quite useful when users would want to force a dependency between independent electrons before proceeding to subsequent steps.
 
+
+Feature summary
+~~~~~~~~~~~~~~~~
+
+In this section we cover and highlight how the following Covalent features can be used when developing workflow
+
+.. list-table::
+    :widths: 20 80
+    :header-rows: 1
+    :align: left
+
+    * - Feature
+      - Description
+
+    * - :doc:`Remote executors <../../../../plugins>`
+      - Executor plugins are a feature in Covalent that allow users to configure the runtime environment for their tasks. With executors users can execute different parts of their
+        workflows on different hardware backends (local/remote) to which they may have access to
+
+    * - :doc:`Electron dependencies <../../../../concepts/concepts>`
+      - Electron dependencies is a API exposed by Covalent so that users can perform custom actions before/after their tasks execute on their preferred backends. With electron dependencies
+        users can install necessary Python packages, execute shell commands as well as inject custom call before/after hooks that get executed before and after task execution respectively
+
+    * - :doc:`Synchronization <../../../../concepts/concepts>`
+      - Covalent exposes all the inherent parallelism within a workflow and executes all the tasks concurrently. To avoid any potential race conditions, Covalent provides users with a convenient
+        and easy to use API to force dependencies between different tasks in their workflow. This feature allows users to set synchronization points in their workflow similar to ``MPI_Barrier/omp_wait`` constructs.
+        Using Covalent's synchronization features, users can enforce sequential execution of tasks within a single workflow as needed
+
+    * - :doc:`AWS Plugins <../../../../plugins>`
+      - Covalent integrates very well with AWS cloud services and provides easy to use cloud plugins to dispatch workloads on AWS compute backends. Users can install all the AWS supported plugins from PYPI via pip
+
+        .. code:: bash
+    
+            pip install covalent-aws-plugins
+
+        The following AWS cloud services are supported in Covalent currently
+
+        * AWS EC2
+        * AWS ECS
+        * AWS Batch
+        * AWS Lambda
+        * AWS Braket
+
+    * - :doc:`File transfers <../../../../concepts/concepts>`
+      - The file transfer feature in Covalent allows users to download and upload files between machines during workflow runtime. This feature facilitate file I/O between remote m
+
+
+Full source
+==============
+
+Before going into details, we first provide the entire workflow source code
+
+.. code:: python
+
+    import os
+    import uuid
+    import pandas as pd
+    import numpy as np
+    import covalent as ct
+    from sklearn import datasets, metrics
+    import matplotlib.pyplot as plt
+    from covalent.executor import SSHExecutor, AWSBatchExecutor
+    from sklearn.model_selection import train_test_split, cross_val_score, ParameterGrid
+    from sklearn.svm import SVC
+    from joblib import dump, load
+
+    # SSH executor
+    localssh = SSHExecutor(username=<username>, hostname=<hostname>, ssh_key_file=<path to ssh key>)
+
+    # AWS Batch executor
+    awsbatch = AWSBatchExecutor(
+                        s3_bucket_name='<s3 bucket name>',
+                        batch_job_definition_name='<job definition name>',
+                        batch_queue='<batch job queue>',
+                        batch_execution_role_name='<batch execution role name>',
+                        batch_job_role_name='<batch IAM job role name>',
+                        batch_job_log_group_name='<batch job log group name>',
+                        vcpu=2,
+                        memory=3.75,
+                        time_limit=60
+    )
+
+    # Load the full dataset from scikit-learn datasets module
+    @ct.electron
+    def load_dataset():
+        """
+        Return the MNIST handwritten images and labels
+        """
+        data = datasets.load_digits()
+        nsamples = len(data.images)
+        return data.images.reshape((nsamples, -1)), data.target
+
+
+    # Plot a few samples of the images from the training dataset for visualization.
+    # Use the SSH executor to offload this task to a remote machine and install `matplotlib` version 3.5.1
+    # before running plot_images. Save the image plot to PNG on the remote machine
+    @ct.electron(
+        executor=localssh,
+        deps_pip = ct.DepsPip(packages=["matplotlib==3.5.1"])
+    )
+    def plot_images(images, labels, basedir = os.environ['HOME']):
+        _, axes = plt.subplots(nrows=1, ncols=len(images), figsize=(10, 3))
+
+        for ax, image, label in zip(axes, images, labels):
+            ax.set_axis_off()
+            ax.imshow(image.reshape(8, 8), cmap=plt.cm.gray_r, interpolation="nearest")
+            ax.set_title(f"Training: {label}")
+
+        plt.tight_layout()
+        plt.savefig(f"{os.path.join(basedir, "training_images.png")}", format="png", dpi=300)
+        return
+
+    # Download the PNG figure generated by the plot_images electron from the remote machine via Rsync
+    # and visualize it locally
+    rsync = ct.fs.strategies.Rsync(user=<username>, host=<hostname>, private_key_path=<ssh key file>)
+    @ct.electron(
+        files=[ct.fs.TransferFromRemote(f"{os.path.join(os.environ['HOME'], 'training_images.png')}", strategy=rsync)]
+    )
+    def visualize_images(files=[]):
+        _, local_path_to_file = files[0]
+        return Image.open(f"{local_path_to_file}"), str(local_path_to_file)
+
+
+    # Preprocessing workflow to visualize few training sample images. Use `ct.wait` to pause until plot_images is finished executing
+    # before executing visualize_images
+    @ct.lattice
+    def preprocessing_workflow():
+        train_images, train_labels = load_dataset()
+        plots = plot_images(train_images[:5], train_labels[:5])
+        images = visualize_images()
+        ct.wait(child=images, parents=[plots])
+        return images
+
+    # Dispatch the pre-processing workflow
+    dispatch_id = ct.dispatch(preprocessing_workflow)()
+    # Fetch the result
+    result = ct.get_result(dispatch_id, wait=True)
+    print(result)
+
+
+    ###############################################
+    # Cross validation workflow
+    ###############################################
+
+    # Directory on the local filesystem to save workflow results
+    RESULTS_DIR = os.path.join(os.environ['HOME'], "cv_results")
+
+    # Based on the input parameter `gamma` return a SVM classifier object
+    @ct.electron
+    def build_classifier(gamma: float):
+        return SVC(gamma = gamma)
+
+    
+    # Split the entire dataset into training and test sets with a test set fraction
+    # defined by `fraction` (defaults to 20%)
+    @ct.electron
+    def split_dataset(images, labels, fraction: float=0.2):
+        return train_test_split(images, labels, test_size=fraction, random_state=42)
+
+    # Given a classifier object, run k-fold cross validation using the training set on AWS Batch.
+    # Since its a remote executor ensure scikit-learn is installed in the remote environment before
+    # executing the electron
+    @ct.electron(executor=awsbatch, deps_pip=ct.DepsPip(packages=['scikit-learn']))
+    def cross_validate_classifier(clf, train_images, train_labels, kfold=3):
+        """
+        Cross validate using the estimators default scorer
+        """
+        cv_scores = cross_val_score(clf, train_images, train_labels, cv=kfold)
+        return cv_scores
+
+    # Fit the model on the entire training set and generate predictions based on the test set.
+    # Compute an accuracy score based on the predictions and the actual test labels
+    @ct.electron
+    def evaluate_model(clf, train_images, train_labels, test_images, test_labels):
+        clf.fit(train_images, train_labels)
+        predictions = clf.predict(test_images)
+        return metrics.accuracy_score(predictions, test_labels)
+
+    # Save the results obtained from cross_validate_classifier and evaluate_model.
+    # Ensure that the RESULTS_DIR exists before executing the save_results electron
+    @ct.electron(
+        call_before=[ct.DepsCall(setup_results_dir, args=[RESULTS_DIR])]
+    )
+    def save_results(results_dir, classifier, cv_scores, accuracy_score):
+       # Generate a random name for the object and results
+        random_name = uuid.uuid4()
+        dump({"clf": classifier, "cv_score": np.mean(cv_scores), "accuracy": acc_score}, os.path.join(results_dir, f"{random_name}_results.pkl"))
+        return
+
+    # Cross validation workflow
+    @ct.lattice
+    def cross_validation_workflow(results_dir, param_grid, split_fraction: float = 0.2):
+        images, labels = load_images()
+        train_images, test_images, train_labels, test_labels = split_dataset(images, labels, fraction=split_fraction)
+
+        for param in list(param_grid):
+            svm_classifier = build_classifier(**param)
+            cv_scores = cross_validate_classifier(svm_classifier, train_images, train_labels, kfold=3)
+            acc_score = evaluate_model(svm_classifier, train_images, train_labels, test_images, test_labels)
+            ct.wait(child=acc_score, parents=[svm_classifier, cv_scores])
+            save_results(results_dir, svm_classifier, cv_scores, acc_score)
+        return
+
+    # Dispatch CV workflow
+    parameters = list(ParameterGrid({'gamma': np.linspace(0.01, 0.1, 5)}))
+
+    dispatch_id = ct.dispatch(cross_validation_workflow)(RESULTS_DIR, parameters, 0.2)
+    result = ct.get_result(dispatch_id, wait=True)
+
+    #########################
+    # Model selection
+    #########################
+
+    # Based on all the cross validation results, select the model that performed best on the test set
+    @ct.lattice
+    @ct.electron
+    def find_best_model(results_dir):
+        all_results = []
+        for root, dirs, files in os.walk(results_dir):
+            for file in files:
+                if "results" in file:
+                    obj = load(os.path.join(root, file))
+                    all_results.append(obj)
+
+        # Convert to dataframe
+        df = pd.DataFrame(all_results)
+        return dict(df.iloc[df['accuracy'].idxmax()])
+
+    # Dispatch model selection workflow
+    dispatch_id = ct.dispatch(find_best_model)(RESULTS_DIR)
+    result = ct.get_result(dispatch_id, wait=True)
+
+
+SVM Classification
+==================
+
 In this example, we use the classic MNIST dataset and build a SVM (Support Vector Machine) classifier using ``scikit-learn`` tools. We will decompose the entire machine learning pipeline
 into several stages and use Covalent to execute the corresponding workflows.
 
@@ -18,9 +253,6 @@ Generally speaking, ML workflows can be largely decomposed into the 3 stages
 All of these stages are unique on their own and depending on the problem at hand each one of them can be quite computationally expensive. Training very large ML models require vast amounts of data all of which needs pre-processing.
 
 With Covalent, we can tackle each of these stages as separate workflows and dispatch computationally intensive parts of each to remote backends using suitable executors.
-
-Workflow Outline
-~~~~~~~~~~~~~~~~~~~~~
 
 Data pre-processing
 ~~~~~~~~~~~~~~~~~~~~~
@@ -584,157 +816,3 @@ Best SVM classifier model
 .. image:: ./best_model.png
     :width: 1000
     :align: center
-
-
-Full source
-==============
-
-For convenience, we give the entire source code of this workflow here
-
-.. code:: python
-
-    import os
-    import uuid
-    import pandas as pd
-    import numpy as np
-    import covalent as ct
-    from sklearn import datasets, metrics
-    import matplotlib.pyplot as plt
-    from covalent.executor import SSHExecutor, AWSBatchExecutor
-    from sklearn.model_selection import train_test_split, cross_val_score, ParameterGrid
-    from sklearn.svm import SVC
-    from joblib import dump, load
-
-    # Executors
-    localssh = SSHExecutor(username=<username>, hostname=<hostname>, ssh_key_file=<path to ssh key>)
-
-    awsbatch = AWSBatchExecutor(
-                        s3_bucket_name='<s3 bucket name>',
-                        batch_job_definition_name='<job definition name>',
-                        batch_queue='<batch job queue>',
-                        batch_execution_role_name='<batch execution role name>',
-                        batch_job_role_name='<batch IAM job role name>',
-                        batch_job_log_group_name='<batch job log group name>',
-                        vcpu=2,
-                        memory=3.75,
-                        time_limit=60
-    )
-
-    @ct.electron
-    def load_dataset():
-        """
-        Return the MNIST handwritten images and labels
-        """
-        data = datasets.load_digits()
-        nsamples = len(data.images)
-        return data.images.reshape((nsamples, -1)), data.target
-
-    @ct.electron(
-        executor=localssh,
-        deps_pip = ct.DepsPip(packages=["matplotlib==3.5.1"])
-    )
-    def plot_images(images, labels, basedir = os.environ['HOME']):
-        _, axes = plt.subplots(nrows=1, ncols=len(images), figsize=(10, 3))
-
-        for ax, image, label in zip(axes, images, labels):
-            ax.set_axis_off()
-            ax.imshow(image.reshape(8, 8), cmap=plt.cm.gray_r, interpolation="nearest")
-            ax.set_title(f"Training: {label}")
-
-        plt.tight_layout()
-        plt.savefig(f"{os.path.join(basedir, "training_images.png")}", format="png", dpi=300)
-        return
-
-    rsync = ct.fs.strategies.Rsync(user=<username>, host=<hostname>, private_key_path=<ssh key file>)
-    @ct.electron(
-        files=[ct.fs.TransferFromRemote(f"{os.path.join(os.environ['HOME'], 'training_images.png')}", strategy=rsync)]
-    )
-    def visualize_images(files=[]):
-        _, local_path_to_file = files[0]
-        return Image.open(f"{local_path_to_file}"), str(local_path_to_file)
-
-    @ct.lattice
-    def preprocessing_workflow():
-        train_images, train_labels = load_dataset()
-        plots = plot_images(train_images[:5], train_labels[:5])
-        images = visualize_images()
-        ct.wait(child=images, parents=[plots])
-        return images
-
-    # Dispatch the pre-processing workflow
-    dispatch_id = ct.dispatch(preprocessing_workflow)()
-    result = ct.get_result(dispatch_id, wait=True)
-
-
-    # Cross validation workflow
-    @ct.electron
-    def build_classifier(gamma: float):
-        return SVC(gamma = gamma)
-
-    @ct.electron
-    def split_dataset(images, labels, fraction: float=0.2):
-        return train_test_split(images, labels, test_size=fraction, random_state=42)
-
-    @ct.electron(executor=awsbatch, deps_pip=ct.DepsPip(packages=['scikit-learn']))
-    def cross_validate_classifier(clf, train_images, train_labels, kfold=3):
-        """
-        Cross validate using the estimators default scorer
-        """
-        cv_scores = cross_val_score(clf, train_images, train_labels, cv=kfold)
-        return cv_scores
-
-    @ct.electron
-    def evaluate_model(clf, train_images, train_labels, test_images, test_labels):
-        clf.fit(train_images, train_labels)
-        predictions = clf.predict(test_images)
-        return metrics.accuracy_score(predictions, test_labels)
-
-    RESULTS_DIR = os.path.join(os.environ['HOME'], "cv_results")
-
-    @ct.electron(
-        call_before=[ct.DepsCall(setup_results_dir, args=[RESULTS_DIR])]
-    )
-    def save_results(results_dir, classifier, cv_scores, accuracy_score):
-       # Generate a random name for the object and results
-        random_name = uuid.uuid4()
-        dump({"clf": classifier, "cv_score": np.mean(cv_scores), "accuracy": acc_score}, os.path.join(results_dir, f"{random_name}_results.pkl"))
-        return
-
-    # Cross validation workflow
-    @ct.lattice
-    def cross_validation_workflow(results_dir, param_grid, split_fraction: float = 0.2):
-        images, labels = load_images()
-        train_images, test_images, train_labels, test_labels = split_dataset(images, labels, fraction=split_fraction)
-
-        for param in list(param_grid):
-            svm_classifier = build_classifier(**param)
-            cv_scores = cross_validate_classifier(svm_classifier, train_images, train_labels, kfold=3)
-            acc_score = evaluate_model(svm_classifier, train_images, train_labels, test_images, test_labels)
-            ct.wait(child=acc_score, parents=[svm_classifier, cv_scores])
-            save_results(results_dir, svm_classifier, cv_scores, acc_score)
-        return
-
-    # Dispatch CV workflow
-    parameters = list(ParameterGrid({'gamma': np.linspace(0.01, 0.1, 5)}))
-
-    dispatch_id = ct.dispatch(cross_validation_workflow)(RESULTS_DIR, parameters, 0.2)
-    result = ct.get_result(dispatch_id, wait=True)
-
-    # Model selection
-    @ct.lattice
-    @ct.electron
-    def find_best_model(results_dir):
-        all_results = []
-        for root, dirs, files in os.walk(results_dir):
-            for file in files:
-                if "results" in file:
-                    obj = load(os.path.join(root, file))
-                    all_results.append(obj)
-
-        # Convert to dataframe
-        df = pd.DataFrame(all_results)
-        return dict(df.iloc[df['accuracy'].idxmax()])
-
-    # Dispatch model selection workflow
-    dispatch_id = ct.dispatch(find_best_model)(RESULTS_DIR)
-    result = ct.get_result(dispatch_id, wait=True)
