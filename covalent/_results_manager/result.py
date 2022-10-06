@@ -406,7 +406,7 @@ Node Outputs
         #            return load_file(storage_path=electron.storage_path, filename=electron.value_filename)
         return
 
-    def _get_node_error(self, node_id: int) -> Any:
+    def _get_node_error(self, node_id: int) -> Union[None, str]:
         """
         Return the error of a node.
 

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Fixed the docstring for `get_node_error`
+
 ### Changed
 
 - move `upsert_lattice_data()` to dispatcher
