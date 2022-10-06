@@ -50,6 +50,7 @@ from covalent_dispatcher._core.execution import (
     initialize_result_object,
     run_workflow,
 )
+from covalent_dispatcher._db import update
 from covalent_dispatcher._db.datastore import DataStore
 
 TEST_RESULTS_DIR = "/tmp/results"
@@ -340,10 +341,8 @@ async def test_update_failed_node(mocker):
 
     result_object = get_mock_result()
     mock_fail_handler = mocker.patch("covalent_dispatcher._core.execution._handle_failed_node")
-    mock_upsert_lattice = mocker.patch(
-        "covalent._results_manager.result.Result.upsert_lattice_data"
-    )
-    mock_update_node = mocker.patch("covalent._results_manager.result.Result._update_node")
+    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
+    mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
 
     node_result = {"node_id": 0, "status": Result.FAILED}
     await _update_node_result(result_object, node_result, pending_deps, tasks_queue)
@@ -364,10 +363,8 @@ async def test_update_cancelled_node(mocker):
     mock_cancel_handler = mocker.patch(
         "covalent_dispatcher._core.execution._handle_cancelled_node"
     )
-    mock_upsert_lattice = mocker.patch(
-        "covalent._results_manager.result.Result.upsert_lattice_data"
-    )
-    mock_update_node = mocker.patch("covalent._results_manager.result.Result._update_node")
+    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
+    mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
 
     node_result = {"node_id": 0, "status": Result.CANCELLED}
     await _update_node_result(result_object, node_result, pending_deps, tasks_queue)
@@ -388,10 +385,8 @@ async def test_update_completed_node(mocker):
     mock_completed_handler = mocker.patch(
         "covalent_dispatcher._core.execution._handle_completed_node"
     )
-    mock_upsert_lattice = mocker.patch(
-        "covalent._results_manager.result.Result.upsert_lattice_data"
-    )
-    mock_update_node = mocker.patch("covalent._results_manager.result.Result._update_node")
+    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
+    mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
 
     node_result = {"node_id": 0, "status": Result.COMPLETED}
     await _update_node_result(result_object, node_result, pending_deps, tasks_queue)
@@ -414,9 +409,7 @@ async def test_handle_completed_node(mocker):
     pending_deps[1] = 0
     pending_deps[2] = 1
 
-    mock_upsert_lattice = mocker.patch(
-        "covalent._results_manager.result.Result.upsert_lattice_data"
-    )
+    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
 
     node_result = {"node_id": 1, "status": Result.COMPLETED}
 
@@ -439,9 +432,7 @@ async def test_handle_failed_node(mocker):
     pending_deps[1] = 0
     pending_deps[2] = 1
 
-    mock_upsert_lattice = mocker.patch(
-        "covalent._results_manager.result.Result.upsert_lattice_data"
-    )
+    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
     mock_get_node_name = mocker.patch("covalent._results_manager.result.Result._get_node_name")
 
     mock_get_node_error = mocker.patch("covalent._results_manager.result.Result._get_node_error")
@@ -470,9 +461,7 @@ async def test_handle_cancelled_node(mocker):
     pending_deps[1] = 0
     pending_deps[2] = 1
 
-    mock_upsert_lattice = mocker.patch(
-        "covalent._results_manager.result.Result.upsert_lattice_data"
-    )
+    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
 
     node_result = {"node_id": 1, "status": Result.CANCELLED}
 
@@ -524,9 +513,9 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
     result_object._initialize_nodes()
 
     # patch all methods that reference a DB
-    mocker.patch("covalent._results_manager.result.Result.upsert_lattice_data")
-    mocker.patch("covalent._results_manager.result.Result.upsert_electron_data")
-    mocker.patch("covalent._results_manager.result.Result.persist")
+    mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
+    mocker.patch("covalent_dispatcher._db.upsert._electron_data")
+    mocker.patch("covalent_dispatcher._db.update.persist")
     mocker.patch(
         "covalent._results_manager.result.Result._get_node_name", return_value="failing_task"
     )
@@ -536,7 +525,7 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
     mocker.patch("covalent_dispatcher._core.execution.update_lattices_data")
     mocker.patch("covalent_dispatcher._core.execution.write_lattice_error")
 
-    result_object.persist()
+    update.persist(result_object)
     result_object = await run_workflow(result_object)
 
     assert result_object.status == Result.FAILED
@@ -568,9 +557,9 @@ async def test_run_workflow_with_failing_leaf(mocker):
     result_object._root_dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    mocker.patch("covalent._results_manager.result.Result.upsert_lattice_data")
-    mocker.patch("covalent._results_manager.result.Result.upsert_electron_data")
-    mocker.patch("covalent._results_manager.result.Result.persist")
+    mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
+    mocker.patch("covalent_dispatcher._db.upsert._electron_data")
+    mocker.patch("covalent_dispatcher._db.update.persist")
     mocker.patch(
         "covalent._results_manager.result.Result._get_node_name", return_value="failing_task"
     )
@@ -580,7 +569,7 @@ async def test_run_workflow_with_failing_leaf(mocker):
     mocker.patch("covalent_dispatcher._core.execution.update_lattices_data")
     mocker.patch("covalent_dispatcher._core.execution.write_lattice_error")
 
-    result_object.persist()
+    update.persist(result_object)
 
     result_object = await run_workflow(result_object)
 
@@ -619,8 +608,8 @@ async def test_run_workflow_does_not_deserialize(mocker):
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    mocker.patch("covalent._data_store.datastore.DataStore.factory", return_value=test_db)
-    result_object.persist()
+    mocker.patch("covalent_dispatcher._db.datastore.DataStore.factory", return_value=test_db)
+    update.persist(result_object)
 
     mock_to_deserialize = mocker.patch("covalent.TransportableObject.get_deserialized")
 
@@ -643,10 +632,10 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
-    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
 
-    result_object.persist()
+    update.persist(result_object)
 
     result_object = await run_workflow(result_object)
     assert result_object.status == Result.PENDING_POSTPROCESSING
@@ -661,10 +650,10 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
-    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
 
-    result_object.persist()
+    update.persist(result_object)
 
     def failing_workflow(x):
         assert False
@@ -707,8 +696,8 @@ async def test_dispatch_sync_sublattice(test_db, mocker):
     def sub_workflow(x):
         return task(x)
 
-    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
-    mocker.patch("covalent._results_manager.result.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
 
     result_object = get_mock_result()
 
@@ -762,7 +751,7 @@ async def test_run_task_sublattice_handling(test_db, mocker):
     sub_result_object._result = ct.TransportableObject(5)
     sub_result_object._status = Result.COMPLETED
 
-    mocker.patch("covalent._results_manager.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mock_get_sublattice_electron_id = mocker.patch(
         "covalent_dispatcher._core.execution.get_sublattice_electron_id", return_value=1
     )

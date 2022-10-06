@@ -48,7 +48,7 @@ from covalent.executor import _executor_manager
 from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
 from covalent_ui import result_webhook
 
-from .._db import update
+from .._db import update, upsert
 from .._db.write_result_to_db import (
     get_sublattice_electron_id,
     update_lattices_data,
@@ -324,7 +324,7 @@ async def _run_task(
                 node_result["status"] = Result.FAILED
                 node_result["error"] = "Sublattice workflow failed to complete"
 
-                sublattice_result.upsert_lattice_data()
+                upsert._lattice_data(sublattice_result)
 
         else:
             app_log.debug(f"Executing task {node_name}")
@@ -424,7 +424,7 @@ async def _handle_failed_node(result_object, node_result, pending_deps, tasks_qu
     result_object._end_time = datetime.now(timezone.utc)
     result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
     app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
-    result_object.upsert_lattice_data()
+    upsert._lattice_data(result_object)
     await result_webhook.send_update(result_object)
     await tasks_queue.put(-1)
 
@@ -433,7 +433,7 @@ async def _handle_cancelled_node(result_object, node_result, pending_deps, tasks
     result_object._status = Result.CANCELLED
     result_object._end_time = datetime.now(timezone.utc)
     app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
-    result_object.upsert_lattice_data()
+    upsert._lattice_data(result_object)
     await result_webhook.send_update(result_object)
     await tasks_queue.put(-1)
 
@@ -506,7 +506,7 @@ async def _postprocess_workflow(result_object: Result) -> Result:
     post_processor = [pp_executor, pp_executor_data]
 
     result_object._status = Result.POSTPROCESSING
-    result_object.upsert_lattice_data()
+    upsert._lattice_data(result_object)
 
     app_log.debug(f"Preparing to post-process workflow {result_object.dispatch_id}")
 
@@ -514,7 +514,7 @@ async def _postprocess_workflow(result_object: Result) -> Result:
         app_log.debug("Workflow to be postprocessed client side")
         result_object._status = Result.PENDING_POSTPROCESSING
         result_object._end_time = datetime.now(timezone.utc)
-        result_object.upsert_lattice_data()
+        upsert._lattice_data(result_object)
         await result_webhook.send_update(result_object)
         return result_object
 
@@ -550,7 +550,7 @@ async def _postprocess_workflow(result_object: Result) -> Result:
         result_object._status = Result.POSTPROCESSING_FAILED
         result_object._error = "Post-processing failed"
         result_object._end_time = datetime.now(timezone.utc)
-        result_object.upsert_lattice_data()
+        upsert._lattice_data(result_object)
         await result_webhook.send_update(result_object)
 
         return result_object
@@ -561,7 +561,7 @@ async def _postprocess_workflow(result_object: Result) -> Result:
         result_object._status = Result.POSTPROCESSING_FAILED
         result_object._error = f"Post-processing failed: {err}"
         result_object._end_time = datetime.now(timezone.utc)
-        result_object.upsert_lattice_data()
+        upsert._lattice_data(result_object)
         await result_webhook.send_update(result_object)
 
         return result_object
@@ -606,7 +606,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
     result_object._status = Result.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
 
-    result_object.upsert_lattice_data()
+    upsert._lattice_data(result_object)
     app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
 
     # Executor for post_processing and dispatching sublattices
@@ -721,7 +721,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
 
     result_object = await _postprocess_workflow(result_object)
 
-    result_object.persist()
+    update.persist(result_object)
     await result_webhook.send_update(result_object)
 
     return result_object
