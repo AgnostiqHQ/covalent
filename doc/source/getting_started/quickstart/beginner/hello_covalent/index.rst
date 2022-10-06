@@ -5,8 +5,8 @@ Hello, Covalent!
 Covalent is a workflow orchestration tool written purely in Python to facilitate heterogenous and distributed computing. With Covalent users can quickly take their
 existing code, ``covalentify`` it and dispatch it for execution on variety of hardware backends (on-prem or cloud).
 
-Generally speaking, workflows which are simply a collection of interdependent tasks. Tasks are the building blocks of workflows and are referred to as :doc:`electrons <../../../../concepts/concepts>` in Covalent.
-In Covalent, a collection of electrons constitutes a :doc:`lattice <../../../../concepts/concepts>` that ultimately represents the entire computation a user intends to run.
+Generally speaking, workflows are simply a collection of interdependent tasks. Tasks are the building blocks of workflows and are referred to as :doc:`electrons <../../../../concepts/concepts>` in Covalent.
+A collection of electrons constitutes a :doc:`lattice <../../../../concepts/concepts>` that ultimately represents the entire computation a user intends to run in Covalent.
 
 .. note::
 
