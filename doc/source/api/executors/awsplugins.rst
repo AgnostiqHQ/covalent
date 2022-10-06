@@ -82,7 +82,7 @@ While each plugin can be seperately installed installing the above pip package i
             :width: 48
             :align: center
      - AWS EC2 Executor
-     - **General purpose compute workloads users can select compute resources.** An EC2 instance is auto-provisioned using terraform with selected compute settings to execute tasks.
+     - **General purpose compute workloads where users can select compute resources.** An EC2 instance is auto-provisioned using terraform with selected compute settings to execute tasks.
    * -
         .. image:: ./Braket.png
             :width: 48
