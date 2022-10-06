@@ -3,9 +3,7 @@
 🔌 AWS Plugins
 """""""""""""""""""""""""""
 
-.. raw:: html
-
-    <img style="width: 100%; height: auto" src="./../../_images/covalent_readme_banner.svg"/>
+.. image:: AWS_Plugins.png
 
 
 `Covalent <https://github.com/AgnostiqHQ/covalent>`_  is a python based workflow orchestration tool used to execute HPC and quantum tasks in heterogenous environments.
@@ -31,11 +29,7 @@ By installing Covalent AWS Plugins users can leverage a broad plugin ecosystem t
     ---
     :column: col-lg-7 p-0 mt-3 mb-2
 
-    .. raw:: html
-
-        <div style="text-align: left">
-            <img style="display: inline-block" src="./../../_images/covalent-ec2-code-example.png"/>
-        </div>
+    .. image:: covalent-ec2-code-example.png
 
 ..
 
