@@ -3,8 +3,6 @@
 import React, { useRef, useEffect, useState } from 'react'
 import { XTerm } from 'xterm-for-react'
 import { FitAddon } from 'xterm-addon-fit';
-import { Container, Grid, Chip } from '@mui/material';
-import Typography from '@mui/material/Typography';
 import './index.css';
 const Terminal = () => {
     const xtermRef = useRef()
