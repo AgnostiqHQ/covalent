@@ -2,7 +2,23 @@
 Hello, Covalent!
 ======
 
-Let's look at a simple example to get started with Covalent. Before starting, ensure you have installed Covalent, verified the installation, and started the Covalent server. Next, open a Jupyter notebook or Python console and create a simple workflow:
+Covalent is a workflow orchestration tool written purely in Python to facilitate heterogenous and distributed computing. With Covalent users can quickly take their
+existing code, ``covalentify`` it and dispatch it for execution on variety of hardware backends (on-prem or cloud).
+
+Generally speaking, workflows which are simply a collection of interdependent tasks. Tasks are the building blocks of workflows and are referred to as :doc:`electrons <../../../../concepts/concepts>` in Covalent.
+In Covalent, a collection of electrons constitutes a :doc:`lattice <../../../../concepts/concepts>` that ultimately represents the entire computation a user intends to run.
+
+.. note::
+
+   A very strong feature of Covalent is that it makes it extremely easy for users to dispatch parts of their workflow to different backends (on-prem HPC clusters, cloud services, quantum devices) through the means
+   of :doc:`executors <../../../../plugins>`
+
+In pythonic terms, :doc:`electrons <../../../../concepts/concepts>` are nothing more than simple python functions and the :doc:`lattice <../../../../concepts/concepts>` is simply a function
+that stitches all of those electrons together. After a user submits their workflow to Covalent, the lattice is converted into a workflow graph which Covalent renders in its :doc:`UI <../../../../webapp_ui/index>`, a demo which can be seen
+`here <http://demo.covalent.xyz>`_
+
+Let's look at a simple example to get started with Covalent. Before starting, ensure you have installed Covalent, verified the installation, and started the Covalent server as outlined :doc:`here <../../../installation/index>`.
+Next, open a Jupyter notebook or Python console and create a simple workflow:
 
 
 .. code:: python
@@ -10,49 +26,69 @@ Let's look at a simple example to get started with Covalent. Before starting, en
    import covalent as ct
 
    # Construct tasks as "electrons"
+   # Normal python functions can be converted into electrons by
+   # simply adding the ``electron`` decorator
    @ct.electron
-   def join_words(a, b):
-       return ", ".join([a, b])
+   def add(x, y):
+      return x + y
 
    @ct.electron
-   def excitement(a):
-       return f"{a}!"
+   def multiply(x, y):
+      return x*y
 
-   # Construct a workflow of tasks
+   @ct.electron
+   def divide(x, y):
+      return x/y
+
+   # Construct the lattice/workflow by simply ``stitching`` all the electrons
+   # defined earlier
    @ct.lattice
-   def simple_workflow(a, b):
-       phrase = join_words(a, b)
-       return excitement(phrase)
+   def workflow(x, y):
+      r1 = add(x, y)
+      r2 = [multiply(r1, y) for _ in range(4)]
+      r3 = [divide(x, value) for value in r2]
+      return r3
 
    # Dispatch the workflow
    dispatch_id = ct.dispatch(simple_workflow)("Hello", "World")
 
-Navigate to the Covalent UI at `<http://localhost:48008>`_ to see your workflow in the queue:
+After Covalent is started, users can navigate to `<http://localhost:48008>`_ to see the UI in their own browsers. In the UI,  users can take a look at the workflow queue
+and several metadata associated with each such as current status, dispatch id, runtime etc.
 
 |
 
 .. image:: hello_covalent_queue.png
    :align: center
 
-
-Click on the dispatch ID to view the workflow graph:
-
-|
+Workflow level details can be viewed by clicking on the dispatch ID
 
 .. image:: hello_covalent_graph.png
    :align: center
 
+The UI is very interactive and users can inspect electron level metadata by simply clicking on the nodes.
 
-While the workflow is being processed by the dispatch server, you are free to terminate the Jupyter kernel or Python console process without losing access to the results. Make sure the Covalent server remains in the "running" state while you have running workflows.
+.. note::
 
-When the workflow has completed, you can start a new session and query the results:
+   All workflow tasks that have no dependent edges are executed in parallel/concurrently by Covalent. Moreover, if users provide :doc:`executor <../../../../plugins>` information,
+   Covalent will execute all the tasks in parallel using the executors defined by the users. This way users can dispatch potentially hundreds if not thousands of electrons to remote backends
+   simply by appending executor information to specific electrons. Concrete examples of how this can be done in Covalent can be found in the :doc:`intermediate <../../intermediate/matrix_eigenvalues/index>`
+   and :doc:`advanced <../../advanced/svm_classification/index>` workflow guides.
+
+While the workflow is being processed by the dispatch server, users are free to terminate the Jupyter kernel or Python console process without losing access to the results
+
+.. note::
+
+   Make sure the Covalent server remains in the "running" state while you have running workflows.
+
+When the workflow has completed, you can start a new session and query the results by simply keeping track of the dispatch ID generated by Covalent when the workflow was submitted
 
 .. code:: python
 
    import covalent as ct
 
-   dispatch_id = "8a7bfe54-d3c7-4ca1-861b-f55af6d5964a"
-   result_string = ct.get_result(dispatch_id).result
+   dispatch_id = "<dispatch_id>"
+   # Get the result
+   result = ct.get_result(dispatch_id).result
 
 When you are done using Covalent, stop the server:
 
@@ -61,6 +97,6 @@ When you are done using Covalent, stop the server:
    $ covalent stop
    Covalent server has stopped.
 
-Even if you forget to query or save your workflow results, Covalent saves them after each task's execution. The full results, including metadata, are stored on disk.
+Covalent saves the results of every workflow on disk them after each task's execution so users can query it at any point in time using its dispatch ID.
 
-Read more about how Covalent works on the Covalent :doc:`concepts <../concepts/concepts>` page.
+Read more about how Covalent works on the Covalent :doc:`concepts <../../../../concepts/concepts>` page.
