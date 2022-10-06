@@ -70,8 +70,8 @@ The UI is very interactive and users can inspect electron level metadata by simp
 .. note::
 
    All workflow tasks that have no dependent edges are executed in parallel/concurrently by Covalent. Moreover, if users provide :doc:`executor <../../../../plugins>` information,
-   Covalent will execute all the tasks in parallel using the executors defined by the users. This way users can dispatch potentially hundreds if not thousands of electrons to remote backends
-   simply by appending executor information to specific electrons. Concrete examples of how this can be done in Covalent can be found in the :doc:`intermediate <../../intermediate/matrix_eigenvalues/index>`
+   Covalent will execute all the tasks using the executors defined by the users. This way users can dispatch potentially hundreds if not thousands of electrons to remote backends
+   simply by appending executor metadata to specific electrons. Concrete examples of how this can be done in Covalent can be found in the :doc:`intermediate <../../intermediate/matrix_eigenvalues/index>`
    and :doc:`advanced <../../advanced/svm_classification/index>` workflow guides.
 
 While the workflow is being processed by the dispatch server, users are free to terminate the Jupyter kernel or Python console process without losing access to the results
