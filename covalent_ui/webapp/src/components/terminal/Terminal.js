@@ -1,6 +1,6 @@
 
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, memo } from 'react'
 import { XTerm } from 'xterm-for-react'
 import { FitAddon } from 'xterm-addon-fit';
 import io from 'socket.io-client'
@@ -62,4 +62,4 @@ const Terminal = () => {
         </>
     )
 }
-export default Terminal
+export default memo(Terminal)
