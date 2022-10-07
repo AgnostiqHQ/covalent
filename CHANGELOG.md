@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updating `Getting Started` section in the RTD
 - Adding beginner, intermediate and advanced examples highlighting major Covalent features
 
+### Docs
+
+- Fixed the docstring for `get_node_error`
+
 ### Changed
 
 - move `upsert_lattice_data()` to dispatcher
