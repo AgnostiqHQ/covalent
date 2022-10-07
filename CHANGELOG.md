@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Updated import statements in alembic `env.py` file to refer to updated location of `DataStore` class
+- Imports in entry_point
 
 ### Docs
 
@@ -28,6 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - move `persist()` to dispatcher
 - move `get_unique_id()` to dispatcher
 - move `initialize_result_object()` to dispatcher
+
+### Removed
+
+- `get_node_value` from `Result`
 
 ## [0.200.0] - 2022-10-05
 
