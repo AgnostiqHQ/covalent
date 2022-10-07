@@ -143,7 +143,6 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    :hidden:
 
    Getting Started <getting_started/index>
-   Feature Highlights <feature_highlights/index>
    Concepts <concepts/concepts>
    Tutorials <tutorials/tutorials>
    How-To Guides <how_to/index>
