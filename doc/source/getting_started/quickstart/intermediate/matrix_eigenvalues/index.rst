@@ -82,14 +82,14 @@ We stich all the above electrons in a ``lattice`` as follows
         return np.asarray(real_values).flatten(), np.asarray(imag_values).flatten()
 
 
-The ``eigenvalue_workflow`` can be dispatched to the ``Covalent`` server as follows
+To illustrate the workflow graph better, we now dispatch the ``eigenvalue_workflow`` to the ``Covalent`` server for a batch size of 2
 
 .. code:: python
 
-    dispatch_id = ct.dispatch(eigenvalue_workflow)([-1, 0, 1], 100)
+    dispatch_id = ct.dispatch(eigenvalue_workflow)([-1, 0, 1], 5, 2)
     result = ct.get_result(dispatch_id, wait=True)
 
-With the above dispatch, the workflow will compute ``100`` random matrices with at most 5 eigenvalues each, thus resulting in a plot with approximately ``500`` eigenvalues. The workflow
+With the above dispatch, the workflow will compute ``2`` random matrices with at most 5 eigenvalues each, thus resulting in a plot with approximately ``10`` eigenvalues. The workflow
 graph can be inspected from in the UI at `<http://localhost:48008>`_.
 
 Workflow Graph
@@ -100,13 +100,13 @@ and can proceed in parallel. Covalent is able to infer the dependencies between 
 and will be default execute electrons with no dependencies in parallel. This decoupling between tasks can be clearly seen
 in the workflow graph from the UI.
 
-.. image:: ./eigenvalue_workflow.png
+.. image:: ./eigenvalue_workflow_small.png
     :width: 1920
     :align: center
     :alt: Eigenvalue computation workflow
 
 From the above figure it also apparent that ``Covalent`` can easily scale up to lots of electrons and and process them at scale
-quite easily.
+quite easily by simply increasing the ``batch_size`` argument.
 
 Post-processing/Visualization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -143,11 +143,14 @@ The ``generate_figure`` lattice can be dispatched to Covalent in a similar fashi
 In the above, ``real_values`` and ``imag_values`` are the outputs of the ``eigenvalue_workflow``. Dispatching the above results in the following
 plot
 
+.. note::
+
+    We plot results from a workflow dispatch for a batch size of ``10``
+
 .. image:: ./matrix_eigenvalues.png
     :width: 1000
     :align: center
     :alt: Matrix eigenvalues
-
 
 
 Remote executors

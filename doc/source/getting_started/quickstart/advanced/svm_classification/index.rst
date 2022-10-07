@@ -734,14 +734,14 @@ are available. This ensure consistency in our workflow and prevents any race con
     and it automatically unrolls the for loop iterations and renders them as independent nodes in the workflow graph. Each of these nodes then execute concurrently as separate AWS Batch jobs.
     This scales quite nicely with workflow size as independent loop iterations are separate invocations of the underlying electron.
 
-We now dispatch the workflow to Covalent as follows after generating a grid of 5 SVM classifier parameter values
+For illustration we now dispatch the workflow to Covalent as follows after generating a grid of 2 different SVM classifier parameter values
 
 .. code:: python
 
     from sklearn.model_selection import ParameterGrid
     import numpy as np
 
-    parameters = list(ParameterGrid({'gamma': np.linspace(0.01, 0.1, 5)}))
+    parameters = list(ParameterGrid({'gamma': np.linspace(0.01, 0.1, 2)}))
 
     dispatch_id = ct.dispatch(cross_validation_workflow)(RESULTS_DIR, parameters, 0.2)
     result = ct.get_result(dispatch_id, wait=True)
@@ -750,14 +750,16 @@ We now dispatch the workflow to Covalent as follows after generating a grid of 5
 
 The workflow graph can be inspected in the UI
 
-.. image:: ./cv_workflow.png
+.. image:: ./cv_workflow_small.png
     :width: 1000
     :align: center
+
+From this simple illustration it should be apparent that we can easily scale up this workflow by simply adding more parameter values to the grid (potentially to even thousands of values).
 
 
 The result object of the workflow is the following
 
-.. image:: ./cv_workflow_result.png
+.. image:: ./cv_workflow_small_result.png
     :width: 1000
     :align: center
 
