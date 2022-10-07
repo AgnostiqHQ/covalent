@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Updated import statements in alembic `env.py` file to refer to updated location of `DataStore` class
+
 ### Docs
 
 - Fixed the docstring for `get_node_error`
