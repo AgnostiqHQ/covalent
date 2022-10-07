@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Updated import statements in alembic `env.py` file to refer to updated location of `DataStore` class
+- Imports in entry_point
 
 ### Docs
 
