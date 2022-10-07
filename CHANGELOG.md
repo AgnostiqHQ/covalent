@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Added AWS Plugins RTD page
+
 ### Fixed
 
 - Updated import statements in alembic `env.py` file to refer to updated location of `DataStore` class
