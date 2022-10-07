@@ -371,7 +371,9 @@ Node Outputs
         """
         return self._lattice.transport_graph.get_node_value(node_id, "output")
 
-    def _get_node_error(self, node_id: int) -> Any:
+
+
+    def _get_node_error(self, node_id: int) -> Union[None, str]:
         """
         Return the error of a node.
 
