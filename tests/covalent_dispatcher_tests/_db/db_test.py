@@ -30,8 +30,8 @@ from alembic.migration import MigrationContext
 from alembic.script import ScriptDirectory
 from sqlalchemy import select
 
-from covalent._data_store import models
-from covalent._data_store.datastore import DataStore
+from covalent_dispatcher._db import models
+from covalent_dispatcher._db.datastore import DataStore
 
 from .fixtures import workflow_fixture
 
@@ -63,7 +63,7 @@ def test_default_db_path(db: DataStore, tmp_path: Path, mocker):
 
     mocker.patch("sqlalchemy.create_engine")
     mocker.patch("sqlalchemy.orm.sessionmaker")
-    mocker.patch("covalent._data_store.datastore.get_config", return_value=DB_PATH)
+    mocker.patch("covalent_dispatcher._db.datastore.get_config", return_value=DB_PATH)
 
     db_url = f"sqlite+pysqlite:///{DB_PATH}"
 
@@ -72,7 +72,7 @@ def test_default_db_path(db: DataStore, tmp_path: Path, mocker):
 
 def test_run_migrations(db: DataStore, mocker):
     config_mock = Mock()
-    command_mock = mocker.patch("covalent._data_store.datastore.command")
+    command_mock = mocker.patch("covalent_dispatcher._db.datastore.command")
 
     def get_config_mock(logging_enabled):
         return config_mock
@@ -95,7 +95,7 @@ def test_current_revision(db: DataStore, mocker):
     MOCK_REVISION = "8a15"
     script_mock = Mock()
     migration_ctx_mock = Mock()
-    mocker.patch("covalent._data_store.datastore.EnvironmentContext")
+    mocker.patch("covalent_dispatcher._db.datastore.EnvironmentContext")
     mocker.patch.object(db, "engine", Mock())
     mocker.patch.object(ScriptDirectory, "from_config", lambda config: script_mock)
     mocker.patch.object(
@@ -108,7 +108,7 @@ def test_current_revision(db: DataStore, mocker):
 
 
 def test_get_alembic_config(db: DataStore, mocker):
-    config_mock = mocker.patch("covalent._data_store.datastore.Config")
+    config_mock = mocker.patch("covalent_dispatcher._db.datastore.Config")
 
     def alembic_config_init(self, provided_path):
         # ensure provided path matches project root / alembic.ini

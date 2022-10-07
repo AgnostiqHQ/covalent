@@ -30,10 +30,8 @@ import cloudpickle
 import networkx as nx
 from sqlalchemy import update
 
-from .._data_store.datastore import workflow_db
-from .._data_store.models import Electron, ElectronDependency, Lattice
-from .._shared_files import logger
-from .._shared_files.defaults import (
+from covalent._shared_files import logger
+from covalent._shared_files.defaults import (
     arg_prefix,
     attr_prefix,
     electron_dict_prefix,
@@ -44,13 +42,14 @@ from .._shared_files.defaults import (
     sublattice_prefix,
     subscript_prefix,
 )
+from covalent._shared_files.exceptions import MissingLatticeRecordError
+from covalent._workflow.lattice import Lattice as LatticeClass
+
+from .datastore import workflow_db
+from .models import Electron, ElectronDependency, Lattice
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-
-class MissingLatticeRecordError(Exception):
-    pass
 
 
 class MissingElectronRecordError(Exception):
@@ -227,7 +226,7 @@ def insert_electrons_data(
     return electron_id
 
 
-def insert_electron_dependency_data(dispatch_id: str, lattice: "Lattice"):
+def insert_electron_dependency_data(dispatch_id: str, lattice: LatticeClass):
     """Extract electron dependencies from the lattice transport graph and add them to the DB."""
 
     # TODO - Update how we access the transport graph edges directly in favor of using some interface provied by the TransportGraph class.

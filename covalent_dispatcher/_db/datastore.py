@@ -31,7 +31,8 @@ from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
-from .._shared_files.config import get_config
+from covalent._shared_files.config import get_config
+
 from . import models
 
 
