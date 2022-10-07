@@ -2,15 +2,15 @@ Classification with Support Vector Machines
 =============================================
 
 In this example we highlight some advanced features in Covalent that facilitate developing workflows involving multiple remote executors. Covalent is quite
-feature rich and allows users to customize execution of their workflows at a very granular level. Users can specify custom hooks that can execute before or after an electron is run by Covalent,
-files can be uploaded and downloaded from remote machines, AWS S3 buckets before the tasks consuming them even begin execution. Users can also specify custom synchronization points in their workflows in order
-to enforce dependencies between electrons. This feature is quite useful when users would want to force a dependency between independent electrons before proceeding to subsequent steps.
-
+feature rich and allows users to customize execution of their workflows at a very granular level. Users can specify custom hooks that can execute before or after an electron
+is run by Covalent, files can be uploaded/downloaded from remote machines and AWS S3 buckets before the tasks begin execution. Users can also specify custom
+synchronization points in their workflows in order to enforce dependencies between electrons. This feature is quite useful when users would want to enforce dependencies
+between electrons before proceeding to subsequent steps.
 
 Feature summary
 ~~~~~~~~~~~~~~~~
 
-In this section we cover and highlight how the following Covalent features can be used when developing workflow
+In this section we highlight a few major Covalent features and how they can be used when developing workflows
 
 .. list-table::
     :widths: 20 80
@@ -21,26 +21,29 @@ In this section we cover and highlight how the following Covalent features can b
       - Description
 
     * - :doc:`Remote executors <../../../../plugins>`
-      - Executor plugins are a feature in Covalent that allow users to configure the runtime environment for their tasks. With executors users can execute different parts of their
-        workflows on different hardware backends (local/remote) to which they may have access to
+      - Executor plugins are a feature in Covalent that allow users to configure the runtime environment of their tasks. With executors users can execute different
+        parts of their workflows on different hardware backends (local/remote, on-prem/cloud) to which they may have access to
 
     * - :doc:`Electron dependencies <../../../../concepts/concepts>`
-      - Electron dependencies is a API exposed by Covalent so that users can perform custom actions before/after their tasks execute on their preferred backends. With electron dependencies
-        users can install necessary Python packages, execute shell commands as well as inject custom call before/after hooks that get executed before and after task execution respectively
+      - Electron dependencies is an API exposed by Covalent for users to perform custom actions before/after their tasks execute on their preferred backends. With electron
+        dependencies, users can install necessary Python packages, execute shell commands as well as inject custom call before/after hooks that get
+        executed before/after task execution respectively
 
     * - :doc:`Synchronization <../../../../concepts/concepts>`
-      - Covalent exposes all the inherent parallelism within a workflow and executes all the tasks concurrently. To avoid any potential race conditions, Covalent provides users with a convenient
-        and easy to use API to force dependencies between different tasks in their workflow. This feature allows users to set synchronization points in their workflow similar to ``MPI_Barrier/omp_wait`` constructs.
-        Using Covalent's synchronization features, users can enforce sequential execution of tasks within a single workflow as needed
+      - Covalent exposes all the inherent parallelism within a workflow and executes all the eligible tasks concurrently. To avoid any potential race conditions,
+        Covalent provides users with a convenient and easy to use API to force dependencies between different tasks in their workflow. This feature allows users to
+        set synchronization points in their workflow similar to ``MPI_Barrier/omp_wait`` constructs. Using Covalent's synchronization features,
+        users can enforce sequential execution of selected tasks within a single workflow as needed
 
     * - :doc:`AWS Plugins <../../../../plugins>`
-      - Covalent integrates very well with AWS cloud services and provides easy to use cloud plugins to dispatch workloads on AWS compute backends. Users can install all the AWS supported plugins from PYPI via pip
+      - Covalent integrates very well with AWS cloud services and provides easy to use cloud plugins that dispatch workloads to AWS compute backends.
+        Users can install all the AWS supported plugins from PYPI via pip.
 
         .. code:: bash
 
             pip install covalent-aws-plugins
 
-        The following AWS cloud services are supported in Covalent currently
+        The following AWS cloud services are currently supported in Covalent
 
         * AWS EC2
         * AWS ECS
@@ -49,13 +52,14 @@ In this section we cover and highlight how the following Covalent features can b
         * AWS Braket
 
     * - :doc:`File transfers <../../../../concepts/concepts>`
-      - The file transfer feature in Covalent allows users to download and upload files between machines during workflow runtime. This feature facilitate file I/O between remote m
+      - The file transfer feature in Covalent allows users to download and upload files between machines during workflow runtime. Using this feature user can move files between machines,
+        as well as AWS S3 buckets before or after an electron executes
 
 
 Full source
 ==============
 
-Before going into details, we first provide the entire workflow source code
+Before going into details, we first provide the entire workflow source code used in this example
 
 .. code:: python
 
@@ -244,16 +248,16 @@ Before going into details, we first provide the entire workflow source code
 SVM Classification
 ==================
 
-In this example, we use the classic MNIST dataset and build a SVM (Support Vector Machine) classifier using ``scikit-learn`` tools. We will decompose the entire machine learning pipeline
-into multiple workflows and use Covalent to execute each one
+In this example, we use the classic MNIST dataset and build a SVM (Support Vector Machine) classifier using ``scikit-learn`` tools. We will decompose the entire machine
+learning pipeline into multiple workflows and use Covalent to execute each one.
 
 Data pre-processing
 ~~~~~~~~~~~~~~~~~~~~~
 
-In the first stage, we load the MNIST hand written dataset from ``scikit-learn`` itself and arrange it in a shape suitable for training. To gain visual insight into the dataset, we add a step
+In the first stage, we load the MNIST dataset from ``scikit-learn`` and arrange it in a shape suitable for training. To gain visual insight into the dataset, we add a step
 in our workflow to plot a few training samples from the dataset and display the images. Seemingly these steps are quite simple but can be computationally intensive under certain circumstances.
-Imagine the use case where the dataset to be plotted is really large and needs a machine with ample amount hardware resources to render the figures. This could very well be a node in a workflow,
-that can be offloaded to a remote machine for execution through Covalent.
+Imagine the use case where the dataset to be plotted is really large and needs a machine with ample amount hardware resources to render the figures. Such computational nodes can
+be quite easily offloaded to a remote machine for execution through Covalent.
 
 We break our pre-processing workflow into 3 distinct steps
 
@@ -261,7 +265,8 @@ We break our pre-processing workflow into 3 distinct steps
 2) Plot a few sample images using ``matplotlib`` and save the resulting figure as PNG using a remote executor (``SSHExecutor``)
 3) Download the resulting figures to the local machine for visualization and post-processing
 
-The first step is trivial and is expressed by the following electron. We flatten the ``8 x 8`` pixel images to a vector of length ``64``. This makes it easier when fitting the classifier to the dataset
+The first step is trivial and is expressed by the following electron. We flatten the ``8 x 8`` pixel images to vectors of length ``64``. This makes it easier when fitting the
+classifier to the dataset
 
 .. code:: python
 
@@ -277,13 +282,13 @@ The first step is trivial and is expressed by the following electron. We flatten
         nsamples = len(data.images)
         return data.images.reshape((nsamples, -1)), data.target
 
-For the second stage of the pre-processing workflow we are going to use the ``SSHExecutor`` to offload the task of generating the images to a remote machine. The source code for this ``plot_images`` stage
-is the following
+For the second stage of the pre-processing workflow we are going to use the :doc:`SSHExecutor <../../../../plugins/ssh>` to offload the task of generating the images to a
+remote machine. The source code for this ``plot_images`` stage is the following
 
 .. code:: python
 
-    import matplotlib.pyplot as plt
     import os
+    import matplotlib.pyplot as plt
     from covalent.executor import SSHExecutor
 
     localssh = SSHExecutor(username=<username>, hostname=<hostname>, ssh_key_file=<path to ssh key>)
@@ -302,10 +307,11 @@ is the following
         return
 
 
-We first create an instance of the ``SSHExecutor`` with the corresponding arguments and pass that as an input the the ``electron`` decorator. This signifies to covalent that
-the execution of the ``plot_images`` electron needs to be on the remote machine running at ``<hostname>``. During runtime, the executor will authenticate with that remote machine
-with the user supplied credentials. The inputs to this ``plot_images`` electron are the training images along with their labels to be plotted and an optional ``basedir`` argument that defaults to the HOME directory
-on the remote machine. This electron does not return anything but generates a PNG figure named ``training_images.png`` saved at ``basedir``.
+We first create an instance of the :doc:`SSHExecutor <../../../../plugins/ssh>` with the corresponding arguments and pass that as an input the the :doc:`electron <../../../../concepts/concepts>`
+decorator. This signifies to covalent that the execution of the ``plot_images`` electron needs to be on the remote machine running at ``<hostname>``. During runtime,
+the executor will authenticate with that remote machine with the user supplied credentials. The inputs to this ``plot_images`` electron are the training images along with their
+labels to be plotted and an optional ``basedir`` argument that defaults to the user's HOME directory on the remote machine. This electron does not return anything but generates
+a PNG figure named ``training_images.png`` saved at ``basedir`` on the remote machine.
 
 Electron Dependencies
 =======================
@@ -313,20 +319,21 @@ Electron Dependencies
 Pip Dependencies
 ~~~~~~~~~~~~~~~~~~~~
 
-During runtime, when Covalent will encounter this, it will pickle the ``plot_images`` function using ``cloudpickle`` and transport it to the remote machine for execution. The pickled object will be un-pickled on the remote machine
-and executed due to which all the python packages being referenced in the ``electron`` need to be installed and be visible in the ``PYTHONPATH`` of the remote Python interpreter.
-There are multiple ways this can be accomplished namely
+During runtime when Covalent encounters an :doc:`electron <../../../../concepts/concepts>` it pickles it and transports it to the remote machine for execution.
+The pickled object gets unpickled on the remote machine and executed. As Python requires, for Covalent to successfully unpickle an object on a remote machine all the python packages being
+referenced in the :doc:`electron <../../../../concepts/concepts>` need to be installed and be visible to the remote Python interpreter. There are multiple ways this can be accomplished namely
 
 1) The user curates the remote execution environment before dispatching the workflows
 2) If on the cloud, the VM can be customized by creating specialized AMIs using tools such as Terraform, Packer and equivalents.
 3) Use Covalent's ``electron dependencies`` features
 
-Here we highlight an important feature in Covalent that allows users to install python packages required by an electron before execution. :doc:`Electron dependencies <../../../../concepts/concepts>` are a key feature in Covalent
-that makes it really convenient for users to install the required Python packages for an electron before its execution. The platform on which the packages get installed are determined by the
-executor of the electron. If the electron is configured to execute on a remote machine, the dependencies will be injected into the remote machines environment. There are several electron dependencies
-supported by Covalent, in this section we will focus on the :doc:`DepsPip <../../../../concepts/concepts>` dependency.
+Here we highlight an important feature in Covalent that allows users to install python packages required by an electron before execution. :doc:`Electron dependencies <../../../../concepts/concepts>` are
+a key feature in Covalent that makes it really convenient for users to install the required Python packages for an electron before it executes on remote platforms.
+The platform on which the packages get installed are determined by the executor of the electron. If the electron is configured to execute on a remote machine the dependencies
+will be injected into the remote Python interpreter's environment. There are several electron dependencies supported by Covalent, in this section we will focus on the :doc:`DepsPip <../../../../concepts/concepts>` dependency.
 
-Inspecting the ``plot_images`` electron it is apparent that ``matplotlib`` is required to be present on the remote machine for the plots to be properly generated. We can instruct Covalent to install a very specific version of ``matplotlib`` at the electron level as follows
+Inspecting the ``plot_images`` electron it is apparent that ``matplotlib`` is a requirement for it execute successfully on a remote machine. We can instruct Covalent to install
+a very specific version of ``matplotlib`` at the electron level as follows using :doc:`DepsPip <../../../../concepts/concepts>`
 
 .. code:: python
 
@@ -346,9 +353,11 @@ Inspecting the ``plot_images`` electron it is apparent that ``matplotlib`` is re
         plt.savefig(f"{os.path.join(basedir, 'training_images.png')}", format="png", dpi=300)
         return
 
-By simply augmenting the ``electron`` decorator with the ``deps_pip`` dependency, Covalent will now install ``matplotlib`` version ``3.5.1`` before executing the ``plot_images`` electron on the remote machine.
+By simply augmenting the :doc:`electron <../../../../concepts/concepts>` decorator with the ``deps_pip`` dependency, Covalent will now install ``matplotlib`` version ``3.5.1``
+before executing the ``plot_images`` electron on the remote machine.
 
 .. note::
+
     As electrons are packaged and transported as types defined within Covalent, ``covalent`` itself is a dependency that needs to be installed and made available on remote machines.
     For consistency it is recommended that the same version of covalent is used across all remote environments to avoid any version conflicts
 
@@ -361,7 +370,7 @@ we want to transfer the PNG figure generated on the remote machine via the ``plo
 the movement of large files between environments. In our case, we will leverage the ``Rsync`` file transfer strategy to download the PNG figures from the remote machine as part of the visualization step of the workflow. Further details about
 file transfers and different strategies can be found :doc:`here <../../../../concepts/concepts>`
 
-The source code for the visualization electron is as follows
+The source code for the ``visualization`` electron is as follows
 
 .. code:: python
 
@@ -373,14 +382,14 @@ The source code for the visualization electron is as follows
         _, local_path_to_file = files[0]
         return Image.open(f"{local_path_to_file}"), str(local_path_to_file)
 
-As seen from above, we create a ``rsync`` file transfer strategy object and pass it the connection credentials such as the username, remote host address and path to the private SSH key.
+As seen from above, we create a ``rsync`` file transfer strategy object and pass it the connection credentials such as the username, remote host address and path to the private SSH key on disk.
 The electron decorator is then augmented with a list of file transfer objects (in this case ``ct.fs.TransferFromRemote``) indicating the files that need to be moved from the remote machine to
 the local platform before ``visualize_images`` executes. With this simple addition, Covalent will copy the figures generated on the remote machine to the user's local environment
 and make it available for further processing in the ``visualize_images`` electron.
 
 It can be seen that there is a ``files=[]`` placeholder argument being passed into ``visualize_images``. This is a convenient handle Covalent exposes for users to easily interact
 with the files being transferred in and out. It can noted that we have not specified where on the local filesystem Covalent ought to download the file. To this end, we use
-the ``files`` argument in ``visualize_images`` to get the temporary path to the download file.
+the ``files`` argument in ``visualize_images`` to get the temporary path on local disk where Covalent downloaded the file
 
 This is then used to open the PNG file and return it as a Python object.
 
@@ -466,9 +475,8 @@ In this case however, this would lead to ``visualize_images`` to fail if the PNG
 In Covalent, users can enforce dependencies between nodes by using the ``wait`` command. As seen in the ``preprocessing_workflow`` we are enforcing a ``parent-child`` dependency between
 the ``plot_images`` and ``visualize_images`` electrons via the ``ct.wait`` command.
 
-Behind the scenes, Covalent will create an ``edge`` connecting the two and synchronizing the execution thus eliminating the potential race condition.
-
-The workflow can now be dispatched to Covalent and its graph can be viewed at `<http://localhost:48008>`_
+Behind the scenes, Covalent will create an ``edge`` connecting the two and synchronizing the execution thus eliminating the race condition. The workflow can now be dispatched to
+Covalent and its graph can be viewed at `<http://localhost:48008>`_
 
 .. code:: python
 
@@ -498,12 +506,13 @@ The output of the ``visualize_images`` electron is the following
 Model Training & Cross validation
 =================================
 
-So far we looked at the `pre-processing` workflow and covered several niche features in Covalent such as file transfers, electron dependencies, synchronization primitives, remote executors etc.
+So far we looked at the `pre-processing` workflow and covered several niche features in Covalent such as file transfers, electron dependencies, synchronization primitives and remote executors.
 In the earlier section, we saw how users can dispatch parts of their workflows to remote machines they may have access to. The machines can be bare-metal servers, virtual machines (on-prem/cloud) that users
 would have access to.
 
 In this section, we look to demonstrate users can dispatch their Covalent workflows to AWS cloud services (especially AWS Batch) for execution. Covalent supports execution of tasks
-on a variety of AWS cloud services through its suite of :doc:`AWS cloud executor plugins<../../../../plugins>`. Users can choose the right compute service for their computational needs and use them elastically as the needs arise.
+on a variety of AWS cloud services through its suite of :doc:`AWS cloud executor plugins<../../../../plugins>`. Users can choose the right compute service for their computational needs and use them
+elastically as needs arise.
 
 Following is the list of AWS cloud executors that are currently supported in Covalent
 
@@ -519,19 +528,19 @@ Each one of them can be installed independently through PYPI, but users can use 
 
     pip install covalent-aws-plugins
 
-In this exercise we will be using the AWS Batch executor to offload the training our model to AWS. The Covalent AWS Batch plugin can from PYPI as follows
+In this exercise we will be using the AWS Batch executor to offload the training of our model to AWS. The Covalent AWS Batch plugin can be installed from PYPI as follows
 
 .. code:: bash
 
-    pip install covalent-awsbatch-plugin==0.16.1rc0
+    pip install covalent-awsbatch-plugin
 
 AWS Batch Executor
 ~~~~~~~~~~~~~~~~~~~~
 
-The `Batch executor <https://github.com/AgnostiqHQ/covalent-awsbatch-plugin>`_ plugin assumes that all the necessary AWS infrastructure has already been provisioned prior to running the workflow. Details pertaining to configuring a
-a AWS batch job queue, job definitions, compute environments and IAM roles can be found `here <https://docs.aws.amazon.com/batch/latest/userguide/Batch_GetStarted.html>`_
+The `Batch executor <https://github.com/AgnostiqHQ/covalent-awsbatch-plugin>`_ plugin assumes that all the necessary AWS infrastructure has already been provisioned prior to
+running the workflow. Details pertaining to configuring a AWS batch job queue, job definitions, compute environments and IAM roles can be found `here <https://docs.aws.amazon.com/batch/latest/userguide/Batch_GetStarted.html>`_
 
-As AWS Batch supports executing jobs as containers, the AWS Batch executor utilizes that feature to execute electrons. From a high level the execution steps from start to finish
+As AWS Batch supports executing jobs as containers, the AWS Batch executor utilizes that feature to execute the electrons. From a high level the execution steps from start to finish
 of an electron scheduled to be executed on AWS Batch are as follows
 
 1) Pickle the electron task to be executed along with all its dependencies (``DepsPip, DepsCall`` etc)
@@ -540,21 +549,23 @@ of an electron scheduled to be executed on AWS Batch are as follows
 5) Upload the electron's result object to the user provided S3 bucket
 6) Download the result object locally for post processing
 
-Similar to the way we configured the ``SSHExecutor``, user can import the ``AWSBatchExecutor`` from Covalent and use that in their workflows. Users can configure this executor in several different ways as outlined in `here <https://github.com/AgnostiqHQ/covalent-awsbatch-plugin>`_.
-In this example, we will configure an instance of the executor and use that to offload execution of certain electrons to the Batch compute environment. Following are the required arguments users need to provided in order to
+Similar to the way we configured the ``SSHExecutor``, user can import the ``AWSBatchExecutor`` from Covalent and use that in their workflows. Users can configure this executor
+in several different ways as outlined `here <https://github.com/AgnostiqHQ/covalent-awsbatch-plugin>`_. In this example, we will configure an instance of the executor and
+use that to offload execution of certain electrons to the Batch compute environment. Following are the required arguments users need to provided in order to
 properly configure the AWS Batch executor
 
 * ``s3_bucket_name``: Name of the AWS S3 bucket to be used during execution to cache function/result objects
 * ``batch_job_definition_name``:  Name of the user configured AWS Batch job definition
 * ``batch_queue``: Name of the AWS Batch job queue to which the job ought to be submitted
-* ``batch_execution_role_name``: Execution role name that grants Batch compute backend services (ECS/Fargate) to take API calls on the user's behalf
-* ``batch_job_role_name``: IAM role name configured by the user for the Batch job. This role should have sufficient privileges for the jobs to read and write the S3
+* ``batch_execution_role_name``: Execution role name that grants Batch compute backend services (ECS/Fargate) to make API calls on the user's behalf
+* ``batch_job_role_name``: IAM role name configured by the user for the Batch job. This role should have sufficient privileges for the jobs to read and write from AWS S3 buckets
 * ``batch_job_log_group_name``: Name of the AWS cloudwatch log group for storing all logs generated during batch job execution
-* ``vcpu``: Number of virtual CPU cores to be used to execute the task
+* ``vcpu``: Minimum number of virtual CPU cores to be used to execute the task
 * ``memory``: Memory in GB to allocate for the task
 * ``time_limit``: Time limit for the job in seconds
 
 .. note::
+
     The executor uses ``vcpu=2``, ``memory=3.75`` and ``time_limit=300`` as default values for all jobs. These can
     be overridden by the user as per their compute requirements and AWS Batch configuration
 
@@ -581,7 +592,7 @@ With the required information, users can then instantiate their Batch executor a
 Cross validation
 ~~~~~~~~~~~~~~~~~
 
-When building good machine learning models it is important that the models do not overfit the training dataset. Overfitting causes the model's to generalize poorly and
+When building good machine learning models it is important that the models do not overfit the training dataset. Overfitting cause the models to generalize poorly and
 result in poor accuracy on test sets. To circumvent such issues, k-fold cross validation is typically carried out using the training samples a) to prevent overfitting and b) to find the optimal
 model hyper-parameters. There are great tools already available in the ``scikit-learn`` package that greatly simplify this process. In this section we will use these techniques to optimize
 our SVM classifier while using Covalent to orchestrate the entire workflow.
@@ -611,7 +622,7 @@ To begin, we import all the required python libraries for our workflow
     from joblib import dump
 
 
-We reuse the ``load_images`` electron that we created earlier during the pre-processing stages i.e.
+We reuse the ``load_dataset`` electron that we created earlier during the pre-processing stages i.e.
 
 .. code:: python
 
@@ -640,8 +651,9 @@ We introduce the following two new electrons to build the SVM classifier and spl
 
 
 We now create the cross validation electron that would be by far the most compute intensive operation of our workflow. To this end we offload this electron to AWS using our Batch executor created earlier (``awsbatch``).
-We also point out that since the executor will be executed using the AWS Batch service as a container, we need to ensure that all Python packages that this electron needs are installed and available to it during runtime. To accomplish this,
-we use the ``DepsPip`` electron dependency to install ``scikit-learn`` in the tasks runtime environment on AWS Batch. With these additions, the ``cross_validation`` electron is the following
+We also point out that since the executor will be executed inside a container on the AWS Batch service, we need to ensure that all Python packages that this electron needs are installed and available to it during runtime.
+To accomplish this, we again use the ``DepsPip`` electron dependency to install ``scikit-learn`` in the tasks runtime environment on AWS Batch.
+With these additions, the ``cross_validation`` electron is the following
 
 .. code:: python
 
@@ -653,8 +665,9 @@ we use the ``DepsPip`` electron dependency to install ``scikit-learn`` in the ta
         cv_scores = cross_val_score(clf, train_images, train_labels, cv=kfold)
         return cv_scores
 
-Here ``clf`` is the SVC classifier used in the cross validation and ``kfold`` is the number of cross validation folds we would run at a given time (defaults to 3). Once the cross validation is finished, we fit the model again on the entire training set
-and predict using the so far, untouched test set and compute an accuracy score. We summarize these steps in the following ``evaluate_model`` electron
+Here ``clf`` is the SVC classifier used in the cross validation and ``kfold`` is the number of cross validation folds we would run at a given time (defaults to 3). Once the cross validation
+is finished, we fit the model again on the entire training set and predict using the test set to compute an accuracy score. We summarize these steps in the following
+``evaluate_model`` electron
 
 .. code:: python
 
@@ -664,9 +677,9 @@ and predict using the so far, untouched test set and compute an accuracy score. 
         predictions = clf.predict(test_images)
         return metrics.accuracy_score(predictions, test_labels)
 
-Finally, we save all the results into separate files on disk via the ``save_results`` electron. In this electron, we save the actually classifier, the scores obtained from cross validation
-and the accuracy score of the model returned via ``evaluate_model``. We define a variable ``RESULTS_DIR`` for convenience that points to the location where the user wishes to save the results
-of their workflow.
+Finally, we save all the results into separate files on disk via the ``save_results`` electron. In this electron, we save the classifier, cross validation scores
+and the accuracy score of the model returned via ``evaluate_model``. We define a variable ``RESULTS_DIR`` for convenience that points to the location where the
+user wishes to save the results of their workflow.
 
 .. code:: python
 
@@ -686,10 +699,10 @@ Call Before/After Hooks
 
 Covalent allows users to define custom hooks that they can use to run arbitrary Python functions before and after an electron executes. These call dependencies are another type of :doc:`electron dependencies <../../../../concepts/concepts>`
 referred to in Covalent as ``DepsCall``. Users can pass in a list of Python functions to the electron decorator they wish Covalent to execute on their behalf before/after an
-electron is executed.
+electron.
 
-In our case, we use the ``call_before`` hook to check that the directory referenced by ``RESULTS_DIR`` exists, if not we create it before the ``save_results`` electron executes.
-This way we are able to ensure that all the results from the ``cross_validation`` step are saved properly to disk for later post processing.
+In our case, we use the ``call_before`` hook to check that the directory referenced by ``RESULTS_DIR`` exists, if not create it before the ``save_results`` electron executes.
+This way we are able to ensure that all the results from the ``cross_validation`` step are saved properly to disk for post processing.
 
 
 Cross Validation Workflow
@@ -727,7 +740,7 @@ Following the splitting of the datasets, we loop over all the parameter values p
 * Store the results on disk as pickle files using a randomly generated name
 
 We use the ``ct.wait`` feature again to enforce that the ``save_results`` electrons do not proceed before the results from ``cross_validate_classifier`` and ``evaluate_model``
-are available. This ensure consistency in our workflow and prevents any race conditions.
+are available. This ensure consistency in our workflow and prevents race conditions.
 
 .. note::
 
@@ -755,8 +768,7 @@ The workflow graph can be inspected in the UI
     :width: 1000
     :align: center
 
-From this simple illustration it should be apparent that we can easily scale up this workflow by simply adding more parameter values to the grid (potentially to even thousands of values).
-
+From this simple illustration it should be apparent that we can easily scale up this workflow by simply adding more parameter values to the grid (potentially to thousands of values).
 
 The result object of the workflow is the following
 
@@ -769,7 +781,7 @@ Model selection
 ================
 
 After the ``cross_validation_workflow`` completes, all the results/classifier objects get pickled and saved at the location specified by ``RESULTS_DIR``. As a final step,
-we create a single node workflow that simply parses all the result files and picks the best model i.e. model with the highest accuracy on the test set and returns it as its result.
+we create a single node workflow that simply parses all the result files and picks the best model i.e. model with the highest accuracy on the test set.
 
 Single node workflows in Covalent are easy to construct as any electron can be converted into a lattice by simply adding the ``lattice`` decorator to it. We create our final
 ``find_best_model`` single node workflow that parses all results files and returns the model with the highest test accuracy.
@@ -792,7 +804,8 @@ Single node workflows in Covalent are easy to construct as any electron can be c
         df = pd.DataFrame(all_results)
         return dict(df.iloc[df['accuracy'].idxmax()])
 
-We use ``pandas`` to sort all the models and filter the one with the highest accuracy score. After dispatching this single node workflow, the results are the following
+We use ``pandas`` to sort all the models based on their accuracy score and find the one with the highest accuracy score. After dispatching this single node workflow,
+the results are the following
 
 .. code:: python
 
