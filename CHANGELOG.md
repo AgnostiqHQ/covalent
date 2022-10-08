@@ -33,6 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `get_node_value` from `Result`
 
+### Tests
+
+- Updated more functional tests
+
 ## [0.200.0] - 2022-10-05
 
 ### Authors
