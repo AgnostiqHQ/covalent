@@ -24,10 +24,9 @@ Self-contained entry point for the dispatcher
 
 import asyncio
 
-from covalent._results_manager.result import initialize_result_object
 from covalent._shared_files import logger
 
-from ._core import run_workflow
+from ._core import initialize_result_object, run_workflow
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info

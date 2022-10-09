@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Unit tests for the FastAPI entry points."""
+"""Unit tests for the FastAPI app."""
 
 from unittest.mock import AsyncMock, MagicMock
 

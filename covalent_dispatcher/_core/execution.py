@@ -25,18 +25,13 @@ Defines the core functionality of the dispatcher
 import asyncio
 import json
 import traceback
+import uuid
 from asyncio import Queue
 from datetime import datetime, timezone
 from functools import partial
 from typing import Any, Dict, List, Tuple
 
 from covalent._results_manager import Result
-from covalent._results_manager.result import initialize_result_object
-from covalent._results_manager.write_result_to_db import (
-    get_sublattice_electron_id,
-    update_lattices_data,
-    write_lattice_error,
-)
 from covalent._shared_files import logger
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import (
@@ -53,6 +48,13 @@ from covalent.executor import _executor_manager
 from covalent.executor._runtime.utils import ExecutorCache
 from covalent.executor.base import wrapper_fn
 from covalent_ui import result_webhook
+
+from .._db import update, upsert
+from .._db.write_result_to_db import (
+    get_sublattice_electron_id,
+    update_lattices_data,
+    write_lattice_error,
+)
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -387,7 +389,7 @@ async def _run_task(
                 node_result["status"] = Result.FAILED
                 node_result["error"] = "Sublattice workflow failed to complete"
 
-                sublattice_result.upsert_lattice_data()
+                upsert._lattice_data(sublattice_result)
 
         else:
             app_log.debug(f"Executing task {node_name}")
@@ -487,7 +489,7 @@ async def _handle_failed_node(result_object, node_result, pending_deps, tasks_qu
     result_object._end_time = datetime.now(timezone.utc)
     result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
     app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
-    result_object.upsert_lattice_data()
+    upsert._lattice_data(result_object)
     await result_webhook.send_update(result_object)
     await tasks_queue.put(-1)
 
@@ -497,14 +499,14 @@ async def _handle_cancelled_node(result_object, node_result, pending_deps, tasks
         result_object._status = Result.CANCELLED
     result_object._end_time = datetime.now(timezone.utc)
     app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
-    result_object.upsert_lattice_data()
+    upsert._lattice_data(result_object)
     await result_webhook.send_update(result_object)
     await tasks_queue.put(-1)
 
 
 async def _update_node_result(result_object, node_result, pending_deps, tasks_queue):
     app_log.warning("Updating node result (run_planned_workflow).")
-    result_object._update_node(**node_result)
+    update._node(result_object, **node_result)
     await result_webhook.send_update(result_object)
 
     node_status = node_result["status"]
@@ -575,7 +577,7 @@ async def _postprocess_workflow(result_object: Result) -> Result:
     post_processor = [pp_executor, pp_executor_data]
 
     result_object._status = Result.POSTPROCESSING
-    result_object.upsert_lattice_data()
+    upsert._lattice_data(result_object)
 
     app_log.debug(f"Preparing to post-process workflow {result_object.dispatch_id}")
 
@@ -583,7 +585,7 @@ async def _postprocess_workflow(result_object: Result) -> Result:
         app_log.debug("Workflow to be postprocessed client side")
         result_object._status = Result.PENDING_POSTPROCESSING
         result_object._end_time = datetime.now(timezone.utc)
-        result_object.upsert_lattice_data()
+        upsert._lattice_data(result_object)
         await result_webhook.send_update(result_object)
         return result_object
 
@@ -620,7 +622,7 @@ async def _postprocess_workflow(result_object: Result) -> Result:
         result_object._status = Result.POSTPROCESSING_FAILED
         result_object._error = "Post-processing failed"
         result_object._end_time = datetime.now(timezone.utc)
-        result_object.upsert_lattice_data()
+        upsert._lattice_data(result_object)
         await result_webhook.send_update(result_object)
 
         return result_object
@@ -631,7 +633,7 @@ async def _postprocess_workflow(result_object: Result) -> Result:
         result_object._status = Result.POSTPROCESSING_FAILED
         result_object._error = f"Post-processing failed: {err}"
         result_object._end_time = datetime.now(timezone.utc)
-        result_object.upsert_lattice_data()
+        upsert._lattice_data(result_object)
         await result_webhook.send_update(result_object)
 
         return result_object
@@ -679,7 +681,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
     result_object._status = Result.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
 
-    result_object.upsert_lattice_data()
+    upsert._lattice_data(result_object)
     app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
 
     # Executor for post_processing and dispatching sublattices
@@ -798,7 +800,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
 
     result_object = await _postprocess_workflow(result_object)
 
-    result_object.persist()
+    update.persist(result_object)
     await result_webhook.send_update(result_object)
 
     return result_object
@@ -895,3 +897,47 @@ async def cancel_workflow(dispatch_id: str) -> None:
     if dispatch_id in _running_workflows:
         app_log.debug(f"Cancelling dispatch {dispatch_id}")
         await _running_workflows[dispatch_id]._cancel()
+
+
+def initialize_result_object(
+    json_lattice: str, parent_result_object: Result = None, parent_electron_id: int = None
+) -> Result:
+    """Convenience function for constructing a result object from a json-serialized lattice.
+
+    Args:
+        json_lattice: a JSON-serialized lattice
+        parent_result_object: the parent result object if json_lattice is a sublattice
+        parent_electron_id: the DB id of the parent electron (for sublattices)
+
+    Returns:
+        Result: result object
+    """
+
+    dispatch_id = get_unique_id()
+    lattice = Lattice.deserialize_from_json(json_lattice)
+    result_object = Result(lattice, lattice.metadata["results_dir"], dispatch_id)
+    if parent_result_object:
+        result_object._root_dispatch_id = parent_result_object._root_dispatch_id
+
+    result_object._initialize_nodes()
+    result_object._initialize_runtime_state()
+    app_log.debug("2: Constructed result object and initialized nodes.")
+
+    update.persist(result_object, electron_id=parent_electron_id)
+    app_log.debug("Result object persisted.")
+
+    return result_object
+
+
+def get_unique_id() -> str:
+    """
+    Get a unique ID.
+
+    Args:
+        None
+
+    Returns:
+        str: Unique ID
+    """
+
+    return str(uuid.uuid4())

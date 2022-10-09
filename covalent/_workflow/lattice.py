@@ -1,4 +1,4 @@
-# copyright 2021 Agnostiq Inc.
+# Copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -32,7 +32,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 from .. import executor as executor_module
-from .._data_store import DataStoreSession
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
@@ -249,9 +248,6 @@ class Lattice:
 
             new_metadata["workflow_executor_data"] = executor.to_dict()
             self.metadata = new_metadata
-
-    def persist(self, ds: DataStoreSession, update: bool):
-        self.transport_graph.persist(ds, update)
 
     def draw(self, *args, **kwargs) -> None:
         """

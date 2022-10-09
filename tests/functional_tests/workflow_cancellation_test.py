@@ -23,10 +23,9 @@ import asyncio
 import pytest
 
 import covalent as ct
-from covalent._data_store.datastore import DataStore
-from covalent._results_manager.result import Result, initialize_result_object
+from covalent._results_manager.result import Result
 from covalent._shared_files.config import get_config
-from covalent_dispatcher._core.execution import run_workflow
+from covalent_dispatcher._core.execution import initialize_result_object, run_workflow
 
 TEST_RESULTS_DIR = "/tmp/results"
 
@@ -38,16 +37,6 @@ def event_loop():
     loop = policy.new_event_loop()
     yield loop
     loop.close()
-
-
-@pytest.fixture
-def test_db():
-    """Instantiate and return an in-memory database."""
-
-    return DataStore(
-        db_URL="sqlite+pysqlite:///:memory:",
-        initialize_db=True,
-    )
 
 
 @pytest.mark.asyncio
