@@ -28,7 +28,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy.sql import desc, func, or_
 from sqlalchemy.util import immutabledict
 
-from covalent._data_store.models import ElectronDependency
+from covalent_dispatcher._db.models import ElectronDependency
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.lattices import Lattice
 from covalent_ui.api.v1.models.dispatch_model import (

@@ -29,7 +29,6 @@ from typing import Any, Callable, Dict
 import cloudpickle
 import networkx as nx
 
-from .._data_store import DataStoreSession
 from .._shared_files.defaults import parameter_prefix
 
 
@@ -589,24 +588,3 @@ class _TransportGraph:
                 node["value"] = TransportableObject.from_dict(node["value"])
 
         self._graph = nx.readwrite.node_link_graph(node_link_data)
-
-    def persist(self, ds: DataStoreSession, update: bool):
-        if update:
-            for node_id in self.dirty_nodes:
-                self.persist_node(ds, node_id)
-            self.dirty_nodes.clear()
-        else:
-            # Save all nodes and edges
-            for node_id in self._graph.nodes:
-                self.persist_node(ds, node_id)
-            for edge in self._graph.edges:
-                self.persist_edge(ds, edge[0], edge[1])
-            self.dirty_nodes.clear()
-
-    def persist_node(self, ds: DataStoreSession, node_id: int):
-        dispatch_id = ds.metadata["dispatch_id"]
-        raise NotImplementedError
-
-    def persist_edge(self, ds: DataStoreSession, parent_id: int, node_id: int):
-        dispatch_id = ds.metadata["dispatch_id"]
-        raise NotImplementedError

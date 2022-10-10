@@ -22,7 +22,7 @@
 
 from sqlalchemy.ext.declarative import declarative_base
 
-from covalent._data_store.datastore import DataStore
+from covalent_dispatcher._db.datastore import DataStore
 
 engine = DataStore().engine
 Base = declarative_base()

@@ -27,7 +27,6 @@ import mock
 import pytest
 from click.testing import CliRunner
 
-from covalent._data_store.datastore import DataStore
 from covalent_dispatcher._cli.service import (
     MIGRATION_COMMAND_MSG,
     MIGRATION_WARNING_MSG,
@@ -48,6 +47,7 @@ from covalent_dispatcher._cli.service import (
     status,
     stop,
 )
+from covalent_dispatcher._db.datastore import DataStore
 
 STOPPED_SERVER_STATUS_ECHO = "Covalent server is stopped.\n"
 RUNNING_SERVER_STATUS_ECHO = "Covalent server is running at http://localhost:42.\n"
