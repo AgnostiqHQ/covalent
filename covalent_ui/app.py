@@ -26,9 +26,9 @@ import uvicorn
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
 
-from covalent._data_store.datastore import DataStore
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
+from covalent_dispatcher._db.datastore import DataStore
 from covalent_dispatcher._service.app_dask import DaskCluster
 from covalent_ui.api.main import app as fastapi_app
 from covalent_ui.api.main import sio

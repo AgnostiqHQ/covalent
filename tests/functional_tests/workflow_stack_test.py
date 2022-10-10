@@ -27,6 +27,7 @@ import pytest
 import covalent as ct
 import covalent._results_manager.results_manager as rm
 from covalent._results_manager.result import Result
+from covalent_dispatcher._db import update
 
 
 def construct_temp_cache_dir():
@@ -606,7 +607,7 @@ def test_client_workflow_executor():
     workflow_result = rm.get_result(dispatch_id, wait=True)
     assert workflow_result.status == Result.PENDING_POSTPROCESSING
     assert workflow_result.result is None
-    workflow_result.persist()
+    update.persist(workflow_result)
     assert workflow_result.post_process() == 15
     rm._delete_result(dispatch_id)
 
@@ -673,7 +674,7 @@ def test_wait_for():
 
     dispatch_id = ct.dispatch(workflow)()
     result = ct.get_result(dispatch_id, wait=True)
-    result.persist()
+    update.persist(result)
 
     assert result.status == Result.COMPLETED
     assert (

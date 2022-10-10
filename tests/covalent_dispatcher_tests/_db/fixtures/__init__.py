@@ -24,7 +24,7 @@ import datetime
 
 import pytest
 
-from covalent._data_store import models
+from covalent_dispatcher._db import models
 
 
 @pytest.fixture
