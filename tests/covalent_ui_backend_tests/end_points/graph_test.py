@@ -18,57 +18,39 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from os.path import abspath, dirname
-
-from pytest_mock import mocker
+"""Graph test"""
 
 import tests.covalent_ui_backend_tests.utils.main as main
-from tests.covalent_ui_backend_tests.utils.assert_data.service_app import seed_service_app_data
+from tests.covalent_ui_backend_tests.utils.assert_data.graph import seed_graph_data
 from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
 
 object_test_template = TestClientTemplate()
-output_path = dirname(abspath(__file__)) + "/utils/assert_data/summary_data.json"
-# with open(output_path, "r") as output_json:
-#     output_data = json.load(output_json)
-output_data = seed_service_app_data()
+output_data = seed_graph_data()
 
 
-def test_ui_service_result(mocker):
-    """Test overview"""
-    import os
-
-    dbpath = os.path.join("tests/covalent_ui_backend_tests/utils/data", "mock_db.sqlite")
-
-    def __init__(self, dbpath=dbpath):
-        self._dbpath = dbpath
-
-    from covalent_dispatcher._db.dispatchdb import DispatchDB
-
-    mocker.patch.object(DispatchDB, "__init__", __init__)
-    test_data = output_data["test_result"]["case1"]
+def test_get_graph():
+    """test get graph"""
+    test_data = output_data["test_graph"]["case_test_get_graph"]
     response = object_test_template(
-        api_path=output_data["test_result"]["api_path"],
+        api_path=output_data["test_graph"]["api_path"],
         app=main.fastapi_app,
         method_type=MethodType.GET,
+        path=test_data["path"],
     )
     assert response.status_code == test_data["status_code"]
     if "response_data" in test_data:
         assert response.json() == test_data["response_data"]
 
 
-def test_ui_service_db_path(mocker):
-    dbpath = "/Users/root/covalent/results.db"
-
-    def __init__(self, dbpath=dbpath):
-        self._dbpath = dbpath
-
-    from covalent_dispatcher._db.dispatchdb import DispatchDB
-
-    mocker.patch.object(DispatchDB, "__init__", __init__)
+def test_graph_invalid_dispatch_id():
+    """test graph invalid dispatch id"""
+    test_data = output_data["test_graph"]["case_test_graph_invalid_dispatch_id"]
     response = object_test_template(
-        api_path="/api/db-path",
+        api_path=output_data["test_graph"]["api_path"],
         app=main.fastapi_app,
         method_type=MethodType.GET,
+        path=test_data["path"],
     )
-    result = response.json().replace("\\", "").replace('"', "")
-    assert result == dbpath
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]

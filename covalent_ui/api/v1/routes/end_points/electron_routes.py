@@ -94,6 +94,7 @@ def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
     with Session(db.engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
+        print("sam ")
         inputs = get_task_inputs(
             node_id=electron_id, node_name=result.name, result_object=result_object
         )
@@ -148,6 +149,7 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
                 return ElectronFileResponse(data=response)
             elif name == "call_before":
                 response = handler.read_from_pickle(result["call_before_filename"])
+                print("sam ", response)
                 return ElectronFileResponse(data=response)
             elif name == "call_after":
                 response = handler.read_from_pickle(result["call_after_filename"])

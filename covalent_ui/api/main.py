@@ -49,9 +49,9 @@ sio = socketio.AsyncServer(
 )
 
 
-@sio.on("message")
-async def chat_message(sid, data):
-    await sio.emit("draw-request", "hi ")
+# @sio.on("message")
+# async def chat_message(sid, data):
+#     await sio.emit("draw-request", "hi ")
 
 
 app.include_router(routes.routes)
