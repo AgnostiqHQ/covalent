@@ -22,9 +22,24 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Union
+from typing import List, Union
 
 from pydantic import BaseModel
+
+from covalent_ui.api.v1.models.dispatch_model import DispatchModule
+from covalent_ui.api.v1.utils.models_helper import CaseInsensitiveEnum
+
+
+class SubLatticeSortBy(CaseInsensitiveEnum):
+    """Values to filter data by"""
+
+    RUNTIME = "runtime"
+    TOTAL_ELECTRONS = "total_electrons"
+    LATTICE_NAME = "lattice_name"
+
+
+class SubLatticeDetailResponse(BaseModel):
+    sub_lattices: List[DispatchModule] = None
 
 
 class LatticeDetailResponse(BaseModel):
@@ -68,6 +83,40 @@ class LatticeWorkflowExecutorResponse(BaseModel):
 
     workflow_executor_name: Union[str, None] = None
     workflow_executor_details: Union[dict, None] = None
+
+
+class GraphNodes(BaseModel):
+
+    id: int = None
+    name: str = None
+    node_id: int = None
+    started_at: datetime = None
+    completed_at: datetime = None
+    status: str = None
+    type: str = None
+    executor: str = None
+
+    # Immediate parent electron id
+    parent_electron_id: int = None
+
+    # Is_parent field introduced to for graph box
+    is_parent: int = None
+
+    # Immediate parent dispatch id, to get electrons details
+    parent_dispatch_id: str = None
+
+    # Allow users to copy dispatch id a sublattice
+    sublattice_dispatch_id: str = None
+
+
+class GraphResponseData(BaseModel):
+
+    nodes: List[GraphNodes] = None
+    links: List[dict] = None
+
+
+class GraphResponse(BaseModel):
+    """Graph Response Model"""
 
 
 class LatticeFileOutput(str, Enum):

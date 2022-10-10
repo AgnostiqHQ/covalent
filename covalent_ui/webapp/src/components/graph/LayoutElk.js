@@ -65,8 +65,9 @@ const mapGraphToElements = (graph, direction, showParams, hideLabels, preview) =
         executor: preview ? node?.metadata.executor_name : node.executor_label,
         node_id: preview ? node.id : node.node_id,
         hideLabels: hideLabels,
-        nodeType:node.type,
-        preview
+        nodeType: node.type,
+        preview,
+        sublattices_id: node.sublattice_dispatch_id ? node.sublattice_dispatch_id : null
       },
       targetPosition: handlePositions.target,
       sourcePosition: handlePositions.source,
@@ -113,6 +114,7 @@ const assignNodePositions = async (
           'elk.spacing.edgeNode': hideLabels ? 60 : 40,
           'elk.spacing.edgeLabel': 10,
           'elk.layered.spacing.nodeNodeBetweenLayers': 80,
+          'elk.layered.spacing.baseValue': hideLabels ? 40 : 10
         },
       })
       : new ELK({

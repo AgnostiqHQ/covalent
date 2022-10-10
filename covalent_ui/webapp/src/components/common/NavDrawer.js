@@ -221,7 +221,7 @@ const LinkButton = ({
       } else if (action.type === updateSettings.rejected.type) {
         setOpenSnackbar(true)
         setSnackbarMessage(
-          'Something went wrong and could not update settings!'
+          'Something went wrong and settings could not be updated.'
         )
         setPopupShow(false)
         const settingObj = {

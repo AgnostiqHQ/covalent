@@ -21,7 +21,7 @@
  */
 
 import _ from 'lodash'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   Table,
@@ -189,9 +189,9 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize text
   [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
-  {
-    fontSize: '1rem',
-  },
+    {
+      fontSize: '1rem',
+    },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
@@ -272,6 +272,7 @@ const LogsListing = () => {
   const [snackbarMessage, setSnackbarMessage] = useState(null)
   const [disableDownload, setDisableDownload] = useState(false)
   const [copied, setCopied] = useState(false)
+  const logsRef = useRef([])
   // reset store values to initial state when moved to another page
   useEffect(() => {
     return () => {
@@ -339,6 +340,7 @@ const LogsListing = () => {
     setSelected([])
     const offsetValue = pageValue === 1 ? 0 : pageValue * 70 - 70
     setOffset(offsetValue)
+    logsRef.current[0].scrollIntoView({ behavior: 'smooth', block: 'end' })
   }
 
   useEffect(() => {
@@ -401,6 +403,9 @@ const LogsListing = () => {
                 '@media (min-width: 1700px)': {
                   height: _.isEmpty(logListView) ? 50 : '66vh',
                 },
+                '@media (min-height: 900px)': {
+                  height: _.isEmpty(logListView) ? 50 : '72vh',
+                },
                 width: _.isEmpty(logListView) ? '40%' : null,
 
                 borderRadius:
@@ -429,6 +434,7 @@ const LogsListing = () => {
                         followCursor={true}
                       >
                         <TableRow
+                          ref={(el) => (logsRef.current[index] = el)}
                           onClick={() => {
                             copy(result.message)
                             setCopied(true)
