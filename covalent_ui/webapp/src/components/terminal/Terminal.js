@@ -9,6 +9,7 @@ const Terminal = () => {
     const fitAddon = new FitAddon();
     useEffect(() => {
         fitAddon.fit();
+        xtermRef?.current?.terminal.focus();
         xtermRef?.current?.terminal.writeln("$ This is just a static terminal"
         );
         xtermRef?.current?.terminal.writeln("$ Please install Covalent to use this exciting new feature!"

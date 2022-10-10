@@ -193,9 +193,9 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize text
   [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
-  {
-    fontSize: '1rem',
-  },
+    {
+      fontSize: '1rem',
+    },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
@@ -494,6 +494,7 @@ const LogsListing = () => {
                   {logListView &&
                     stableSort(logListView, getComparator(sortOrder, sortColumn)).map((result, index) => (
                       <Tooltip
+                        enterDelay={800}
                         title={!copied ? 'Click to copy log message' : 'Copied'}
                         data-testid="log"
                         followCursor={true}
@@ -603,6 +604,7 @@ const LogsListing = () => {
                       ? Math.ceil(totalRecords / 70)
                       : 1
                   }
+                  disabled={totalRecords <= 10}
                   page={page}
                   onChange={handlePageChanges}
                   showFirstButton
