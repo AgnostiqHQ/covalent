@@ -36,9 +36,10 @@
    }
 
    const socket = io(process.env.REACT_APP_SOCKET_URL, {
-     // required for CORS
-     withCredentials: true,
-   })
+    // required for CORS
+    withCredentials: true,
+    transports : ['websocket'],
+  })
 
    socket.on('connect', () => {
      console.debug(`socket ${socket.id} connected: ${socket.connected}`)

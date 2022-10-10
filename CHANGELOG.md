@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Ability to view sublattices list as part of the main lattice
+- Ability to view subalattices graph as part of main lattice
+
 ## [0.201.0] - 2022-10-09
 
 ### Authors
