@@ -270,6 +270,26 @@ def insert_electron_dependency_data(dispatch_id: str, lattice: LatticeClass):
     return electron_dependency_ids
 
 
+def upsert_electron_dependency_data(dispatch_id: str, lattice: LatticeClass):
+    """Update electron dependency data"""
+
+    # Insert electron dependency records if they don't exist
+    with workflow_db.session() as session:
+        electron_dependencies_exist = (
+            session.query(ElectronDependency, Electron, Lattice)
+            .where(
+                Electron.id == ElectronDependency.electron_id,
+                Electron.parent_lattice_id == Lattice.id,
+                Lattice.dispatch_id == dispatch_id,
+            )
+            .first()
+            is not None
+        )
+    app_log.debug("electron_dependencies_exist is " + str(electron_dependencies_exist))
+    if not electron_dependencies_exist:
+        insert_electron_dependency_data(dispatch_id=dispatch_id, lattice=lattice)
+
+
 def update_lattices_data(dispatch_id: str, **kwargs) -> None:
     """This function updates the lattices record."""
 
