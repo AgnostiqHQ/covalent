@@ -93,12 +93,6 @@ def test_get_node_error(result_1):
     assert not result_1._get_node_error(node_id=0)
 
 
-def test_get_node_value(result_1, mocker):
-    """Test result method to get the node value."""
-
-    assert result_1._get_node_value(node_id=0) is None
-
-
 def test_get_all_node_results(result_1, mocker):
     """Test result method to get all the node results."""
 
