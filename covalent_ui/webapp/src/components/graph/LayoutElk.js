@@ -82,8 +82,7 @@ const mapGraphToElements = (
   const nodes = _.map(graph.nodes, (node) => {
     const handlePositions = getHandlePositions(direction)
     const isParam = isParameter(node)
-    const name = nodeLabel(node.type, node.name)
-
+    const name = isParam ? _.trim(node.name, ':parameter:') : nodeLabel(node.type, node.name)
     return {
       id: String(node.id),
       type: isParam ? 'parameter' : 'electron',
