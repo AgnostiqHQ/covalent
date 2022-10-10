@@ -19,6 +19,7 @@ const Terminal = () => {
                 fitAddon.fit();
                 const dims = { cols: xtermRef?.current?.terminal.cols, rows: xtermRef?.current?.terminal.rows };
                 if (dims.rows) {
+                    xtermRef?.current?.terminal.focus();
                     socket.emit('start_terminal', dims);
                     socket.emit("resize", dims);
                 }
