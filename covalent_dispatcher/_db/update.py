@@ -30,7 +30,7 @@ from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import _TransportGraph
 
 from . import upsert
-from .write_result_to_db import insert_electron_dependency_data
+from .write_result_to_db import upsert_electron_dependency_data
 
 app_log = logger.app_log
 
@@ -50,7 +50,7 @@ def persist(record: Union[Result, Lattice, _TransportGraph], electron_id: int = 
         upsert._lattice_data(record, electron_id=electron_id)
         upsert._electron_data(record)
         app_log.debug("upsert complete")
-        insert_electron_dependency_data(record.dispatch_id, record.lattice)
+        upsert_electron_dependency_data(record.dispatch_id, record.lattice)
         app_log.debug("persist complete")
     if isinstance(record, Lattice):
         persist(record.transport_graph)
