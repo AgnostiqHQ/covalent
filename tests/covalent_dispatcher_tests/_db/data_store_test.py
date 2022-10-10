@@ -17,3 +17,17 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+
+"""
+Unit tests for DataStore object
+"""
+
+from covalent._shared_files.config import get_config
+from covalent_dispatcher._db.datastore import DataStore
+
+
+def test_datastore_init():
+    """Test data store initialization method."""
+
+    ds = DataStore(db_URL=None)
+    assert ds.db_URL == "sqlite+pysqlite:///" + get_config("dispatcher.db_path")
