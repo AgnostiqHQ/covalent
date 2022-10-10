@@ -53,15 +53,15 @@ const OverflowTip = (props) => {
       data-testid="toolTip"
       title={props.value}
       disableHoverListener={!hoverStatus}
-      style={{ fontSize: '2em' }}
-    >
+      style={{ fontSize: props.fontSize || '2em' }}
+      >
       <div
         ref={textElementRef}
         style={{
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
-          width: '200px',
+          width: props.width || '200px'
         }}
       >
         {props.value}
