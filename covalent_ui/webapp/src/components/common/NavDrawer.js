@@ -33,6 +33,8 @@ import {
   Snackbar,
 } from '@mui/material'
 import { ReactComponent as Logo } from '../../assets/covalent-logo.svg'
+import { ReactComponent as LogoOnHover } from '../../assets/covalent-logo-hover.svg'
+
 import { ReactComponent as DispatchList } from '../../assets/dashboard.svg'
 import { ReactComponent as DispatchPreview } from '../../assets/license.svg'
 import { ReactComponent as UITerminal } from '../../assets/terminal.svg'
@@ -185,6 +187,7 @@ const LinkButton = ({
   const [popupShow, setPopupShow] = useState(false)
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState(null)
+  const [hovered, sethovered] = useState(false)
   let navigate = useNavigate()
 
   const menuClick = (path) => {
@@ -193,8 +196,7 @@ const LinkButton = ({
     } else if (dRes.isChanged === true) {
       if (path === '/settings') {
         setPopupShow(false)
-      }
-      else {
+      } else {
         setPopupShow(true)
       }
     } else {
@@ -275,10 +277,26 @@ const LinkButton = ({
       />
       {title === 'Logo' ? (
         <ListItemButton
-          sx={{ position: 'fixed', top: 5 }}
+          sx={{
+            position: 'fixed',
+            top: 5,
+            background: (theme) => theme.palette.background.default,
+            '&:hover': {
+              background: (theme) => theme.palette.background.default,
+            },
+          }}
           onClick={() => menuClick(path)}
+          onMouseEnter={() => sethovered(true)}
+          onMouseLeave={() => sethovered(false)}
         >
-          <Logo data-testid="covalentLogo" style={{ width: '30px' }} />
+          {hovered ? (
+            <LogoOnHover
+              data-testid="covalentLogoHover"
+              style={{ width: '30px' }}
+            />
+          ) : (
+            <Logo data-testid="covalentLogo" style={{ width: '30px' }} />
+          )}
         </ListItemButton>
       ) : (
         <Tooltip

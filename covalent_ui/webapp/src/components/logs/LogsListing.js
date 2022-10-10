@@ -429,6 +429,7 @@ const LogsListing = () => {
                   {logListView &&
                     logListView.map((result, index) => (
                       <Tooltip
+                        enterDelay={800}
                         title={!copied ? 'Click to copy log message' : 'Copied'}
                         data-testid="log"
                         followCursor={true}

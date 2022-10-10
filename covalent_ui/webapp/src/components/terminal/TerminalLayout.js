@@ -21,7 +21,7 @@
  */
 
 import { Box } from '@mui/system'
-import { Container, Grid, Chip,Typography } from '@mui/material';
+import { Container, Grid, Chip, Typography } from '@mui/material'
 import NavDrawer from '../common/NavDrawer'
 import Terminal from '../terminal/Terminal'
 
@@ -31,10 +31,27 @@ const TerminalLayout = () => {
       <NavDrawer />
       <Container maxWidth="xl" sx={{ mb: 4, mt: '32px' }}>
         <Grid xs={12} sx={{ mb: 4 }}>
-          <Typography sx={{ fontSize: '2rem' }} component="h4" display="inline">
+          <Typography
+            sx={{
+              fontSize: '2rem',
+              color: (theme) => theme.palette.primary.white,
+            }}
+            component="h4"
+            display="inline"
+          >
             Terminal
           </Typography>
-          <Chip sx={{ height: '24px', ml: 1, mb: 1.5, fontSize: '0.75rem', color: '#FFFFFF' }} label='BETA' variant='outlined' />
+          <Chip
+            sx={{
+              height: '24px',
+              ml: 1,
+              mb: 1.5,
+              fontSize: '0.75rem',
+              color: '#FFFFFF',
+            }}
+            label="BETA"
+            variant="outlined"
+          />
         </Grid>
         <Terminal />
       </Container>
