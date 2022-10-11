@@ -19,12 +19,12 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
-
+import React, { Suspense, lazy } from 'react'
 import { Box } from '@mui/system'
 import { Container, Grid, Chip, Typography } from '@mui/material'
 import NavDrawer from '../common/NavDrawer'
-import Terminal from '../terminal/Terminal'
-
+import PageLoading from '../common/PageLoading'
+const TerminalUI = lazy(() => import('../terminal/Terminal'));
 const TerminalLayout = () => {
   return (
     <Box sx={{ display: 'flex' }} data-testid="dashboard">
@@ -53,10 +53,11 @@ const TerminalLayout = () => {
             variant="outlined"
           />
         </Grid>
-        <Terminal />
+        <Suspense fallback={<PageLoading />}>
+          <TerminalUI />
+        </Suspense>
       </Container>
     </Box>
   )
 }
-
 export default TerminalLayout
