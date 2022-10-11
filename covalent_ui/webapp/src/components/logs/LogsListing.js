@@ -604,7 +604,7 @@ const LogsListing = () => {
                       ? Math.ceil(totalRecords / 70)
                       : 1
                   }
-                  disabled={totalRecords <= 10}
+                  disabled={totalRecords <= 70}
                   page={page}
                   onChange={handlePageChanges}
                   showFirstButton

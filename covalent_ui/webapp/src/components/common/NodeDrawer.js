@@ -122,6 +122,19 @@ const NodeDrawer = ({ node, dispatchId }) => {
     setSelectedElements([])
   }
 
+  const nodeLabel = (type, name) => {
+    switch (type) {
+      case 'parameter':
+        return name?.replace(':parameter:', '')
+      case 'electron_list':
+        return name?.replace(':electron_list:', 'electron list')
+      case 'sublattice':
+        return name?.replace(':sublattice:', 'Sublattice:')
+      default:
+        return name
+    }
+  }
+
   const hasStarted = !!_.get(electronDetail, 'started_at')
   const hasEnded = !!_.get(electronDetail, 'ended_at')
 
@@ -167,7 +180,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
               <Skeleton data-testid="node__box_skl" width={150} />
             ) : (
               <Typography sx={{ color: '#A5A6F6', overflowWrap: 'anywhere' }}>
-                {electronDetail?.name}
+                {nodeLabel(electronDetail?.type, electronDetail?.name)}
               </Typography>
             )}
 

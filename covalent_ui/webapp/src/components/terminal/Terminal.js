@@ -27,6 +27,7 @@ const Terminal = () => {
                 scrollback: 500,
                 theme: {
                     background: '#08081A',
+                    foreground: '#AEB6FF'
                 }
             }}
             className='term'
