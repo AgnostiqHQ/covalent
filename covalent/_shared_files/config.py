@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import copy
+import fcntl
 import os
 import shutil
 from functools import reduce
@@ -51,7 +52,7 @@ class _ConfigManager:
                 pass
 
             self.update_config()
-        else:
+        except:
             Path(config_dir).mkdir(parents=True, exist_ok=True)
 
             self.write_config()
