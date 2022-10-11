@@ -23,7 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Ability to view sublattices list as part of the main lattice
 - Ability to view subalattices graph as part of main lattice
-- Ability to use terminal on the GUI.
 
 
 ### Fixed
