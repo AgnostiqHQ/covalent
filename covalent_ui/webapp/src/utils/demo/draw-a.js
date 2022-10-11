@@ -57,7 +57,7 @@ const latticePreview = {
           doc: null,
         },
         {
-          name: ':electron_list:',
+          name: 'electron list',
           kwargs: {
             target_list: "['sirius', 'trappist-1']",
           },
@@ -136,7 +136,7 @@ const latticePreview = {
           doc: null,
         },
         {
-          name: ':electron_list:',
+          name: 'electron list',
           kwargs: {
             target_list: "['sirius', 'trappist-1']",
           },

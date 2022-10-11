@@ -50,7 +50,7 @@ export const demoState = {
     deleteResults: { isFetching: false, error: null },
     overallDashboardList: demoDashboardListData.dashboardList,
     dashboardList: demoDashboardListData.dashboardList,
-    totalDispatches: demoDashboardListData.dashboardList.total_count
+    totalDispatches: demoDashboardListData.total_count
   },
   latticeResults: {
     latticeResultsData: latticeDetailsDemoData,
