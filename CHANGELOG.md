@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.202.0] - 2022-10-11
+
+### Authors
+
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Casey Jao <casey@agnostiq.ai>
+
+
 ### Added
 
 - Ability to view sublattices list as part of the main lattice
