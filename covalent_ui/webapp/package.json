@@ -57,7 +57,7 @@
   },
   "jest": {
     "transformIgnorePatterns": [
-      "/node_modules/(?!d3|d3-array|internmap|delaunator|robust-predicates)"
+      "/node_modules/(?!d3|d3-array|internmap|delaunator|xterm-for-react|xterm-addon-fit|xterm-addon-web-links|xterm-addon-search|robust-predicates)"
     ]
   },
   "browserslist": {
