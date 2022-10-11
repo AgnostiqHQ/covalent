@@ -2272,7 +2272,7 @@ executor_label:'dask',
                 status: 'FAILED'
             },
             {
-                name: ':electron_list:',
+                name: 'electron list',
                 kwargs: {
                     target_list: "['sirius', 'trappist-1']",
                 },
@@ -2359,7 +2359,7 @@ executor_label:'dask',
                 status: 'COMPLETED'
             },
             {
-                name: ':electron_list:',
+                name: 'electron list',
                 kwargs: {
                     target_list: "['sirius', 'trappist-1']",
                 },
@@ -2972,7 +2972,7 @@ graphDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"] = {
             },
             {
                 "id": 1,
-                "name": ":electron_list:",
+                "name": "electron list",
                 "node_id": 1,
                 "started_at": "2022-10-03 03:34:57.840132",
                 "completed_at": "2022-10-03 03:34:57.907292",
@@ -3027,7 +3027,7 @@ graphDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"] = {
             },
             {
                 "id": 6,
-                "name": ":electron_list:",
+                "name": "electron list",
                 "node_id": 6,
                 "started_at": "2022-10-03 03:34:57.854587",
                 "completed_at": "2022-10-03 03:34:57.925453",
@@ -3082,7 +3082,7 @@ graphDemoData["419d22a3-e1d7-46a8-92ba-d4ef234674b0"] = {
             },
             {
                 "id": 11,
-                "name": ":electron_list:",
+                "name": "electron list",
                 "node_id": 11,
                 "started_at": "2022-10-03 03:34:57.882949",
                 "completed_at": "2022-10-03 03:34:57.970101",

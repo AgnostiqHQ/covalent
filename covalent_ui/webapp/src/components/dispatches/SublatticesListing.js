@@ -168,7 +168,7 @@ const StyledTable = styled(Table)(({ theme }) => ({
 const SublatticesListing = () => {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
-  const [sortColumn, setSortColumn] = useState('total_electrons')
+  const [sortColumn, setSortColumn] = useState('totalElectrons')
   const [sortOrder, setSortOrder] = useState('desc')
 
   const sublatticesId = useSelector(
