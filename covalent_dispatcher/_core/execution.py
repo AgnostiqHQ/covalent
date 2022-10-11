@@ -407,76 +407,65 @@ def _gather_deps(result_object: Result, node_id: int) -> Tuple[List, List]:
     return call_before, call_after
 
 
-async def _handle_completed_node(result_object, node_result, pending_deps, tasks_queue):
+async def _handle_completed_node(result_object, node_id, pending_deps):
     g = result_object.lattice.transport_graph._graph
 
-    for child, edges in g.adj[node_result["node_id"]].items():
+    ready_nodes = []
+    app_log.debug(f"Node {node_id} completed")
+    for child, edges in g.adj[node_id].items():
         for edge in edges:
             pending_deps[child] -= 1
         if pending_deps[child] < 1:
             app_log.debug(f"Queuing node {child} for execution")
-            await tasks_queue.put(child)
+            ready_nodes.append(child)
+
+    return ready_nodes
 
 
-async def _handle_failed_node(result_object, node_result, pending_deps, tasks_queue):
-    node_id = node_result["node_id"]
+async def _handle_failed_node(result_object, node_id):
     result_object._status = Result.FAILED
     result_object._end_time = datetime.now(timezone.utc)
     result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
     app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
     upsert._lattice_data(result_object)
     await result_webhook.send_update(result_object)
-    await tasks_queue.put(-1)
 
 
-async def _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue):
+async def _handle_cancelled_node(result_object, node_id):
     result_object._status = Result.CANCELLED
     result_object._end_time = datetime.now(timezone.utc)
     app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
     upsert._lattice_data(result_object)
     await result_webhook.send_update(result_object)
-    await tasks_queue.put(-1)
 
 
-async def _update_node_result(result_object, node_result, pending_deps, tasks_queue):
+async def _update_node_result(result_object, node_result, pending_deps, status_queue):
     app_log.warning("Updating node result (run_planned_workflow).")
     update._node(result_object, **node_result)
     await result_webhook.send_update(result_object)
-
+    node_id = node_result["node_id"]
     node_status = node_result["status"]
-    if node_status == Result.COMPLETED:
-        await _handle_completed_node(result_object, node_result, pending_deps, tasks_queue)
-        return
-
-    if node_status == Result.FAILED:
-        await _handle_failed_node(result_object, node_result, pending_deps, tasks_queue)
-        return
-
-    if node_status == Result.CANCELLED:
-        await _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue)
-        return
-
-    if node_status == Result.RUNNING:
-        return
+    await status_queue.put((node_id, node_status))
 
 
-async def _run_task_and_update(run_task_callable, result_object, pending_deps, tasks_queue):
+async def _run_task_and_update(run_task_callable, result_object, pending_deps, status_queue):
     node_result = await run_task_callable()
 
     # NOTE: This is a blocking operation because of db writes and needs special handling when
     # we switch to an event loop for processing tasks
-    await _update_node_result(result_object, node_result, pending_deps, tasks_queue)
+    await _update_node_result(result_object, node_result, pending_deps, status_queue)
     return node_result
 
 
-async def _initialize_deps_and_queue(
-    result_object: Result, tasks_queue: Queue, pending_deps: dict
-) -> int:
+async def _initialize_deps_and_queue(result_object: Result) -> int:
     """Initialize the data structures controlling when tasks are queued for execution.
 
     Returns the total number of nodes in the transport graph."""
 
     num_tasks = 0
+    ready_nodes = []
+    pending_deps = {}
+
     g = result_object.lattice.transport_graph._graph
     for node_id, d in g.in_degree():
         app_log.debug(f"Node {node_id} has {d} parents")
@@ -484,9 +473,9 @@ async def _initialize_deps_and_queue(
         pending_deps[node_id] = d
         num_tasks += 1
         if d == 0:
-            await tasks_queue.put(node_id)
+            ready_nodes.append(node_id)
 
-    return num_tasks
+    return num_tasks, ready_nodes, pending_deps
 
 
 async def _postprocess_workflow(result_object: Result) -> Result:
@@ -579,77 +568,35 @@ async def _postprocess_workflow(result_object: Result) -> Result:
     return result_object
 
 
-async def _run_planned_workflow(result_object: Result) -> Result:
-    """
-    Run the workflow in the topological order of their position on the
-    transport graph. Does this in an asynchronous manner so that nodes
-    at the same level are executed in parallel. Also updates the status
-    of the whole workflow execution.
+async def _submit_task(result_object, node_id, pending_deps, status_queue, task_futures):
 
-    Args:
-        result_object: Result object being used for current dispatch
+    # Get name of the node for the current task
+    node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
+    app_log.debug(f"7A: Node name: {node_name} (run_planned_workflow).")
 
-    Returns:
-        None
-    """
+    # Handle parameter nodes
+    if node_name.startswith(parameter_prefix):
+        app_log.debug("7C: Parameter if block (run_planned_workflow).")
+        output = result_object.lattice.transport_graph.get_node_value(node_id, "value")
+        app_log.debug(f"7C: Node output: {output} (run_planned_workflow).")
+        app_log.debug("8: Starting update node (run_planned_workflow).")
 
-    app_log.debug("3: Inside run_planned_workflow (run_planned_workflow).")
+        node_result = {
+            "node_id": node_id,
+            "start_time": datetime.now(timezone.utc),
+            "end_time": datetime.now(timezone.utc),
+            "status": Result.COMPLETED,
+            "output": output,
+        }
+        await _update_node_result(result_object, node_result, pending_deps, status_queue)
+        app_log.debug("8A: Update node success (run_planned_workflow).")
 
-    tasks_queue = Queue()
-    pending_deps = {}
-    task_futures: list = []
+    else:
 
-    app_log.debug(
-        f"4: Workflow status changed to running {result_object.dispatch_id} (run_planned_workflow)."
-    )
-
-    result_object._status = Result.RUNNING
-    result_object._start_time = datetime.now(timezone.utc)
-
-    upsert._lattice_data(result_object)
-    app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
-
-    # Executor for post_processing and dispatching sublattices
-    pp_executor = result_object.lattice.get_metadata("workflow_executor")
-    pp_executor_data = result_object.lattice.get_metadata("workflow_executor_data")
-    post_processor = [pp_executor, pp_executor_data]
-
-    tasks_left = await _initialize_deps_and_queue(result_object, tasks_queue, pending_deps)
-
-    while tasks_left > 0:
-        app_log.debug(f"{tasks_left} tasks left")
-
-        tasks_left -= 1
-        node_id = await tasks_queue.get()
-        app_log.debug(f"Processing node {node_id}")
-
-        if node_id < 0:
-            app_log.debug(f"Workflow {result_object.dispatch_id} failed or cancelled.")
-            await asyncio.gather(*task_futures)
-            return result_object
-
-        # Get name of the node for the current task
-        node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
-        app_log.debug(f"7A: Node name: {node_name} (run_planned_workflow).")
-
-        # Handle parameter nodes
-        if node_name.startswith(parameter_prefix):
-            app_log.debug("7C: Parameter if block (run_planned_workflow).")
-            output = result_object.lattice.transport_graph.get_node_value(node_id, "value")
-            app_log.debug(f"7C: Node output: {output} (run_planned_workflow).")
-            app_log.debug("8: Starting update node (run_planned_workflow).")
-
-            node_result = {
-                "node_id": node_id,
-                "start_time": datetime.now(timezone.utc),
-                "end_time": datetime.now(timezone.utc),
-                "status": Result.COMPLETED,
-                "output": output,
-            }
-            await _update_node_result(result_object, node_result, pending_deps, tasks_queue)
-            app_log.debug("8A: Update node success (run_planned_workflow).")
-
-            continue
+        # Executor for post_processing and dispatching sublattices
+        pp_executor = result_object.lattice.get_metadata("workflow_executor")
+        pp_executor_data = result_object.lattice.get_metadata("workflow_executor_data")
+        post_processor = [pp_executor, pp_executor_data]
 
         # Gather inputs and dispatch task
         app_log.debug(f"Gathering inputs for task {node_id} (run_planned_workflow).")
@@ -681,7 +628,7 @@ async def _run_planned_workflow(result_object: Result) -> Result:
             start_time=start_time,
             status=Result.RUNNING,
         )
-        await _update_node_result(result_object, node_result, pending_deps, tasks_queue)
+        await _update_node_result(result_object, node_result, pending_deps, status_queue)
         app_log.debug("7: Updating nodes after deps (run_planned_workflow)")
 
         app_log.debug(f"Submitting task {node_id} to executor")
@@ -705,13 +652,80 @@ async def _run_planned_workflow(result_object: Result) -> Result:
                 run_task_callable=run_task_callable,
                 result_object=result_object,
                 pending_deps=pending_deps,
-                tasks_queue=tasks_queue,
+                status_queue=status_queue,
             )
         )
 
         task_futures.append(future)
 
-    await asyncio.gather(*task_futures)
+
+async def _run_planned_workflow(result_object: Result, status_queue: Queue = None) -> Result:
+    """
+    Run the workflow in the topological order of their position on the
+    transport graph. Does this in an asynchronous manner so that nodes
+    at the same level are executed in parallel. Also updates the status
+    of the whole workflow execution.
+
+    Args:
+        result_object: Result object being used for current dispatch
+        status_queue: message queue for notifying the main loop of status updates
+
+    Returns:
+        None
+    """
+
+    app_log.debug("3: Inside run_planned_workflow (run_planned_workflow).")
+
+    if not status_queue:
+        status_queue = Queue()
+
+    task_futures: list = []
+
+    app_log.debug(
+        f"4: Workflow status changed to running {result_object.dispatch_id} (run_planned_workflow)."
+    )
+
+    result_object._status = Result.RUNNING
+    result_object._start_time = datetime.now(timezone.utc)
+
+    upsert._lattice_data(result_object)
+    app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
+
+    tasks_left, initial_nodes, pending_deps = await _initialize_deps_and_queue(result_object)
+
+    unresolved_tasks = 0
+    resolved_tasks = 0
+
+    for node_id in initial_nodes:
+        unresolved_tasks += 1
+        await _submit_task(result_object, node_id, pending_deps, status_queue, task_futures)
+
+    while unresolved_tasks > 0:
+        app_log.debug(f"{tasks_left} tasks left to complete")
+        app_log.debug(f"Waiting to hear from {unresolved_tasks} tasks")
+        node_id, node_status = await status_queue.get()
+
+        app_log.debug(f"Processing result for node {node_id}")
+
+        if node_status == Result.RUNNING:
+            continue
+
+        unresolved_tasks -= 1
+
+        if node_status == Result.COMPLETED:
+            tasks_left -= 1
+            ready_nodes = await _handle_completed_node(result_object, node_id, pending_deps)
+            for node_id in ready_nodes:
+                unresolved_tasks += 1
+                await _submit_task(
+                    result_object, node_id, pending_deps, status_queue, task_futures
+                )
+
+        if node_status == Result.FAILED:
+            await _handle_failed_node(result_object, node_id)
+
+        if node_status == Result.CANCELLED:
+            await _handle_cancelled_node(result_object, node_id)
 
     if result_object._status in [Result.FAILED, Result.CANCELLED]:
         app_log.debug(f"Workflow {result_object.dispatch_id} cancelled or failed")
