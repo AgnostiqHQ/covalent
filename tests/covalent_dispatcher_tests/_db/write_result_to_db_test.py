@@ -54,6 +54,7 @@ from covalent_dispatcher._db.write_result_to_db import (
     update_electrons_data,
     update_lattice_completed_electron_num,
     update_lattices_data,
+    upsert_electron_dependency_data,
 )
 
 STORAGE_TYPE = "local"
@@ -445,6 +446,76 @@ def test_insert_electron_dependency_data(test_db, workflow_lattice, mocker):
 
             assert electron_dependency.is_active
             assert electron_dependency.updated_at is not None
+
+
+def test_upsert_electron_dependency_data(test_db, workflow_lattice, mocker):
+    """Test that upsert_electron_dependency_data is idempotent"""
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    cur_time = dt.now(timezone.utc)
+    insert_lattices_data(
+        **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
+    )
+
+    electron_ids = []
+    cur_time = dt.now(timezone.utc)
+    for (name, node_id) in [
+        ("task_1", 0),
+        (":parameter:1", 1),
+        (":parameter:2", 2),
+        (":sublattice:task_2", 3),
+        (":parameter:2", 4),
+    ]:
+        electron_kwargs = get_electron_kwargs(
+            name=name,
+            transport_graph_node_id=node_id,
+            created_at=cur_time,
+            updated_at=cur_time,
+        )
+        electron_ids.append(insert_electrons_data(**electron_kwargs))
+
+    mock_insert = mocker.patch(
+        "covalent_dispatcher._db.write_result_to_db.insert_electron_dependency_data"
+    )
+
+    upsert_electron_dependency_data(dispatch_id="dispatch_1", lattice=workflow_lattice)
+
+    mock_insert.assert_called_once_with(dispatch_id="dispatch_1", lattice=workflow_lattice)
+
+
+def test_upsert_electron_dependency_data_idempotent(test_db, workflow_lattice, mocker):
+    """Test that upsert_electron_dependency_data is idempotent"""
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    cur_time = dt.now(timezone.utc)
+    insert_lattices_data(
+        **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
+    )
+
+    electron_ids = []
+    cur_time = dt.now(timezone.utc)
+    for (name, node_id) in [
+        ("task_1", 0),
+        (":parameter:1", 1),
+        (":parameter:2", 2),
+        (":sublattice:task_2", 3),
+        (":parameter:2", 4),
+    ]:
+        electron_kwargs = get_electron_kwargs(
+            name=name,
+            transport_graph_node_id=node_id,
+            created_at=cur_time,
+            updated_at=cur_time,
+        )
+        electron_ids.append(insert_electrons_data(**electron_kwargs))
+
+    insert_electron_dependency_data(dispatch_id="dispatch_1", lattice=workflow_lattice)
+
+    mock_insert = mocker.patch(
+        "covalent_dispatcher._db.write_result_to_db.insert_electron_dependency_data"
+    )
+    upsert_electron_dependency_data(dispatch_id="dispatch_1", lattice=workflow_lattice)
+    mock_insert.assert_not_called()
 
 
 def test_update_lattices_data(test_db, mocker):
