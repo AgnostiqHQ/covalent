@@ -92,6 +92,7 @@ class Summary:
             ),
             Lattice.status.in_(status_filters),
             Lattice.is_active.is_not(False),
+            Lattice.electron_id.is_(None),
         )
 
         if sort_by.value == "status":
@@ -128,6 +129,7 @@ class Summary:
                 ),
                 Lattice.status.in_(status_filters),
                 Lattice.is_active.is_not(False),
+                Lattice.electron_id.is_(None),
             )
             .first()
         )
@@ -150,6 +152,7 @@ class Summary:
             .filter(
                 Lattice.status == "RUNNING",
                 Lattice.is_active.is_not(False),
+                Lattice.electron_id.is_(None),
             )
             .label("total_jobs_running")
         ).first()
@@ -164,13 +167,14 @@ class Summary:
                     Lattice.status == "PENDING_POSTPROCESSING",
                 ),
                 Lattice.is_active.is_not(False),
+                Lattice.electron_id.is_(None),
             )
             .label("total_jobs_done")
         ).first()
 
         last_ran_job_status = (
             self.db_con.query(Lattice.status)
-            .filter(Lattice.is_active.is_not(False))
+            .filter(Lattice.is_active.is_not(False), Lattice.electron_id.is_(None))
             .order_by(Lattice.updated_at.desc())
             .first()
         )
@@ -185,7 +189,7 @@ class Summary:
                     * 1000
                 ).label("run_time")
             )
-            .filter(Lattice.is_active.is_not(False))
+            .filter(Lattice.is_active.is_not(False), Lattice.electron_id.is_(None))
             .first()
         )
 
@@ -194,12 +198,15 @@ class Summary:
             .filter(
                 Lattice.status == "FAILED",
                 Lattice.is_active.is_not(False),
+                Lattice.electron_id.is_(None),
             )
             .label("total_jobs_failed")
         ).first()
 
         total_jobs = self.db_con.query(
-            (func.count(Lattice.id)).filter(Lattice.is_active.is_not(False)).label("total_jobs")
+            (func.count(Lattice.id))
+            .filter(Lattice.is_active.is_not(False), Lattice.electron_id.is_(None))
+            .label("total_jobs")
         ).first()
 
         total_jobs_cancelled = self.db_con.query(
@@ -207,6 +214,7 @@ class Summary:
             .filter(
                 Lattice.status == "CANCELLED",
                 Lattice.is_active.is_not(False),
+                Lattice.electron_id.is_(None),
             )
             .label("total_jobs_cancelled")
         ).first()
@@ -216,6 +224,7 @@ class Summary:
             .filter(
                 Lattice.status == "NEW_OBJECT",
                 Lattice.is_active.is_not(False),
+                Lattice.electron_id.is_(None),
             )
             .label("total_jobs_new_object")
         ).first()
