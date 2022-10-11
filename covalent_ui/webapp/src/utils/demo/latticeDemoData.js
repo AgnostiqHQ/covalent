@@ -249,7 +249,8 @@ latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[10].elec
     "runtime": 50
 }
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[10].electronResult = {
-    "data": "11.949399856606007"
+    "data": "\"0.44034357303561467\"",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\n\\x00\\x00\\x00\\x00\\x00\\x00\\x00G?\\xdc.\\x96\\xcfLE\\xac.')"
 }
 latticeDetailsDemoData["2537c3b0-c150-441b-81c6-844e3fd88ef3"].electron[10].electronExecutor = {
     "executor_name": "local",
@@ -520,7 +521,8 @@ latticeDetailsDemoData["fcd385e2-7881-4bcd-862c-2ac99706d2f9"].electron[10].elec
     "runtime": 50
 }
 latticeDetailsDemoData["fcd385e2-7881-4bcd-862c-2ac99706d2f9"].electron[10].electronResult = {
-    "data": "11.949399856606007"
+    "data": "\"0.44034357303561467\"",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\n\\x00\\x00\\x00\\x00\\x00\\x00\\x00G?\\xdc.\\x96\\xcfLE\\xac.')"
 }
 latticeDetailsDemoData["fcd385e2-7881-4bcd-862c-2ac99706d2f9"].electron[10].electronExecutor = {
     "executor_name": "local",
@@ -792,7 +794,8 @@ latticeDetailsDemoData["b199afa5-301f-47d8-a8dc-fd78e1f5d08a"].electron[10].elec
     "runtime": 50
 }
 latticeDetailsDemoData["b199afa5-301f-47d8-a8dc-fd78e1f5d08a"].electron[10].electronResult = {
-    "data": "11.949399856606007"
+    "data": "\"0.44034357303561467\"",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\n\\x00\\x00\\x00\\x00\\x00\\x00\\x00G?\\xdc.\\x96\\xcfLE\\xac.')"
 }
 latticeDetailsDemoData["b199afa5-301f-47d8-a8dc-fd78e1f5d08a"].electron[10].electronExecutor = {
     "executor_name": "local",
@@ -1063,7 +1066,8 @@ latticeDetailsDemoData["df4601e7-7658-4a14-a860-f91a35a1b453"].electron[10].elec
     "runtime": 50
 }
 latticeDetailsDemoData["df4601e7-7658-4a14-a860-f91a35a1b453"].electron[10].electronResult = {
-    "data": "11.949399856606007"
+    "data": "\"0.44034357303561467\"",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\n\\x00\\x00\\x00\\x00\\x00\\x00\\x00G?\\xdc.\\x96\\xcfLE\\xac.')"
 }
 latticeDetailsDemoData["df4601e7-7658-4a14-a860-f91a35a1b453"].electron[10].electronExecutor = {
     "executor_name": "local",
@@ -2213,7 +2217,8 @@ latticeDetailsDemoData["eb2549cc-e2d4-482b-ba9e-c1cb39d0eb1a"].electron[10].elec
     "runtime": 50
 }
 latticeDetailsDemoData["eb2549cc-e2d4-482b-ba9e-c1cb39d0eb1a"].electron[10].electronResult = {
-    "data": "11.949399856606007"
+    "data": "\"0.44034357303561467\"",
+    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\n\\x00\\x00\\x00\\x00\\x00\\x00\\x00G?\\xdc.\\x96\\xcfLE\\xac.')"
 }
 latticeDetailsDemoData["eb2549cc-e2d4-482b-ba9e-c1cb39d0eb1a"].electron[10].electronExecutor = {
     "executor_name": "local",
