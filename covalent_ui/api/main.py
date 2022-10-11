@@ -24,6 +24,7 @@ import fcntl
 import os
 import pty
 import select
+import signal
 import struct
 import subprocess
 import termios
@@ -124,6 +125,8 @@ async def chat_message(*args):
 async def stop_terminal(*args):
     global terminal_subprocess
     terminal_subprocess = False
+    os.killpg(child_process_id, signal.SIGKILL)
+    await sio.sleep(0.01)
 
 
 @app.exception_handler(RequestValidationError)
