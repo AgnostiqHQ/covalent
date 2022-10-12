@@ -27,10 +27,11 @@ import networkx as nx
 import simplejson
 
 import covalent.executor as covalent_executor
-from covalent._data_store import DataStore
 from covalent._shared_files import logger
-from covalent._shared_files.config import CMType, get_config
+from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import Status
+
+from .datastore import DataStore
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -169,7 +170,7 @@ class DispatchDB:
         if dbpath:
             self._dbpath = dbpath
         else:
-            self._dbpath = get_config(CMType.SERVER, "service.dispatch_db")
+            self._dbpath = get_config("user_interface.dispatch_db")
 
     def __enter__(self):
         return self

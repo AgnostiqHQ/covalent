@@ -21,6 +21,7 @@
  */
 import _ from 'lodash'
 import { useSelector } from 'react-redux'
+import { useStoreActions } from 'react-flow-renderer'
 import { Close } from '@mui/icons-material'
 import {
   Box,
@@ -30,10 +31,12 @@ import {
   Paper,
   Typography,
 } from '@mui/material'
-import { useStoreActions } from 'react-flow-renderer'
 import { alpha } from '@mui/material/styles'
-
-import { statusColor, statusIcon, statusLabel } from '../../utils/misc'
+import {
+  statusColor,
+  statusIcon,
+  statusLabel,
+} from '../../utils/misc'
 import InputSection from '../common/InputSection'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import Heading from '../common/Heading'
@@ -42,11 +45,12 @@ import ExecutorSection from './ExecutorSection'
 
 export const nodeDrawerWidth = 360
 
-const NodeDrawer = ({ node }) => {
-  const preview = useSelector((state) => state.latticePreview.lattice) // unselect on close
+const NodeDrawer = ({ node,setSelectedElectron }) => {
+  const preview = useSelector((state) => state.latticePreview.lattice)   // unselect on close
   const setSelectedElements = useStoreActions(
     (actions) => actions.setSelectedElements
   )
+
   const handleClose = () => {
     setSelectedElements([])
   }
@@ -67,7 +71,7 @@ const NodeDrawer = ({ node }) => {
           borderRadius: '16px',
           marginRight: '10px',
           marginTop:'22px',
-          height: '904px',
+          height: '95vh',
         },
       })}
       anchor="right"
@@ -131,7 +135,7 @@ const NodeDrawer = ({ node }) => {
           <ExecutorSection
             preview
             metadata={_.get(preview, 'lattice.metadata')}
-            sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
+            sx={(theme) => ({ bgcolor: theme.palette.background.outRunBg })}
           />
 
           <Divider sx={{ my: 2 }} />
@@ -140,7 +144,7 @@ const NodeDrawer = ({ node }) => {
           <Heading />
           <Paper
             elevation={0}
-            sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}
+            sx={(theme) => ({ bgcolor: theme.palette.background.outRunBg })}
           >
             <SyntaxHighlighter src={src} />
           </Paper>

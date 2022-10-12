@@ -27,8 +27,6 @@ from typing import Dict, List
 
 import dask.system
 
-from .config import CMType
-
 prefix_separator = ":"
 
 parameter_prefix = f"{prefix_separator}parameter{prefix_separator}"
@@ -67,46 +65,18 @@ def get_default_sdk_config():
     }
 
 
-def get_default_server_config():
-    """
-    Return the default server config for a client
-    """
+def get_default_dispatcher_config():
     return {
-        "address": os.environ.get("COVALENT_DISPATCHER_ADDR")
-        if os.environ.get("COVALENT_DISPATCHER_ADDR")
-        else "localhost",
-        "port": int(os.environ.get("COVALENT_SVC_PORT"))
-        if os.environ.get("COVALENT_SVC_PORT")
-        else 48008,
-    }
-
-
-def get_default_service_config():
-    """
-    Return the default service configuration for the server (a.k.a dispatcher)
-    """
-    return {
-        "address": "0.0.0.0" if os.environ.get("COVALENT_SERVER_IFACE_ANY") else "localhost",
-        "port": int(os.environ.get("COVALENT_SVC_PORT"))
-        if os.environ.get("COVALENT_SVC_PORT")
-        else 48008,
-        "dev_port": int(os.environ.get("COVALENT_DEV_PORT"))
-        if os.environ.get("COVALENT_DEV_PORT")
-        else 49009,
-        "results_dir": os.environ.get("COVALENT_RESULTS_DIR", "results"),
+        "address": os.environ.get("COVALENT_DISPATCHER_ADDR", "localhost"),
+        "port": int(os.environ.get("COVALENT_SVC_PORT", 48008)),
         "cache_dir": os.environ.get("COVALENT_CACHE_DIR")
-        or (
-            (os.environ.get("XDG_CACHE_HOME") or (os.environ.get("HOME") + "/.cache"))
-            + "/covalent"
-        ),
+        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
+        "results_dir": os.environ.get("COVALENT_RESULTS_DIR", "results"),
         "log_dir": os.environ.get("COVALENT_LOGDIR")
-        or (
-            (os.environ.get("XDG_CACHE_HOME") or (os.environ.get("HOME") + "/.cache"))
-            + "/covalent"
-        ),
+        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
         "db_path": os.environ.get("COVALENT_DATABASE")
         or (
-            (os.environ.get("XDG_DATA_HOME") or (os.environ.get("HOME") + "/.local/share"))
+            (os.environ.get("XDG_DATA_HOME") or (os.environ["HOME"] + "/.local/share"))
             + "/covalent/dispatcher_db.sqlite"
         ),
     }
@@ -135,6 +105,18 @@ def get_default_workflow_data_config():
     }
 
 
+def get_default_ui_config():
+    return {
+        "address": "localhost",
+        "port": int(os.environ.get("COVALENT_SVC_PORT"))
+        if os.environ.get("COVALENT_SVC_PORT")
+        else 48008,
+        "dev_port": 49009,
+        "log_dir": os.environ.get("COVALENT_LOGDIR")
+        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
+    }
+
+
 def get_default_executor() -> dict:
     """
     Gets the executor based on whether Dask service is running.
@@ -144,31 +126,17 @@ def get_default_executor() -> dict:
     """
     from .config import get_config
 
-    return "local" if get_config(CMType.CLIENT, "sdk.no_cluster") else "dask"
-
-
-def get_default_config_path(type: CMType) -> str:
-    base = (
-        os.environ.get("COVALENT_CONFIG_DIR")
-        or os.environ.get("XDG_CONFIG_DIR")
-        or (os.environ.get("HOME") + "/.config")
-    )
-    filename = "/covalent/covalent.conf" if type == CMType.CLIENT else "/covalent/covalentd.conf"
-    return base + filename
+    return "local" if get_config("sdk.no_cluster") else "dask"
 
 
 # Default configuration settings
 @dataclass
-class DefaultClientConfig:
+class DefaultConfig:
     sdk: Dict = field(default_factory=get_default_sdk_config)
-    server: Dict = field(default_factory=get_default_server_config)
-
-
-@dataclass
-class DefaultServerConfig:
-    service: Dict = field(default_factory=get_default_service_config)
+    dispatcher: Dict = field(default_factory=get_default_dispatcher_config)
     dask: Dict = field(default_factory=get_default_dask_config)
     workflow_data: Dict = field(default_factory=get_default_workflow_data_config)
+    user_interface: Dict = field(default_factory=get_default_ui_config)
 
 
 @dataclass

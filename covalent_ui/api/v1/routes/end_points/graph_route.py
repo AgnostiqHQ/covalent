@@ -15,6 +15,7 @@
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
 # Relief from the License may be granted by purchasing a commercial license.
 
 """Graph Route"""
@@ -26,7 +27,7 @@ from sqlalchemy.orm import Session
 
 from covalent_ui.api.v1.data_layer.graph_dal import Graph
 from covalent_ui.api.v1.database.config.db import engine
-from covalent_ui.api.v1.models.lattices_model import GraphResponse
+from covalent_ui.api.v1.models.graph_model import GraphResponse
 
 routes: APIRouter = APIRouter()
 

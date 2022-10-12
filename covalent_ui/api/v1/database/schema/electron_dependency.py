@@ -20,25 +20,9 @@
 
 """Electron dependency schema"""
 
-import enum
-
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, func
 
 from covalent_ui.api.v1.database.config.db import Base
-
-
-class ParameterTypeEnum(enum.Enum):
-    """Parameter Type Of Enum
-
-    Attributes:
-        arg: Arguments
-        kwarg: keywords
-        null: null value
-    """
-
-    arg = 1
-    kwarg = 2
-    NULL = 3
 
 
 class ElectronDependency(Base):

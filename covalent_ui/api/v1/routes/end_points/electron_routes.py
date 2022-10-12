@@ -15,6 +15,7 @@
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
 # Relief from the License may be granted by purchasing a commercial license.
 
 """Electrons Route"""
@@ -27,9 +28,9 @@ from sqlalchemy.orm import Session
 from covalent._results_manager.results_manager import get_result
 from covalent_ui.api.v1.data_layer.electron_dal import Electrons
 from covalent_ui.api.v1.database.config.db import engine
-from covalent_ui.api.v1.models.electrons_model import FileOutput
-from covalent_ui.api.v1.models.lattices_model import (
+from covalent_ui.api.v1.models.electrons_model import (
     ElectronExecutorResponse,
+    ElectronFileOutput,
     ElectronFileResponse,
     ElectronResponse,
 )
@@ -78,9 +79,18 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
 
 
 def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
+    """
+    Get Electron Inputs
+    Args:
+        dispatch_id: Dispatch id of lattice/sublattice
+        electron_id: Transport graph node id of a electron
+    Returns:
+        Returns the inputs data from Result object
+    """
     from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
 
     result_object = get_result(dispatch_id=str(dispatch_id), wait=False)
+
     with Session(engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
@@ -91,11 +101,22 @@ def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
 
 
 @routes.get("/{dispatch_id}/electron/{electron_id}/details/{name}")
-def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: FileOutput):
-
+def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFileOutput):
+    """
+    Get Electron details
+    Args:
+        dispatch_id: Dispatch id of lattice/sublattice
+        electron_id: Transport graph node id of a electron
+        name: refers file type, like inputs, function_string, function, executor, result, value, key,
+        stdout, deps, call_before, call_after, error, info
+    Returns:
+        Returns electron details based on the given name
+    """
     if name == "inputs":
-        response = get_electron_inputs(dispatch_id=dispatch_id, electron_id=electron_id)
-        return ElectronFileResponse(data=response)
+        response, python_object = get_electron_inputs(
+            dispatch_id=dispatch_id, electron_id=electron_id
+        )
+        return ElectronFileResponse(data=str(response), python_object=str(python_object))
     with Session(engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
@@ -105,8 +126,8 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: FileOutput
                 response = handler.read_from_text(result["function_string_filename"])
                 return ElectronFileResponse(data=response)
             elif name == "function":
-                response = handler.read_from_pickle(result["function_filename"])
-                return ElectronFileResponse(data=response)
+                response, python_object = handler.read_from_pickle(result["function_filename"])
+                return ElectronFileResponse(data=response, python_object=python_object)
             elif name == "executor":
                 executor_name = result["executor"]
                 executor_data = handler.read_from_pickle(result["executor_data_filename"])
@@ -114,14 +135,11 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: FileOutput
                     executor_name=executor_name, executor_details=executor_data
                 )
             elif name == "result":
-                response = handler.read_from_pickle(result["results_filename"])
-                return ElectronFileResponse(data=str(response))
+                response, python_object = handler.read_from_pickle(result["results_filename"])
+                return ElectronFileResponse(data=str(response), python_object=python_object)
             elif name == "value":
                 response = handler.read_from_pickle(result["value_filename"])
-                return ElectronFileResponse(data=response)
-            elif name == "key":
-                response = handler.read_from_pickle(result["key_filename"])
-                return ElectronFileResponse(data=response)
+                return ElectronFileResponse(data=str(response))
             elif name == "stdout":
                 response = handler.read_from_text(result["stdout_filename"])
                 return ElectronFileResponse(data=response)

@@ -1,135 +1,201 @@
 [
   {
-    "name": "Ubuntu 18.04 / Python 3.8 / Dask",
+    "name": "Debian 10 / Python 3.8 / Dask",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu18-py38:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian10-py38:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
   {
-    "name": "Ubuntu 18.04 / Python 3.8 / Local",
+    "name": "Debian 10 / Python 3.8 / Local",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu18-py38:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian10-py38:latest",
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
   {
-    "name": "Ubuntu 18.04 / Python 3.9 / Dask",
+    "name": "Debian 10 / Python 3.9 / Dask",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu18-py39:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian10-py39:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
   {
-    "name": "Ubuntu 18.04 / Python 3.9 / Local",
+    "name": "Debian 10 / Python 3.9 / Local",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu18-py39:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian10-py39:latest",
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
   {
-    "name": "Ubuntu 18.04 / Python 3.10 / Dask",
+    "name": "Debian 10 / Python 3.10 / Dask",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu18-py310:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian10-py310:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
   {
-    "name": "Ubuntu 18.04 / Python 3.10 / Local",
+    "name": "Debian 10 / Python 3.10 / Local",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu18-py310:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian10-py310:latest",
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
   {
-    "name": "Ubuntu 20.04 / Python 3.8 / Dask",
+    "name": "Debian 11 / Python 3.8 / Dask",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu20-py38:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian11-py38:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": [
+      "push",
       "pull_request",
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
   {
-    "name": "Ubuntu 20.04 / Python 3.8 / Local",
+    "name": "Debian 11 / Python 3.8 / Local",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu20-py38:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian11-py38:latest",
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "pull_request",
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
   {
-    "name": "Ubuntu 20.04 / Python 3.9 / Dask",
+    "name": "Debian 11 / Python 3.9 / Dask",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu20-py39:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian11-py39:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
   {
-    "name": "Ubuntu 20.04 / Python 3.9 / Local",
+    "name": "Debian 11 / Python 3.9 / Local",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu20-py39:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian11-py39:latest",
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
   {
-    "name": "Ubuntu 20.04 / Python 3.10 / Dask",
+    "name": "Debian 11 / Python 3.10 / Dask",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu20-py310:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian11-py310:latest",
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
   {
-    "name": "Ubuntu 20.04 / Python 3.10 / Local",
+    "name": "Debian 11 / Python 3.10 / Local",
     "os": "ubuntu-latest",
-    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu20-py310:latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian11-py310:latest",
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "Debian 11 / Python 3.11 / Dask",
+    "os": "ubuntu-latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian11-py311:latest",
+    "backend": "dask",
+    "experimental": true,
+    "trigger": [
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "Debian 11 / Python 3.11 / Local",
+    "os": "ubuntu-latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/debian11-py311:latest",
+    "backend": "local",
+    "experimental": true,
+    "trigger": [
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "Ubuntu 22.04 / Python 3.8 / Dask",
+    "os": "ubuntu-latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu22-py38:latest",
+    "backend": "dask",
+    "experimental": false,
+    "trigger": [
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "Ubuntu 22.04 / Python 3.8 / Local",
+    "os": "ubuntu-latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu22-py38:latest",
+    "backend": "local",
+    "experimental": false,
+    "trigger": [
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "Ubuntu 22.04 / Python 3.9 / Dask",
+    "os": "ubuntu-latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu22-py39:latest",
+    "backend": "dask",
+    "experimental": false,
+    "trigger": [
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "Ubuntu 22.04 / Python 3.9 / Local",
+    "os": "ubuntu-latest",
+    "container": "ghcr.io/agnostiqhq/covalent-dev/ubuntu22-py39:latest",
+    "backend": "local",
+    "experimental": false,
+    "trigger": [
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -143,7 +209,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -157,7 +223,35 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "CentOS 7 / Python 3.9 / Dask",
+    "os": "ubuntu-latest",
+    "container": {
+      "image": "ghcr.io/agnostiqhq/covalent-dev/centos7-py39:latest",
+      "options": "--user root"
+    },
+    "backend": "dask",
+    "experimental": false,
+    "trigger": [
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
+  {
+    "name": "CentOS 7 / Python 3.9 / Local",
+    "os": "ubuntu-latest",
+    "container": {
+      "image": "ghcr.io/agnostiqhq/covalent-dev/centos7-py39:latest",
+      "options": "--user root"
+    },
+    "backend": "local",
+    "experimental": false,
+    "trigger": [
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -168,7 +262,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -179,7 +273,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -190,7 +284,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -201,7 +295,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -212,7 +306,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -223,7 +317,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -234,7 +328,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -245,7 +339,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -256,7 +350,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -267,7 +361,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -278,7 +372,7 @@
     "backend": "dask",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   },
@@ -289,7 +383,7 @@
     "backend": "local",
     "experimental": false,
     "trigger": [
-      "workflow_call",
+      "schedule",
       "workflow_dispatch"
     ]
   }
