@@ -53,12 +53,14 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
+# Domain: dispatcher
 # This is to be run out-of-process
 def _build_sublattice_graph(sub: Lattice, *args, **kwargs):
     sub.build_graph(*args, **kwargs)
     return sub.serialize_to_json()
 
 
+# Domain: runner
 def generate_node_result(
     node_id,
     start_time=None,
@@ -84,6 +86,60 @@ def generate_node_result(
     }
 
 
+# Domain: dispatcher
+def _get_abstract_task_inputs(node_id: int, node_name: str, result_object: Result) -> dict:
+    """Return placeholders for the required inputs for a task execution.
+
+    Args:
+        node_id: Node id of this task in the transport graph.
+        node_name: Name of the node.
+        result_object: Result object to be used to update and store execution related
+                       info including the results.
+
+    Returns: inputs: Input dictionary to be passed to the task with
+        `node_id` placeholders for args, kwargs. These are to be
+        resolved to their values later.
+    """
+
+    abstract_task_input = {"args": [], "kwargs": {}}
+
+    for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
+
+        edge_data = result_object.lattice.transport_graph.get_edge_data(parent, node_id)
+        # value = result_object.lattice.transport_graph.get_node_value(parent, "output")
+
+        for e_key, d in edge_data.items():
+            if not d.get("wait_for"):
+                if d["param_type"] == "arg":
+                    abstract_task_input["args"].append((parent, d["arg_index"]))
+                elif d["param_type"] == "kwarg":
+                    key = d["edge_name"]
+                    abstract_task_input["kwargs"][key] = parent
+
+    sorted_args = sorted(abstract_task_input["args"], key=lambda x: x[1])
+    abstract_task_input["args"] = [x[0] for x in sorted_args]
+
+    return abstract_task_input
+
+
+# Domain: runner
+# to be called by _run_abstract_task
+def _get_task_input_values(result_object: Result, abs_task_inputs: dict) -> dict:
+    node_values = {}
+    args = abs_task_inputs["args"]
+    for node_id in args:
+        value = result_object.lattice.transport_graph.get_node_value(node_id, "output")
+        node_values[node_id] = value
+
+    kwargs = abs_task_inputs["kwargs"]
+    for key, node_id in kwargs.items():
+        value = result_object.lattice.transport_graph.get_node_value(node_id, "output")
+        node_values[node_id] = value
+
+    return node_values
+
+
+# Domain: runner
 def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dict:
     """
     Return the required inputs for a task execution.
@@ -101,27 +157,59 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
                 and any parent node execution results if present.
     """
 
-    task_input = {"args": [], "kwargs": {}}
+    abstract_inputs = _get_abstract_task_inputs(node_id, node_name, result_object)
+    input_values = _get_task_input_values(result_object, abstract_inputs)
 
-    for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
-
-        edge_data = result_object.lattice.transport_graph.get_edge_data(parent, node_id)
-        value = result_object.lattice.transport_graph.get_node_value(parent, "output")
-
-        for e_key, d in edge_data.items():
-            if not d.get("wait_for"):
-                if d["param_type"] == "arg":
-                    task_input["args"].append((value, d["arg_index"]))
-                elif d["param_type"] == "kwarg":
-                    key = d["edge_name"]
-                    task_input["kwargs"][key] = value
-
-    sorted_args = sorted(task_input["args"], key=lambda x: x[1])
-    task_input["args"] = [x[0] for x in sorted_args]
+    abstract_args = abstract_inputs["args"]
+    abstract_kwargs = abstract_inputs["kwargs"]
+    args = [input_values[node_id] for node_id in abstract_args]
+    kwargs = {k: input_values[v] for k, v in abstract_kwargs.items()}
+    task_input = {"args": args, "kwargs": kwargs}
 
     return task_input
 
 
+# Domain: runner
+async def _run_abstract_task(
+    result_object: Result,
+    node_id: int,
+    node_name: str,
+    abstract_inputs: Dict,
+    selected_executor: Any,
+    workflow_executor: Any,
+) -> None:
+
+    # Resolve abstract task and inputs to their concrete (serialized) values
+    serialized_callable = result_object.lattice.transport_graph.get_node_value(node_id, "function")
+    input_values = _get_task_input_values(result_object, abstract_inputs)
+
+    abstract_args = abstract_inputs["args"]
+    abstract_kwargs = abstract_inputs["kwargs"]
+    args = [input_values[node_id] for node_id in abstract_args]
+    kwargs = {k: input_values[v] for k, v in abstract_kwargs.items()}
+    task_input = {"args": args, "kwargs": kwargs}
+
+    try:
+        call_before, call_after = _gather_deps(result_object, node_id)
+
+    except Exception as ex:
+        app_log.error(f"Exception when trying to collect deps: {ex}")
+        raise ex
+
+    return await _run_task(
+        result_object=result_object,
+        node_id=node_id,
+        serialized_callable=serialized_callable,
+        selected_executor=selected_executor,
+        node_name=node_name,
+        call_before=call_before,
+        call_after=call_after,
+        inputs=task_input,
+        workflow_executor=workflow_executor,
+    )
+
+
+# Domain: dispatcher
 # This is to be run out-of-process
 def _post_process(lattice: Lattice, node_outputs: Dict) -> Any:
     """
@@ -165,6 +253,7 @@ def _post_process(lattice: Lattice, node_outputs: Dict) -> Any:
         return result
 
 
+# Domain: dispatcher
 async def _dispatch_sync_sublattice(
     parent_result_object: Result,
     parent_electron_id: int,
@@ -218,6 +307,7 @@ async def _dispatch_sync_sublattice(
     return await run_workflow(sub_result_object)
 
 
+# Domain: runner
 async def _run_task(
     result_object: Result,
     node_id: int,
@@ -341,6 +431,7 @@ async def _run_task(
     return node_result
 
 
+# Domain: runner
 def _gather_deps(result_object: Result, node_id: int) -> Tuple[List, List]:
     """Assemble deps for a node into the final call_before and call_after"""
 
@@ -382,6 +473,7 @@ def _gather_deps(result_object: Result, node_id: int) -> Tuple[List, List]:
     return call_before, call_after
 
 
+# Domain: dispatcher
 async def _handle_completed_node(result_object, node_id, pending_deps):
     g = result_object.lattice.transport_graph._graph
 
@@ -397,6 +489,7 @@ async def _handle_completed_node(result_object, node_id, pending_deps):
     return ready_nodes
 
 
+# Domain: dispatcher
 async def _handle_failed_node(result_object, node_id):
     result_object._status = Result.FAILED
     result_object._end_time = datetime.now(timezone.utc)
@@ -406,6 +499,7 @@ async def _handle_failed_node(result_object, node_id):
     await result_webhook.send_update(result_object)
 
 
+# Domain: dispatcher
 async def _handle_cancelled_node(result_object, node_id):
     result_object._status = Result.CANCELLED
     result_object._end_time = datetime.now(timezone.utc)
@@ -414,6 +508,7 @@ async def _handle_cancelled_node(result_object, node_id):
     await result_webhook.send_update(result_object)
 
 
+# Domain: result
 async def _update_node_result(result_object, node_result, pending_deps, status_queue):
     app_log.warning("Updating node result (run_planned_workflow).")
     update._node(result_object, **node_result)
@@ -423,6 +518,7 @@ async def _update_node_result(result_object, node_result, pending_deps, status_q
     await status_queue.put((node_id, node_status))
 
 
+# Domain: runner
 async def _run_task_and_update(run_task_callable, result_object, pending_deps, status_queue):
     node_result = await run_task_callable()
 
@@ -432,6 +528,7 @@ async def _run_task_and_update(run_task_callable, result_object, pending_deps, s
     return node_result
 
 
+# Domain: dispatcher
 async def _initialize_deps_and_queue(result_object: Result) -> int:
     """Initialize the data structures controlling when tasks are queued for execution.
 
@@ -453,6 +550,7 @@ async def _initialize_deps_and_queue(result_object: Result) -> int:
     return num_tasks, ready_nodes, pending_deps
 
 
+# Domain: dispatcher
 async def _postprocess_workflow(result_object: Result) -> Result:
     """
     Postprocesses a workflow with a completed computational graph
@@ -543,6 +641,7 @@ async def _postprocess_workflow(result_object: Result) -> Result:
     return result_object
 
 
+# Domain: dispatcher
 async def _submit_task(result_object, node_id, pending_deps, status_queue, task_futures):
 
     # Get name of the node for the current task
@@ -575,12 +674,10 @@ async def _submit_task(result_object, node_id, pending_deps, status_queue, task_
 
         # Gather inputs and dispatch task
         app_log.debug(f"Gathering inputs for task {node_id} (run_planned_workflow).")
-        task_input = _get_task_inputs(node_id, node_name, result_object)
+
+        abs_task_input = _get_abstract_task_inputs(node_id, node_name, result_object)
 
         start_time = datetime.now(timezone.utc)
-        serialized_callable = result_object.lattice.transport_graph.get_node_value(
-            node_id, "function"
-        )
 
         selected_executor = result_object.lattice.transport_graph.get_node_value(
             node_id, "metadata"
@@ -591,12 +688,6 @@ async def _submit_task(result_object, node_id, pending_deps, status_queue, task_
         )["executor_data"]
 
         app_log.debug(f"Collecting deps for task {node_id}")
-        try:
-            call_before, call_after = _gather_deps(result_object, node_id)
-
-        except Exception as ex:
-            app_log.error(f"Exception when trying to collect deps: {ex}")
-            raise ex
 
         node_result = generate_node_result(
             node_id=node_id,
@@ -604,20 +695,17 @@ async def _submit_task(result_object, node_id, pending_deps, status_queue, task_
             status=Result.RUNNING,
         )
         await _update_node_result(result_object, node_result, pending_deps, status_queue)
-        app_log.debug("7: Updating nodes after deps (run_planned_workflow)")
+        app_log.debug(f"7: Marking node {node_id} as running (_submit_task)")
 
         app_log.debug(f"Submitting task {node_id} to executor")
 
         run_task_callable = partial(
-            _run_task,
+            _run_abstract_task,
             result_object=result_object,
             node_id=node_id,
-            serialized_callable=serialized_callable,
             selected_executor=[selected_executor, selected_executor_data],
             node_name=node_name,
-            call_before=call_before,
-            call_after=call_after,
-            inputs=task_input,
+            abstract_inputs=abs_task_input,
             workflow_executor=post_processor,
         )
 
@@ -634,6 +722,7 @@ async def _submit_task(result_object, node_id, pending_deps, status_queue, task_
         task_futures.append(future)
 
 
+# Domain: dispatcher
 async def _run_planned_workflow(result_object: Result, status_queue: Queue = None) -> Result:
     """
     Run the workflow in the topological order of their position on the
