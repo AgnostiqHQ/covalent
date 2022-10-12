@@ -20,11 +20,13 @@
 
 """Graph request and response model"""
 
+from typing import Union
+
 from pydantic import BaseModel
 
 
 class GraphResponse(BaseModel):
     """Graph Response Model"""
 
-    dispatch_id: str = None
-    graph: dict = None
+    dispatch_id: Union[str, None] = None
+    graph: Union[dict, None] = None

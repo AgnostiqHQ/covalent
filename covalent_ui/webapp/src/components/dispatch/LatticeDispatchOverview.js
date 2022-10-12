@@ -19,7 +19,14 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
-import { Divider, Paper, Tooltip, Typography, Skeleton } from '@mui/material'
+import {
+  Divider,
+  Paper,
+  Tooltip,
+  Typography,
+  Skeleton,
+  Grid,
+} from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import React, { useEffect } from 'react'
 import { formatDate, truncateMiddle } from '../../utils/misc'
@@ -107,10 +114,9 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       <Heading>Runtime</Heading>
       {isFetching ? (
         <Skeleton />
-      ) :
-        (
-          <Runtime startTime={result?.started_at} endTime={result?.ended_at} />
-        )}
+      ) : (
+        <Runtime startTime={result?.started_at} endTime={result?.ended_at} />
+      )}
 
       {/* Directory */}
       <Heading>Directory</Heading>
@@ -118,31 +124,40 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
         <Skeleton />
       ) : (
         <Typography
-          sx={{ overflowWrap: 'anywhere', fontSize: 'body2.fontSize' }}
+          sx={{
+            overflowWrap: 'anywhere',
+            fontSize: 'body2.fontSize',
+            display: 'flex',
+            alignItems: 'center',
+          }}
         >
           <Tooltip title={result?.directory} enterDelay={500}>
-            <span>{truncateMiddle(result?.directory, 15, 20)}</span>
+            <span>{truncateMiddle(result?.directory, 15, 18)}</span>
           </Tooltip>
-          <CopyButton
-            isBorderPresent
-            content={result?.directory}
-            size="small"
-            title="Copy results directory"
-          />
+          <Grid sx={{ ml: '8px' }}>
+            <CopyButton
+              isBorderPresent
+              content={result?.directory}
+              size="small"
+              title="Copy results directory"
+            />
+          </Grid>
         </Typography>
       )}
 
       {/* Input */}
       {Object.keys(drawerInput).length !== 0 && (
         <InputSection
+          sx={(theme) => ({
+            bgcolor: theme.palette.background.outRunBg,
+            cursor: 'pointer',
+          })}
           isFetching={
             drawerInputListFetching && Object.keys(drawerInput).length === 0
           }
-          sx={() => ({ cursor: 'pointer' })}
           inputs={drawerInput}
         />
       )}
-
 
       {/* Result */}
       {Object.keys(drawerResult).length !== 0 && result.status === 'COMPLETED' && (
@@ -151,7 +166,10 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
             isFetching={
               drawerResultListFetching && Object.keys(drawerResult).length === 0
             }
-            sx={() => ({ cursor: 'pointer' })}
+            sx={(theme) => ({
+              bgcolor: theme.palette.background.outRunBg,
+              cursor: 'pointer',
+            })}
             results={drawerResult}
           />
         </>
@@ -160,6 +178,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       {/* Executor */}
       {Object.keys(drawerExecutorDetail).length !== 0 && (
         <ExecutorSection
+          sx={(theme) => ({ bgcolor: theme.palette.background.outRunBg })}
           isFetching={
             Object.keys(drawerExecutorDetail).length === 0 &&
             drawerExecutorDetailListFetching
@@ -175,10 +194,13 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       <Heading />
 
       {Object.keys(drawerFunctionString).length === 0 &&
-        drawerFunctionStringListFetching ? (
+      drawerFunctionStringListFetching ? (
         <Skeleton height={100} />
       ) : (
-        <Paper elevation={0}>
+        <Paper
+          elevation={0}
+          sx={(theme) => ({ bgcolor: theme.palette.background.outRunBg })}
+        >
           <SyntaxHighlighter src={drawerFunctionString.data} />
         </Paper>
       )}
