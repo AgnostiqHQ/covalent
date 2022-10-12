@@ -68,11 +68,12 @@ async def _dispatch_sync_sublattice(
         short_name, object_dict = workflow_executor
 
         if short_name == "client":
+            app_log.error("No executor selected for dispatching sublattices")
             raise RuntimeError("No executor selected for dispatching sublattices")
 
     except Exception as ex:
         app_log.debug(f"Exception when trying to determine sublattice executor: {ex}")
-        raise ex
+        return None
 
     sub_dispatch_inputs = {"args": [serialized_callable], "kwargs": inputs["kwargs"]}
     for arg in inputs["args"]:
@@ -96,14 +97,17 @@ async def _dispatch_sync_sublattice(
     )
 
     res = await fut
-    json_sublattice = json.loads(res["output"].json)
+    if res["status"] == Result.COMPLETED:
+        json_sublattice = json.loads(res["output"].json)
 
-    sub_result_object = resultsvc.initialize_result_object(
-        json_sublattice, parent_result_object, parent_electron_id
-    )
-    app_log.debug(f"Sublattice dispatch id: {sub_result_object.dispatch_id}")
+        sub_result_object = resultsvc.initialize_result_object(
+            json_sublattice, parent_result_object, parent_electron_id
+        )
+        app_log.debug(f"Sublattice dispatch id: {sub_result_object.dispatch_id}")
 
-    return await run_workflow(sub_result_object)
+        return await run_workflow(sub_result_object)
+    else:
+        return None
 
 
 # Domain: dispatcher

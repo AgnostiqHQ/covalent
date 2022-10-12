@@ -285,31 +285,23 @@ async def test_dispatch_sync_sublattice(test_db, mocker):
 
     # Check handling of invalid workflow executors
 
-    try:
-        sub_result = await _dispatch_sync_sublattice(
-            parent_result_object=result_object,
-            parent_electron_id=1,
-            inputs=inputs,
-            serialized_callable=serialized_callable,
-            workflow_executor=["client", {}],
-        )
-        assert False
+    sub_result = await _dispatch_sync_sublattice(
+        parent_result_object=result_object,
+        parent_electron_id=1,
+        inputs=inputs,
+        serialized_callable=serialized_callable,
+        workflow_executor=["client", {}],
+    )
+    assert sub_result is None
 
-    except RuntimeError:
-        pass
-
-    try:
-        sub_result = await _dispatch_sync_sublattice(
-            parent_result_object=result_object,
-            parent_electron_id=1,
-            inputs=inputs,
-            serialized_callable=serialized_callable,
-            workflow_executor=["fake_executor", {}],
-        )
-        assert False
-
-    except ValueError:
-        pass
+    sub_result = await _dispatch_sync_sublattice(
+        parent_result_object=result_object,
+        parent_electron_id=1,
+        inputs=inputs,
+        serialized_callable=serialized_callable,
+        workflow_executor=["fake_executor", {}],
+    )
+    assert sub_result is None
 
 
 @pytest.mark.asyncio

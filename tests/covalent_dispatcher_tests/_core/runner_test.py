@@ -25,10 +25,12 @@ Tests for the core functionality of the runner.
 
 from typing import Dict, List
 
+import pytest
+
 import covalent as ct
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
-from covalent_dispatcher._core.runner import _gather_deps, _get_task_inputs
+from covalent_dispatcher._core.runner import _gather_deps, _get_task_inputs, _run_task
 
 TEST_RESULTS_DIR = "/tmp/results"
 
@@ -185,3 +187,29 @@ def test_gather_deps():
     before, after = _gather_deps(result_object, 0)
     assert len(before) == 1
     assert len(after) == 1
+
+
+@pytest.mark.asyncio
+async def test_run_task_executor_exception_handling(mocker):
+    """Test that exceptions from initializing executors are caught"""
+
+    result_object = get_mock_result()
+    inputs = {"args": [], "kwargs": {}}
+    mock_get_executor = mocker.patch(
+        "covalent_dispatcher._core.runner._executor_manager.get_executor",
+        side_effect=Exception(),
+    )
+
+    node_result = await _run_task(
+        result_object=result_object,
+        node_id=1,
+        inputs=inputs,
+        serialized_callable=None,
+        selected_executor=["nonexistent", {}],
+        call_before=[],
+        call_after=[],
+        node_name="test_node",
+        workflow_executor=["local", {}],
+    )
+
+    assert node_result["status"] == Result.FAILED

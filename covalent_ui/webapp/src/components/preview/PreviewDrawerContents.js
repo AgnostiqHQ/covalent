@@ -108,16 +108,27 @@ const LatticePreviewOverview = ({ preview }) => {
       )}
 
       {/* Input */}
-      <InputSection preview inputs={_.get(preview, 'lattice.inputs')} />
+      <InputSection
+        preview
+        inputs={_.get(preview, 'lattice.inputs')}
+        sx={(theme) => ({ bgcolor: theme.palette.background.outRunBg })}
+      />
 
       {/* Executor */}
-      <ExecutorSection preview metadata={_.get(preview, 'lattice.metadata')} />
+      <ExecutorSection
+        sx={(theme) => ({ bgcolor: theme.palette.background.outRunBg })}
+        preview
+        metadata={_.get(preview, 'lattice.metadata')}
+      />
 
       <Divider sx={{ my: 3 }} />
 
       {/* Source */}
       <Heading />
-      <Paper elevation={0}>
+      <Paper
+        elevation={0}
+        sx={(theme) => ({ bgcolor: theme.palette.background.outRunBg })}
+      >
         <SyntaxHighlighter src={src} />
       </Paper>
     </>

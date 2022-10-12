@@ -172,8 +172,14 @@ async def _run_task(
         executor = _executor_manager.get_executor(short_name)
         executor.from_dict(object_dict)
     except Exception as ex:
-        app_log.debug(f"Exception when trying to determine executor: {ex}")
-        raise ex
+        app_log.debug(f"Exception when trying to instantiate executor: {ex}")
+        node_result = resultsvc.generate_node_result(
+            node_id=node_id,
+            end_time=datetime.now(timezone.utc),
+            status=Result.FAILED,
+            error="".join(traceback.TracebackException.from_exception(ex).format()),
+        )
+        return node_result
 
     # run the task on the executor and register any failures
     try:
