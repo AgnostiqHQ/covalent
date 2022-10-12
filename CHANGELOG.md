@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Ability to use terminal on the GUI.
 
+### Fixed
+
+- Exceptions when instantiating executors are handled
+
 ## [0.202.0] - 2022-10-11
 
 ### Authors
