@@ -34,13 +34,7 @@ from typing import Any, Dict, List, Tuple
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.context_managers import active_lattice_manager
-from covalent._shared_files.defaults import (
-    electron_dict_prefix,
-    electron_list_prefix,
-    parameter_prefix,
-    prefix_separator,
-    sublattice_prefix,
-)
+from covalent._shared_files.defaults import parameter_prefix, prefix_separator, sublattice_prefix
 from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
@@ -107,42 +101,23 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
                 and any parent node execution results if present.
     """
 
-    if node_name.startswith(electron_list_prefix):
-        values = [
-            result_object.lattice.transport_graph.get_node_value(parent, "output")
-            for parent in result_object.lattice.transport_graph.get_dependencies(node_id)
-        ]
-        task_input = {"args": [], "kwargs": {"x": TransportableObject.make_transportable(values)}}
-    elif node_name.startswith(electron_dict_prefix):
-        values = {}
-        for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
+    task_input = {"args": [], "kwargs": {}}
 
-            edge_data = result_object.lattice.transport_graph.get_edge_data(parent, node_id)
+    for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
 
-            value = result_object.lattice.transport_graph.get_node_value(parent, "output")
-            for e_key, d in edge_data.items():
-                key = d["edge_name"]
-                values[key] = value
+        edge_data = result_object.lattice.transport_graph.get_edge_data(parent, node_id)
+        value = result_object.lattice.transport_graph.get_node_value(parent, "output")
 
-        task_input = {"args": [], "kwargs": {"x": TransportableObject.make_transportable(values)}}
-    else:
-        task_input = {"args": [], "kwargs": {}}
+        for e_key, d in edge_data.items():
+            if not d.get("wait_for"):
+                if d["param_type"] == "arg":
+                    task_input["args"].append((value, d["arg_index"]))
+                elif d["param_type"] == "kwarg":
+                    key = d["edge_name"]
+                    task_input["kwargs"][key] = value
 
-        for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
-
-            edge_data = result_object.lattice.transport_graph.get_edge_data(parent, node_id)
-            value = result_object.lattice.transport_graph.get_node_value(parent, "output")
-
-            for e_key, d in edge_data.items():
-                if not d.get("wait_for"):
-                    if d["param_type"] == "arg":
-                        task_input["args"].append((value, d["arg_index"]))
-                    elif d["param_type"] == "kwarg":
-                        key = d["edge_name"]
-                        task_input["kwargs"][key] = value
-
-        sorted_args = sorted(task_input["args"], key=lambda x: x[1])
-        task_input["args"] = [x[0] for x in sorted_args]
+    sorted_args = sorted(task_input["args"], key=lambda x: x[1])
+    task_input["args"] = [x[0] for x in sorted_args]
 
     return task_input
 
