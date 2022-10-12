@@ -7,9 +7,153 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.202.0] - 2022-10-11
+
+### Authors
+
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Added
+
+- Ability to view sublattices list as part of the main lattice
+- Ability to view subalattices graph as part of main lattice
+
+
+### Fixed
+
+- Electron dependencies are no longer written twice to the DB during a workflow
+
+## [0.201.0] - 2022-10-09
+
+### Authors
+
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Aravind <100823292+Aravind-psiog@users.noreply.github.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Scott Wyman Neagle <wymnea@protonmail.com>
+
+
+### Docs
+
+- Added AWS Plugins RTD page
+
+### Fixed
+
+- Updated import statements in alembic `env.py` file to refer to updated location of `DataStore` class
+- Imports in entry_point
+
+### Docs
+
+- Fixed the docstring for `get_node_error`
+
+### Changed
+
+- move `upsert_lattice_data()` to dispatcher
+- move `upsert_electron_data()` to dispatcher
+- move `insert_electron_dependency_data()` to dispatcher
+- move `persist()` to dispatcher
+- move `get_unique_id()` to dispatcher
+- move `initialize_result_object()` to dispatcher
+
+### Removed
+
+- `get_node_value` from `Result`
+
+### Tests
+
+- Updated more functional tests
+
+## [0.200.0] - 2022-10-05
+
+### Authors
+
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Aravind <100823292+Aravind-psiog@users.noreply.github.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+
+
+## Docs
+
+- Updated ECS Executor RTD with config & cloud resources table
+
+### Added
+
+- Ability to view the configuration file on the GUI as settings
+- Ability to copy python objects for inputs and results for lattice and electrons
+
+### Fixed
+
+- Minor GUI bugs and improvements
+
+### Docs
+
+- Updated Lambda Executor RTD with config & cloud resources table
+- Updated EC2, Braket, and Batch AWS Executors RTD with config & cloud resources table
+
 ### Operations
 
-- Remove `benchmark` workflow from `nightly` schedule
+- Fixed syntax issues in `nightly.yml`
+- Add `repository` arg to checkout in `version`
+- fix `octokit` request action route, update env token
+- create stable versions for stable releases
+- add `fetch-depth: 0` to fetch entire history
+- fix regex for matching version
+- add `persist-credentials: false` in nightly
+- Update `nightly` schedule to midnight EST
+- Added CI for Ubuntu 22.04 / Python 3.8, 3.9
+- Added CI for Centos 7 / Python 3.9
+- Added experimental CI for Debian 11 / Python 3.11rc2
+- Renamed Ubuntu images to Debian for accuracy
+- Adding boilerplate workflow
+- Syntax fixes in release.yml
+- Verbose failure messages in boilerplate workflow
+- Change license.yml to pip-license-checker action
+
+## [0.199.0] - 2022-09-29
+
+### Authors
+
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Manjunath PV <manjunath.poilath@psiog.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: RaviPsiog <raviteja.gurram@psiog.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 
 ### Tests
 
@@ -65,6 +209,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Only the recommended platform is tested on pull requests
 - Update check blocks to assert the `workflow_call` event type is replaced with `schedule`
 - Create a hotfix when pushing to a release branch
+- Update nightly trigger to `hourly` for testing
+- Update `changelog` action token to `COVALENT_OPS_BOT_TOKEN`
+- Remove `benchmark` workflow from `nightly` schedule
+- Removed payload dependency from changelog action so it can run on a schedule
+- Remove `benchmark` workflow from `nightly` schedule
 
 ## [0.198.0] - 2022-09-14
 

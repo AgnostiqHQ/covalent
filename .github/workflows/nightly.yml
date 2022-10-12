@@ -53,9 +53,9 @@ jobs:
         id: query-tags
         uses: octokit/request-action@v2.x
         with:
-          route: GET /repos/{owner}/{repo}/tags
-          owner: AgnostiqHQ
-          repo: covalent
+          route: GET /repos/AgnostiqHQ/covalent/tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
 
       - name: Parse latest tag
         id: get-latest-tag
@@ -65,7 +65,10 @@ jobs:
           echo "::set-output name=tag::${latest_tag}"
 
       - name: Checkout default branch
-        uses: github/checkout@v3
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Push to master
         id: push
@@ -101,7 +104,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout master
-        uses: github/checkout@v3
+        uses: actions/checkout@v3
         with:
           ref: "master"
 

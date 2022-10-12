@@ -1,5 +1,27 @@
+/**
+ * Copyright 2021 Agnostiq Inc.
+ *
+ * This file is part of Covalent.
+ *
+ * Licensed under the GNU Affero General Public License 3.0 (the "License").
+ * A copy of the License may be obtained with this software package or at
+ *
+ *      https://www.gnu.org/licenses/agpl-3.0.en.html
+ *
+ * Use of this file is prohibited except in compliance with the License. Any
+ * modifications or derivative works of this file must retain this copyright
+ * notice, and modified files must contain a notice indicating that they have
+ * been altered from the originals.
+ *
+ * Covalent is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+ * FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+ *
+ * Relief from the License may be granted by purchasing a commercial license.
+ */
+
 import _ from 'lodash'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   Table,
@@ -26,6 +48,7 @@ import {
   Snackbar,
   SvgIcon,
   Pagination,
+  Tooltip,
 } from '@mui/material'
 import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
 import { useDebounce } from 'use-debounce'
@@ -36,7 +59,6 @@ import {
 } from '../../redux/logsSlice'
 import DownloadButton from '../common/DownloadButton'
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
-import CopyButton from '../common/CopyButton'
 import {
   logStatusIcon,
   logStatusLabel,
@@ -44,6 +66,7 @@ import {
   formatLogTime,
   statusColor,
 } from '../../utils/misc'
+import copy from 'copy-to-clipboard'
 
 const headers = [
   {
@@ -107,7 +130,7 @@ const ResultsTableHead = ({
   onSort,
   logListView,
   onDownload,
-  disableDownload
+  disableDownload,
 }) => {
   return (
     <TableHead sx={{ position: 'sticky', zIndex: 19 }}>
@@ -126,6 +149,11 @@ const ResultsTableHead = ({
                   active={orderBy === header.id}
                   direction={orderBy === header.id ? order : 'asc'}
                   onClick={() => onSort(header.id)}
+                  sx={{
+                    '.Mui-active': {
+                      color: (theme) => theme.palette.text.secondary,
+                    },
+                  }}
                 >
                   {header.label}
                 </TableSortLabel>
@@ -161,9 +189,9 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize text
   [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
-  {
-    fontSize: '1rem',
-  },
+    {
+      fontSize: '1rem',
+    },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
@@ -243,6 +271,8 @@ const LogsListing = () => {
   const [openSnackbar, setOpenSnackbar] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState(null)
   const [disableDownload, setDisableDownload] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const logsRef = useRef([])
   // reset store values to initial state when moved to another page
   useEffect(() => {
     return () => {
@@ -263,20 +293,20 @@ const LogsListing = () => {
       link.click()
       document.body.removeChild(link)
       dispatch(resetLogs())
-      setDisableDownload(false);
+      setDisableDownload(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [logFinalFile])
 
   const downloadLogFile = () => {
-    setDisableDownload(true);
+    setDisableDownload(true)
     dispatch(downloadCovalentLogFile()).then((action) => {
       if (action.type === downloadCovalentLogFile.rejected.type) {
         setOpenSnackbar(true)
         setSnackbarMessage(
           'Something went wrong and could not download the file!'
         )
-        setDisableDownload(false);
+        setDisableDownload(false)
       }
     })
   }
@@ -310,6 +340,7 @@ const LogsListing = () => {
     setSelected([])
     const offsetValue = pageValue === 1 ? 0 : pageValue * 70 - 70
     setOffset(offsetValue)
+    logsRef.current[0].scrollIntoView({ behavior: 'smooth', block: 'end' })
   }
 
   useEffect(() => {
@@ -372,6 +403,9 @@ const LogsListing = () => {
                 '@media (min-width: 1700px)': {
                   height: _.isEmpty(logListView) ? 50 : '66vh',
                 },
+                '@media (min-height: 900px)': {
+                  height: _.isEmpty(logListView) ? 50 : '72vh',
+                },
                 width: _.isEmpty(logListView) ? '40%' : null,
 
                 borderRadius:
@@ -394,71 +428,81 @@ const LogsListing = () => {
                 <TableBody>
                   {logListView &&
                     logListView.map((result, index) => (
-                      <TableRow hover key={index} sx={{ height: '50px' }}>
-                        <TableCell
-                          sx={{
-                            width: 180,
-                            verticalAlign: 'center',
-                            fontFamily: (theme) => theme.typography.logsFont,
+                      <Tooltip
+                        title={!copied ? 'Click to copy log message' : 'Copied'}
+                        data-testid="log"
+                        followCursor={true}
+                      >
+                        <TableRow
+                          ref={(el) => (logsRef.current[index] = el)}
+                          onClick={() => {
+                            copy(result.message)
+                            setCopied(true)
+                            setTimeout(() => setCopied(false), 1200)
                           }}
+                          hover
+                          key={index}
                         >
-                          <Grid
+                          <TableCell
                             sx={{
-                              fontSize: '12px',
-                            }}
-                          >
-                            {formatLogTime(result.logDate)}
-                          </Grid>
-                          <Grid
-                            sx={{
-                              color: (theme) => theme.palette.text.tertiary,
-                              fontSize: '10px',
-                            }}
-                          >
-                            {formatLogDate(result.logDate)}
-                          </Grid>
-                        </TableCell>
-                        <TableCell
-                          style={{ width: 180, verticalAlign: 'center' }}
-                        >
-                          <Box
-                            sx={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              fontSize: '14px',
-                              color: statusColor(result.status),
-                            }}
-                          >
-                            {logStatusIcon(result.status)}
-                            &nbsp;
-                            {logStatusLabel(result.status)}
-                          </Box>
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            color: (theme) => theme.palette.primary.white,
-                            whiteSpace: 'pre-wrap',
-                          }}
-                        >
-                          <Typography
-                            sx={{
-                              fontSize: '12px',
+                              width: 180,
+                              verticalAlign: 'top',
                               fontFamily: (theme) => theme.typography.logsFont,
                             }}
                           >
-                            {result.message}
-                          </Typography>
-                        </TableCell>
-                        <TableCell sx={{ width: '15px' }}>
-                          <CopyButton
-                            data-testid="copyMessage"
-                            content={result.message}
-                            size="small"
-                            title="Copy message"
-                            isBorderPresent
-                          />
-                        </TableCell>
-                      </TableRow>
+                            <Grid
+                              sx={{
+                                fontSize: '12px',
+                              }}
+                            >
+                              {formatLogTime(result.logDate)}
+                            </Grid>
+                            <Grid
+                              sx={{
+                                color: (theme) => theme.palette.text.tertiary,
+                                fontSize: '10px',
+                              }}
+                            >
+                              {formatLogDate(result.logDate)}
+                            </Grid>
+                          </TableCell>
+                          <TableCell
+                            style={{ width: 180, verticalAlign: 'top' }}
+                          >
+                            <Box
+                              sx={{
+                                display: 'flex',
+                                alignItems: 'top',
+                                fontSize: '14px',
+                                color: statusColor(result.status),
+                              }}
+                            >
+                              {logStatusIcon(result.status)}
+                              &nbsp;
+                              {logStatusLabel(result.status)}
+                            </Box>
+                          </TableCell>
+
+                          <TableCell
+                            colSpan={2}
+                            sx={{
+                              verticalAlign: 'top',
+                              color: (theme) => theme.palette.primary.white,
+                              whiteSpace: 'pre-wrap',
+                            }}
+                          >
+                            <Typography
+                              sx={{
+                                fontSize: '12px',
+                                fontFamily: (theme) =>
+                                  theme.typography.logsFont,
+                              }}
+                            >
+                              {result.message}
+                            </Typography>
+                          </TableCell>
+                        </TableRow>
+                      </Tooltip>
                     ))}
                 </TableBody>
               </StyledTable>
@@ -526,9 +570,6 @@ const LogsListing = () => {
                     </TableCell>
                     <TableCell>
                       <Skeleton sx={{ my: 2 }} />
-                    </TableCell>
-                    <TableCell sx={{ width: '5%' }}>
-                      <Skeleton sx={{ my: 1, py: 2, px: 0.5 }} />
                     </TableCell>
                   </TableRow>
                 ))}

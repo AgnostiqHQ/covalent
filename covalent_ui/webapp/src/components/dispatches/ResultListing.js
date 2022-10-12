@@ -21,7 +21,7 @@
  */
 
 import _ from 'lodash'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useDebounce } from 'use-debounce'
 import {
@@ -246,17 +246,15 @@ const ResultsTableHead = ({
               All visible{' '}
             </MenuItem>
             {filterValue === 'ALL' ? (
-              <>
-                <MenuItem
-                  divider
-                  onClick={() => {
-                    handleAllDelete('ALL', allDispatches)
-                  }}
-                  onClose={handleClose}
-                >
-                  All
-                </MenuItem>
-              </>
+              <MenuItem
+                divider
+                onClick={() => {
+                  handleAllDelete('ALL', allDispatches)
+                }}
+                onClose={handleClose}
+              >
+                All
+              </MenuItem>
             ) : null}
             {(filterValue === 'COMPLETED' || filterValue === 'ALL') &&
             completedDispatches !== 0 ? (
@@ -376,6 +374,7 @@ const ResultsTableToolbar = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            width: '12%',
           }}
         >
           {numSelected} selected
@@ -413,14 +412,7 @@ const ResultsTableToolbar = ({
         message="Are you sure about deleting"
         icon={DeleteNewIcon}
       />
-      <Grid
-        ml={2}
-        container
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        sx={{ width: '35%' }}
-      >
+      <Grid ml={2} container direction="row">
         <SortDispatch
           title="All"
           count={allDispatches}
@@ -582,6 +574,7 @@ const ResultListing = () => {
   const [openDialogBox, setOpenDialogBox] = useState(false)
   const [openDialogBoxAll, setOpenDialogBoxAll] = useState(false)
   const [anchorEl, setAnchorEl] = useState(null)
+  const resultsRef = useRef([])
 
   const isError = useSelector(
     (state) => state.dashboard.fetchDashboardList.error
@@ -690,6 +683,7 @@ const ResultListing = () => {
     setSelected([])
     const offsetValue = pageValue === 1 ? 0 : pageValue * 10 - 10
     setOffset(offsetValue)
+    resultsRef.current[0].scrollIntoView({ behavior: 'smooth', block: 'end' })
   }
 
   const handleChangeSelection = (dispatchId) => {
@@ -810,12 +804,15 @@ const ResultListing = () => {
           <Grid>
             <TableContainer
               sx={{
-                height: _.isEmpty(dashboardListView) ? 50 : 310,
+                height: _.isEmpty(dashboardListView) ? 50 : 350,
                 '@media (min-width: 1500px) and (min-height: 850px)': {
-                  height: _.isEmpty(dashboardListView) ? 50 : 450,
+                  height: _.isEmpty(dashboardListView) ? 50 : 485,
                 },
                 '@media (min-width: 1700px)': {
                   height: _.isEmpty(dashboardListView) ? 50 : '53vh',
+                },
+                '@media (min-height: 900px)': {
+                  height: _.isEmpty(dashboardListView) ? 50 : '62vh',
                 },
               }}
             >
@@ -852,7 +849,11 @@ const ResultListing = () => {
                 <TableBody sx={{ height: 'max-content' }}>
                   {dashboardListView &&
                     dashboardListView.map((result, index) => (
-                      <TableRow hover key={result.dispatchId}>
+                      <TableRow
+                        hover
+                        key={result.dispatchId}
+                        ref={(el) => (resultsRef.current[index] = el)}
+                      >
                         <TableCell padding="checkbox">
                           <Checkbox
                             disableRipple
@@ -886,7 +887,10 @@ const ResultListing = () => {
                         </TableCell>
 
                         <TableCell>
-                          <OverflowTip value={result.latticeName} />
+                          <OverflowTip
+                            value={result.latticeName}
+                            width="70px"
+                          />
                         </TableCell>
                         {result.status === 'RUNNING' ? (
                           <TableCell>
