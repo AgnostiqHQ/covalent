@@ -29,7 +29,7 @@ const Terminal = () => {
     useEffect(() => {
         if (socket) {
             return () => {
-                socket.emit('stop_terminal')
+                socket.disconnect()
             }
         }
 
