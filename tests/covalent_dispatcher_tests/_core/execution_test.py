@@ -254,12 +254,9 @@ def test_get_task_inputs():
     result_object = Result(lattice=list_workflow, results_dir="/tmp", dispatch_id="asdf")
     task_inputs = _get_task_inputs(1, tg.get_node_value(1, "name"), result_object)
 
-    expected_inputs = {"args": [], "kwargs": {"x": ct.TransportableObject(serialized_args)}}
+    expected_inputs = {"args": serialized_args, "kwargs": {}}
 
-    assert (
-        task_inputs["kwargs"]["x"].get_deserialized()
-        == expected_inputs["kwargs"]["x"].get_deserialized()
-    )
+    assert task_inputs == expected_inputs
 
     # dict-type inputs
 
@@ -272,12 +269,9 @@ def test_get_task_inputs():
 
     result_object = Result(lattice=dict_workflow, results_dir="/tmp", dispatch_id="asdf")
     task_inputs = _get_task_inputs(1, tg.get_node_value(1, "name"), result_object)
-    expected_inputs = {"args": [], "kwargs": {"x": ct.TransportableObject(serialized_args)}}
+    expected_inputs = {"args": [], "kwargs": serialized_args}
 
-    assert (
-        task_inputs["kwargs"]["x"].get_deserialized()
-        == expected_inputs["kwargs"]["x"].get_deserialized()
-    )
+    assert task_inputs == expected_inputs
 
     # Check arg order
     multivar_workflow.build_graph(1, 2)
