@@ -21,7 +21,6 @@
 
 # Ignore results folders
 results/**
-result_*
 
 # XML files
 *.xml
