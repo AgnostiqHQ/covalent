@@ -50,9 +50,9 @@ import {
   Snackbar,
   SvgIcon,
   Pagination,
-  Tooltip,
 } from '@mui/material'
 import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
+import ReactTooltip from "react-tooltip";
 import { useDebounce } from 'use-debounce'
 import {
   fetchLogsList
@@ -193,9 +193,9 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize text
   [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
-    {
-      fontSize: '1rem',
-    },
+  {
+    fontSize: '1rem',
+  },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
@@ -493,13 +493,9 @@ const LogsListing = () => {
                 <TableBody>
                   {logListView &&
                     stableSort(logListView, getComparator(sortOrder, sortColumn)).map((result, index) => (
-                      <Tooltip
-                        enterDelay={800}
-                        title={!copied ? 'Click to copy log message' : 'Copied'}
-                        data-testid="log"
-                        followCursor={true}
-                      >
+                      <>
                         <TableRow
+                          data-tip data-for="logRow"
                           ref={(el) => (logsRef.current[index] = el)}
                           onClick={() => {
                             copy(result.message)
@@ -566,7 +562,12 @@ const LogsListing = () => {
                             </Typography>
                           </TableCell>
                         </TableRow>
-                      </Tooltip>
+                        <ReactTooltip
+                          id="logRow" place="top" effect="float" arrowColor="#1C1C46" backgroundColor="#1C1C46" delayShow={300}
+                        >
+                          {!copied ? 'Click to copy log message' : 'Copied'}
+                        </ReactTooltip>
+                      </>
                     ))}
                 </TableBody>
               </StyledTable>

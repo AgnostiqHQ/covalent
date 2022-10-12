@@ -56,12 +56,6 @@ log_to_file = get_config("sdk.enable_logging").upper() == "TRUE"
 app = FastAPI()
 sio = socketio.AsyncServer(cors_allowed_origins="*", async_mode="asgi", logger=log_to_file)
 
-
-@sio.on("message")
-async def chat_message(sid, data):
-    await sio.emit("draw-request", "hi ")
-
-
 app.include_router(routes.routes)
 
 app.add_middleware(
@@ -90,6 +84,13 @@ async def read_and_forward_pty_output():
                 await sio.emit("pty-output", {"output": output})
 
 
+async def disconnect_terminal():
+    global terminal_subprocess
+    terminal_subprocess = False
+    os.killpg(child_process_id, signal.SIGKILL)
+    await sio.sleep(0.01)
+
+
 @sio.on("pty-input")
 def pty_input(sid, data):
     """write to the child pty. The pty sees this as if you are typing in a real
@@ -106,13 +107,13 @@ def resize(sid, data):
 
 
 @sio.on("start_terminal")
-async def chat_message(*args):
+async def on_start_start_terminal(*args):
     global terminal_subprocess
     terminal_subprocess = True
     global child_process_id
     (child_pid, fd) = pty.fork()
     if child_pid == 0:
-        subprocess.run(["bash"])
+        subprocess.run([os.environ.get("SHELL", "bash")])
     else:
         child_process_id = child_pid
         global file_descriptor
@@ -121,12 +122,10 @@ async def chat_message(*args):
         await sio.start_background_task(read_and_forward_pty_output)
 
 
-@sio.on("stop_terminal")
-async def stop_terminal(*args):
-    global terminal_subprocess
-    terminal_subprocess = False
-    os.killpg(child_process_id, signal.SIGKILL)
-    await sio.sleep(0.01)
+@sio.on("disconnect")
+async def disconnect(sid):
+    if file_descriptor is not None:
+        await disconnect_terminal()
 
 
 @app.exception_handler(RequestValidationError)
