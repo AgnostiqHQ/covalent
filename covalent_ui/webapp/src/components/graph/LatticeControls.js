@@ -20,25 +20,24 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
- import { useZoomPanHelper } from 'react-flow-renderer'
- import { ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material'
- import {
-   Add as PlusIcon,
-   ArrowBack,
-   ArrowDownward,
-   ArrowForward,
-   ArrowUpward,
-   Fullscreen,
-   LockOpenOutlined,
-   LockOutlined,
-   MapOutlined,
-   Remove as MinusIcon,
- } from '@mui/icons-material'
- import useFitViewHelper from './ReactFlowHooks'
+import { useZoomPanHelper } from 'react-flow-renderer'
+import { ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material'
+import {
+  Add as PlusIcon,
+  ArrowBack,
+  ArrowDownward,
+  ArrowForward,
+  ArrowUpward,
+  Fullscreen,
+  LockOpenOutlined,
+  LockOutlined,
+  MapOutlined,
+  Remove as MinusIcon,
+} from '@mui/icons-material'
+import useFitViewHelper from './ReactFlowHooks'
 
 
-
- const LatticeControls = ({
+const LatticeControls = ({
    marginLeft = 0,
    marginRight = 0,
    showParams,

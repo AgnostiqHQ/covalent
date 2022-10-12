@@ -15,6 +15,7 @@
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
 # Relief from the License may be granted by purchasing a commercial license.
 
 """Logs response model"""
@@ -47,7 +48,7 @@ class LogsRequest(BaseModel):
 class LogsModule(BaseModel):
     """Dispatch Modeule Validation"""
 
-    log_date: str = None
+    log_date: Union[str, None] = None
     status: str = "INFO"
     message: Optional[Union[str, None]]
 
@@ -56,7 +57,7 @@ class LogsResponse(BaseModel):
     """Dispatch Response Model"""
 
     items: List[LogsModule]
-    total_count: int
+    total_count: Union[int, None] = None
 
     class Config:
         """Configure example for openAPI"""

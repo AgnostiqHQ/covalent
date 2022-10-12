@@ -1,4 +1,4 @@
-# copyright 2021 Agnostiq Inc.
+# Copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -31,7 +31,6 @@ from functools import wraps
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
-from .._data_store import DataStoreSession
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
@@ -233,9 +232,6 @@ class Lattice:
                         "Please make sure you are not manipulating an object inside the lattice."
                     )
                     raise
-
-    def persist(self, ds: DataStoreSession, update: bool):
-        self.transport_graph.persist(ds, update)
 
     def draw(self, *args, **kwargs) -> None:
         """

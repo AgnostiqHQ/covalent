@@ -5,24 +5,272 @@
 
 .. image:: AWS_Batch.jpg
 
-With this executor, users can execute tasks (electrons) or entire lattices using the AWS Batch compute service.
-This executor plugin is well suited for compute/memory intensive tasks such as training machine learning models,
-hyperparameter optimization, deep learning etc. With this executor, the compute backend is the Amazon EC2 service,
-with instances optimized for compute and memory intensive operations.
 
-This executor plugin can be installed via pip as follows
+Covalent is a Pythonic workflow tool used to execute tasks on advanced computing hardware.
+
+This executor plugin interfaces Covalent with `AWS Batch <https://docs.aws.amazon.com/batch/>`_ which allows tasks in a covalent workflow to be executed as AWS batch jobs.
+
+Furthermore, this plugin is well suited for compute/memory intensive tasks such as training machine learning models, hyperparameter optimization, deep learning etc. With this executor, the compute backend is the Amazon EC2 service, with instances optimized for compute and memory intensive operations.
+
+
+===========================================
+1. Installation
+===========================================
+
+To use this plugin with Covalent, simply install it using :code:`pip`:
 
 .. code:: bash
 
-    pip install covalent-awsbatch-plugin==0.9.0rc0
+   pip install covalent-awsbatch-plugin
 
-Since this is a cloud executor, proper IAM credentials, permissions and roles must be configured prior to using this executor.
-This executor uses different AWS services (S3, ECR and Batch) to successfully run a task. To this end the IAM roles and policies must be
-configured so that the executor has the necessary permissions to interact with these.
 
-The following JSON policy document lists the necessary IAM permissions required by the executor
+===========================================
+2. Usage Example
+===========================================
 
-.. dropdown:: AWS Batch IAM policy
+This is an example of how a workflow can be adapted to utilize the AWS Batch Executor. Here we train a simple Support Vector Machine (SVM) model and use an existing AWS Batch Compute environment to run the :code:`train_svm` electron as a batch job. We also note we require :doc:`DepsPip <../../concepts/concepts>` to install the dependencies when creating the batch job.
+
+.. code-block:: python
+
+    from numpy.random import permutation
+    from sklearn import svm, datasets
+    import covalent as ct
+
+    deps_pip = ct.DepsPip(
+      packages=["numpy==1.23.2", "scikit-learn==1.1.2"]
+    )
+
+    executor = ct.executor.AWSBatchExecutor(
+        s3_bucket_name = "covalent-batch-qa-job-resources",
+        batch_job_definition_name = "covalent-batch-qa-job-definition",
+        batch_queue = "covalent-batch-qa-queue",
+        batch_execution_role_name = "ecsTaskExecutionRole",
+        batch_job_role_name = "covalent-batch-qa-job-role",
+        batch_job_log_group_name = "covalent-batch-qa-log-group",
+        vcpu = 2, # Number of vCPUs to allocate
+        memory = 3.75, # Memory in GB to allocate
+        time_limit = 300, # Time limit of job in seconds
+    )
+
+    # Use executor plugin to train our SVM model.
+    @ct.electron(
+        executor=executor,
+        deps_pip=deps_pip
+    )
+    def train_svm(data, C, gamma):
+        X, y = data
+        clf = svm.SVC(C=C, gamma=gamma)
+        clf.fit(X[90:], y[90:])
+        return clf
+
+    @ct.electron
+    def load_data():
+        iris = datasets.load_iris()
+        perm = permutation(iris.target.size)
+        iris.data = iris.data[perm]
+        iris.target = iris.target[perm]
+        return iris.data, iris.target
+
+    @ct.electron
+    def score_svm(data, clf):
+        X_test, y_test = data
+        return clf.score(
+          X_test[:90],
+        y_test[:90]
+        )
+
+    @ct.lattice
+    def run_experiment(C=1.0, gamma=0.7):
+        data = load_data()
+        clf = train_svm(
+          data=data,
+          C=C,
+          gamma=gamma
+        )
+        score = score_svm(
+          data=data,
+        clf=clf
+        )
+        return score
+
+    # Dispatch the workflow
+    dispatch_id = ct.dispatch(run_experiment)(
+      C=1.0,
+      gamma=0.7
+    )
+
+    # Wait for our result and get result value
+    result = ct.get_result(dispatch_id=dispatch_id, wait=True).result
+
+    print(result)
+
+During the execution of the workflow one can navigate to the UI to see the status of the workflow, once completed however the above script should also output a value with the score of our model.
+
+.. code-block:: python
+
+    0.8666666666666667
+
+===========================================
+3. Overview of Configuration
+===========================================
+
+.. list-table::
+   :widths: 2 1 2 3
+   :header-rows: 1
+
+   * - Config Key
+     - Is Required
+     - Default
+     - Description
+   * - profile
+     - No
+     - default
+     - Named AWS profile used for authentication
+   * - region
+     - Yes
+     - us-east-1
+     - AWS Region to use to for client calls
+   * - credentials
+     - No
+     - ~/.aws/credentials
+     - The path to the AWS credentials file
+   * - batch_queue
+     - Yes
+     - covalent-batch-queue
+     - Name of the Batch queue used for job management.
+   * - s3_bucket_name
+     - Yes
+     - covalent-batch-job-resources
+     - Name of an S3 bucket where covalent artifacts are stored.
+   * - batch_job_definition_name
+     - Yes
+     - covalent-batch-jobs
+     - Name of the Batch job definition for a user, project, or experiment.
+   * - batch_execution_role_name
+     - No
+     - ecsTaskExecutionRole
+     - Name of the IAM role used by the Batch ECS agent (the above role should already exist in AWS).
+   * - batch_job_role_name
+     - Yes
+     - CovalentBatchJobRole
+     - Name of the IAM role used within the container.
+   * - batch_job_log_group_name
+     - Yes
+     - covalent-batch-job-logs
+     - Name of the CloudWatch log group where container logs are stored.
+   * - vcpu
+     - No
+     - 2
+     - Number of vCPUs available to a task.
+   * - memory
+     - No
+     - 3.75
+     - Memory (in GB) available to a task.
+   * - num_gpus
+     - No
+     - 0
+     - Number of GPUs availabel to a task.
+   * - retry_attempts
+     - No
+     - 3
+     - Number of times a job is retried if it fails.
+   * - time_limit
+     - No
+     - 300
+     - Time limit (in seconds) after which jobs are killed.
+   * - poll_freq
+     - No
+     - 10
+     - Frequency (in seconds) with which to poll a submitted task.
+   * - cache_dir
+     - No
+     - /tmp/covalent
+     - Cache directory used by this executor for temporary files.
+
+This plugin can be configured in one of two ways:
+
+#. Configuration options can be passed in as constructor keys to the executor class :code:`ct.executor.AWSBatchExecutor`
+
+#. By modifying the `covalent configuration file <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_ under the section :code:`[executors.awsbatch]`
+
+
+
+The following shows an example of how a user might modify their `covalent configuration file <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_  to support this plugin:
+
+.. code:: shell
+
+    [executors.awsbatch]
+    s3_bucket_name = "covalent-batch-job-resources"
+    batch_queue = "covalent-batch-queue"
+    batch_job_definition_name = "covalent-batch-jobs"
+    batch_execution_role_name = "ecsTaskExecutionRole"
+    batch_job_role_name = "CovalentBatchJobRole"
+    batch_job_log_group_name = "covalent-batch-job-logs"
+    ...
+
+
+.. autoclass:: covalent.executor.EC2Executor
+    :members:
+    :inherited-members:
+
+
+===========================================
+4. Required Cloud Resources
+===========================================
+
+In order to run your workflows with covalent there are a few notable AWS resources that need to be provisioned first.
+
+
+.. list-table::
+   :widths: 2 1 2 3
+   :header-rows: 1
+
+   * - Resource
+     - Is Required
+     - Config Key
+     - Description
+   * - AWS S3 Bucket
+     - Yes
+     - :code:`covalent-batch-job-resources`
+     - S3 bucket must be created for covalent to store essential files that are needed during execution.
+   * - VPC & Subnet
+     - Yes
+     - N/A
+     - A VPC must be associated with the AWS Batch Compute Environment along with a public or private subnet (there needs to be additional resources created for private subnets)
+   * - AWS Batch Compute Environment
+     - Yes
+     - N/A
+     - An AWS Batch compute environment (EC2) that will provision EC2 instances as needed when jobs are submitted to the associated job queue.
+   * - AWS Batch Queue
+     - Yes
+     - :code:`batch_queue`
+     - An AWS Batch Job Queue that will queue tasks for execution in it's associated compute environment.
+   * - AWS Batch Job Definition
+     - Yes
+     - :code:`batch_job_definition_name`
+     - An AWS Batch job definition that will be replaced by a new batch job definition when the workflow is executed.
+   * - AWS IAM Role (Job Role)
+     - Yes
+     - :code:`batch_job_role_name`
+     - The IAM role used within the container.
+   * - AWS IAM Role (Execution Role)
+     - No
+     - :code:`batch_execution_role_name`
+     - The IAM role used by the Batch ECS agent (default role ecsTaskExecutionRole should already exist).
+   * - Log Group
+     - Yes
+     - :code:`batch_job_log_group_name`
+     - An AWS CloudWatch log group where task logs are stored.
+
+
+
+#. To create an AWS S3 Bucket refer to the following `AWS documentation <https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-bucket.html>`_.
+#. To create a VPC & Subnet refer to the following `AWS documentation <https://docs.aws.amazon.com/directoryservice/latest/admin-guide/gsg_create_vpc.html>`_.
+#. To create an AWS Batch Queue refer to the following `AWS documentation <https://docs.aws.amazon.com/batch/latest/userguide/create-job-queue.html>`_ it must be a compute environment configured in EC2 mode.
+#. To create an AWS Batch Job Definition refer to the following `AWS documentation <https://docs.aws.amazon.com/batch/latest/userguide/create-job-definition-EC2.html>`_ the configuration for this can be trivial as covalent will update the Job Definition prior to execution.
+#. To create an AWS IAM Role for batch jobs (Job Role) one can provision a policy with the following permissions (below) then create a new role and attach with the created policy. Refer to the following `AWS documentation <https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_job-functions_create-policies.html>`_ for an example of creating a policy & role in IAM.
+
+.. dropdown:: AWS Batch IAM Job Policy
 
     .. code:: json
 
@@ -103,70 +351,9 @@ The following JSON policy document lists the necessary IAM permissions required 
     }
 
 
-This executor builds a docker image locally on the user's machine with the function to be exected baked inside the image
-along with its arguments and keyword arguments. The executor requires that `Docker <https://www.docker.com/>`_ be
-properly installed and configured on the user's machine prior to using this executor in workflows. The executor the uploads
-the built docker image to the elastic container registry provided by the user. Following this, the executor registers a AWS batch job RegisterJobDefinition
-that contains links the the ECR repo hosting the built image. Finally the job is submitted to AWS batch for execution.
-The output of the job is stored in the S3 bucket provided by the user and the result is retrieved from there post execution.
-
-The following snippet shows how a user might configure their Covalent `configuration <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_
-to provide override the default executor values
-
-.. code:: bash
-
-    [executors.awsbatch]
-    credentials = "/home/user/.aws/credentials"
-    profile = ""
-    s3_bucket_name = "covalent-batch-job-resources"
-    ecr_repo_name = "covalent-batch-job-images"
-    batch_job_definition_name = "covalent-batch-jobs"
-    batch_queue = "covalent-batch-queue"
-    batch_execution_role_name = "ecsTaskExecutionRole"
-    batch_job_role_name = "CovalentBatchJobRole"
-    batch_job_log_group_name = "covalent-batch-job-logs"
-    vcpu = 2
-    memory = 3.75
-    num_gpus = 0
-    retry_attempts = 3
-    time_limit = 300
-    cache_dir = "/tmp/covalent"
-    poll_freq = 10
-
-In the default configuration, jobs can run on any instance from the EC2 C4 compute family. If GPU instances
-are required, other instance families should be configured prior to using the executor.
-
-If the parameters to the executor are set in the configuration file, user can them simply use the executor as follows
-
-.. code:: python
-
-    import covalent as ct
-
-    @ct.electron(executor='awsbatch')
-    def task(x, y):
-        return x + y
-
-Users can also instantiate the executor in the workflows directly by providing the necessary input arguments
-to its constructor
-
-.. code:: python
-
-    import covalent as ct
-    from covlent.executor import AWSBatchExecutor
-
-    awsbatch = AWSBatchExecutor(
-        vcpu=16,
-        memory=16,
-        time_limit=600
-    )
-
-    @ct.electron(executor=awsbatch)
-    def task(x, y):
-        return x + y
-
-In this scenario, the parameters which are not set explicity are then read from the configuration file.
-
-
+.. ===========================================
+.. 5. Source
+.. ===========================================
 
 .. autoclass:: covalent.executor.AWSBatchExecutor
     :members:

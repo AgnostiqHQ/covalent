@@ -25,9 +25,9 @@ from unittest.mock import MagicMock, Mock
 
 import mock
 import pytest
+import requests
 from click.testing import CliRunner
 
-from covalent._data_store.datastore import DataStore
 from covalent_dispatcher._cli.service import (
     MIGRATION_COMMAND_MSG,
     MIGRATION_WARNING_MSG,
@@ -48,6 +48,7 @@ from covalent_dispatcher._cli.service import (
     status,
     stop,
 )
+from covalent_dispatcher._db.datastore import DataStore
 
 STOPPED_SERVER_STATUS_ECHO = "Covalent server is stopped.\n"
 RUNNING_SERVER_STATUS_ECHO = "Covalent server is running at http://localhost:42.\n"
@@ -144,6 +145,9 @@ def test_graceful_start_when_pid_absent(mocker):
     )
     popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
     click_echo_mock = mocker.patch("click.echo")
+    requests_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.requests.get",
+    )
 
     with mock.patch("covalent_dispatcher._cli.service.open", mock.mock_open()):
         res = _graceful_start("", "", "output.log", 15, False)
@@ -155,6 +159,35 @@ def test_graceful_start_when_pid_absent(mocker):
     popen_mock.assert_called_once()
     click_echo_mock.assert_called_once()
     read_pid_mock.assert_called_once()
+
+
+def test_graceful_start_waits_to_return(mocker):
+    """Check that graceful server start function doesn't return until
+    the endpoints are live."""
+
+    read_pid_mock = mocker.patch("covalent_dispatcher._cli.service._read_pid")
+    pid_exists_mock = mocker.patch("psutil.pid_exists", return_value=False)
+    rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
+    next_available_port_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._next_available_port", return_value=1984
+    )
+    popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
+    click_echo_mock = mocker.patch("click.echo")
+    requests_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.requests.get",
+        side_effect=requests.exceptions.ConnectionError(),
+    )
+    sleep_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.time.sleep", side_effect=RuntimeError()
+    )
+
+    with mock.patch("covalent_dispatcher._cli.service.open", mock.mock_open()):
+        with pytest.raises(RuntimeError):
+            res = _graceful_start("", "", "output.log", 15, False)
+
+        pass
+
+    sleep_mock.assert_called_once()
 
 
 def test_graceful_shutdown_running_server(mocker):
