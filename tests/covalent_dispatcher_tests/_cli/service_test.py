@@ -144,6 +144,9 @@ def test_graceful_start_when_pid_absent(mocker):
     )
     popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
     click_echo_mock = mocker.patch("click.echo")
+    requests_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.requests.get",
+    )
 
     with mock.patch("covalent_dispatcher._cli.service.open", mock.mock_open()):
         res = _graceful_start("", "", "output.log", 15, False)
