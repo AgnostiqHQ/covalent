@@ -31,6 +31,7 @@
     "react-router-dom": "^6.0.2",
     "react-scripts": "4.0.3",
     "react-syntax-highlighter": "^15.4.5",
+    "react-tooltip": "^4.2.21",
     "redux-localstorage": "^0.4.1",
     "socket.io-client": "^4.4.0",
     "use-debounce": "^8.0.1",
