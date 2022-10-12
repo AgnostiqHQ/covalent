@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - updated hotfix logic to run on a merge to a release branch
+- Increase frequency of nightly workflow (temp)
 
 ## [0.202.0] - 2022-10-11
 
