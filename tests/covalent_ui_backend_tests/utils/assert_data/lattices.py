@@ -38,7 +38,7 @@ def seed_lattice_data():
                     "total_electrons_completed": 6,
                     "started_at": "2022-09-23T15:31:11",
                     "ended_at": "2022-09-23T15:31:11",
-                    "directory": os.path.abspath(  # os.path.dirname(__file__)
+                    "directory": os.path.abspath(
                         os.path.join(os.path.dirname(__file__), os.pardir)
                     )
                     + "/mock_files/"
@@ -47,6 +47,14 @@ def seed_lattice_data():
                     "runtime": 0,
                     "updated_at": None,
                 },
+            },
+            "case_invalid_1": {
+                "status_code": 400,
+                "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9c1"},
+            },
+            "case_invalid_2": {
+                "status_code": 422,
+                "path": {"dispatch_id": "123"},
             },
         },
         "test_lattices_file": {
@@ -108,13 +116,33 @@ def seed_lattice_data():
                     "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
                     "name": "transport_graph",
                 },
-                "response_data": {
-                    "data": "{'lattice_metadata': {'executor': 'dask',\
-                             'results_dir': '/home/arunmukesh/Desktop/files/results', \
-                                'workflow_executor': 'dask', 'deps': {}, 'call_before': [], \
-                                    'call_after': [], 'executor_data': {}, \
-                                        'workflow_executor_data': {}}, 'dirty_nodes': []}"
+                "response_data": "'lattice_metadata': {'executor': 'dask', 'results_dir': '/home/arunmukesh/Desktop/files/results', 'workflow_executor': 'dask', 'deps': {}, 'call_before': [], 'call_after': [], 'executor_data': {}, 'workflow_executor_data': {}}, 'dirty_nodes': []",
+            },
+            "case_invalid_1": {
+                "status_code": 422,
+                "path": {
+                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
+                    "name": "results",
                 },
+            },
+            "case_bad_request": {
+                "status_code": 400,
+                "path": {
+                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9c1",
+                    "name": "result",
+                },
+            },
+        },
+        "test_sublattices": {
+            "api_path": "/api/v1/dispatches/{}/sublattices",
+            "case1": {
+                "status_code": 200,
+                "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd"},
+            },
+            "case2": {
+                "status_code": 200,
+                "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd"},
+                "query_data": {"sort_by": "total_electrons", "sort_direction": "ASC"},
             },
         },
     }

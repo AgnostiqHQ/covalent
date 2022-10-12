@@ -39,6 +39,5 @@ def init():
 @fastapi_app.on_event("shutdown")
 def de_init():
     os.remove(mock_db_path)
-    print("remove mock file", mock_db_path)
     shutil.rmtree(log_output_data["lattice_files"]["path"])
     shutil.rmtree(log_output_data["log_files"]["path"])

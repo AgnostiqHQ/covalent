@@ -42,6 +42,20 @@ def test_electrons():
         assert response.json() == test_data["response_data"]
 
 
+def test_electrons_bad_request():
+    """Test electrons"""
+    test_data = output_data["test_electrons"]["case_invalid"]
+    response = object_test_template(
+        api_path=output_data["test_electrons"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+        path=test_data["path"],
+    )
+    assert response.status_code == test_data["status_code"]
+    response_detail = response.json()["detail"][0]
+    assert "does not exist" in response_detail["msg"]
+
+
 def test_electrons_details_function_string():
     """Test overview"""
     test_data = output_data["test_electrons_details"]["case_function_string_1"]
@@ -194,3 +208,17 @@ def test_electrons_details_inputs():
     assert response.status_code == test_data["status_code"]
     if "response_data" in test_data:
         assert response.json() == test_data["response_data"]
+
+
+def test_electrons_file_bad_request():
+    """Test electrons results"""
+    test_data = output_data["test_electrons_details"]["case_bad_request"]
+    response = object_test_template(
+        api_path=output_data["test_electrons_details"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+        path=test_data["path"],
+    )
+    assert response.status_code == test_data["status_code"]
+    response_detail = response.json()["detail"][0]
+    assert response_detail["type"] == "type_error.enum"

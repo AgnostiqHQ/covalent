@@ -134,8 +134,10 @@ class Graph:
             graph data with list of nodes and links
         """
         parent_lattice_id = (
-            self.db_con.query(Lattice.id).where(Lattice.dispatch_id == str(dispatch_id)).first()[0]
+            self.db_con.query(Lattice.id).where(Lattice.dispatch_id == str(dispatch_id)).first()
         )
-        nodes = self.check_error(self.get_nodes(parent_lattice_id))
-        links = self.check_error(self.get_links(parent_lattice_id))
+        if parent_lattice_id is None:
+            return None
+        nodes = self.check_error(self.get_nodes(parent_lattice_id[0]))
+        links = self.check_error(self.get_links(parent_lattice_id[0]))
         return {"dispatch_id": str(dispatch_id), "nodes": nodes, "links": links}

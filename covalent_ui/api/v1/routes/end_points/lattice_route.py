@@ -134,8 +134,6 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
             elif name == "transport_graph":
                 response = handler.read_from_pickle(lattice_data["transport_graph_filename"])
                 return LatticeFileResponse(data=response)
-            else:
-                return LatticeFileResponse(data=None)
         else:
             raise HTTPException(
                 status_code=400,

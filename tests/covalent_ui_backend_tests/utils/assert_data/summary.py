@@ -46,7 +46,6 @@ def seed_summary_data():
                 "request_data": {
                     "query": {
                         "count": 10,
-                        "offset": 0,
                         "sort_by": "runtime",
                         "sort_direction": "DESC",
                         "status_filter": "ALL",
@@ -74,7 +73,6 @@ def seed_summary_data():
                 "request_data": {
                     "query": {
                         "count": 1,
-                        "offset": 0,
                         "sort_by": "status",
                         "sort_direction": "ASC",
                         "status_filter": "ALL",
@@ -98,25 +96,23 @@ def seed_summary_data():
                 },
             },
             "case3": {
-                "status_code": 200,
+                "status_code": 422,
                 "request_data": {
                     "query": {
                         "count": 1,
-                        "offset": 0,
+                        "offset": -10,
                         "sort_by": "status",
                         "sort_direction": "ASC",
                         "search": "30",
                         "status_filter": "ALL",
                     }
                 },
-                "response_data": {"items": [], "total_count": 0},
             },
             "case4": {
                 "status_code": 422,
                 "request_data": {
                     "query": {
                         "count": 0,
-                        "offset": 0,
                         "sort_by": "status",
                         "sort_direction": "ASC",
                         "search": "30",
@@ -177,5 +173,38 @@ def seed_summary_data():
                     "message": "Some of the dispatches could not be deleted",
                 },
             },
+            "case4": {
+                "status_code": 422,
+                "request_data": {
+                    "body": {
+                        "dispatches": [
+                            "05669868aa",
+                            "f7eeb4ad-5262-49a5-aabc-cea10c6c1071",
+                        ]
+                    }
+                },
+            },
+        },
+        "test_delete_all": {
+            "api_path": "/api/v1/dispatches/delete-all",
+            "case1": {
+                "status_code": 200,
+                "request_data": {"body": {"status_filter": "ALL", "search_string": ""}},
+                "response_data": {
+                    "success_items": ["78525234-72ec-42dc-94a0-f4751707f9cd"],
+                    "failure_items": [],
+                    "message": "Dispatch(es) have been deleted successfully!",
+                },
+            },
+            "case2": {
+                "status_code": 200,
+                "request_data": {"body": {"status_filter": "ALL", "search_string": "random"}},
+                "response_data": {
+                    "success_items": [],
+                    "failure_items": [],
+                    "message": "No dispatches were deleted",
+                },
+            },
+            "case3": {"status_code": 422, "request_data": {"body": {"status_filter": "failed"}}},
         },
     }

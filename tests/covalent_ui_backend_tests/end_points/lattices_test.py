@@ -43,6 +43,20 @@ def test_lattices():
         assert response.json() == test_data["response_data"]
 
 
+def test_lattices_bad_request():
+    """Test lattices results"""
+    test_data = output_data["test_lattices"]["case_invalid_1"]
+    response = object_test_template(
+        api_path=output_data["test_lattices"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+        path=test_data["path"],
+    )
+    assert response.status_code == test_data["status_code"]
+    response_detail = response.json()["detail"][0]
+    assert "does not exist" in response_detail["msg"]
+
+
 def test_lattices_results():
     """Test lattices results"""
     test_data = output_data["test_lattices_file"]["case_results_1"]
@@ -127,19 +141,69 @@ def test_lattices_function_workflow_executor():
         assert response.json() == test_data["response_data"]
 
 
-# def test_lattices_transport_graph():
-#     """Test lattices results"""
-#     test_data = output_data["test_lattices_file"]["case_transport_graph_1"]
-#     response = object_test_template(
-#         api_path=output_data["test_lattices_file"]["api_path"],
-#         app=main.fastapi_app,
-#         method_type=MethodType.GET,
-#         path=test_data['path']
-#     )
-#     assert response.status_code == test_data["status_code"]
-#     if "response_data" in test_data:
-#         #print("load data")
-#         data = response.json()["data"]
-#         data = data[0:1]+ data[int(data.index('>') + 2): ]
-#         #print(data)
-#         assert data == test_data["response_data"]["data"]
+def test_lattices_transport_graph():
+    """Test lattices for transport graph"""
+    test_data = output_data["test_lattices_file"]["case_transport_graph_1"]
+    response = object_test_template(
+        api_path=output_data["test_lattices_file"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+        path=test_data["path"],
+    )
+    print(response.json())
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert test_data["response_data"] in response.json()["data"]
+
+
+def test_lattices_invalid_name():
+    """Test lattices results"""
+    test_data = output_data["test_lattices_file"]["case_invalid_1"]
+    response = object_test_template(
+        api_path=output_data["test_lattices_file"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+        path=test_data["path"],
+    )
+    assert response.status_code == test_data["status_code"]
+    response_detail = response.json()["detail"][0]
+    assert response_detail["type"] == "type_error.enum"
+
+
+def test_lattices_file_bad_request():
+    """Test lattices results"""
+    test_data = output_data["test_lattices_file"]["case_bad_request"]
+    response = object_test_template(
+        api_path=output_data["test_lattices_file"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+        path=test_data["path"],
+    )
+    assert response.status_code == test_data["status_code"]
+    response_detail = response.json()["detail"][0]
+    assert "does not exist" in response_detail["msg"]
+
+
+def test_sublattices():
+    """Test sublattices"""
+    test_data = output_data["test_sublattices"]["case1"]
+    response = object_test_template(
+        api_path=output_data["test_sublattices"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+        path=test_data["path"],
+    )
+    assert response.status_code == test_data["status_code"]
+
+
+def test_sublattices_queries():
+    """Test sublattices with queries"""
+    test_data = output_data["test_sublattices"]["case2"]
+    response = object_test_template(
+        api_path=output_data["test_sublattices"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+        query_data=test_data["query_data"],
+    )
+    print(response.json())
+    assert response.status_code == 422

@@ -20,11 +20,23 @@
 
 """Mock files data"""
 
-from covalent._workflow.transport import TransportableObject
+from covalent._workflow.transport import TransportableObject, _TransportGraph
 
 
 def mock_files_data():
     """Mock files data"""
+    transport_graph = _TransportGraph()
+    transport_graph.lattice_metadata = {
+        "executor": "dask",
+        "results_dir": "/home/arunmukesh/Desktop/files/results",
+        "workflow_executor": "dask",
+        "deps": {},
+        "call_before": [],
+        "call_after": [],
+        "executor_data": {},
+        "workflow_executor_data": {},
+    }
+    transport_graph.dirty_nodes = []
     return {
         "lattice_files": {
             "path": "tests/covalent_ui_backend_tests/utils/mock_files/78525234-72ec-42dc-94a0-f4751707f9cd",
@@ -66,19 +78,7 @@ def workflow(name):
                 {"file_name": "stdout.log", "data": ""},
                 {
                     "file_name": "transport_graph.pkl",
-                    "data": {
-                        "lattice_metadata": {
-                            "executor": "dask",
-                            "results_dir": "/home/arunmukesh/Desktop/files/results",
-                            "workflow_executor": "dask",
-                            "deps": {},
-                            "call_before": [],
-                            "call_after": [],
-                            "executor_data": {},
-                            "workflow_executor_data": {},
-                        },
-                        "dirty_nodes": [],
-                    },
+                    "data": transport_graph,
                 },
                 {"file_name": "workflow_executor_data.pkl", "data": {}},
             ],

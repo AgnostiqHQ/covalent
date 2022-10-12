@@ -47,6 +47,10 @@ def seed_electron_data():
                     "description": "",
                 },
             },
+            "case_invalid": {
+                "status_code": 400,
+                "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd", "electron_id": 8},
+            },
         },
         "test_electrons_details": {
             "api_path": "/api/v1/dispatches/{}/electron/{}/details/{}",
@@ -157,6 +161,14 @@ def seed_electron_data():
                     "name": "inputs",
                 },
                 "response_data": {"data": '{"args": [], "kwargs": {}}'},
+            },
+            "case_bad_request": {
+                "status_code": 422,
+                "path": {
+                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
+                    "electron_id": 0,
+                    "name": "results",
+                },
             },
         },
     }

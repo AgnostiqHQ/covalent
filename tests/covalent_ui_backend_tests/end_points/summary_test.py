@@ -26,8 +26,6 @@ from tests.covalent_ui_backend_tests.utils.client_template import MethodType, Te
 
 object_test_template = TestClientTemplate()
 output_path = dirname(abspath(__file__)) + "/utils/assert_data/summary_data.json"
-# with open(output_path, "r") as output_json:
-#     output_data = json.load(output_json)
 output_data = seed_summary_data()
 
 
@@ -66,7 +64,6 @@ def test_list():
         method_type=MethodType.GET,
         query_data=test_data["request_data"]["query"],
     )
-    print(response.json())
     assert response.status_code == test_data["status_code"]
     if "response_data" in test_data:
         assert response.json() == test_data["response_data"]
@@ -114,6 +111,20 @@ def test_list_search():
         assert response.json() == test_data["response_data"]
 
 
+def test_list_invalid_offset():
+    """Test List with invalid offset"""
+    test_data = output_data["test_list"]["case3"]
+    response = object_test_template(
+        api_path=output_data["test_list"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+        query_data=test_data["request_data"]["query"],
+    )
+    assert response.status_code == test_data["status_code"]
+    response_detail = response.json()["detail"][0]
+    assert response_detail["type"] == "value_error.number.not_gt"
+
+
 def test_delete():
     """Test delete from dispatch list"""
     test_data = output_data["test_delete"]["case1"]
@@ -126,10 +137,6 @@ def test_delete():
     assert response.status_code == test_data["status_code"]
     if "response_data" in test_data:
         assert response.json() == test_data["response_data"]
-
-
-# dispatches = null & dispatches not present. -> 500 error
-#
 
 
 def test_delete_invalid_dispatch_id():
@@ -158,3 +165,58 @@ def test_delete_dispatch_multiple_times():
     assert response.status_code == test_data["status_code"]
     if "response_data" in test_data:
         assert response.json() == test_data["response_data"]
+
+
+def test_delete_invalid_uuid():
+    """Test List with invalid offset"""
+    test_data = output_data["test_delete"]["case4"]
+    response = object_test_template(
+        api_path=output_data["test_delete"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+    )
+    assert response.status_code == test_data["status_code"]
+    response_detail = response.json()["detail"][0]
+    assert response_detail["type"] == "type_error.uuid"
+
+
+def test_delete_all():
+    """Test delete all dispatches"""
+    test_data = output_data["test_delete_all"]["case1"]
+    response = object_test_template(
+        api_path=output_data["test_delete_all"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.POST,
+        body_data=test_data["request_data"]["body"],
+    )
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
+
+
+def test_delete_all_with_search():
+    """Test delete all dispatches with search"""
+    test_data = output_data["test_delete_all"]["case2"]
+    response = object_test_template(
+        api_path=output_data["test_delete_all"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.POST,
+        body_data=test_data["request_data"]["body"],
+    )
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
+
+
+def test_delete_all_invalid_filter():
+    """Test delete all dispatches with search"""
+    test_data = output_data["test_delete_all"]["case3"]
+    response = object_test_template(
+        api_path=output_data["test_delete_all"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.POST,
+        body_data=test_data["request_data"]["body"],
+    )
+    assert response.status_code == test_data["status_code"]
+    response_detail = response.json()["detail"][0]
+    assert response_detail["type"] == "type_error.enum"

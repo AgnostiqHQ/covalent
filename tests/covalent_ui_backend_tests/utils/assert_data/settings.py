@@ -28,6 +28,7 @@ def seed_settings_data():
     config_path = os.environ.get("COVALENT_CONFIG_DIR")
     log_dir = os.environ.get("COVALENT_LOGDIR")
     executor_dir = os.environ.get("COVALENT_EXECUTOR_DIR")
+    base_dir = os.environ.get("COVALENT_DATA_DIR")
     return {
         "test_settings": {
             "api_path": "/api/v1/settings",
@@ -49,6 +50,41 @@ def seed_settings_data():
                     }
                 },
                 "request_params": {"override_existing": False},
+                "response_data": {"data": "settings updated successfully"},
+            },
+            "case3": {
+                "status_code": 400,
+                "request_body": {
+                    "client": {
+                        "": {
+                            "config_file": config_path,
+                            "log_dir": log_dir,
+                            "log_level": "info",
+                            "enable_logging": "true",
+                            "executor_dir": executor_dir,
+                            "no_cluster": "true",
+                        }
+                    }
+                },
+                "request_params": {"override_existing": True},
+                "response_data": {"data": "settings updated successfully"},
+            },
+            "case4": {
+                "status_code": 400,
+                "request_body": {
+                    "client": {
+                        "sdk": {
+                            "config_file": config_path,
+                            "log_dir": log_dir,
+                            "log_level": "info",
+                            "enable_logging": "true",
+                            "executor_dir": executor_dir,
+                            "no_cluster": "true",
+                        },
+                    },
+                    "workflow_data": {"storage_type": "local", "base_dir": base_dir},
+                },
+                "request_params": {"override_existing": True},
                 "response_data": {"data": "settings updated successfully"},
             },
         },
