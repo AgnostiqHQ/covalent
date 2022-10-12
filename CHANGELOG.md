@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Exceptions when instantiating executors are handled
+- Covalent start now waits for the server to settle before returning
 
 ## [0.202.0] - 2022-10-11
 
