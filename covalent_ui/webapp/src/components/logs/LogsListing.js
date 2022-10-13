@@ -277,8 +277,6 @@ const LogsListing = () => {
   const [disableDownload, setDisableDownload] = useState(false)
   const [logFinalFile, setLogFinalFile] = useState('')
   const [copied, setCopied] = useState(false);
-  const logsRef = useRef([])
-
 
   useEffect(() => {
     if (logFinalFile) {
