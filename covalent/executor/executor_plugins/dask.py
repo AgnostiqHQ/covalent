@@ -28,12 +28,13 @@ This is a plugin executor module; it is loaded if found and properly structured.
 import io
 import os
 import sys
+import traceback
 from contextlib import redirect_stderr, redirect_stdout
 from typing import Callable, Dict, List
 
 from dask.distributed import Client
 
-from covalent._shared_files import logger
+from covalent._shared_files import TaskRuntimeError, logger
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files.config import get_config
@@ -109,7 +110,11 @@ class DaskExecutor(AsyncBaseExecutor):
 
         future = dask_client.submit(dask_wrapper, function, args, kwargs)
         app_log.debug(f"Submitted task {node_id} to dask")
-        result, worker_stdout, worker_stderr = await dask_client.gather(future)
+        try:
+            result, worker_stdout, worker_stderr = await dask_client.gather(future)
+        except Exception as ex:
+            tb = "".join(traceback.TracebackException.from_exception(ex).format())
+            raise TaskRuntimeError(tb)
 
         print(worker_stdout, end="", file=sys.stdout)
         print(worker_stderr, end="", file=sys.stderr)

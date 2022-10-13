@@ -25,10 +25,11 @@ This is a plugin executor module; it is loaded if found and properly structured.
 """
 
 import os
+import traceback
 from typing import Callable, Dict, List
 
 # Relative imports are not allowed in executor plugins
-from covalent._shared_files import logger
+from covalent._shared_files import TaskRuntimeError, logger
 from covalent.executor import BaseExecutor, wrapper_fn  # nopycln: import
 
 # The plugin class name must be given by the executor_plugin_name attribute:
@@ -53,4 +54,10 @@ class LocalExecutor(BaseExecutor):
 
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         app_log.debug(f"Running function {function} locally")
-        return function(*args, **kwargs)
+        try:
+            output = function(*args, **kwargs)
+        except Exception as ex:
+            tb = "".join(traceback.TracebackException.from_exception(ex).format())
+            raise TaskRuntimeError(tb)
+
+        return output

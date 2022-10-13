@@ -32,7 +32,7 @@ from functools import partial
 from typing import Any, Dict, List, Tuple
 
 from covalent._results_manager import Result
-from covalent._shared_files import logger
+from covalent._shared_files import TaskRuntimeError, logger
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import (
     electron_dict_prefix,
@@ -364,6 +364,15 @@ async def _run_task(
                 stderr=stderr,
             )
 
+    except TaskRuntimeError as ex:
+        app_log.error(f"Exception occurred when running task {node_id}: {ex}")
+        node_result = generate_node_result(
+            node_id=node_id,
+            end_time=datetime.now(timezone.utc),
+            status=Result.FAILED,
+            stderr=str(ex),
+        )
+
     except Exception as ex:
         app_log.error(f"Exception occurred when running task {node_id}: {ex}")
         node_result = generate_node_result(
@@ -432,7 +441,11 @@ async def _handle_failed_node(result_object, node_result, pending_deps, tasks_qu
     node_id = node_result["node_id"]
     result_object._status = Result.FAILED
     result_object._end_time = datetime.now(timezone.utc)
-    result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
+    node_error = result_object._get_node_error(node_id)
+    if not node_error:
+        node_error = result_object.lattice.transport_graph.get_node_value(node_id, "stderr")
+
+    result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{node_error}"
     app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
     upsert._lattice_data(result_object)
     await result_webhook.send_update(result_object)

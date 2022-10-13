@@ -23,7 +23,10 @@
 import tempfile
 from functools import partial
 
+import pytest
+
 import covalent as ct
+from covalent._shared_files import TaskRuntimeError
 from covalent._workflow.transport import TransportableObject
 from covalent.executor.executor_plugins.local import LocalExecutor, wrapper_fn
 
@@ -115,3 +118,15 @@ def test_local_executor_run():
     kwargs = {}
     task_metadata = {"dispatch_id": "asdf", "node_id": 1}
     assert le.run(f, args, kwargs, task_metadata) == 25
+
+
+def test_local_executor_run_exception_handling():
+    def f(x):
+        raise RuntimeError("error")
+
+    le = LocalExecutor()
+    args = [5]
+    kwargs = {}
+    task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+    with pytest.raises(TaskRuntimeError) as ex:
+        le.run(f, args, kwargs, task_metadata)

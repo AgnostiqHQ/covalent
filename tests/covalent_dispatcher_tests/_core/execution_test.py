@@ -26,12 +26,14 @@ Tests for the core functionality of the dispatcher.
 import asyncio
 from asyncio import Queue
 from typing import Dict, List
+from unittest.mock import MagicMock
 
 import cloudpickle as pickle
 import pytest
 
 import covalent as ct
 from covalent._results_manager import Result
+from covalent._shared_files import TaskRuntimeError
 from covalent._shared_files.defaults import sublattice_prefix
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.execution import (
@@ -833,3 +835,32 @@ async def test_run_task_executor_exception_handling(mocker):
     )
 
     assert node_result["status"] == Result.FAILED
+
+
+@pytest.mark.asyncio
+async def test_run_task_runtime_exception_handling(mocker):
+
+    result_object = get_mock_result()
+    inputs = {"args": [], "kwargs": {}}
+    mock_executor = MagicMock()
+    mock_executor.execute.side_effect = TaskRuntimeError("error")
+    mock_get_executor = mocker.patch(
+        "covalent_dispatcher._core.execution._executor_manager.get_executor",
+        return_value=mock_executor,
+    )
+
+    node_result = await _run_task(
+        result_object=result_object,
+        node_id=1,
+        inputs=inputs,
+        serialized_callable=None,
+        selected_executor=["local", {}],
+        call_before=[],
+        call_after=[],
+        node_name="task",
+        workflow_executor=["local", {}],
+    )
+
+    mock_executor.execute.assert_called_once()
+
+    assert node_result["stderr"] == "error"

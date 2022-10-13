@@ -22,6 +22,10 @@
 
 import asyncio
 
+import pytest
+
+from covalent._shared_files import TaskRuntimeError
+
 
 def test_dask_executor_init(mocker):
     """Test dask executor constructor"""
@@ -80,3 +84,28 @@ def test_dask_executor_run():
     assert result == (5, 7)
     assert stdout.getvalue() == "Hello\n"
     assert stderr.getvalue() == "Bye\n"
+
+
+def test_dask_executor_run_exception_handling():
+    """Test run method for Dask executor"""
+
+    import io
+    import sys
+    from contextlib import redirect_stderr, redirect_stdout
+
+    from dask.distributed import LocalCluster
+
+    from covalent.executor import DaskExecutor
+
+    cluster = LocalCluster()
+
+    dask_exec = DaskExecutor(cluster.scheduler_address)
+
+    def f(x, y):
+        raise RuntimeError("error")
+
+    args = [5]
+    kwargs = {"y": 7}
+    task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+    with pytest.raises(TaskRuntimeError):
+        asyncio.run(dask_exec.run(f, args, kwargs, task_metadata))
