@@ -19,8 +19,8 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
- import { useEffect, useRef, useState, useCallback } from 'react'
- import { toJpeg } from 'html-to-image';
+ import { useEffect, useRef, useState, createRef } from 'react'
+ import { useScreenshot, createFileName } from "use-react-screenshot"
  import ReactFlow, {
    MiniMap,
    getIncomers,
@@ -149,26 +149,29 @@
 
    /*<--------ScreenShot-------->*/
 
-   const ref_chart = useRef(null)
+  useEffect(() => {
+    if (screen) {
+      takeScreenShot(ref_chart.current).then(download);
+      setScreen(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen]);
 
-   const download = useCallback(() => {
-     if (ref_chart.current === null) {
-       return
-     }
-     setScreen(true);
-     toJpeg(ref_chart.current, { cacheBust: true, })
-       .then((dataUrl) => {
-         const link = document.createElement('a')
-         link.download = `${dispatchId}.jpg`
-         link.href = dataUrl
-         link.click()
-         setScreen(false)
-       })
-       .catch((err) => {
-         console.log(err)
-       })
-     // eslint-disable-next-line react-hooks/exhaustive-deps
-   }, [ref_chart])
+
+  const ref_chart = createRef(null);
+
+  // eslint-disable-next-line no-unused-vars
+  const [image, takeScreenShot] = useScreenshot({
+    type: "image/jpeg",
+    quality: 1.0,
+  });
+
+  const download = (image, { name = dispatchId, extension = "jpg" } = {}) => {
+    const a = document.createElement("a");
+    a.href = image;
+    a.download = createFileName(extension, name);
+    a.click();
+  };
 
 
    // highlight links of selected nodes
@@ -304,8 +307,8 @@
                setShowMinimap(!showMinimap)
              }}
              toggleScreenShot={() => {
-               download()
-             }}
+              setScreen(true)
+            }}
              open={open}
              anchorEl={anchorEl}
              handleClick={handleClick}

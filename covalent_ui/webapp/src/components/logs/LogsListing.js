@@ -335,7 +335,6 @@ const LogsListing = () => {
     setSelected([])
     const offsetValue = pageValue === 1 ? 0 : pageValue * 70 - 70
     setOffset(offsetValue)
-    logsRef.current[0].scrollIntoView({ behavior: 'smooth', block: 'end' })
   }
 
   useEffect(() => {
@@ -496,7 +495,6 @@ const LogsListing = () => {
                       <>
                         <TableRow
                           data-tip data-for="logRow"
-                          ref={(el) => (logsRef.current[index] = el)}
                           onClick={() => {
                             copy(result.message)
                             setCopied(true)
