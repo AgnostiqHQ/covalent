@@ -21,7 +21,7 @@
  */
 
 import _ from 'lodash'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { createSelector } from '@reduxjs/toolkit'
 import Fuse from 'fuse.js'
