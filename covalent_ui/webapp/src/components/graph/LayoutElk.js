@@ -97,7 +97,9 @@ const mapGraphToElements = (
         hideLabels: hideLabels,
         nodeType: node.type,
         preview,
-        sublattices_id: node.sublattice_dispatch_id ? node.sublattice_dispatch_id : null
+        sublattices_id: node.sublattice_dispatch_id
+          ? node.sublattice_dispatch_id
+          : null,
       },
       targetPosition: handlePositions.target,
       sourcePosition: handlePositions.source,
@@ -134,19 +136,19 @@ const assignNodePositions = async (
   const elk =
     algorithm === 'layered'
       ? new ELK({
-        defaultLayoutOptions: {
-          'elk.algorithm': algorithm,
-          'elk.direction': direction,
-          'elk.edgeRouting': 'POLYLINE',
-          'elk.layered.nodePlacement.strategy': 'SIMPLE',
-          'elk.spacing.edgeEdge': hideLabels ? 10 : 20,
-          'elk.spacing.nodeNode': hideLabels ? 60 : 40,
-          'elk.spacing.edgeNode': hideLabels ? 60 : 40,
-          'elk.spacing.edgeLabel': 10,
-          'elk.layered.spacing.nodeNodeBetweenLayers': 80,
-          'elk.layered.spacing.baseValue': hideLabels ? 40 : 10
-        },
-      })
+          defaultLayoutOptions: {
+            'elk.algorithm': algorithm,
+            'elk.direction': direction,
+            'elk.edgeRouting': 'POLYLINE',
+            'elk.layered.nodePlacement.strategy': 'SIMPLE',
+            'elk.spacing.edgeEdge': hideLabels ? 10 : 20,
+            'elk.spacing.nodeNode': hideLabels ? 60 : 40,
+            'elk.spacing.edgeNode': hideLabels ? 60 : 40,
+            'elk.spacing.edgeLabel': 10,
+            'elk.layered.spacing.nodeNodeBetweenLayers': 80,
+            'elk.layered.spacing.baseValue': hideLabels ? 40 : 10,
+          },
+        })
       : new ELK({
           defaultLayoutOptions: {
             'elk.algorithm': algorithm,

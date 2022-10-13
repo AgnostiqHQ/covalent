@@ -205,11 +205,12 @@ async def _dispatch_sync_sublattice(
         short_name, object_dict = workflow_executor
 
         if short_name == "client":
+            app_log.error("No executor selected for dispatching sublattices")
             raise RuntimeError("No executor selected for dispatching sublattices")
 
     except Exception as ex:
         app_log.debug(f"Exception when trying to determine sublattice executor: {ex}")
-        raise ex
+        return None
 
     sub_dispatch_inputs = {"args": [serialized_callable], "kwargs": inputs["kwargs"]}
     for arg in inputs["args"]:
@@ -233,14 +234,17 @@ async def _dispatch_sync_sublattice(
     )
 
     res = await fut
-    json_sublattice = json.loads(res["output"].json)
+    if res["status"] == Result.COMPLETED:
+        json_sublattice = json.loads(res["output"].json)
 
-    sub_result_object = initialize_result_object(
-        json_sublattice, parent_result_object, parent_electron_id
-    )
-    app_log.debug(f"Sublattice dispatch id: {sub_result_object.dispatch_id}")
+        sub_result_object = initialize_result_object(
+            json_sublattice, parent_result_object, parent_electron_id
+        )
+        app_log.debug(f"Sublattice dispatch id: {sub_result_object.dispatch_id}")
 
-    return await run_workflow(sub_result_object)
+        return await run_workflow(sub_result_object)
+    else:
+        return None
 
 
 async def _run_task(
@@ -284,8 +288,14 @@ async def _run_task(
         executor = _executor_manager.get_executor(short_name)
         executor.from_dict(object_dict)
     except Exception as ex:
-        app_log.debug(f"Exception when trying to determine executor: {ex}")
-        raise ex
+        app_log.debug(f"Exception when trying to instantiate executor: {ex}")
+        node_result = generate_node_result(
+            node_id=node_id,
+            end_time=datetime.now(timezone.utc),
+            status=Result.FAILED,
+            error="".join(traceback.TracebackException.from_exception(ex).format()),
+        )
+        return node_result
 
     # run the task on the executor and register any failures
     try:
@@ -786,7 +796,6 @@ async def run_workflow(result_object: Result) -> Result:
             result_object.dispatch_id,
             "".join(traceback.TracebackException.from_exception(ex).format()),
         )
-        raise
 
     return result_object
 
