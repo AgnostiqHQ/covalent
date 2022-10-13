@@ -9,8 +9,7 @@ const run = async () => {
   else if (stable === "false") stable = false;
   else core.setFailed("There is an error in the stable input");
   const octokit = github.getOctokit(token);
-  const owner = github.context.payload.repository.organization;
-  const repo = github.context.payload.repository.name;
+  const {owner:owner,repo:repo} = github.context.repo
   const {
     data: {
       object: { sha: commit },
