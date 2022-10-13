@@ -7,12 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-<<<<<<< HEAD
 ## Docs
 
 - Updating `Getting Started` section in the RTD
 - Adding beginner, intermediate and advanced examples highlighting major Covalent features
-=======
 ### Added 
 
 - Ability to use terminal on the GUI.
@@ -27,7 +25,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - updated hotfix logic to run on a merge to a release branch
 - Fixing js github actions dist by re-building from develop
 
->>>>>>> develop
 ## [0.202.0] - 2022-10-11
 
 ### Authors
