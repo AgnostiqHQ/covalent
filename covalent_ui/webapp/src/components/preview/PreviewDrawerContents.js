@@ -41,7 +41,18 @@ const PreviewDrawerContents = () => {
     <>
       <Box sx={{ p: 3 }}>
         {/* dispatch id */}
-        <IconButton href="/" sx={{ color: 'text.disabled', mr: 1 }}>
+        <IconButton
+          href="/"
+          sx={{
+            color: 'text.disabled',
+            mr: 1,
+            mb:1,
+            backgroundColor: (theme) => theme.palette.background.buttonBg,
+            borderRadius: '10px',
+            width: '32px',
+            height: '32px',
+          }}
+        >
           <ChevronLeft />
         </IconButton>
 
