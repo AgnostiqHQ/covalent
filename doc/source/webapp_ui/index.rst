@@ -34,7 +34,7 @@ Lattice Graph Preview
 - :doc:`Preview Electron sidebar<preview/preview_electron>`
 - :doc:`Preview Transport Graph<preview/preview>`
 
-Logs 
+Logs
 ***********************
 - :doc:`List <logs/logs_list>`
 - :doc:`Pagination <logs/pagination>`
@@ -42,12 +42,12 @@ Logs
 - :doc:`Sort <logs/sort>`
 - :doc:`Download <logs/download>`
 
-Settings 
+Settings
 ***********************
 - :doc:`Settings <settings/settings>`
 - :doc:`Settings Search <settings/search>`
 
-Terminal 
+Terminal
 ***********************
 - :doc:`Terminal <terminal/terminal>`
 

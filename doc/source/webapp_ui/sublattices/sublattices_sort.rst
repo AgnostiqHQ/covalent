@@ -13,4 +13,4 @@ Sublattices Sort
 
 - Users can sort through a column by ascending |ascending| and descending |descending| orderings. By default, sorting is done in descending order of the **Nodes** count .
 - Users can sort by the Title, Runtime and Nodes columns.
-- Sublattcies can be sorted by alphabetical order of Title; ascending and descending order of Runtime; ascending and descending order of number of nodes. 
+- Sublattcies can be sorted by alphabetical order of Title; ascending and descending order of Runtime; ascending and descending order of number of nodes.
