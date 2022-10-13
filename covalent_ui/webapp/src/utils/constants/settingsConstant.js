@@ -23,7 +23,7 @@
 export const CONFIG_SECTIONS = {
   slurm: 'SLURM',
   sdk: 'SDK',
-  dask: 'DASK',
+  dask: 'Dask cluster',
   cache_dir: 'Cache directory',
   results_dir: 'Results directory',
   executor_dir: 'Executor directory',

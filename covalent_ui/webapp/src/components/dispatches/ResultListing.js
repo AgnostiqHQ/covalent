@@ -947,6 +947,7 @@ const ResultListing = () => {
                       ? Math.ceil(totalRecords / 10)
                       : 1
                   }
+                  disabled={totalRecords <= 10}
                   page={page}
                   onChange={handlePageChanges}
                   showFirstButton

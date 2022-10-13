@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added 
+
+- Ability to use terminal on the GUI.
+
+### Fixed
+
+- Exceptions when instantiating executors are handled
+- Covalent start now waits for the server to settle before returning
+
+### Operations
+
+- updated hotfix logic to run on a merge to a release branch
+- Fixing js github actions dist by re-building from develop
+
 ## [0.202.0] - 2022-10-11
 
 ### Authors
