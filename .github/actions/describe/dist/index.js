@@ -9731,9 +9731,9 @@ const run = async () => {
 };
 
 run()
-  .catch(error)
+  .catch(error => error)
   .then((error) => {
-    core.setFailed(error.message);
+    core.setFailed(error?.message);
   });
 
 })();
