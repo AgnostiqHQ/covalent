@@ -24,18 +24,18 @@ const settingsDemoData = {
     settingsOverview: {
         "client": {
             "sdk": {
-                "config_file": "/home/prasannavenkatesh/.config/covalent/covalent.conf",
-                "log_dir": "/home/prasannavenkatesh/.cache/covalent",
+                "config_file": "/home/covalent/.config/covalent/covalent.conf",
+                "log_dir": "/home/covalent/.cache/covalent",
                 "log_level": "error",
                 "enable_logging": "true",
-                "executor_dir": "/home/prasannavenkatesh/.config/covalent/executor_plugins",
+                "executor_dir": "/home/covalent/.config/covalent/executor_plugins",
                 "no_cluster": "false"
             },
             "executors": {
                 "local": {
                     "log_stdout": "stdout.log",
                     "log_stderr": "stderr.log",
-                    "cache_dir": "/home/prasannavenkatesh/.cache/covalent"
+                    "cache_dir": "/home/covalent/.cache/covalent"
                 },
                 "remote_executor": {
                     "poll_freq": 15,
@@ -45,7 +45,7 @@ const settingsDemoData = {
                 "dask": {
                     "log_stdout": "stdout.log",
                     "log_stderr": "stderr.log",
-                    "cache_dir": "/home/prasannavenkatesh/.cache/covalent"
+                    "cache_dir": "/home/covalent/.cache/covalent"
                 }
             }
         },
@@ -53,14 +53,14 @@ const settingsDemoData = {
             "dispatcher": {
                 "address": "localhost",
                 "port": 48008,
-                "cache_dir": "/home/prasannavenkatesh/.cache/covalent",
+                "cache_dir": "/home/covalent/.cache/covalent",
                 "results_dir": "results",
-                "log_dir": "/home/prasannavenkatesh/.cache/covalent",
-                "db_path": "/home/prasannavenkatesh/.local/share/covalent/dispatcher_db.sqlite"
+                "log_dir": "/home/covalent/.cache/covalent",
+                "db_path": "/home/covalent/.local/share/covalent/dispatcher_db.sqlite"
             },
             "dask": {
-                "cache_dir": "/home/prasannavenkatesh/.cache/covalent",
-                "log_dir": "/home/prasannavenkatesh/.cache/covalent",
+                "cache_dir": "/home/covalent/.cache/covalent",
+                "log_dir": "/home/covalent/.cache/covalent",
                 "mem_per_worker": "auto",
                 "threads_per_worker": 1,
                 "num_workers": 8,
@@ -73,13 +73,13 @@ const settingsDemoData = {
             },
             "workflow_data": {
                 "storage_type": "local",
-                "base_dir": "/home/prasannavenkatesh/.local/share/covalent/workflow_data"
+                "base_dir": "/home/covalent/.local/share/covalent/workflow_data"
             },
             "user_interface": {
                 "address": "localhost",
                 "port": 48008,
                 "dev_port": 49009,
-                "log_dir": "/home/prasannavenkatesh/.cache/covalent"
+                "log_dir": "/home/covalent/.cache/covalent"
             }
         }
     }
