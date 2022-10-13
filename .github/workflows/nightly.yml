@@ -22,7 +22,7 @@ name: nightly
 
 on:
   schedule:
-    - cron: "00 * * * *"
+    - cron: "0 4 * * *"
 
 jobs:
   license:
