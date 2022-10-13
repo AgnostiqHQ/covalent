@@ -531,4 +531,3 @@ jobs:
           push: true
           tags: |
             public.ecr.aws/covalent/covalent-lambda-executor:stable
-
