@@ -49,7 +49,7 @@ def test_dask_wrapper_fn():
 
     args = [5]
     kwargs = {}
-    output, stdout, stderr = dask_wrapper(f, args, kwargs)
+    output, stdout, stderr, tb = dask_wrapper(f, args, kwargs)
     assert output == 5
     assert stdout == "Hello\n"
     assert stderr == "Bye\n"

@@ -219,7 +219,7 @@ def test_base_executor_execute(mocker):
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
-    result, stdout, stderr = me.execute(
+    result, stdout, stderr, exception_raised = me.execute(
         function=assembled_callable,
         args=args,
         kwargs=kwargs,
@@ -271,7 +271,7 @@ def test_base_executor_passes_task_metadata(mocker):
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
-    metadata, stdout, stderr = me.execute(
+    metadata, stdout, stderr, exception_raised = me.execute(
         function=assembled_callable,
         args=args,
         kwargs=kwargs,
@@ -314,7 +314,7 @@ def test_base_async_executor_passes_task_metadata(mocker):
         node_id=node_id,
     )
 
-    metadata, stdout, stderr = asyncio.run(awaitable)
+    metadata, stdout, stderr, exception_raised = asyncio.run(awaitable)
     task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
     assert metadata == task_metadata
 
@@ -382,7 +382,7 @@ def test_executor_setup_teardown_method(mocker):
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
-    result, stdout, stderr = me.execute(
+    result, stdout, stderr, exception_raised = me.execute(
         function=assembled_callable,
         args=args,
         kwargs=kwargs,

@@ -58,9 +58,14 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
 
 def dask_wrapper(fn, args, kwargs):
     with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
-        output = fn(*args, **kwargs)
+        try:
+            output = fn(*args, **kwargs)
+            tb = ""
+        except Exception as ex:
+            output = None
+            tb = "".join(traceback.TracebackException.from_exception(ex).format())
 
-    return output, stdout.getvalue(), stderr.getvalue()
+    return output, stdout.getvalue(), stderr.getvalue(), tb
 
 
 class DaskExecutor(AsyncBaseExecutor):
@@ -111,13 +116,16 @@ class DaskExecutor(AsyncBaseExecutor):
         future = dask_client.submit(dask_wrapper, function, args, kwargs)
         app_log.debug(f"Submitted task {node_id} to dask")
         try:
-            result, worker_stdout, worker_stderr = await dask_client.gather(future)
+            result, worker_stdout, worker_stderr, tb = await dask_client.gather(future)
         except Exception as ex:
-            tb = "".join(traceback.TracebackException.from_exception(ex).format())
-            raise TaskRuntimeError(tb)
+            raise ex
 
         print(worker_stdout, end="", file=sys.stdout)
         print(worker_stderr, end="", file=sys.stderr)
+
+        if tb:
+            print(tb, end="", file=sys.stderr)
+            raise TaskRuntimeError(tb)
 
         # FIX: need to get stdout and stderr from dask worker and print them
         return result

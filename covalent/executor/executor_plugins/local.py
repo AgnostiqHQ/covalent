@@ -25,6 +25,7 @@ This is a plugin executor module; it is loaded if found and properly structured.
 """
 
 import os
+import sys
 import traceback
 from typing import Callable, Dict, List
 
@@ -58,6 +59,7 @@ class LocalExecutor(BaseExecutor):
             output = function(*args, **kwargs)
         except Exception as ex:
             tb = "".join(traceback.TracebackException.from_exception(ex).format())
+            print(tb, end="", file=sys.stderr)
             raise TaskRuntimeError(tb)
 
         return output

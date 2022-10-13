@@ -32,7 +32,7 @@ from functools import partial
 from typing import Any, Dict, List, Tuple
 
 from covalent._results_manager import Result
-from covalent._shared_files import TaskRuntimeError, logger
+from covalent._shared_files import logger
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import (
     electron_dict_prefix,
@@ -350,28 +350,26 @@ async def _run_task(
             )
 
             if isinstance(executor, AsyncBaseExecutor):
-                output, stdout, stderr = await execute_callable()
+                output, stdout, stderr, exception_raised = await execute_callable()
             else:
                 loop = asyncio.get_running_loop()
-                output, stdout, stderr = await loop.run_in_executor(None, execute_callable)
+                output, stdout, stderr, exception_raised = await loop.run_in_executor(
+                    None, execute_callable
+                )
+
+            if exception_raised:
+                status = Result.FAILED
+            else:
+                status = Result.COMPLETED
 
             node_result = generate_node_result(
                 node_id=node_id,
                 end_time=datetime.now(timezone.utc),
-                status=Result.COMPLETED,
+                status=status,
                 output=output,
                 stdout=stdout,
                 stderr=stderr,
             )
-
-    except TaskRuntimeError as ex:
-        app_log.error(f"Exception occurred when running task {node_id}: {ex}")
-        node_result = generate_node_result(
-            node_id=node_id,
-            end_time=datetime.now(timezone.utc),
-            status=Result.FAILED,
-            stderr=str(ex),
-        )
 
     except Exception as ex:
         app_log.error(f"Exception occurred when running task {node_id}: {ex}")

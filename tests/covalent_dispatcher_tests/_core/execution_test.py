@@ -33,7 +33,6 @@ import pytest
 
 import covalent as ct
 from covalent._results_manager import Result
-from covalent._shared_files import TaskRuntimeError
 from covalent._shared_files.defaults import sublattice_prefix
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.execution import (
@@ -843,7 +842,7 @@ async def test_run_task_runtime_exception_handling(mocker):
     result_object = get_mock_result()
     inputs = {"args": [], "kwargs": {}}
     mock_executor = MagicMock()
-    mock_executor.execute.side_effect = TaskRuntimeError("error")
+    mock_executor.execute.return_value = ("", "", "error", True)
     mock_get_executor = mocker.patch(
         "covalent_dispatcher._core.execution._executor_manager.get_executor",
         return_value=mock_executor,
