@@ -2,14 +2,16 @@
 Electron Sidebar
 ===================
 
-- The electron sidebar provides node-level details for a particular workflow dispatch.
-- The sidebar will be shown on the right-hand side when one of the nodes is clicked.
-
-.. image:: ../images/electron-sidebar.gif
+.. image:: ../images/electron_sidebar.gif
    :align: center
    :width: 5000px
 
+The electron sidebar provides node-level details for a particular workflow dispatch. The sidebar will be shown on the right-hand side when one of the nodes is clicked.
 This sidebar contains the following attributes:
+
+- **Status**
+
+  Shows the status for that particular node/electron.
 
 - **Started - Ended**
 

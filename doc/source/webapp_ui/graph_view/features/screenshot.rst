@@ -5,7 +5,7 @@ Screenshot
 .. |screenshot| image:: ./images/screenshot.png
     :width: 20px
 
-.. image:: ./images/screenshot.gif
+.. image:: ./images/download-screenshot.gif
    :align: center
    :width: 5000px
 
@@ -16,6 +16,6 @@ Screenshot
 Downloaded Image
 --------------------
 
-.. image:: ./images/screenshot-download.jpg
+.. image:: ./images/download-screenshot.png
    :align: center
    :width: 5000px

@@ -21,7 +21,7 @@ Zoom In
    :width: 5000px
 
 - Users can zoom in to transport graph by clicking |zoom in| icon.
-- Users can also zoom in by scrolling down when pointing the cursor on the graph view.
+- Users can also zoom in by scrolling up when pointing the cursor on the graph view.
 
 Zoom Out
 ~~~~~~~~~~~~~~~~~~
@@ -31,12 +31,12 @@ Zoom Out
    :width: 5000px
 
 - Users can zoom out to transport graph by clicking |zoom out| icon.
-- Users can also zoom out by scrolling up when pointing the cursor on the graph view.
+- Users can also zoom out by scrolling down when pointing the cursor on the graph view.
 
 Fit To Screen
 ~~~~~~~~~~~~~~~~~~
 
-.. image:: ./images/fit.gif
+.. image:: ./images/graph-fit.gif
    :align: center
    :width: 5000px
 
