@@ -496,7 +496,7 @@ const LogsListing = () => {
                           onClick={() => {
                             copy(result.message)
                             setCopied(true)
-                            setTimeout(() => setCopied(false), 1200)
+                            setTimeout(() => setCopied(false), 300)
                           }}
                         >
                           <TableCell
