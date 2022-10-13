@@ -48,9 +48,9 @@ import {
   Snackbar,
   SvgIcon,
   Pagination,
-  Tooltip,
 } from '@mui/material'
 import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
+import ReactTooltip from "react-tooltip";
 import { useDebounce } from 'use-debounce'
 import {
   fetchLogsList,
@@ -189,9 +189,9 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize text
   [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
-    {
-      fontSize: '1rem',
-    },
+  {
+    fontSize: '1rem',
+  },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
@@ -272,7 +272,6 @@ const LogsListing = () => {
   const [snackbarMessage, setSnackbarMessage] = useState(null)
   const [disableDownload, setDisableDownload] = useState(false)
   const [copied, setCopied] = useState(false)
-  const logsRef = useRef([])
   // reset store values to initial state when moved to another page
   useEffect(() => {
     return () => {
@@ -340,7 +339,6 @@ const LogsListing = () => {
     setSelected([])
     const offsetValue = pageValue === 1 ? 0 : pageValue * 70 - 70
     setOffset(offsetValue)
-    logsRef.current[0].scrollIntoView({ behavior: 'smooth', block: 'end' })
   }
 
   useEffect(() => {
@@ -428,13 +426,9 @@ const LogsListing = () => {
                 <TableBody>
                   {logListView &&
                     logListView.map((result, index) => (
-                      <Tooltip
-                        title={!copied ? 'Click to copy log message' : 'Copied'}
-                        data-testid="log"
-                        followCursor={true}
-                      >
+                      <>
                         <TableRow
-                          ref={(el) => (logsRef.current[index] = el)}
+                          data-tip data-for="logRow"
                           onClick={() => {
                             copy(result.message)
                             setCopied(true)
@@ -502,7 +496,12 @@ const LogsListing = () => {
                             </Typography>
                           </TableCell>
                         </TableRow>
-                      </Tooltip>
+                        <ReactTooltip
+                          id="logRow" place="top" effect="float" arrowColor="#1C1C46" backgroundColor="#1C1C46" delayShow={300}
+                        >
+                          {!copied ? 'Click to copy log message' : 'Copied'}
+                        </ReactTooltip>
+                      </>
                     ))}
                 </TableBody>
               </StyledTable>
@@ -540,6 +539,7 @@ const LogsListing = () => {
                       ? Math.ceil(totalRecords / 70)
                       : 1
                   }
+                  disabled={totalRecords <= 70}
                   page={page}
                   onChange={handlePageChanges}
                   showFirstButton

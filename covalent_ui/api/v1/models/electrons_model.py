@@ -32,17 +32,17 @@ from covalent_ui.api.v1.utils.status import Status
 class ElectronResponse(BaseModel):
     """Electron Response Model"""
 
-    id: int = None
-    node_id: int = None
-    parent_lattice_id: int = None
-    type: str = None
-    storage_path: str = None
-    name: str = None
-    status: str = None
-    started_at: datetime = None
-    ended_at: datetime = None
-    runtime: int = None
-    description: str = None
+    id: Union[int, None] = None
+    node_id: Union[int, None] = None
+    parent_lattice_id: Union[int, None] = None
+    type: Union[str, None] = None
+    storage_path: Union[str, None] = None
+    name: Union[str, None] = None
+    status: Union[str, None] = None
+    started_at: Union[datetime, None] = None
+    ended_at: Union[datetime, None] = None
+    runtime: Union[int, None] = None
+    description: Union[str, None] = None
 
 
 class ElectronFileResponse(BaseModel):
@@ -55,20 +55,20 @@ class ElectronFileResponse(BaseModel):
 class ElectronExecutorResponse(BaseModel):
     """Electron File Response Model"""
 
-    executor_name: str = None
-    executor_details: dict = None
+    executor_name: Union[str, None] = None
+    executor_details: Union[dict, None] = None
 
 
 class ElectronErrorResponse(BaseModel):
     """Electron Error Response Model"""
 
-    data: str = None
+    data: Union[str, None] = None
 
 
 class ElectronFunctionResponse(BaseModel):
     """Electron Function Response Model"""
 
-    data: str = None
+    data: Union[str, None] = None
 
 
 class ElectronResponseModel(BaseModel):

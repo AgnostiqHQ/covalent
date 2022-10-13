@@ -18,17 +18,22 @@ const run = async () => {
   } = await octokit.rest.git.getRef({
     owner: owner,
     repo: repo,
-    ref: `heads/${branch.replace("refs/heads/", "")}`
+    ref: `heads/${branch.replace("refs/heads/", "")}`,
   });
   const { data: tags } = await octokit.rest.repos.listTags({
     owner: owner,
     repo: repo,
   });
+  const re = /\d+\.\d+\.\d+(-\d+)*?/;
   let latestTag, i;
   while (latestTag == null) {
     i = 0;
     while (i < tags.length && latestTag == null) {
-      if (commit === tags[i].commit.sha && (!tag.name.match("rc") || !stable))
+      if (
+        commit === tags[i].commit.sha &&
+        (!tag.name.match("rc") || !stable) &&
+        tag.name.match(re)
+      )
         latestTag = tag.name;
       i++;
     }
@@ -60,7 +65,7 @@ const run = async () => {
 };
 
 run()
-  .catch(error)
+  .catch(error => error)
   .then((error) => {
-    core.setFailed(error.message);
+    core.setFailed(error?.message);
   });
