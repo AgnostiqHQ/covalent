@@ -153,11 +153,11 @@ const LatticeGraph = ({
     if (screen) {
       var svgElements = ref_chart.current.querySelectorAll('svg');
       svgElements.forEach(function (item) {
-        item.style.marginBottom = '12px';
+        item.style.marginBottom = '14px';
       });
       takeScreenShot(ref_chart.current).then(download);
       svgElements.forEach(function (item) {
-        item.style.marginBottom = '0';
+        item.style.marginBottom = '0px';
       });
       setScreen(false);
     }
@@ -170,7 +170,7 @@ const LatticeGraph = ({
   // eslint-disable-next-line no-unused-vars
   const [image, takeScreenShot] = useScreenshot({
     type: "image/jpeg",
-    quality: 9.0,
+    quality: 1.0,
   });
 
   const download = (image, { name = dispatchId, extension = "jpg" } = {}) => {
