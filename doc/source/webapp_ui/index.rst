@@ -50,4 +50,3 @@ Settings
 Terminal
 ***********************
 - :doc:`Terminal <terminal/terminal>`
-

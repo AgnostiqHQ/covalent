@@ -42,4 +42,3 @@ The overview details are as follows:
 - **Function String**
 
   Shows the detailed string representation of a lattice function (python format).
-
