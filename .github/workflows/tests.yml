@@ -171,7 +171,8 @@ jobs:
       - name: Validate distribution
         if: env.BUILD_AND_RUN_ALL
         run: |
-          VERSION="$(cat ./VERSION | sed 's/-//')"
+          echo "Setting VERSION from X.Y.Z-rc.0 to X.Y.Zrc0"
+          VERSION="$(cat ./VERSION | sed 's/-//' | sed 's/\(.*\)\./\1/')'"
           cd dist
           tar xzf covalent-${VERSION}.tar.gz
           diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
