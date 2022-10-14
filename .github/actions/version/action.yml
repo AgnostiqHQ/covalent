@@ -1,0 +1,87 @@
+name: "Pull Request Version Validation"
+description: "Validate the VERSION file and ensure the CHANGELOG edits are valid."
+inputs:
+  changelog-path:
+    description: "Path to the CHANGELOG file"
+    required: false
+    default: "./CHANGELOG.md"
+  version-path:
+    description: "Path to the VERSION file"
+    required: false
+    default: "./VERSION"
+  base_ref:
+    description: "Git base commit ref"
+    required: true
+    default: ${{ github.event.pull_request.base.ref }}
+  head_ref:
+    description: "Git head commit ref"
+    required: true
+    default: ${{ github.event.pull_request.head.ref }}
+  unreleased_header_line:
+    description: "Line number of which [UNRELEASED] appears"
+    required: true
+    default: 8
+runs:
+  using: "composite"
+  steps:
+    - name: Check out head
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+        ref: ${{ inputs.head_ref }}
+        repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+    - name: Check git history
+      shell: bash
+      run: |
+        if git merge-base --is-ancestor $GITHUB_SHA origin/${{ inputs.base_ref }} ; then
+          echo "BASE_COMMIT_HISTORY=$GITHUB_SHA" >> $GITHUB_ENV
+        fi
+    - name: Check for version change
+      id: changed-version-file
+      uses: tj-actions/changed-files@v18.4
+      with:
+        sha: ${{ inputs.head_ref }}
+        files: |
+          ${{ inputs.version-path }}
+    - name: Fail if version changed
+      if: >
+        steps.changed-version-file.outputs.any_changed == 'true'
+        && inputs.head_ref != env.BASE_COMMIT_HISTORY
+      shell: bash
+      run: |
+        echo "Version changes are prohibited in pull requests."
+        exit 1
+    - name: Read head version
+      if: inputs.head_ref != env.DEVELOP_COMMIT_HISTORY
+      shell: bash
+      run: |
+        HEAD_VERSION="$(cat ${{ inputs.version-path }})"
+        echo "HEAD_VERSION=$HEAD_VERSION" >> $GITHUB_ENV
+    - name: Validate changelog entry
+      if: inputs.head_ref != env.DEVELOP_COMMIT_HISTORY
+      shell: bash
+      run: |
+        git diff --name-only ${{ inputs.base_ref }} | grep CHANGELOG
+        unreleased_header_line=${{ inputs.unreleased_header_line }}
+        if [[ $(sed "${unreleased_header_line}q;d" ${{ inputs.changelog-path }}) != "## [UNRELEASED]" ]] ; then
+          echo "Removing the [UNRELEASED] header is prohibited in pull requests."
+          exit 2
+        fi
+        re="/\[[0-9]\+\.[0-9]\+\.[0-9]\+\(-[0-9]\+\)\?\(-rc\.[0-9]\+\)\?\]/="
+        latest_release=$(sed -n $re ${{ inputs.changelog-path }} | head -n 1)
+        IFS='[]' read -ra changelog_version <<< $(sed "${latest_release}q;d" ${{ inputs.changelog-path }})
+        if [[ "${changelog_version[1]}" != $HEAD_VERSION ]] ; then
+          echo "The most recent CHANGELOG release does not match the VERSION."
+          echo ${changelog_version[1]}
+          echo $HEAD_VERSION
+          exit 3
+        fi
+        IFS='@-+,' read -ra LINES <<< "$(git diff ${{ inputs.base_ref }} -- ${{ inputs.changelog-path }} | sed '5q;d')"
+        start_head="$(( LINES[5] + 3 ))"
+        lines_head="$(( LINES[6] - 6 ))"
+        if [[ $start_head -lt $unreleased_header_line ]] ||
+           [[ $((start_head + lines_head)) -gt $latest_release ]] ; then
+          echo "Changes outside the UNRELEASED block are prohibited in pull requests."
+          exit 4
+        fi

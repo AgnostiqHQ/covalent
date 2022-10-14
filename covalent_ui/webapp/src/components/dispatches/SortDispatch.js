@@ -24,21 +24,50 @@ import React from 'react'
 import { Typography, Chip, Skeleton } from '@mui/material'
 import { Box } from '@mui/system'
 const SortDispatch = (props) => {
-  const { title, count, isFetching } = props
+  const {
+    title,
+    count,
+    isFetching,
+    setFilterValue,
+    isSelected,
+    setSelected,
+    setOffset,
+  } = props
 
   return (
     <Box
+      onClick={() => {
+        setFilterValue(title.toUpperCase())
+        setSelected([])
+        setOffset(0)
+      }}
       sx={{
+        marginRight: '32px',
         display: 'flex',
         alignItems: 'center',
         cursor: 'default',
         fontWeight: 'bold',
+        color: isSelected ? (theme) => theme.palette.text.secondary : null,
+        '.title': {
+          color: isSelected ? (theme) => theme.palette.text.secondary : null,
+        },
+        '.chipContainer': {
+          cursor: isSelected ? 'pointer' : 'default',
+          color: isSelected ? (theme) => theme.palette.text.secondary : null,
+          fontWeight: isSelected ? 'bold' : null,
+          background: (theme) => theme.palette.background.paper,
+          border: '1 px solid',
+          borderColor: (theme) =>
+            isSelected
+              ? theme.palette.primary.blue04
+              : theme.palette.background.paper,
+        },
         '&:hover': {
-          cursor: 'pointer',
-          color: (theme) => theme.palette.text.secondary,
           '.title': {
+            cursor: 'pointer',
             color: (theme) => theme.palette.text.secondary,
           },
+
           '.chipContainer': {
             cursor: 'pointer',
             color: (theme) => theme.palette.text.secondary,

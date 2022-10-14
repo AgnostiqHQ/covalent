@@ -26,13 +26,26 @@ import { IconButton, Tooltip, Grid } from '@mui/material'
 import { CheckRounded } from '@mui/icons-material'
 import { ReactComponent as CopyIcon } from '../../assets/copy.svg'
 
-const CopyButton = ({ content, isBorderPresent, title = 'Copy', ...props }) => {
+const CopyButton = ({
+  content,
+  isBorderPresent,
+  title = 'Copy',
+  width,
+  height,
+  borderRadius,
+  ...props
+}) => {
   const [copied, setCopied] = useState(false)
 
   return (
-    <Tooltip title={copied ? 'Copied!' : title} placement="right">
+    <Tooltip
+      title={copied ? 'Copied!' : title}
+      placement="right"
+      data-testid="copyButton"
+    >
       <IconButton
-        onClick={() => {
+        onClick={(e) => {
+          e.stopPropagation()
           copy(content)
           setCopied(true)
           setTimeout(() => setCopied(false), 1200)
@@ -44,9 +57,9 @@ const CopyButton = ({ content, isBorderPresent, title = 'Copy', ...props }) => {
         <Grid
           sx={{
             border: isBorderPresent ? '1px solid #303067' : null,
-            borderRadius: '8px',
-            width: '32px',
-            height: '32px',
+            borderRadius: borderRadius ? borderRadius : '8px',
+            width: width ? width : '32px',
+            height: height ? height : '32px',
           }}
           container
           direction="row"
@@ -54,10 +67,23 @@ const CopyButton = ({ content, isBorderPresent, title = 'Copy', ...props }) => {
           alignItems="center"
         >
           {copied ? (
-            <CheckRounded fontSize="inherit" />
+            <CheckRounded
+              fontSize="inherit"
+              data-testid="copiedIcon"
+              style={{
+                margin: 'auto',
+                width: width ? width / 2 : null,
+                height: height ? height / 2 : null,
+              }}
+            />
           ) : (
             <CopyIcon
-              style={{ margin: 'auto', width: '16px', height: '16px' }}
+              style={{
+                margin: 'auto',
+                width: width ? width / 2 : '16px',
+                height: height ? height / 2 : '16px',
+              }}
+              data-testid="copyIcon"
             />
           )}
         </Grid>

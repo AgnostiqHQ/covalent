@@ -20,23 +20,11 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import {
-  Grid,
-  Paper,
-  SvgIcon,
-  Tooltip,
-  tooltipClasses,
-  Typography,
-} from '@mui/material'
+import { Grid, Paper, Tooltip, tooltipClasses, Typography } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { Handle } from 'react-flow-renderer'
-
-import { ReactComponent as AtomSvg } from '../../assets/status/activity.svg'
-import { ReactComponent as CheckSvg } from '../../assets/status/checkmark.svg'
-import { ReactComponent as ErrorSvg } from '../../assets/status/error.svg'
-import { ReactComponent as CancelSvg } from '../../assets/status/stop.svg'
-import { statusColor, truncateMiddle, nodeLabelIcon } from '../../utils/misc'
-import { ReactComponent as LoaderSvg } from '../../assets/loader.svg'
+import CopyButton from '../common/CopyButton'
+import { truncateMiddle, nodeLabelIcon, statusIcon } from '../../utils/misc'
 
 export const NODE_TEXT_COLOR = 'rgba(250, 250, 250, 0.6)'
 
@@ -56,7 +44,6 @@ const ElectronNode = ({
   targetPosition,
   isConnectable,
 }) => {
-  const color = statusColor(data.status)
   const hasBorder = data.status !== 'NEW_OBJECT'
   return (
     <>
@@ -79,12 +66,14 @@ const ElectronNode = ({
                 borderRadius: '5px 5px 0px 0px',
                 minWidth: '30%',
                 overflow: 'hidden',
-                background: (theme) => theme.palette.background.executorBg,
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
-                color: (theme) => theme.palette.text.tertiary,
-                borderColor: (theme) => theme.palette.primary.highlightBlue,
-                borderStyle: 'solid',
-                borderWidth: hasBorder ? 1 : 0,
+                color: (theme) =>
+                  !selected
+                    ? theme.palette.text.tertiary
+                    : theme.palette.text.primary,
+                '&:hover': {
+                  color: (theme) => theme.palette.text.primary,
+                },
               }}
             >
               <Handle
@@ -107,11 +96,13 @@ const ElectronNode = ({
           title={
             data.hideLabels ? (
               <>
-                <Typography color="inherit">name : {data.fullName}</Typography>
-                <Typography color="inherit">
+                <Typography sx={{ fontSize: '0.75rem' }} color="inherit">
+                  name : {data.fullName}
+                </Typography>
+                <Typography sx={{ fontSize: '0.75rem' }} color="inherit">
                   executor : {data.executor}
                 </Typography>
-                <Typography color="inherit">
+                <Typography sx={{ fontSize: '0.75rem' }} color="inherit">
                   node_id : {data.node_id}
                 </Typography>
               </>
@@ -123,6 +114,7 @@ const ElectronNode = ({
           placement="bottom-end"
         >
           <Paper
+            data-testid="electronNode"
             elevation={!selected ? 1 : 5}
             sx={{
               height: '34px',
@@ -131,68 +123,52 @@ const ElectronNode = ({
               px: 1,
               py: 0.5,
               borderRadius: '100px',
-              // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
+              bgcolor: !selected
+                ? (theme) => theme.palette.background.paper
+                : (theme) => theme.palette.primary.dark,
               color: !selected ? NODE_TEXT_COLOR : '#FAFAFA',
-              borderColor: color,
+              borderColor: !selected
+                ? (theme) => theme.palette.primary.highlightBlue
+                : (theme) => theme.palette.background.paper,
               borderStyle: 'solid',
               borderWidth: hasBorder ? 1 : 0,
+              '&:hover': {
+                bgcolor: (theme) => theme.palette.background.coveBlack02,
+                color: (theme) => theme.palette.primary.white,
+              },
             }}
           >
             <Handle
               type="target"
               position={targetPosition}
               isConnectable={isConnectable}
+              data-testid="handleelectronNode"
             />
             {nodeLabelIcon(data.nodeType)}
-            {(() => {
-              switch (data.status) {
-                case 'NEW_OBJECT':
-                  return (
-                    <SvgIcon
-                      sx={{ mt: 0.5, mr: 0.5, fontSize: 14, fill: color }}
-                    >
-                      <AtomSvg />
-                    </SvgIcon>
-                  )
-                case 'RUNNING':
-                  return (
-                    <SvgIcon
-                      sx={{ mt: 0.1, mr: 0.5, fontSize: 16, fill: color }}
-                    >
-                      <LoaderSvg />
-                    </SvgIcon>
-                  )
-                case 'COMPLETED':
-                  return (
-                    <SvgIcon
-                      sx={{ fill: color, mt: 1 }}
-                    >
-                      <CheckSvg />
-                    </SvgIcon>
-                  )
-                case 'FAILED':
-                  return (
-                    <SvgIcon sx={{ mt: 1, fill: color }}>
-                      <ErrorSvg />
-                    </SvgIcon>
-                  )
-                case 'CANCELLED':
-                  return (
-                    <SvgIcon sx={{ mt: 0.8, fill: color }}>
-                      <CancelSvg />
-                    </SvgIcon>
-                  )
-                default:
-                  return null
-              }
-            })()}
-
-            <Typography sx={{ fontSize: 14, mb: 0.3 }}>{data.label}</Typography>
+            {statusIcon(data.status)}
+            <Typography sx={{ fontSize: 14, mb: 0.3, mt: 0.3 }}>
+              {data.label}
+            </Typography>
             <Handle
+              data-testid="sourcehandleelectronNode"
               type="source"
               position={sourcePosition}
               isConnectable={isConnectable}
             />
+            {data.nodeType === 'sublattice' && (
+              <CopyButton
+                sx={{ ml: 1, color: 'text.tertiary', pt: 0.3 }}
+                fontSize="10"
+                content={data.sublattices_id}
+                size="small"
+                className="copy-btn"
+                title="Copy ID"
+                width={17}
+                height={17}
+                isBorderPresent={true}
+                borderRadius="4px"
+              />
+            )}
           </Paper>
         </ElectronTooltip>
         {!data.hideLabels ? (
@@ -201,14 +177,21 @@ const ElectronNode = ({
               elevation={!selected ? 1 : 5}
               sx={{
                 position: 'absolute',
-                top: data.executor ? 48 : 35,
+                top: data.executor ? 48 : 30,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 borderRadius: '16px',
                 minWidth: '20%',
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
-                color: (theme) => theme.palette.text.tertiary,
+                color: (theme) =>
+                  !selected
+                    ? theme.palette.text.tertiary
+                    : theme.palette.text.primary,
+
+                '&:hover': {
+                  color: (theme) => theme.palette.text.primary,
+                },
               }}
             >
               <Handle

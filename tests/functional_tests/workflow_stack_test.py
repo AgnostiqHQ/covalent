@@ -27,7 +27,7 @@ import pytest
 import covalent as ct
 import covalent._results_manager.results_manager as rm
 from covalent._results_manager.result import Result
-from covalent_dispatcher._core.execution import _dispatch_sublattice
+from covalent_dispatcher._db import update
 
 
 def construct_temp_cache_dir():
@@ -120,63 +120,10 @@ def test_sublatticing():
     dispatch_id = ct.dispatch(workflow)(a=1, b=2)
     workflow_result = rm.get_result(dispatch_id, wait=True)
 
-    assert workflow_result.error == ""
-    assert workflow_result.status == str(Result.COMPLETED)
+    assert workflow_result.error is None
+    assert workflow_result.status == Result.COMPLETED
     assert workflow_result.result == 3
     assert workflow_result.get_node_result(node_id=0)["sublattice_result"].result == 3
-
-
-@pytest.mark.asyncio
-async def test_internal_sublattice_dispatch():
-    """Test dispatcher's out-of-process _dispatch_sublattice using a workflow executor"""
-
-    @ct.electron
-    def add(a, b):
-        return a + b
-
-    sublattice_add = ct.TransportableObject(ct.lattice(add))
-    inputs = {}
-    inputs["args"] = []
-    inputs["kwargs"] = {"a": ct.TransportableObject(1), "b": ct.TransportableObject(2)}
-    workflow_executor = ["local", {}]
-    dispatch_id = "asdf"
-    sub_dispatch_id = await _dispatch_sublattice(
-        dispatch_id,
-        "/tmp",
-        inputs=inputs,
-        serialized_callable=sublattice_add,
-        workflow_executor=workflow_executor,
-    )
-
-    workflow_result = rm.get_result(sub_dispatch_id, wait=True)
-    assert workflow_result.result == 3
-
-    try:
-        sub_dispatch_id = await _dispatch_sublattice(
-            dispatch_id,
-            "/tmp",
-            inputs=inputs,
-            serialized_callable=sublattice_add,
-            workflow_executor=["client", {}],
-        )
-
-        assert False
-    except Exception as e:
-        # Dispatch should not
-        assert str(e) == "No executor selected for dispatching sublattices"
-
-    try:
-        sub_dispatch_id = await _dispatch_sublattice(
-            dispatch_id,
-            "/tmp",
-            inputs=inputs,
-            serialized_callable=sublattice_add,
-            workflow_executor=["bogus_executor", {}],
-        )
-
-        assert False
-    except Exception as e:
-        assert True
 
 
 def test_parallelization():
@@ -283,7 +230,7 @@ def test_electron_deps_call_before():
     dispatch_id = ct.dispatch(workflow)(file_path=tmp_path)
     res = ct.get_result(dispatch_id, wait=True)
 
-    assert res.error == ""
+    assert res.error is None
 
     assert res.result == (True, "Hello")
 
@@ -517,7 +464,7 @@ def test_decorated_function():
 
     rm._delete_result(dispatch_id)
 
-    assert workflow_result.status == str(Result.COMPLETED)
+    assert workflow_result.status == Result.COMPLETED
 
 
 def test_leaf_electron_failure():
@@ -536,7 +483,7 @@ def test_leaf_electron_failure():
 
     tg = workflow_result.lattice.transport_graph
 
-    assert workflow_result.status == str(Result.FAILED)
+    assert workflow_result.status == Result.FAILED
     assert tg.get_node_value(0, "status") == Result.FAILED
 
 
@@ -557,7 +504,7 @@ def test_intermediate_electron_failure():
 
     tg = workflow_result.lattice.transport_graph
 
-    assert workflow_result.status == str(Result.FAILED)
+    assert workflow_result.status == Result.FAILED
     assert tg.get_node_value(0, "status") == Result.FAILED
 
 
@@ -658,14 +605,11 @@ def test_client_workflow_executor():
     dispatch_id = ct.dispatch(work_func)(1, 2, c=3)
 
     workflow_result = rm.get_result(dispatch_id, wait=True)
-
-    rm._delete_result(dispatch_id)
-
-    assert workflow_result.status == str(Result.PENDING_POSTPROCESSING)
+    assert workflow_result.status == Result.PENDING_POSTPROCESSING
     assert workflow_result.result is None
-    workflow_result.persist()
-
+    update.persist(workflow_result)
     assert workflow_result.post_process() == 15
+    rm._delete_result(dispatch_id)
 
 
 def test_two_iterations():
@@ -730,9 +674,9 @@ def test_wait_for():
 
     dispatch_id = ct.dispatch(workflow)()
     result = ct.get_result(dispatch_id, wait=True)
-    result.persist()
+    update.persist(result)
 
-    assert result.status == str(Result.COMPLETED)
+    assert result.status == Result.COMPLETED
     assert (
         result.get_node_result(node_id=6)["start_time"]
         > result.get_node_result(node_id=0)["end_time"]

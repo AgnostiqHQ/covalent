@@ -31,6 +31,7 @@ const MobileAppBar = () => {
 
   return (
     <AppBar
+      data-testid="mobile appbar"
       position="fixed"
       sx={(theme) => ({
         display: {

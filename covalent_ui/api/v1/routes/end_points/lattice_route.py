@@ -21,20 +21,22 @@
 """Lattice route"""
 
 import uuid
-from random import randrange
+from typing import Optional
 
-from fastapi import APIRouter, HTTPException
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, HTTPException, Path, Query
 from sqlalchemy.orm import Session
 
 from covalent_ui.api.v1.data_layer.lattice_dal import Lattices
 from covalent_ui.api.v1.database.config.db import engine
+from covalent_ui.api.v1.models.dispatch_model import SortDirection
 from covalent_ui.api.v1.models.lattices_model import (
-    FileOutput,
     LatticeDetailResponse,
     LatticeExecutorResponse,
+    LatticeFileOutput,
     LatticeFileResponse,
     LatticeWorkflowExecutorResponse,
+    SubLatticeDetailResponse,
+    SubLatticeSortBy,
 )
 from covalent_ui.api.v1.utils.file_handle import FileHandler
 
@@ -53,9 +55,10 @@ def get_lattice_details(dispatch_id: uuid.UUID):
     """
 
     with Session(engine) as session:
-        electron = Lattices(session)
-        data = electron.get_lattices_id(dispatch_id)
+        lattice = Lattices(session)
+        data = lattice.get_lattices_id(dispatch_id)
         if data is not None:
+            handler = FileHandler(data["directory"])
             return LatticeDetailResponse(
                 dispatch_id=data.dispatch_id,
                 status=data.status,
@@ -64,6 +67,7 @@ def get_lattice_details(dispatch_id: uuid.UUID):
                 started_at=data.start_time,
                 ended_at=data.end_time,
                 directory=data.directory,
+                description=handler.read_from_text(data.docstring_filename),
                 runtime=data.runtime,
             )
         raise HTTPException(
@@ -79,7 +83,7 @@ def get_lattice_details(dispatch_id: uuid.UUID):
 
 
 @routes.get("/{dispatch_id}/details/{name}")
-def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
+def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
     """Get lattice file data
 
     Args:
@@ -90,16 +94,18 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
         Returns the lattice file data with the dispatch id and file_module provided provided
     """
     with Session(engine) as session:
-        electron = Lattices(session)
-        lattice_data = electron.get_lattices_id_storage_file(dispatch_id)
+        lattice = Lattices(session)
+        lattice_data = lattice.get_lattices_id_storage_file(dispatch_id)
         if lattice_data is not None:
             handler = FileHandler(lattice_data["directory"])
             if name == "result":
-                response = handler.read_from_pickle(lattice_data["results_filename"])
-                return LatticeFileResponse(data=str(response))
+                response, python_object = handler.read_from_pickle(
+                    lattice_data["results_filename"]
+                )
+                return LatticeFileResponse(data=str(response), python_object=python_object)
             if name == "inputs":
-                response = handler.read_from_pickle(lattice_data["inputs_filename"])
-                return LatticeFileResponse(data=response)
+                response, python_object = handler.read_from_pickle(lattice_data["inputs_filename"])
+                return LatticeFileResponse(data=response, python_object=python_object)
             elif name == "function_string":
                 response = handler.read_from_text(lattice_data["function_string_filename"])
                 return LatticeFileResponse(data=response)
@@ -121,8 +127,10 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
                 response = handler.read_from_text(lattice_data["error_filename"])
                 return LatticeFileResponse(data=response)
             elif name == "function":
-                response = handler.read_from_pickle(lattice_data["function_filename"])
-                return LatticeFileResponse(data=response)
+                response, python_object = handler.read_from_pickle(
+                    lattice_data["function_filename"]
+                )
+                return LatticeFileResponse(data=response, python_object=python_object)
             elif name == "transport_graph":
                 response = handler.read_from_pickle(lattice_data["transport_graph_filename"])
                 return LatticeFileResponse(data=response)
@@ -139,3 +147,25 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: FileOutput):
                     }
                 ],
             )
+
+
+@routes.get("/{dispatch_id}/sublattices", response_model=SubLatticeDetailResponse)
+def get_sub_lattice(
+    sort_by: Optional[SubLatticeSortBy] = Query(default=SubLatticeSortBy.RUNTIME),
+    sort_direction: Optional[SortDirection] = Query(default=SortDirection.DESCENDING),
+    dispatch_id: uuid.UUID = Path(title="dispatch id"),
+):
+    """Get All Sub Lattices
+
+    Args:
+        req: Dispatch ID
+
+    Returns:
+        List of Sub Lattices details
+    """
+    with Session(engine) as session:
+        lattice = Lattices(session)
+        data = lattice.get_sub_lattice_details(
+            dispatch_id=dispatch_id, sort_by=sort_by, sort_direction=sort_direction
+        )
+        return SubLatticeDetailResponse(sub_lattices=data)

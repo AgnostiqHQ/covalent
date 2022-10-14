@@ -38,6 +38,11 @@ on:
         required: true
         type: boolean
         default: true
+      prerelease_version:
+        description: "The prerelease version to release"
+        required: false
+        type: string
+        default: "master"
 
 env:
   PAUL_BLART: >
@@ -46,24 +51,49 @@ env:
     '"FyzHsn",'
     '"wjcunningham7",'
     '"santoshkumarradha"]'
+  EXECUTOR_BASE_DOCKERFILE_URL: "https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/Dockerfile?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}"
+  AWS_PLUGINS_VERSION_URL: "https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/VERSION?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}"
 
 jobs:
   github:
     runs-on: ubuntu-latest
+    outputs:
+      release: ${{ env.RELEASE }}
     steps:
-      - name: Check out release tag
+      - name: Check out stable release tag
         uses: actions/checkout@v2
         if: github.event.inputs.stable_version
         with:
           persist-credentials: false
           fetch-depth: 0
           ref: "v${{ github.event.inputs.stable_version }}"
-      - name: Check out master
+      - name: Format prerelease ref
+        if: inputs.prerelease
+        run: |
+          re='^[0-9]+$'
+          IFS='.' read -ra version <<< "${{ inputs.prerelease_version }}"
+          if [[ ${version[0]} =~ $re ]] ; then
+            echo "PRERELEASE=v$version" >> $GITHUB_ENV
+          else
+            echo "PRERELEASE=$version" >> $GITHUB_ENV
+          fi
+      - name: Check out prerelease tag
         uses: actions/checkout@v2
         if: inputs.prerelease
         with:
           persist-credentials: false
           fetch-depth: 0
+          ref: "${{ env.PRERELEASE }}"
+      - name: Generate stable release message
+        if: >
+          github.event.inputs.stable_version
+          && contains(env.PAUL_BLART, github.actor)
+        id: stable-changelog
+        uses: ./.github/actions/stable-changelog
+        with:
+          changelog-path: CHANGELOG.md
+          version-path: VERSION
+
       - name: Read version
         run: |
           if [ -z ${{ inputs.prerelease }} ] && \
@@ -74,22 +104,8 @@ jobs:
           VERSION="$(cat ./VERSION)"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "RELEASE=v$VERSION" >> $GITHUB_ENV
-      - name: Tag commit
+      - name: Generate prerelease message
         if: inputs.prerelease
-        id: push
-        run: |
-          git config user.name "CovalentOpsBot"
-          git config user.email "covalentopsbot@users.noreply.github.com"
-          git tag -a $RELEASE -m "Release $RELEASE"
-          git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
-          git push origin $RELEASE
-      - name: Check conditions for stable release
-        if: >
-          github.event.inputs.stable_version
-          && contains(env.PAUL_BLART, github.actor)
-        id: no-push
-        run: echo "Stable release for version ${{ github.event.inputs.stable_version }}"
-      - name: Generate release message
         id: message
         run: |
           begin=$(grep -n "\b${VERSION}\b" ./CHANGELOG.md | cut -d ':' -f 1)
@@ -98,17 +114,38 @@ jobs:
           echo 'MESSAGE<<EOF' >> $GITHUB_ENV
           tail +$begin ./CHANGELOG.md | head -$end >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
-      - name: Create release
+      - name: Tag commit
+        id: push
+        run: |
+          git config user.name "CovalentOpsBot"
+          git config user.email "covalentopsbot@users.noreply.github.com"
+          git tag -a $RELEASE -m "Release $RELEASE"
+          git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
+          git push origin $RELEASE
+      - name: Create prerelease
         if: >-
-          ${{ (steps.push.outcome == 'success' || steps.no-push.outcome == 'success')
+          inputs.prerelease
           && steps.message.outcome == 'success'
-          && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false') }}
+          && steps.push.outcome == 'success'
+          && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false')
         uses: ncipollo/release-action@v1
         with:
           body: ${{ env.MESSAGE }}
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
           tag: ${{ env.RELEASE }}
-          prerelease: ${{ inputs.prerelease }}
+          prerelease: true
+      - name: Create stable release
+        if: >-
+          github.event.inputs.stable_version
+          && contains(env.PAUL_BLART, github.actor)
+          && steps.stable-changelog.outcome == 'success'
+          && steps.push.outcome == 'success'
+          && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false')
+        uses: ncipollo/release-action@v1
+        with:
+          body: ${{ steps.stable-changelog.outputs.message }}
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+          tag: ${{ env.RELEASE }}
       - name: Alert Slack
         if: failure()
         uses: rtCamp/action-slack-notify@v2
@@ -119,24 +156,19 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+
   pypi:
     runs-on: ubuntu-latest
+    needs: github
     outputs:
       version: ${{ steps.validate.outputs.version }}
     steps:
       - name: Check out release tag
         uses: actions/checkout@v2
-        if: github.event.inputs.stable_version
         with:
           persist-credentials: false
           fetch-depth: 0
-          ref: "v${{ github.event.inputs.stable_version }}"
-      - name: Check out master
-        uses: actions/checkout@v2
-        if: inputs.prerelease
-        with:
-          persist-credentials: false
-          fetch-depth: 0
+          ref: ${{ needs.github.outputs.release }}
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -173,10 +205,17 @@ jobs:
             echo "You can't create a stable release without specifying the stable version number."
             exit 1
           fi
-          if ${{ inputs.prerelease == true }} ; then
-            VERSION="${VERSION}rc0"
-          fi
-          VERSION="$(echo $VERSION | sed 's/-/.post/')"
+          IFS='-' read -ra version_sub <<< $VERSION
+          if [ ${#version_sub[1]} -eq 0 ] ; then
+            #do nothing
+            :
+          elif [[ ${version_sub[1]} =~ rc ]] ; then
+            VERSION="${version_sub[0]}$(echo ${version_sub[1]} | sed 's/\.//')"
+          elif [ ${#version_sub[2]} -eq 0 ] ; then
+            VERSION="$(echo $VERSION | sed 's/-/.post/')"
+          else
+            VERSION="${version_sub[0]}.post${version_sub[1]}.dev$(echo ${version_sub[2]} | sed 's/rc.//')"
+           fi
           cd dist
           tar xzf covalent-${VERSION}.tar.gz
           diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
@@ -206,6 +245,7 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+
   conda:
     needs: pypi
     runs-on: ubuntu-latest
@@ -241,77 +281,163 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+
   docker:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
       - name: Check out release tag
         uses: actions/checkout@v2
-        if: github.event.inputs.stable_version
+        if: inputs.stable_version
         with:
           persist-credentials: false
           fetch-depth: 0
           ref: "v${{ github.event.inputs.stable_version }}"
+
       - name: Check out master
         uses: actions/checkout@v2
         if: inputs.prerelease
         with:
           persist-credentials: false
           fetch-depth: 0
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@master
         with:
-          platforms: all
+          platforms: "linux/amd64,linux/arm64"
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@master
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          aws-access-key-id: ${{ secrets.AWS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: ${{ secrets.ECR_PUBLIC_UPLOAD_ROLE }}
           aws-region: us-east-1
-      - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v1
+
       - name: Generate tag
         run: |
           aws --version
           docker info
           TAG="$(cat ./VERSION)"
-          if aws ecr describe-images \
-            --repository-name covalent
-            --image-ids imageTag=$TAG &>/dev/null ; then
-            SHORT_SHA="${GITHUB_SHA::8}"
-            TAG=$TAG-$SHORT_SHA
-          fi
           echo "TAG: $TAG"
           echo "TAG=$TAG" >> $GITHUB_ENV
+
       - name: Login to Public Registry
-        uses: docker/login-action@v1
-        with:
-          registry: public.ecr.aws
-          username: ${{ secrets.AWS_KEY_ID }}
-          password: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+
       - name: Build and push pre-release
         if: >
           inputs.prerelease
-          && !github.events.inputs.stable_version
-          && github.event_name == 'workflow_call'
+          && !inputs.stable_version
+          && github.event_name == 'schedule'
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          file: ./Dockerfile
-          platforms: all
+          file: ./Dockerfile.dev
+          platforms: linux/amd64
           push: true
           tags: |
             public.ecr.aws/covalent/covalent:latest
             public.ecr.aws/covalent/covalent:${{ env.TAG }}
+
+      - name: Check if executor base Dockerfile exists
+        id: check_aws_executor_dockerfile
+        run: |
+          status_code=$(wget --server-response ${{ env.EXECUTOR_BASE_DOCKERFILE }} 2>&1 | grep HTTP/ | awk '{print $2}')
+          echo "::set-output name=status::value=$status_code"
+
+      - name: Download Covalent AWS executor Dockerfile
+        id: get_aws_executor_dockerfile
+        if: steps.check_aws_executor_dockerfile.outputs.status_code < 400
+        run: |
+          wget ${{ env.EXECUTOR_BASE_DOCKERFILE_URL }} -O Dockerfile.awsexecutor
+
+      - name: Check if covalent-aws-plugin VERSION file is present
+        id: check_aws_plugin_version_file
+        run: |
+          status_code=$(wget --server-response ${{ env.AWS_PLUGINS_VERSION_URL }} 2>&1 | grep HTTP/ | awk '{print $2}')
+          echo "::set-output name=status::value=$status_code"
+
+      - name: Download covalent-aws-plugin VERSION file
+        id: get_aws_plugin_version
+        if: steps.check_aws_plugin_version_file.outputs.status_code < 400
+        run: |
+          wget ${{ env.AWS_PLUGINS_VERSION_URL }} -O AWS_PLUGINS_VERSION
+
+      - name: Generate AWS executor base image tag
+        if: >
+          inputs.prerelease
+          && !github.events.inputs.stable_version
+          && github.event_name == 'schedule'
+          && steps.get_aws_plugin_dockerfile.outcome == 'success'
+          && steps.get_aws_plugin_version.outcome == 'success'
+        run: |
+          aws --version
+          docker info
+          AWS_PLUGINS_TAG="$(cat ./AWS_PLUGINS_VERSION)"
+          if aws ecr describe-images \
+            --repository-name covalent-executor-base
+            --image-ids imageTag=$AWS_PLUGINS_TAG &>/dev/null ; then
+            SHORT_SHA="${GITHUB_SHA::8}"
+            AWS_PLUGINS_TAG=$AWS_PLUGINS_TAG-$SHORT_SHA
+          fi
+          echo "AWS_PLUGINS_TAG: $AWS_PLUGINS_TAG"
+          echo "AWS_PLUGINS_TAG=$AWS_PLUGINS_TAG" >> $GITHUB_ENV
+
+      - name: Build and push pre-release AWS executor image
+        uses: docker/build-push-action@v2
+        if: >
+          inputs.prerelease
+          && !github.events.inputs.stable_version
+          && github.event_name == 'schedule'
+          && !github.events.inputs.test_release
+          && steps.get_aws_plugin_dockerfile.outcome == 'success'
+          && steps.get_aws_plugin_version.outcome == 'success'
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile.awsexecutor
+          platforms: "linux/amd64,linux/arm64"
+          build-args: |
+            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:${{ env.TAG }}
+          push: true
+          tags: |
+            public.ecr.aws/covalent/covalent-executor-base:latest
+            public.ecr.aws/covalent/covalent-executor-base:${{ env.AWS_PLUGINS_TAG }}
+
       - name: Tag stable release
         if: >
           github.event_name == 'workflow_dispatch'
-          && github.event.inputs.stable_version
+          && inputs.stable_version
           && !inputs.prerelease
           && !github.events.inputs.test_release
           && contains(env.PAUL_BLART, github.actor)
         run: |
-          MANIFEST=$(aws ecr batch-get-image --repository-name covalent --image-ids imageTag=${{ github.events.inputs.stable_version }} --output json | jq --raw-output --join-output '.images[0].imageManifest')
-          aws ecr put-image --repository-name covalent --image-tag stable --image-manifest "$MANIFEST"
+          docker pull public.ecr.aws/covalent/covalent:${{ inputs.stable_version }}
+          docker tag public.ecr.aws/covalent/covalent:${{ inputs.stable_version }} public.ecr.aws/covalent/covalent:stable
+          docker push public.ecr.aws/covalent/covalent:stable
+
+      - name: Build AWS executor stable image
+        if: >
+          !inputs.prerelease
+          && github.events.inputs.stable_version
+          && !github.events.inputs.test_release
+          && contains(env.PAUL_BLART, github.actor)
+          && steps.get_aws_plugin_dockerfile.outcome == 'success'
+          && steps.get_aws_plugin_version.outcome == 'success'
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile.awsexecutor
+          platforms: "linux/amd64,linux/arm64"
+          build-args: |
+            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:stable
+          push: true
+          tags: |
+            public.ecr.aws/covalent/covalent-executor-base:stable

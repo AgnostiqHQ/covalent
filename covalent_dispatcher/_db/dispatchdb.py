@@ -21,22 +21,17 @@
 """Dispatch DataBase script."""
 
 import copy
-import json
-import os
-import sqlite3
 from datetime import datetime
-from typing import List, Tuple
 
 import networkx as nx
 import simplejson
 
 import covalent.executor as covalent_executor
-from covalent._data_store import DataStore
-from covalent._results_manager.result import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import Status
-from covalent._shared_files.utils import get_named_params
+
+from .datastore import DataStore
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info

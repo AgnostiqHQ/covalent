@@ -36,7 +36,7 @@ const ExecutorSection = ({ isFetching, metadata, ...props }) => {
   return (
     <>
       {!isFetching && (
-        <Heading>
+        <Heading data-testid="executorSection">
           Executor: <strong>{executorType}</strong>
         </Heading>
       )}

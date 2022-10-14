@@ -21,6 +21,7 @@
  */
 import _ from 'lodash'
 import { useSelector } from 'react-redux'
+import { useStoreActions } from 'react-flow-renderer'
 import { Close } from '@mui/icons-material'
 import {
   Box,
@@ -30,9 +31,7 @@ import {
   Paper,
   Typography,
 } from '@mui/material'
-import { useStoreActions } from 'react-flow-renderer'
 import { alpha } from '@mui/material/styles'
-
 import {
   statusColor,
   statusIcon,
@@ -46,11 +45,12 @@ import ExecutorSection from './ExecutorSection'
 
 export const nodeDrawerWidth = 360
 
-const NodeDrawer = ({ node }) => {
+const NodeDrawer = ({ node,setSelectedElectron }) => {
   const preview = useSelector((state) => state.latticePreview.lattice)   // unselect on close
   const setSelectedElements = useStoreActions(
     (actions) => actions.setSelectedElements
   )
+
   const handleClose = () => {
     setSelectedElements([])
   }
@@ -66,12 +66,19 @@ const NodeDrawer = ({ node }) => {
           border: 'none',
           p: 3,
           bgcolor: alpha(theme.palette.background.default),
+          boxShadow:'0px 16px 50px rgba(0, 0, 0, 0.9)',
+          backdropFilter:'blur(8px)',
+          borderRadius: '16px',
+          marginRight: '10px',
+          marginTop:'22px',
+          height: '95vh',
         },
       })}
       anchor="right"
       variant="persistent"
       open={!!node}
       onClose={handleClose}
+      data-testid="nodeDrawer"
     >
       {!!node && (
         <>
@@ -118,18 +125,27 @@ const NodeDrawer = ({ node }) => {
           {node.doc && (
             <>
               <Heading>Description</Heading>
-              <Typography fontSize="body2.fontSize" color='text.tertiary'>{node.doc}</Typography>
+              <Typography fontSize="body2.fontSize" color="text.tertiary">
+                {node.doc}
+              </Typography>
             </>
           )}
           <InputSection preview inputs={node.kwargs} />
           {/* Executor */}
-          <ExecutorSection preview metadata={_.get(preview, 'lattice.metadata')} sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })} />
+          <ExecutorSection
+            preview
+            metadata={_.get(preview, 'lattice.metadata')}
+            sx={(theme) => ({ bgcolor: theme.palette.background.outRunBg })}
+          />
 
           <Divider sx={{ my: 2 }} />
 
           {/* Source */}
           <Heading />
-          <Paper elevation={0} sx={(theme) => ({ bgcolor: theme.palette.background.darkblackbg })}>
+          <Paper
+            elevation={0}
+            sx={(theme) => ({ bgcolor: theme.palette.background.outRunBg })}
+          >
             <SyntaxHighlighter src={src} />
           </Paper>
         </>

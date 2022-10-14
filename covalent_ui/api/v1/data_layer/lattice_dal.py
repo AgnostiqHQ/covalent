@@ -21,13 +21,14 @@
 """Lattice Data Layer"""
 
 from datetime import timezone
+from typing import List
 from uuid import UUID
 
 from sqlalchemy.orm import Session
-from sqlalchemy.sql import func
+from sqlalchemy.sql import desc, func
 
-from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.lattices import Lattice
+from covalent_ui.api.v1.models.dispatch_model import SortDirection
 from covalent_ui.api.v1.models.lattices_model import LatticeDetailResponse
 
 
@@ -53,6 +54,8 @@ class Lattices:
                 Lattice.status,
                 Lattice.storage_path.label("directory"),
                 Lattice.error_filename,
+                Lattice.results_filename,
+                Lattice.docstring_filename,
                 func.datetime(Lattice.started_at, "localtime").label("start_time"),
                 func.IFNULL(func.datetime(Lattice.completed_at, "localtime"), None).label(
                     "end_time"
@@ -73,7 +76,6 @@ class Lattices:
                     "updated_at"
                 ),
             )
-            .join(Electron, Electron.parent_lattice_id == Lattice.id)
             .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
             .first()
         )
@@ -110,7 +112,6 @@ class Lattices:
                 Lattice.electron_num.label("total_electrons"),
                 Lattice.completed_electron_num.label("total_electrons_completed"),
             )
-            .join(Electron, Electron.parent_lattice_id == Lattice.id)
             .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
             .first()
         )
@@ -129,3 +130,51 @@ class Lattices:
             .first()
         )
         return data[0]
+
+    def get_sub_lattice_details(self, sort_by, sort_direction, dispatch_id) -> List[Lattice]:
+        """
+        Get summary of sub lattices
+        Args:
+            req.sort_by: sort by field name(run_time, status, lattice_name)
+            req.direction: sort by direction ASE, DESC
+        Return:
+            List of sub Lattices
+        """
+
+        data = (
+            self.db_con.query(
+                Lattice.dispatch_id.label("dispatch_id"),
+                Lattice.name.label("lattice_name"),
+                (
+                    (
+                        func.strftime(
+                            "%s",
+                            func.IFNULL(Lattice.completed_at, func.datetime.now(timezone.utc)),
+                        )
+                        - func.strftime("%s", Lattice.started_at)
+                    )
+                    * 1000
+                ).label("runtime"),
+                Lattice.electron_num.label("total_electrons"),
+                Lattice.completed_electron_num.label("total_electrons_completed"),
+                Lattice.status.label("status"),
+                func.datetime(Lattice.started_at, "localtime").label("started_at"),
+                func.IFNULL(func.datetime(Lattice.completed_at, "localtime"), None).label(
+                    "ended_at"
+                ),
+                func.datetime(Lattice.updated_at, "localtime").label("updated_at"),
+            )
+            .filter(
+                Lattice.is_active.is_not(False),
+                Lattice.electron_id.is_not(None),
+                Lattice.root_dispatch_id == str(dispatch_id),
+            )
+            .order_by(
+                desc(sort_by.value)
+                if sort_direction == SortDirection.DESCENDING
+                else sort_by.value
+            )
+            .all()
+        )
+
+        return data

@@ -20,11 +20,10 @@
 from os import path
 from pathlib import Path
 from subprocess import PIPE, Popen
-from typing import List
 
 import click
 
-from covalent._data_store.datastore import DataStore
+from ..._db.datastore import DataStore
 
 MIGRATION_WARNING_MSG = "There was an issue running migrations.\nPlease read https://covalent.readthedocs.io/en/latest/how_to/db/migration_error.html for more information."
 

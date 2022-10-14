@@ -66,7 +66,15 @@ const DashboardCard = () => {
   }, [isError])
 
   return (
-    <Paper elevation={0} sx={{ p: 3, mb: 2, borderRadius: '8px' }}>
+    <Paper
+      data-testid="dashboardCard"
+      elevation={0}
+      sx={{
+        p: 3,
+        mb: 2,
+        borderRadius: '8px',
+      }}
+    >
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
         <Typography fontSize="h5.fontSize" sx={{ color: '#FFFFFF' }}>
           Dispatch list
@@ -114,7 +122,11 @@ const DashboardCard = () => {
         />
         <DashboardDivider />
         <DashBoardCardItems
-          content={dashboardStats?.total_dispatcher_duration ? secondsToHms(dashboardStats.total_dispatcher_duration) : 'N/A'}
+          content={
+            dashboardStats?.total_dispatcher_duration
+              ? secondsToHms(dashboardStats.total_dispatcher_duration)
+              : 'N/A'
+          }
           desc="Total dispatcher duration"
           align="flex-end"
           isSkeletonPresent={!dashboardStats}

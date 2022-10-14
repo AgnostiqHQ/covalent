@@ -48,6 +48,7 @@ export default function DialogBox({
       data-testid="dialogBox"
     >
       <Box
+        data-testid="dialogbox"
         sx={{
           position: 'absolute',
           top: '40%',
@@ -74,7 +75,11 @@ export default function DialogBox({
           <Grid
             sx={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}
           >
-            <SvgIcon component={icon} style={{ fontSize: '30px' }} />
+            <SvgIcon
+              data-testid="dialogIcon"
+              component={icon}
+              style={{ fontSize: '25px' }}
+            />
             <Typography
               sx={{
                 paddingBottom: '5px',
@@ -85,12 +90,18 @@ export default function DialogBox({
               variant="subtitle2"
               data-testid="messageTitle"
             >
-              {title} {totalItems} {totalItems === 1 ? 'item' : 'items'}
+              {title} {totalItems} {totalItems === 1 ? 'item ?' : 'items ?'}
             </Typography>
           </Grid>
 
           <CloseIcon
-            style={{ marginTop: '3px', width: '10px', height: '10px',cursor:'pointer' }}
+            data-testid="closeIcon"
+            style={{
+              marginTop: '3px',
+              width: '10px',
+              height: '10px',
+              cursor: 'pointer',
+            }}
             onClick={handleClose}
           />
         </Grid>
@@ -101,7 +112,7 @@ export default function DialogBox({
             variant="subtitle2"
             data-testid="message"
           >
-            {message} {totalItems} {totalItems === 1 ? 'item' : 'items'} ?
+            {message} {totalItems} {totalItems === 1 ? 'item' : totalItems === 0 || totalItems===undefined ? '' : 'items'} ?
           </Typography>
         </Grid>
         <Grid

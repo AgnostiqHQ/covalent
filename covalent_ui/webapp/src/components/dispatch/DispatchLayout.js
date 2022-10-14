@@ -44,12 +44,16 @@ export function DispatchLayout() {
   const dispatch = useDispatch()
   const graph_result = useSelector((state) => state.graphResults.graphList)
   const latDetailError = useSelector((state) => state.latticeResults.latticeDetailsResults.error)
+  const sublatticesDispatchId = useSelector(
+    (state) => state.latticeResults.sublatticesId
+  )
   // check if socket message is received and call API
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
   useEffect(() => {
-    dispatch(graphResults({ dispatchId }))
+    if (sublatticesDispatchId?.dispatchId) dispatch(graphResults({ dispatchId: sublatticesDispatchId?.dispatchId }))
+    else dispatch(graphResults({ dispatchId }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [callSocketApi])
+  }, [callSocketApi, sublatticesDispatchId])
 
 
   // reset store values to initial state when moved to another page
@@ -80,10 +84,10 @@ export function DispatchLayout() {
   // unselect on change of dispatch
   useEffect(() => {
     setSelectedElements([])
-  }, [dispatchId, setSelectedElements])
+  }, [dispatchId, setSelectedElements,sublatticesDispatchId])
 
   // dispatch id not found
-  if(latDetailError !== null && latDetailError.status === 400){
+  if (latDetailError !== null && latDetailError.status === 400) {
     return <NotFound text="Lattice dispatch not found." />
   }
 
@@ -96,13 +100,14 @@ export function DispatchLayout() {
           width: '100vw',
           height: '100vh',
           bgcolor: graphBgColor,
-          paddingTop: '20px'
+          paddingTop: '35px'
         }}
       >
         {Object.keys(graph_result).length !== 0 && (<LatticeGraph
           graph={graph_result}
           hasSelectedNode={!!selectedElectron}
           marginLeft={latticeDrawerWidth + navDrawerWidth}
+          dispatchId={dispatchId}
         />)}
       </Box>
       <NavDrawer />
@@ -113,7 +118,7 @@ export function DispatchLayout() {
         <NodeDrawer
           node={selectedElectron}
           graph={graph_result}
-          dispatchId={dispatchId}
+          dispatchId={sublatticesDispatchId ? sublatticesDispatchId?.dispatchId : dispatchId}
         />
       ) : (
         <PageLoading />

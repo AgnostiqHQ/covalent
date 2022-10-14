@@ -1,13 +1,33 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
 import os
-import urllib.request
-from pathlib import Path
-from subprocess import PIPE, CalledProcessError, Popen
-from typing import Optional
 
 from furl import furl
 
-from covalent._file_transfer import File
-from covalent._file_transfer.strategies.transfer_strategy_base import FileTransferStrategy
+from ..._shared_files import logger
+from .. import File
+from .transfer_strategy_base import FileTransferStrategy
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
 
 
 class S3(FileTransferStrategy):
@@ -49,9 +69,12 @@ class S3(FileTransferStrategy):
 
     # return callable to download here implies 'from' is a remote source
     def download(self, from_file: File, to_file: File = File()) -> File:
-        from_filepath = from_file.filepath
+        from_filepath = from_file.filepath.strip("/")
         to_filepath = to_file.filepath
         bucket_name = furl(from_file.uri).origin[5:]
+        app_log.debug(
+            f"S3 download bucket: {bucket_name}, from_filepath: {from_filepath}, to_filepath {to_filepath}."
+        )
 
         def callable():
             import boto3
@@ -68,8 +91,11 @@ class S3(FileTransferStrategy):
     def upload(self, from_file: File, to_file: File = File()) -> File:
 
         from_filepath = from_file.filepath
-        to_filepath = to_file.filepath
+        to_filepath = to_file.filepath.strip("/")
         bucket_name = furl(to_file.uri).origin[5:]
+        app_log.debug(
+            f"S3 download bucket: {bucket_name}, from_filepath: {from_filepath}, to_filepath {to_filepath}."
+        )
 
         def callable():
             import boto3

@@ -21,7 +21,7 @@
  */
 
 import React from 'react'
-import { createTheme, emphasize, darken } from '@mui/material/styles'
+import { createTheme, emphasize } from '@mui/material/styles'
 import { Link as RouterLink } from 'react-router-dom'
 
 const LinkBehavior = React.forwardRef(({ href, ...props }, ref) => {
@@ -32,6 +32,7 @@ const LinkBehavior = React.forwardRef(({ href, ...props }, ref) => {
 const defaultTheme = createTheme({
   typography: {
     fontFamily: '"DM Sans", "Helvetica", "Arial", sans-serif',
+    logsFont: '"Inter", "Arial", sans-serif',
   },
   palette: {
     mode: 'dark',
@@ -53,11 +54,11 @@ const defaultTheme = createTheme({
       paper: '#1C1C46',
       coveBlack01: '#464660',
       coveBlack02: '#303067',
-      coveBlack03: '#1C1C46',
       graphCanvas: '#464646',
       darkblackbg: '#101820',
       buttonBg: '#10102C',
       executorBg: '#1E1E2E',
+      outRunBg:'#0B0B11'
     },
     error: {
       main: '#FF6464',
@@ -70,6 +71,12 @@ const defaultTheme = createTheme({
     },
     running: {
       main: '#dac3ff',
+    },
+    info: {
+      main: '#CBCBD7',
+    },
+    queued: {
+      main: '#FFC164',
     },
     text: {
       primary: '#CBCBD7',
@@ -172,6 +179,6 @@ const theme = createTheme(defaultTheme, {
   },
 })
 
-export const graphBgColor = darken(theme.palette.background.paper, 0.3)
+export const graphBgColor = theme.palette.background.default
 
 export default theme

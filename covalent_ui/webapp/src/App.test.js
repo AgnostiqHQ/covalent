@@ -20,11 +20,35 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { render, screen } from '@testing-library/react'
+import { screen, render } from '@testing-library/react'
 import App from './App'
+import { BrowserRouter } from 'react-router-dom'
+import React from 'react'
+import { Provider } from 'react-redux'
+import reducers from './redux/reducers'
+import { configureStore } from '@reduxjs/toolkit'
+import theme from './utils/theme'
+import ThemeProvider from '@mui/system/ThemeProvider'
+import DispatchLayout from './components/dispatch/DispatchLayout'
 
-test('renders title home link', () => {
-  render(<App />)
-  const linkElement = screen.getByText(/covalent dashboard/i)
-  expect(linkElement).toBeInTheDocument()
+function reduxRender(renderedComponent) {
+  const store = configureStore({
+    reducer: reducers,
+  })
+
+  return render(
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <BrowserRouter>{renderedComponent}</BrowserRouter>
+      </ThemeProvider>
+    </Provider>
+  )
+}
+
+describe('App Page', () => {
+  test('app.js is rendered', () => {
+    reduxRender(<App element={<DispatchLayout />} />)
+    const linkElement = screen.getByTestId('dashboard')
+    expect(linkElement).toBeInTheDocument()
+  })
 })
