@@ -171,7 +171,7 @@ jobs:
       - name: Validate distribution
         if: env.BUILD_AND_RUN_ALL
         run: |
-          VERSION="$(cat ./VERSION)"
+          VERSION="$(cat ./VERSION | sed 's/-//')"
           cd dist
           tar xzf covalent-${VERSION}.tar.gz
           diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent

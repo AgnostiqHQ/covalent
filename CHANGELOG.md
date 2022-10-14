@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Fixing the validate distribution step given changes in -rc0 suffix to version
+
 ### Fixed
 
 - Re-applying default executor fix post config file reunification
