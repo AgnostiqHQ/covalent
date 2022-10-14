@@ -20,7 +20,8 @@
 
 # syntax=docker/dockerfile:1
 FROM python:3.8-slim-bullseye AS build
-ARG COVALENT_VERSION=0.177.0
+ARG COVALENT_VERSION="0.177.0"
+ARG COVALENT_COMMIT_SHA="f2e85397ea4609df274a38b03e6e17dcbae6bc52" # pragma: allowlist secret
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends rsync wget \
@@ -36,8 +37,8 @@ LABEL org.label-schema.name="Covalent Server"
 LABEL org.label-schema.vendor="Agnostiq"
 LABEL org.label-schema.url="https://covalent.xyz"
 LABEL org.label-schema.vcs-url="https://github.com/AgnostiqHQ/covalent"
-LABEL org.label-schema.vcs-ref="f2e85397ea4609df274a38b03e6e17dcbae6bc52" # pragma: allowlist secret
-LABEL org.label-schema.version="0.177.0"
+LABEL org.label-schema.vcs-ref=${COVALENT_COMMIT_SHA}
+LABEL org.label-schema.version=${COVALENT_VERSION}
 LABEL org.label-schema.docker.cmd="docker run -it -p 8080:8080 -d covalent:latest"
 LABEL org.label-schema.schema-version=1.0
 
@@ -64,4 +65,4 @@ HEALTHCHECK CMD wget --no-verbose --tries=1 --spider http://localhost:8080 || ex
 RUN covalent config \
   && sed -i 's|^results_dir.*$|results_dir = "/covalent/results"|' /home/ubuntu/.config/covalent/covalent.conf
 
-CMD covalent start --ignore-migrations --port 8080 && bash
+CMD ["covalent", "start", "--ignore-migrations", "--port", "8080", "&&", "bash"]

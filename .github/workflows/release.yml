@@ -31,6 +31,12 @@ on:
         required: true
         type: boolean
         default: true
+      executor_base_image_stable_version:
+        description: "Stable version number for the executor base image, e.g. 0.32.3"
+        type: string
+      awslambda_executor_base_image_stable_version:
+        description: "Stable version number for the AWS Lambda executor base image, e.g. 0.32.3"
+        type: string
   workflow_call:
     inputs:
       prerelease:
@@ -171,10 +177,12 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
           ref: ${{ needs.github.outputs.release }}
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
+
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
@@ -183,21 +191,25 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: 16
+
       - name: Build Webapp
         run: |
           cd ./covalent_ui/webapp
           yarn install
           yarn build
+
       - name: Build Prerelease Distribution
         if: inputs.prerelease
         id: pre-build
         run: python setup.py egg_info --tag-build=pre sdist
+
       - name: Build Stable Distribution
         if: >
           github.event.inputs.stable_version
           && contains(env.PAUL_BLART, github.actor)
         id: stable-build
         run: python setup.py sdist
+
       - name: Validate Distribution
         id: validate
         run: |
@@ -227,16 +239,36 @@ jobs:
           diff -r covalent-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf covalent-${VERSION}/
           echo "::set-output name=version::$VERSION"
+
       - name: Upload Distribution
         if: >
           steps.pre-build.outcome == 'success'
           || steps.stable-build.outcome == 'success'
           && steps.validate.outcome == 'success'
           && ${{ !github.event.inputs.test_release }}
+        id: upload_dist
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: twine upload dist/*
+
+      - name: Assert distribution is available on pypi
+        if: >
+          steps.upload_dist.outcome == 'success'
+        run: |
+          while true
+          do
+            #PYPI_VERSION=$(pip index versions --pre covalent | grep covalent | cut -d'(' -f2 | cut -d')' -f1)
+
+            # Endpoint returns all the version in ascending order to the last one will be the most recently uploaded dist
+            PYPI_VERSION=$(curl https://pypi.org/pypi/covalent/json | jq '.releases' | jq 'keys' | jq -r 'last')
+            if [ "${PYPI_VERSION}" = "${{ steps.validate.outputs.version }}" ]; then
+              break
+            else
+              sleep 1
+            fi
+          done
+
       - name: Alert Slack
         if: failure()
         uses: rtCamp/action-slack-notify@v2
@@ -284,8 +316,10 @@ jobs:
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
 
+  # Build Covalent docker image (full/sdk only)
   docker:
     runs-on: ubuntu-latest
+    needs: pypi
     permissions:
       id-token: write
       contents: read
@@ -340,77 +374,28 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          file: ./Dockerfile.dev
-          platforms: linux/amd64
+          file: ./Dockerfile
+          platforms: "linux/amd64,linux/arm64"
           push: true
           tags: |
             public.ecr.aws/covalent/covalent:latest
             public.ecr.aws/covalent/covalent:${{ env.TAG }}
 
-      - name: Check if executor base Dockerfile exists
-        id: check_aws_executor_dockerfile
-        run: |
-          status_code=$(wget --server-response ${{ env.EXECUTOR_BASE_DOCKERFILE_URL }} 2>&1 | grep HTTP/ | awk '{print $2}')
-          echo "::set-output name=status::value=$status_code"
-
-      - name: Download Covalent AWS executor Dockerfile
-        id: get_aws_executor_dockerfile
-        if: steps.check_aws_executor_dockerfile.outputs.status_code < 400
-        run: |
-          wget ${{ env.EXECUTOR_BASE_DOCKERFILE_URL }} -O Dockerfile.awsexecutor
-
-      - name: Check if covalent-aws-plugin VERSION file is present
-        id: check_aws_plugin_version_file
-        run: |
-          status_code=$(wget --server-response ${{ env.AWS_PLUGINS_VERSION_URL }} 2>&1 | grep HTTP/ | awk '{print $2}')
-          echo "::set-output name=status::value=$status_code"
-
-      - name: Download covalent-aws-plugin VERSION file
-        id: get_aws_plugin_version
-        if: steps.check_aws_plugin_version_file.outputs.status_code < 400
-        run: |
-          wget ${{ env.AWS_PLUGINS_VERSION_URL }} -O AWS_PLUGINS_VERSION
-
-      - name: Generate AWS executor base image tag
+      - name: Build and push SDK only pre-release
         if: >
           inputs.prerelease
-          && !github.events.inputs.stable_version
+          && !inputs.stable_version
           && github.event_name == 'schedule'
-          && steps.get_aws_plugin_dockerfile.outcome == 'success'
-          && steps.get_aws_plugin_version.outcome == 'success'
-        run: |
-          aws --version
-          docker info
-          AWS_PLUGINS_TAG="$(cat ./AWS_PLUGINS_VERSION)"
-          if aws ecr describe-images \
-            --repository-name covalent-executor-base
-            --image-ids imageTag=$AWS_PLUGINS_TAG &>/dev/null ; then
-            SHORT_SHA="${GITHUB_SHA::8}"
-            AWS_PLUGINS_TAG=$AWS_PLUGINS_TAG-$SHORT_SHA
-          fi
-          echo "AWS_PLUGINS_TAG: $AWS_PLUGINS_TAG"
-          echo "AWS_PLUGINS_TAG=$AWS_PLUGINS_TAG" >> $GITHUB_ENV
-
-      - name: Build and push pre-release AWS executor image
         uses: docker/build-push-action@v2
-        if: >
-          inputs.prerelease
-          && !github.events.inputs.stable_version
-          && github.event_name == 'schedule'
-          && !github.events.inputs.test_release
-          && steps.get_aws_plugin_dockerfile.outcome == 'success'
-          && steps.get_aws_plugin_version.outcome == 'success'
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          file: ./Dockerfile.awsexecutor
+          file: ./Dockerfile.sdk
           platforms: "linux/amd64,linux/arm64"
-          build-args: |
-            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:${{ env.TAG }}
           push: true
           tags: |
-            public.ecr.aws/covalent/covalent-executor-base:latest
-            public.ecr.aws/covalent/covalent-executor-base:${{ env.AWS_PLUGINS_TAG }}
+            public.ecr.aws/covalent/covalent:latestsdk
+            public.ecr.aws/covalent/covalent:${{ env.TAG }}sdk
 
       - name: Tag stable release
         if: >
@@ -424,110 +409,187 @@ jobs:
           docker tag public.ecr.aws/covalent/covalent:${{ inputs.stable_version }} public.ecr.aws/covalent/covalent:stable
           docker push public.ecr.aws/covalent/covalent:stable
 
-      - name: Build AWS executor stable image
+          # SDK only stable release
+          docker pull public.ecr.aws/covalent/covalent:${{ inputs.stable_version }}sdk
+          docker tag public.ecr.aws/covalent/covalent:${{ inputs.stable_version }}sdk public.ecr.aws/covalent/covalent:stablesdk
+          docker push public.ecr.aws/covalent/covalent:stablesdk
+
+  # Build Covalent executor base image
+  docker_executor_base_image:
+    runs-on: ubuntu-latest
+    needs: docker
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@v3
+        if: inputs.executor_base_image_stable_version
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          repository: AgnostiqHQ/covalent-aws-plugins
+          ref: "v${{ github.event.inputs.executor_base_image_stable_version }}"
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+
+      - name: Check out master
+        uses: actions/checkout@v3
+        if: inputs.prerelease
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          repository: AgnostiqHQ/covalent-aws-plugins
+          ref: "master"
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+        with:
+          platforms: "linux/amd64,linux/arm64"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@master
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.ECR_PUBLIC_UPLOAD_ROLE }}
+          aws-region: us-east-1
+
+      - name: Login to Public Registry
+        run: |
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+
+      - name: Generate tag
+        run: |
+          aws --version
+          docker info
+          TAG="$(cat ./VERSION)"
+          echo "TAG: $TAG"
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Build and push pre-release
         if: >
-          !inputs.prerelease
-          && github.events.inputs.stable_version
-          && !github.events.inputs.test_release
-          && contains(env.PAUL_BLART, github.actor)
-          && steps.get_aws_plugin_dockerfile.outcome == 'success'
-          && steps.get_aws_plugin_version.outcome == 'success'
+          inputs.prerelease
+          && !inputs.executor_base_image_stable_version
+          && github.event_name == 'schedule'
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          file: ./Dockerfile.awsexecutor
+          file: ./Dockerfile
           platforms: "linux/amd64,linux/arm64"
+          push: true
           build-args: |
-            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:stable
+            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:latestsdk
+          tags: |
+            public.ecr.aws/covalent/covalent-executor-base:latest
+            public.ecr.aws/covalent/covalent-executor-base:${{ env.TAG }}
+
+      - name: Build stable image
+        if: >
+          !inputs.prerelease
+          && github.events.inputs.executor_base_image_stable_version
+          && !github.events.inputs.test_release
+          && contains(env.PAUL_BLART, github.actor)
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64
+          build-args: |
+            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:stablesdk
           push: true
           tags: |
             public.ecr.aws/covalent/covalent-executor-base:stable
 
-      # AWS Lambda executor base docker image
-      - name: Check if lambda executor base Dockerfile exists
-        id: check_awslambda_executor_dockerfile
-        run: |
-          status_code=$(wget --server-response ${{ env.LAMBDA_EXECUTOR_BASE_DOCKERFILE_URL }} 2>&1 | grep HTTP/ | awk '{print $2}')
-          echo "::set-output name=awslambda_executor_dockerfile_status::value=$status_code"
+  # Build Covalent Lambda executor base image
+  docker_awslambda_executor_base_image:
+    runs-on: ubuntu-latest
+    needs: docker
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@v3
+        if: inputs.awslambda_executor_base_image_stable_version
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          repository: AgnostiqHQ/covalent-awslambda-plugin
+          ref: "v${{ github.event.inputs.awslambda_executor_base_image_stable_version }}"
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
 
-      - name: Download Covalent AWS Lambda executor Dockerfile
-        id: get_awslambda_executor_dockerfile
-        if: steps.check_awslambda_executor_dockerfile.outputs.status_code < 400
-        run: |
-          wget ${{ env.LAMBDA_EXECUTOR_BASE_DOCKERFILE_URL }} -O Dockerfile.awslambda
+      - name: Check out master
+        uses: actions/checkout@v3
+        if: inputs.prerelease
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          repository: AgnostiqHQ/covalent-awslambda-plugin
+          ref: "master"
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
 
-      - name: Check if covalent-awslambda-plugin VERSION file is present
-        id: check_awslambda_plugin_version_file
-        run: |
-          status_code=$(wget --server-response ${{ env.AWSLAMBDA_PLUGIN_VERSION_URL }} 2>&1 | grep HTTP/ | awk '{print $2}')
-          echo "::set-output name=awslambda_plugin_version_file_status::value=$status_code"
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+        with:
+          platforms: "linux/amd64,linux/arm64"
 
-      - name: Download covalent-awslambda-plugin VERSION file
-        id: get_awslambda_plugin_version_file
-        if: steps.check_awslambda_plugin_version_file.outputs.status_code < 400
-        run: |
-          wget ${{ env.AWSLAMBDA_PLUGIN_VERSION_URL }} -O AWSLAMBDA_PLUGIN_VERSION
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@master
 
-      - name: Generate AWSLambda executor base image tag
-        if: >
-          inputs.prerelease
-          && !github.events.inputs.stable_version
-          && github.event_name == 'schedule'
-          && steps.get_awslambda_plugin_dockerfile.outcome == 'success'
-          && steps.get_awslambda_plugin_version_file.outcome == 'success'
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.ECR_PUBLIC_UPLOAD_ROLE }}
+          aws-region: us-east-1
+
+      - name: Login to Public Registry
+        run: |
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+
+      - name: Generate tag
         run: |
           aws --version
           docker info
-          AWSLAMBDA_PLUGIN_TAG="$(cat ./AWSLAMBDA_PLUGIN_VERSION)"
-          echo "AWSLAMBDA_PLUGIN_TAG: $AWSLAMBDA_PLUGIN_TAG"
-          echo "AWSLAMBDA_PLUGIN_TAG=$AWSLAMBDA_PLUGIN_TAG" >> $GITHUB_ENV
-          # Do we need this check?
-          #if aws ecr describe-images \
-          #  --repository-name covalent-lambda-executor
-          #  --image-ids imageTag=$AWSLAMBDA_PLUGIN_TAG &>/dev/null ; then
-          #  # What GITHUB_SHA will this be? base covalent or covalent-awslambda-plugin/develop?
-          #  SHORT_SHA="${GITHUB_SHA::8}"
-          #  AWSLAMBDA_PLUGIN_TAG=$AWSLAMBDA_PLUGIN_TAG-$SHORT_SHA
-          #fi
+          TAG="$(cat ./VERSION)"
+          echo "TAG: $TAG"
+          echo "TAG=$TAG" >> $GITHUB_ENV
 
-      - name: Build and push pre-release AWSLambda executor image
-        uses: docker/build-push-action@v2
+      - name: Build and push pre-release
         if: >
           inputs.prerelease
-          && !github.events.inputs.stable_version
+          && !inputs.awslambda_executor_base_image_stable_version
           && github.event_name == 'schedule'
-          && !github.events.inputs.test_release
-          && steps.get_awslambda_executor_dockerfile.outcome == 'success'
-          && steps.get_awslambda_plugin_version_file.outcome == 'success'
-        with:
-          builder: ${{ steps.buildx.outputs.name }}
-          context: .
-          file: ./Dockerfile.awslambda
-          platforms: "linux/amd64,linux/arm64"
-          build-args: |
-            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:${{ env.TAG }}
-          push: true
-          tags: |
-            public.ecr.aws/covalent/covalent-lambda-executor:latest
-            public.ecr.aws/covalent/covalent-lambda-executor:${{ env.AWSLAMBDA_PLUGIN_TAG }}
-
-      - name: Build AWSLambda executor stable image
-        if: >
-          !inputs.prerelease
-          && github.events.inputs.stable_version
-          && !github.events.inputs.test_release
-          && contains(env.PAUL_BLART, github.actor)
-          && steps.get_awslambda_executor_dockerfile.outcome == 'success'
-          && steps.get_awslambda_plugin_version_file.outcome == 'success'
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          file: ./Dockerfile.awslambda
+          file: ./Dockerfile
+          platforms: "linux/amd64,linux/arm64"
+          push: true
+          build-args: |
+            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:latestsdk
+          tags: |
+            public.ecr.aws/covalent/covalent-lambda-executor:latest
+            public.ecr.aws/covalent/covalent-lambda-executor:${{ env.TAG }}
+
+      - name: Build stable image
+        if: >
+          !inputs.prerelease
+          && github.events.inputs.awslambda_executor_base_image_stable_version
+          && !github.events.inputs.test_release
+          && contains(env.PAUL_BLART, github.actor)
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile
           platforms: "linux/amd64,linux/arm64"
           build-args: |
-            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:stable
+            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:stablesdk
           push: true
           tags: |
             public.ecr.aws/covalent/covalent-lambda-executor:stable
