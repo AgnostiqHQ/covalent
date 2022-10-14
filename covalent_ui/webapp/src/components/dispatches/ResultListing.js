@@ -21,7 +21,7 @@
  */
 
 import _ from 'lodash'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { createSelector } from '@reduxjs/toolkit'
 import { useDebounce } from 'use-debounce'
@@ -580,7 +580,6 @@ const ResultListing = () => {
   const [openDialogBox, setOpenDialogBox] = useState(false)
   const [openDialogBoxAll, setOpenDialogBoxAll] = useState(false)
   const [anchorEl, setAnchorEl] = useState(null)
-  const resultsRef = useRef([])
 
   const isError = useSelector(
     (state) => state.dashboard.fetchDashboardList.error
@@ -727,7 +726,6 @@ const ResultListing = () => {
     setSelected([])
     const offsetValue = pageValue === 1 ? 0 : pageValue * 10 - 10
     setOffset(offsetValue)
-    resultsRef.current[0].scrollIntoView({ behavior: 'smooth', block: 'end' })
   }
 
   const handleChangeSelection = (dispatchId) => {
@@ -919,7 +917,7 @@ const ResultListing = () => {
                 <TableBody sx={{ height: 'max-content' }}>
                   {dashboardListView &&
                     stableSort(dashboardListView, getComparator(sortOrder, sortColumn)).map((result, index) => (
-                      <TableRow hover key={result.dispatchId} ref={(el) => (resultsRef.current[index] = el)}>
+                      <TableRow hover key={result.dispatchId}>
                         <TableCell padding="checkbox">
                           <Checkbox
                             disableRipple
