@@ -33,8 +33,8 @@ with open("VERSION") as f:
 
 
 requirements_file = "requirements.txt"
-sdk_only = os.environ.get("COVALENT_SDK_ONLY")
-if sdk_only == "True":
+sdk_only = bool(os.environ.get("COVALENT_SDK_ONLY"))  # Can be True or False
+if sdk_only:
     requirements_file = "requirements-client.txt"
 
 with open(requirements_file) as f:
@@ -153,7 +153,6 @@ class BuildUI(Command):
 
 setup_info = {
     "name": "covalent",
-    "packages": find_packages(exclude=["tests"]),
     "version": version,
     "maintainer": "Agnostiq",
     "url": "https://github.com/AgnostiqHQ/covalent",
@@ -164,9 +163,16 @@ setup_info = {
     "description": "Covalent Workflow Tool",
     "long_description": open("README.md").read(),
     "long_description_content_type": "text/markdown",
-    "include_package_data": True,
+    "include_package_data": False if sdk_only else True,
     "zip_safe": False,
-    "package_data": {
+    "packages": find_packages(
+        exclude=["*tests*", "*covalent_dispatcher*", "*covalent_ui*", "*covalent_migrations*"],
+    )
+    if sdk_only
+    else find_packages(exclude=["*tests*"]),
+    "package_data": {"covalent": ["executor/executor_plugins/local.py"]}
+    if sdk_only
+    else {
         "covalent": ["executor/executor_plugins/local.py"],
         "covalent_dispatcher": ["_service/app.py"],
         "covalent_ui": recursively_append_files("covalent_ui/webapp/build"),
@@ -202,7 +208,9 @@ setup_info = {
         "docs": Docs,
         "webapp": BuildUI,
     },
-    "entry_points": {
+    "entry_points": {}
+    if sdk_only
+    else {
         "console_scripts": [
             "covalent = covalent_dispatcher._cli.cli:cli",
         ],
