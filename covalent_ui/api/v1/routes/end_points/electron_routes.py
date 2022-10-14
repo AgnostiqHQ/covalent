@@ -105,24 +105,25 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
     """
     Get Electron details
     Args:
-        dispatch_id: Dispatch id of lattice/sublattice
+        dispatch_id: Disapi/v1/dispatches/6a6a6dd8-bcf0-4c67-be0a-20d8e5c34c24/2/details/inputspatch id of lattice/sublattice
         electron_id: Transport graph node id of a electron
         name: refers file type, like inputs, function_string, function, executor, result, value, key,
         stdout, deps, call_before, call_after, error, info
     Returns:
         Returns electron details based on the given name
     """
-    if name == "inputs":
-        response, python_object = get_electron_inputs(
-            dispatch_id=dispatch_id, electron_id=electron_id
-        )
-        return ElectronFileResponse(data=str(response), python_object=str(python_object))
+
     with Session(engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
         if result is not None:
             handler = FileHandler(result["storage_path"])
-            if name == "function_string":
+            if name == "inputs":
+                response, python_object = get_electron_inputs(
+                    dispatch_id=dispatch_id, electron_id=electron_id
+                )
+                return ElectronFileResponse(data=str(response), python_object=str(python_object))
+            elif name == "function_string":
                 response = handler.read_from_text(result["function_string_filename"])
                 return ElectronFileResponse(data=response)
             elif name == "function":
