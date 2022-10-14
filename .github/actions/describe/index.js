@@ -10,7 +10,7 @@ const run = async () => {
   else core.setFailed("There is an error in the stable input");
   const octokit = github.getOctokit(token);
   const {owner:owner,repo:repo} = github.context.repo
-  const {
+  let {
     data: {
       object: { sha: commit },
     },
@@ -30,10 +30,10 @@ const run = async () => {
     while (i < tags.length && latestTag == null) {
       if (
         commit === tags[i].commit.sha &&
-        (!tag.name.match("rc") || !stable) &&
-        tag.name.match(re)
+        (!tags[i].name.match("rc") || !stable) &&
+        tags[i].name.match(re)
       )
-        latestTag = tag.name;
+        latestTag = tags[i].name;
       i++;
     }
     if (latestTag == null) {
@@ -42,14 +42,13 @@ const run = async () => {
         repo: repo,
         ref: commit,
       });
-      const parents = data.commit.parents;
-      if (parents.length !== 1) {
+      if (data.parents.length !== 1) {
         core.setFailed(
           "Branch history is not linear. Try squashing your commits."
         );
         return;
       } else {
-        commit = parents[0].sha;
+        commit = data.parents[0].sha;
       }
     }
   }
@@ -64,7 +63,6 @@ const run = async () => {
 };
 
 run()
-  .catch(error => error)
-  .then((error) => {
-    core.setFailed(error?.message);
+  .catch(error => {
+    core.setFailed(error.message);
   });

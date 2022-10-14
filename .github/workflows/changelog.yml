@@ -50,7 +50,7 @@ jobs:
         uses: ./.github/actions/describe
         with:
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
-          branch: ${{ github.event.ref }}
+          branch: develop
           stable: false
       - name: Update version number
         id: changelog
