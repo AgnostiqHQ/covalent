@@ -45,12 +45,11 @@ jobs:
               - '.github/actions/changelog/action.yml'
             dist:
               - '.github/actions/changelog/dist/**'
-
       - name: Latest tag
         id: get-latest-tag
         uses: ./.github/actions/describe
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
           branch: ${{ github.event.ref }}
           stable: false
       - name: Update version number
