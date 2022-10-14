@@ -45,6 +45,9 @@ jobs:
           - covalent-awsbatch-plugin
           - covalent-awslambda-plugin
           - covalent-braket-plugin
+          - covalent-ec2-plugin
+          - covalent-aws-plugins
+          - covalent-kubernetes-plugin
         include:
           - repo: covalent
             language: javascript
