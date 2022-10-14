@@ -176,10 +176,12 @@ setup_info = {
     )
     if sdk_only
     else find_packages(exclude=["*tests*", "*doc*"]),
-    "package_data": {"covalent": ["executor/executor_plugins/local.py"]}
+    "package_data": {
+        "covalent": ["executor/executor_plugins/local.py", "executor/executor_plugins/dask.py"]
+    }
     if sdk_only
     else {
-        "covalent": ["executor/executor_plugins/local.py"],
+        "covalent": ["executor/executor_plugins/local.py", "executor/executor_plugins/dask.py"],
         "covalent_dispatcher": ["_service/app.py"],
         "covalent_ui": recursively_append_files("covalent_ui/webapp/build"),
     },
