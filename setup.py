@@ -166,10 +166,16 @@ setup_info = {
     "include_package_data": False if sdk_only else True,
     "zip_safe": False,
     "packages": find_packages(
-        exclude=["*tests*", "*covalent_dispatcher*", "*covalent_ui*", "*covalent_migrations*"],
+        exclude=[
+            "*tests*",
+            "*doc*",
+            "*covalent_dispatcher*",
+            "*covalent_ui*",
+            "*covalent_migrations*",
+        ],
     )
     if sdk_only
-    else find_packages(exclude=["*tests*"]),
+    else find_packages(exclude=["*tests*", "*doc*"]),
     "package_data": {"covalent": ["executor/executor_plugins/local.py"]}
     if sdk_only
     else {
