@@ -803,6 +803,11 @@ async def run_workflow(result_object: Result) -> Result:
             updated_at=datetime.now(timezone.utc),
         )
 
+        error_msg = "".join(traceback.TracebackException.from_exception(ex).format())
+        result_object._status = Result.FAILED
+        result_object._error = error_msg
+        result_object._end_time = datetime.now(timezone.utc)
+        upsert._lattice_data(result_object)
         write_lattice_error(
             result_object.dispatch_id,
             "".join(traceback.TracebackException.from_exception(ex).format()),
