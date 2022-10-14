@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - updated hotfix logic to run on a merge to a release branch
 - Fixing js github actions dist by re-building from develop
+- Fixing syntax in describe action & compiled action manually
 
 ## [0.202.0] - 2022-10-11
 
