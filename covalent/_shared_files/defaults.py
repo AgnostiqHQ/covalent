@@ -126,7 +126,7 @@ def get_default_executor() -> dict:
     """
     from .config import get_config
 
-    return "local" if get_config("sdk.no_cluster") else "dask"
+    return "local" if get_config("sdk.no_cluster") == "true" else "dask"
 
 
 # Default configuration settings
