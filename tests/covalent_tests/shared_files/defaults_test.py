@@ -23,7 +23,6 @@
 import os
 from unittest import mock
 
-import dask.system as dask_system
 import pytest
 
 
@@ -70,9 +69,6 @@ def test_get_default_dask_config(env_vars):
 
         assert received_config["cache_dir"] == "test_home/.cache/covalent"
         assert received_config["log_dir"] == "test_home/.cache/covalent"
-        assert received_config["mem_per_worker"] == "auto"
-        assert received_config["threads_per_worker"] == 1
-        assert received_config["num_workers"] == dask_system.CPU_COUNT
 
 
 def test_get_default_workflow_data_config(env_vars):
@@ -83,7 +79,6 @@ def test_get_default_workflow_data_config(env_vars):
 
         received_config = get_default_workflow_data_config()
 
-        assert received_config["storage_type"] == "local"
         assert received_config["base_dir"] == "test_home/.local/share/covalent/workflow_data"
 
 
