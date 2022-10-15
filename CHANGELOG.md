@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Add steps to build, tag and push the AWS lambda executor base container image to ECR
+
 ### Fixed
 
 - Re-applying default executor fix post config file reunification
