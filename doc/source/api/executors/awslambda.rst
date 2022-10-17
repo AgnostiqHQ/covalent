@@ -90,11 +90,11 @@ The following table shows a list of all input arguments including the required a
      - Description
    * - function_name
      - Yes
-     - "-"
+     - ``-``
      - Name of the AWS lambda function to be used at runtime
    * - s3_bucket_name
      - Yes
-     - -
+     - ``-``
      - Name of an AWS S3 bucket that the executor must use to cache object files
    * - credentials_file
      - No
@@ -256,10 +256,10 @@ to properly run tasks using the AWS Lambda compute service:
         }
 
 
-where `<bucket-name>` is the name of an S3 bucket to be used by the executor to store temporary files generated during task
+where ``<bucket-name>`` is the name of an S3 bucket to be used by the executor to store temporary files generated during task
 execution. The lambda function interacts with the S3 bucket as well as with the AWS Cloudwatch service to route any log messages.
 Due to this, the lambda function must have the necessary IAM permissions in order to do so. Users must provision an IAM role that has
-the `AWSLambdaExecute` policy attached to it. The policy document is summarized here for convenience:
+the ``AWSLambdaExecute`` policy attached to it. The policy document is summarized here for convenience:
 
 .. dropdown:: Covalent Lambda Execution Role Policy
 
