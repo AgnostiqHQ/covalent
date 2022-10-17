@@ -286,7 +286,7 @@ the ``AWSLambdaExecute`` policy attached to it. The policy document is summarize
             ]
         }
 
-[Terraform](https://www.terraform.io/) can be used to spin up the required resources for this executor and users can use the snippet as a starting point
+Users can use the following `Terraform <https://www.terraform.io/>`_ snippet as a starting point to spin up the required resources
 
 .. code-block:: terraform
 
