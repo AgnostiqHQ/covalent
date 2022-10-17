@@ -15,7 +15,7 @@ Pagination divides dispatches into discrete pages with up to 10 records per page
 .. |skip last| image:: ../images/skip_last.png
     :width: 20px
 
-.. image:: ../images/page.gif
+.. image:: ../images/dispatchlist_pagination.gif
    :align: center
    :width: 5000px
 
