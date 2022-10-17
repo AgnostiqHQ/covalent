@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- `covalent restart` no longer overwrites the `sdk.no_cluster` setting
+
 ### Added
 
 - RTD for User Interface
