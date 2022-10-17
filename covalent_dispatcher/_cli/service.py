@@ -304,7 +304,7 @@ def start(
     ctx: click.Context,
     port: int,
     develop: bool,
-    no_cluster: bool,
+    no_cluster: str,
     mem_per_worker: str,
     threads_per_worker: int,
     workers: int,
@@ -365,10 +365,11 @@ def restart(ctx, port: bool, develop: bool) -> None:
     Restart the server.
     """
 
+    no_cluster_map = {"true": True, "false": False}
     configuration = {
         "port": port or get_config("user_interface.port"),
         "develop": develop or (get_config("sdk.log_level") == "debug"),
-        "no_cluster": get_config("user_interface.port"),
+        "no_cluster": no_cluster_map[get_config("sdk.no_cluster")],
         "mem_per_worker": get_config("dask.mem_per_worker"),
         "threads_per_worker": get_config("dask.threads_per_worker"),
         "workers": set_config("dask.num_workers"),
