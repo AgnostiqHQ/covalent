@@ -105,7 +105,7 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
     """
     Get Electron details
     Args:
-        dispatch_id: Disapi/v1/dispatches/6a6a6dd8-bcf0-4c67-be0a-20d8e5c34c24/2/details/inputspatch id of lattice/sublattice
+        dispatch_id: Dispatch id of lattice/sublattice
         electron_id: Transport graph node id of a electron
         name: refers file type, like inputs, function_string, function, executor, result, value, key,
         stdout, deps, call_before, call_after, error, info
