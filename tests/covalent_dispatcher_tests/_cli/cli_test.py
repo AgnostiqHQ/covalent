@@ -37,12 +37,11 @@ def test_cli(mocker):
     with open("VERSION", "r") as f:
         current_version = f.readline()
 
-    assert (
-        ("python" in response.output.lower())
-        and ("agnostiq" in response.output.lower())
-        and ("copyright" in response.output.lower())
-        and (current_version in response.output.lower())
-    )
+    normalized_output = response.output.lower()
+    assert "python" in normalized_output
+    assert "agnostiq" in normalized_output
+    assert "copyright" in normalized_output
+    assert current_version in normalized_output
 
     response = runner.invoke(cli)
     assert ("options" in response.output.lower()) and ("commands" in response.output.lower())
