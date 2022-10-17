@@ -372,7 +372,7 @@ def restart(ctx, port: bool, develop: bool) -> None:
         "no_cluster": no_cluster_map[get_config("sdk.no_cluster")],
         "mem_per_worker": get_config("dask.mem_per_worker"),
         "threads_per_worker": get_config("dask.threads_per_worker"),
-        "workers": set_config("dask.num_workers"),
+        "workers": get_config("dask.num_workers"),
     }
 
     ctx.invoke(stop)
