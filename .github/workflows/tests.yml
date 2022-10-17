@@ -171,8 +171,19 @@ jobs:
       - name: Validate distribution
         if: env.BUILD_AND_RUN_ALL
         run: |
-          echo "Setting VERSION from X.Y.Z-rc.0 to X.Y.Zrc0"
-          VERSION="$(cat ./VERSION | sed 's/-//' | sed 's/\(.*\)\./\1/')"
+          echo "Intended version transformations (Semver -> PEP440):"
+          echo "A.B.C -> A.B.C (stable release)"
+          echo "A.B.C-D -> A.B.C.postD (post-release)"
+          echo "A.B.C-rc.D -> A.B.CrcD (release candidate / pre-release)"
+          echo "A.B.C-D-rc.E -> A.B.C.postD.devE (development pre-release between release and post-release)"
+          echo "\nOriginal Version file:"
+          cat ./VERSION
+          sed -i 's/\(-\)\([0-9]\+\)/\.post\2/' VERSION
+          sed -i 's/\(\.post[0-9]\+\)\(-rc\.\)/\1.dev' VERSION
+          sed -i 's/-rc\./rc/' VERSION
+          echo "New version file:"
+          cat ./VERSION
+          VERSION="$(cat ./VERSION"
           cd dist
           tar xzf covalent-${VERSION}.tar.gz
           diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
