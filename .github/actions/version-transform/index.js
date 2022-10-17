@@ -1,6 +1,6 @@
 const core = require("@actions/core");
 const fs = require('fs')
-const version = fs
+let version = fs
     .readFileSync(core.getInput("version-path"), "utf8")
     .trim();
 

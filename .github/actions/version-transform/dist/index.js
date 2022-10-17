@@ -2819,7 +2819,7 @@ var __webpack_exports__ = {};
 (() => {
 const core = __nccwpck_require__(809);
 const fs = __nccwpck_require__(147)
-const version = fs
+let version = fs
     .readFileSync(core.getInput("version-path"), "utf8")
     .trim();
 
@@ -2828,6 +2828,7 @@ version = version.replace(/(.post[0-9]+)(-rc.)/, "$1.dev")
 version = version.replace('-rc.', 'rc')
 
 core.setOutput("version", version);
+
 })();
 
 module.exports = __webpack_exports__;
