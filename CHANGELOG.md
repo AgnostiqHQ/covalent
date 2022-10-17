@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Re-applying default executor fix post config file reunification
+
+## [0.203.0-rc.0] - 2022-10-14
+
+### Authors
+
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Aravind-psiog <aravind.prabaharan@psiog.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+- Scott Wyman Neagle <wymnea@protonmail.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Will Cunningham <wjcunningham7@gmail.com>
+
+
 ### Added 
 
 - Ability to use terminal on the GUI.
@@ -19,7 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - updated hotfix logic to run on a merge to a release branch
-- Increase frequency of nightly workflow (temp)
+- Fixing js github actions dist by re-building from develop
+- Fixing syntax in describe action & compiled action manually
 
 ## [0.202.0] - 2022-10-11
 
