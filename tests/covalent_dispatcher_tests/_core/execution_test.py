@@ -26,7 +26,7 @@ Tests for the core functionality of the dispatcher.
 import asyncio
 from asyncio import Queue
 from typing import Dict, List
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import cloudpickle as pickle
 import pytest
@@ -738,19 +738,20 @@ async def test_dispatch_sync_sublattice(test_db, mocker):
     def sub_workflow(x):
         return task(x)
 
-    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-
     result_object = get_mock_result()
+    sub_result = get_mock_result()
     result_object._initialize_runtime_state()
 
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._core.execution.run_workflow", return_value=sub_result)
+    mocker.patch(
+        "covalent_dispatcher._core.execution.initialize_result_object", return_value=sub_result
+    )
+    mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
     result_object._runtime_state["executor_cache"] = executor_cache
     serialized_callable = ct.TransportableObject(sub_workflow)
     inputs = {"args": [ct.TransportableObject(2)], "kwargs": {}}
-
-    result_object._update_node = MagicMock()
-
-    mock_update_node = mocker.patch("covalent._results_manager.result.Result._update_node")
 
     sub_result = await _dispatch_sync_sublattice(
         parent_result_object=result_object,
@@ -767,44 +768,30 @@ async def test_dispatch_sync_sublattice(test_db, mocker):
         status=Result.RUNNING,
         sublattice_result=sub_result,
     )
-    result_object._update_node.assert_called_once_with(**node_result)
+    mock_update_node.assert_called_with(result_object, node_result)
 
     # Check handling of invalid workflow executors
 
-    try:
-        sub_result = await _dispatch_sync_sublattice(
-            parent_result_object=result_object,
-            parent_electron_id=1,
-            parent_tg_node_id=0,
-            inputs=inputs,
-            serialized_callable=serialized_callable,
-            workflow_executor=["client", {}],
-        )
-        assert False
+    sub_result = await _dispatch_sync_sublattice(
+        parent_result_object=result_object,
+        parent_electron_id=1,
+        parent_tg_node_id=0,
+        inputs=inputs,
+        serialized_callable=serialized_callable,
+        workflow_executor=["client", {}],
+    )
+    assert sub_result is None
 
-    except RuntimeError:
-        pass
-
-    try:
-        bad_short_name = "fake_executor"
-        bad_object_dict = {
-            "type": "FakeExecutor",
-            "short_name": "fake_executor",
-            "attributes": {"instance_id": -1},
-        }
-        executor_cache.id_instance_map[-1] = None
-        sub_result = await _dispatch_sync_sublattice(
-            parent_result_object=result_object,
-            parent_electron_id=1,
-            parent_tg_node_id=0,
-            inputs=inputs,
-            serialized_callable=serialized_callable,
-            workflow_executor=["fake_executor", bad_object_dict],
-        )
-        assert False
-
-    except ValueError:
-        pass
+    executor_cache.id_instance_map[-1] = None
+    sub_result = await _dispatch_sync_sublattice(
+        parent_result_object=result_object,
+        parent_electron_id=1,
+        parent_tg_node_id=0,
+        inputs=inputs,
+        serialized_callable=serialized_callable,
+        workflow_executor=["fake_executor", {}],
+    )
+    assert sub_result is None
 
 
 @pytest.mark.asyncio
@@ -1259,9 +1246,9 @@ async def test_run_workflow_exception(mocker):
         "covalent_dispatcher._core.execution.write_lattice_error"
     )
 
-    with pytest.raises(RuntimeError) as ex:
-        await run_workflow(result_object)
+    result = await run_workflow(result_object)
 
+    assert result.status == Result.FAILED
     mock_register.assert_called_once_with(result_object)
     mock_unregister.assert_called_once_with(result_object)
     mock_register.assert_called_once_with(result_object)
@@ -1298,3 +1285,31 @@ async def test_cancel_workflow(mocker):
 
     res1._cancel.assert_awaited_once()
     res2._cancel.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_run_task_executor_exception_handling(mocker):
+    """Test that exceptions from initializing executors are caught"""
+
+    result_object = get_mock_result()
+    result_object._initialize_runtime_state()
+    inputs = {"args": [], "kwargs": {}}
+    mock_get_executor = mocker.patch(
+        "covalent_dispatcher._core.execution._executor_manager.get_executor",
+        side_effect=Exception(),
+    )
+
+    node_result = await _run_task(
+        result_object=result_object,
+        node_id=1,
+        inputs=inputs,
+        serialized_callable=None,
+        selected_executor=["nonexistent", {}],
+        call_before=[],
+        call_after=[],
+        node_name=sublattice_prefix,
+        workflow_executor=["local", {}],
+        unplanned_task=False,
+    )
+
+    assert node_result["status"] == Result.FAILED

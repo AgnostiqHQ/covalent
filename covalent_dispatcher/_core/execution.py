@@ -211,11 +211,12 @@ async def _dispatch_sync_sublattice(
         short_name, object_dict = workflow_executor
 
         if short_name == "client":
+            app_log.error("No executor selected for dispatching sublattices")
             raise RuntimeError("No executor selected for dispatching sublattices")
 
     except Exception as ex:
         app_log.debug(f"Exception when trying to determine sublattice executor: {ex}")
-        raise ex
+        return None
 
     sub_dispatch_inputs = {"args": [serialized_callable], "kwargs": inputs["kwargs"]}
     for arg in inputs["args"]:
@@ -224,38 +225,38 @@ async def _dispatch_sync_sublattice(
     # Build the sublattice graph. This must be run
     # externally since it involves deserializing the
     # sublattice workflow function.
-
-    # increment the task count b/c this is an "un-planned" task (not
-    # visible in the initial transport graph)
-    res = await _run_task(
-        result_object=parent_result_object,
-        node_id=parent_result_object._get_workflow_executor_task_id(),
-        serialized_callable=TransportableObject.make_transportable(_build_sublattice_graph),
-        selected_executor=workflow_executor,
-        node_name="build_sublattice_graph",
-        call_before=[],
-        call_after=[],
-        inputs=sub_dispatch_inputs,
-        workflow_executor=workflow_executor,
-        unplanned_task=True,
+    fut = asyncio.create_task(
+        _run_task(
+            result_object=parent_result_object,
+            node_id=parent_result_object._get_workflow_executor_task_id(),
+            serialized_callable=TransportableObject.make_transportable(_build_sublattice_graph),
+            selected_executor=workflow_executor,
+            node_name="build_sublattice_graph",
+            call_before=[],
+            call_after=[],
+            inputs=sub_dispatch_inputs,
+            workflow_executor=workflow_executor,
+            unplanned_task=True,
+        )
     )
-    json_sublattice = json.loads(res["output"].json)
+    res = await fut
+    if res["status"] == Result.COMPLETED:
+        json_sublattice = json.loads(res["output"].json)
 
-    sub_result_object = initialize_result_object(
-        json_sublattice, parent_result_object, parent_electron_id
-    )
-    app_log.debug(f"Sublattice dispatch id: {sub_result_object.dispatch_id}")
-
-    # Attach the sublattice result object to the parent tg node
-    node_result = generate_node_result(
-        node_id=parent_tg_node_id,
-        status=Result.RUNNING,
-        sublattice_result=sub_result_object,
-    )
-
-    parent_result_object._update_node(**node_result)
-
-    return await run_workflow(sub_result_object)
+        sub_result_object = initialize_result_object(
+            json_sublattice, parent_result_object, parent_electron_id
+        )
+        app_log.debug(f"Sublattice dispatch id: {sub_result_object.dispatch_id}")
+        # Attach the sublattice result object to the parent tg node
+        node_result = generate_node_result(
+            node_id=parent_tg_node_id,
+            status=Result.RUNNING,
+            sublattice_result=sub_result_object,
+        )
+        update._node(parent_result_object, node_result)
+        return await run_workflow(sub_result_object)
+    else:
+        return None
 
 
 def _get_executor_instance(
@@ -342,14 +343,24 @@ async def _run_task(
     dispatch_id = result_object.dispatch_id
     results_dir = result_object.results_dir
     executor_cache = result_object._get_executor_cache()
-    executor = _get_executor_instance(
-        node_id=node_id,
-        dispatch_id=dispatch_id,
-        node_name=node_name,
-        selected_executor=selected_executor,
-        executor_cache=executor_cache,
-        unplanned_task=unplanned_task,
-    )
+    try:
+        executor = _get_executor_instance(
+            node_id=node_id,
+            dispatch_id=dispatch_id,
+            node_name=node_name,
+            selected_executor=selected_executor,
+            executor_cache=executor_cache,
+            unplanned_task=unplanned_task,
+        )
+    except Exception as ex:
+        app_log.debug(f"Exception when trying to instantiate executor: {ex}")
+        node_result = generate_node_result(
+            node_id=node_id,
+            end_time=datetime.now(timezone.utc),
+            status=Result.FAILED,
+            error="".join(traceback.TracebackException.from_exception(ex).format()),
+        )
+        return node_result
 
     # run the task on the executor and register any failures
     try:
@@ -862,12 +873,12 @@ async def run_workflow(result_object: Result) -> Result:
             completed_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
         )
-
+        result_object._error = "".join(traceback.TracebackException.from_exception(ex).format())
+        result_object._status = Result.FAILED
         write_lattice_error(
             result_object.dispatch_id,
             "".join(traceback.TracebackException.from_exception(ex).format()),
         )
-        raise
     finally:
         _unregister_dispatch(result_object)
         app_log.debug(f"Unregistered dispatch {result_object.dispatch_id}")
