@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Updated RTD with details about the new AWS lambda executor interface
+
 ### Added
 
 - RTD for User Interface
