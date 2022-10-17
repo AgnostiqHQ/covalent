@@ -58,7 +58,10 @@ def get_home(request: Request, rest_of_path: str):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
-socketio_app = socketio.ASGIApp(sio, static_files=STATIC_FILES)
+socketio_app = socketio.ASGIApp(
+    sio,
+    static_files=STATIC_FILES,
+)
 fastapi_app.mount("/", socketio_app)
 
 

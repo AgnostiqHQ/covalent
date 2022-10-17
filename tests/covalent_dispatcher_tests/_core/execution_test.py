@@ -715,31 +715,23 @@ async def test_dispatch_sync_sublattice(test_db, mocker):
 
     # Check handling of invalid workflow executors
 
-    try:
-        sub_result = await _dispatch_sync_sublattice(
-            parent_result_object=result_object,
-            parent_electron_id=1,
-            inputs=inputs,
-            serialized_callable=serialized_callable,
-            workflow_executor=["client", {}],
-        )
-        assert False
+    sub_result = await _dispatch_sync_sublattice(
+        parent_result_object=result_object,
+        parent_electron_id=1,
+        inputs=inputs,
+        serialized_callable=serialized_callable,
+        workflow_executor=["client", {}],
+    )
+    assert sub_result is None
 
-    except RuntimeError:
-        pass
-
-    try:
-        sub_result = await _dispatch_sync_sublattice(
-            parent_result_object=result_object,
-            parent_electron_id=1,
-            inputs=inputs,
-            serialized_callable=serialized_callable,
-            workflow_executor=["fake_executor", {}],
-        )
-        assert False
-
-    except ValueError:
-        pass
+    sub_result = await _dispatch_sync_sublattice(
+        parent_result_object=result_object,
+        parent_electron_id=1,
+        inputs=inputs,
+        serialized_callable=serialized_callable,
+        workflow_executor=["fake_executor", {}],
+    )
+    assert sub_result is None
 
 
 @pytest.mark.asyncio
@@ -808,6 +800,32 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         inputs=inputs,
         serialized_callable=None,
         selected_executor=["local", {}],
+        call_before=[],
+        call_after=[],
+        node_name=sublattice_prefix,
+        workflow_executor=["local", {}],
+    )
+
+    assert node_result["status"] == Result.FAILED
+
+
+@pytest.mark.asyncio
+async def test_run_task_executor_exception_handling(mocker):
+    """Test that exceptions from initializing executors are caught"""
+
+    result_object = get_mock_result()
+    inputs = {"args": [], "kwargs": {}}
+    mock_get_executor = mocker.patch(
+        "covalent_dispatcher._core.execution._executor_manager.get_executor",
+        side_effect=Exception(),
+    )
+
+    node_result = await _run_task(
+        result_object=result_object,
+        node_id=1,
+        inputs=inputs,
+        serialized_callable=None,
+        selected_executor=["nonexistent", {}],
         call_before=[],
         call_after=[],
         node_name=sublattice_prefix,
