@@ -283,9 +283,21 @@ def test_stop(mocker, monkeypatch):
 def test_restart(mocker, port_tag, port, pid, server, restart_called, start_called, stop_called):
     """Test the restart CLI command."""
 
+    mock_config_map = {
+        "user_interface.port": port,
+        "sdk.log_level": "debug",
+        "sdk.no_cluster": "true",
+        "dask.mem_per_worker": 1024,
+        "dask.threads_per_worker": 2,
+        "dask.num_workers": 4,
+    }
+
+    def mock_config(key):
+        return mock_config_map[key]
+
     start = mocker.patch("covalent_dispatcher._cli.service.start")
     stop = mocker.patch("covalent_dispatcher._cli.service.stop")
-    mocker.patch("covalent_dispatcher._cli.service.get_config", return_value=port)
+    mocker.patch("covalent_dispatcher._cli.service.get_config", mock_config)
 
     obj = mocker.MagicMock()
     mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=pid)
