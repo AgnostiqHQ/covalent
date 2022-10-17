@@ -17,11 +17,11 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
-
 import os
 import re
 from datetime import datetime
 
+from dateutil import tz
 from fastapi.responses import Response
 
 from covalent._shared_files.config import get_config
@@ -57,7 +57,9 @@ class Logs:
         json_data = {"log_date": None, "status": "INFO", "message": reg[0]}
         if len(reg) >= 3:
             parse_str = datetime.strptime(reg[1], "%Y-%m-%d %H:%M:%S,%f")
-            json_data = {"log_date": f"{parse_str}", "status": reg[2], "message": reg[3]}
+            parse_str = parse_str.replace(tzinfo=tz.tzutc())
+            dt_local = parse_str.astimezone(tz.tzlocal())
+            json_data = {"log_date": f"{dt_local}", "status": reg[2], "message": reg[3]}
         if search != "":
             if (search in json_data["message"].lower()) or (search in json_data["status"].lower()):
                 result_data.append(json_data)
@@ -79,13 +81,11 @@ class Logs:
         output_data, result_data = [], []
         last_msg = ""
         reverse_list = direction.value == "DESC"
-
         split_line, split_words = (
             r"\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,3})?,[0-9]+]"
         ), (
             r"\[(.*)\] \[(TRACE|DEBUG|INFO|NOTICE|WARN|WARNING|ERROR|SEVERE|CRITICAL|FATAL)\] ((.|\n)*)"
         )
-
         try:
             with open(UI_LOGFILE, "r", encoding="utf-8") as logfile:
                 for line in logfile:
@@ -97,10 +97,8 @@ class Logs:
                     last_msg = ""
         except FileNotFoundError:
             output_data = []
-
         if len(output_data) == 0:
             return LogsResponse(items=[], total_count=len(result_data))
-
         regex_expr = re.compile(split_words)
         for line in output_data:
             self.__split_merge_json(line, regex_expr, result_data, search.lower())
@@ -109,11 +107,9 @@ class Logs:
             key=lambda e: (e[sort_by.value] is not None, e[sort_by.value]),
             reverse=reverse_list,
         )
-
         modified_data = (
             modified_data[offset : count + offset] if count != 0 else modified_data[offset:]
         )
-
         return LogsResponse(items=modified_data, total_count=len(result_data))
 
     def download_logs(self):

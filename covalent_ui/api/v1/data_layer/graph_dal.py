@@ -44,22 +44,6 @@ class Graph:
         Return:
             graph data with list of nodes
         """
-        # sub_query = self.db_con.query(Lattice.id).where(Lattice.electron_id == Electron.id).subquery()
-        # return (
-        #     self.db_con.query(
-        #         Electron.id,
-        #         Electron.name,
-        #         Electron.transport_graph_node_id.label("node_id"),
-        #         Electron.started_at,
-        #         Electron.completed_at,
-        #         Electron.status,
-        #         Electron.type,
-        #         Electron.executor,
-        #         self.db_con.query(Lattice.id).where(Lattice.electron_id == Electron.id)
-        #     )
-        #     .filter(Electron.parent_lattice_id == parent_lattice_id)
-        #     .all()
-        # )
         sql = text(
             """SELECT
             electrons.id as id,
@@ -134,8 +118,11 @@ class Graph:
             graph data with list of nodes and links
         """
         parent_lattice_id = (
-            self.db_con.query(Lattice.id).where(Lattice.dispatch_id == str(dispatch_id)).first()[0]
+            self.db_con.query(Lattice.id).where(Lattice.dispatch_id == str(dispatch_id)).first()
         )
-        nodes = self.check_error(self.get_nodes(parent_lattice_id))
-        links = self.check_error(self.get_links(parent_lattice_id))
-        return {"dispatch_id": str(dispatch_id), "nodes": nodes, "links": links}
+        if parent_lattice_id is not None:
+            parrent_id = parent_lattice_id[0]
+            nodes = self.check_error(self.get_nodes(parrent_id))
+            links = self.check_error(self.get_links(parrent_id))
+            return {"dispatch_id": str(dispatch_id), "nodes": nodes, "links": links}
+        return None
