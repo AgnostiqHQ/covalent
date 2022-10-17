@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- RTD for User Interface
+
 ### Fixed
 
 - Re-applying default executor fix post config file reunification
@@ -562,7 +566,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
-- Added read the docs for user interface
 - Added db schema migration error guide in RTD
 - Removed `get_data_store` from quantum chemistry tutorial #1046
 
