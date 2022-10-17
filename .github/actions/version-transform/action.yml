@@ -1,0 +1,12 @@
+name: "Semver to PEP440 Version"
+description: "Transform Semver Version to PEP440 Version"
+inputs:
+  version-path:
+    description: "Path to version file containing semver version"
+    required: true
+outputs:
+  version:
+    description: "The new PEP440 Version"
+runs:
+  using: "node16"
+  main: "dist/index.js"
