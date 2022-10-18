@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Updated all CI Slack alerts to all go to the #covalent-ci channel
+
 ### Fixed
 
 - VERSION incrementing logic in changelog
@@ -30,7 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
-- Updated all CI Slack alerts to all go to the #covalent-ci channel
 - Removed PAUL_BLART check on build sdist step in release.yml
 - Consolidated pre & stable build into one step in release.yml
 
