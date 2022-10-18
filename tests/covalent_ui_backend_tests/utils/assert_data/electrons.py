@@ -66,6 +66,18 @@ def seed_electron_data():
                     "python_object": None,
                 },
             },
+            "case_function_1": {
+                "status_code": 200,
+                "path": {
+                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
+                    "electron_id": 0,
+                    "name": "function",
+                },
+                "response_data": {
+                    "data": None,
+                    "python_object": None,
+                },
+            },
             "case_executor_1": {
                 "status_code": 200,
                 "path": {

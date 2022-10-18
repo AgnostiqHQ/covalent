@@ -180,6 +180,20 @@ def test_delete_invalid_uuid():
     assert response_detail["type"] == "type_error.uuid"
 
 
+def test_delete_none():
+    """Test deleting no dispatches"""
+    test_data = output_data["test_delete"]["case5"]
+    response = object_test_template(
+        api_path=output_data["test_delete"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.POST,
+        body_data=test_data["request_data"]["body"],
+    )
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
+
+
 def test_delete_all():
     """Test delete all dispatches"""
     test_data = output_data["test_delete_all"]["case1"]
@@ -196,7 +210,7 @@ def test_delete_all():
 
 def test_delete_all_with_search():
     """Test delete all dispatches with search"""
-    test_data = output_data["test_delete_all"]["case2"]
+    test_data = output_data["test_delete_all"]["case3"]
     response = object_test_template(
         api_path=output_data["test_delete_all"]["api_path"],
         app=main.fastapi_app,
@@ -208,9 +222,33 @@ def test_delete_all_with_search():
         assert response.json() == test_data["response_data"]
 
 
+def test_delete_all_with_filter():
+    """Test delete all dispatches with filter"""
+    test_data = output_data["test_delete_all"]["case2"]
+    response = object_test_template(
+        api_path=output_data["test_delete_all"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.POST,
+        body_data=test_data["request_data"]["body"],
+    )
+    assert response.status_code == test_data["status_code"]
+
+
+def test_delete_all_with_filter_case2():
+    """Test delete all dispatches with filter case2"""
+    test_data = output_data["test_delete_all"]["case4"]
+    response = object_test_template(
+        api_path=output_data["test_delete_all"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.POST,
+        body_data=test_data["request_data"]["body"],
+    )
+    assert response.status_code == test_data["status_code"]
+
+
 def test_delete_all_invalid_filter():
-    """Test delete all dispatches with search"""
-    test_data = output_data["test_delete_all"]["case3"]
+    """Test delete all dispatches with invalid filter"""
+    test_data = output_data["test_delete_all"]["case5"]
     response = object_test_template(
         api_path=output_data["test_delete_all"]["api_path"],
         app=main.fastapi_app,

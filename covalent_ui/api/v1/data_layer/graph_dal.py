@@ -21,7 +21,6 @@
 """Graph Data Layer"""
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -107,21 +106,6 @@ class Graph:
             .all()
         )
 
-    def check_error(self, data):
-        """
-        Helper method to rise exception if data is None
-
-        Args:
-            data: list of queried data
-        Return:
-            data
-        Rise:
-            Http Exception with status code 400 and details
-        """
-        if data is None:
-            raise HTTPException(status_code=400, detail=["Something went wrong"])
-        return data
-
     def get_graph(self, dispatch_id: UUID):
         """
         Get graph data from parent lattice id
@@ -138,6 +122,6 @@ class Graph:
         )
         if parent_lattice_id is None:
             return None
-        nodes = self.check_error(self.get_nodes(parent_lattice_id[0]))
-        links = self.check_error(self.get_links(parent_lattice_id[0]))
+        nodes = self.get_nodes(parent_lattice_id[0])
+        links = self.get_links(parent_lattice_id[0])
         return {"dispatch_id": str(dispatch_id), "nodes": nodes, "links": links}

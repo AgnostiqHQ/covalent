@@ -55,6 +55,24 @@ def test_logs(mocker):
         assert response.json() == test_data["response_data"]
 
 
+def test_logs_case2(mocker):
+    """Test Logs"""
+    mocker.patch(
+        "covalent_ui.api.v1.data_layer.logs_dal.UI_LOGFILE",
+        "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_3.log",
+    )
+    test_data = output_data["test_logs"]["case1_1"]
+    response = object_test_template(
+        api_path=output_data["test_logs"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+    )
+    print(response.json())
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
+
+
 def test_logs_with_queries(mocker):
     """Test Logs With Queries"""
     mocker.patch(
@@ -83,7 +101,7 @@ def test_non_existing_logs(mocker):
     """Test Missing Logs"""
     mocker.patch(
         "covalent_ui.api.v1.data_layer.logs_dal.UI_LOGFILE",
-        "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_3.log",
+        "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_4.log",
     )
     test_data = output_data["test_logs"]["case5"]
     response = object_test_template(

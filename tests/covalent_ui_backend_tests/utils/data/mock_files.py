@@ -525,6 +525,20 @@ Killed
 [2022-09-26 07:41:42,907] [INFO] WebSocket - connection open
 [2022-09-26 07:41:42,907] [INFO] 127.0.0.1:47378 - "GET /favicon.ico HTTP/1.1" 404""",
                 },
+                {
+                    "file_name": "case_3.log",
+                    "data": """Killed
+[2022-09-23 07:43:59,752] [INFO] Started server process [41482]
+[2022-09-23 07:43:59,753] [INFO] Waiting for application startup.
+[2022-09-23 07:43:59,753] [INFO] Application startup complete.
+[2022-09-26 07:41:42,411] [INFO] 127.0.0.1:47378 - "GET /docs HTTP/1.1" 200
+[2022-09-26 07:41:42,907] [INFO] 127.0.0.1:47378 - "GET /openapi.json HTTP/1.1" 200
+connection Closed
+[2022-09-26 07:41:42,907] [INFO] WebSocket - connection open
+[2022-09-26 07:41:42,907] [INFO] 127.0.0.1:47378 - "GET /favicon.ico HTTP/1.1" 404
+Connection Closed
+killed""",
+                },
             ],
         },
     }

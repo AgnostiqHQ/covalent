@@ -78,6 +78,17 @@ def seed_lattice_data():
                     "python_object": None,
                 },
             },
+            "case_function_1": {
+                "status_code": 200,
+                "path": {
+                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
+                    "name": "function",
+                },
+                "response_data": {
+                    "data": None,
+                    "python_object": None,
+                },
+            },
             "case_inputs_1": {
                 "status_code": 200,
                 "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd", "name": "inputs"},
@@ -144,5 +155,8 @@ def seed_lattice_data():
                 "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd"},
                 "query_data": {"sort_by": "total_electrons", "sort_direction": "ASC"},
             },
+        },
+        "functional_test_lattices": {
+            "case1": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd", "lattice_id": 1}
         },
     }

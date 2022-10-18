@@ -85,6 +85,21 @@ def test_lattices_function_string():
         assert response.json() == test_data["response_data"]
 
 
+def test_lattices_function():
+    """Test lattices results"""
+    test_data = output_data["test_lattices_file"]["case_function_1"]
+    response = object_test_template(
+        api_path=output_data["test_lattices_file"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+        path=test_data["path"],
+    )
+    print(response.json())
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
+
+
 def test_lattices_inputs():
     """Test lattices results"""
     test_data = output_data["test_lattices_file"]["case_inputs_1"]

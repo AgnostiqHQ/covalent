@@ -70,6 +70,20 @@ def test_electrons_details_function_string():
         assert response.json() == test_data["response_data"]
 
 
+def test_electrons_details_function():
+    """Test overview"""
+    test_data = output_data["test_electrons_details"]["case_function_1"]
+    response = object_test_template(
+        api_path=output_data["test_electrons_details"]["api_path"],
+        path=test_data["path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+    )
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
+
+
 def test_electrons_details_executor():
     """Test overview"""
     test_data = output_data["test_electrons_details"]["case_executor_1"]
