@@ -40,8 +40,7 @@ and return an excited phrase.
 
     executor = AWSLambdaExecutor(
         function_name = "my-lambda-function"
-        s3_bucket_name="covalent-lambda-job-resources",
-        execution_role="covalent-lambda-execution-role"
+        s3_bucket_name="covalent-lambda-job-resources"
     )
 
     @ct.electron(executor=executor)
