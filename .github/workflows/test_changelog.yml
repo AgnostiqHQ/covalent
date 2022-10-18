@@ -24,9 +24,12 @@ on: pull_request
 
 jobs:
   test_changelog_workflow:
-    name: Test Changelog
     runs-on: ubuntu-latest
     steps:
+      - name: Check out head
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
       - name: Assign Version
         uses: AgnostiqHQ/covalent/.github/workflows/changelog.yml@1366-fix-version-increment
         secrets: inherit # pragma: allowlist secret
