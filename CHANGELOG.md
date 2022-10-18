@@ -11,8 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Rendering newlines in ErrorCard on the UI for displaying error stacktraces
 
+- `covalent restart` honors the `sdk.no_cluster` setting
+
+### Docs
+
+- Updated RTD with details about the new AWS lambda executor interface
+
 ### Operations
 
+- Removed PAUL_BLART check on build sdist step in release.yml
 - Consolidated pre & stable build into one step in release.yml
 
 ## [0.204.0-rc.0] - 2022-10-17
