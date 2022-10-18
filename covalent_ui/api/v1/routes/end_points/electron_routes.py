@@ -158,7 +158,8 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
                 # is only used for fatal dispatcher-executor interaction errors
                 error_response = handler.read_from_text(result["error_filename"])
                 stderr_response = handler.read_from_text(result["stderr_filename"])
-                response = error_response + stderr_response
+                stdout_response = handler.read_from_text(result["stdout_filename"])
+                response = stdout_response + stderr_response + error_response
                 return ElectronFileResponse(data=response)
             else:
                 return ElectronFileResponse(data=None)
