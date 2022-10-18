@@ -21,11 +21,9 @@
 name: test_changelog_workflow
 
 on:
-  pull_request:
-  # workflow_call:
-  # push:
-  #   branches:
-  #     - develop
+  push:
+    branches:
+      - 1366-fix-version-increment
   #   paths-ignore:
   #     - CHANGELOG.md
   #     - VERSION
@@ -42,5 +40,5 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Assign Version
-        uses: AgnostiqHQ/covalent/.github/workflows/changelog.yml@develop
+        uses: AgnostiqHQ/covalent/.github/workflows/changelog.yml@1366-fix-version-increment
         secrets: inherit # pragma: allowlist secret
