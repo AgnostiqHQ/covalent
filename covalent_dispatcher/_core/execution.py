@@ -644,10 +644,9 @@ async def _run_planned_workflow(result_object: Result) -> Result:
         node_id = await tasks_queue.get()
         app_log.debug(f"Processing node {node_id}")
 
+        # Tasks queue has been poisoned, don't process the graph further
         if node_id < 0:
-            app_log.debug(f"Workflow {result_object.dispatch_id} failed or cancelled.")
-            await asyncio.gather(*task_futures)
-            return result_object
+            break
 
         # Get name of the node for the current task
         node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
@@ -736,6 +735,10 @@ async def _run_planned_workflow(result_object: Result) -> Result:
 
     if result_object._status in [Result.FAILED, Result.CANCELLED]:
         app_log.debug(f"Workflow {result_object.dispatch_id} cancelled or failed")
+
+        failed_nodes = ", ".join(map(str, result_object.get_failed_nodes()))
+        result_object._error = "The following tasks failed: " + failed_nodes
+        upsert._lattice_data(result_object)
         return result_object
 
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
