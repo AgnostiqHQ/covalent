@@ -186,15 +186,9 @@ jobs:
           cd ./covalent_ui/webapp
           yarn install
           yarn build
-      - name: Build Prerelease Distribution
-        if: inputs.prerelease
-        id: pre-build
-        run: python setup.py egg_info --tag-build=pre sdist
-      - name: Build Stable Distribution
-        if: >
-          github.event.inputs.stable_version
-          && contains(env.PAUL_BLART, github.actor)
-        id: stable-build
+      - name: Build Stable or Pre-Release Distribution
+        if: contains(env.PAUL_BLART, github.actor)
+        id: pre-or-stable-build
         run: python setup.py sdist
       - name: Transform semver version to pep440
         id: version-transform
@@ -221,8 +215,7 @@ jobs:
           echo "::set-output name=version::$VERSION"
       - name: Upload Distribution
         if: >
-          steps.pre-build.outcome == 'success'
-          || steps.stable-build.outcome == 'success'
+          steps.pre-or-stable-build.outcome == 'success'
           && steps.validate.outcome == 'success'
           && ${{ !github.event.inputs.test_release }}
         env:
