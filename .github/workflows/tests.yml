@@ -357,7 +357,7 @@ jobs:
           && failure()
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_CHANNEL: "covalent"
+          SLACK_CHANNEL: "covalent-ci"
           SLACK_USERNAME: "CovalentOpsBot"
           SLACK_MESSAGE: "The tests.yml workflow is failing in develop!"
           SLACK_COLOR: ${{ job.status }}
