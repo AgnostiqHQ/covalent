@@ -109,7 +109,7 @@ try {
         }
         let simplifiedSemver = `${semverUtils.major(semver)}.${semverUtils.minor(semver)}.${semverUtils.patch(semver)}`;
 
-        console.log(`VERSION file contents: ${head_version} | Parsed: ${semver}) | Simplified: ${simplifiedSemver}`)
+        console.log(`VERSION file contents: ${head_version} | Parsed: ${semver} | Simplified: ${simplifiedSemver}`)
 
         if(minor){
           simplifiedSemver = semverUtils.inc(simplifiedSemver,'minor')
