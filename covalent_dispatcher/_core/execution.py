@@ -736,8 +736,10 @@ async def _run_planned_workflow(result_object: Result) -> Result:
     if result_object._status in [Result.FAILED, Result.CANCELLED]:
         app_log.debug(f"Workflow {result_object.dispatch_id} cancelled or failed")
 
-        failed_nodes = ", ".join(map(str, result_object.get_failed_nodes()))
-        result_object._error = "The following tasks failed: " + failed_nodes
+        failed_nodes = result_object._get_failed_nodes()
+        failed_nodes = map(lambda x: f"{x[0]}: {x[1]}", failed_nodes)
+        failed_nodes_msg = "\n".join(failed_nodes)
+        result_object._error = "The following tasks failed:\n" + failed_nodes_msg
         upsert._lattice_data(result_object)
         return result_object
 
