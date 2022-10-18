@@ -187,7 +187,6 @@ jobs:
           yarn install
           yarn build
       - name: Build Stable or Pre-Release Distribution
-        if: contains(env.PAUL_BLART, github.actor)
         id: pre-or-stable-build
         run: python setup.py sdist
       - name: Transform semver version to pep440
