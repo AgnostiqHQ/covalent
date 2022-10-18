@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.204.NaN-rc.0] - 2022-10-18
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
 ### Fixed
 
 - `covalent restart` honors the `sdk.no_cluster` setting
