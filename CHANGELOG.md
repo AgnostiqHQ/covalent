@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Removed PAUL_BLART check on build sdist step in release.yml
+- Consolidated pre & stable build into one step in release.yml
+
+## [0.204.0-rc.0] - 2022-10-17
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Aravind-psiog <aravind.prabaharan@psiog.com>
+- Co-authored-by: Manjunath PV <manjunath.poilath@psiog.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: RaviPsiog <raviteja.gurram@psiog.com>
+- Co-authored-by: RaviPsiog <ravieja.gurram@psiog.com>
+- Aravind <100823292+Aravind-psiog@users.noreply.github.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+
+
+### Operations
+
+- Fixing the validate distribution step given changes in -rc0 suffix to version
+
+### Added
+
+- RTD for User Interface
+- Minor GUI fixes
+
+### Fixed
+
+- Re-applying default executor fix post config file reunification
+
+## [0.203.0-rc.0] - 2022-10-14
+
+### Authors
+
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Aravind-psiog <aravind.prabaharan@psiog.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+- Scott Wyman Neagle <wymnea@protonmail.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Will Cunningham <wjcunningham7@gmail.com>
+
+
 ### Added 
 
 - Ability to use terminal on the GUI.
@@ -14,6 +63,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Exceptions when instantiating executors are handled
+- Covalent start now waits for the server to settle before returning
+
+### Operations
+
+- updated hotfix logic to run on a merge to a release branch
+- Fixing js github actions dist by re-building from develop
+- Fixing syntax in describe action & compiled action manually
 
 ## [0.202.0] - 2022-10-11
 
@@ -320,8 +376,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced DB tests to check faithfulness of persist and rehydrate operations
 
 ### Docs
-
-### Docs
 - Update user interface docs for filter and delete features.
 - Added credential management page
 
@@ -537,7 +591,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
-- Added read the docs for user interface
 - Added db schema migration error guide in RTD
 - Removed `get_data_store` from quantum chemistry tutorial #1046
 
@@ -546,6 +599,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Front-end test coverage measured and reported in CI
 - Added reusable version action
 
+- Added read the docs for user interface
+ 
 ## [0.187.0] - 2022-08-28
 
 ### Authors

@@ -45,12 +45,13 @@ jobs:
               - '.github/actions/changelog/action.yml'
             dist:
               - '.github/actions/changelog/dist/**'
-
-      - name: Get latest release
-        uses: actions-ecosystem/action-get-latest-tag@v1
+      - name: Latest tag
         id: get-latest-tag
+        uses: ./.github/actions/describe
         with:
-          semver_only: true
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+          branch: develop
+          stable: false
       - name: Update version number
         id: changelog
         uses: ./.github/actions/changelog

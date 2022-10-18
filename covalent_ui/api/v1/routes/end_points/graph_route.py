@@ -22,7 +22,7 @@
 
 import uuid
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException, status
 from sqlalchemy.orm import Session
 
 from covalent_ui.api.v1.data_layer.graph_dal import Graph
@@ -47,7 +47,18 @@ def get_graph(dispatch_id: uuid.UUID):
 
         graph = Graph(session)
         graph_data = graph.get_graph(dispatch_id)
-        return GraphResponse(
-            dispatch_id=graph_data["dispatch_id"],
-            graph={"nodes": graph_data["nodes"], "links": graph_data["links"]},
+        if graph_data is not None:
+            return GraphResponse(
+                dispatch_id=graph_data["dispatch_id"],
+                graph={"nodes": graph_data["nodes"], "links": graph_data["links"]},
+            )
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=[
+                {
+                    "loc": ["path", "dispatch_id"],
+                    "msg": f"Dispatch ID {dispatch_id} does not exist",
+                    "type": None,
+                }
+            ],
         )

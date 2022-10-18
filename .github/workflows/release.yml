@@ -186,29 +186,23 @@ jobs:
           cd ./covalent_ui/webapp
           yarn install
           yarn build
-      - name: Build Prerelease Distribution
-        if: inputs.prerelease
-        id: pre-build
-        run: python setup.py egg_info --tag-build=pre sdist
-      - name: Build Stable Distribution
-        if: >
-          github.event.inputs.stable_version
-          && contains(env.PAUL_BLART, github.actor)
-        id: stable-build
+      - name: Build Stable or Pre-Release Distribution
+        id: pre-or-stable-build
         run: python setup.py sdist
+      - name: Transform semver version to pep440
+        id: version-transform
+        uses: ./.github/actions/version-transform
+        with:
+          version-path: VERSION
       - name: Validate Distribution
         id: validate
         run: |
-          VERSION="$(cat ./VERSION)"
           if [ -z ${{ inputs.prerelease }} ] && \
              [ -z ${{ github.event.inputs.stable_version }} ] ; then
             echo "You can't create a stable release without specifying the stable version number."
             exit 1
           fi
-          if ${{ inputs.prerelease == true }} ; then
-            VERSION="${VERSION}rc0"
-          fi
-          VERSION="$(echo $VERSION | sed 's/-/.post/')"
+          VERSION="${{ steps.version-transform.outputs.version }}"
           cd dist
           tar xzf covalent-${VERSION}.tar.gz
           diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
@@ -220,8 +214,7 @@ jobs:
           echo "::set-output name=version::$VERSION"
       - name: Upload Distribution
         if: >
-          steps.pre-build.outcome == 'success'
-          || steps.stable-build.outcome == 'success'
+          steps.pre-or-stable-build.outcome == 'success'
           && steps.validate.outcome == 'success'
           && ${{ !github.event.inputs.test_release }}
         env:

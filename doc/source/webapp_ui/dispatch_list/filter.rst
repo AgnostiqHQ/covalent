@@ -1,7 +1,7 @@
 ========
 Filter
 ========
-.. image:: ../images/Filter.gif
+.. image:: ../images/dispatchlist_filter.gif
    :align: center
 
 - Filter enables users to filter dispatches with respect to a specific status.
