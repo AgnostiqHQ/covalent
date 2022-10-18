@@ -27,9 +27,12 @@ import requests
 from .._results_manager import wait
 from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
+from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._workflow.lattice import Lattice
 from .base import BaseDispatcher
+
+app_log = logger.app_log
 
 
 class LocalDispatcher(BaseDispatcher):
@@ -82,10 +85,14 @@ class LocalDispatcher(BaseDispatcher):
             json_lattice = lattice.serialize_to_json()
 
             test_url = f"http://{dispatcher_addr}/api/submit"
-
-            r = requests.post(test_url, data=json_lattice)
-            r.raise_for_status()
-            return r.content.decode("utf-8").strip().replace('"', "")
+            try:
+                r = requests.post(test_url, data=json_lattice)
+                return r.content.decode("utf-8").strip().replace('"', "")
+            except requests.exceptions.RequestException:
+                app_log.error(
+                    'Covalent server is not running. Start the server using "covalent start" and try dispatching workflows.'
+                )
+                return 'Covalent server is not running. Start the server using "covalent start" and try dispatching workflows.'
 
         return wrapper
 

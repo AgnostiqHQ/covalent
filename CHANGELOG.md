@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Replaced ConnectionRefusedError with helpful message if trying to dispatch a workflow when covalent is not started.
+
 ### Operations
 
 - Removed PAUL_BLART check on build sdist step in release.yml
