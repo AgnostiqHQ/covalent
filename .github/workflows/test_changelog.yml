@@ -23,7 +23,7 @@ name: test_changelog_workflow
 on: pull_request
 
 jobs:
-  test_changelog:
+  test_changelog_workflow:
     name: Test Changelog
     runs-on: ubuntu-latest
     steps:
