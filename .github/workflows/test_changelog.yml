@@ -18,18 +18,44 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-name: test_changelog_workflow
+name: changelog_test
 
 on: pull_request
 
 jobs:
-  test_changelog_workflow:
+  changelog_test:
     runs-on: ubuntu-latest
+    outputs:
+      index: ${{ steps.filter.outputs.index }}
+      action: ${{ steps.filter.outputs.action }}
+      dist: ${{ steps.filter.outputs.dist }}
     steps:
       - name: Check out head
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0
-      - name: Assign Version
-        uses: AgnostiqHQ/covalent/.github/workflows/changelog.yml@1366-fix-version-increment
-        secrets: inherit # pragma: allowlist secret
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+      - uses: dorny/paths-filter@v2
+        id: filter
+        with:
+          filters: |
+            index:
+              - '.github/actions/changelog/index.js'
+            action:
+              - '.github/actions/changelog/action.yml'
+            dist:
+              - '.github/actions/changelog/dist/**'
+      - name: Latest tag
+        id: get-latest-tag
+        uses: ./.github/actions/describe
+        with:
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+          branch: develop
+          stable: false
+      - name: Update version number
+        id: changelog
+        uses: ./.github/actions/changelog
+        with:
+          changelog-path: CHANGELOG.md
+          version-path: VERSION
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+          basehead: ${{ steps.get-latest-tag.outputs.tag }}...${{ github.sha }}
