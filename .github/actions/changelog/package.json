@@ -4,13 +4,17 @@
   "description": "Parse the new information in the CHANGELOG and update the CHANGELOG and VERSION files accordingly",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "ncc build index.js --license licenses.txt"
   },
   "keywords": [],
   "author": "Scott Wyman Neagle <scott@agnostiq.ai> (http://covalent.xyz)",
   "license": "AGPL-3.0-only",
   "dependencies": {
     "@actions/core": "^1.9.1",
-    "@actions/github": "^5.0.3"
+    "@actions/github": "^5.0.3",
+    "semver": "^7.3.8"
+  },
+  "devDependencies": {
+    "@vercel/ncc": "^0.34.0"
   }
 }
