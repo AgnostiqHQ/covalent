@@ -95,6 +95,8 @@ try {
       });
       rl.on("close", () => {
         const semver = head_version.split(".");
+        console.log('Semver components:')
+        console.log(semver)
         let vmajor = semver[0];
         let vminor = semver[1];
         let vpatch = semver[2];

@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-## [0.204.NaN-rc.0] - 2022-10-18
+### Fixed
+
+- VERSION incrementing logic in changelog
+
+## [0.204.1-rc.0] - 2022-10-18
 
 ### Authors
 
