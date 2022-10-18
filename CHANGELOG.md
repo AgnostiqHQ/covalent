@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Rendering newlines in ErrorCard on the UI for displaying error stacktraces
+
 ### Operations
 
 - Consolidated pre & stable build into one step in release.yml
