@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Fixing the validate distribution step given changes in -rc0 suffix to version
+- Adding pre suffix if pre-release during validate distribution step
 
 ### Added
 

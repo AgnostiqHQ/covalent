@@ -209,7 +209,11 @@ jobs:
             echo "You can't create a stable release without specifying the stable version number."
             exit 1
           fi
-          VERSION="${{ steps.version-transform.outputs.version }}"
+          if [ -z ${{ inputs.prerelease }} ]; then
+              VERSION="${{ steps.version-transform.outputs.version }}"
+          else
+              VERSION="${{ steps.version-transform.outputs.version }}pre"
+          fi
           cd dist
           tar xzf covalent-${VERSION}.tar.gz
           diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
