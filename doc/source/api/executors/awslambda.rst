@@ -6,9 +6,12 @@
 .. image:: AWS_Lambda.jpg
 
 With this executor, users can execute tasks (electrons) or entire lattices using the AWS Lambda serverless compute service. It is appropriate
-to use this plugin for electrons that are expected to be short lived and low in compute intensity. This plugin can also be used
-for workflows with several short lived embarassingly parallel tasks aka horizontal workflows.
+to use this plugin for electrons that are expected to be short lived, low in compute intensity. This plugin can also be used for workflows with a high number of electrons
+that are embarassingly parallel aka fully independent of each other.
 
+The AWS resources required by this executor are quite minimal 1) S3 bucket for caching objects 2) Container based AWS lambda function 3) IAM role for  the Lambda.
+
+The following snippet shows the required terraform to spin up the necessary resources and can be used as a base template
 
 1. Installation
 ###############
@@ -36,11 +39,8 @@ and return an excited phrase.
     from covalent.executor import AWSLambdaExecutor
 
     executor = AWSLambdaExecutor(
-        region="us-east-1",
-        lambda_role_name="CovalentLambdaExecutionRole",
-        s3_bucket_name="covalent-lambda-job-resources",
-        timeout=60,
-        memory_size=512
+        function_name = "my-lambda-function"
+        s3_bucket_name="covalent-lambda-job-resources"
     )
 
     @ct.electron(executor=executor)
@@ -72,7 +72,8 @@ should also output the result:
 In order for the above workflow to run successfully, one has to provision the required AWS resources as mentioned in :ref:`required_aws_resources`.
 
 .. note::
-    Users may encounter failures with dispatching workflows on MacOS due to errors with importing the `psutil` module. This is a known issue and will be       addressed in a future sprint.
+    Users may encounter failures with dispatching workflows on MacOS due to errors with importing the `psutil` module. This is a known issue and will be
+    addressed in a future sprint.
 
 3. Overview of configuration
 ############################
@@ -87,6 +88,14 @@ The following table shows a list of all input arguments including the required a
      - Is Required
      - Default
      - Description
+   * - function_name
+     - Yes
+     - ``-``
+     - Name of the AWS lambda function to be used at runtime
+   * - s3_bucket_name
+     - Yes
+     - ``-``
+     - Name of an AWS S3 bucket that the executor must use to cache object files
    * - credentials_file
      - No
      - ~/.aws/credentials
@@ -95,26 +104,6 @@ The following table shows a list of all input arguments including the required a
      - No
      - default
      - AWS profile used for authentication
-   * - region
-     - Yes
-     - us-east-1
-     - AWS region to use for client calls
-   * - lambda_role_name
-     - Yes
-     - CovalentLambdaExecutionRole
-     - The IAM role this lambda will assume during execution of your tasks
-   * - s3_bucket_name
-     - Yes
-     - covalent-lambda-job-resources
-     - Name of an AWS S3 bucket that the executor can use to store temporary files
-   * - timeout
-     - Yes
-     - 60
-     - Duration in seconds before the lambda times out
-   * - memory_size
-     - Yes
-     - 512
-     - Amount in MB of memory to allocate to the lambda
    * - poll_freq
      - No
      - 5
@@ -123,10 +112,10 @@ The following table shows a list of all input arguments including the required a
      - No
      - ~/.cache/covalent
      - Path on the local file system to a cache
-   * - cleanup
+   * - timeout
      - No
-     - True
-     - Flag represents whether or not to cleanup temporary files generated during execution
+     - ``900``
+     - Duration in seconds to keep polling the task for results/exceptions raised
 
 The following snippet shows how users may modify their Covalent `configuration <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_ to provide
 the necessary input arguments to the executor:
@@ -134,16 +123,14 @@ the necessary input arguments to the executor:
 .. code-block:: bash
 
     [executors.awslambda]
+    function_name = "my-lambda-function"
+    s3_bucket_name = "covalent-lambda-job-resources"
     credentials_file = "/home/<user>/.aws/credentials"
     profile = "default"
     region = "us-east-1"
-    lambda_role_name = "CovalentLambdaExecutionRole"
-    s3_bucket_name = "covalent-lambda-job-resources"
     cache_dir = "/home/<user>/.cache/covalent"
     poll_freq = 5
     timeout = 60
-    memory_size = 512
-    cleanup = true
 
 Within a workflow, users can use this executor with the default values configured in the configuration file as follows:
 
@@ -164,16 +151,14 @@ Alternatively, users can customize this executor entirely by providing their own
     from covalent.executor import AWSLambdaExecutor
 
     lambda_executor = AWSLambdaExecutor(
+        function_name = "my-lambda-function"
+        s3_bucket_name="my_s3_bucket",
         credentials_file="my_custom_credentials",
         profile="custom_profile",
         region="us-east-1",
-        lambda_role_name="my_lambda_role_name",
-        s3_bucket_name="my_s3_bucket",
         cache_dir="/home/<user>/covalent/cache",
         poll_freq=5,
-        timeout=30,
-        memory_size=512,
-        cleanup=True
+        timeout=60
     )
 
     @ct.electron(executor=lambda_executor)
@@ -201,6 +186,9 @@ either with `Terraform <https://www.terraform.io/>`_ or manually provisioned on 
    * - S3 Bucket
      - s3_bucket_name
      - Name of an AWS S3 bucket that the executor can use to store temporary files
+   * - AWS Lambda function
+     - function_name
+     - Name of the AWS lambda function created in AWS
 
 The following JSON policy document shows the necessary IAM permissions required for the executor
 to properly run tasks using the AWS Lambda compute service:
@@ -274,14 +262,10 @@ to properly run tasks using the AWS Lambda compute service:
         }
 
 
-where `<bucket-name>` is the name of an S3 bucket to be used by the executor to store temporary files generated during task
-execution. By default, the Lambda executor looks for an S3 bucket with the name `covalent-lambda-job-resources` in the user's
-AWS account.
-The executor creates an AWS Lambda function using a deployment package containing the code to be executed. The created
-lambda function interacts with the S3 bucket as well as with the AWS Cloudwatch service to route any log messages.
-Due to this, the lambda function must have the necessary IAM permissions in order to do so. By default, the executor assumes that the
-user has already provisioned an IAM role named `CovalentLambdaExecutionRole` that has the `AWSLambdaExecute` policy attached to it.
-The policy document is summarized here for convenience:
+where ``<bucket-name>`` is the name of an S3 bucket to be used by the executor to store temporary files generated during task
+execution. The lambda function interacts with the S3 bucket as well as with the AWS Cloudwatch service to route any log messages.
+Due to this, the lambda function must have the necessary IAM permissions in order to do so. Users must provision an IAM role that has
+the ``AWSLambdaExecute`` policy attached to it. The policy document is summarized here for convenience:
 
 .. dropdown:: Covalent Lambda Execution Role Policy
 
@@ -307,6 +291,43 @@ The policy document is summarized here for convenience:
                 }
             ]
         }
+
+Users can use the following `Terraform <https://www.terraform.io/>`_ snippet as a starting point to spin up the required resources
+
+.. code-block:: terraform
+
+    provider aws {}
+
+    resource aws_s3_bucket bucket {
+        ...
+    }
+
+    resource aws_iam_role lambda_iam {
+        name = var.aws_lambda_iam_role_name
+        assume_role_policy = jsonencode({
+            Version = "2012-10-17"
+            Statement = [
+                {
+                    Action = "sts:AssumeRole"
+                    Effect = "Allow"
+                    Sid    = ""
+                    Principal = {
+                        Service = "lambda.amazonaws.com"
+                }
+            },
+        ]
+        })
+        managed_policy_arns = [ "arn:aws:iam::aws:policy/AWSLambdaExecute" ]
+    }
+
+    resource aws_lambda_function lambda {
+        function_name = "my-lambda-function"
+        role = aws_iam_role.lambda_iam.arn
+        packge_type = "Image"
+        timeout = <timeout value in seconds, max 900 (15 minutes), defaults to 3>
+        memory_size = <Max memory in MB that the Lambda is expected to use, defaults to 128>
+        image_uri = <URI to the container image used by the lambda, defaults to `public.ecr.aws/covalent/covalent-lambda-executor:stable`>
+    }
 
 For more information on how to create IAM roles and attach policies in AWS, refer to `IAM roles <https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create.html>`_.
 For more information on AWS S3, refer to `AWS S3 <https://aws.amazon.com/s3/>`_.
