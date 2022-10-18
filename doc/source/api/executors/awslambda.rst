@@ -41,6 +41,7 @@ and return an excited phrase.
     executor = AWSLambdaExecutor(
         function_name = "my-lambda-function"
         s3_bucket_name="covalent-lambda-job-resources",
+        execution_role="covalent-lambda-execution-role"
     )
 
     @ct.electron(executor=executor)
@@ -112,6 +113,10 @@ The following table shows a list of all input arguments including the required a
      - No
      - ~/.cache/covalent
      - Path on the local file system to a cache
+   * - timeout
+     - No
+     - ``900``
+     - Duration in seconds to keep polling the task for results/exceptions raised
 
 The following snippet shows how users may modify their Covalent `configuration <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_ to provide
 the necessary input arguments to the executor:
@@ -126,6 +131,7 @@ the necessary input arguments to the executor:
     region = "us-east-1"
     cache_dir = "/home/<user>/.cache/covalent"
     poll_freq = 5
+    timeout = 60
 
 Within a workflow, users can use this executor with the default values configured in the configuration file as follows:
 
@@ -153,6 +159,7 @@ Alternatively, users can customize this executor entirely by providing their own
         region="us-east-1",
         cache_dir="/home/<user>/covalent/cache",
         poll_freq=5,
+        timeout=60
     )
 
     @ct.electron(executor=lambda_executor)
