@@ -196,6 +196,7 @@ jobs:
         if: env.BUILD_AND_RUN_ALL
         id: covalent_start
         run: |
+          covalent db migrate
           if [ "${{ matrix.backend }}" = 'dask' ] ; then
             covalent start
           elif [ "${{ matrix.backend }}" = 'local' ] ; then
