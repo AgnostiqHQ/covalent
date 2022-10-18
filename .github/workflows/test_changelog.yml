@@ -24,15 +24,6 @@ on:
   push:
     branches:
       - 1366-fix-version-increment
-  #   paths-ignore:
-  #     - CHANGELOG.md
-  #     - VERSION
-  # workflow_dispatch:
-  #   inputs:
-  #     commit_sha:
-  #       description: "Commit SHA used for testing"
-  #       type: string
-  #       required: true
 
 jobs:
   test_changelog:
