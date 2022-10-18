@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Adding pre suffix if pre-release during validate distribution step
+
 ## [0.204.0-rc.0] - 2022-10-17
 
 ### Authors
@@ -25,7 +29,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Fixing the validate distribution step given changes in -rc0 suffix to version
-- Adding pre suffix if pre-release during validate distribution step
 
 ### Added
 
