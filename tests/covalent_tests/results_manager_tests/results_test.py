@@ -103,6 +103,14 @@ def test_get_all_node_results(result_1, mocker):
             assert data_row["node_name"] == ":parameter:1"
 
 
+def test_get_failed_nodes(result_1, mocker):
+    """Test result method to get all failed nodes"""
+    result_1.lattice.transport_graph.set_node_value(0, "status", Result.FAILED)
+    result_1.lattice.transport_graph.set_node_value(1, "status", Result.COMPLETED)
+    result_1.lattice.transport_graph.set_node_value(2, "status", Result.COMPLETED)
+    assert result_1.get_failed_nodes() == [0]
+
+
 def test_result_root_dispatch_id(result_1):
     """Test the `root_dispatch_id` property`"""
 

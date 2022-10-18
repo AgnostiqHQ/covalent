@@ -314,6 +314,12 @@ Node Outputs
             for node_id in self._lattice.transport_graph._graph.nodes
         ]
 
+    def get_failed_nodes(self) -> List[int]:
+        """
+        Get the node_id of each failed task
+        """
+        return [i for i in range(self._num_nodes) if self._get_node_status(i) == Result.FAILED]
+
     def post_process(self):
 
         # Copied from server-side _post_process()
