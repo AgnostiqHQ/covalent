@@ -12941,7 +12941,7 @@ try {
 
         const version = `${simplifiedSemver}-rc.0`;
 
-        console.log(`Incrimented semver version: ${simplifiedSemver}`);
+        console.log(`Incremented semver version: ${simplifiedSemver}`);
 
         const changelog_header =
           "## [" + version + "] - " + new Date().toISOString().split("T")[0];
