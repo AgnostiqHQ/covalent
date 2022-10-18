@@ -195,10 +195,11 @@ jobs:
         if: env.BUILD_AND_RUN_ALL
         id: covalent_start
         run: |
+          covalent db migrate
           if [ "${{ matrix.backend }}" = 'dask' ] ; then
-            covalent start --ignore-migrations
+            covalent start
           elif [ "${{ matrix.backend }}" = 'local' ] ; then
-            covalent start --ignore-migrations --no-cluster
+            covalent start --no-cluster
           else
             echo "Invalid backend specified in test matrix."
             exit 1
