@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Rendering newlines in ErrorCard on the UI for displaying error stacktraces
 - VERSION incrementing logic in changelog
+- Enabling logging by default
 
 ## [0.204.1-rc.0] - 2022-10-18
 
