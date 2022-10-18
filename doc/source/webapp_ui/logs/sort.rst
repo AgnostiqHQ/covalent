@@ -1,6 +1,6 @@
-=======
+========
 Sort
-=======
+========
 .. image:: ../images/logs_sort.gif
    :align: center
    :width: 5000px
