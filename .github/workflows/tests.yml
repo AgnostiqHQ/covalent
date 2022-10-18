@@ -163,6 +163,11 @@ jobs:
             yarn install
             yarn build
 
+      - name: Transform semver version to pep440
+        id: version-transform
+        uses: ./.github/actions/version-transform
+        with:
+          version-path: VERSION
       - name: Build distribution
         id: build-dist
         if: env.NEED_PYTHON || env.BUILD_AND_RUN_ALL
@@ -171,7 +176,8 @@ jobs:
       - name: Validate distribution
         if: env.BUILD_AND_RUN_ALL
         run: |
-          VERSION="$(cat ./VERSION)"
+          VERSION="${{ steps.version-transform.outputs.version }}"
+          echo "Using transformed VERSION: $VERSION"
           cd dist
           tar xzf covalent-${VERSION}.tar.gz
           diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent

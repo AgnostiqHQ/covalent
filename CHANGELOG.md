@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Removed PAUL_BLART check on build sdist step in release.yml
+- Consolidated pre & stable build into one step in release.yml
+
+## [0.204.0-rc.0] - 2022-10-17
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Aravind-psiog <aravind.prabaharan@psiog.com>
+- Co-authored-by: Manjunath PV <manjunath.poilath@psiog.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: RaviPsiog <raviteja.gurram@psiog.com>
+- Co-authored-by: RaviPsiog <ravieja.gurram@psiog.com>
+- Aravind <100823292+Aravind-psiog@users.noreply.github.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+
+
+### Operations
+
+- Fixing the validate distribution step given changes in -rc0 suffix to version
+
+### Added
+
+- RTD for User Interface
+- Minor GUI fixes
+
 ### Fixed
 
 - Re-applying default executor fix post config file reunification
@@ -347,8 +376,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced DB tests to check faithfulness of persist and rehydrate operations
 
 ### Docs
-
-### Docs
 - Update user interface docs for filter and delete features.
 - Added credential management page
 
@@ -564,7 +591,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
-- Added read the docs for user interface
 - Added db schema migration error guide in RTD
 - Removed `get_data_store` from quantum chemistry tutorial #1046
 
@@ -573,6 +599,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Front-end test coverage measured and reported in CI
 - Added reusable version action
 
+- Added read the docs for user interface
+ 
 ## [0.187.0] - 2022-08-28
 
 ### Authors
