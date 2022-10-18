@@ -1,6 +1,6 @@
-=======
+========
 Sort
-=======
+========
 .. image:: ../images/dispatchlist_sort.gif
    :align: center
    :width: 5000px

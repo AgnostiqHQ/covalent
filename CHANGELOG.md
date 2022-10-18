@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Replaced ConnectionRefusedError with helpful message if trying to dispatch a workflow when covalent is not started.
 
+### Docs
+
+- Updated RTD with details about the new AWS lambda executor interface
+
 ### Operations
 
 - Removed PAUL_BLART check on build sdist step in release.yml
