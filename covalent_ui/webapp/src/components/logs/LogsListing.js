@@ -21,7 +21,7 @@
  */
 
 import _ from 'lodash'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   Table,
@@ -272,7 +272,6 @@ const LogsListing = () => {
   const [snackbarMessage, setSnackbarMessage] = useState(null)
   const [disableDownload, setDisableDownload] = useState(false)
   const [copied, setCopied] = useState(false)
-  const logsRef = useRef([])
   // reset store values to initial state when moved to another page
   useEffect(() => {
     return () => {
@@ -340,7 +339,6 @@ const LogsListing = () => {
     setSelected([])
     const offsetValue = pageValue === 1 ? 0 : pageValue * 70 - 70
     setOffset(offsetValue)
-    logsRef.current[0].scrollIntoView({ behavior: 'smooth', block: 'end' })
   }
 
   useEffect(() => {
@@ -431,11 +429,10 @@ const LogsListing = () => {
                       <>
                         <TableRow
                           data-tip data-for="logRow"
-                          ref={(el) => (logsRef.current[index] = el)}
                           onClick={() => {
                             copy(result.message)
                             setCopied(true)
-                            setTimeout(() => setCopied(false), 1200)
+                            setTimeout(() => setCopied(false), 300)
                           }}
                           hover
                           key={index}

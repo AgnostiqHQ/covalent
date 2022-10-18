@@ -189,21 +189,21 @@ export const logStatusIcon = (status) => {
     case 'WARNING':
     case 'WARN':
       return (
-        <SvgIcon sx={{ mt: 0.4, mr: 0.7, fontSize: '18px' }}>
+        <SvgIcon sx={{ mt: 0.6, mr: 0.7, fontSize: '18px' }}>
           <WarningSvg />
         </SvgIcon>
       )
     case 'INFO':
     case 'DEBUG':
       return (
-        <SvgIcon sx={{ mt: 0.4 }}>
+        <SvgIcon sx={{ mt: 0.6 }}>
           <InfoSvg />
         </SvgIcon>
       )
     case 'ERROR':
     case 'CRITICAL':
       return (
-        <SvgIcon sx={{ mt: 0.4, mr: 0.7, fontSize: '18px' }}>
+        <SvgIcon sx={{ mt: 0.6, mr: 0.7, fontSize: '18px' }}>
           <ErrorSvg />
         </SvgIcon>
       )
