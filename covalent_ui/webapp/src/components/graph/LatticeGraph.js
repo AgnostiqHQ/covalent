@@ -58,9 +58,6 @@ const LatticeGraph = ({
 }) => {
   var currentDateTime = new Date();
   var resultInSeconds = currentDateTime.getTime() / 1000;
-  console.log("The current date time in seconds is as follows:")
-  console.log(resultInSeconds);
-  console.log('rerendered')
   const { fitView } = useFitViewHelper()
   const [elements, setElements] = useState([])
   const [direction, setDirection] = useState('DOWN')
