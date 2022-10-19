@@ -47,7 +47,7 @@ def upgrade() -> None:
         batch_op.add_column(sa.Column("cova_imports_filename", sa.Text(), nullable=True))
         batch_op.add_column(sa.Column("lattice_imports_filename", sa.Text(), nullable=True))
         batch_op.add_column(sa.Column("results_dir", sa.Text(), nullable=True))
-        batch_op.add_column(sa.Column("root_dispatch_id", sa.String(length=64), nullable=False))
+        batch_op.add_column(sa.Column("root_dispatch_id", sa.String(length=64), nullable=True))
 
     # ### end Alembic commands ###
 
