@@ -56,8 +56,6 @@ const LatticeGraph = ({
   marginRight = 0,
   dispatchId,
 }) => {
-  var currentDateTime = new Date();
-  var resultInSeconds = currentDateTime.getTime() / 1000;
   const { fitView } = useFitViewHelper()
   const [elements, setElements] = useState([])
   const [direction, setDirection] = useState('DOWN')
