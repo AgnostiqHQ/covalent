@@ -38,23 +38,6 @@ const nodeLabel = (type, name) => {
   }
 }
 
-const layoutElk = (
-  graph,
-  direction,
-  showParams = true,
-  hideLabels,
-  preview
-) => {
-  const elements = mapGraphToElements(
-    graph,
-    direction,
-    showParams,
-    hideLabels,
-    preview
-  )
-  return elements
-}
-
 /**
  * Filter graph by node type.
  */
@@ -86,6 +69,8 @@ const mapGraphToElements = (
     return {
       id: String(node.id),
       type: isParam ? 'parameter' : 'electron',
+      width: _.size(name) * 15,
+      height: 75,
       data: {
         fullName: name,
         label: hideLabels
@@ -117,7 +102,7 @@ const mapGraphToElements = (
     }
   })
 
-  return [...nodes, ...edges]
+  return { nodes, edges }
 }
 
 const assignNodePositions = async (
@@ -128,69 +113,39 @@ const assignNodePositions = async (
   hideLabels,
   preview
 ) => {
-  const elements = layoutElk(graph, direction, showParams, hideLabels, preview)
-  const nodes = []
-  const edges = []
-  const DEFAULT_HEIGHT = 75
-
-  const elk =
-    algorithm === 'layered'
-      ? new ELK({
-          defaultLayoutOptions: {
-            'elk.algorithm': algorithm,
-            'elk.direction': direction,
-            'elk.edgeRouting': 'POLYLINE',
-            'elk.layered.nodePlacement.strategy': 'SIMPLE',
-            'elk.spacing.edgeEdge': hideLabels ? 10 : 20,
-            'elk.spacing.nodeNode': hideLabels ? 60 : 40,
-            'elk.spacing.edgeNode': hideLabels ? 60 : 40,
-            'elk.spacing.edgeLabel': 10,
-            'elk.layered.spacing.nodeNodeBetweenLayers': 80,
-            'elk.layered.spacing.baseValue': hideLabels ? 40 : 10,
-          },
-        })
-      : new ELK({
-          defaultLayoutOptions: {
-            'elk.algorithm': algorithm,
-            'elk.direction': direction,
-            'elk.spacing.nodeNode': 60,
-            'elk.spacing.edgeEdge': hideLabels ? 10 : 0,
-            'elk.spacing.edgeNode': hideLabels ? 60 : 80,
-          },
-        })
-  _.each(elements, (el) => {
-    if (isNode(el)) {
-      nodes.push({
-        id: el.id,
-        width: _.size(el.data.label) * 15,
-        height: DEFAULT_HEIGHT,
-      })
-    } else {
-      edges.push({
-        id: el.id,
-        target: el.target,
-        source: el.source,
-      })
-    }
+  const elements = mapGraphToElements(graph, direction, showParams, hideLabels, preview)
+  const elk = new ELK({
+    defaultLayoutOptions: {
+      'elk.algorithm': algorithm,
+      'elk.direction': direction,
+      'elk.edgeRouting': 'POLYLINE',
+      'elk.layered.nodePlacement.strategy': 'SIMPLE',
+      'elk.spacing.edgeEdge': hideLabels ? 10 : 20,
+      'elk.spacing.nodeNode': hideLabels ? 60 : 40,
+      'elk.spacing.edgeNode': hideLabels ? 60 : 40,
+      'elk.spacing.edgeLabel': 10,
+      'elk.layered.spacing.nodeNodeBetweenLayers': 80,
+      'elk.layered.spacing.baseValue': hideLabels ? 40 : 10,
+    },
   })
-
   const newGraph = await elk.layout({
     id: 'root',
-    children: nodes,
-    edges: edges,
+    children: elements.nodes,
+    edges: elements.edges,
   })
-  return elements.map((el) => {
-    if (isNode(el)) {
-      const node = newGraph?.children?.find((n) => n.id === el.id)
-      if (node?.x && node?.y && node?.width && node?.height) {
-        el.position = {
-          x: node.x,
-          y: node.y,
-        }
+  const nodes = elements?.nodes?.map((el) => {
+    const node = newGraph?.children?.find((n) => n.id === el.id)
+    if (node?.x && node?.y && node?.width && node?.height) {
+      el.position = {
+        x: node.x,
+        y: node.y,
       }
     }
     return el
   })
+
+  const finalEl = [...nodes, ...elements.edges]
+  return finalEl
 }
 
 /**
@@ -214,22 +169,6 @@ const getHandlePositions = (direction) => {
     default:
       throw new Error(`Illegal direction: ${direction}`)
   }
-}
-
-export const countEdges = (nodeId, edges) => {
-  return _.reduce(
-    edges,
-    (res, edge) => {
-      if (edge.source === nodeId) {
-        res.outputs++
-      }
-      if (edge.target === nodeId) {
-        res.inputs++
-      }
-      return res
-    },
-    { inputs: 0, outputs: 0 }
-  )
 }
 
 export default assignNodePositions

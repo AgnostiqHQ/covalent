@@ -19,7 +19,7 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
-import { useEffect, useRef, useState, createRef } from 'react'
+import { useEffect, useRef, useState, createRef, memo } from 'react'
 import { useScreenshot, createFileName } from "use-react-screenshot"
 import ReactFlow, {
   MiniMap,
@@ -56,6 +56,11 @@ const LatticeGraph = ({
   marginRight = 0,
   dispatchId,
 }) => {
+  var currentDateTime = new Date();
+  var resultInSeconds = currentDateTime.getTime() / 1000;
+  console.log("The current date time in seconds is as follows:")
+  console.log(resultInSeconds);
+  console.log('rerendered')
   const { fitView } = useFitViewHelper()
   const [elements, setElements] = useState([])
   const [direction, setDirection] = useState('DOWN')
@@ -350,4 +355,4 @@ const LatticeGraph = ({
   )
 }
 
-export default LatticeGraph
+export default memo(LatticeGraph)
