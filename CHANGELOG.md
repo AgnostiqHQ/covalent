@@ -15,7 +15,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Rendering newlines in ErrorCard on the UI for displaying error stacktraces
 - VERSION incrementing logic in changelog
-- Fixed v11 migration to use render as batch to make DROP operations compatible with sqlite
 
 ## [0.204.1-rc.0] - 2022-10-18
 
