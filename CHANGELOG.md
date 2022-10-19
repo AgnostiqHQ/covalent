@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+
+### Changed
+
+- Reverted migrations fix for v11
+
 ### Operations
 
 - Updated all CI Slack alerts to all go to the #covalent-ci channel
