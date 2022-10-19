@@ -26,6 +26,7 @@ on:
   push:
     branches:
       - develop
+      - release-v*
     paths-ignore:
       - CHANGELOG.md
       - VERSION
@@ -51,7 +52,11 @@ jobs:
       - name: Filter test matrix
         id: filter-matrix
         run: |
-          matrix=$(jq --arg trigger "${{ github.event_name }}" 'map(. | select(.trigger | index($trigger)))' .github/workflows/test_matrix.json)
+          if [[ ${GITHUB_REF##*/} =~ ^release-v.*$ ]] ; then
+            matrix=$(jq < .github/workflows/test_matrix.json)
+          else
+            matrix=$(jq --arg trigger "${{ github.event_name }}" 'map(. | select(.trigger | index($trigger)))' .github/workflows/test_matrix.json)
+          fi
           echo "Test matrix:"
           echo "$matrix" | jq
           echo ::set-output name=matrix::{\"include\":$(echo $matrix)}
