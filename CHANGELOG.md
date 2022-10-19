@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Updated all CI Slack alerts to all go to the #covalent-ci channel
+
 ### Fixed
 
 - Rendering newlines in ErrorCard on the UI for displaying error stacktraces
