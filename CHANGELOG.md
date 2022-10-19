@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.205.0-rc.0] - 2022-10-19
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
 ### Changed
 
 - Made `root_dispatch_id` nullable to circumvent migration issues with sqlite in certain platforms
