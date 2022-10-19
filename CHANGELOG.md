@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Made `root_dispatch_id` nullable to circumvent migration issues with sqlite in certain platforms
+
 ### Fixed
 
 - Rendering newlines in ErrorCard on the UI for displaying error stacktraces
