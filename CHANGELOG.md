@@ -7,10 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.205.0-rc.0] - 2022-10-19
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Made `root_dispatch_id` nullable to circumvent migration issues with sqlite in certain platforms
+
+### Operations
+
+- Updated all CI Slack alerts to all go to the #covalent-ci channel
+
 ### Fixed
 
 - Rendering newlines in ErrorCard on the UI for displaying error stacktraces
 - VERSION incrementing logic in changelog
+- Fixed v11 migration to use render as batch to make DROP operations compatible with sqlite
 
 ## [0.204.1-rc.0] - 2022-10-18
 
