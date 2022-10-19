@@ -119,36 +119,42 @@ v0.202.0
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Officially supported.</td>
         </tr>
         <tr style="background-color: white;">
+          <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
+          <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.9</td>
+          <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: rgb(255 223 122);">SEMI-STABLE</td>
+          <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Beta testing.</td>
+        </tr>
+        <tr style="background-color: #f2f2f2;">
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">CentOS 8</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.9</td>
           <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Officially supported.</td>
         </tr>
-        <tr style="background-color: #f2f2f2;">
+        <tr style="background-color: white;">
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">RHEL 7</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.8</td>
           <td class="semi-stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: rgb(255 223 122);">SEMI-STABLE</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Beta testing.</td>
         </tr>
-        <tr style="background-color: white;">
+        <tr style="background-color: #f2f2f2;">
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">SUSE Enterprise 15</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.8</td>
           <td class="semi-stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: rgb(255 223 122);">SEMI-STABLE</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Beta testing.</td>
         </tr>
-        <tr style="background-color: #f2f2f2;">
+        <tr style="background-color: white;">
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Gentoo</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.8</td>
           <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Officially supported.</td>
         </tr>
-        <tr style="background-color: white;">
+        <tr style="background-color: #f2f2f2;">
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.9</td>
           <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Officially supported.</td>
         </tr>
-        <tr style="background-color: #f2f2f2;">
+        <tr style="background-color: white;">
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;"></td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.10</td>
           <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: rgb(255 223 122);">SEMI-STABLE</td>
