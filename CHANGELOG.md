@@ -7,9 +7,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.205.0-rc.0] - 2022-10-19
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Made `root_dispatch_id` nullable to circumvent migration issues with sqlite in certain platforms
+
+### Operations
+
+- Updated all CI Slack alerts to all go to the #covalent-ci channel
+
+### Fixed
+
+- Rendering newlines in ErrorCard on the UI for displaying error stacktraces
+- VERSION incrementing logic in changelog
+- Fixed v11 migration to use render as batch to make DROP operations compatible with sqlite
+
+## [0.204.1-rc.0] - 2022-10-18
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Fixed
+
+- `covalent restart` honors the `sdk.no_cluster` setting
+
+### Docs
+
+- Updated RTD with details about the new AWS lambda executor interface
+
+### Operations
+
+- Removed PAUL_BLART check on build sdist step in release.yml
+- Consolidated pre & stable build into one step in release.yml
+
+## [0.204.0-rc.0] - 2022-10-17
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Aravind-psiog <aravind.prabaharan@psiog.com>
+- Co-authored-by: Manjunath PV <manjunath.poilath@psiog.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: RaviPsiog <raviteja.gurram@psiog.com>
+- Co-authored-by: RaviPsiog <ravieja.gurram@psiog.com>
+- Aravind <100823292+Aravind-psiog@users.noreply.github.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+
+
+### Operations
+
+- Fixing the validate distribution step given changes in -rc0 suffix to version
+
 ### Added
 
 - RTD for User Interface
+- Minor GUI fixes
 
 ### Fixed
 

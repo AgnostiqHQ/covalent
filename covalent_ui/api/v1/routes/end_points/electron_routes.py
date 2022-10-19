@@ -91,15 +91,15 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
     """
     with Session(db.engine) as session:
         electron = Electrons(session)
-        if name == "inputs":
-            response, python_object = electron.get_electron_inputs(
-                dispatch_id=dispatch_id, electron_id=electron_id
-            )
-            return ElectronFileResponse(data=str(response), python_object=str(python_object))
         result = electron.get_electrons_id(dispatch_id, electron_id)
         if result is not None:
             handler = FileHandler(result["storage_path"])
-            if name == "function_string":
+            if name == "inputs":
+                response, python_object = electron.get_electron_inputs(
+                    dispatch_id=dispatch_id, electron_id=electron_id
+                )
+                return ElectronFileResponse(data=str(response), python_object=str(python_object))
+            elif name == "function_string":
                 response = handler.read_from_text(result["function_string_filename"])
                 return ElectronFileResponse(data=response)
             elif name == "function":

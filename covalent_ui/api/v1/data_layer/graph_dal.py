@@ -21,6 +21,7 @@
 """Graph Data Layer"""
 from uuid import UUID
 
+from fastapi import HTTPException
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -43,22 +44,6 @@ class Graph:
         Return:
             graph data with list of nodes
         """
-        # sub_query = self.db_con.query(Lattice.id).where(Lattice.electron_id == Electron.id).subquery()
-        # return (
-        #     self.db_con.query(
-        #         Electron.id,
-        #         Electron.name,
-        #         Electron.transport_graph_node_id.label("node_id"),
-        #         Electron.started_at,
-        #         Electron.completed_at,
-        #         Electron.status,
-        #         Electron.type,
-        #         Electron.executor,
-        #         self.db_con.query(Lattice.id).where(Lattice.electron_id == Electron.id)
-        #     )
-        #     .filter(Electron.parent_lattice_id == parent_lattice_id)
-        #     .all()
-        # )
         sql = text(
             """SELECT
             electrons.id as id,
@@ -106,6 +91,21 @@ class Graph:
             .all()
         )
 
+    def check_error(self, data):
+        """
+        Helper method to rise exception if data is None
+
+        Args:
+            data: list of queried data
+        Return:
+            data
+        Rise:
+            Http Exception with status code 400 and details
+        """
+        if data is None:
+            raise HTTPException(status_code=400, detail=["Something went wrong"])
+        return data
+
     def get_graph(self, dispatch_id: UUID):
         """
         Get graph data from parent lattice id
@@ -120,8 +120,9 @@ class Graph:
         parent_lattice_id = (
             self.db_con.query(Lattice.id).where(Lattice.dispatch_id == str(dispatch_id)).first()
         )
-        if parent_lattice_id is None:
-            return None
-        nodes = self.get_nodes(parent_lattice_id[0])
-        links = self.get_links(parent_lattice_id[0])
-        return {"dispatch_id": str(dispatch_id), "nodes": nodes, "links": links}
+        if parent_lattice_id is not None:
+            parrent_id = parent_lattice_id[0]
+            nodes = self.check_error(self.get_nodes(parrent_id))
+            links = self.check_error(self.get_links(parrent_id))
+            return {"dispatch_id": str(dispatch_id), "nodes": nodes, "links": links}
+        return None

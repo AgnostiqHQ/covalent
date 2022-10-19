@@ -22,6 +22,8 @@
 
 """Covalent CLI Tool."""
 
+from importlib import metadata
+
 import click
 
 from .groups import db
@@ -47,8 +49,6 @@ def cli(ctx: click.Context, version: bool) -> None:
     Covalent CLI tool used to manage the servers.
     """
     if version:
-        from importlib import metadata
-
         click.echo("covalent:  Covalent Workflow CLI Tool")
         click.echo("Copyright (C) 2021 Agnostiq Inc.")
         click.echo("Built using Python 3.8 (Platform: x86_64-linux)")
