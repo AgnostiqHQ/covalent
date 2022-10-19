@@ -18,21 +18,29 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""DB Config"""
-
-from sqlalchemy.ext.declarative import declarative_base
-
-from covalent_dispatcher._db.datastore import DataStore
-
-Base = declarative_base()
-engine = DataStore().engine
+"""Lattice functional test"""
 
 
-def init_db(db_path: str = ""):
+from covalent_ui.api.v1.utils.file_handle import transportable_object, validate_data
+from tests.covalent_ui_backend_tests.utils.assert_data.lattices import seed_lattice_data
+from tests.covalent_ui_backend_tests.utils.client_template import TestClientTemplate
 
-    global engine
-    engine = (
-        DataStore(db_URL=db_path, initialize_db=True).engine
-        if db_path != ""
-        else DataStore().engine
-    )
+object_test_template = TestClientTemplate()
+output_data = seed_lattice_data()
+
+
+def test_transportable_object():
+    obj_res = transportable_object(None)
+    assert obj_res is None
+
+
+def test_validate_unpickled_list():
+    list_arr = ["Hello", " ", "World!"]
+    obj_res = validate_data(list_arr)
+    assert obj_res == "Hello World!"
+
+
+def test_validate_unpickled_str():
+    sample_str = "dispatch.get_result()"
+    obj_res = validate_data(sample_str)
+    assert obj_res == "dispatch.get_result()"

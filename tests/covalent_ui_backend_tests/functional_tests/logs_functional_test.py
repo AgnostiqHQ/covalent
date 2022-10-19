@@ -18,21 +18,19 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""DB Config"""
-
-from sqlalchemy.ext.declarative import declarative_base
-
-from covalent_dispatcher._db.datastore import DataStore
-
-Base = declarative_base()
-engine = DataStore().engine
+"""Logs functional test"""
 
 
-def init_db(db_path: str = ""):
+from covalent_ui.api.v1.data_layer.logs_dal import Logs
+from tests.covalent_ui_backend_tests.utils.assert_data.logs import seed_logs_data
+from tests.covalent_ui_backend_tests.utils.client_template import TestClientTemplate
 
-    global engine
-    engine = (
-        DataStore(db_URL=db_path, initialize_db=True).engine
-        if db_path != ""
-        else DataStore().engine
-    )
+object_test_template = TestClientTemplate()
+output_data = seed_logs_data()
+
+
+def test_download_logs():
+    """Test Download Logs"""
+    logs = Logs()
+    bytes_result = logs.download_logs()
+    assert 1 == 1

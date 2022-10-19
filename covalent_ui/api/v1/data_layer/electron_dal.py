@@ -18,12 +18,15 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import uuid
 from datetime import timezone
 
 from sqlalchemy.sql import func
 
+from covalent._results_manager.results_manager import get_result
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.lattices import Lattice
+from covalent_ui.api.v1.utils.file_handle import validate_data
 
 
 class Electrons:
@@ -82,3 +85,22 @@ class Electrons:
             .first()
         )
         return data
+
+    def get_electron_inputs(self, dispatch_id: uuid.UUID, electron_id: int) -> str:
+        """
+        Get Electron Inputs
+        Args:
+            dispatch_id: Dispatch id of lattice/sublattice
+            electron_id: Transport graph node id of a electron
+        Returns:
+            Returns the inputs data from Result object
+        """
+        from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
+
+        result_object = get_result(dispatch_id=str(dispatch_id), wait=False)
+
+        result = self.get_electrons_id(dispatch_id, electron_id)
+        inputs = get_task_inputs(
+            node_id=electron_id, node_name=result.name, result_object=result_object
+        )
+        return validate_data(inputs)

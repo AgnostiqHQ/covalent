@@ -17,22 +17,3 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
-
-"""DB Config"""
-
-from sqlalchemy.ext.declarative import declarative_base
-
-from covalent_dispatcher._db.datastore import DataStore
-
-Base = declarative_base()
-engine = DataStore().engine
-
-
-def init_db(db_path: str = ""):
-
-    global engine
-    engine = (
-        DataStore(db_URL=db_path, initialize_db=True).engine
-        if db_path != ""
-        else DataStore().engine
-    )

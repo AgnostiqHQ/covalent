@@ -18,21 +18,23 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""DB Config"""
 
-from sqlalchemy.ext.declarative import declarative_base
-
-from covalent_dispatcher._db.datastore import DataStore
-
-Base = declarative_base()
-engine = DataStore().engine
-
-
-def init_db(db_path: str = ""):
-
-    global engine
-    engine = (
-        DataStore(db_URL=db_path, initialize_db=True).engine
-        if db_path != ""
-        else DataStore().engine
-    )
+def seed_service_app_data():
+    return {
+        "test_result": {
+            "api_path": "/api/result/83568425-5565-4543-ab6f-7afb88e50458?wait=false&status_only=false",
+            "case1": {
+                "status_code": 404,
+                "response_data": {
+                    "message": "The requested dispatch ID 78525234-72ec-42dc-94a0-f4751707f9cd was not found."
+                },
+            },
+        },
+        "test_db_path": {
+            "api_path": "/api/db-path",
+            "case1": {
+                "status_code": 200,
+                "response_data": '"/home/arunmukesh/.local/share/covalent/dispatcher_db.sqlite"',
+            },
+        },
+    }

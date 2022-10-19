@@ -60,6 +60,17 @@ def get_settings():
 
 @routes.post("/settings", response_model=UpdateSettingsResponseModel)
 def post_settings(new_entries: Dict, override_existing: bool = True):
+    """
+    Update the exising configuration dictionary with the configuration sent in request body.
+    Only executor fields are writable.
+    Args:
+        new_entries: Dictionary of new entries added or updated in the config.
+        override_existing: If True (default), config values from the config file
+            or the input dictionary (new_entries) take precedence over any existing
+            values in the config.
+    Returns:
+        settings updated successfully when updated.
+    """
     file_type = next(iter(new_entries.keys()))
     first_key = next(iter(new_entries[file_type].keys()))
     if first_key == "":
@@ -73,17 +84,6 @@ def post_settings(new_entries: Dict, override_existing: bool = True):
                 }
             ],
         )
-    """
-    Update the exising configuration dictionary with the configuration sent in request body.
-    Only executor fields are writable.
-    Args:
-        new_entries: Dictionary of new entries added or updated in the config.
-        override_existing: If True (default), config values from the config file
-            or the input dictionary (new_entries) take precedence over any existing
-            values in the config.
-    Returns:
-        settings updated successfully when updated.
-    """
     if len([validator.value for validator in Validators if validator.value in new_entries]) != 0:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,

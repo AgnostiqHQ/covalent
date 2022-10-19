@@ -18,37 +18,22 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Lattice file module mapper"""
 
-from enum import Enum
-
-
-class Filetype(str, Enum):
-    """Map module for mapping file module to their
-    corresponding file extensions"""
-
-    RESULT = "result.pkl"
-    OUTPUT = "output"
-    FUNCTION_STRING = "function_string.txt"
-    INPUTS = "inputs.pkl"
-    ERROR = "error.log"
-    EXECUTOR = "executor.pkl"
-    RESULTS = "results.pkl"
-
-
-class FileMapper(str, Enum):
-    """Map module for mapping file module to their
-    corresponding result from database"""
-
-    ERROR = 3
-    FUNCTION_STRING = 4
-    EXECUTOR = 5
-    INPUTS = 6
-    RESULT = 7
-
-
-class FileExtension(Enum):
-    """Extension enum"""
-
-    TXT = ".txt"
-    PKL = ".pkl"
+def main_mock_data():
+    """Mock main data"""
+    return {
+        "test_webhook": {
+            "api_path": "/api/webhook",
+            "case1": {
+                "status_code": 200,
+                "response_data": {"ok": True},
+            },
+        },
+        "test_draw": {
+            "api_path": "/api/draw",
+            "case1": {
+                "status_code": 200,
+                "response_data": {"ok": True},
+            },
+        },
+    }

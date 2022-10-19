@@ -30,7 +30,6 @@ from covalent._workflow.transport import TransportableObject, _TransportGraph
 
 def transportable_object(obj):
     """Decode transportable object
-
     Args:
         obj: Covalent transportable object
     Returns:
@@ -43,7 +42,6 @@ def transportable_object(obj):
 
 
 def validate_data(unpickled_object):
-
     """Validate unpickled object"""
     if isinstance(unpickled_object, list):
         if not (unpickled_object):
