@@ -30,6 +30,7 @@ jobs:
       index: ${{ steps.filter.outputs.index }}
       action: ${{ steps.filter.outputs.action }}
       dist: ${{ steps.filter.outputs.dist }}
+      version: ${{ steps.changelog.outputs.version }}
     steps:
       - name: Check out head
         uses: actions/checkout@v3
@@ -45,13 +46,12 @@ jobs:
               - '.github/actions/changelog/action.yml'
             dist:
               - '.github/actions/changelog/dist/**'
-
       - name: Latest tag
         id: get-latest-tag
         uses: ./.github/actions/describe
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          branch: ${{ github.event.ref }}
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+          branch: develop
           stable: false
       - name: Update version number
         id: changelog
