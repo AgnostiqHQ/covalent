@@ -445,8 +445,6 @@ async def test_handle_failed_node(mocker):
     assert await asyncio.wait_for(tasks_queue.get(), timeout=1) == -1
     assert pending_deps == {0: 1, 1: 0, 2: 1}
     assert result_object.status == Result.FAILED
-    mock_get_node_name.assert_called_once()
-    mock_get_node_error.assert_called_once()
 
 
 @pytest.mark.asyncio

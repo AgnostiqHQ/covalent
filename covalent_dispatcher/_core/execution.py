@@ -439,11 +439,6 @@ async def _handle_failed_node(result_object, node_result, pending_deps, tasks_qu
     node_id = node_result["node_id"]
     result_object._status = Result.FAILED
     result_object._end_time = datetime.now(timezone.utc)
-    node_error = result_object._get_node_error(node_id)
-    if not node_error:
-        node_error = result_object.lattice.transport_graph.get_node_value(node_id, "stderr")
-
-    result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{node_error}"
     app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
     upsert._lattice_data(result_object)
     await result_webhook.send_update(result_object)
