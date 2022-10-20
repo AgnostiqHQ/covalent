@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Single line call to join instead of a for loop
+
 ## [0.205.0-rc.0] - 2022-10-19
 
 ### Authors
