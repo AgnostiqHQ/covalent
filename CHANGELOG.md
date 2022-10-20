@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Single line call to join instead of a for loop
+
 ## [0.205.0-rc.0] - 2022-10-19
 
 ### Authors
@@ -4153,9 +4157,3 @@ Installed executor plugins don't have to be referred to by their full module nam
 - CHANGELOG.md to track changes (this file).
 - Semantic versioning in VERSION.
 - CI pipeline job to enforce versioning.
-
-## [0.0.1] - 2020-09-22
-
-### Changed
-
-- Single line call to join instead of a for loop
