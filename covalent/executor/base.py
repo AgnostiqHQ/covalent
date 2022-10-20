@@ -263,19 +263,22 @@ class BaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
 
+        self.setup(task_metadata=task_metadata)
+
         try:
             with self.get_dispatch_context(dispatch_info), redirect_stdout(
                 io.StringIO()
             ) as stdout, redirect_stderr(io.StringIO()) as stderr:
 
-                self.setup(task_metadata=task_metadata)
                 result = self.run(function, args, kwargs, task_metadata)
-                self.teardown(task_metadata=task_metadata)
                 exception_raised = False
         except TaskRuntimeError as err:
             app_log.error(f"TaskRuntimeError: {err}")
             exception_raised = True
             result = None
+
+        finally:
+            self.teardown(task_metadata=task_metadata)
 
         self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
@@ -388,17 +391,20 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
 
+        await self.setup(task_metadata=task_metadata)
+
         try:
             with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(
                 io.StringIO()
             ) as stderr:
-                await self.setup(task_metadata=task_metadata)
                 result = await self.run(function, args, kwargs, task_metadata)
-                await self.teardown(task_metadata=task_metadata)
                 exception_raised = False
         except TaskRuntimeError as err:
             exception_raised = True
             result = None
+
+        finally:
+            await self.teardown(task_metadata=task_metadata)
 
         await self.write_streams_to_file(
             (stdout.getvalue(), stderr.getvalue()),
