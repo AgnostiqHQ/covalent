@@ -21,6 +21,7 @@
     "elkjs": "^0.7.1",
     "fuse.js": "^6.4.6",
     "html-to-image": "^1.10.8",
+    "html2canvas": "^1.4.1",
     "humanize-duration": "^3.27.1",
     "lodash": "^4.17.21",
     "react": "^17.0.2",
