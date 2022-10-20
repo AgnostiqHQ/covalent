@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Updated hotfix logic to run on a merge to a release branch
+- CodeQL workflow uses a test matrix to scan all repos in the Covalent ecosystem
 
 ## [0.205.0-rc.0] - 2022-10-19
 
