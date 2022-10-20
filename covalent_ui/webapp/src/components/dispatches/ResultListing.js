@@ -246,17 +246,15 @@ const ResultsTableHead = ({
               All visible{' '}
             </MenuItem>
             {filterValue === 'ALL' ? (
-              <>
-                <MenuItem
-                  divider
-                  onClick={() => {
-                    handleAllDelete('ALL', allDispatches)
-                  }}
-                  onClose={handleClose}
-                >
-                  All
-                </MenuItem>
-              </>
+              <MenuItem
+                divider
+                onClick={() => {
+                  handleAllDelete('ALL', allDispatches)
+                }}
+                onClose={handleClose}
+              >
+                All
+              </MenuItem>
             ) : null}
             {(filterValue === 'COMPLETED' || filterValue === 'ALL') &&
             completedDispatches !== 0 ? (
@@ -376,6 +374,7 @@ const ResultsTableToolbar = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            width: '12%',
           }}
         >
           {numSelected} selected
@@ -413,14 +412,7 @@ const ResultsTableToolbar = ({
         message="Are you sure about deleting"
         icon={DeleteNewIcon}
       />
-      <Grid
-        ml={2}
-        container
-        direction="row"
-        justifyContent="space-between"
-        alignItems="center"
-        sx={{ width: '35%' }}
-      >
+      <Grid ml={2} container direction="row">
         <SortDispatch
           title="All"
           count={allDispatches}
@@ -810,12 +802,15 @@ const ResultListing = () => {
           <Grid>
             <TableContainer
               sx={{
-                height: _.isEmpty(dashboardListView) ? 50 : 310,
+                height: _.isEmpty(dashboardListView) ? 50 : 350,
                 '@media (min-width: 1500px) and (min-height: 850px)': {
-                  height: _.isEmpty(dashboardListView) ? 50 : 450,
+                  height: _.isEmpty(dashboardListView) ? 50 : 485,
                 },
                 '@media (min-width: 1700px)': {
                   height: _.isEmpty(dashboardListView) ? 50 : '53vh',
+                },
+                '@media (min-height: 900px)': {
+                  height: _.isEmpty(dashboardListView) ? 50 : '62vh',
                 },
               }}
             >
@@ -852,7 +847,10 @@ const ResultListing = () => {
                 <TableBody sx={{ height: 'max-content' }}>
                   {dashboardListView &&
                     dashboardListView.map((result, index) => (
-                      <TableRow hover key={result.dispatchId}>
+                      <TableRow
+                        hover
+                        key={result.dispatchId}
+                      >
                         <TableCell padding="checkbox">
                           <Checkbox
                             disableRipple
@@ -886,7 +884,10 @@ const ResultListing = () => {
                         </TableCell>
 
                         <TableCell>
-                          <OverflowTip value={result.latticeName} />
+                          <OverflowTip
+                            value={result.latticeName}
+                            width="70px"
+                          />
                         </TableCell>
                         {result.status === 'RUNNING' ? (
                           <TableCell>
@@ -943,6 +944,7 @@ const ResultListing = () => {
                       ? Math.ceil(totalRecords / 10)
                       : 1
                   }
+                  disabled={totalRecords <= 10}
                   page={page}
                   onChange={handlePageChanges}
                   showFirstButton

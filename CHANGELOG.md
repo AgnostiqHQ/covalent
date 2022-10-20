@@ -7,9 +7,219 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.205.0-rc.0] - 2022-10-19
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Made `root_dispatch_id` nullable to circumvent migration issues with sqlite in certain platforms
+
+### Operations
+
+- Updated all CI Slack alerts to all go to the #covalent-ci channel
+
+### Fixed
+
+- Rendering newlines in ErrorCard on the UI for displaying error stacktraces
+- VERSION incrementing logic in changelog
+- Fixed v11 migration to use render as batch to make DROP operations compatible with sqlite
+
+## [0.204.1-rc.0] - 2022-10-18
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Fixed
+
+- `covalent restart` honors the `sdk.no_cluster` setting
+
 ### Docs
 
-- Updated EC2 RTD with config & cloud resources table
+- Updated RTD with details about the new AWS lambda executor interface
+
+### Operations
+
+- Removed PAUL_BLART check on build sdist step in release.yml
+- Consolidated pre & stable build into one step in release.yml
+
+## [0.204.0-rc.0] - 2022-10-17
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Aravind-psiog <aravind.prabaharan@psiog.com>
+- Co-authored-by: Manjunath PV <manjunath.poilath@psiog.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: RaviPsiog <raviteja.gurram@psiog.com>
+- Co-authored-by: RaviPsiog <ravieja.gurram@psiog.com>
+- Aravind <100823292+Aravind-psiog@users.noreply.github.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+
+
+### Operations
+
+- Fixing the validate distribution step given changes in -rc0 suffix to version
+
+### Added
+
+- RTD for User Interface
+- Minor GUI fixes
+
+### Fixed
+
+- Re-applying default executor fix post config file reunification
+
+## [0.203.0-rc.0] - 2022-10-14
+
+### Authors
+
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Aravind-psiog <aravind.prabaharan@psiog.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+- Scott Wyman Neagle <wymnea@protonmail.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Will Cunningham <wjcunningham7@gmail.com>
+
+
+### Added 
+
+- Ability to use terminal on the GUI.
+
+### Fixed
+
+- Exceptions when instantiating executors are handled
+- Covalent start now waits for the server to settle before returning
+
+### Operations
+
+- updated hotfix logic to run on a merge to a release branch
+- Fixing js github actions dist by re-building from develop
+- Fixing syntax in describe action & compiled action manually
+
+## [0.202.0] - 2022-10-11
+
+### Authors
+
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Added
+
+- Ability to view sublattices list as part of the main lattice
+- Ability to view subalattices graph as part of main lattice
+
+
+### Fixed
+
+- Electron dependencies are no longer written twice to the DB during a workflow
+
+## [0.201.0] - 2022-10-09
+
+### Authors
+
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Aravind <100823292+Aravind-psiog@users.noreply.github.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Scott Wyman Neagle <wymnea@protonmail.com>
+
+
+### Docs
+
+- Added AWS Plugins RTD page
+
+### Fixed
+
+- Updated import statements in alembic `env.py` file to refer to updated location of `DataStore` class
+- Imports in entry_point
+
+### Docs
+
+- Fixed the docstring for `get_node_error`
+
+### Changed
+
+- move `upsert_lattice_data()` to dispatcher
+- move `upsert_electron_data()` to dispatcher
+- move `insert_electron_dependency_data()` to dispatcher
+- move `persist()` to dispatcher
+- move `get_unique_id()` to dispatcher
+- move `initialize_result_object()` to dispatcher
+
+### Removed
+
+- `get_node_value` from `Result`
+
+### Tests
+
+- Updated more functional tests
+
+## [0.200.0] - 2022-10-05
+
+### Authors
+
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Scott Wyman Neagle <scott@agnostiq.ai>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Aravind <100823292+Aravind-psiog@users.noreply.github.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+
+
+## Docs
+
+- Updated ECS Executor RTD with config & cloud resources table
+
+### Added
+
+- Ability to view the configuration file on the GUI as settings
+- Ability to copy python objects for inputs and results for lattice and electrons
+
+### Fixed
+
+- Minor GUI bugs and improvements
+
+### Docs
+
+- Updated Lambda Executor RTD with config & cloud resources table
+- Updated EC2, Braket, and Batch AWS Executors RTD with config & cloud resources table
 
 ### Operations
 
@@ -28,6 +238,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Adding boilerplate workflow
 - Syntax fixes in release.yml
 - Verbose failure messages in boilerplate workflow
+- Change license.yml to pip-license-checker action
 
 ## [0.199.0] - 2022-09-29
 
@@ -213,8 +424,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Tests
 
 - Enhanced DB tests to check faithfulness of persist and rehydrate operations
-
-### Docs
 
 ### Docs
 - Update user interface docs for filter and delete features.
@@ -432,7 +641,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
-- Added read the docs for user interface
 - Added db schema migration error guide in RTD
 - Removed `get_data_store` from quantum chemistry tutorial #1046
 
@@ -441,6 +649,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Front-end test coverage measured and reported in CI
 - Added reusable version action
 
+- Added read the docs for user interface
+ 
 ## [0.187.0] - 2022-08-28
 
 ### Authors

@@ -25,9 +25,9 @@ from unittest.mock import MagicMock, Mock
 
 import mock
 import pytest
+import requests
 from click.testing import CliRunner
 
-from covalent._data_store.datastore import DataStore
 from covalent_dispatcher._cli.service import (
     MIGRATION_COMMAND_MSG,
     MIGRATION_WARNING_MSG,
@@ -48,6 +48,7 @@ from covalent_dispatcher._cli.service import (
     status,
     stop,
 )
+from covalent_dispatcher._db.datastore import DataStore
 
 STOPPED_SERVER_STATUS_ECHO = "Covalent server is stopped.\n"
 RUNNING_SERVER_STATUS_ECHO = "Covalent server is running at http://localhost:42.\n"
@@ -144,6 +145,9 @@ def test_graceful_start_when_pid_absent(mocker):
     )
     popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
     click_echo_mock = mocker.patch("click.echo")
+    requests_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.requests.get",
+    )
 
     with mock.patch("covalent_dispatcher._cli.service.open", mock.mock_open()):
         res = _graceful_start("", "", "output.log", 15, False)
@@ -155,6 +159,35 @@ def test_graceful_start_when_pid_absent(mocker):
     popen_mock.assert_called_once()
     click_echo_mock.assert_called_once()
     read_pid_mock.assert_called_once()
+
+
+def test_graceful_start_waits_to_return(mocker):
+    """Check that graceful server start function doesn't return until
+    the endpoints are live."""
+
+    read_pid_mock = mocker.patch("covalent_dispatcher._cli.service._read_pid")
+    pid_exists_mock = mocker.patch("psutil.pid_exists", return_value=False)
+    rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
+    next_available_port_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._next_available_port", return_value=1984
+    )
+    popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
+    click_echo_mock = mocker.patch("click.echo")
+    requests_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.requests.get",
+        side_effect=requests.exceptions.ConnectionError(),
+    )
+    sleep_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.time.sleep", side_effect=RuntimeError()
+    )
+
+    with mock.patch("covalent_dispatcher._cli.service.open", mock.mock_open()):
+        with pytest.raises(RuntimeError):
+            res = _graceful_start("", "", "output.log", 15, False)
+
+        pass
+
+    sleep_mock.assert_called_once()
 
 
 def test_graceful_shutdown_running_server(mocker):
@@ -250,9 +283,21 @@ def test_stop(mocker, monkeypatch):
 def test_restart(mocker, port_tag, port, pid, server, restart_called, start_called, stop_called):
     """Test the restart CLI command."""
 
+    mock_config_map = {
+        "user_interface.port": port,
+        "sdk.log_level": "debug",
+        "sdk.no_cluster": "true",
+        "dask.mem_per_worker": 1024,
+        "dask.threads_per_worker": 2,
+        "dask.num_workers": 4,
+    }
+
+    def mock_config(key):
+        return mock_config_map[key]
+
     start = mocker.patch("covalent_dispatcher._cli.service.start")
     stop = mocker.patch("covalent_dispatcher._cli.service.stop")
-    mocker.patch("covalent_dispatcher._cli.service.get_config", return_value=port)
+    mocker.patch("covalent_dispatcher._cli.service.get_config", mock_config)
 
     obj = mocker.MagicMock()
     mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=pid)
@@ -261,6 +306,49 @@ def test_restart(mocker, port_tag, port, pid, server, restart_called, start_call
     runner.invoke(restart, f"--{port_tag} {port}", obj=obj)
     assert start.called is start_called
     assert stop.called is stop_called
+
+
+@pytest.mark.parametrize(
+    "port_tag,port,pid,server,no_cluster",
+    [
+        ("port", 42, 100, "ui", "true"),
+        ("port", 42, 100, "ui", "false"),
+    ],
+)
+def test_restart_preserves_nocluster(mocker, port_tag, port, pid, server, no_cluster):
+    """Test the restart CLI command preserves the setting of sdk.no_cluster."""
+
+    mock_config_map = {
+        "user_interface.port": port,
+        "sdk.log_level": "debug",
+        "sdk.no_cluster": no_cluster,
+        "dask.mem_per_worker": 1024,
+        "dask.threads_per_worker": 2,
+        "dask.num_workers": 4,
+    }
+    no_cluster_map = {"true": True, "false": False}
+
+    def mock_config(key):
+        return mock_config_map[key]
+
+    start = mocker.patch("covalent_dispatcher._cli.service.start")
+    stop = mocker.patch("covalent_dispatcher._cli.service.stop")
+    mocker.patch("covalent_dispatcher._cli.service.get_config", mock_config)
+
+    obj = mocker.MagicMock()
+    mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=pid)
+
+    configuration = {
+        "port": mock_config_map["user_interface.port"],
+        "develop": (mock_config_map["sdk.log_level"] == "debug"),
+        "no_cluster": no_cluster_map[mock_config_map["sdk.no_cluster"]],
+        "mem_per_worker": mock_config_map["dask.mem_per_worker"],
+        "threads_per_worker": mock_config_map["dask.threads_per_worker"],
+        "workers": mock_config_map["dask.num_workers"],
+    }
+    runner = CliRunner()
+    runner.invoke(restart, f"--{port_tag} {port}", obj=obj)
+    start.assert_called_with(**configuration)
 
 
 @pytest.mark.parametrize(

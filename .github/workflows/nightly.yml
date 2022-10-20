@@ -22,7 +22,7 @@ name: nightly
 
 on:
   schedule:
-    - cron: "0 4 * * *"
+    - cron: "0 * * * *"
 
 jobs:
   license:
@@ -73,6 +73,7 @@ jobs:
       - name: Push to master
         id: push
         run: |
+          CHANGELOG_VERSION="${{ needs.changelog.outputs.version }}"
           MASTER_VERSION="$(echo ${{ steps.get-latest-tag.outputs.tag }} | cut -c2- )"
           VERSION="$(cat ./VERSION)"
           release=false

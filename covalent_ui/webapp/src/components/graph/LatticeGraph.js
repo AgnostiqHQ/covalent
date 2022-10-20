@@ -20,6 +20,7 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 import { useEffect, useRef, useState, createRef } from 'react'
+import { useScreenshot, createFileName } from "use-react-screenshot"
 import ReactFlow, {
   MiniMap,
   getIncomers,
@@ -36,7 +37,6 @@ import LatticeControls from './LatticeControlsElk'
 import theme from '../../utils/theme'
 import { statusColor } from '../../utils/misc'
 import useFitViewHelper from './ReactFlowHooks'
-import { useScreenshot, createFileName } from 'use-react-screenshot'
 import covalentLogo from '../../assets/frame.png'
 
 // https://reactjs.org/docs/hooks-faq.html#how-to-get-the-previous-props-or-state
@@ -90,7 +90,7 @@ const LatticeGraph = ({
   useEffect(() => {
     setHighlighted(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [direction, showParams, algorithm, hideLabels])
+  }, [direction, showParams, algorithm, hideLabels, graph])
 
   // handle resizing
   const resizing = () => {
@@ -104,7 +104,7 @@ const LatticeGraph = ({
   useEffect(() => {
     resizing()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [marginRight, marginLeft, fitView, elements])
+  }, [marginRight, marginLeft, fitView, elements, graph])
 
   // layouting
   useEffect(() => {
@@ -151,26 +151,35 @@ const LatticeGraph = ({
 
   useEffect(() => {
     if (screen) {
-      takeScreenShot(ref_chart.current).then(download)
-      setScreen(false)
+      var svgElements = ref_chart.current.querySelectorAll('svg');
+      svgElements.forEach(function (item) {
+        item.style.marginBottom = '14px';
+      });
+      takeScreenShot(ref_chart.current).then(download);
+      svgElements.forEach(function (item) {
+        item.style.marginBottom = '0px';
+      });
+      setScreen(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen])
+  }, [screen]);
 
-  const ref_chart = createRef(null)
+
+  const ref_chart = createRef(null);
 
   // eslint-disable-next-line no-unused-vars
   const [image, takeScreenShot] = useScreenshot({
-    type: 'image/jpeg',
+    type: "image/jpeg",
     quality: 1.0,
-  })
+  });
 
-  const download = (image, { name = dispatchId, extension = 'jpg' } = {}) => {
-    const a = document.createElement('a')
-    a.href = image
-    a.download = createFileName(extension, name)
-    a.click()
-  }
+  const download = (image, { name = dispatchId, extension = "jpg" } = {}) => {
+    const a = document.createElement("a");
+    a.href = image;
+    a.download = createFileName(extension, name);
+    a.click();
+  };
+
 
   // highlight links of selected nodes
   const getAllIncomers = (node, elements) => {

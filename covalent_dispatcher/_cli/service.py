@@ -27,18 +27,21 @@ import json
 import os
 import shutil
 import socket
+import time
 from subprocess import DEVNULL, Popen
 from typing import Optional
 
 import click
 import dask.system
 import psutil
+import requests
 from distributed.comm import unparse_address
 from distributed.core import connect, rpc
 
-from covalent._data_store.datastore import DataStore
 from covalent._shared_files.config import ConfigManager, get_config, set_config
-from covalent.utils.migrate import migrate_pickled_result_object
+
+from .._db.datastore import DataStore
+from .migrate import migrate_pickled_result_object
 
 cm = ConfigManager()
 
@@ -188,6 +191,16 @@ def _graceful_start(
     with open(pidfile, "w") as PIDFILE:
         PIDFILE.write(str(pid))
 
+    # Wait until the server actually starts listening on the port
+    dispatcher_addr = f"http://localhost:{port}"
+    up = False
+    while not up:
+        try:
+            requests.get(dispatcher_addr, timeout=1)
+            up = True
+        except requests.exceptions.ConnectionError as err:
+            time.sleep(1)
+
     click.echo(f"Covalent server has started at http://localhost:{port}")
     return port
 
@@ -291,7 +304,7 @@ def start(
     ctx: click.Context,
     port: int,
     develop: bool,
-    no_cluster: bool,
+    no_cluster: str,
     mem_per_worker: str,
     threads_per_worker: int,
     workers: int,
@@ -328,16 +341,6 @@ def start(
     set_config("user_interface.port", port)
     set_config("dispatcher.port", port)
 
-    # Wait until the server actually starts listening on the port
-    server_listening = False
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    while not server_listening:
-        try:
-            sock.bind(("localhost", port))
-            sock.close()
-        except OSError:
-            server_listening = True
-
 
 @click.command()
 def stop() -> None:
@@ -362,13 +365,14 @@ def restart(ctx, port: bool, develop: bool) -> None:
     Restart the server.
     """
 
+    no_cluster_map = {"true": True, "false": False}
     configuration = {
         "port": port or get_config("user_interface.port"),
         "develop": develop or (get_config("sdk.log_level") == "debug"),
-        "no_cluster": get_config("user_interface.port"),
+        "no_cluster": no_cluster_map[get_config("sdk.no_cluster")],
         "mem_per_worker": get_config("dask.mem_per_worker"),
         "threads_per_worker": get_config("dask.threads_per_worker"),
-        "workers": set_config("dask.num_workers"),
+        "workers": get_config("dask.num_workers"),
     }
 
     ctx.invoke(stop)
