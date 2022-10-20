@@ -23,7 +23,7 @@ name: release-merge
 on:
   push:
     branches:
-      - "release-0.*.*"
+      - "release-v0.*.*"
 
 jobs:
   release-merge:
