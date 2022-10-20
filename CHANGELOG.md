@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Enabling logging by default
 
+### Changed
+
+- Single line call to join instead of a for loop
+- Updated black, mirrors-prettier, and detect-secrets in pre-commit hooks
+
+### Operations
+
+- Updated hotfix logic to run on a merge to a release branch
+
 ## [0.205.0-rc.0] - 2022-10-19
 
 ### Authors
