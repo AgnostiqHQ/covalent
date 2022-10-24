@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Fixed missing RTD content under API section for covalent, cli, leptons, deps, data transfer
+
+### Fixed
+
+- Enabling logging by default
+- Removed debugging output
+
+### Changed
+
+- Single line call to join instead of a for loop
+- Updated black, mirrors-prettier, and detect-secrets in pre-commit hooks
+
+### Operations
+
+- Updated hotfix logic to run on a merge to a release branch
+- CodeQL workflow uses a test matrix to scan all repos in the Covalent ecosystem
+
 ## [0.205.0-rc.0] - 2022-10-19
 
 ### Authors
