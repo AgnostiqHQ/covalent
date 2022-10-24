@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+- Updated AWS Lambda executor docs to address conflict with using public ecr registries
+
+### Docs
+
 - Fixed missing RTD content under API section for covalent, cli, leptons, deps, data transfer
 
 ### Fixed
