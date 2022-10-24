@@ -99,7 +99,7 @@ class S3(FileTransferStrategy):
                 ]:
                     obj_key = obj_metadata["Key"]
                     obj_destination_filepath = Path(to_filepath) / obj_key
-                    if self._is_dir(obj_key):
+                    if obj_key.endswith("/"):
                         obj_destination_filepath.mkdir(parents=True, exist_ok=True)
                     else:
                         s3.download_file(bucket_name, obj_key, str(obj_destination_filepath))
@@ -128,13 +128,14 @@ class S3(FileTransferStrategy):
 
         bucket_name = furl(to_file.uri).origin[5:]
         app_log.debug(
-            f"S3 download bucket: {bucket_name}, from_filepath: {from_filepath}, to_filepath {to_filepath}."
+            f"S3 upload bucket: {bucket_name}, from_filepath: {from_filepath}, to_filepath {to_filepath}."
         )
 
         if from_file._is_dir:
 
             def callable():
                 import os
+                from pathlib import Path
 
                 import boto3
 
@@ -147,8 +148,10 @@ class S3(FileTransferStrategy):
                     for file_name in files:
                         rel_dir = os.path.relpath(dir_, from_filepath)
                         rel_file = os.path.join(rel_dir, file_name)
-                        if "DS_Store" not in rel_file:
-                            s3.upload_file(from_filepath, bucket_name, to_filepath)
+                        obj_from_filepath = str(Path(from_filepath) / rel_file)
+                        obj_to_filepath = str(Path(to_filepath) / rel_file)
+                        app_log.debug(f"Uploading from {obj_from_filepath} to {obj_to_filepath}.")
+                        s3.upload_file(obj_from_filepath, bucket_name, obj_to_filepath)
 
         else:
 
