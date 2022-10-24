@@ -69,21 +69,51 @@ class S3(FileTransferStrategy):
 
     # return callable to download here implies 'from' is a remote source
     def download(self, from_file: File, to_file: File = File()) -> File:
-        from_filepath = from_file.filepath.strip("/")
+
+        app_log.debug(f"Is dir: {from_file._is_dir}")
+
+        from_filepath = from_file.filepath
         to_filepath = to_file.filepath
+
+        if from_filepath.startswith("/"):
+            from_filepath = from_filepath[1:]
+
         bucket_name = furl(from_file.uri).origin[5:]
         app_log.debug(
             f"S3 download bucket: {bucket_name}, from_filepath: {from_filepath}, to_filepath {to_filepath}."
         )
 
-        def callable():
-            import boto3
+        if from_file._is_dir:
 
-            s3 = boto3.client(
-                "s3",
-                region_name=self.region_name,
-            )
-            s3.download_file(bucket_name, from_filepath, to_filepath)
+            def callable():
+                from pathlib import Path
+
+                import boto3
+
+                s3 = boto3.client(
+                    "s3",
+                    region_name=self.region_name,
+                )
+                for obj_metadata in s3.list_objects(Bucket=bucket_name, Prefix=from_filepath)[
+                    "Contents"
+                ]:
+                    obj_key = obj_metadata["Key"]
+                    obj_destination_filepath = Path(to_filepath) / obj_key
+                    if self._is_dir(obj_key):
+                        obj_destination_filepath.mkdir(parents=True, exist_ok=True)
+                    else:
+                        s3.download_file(bucket_name, obj_key, str(obj_destination_filepath))
+
+        else:
+
+            def callable():
+                import boto3
+
+                s3 = boto3.client(
+                    "s3",
+                    region_name=self.region_name,
+                )
+                s3.download_file(bucket_name, from_filepath, to_filepath)
 
         return callable
 
@@ -91,20 +121,45 @@ class S3(FileTransferStrategy):
     def upload(self, from_file: File, to_file: File = File()) -> File:
 
         from_filepath = from_file.filepath
-        to_filepath = to_file.filepath.strip("/")
+        to_filepath = to_file.filepath
+
+        if to_filepath.startswith("/"):
+            to_filepath = to_filepath.strip("/")
+
         bucket_name = furl(to_file.uri).origin[5:]
         app_log.debug(
             f"S3 download bucket: {bucket_name}, from_filepath: {from_filepath}, to_filepath {to_filepath}."
         )
 
-        def callable():
-            import boto3
+        if from_file._is_dir:
 
-            s3 = boto3.client(
-                "s3",
-                region_name=self.region_name,
-            )
-            s3.upload_file(from_filepath, bucket_name, to_filepath)
+            def callable():
+                import os
+
+                import boto3
+
+                s3 = boto3.client(
+                    "s3",
+                    region_name=self.region_name,
+                )
+
+                for dir_, _, files in os.walk(from_filepath):
+                    for file_name in files:
+                        rel_dir = os.path.relpath(dir_, from_filepath)
+                        rel_file = os.path.join(rel_dir, file_name)
+                        if "DS_Store" not in rel_file:
+                            s3.upload_file(from_filepath, bucket_name, to_filepath)
+
+        else:
+
+            def callable():
+                import boto3
+
+                s3 = boto3.client(
+                    "s3",
+                    region_name=self.region_name,
+                )
+                s3.upload_file(from_filepath, bucket_name, to_filepath)
 
         return callable
 
