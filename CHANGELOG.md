@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Enabling logging by default
+- Removed debugging output
 
 ### Changed
 
