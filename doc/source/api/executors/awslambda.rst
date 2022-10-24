@@ -193,9 +193,9 @@ In order for the executor to work end-to-end, the following resources need to be
    * - AWS Lambda function
      - function_name
      - Name of the AWS lambda function created in AWS
-   * - AWS Elastic Container Registery (ECR)
+   * - AWS Elastic Container Registry (ECR)
      - ``-``
-     - The container registry that contains the docker images used by the lambda function to execute tasks.t
+     - The container registry that contains the docker images used by the lambda function to execute tasks
 
 The following JSON policy document shows the necessary IAM permissions required for the executor
 to properly run tasks using the AWS Lambda compute service:
@@ -306,7 +306,7 @@ Users can use the following `Terraform <https://www.terraform.io/>`_ snippet as 
     provider aws {}
 
     resource aws_s3_bucket bucket {
-        ...
+        bucket = "my-s3-bucket"
     }
 
     resource aws_iam_role lambda_iam {
