@@ -18,29 +18,19 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""${message}
+name: release-merge
 
-Revision ID: ${up_revision}
-Revises: ${down_revision | comma,n}
-Create Date: ${create_date}
+on:
+  push:
+    branches:
+      - "release-v0.*.*"
 
-"""
-from alembic import op
-import sqlalchemy as sa
-${imports if imports else ""}
-
-# revision identifiers, used by Alembic.
-# pragma: allowlist nextline secret
-revision = ${repr(up_revision)}
-# pragma: allowlist nextline secret
-down_revision = ${repr(down_revision)}
-branch_labels = ${repr(branch_labels)}
-depends_on = ${repr(depends_on)}
-
-
-def upgrade() -> None:
-    ${upgrades if upgrades else "pass"}
-
-
-def downgrade() -> None:
-    ${downgrades if downgrades else "pass"}
+jobs:
+  release-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create pull request
+        uses: devops-infra/action-pull-request@v0.5.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          target_branch: develop
