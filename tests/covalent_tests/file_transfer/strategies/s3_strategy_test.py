@@ -84,3 +84,13 @@ class TestS3Strategy:
 
         with pytest.raises(NotImplementedError):
             S3().cp(File(self.MOCK_REMOTE_FILEPATH), File(self.MOCK_LOCAL_FILEPATH))()
+
+
+def test_folder_download(mocker):
+    """Test the s3 file download when remote and local folders are provided."""
+    pass
+
+
+def test_folder_upload(mocker):
+    """Test the s3 file upload method when remote and local folders are provided."""
+    pass

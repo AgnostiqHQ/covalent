@@ -69,7 +69,7 @@ class S3(FileTransferStrategy):
 
     # return callable to download here implies 'from' is a remote source
     def download(self, from_file: File, to_file: File = File()) -> File:
-
+        """Download files or the contents of folders from S3 bucket."""
         app_log.debug(f"Is dir: {from_file._is_dir}")
 
         from_filepath = from_file.filepath
@@ -86,6 +86,7 @@ class S3(FileTransferStrategy):
         if from_file._is_dir:
 
             def callable():
+                """Download files from a folder in s3 bucket."""
                 from pathlib import Path
 
                 import boto3
@@ -107,6 +108,7 @@ class S3(FileTransferStrategy):
         else:
 
             def callable():
+                """Download file from s3 bucket."""
                 import boto3
 
                 s3 = boto3.client(
@@ -119,7 +121,7 @@ class S3(FileTransferStrategy):
 
     # return callable to download here implies 'to' is a remote source
     def upload(self, from_file: File, to_file: File = File()) -> File:
-
+        """Upload files or folders to S3 bucket."""
         from_filepath = from_file.filepath
         to_filepath = to_file.filepath
 
@@ -134,6 +136,7 @@ class S3(FileTransferStrategy):
         if from_file._is_dir:
 
             def callable():
+                """List and upload files from a directory to the remote S3 bucket."""
                 import os
                 from pathlib import Path
 
@@ -156,6 +159,7 @@ class S3(FileTransferStrategy):
         else:
 
             def callable():
+                """Upload file to remote S3 bucket."""
                 import boto3
 
                 s3 = boto3.client(
