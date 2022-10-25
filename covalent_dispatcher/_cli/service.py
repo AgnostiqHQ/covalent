@@ -49,8 +49,10 @@ UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
 UI_SRVDIR = f"{os.path.dirname(os.path.abspath(__file__))}/../../covalent_ui"
 
-MIGRATION_WARNING_MSG = "There have been changes applied to the database."
-MIGRATION_COMMAND_MSG = '   (use "covalent db migrate" to run database migrations)'
+MIGRATION_WARNING_MSG = "Covalent not started. The database needs to be upgraded."
+MIGRATION_COMMAND_MSG = (
+    '   (use "covalent db migrate" to run database migrations and then retry "covalent start")'
+)
 
 
 def _read_pid(filename: str) -> int:

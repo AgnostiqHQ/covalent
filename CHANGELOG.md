@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Enabling logging by default
 - Removed debugging output
+- Clarify cli output when `covalent db migrate` needs to be run
 
 ### Changed
 
