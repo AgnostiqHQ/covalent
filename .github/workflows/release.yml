@@ -47,7 +47,7 @@ on:
 env:
   PAUL_BLART: >
     '['
-    '"scottwn",'
+    '"AlejandroEsquivel",'
     '"FyzHsn",'
     '"wjcunningham7",'
     '"santoshkumarradha"]'
