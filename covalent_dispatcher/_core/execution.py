@@ -33,6 +33,7 @@ from typing import Any, Dict, List, Tuple
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
+from covalent._shared_files.config import get_config
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import (
     electron_dict_prefix,
@@ -57,6 +58,7 @@ from .._db.write_result_to_db import (
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+debug_mode = get_config("sdk.log_level") == "debug"
 
 
 # This is to be run out-of-process
@@ -288,12 +290,15 @@ async def _run_task(
         executor = _executor_manager.get_executor(short_name)
         executor.from_dict(object_dict)
     except Exception as ex:
-        app_log.debug(f"Exception when trying to instantiate executor: {ex}")
+        tb = "".join(traceback.TracebackException.from_exception(ex).format())
+        app_log.debug("Exception when trying to instantiate executor:")
+        app_log.debug(tb)
+        error_msg = tb if debug_mode else str(ex)
         node_result = generate_node_result(
             node_id=node_id,
             end_time=datetime.now(timezone.utc),
             status=Result.FAILED,
-            error="".join(traceback.TracebackException.from_exception(ex).format()),
+            error=error_msg,
         )
         return node_result
 
@@ -372,12 +377,15 @@ async def _run_task(
             )
 
     except Exception as ex:
-        app_log.error(f"Exception occurred when running task {node_id}: {ex}")
+        tb = "".join(traceback.TracebackException.from_exception(ex).format())
+        app_log.debug(f"Exception occurred when running task {node_id}:")
+        app_log.debug(tb)
+        error_msg = tb if debug_mode else str(ex)
         node_result = generate_node_result(
             node_id=node_id,
             end_time=datetime.now(timezone.utc),
             status=Result.FAILED,
-            error="".join(traceback.TracebackException.from_exception(ex).format()),
+            error=error_msg,
         )
     app_log.debug(f"Node result: {node_result}")
     return node_result
