@@ -59,14 +59,6 @@ class S3(FileTransferStrategy):
         if self.profile is not None:
             os.environ["AWS_PROFILE"] = self.profile
 
-        # AWS Account Retrieval
-        sts = boto3.client("sts")
-        identity = sts.get_caller_identity()
-        account = identity.get("Account")
-
-        if account is None:
-            raise Exception("Incorrect AWS account credentials")
-
     # return callable to download here implies 'from' is a remote source
     def download(self, from_file: File, to_file: File = File()) -> File:
         """Download files or the contents of folders from S3 bucket."""
