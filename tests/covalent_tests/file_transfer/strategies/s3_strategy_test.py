@@ -116,6 +116,8 @@ def test_folder_download(mocker):
     from_folder = Folder("s3://mock-bucket/")
     to_folder = Folder("/User/tmp/")
 
+    bucket_name = furl(from_folder.uri).origin[5:]
+
     boto3_client_mock().list_objects.return_value = {
         "Contents": [
             {"Key": "test.csv"},
@@ -124,7 +126,9 @@ def test_folder_download(mocker):
 
     callable_func = S3().download(from_folder, to_folder)
     callable_func()
-    boto3_client_mock().download_file.assert_called_once()
+    boto3_client_mock().download_file.assert_called_once_with(
+        bucket_name, "test.csv", "/User/tmp/test.csv"
+    )
 
 
 def test_folder_upload(mocker):
@@ -142,12 +146,19 @@ def test_folder_upload(mocker):
     to_folder = Folder("s3://mock-bucket/")
     from_folder = Folder("/User/tmp/")
 
+    bucket_name = furl(to_folder.uri).origin[5:]
+
     boto3_client_mock().list_objects.return_value = {
         "Contents": [
             {"Key": "test.csv"},
         ]
     }
 
+    os_mock.path.relpath.return_value = "mock_path"
+    os_mock.path.join.return_value = "mock_join"
+
     callable_func = S3().upload(from_folder, to_folder)
     callable_func()
-    boto3_client_mock().upload_file.assert_called_once()
+    boto3_client_mock().upload_file.assert_called_once_with(
+        "/User/tmp/mock_join", bucket_name, "mock_join"
+    )
