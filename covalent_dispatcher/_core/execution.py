@@ -46,7 +46,7 @@ from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
-from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
+from covalent.executor.base import wrapper_fn
 from covalent_ui import result_webhook
 
 from .._db import update, upsert
@@ -353,15 +353,14 @@ async def _run_task(
                 results_dir=results_dir,
                 node_id=node_id,
             )
-
-            if isinstance(executor, AsyncBaseExecutor):
-                output, stdout, stderr, exception_raised = await execute_callable()
-            else:
-                loop = asyncio.get_running_loop()
-                output, stdout, stderr, exception_raised = await loop.run_in_executor(
-                    None, execute_callable
-                )
-
+            output, stdout, stderr, exception_raised = await executor._execute(
+                function=assembled_callable,
+                args=inputs["args"],
+                kwargs=inputs["kwargs"],
+                dispatch_id=dispatch_id,
+                results_dir=results_dir,
+                node_id=node_id,
+            )
             if exception_raised:
                 status = Result.FAILED
             else:

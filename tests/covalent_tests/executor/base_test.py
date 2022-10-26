@@ -251,6 +251,78 @@ async def test_async_base_executor_run(mocker):
         assert True
 
 
+@pytest.mark.asyncio
+async def test_base_executor_private_execute(mocker):
+    """Test that `BaseExecutor._execute()` correctly invokes the real execute method"""
+
+    def f(x, y):
+        return x, y
+
+    me = MockExecutor()
+
+    me.execute = MagicMock()
+
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    await me._execute(
+        function=function,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+    me.execute.assert_called_with(
+        function,
+        args,
+        kwargs,
+        dispatch_id,
+        results_dir,
+        node_id,
+    )
+
+
+@pytest.mark.asyncio
+async def test_async_base_executor_private_execute(mocker):
+    """Test that `AsyncBaseExecutor._execute()` correctly invokes the real execute method"""
+
+    def f(x, y):
+        return x, y
+
+    async_me = MockAsyncExecutor()
+
+    async_me.execute = AsyncMock()
+
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    await async_me._execute(
+        function=function,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+    async_me.execute.assert_awaited_with(
+        function,
+        args,
+        kwargs,
+        dispatch_id,
+        results_dir,
+        node_id,
+    )
+
+
 def test_base_executor_passes_task_metadata(mocker):
     def f(x, y):
         return x, y

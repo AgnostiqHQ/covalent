@@ -22,6 +22,7 @@
 Class that defines the base executor template.
 """
 
+import asyncio
 import copy
 import io
 import os
@@ -233,6 +234,28 @@ class BaseExecutor(_AbstractBaseExecutor):
                 with open(filepath, "a") as f:
                     f.write(ss)
 
+    async def _execute(
+        self,
+        function: Callable,
+        args: List,
+        kwargs: Dict,
+        dispatch_id: str,
+        results_dir: str,
+        node_id: int = -1,
+    ) -> Any:
+
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(
+            None,
+            self.execute,
+            function,
+            args,
+            kwargs,
+            dispatch_id,
+            results_dir,
+            node_id,
+        )
+
     def execute(
         self,
         function: Callable,
@@ -384,6 +407,25 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
                 async with aiofiles.open(filepath, "a") as f:
                     await f.write(ss)
+
+    async def _execute(
+        self,
+        function: Callable,
+        args: List,
+        kwargs: Dict,
+        dispatch_id: str,
+        results_dir: str,
+        node_id: int = -1,
+    ) -> Any:
+
+        return await self.execute(
+            function,
+            args,
+            kwargs,
+            dispatch_id,
+            results_dir,
+            node_id,
+        )
 
     async def execute(
         self,

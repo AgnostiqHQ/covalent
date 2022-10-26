@@ -26,7 +26,7 @@ Tests for the core functionality of the dispatcher.
 import asyncio
 from asyncio import Queue
 from typing import Dict, List
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import cloudpickle as pickle
 import pytest
@@ -852,7 +852,7 @@ async def test_run_task_runtime_exception_handling(mocker):
     result_object = get_mock_result()
     inputs = {"args": [], "kwargs": {}}
     mock_executor = MagicMock()
-    mock_executor.execute.return_value = ("", "", "error", True)
+    mock_executor._execute = AsyncMock(return_value=("", "", "error", True))
     mock_get_executor = mocker.patch(
         "covalent_dispatcher._core.execution._executor_manager.get_executor",
         return_value=mock_executor,
@@ -870,7 +870,7 @@ async def test_run_task_runtime_exception_handling(mocker):
         workflow_executor=["local", {}],
     )
 
-    mock_executor.execute.assert_called_once()
+    mock_executor._execute.assert_awaited_once()
 
     assert node_result["stderr"] == "error"
 
