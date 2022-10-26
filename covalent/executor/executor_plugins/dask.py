@@ -27,7 +27,6 @@ This is a plugin executor module; it is loaded if found and properly structured.
 
 import io
 import os
-import sys
 import traceback
 from contextlib import redirect_stderr, redirect_stdout
 from typing import Callable, Dict, List
@@ -120,11 +119,11 @@ class DaskExecutor(AsyncBaseExecutor):
         except Exception as ex:
             raise ex
 
-        print(worker_stdout, end="", file=sys.stdout)
-        print(worker_stderr, end="", file=sys.stderr)
+        print(worker_stdout, end="", file=self.task_stdout)
+        print(worker_stderr, end="", file=self.task_stderr)
 
         if tb:
-            print(tb, end="", file=sys.stderr)
+            print(tb, end="", file=self.task_stderr)
             raise TaskRuntimeError(tb)
 
         # FIX: need to get stdout and stderr from dask worker and print them

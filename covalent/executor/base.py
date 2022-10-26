@@ -26,7 +26,6 @@ import copy
 import io
 import os
 from abc import ABC, abstractmethod
-from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
 
@@ -171,6 +170,14 @@ class _AbstractBaseExecutor(ABC):
             self.__dict__ = copy.deepcopy(object_dict["attributes"])
         return self
 
+    @property
+    def task_stdout(self):
+        return self.__dict__.get("_task_stdout")
+
+    @property
+    def task_stderr(self):
+        return self.__dict__.get("_task_stderr")
+
 
 class BaseExecutor(_AbstractBaseExecutor):
     """
@@ -256,6 +263,8 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         dispatch_info = DispatchInfo(dispatch_id)
         fn_version = function.args[0].python_version
+        self._task_stdout = io.StringIO()
+        self._task_stderr = io.StringIO()
 
         task_metadata = {
             "dispatch_id": dispatch_id,
@@ -266,12 +275,8 @@ class BaseExecutor(_AbstractBaseExecutor):
         self.setup(task_metadata=task_metadata)
 
         try:
-            with self.get_dispatch_context(dispatch_info), redirect_stdout(
-                io.StringIO()
-            ) as stdout, redirect_stderr(io.StringIO()) as stderr:
-
-                result = self.run(function, args, kwargs, task_metadata)
-                exception_raised = False
+            result = self.run(function, args, kwargs, task_metadata)
+            exception_raised = False
         except TaskRuntimeError as err:
             app_log.error(f"TaskRuntimeError: {err}")
             exception_raised = True
@@ -281,13 +286,18 @@ class BaseExecutor(_AbstractBaseExecutor):
             self.teardown(task_metadata=task_metadata)
 
         self.write_streams_to_file(
-            (stdout.getvalue(), stderr.getvalue()),
+            (self._task_stdout.getvalue(), self._task_stderr.getvalue()),
             (self.log_stdout, self.log_stderr),
             dispatch_id,
             results_dir,
         )
 
-        return (result, stdout.getvalue(), stderr.getvalue(), exception_raised)
+        return (
+            result,
+            self._task_stdout.getvalue(),
+            self._task_stderr.getvalue(),
+            exception_raised,
+        )
 
     def setup(self, task_metadata: Dict) -> Any:
         """Placeholder to run any executor specific tasks"""
@@ -385,6 +395,9 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         node_id: int = -1,
     ) -> Any:
 
+        self._task_stdout = io.StringIO()
+        self._task_stderr = io.StringIO()
+
         task_metadata = {
             "dispatch_id": dispatch_id,
             "node_id": node_id,
@@ -394,11 +407,8 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         await self.setup(task_metadata=task_metadata)
 
         try:
-            with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(
-                io.StringIO()
-            ) as stderr:
-                result = await self.run(function, args, kwargs, task_metadata)
-                exception_raised = False
+            result = await self.run(function, args, kwargs, task_metadata)
+            exception_raised = False
         except TaskRuntimeError as err:
             exception_raised = True
             result = None
@@ -407,13 +417,18 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             await self.teardown(task_metadata=task_metadata)
 
         await self.write_streams_to_file(
-            (stdout.getvalue(), stderr.getvalue()),
+            (self._task_stdout.getvalue(), self._task_stderr.getvalue()),
             (self.log_stdout, self.log_stderr),
             dispatch_id,
             results_dir,
         )
 
-        return (result, stdout.getvalue(), stderr.getvalue(), exception_raised)
+        return (
+            result,
+            self._task_stdout.getvalue(),
+            self._task_stderr.getvalue(),
+            exception_raised,
+        )
 
     async def setup(self, task_metadata: Dict):
         """Executor specific setup method"""

@@ -24,14 +24,18 @@ Module for defining a local executor that directly invokes the input python func
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
+
+import multiprocessing as mp
 import os
-import sys
-import traceback
 from typing import Callable, Dict, List
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import TaskRuntimeError, logger
-from covalent.executor import BaseExecutor, wrapper_fn  # nopycln: import
+from covalent.executor import BaseExecutor
+
+# Store the wrapper function in an external module to avoid module
+# import errors during pickling
+from covalent.executor.utils.local_executor_utils import local_wrapper
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "LocalExecutor"
@@ -55,11 +59,23 @@ class LocalExecutor(BaseExecutor):
 
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         app_log.debug(f"Running function {function} locally")
+        q = mp.Queue()
+
+        # Run the target function in a separate process
+        proc = mp.Process(target=local_wrapper, args=(function, args, kwargs, q))
+
         try:
-            output = function(*args, **kwargs)
+            proc.start()
+            proc.join()
+            output, worker_stdout, worker_stderr, tb = q.get(False)
         except Exception as ex:
-            tb = "".join(traceback.TracebackException.from_exception(ex).format())
-            print(tb, end="", file=sys.stderr)
+            raise ex
+
+        print(worker_stdout, end="", file=self.task_stdout)
+        print(worker_stderr, end="", file=self.task_stderr)
+
+        if tb:
+            print(tb, end="", file=self.task_stderr)
             raise TaskRuntimeError(tb)
 
         return output
