@@ -115,16 +115,39 @@ def test_folder_download(mocker):
 
     from_folder = Folder("s3://mock-bucket/")
     to_folder = Folder("/User/tmp/")
-    bucket_name = furl(from_folder.uri).origin[5:]
 
     boto3_client_mock().list_objects.return_value = {
-        "Contents": {"Key": ["test.csv", "train.csv"]}
+        "Contents": [
+            {"Key": "test.csv"},
+        ]
     }
 
-    S3().download(from_folder, to_folder)
+    callable_func = S3().download(from_folder, to_folder)
+    callable_func()
     boto3_client_mock().download_file.assert_called_once()
 
 
 def test_folder_upload(mocker):
     """Test the s3 file upload method when remote and local folders are provided."""
-    pass
+    boto3_mock = MagicMock()
+    sys.modules["boto3"] = boto3_mock
+
+    boto3_client_mock = mocker.patch("boto3.client")
+
+    os_mock = MagicMock()
+    sys.modules["os"] = os_mock
+
+    mocker.patch("os.walk", return_value=[["", "", ["test.csv"]]])
+
+    to_folder = Folder("s3://mock-bucket/")
+    from_folder = Folder("/User/tmp/")
+
+    boto3_client_mock().list_objects.return_value = {
+        "Contents": [
+            {"Key": "test.csv"},
+        ]
+    }
+
+    callable_func = S3().upload(from_folder, to_folder)
+    callable_func()
+    boto3_client_mock().upload_file.assert_called_once()
