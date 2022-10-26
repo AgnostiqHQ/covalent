@@ -318,7 +318,6 @@ def update_electrons_data(
 ) -> None:
     """This function updates the electrons record."""
 
-    print("DEBUG: update_electrons_data called on node", transport_graph_node_id)
     with workflow_db.session() as session:
         parent_lattice_id = (
             session.query(Lattice).where(Lattice.dispatch_id == parent_dispatch_id).all()[0].id
