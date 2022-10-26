@@ -257,8 +257,8 @@ def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations, cur
 
     res = runner.invoke(start, cli_args)
 
-    # if current_revision is None no migrations have been run 
-    if current_revision is None and not ignore_migrations: 
+    # if current_revision is None no migrations have been run
+    if current_revision is None and not ignore_migrations:
         db_mock.current_revision.assert_called_once()
 
     if ignore_migrations or not is_migration_pending:
