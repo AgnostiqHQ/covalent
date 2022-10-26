@@ -28,7 +28,8 @@ import pytest
 import covalent as ct
 from covalent._shared_files import TaskRuntimeError
 from covalent._workflow.transport import TransportableObject
-from covalent.executor.executor_plugins.local import LocalExecutor, wrapper_fn
+from covalent.executor.base import wrapper_fn
+from covalent.executor.executor_plugins.local import LocalExecutor
 
 
 def test_local_executor_passes_results_dir(mocker):
