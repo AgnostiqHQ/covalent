@@ -329,6 +329,12 @@ def start(
         click.echo(MIGRATION_COMMAND_MSG)
         return ctx.exit(1)
 
+    if ignore_migrations and db.is_migration_pending:
+        click.secho(
+            'Warning: Ignoring migrations is not recommended and may have unanticipated side effects. Use "covalent db migrate" to run migrations.',
+            fg="yellow",
+        )
+
     set_config("user_interface.port", port)
     set_config("dispatcher.port", port)
 
