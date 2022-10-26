@@ -18,35 +18,30 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Module for logging errors, warnings, and debug statements."""
 
-import logging
-import os
-import sys
-import time
+import covalent as ct
 
-from .config import get_config
 
-logging.Formatter.converter = time.gmtime
+def test_local_executor_returns_stdout_stderr():
+    from covalent.executor import LocalExecutor
 
-app_log = logging.getLogger(__name__)
+    le = LocalExecutor()
 
-log_level = get_config("sdk.log_level").upper()
-app_log.setLevel(log_level)
+    @ct.electron(executor=le)
+    def task(x):
+        import sys
 
-# Set the format
-stream_formatter = logging.Formatter(
-    "[%(asctime)s] " + "[%(levelname)s] " + "%(filename)s: " + "Line "
-    "%(lineno)s in %(funcName)s: " + "%(message)s"
-)
+        print("Hello")
+        print("Error", file=sys.stderr)
+        return x
 
-stream_handler = logging.StreamHandler()
-stream_handler.setLevel(log_level)
-stream_handler.setFormatter(stream_formatter)
-stream_handler.stream = sys.stdout
+    @ct.lattice
+    def workflow(x):
+        return task(x)
 
-app_log.addHandler(stream_handler)
-app_log.propagate = False
-
-# Show stack traces
-log_stack_info = os.environ.get("LOGSTACK", "TRUE").upper() == "TRUE"
+    dispatch_id = ct.dispatch(workflow)(5)
+    res = ct.get_result(dispatch_id, wait=True)
+    tg = res.lattice.transport_graph
+    assert tg.get_node_value(0, "stdout") == "Hello\n"
+    assert tg.get_node_value(0, "stderr") == "Error\n"
+    assert tg.get_node_value(0, "output").get_deserialized() == 5
