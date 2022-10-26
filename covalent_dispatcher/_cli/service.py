@@ -319,6 +319,11 @@ def start(
         set_config({"sdk.log_level": "debug"})
 
     db = DataStore.factory()
+
+    # No migrations have run as of yet - run them automatically
+    if db.current_revision() == None:
+        db.run_migrations(logging_enabled=False)
+
     if db.is_migration_pending and not ignore_migrations:
         click.secho(MIGRATION_WARNING_MSG, fg="yellow")
         click.echo(MIGRATION_COMMAND_MSG)
