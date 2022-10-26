@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.206.0-rc.0] - 2022-10-26
+
+### Authors
+
+- Akalanka <8133713+boneyag@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Scott Wyman Neagle <wymnea@protonmail.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+
+
 ### Docs
 
 - Updated AWS Lambda executor docs to address conflict with using public ecr registries
