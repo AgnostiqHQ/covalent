@@ -1,3 +1,23 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
 import os
 import sys
 from unittest.mock import MagicMock
@@ -5,7 +25,7 @@ from unittest.mock import MagicMock
 import pytest
 from furl import furl
 
-from covalent._file_transfer import File
+from covalent._file_transfer import File, Folder
 from covalent._file_transfer.strategies.s3_strategy import S3
 
 
@@ -88,7 +108,21 @@ class TestS3Strategy:
 
 def test_folder_download(mocker):
     """Test the s3 file download when remote and local folders are provided."""
-    pass
+    boto3_mock = MagicMock()
+    sys.modules["boto3"] = boto3_mock
+
+    boto3_client_mock = mocker.patch("boto3.client")
+
+    from_folder = Folder("s3://mock-bucket/")
+    to_folder = Folder("/User/tmp/")
+    bucket_name = furl(from_folder.uri).origin[5:]
+
+    boto3_client_mock().list_objects.return_value = {
+        "Contents": {"Key": ["test.csv", "train.csv"]}
+    }
+
+    S3().download(from_folder, to_folder)
+    boto3_client_mock().download_file.assert_called_once()
 
 
 def test_folder_upload(mocker):
