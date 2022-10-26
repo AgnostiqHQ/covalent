@@ -224,10 +224,19 @@ def test_graceful_shutdown_stopped_server(mocker):
 
 
 @pytest.mark.parametrize(
-    "is_migration_pending, ignore_migrations",
-    [(True, True), (True, False), (False, False), (False, True)],
+    "is_migration_pending, ignore_migrations, current_revision",
+    [
+        (True, True, None),
+        (True, False, None),
+        (False, False, None),
+        (False, True, None),
+        (True, True, "112233"),
+        (True, False, "112233"),
+        (False, False, "112233"),
+        (False, True, "112233"),
+    ],
 )
-def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations):
+def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations, current_revision):
     """Test the start CLI command."""
 
     runner = CliRunner()
@@ -245,6 +254,7 @@ def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations):
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
 
     db_mock.is_migration_pending = is_migration_pending
+    db_mock.current_revision.return_value = current_revision
 
     cli_args = f"--port {port_val} -d"
 
@@ -253,10 +263,13 @@ def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations):
 
     res = runner.invoke(start, cli_args)
 
+    # if current_revision is None no migrations have been run
+    if current_revision is None and not ignore_migrations:
+        db_mock.current_revision.assert_called_once()
+
     if ignore_migrations or not is_migration_pending:
         graceful_start_mock.assert_called_once()
         assert set_config_mock.call_count == 6
-        # set_config_mock.assert_called_once()
     else:
         assert MIGRATION_COMMAND_MSG in res.output
         assert MIGRATION_WARNING_MSG in res.output
@@ -283,9 +296,21 @@ def test_stop(mocker, monkeypatch):
 def test_restart(mocker, port_tag, port, pid, server, restart_called, start_called, stop_called):
     """Test the restart CLI command."""
 
+    mock_config_map = {
+        "user_interface.port": port,
+        "sdk.log_level": "debug",
+        "sdk.no_cluster": "true",
+        "dask.mem_per_worker": 1024,
+        "dask.threads_per_worker": 2,
+        "dask.num_workers": 4,
+    }
+
+    def mock_config(key):
+        return mock_config_map[key]
+
     start = mocker.patch("covalent_dispatcher._cli.service.start")
     stop = mocker.patch("covalent_dispatcher._cli.service.stop")
-    mocker.patch("covalent_dispatcher._cli.service.get_config", return_value=port)
+    mocker.patch("covalent_dispatcher._cli.service.get_config", mock_config)
 
     obj = mocker.MagicMock()
     mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=pid)
@@ -294,6 +319,49 @@ def test_restart(mocker, port_tag, port, pid, server, restart_called, start_call
     runner.invoke(restart, f"--{port_tag} {port}", obj=obj)
     assert start.called is start_called
     assert stop.called is stop_called
+
+
+@pytest.mark.parametrize(
+    "port_tag,port,pid,server,no_cluster",
+    [
+        ("port", 42, 100, "ui", "true"),
+        ("port", 42, 100, "ui", "false"),
+    ],
+)
+def test_restart_preserves_nocluster(mocker, port_tag, port, pid, server, no_cluster):
+    """Test the restart CLI command preserves the setting of sdk.no_cluster."""
+
+    mock_config_map = {
+        "user_interface.port": port,
+        "sdk.log_level": "debug",
+        "sdk.no_cluster": no_cluster,
+        "dask.mem_per_worker": 1024,
+        "dask.threads_per_worker": 2,
+        "dask.num_workers": 4,
+    }
+    no_cluster_map = {"true": True, "false": False}
+
+    def mock_config(key):
+        return mock_config_map[key]
+
+    start = mocker.patch("covalent_dispatcher._cli.service.start")
+    stop = mocker.patch("covalent_dispatcher._cli.service.stop")
+    mocker.patch("covalent_dispatcher._cli.service.get_config", mock_config)
+
+    obj = mocker.MagicMock()
+    mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=pid)
+
+    configuration = {
+        "port": mock_config_map["user_interface.port"],
+        "develop": (mock_config_map["sdk.log_level"] == "debug"),
+        "no_cluster": no_cluster_map[mock_config_map["sdk.no_cluster"]],
+        "mem_per_worker": mock_config_map["dask.mem_per_worker"],
+        "threads_per_worker": mock_config_map["dask.threads_per_worker"],
+        "workers": mock_config_map["dask.num_workers"],
+    }
+    runner = CliRunner()
+    runner.invoke(restart, f"--{port_tag} {port}", obj=obj)
+    start.assert_called_with(**configuration)
 
 
 @pytest.mark.parametrize(

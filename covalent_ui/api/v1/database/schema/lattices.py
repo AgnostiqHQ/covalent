@@ -134,7 +134,7 @@ class Lattice(Base):
     results_dir = Column(Text)
 
     # Dispatch id of the root lattice in a hierarchy of sublattices
-    root_dispatch_id = Column(String(64), nullable=False)
+    root_dispatch_id = Column(String(64), nullable=True)
 
     # Name of the column which signifies soft deletion of a lattice
     is_active = Column(Boolean, nullable=False, default=True)
