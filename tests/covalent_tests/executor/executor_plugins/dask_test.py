@@ -37,7 +37,7 @@ def test_dask_executor_init(mocker):
     assert de.scheduler_address == "127.0.0.1"
 
 
-def test_dask_wrapper_fn():
+def test_dask_wrapper_fn(mocker):
     import sys
 
     from covalent.executor.executor_plugins.dask import dask_wrapper
@@ -49,10 +49,29 @@ def test_dask_wrapper_fn():
 
     args = [5]
     kwargs = {}
+
     output, stdout, stderr, tb = dask_wrapper(f, args, kwargs)
     assert output == 5
     assert stdout == "Hello\n"
     assert stderr == "Bye\n"
+    assert tb == ""
+
+
+def test_dask_wrapper_fn_exception_handling(mocker):
+    import sys
+
+    from covalent.executor.executor_plugins.dask import dask_wrapper
+
+    def f(x):
+        raise RuntimeError("error")
+
+    args = [5]
+    kwargs = {}
+    error_msg = "task failed"
+    mocker.patch("traceback.TracebackException.from_exception", return_value=error_msg)
+    output, stdout, stderr, tb = dask_wrapper(f, args, kwargs)
+    assert tb == error_msg
+    assert output is None
 
 
 def test_dask_executor_run():
@@ -103,6 +122,7 @@ def test_dask_executor_run_exception_handling():
     dask_exec._task_stderr = io.StringIO()
 
     def f(x, y):
+        print("f output")
         raise RuntimeError("error")
 
     args = [5]
@@ -110,3 +130,6 @@ def test_dask_executor_run_exception_handling():
     task_metadata = {"dispatch_id": "asdf", "node_id": 1}
     with pytest.raises(TaskRuntimeError):
         asyncio.run(dask_exec.run(f, args, kwargs, task_metadata))
+
+    dask_exec._task_stdout.getvalue() == "f output"
+    assert "RuntimeError" in dask_exec._task_stderr.getvalue()

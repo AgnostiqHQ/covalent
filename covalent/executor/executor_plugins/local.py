@@ -63,13 +63,9 @@ class LocalExecutor(BaseExecutor):
 
         # Run the target function in a separate process
         proc = mp.Process(target=local_wrapper, args=(function, args, kwargs, q))
-
-        try:
-            proc.start()
-            proc.join()
-            output, worker_stdout, worker_stderr, tb = q.get(False)
-        except Exception as ex:
-            raise ex
+        proc.start()
+        proc.join()
+        output, worker_stdout, worker_stderr, tb = q.get(False)
 
         print(worker_stdout, end="", file=self.task_stdout)
         print(worker_stderr, end="", file=self.task_stderr)

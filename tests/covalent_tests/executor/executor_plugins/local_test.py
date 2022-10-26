@@ -20,6 +20,7 @@
 
 """Tests for Covalent local executor."""
 
+import io
 import tempfile
 from functools import partial
 
@@ -121,13 +122,40 @@ def test_local_executor_run():
     assert le.run(f, args, kwargs, task_metadata) == 25
 
 
-def test_local_executor_run_exception_handling():
+def test_local_executor_run_exception_handling(mocker):
     def f(x):
+        print("f output")
         raise RuntimeError("error")
 
     le = LocalExecutor()
+    le._task_stdout = io.StringIO()
+    le._task_stderr = io.StringIO()
     args = [5]
     kwargs = {}
     task_metadata = {"dispatch_id": "asdf", "node_id": 1}
     with pytest.raises(TaskRuntimeError) as ex:
         le.run(f, args, kwargs, task_metadata)
+    le._task_stdout.getvalue() == "f output"
+    assert "RuntimeError" in le._task_stderr.getvalue()
+
+
+def test_local_wrapper_fn_exception_handling(mocker):
+    import multiprocessing as mp
+
+    from covalent.executor.utils.local_executor_utils import local_wrapper
+
+    def failing_task():
+        raise RuntimeError("Err")
+
+    args = [5]
+    kwargs = {}
+    error_msg = "task failed"
+    q = mp.Queue()
+    mocker.patch("traceback.TracebackException.from_exception", return_value=error_msg)
+    p = mp.Process(target=local_wrapper, args=(failing_task, args, kwargs, q))
+    p.start()
+    p.join()
+    output, stdout, stderr, tb = q.get(False)
+
+    assert tb == error_msg
+    assert output is None

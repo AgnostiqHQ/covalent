@@ -114,10 +114,8 @@ class DaskExecutor(AsyncBaseExecutor):
 
         future = dask_client.submit(dask_wrapper, function, args, kwargs)
         app_log.debug(f"Submitted task {node_id} to dask")
-        try:
-            result, worker_stdout, worker_stderr, tb = await dask_client.gather(future)
-        except Exception as ex:
-            raise ex
+
+        result, worker_stdout, worker_stderr, tb = await future
 
         print(worker_stdout, end="", file=self.task_stdout)
         print(worker_stderr, end="", file=self.task_stderr)
