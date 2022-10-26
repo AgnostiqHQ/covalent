@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Running migrations automatically if none have run in the past (fresh installs, after purging)
+
 ## [0.206.0-rc.0] - 2022-10-26
 
 ### Authors
