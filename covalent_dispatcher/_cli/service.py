@@ -321,7 +321,7 @@ def start(
     db = DataStore.factory()
 
     # No migrations have run as of yet - run them automatically
-    if not ignore_migrations and db.current_revision() is not None:
+    if not ignore_migrations and db.current_revision() is None:
         db.run_migrations(logging_enabled=False)
 
     if db.is_migration_pending and not ignore_migrations:
