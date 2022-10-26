@@ -226,8 +226,14 @@ def test_graceful_shutdown_stopped_server(mocker):
 @pytest.mark.parametrize(
     "is_migration_pending, ignore_migrations, current_revision",
     [
-        (True, True, None), (True, False, None), (False, False, None), (False, True, None),
-        (True, True, "112233"), (True, False, "112233"), (False, False, "112233"), (False, True, "112233")
+        (True, True, None),
+        (True, False, None),
+        (False, False, None),
+        (False, True, None),
+        (True, True, "112233"),
+        (True, False, "112233"),
+        (False, False, "112233"),
+        (False, True, "112233"),
     ],
 )
 def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations, current_revision):
