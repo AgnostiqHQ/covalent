@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Respecting specified AWS profile & region in remote executed S3 file transfers, defaulting to env vars of execution backend
+
 ### Added
 
 - Support for transferring the contents of folders to and from S3 buckets using the file transfer module.

@@ -83,6 +83,9 @@ class S3(FileTransferStrategy):
             f"S3 download bucket: {bucket_name}, from_filepath: {from_filepath}, to_filepath {to_filepath}."
         )
 
+        executor_profile = self.profile
+        executor_region = self.region_name
+
         if from_file._is_dir:
 
             def callable():
@@ -91,10 +94,10 @@ class S3(FileTransferStrategy):
 
                 import boto3
 
-                s3 = boto3.client(
-                    "s3",
-                    region_name=self.region_name,
-                )
+                profile = executor_profile or os.environ.get("AWS_PROFILE")
+                region = executor_region or os.getenv("AWS_REGION")
+                s3 = boto3.Session(profile_name=profile, region_name=region).client("s3")
+
                 for obj_metadata in s3.list_objects(Bucket=bucket_name, Prefix=from_filepath)[
                     "Contents"
                 ]:
@@ -111,10 +114,10 @@ class S3(FileTransferStrategy):
                 """Download file from s3 bucket."""
                 import boto3
 
-                s3 = boto3.client(
-                    "s3",
-                    region_name=self.region_name,
-                )
+                profile = executor_profile or os.environ.get("AWS_PROFILE")
+                region = executor_region or os.getenv("AWS_REGION")
+                s3 = boto3.Session(profile_name=profile, region_name=region).client("s3")
+
                 s3.download_file(bucket_name, from_filepath, to_filepath)
 
         return callable
@@ -133,6 +136,9 @@ class S3(FileTransferStrategy):
             f"S3 upload bucket: {bucket_name}, from_filepath: {from_filepath}, to_filepath {to_filepath}."
         )
 
+        executor_profile = self.profile
+        executor_region = self.region_name
+
         if from_file._is_dir:
 
             def callable():
@@ -142,10 +148,9 @@ class S3(FileTransferStrategy):
 
                 import boto3
 
-                s3 = boto3.client(
-                    "s3",
-                    region_name=self.region_name,
-                )
+                profile = executor_profile or os.environ.get("AWS_PROFILE")
+                region = executor_region or os.getenv("AWS_REGION")
+                s3 = boto3.Session(profile_name=profile, region_name=region).client("s3")
 
                 for dir_, _, files in os.walk(from_filepath):
                     for file_name in files:
@@ -162,10 +167,10 @@ class S3(FileTransferStrategy):
                 """Upload file to remote S3 bucket."""
                 import boto3
 
-                s3 = boto3.client(
-                    "s3",
-                    region_name=self.region_name,
-                )
+                profile = executor_profile or os.environ.get("AWS_PROFILE")
+                region = executor_region or os.getenv("AWS_REGION")
+                s3 = boto3.Session(profile_name=profile, region_name=region).client("s3")
+
                 s3.upload_file(from_filepath, bucket_name, to_filepath)
 
         return callable
