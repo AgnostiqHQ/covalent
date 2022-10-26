@@ -873,3 +873,69 @@ async def test_run_task_runtime_exception_handling(mocker):
     mock_executor.execute.assert_called_once()
 
     assert node_result["stderr"] == "error"
+
+
+@pytest.mark.asyncio
+async def test_run_workflow_normal(mocker):
+    result_object = get_mock_result()
+    mocker.patch("covalent_dispatcher._core.execution._plan_workflow")
+    mocker.patch(
+        "covalent_dispatcher._core.execution._run_planned_workflow", return_value=result_object
+    )
+    mock_update_lattices_data = mocker.patch(
+        "covalent_dispatcher._core.execution.update_lattices_data"
+    )
+    mock_write_lattice_error = mocker.patch(
+        "covalent_dispatcher._core.execution.write_lattice_error"
+    )
+
+    await run_workflow(result_object)
+
+    mock_update_lattices_data.assert_not_called()
+    mock_write_lattice_error.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_run_completed_workflow(mocker):
+    result_object = get_mock_result()
+    result_object._status = Result.COMPLETED
+    mock_plan = mocker.patch("covalent_dispatcher._core.execution._plan_workflow")
+    mock_run_planned_workflow = mocker.patch(
+        "covalent_dispatcher._core.execution._run_planned_workflow", return_value=result_object
+    )
+    mock_update_lattices_data = mocker.patch(
+        "covalent_dispatcher._core.execution.update_lattices_data"
+    )
+    mock_write_lattice_error = mocker.patch(
+        "covalent_dispatcher._core.execution.write_lattice_error"
+    )
+
+    await run_workflow(result_object)
+
+    mock_plan.assert_not_called()
+    mock_run_planned_workflow.assert_not_called()
+    mock_update_lattices_data.assert_not_called()
+    mock_write_lattice_error.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_run_workflow_exception(mocker):
+    result_object = get_mock_result()
+    mocker.patch("covalent_dispatcher._core.execution._plan_workflow")
+    mocker.patch(
+        "covalent_dispatcher._core.execution._run_planned_workflow",
+        return_value=result_object,
+        side_effect=RuntimeError("Error"),
+    )
+    mock_update_lattices_data = mocker.patch(
+        "covalent_dispatcher._core.execution.update_lattices_data"
+    )
+    mock_write_lattice_error = mocker.patch(
+        "covalent_dispatcher._core.execution.write_lattice_error"
+    )
+
+    result = await run_workflow(result_object)
+
+    assert result.status == Result.FAILED
+    mock_update_lattices_data.assert_called_once()
+    mock_write_lattice_error.assert_called_once()
