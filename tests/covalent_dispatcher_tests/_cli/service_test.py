@@ -224,10 +224,19 @@ def test_graceful_shutdown_stopped_server(mocker):
 
 
 @pytest.mark.parametrize(
-    "is_migration_pending, ignore_migrations",
-    [(True, True), (True, False), (False, False), (False, True)],
+    "is_migration_pending, ignore_migrations, current_revision",
+    [
+        (True, True, None),
+        (True, False, None),
+        (False, False, None),
+        (False, True, None),
+        (True, True, "112233"),
+        (True, False, "112233"),
+        (False, False, "112233"),
+        (False, True, "112233"),
+    ],
 )
-def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations):
+def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations, current_revision):
     """Test the start CLI command."""
 
     runner = CliRunner()
@@ -245,6 +254,7 @@ def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations):
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
 
     db_mock.is_migration_pending = is_migration_pending
+    db_mock.current_revision.return_value = current_revision
 
     cli_args = f"--port {port_val} -d"
 
@@ -253,10 +263,13 @@ def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations):
 
     res = runner.invoke(start, cli_args)
 
+    # if current_revision is None no migrations have been run
+    if current_revision is None and not ignore_migrations:
+        db_mock.current_revision.assert_called_once()
+
     if ignore_migrations or not is_migration_pending:
         graceful_start_mock.assert_called_once()
         assert set_config_mock.call_count == 6
-        # set_config_mock.assert_called_once()
     else:
         assert MIGRATION_COMMAND_MSG in res.output
         assert MIGRATION_WARNING_MSG in res.output
