@@ -22,9 +22,10 @@
 
 import threading
 from contextlib import contextmanager
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Generator
 
 if TYPE_CHECKING:
+    from .._shared_files.util_classes import DispatchInfo
     from .._workflow.lattice import Lattice
 
 
@@ -85,4 +86,48 @@ class ActiveLatticeManager(threading.local):
             self._active_lattice = None
 
 
+class ActiveDispatchInfoManager:
+    """
+    The active dispatch info manager is used to maintain a single instance of dispatch information
+    which can be used by any of the executors or when required inside the electron execution.
+    For example, the lattice level details, such as the total budget assigned, or total time allotted
+    for the whole lattice execution, are not accessible inside the electron at the time of dispatching.
+    If they are required at the time of electron execution, this manager is used to provide access
+    to information like that.
+    """
+
+    def __init__(self) -> None:
+        self._active_dispatch_info = None
+
+    def get_active_dispatch_info(self) -> "DispatchInfo":
+        """
+        Returns the active dispatch info.
+
+        Args:
+            None
+
+        Returns:
+            active_dispatch_info: The active dispatch info.
+        """
+
+        return self._active_dispatch_info
+
+    @contextmanager
+    def claim(self, dispatch_info: "DispatchInfo") -> Generator:
+        """
+        Claims the given dispatch info as active.
+
+        Args:
+            dispatch_info: The dispatch info object to claim.
+
+        Returns:
+            Returns a generator, which gets converted into a contextmanager.
+        """
+
+        self._active_dispatch_info = dispatch_info
+        yield
+        self._active_dispatch_info = None
+
+
 active_lattice_manager = ActiveLatticeManager()
+active_dispatch_info_manager = ActiveDispatchInfoManager()

@@ -28,13 +28,15 @@ import io
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Callable, Dict, Iterable, List, Tuple
+from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
 
 import aiofiles
 
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
 
 from .._shared_files import TaskRuntimeError, logger
+from .._shared_files.context_managers import active_dispatch_info_manager
+from .._shared_files.util_classes import DispatchInfo
 from .._workflow.transport import TransportableObject
 
 app_log = logger.app_log
@@ -127,6 +129,20 @@ class _AbstractBaseExecutor(ABC):
         self.cache_dir = cache_dir
         self.time_limit = time_limit
         self.retries = retries
+
+    def get_dispatch_context(self, dispatch_info: DispatchInfo) -> ContextManager[DispatchInfo]:
+        """
+        Start a context manager that will be used to
+        access the dispatch info for the executor.
+
+        Args:
+            dispatch_info: The dispatch info to be used inside current context.
+
+        Returns:
+            A context manager object that handles the dispatch info.
+        """
+
+        return active_dispatch_info_manager.claim(dispatch_info)
 
     def short_name(self):
         module = self.__module__
@@ -268,6 +284,7 @@ class BaseExecutor(_AbstractBaseExecutor):
             output: The result of the function execution.
         """
 
+        dispatch_info = DispatchInfo(dispatch_id)
         fn_version = function.args[0].python_version
         self._task_stdout = io.StringIO()
         self._task_stderr = io.StringIO()
