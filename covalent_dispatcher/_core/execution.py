@@ -446,7 +446,7 @@ async def _handle_failed_node(result_object, node_result, pending_deps, tasks_qu
     node_id = node_result["node_id"]
     result_object._status = Result.FAILED
     result_object._end_time = datetime.now(timezone.utc)
-    app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
+    app_log.debug("8A: Failed node upsert statement (run_planned_workflow)")
     upsert._lattice_data(result_object)
     await result_webhook.send_update(result_object)
     await tasks_queue.put(-1)
@@ -455,14 +455,14 @@ async def _handle_failed_node(result_object, node_result, pending_deps, tasks_qu
 async def _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue):
     result_object._status = Result.CANCELLED
     result_object._end_time = datetime.now(timezone.utc)
-    app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
+    app_log.debug("9: Failed node upsert statement (run_planned_workflow)")
     upsert._lattice_data(result_object)
     await result_webhook.send_update(result_object)
     await tasks_queue.put(-1)
 
 
 async def _update_node_result(result_object, node_result, pending_deps, tasks_queue):
-    app_log.warning("Updating node result (run_planned_workflow).")
+    app_log.debug("Updating node result (run_planned_workflow).")
     update._node(result_object, **node_result)
     await result_webhook.send_update(result_object)
 
