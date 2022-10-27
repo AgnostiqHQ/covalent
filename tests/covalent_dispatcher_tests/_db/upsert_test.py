@@ -26,7 +26,13 @@ from covalent._results_manager.result import Result
 from covalent._workflow.lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
 from covalent_dispatcher._db.datastore import DataStore
-from covalent_dispatcher._db.upsert import ELECTRON_ERROR_FILENAME, _electron_data
+from covalent_dispatcher._db.upsert import (
+    ELECTRON_ERROR_FILENAME,
+    ELECTRON_RESULTS_FILENAME,
+    ELECTRON_STDERR_FILENAME,
+    ELECTRON_STDOUT_FILENAME,
+    _electron_data,
+)
 
 TEMP_RESULTS_DIR = "/tmp/results"
 le = LocalExecutor(log_stdout="/tmp/stdout.log")
@@ -91,3 +97,6 @@ def test_upsert_electron_data_handles_missing_keys(test_db, result_1, mocker):
 
     node_path = Path(TEMP_RESULTS_DIR) / result_1.dispatch_id / "node_0"
     mock_store_file.assert_any_call(node_path, ELECTRON_ERROR_FILENAME, None)
+    mock_store_file.assert_any_call(node_path, ELECTRON_STDOUT_FILENAME, None)
+    mock_store_file.assert_any_call(node_path, ELECTRON_STDERR_FILENAME, None)
+    mock_store_file.assert_any_call(node_path, ELECTRON_RESULTS_FILENAME, None)
