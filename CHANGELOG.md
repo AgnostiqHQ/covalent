@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Electron errors are segregated by type; task runtime errors are
   stored in `stderr` while the `error` attribute of a node is reserved
   for exceptions raised by Covalent itself.
+- When tasks fail in a workflow, the Lattice ErrorCard in the UI summarizes the failed tasks.
 
 ### Fixed
 
