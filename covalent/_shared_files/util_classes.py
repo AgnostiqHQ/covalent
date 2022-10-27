@@ -20,7 +20,6 @@
 
 
 from dataclasses import dataclass
-from typing import NamedTuple
 
 
 @dataclass
@@ -47,14 +46,3 @@ class RESULT_STATUS:
     FAILED = Status("FAILED")
     RUNNING = Status("RUNNING")
     CANCELLED = Status("CANCELLED")
-
-
-class DispatchInfo(NamedTuple):
-    """
-    Information about a dispatch to be shared to a task post dispatch.
-
-    Attributes:
-        dispatch_id: Dispatch id of the dispatch.
-    """
-
-    dispatch_id: str
