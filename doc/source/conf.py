@@ -25,7 +25,7 @@ import sys
 
 # Project information
 project = ""
-copyright = "2021 Agnostiq Inc."
+copyright = "2021-2022 Agnostiq Inc."
 author = "Agnostiq"
 
 html_static_path = ["_static"]

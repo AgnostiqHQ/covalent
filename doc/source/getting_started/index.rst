@@ -2,37 +2,47 @@
 Getting Started
 ===============
 
-Covalent is developed using Python 3.8 on Linux and macOS.  See the :doc:`Compatibility <./compatibility>` page for further details on Python versions and operating systems which support Covalent. To set up Python on your computer, refer to the official `Python for Beginners <https://www.python.org/about/gettingstarted/>`_ page.
+Covalent is a Pythonic workflow tool for data scientists, AI/ML researchers, and anyone who needs a way to run experiments on limited or expensive computing resources. Such resources can include quantum computers, HPC clusters, GPU arrays, and cloud services. Covalent manages workflows in heterogeneous environments that contain any or all of these advanced platforms.
 
-Installation
-############
+Covalent enables you to:
+* Isolate operations that don't require advanced compute resources so you can run them on commonly available hardware;
+* Test individual functions or groups of functions on local hardware or inexpensive servers before committing them to advanced hardware;
+* Manage experiments and view results in a browser-based GUI;
+* Automate and manage workflows from a Jupyter notebook;
+* Parallelize independent computations to accelerate job completion;
+* Bring existing code into Covalent without extensive refactoring.
 
-Upgrading Covalent
-~~~~~~~~~~~~~~~~~~
+Covalent is developed in Python 3.8 on Linux and macOS.  See the :doc:`Compatibility <./compatibility>` page for supported Python versions and operating systems. To set up Python on your computer, refer to the official `Python for Beginners <https://www.python.org/about/gettingstarted/>`_ page.
 
-If you are upgrading Covalent from the previous stable release, please refer to the :doc:`migration guide <./../version_migrations/index>` if you wish to preserve your data and/or avoid any issues that may arise when upgrading.
+Installing Covalent
+###################
 
-Installation Methods
-~~~~~~~~~~~~~~~~~~~~
+.. note::
+
+   If you are upgrading Covalent from the previous stable release, refer to the :doc:`migration guide <./../version_migrations/index>` to preserve your data and avoid upgrade problems.
+
+You can install Covalent using the Python package manager, using Conda, or by building and installing from source.
 
 Pip Install
------------
+~~~~~~~~~~~
 
-The easiest way to install Covalent is using the PyPI package manager:
+The easiest way to install Covalent is to use Pip, the Python package manager.
+
+.. note::
+
+   If you have previously used Covalent, uninstall the Covalent Dask plugin by running :code:`pip uninstall covalent-dask-plugin`. The plugin has been folded into Covalent and is no longer maintained separately.
+
+To install using Pip:
 
 .. code:: bash
 
    pip install covalent
 
-.. note::
-
-   If you have used Covalent previously, make sure to uninstall the Covalent Dask plugin by running :code:`pip uninstall covalent-dask-plugin`. That plugin has been folded into Covalent and will no longer be maintained separately.
-
 
 Conda Install
--------------
+~~~~~~~~~~~~~
 
-Users can also install Covalent as a package in a Conda environment:
+You can install Covalent as a package in a Conda environment:
 
 .. code:: bash
 
@@ -40,12 +50,14 @@ Users can also install Covalent as a package in a Conda environment:
 
 .. note::
 
-   Installation via Conda is currently only supported for Linux. Sometimes Conda can have trouble resolving packages. Use the flag :code:`--override-channels` to speed things up.
+   Conda installation is currently only supported for Linux. Sometimes Conda can have trouble resolving packages. Use the flag :code:`--override-channels` to speed up installation.
+
+   On Mac, you can use Conda to manage your environment but must use Pip to install Covalent.
 
 Install From Source
---------------------
+~~~~~~~~~~~~~~~~~~~
 
-Covalent can also be downloaded and installed from source:
+You can download and install Covalent from source:
 
 .. code:: bash
 
@@ -55,33 +67,47 @@ Covalent can also be downloaded and installed from source:
    # Build dashboard
    python setup.py webapp
 
-   # Install using pip (-e for developer mode), or...
+   # Either:
+   # 1. Install using pip (-e is for developer mode)
    pip install -e .
 
-   # Build and install using Conda (10-15 mins)
+   # - or -
+   # 2. Build and install using Conda (takes 10-15 mins)
    conda build .
    conda install -c local covalent
 
-The documentation can also easily be built locally:
+To build the documentation locally:
 
 .. code:: bash
 
    python setup.py docs
 
 
-Validate the Installation
-~~~~~~~~~~~~~~~~~~~~~~~~~
+Validating the Installation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can validate Covalent has been properly installed if the following returns without error:
+Covalent has been properly installed if the following returns without error:
 
 .. code:: bash
 
    python -c "import covalent"
 
-Start the Server
-#################
+Starting the Server
+###################
 
-Use the Covalent CLI tool to manage the Covalent server. The following commands will help you get started.
+Start the Covalent server:
+
+.. code:: console
+
+   $ covalent start
+   Covalent server has started at http://localhost:48008
+
+Managing the Server
+~~~~~~~~~~~~~~~~~~~
+
+Use the Covalent CLI tool to manage the Covalent server. You can start and stop the server, view its status, and see the server logs.
+
+View available subcommands with the --help option:
 
 .. code:: console
 
@@ -102,26 +128,20 @@ Use the Covalent CLI tool to manage the Covalent server. The following commands 
    status   Query the status of the Covalent server.
    stop     Stop the Covalent server.
 
-Start the Covalent server:
+Using the UI to View Workflows and Results
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: console
+Navigate to the Covalent UI by entering the address, http://localhost:48008, into your web browser.  This is where dispatched jobs will appear.
 
-   $ covalent start
-   Covalent server has started at http://localhost:48008
 
-Optionally, confirm the server is running:
+Running a Workflow
+##################
 
-.. code:: console
+Run this simple "Hello World" example to see Covalent in action.
 
-   $ covalent status
-   Covalent server is running at http://localhost:48008.
+Before starting, ensure that you have installed Covalent, verified the installation, and started the Covalent server.
 
-Now, navigate to the Covalent UI by entering the address into your web browser.  This is where dispatched jobs will appear.
-
-Hello, Covalent!
-################
-
-Let's look at a simple example to get started with Covalent. Before starting, ensure you have installed Covalent, verified the installation, and started the Covalent server. Next, open a Jupyter notebook or Python console and create a simple workflow:
+Open a Jupyter notebook or Python console and create the following workflow:
 
 
 .. code:: python
@@ -137,7 +157,7 @@ Let's look at a simple example to get started with Covalent. Before starting, en
    def excitement(a):
        return f"{a}!"
 
-   # Construct a workflow of tasks
+   # Construct a workflow as "lattice"
    @ct.lattice
    def simple_workflow(a, b):
        phrase = join_words(a, b)
@@ -162,7 +182,7 @@ Click on the dispatch ID to view the workflow graph:
    :align: center
 
 
-While the workflow is being processed by the dispatch server, you are free to terminate the Jupyter kernel or Python console process without losing access to the results. Make sure the Covalent server remains in the "running" state while you have running workflows.
+While the workflow is being processed by the dispatch server, you can terminate the Jupyter kernel or Python console process without losing access to the results. Make sure the Covalent server remains in the "running" state while you have running workflows.
 
 When the workflow has completed, you can start a new session and query the results:
 
@@ -170,10 +190,11 @@ When the workflow has completed, you can start a new session and query the resul
 
    import covalent as ct
 
-   dispatch_id = "8a7bfe54-d3c7-4ca1-861b-f55af6d5964a"
+   # Copy the dispatch ID from the UI
+   dispatch_id = "12345678-1234-1234-1234-123456789abc"
    result_string = ct.get_result(dispatch_id).result
 
-When you are done using Covalent, stop the server:
+When you are done using Covalent to run workflows, stop the server:
 
 .. code:: console
 
