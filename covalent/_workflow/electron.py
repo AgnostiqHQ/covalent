@@ -322,12 +322,21 @@ class Electron:
         # Setting metadata for default values according to lattice's metadata
         # If metadata is default, then set it to lattice's default
         for k in self.metadata:
-            if (
-                k not in consumable_constraints
-                and k in DEFAULT_METADATA_VALUES
-                and self.get_metadata(k) is DEFAULT_METADATA_VALUES[k]
-            ):
-                self.set_metadata(k, active_lattice.get_metadata(k))
+            if k != "executor":
+                if (
+                    k not in consumable_constraints
+                    and k in DEFAULT_METADATA_VALUES
+                    and self.get_metadata(k) is DEFAULT_METADATA_VALUES[k]
+                ):
+                    self.set_metadata(k, active_lattice.get_metadata(k))
+            # if electron executor metadata is not empty string, then it should assigned with whatever it has defined.
+            # else, we need to set the electron executor to be of lattices', which will be of default.
+            # this case is not possible without having an empty executor string at first, so i had to change this also at line 550
+            else:
+                if self.get_metadata(k) != "":
+                    self.set_metadata(k, self.get_metadata(k))
+                else:
+                    self.set_metadata(k, active_lattice.get_metadata(k))
 
         # Add a node to the transport graph of the active lattice
         self.node_id = active_lattice.transport_graph.add_node(
@@ -516,13 +525,27 @@ class Electron:
         )
 
 
+# def electron(
+#     _func: Optional[Callable] = None,
+#     *,
+#     backend: Optional[str] = None,
+#     executor: Optional[
+#         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
+#     ] = DEFAULT_METADATA_VALUES["executor"],
+#     # Add custom metadata fields here
+#     files: List[FileTransfer] = [],
+#     deps_bash: Union[DepsBash, List, str] = DEFAULT_METADATA_VALUES["deps"].get("bash", []),
+#     deps_pip: Union[DepsPip, list] = DEFAULT_METADATA_VALUES["deps"].get("pip", None),
+#     call_before: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_before"],
+#     call_after: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_after"],
+# ) -> Callable:
+
+
 def electron(
     _func: Optional[Callable] = None,
     *,
     backend: Optional[str] = None,
-    executor: Optional[
-        Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = DEFAULT_METADATA_VALUES["executor"],
+    executor: Optional[Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]] = "",
     # Add custom metadata fields here
     files: List[FileTransfer] = [],
     deps_bash: Union[DepsBash, List, str] = DEFAULT_METADATA_VALUES["deps"].get("bash", []),
