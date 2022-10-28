@@ -27,6 +27,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - When an electron raises an exception during execution, the local and dask executors now try to recover any output that was already
   written.
 
+### Fixed
+
+- Result objects now print correctly when nodes fail
+
 ## [0.207.0-rc.0] - 2022-10-26
 
 ### Authors

@@ -88,6 +88,29 @@ def result_1():
     return result
 
 
+@pytest.fixture
+def result_2():
+    @ct.electron(executor=le)
+    def task_1(x, y):
+        raise RuntimeError("error")
+
+    @ct.lattice(executor=le, workflow_executor=le, results_dir=TEMP_RESULTS_DIR)
+    def workflow_1(a, b):
+        """Docstring"""
+        res_1 = task_1(a, b)
+        return res_1
+
+    Path(f"{TEMP_RESULTS_DIR}/dispatch_1").mkdir(parents=True, exist_ok=True)
+    workflow_1.build_graph(a=1, b=2)
+    received_lattice = LatticeClass.deserialize_from_json(workflow_1.serialize_to_json())
+    result = Result(
+        lattice=received_lattice, results_dir=TEMP_RESULTS_DIR, dispatch_id="dispatch_1"
+    )
+    result.lattice.metadata["results_dir"] = TEMP_RESULTS_DIR
+    result._initialize_nodes()
+    return result
+
+
 def test_get_node_error(result_1):
     """Test result method to get the node error."""
     assert not result_1._get_node_error(node_id=0)
@@ -109,6 +132,12 @@ def test_get_failed_nodes(result_1, mocker):
     result_1.lattice.transport_graph.set_node_value(1, "status", Result.COMPLETED)
     result_1.lattice.transport_graph.set_node_value(2, "status", Result.COMPLETED)
     assert result_1._get_failed_nodes() == [(0, "task_1")]
+
+
+def test_str_result(result_2, mocker):
+    """Test result __str__ method"""
+    s = str(result_2)
+    assert "task_1" in s
 
 
 def test_result_root_dispatch_id(result_1):
