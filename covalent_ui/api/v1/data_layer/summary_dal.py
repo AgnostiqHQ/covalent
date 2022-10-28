@@ -254,6 +254,12 @@ class Summary:
         success = []
         failure = []
         message = "No dispatches were deleted"
+        if data.dispatches is None:
+            return DeleteDispatchesResponse(
+                success_items=success,
+                failure_items=failure,
+                message=message,
+            )
         if len(data.dispatches) == 0:
             return DeleteDispatchesResponse(
                 success_items=success,

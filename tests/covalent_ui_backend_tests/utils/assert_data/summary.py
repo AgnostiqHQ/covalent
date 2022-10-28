@@ -27,14 +27,14 @@ def seed_summary_data():
             "case1": {
                 "status_code": 200,
                 "response_data": {
-                    "total_jobs": 1,
+                    "total_jobs": 2,
                     "total_jobs_running": 0,
-                    "total_jobs_completed": 1,
+                    "total_jobs_completed": 2,
                     "total_jobs_failed": 0,
                     "total_jobs_cancelled": 0,
                     "total_jobs_new_object": 0,
                     "latest_running_task_status": "COMPLETED",
-                    "total_dispatcher_duration": 0,
+                    "total_dispatcher_duration": 10000,
                 },
             },
             "case2": {"status_code": 404},
@@ -54,6 +54,17 @@ def seed_summary_data():
                 "response_data": {
                     "items": [
                         {
+                            "dispatch_id": "a95d84ad-c441-446d-83ae-46380dcdf38e",
+                            "lattice_name": "workflow",
+                            "runtime": 10000,
+                            "total_electrons": 4,
+                            "total_electrons_completed": 4,
+                            "started_at": "2022-10-27T15:38:33",
+                            "ended_at": "2022-10-27T15:38:43",
+                            "status": "COMPLETED",
+                            "updated_at": "2022-10-27T15:38:43",
+                        },
+                        {
                             "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
                             "lattice_name": "workflow",
                             "runtime": 0,
@@ -63,9 +74,9 @@ def seed_summary_data():
                             "ended_at": "2022-09-23T15:31:11",
                             "status": "COMPLETED",
                             "updated_at": "2022-09-23T15:31:11",
-                        }
+                        },
                     ],
-                    "total_count": 1,
+                    "total_count": 2,
                 },
             },
             "case2": {
@@ -92,7 +103,7 @@ def seed_summary_data():
                             "updated_at": "2022-09-23T15:31:11",
                         }
                     ],
-                    "total_count": 1,
+                    "total_count": 2,
                 },
             },
             "case3": {
@@ -193,6 +204,15 @@ def seed_summary_data():
                     "message": "No dispatches were deleted",
                 },
             },
+            "case6": {
+                "status_code": 200,
+                "request_data": {"body": {"dispatches": None}},
+                "response_data": {
+                    "success_items": [],
+                    "failure_items": [],
+                    "message": "No dispatches were deleted",
+                },
+            },
         },
         "test_delete_all": {
             "api_path": "/api/v1/dispatches/delete-all",
@@ -200,7 +220,12 @@ def seed_summary_data():
                 "status_code": 200,
                 "request_data": {"body": {"status_filter": "ALL", "search_string": ""}},
                 "response_data": {
-                    "success_items": ["78525234-72ec-42dc-94a0-f4751707f9cd"],
+                    "success_items": [
+                        "78525234-72ec-42dc-94a0-f4751707f9cd",
+                        "a95d84ad-c441-446d-83ae-46380dcdf38e",
+                        "89be0bcf-95dd-40a6-947e-6af6c56f147d",
+                        "69dec597-79d9-4c99-96de-8d5f06f3d4dd",
+                    ],
                     "failure_items": [],
                     "message": "Dispatch(es) have been deleted successfully!",
                 },

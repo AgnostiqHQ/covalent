@@ -47,7 +47,16 @@ def test_post_settings():
         method_type=MethodType.POST,
         body_data=test_data["request_body"],
     )
-    response2 = object_test_template(
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
+
+
+def test_post_settings_with_params():
+    """Test Post Settings With Params"""
+    test_data = output_data["test_settings"]["case2"]
+
+    response = object_test_template(
         api_path=output_data["test_settings"]["api_path"],
         app=main.fastapi_app,
         method_type=MethodType.POST,
@@ -57,10 +66,6 @@ def test_post_settings():
     assert response.status_code == test_data["status_code"]
     if "response_data" in test_data:
         assert response.json() == test_data["response_data"]
-
-    assert response2.status_code == test_data["status_code"]
-    if "response_data" in test_data:
-        assert response2.json() == test_data["response_data"]
 
 
 def test_settings_bad_request():

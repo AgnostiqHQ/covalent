@@ -180,9 +180,23 @@ def test_delete_invalid_uuid():
     assert response_detail["type"] == "type_error.uuid"
 
 
-def test_delete_none():
-    """Test deleting no dispatches"""
+def test_delete_empty():
+    """Test deleting empty dispatches"""
     test_data = output_data["test_delete"]["case5"]
+    response = object_test_template(
+        api_path=output_data["test_delete"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.POST,
+        body_data=test_data["request_data"]["body"],
+    )
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
+
+
+def test_delete_none():
+    """Test deleting with NULL value"""
+    test_data = output_data["test_delete"]["case6"]
     response = object_test_template(
         api_path=output_data["test_delete"]["api_path"],
         app=main.fastapi_app,

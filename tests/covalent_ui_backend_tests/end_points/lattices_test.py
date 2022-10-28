@@ -53,8 +53,9 @@ def test_lattices_bad_request():
         path=test_data["path"],
     )
     assert response.status_code == test_data["status_code"]
-    response_detail = response.json()["detail"][0]
-    assert "does not exist" in response_detail["msg"]
+    if test_data["response_string"]:
+        response_detail = response.json()["detail"][0]
+        assert test_data["response_string"] in response_detail["msg"]
 
 
 def test_lattices_results():
@@ -179,8 +180,9 @@ def test_lattices_invalid_name():
         path=test_data["path"],
     )
     assert response.status_code == test_data["status_code"]
-    response_detail = response.json()["detail"][0]
-    assert response_detail["type"] == "type_error.enum"
+    if test_data["response_type"]:
+        response_detail = response.json()["detail"][0]
+        assert response_detail["type"] == test_data["response_type"]
 
 
 def test_lattices_file_bad_request():
@@ -193,8 +195,9 @@ def test_lattices_file_bad_request():
         path=test_data["path"],
     )
     assert response.status_code == test_data["status_code"]
-    response_detail = response.json()["detail"][0]
-    assert "does not exist" in response_detail["msg"]
+    if test_data["response_string"]:
+        response_detail = response.json()["detail"][0]
+        assert test_data["response_string"] in response_detail["msg"]
 
 
 def test_sublattices():
@@ -207,6 +210,8 @@ def test_sublattices():
         path=test_data["path"],
     )
     assert response.status_code == test_data["status_code"]
+    if test_data["response_data"]:
+        assert response.json() == test_data["response_data"]
 
 
 def test_sublattices_queries():
@@ -216,6 +221,9 @@ def test_sublattices_queries():
         api_path=output_data["test_sublattices"]["api_path"],
         app=main.fastapi_app,
         method_type=MethodType.GET,
+        path=test_data["path"],
         query_data=test_data["query_data"],
     )
-    assert response.status_code == 422
+    assert response.status_code == test_data["status_code"]
+    if test_data["response_data"]:
+        assert response.json() == test_data["response_data"]

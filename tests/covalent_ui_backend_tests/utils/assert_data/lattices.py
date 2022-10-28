@@ -51,6 +51,7 @@ def seed_lattice_data():
             "case_invalid_1": {
                 "status_code": 400,
                 "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9c1"},
+                "response_string": "does not exist",
             },
             "case_invalid_2": {
                 "status_code": 422,
@@ -135,6 +136,7 @@ def seed_lattice_data():
                     "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
                     "name": "results",
                 },
+                "response_type": "type_error.enum",
             },
             "case_bad_request": {
                 "status_code": 400,
@@ -142,18 +144,71 @@ def seed_lattice_data():
                     "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9c1",
                     "name": "result",
                 },
+                "response_string": "does not exist",
             },
         },
         "test_sublattices": {
             "api_path": "/api/v1/dispatches/{}/sublattices",
             "case1": {
                 "status_code": 200,
-                "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd"},
+                "path": {"dispatch_id": "a95d84ad-c441-446d-83ae-46380dcdf38e"},
+                "response_data": {
+                    "sub_lattices": [
+                        {
+                            "dispatch_id": "69dec597-79d9-4c99-96de-8d5f06f3d4dd",
+                            "lattice_name": "sub",
+                            "runtime": 5000,
+                            "total_electrons": 120,
+                            "total_electrons_completed": 120,
+                            "started_at": "2022-10-27T15:38:38",
+                            "ended_at": "2022-10-27T15:38:43",
+                            "status": "COMPLETED",
+                            "updated_at": "2022-10-27T15:38:43",
+                        },
+                        {
+                            "dispatch_id": "89be0bcf-95dd-40a6-947e-6af6c56f147d",
+                            "lattice_name": "sub",
+                            "runtime": 1000,
+                            "total_electrons": 20,
+                            "total_electrons_completed": 20,
+                            "started_at": "2022-10-27T15:38:34",
+                            "ended_at": "2022-10-27T15:38:35",
+                            "status": "COMPLETED",
+                            "updated_at": "2022-10-27T15:38:36",
+                        },
+                    ]
+                },
             },
             "case2": {
                 "status_code": 200,
-                "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd"},
+                "path": {"dispatch_id": "a95d84ad-c441-446d-83ae-46380dcdf38e"},
                 "query_data": {"sort_by": "total_electrons", "sort_direction": "ASC"},
+                "response_data": {
+                    "sub_lattices": [
+                        {
+                            "dispatch_id": "89be0bcf-95dd-40a6-947e-6af6c56f147d",
+                            "lattice_name": "sub",
+                            "runtime": 1000,
+                            "total_electrons": 20,
+                            "total_electrons_completed": 20,
+                            "started_at": "2022-10-27T15:38:34",
+                            "ended_at": "2022-10-27T15:38:35",
+                            "status": "COMPLETED",
+                            "updated_at": "2022-10-27T15:38:36",
+                        },
+                        {
+                            "dispatch_id": "69dec597-79d9-4c99-96de-8d5f06f3d4dd",
+                            "lattice_name": "sub",
+                            "runtime": 5000,
+                            "total_electrons": 120,
+                            "total_electrons_completed": 120,
+                            "started_at": "2022-10-27T15:38:38",
+                            "ended_at": "2022-10-27T15:38:43",
+                            "status": "COMPLETED",
+                            "updated_at": "2022-10-27T15:38:43",
+                        },
+                    ]
+                },
             },
         },
         "functional_test_lattices": {
