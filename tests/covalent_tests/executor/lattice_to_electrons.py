@@ -29,7 +29,7 @@ from covalent._results_manager.result import Result
 from covalent._workflow.lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
 
-# start the covalent server with no cluster and then run this program, 
+# start the covalent server with no cluster and then run this program,
 # electrons are supposed to have local executor, but as lattice executor changed to dask, they also change.
 def test_electrons_have_lattice_executor():
     import covalent as ct
@@ -92,6 +92,6 @@ def test_electrons_precede_lattice_executor():
             assert i["metadata"]["executor"] == "local"
         elif "parameter" not in i["name"]:
             assert i["metadata"]["executor"] == hello_world.metadata["executor"]
-            
+
 test_electrons_have_lattice_executor()
 test_electrons_precede_lattice_executor()

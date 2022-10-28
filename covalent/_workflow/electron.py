@@ -332,7 +332,7 @@ class Electron:
             #if electron executor metadata is not empty string, then it should assigned with whatever it has defined.
             #else, we need to set the electron executor to be of lattices', which will be of default.
             #this case is not possible without having an empty executor string at first, so i had to change this also at line 550
-            else: 
+            else:
                 if (
                     self.get_metadata(k) != ""
                 ):
