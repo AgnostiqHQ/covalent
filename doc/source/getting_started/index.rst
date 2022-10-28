@@ -5,11 +5,12 @@ Getting Started
 Covalent is a Pythonic workflow tool for data scientists, AI/ML researchers, and anyone who needs a way to run experiments on limited or expensive computing resources. Such resources can include quantum computers, HPC clusters, GPU arrays, and cloud services. Covalent manages workflows in heterogeneous environments that contain any or all of these advanced platforms.
 
 Covalent enables you to:
+
 * Isolate operations that don't require advanced compute resources so you can run them on commonly available hardware;
 * Test individual functions or groups of functions on local hardware or inexpensive servers before committing them to advanced hardware;
 * Manage experiments and view results in a browser-based GUI;
 * Automate and manage workflows from a Jupyter notebook;
-* Parallelize independent computations to accelerate job completion;
+* Parallelize independent computations to accelerate job completion; and
 * Bring existing code into Covalent without extensive refactoring.
 
 Covalent is developed in Python 3.8 on Linux and macOS.  See the :doc:`Compatibility <./compatibility>` page for supported Python versions and operating systems. To set up Python on your computer, refer to the official `Python for Beginners <https://www.python.org/about/gettingstarted/>`_ page.
@@ -21,16 +22,16 @@ Installing Covalent
 
    If you are upgrading Covalent from the previous stable release, refer to the :doc:`migration guide <./../version_migrations/index>` to preserve your data and avoid upgrade problems.
 
-You can install Covalent using the Python package manager, using Conda, or by building and installing from source.
+You can install Covalent using Pip, the Python package manager; using the `Conda <https://docs.conda.io/en/latest/>`_ environment management system; or by building and installing from source.
 
 Pip Install
 ~~~~~~~~~~~
 
-The easiest way to install Covalent is to use Pip, the Python package manager.
+The easiest way to install Covalent is to use Pip.
 
 .. note::
 
-   If you have previously used Covalent, uninstall the Covalent Dask plugin by running :code:`pip uninstall covalent-dask-plugin`. The plugin has been folded into Covalent and is no longer maintained separately.
+   If you have previously installed Covalent, uninstall the Covalent Dask plugin by running :code:`pip uninstall covalent-dask-plugin`. The plugin has been folded into Covalent and is no longer maintained separately.
 
 To install using Pip:
 
@@ -42,19 +43,21 @@ To install using Pip:
 Conda Install
 ~~~~~~~~~~~~~
 
-You can install Covalent as a package in a Conda environment:
+You can install Covalent as a package in a Conda environment.
+
+.. note::
+
+   Conda installation is currently supported only for Linux. Sometimes Conda can have trouble resolving packages. Use the flag :code:`--override-channels` to speed up installation.
+
+   On Mac, you can use Conda to manage your environment but must use Pip to install Covalent.
+
+To install using Conda:
 
 .. code:: bash
 
    conda install -c agnostiq covalent
 
-.. note::
-
-   Conda installation is currently only supported for Linux. Sometimes Conda can have trouble resolving packages. Use the flag :code:`--override-channels` to speed up installation.
-
-   On Mac, you can use Conda to manage your environment but must use Pip to install Covalent.
-
-Install From Source
+Install from Source
 ~~~~~~~~~~~~~~~~~~~
 
 You can download and install Covalent from source:
@@ -64,7 +67,7 @@ You can download and install Covalent from source:
    git clone git@github.com:AgnostiqHQ/covalent.git
    cd covalent
 
-   # Build dashboard
+   # Build the dashboard
    python setup.py webapp
 
    # Either:
@@ -72,16 +75,30 @@ You can download and install Covalent from source:
    pip install -e .
 
    # - or -
+
    # 2. Build and install using Conda (takes 10-15 mins)
    conda build .
    conda install -c local covalent
 
-To build the documentation locally:
+To build the documentation locally, use the :code:`setup.py` script.
+
+.. note::
+
+   The first time you build the docs locally, make sure you have the required packages installed:
+
+   .. code:: bash
+
+      cd covalent/doc
+      pip install -r requirements.txt
+
+To build the documentation:
 
 .. code:: bash
 
+   cd covalent
    python setup.py docs
 
+View the local documentation at `<file:///Users/mini-me/agnostiq/covalent/doc/build/html/index.html>`_.
 
 Validating the Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -131,7 +148,7 @@ View available subcommands with the --help option:
 Using the UI to View Workflows and Results
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Navigate to the Covalent UI by entering the address, http://localhost:48008, into your web browser.  This is where dispatched jobs will appear.
+View the Covalent UI in your web browser at http://localhost:48008. This is where dispatched jobs will appear.
 
 
 Running a Workflow

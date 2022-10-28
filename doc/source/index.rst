@@ -31,29 +31,28 @@ COVALENT DOCUMENTATION
 
 |
 
-What is Covalent?
-#################
-
-Covalent is a Python-language – and [Pythonic(https://www.udacity.com/blog/2020/09/what-is-pythonic-style.html)] – workflow tool for computational scientists, AI/ML software engineers, and anyone who needs a way to run experiments on limited or expensive computing resources. Such resources can include quantum computers, HPC clusters, GPU arrays, and cloud services. Covalent manages workflows in heterogeneous environments that contain any or all of these advanced platforms.
+Covalent is a Python-language – and `Pythonic <https://www.udacity.com/blog/2020/09/what-is-pythonic-style.html>`_ – workflow tool for computational scientists, AI/ML software engineers, and anyone who needs a way to run experiments on limited or expensive computing resources. Such resources can include quantum computers, HPC clusters, GPU arrays, and cloud services. Covalent manages workflows in heterogeneous environments that contain any or all of these advanced platforms.
 
 Covalent enables you to:
 
 Isolate operations that don't require advanced compute resources so you can run them on commonly available hardware.
-    Covalent dispatches tasks to any number of executors backed by heterogeneous hardware platforms. Run non-critical tasks on commodity hardware, using advanced hardware only for the heavy computations: Using a heterogeneous environment is almost as easy as running with a monolithic backend.
+    Covalent dispatches tasks to any number of executors backed by heterogeneous hardware platforms. Run non-critical tasks on commodity hardware, reserving advanced hardware only for the heavy computations. Covalent makes using a heterogeneous environment almost as easy as running with a monolithic backend.
 
 Test individual functions or groups of functions on local hardware before committing them to advanced hardware.
-    Not only does Covalent run different workflow tasks on different platforms; but reassigning a task to a different platform is as easy as changing a single attribute in a function decorator. Test locally, then do the real work on big hardware.
+    Not only does Covalent run different workflow tasks on different platforms,  but reassigning a task to a different platform is as easy as changing a single attribute in a function decorator. Test locally, then do the real work on big hardware.
 
 Iteratively run prototypes and exploratory research models and save results.
     Covalent saves the data required to reproduce every run of every workflow, along with its results. Manage running workflows, view task dependencies, and examine results in Covalent's intuitive browser-based UI.
 
-Automate and manage workflows from a Jupyter notebook or any other interactive Python environment.
+Automate and manage workflows from a Jupyter notebook or Python command line.
     The Covalent scheduler runs locally or on a server. Run experiments as you normally would, swapping parameters and datasets, from Jupyter or any other interactive Python environment.
 
 Run experiments faster with parallel processing.
     Covalent automatically parallelizes independent tasks to accelerate job completion.
 
-Ready to try it? Skip to [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html)
+.. admonition:: Ready to try it?
+
+    Skip to `Getting Started <https://covalent.readthedocs.io/en/latest/getting_started/index.html>`_.
 
 Covalent is designed and developed from the ground up for data experimentation and prototyping. Covalent features:
 
@@ -64,7 +63,7 @@ A robust user interface
     Covalent provides an intuitive and aesthetic browser-based UI to monitor and manage your workflows.
 
 Result management
-    Covalent manages the results of your workflows. Whenever you need to modify parts of your workflow, from inputs to components, Covalent stores and saves the run of every experiment in a reproducible format.
+    Covalent manages the results of your workflows. Covalent stores and saves the run of every experiment in a reproducible format, making it easy to modify any part of your workflow from inputs to components.
 
 Low overhead
     Covalent is designed to be as lightweight as possible and is optimized for the most common use cases. Covalent's overhead is less than 0.1% of the total runtime for typical high-compute applications and often has a constant overhead of ~ 10-100μs – and this is constantly being optimized.
@@ -72,19 +71,23 @@ Low overhead
 Interactive
     Unlike other workflow tools, Covalent is interactive. You can view, modify, and re-submit workflows directly within a Jupyter notebook.
 
-Ready to try it? Skip to [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html)
+.. admonition:: Ready to try it?
+
+    Skip to `Getting Started <https://covalent.readthedocs.io/en/latest/getting_started/index.html>`_.
+
 
 Is It Really That Easy?
 #######################
 
 Don't be fooled the simplicity of Covalent's decorator-based code syntax. Each decorator is a wrapper hiding sophisticated task management software that analyzes function input and output and enables the Covalent server to abstract the code from the backend implementation.
 
-You do have some responsibilities when you use a Covalent decorator. Your code should be task-oriented and Pythonic. Task-oriented, because the more you use small, independent, single-purpose tasks, the more efficiently Covalent can manage your workflow. Long, shambolic scripts are not a good candidate for Covalent scheduling – at least not without refactoring.
+That said, you do have a responsibility when you use a Covalent decorator to make your code task-oriented and Pythonic.
+
+Task-oriented, because the more you use small, independent, single-purpose tasks, the more efficiently Covalent can manage your workflow. Long, shambolic scripts are not a good candidate for Covalent scheduling – at least not without refactoring.
 
 Pythonic, because using Python best practices enables Covalent to automatically construct workflow graphs without having to specify graph edges explicitly in another language such as YAML.
-</div>
 
-For a more in-depth description of Covalent's features and how they work, refer to the [Concepts](https://covalent.readthedocs.io/en/latest/concepts/concepts.html) page in the documentation.
+For a more in-depth description of Covalent's features and how they work, refer to the `Concepts <https://covalent.readthedocs.io/en/latest/concepts/concepts.html>`_ page in the documentation.
 
 .. |
 
