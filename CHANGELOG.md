@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Folder transfer download bug
 - Result objects now print correctly when nodes fail
 
 ## [0.207.0-rc.0] - 2022-10-26
