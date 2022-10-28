@@ -129,7 +129,7 @@ Node Outputs
 
         node_outputs = self.get_all_node_outputs()
         for k, v in node_outputs.items():
-            show_result_str += f"{k}: {v.object_string}\n"
+            show_result_str += f"{k}: {TransportableObject.make_transportable(v).object_string}\n"
 
         return show_result_str
 
