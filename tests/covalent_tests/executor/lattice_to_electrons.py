@@ -21,13 +21,10 @@
 """Unit tests to check that electrons inherit the parent lattice executor."""
 
 import json
-from pathlib import Path
-
 
 import covalent as ct
-from covalent._results_manager.result import Result
 from covalent._workflow.lattice import Lattice as LatticeClass
-from covalent.executor import LocalExecutor
+
 
 # start the covalent server with no cluster and then run this program,
 # electrons are supposed to have local executor, but as lattice executor changed to dask, they also change.
@@ -46,20 +43,21 @@ def test_electrons_have_lattice_executor():
     # Construct a workflow of tasks
     @ct.lattice(executor="dask")
     def hello_world(a, b):
-        """ This is a basic hello world dispatch """
+        """This is a basic hello world dispatch"""
         phrase = join_words(a, b)
         return excitement(phrase)
 
     # Dispatch the workflow
-    hello_world.build_graph("hello","world")
+    hello_world.build_graph("hello", "world")
     data = hello_world.transport_graph.serialize_to_json()
     data = json.loads(data)
     hello_world = LatticeClass.deserialize_from_json(hello_world.serialize_to_json())
 
     for i in data["nodes"]:
         if "parameter" not in i["name"]:
-            #print(i["name"], i["metadata"]["executor"])
+            # print(i["name"], i["metadata"]["executor"])
             assert i["metadata"]["executor"] == hello_world.metadata["executor"]
+
 
 # if an electron is changed to something else, then it should be taken instead of lattice executor.
 def test_electrons_precede_lattice_executor():
@@ -77,12 +75,12 @@ def test_electrons_precede_lattice_executor():
     # Construct a workflow of tasks
     @ct.lattice(executor="dask")
     def hello_world(a, b):
-        """ This is a basic hello world dispatch """
+        """This is a basic hello world dispatch"""
         phrase = join_words(a, b)
         return excitement(phrase)
 
     # Dispatch the workflow
-    hello_world.build_graph("hello","world")
+    hello_world.build_graph("hello", "world")
     data = hello_world.transport_graph.serialize_to_json()
     data = json.loads(data)
     hello_world = LatticeClass.deserialize_from_json(hello_world.serialize_to_json())
@@ -92,6 +90,7 @@ def test_electrons_precede_lattice_executor():
             assert i["metadata"]["executor"] == "local"
         elif "parameter" not in i["name"]:
             assert i["metadata"]["executor"] == hello_world.metadata["executor"]
+
 
 test_electrons_have_lattice_executor()
 test_electrons_precede_lattice_executor()
