@@ -18,5 +18,5 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .dispatcher import cancel_workflow, run_workflow
-from .result import initialize_result_object
+from .dispatcher import cancel_workflow, run_dispatch, run_workflow
+from .result import initialize_result_object, make_dispatch

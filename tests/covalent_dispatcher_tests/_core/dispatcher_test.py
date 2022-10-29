@@ -41,6 +41,7 @@ from covalent_dispatcher._core.dispatcher import (
     _initialize_deps_and_queue,
     _plan_workflow,
     _post_process,
+    run_dispatch,
 )
 from covalent_dispatcher._db.datastore import DataStore
 
@@ -355,3 +356,14 @@ def test_build_sublattice_graph():
     lattice = Lattice.deserialize_from_json(json_lattice)
 
     assert list(lattice.transport_graph._graph.nodes) == [0, 1]
+
+
+@pytest.mark.asyncio
+async def test_run_dispatch(mocker):
+    res = get_mock_result()
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.resultsvc.get_result_object", return_value=res
+    )
+    mock_run = mocker.patch("covalent_dispatcher._core.dispatcher.run_workflow")
+    run_dispatch(res.dispatch_id)
+    mock_run.assert_called_with(res)

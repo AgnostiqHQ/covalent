@@ -92,7 +92,7 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
 
 # Domain: runner
 async def _run_abstract_task(
-    result_object: Result,
+    dispatch_id: str,
     node_id: int,
     node_name: str,
     abstract_inputs: Dict,
@@ -101,6 +101,7 @@ async def _run_abstract_task(
 ) -> None:
 
     # Resolve abstract task and inputs to their concrete (serialized) values
+    result_object = resultsvc.get_result_object(dispatch_id)
     serialized_callable = result_object.lattice.transport_graph.get_node_value(node_id, "function")
     input_values = _get_task_input_values(result_object, abstract_inputs)
 

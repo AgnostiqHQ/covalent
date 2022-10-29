@@ -111,10 +111,16 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
     )
     mocker.patch("covalent_dispatcher._core.dispatcher.update_lattices_data")
     mocker.patch("covalent_dispatcher._core.dispatcher.write_lattice_error")
+    mock_unregister = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.resultsvc.unregister_dispatch"
+    )
+    mocker.patch(
+        "covalent_dispatcher._core.runner.resultsvc.get_result_object", return_value=result_object
+    )
 
     update.persist(result_object)
     result_object = await run_workflow(result_object)
-
+    mock_unregister.assert_called_with(result_object.dispatch_id)
     assert result_object.status == Result.FAILED
 
 
@@ -155,11 +161,17 @@ async def test_run_workflow_with_failing_leaf(mocker):
     )
     mocker.patch("covalent_dispatcher._core.dispatcher.update_lattices_data")
     mocker.patch("covalent_dispatcher._core.dispatcher.write_lattice_error")
+    mock_unregister = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.resultsvc.unregister_dispatch"
+    )
+    mocker.patch(
+        "covalent_dispatcher._core.runner.resultsvc.get_result_object", return_value=result_object
+    )
 
     update.persist(result_object)
 
     result_object = await run_workflow(result_object)
-
+    mock_unregister.assert_called_with(result_object.dispatch_id)
     assert result_object.status == Result.FAILED
 
 
@@ -196,6 +208,9 @@ async def test_run_workflow_does_not_deserialize(mocker):
     result_object._initialize_nodes()
 
     mocker.patch("covalent_dispatcher._db.datastore.DataStore.factory", return_value=test_db)
+    mocker.patch(
+        "covalent_dispatcher._core.runner.resultsvc.get_result_object", return_value=result_object
+    )
     update.persist(result_object)
 
     mock_to_deserialize = mocker.patch("covalent.TransportableObject.get_deserialized")
@@ -219,10 +234,17 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mock_unregister = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.resultsvc.unregister_dispatch"
+    )
+    mocker.patch(
+        "covalent_dispatcher._core.runner.resultsvc.get_result_object", return_value=result_object
+    )
 
     update.persist(result_object)
 
     result_object = await run_workflow(result_object)
+    mock_unregister.assert_called_with(result_object.dispatch_id)
     assert result_object.status == Result.PENDING_POSTPROCESSING
 
 
@@ -237,6 +259,12 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mock_unregister = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.resultsvc.unregister_dispatch"
+    )
+    mocker.patch(
+        "covalent_dispatcher._core.runner.resultsvc.get_result_object", return_value=result_object
+    )
 
     update.persist(result_object)
 
@@ -245,6 +273,7 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
 
     result_object.lattice.set_metadata("workflow_executor", "bogus")
     result_object = await run_workflow(result_object)
+    mock_unregister.assert_called_with(result_object.dispatch_id)
 
     assert result_object.status == Result.POSTPROCESSING_FAILED
 
@@ -252,6 +281,7 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     result_object.lattice.set_metadata("workflow_executor", "local")
 
     result_object = await run_workflow(result_object)
+    mock_unregister.assert_called_with(result_object.dispatch_id)
 
     assert result_object.status == Result.POSTPROCESSING_FAILED
 
@@ -268,6 +298,7 @@ async def test_dispatch_sync_sublattice(test_db, mocker):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._core.dispatcher.resultsvc.unregister_dispatch")
 
     result_object = get_mock_result()
 

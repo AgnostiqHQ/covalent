@@ -34,6 +34,8 @@ from .._db import update
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
+_registered_dispatches = {}
+
 
 def generate_node_result(
     node_id,
@@ -113,3 +115,27 @@ def get_unique_id() -> str:
     """
 
     return str(uuid.uuid4())
+
+
+def make_dispatch(
+    json_lattice: str, parent_result_object: Result = None, parent_electron_id: int = None
+) -> Result:
+
+    result_object = initialize_result_object(
+        json_lattice, parent_result_object, parent_electron_id
+    )
+    _register_result_object(result_object)
+    return result_object.dispatch_id
+
+
+def get_result_object(dispatch_id: str) -> Result:
+    return _registered_dispatches[dispatch_id]
+
+
+def _register_result_object(result_object: Result):
+    dispatch_id = result_object.dispatch_id
+    _registered_dispatches[dispatch_id] = result_object
+
+
+def unregister_dispatch(dispatch_id: str):
+    del _registered_dispatches[dispatch_id]

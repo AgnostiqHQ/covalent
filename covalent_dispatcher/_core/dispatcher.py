@@ -100,12 +100,11 @@ async def _dispatch_sync_sublattice(
     if res["status"] == Result.COMPLETED:
         json_sublattice = json.loads(res["output"].json)
 
-        sub_result_object = resultsvc.initialize_result_object(
+        sub_dispatch_id = resultsvc.make_dispatch(
             json_sublattice, parent_result_object, parent_electron_id
         )
-        app_log.debug(f"Sublattice dispatch id: {sub_result_object.dispatch_id}")
-
-        return await run_workflow(sub_result_object)
+        app_log.debug(f"Sublattice dispatch id: {sub_dispatch_id}")
+        return await run_dispatch(sub_dispatch_id)
     else:
         return None
 
@@ -398,7 +397,7 @@ async def _submit_task(result_object, node_id, pending_deps, status_queue, task_
 
         run_task_callable = partial(
             runner._run_abstract_task,
-            result_object=result_object,
+            dispatch_id=result_object.dispatch_id,
             node_id=node_id,
             selected_executor=[selected_executor, selected_executor_data],
             node_name=node_name,
@@ -562,6 +561,8 @@ async def run_workflow(result_object: Result) -> Result:
             "".join(traceback.TracebackException.from_exception(ex).format()),
         )
         raise
+    finally:
+        resultsvc.unregister_dispatch(result_object.dispatch_id)
 
     return result_object
 
@@ -582,3 +583,8 @@ def cancel_workflow(dispatch_id: str) -> None:
     # shared_var = Variable(dispatch_id)
     # shared_var.set(str(Result.CANCELLED))
     pass
+
+
+def run_dispatch(dispatch_id: str) -> asyncio.Future:
+    result_object = resultsvc.get_result_object(dispatch_id)
+    return asyncio.create_task(run_workflow(result_object))

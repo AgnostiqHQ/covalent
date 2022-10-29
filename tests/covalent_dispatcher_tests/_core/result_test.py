@@ -30,7 +30,15 @@ import pytest
 import covalent as ct
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
-from covalent_dispatcher._core.result import _update_node_result, initialize_result_object
+from covalent_dispatcher._core.result import (
+    _register_result_object,
+    _registered_dispatches,
+    _update_node_result,
+    get_result_object,
+    initialize_result_object,
+    make_dispatch,
+    unregister_dispatch,
+)
 from covalent_dispatcher._db.datastore import DataStore
 
 TEST_RESULTS_DIR = "/tmp/results"
@@ -155,3 +163,42 @@ async def test_update_completed_node(mocker):
     node_result = {"node_id": 0, "status": Result.COMPLETED}
     await _update_node_result(result_object, node_result, pending_deps, status_queue)
     status_queue.put.assert_awaited_with((0, Result.COMPLETED))
+
+
+def test_make_dispatch(mocker):
+    res = get_mock_result()
+    mock_init_result = mocker.patch(
+        "covalent_dispatcher._core.result.initialize_result_object", return_value=res
+    )
+    mock_register = mocker.patch(
+        "covalent_dispatcher._core.result._register_result_object", return_value=res
+    )
+    json_lattice = '{"workflow_function": "asdf"}'
+    dispatch_id = make_dispatch(json_lattice)
+
+    assert dispatch_id == res.dispatch_id
+    mock_register.assert_called_with(res)
+
+
+def test_get_result_object(mocker):
+    result_object = get_mock_result()
+    dispatch_id = result_object.dispatch_id
+    _registered_dispatches[dispatch_id] = result_object
+    assert get_result_object(dispatch_id) is result_object
+    del _registered_dispatches[dispatch_id]
+
+
+def test_register_result_object(mocker):
+    result_object = get_mock_result()
+    dispatch_id = result_object.dispatch_id
+    _register_result_object(result_object)
+    assert _registered_dispatches[dispatch_id] is result_object
+    del _registered_dispatches[dispatch_id]
+
+
+def test_unregister_result_object(mocker):
+    result_object = get_mock_result()
+    dispatch_id = result_object.dispatch_id
+    _registered_dispatches[dispatch_id] = result_object
+    unregister_dispatch(dispatch_id)
+    assert dispatch_id not in _registered_dispatches
