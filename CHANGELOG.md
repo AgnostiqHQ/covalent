@@ -7,6 +7,45 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Support for transferring the contents of folders to and from S3 buckets using the file transfer module.
+
+### Fixed
+
+- Result objects now print correctly when nodes fail
+
+## [0.207.0-rc.0] - 2022-10-26
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Changed
+
+- Running migrations automatically if none have run in the past (fresh installs, after purging)
+
+## [0.206.0-rc.0] - 2022-10-26
+
+### Authors
+
+- Akalanka <8133713+boneyag@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Scott Wyman Neagle <wymnea@protonmail.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+
+
+### Docs
+
+- Updated AWS Lambda executor docs to address conflict with using public ecr registries
+
 ### Docs
 
 - Fixed missing RTD content under API section for covalent, cli, leptons, deps, data transfer
@@ -14,6 +53,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Enabling logging by default
+- Removed debugging output
+- Clarify cli output when `covalent db migrate` needs to be run
 
 ### Changed
 
