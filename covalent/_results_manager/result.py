@@ -329,8 +329,10 @@ Node Outputs
         with active_lattice_manager.claim(lattice):
             lattice.post_processing = True
             lattice.electron_outputs = ordered_node_outputs
+            args = [arg.get_deserialized() for arg in lattice.args]
+            kwargs = {k: v.get_deserialized() for k, v in lattice.kwargs.items()}
             workflow_function = lattice.workflow_function.get_deserialized()
-            result = workflow_function(*lattice.args, **lattice.kwargs)
+            result = workflow_function(*args, **kwargs)
             lattice.post_processing = False
         return result
 

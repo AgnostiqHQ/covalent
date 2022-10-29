@@ -162,7 +162,7 @@ def test_result_post_process(
         return x
 
     @ct.lattice
-    def compute_energy():
+    def compute_energy(n):
         N2 = construct_n_molecule(1)
         e_N2 = compute_system_energy(N2)
 
@@ -171,10 +171,12 @@ def test_result_post_process(
 
         relaxed_slab = get_relaxed_slab(3)
         e_relaxed_slab = compute_system_energy(relaxed_slab)
+        for i in range(n):
+            pass
 
         return (N2, e_N2, slab, e_slab, relaxed_slab, e_relaxed_slab)
 
-    compute_energy.build_graph()
+    compute_energy.build_graph(3)
 
     compute_energy = LatticeClass.deserialize_from_json(compute_energy.serialize_to_json())
 
@@ -206,4 +208,4 @@ def test_result_post_process(
 
     execution_result = res.post_process()
 
-    assert execution_result == compute_energy()
+    assert execution_result == compute_energy(3)
