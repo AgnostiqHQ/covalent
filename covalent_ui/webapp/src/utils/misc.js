@@ -32,6 +32,9 @@ import { ReactComponent as LoaderSvg } from '../assets/loader.svg'
 import { ReactComponent as FunctionSvg } from '../assets/nodeType/fuction.svg'
 import { ReactComponent as ParameterSvg } from '../assets/nodeType/parameter.svg'
 import { ReactComponent as SubLattice } from '../assets/nodeType/sublattice.svg'
+import { ReactComponent as RunningSvg } from '../assets/sublattice/running.svg'
+import { ReactComponent as FailedSvg } from '../assets/sublattice/failed.svg'
+import { ReactComponent as SuccessSvg } from '../assets/sublattice/success.svg'
 import { ReactComponent as ArgSvg } from '../assets/nodeType/arg.svg'
 import { ReactComponent as AttributeSvg } from '../assets/nodeType/attribute.svg'
 import { ReactComponent as ElectronDictSvg } from '../assets/nodeType/electron-dict.svg'
@@ -43,7 +46,9 @@ import { ReactComponent as ConnectionLostSvg } from '../assets/status/connection
 import { ReactComponent as TimeoutSvg } from '../assets/status/timeout.svg'
 import { ReactComponent as QueuedSvg } from '../assets/status/queued.svg'
 import { ReactComponent as CompletingSvg } from '../assets/status/completing.svg'
-
+import { ReactComponent as RunningTopBarSvg } from '../assets/sublattice/runningTopBar.svg'
+import { ReactComponent as FailedTopBarSvg } from '../assets/sublattice/failedTopBar.svg'
+import { ReactComponent as SuccessTopBarSvg } from '../assets/sublattice/successTopBar.svg'
 export const secondsToHms = (ms) => {
   let time = ''
   const sec = Math.floor(ms / 1000)
@@ -184,21 +189,21 @@ export const logStatusIcon = (status) => {
     case 'WARNING':
     case 'WARN':
       return (
-        <SvgIcon sx={{ mt: 0.5, fontSize: '18px' }}>
+        <SvgIcon sx={{ mt: 0.6, mr: 0.7, fontSize: '18px' }}>
           <WarningSvg />
         </SvgIcon>
       )
     case 'INFO':
     case 'DEBUG':
       return (
-        <SvgIcon sx={{ mt: 1.4 }}>
+        <SvgIcon sx={{ mt: 0.6 }}>
           <InfoSvg />
         </SvgIcon>
       )
     case 'ERROR':
     case 'CRITICAL':
       return (
-        <SvgIcon sx={{ mt: 0.5, fontSize: '18px' }}>
+        <SvgIcon sx={{ mt: 0.6, mr: 0.7, fontSize: '18px' }}>
           <ErrorSvg />
         </SvgIcon>
       )
@@ -285,7 +290,7 @@ export const nodeLabelIcon = (type) => {
   switch (type) {
     case 'function':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon sx={{ mt: 1.2 }}>
           <FunctionSvg />
         </SvgIcon>
       )
@@ -337,6 +342,58 @@ export const nodeLabelIcon = (type) => {
           <ArgSvg />
         </SvgIcon>
       )
+    default:
+      return null
+  }
+}
+
+export const sublatticeIcon = (type, sub) => {
+  switch (type) {
+    case 'COMPLETED':
+      return (
+        <SvgIcon sx={{ mr: 1, fontSize: '28px' }}>
+          <SuccessSvg />
+        </SvgIcon>
+      )
+    case 'FAILED':
+      return (
+        <SvgIcon sx={{ mr: 1, fontSize: '28px' }}>
+          <FailedSvg />
+        </SvgIcon>
+      )
+    case 'RUNNING':
+      return (
+        <SvgIcon sx={{ mr: 1, fontSize: '28px' }}>
+          <RunningSvg />
+        </SvgIcon>
+      )
+
+    default:
+      return null
+  }
+}
+
+export const sublatticeIconTopBar = (type, sub) => {
+  switch (type) {
+    case 'COMPLETED':
+      return (
+        <SvgIcon sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}>
+          <SuccessTopBarSvg />
+        </SvgIcon>
+      )
+    case 'FAILED':
+      return (
+        <SvgIcon sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}>
+          <FailedTopBarSvg />
+        </SvgIcon>
+      )
+    case 'RUNNING':
+      return (
+        <SvgIcon sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}>
+          <RunningTopBarSvg />
+        </SvgIcon>
+      )
+
     default:
       return null
   }

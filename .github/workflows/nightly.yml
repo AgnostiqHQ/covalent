@@ -22,7 +22,7 @@ name: nightly
 
 on:
   schedule:
-    - cron: "0 4 * * *"
+    - cron: "0 * * * *"
 
 jobs:
   license:
@@ -32,11 +32,6 @@ jobs:
   tests:
     name: Unit and Functional Tests
     uses: AgnostiqHQ/covalent/.github/workflows/tests.yml@develop
-    secrets: inherit # pragma: allowlist secret
-
-  benchmarks:
-    name: Benchmarks
-    uses: AgnostiqHQ/covalent/.github/workflows/benchmark.yml@develop
     secrets: inherit # pragma: allowlist secret
 
   changelog:
@@ -58,9 +53,9 @@ jobs:
         id: query-tags
         uses: octokit/request-action@v2.x
         with:
-          route: GET /repos/{owner}/{repo}/tags
-          owner: AgnostiqHQ
-          repo: covalent
+          route: GET /repos/AgnostiqHQ/covalent/tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
 
       - name: Parse latest tag
         id: get-latest-tag
@@ -70,11 +65,15 @@ jobs:
           echo "::set-output name=tag::${latest_tag}"
 
       - name: Checkout default branch
-        uses: github/checkout@v3
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Push to master
         id: push
         run: |
+          CHANGELOG_VERSION="${{ needs.changelog.outputs.version }}"
           MASTER_VERSION="$(echo ${{ steps.get-latest-tag.outputs.tag }} | cut -c2- )"
           VERSION="$(cat ./VERSION)"
           release=false
@@ -106,7 +105,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout master
-        uses: github/checkout@v3
+        uses: actions/checkout@v3
         with:
           ref: "master"
 
