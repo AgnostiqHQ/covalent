@@ -221,7 +221,7 @@ const SublatticesListing = () => {
 
   return (
     <>
-      <Box>
+      <Box data-testid="sublatticeTable">
         {sublatticesListView && (
           <>
             <TableContainer>

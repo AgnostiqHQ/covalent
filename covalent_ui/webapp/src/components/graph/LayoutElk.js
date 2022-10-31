@@ -38,12 +38,13 @@ const nodeLabel = (type, name) => {
   }
 }
 
-const layoutElk = (
+export const layoutElk = (
   graph,
   direction,
   showParams = true,
   hideLabels,
   preview
+  
 ) => {
   const elements = mapGraphToElements(
     graph,
@@ -82,7 +83,9 @@ const mapGraphToElements = (
   const nodes = _.map(graph.nodes, (node) => {
     const handlePositions = getHandlePositions(direction)
     const isParam = isParameter(node)
-    const name = isParam ? _.trim(node.name, ':parameter:') : nodeLabel(node.type, node.name)
+    const name = isParam
+      ? _.trim(node.name, ':parameter:')
+      : nodeLabel(node.type, node.name)
     return {
       id: String(node.id),
       type: isParam ? 'parameter' : 'electron',

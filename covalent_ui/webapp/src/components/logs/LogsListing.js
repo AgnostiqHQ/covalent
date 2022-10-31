@@ -50,7 +50,7 @@ import {
   Pagination,
 } from '@mui/material'
 import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
-import ReactTooltip from "react-tooltip";
+import ReactTooltip from 'react-tooltip'
 import { useDebounce } from 'use-debounce'
 import {
   fetchLogsList,
@@ -189,9 +189,9 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize text
   [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
-  {
-    fontSize: '1rem',
-  },
+    {
+      fontSize: '1rem',
+    },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
@@ -317,6 +317,7 @@ const LogsListing = () => {
       message: e.message,
     }
   })
+
   const totalRecords = useSelector((state) => state.logs.totalLogs)
 
   const isFetching = useSelector((state) => state.logs.fetchLogList.isFetching)
@@ -366,10 +367,9 @@ const LogsListing = () => {
     setSortOrder(isAsc ? 'desc' : 'asc')
     setSortColumn(column)
   }
-
   return (
     <>
-      <Box>
+      <Box data-testid="logsTable">
         <Snackbar
           open={openSnackbar}
           autoHideDuration={3000}
@@ -428,7 +428,8 @@ const LogsListing = () => {
                     logListView.map((result, index) => (
                       <>
                         <TableRow
-                          data-tip data-for="logRow"
+                          data-tip
+                          data-for="logRow"
                           onClick={() => {
                             copy(result.message)
                             setCopied(true)
@@ -497,7 +498,12 @@ const LogsListing = () => {
                           </TableCell>
                         </TableRow>
                         <ReactTooltip
-                          id="logRow" place="top" effect="float" arrowColor="#1C1C46" backgroundColor="#1C1C46" delayShow={300}
+                          id="logRow"
+                          place="top"
+                          effect="float"
+                          arrowColor="#1C1C46"
+                          backgroundColor="#1C1C46"
+                          delayShow={300}
                         >
                           {!copied ? 'Click to copy log message' : 'Copied'}
                         </ReactTooltip>

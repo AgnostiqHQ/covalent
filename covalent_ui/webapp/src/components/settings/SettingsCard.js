@@ -445,10 +445,11 @@ const SettingsCard = () => {
                     <StyledList sx={{ pb: 0, pt: 0 }} key={menuKey}>
                       <ListItem disablePadding sx={{ lineHeight: '18px' }}>
                         <ListItemButton
+                          data-testid="openMenu"
                           onClick={
                             isChildHasList
                               ? () => handleClick(menuValue)
-                              : () => { }
+                              : () => {}
                           }
                           sx={{
                             right: '0px',
@@ -497,7 +498,10 @@ const SettingsCard = () => {
                       {_.map(subMenu, function (value, key) {
                         return (
                           <StyledList sx={{ pb: 0, pt: 0 }} key={key}>
-                            <ListItem disablePadding sx={{ lineHeight: '18px' }}>
+                            <ListItem
+                              disablePadding
+                              sx={{ lineHeight: '18px' }}
+                            >
                               <ListItemButton
                                 sx={{ pl: 7, pt: 0.3, pb: 0.3 }}
                                 onClick={() => handleSubmenuClick(subMenu, key)}
@@ -529,7 +533,7 @@ const SettingsCard = () => {
                           onClick={
                             isChildHasList
                               ? () => handleClick(menuValue)
-                              : () => { }
+                              : () => {}
                           }
                           sx={{
                             right: '0px',
@@ -580,7 +584,7 @@ const SettingsCard = () => {
                   fontWeight: 'bold',
                   fontSize: '24px',
                   color: (theme) => theme.palette.primary.white,
-                  lineHeight: '31px'
+                  lineHeight: '31px',
                 }}
               >
                 {formatUnderscoreConcatenatedString(resultKey)}
@@ -613,7 +617,7 @@ const SettingsCard = () => {
                                     color: theme.palette.primary.light,
                                     fontWeight: 'bold',
                                     lineHeight: '16px',
-                                    fontSize:'16px'
+                                    fontSize: '16px',
                                   })}
                                 >
                                   {formatUnderscoreConcatenatedString(key)}
