@@ -19,7 +19,7 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
-import { useEffect, useRef, useState, createRef, memo } from 'react'
+import { useEffect, useRef, useState, createRef, memo, useMemo } from 'react'
 import { useScreenshot, createFileName } from "use-react-screenshot"
 import ReactFlow, {
   MiniMap,
@@ -198,16 +198,16 @@ const LatticeGraph = ({
     const result = incomers.reduce(
       (memo, incomer) => {
         memo.push(incomer);
-  
+
         if ((prevIncomers.findIndex(n => n.id === incomer.id) === -1)) {
           prevIncomers.push(incomer);
-  
+
           getAllIncomers(incomer, elements, prevIncomers).forEach((foundNode) => {
             memo.push(foundNode);
-  
+
             if ((prevIncomers.findIndex(n => n.id === foundNode.id) === -1)) {
               prevIncomers.push(incomer);
-  
+
             }
           });
         }
@@ -223,13 +223,13 @@ const LatticeGraph = ({
     return outgoers.reduce(
       (memo, outgoer) => {
         memo.push(outgoer);
-  
+
         if ((prevOutgoers.findIndex(n => n.id === outgoer.id) === -1)) {
           prevOutgoers.push(outgoer);
-  
+
           getAllOutgoers(outgoer, elements, prevOutgoers).forEach((foundNode) => {
             memo.push(foundNode);
-  
+
             if ((prevOutgoers.findIndex(n => n.id === foundNode.id) === -1)) {
               prevOutgoers.push(foundNode);
             }
@@ -279,7 +279,7 @@ const LatticeGraph = ({
       })
     }
   }
-  
+
 
   useEffect(() => {
     if (!hasSelectedNode) resetNodeStyles()
@@ -301,6 +301,9 @@ const LatticeGraph = ({
     })
   }
 
+  const nodeTypes = useMemo(() => ({ electron: ElectronNode, parameter: ParameterNode }), []);
+  const edgeTypes = useMemo(() => ({ directed: DirectedEdge }), []);
+
   return (
     <>
       {elements?.length > 0 && (
@@ -308,8 +311,8 @@ const LatticeGraph = ({
           <ReactFlow
             ref={ref_chart}
             data-testid="lattice__graph"
-            nodeTypes={{ electron: ElectronNode, parameter: ParameterNode }}
-            edgeTypes={{ directed: DirectedEdge }}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
             nodesDraggable={nodesDraggable}
             nodesConnectable={false}
             elements={elements}
