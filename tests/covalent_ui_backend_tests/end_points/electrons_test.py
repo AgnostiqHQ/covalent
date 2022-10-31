@@ -19,13 +19,27 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 """Electron test"""
+import pytest
 
 import tests.covalent_ui_backend_tests.utils.main as main
+from covalent_dispatcher._db.datastore import DataStore
 from tests.covalent_ui_backend_tests.utils.assert_data.electrons import seed_electron_data
 from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
 
 object_test_template = TestClientTemplate()
 output_data = seed_electron_data()
+
+
+@pytest.fixture
+def test_db():
+    """Instantiate and return an in-memory database."""
+    import os
+
+    mock_db_path = os.path.join("tests/covalent_ui_backend_tests/utils/data", "mock_db.sqlite")
+    return DataStore(
+        db_URL="sqlite+pysqlite:///" + mock_db_path,
+        initialize_db=True,
+    )
 
 
 def test_electrons():
@@ -211,8 +225,15 @@ def test_electrons_details_info():
         assert response.json() == test_data["response_data"]
 
 
-def test_electrons_details_inputs():
+def test_electrons_details_inputs(mocker, test_db):
     """Test overview"""
+    import os
+
+    mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db)
+    # mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db )
+    # print("sam 1 ", covalent_dispatcher._service.app.workflow_db.db_URL)
+    # print("write result ", covalent_dispatcher._db.write_result_to_db.workflow_db.db_URL)
+    # print(create_dispatch())
     test_data = output_data["test_electrons_details"]["case_inputs_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
@@ -220,7 +241,9 @@ def test_electrons_details_inputs():
         method_type=MethodType.GET,
         path=test_data["path"],
     )
+    # print("sam 2 ",covalent_dispatcher._db.datastore.workflow_db.db_URL)
     assert response.status_code == test_data["status_code"]
+    # print(response.json())
     if "response_data" in test_data:
         assert response.json() == test_data["response_data"]
 
@@ -237,3 +260,26 @@ def test_electrons_file_bad_request():
     assert response.status_code == test_data["status_code"]
     response_detail = response.json()["detail"][0]
     assert response_detail["type"] == "type_error.enum"
+
+
+def create_dispatch():
+    import covalent as ct
+
+    @ct.electron
+    def hello():
+        return "Hello "
+
+    @ct.electron
+    def moniker(name):
+        return name + " "
+
+    @ct.electron
+    def join(*a):
+        return "".join(a)
+
+    @ct.lattice
+    def workflow(name):
+        result = join(hello(), moniker(name))
+        return result + " !!"
+
+    return ct.dispatch(workflow)(name="shore")

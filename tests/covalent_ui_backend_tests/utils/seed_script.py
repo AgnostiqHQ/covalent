@@ -51,6 +51,12 @@ def seed(engine):
                     status=item["status"],
                     electron_num=item["electron_num"],
                     completed_electron_num=item["completed_electron_num"],
+                    docstring_filename=item["docstring_filename"],
+                    deps_filename=item["deps_filename"],
+                    call_before_filename=item["call_before_filename"],
+                    call_after_filename=item["call_after_filename"],
+                    cova_imports_filename=item["cova_imports_filename"],
+                    lattice_imports_filename=item["lattice_imports_filename"],
                     storage_type=item["storage_type"],
                     storage_path=os.path.dirname(__file__)
                     + "/mock_files/"
@@ -127,8 +133,8 @@ def seed(engine):
                 ElectronDependency(
                     id=item["id"],
                     electron_id=item["electron_id"],
-                    parent_electron_id=item["electron_id"],
-                    edge_name=item["electron_id"],
+                    parent_electron_id=item["parent_electron_id"],
+                    edge_name=item["edge_name"],
                     parameter_type=item["parameter_type"],
                     arg_index=item["arg_index"],
                     is_active=item["is_active"],

@@ -172,7 +172,10 @@ def seed_electron_data():
                     "electron_id": 0,
                     "name": "inputs",
                 },
-                "response_data": {"data": '{"args": [], "kwargs": {}}'},
+                "response_data": {
+                    "data": "{'args': (), 'kwargs': {}}",
+                    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x18\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94)\\x8c\\x06kwargs\\x94}\\x94u.')",
+                },
             },
             "case_bad_request": {
                 "status_code": 422,

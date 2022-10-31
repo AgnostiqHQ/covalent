@@ -43,7 +43,7 @@ def seed_lattice_data():
                     )
                     + "/mock_files/"
                     + "78525234-72ec-42dc-94a0-f4751707f9cd",
-                    "description": None,
+                    "description": "",
                     "runtime": 0,
                     "updated_at": None,
                 },

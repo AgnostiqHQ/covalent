@@ -20,7 +20,16 @@
 
 """Mock files data"""
 
+import os
+import pickle
+
 from covalent._workflow.transport import TransportableObject, _TransportGraph
+
+print("path ")
+with open(
+    os.path.dirname(os.path.abspath(__file__)) + "/sample_transport_graph", "rb"
+) as sample_file:
+    sample_data = pickle.load(sample_file)
 
 
 def mock_files_data():
@@ -84,7 +93,7 @@ def workflow(name):
                 {"file_name": "stdout.log", "data": ""},
                 {
                     "file_name": "transport_graph.pkl",
-                    "data": transport_graph,
+                    "data": sample_data,
                 },
                 {"file_name": "workflow_executor_data.pkl", "data": {}},
             ],

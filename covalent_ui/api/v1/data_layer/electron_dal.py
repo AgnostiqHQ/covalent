@@ -95,12 +95,20 @@ class Electrons:
         Returns:
             Returns the inputs data from Result object
         """
+        import codecs
+        import pickle
+
+        from fastapi.responses import JSONResponse
+
         from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
+        from covalent_dispatcher._service.app import get_result
 
-        result_object = get_result(dispatch_id=str(dispatch_id), wait=False)
-
-        result = self.get_electrons_id(dispatch_id, electron_id)
+        result = get_result(dispatch_id=str(dispatch_id), wait=False)
+        if isinstance(result, JSONResponse):
+            assert False
+        result_object = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
+        electron_result = self.get_electrons_id(dispatch_id, electron_id)
         inputs = get_task_inputs(
-            node_id=electron_id, node_name=result.name, result_object=result_object
+            node_id=electron_id, node_name=electron_result.name, result_object=result_object
         )
         return validate_data(inputs)
