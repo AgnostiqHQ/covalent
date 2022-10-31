@@ -30,7 +30,12 @@ import pytest
 import covalent as ct
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
-from covalent_dispatcher._core.runner import _gather_deps, _get_task_inputs, _run_task
+from covalent_dispatcher._core.runner import (
+    _gather_deps,
+    _get_task_inputs,
+    _post_process,
+    _run_task,
+)
 
 TEST_RESULTS_DIR = "/tmp/results"
 
@@ -213,3 +218,60 @@ async def test_run_task_executor_exception_handling(mocker):
     )
 
     assert node_result["status"] == Result.FAILED
+
+
+def test_post_process():
+    """Test post-processing of results."""
+
+    import covalent as ct
+
+    @ct.electron
+    def construct_cu_slab(x):
+        return x
+
+    @ct.electron
+    def compute_system_energy(x):
+        return x
+
+    @ct.electron
+    def construct_n_molecule(x):
+        return x
+
+    @ct.electron
+    def get_relaxed_slab(x):
+        return x
+
+    @ct.lattice
+    def compute_energy():
+        N2 = construct_n_molecule(1)
+        e_N2 = compute_system_energy(N2)
+
+        slab = construct_cu_slab(2)
+        e_slab = compute_system_energy(slab)
+
+        relaxed_slab = get_relaxed_slab(3)
+        e_relaxed_slab = compute_system_energy(relaxed_slab)
+
+        return (N2, e_N2, slab, e_slab, relaxed_slab, e_relaxed_slab)
+
+    compute_energy.build_graph()
+
+    node_outputs = {
+        "construct_n_molecule(0)": 1,
+        ":parameter:1(1)": 1,
+        "compute_system_energy(2)": 1,
+        "construct_cu_slab(3)": 2,
+        ":parameter:2(4)": 2,
+        "compute_system_energy(5)": 2,
+        "get_relaxed_slab(6)": 3,
+        ":parameter:3(7)": 3,
+        "compute_system_energy(8)": 3,
+    }
+
+    encoded_node_outputs = {
+        k: ct.TransportableObject.make_transportable(v) for k, v in node_outputs.items()
+    }
+
+    execution_result = _post_process(compute_energy, encoded_node_outputs)
+
+    assert execution_result == compute_energy()

@@ -40,7 +40,6 @@ from covalent_dispatcher._core.dispatcher import (
     _handle_failed_node,
     _initialize_deps_and_queue,
     _plan_workflow,
-    _post_process,
     run_dispatch,
 )
 from covalent_dispatcher._db.datastore import DataStore
@@ -104,63 +103,6 @@ def test_plan_workflow():
     updated_tg = pickle.loads(result_object.lattice.transport_graph.serialize(metadata_only=True))
 
     assert updated_tg["lattice_metadata"]["schedule"]
-
-
-def test_post_process():
-    """Test post-processing of results."""
-
-    import covalent as ct
-
-    @ct.electron
-    def construct_cu_slab(x):
-        return x
-
-    @ct.electron
-    def compute_system_energy(x):
-        return x
-
-    @ct.electron
-    def construct_n_molecule(x):
-        return x
-
-    @ct.electron
-    def get_relaxed_slab(x):
-        return x
-
-    @ct.lattice
-    def compute_energy():
-        N2 = construct_n_molecule(1)
-        e_N2 = compute_system_energy(N2)
-
-        slab = construct_cu_slab(2)
-        e_slab = compute_system_energy(slab)
-
-        relaxed_slab = get_relaxed_slab(3)
-        e_relaxed_slab = compute_system_energy(relaxed_slab)
-
-        return (N2, e_N2, slab, e_slab, relaxed_slab, e_relaxed_slab)
-
-    compute_energy.build_graph()
-
-    node_outputs = {
-        "construct_n_molecule(0)": 1,
-        ":parameter:1(1)": 1,
-        "compute_system_energy(2)": 1,
-        "construct_cu_slab(3)": 2,
-        ":parameter:2(4)": 2,
-        "compute_system_energy(5)": 2,
-        "get_relaxed_slab(6)": 3,
-        ":parameter:3(7)": 3,
-        "compute_system_energy(8)": 3,
-    }
-
-    encoded_node_outputs = {
-        k: ct.TransportableObject.make_transportable(v) for k, v in node_outputs.items()
-    }
-
-    execution_result = _post_process(compute_energy, encoded_node_outputs)
-
-    assert execution_result == compute_energy()
 
 
 def test_get_abstract_task_inputs():
