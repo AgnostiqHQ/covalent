@@ -25,7 +25,6 @@ import pickle
 
 from covalent._workflow.transport import TransportableObject, _TransportGraph
 
-print("path ")
 with open(
     os.path.dirname(os.path.abspath(__file__)) + "/sample_transport_graph", "rb"
 ) as sample_file:

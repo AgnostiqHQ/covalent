@@ -93,7 +93,6 @@ def test_electrons_details_function():
         app=main.fastapi_app,
         method_type=MethodType.GET,
     )
-    print(response.json())
     assert response.status_code == test_data["status_code"]
     if "response_data" in test_data:
         assert response.json() == test_data["response_data"]
@@ -227,13 +226,8 @@ def test_electrons_details_info():
 
 def test_electrons_details_inputs(mocker, test_db):
     """Test overview"""
-    import os
 
     mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db)
-    # mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db )
-    # print("sam 1 ", covalent_dispatcher._service.app.workflow_db.db_URL)
-    # print("write result ", covalent_dispatcher._db.write_result_to_db.workflow_db.db_URL)
-    # print(create_dispatch())
     test_data = output_data["test_electrons_details"]["case_inputs_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
@@ -241,9 +235,7 @@ def test_electrons_details_inputs(mocker, test_db):
         method_type=MethodType.GET,
         path=test_data["path"],
     )
-    # print("sam 2 ",covalent_dispatcher._db.datastore.workflow_db.db_URL)
     assert response.status_code == test_data["status_code"]
-    # print(response.json())
     if "response_data" in test_data:
         assert response.json() == test_data["response_data"]
 
@@ -260,26 +252,3 @@ def test_electrons_file_bad_request():
     assert response.status_code == test_data["status_code"]
     response_detail = response.json()["detail"][0]
     assert response_detail["type"] == "type_error.enum"
-
-
-def create_dispatch():
-    import covalent as ct
-
-    @ct.electron
-    def hello():
-        return "Hello "
-
-    @ct.electron
-    def moniker(name):
-        return name + " "
-
-    @ct.electron
-    def join(*a):
-        return "".join(a)
-
-    @ct.lattice
-    def workflow(name):
-        result = join(hello(), moniker(name))
-        return result + " !!"
-
-    return ct.dispatch(workflow)(name="shore")
