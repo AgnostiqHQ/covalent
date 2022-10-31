@@ -214,25 +214,25 @@ The official documentation includes tips on getting started, some high level con
 
 To contribute to Covalent, refer to the [Contribution Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/CONTRIBUTING.md). We use GitHub's [issue tracking](https://github.com/AgnostiqHQ/covalent/issues) to manage known issues, bugs, and pull requests. Get started by forking the develop branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. Participation in the Covalent community is governed by the [Code of Conduct](https://github.com/AgnostiqHQ/covalent/blob/master/CODE_OF_CONDUCT.md).
 
-## 📝 Release Notes
+## 📝 What's New?
 
-The latest release includes two new feature sets and three major enhancements. True to its modular nature, Covalent now allows users to define custom pre- and post-hooks to electrons to facilitate various use cases from setting up remote environments (using DepsPip) to running custom functions. We also now support data/file transfers between remote electrons in a very modular way, including Rsync, HTTP, and S3 protocols. As part of the enhancements, Covalent now internally uses an SQL database instead of storing results in a serialized format, which has resulted in impressive speedups and stability across the platform.  We have further made the Covalent server leaner by not requiring it to have any dependencies of electrons installed.  Covalent now only requires that your electron’s software dependencies exist on the client (the machine submitting the workflows) and backend (hardware running the tasks).
+This latest release includes major improvements to the Covalent GUI. You can now use the GUI to:
+- View, download, and search the Covalent logs
+- Edit configuration files and modify settings
+- Open a command line terminal within the GUI
+- View sublattices and their corresponding graphs on the main lattice page
+- Screenshot workflows in the GUI
+- Filter, sort, and delete dispatches from the dispatch list
 
-Summary of major features/enhancements:
-- Pre- and post-hooks to setup the software environment and to run other custom functions
-- Data transfer/management between electrons
-- Robust database for storing and managing results
-- User interface enhancements
+And finally, the GUI theme has been modified to improve legibility and clarity.
 
-The detailed history of changes can be viewed in the [Changelog](https://github.com/AgnostiqHQ/covalent/blob/master/CHANGELOG.md).
-
+For a detailed history of changes, see the [Changelog](https://github.com/AgnostiqHQ/covalent/blob/master/CHANGELOG.md).
 
 ## ⚓ Citation
 
 Please use the following citation in any publications:
 
-> W. J. Cunningham, S. K. Radha, F. Hasan, J. Kanem, S. W. Neagle, and S. Sanand.
-> *Covalent.* Zenodo, 2022. https://doi.org/10.5281/zenodo.5903364
+> https://doi.org/10.5281/zenodo.5903364
 
 ## 📃 License
 
