@@ -29,6 +29,8 @@ def seed_settings_data():
     log_dir = os.environ.get("COVALENT_LOGDIR")
     executor_dir = os.environ.get("COVALENT_EXECUTOR_DIR")
     base_dir = os.environ.get("COVALENT_DATA_DIR")
+
+    messages = {"update": "settings updated successfully"}
     return {
         "test_settings": {
             "api_path": "/api/v1/settings",
@@ -50,7 +52,7 @@ def seed_settings_data():
                     }
                 },
                 "request_params": {"override_existing": False},
-                "response_data": {"data": "settings updated successfully"},
+                "response_data": {"data": messages["update"]},
             },
             "case3": {
                 "status_code": 400,
@@ -67,7 +69,7 @@ def seed_settings_data():
                     }
                 },
                 "request_params": {"override_existing": True},
-                "response_data": {"data": "settings updated successfully"},
+                "response_data": {"data": messages["update"]},
             },
             "case4": {
                 "status_code": 400,
@@ -85,7 +87,7 @@ def seed_settings_data():
                     "workflow_data": {"storage_type": "local", "base_dir": base_dir},
                 },
                 "request_params": {"override_existing": True},
-                "response_data": {"data": "settings updated successfully"},
+                "response_data": {"data": messages["update"]},
             },
         },
     }

@@ -32,5 +32,7 @@ output_data = seed_logs_data()
 def test_download_logs():
     """Test Download Logs"""
     logs = Logs()
-    bytes_result = logs.download_logs()
-    assert 1 == 1
+    test_data = output_data["test_download_logs"]["case_functional_1"]
+    response = logs.download_logs()
+    if test_data["response_type"]:
+        assert type(response).__name__ == test_data["response_type"]

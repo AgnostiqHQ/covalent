@@ -25,6 +25,8 @@ from tests.covalent_ui_backend_tests.utils.client_template import MethodType, Te
 object_test_template = TestClientTemplate()
 output_data = seed_logs_data()
 
+UI_LOGFILE = "covalent_ui.api.v1.data_layer.logs_dal.UI_LOGFILE"
+
 
 def __get_custom_response(case: str):
     test_data = output_data["test_logs"][case]
@@ -41,7 +43,7 @@ def __get_custom_response(case: str):
 def test_logs(mocker):
     """Test Logs"""
     mocker.patch(
-        "covalent_ui.api.v1.data_layer.logs_dal.UI_LOGFILE",
+        UI_LOGFILE,
         "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_1.log",
     )
     test_data = output_data["test_logs"]["case1"]
@@ -58,7 +60,7 @@ def test_logs(mocker):
 def test_logs_case2(mocker):
     """Test Logs"""
     mocker.patch(
-        "covalent_ui.api.v1.data_layer.logs_dal.UI_LOGFILE",
+        UI_LOGFILE,
         "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_3.log",
     )
     test_data = output_data["test_logs"]["case1_1"]
@@ -75,7 +77,7 @@ def test_logs_case2(mocker):
 def test_logs_with_queries(mocker):
     """Test Logs With Queries"""
     mocker.patch(
-        "covalent_ui.api.v1.data_layer.logs_dal.UI_LOGFILE",
+        UI_LOGFILE,
         "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_2.log",
     )
     test_cases = ["case2", "case3", "case4"]
@@ -99,7 +101,7 @@ def test_logs_with_queries(mocker):
 def test_non_existing_logs(mocker):
     """Test Missing Logs"""
     mocker.patch(
-        "covalent_ui.api.v1.data_layer.logs_dal.UI_LOGFILE",
+        UI_LOGFILE,
         "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_4.log",
     )
     test_data = output_data["test_logs"]["case5"]
@@ -115,7 +117,7 @@ def test_non_existing_logs(mocker):
 
 def test_download_log(mocker):
     mocker.patch(
-        "covalent_ui.api.v1.data_layer.logs_dal.UI_LOGFILE",
+        UI_LOGFILE,
         "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_b.log",
     )
     test_data = output_data["test_download_logs"]["case1"]

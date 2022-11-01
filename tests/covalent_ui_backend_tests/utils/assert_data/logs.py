@@ -21,6 +21,12 @@
 
 def seed_logs_data():
     """Mock db logs data"""
+    messages = {
+        "startup": "Application startup complete.",
+        "wait": "Waiting for application startup.",
+        "started": "Started server process [41482]",
+    }
+
     return {
         "test_logs": {
             "api_path": "/api/v1/logs/",
@@ -29,24 +35,24 @@ def seed_logs_data():
                 "response_data": {
                     "items": [
                         {
-                            "log_date": "2022-09-26 13:11:42.907000+05:30",
+                            "log_date": "2022-09-26 13:15:27.907000+05:30",
                             "status": "INFO",
                             "message": '127.0.0.1:47378 - "GET /openapi.json HTTP/1.1" 200',
                         },
                         {
-                            "log_date": "2022-09-26 13:11:42.411000+05:30",
+                            "log_date": "2022-09-26 13:14:16.411000+05:30",
                             "status": "INFO",
                             "message": '127.0.0.1:47378 - "GET /docs HTTP/1.1" 200',
+                        },
+                        {
+                            "log_date": "2022-09-23 13:14:01.753000+05:30",
+                            "status": "INFO",
+                            "message": "Application startup complete.",
                         },
                         {
                             "log_date": "2022-09-23 13:13:59.753000+05:30",
                             "status": "INFO",
                             "message": "Waiting for application startup.",
-                        },
-                        {
-                            "log_date": "2022-09-23 13:13:59.753000+05:30",
-                            "status": "INFO",
-                            "message": "Application startup complete.",
                         },
                         {
                             "log_date": "2022-09-23 13:13:59.752000+05:30",
@@ -76,7 +82,7 @@ def seed_logs_data():
                             "message": '127.0.0.1:47378 - "GET /openapi.json HTTP/1.1" 200\nconnection Closed\n\nKilled',
                         },
                         {
-                            "log_date": "2022-09-26 07:41:42.907000",
+                            "log_date": "2022-09-26 07:42:44.907000",
                             "status": "INFO",
                             "message": "WebSocket - connection open",
                         },
@@ -100,17 +106,17 @@ def seed_logs_data():
                         {
                             "log_date": "2022-09-23 07:43:59.753000",
                             "status": "INFO",
-                            "message": "Waiting for application startup.",
+                            "message": messages["wait"],
                         },
                         {
-                            "log_date": "2022-09-23 07:43:59.753000",
+                            "log_date": "2022-09-23 07:45:23.753000",
                             "status": "INFO",
-                            "message": "Application startup complete.",
+                            "message": messages["startup"],
                         },
                         {
-                            "log_date": "2022-09-23 07:43:59.752000",
+                            "log_date": "2022-09-23 07:45:47.752000",
                             "status": "INFO",
-                            "message": "Started server process [41482]",
+                            "message": messages["started"],
                         },
                     ],
                     "total_count": 7,
@@ -152,37 +158,37 @@ def seed_logs_data():
                 "response_data": {
                     "items": [
                         {
-                            "log_date": "2022-09-26 13:11:42.907000+05:30",
-                            "status": "INFO",
-                            "message": '127.0.0.1:47378 - "GET /openapi.json HTTP/1.1" 200\nconnection Closed',
-                        },
-                        {
-                            "log_date": "2022-09-26 13:11:42.907000+05:30",
-                            "status": "INFO",
-                            "message": "WebSocket - connection open",
-                        },
-                        {
-                            "log_date": "2022-09-26 13:11:42.907000+05:30",
+                            "log_date": "2022-09-26 12:06:46.907000+05:30",
                             "status": "INFO",
                             "message": '127.0.0.1:47378 - "GET /favicon.ico HTTP/1.1" 404\nConnection Closed\n\nkilled',
                         },
                         {
-                            "log_date": "2022-09-26 13:11:42.411000+05:30",
+                            "log_date": "2022-09-26 11:30:42.907000+05:30",
+                            "status": "INFO",
+                            "message": "WebSocket - connection open",
+                        },
+                        {
+                            "log_date": "2022-09-26 10:58:54.907000+05:30",
+                            "status": "INFO",
+                            "message": '127.0.0.1:47378 - "GET /openapi.json HTTP/1.1" 200\nconnection Closed',
+                        },
+                        {
+                            "log_date": "2022-09-26 10:44:33.411000+05:30",
                             "status": "INFO",
                             "message": '127.0.0.1:47378 - "GET /docs HTTP/1.1" 200',
                         },
                         {
-                            "log_date": "2022-09-23 13:13:59.753000+05:30",
-                            "status": "INFO",
-                            "message": "Waiting for application startup.",
-                        },
-                        {
-                            "log_date": "2022-09-23 13:13:59.753000+05:30",
+                            "log_date": "2022-09-23 09:13:57.753000+05:30",
                             "status": "INFO",
                             "message": "Application startup complete.",
                         },
                         {
-                            "log_date": "2022-09-23 13:13:59.752000+05:30",
+                            "log_date": "2022-09-23 08:41:11.753000+05:30",
+                            "status": "INFO",
+                            "message": "Waiting for application startup.",
+                        },
+                        {
+                            "log_date": "2022-09-23 08:31:52.752000+05:30",
                             "status": "INFO",
                             "message": "Started server process [41482]",
                         },
@@ -193,5 +199,9 @@ def seed_logs_data():
             },
             "case5": {"status_code": 200, "response_data": {"items": [], "total_count": 0}},
         },
-        "test_download_logs": {"api_path": "/api/v1/logs/download", "case1": {"status_code": 200}},
+        "test_download_logs": {
+            "api_path": "/api/v1/logs/download",
+            "case1": {"status_code": 200},
+            "case_functional_1": {"response_type": "Response"},
+        },
     }

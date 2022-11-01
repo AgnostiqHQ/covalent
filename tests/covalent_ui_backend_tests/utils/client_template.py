@@ -38,13 +38,13 @@ class MethodType(Enum):
 class TestClientTemplate:
     """Custom test client"""
 
-    api_path: str = None
+    api_path: str = ""
     app: FastAPI = None
     method_type: MethodType = MethodType.GET
-    body_data: Dict = (None,)
-    query_data: Dict = (None,)
-    header: str = (None,)
-    path: Dict = (None,)
+    body_data: Dict = {}
+    query_data: Dict = {}
+    header: str = ""
+    path: Dict = {}
 
     def build_query(self, api_path: str, path: dict, query: dict) -> str:
         """

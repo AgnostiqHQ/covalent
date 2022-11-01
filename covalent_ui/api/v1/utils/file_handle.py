@@ -25,7 +25,7 @@ import json
 
 import cloudpickle as pickle
 
-from covalent._workflow.transport import TransportableObject, _TransportGraph
+from covalent._workflow.transport import TransportableObject
 
 
 def transportable_object(obj):
@@ -41,55 +41,79 @@ def transportable_object(obj):
     return None
 
 
+def is_list(unpickled_object):
+    """
+    Check if the unpickled object is of type list or not
+    if its list, convert and return the object as string
+    """
+    return "".join([obj for obj in unpickled_object]) if unpickled_object else ""
+
+
+def is_dict(unpickled_object):
+    """
+    Check if the unpickled object is of type dict or not
+    if its dict, convert and return the object as string
+    """
+    if bool(unpickled_object):
+        if "type" in unpickled_object:
+            return unpickled_object
+        deserialized_dict = TransportableObject.deserialize_dict(unpickled_object)
+        to_transportable_object = TransportableObject(deserialized_dict)
+        object_bytes = transportable_object(to_transportable_object)
+        return (str(deserialized_dict), f"import pickle{object_bytes}")
+    return None
+
+
+def is_transportable_object(unpickled_object):
+    """
+    Check if the unpickled object is transportable object or not
+    if its transportable object, convert and return the object as string
+    """
+    object_bytes = transportable_object(unpickled_object)
+    res = unpickled_object.object_string
+    return (
+        json.dumps(res),
+        f"import pickle{object_bytes}",
+    )
+
+
+def is_transport_graph(unpickled_object):
+    """
+    Check if the unpickled object is transport graph or not
+    if its transport graph, convert and return the object as string
+    """
+    return str(unpickled_object.__dict__)
+
+
+def is_str(unpickled_object):
+    """
+    Check if the unpickled object is string or not
+    """
+    return unpickled_object
+
+
+def is_none():
+    """
+    Check if the unpickled object is string or not
+    """
+    return ""
+
+
+choices = {
+    "list": is_list,
+    "dict": is_dict,
+    "TransportableObject": is_transportable_object,
+    "_TransportGraph": is_transport_graph,
+    "str": is_str,
+    "NoneType": is_none,
+}
+
+
 def validate_data(unpickled_object):
     """Validate unpickled object"""
-    if isinstance(unpickled_object, list):
-        if not (unpickled_object):
-            return ""
-        else:
-            list_str = "".join([obj for obj in unpickled_object])
-            return list_str
-    if isinstance(unpickled_object, dict):
-        args_array = []
-        kwargs_array = {}
-        if bool(unpickled_object):
-            if "type" in unpickled_object:
-                return unpickled_object
-            for obj in unpickled_object["args"]:
-                args_array.append(obj.object_string) if obj is not None else None
-
-            for obj in unpickled_object["kwargs"]:
-                kwargs_array[obj] = (
-                    unpickled_object["kwargs"][obj].object_string
-                    if unpickled_object["kwargs"][obj] is not None
-                    else None
-                )
-
-            to_transportable_object = TransportableObject(
-                {"args": tuple(args_array), "kwargs": kwargs_array}
-            )
-            object_bytes = transportable_object(to_transportable_object)
-            return (
-                str(({"args": tuple(args_array), "kwargs": kwargs_array})),
-                f"import pickle{object_bytes}",
-            )
-        else:
-            return None
-    elif isinstance(unpickled_object, str):
-        return (
-            unpickled_object if (unpickled_object != "" or unpickled_object is not None) else None
-        )
-    elif isinstance(unpickled_object, TransportableObject):
-        object_bytes = transportable_object(unpickled_object)
-        res = unpickled_object.object_string
-        return (
-            json.dumps(res),
-            f"import pickle{object_bytes}",
-        )
-    elif isinstance(unpickled_object, _TransportGraph):
-        return str(unpickled_object.__dict__)
-    else:
-        return unpickled_object, unpickled_object
+    object_type = type(unpickled_object).__name__
+    switcher = choices.get(object_type, unpickled_object)
+    return switcher(unpickled_object)
 
 
 class FileHandler:
@@ -102,8 +126,9 @@ class FileHandler:
         """Return data from pickle file"""
         try:
             unpickled_object = self.__unpickle_file(path)
-            return validate_data(unpickled_object)
-        except Exception as e:
+            res = validate_data(unpickled_object)
+            return res
+        except Exception:
             return None
 
     def read_from_text(self, path):

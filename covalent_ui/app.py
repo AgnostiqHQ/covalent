@@ -93,7 +93,6 @@ if __name__ == "__main__":
     host = get_config("dispatcher.address") if not COVALENT_SERVER_IFACE_ANY else "0.0.0.0"
 
     DEBUG = True if args.develop is True else False
-    # reload = True if args.develop is True else False
     RELOAD = False
 
     # Start dask if no-cluster flag is not specified (covalent stop auto terminates all child processes of this)

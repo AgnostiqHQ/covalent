@@ -21,6 +21,13 @@
 
 def seed_summary_data():
     """Mock db sumary data"""
+    messages = {
+        "success": "Dispatch(es) have been deleted successfully!",
+        "none": "No dispatches were deleted",
+    }
+
+    test_date = "2022-09-23T15:31:11"
+
     return {
         "test_overview": {
             "api_path": "/api/v1/dispatches/overview",
@@ -70,10 +77,10 @@ def seed_summary_data():
                             "runtime": 0,
                             "total_electrons": 6,
                             "total_electrons_completed": 6,
-                            "started_at": "2022-09-23T15:31:11",
-                            "ended_at": "2022-09-23T15:31:11",
+                            "started_at": test_date,
+                            "ended_at": test_date,
                             "status": "COMPLETED",
-                            "updated_at": "2022-09-23T15:31:11",
+                            "updated_at": test_date,
                         },
                     ],
                     "total_count": 2,
@@ -97,10 +104,10 @@ def seed_summary_data():
                             "runtime": 0,
                             "total_electrons": 6,
                             "total_electrons_completed": 6,
-                            "started_at": "2022-09-23T15:31:11",
-                            "ended_at": "2022-09-23T15:31:11",
+                            "started_at": test_date,
+                            "ended_at": test_date,
                             "status": "COMPLETED",
-                            "updated_at": "2022-09-23T15:31:11",
+                            "updated_at": test_date,
                         }
                     ],
                     "total_count": 2,
@@ -150,7 +157,7 @@ def seed_summary_data():
                 "response_data": {
                     "success_items": ["78525234-72ec-42dc-94a0-f4751707f9cd"],
                     "failure_items": [],
-                    "message": "Dispatch(es) have been deleted successfully!",
+                    "message": messages["success"],
                 },
             },
             "case2": {
@@ -159,7 +166,7 @@ def seed_summary_data():
                 "response_data": {
                     "success_items": [],
                     "failure_items": ["f7eeb4ad-5262-49a5-aabc-cea10c6c1071"],
-                    "message": "No dispatches were deleted",
+                    "message": messages["none"],
                 },
             },
             "case3": {
@@ -201,7 +208,7 @@ def seed_summary_data():
                 "response_data": {
                     "success_items": [],
                     "failure_items": [],
-                    "message": "No dispatches were deleted",
+                    "message": messages["none"],
                 },
             },
             "case6": {
@@ -210,7 +217,7 @@ def seed_summary_data():
                 "response_data": {
                     "success_items": [],
                     "failure_items": [],
-                    "message": "No dispatches were deleted",
+                    "message": messages["none"],
                 },
             },
         },
@@ -227,7 +234,7 @@ def seed_summary_data():
                         "69dec597-79d9-4c99-96de-8d5f06f3d4dd",
                     ],
                     "failure_items": [],
-                    "message": "Dispatch(es) have been deleted successfully!",
+                    "message": messages["success"],
                 },
             },
             "case2": {
@@ -236,7 +243,7 @@ def seed_summary_data():
                 "response_data": {
                     "success_items": ["78525234-72ec-42dc-94a0-f4751707f9cd"],
                     "failure_items": [],
-                    "message": "Dispatch(es) have been deleted successfully!",
+                    "message": messages["success"],
                 },
             },
             "case3": {
@@ -245,7 +252,7 @@ def seed_summary_data():
                 "response_data": {
                     "success_items": [],
                     "failure_items": [],
-                    "message": "No dispatches were deleted",
+                    "message": messages["none"],
                 },
             },
             "case4": {
@@ -254,7 +261,7 @@ def seed_summary_data():
                 "response_data": {
                     "success_items": [],
                     "failure_items": [],
-                    "message": "No dispatches were deleted",
+                    "message": messages["none"],
                 },
             },
             "case5": {"status_code": 422, "request_data": {"body": {"status_filter": "failed"}}},

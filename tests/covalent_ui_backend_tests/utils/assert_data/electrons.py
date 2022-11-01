@@ -95,8 +95,8 @@ def seed_electron_data():
                     "name": "result",
                 },
                 "response_data": {
-                    "data": '"Hello shore  !!"',
-                    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x13\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x8c\\x0fHello shore  !!\\x94.')",
+                    "data": '"Hello shore - Node 0 !!"',
+                    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x1b\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x8c\\x17Hello shore - Node 0 !!\\x94.')",
                 },
             },
             "case_value_1": {
@@ -106,7 +106,7 @@ def seed_electron_data():
                     "electron_id": 0,
                     "name": "value",
                 },
-                "response_data": {"data": "(None, None)", "python_object": None},
+                "response_data": {"data": "None", "python_object": None},
             },
             "case_stdout_1": {
                 "status_code": 200,
@@ -173,8 +173,8 @@ def seed_electron_data():
                     "name": "inputs",
                 },
                 "response_data": {
-                    "data": "{'args': (), 'kwargs': {}}",
-                    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x18\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94)\\x8c\\x06kwargs\\x94}\\x94u.')",
+                    "data": "{'args': [], 'kwargs': {}}",
+                    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x19\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94]\\x94\\x8c\\x06kwargs\\x94}\\x94u.')",
                 },
             },
             "case_bad_request": {

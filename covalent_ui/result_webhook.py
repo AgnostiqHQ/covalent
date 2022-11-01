@@ -37,8 +37,8 @@ app_log = logger.app_log
 
 
 def get_ui_url(path):
-    baseUrl = f"http://localhost:{DEFAULT_PORT}"
-    return f"{baseUrl}{path}"
+    base_url = f"http://localhost:{DEFAULT_PORT}"
+    return f"{base_url}{path}"
 
 
 async def send_update(result: Result) -> None:
