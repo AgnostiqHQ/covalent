@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Reverted nightly schedule back to daily at 4:00am
+
 ### Added
 
 - Support for transferring the contents of folders to and from S3 buckets using the file transfer module.
