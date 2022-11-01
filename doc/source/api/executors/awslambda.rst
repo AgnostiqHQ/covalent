@@ -7,14 +7,19 @@
 
 With this executor, users can execute tasks (electrons) or entire lattices using the AWS Lambda serverless compute service. It is appropriate
 to use this plugin for electrons that are expected to be short lived, low in compute intensity. This plugin can also be used for workflows with a high number of electrons
-that are embarassingly parallel aka fully independent of each other.
+that are embarassingly parallel (fully independent of each other).
 
-The AWS resources required by this executor are quite minimal 1) S3 bucket for caching objects 2) Container based AWS lambda function 3) IAM role for  the Lambda.
+The following AWS resources are required by this executor
 
-The following snippet shows the required terraform to spin up the necessary resources and can be used as a base template
+* Container based `AWS Lambda <https://docs.aws.amazon.com/lambda/latest/dg/welcome.html>`_ function
+* `AWS S3 <https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html>`_ bucket for caching objects
+* `IAM <https://docs.aws.amazon.com/iam/index.html>`_ role for Lambda
+* `ECR <https://docs.aws.amazon.com/ecr/index.html>`_ container registry for storing docker images
+
 
 1. Installation
 ###############
+
 To use this plugin with Covalent, simply install it using `pip`:
 
 .. code-block:: shell
@@ -170,8 +175,7 @@ Alternatively, users can customize this executor entirely by providing their own
 4. Required AWS Resources
 ###########################
 
-In order for the executor to work end-to-end, the following resources need to be configured
-either with `Terraform <https://www.terraform.io/>`_ or manually provisioned on the `AWS Dashboard <https://aws.amazon.com/>`_:
+In order for the executor to work end-to-end, the following resources need to be provisioned apriori.
 
 .. list-table:: Title
    :widths: 25 25 50
@@ -189,6 +193,9 @@ either with `Terraform <https://www.terraform.io/>`_ or manually provisioned on 
    * - AWS Lambda function
      - function_name
      - Name of the AWS lambda function created in AWS
+   * - AWS Elastic Container Registry (ECR)
+     - ``-``
+     - The container registry that contains the docker images used by the lambda function to execute tasks
 
 The following JSON policy document shows the necessary IAM permissions required for the executor
 to properly run tasks using the AWS Lambda compute service:
@@ -299,7 +306,7 @@ Users can use the following `Terraform <https://www.terraform.io/>`_ snippet as 
     provider aws {}
 
     resource aws_s3_bucket bucket {
-        ...
+        bucket = "my-s3-bucket"
     }
 
     resource aws_iam_role lambda_iam {
@@ -320,14 +327,36 @@ Users can use the following `Terraform <https://www.terraform.io/>`_ snippet as 
         managed_policy_arns = [ "arn:aws:iam::aws:policy/AWSLambdaExecute" ]
     }
 
+    resource aws_ecr_repository lambda_ecr {
+        name = "lambda_container_registry"
+    }
+
     resource aws_lambda_function lambda {
         function_name = "my-lambda-function"
         role = aws_iam_role.lambda_iam.arn
         packge_type = "Image"
         timeout = <timeout value in seconds, max 900 (15 minutes), defaults to 3>
         memory_size = <Max memory in MB that the Lambda is expected to use, defaults to 128>
-        image_uri = <URI to the container image used by the lambda, defaults to `public.ecr.aws/covalent/covalent-lambda-executor:stable`>
+        image_uri = aws_ecr_repository.lambda_ecr.repository_url
     }
 
 For more information on how to create IAM roles and attach policies in AWS, refer to `IAM roles <https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_create.html>`_.
 For more information on AWS S3, refer to `AWS S3 <https://aws.amazon.com/s3/>`_.
+
+.. note::
+
+    The lambda function created requires a docker image to execute the any tasks required by it. We distribute ready to use AWS Lambda executor docker images that user's can pull and push to their private ECR registries before dispatching workflows.
+
+    The base docker image can be obtained as follows
+
+    .. code:: bash
+
+        docker pull public.ecr.aws/covalent/covalent-lambda-executor:stable
+
+    Once the image has been obtained, user's can tag it with their registry information and upload to ECR as follows
+
+    .. code:: bash
+
+        aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.<region>.amazonaws.com
+        docker tag public.ecr.aws/covalent/covalent-lambda-executor:stable <aws_account_id>.dkr.ecr.<region>.amazonaws.com/<my-repository>:tag
+        docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/<my-repository>:tag
