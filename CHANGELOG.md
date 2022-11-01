@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Added Alejandro to PAUL_BLART group to allow trigerring of releases
+
 ### Added
 
 - Support for transferring the contents of folders to and from S3 buckets using the file transfer module.
@@ -64,7 +68,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
-- Added Alejandro to PAUL_BLART group to allow trigerring of releases
 - Updated hotfix logic to run on a merge to a release branch
 - CodeQL workflow uses a test matrix to scan all repos in the Covalent ecosystem
 
