@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import types
 from copy import deepcopy
 from functools import wraps
 from typing import Callable
@@ -27,9 +28,12 @@ import requests
 from .._results_manager import wait
 from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
+from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._workflow.lattice import Lattice
 from .base import BaseDispatcher
+
+app_log = logger.app_log
 
 
 class LocalDispatcher(BaseDispatcher):
@@ -73,7 +77,13 @@ class LocalDispatcher(BaseDispatcher):
             Returns:
                 The dispatch id of the workflow.
             """
-
+            if isinstance(orig_lattice, types.FunctionType):
+                app_log.error(
+                    "Dispatcher object must be covalent workflow. Instead, a function was passed"
+                )
+                return (
+                    "Dispatcher object must be covalent workflow. Instead, a function was passed"
+                )
             lattice = deepcopy(orig_lattice)
 
             lattice.build_graph(*args, **kwargs)

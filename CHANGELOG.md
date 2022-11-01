@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Folder transfer download bug
 - Result objects now print correctly when nodes fail
+- Replaced AttributeError with a meaningful error for non-lattice dispatches
 
 ## [0.207.0-rc.0] - 2022-10-26
 
