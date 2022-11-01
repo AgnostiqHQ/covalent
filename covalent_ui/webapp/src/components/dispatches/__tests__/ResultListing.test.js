@@ -30,8 +30,46 @@ import theme from '../../../utils/theme'
 import ThemeProvider from '@mui/system/ThemeProvider'
 
 function mockRender(renderedComponent) {
+  const initialState = {
+    dashboard: {
+      dashboardList: [
+        {
+          dispatch_id: '8d282f51-6ce5-4629-8d77-c72c9944bbbc',
+          lattice_name: 'simple_workflow',
+          runtime: 0,
+          total_electrons: 4,
+          total_electrons_completed: 4,
+          started_at: '2022-10-31T14:34:46',
+          ended_at: '2022-10-31T14:34:46',
+          status: 'COMPLETED',
+          updated_at: '2022-10-31T14:34:46',
+        },
+        {
+          dispatch_id: 'ea0dec63-5c11-4634-a71e-46a1aa6259f2',
+          lattice_name: 'simple_workflow',
+          runtime: 0,
+          total_electrons: 4,
+          total_electrons_completed: 2,
+          started_at: '2022-10-27T15:52:08',
+          ended_at: '2022-10-27T15:52:08',
+          status: 'FAILED',
+          updated_at: '2022-10-27T15:52:08',
+        },
+      ],
+      totalDispatches: 0,
+      runningDispatches: 0,
+      completedDispatches: 0,
+      failedDispatches: 0,
+      dashboardOverview: {},
+      fetchDashboardList: { isFetching: false, error: null },
+      fetchDashboardOverview: { isFetching: false, error: null },
+      deleteResults: { isFetching: false, error: null },
+      dispatchesDeleted: false,
+    },
+  }
   const store = configureStore({
     reducer: reducers,
+    preloadedState: initialState,
   })
   return render(
     <Provider store={store}>
@@ -45,8 +83,6 @@ function mockRender(renderedComponent) {
 const resultListCases = ['All', 'Completed', 'Failed', 'Running']
 
 describe('Result Listing', () => {
-
-
   test('renders result lists section', () => {
     mockRender(<App />)
     const linkElement = screen.getByText('All')
@@ -66,6 +102,21 @@ describe('Result Listing', () => {
   test('renders dialogBox', () => {
     mockRender(<App openDialogBox={true} />)
     const linkElement = screen.getByPlaceholderText('Search')
+    expect(linkElement).toBeInTheDocument()
+  })
+  test('checks checkbox rendering', () => {
+    mockRender(<App />)
+    const linkElement = screen.getAllByTestId('checkbox')
+    expect(linkElement).toHaveLength(2)
+  })
+  test('checks pagination rendering', () => {
+    mockRender(<App />)
+    const linkElement = screen.getByTestId('pagination')
+    expect(linkElement).toBeInTheDocument()
+  })
+  test('checks keyboard arrow down icon rendering', () => {
+    mockRender(<App />)
+    const linkElement = screen.getByTestId('KeyboardArrowDownIcon')
     expect(linkElement).toBeInTheDocument()
   })
 })

@@ -183,6 +183,7 @@ const ResultsTableHead = ({
             />
             {dashboardListView.length !== 0 ? (
               <KeyboardArrowDownIcon
+                data-testid="KeyboardArrowDownIcon"
                 onClick={handleClick}
                 sx={{
                   '&:hover': {
@@ -241,8 +242,8 @@ const ResultsTableHead = ({
             </MenuItem>
             <MenuItem divider onClick={onSelectAllClick} onClose={handleClose}>
               {/* {numSelected > 0 && numSelected === total
-                ? 'Unselect all'
-                : 'Select all records'} */}
+                 ? 'Unselect all'
+                 : 'Select all records'} */}
               All visible{' '}
             </MenuItem>
             {filterValue === 'ALL' ? (
@@ -294,16 +295,16 @@ const ResultsTableHead = ({
               </MenuItem>
             ) : null}
             {/* {(filterValue === 'CANCELLED' || filterValue === 'ALL') &&
-            cancelledDispatches !== 0 ? (
-              <MenuItem
-                onClick={() => {
-                  handleAllDelete('CANCELLED', cancelledDispatches)
-                }}
-                onClose={handleClose}
-              >
-                Cancelled
-              </MenuItem>
-            ) : null} */}
+             cancelledDispatches !== 0 ? (
+               <MenuItem
+                 onClick={() => {
+                   handleAllDelete('CANCELLED', cancelledDispatches)
+                 }}
+                 onClose={handleClose}
+               >
+                 Cancelled
+               </MenuItem>
+             ) : null} */}
           </Menu>
           <DialogBox
             openDialogBox={openDialogBoxAll}
@@ -451,14 +452,14 @@ const ResultsTableToolbar = ({
           setOffset={setOffset}
         />
         {/* <SortDispatch
-          title="Cancelled"
-          count={cancelledDispatches}
-          isFetching={!dashboardOverviewFetching}
-          setFilterValue={setFilterValue}
-          isSelected={filterValue === 'CANCELLED' ? true : false}
-          setSelected={setSelected}
-          setOffset={setOffset}
-        /> */}
+           title="Cancelled"
+           count={cancelledDispatches}
+           isFetching={!dashboardOverviewFetching}
+           setFilterValue={setFilterValue}
+           isSelected={filterValue === 'CANCELLED' ? true : false}
+           setSelected={setSelected}
+           setOffset={setOffset}
+         /> */}
       </Grid>
       <Input
         sx={{
@@ -598,7 +599,6 @@ const ResultListing = () => {
       window.removeEventListener('resize', debouncedHandleResize)
     }
   })
-
 
   const isError = useSelector(
     (state) => state.dashboard.fetchDashboardList.error
@@ -875,6 +875,7 @@ const ResultListing = () => {
                       <TableRow hover key={result.dispatchId}>
                         <TableCell padding="checkbox">
                           <Checkbox
+                            data-testid="checkbox"
                             disableRipple
                             checked={_.includes(selected, result.dispatchId)}
                             onClick={() =>
@@ -958,6 +959,7 @@ const ResultListing = () => {
             >
               {!_.isEmpty(dashboardListView) && (
                 <Pagination
+                  data-testid="pagination"
                   color="primary"
                   shape="rounded"
                   variant="outlined"

@@ -44,7 +44,6 @@ export const layoutElk = (
   showParams = true,
   hideLabels,
   preview
-  
 ) => {
   const elements = mapGraphToElements(
     graph,
@@ -53,6 +52,7 @@ export const layoutElk = (
     hideLabels,
     preview
   )
+
   return elements
 }
 
