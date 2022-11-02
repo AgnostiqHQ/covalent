@@ -31,11 +31,13 @@ output_data = seed_electron_data()
 
 
 @pytest.fixture
-def test_db():
+def mock_db():
     """Instantiate and return an in-memory database."""
-    import os
+    import pathlib
 
-    mock_db_path = os.path.join("tests/covalent_ui_backend_tests/utils/data", "mock_db.sqlite")
+    mock_db_path = (
+        str(pathlib.Path(__file__).parent.parent.absolute()) + "/utils/data/mock_db.sqlite"
+    )
     return DataStore(
         db_URL="sqlite+pysqlite:///" + mock_db_path,
         initialize_db=True,
@@ -224,11 +226,15 @@ def test_electrons_details_info():
         assert response.json() == test_data["response_data"]
 
 
-def test_electrons_details_inputs(mocker, test_db):
+def test_electrons_details_inputs(mocker, mock_db):
     """Test overview"""
 
-    mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._service.app.workflow_db", mock_db)
     test_data = output_data["test_electrons_details"]["case_inputs_1"]
+    import covalent_dispatcher
+
+    print("sam mock test_electrons_details_inputs path ")
+    print(covalent_dispatcher._service.app.workflow_db.db_URL)
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
         app=main.fastapi_app,
