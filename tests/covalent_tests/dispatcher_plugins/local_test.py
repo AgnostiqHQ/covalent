@@ -38,3 +38,28 @@ def test_dispatch_workflow_for_nonlattice():
         assert True
     else:
         assert False
+
+
+def test_dispatcher_workflow():
+    @ct.electron
+    def join_words(a, b):
+        return ", ".join([a, b])
+
+    @ct.electron
+    @ct.lattice
+    def excitement(a):
+        return f"{a}!"
+
+    # Construct a workflow of tasks
+
+    @ct.lattice
+    def simple_workflow(a, b):
+        phrase = join_words(a, b)
+        return excitement(phrase)
+
+    # Dispatch the workflow
+    dispatch_id = ct.dispatch(simple_workflow)("Hello", "World")
+    if dispatch_id is None:
+        assert False
+    else:
+        assert True
