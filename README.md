@@ -13,18 +13,6 @@
 
 </div>
 
-<style>
-table, th, td {
-  border: none;
-}
-table th:first-of-type {
-    width: 50%;
-}
-table th:nth-of-type(2) {
-    width: 50%;
-}
-</style>
-
 <img src="images/executor_gif_full_list_tall.gif" align="right" width="40%" alt="Covalent Executors"></img>
 
 ## What is Covalent?
