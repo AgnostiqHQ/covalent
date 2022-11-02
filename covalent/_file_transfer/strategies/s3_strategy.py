@@ -95,15 +95,22 @@ class S3(FileTransferStrategy):
                     "s3",
                     region_name=self.region_name,
                 )
+
                 for obj_metadata in s3.list_objects(Bucket=bucket_name, Prefix=from_filepath)[
                     "Contents"
                 ]:
                     obj_key = obj_metadata["Key"]
                     obj_destination_filepath = Path(to_filepath) / obj_key
-                    if obj_key.endswith("/"):
-                        obj_destination_filepath.mkdir(parents=True, exist_ok=True)
-                    else:
-                        s3.download_file(bucket_name, obj_key, str(obj_destination_filepath))
+                    if not obj_key.endswith("/"):
+                        obj_destination_filepath.parents[0].mkdir(parents=True, exist_ok=True)
+                        app_log.debug(
+                            f"Downloading file {str(Path(from_filepath) / obj_key)} to {str(obj_destination_filepath)}."
+                        )
+                        s3.download_file(
+                            bucket_name,
+                            str(Path(from_filepath) / obj_key),
+                            str(obj_destination_filepath),
+                        )
 
         else:
 
