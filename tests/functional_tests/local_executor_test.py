@@ -18,29 +18,30 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""${message}
 
-Revision ID: ${up_revision}
-Revises: ${down_revision | comma,n}
-Create Date: ${create_date}
-
-"""
-from alembic import op
-import sqlalchemy as sa
-${imports if imports else ""}
-
-# revision identifiers, used by Alembic.
-# pragma: allowlist nextline secret
-revision = ${repr(up_revision)}
-# pragma: allowlist nextline secret
-down_revision = ${repr(down_revision)}
-branch_labels = ${repr(branch_labels)}
-depends_on = ${repr(depends_on)}
+import covalent as ct
 
 
-def upgrade() -> None:
-    ${upgrades if upgrades else "pass"}
+def test_local_executor_returns_stdout_stderr():
+    from covalent.executor import LocalExecutor
 
+    le = LocalExecutor()
 
-def downgrade() -> None:
-    ${downgrades if downgrades else "pass"}
+    @ct.electron(executor=le)
+    def task(x):
+        import sys
+
+        print("Hello")
+        print("Error", file=sys.stderr)
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    dispatch_id = ct.dispatch(workflow)(5)
+    res = ct.get_result(dispatch_id, wait=True)
+    tg = res.lattice.transport_graph
+    assert tg.get_node_value(0, "stdout") == "Hello\n"
+    assert tg.get_node_value(0, "stderr") == "Error\n"
+    assert tg.get_node_value(0, "output").get_deserialized() == 5

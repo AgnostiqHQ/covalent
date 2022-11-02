@@ -30,6 +30,7 @@ jobs:
       index: ${{ steps.filter.outputs.index }}
       action: ${{ steps.filter.outputs.action }}
       dist: ${{ steps.filter.outputs.dist }}
+      version: ${{ steps.changelog.outputs.version }}
     steps:
       - name: Check out head
         uses: actions/checkout@v3

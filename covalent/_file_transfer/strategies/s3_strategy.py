@@ -69,42 +69,111 @@ class S3(FileTransferStrategy):
 
     # return callable to download here implies 'from' is a remote source
     def download(self, from_file: File, to_file: File = File()) -> File:
-        from_filepath = from_file.filepath.strip("/")
+        """Download files or the contents of folders from S3 bucket."""
+        app_log.debug(f"Is dir: {from_file._is_dir}")
+
+        from_filepath = from_file.filepath
         to_filepath = to_file.filepath
+
+        if from_filepath.startswith("/"):
+            from_filepath = from_filepath[1:]
+
         bucket_name = furl(from_file.uri).origin[5:]
         app_log.debug(
             f"S3 download bucket: {bucket_name}, from_filepath: {from_filepath}, to_filepath {to_filepath}."
         )
 
-        def callable():
-            import boto3
+        if from_file._is_dir:
 
-            s3 = boto3.client(
-                "s3",
-                region_name=self.region_name,
-            )
-            s3.download_file(bucket_name, from_filepath, to_filepath)
+            def callable():
+                """Download files from a folder in s3 bucket."""
+                from pathlib import Path
+
+                import boto3
+
+                s3 = boto3.client(
+                    "s3",
+                    region_name=self.region_name,
+                )
+
+                for obj_metadata in s3.list_objects(Bucket=bucket_name, Prefix=from_filepath)[
+                    "Contents"
+                ]:
+                    obj_key = obj_metadata["Key"]
+                    obj_destination_filepath = Path(to_filepath) / obj_key
+                    if not obj_key.endswith("/"):
+                        obj_destination_filepath.parents[0].mkdir(parents=True, exist_ok=True)
+                        app_log.debug(
+                            f"Downloading file {str(Path(from_filepath) / obj_key)} to {str(obj_destination_filepath)}."
+                        )
+                        s3.download_file(
+                            bucket_name,
+                            str(Path(from_filepath) / obj_key),
+                            str(obj_destination_filepath),
+                        )
+
+        else:
+
+            def callable():
+                """Download file from s3 bucket."""
+                import boto3
+
+                s3 = boto3.client(
+                    "s3",
+                    region_name=self.region_name,
+                )
+                s3.download_file(bucket_name, from_filepath, to_filepath)
 
         return callable
 
     # return callable to download here implies 'to' is a remote source
     def upload(self, from_file: File, to_file: File = File()) -> File:
-
+        """Upload files or folders to S3 bucket."""
         from_filepath = from_file.filepath
-        to_filepath = to_file.filepath.strip("/")
+        to_filepath = to_file.filepath
+
+        if to_filepath.startswith("/"):
+            to_filepath = to_filepath.strip("/")
+
         bucket_name = furl(to_file.uri).origin[5:]
         app_log.debug(
-            f"S3 download bucket: {bucket_name}, from_filepath: {from_filepath}, to_filepath {to_filepath}."
+            f"S3 upload bucket: {bucket_name}, from_filepath: {from_filepath}, to_filepath {to_filepath}."
         )
 
-        def callable():
-            import boto3
+        if from_file._is_dir:
 
-            s3 = boto3.client(
-                "s3",
-                region_name=self.region_name,
-            )
-            s3.upload_file(from_filepath, bucket_name, to_filepath)
+            def callable():
+                """List and upload files from a directory to the remote S3 bucket."""
+                import os
+                from pathlib import Path
+
+                import boto3
+
+                s3 = boto3.client(
+                    "s3",
+                    region_name=self.region_name,
+                )
+
+                for dir_, _, files in os.walk(from_filepath):
+                    for file_name in files:
+                        rel_dir = os.path.relpath(dir_, from_filepath)
+                        rel_file = os.path.join(rel_dir, file_name)
+                        obj_from_filepath = str(Path(from_filepath) / rel_file)
+                        obj_to_filepath = str(Path(to_filepath) / rel_file)
+                        app_log.debug(f"Uploading from {obj_from_filepath} to {obj_to_filepath}.")
+                        s3.upload_file(obj_from_filepath, bucket_name, obj_to_filepath)
+
+        else:
+
+            def callable():
+                """Upload file to remote S3 bucket."""
+                import boto3
+
+                s3 = boto3.client(
+                    "s3",
+                    region_name=self.region_name,
+                )
+                s3.upload_file(from_filepath, bucket_name, to_filepath)
 
         return callable
 
