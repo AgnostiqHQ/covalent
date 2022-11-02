@@ -23,7 +23,7 @@
 import covalent as ct
 
 
-def test_dispatch_workflow_on_stop():
+def test_dispatch_workflow_for_nonlattice():
     @ct.electron
     def new_func(a, b, c, d, e):
         return a + b + c + d + e
@@ -34,7 +34,7 @@ def test_dispatch_workflow_on_stop():
         return new_func(a, b, c, d=4, e=5)
 
     dispatch_id = ct.dispatch(work_func)(5, 6, 7)
-    assert (
-        dispatch_id
-        == "Dispatcher object must be covalent workflow. Instead, a function was passed"
-    )
+    if dispatch_id is None:
+        assert True
+    else:
+        assert False

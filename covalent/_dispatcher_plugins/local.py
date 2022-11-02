@@ -81,21 +81,19 @@ class LocalDispatcher(BaseDispatcher):
                 app_log.error(
                     "Dispatcher object must be covalent workflow. Instead, a function was passed"
                 )
-                return (
-                    "Dispatcher object must be covalent workflow. Instead, a function was passed"
-                )
-            lattice = deepcopy(orig_lattice)
+            else:
+                lattice = deepcopy(orig_lattice)
 
-            lattice.build_graph(*args, **kwargs)
+                lattice.build_graph(*args, **kwargs)
 
-            # Serialize the transport graph to JSON
-            json_lattice = lattice.serialize_to_json()
+                # Serialize the transport graph to JSON
+                json_lattice = lattice.serialize_to_json()
 
-            test_url = f"http://{dispatcher_addr}/api/submit"
+                test_url = f"http://{dispatcher_addr}/api/submit"
 
-            r = requests.post(test_url, data=json_lattice)
-            r.raise_for_status()
-            return r.content.decode("utf-8").strip().replace('"', "")
+                r = requests.post(test_url, data=json_lattice)
+                r.raise_for_status()
+                return r.content.decode("utf-8").strip().replace('"', "")
 
         return wrapper
 
