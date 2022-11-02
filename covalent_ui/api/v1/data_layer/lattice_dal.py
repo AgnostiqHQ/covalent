@@ -116,21 +116,6 @@ class Lattices:
             .first()
         )
 
-    def get_lattice_id_by_dispatch_id(self, dispatch_id: UUID):
-        """
-        Get top lattice id from dispatch id
-        Args:
-            dispatch_id: UUID of dispatch
-        Returns:
-            Top most lattice id
-        """
-        data = (
-            self.db_con.query(Lattice.id)
-            .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.electron_id.is_(None))
-            .first()
-        )
-        return data[0]
-
     def get_sub_lattice_details(self, sort_by, sort_direction, dispatch_id) -> List[Lattice]:
         """
         Get summary of sub lattices

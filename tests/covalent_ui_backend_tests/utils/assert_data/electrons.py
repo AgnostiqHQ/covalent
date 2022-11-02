@@ -50,6 +50,15 @@ def seed_electron_data():
             "case_invalid": {
                 "status_code": 400,
                 "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd", "electron_id": 8},
+                "response_data": {
+                    "detail": [
+                        {
+                            "loc": ["path", "dispatch_id"],
+                            "msg": "Dispatch ID 78525234-72ec-42dc-94a0-f4751707f9cd or Electron ID does not exist",
+                            "type": None,
+                        }
+                    ]
+                },
             },
         },
         "test_electrons_details": {

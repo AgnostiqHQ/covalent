@@ -68,8 +68,8 @@ def test_electrons_bad_request():
         path=test_data["path"],
     )
     assert response.status_code == test_data["status_code"]
-    response_detail = response.json()["detail"][0]
-    assert "does not exist" in response_detail["msg"]
+    if test_data["response_data"]:
+        assert response.json() == test_data["response_data"]
 
 
 def test_electrons_details_function_string():
@@ -231,10 +231,6 @@ def test_electrons_details_inputs(mocker, mock_db):
 
     mocker.patch("covalent_dispatcher._service.app.workflow_db", mock_db)
     test_data = output_data["test_electrons_details"]["case_inputs_1"]
-    import covalent_dispatcher
-
-    print("sam mock test_electrons_details_inputs path ")
-    print(covalent_dispatcher._service.app.workflow_db.db_URL)
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
         app=main.fastapi_app,
