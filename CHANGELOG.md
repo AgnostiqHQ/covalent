@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Added Alejandro to PAUL_BLART group to allow trigerring of releases
+
 ### Added
 
 - Support for transferring the contents of folders to and from S3 buckets using the file transfer module.
@@ -29,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Folder transfer download bug
 - Result objects now print correctly when nodes fail
 
 ## [0.207.0-rc.0] - 2022-10-26
