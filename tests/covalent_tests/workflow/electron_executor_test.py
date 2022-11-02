@@ -18,16 +18,14 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Unit tests to check that electrons inherit the parent lattice executor."""
+"""Unit tests to test whether electrons inherit lattice executor"""
 
 import json
 
-import covalent as ct
-from covalent._workflow.lattice import Lattice as LatticeClass
 
-
-def test_electrons_have_lattice_executor():
-    """start the covalent server with local executor and then run this program."""
+def test_electrons_get_lattice_executor():
+    """case 1 - covalent started with local, Lattice executor set to dask.
+    This checks electron executors are changed to dask."""
     import covalent as ct
 
     # Construct tasks as "electrons"
@@ -48,16 +46,18 @@ def test_electrons_have_lattice_executor():
 
     # Dispatch the workflow
     hello_world.build_graph("hello", "world")
+
     data = hello_world.transport_graph.serialize_to_json()
     data = json.loads(data)
-    hello_world = LatticeClass.deserialize_from_json(hello_world.serialize_to_json())
 
     for i in data["nodes"]:
         if "parameter" not in i["name"]:
-            assert i["metadata"]["executor"] == hello_world.metadata["executor"]
+            assert i["metadata"]["executor"] == "dask"
 
 
 def test_electrons_precede_lattice_executor():
+    """case 2 - covalent started with local, Lattice executor set to dask, excitement electron executor changed to local.
+    This checks whether the electron executor is preceded over the lattice executor."""
     import covalent as ct
 
     # Construct tasks as "electrons"
@@ -78,12 +78,12 @@ def test_electrons_precede_lattice_executor():
 
     # Dispatch the workflow
     hello_world.build_graph("hello", "world")
+
     data = hello_world.transport_graph.serialize_to_json()
     data = json.loads(data)
-    hello_world = LatticeClass.deserialize_from_json(hello_world.serialize_to_json())
 
     for i in data["nodes"]:
         if ("parameter" not in i["name"]) and ("excitement" in i["name"]):
             assert i["metadata"]["executor"] == "local"
         elif "parameter" not in i["name"]:
-            assert i["metadata"]["executor"] == hello_world.metadata["executor"]
+            assert i["metadata"]["executor"] == "dask"
