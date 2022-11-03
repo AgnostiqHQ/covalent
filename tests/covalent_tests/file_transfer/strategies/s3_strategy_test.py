@@ -98,7 +98,7 @@ class TestS3Strategy:
         )
 
     def test_cp_failure(self, mocker):
-
+        """Test that the cp has not been implemented."""
         mock_boto3 = MagicMock()
         sys.modules["boto3"] = mock_boto3
 
