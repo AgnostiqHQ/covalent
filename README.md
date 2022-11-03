@@ -13,7 +13,7 @@
 
 </div>
 
-<img src="images/executor_gif_full_list_tall.gif" align="right" width="40%" alt="Covalent Executors"></img>
+<img src="https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/executor_gif_full_list_tall.gif" align="right" width="40%" alt="Covalent Executors"></img>
 
 ## What is Covalent?
 
