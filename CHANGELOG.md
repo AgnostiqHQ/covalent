@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
+- Reverted nightly schedule back to daily at 4:00am
 - Added Alejandro to PAUL_BLART group to allow trigerring of releases
 
 ### Added
@@ -33,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Folder transfer unit test.
 - Folder transfer download bug
 - Result objects now print correctly when nodes fail
 
