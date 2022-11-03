@@ -22,6 +22,7 @@
 import React from 'react'
 import { render, screen, fireEvent } from '../../../testHelpers/testUtils'
 import App from '../ResultListing'
+import { ResultsTableHead } from '../ResultListing'
 import { BrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import reducers from '../../../redux/reducers'
@@ -99,11 +100,13 @@ describe('Result Listing', () => {
     const linkElement = screen.getByPlaceholderText('Search')
     expect(linkElement).toBeInTheDocument()
   })
+
   test('renders dialogBox', () => {
     mockRender(<App openDialogBox={true} />)
     const linkElement = screen.getByPlaceholderText('Search')
     expect(linkElement).toBeInTheDocument()
   })
+
   test('checks checkbox rendering', () => {
     mockRender(<App />)
     const linkElement = screen.getAllByTestId('checkbox')
@@ -111,11 +114,13 @@ describe('Result Listing', () => {
     fireEvent.click(linkElement[0])
     expect(linkElement[0]).toBeEnabled()
   })
+
   test('checks pagination rendering', () => {
     mockRender(<App />)
     const linkElement = screen.getByTestId('pagination')
     expect(linkElement).toBeInTheDocument()
   })
+
   test('checks keyboard arrow down icon rendering', () => {
     mockRender(<App />)
     const linkElement = screen.getByTestId('KeyboardArrowDownIcon')
@@ -135,29 +140,81 @@ describe('Result Listing', () => {
     )
     expect(linkElement).toBeInTheDocument()
   })
+
   test('checks tablesortlabel click event', () => {
     mockRender(<App />)
     const element = screen.getAllByTestId('tablesortlabel')
     fireEvent.click(element[0])
     expect(element[0]).toBeEnabled()
   })
+
   test('checks input change event', () => {
     mockRender(<App />)
     const element = screen.getByPlaceholderText('Search')
     fireEvent.change(element)
     expect(element).toBeEnabled()
   })
+
   test('checks closeIconButton click event', () => {
     mockRender(<App />)
     const element = screen.getByTestId('closeIconButton')
     fireEvent.click(element)
     expect(element).toBeEnabled()
   })
-  // test('checks menuitem click event', () => {
-  //   initialState.dashboard={...initialState.dashboard,completedDispatches: 3,runningDispatches:3}
-  //   mockRender(<App filterValue={"ALL"} anchorEl={true}/>)
-  //   const element = screen.queryAllByTestId("menuitem")
-  //   fireEvent.click(element[0]);
-  //   expect(element[0]).toBeInTheDocument();
-  // })
+
+  const dashboardListView = initialState.dashboard.dashboardList.map((e) => {
+    return {
+      dispatchId: e.dispatch_id,
+      endTime: e.ended_at,
+      latticeName: e.lattice_name,
+      resultsDir: e.results_dir,
+      status: e.status,
+      error: e.error,
+      runTime: e.runtime,
+      startTime: e.started_at,
+      totalElectrons: e.total_electrons,
+      totalElectronsCompleted: e.total_electrons_completed,
+    }
+  })
+
+  test('checks KeyboardArrowDownIcon click event', () => {
+    const anchorFunc = jest.fn()
+    const setSelectedFunc = jest.fn()
+    mockRender(
+      <ResultsTableHead
+        dashboardListView={dashboardListView}
+        setAnchorEl={anchorFunc}
+        anchorEl={10}
+        setSelected={setSelectedFunc}
+      />
+    )
+    const linkElement = screen.getByTestId('KeyboardArrowDownIcon')
+    fireEvent.click(linkElement)
+    expect(linkElement).toBeEnabled()
+    expect(anchorFunc).toHaveBeenCalled()
+  })
+
+  test('checks menuitem rendering and click event', () => {
+    const anchorFunc = jest.fn()
+    mockRender(
+      <ResultsTableHead
+        filterValue="ALL"
+        runningDispatches={10}
+        completedDispatches={15}
+        failedDispatches={5}
+        cancelledDispatches={2}
+        dashboardListView={dashboardListView}
+        setAnchorEl={anchorFunc}
+        anchorEl={10}
+        setSelected={jest.fn()}
+        setOpenDialogBoxAll={jest.fn()}
+        setDeleteFilter={jest.fn()}
+        setDeleteCount={jest.fn()}
+      />
+    )
+    const linkElement = screen.getAllByTestId('menuitem')
+    fireEvent.click(linkElement[0])
+    expect(linkElement[0]).toBeEnabled()
+    // expect(anchorFunc).toHaveBeenCalled()
+  })
 })

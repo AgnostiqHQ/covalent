@@ -117,7 +117,7 @@ const headers = [
   },
 ]
 
-const ResultsTableHead = ({
+export const ResultsTableHead = ({
   order,
   orderBy,
   onSort,

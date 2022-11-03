@@ -139,7 +139,7 @@ const NavDrawer = () => {
   )
 }
 
-const DialogToolbar = ({
+export const DialogToolbar = ({
   openDialogBox,
   setOpenDialogBox,
   onClickHand,
@@ -147,7 +147,7 @@ const DialogToolbar = ({
   handlePopClose,
 }) => {
   return (
-    <Toolbar disableGutters sx={{ mb: 1 }}>
+    <Toolbar data-testid="toolBar" disableGutters sx={{ mb: 1 }}>
       <Typography
         sx={{
           display: 'flex',
@@ -169,7 +169,7 @@ const DialogToolbar = ({
   )
 }
 
-const LinkButton = ({
+export const LinkButton = ({
   title,
   icon,
   path,
@@ -309,6 +309,7 @@ const LinkButton = ({
           enterNextDelay={750}
         >
           <ListItemButton
+            data-testid="SpecificListItemButton"
             disableRipple
             sx={{
               textAlign: 'left',
