@@ -353,6 +353,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: Queue = Non
 
     if result_object._status in [Result.FAILED, Result.CANCELLED]:
         app_log.debug(f"Workflow {result_object.dispatch_id} cancelled or failed")
+        update.persist(result_object)
         return result_object
 
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
