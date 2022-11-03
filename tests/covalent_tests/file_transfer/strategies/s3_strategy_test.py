@@ -114,7 +114,7 @@ def test_folder_download(mocker):
     boto3_client_mock = mocker.patch("boto3.client")
 
     from_folder = Folder("s3://mock-bucket/")
-    to_folder = Folder("/User/tmp/")
+    to_folder = Folder("/tmp/")
 
     bucket_name = furl(from_folder.uri).origin[5:]
 
@@ -127,7 +127,7 @@ def test_folder_download(mocker):
     callable_func = S3().download(from_folder, to_folder)
     callable_func()
     boto3_client_mock().download_file.assert_called_once_with(
-        bucket_name, "test.csv", "/User/tmp/test.csv"
+        bucket_name, "test.csv", "/tmp/test.csv"
     )
 
 
@@ -144,7 +144,7 @@ def test_folder_upload(mocker):
     mocker.patch("os.walk", return_value=[["", "", ["test.csv"]]])
 
     to_folder = Folder("s3://mock-bucket/")
-    from_folder = Folder("/User/tmp/")
+    from_folder = Folder("/tmp/")
 
     bucket_name = furl(to_folder.uri).origin[5:]
 
@@ -160,5 +160,5 @@ def test_folder_upload(mocker):
     callable_func = S3().upload(from_folder, to_folder)
     callable_func()
     boto3_client_mock().upload_file.assert_called_once_with(
-        "/User/tmp/mock_join", bucket_name, "mock_join"
+        "/tmp/mock_join", bucket_name, "mock_join"
     )
