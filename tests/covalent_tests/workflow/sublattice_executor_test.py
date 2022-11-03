@@ -18,16 +18,16 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Integration tests to check that sublattices inherit the parent lattice executor."""
+"""Unit tests to check that sublattices inherit the parent lattice executor."""
 
 import json
 
 import covalent as ct
-from covalent._workflow.lattice import Lattice as LatticeClass
 
 
 def test_sublattices_have_default_executor():
-    """start the covalent server with dask, and don't specify executor to main lattice. check if everything has dask."""
+    """start the covalent server with dask, and don't specify executor to main lattice.
+    This is to check if everything has dask, including sublattices."""
     import covalent as ct
 
     @ct.electron
@@ -62,7 +62,6 @@ def test_sublattices_have_default_executor():
     solution.build_graph(3, 2)
     data = solution.transport_graph.serialize_to_json()
     data = json.loads(data)
-    solution = LatticeClass.deserialize_from_json(solution.serialize_to_json())
 
     for i in data["nodes"]:
         if "sublattice" in i["name"]:
@@ -70,7 +69,8 @@ def test_sublattices_have_default_executor():
 
 
 def test_sublattices_have_lattice_executor():
-    """start the covalent server with dask, and change the executor to local. Now, even the sublattices executor should be local."""
+    """start the covalent server with dask, and change the executor to local.
+    This checks that sublattices executor should be local."""
     import covalent as ct
 
     @ct.electron
@@ -105,15 +105,15 @@ def test_sublattices_have_lattice_executor():
     solution.build_graph(3, 2)
     data = solution.transport_graph.serialize_to_json()
     data = json.loads(data)
-    solution = LatticeClass.deserialize_from_json(solution.serialize_to_json())
 
     for i in data["nodes"]:
         if "sublattice" in i["name"]:
-            assert i["metadata"]["executor"] == solution.metadata["executor"]
+            assert i["metadata"]["executor"] == "local"
 
 
 def test_sublattices_precede_lattice_executor():
-    """Start covalent server with dask, Change a sublattice executor and now it shouldn't take the lattice executor."""
+    """Start covalent server with dask, Change a sublattice executor.
+    Now it shouldn't take the lattice executor."""
     import covalent as ct
 
     @ct.electron
@@ -148,10 +148,9 @@ def test_sublattices_precede_lattice_executor():
     solution.build_graph(3, 2)
     data = solution.transport_graph.serialize_to_json()
     data = json.loads(data)
-    solution = LatticeClass.deserialize_from_json(solution.serialize_to_json())
 
     for i in data["nodes"]:
         if ("div" in i["name"]) and ("sublattice" in i["name"]):
             assert i["metadata"]["executor"] == "dask"
         elif "sublattice" in i["name"]:
-            assert i["metadata"]["executor"] == solution.metadata["executor"]
+            assert i["metadata"]["executor"] == "local"
