@@ -20,7 +20,7 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 import React from 'react'
-import { render, screen } from '../../../testHelpers/testUtils'
+import { fireEvent, render, screen, act } from '../../../testHelpers/testUtils'
 import App from '../LogsListing.js'
 import { BrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
@@ -30,6 +30,7 @@ import theme from '../../../utils/theme'
 import ThemeProvider from '@mui/system/ThemeProvider'
 import configureMockStore from 'redux-mock-store'
 import thunk from 'redux-thunk'
+import userEvent from '@testing-library/user-event'
 
 const mockStore = configureMockStore([thunk])
 
@@ -37,6 +38,7 @@ function mockRenderSlice(renderedComponent) {
   const store = mockStore({
     logs: {
       fetchLogList: { isFetching: true },
+      logFile: '',
       totalLogs: 1,
       logList: [
         {
@@ -44,6 +46,16 @@ function mockRenderSlice(renderedComponent) {
           status: 'INFO',
           message:
             '/bin/sh: 1: python: not found\n\n/bin/sh: 1: python: not found\n\n/bin/sh: 1: python: not found\n\n/bin/sh: 1: python: not found',
+        },
+        {
+          log_date: '2022-11-02 12:49:46.321000+05:30',
+          status: 'INFO',
+          message: '127.0.0.1:41948 - "GET /openapi.json HTTP/1.1" 200',
+        },
+        {
+          log_date: '2022-11-02 12:49:45.960000+05:30',
+          status: 'ERROR',
+          message: 'connection closed',
         },
       ],
     },
@@ -76,6 +88,43 @@ describe('Logs table', () => {
     mockRenderSlice(<App />)
     const linkElement = screen.getByTestId('logsTable')
     expect(linkElement).toBeInTheDocument()
+  })
+
+  test('copy mesage on click', () => {
+    mockRenderSlice(<App />)
+    const linkElement = screen.getAllByTestId('copyMessage')
+    expect(linkElement).toHaveLength(3)
+    fireEvent.click(linkElement[0])
+    const resultText = screen.getAllByText('Copied')
+    expect(resultText).toHaveLength(3)
+  })
+
+  test('search works', () => {
+    mockRenderSlice(<App />)
+    const linkElement = screen.getAllByTestId('copyMessage')
+    expect(linkElement).toHaveLength(3)
+    fireEvent.click(linkElement[0])
+    const resultText = screen.getAllByText('Copied')
+    expect(resultText).toHaveLength(3)
+  })
+
+  test('sort header', () => {
+    mockRenderSlice(<App />)
+    const linkElement = screen.getAllByTestId('tableHeader')
+    expect(linkElement).toHaveLength(2)
+    fireEvent.click(linkElement[0])
+  })
+
+  test('download logs button works', async () => {
+    mockRenderSlice(<App />)
+    const linkElement = await screen.findAllByTestId('downloadButton')
+    expect(linkElement).toHaveLength(2)
+    act(() => fireEvent.click(linkElement[0]))
+
+    const linkElement2 = await screen.findByText(
+      'Something went wrong and could not download the file!'
+    )
+    expect(linkElement2).toBeInTheDocument()
   })
 
   test('renders search  section', () => {
@@ -122,5 +171,14 @@ describe('Logs table', () => {
     mockRender(<App />)
     const linkElement = screen.queryByTestId('downloadButton')
     expect(linkElement).not.toBeInTheDocument()
+  })
+
+  test('change search value', () => {
+    mockRender(<App />)
+    const linkElement = screen.getByPlaceholderText('Search in logs')
+    expect(linkElement).toBeInTheDocument()
+    expect(linkElement).toHaveValue('')
+    userEvent.type(linkElement, 'test@mail.com')
+    expect(linkElement).toHaveValue('test@mail.com')
   })
 })

@@ -29,11 +29,13 @@ import configureMockStore from 'redux-mock-store'
 import thunk from 'redux-thunk'
 import theme from '../../../utils/theme'
 import ThemeProvider from '@mui/system/ThemeProvider'
+import userEvent from '@testing-library/user-event'
 
 const mockStore = configureMockStore([thunk])
 
 function mockRender(renderedComponent) {
   const store = mockStore({
+    updateSuccess: {},
     dataRes: { popupData: 'covalent' },
     settingsResults: {
       settingsList: {
@@ -153,6 +155,56 @@ describe('Settings card', () => {
       const linkElement = screen.getAllByText(executorMenus[i].name)
       expect(linkElement).toHaveLength(executorMenus[i].length)
     }
+  })
 
+  test('save button is clicked', async () => {
+    mockRender(<App />)
+    const linkElement = await screen.findByTestId('submitButton')
+
+    expect(linkElement).toBeInTheDocument()
+    fireEvent.click(linkElement)
+    const linkElement2 = await screen.findByText(
+      'Something went wrong and settings could not be updated.'
+    )
+    expect(linkElement2).toBeInTheDocument()
+  })
+
+  test('can close the snackbar', async () => {
+    mockRender(<App />)
+    const linkElement = await screen.findByTestId('submitButton')
+
+    expect(linkElement).toBeInTheDocument()
+    fireEvent.click(linkElement)
+    const linkElement2 = await screen.findByText(
+      'Something went wrong and settings could not be updated.'
+    )
+    expect(linkElement2).toBeInTheDocument()
+    const linkElement3 = await screen.findByTestId('snackbarClose')
+    fireEvent.click(linkElement3)
+  })
+
+  test('cancel button is clicked', async () => {
+    mockRender(<App />)
+    const linkElement = await screen.findByTestId('cancelButton')
+
+    expect(linkElement).toBeInTheDocument()
+    fireEvent.click(linkElement)
+    const linkElement2 = await screen.findByText('Settings')
+    expect(linkElement2).toBeInTheDocument()
+  })
+
+  test('change logdir value', async () => {
+    mockRender(<App />)
+    const linkElement = await screen.findAllByPlaceholderText(
+      'Please enter a value'
+    )
+    expect(linkElement[1]).toHaveValue('/home/kamaleshsuresh/.cache/covalent')
+    userEvent.type(linkElement[1], 'test@mail.com')
+    expect(linkElement[1]).toHaveValue(
+      '/home/kamaleshsuresh/.cache/covalenttest@mail.com'
+    )
+    const linkElement2 = await screen.findByTestId('submitButton')
+    expect(linkElement2).toBeInTheDocument()
+    fireEvent.click(linkElement2)
   })
 })

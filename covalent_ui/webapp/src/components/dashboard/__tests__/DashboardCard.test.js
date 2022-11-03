@@ -20,7 +20,7 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { screen, render } from '@testing-library/react'
+import { screen, render, fireEvent } from '@testing-library/react'
 import App from '../DashboardCard'
 import { BrowserRouter } from 'react-router-dom'
 import React from 'react'
@@ -42,6 +42,31 @@ function mockRender(renderedComponent) {
     </Provider>
   )
 }
+
+const initialState = {
+  dashboard: {
+    totalDispatches: 0,
+    runningDispatches: 0,
+    completedDispatches: 0,
+    failedDispatches: 0,
+    dashboardOverview: {},
+    fetchDashboardOverview: { isFetching: false, error: 'hi man' },
+  },
+}
+
+function mockRenderSlice(renderedComponent) {
+  const store = configureStore({
+    reducer: reducers,
+    preloadedState: initialState,
+  })
+  return render(
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <BrowserRouter>{renderedComponent}</BrowserRouter>
+      </ThemeProvider>
+    </Provider>
+  )
+}
 const dashboardCardCases = [
   'Dispatch list',
   'Total jobs running',
@@ -52,9 +77,24 @@ const dashboardCardCases = [
 
 describe('dashboard card', () => {
   test('renders dashboard', () => {
-    mockRender(<App />)
+    mockRenderSlice(<App />)
     const linkElement = screen.getByTestId('dashboardCard')
     expect(linkElement).toBeInTheDocument()
+  })
+
+  test('renders error message snackbar', () => {
+    mockRenderSlice(<App />)
+    const linkElement = screen.getByText(
+      'Something went wrong,please contact the administrator!'
+    )
+    expect(linkElement).toBeInTheDocument()
+  })
+
+  test('can close snackbar', async () => {
+    mockRenderSlice(<App />)
+    const linkElement = await screen.findByTestId('closeIcon')
+    expect(linkElement).toBeInTheDocument()
+    fireEvent.click(linkElement)
   })
 
   test.each(dashboardCardCases)('render %p section', (firstArg) => {

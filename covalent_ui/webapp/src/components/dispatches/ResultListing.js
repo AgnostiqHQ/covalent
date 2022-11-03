@@ -242,12 +242,13 @@ const ResultsTableHead = ({
             </MenuItem>
             <MenuItem divider onClick={onSelectAllClick} onClose={handleClose}>
               {/* {numSelected > 0 && numSelected === total
-                 ? 'Unselect all'
-                 : 'Select all records'} */}
+                  ? 'Unselect all'
+                  : 'Select all records'} */}
               All visible{' '}
             </MenuItem>
             {filterValue === 'ALL' ? (
               <MenuItem
+                data-testid="menuitem"
                 divider
                 onClick={() => {
                   handleAllDelete('ALL', allDispatches)
@@ -260,6 +261,7 @@ const ResultsTableHead = ({
             {(filterValue === 'COMPLETED' || filterValue === 'ALL') &&
             completedDispatches !== 0 ? (
               <MenuItem
+                data-testid="menuitem"
                 divider
                 onClick={() => {
                   handleAllDelete('COMPLETED', completedDispatches)
@@ -273,6 +275,7 @@ const ResultsTableHead = ({
             {(filterValue === 'RUNNING' || filterValue === 'ALL') &&
             runningDispatches !== 0 ? (
               <MenuItem
+                data-testid="menuitem"
                 divider
                 onClick={() => {
                   handleAllDelete('RUNNING', runningDispatches)
@@ -285,6 +288,7 @@ const ResultsTableHead = ({
             {(filterValue === 'FAILED' || filterValue === 'ALL') &&
             failedDispatches !== 0 ? (
               <MenuItem
+                data-testid="menuitem"
                 divider
                 onClick={() => {
                   handleAllDelete('FAILED', failedDispatches)
@@ -295,16 +299,16 @@ const ResultsTableHead = ({
               </MenuItem>
             ) : null}
             {/* {(filterValue === 'CANCELLED' || filterValue === 'ALL') &&
-             cancelledDispatches !== 0 ? (
-               <MenuItem
-                 onClick={() => {
-                   handleAllDelete('CANCELLED', cancelledDispatches)
-                 }}
-                 onClose={handleClose}
-               >
-                 Cancelled
-               </MenuItem>
-             ) : null} */}
+              cancelledDispatches !== 0 ? (
+                <MenuItem
+                  onClick={() => {
+                    handleAllDelete('CANCELLED', cancelledDispatches)
+                  }}
+                  onClose={handleClose}
+                >
+                  Cancelled
+                </MenuItem>
+              ) : null} */}
           </Menu>
           <DialogBox
             openDialogBox={openDialogBoxAll}
@@ -331,6 +335,7 @@ const ResultsTableHead = ({
             >
               {header.sortable ? (
                 <TableSortLabel
+                  data-testid="tablesortlabel"
                   active={orderBy === header.id}
                   direction={orderBy === header.id ? order : 'asc'}
                   onClick={() => onSort(header.id)}
@@ -452,14 +457,14 @@ const ResultsTableToolbar = ({
           setOffset={setOffset}
         />
         {/* <SortDispatch
-           title="Cancelled"
-           count={cancelledDispatches}
-           isFetching={!dashboardOverviewFetching}
-           setFilterValue={setFilterValue}
-           isSelected={filterValue === 'CANCELLED' ? true : false}
-           setSelected={setSelected}
-           setOffset={setOffset}
-         /> */}
+            title="Cancelled"
+            count={cancelledDispatches}
+            isFetching={!dashboardOverviewFetching}
+            setFilterValue={setFilterValue}
+            isSelected={filterValue === 'CANCELLED' ? true : false}
+            setSelected={setSelected}
+            setOffset={setOffset}
+          /> */}
       </Grid>
       <Input
         sx={{
@@ -485,7 +490,11 @@ const ResultsTableToolbar = ({
             position="end"
             sx={{ visibility: !!query ? 'visible' : 'hidden' }}
           >
-            <IconButton size="small" onClick={() => setQuery('')}>
+            <IconButton
+              data-testid="closeIconButton"
+              size="small"
+              onClick={() => setQuery('')}
+            >
               <ClearIcon fontSize="inherit" sx={{ color: 'text.secondary' }} />
             </IconButton>
           </InputAdornment>

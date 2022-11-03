@@ -259,6 +259,7 @@ const LinkButton = ({
         />
       )}
       <Snackbar
+        data-testid="snackbar"
         open={openSnackbar}
         autoHideDuration={3000}
         message={snackbarMessage}
@@ -277,6 +278,7 @@ const LinkButton = ({
       />
       {title === 'Logo' ? (
         <ListItemButton
+          data-testid="LogoListItemButton"
           sx={{
             position: 'fixed',
             top: 5,

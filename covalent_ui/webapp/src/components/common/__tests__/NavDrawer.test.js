@@ -20,7 +20,7 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { render, screen } from '@testing-library/react'
+import { render, screen , fireEvent } from '@testing-library/react'
 import App from '../NavDrawer'
 import { Provider } from 'react-redux'
 import { BrowserRouter } from 'react-router-dom'
@@ -28,7 +28,7 @@ import { ReactFlowProvider } from 'react-flow-renderer'
 import { HelmetProvider } from 'react-helmet-async'
 import { configureStore } from '@reduxjs/toolkit'
 import reducers from '../../../redux/reducers'
-
+import React from "react"
 
 const MockApp = () => {
   const store = configureStore({
@@ -61,5 +61,18 @@ describe('navDrawers', () => {
     render(<MockApp />)
     const element = screen.getByLabelText(firstArg)
     expect(element).toBeInTheDocument()
+  })
+  test('render button actions', () => {
+    render(<MockApp />)
+    const element = screen.getByTestId("LogoListItemButton")
+    expect(element).toBeInTheDocument()
+    fireEvent.mouseOver(element);
+    const textHover= screen.getByTestId("covalentLogoHover");
+    expect(textHover).toBeInTheDocument();
+    fireEvent.mouseOut(element);
+    const textHoverOut= screen.getByTestId("covalentLogo");
+    expect(textHoverOut).toBeInTheDocument();
+    fireEvent.click(element);
+    expect(screen.getByTestId('LogoListItemButton')).toBeEnabled();
   })
 })

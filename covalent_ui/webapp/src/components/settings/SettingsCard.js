@@ -364,6 +364,7 @@ const SettingsCard = () => {
         onClose={() => setOpenSnackbar(false)}
         action={
           <SvgIcon
+            data-testid="snackbarClose"
             sx={{
               mt: 2,
               zIndex: 2,
@@ -986,6 +987,7 @@ const SettingsCard = () => {
                         sx={{ float: 'right' }}
                       >
                         <Button
+                          data-testid="cancelButton"
                           variant="outlined"
                           onClick={() => cancelButton()}
                           sx={{
@@ -1002,7 +1004,7 @@ const SettingsCard = () => {
                           Cancel
                         </Button>
                         <Button
-                          var
+                          data-testid="submitButton"
                           type="submit"
                           sx={{
                             background: '#5552FF',

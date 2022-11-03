@@ -89,6 +89,7 @@ const ResultsTableHead = ({ order, orderBy, onSort }) => {
             >
               {header.sortable ? (
                 <TableSortLabel
+                  data-testid="tablesortlabel"
                   active={orderBy === header.id}
                   direction={orderBy === header.id ? order : 'asc'}
                   onClick={() => onSort(header.id)}
@@ -251,6 +252,7 @@ const SublatticesListing = () => {
                       >
                         <TableRow
                           hover
+                          data-testid="tableRowSublattice"
                           key={result.dispatchId}
                           onClick={() => sublatticesDispatch(result)}
                           sx={{

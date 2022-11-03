@@ -86,6 +86,7 @@ const DashboardCard = () => {
           onClose={() => setOpenSnackbar(false)}
           action={
             <SvgIcon
+              data-testid='closeIcon'
               sx={{
                 mt: 2,
                 zIndex: 2,

@@ -146,6 +146,7 @@ const ResultsTableHead = ({
             >
               {header.sortable ? (
                 <TableSortLabel
+                  data-testid="tableHeader"
                   active={orderBy === header.id}
                   direction={orderBy === header.id ? order : 'asc'}
                   onClick={() => onSort(header.id)}
@@ -367,6 +368,7 @@ const LogsListing = () => {
     setSortOrder(isAsc ? 'desc' : 'asc')
     setSortColumn(column)
   }
+
   return (
     <>
       <Box data-testid="logsTable">
@@ -393,6 +395,7 @@ const LogsListing = () => {
           onSearch={onSearch}
           setQuery={setSearchKey}
         />
+
         {logListView && (
           <Grid>
             <TableContainer
@@ -428,6 +431,7 @@ const LogsListing = () => {
                     logListView.map((result, index) => (
                       <>
                         <TableRow
+                          data-testid="copyMessage"
                           data-tip
                           data-for="logRow"
                           onClick={() => {

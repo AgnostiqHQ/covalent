@@ -20,7 +20,7 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 import React from 'react'
-import { render, screen } from '../../../testHelpers/testUtils'
+import { render, screen, fireEvent } from '../../../testHelpers/testUtils'
 import App from '../ResultListing'
 import { BrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
@@ -29,44 +29,44 @@ import { configureStore } from '@reduxjs/toolkit'
 import theme from '../../../utils/theme'
 import ThemeProvider from '@mui/system/ThemeProvider'
 
+const initialState = {
+  dashboard: {
+    dashboardList: [
+      {
+        dispatch_id: '8d282f51-6ce5-4629-8d77-c72c9944bbbc',
+        lattice_name: 'simple_workflow',
+        runtime: 0,
+        total_electrons: 4,
+        total_electrons_completed: 4,
+        started_at: '2022-10-31T14:34:46',
+        ended_at: '2022-10-31T14:34:46',
+        status: 'COMPLETED',
+        updated_at: '2022-10-31T14:34:46',
+      },
+      {
+        dispatch_id: 'ea0dec63-5c11-4634-a71e-46a1aa6259f2',
+        lattice_name: 'simple_workflow',
+        runtime: 0,
+        total_electrons: 4,
+        total_electrons_completed: 2,
+        started_at: '2022-10-27T15:52:08',
+        ended_at: '2022-10-27T15:52:08',
+        status: 'FAILED',
+        updated_at: '2022-10-27T15:52:08',
+      },
+    ],
+    totalDispatches: 0,
+    runningDispatches: 0,
+    completedDispatches: 0,
+    failedDispatches: 0,
+    dashboardOverview: {},
+    fetchDashboardList: { isFetching: false, error: null },
+    fetchDashboardOverview: { isFetching: false, error: null },
+    deleteResults: { isFetching: false, error: null },
+    dispatchesDeleted: false,
+  },
+}
 function mockRender(renderedComponent) {
-  const initialState = {
-    dashboard: {
-      dashboardList: [
-        {
-          dispatch_id: '8d282f51-6ce5-4629-8d77-c72c9944bbbc',
-          lattice_name: 'simple_workflow',
-          runtime: 0,
-          total_electrons: 4,
-          total_electrons_completed: 4,
-          started_at: '2022-10-31T14:34:46',
-          ended_at: '2022-10-31T14:34:46',
-          status: 'COMPLETED',
-          updated_at: '2022-10-31T14:34:46',
-        },
-        {
-          dispatch_id: 'ea0dec63-5c11-4634-a71e-46a1aa6259f2',
-          lattice_name: 'simple_workflow',
-          runtime: 0,
-          total_electrons: 4,
-          total_electrons_completed: 2,
-          started_at: '2022-10-27T15:52:08',
-          ended_at: '2022-10-27T15:52:08',
-          status: 'FAILED',
-          updated_at: '2022-10-27T15:52:08',
-        },
-      ],
-      totalDispatches: 0,
-      runningDispatches: 0,
-      completedDispatches: 0,
-      failedDispatches: 0,
-      dashboardOverview: {},
-      fetchDashboardList: { isFetching: false, error: null },
-      fetchDashboardOverview: { isFetching: false, error: null },
-      deleteResults: { isFetching: false, error: null },
-      dispatchesDeleted: false,
-    },
-  }
   const store = configureStore({
     reducer: reducers,
     preloadedState: initialState,
@@ -108,6 +108,8 @@ describe('Result Listing', () => {
     mockRender(<App />)
     const linkElement = screen.getAllByTestId('checkbox')
     expect(linkElement).toHaveLength(2)
+    fireEvent.click(linkElement[0])
+    expect(linkElement[0]).toBeEnabled()
   })
   test('checks pagination rendering', () => {
     mockRender(<App />)
@@ -119,4 +121,43 @@ describe('Result Listing', () => {
     const linkElement = screen.getByTestId('KeyboardArrowDownIcon')
     expect(linkElement).toBeInTheDocument()
   })
+  test('checks pagination rendering with more than 10 records', () => {
+    initialState.dashboard = { ...initialState.dashboard, totalDispatches: 20 }
+    mockRender(<App />)
+    const linkElement = screen.getByTestId('pagination')
+    expect(linkElement).toBeInTheDocument()
+  })
+  const filterData = ['ALL', 'RUNNING', 'COMPLETED', 'FAILED']
+  test.each(filterData)('checks rendering for filter values', (arg) => {
+    mockRender(<App filterValue={arg} />)
+    const linkElement = screen.getByText(
+      arg.charAt(0).toUpperCase() + arg.slice(1).toLowerCase()
+    )
+    expect(linkElement).toBeInTheDocument()
+  })
+  test('checks tablesortlabel click event', () => {
+    mockRender(<App />)
+    const element = screen.getAllByTestId('tablesortlabel')
+    fireEvent.click(element[0])
+    expect(element[0]).toBeEnabled()
+  })
+  test('checks input change event', () => {
+    mockRender(<App />)
+    const element = screen.getByPlaceholderText('Search')
+    fireEvent.change(element)
+    expect(element).toBeEnabled()
+  })
+  test('checks closeIconButton click event', () => {
+    mockRender(<App />)
+    const element = screen.getByTestId('closeIconButton')
+    fireEvent.click(element)
+    expect(element).toBeEnabled()
+  })
+  // test('checks menuitem click event', () => {
+  //   initialState.dashboard={...initialState.dashboard,completedDispatches: 3,runningDispatches:3}
+  //   mockRender(<App filterValue={"ALL"} anchorEl={true}/>)
+  //   const element = screen.queryAllByTestId("menuitem")
+  //   fireEvent.click(element[0]);
+  //   expect(element[0]).toBeInTheDocument();
+  // })
 })
