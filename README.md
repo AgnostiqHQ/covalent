@@ -14,7 +14,7 @@
 </div>
 
 <p align="center">
-<img src="./doc/source/_static/executor_gif_full_list_tall.gif" width="70%" alt="Covalent Executors" style="border-radius:10%"></img> 
+<img src="./doc/source/_static/executor_gif_full_list_tall.gif" width="70%" alt="Covalent Executors" style="border-radius:10%"></img>
 </p>
 
 ## 🤔  What is Covalent?
