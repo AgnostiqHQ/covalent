@@ -92,7 +92,6 @@ class LocalDispatcher(BaseDispatcher):
                 app_log.error(
                     'Covalent server is not running. Start the server using "covalent start" and try dispatching workflows.'
                 )
-                return 'Covalent server is not running. Start the server using "covalent start" and try dispatching workflows.'
 
         return wrapper
 

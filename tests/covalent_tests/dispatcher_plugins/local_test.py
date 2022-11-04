@@ -23,7 +23,7 @@
 import covalent as ct
 
 
-def test_dispatch_workflow_on_stop():
+def test_dispatch_workflow_on_server_stop():
     @ct.electron
     def join_words(a, b):
         return ", ".join([a, b])
@@ -40,8 +40,7 @@ def test_dispatch_workflow_on_stop():
 
     # Dispatch the workflow
     dispatch_id = ct.dispatch(simple_workflow)("Hello", "World")
-    assert (
-        dispatch_id
-        == 'Covalent server is not running. Start the server using "covalent start" and try dispatching workflows.'
-        or dispatch_id
-    )
+    if dispatch_id is None:
+        assert True
+    else:
+        assert False
