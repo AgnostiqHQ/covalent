@@ -714,7 +714,6 @@ const ResultListing = () => {
   }, [offset])
 
   const handlePageChanges = (event, pageValue) => {
-    console.log('hello')
     setPage(pageValue)
     setSelected([])
     const offsetValue = pageValue === 1 ? 0 : pageValue * 10 - 10

@@ -26,7 +26,7 @@ import {
   settingsSlice,
 } from '../settingsSlice'
 
-describe('results slice', () => {
+describe('settings slice', () => {
   it('settingsResults is pending', () => {
     const action = settingsResults.pending(
       // <-- THIS
