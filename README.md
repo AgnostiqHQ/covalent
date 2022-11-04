@@ -15,7 +15,7 @@
 
 <img src="https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/executor_gif_full_list_tall.gif" align="right" width="40%" alt="Covalent Executors"></img>
 
-## What is Covalent?
+## 🤔  What is Covalent?
 
 Covalent is a Pythonic workflow tool for computational scientists, AI/ML software engineers, and anyone who needs to run experiments on limited or expensive computing resources including quantum computers, HPC clusters, GPU arrays, and cloud services.
 
