@@ -33,7 +33,6 @@ import ThemeProvider from '@mui/system/ThemeProvider'
 import { HelmetProvider } from 'react-helmet-async'
 import { ReactFlowProvider } from 'react-flow-renderer'
 
-
 function reduxRender(renderedComponent) {
   const store = configureStore({
     reducer: reducers,
@@ -58,7 +57,7 @@ describe('layout options', () => {
     'Force',
     'Rectangular',
     'Box',
-    'Old Layout'
+    'Old Layout',
   ]
   test('render layout options', () => {
     reduxRender(<LayoutOptions />)
@@ -67,13 +66,9 @@ describe('layout options', () => {
   })
 
   test.each(options)('render %p sort section', (firstArg) => {
-    const handleChangeAlgorithm = jest.fn()
-    reduxRender(
-      <LayoutOptions open={open} />
-    )
+    reduxRender(<LayoutOptions open />)
     const elementLink = screen.getByTestId('lay__tit')
     fireEvent.click(elementLink)
     expect(screen.getByText(firstArg)).toBeDefined()
   })
-
 })

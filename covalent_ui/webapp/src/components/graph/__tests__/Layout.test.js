@@ -20,7 +20,7 @@
 //  * Relief from the License may be granted by purchasing a commercial license.
 //  */
 
-import { render, screen } from '@testing-library/react'
+import { render } from '@testing-library/react'
 // import {screen} from '@testing-library/dom'
 import App from '../Layout'
 import { BrowserRouter } from 'react-router-dom'

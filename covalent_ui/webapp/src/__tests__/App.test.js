@@ -21,15 +21,15 @@
  */
 
 import { screen, render } from '@testing-library/react'
-import App from './App'
+import App from '../App'
 import { BrowserRouter } from 'react-router-dom'
 import React from 'react'
 import { Provider } from 'react-redux'
-import reducers from './redux/reducers'
+import reducers from '../redux/reducers'
 import { configureStore } from '@reduxjs/toolkit'
-import theme from './utils/theme'
+import theme from '../utils/theme'
 import ThemeProvider from '@mui/system/ThemeProvider'
-import DispatchLayout from './components/dispatch/DispatchLayout'
+import DispatchLayout from '../components/dispatch/DispatchLayout'
 
 function reduxRender(renderedComponent) {
   const store = configureStore({

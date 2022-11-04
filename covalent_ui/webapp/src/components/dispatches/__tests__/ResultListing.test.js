@@ -23,6 +23,7 @@ import React from 'react'
 import { render, screen, fireEvent } from '../../../testHelpers/testUtils'
 import App from '../ResultListing'
 import { ResultsTableHead } from '../ResultListing'
+import { ResultsTableToolbar } from '../ResultListing'
 import { BrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
 import reducers from '../../../redux/reducers'
@@ -134,7 +135,7 @@ describe('Result Listing', () => {
   })
   const filterData = ['ALL', 'RUNNING', 'COMPLETED', 'FAILED']
   test.each(filterData)('checks rendering for filter values', (arg) => {
-    mockRender(<App filterValue={arg} />)
+    mockRender(<ResultsTableToolbar filterValue={arg} />)
     const linkElement = screen.getByText(
       arg.charAt(0).toUpperCase() + arg.slice(1).toLowerCase()
     )
@@ -194,11 +195,11 @@ describe('Result Listing', () => {
     expect(anchorFunc).toHaveBeenCalled()
   })
 
-  test('checks menuitem rendering and click event', () => {
+  test.each(filterData)('checks menuitem rendering and click event', (arg) => {
     const anchorFunc = jest.fn()
     mockRender(
       <ResultsTableHead
-        filterValue="ALL"
+        filterValue={arg}
         runningDispatches={10}
         completedDispatches={15}
         failedDispatches={5}
@@ -216,5 +217,22 @@ describe('Result Listing', () => {
     fireEvent.click(linkElement[0])
     expect(linkElement[0]).toBeEnabled()
     // expect(anchorFunc).toHaveBeenCalled()
+  })
+  test('icon button click event', () => {
+    const searchfn = jest.fn()
+    mockRender(
+      <ResultsTableToolbar
+        numSelected={5}
+        setOpenDialogBox={jest.fn()}
+        onSearch={searchfn()}
+      />
+    )
+    const buttonElement = screen.getByTestId('iconButtonDelete')
+    fireEvent.click(buttonElement)
+    expect(buttonElement).toBeEnabled()
+    const inputElement = screen.getByTestId('input')
+    fireEvent.change(inputElement)
+    expect(inputElement).toBeEnabled()
+    expect(searchfn).toHaveBeenCalled()
   })
 })

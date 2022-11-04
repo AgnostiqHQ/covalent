@@ -353,7 +353,7 @@ export const ResultsTableHead = ({
   )
 }
 
-const ResultsTableToolbar = ({
+export const ResultsTableToolbar = ({
   query,
   onSearch,
   setQuery,
@@ -394,6 +394,7 @@ const ResultsTableToolbar = ({
             }}
           >
             <IconButton
+              data-testid="iconButtonDelete"
               onClick={() => setOpenDialogBox(true)}
               mt={2}
               sx={{
@@ -467,6 +468,7 @@ const ResultsTableToolbar = ({
           /> */}
       </Grid>
       <Input
+        data-testid="input"
         sx={{
           ml: 'auto',
           px: 1,
@@ -712,6 +714,7 @@ const ResultListing = () => {
   }, [offset])
 
   const handlePageChanges = (event, pageValue) => {
+    console.log('hello')
     setPage(pageValue)
     setSelected([])
     const offsetValue = pageValue === 1 ? 0 : pageValue * 10 - 10
