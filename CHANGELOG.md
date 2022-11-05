@@ -7,23 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-## [0.208.0-rc.0] - 2022-11-05
-
-### Authors
-
-- Faiyaz Hasan <faiyaz@agnostiq.ai>
-- Casey Jao <casey@agnostiq.ai>
-- Alejandro Esquivel <ae@alejandro.ltd>
-
-
-### Operations
-
-- Reverted nightly schedule back to daily at 4:00am
-- Added Alejandro to PAUL_BLART group to allow trigerring of releases
-
 ### Added
 
-- Support for transferring the contents of folders to and from S3 buckets using the file transfer module.
 - Added `TaskRuntimeError` exception for executor plugin implementations to signal to Covalent that a task raised an
   unhandled exception while running in the executor backend.
 
@@ -40,6 +25,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Electron errors now appear in the Electron ErrorCard when one clicks on a failed task in the UI.
 - When an electron raises an exception during execution, the local and dask executors now try to recover any output that was already
   written.
+
+## [0.208.0-rc.0] - 2022-11-05
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+### Operations
+
+- Reverted nightly schedule back to daily at 4:00am
+- Added Alejandro to PAUL_BLART group to allow trigerring of releases
+
+### Added
+
+- Support for transferring the contents of folders to and from S3 buckets using the file transfer module.
 
 ### Fixed
 
