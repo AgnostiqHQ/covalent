@@ -13,178 +13,64 @@
 
 </div>
 
-## 🤔 What is Covalent?
+<p align="center">
+<img src="./doc/source/_static/executor_gif_full_list_tall.gif" width="70%" alt="Covalent Executors" style="border-radius:10%"></img>
+</p>
 
-Covalent is a Pythonic workflow tool used to execute HPC and quantum tasks in heterogenous environments. Computational scientists and engineers use Covalent to...
+## 🤔  What is Covalent?
 
-- rapidly iterate prototypes and exploratory research models
-- automate, manage, and share reproducible experiments
-- visualize data and task dependencies in an interactive user interface
-- run code in heterogenous compute environments, including in hybrid-cloud and hybrid-quantum configurations
-- understand where time and money is spent across a project
+Covalent is a Pythonic workflow tool for computational scientists, AI/ML software engineers, and anyone who needs to run experiments on limited or expensive computing resources including quantum computers, HPC clusters, GPU arrays, and cloud services.
 
-Covalent may be deployed locally or on a remote server. Covalent is rapidly expanding to include support for a variety of cloud interfaces, including HPC infrastructure tools developed by major cloud providers and emerging quantum APIs. It has never been easier to deploy your code on the world's most advanced computing hardware with Covalent.
+Covalent enables a researcher to run computation tasks on an advanced hardware platform – such as a quantum computer or serverless HPC cluster – using a single line of code.
 
-Read more in the official [documentation](https://covalent.readthedocs.io/en/latest/).
+## 💭 Why Covalent?
 
-## ✨ Features
+Covalent overcomes computational and operational challenges inherent in AI/ML experimentation.
 
-- **Purely Pythonic**: No need to learn any new syntax or mess around with YAML. Construct your complex workflow programmatically with native Python functions. By just adding one-line decorators to your functions, you can supercharge your experiments.
-- **Native parallelization**: Covalent natively parallelizes mutually independent parts of your workflow.
-- **Monitor with UI**: Covalent provides an intuitive and aesthetically beautiful browser-based user interface to monitor and manage your workflows.
-- **Abstracted dataflow**: No need to worry about the details of the underlying data structures. Covalent takes care of data dependencies in the background while you concentrate on understanding the big picture.
-- **Result management**: Covalent manages the results of your workflows. Whenever you need to modify parts of your workflow, from inputs to components, Covalent stores and saves the run of every experiment in a reproducible format.
-- **Little-to-no overhead**: Covalent is designed to be as lightweight as possible and is optimized for the most common use cases. Covalent's overhead is less than 0.1% of the total runtime for typical high compute applications and often has a constant overhead of ~ 10-100μs -- and this is constantly being optimized.
-- **Interactive**: Unlike other workflow tools, Covalent is interactive. You can view, modify, and re-submit workflows directly within a Jupyter notebook.
+| **Computational challenges**  | **Operational challenges**    |
+|:------------------------------|:------------------------------|
+| <ul><li>Advanced compute hardware is expensive, and access is often limited – shared with other researchers, for example.</li><li>You'd like to iterate quickly, but running large models takes time.</li><li>Parallel computation speeds execution, but requires careful attention to data relationships.</li></ul>|<ul><li>Proliferation of models, datasets, and hardware trials.</li><li> Switching between development tools, including notebooks, scripts, and submission queues.</li><li>Tracking, repeating, and sharing results.</li></ul>|
 
-<div align="center">
+With Covalent, you:
+- Assign functions to appropriate resources: Use advanced hardware (quantum computers, HPC clusters) for the heavy lifting and commodity hardware for bookkeeping.
+- Test functions on local servers before shipping them to advanced hardware.
+- Let Covalent's services analyze functions for data independence and automatically parallelize them.
+- Run experiments from a Jupyter notebook (or whatever your preferred interactive Python environment is).
+- Track workflows and examine results in a browser-based GUI.
 
-![covalent user interface](https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/workflow_demo_image.png)
+## How Does It Work?
 
-</div>
+Covalent has three main components:
+- A Python module containing an API that you use to build manageable workflows out of new or existing Python functions.
+- A set of services that run locally or on a server to dispatch and execute workflow tasks.
+- A browser-based UI from which to to manage workflows and view results.
 
-For a more in-depth description of Covalent's features and how they work, refer to the [Concepts](https://covalent.readthedocs.io/en/latest/concepts/concepts.html) page in the documentation.
+You compose workflows using the Covalent API and submit them to the Covalent server. The server analyzes the workflow to determine dependencies between tasks, then dispatches each task to its specified execution backend. Independent tasks are executed concurrently if resources are available.
 
-## 📖 Example
+The Covalent UI displays the progress of each workflow at the level of individual tasks.
 
-Begin by starting the Covalent servers:
+### The Covalent API
 
-```console
-covalent start
-```
+The Covalent API is a Python module containing a small collection of classes that implement server-based workflow management. The key elements are two decorators that wrap functions to create managed *tasks* and *workflows*.
 
-Navigate to the user interface at `http://localhost:48008` to monitor workflow execution progress.
+The task decorator is called an *electron*. The electron decorator simply turns the function into a dispatchable task.
 
-In your Python code, it's as simple as adding a few decorators!  Consider the following example which uses a support vector machine (SVM) to classify types of iris flowers.
+The workflow decorator is called a *lattice*. The lattice decorator turns a function composed of electrons into a manageable workflow.
 
-<table style='margin-left: auto; margin-right: auto; word-wrap: break-word;'>
-<tr>
-<th style='text-align:center;'>Without Covalent</th>
-<th style='text-align:center;'>With Covalent</th>
-</tr>
+<img src="https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/cova_archi.png" align="right" width="40%" alt="Covalent Architecture"/>
 
-<tr>
-<td valign="top">
+### Covalent Services
 
-``` python
-from numpy.random import permutation
-from sklearn import svm, datasets
+The Covalent server is a lightweight service that runs on your local machine or a server. A dispatcher analyzes workflows (lattices) and hands its component functions (electrons) off to executors. Each executor is an adaptor to a backend hardware resource. Covalent has a growing list of turn-key executors for common compute backends. If no executor exists yet for your compute platform, Covalent supports writing your own.
 
-def load_data():
-    iris = datasets.load_iris()
-    perm = permutation(iris.target.size)
-    iris.data = iris.data[perm]
-    iris.target = iris.target[perm]
-    return iris.data, iris.target
+### The Covalent GUI
 
-def train_svm(data, C, gamma):
-    X, y = data
-    clf = svm.SVC(C=C, gamma=gamma)
-    clf.fit(X[90:], y[90:])
-    return clf
+The Covalent user interface runs as a web server on the machine where the Covalent server is running. The GUI dashboard shows a list of dispatched workflows. From there, you can drill down to workflow details or a graphical view of the workflow. You can also view logs, settings, and result sets.
 
-def score_svm(data, clf):
-    X_test, y_test = data
-    return clf.score(
-    	X_test[:90],
-	y_test[:90]
-    )
+Ready to try it? Go to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide in the documentation.
 
-def run_experiment(C=1.0, gamma=0.7):
-    data = load_data()
-    clf = train_svm(
-    	data=data,
-	C=C,
-	gamma=gamma
-    )
-    score = score_svm(data=data, clf=clf)
-    return score
+For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://covalent.readthedocs.io/en/latest/concepts/concepts.html) page in the documentation.
 
-result=run_experiment(C=1.0, gamma=0.7)
-```
-</td>
-<td valign="top">
-
-
-
-```python
-from numpy.random import permutation
-from sklearn import svm, datasets
-import covalent as ct
-
-@ct.electron
-def load_data():
-    iris = datasets.load_iris()
-    perm = permutation(iris.target.size)
-    iris.data = iris.data[perm]
-    iris.target = iris.target[perm]
-    return iris.data, iris.target
-
-@ct.electron
-def train_svm(data, C, gamma):
-    X, y = data
-    clf = svm.SVC(C=C, gamma=gamma)
-    clf.fit(X[90:], y[90:])
-    return clf
-
-@ct.electron
-def score_svm(data, clf):
-    X_test, y_test = data
-    return clf.score(
-    	X_test[:90],
-	y_test[:90]
-    )
-
-@ct.lattice
-def run_experiment(C=1.0, gamma=0.7):
-    data = load_data()
-    clf = train_svm(
-    	data=data,
-	C=C,
-	gamma=gamma
-    )
-    score = score_svm(
-    	data=data,
-	clf=clf
-    )
-    return score
-
-dispatchable_func = ct.dispatch(run_experiment)
-
-dispatch_id = dispatchable_func(
-    	C=1.0,
-    	gamma=0.7
-    )
-result = ct.get_result(dispatch_id)
-```
-</td>
-</tr>
-<tr>
-<td valign="top">
-
-```python
->>> print(result)
-0.988888888
-```
-</td>
-<td valign="top">
-
-```python
->>> print(f"""
-... status     = {result.status}
-... input      = {result.inputs}
-... result     = {result.result}
-... """)
-status     = Status(STATUS='COMPLETED')
-input      = {'C': 1.0, 'gamma': 0.7}
-result     = 0.988888888
-```
-</td>
-</tr>
-</table>
-
-
-For more examples, please refer to the [Covalent tutorials](https://covalent.readthedocs.io/en/latest/tutorials/tutorials.html).
 
 ## 📦 Installation
 
@@ -194,21 +80,11 @@ Covalent is developed using Python version 3.8 on Linux and macOS. The easiest w
 pip install covalent
 ```
 
-Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide for more details on setting up. For a full list of supported platforms, consult the Covalent [compatibility matrix](https://covalent.readthedocs.io/en/latest/getting_started/compatibility.html).
-
-## 🔧 How it Works
-
-Users compose workflows using the Covalent SDK and submit them to the Covalent server. Upon receiving a workflow, the server analyzes the dependencies between tasks and dispatches each task to its specified execution backend. Independent tasks may be executed concurrently. The Covalent UI displays the execution progress of each workflow at the level of individual tasks.
-
-<div align="center">
-
-![covalent architecture](https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/cova_archi.png)
-
-</div>
+Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide for detailed setup instructions. For a full list of supported platforms, see the Covalent [compatibility matrix](https://covalent.readthedocs.io/en/latest/getting_started/compatibility.html).
 
 ## 📚 Documentation
 
-The official documentation includes tips on getting started, some high level concepts, a handful of tutorials, and the API documentation. To learn more, please refer to the [Covalent documentation](https://covalent.readthedocs.io/en/latest/).
+The official documentation includes tips on getting started, high level concepts, tutorials, and the API documentation, and more. To learn more, see the [Covalent documentation](https://covalent.readthedocs.io/en/latest/).
 
 ## ✔️  Contributing
 

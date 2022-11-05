@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+- Rewrote intro material in README.
 - Changed "Citation" in the README.
 - Renamed "Release Notes" to "What's New?" in the README. Updated What's New with a description of the newest GUI functionality.
 
