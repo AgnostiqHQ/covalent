@@ -114,7 +114,7 @@ const ResultsTableToolbar = ({ query, onSearch, setQuery }) => {
             position="end"
             sx={{ visibility: !!query ? 'visible' : 'hidden' }}
           >
-            <IconButton size="small" onClick={() => setQuery('')}>
+            <IconButton size="small" onClick={() => setQuery('')} data-testid="clear">
               <ClearIcon fontSize="inherit" sx={{ color: 'text.secondary' }} />
             </IconButton>
           </InputAdornment>

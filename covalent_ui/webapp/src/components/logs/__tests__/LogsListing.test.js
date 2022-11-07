@@ -140,9 +140,12 @@ describe('Logs table', () => {
   })
 
   test('renders clear icon in search section', () => {
-    mockRender(<App />)
+    const setQuery = jest.fn()
+    mockRender(<App setQuery={setQuery} />)
     const linkElement = screen.getByTestId('ClearIcon')
     expect(linkElement).toBeInTheDocument()
+    // const linkElement2 = screen.getByTestId('clear')
+    fireEvent.click(linkElement)
   })
 
   test('renders table header section', () => {

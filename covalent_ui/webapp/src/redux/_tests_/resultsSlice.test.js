@@ -48,17 +48,25 @@ describe('results slice', () => {
 
   it('fetch result is fulfilled', () => {
     const action = {
-      type: fetchResult.pending,
-      payload: { dispatch: '32323232' },
+      type: fetchResult.fulfilled,
+      payload: {
+        dispatch_id: 'dsdsdsdsds23232',
+      },
     }
     const initialState = resultsSlice.reducer(
       {
+        cache: {},
         fetchResult: { isFetching: false, error: null },
       },
       action
     )
     expect(initialState).toEqual({
-      fetchResult: { isFetching: true, error: null },
+      cache: {
+        dsdsdsdsds23232: {
+          dispatch_id: 'dsdsdsdsds23232',
+        },
+      },
+      fetchResult: { isFetching: false, error: null },
     })
   })
 
