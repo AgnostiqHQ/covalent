@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.208.0-rc.0] - 2022-11-05
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
 ### Operations
 
 - Reverted nightly schedule back to daily at 4:00am
