@@ -27,7 +27,9 @@ from covalent._results_manager import Result
 from covalent._shared_files.config import get_config
 from covalent._workflow.lattice import Lattice
 from covalent_ui.result_webhook import get_ui_url, send_draw_request, send_update
-from tests.covalent_ui_backend_tests.utils.assert_data.result_webhook import result_mock_data
+from tests.covalent_ui_backend_tests.utils.assert_data.sample_result_webhook import (
+    result_mock_data,
+)
 
 mock_data = result_mock_data()
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
