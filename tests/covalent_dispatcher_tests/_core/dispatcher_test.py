@@ -35,10 +35,10 @@ from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.dispatcher import (
     _build_sublattice_graph,
     _get_abstract_task_inputs,
+    _get_initial_tasks_and_deps,
     _handle_cancelled_node,
     _handle_completed_node,
     _handle_failed_node,
-    _initialize_deps_and_queue,
     _plan_workflow,
     run_dispatch,
 )
@@ -272,13 +272,13 @@ async def test_handle_cancelled_node(mocker):
 
 
 @pytest.mark.asyncio
-async def test_initialize_deps_and_queue(mocker):
+async def test_get_initial_tasks_and_deps(mocker):
     """Test internal function for initializing status_queue and pending_deps"""
     status_queue = Queue()
     pending_deps = {}
 
     result_object = get_mock_result()
-    num_tasks, initial_nodes, pending_deps = await _initialize_deps_and_queue(result_object)
+    num_tasks, initial_nodes, pending_deps = await _get_initial_tasks_and_deps(result_object)
 
     assert initial_nodes == [1]
     assert pending_deps == {0: 1, 1: 0, 2: 1}

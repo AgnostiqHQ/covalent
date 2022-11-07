@@ -28,7 +28,7 @@ import traceback
 from asyncio import Queue
 from datetime import datetime, timezone
 from functools import partial
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
@@ -180,10 +180,16 @@ async def _handle_cancelled_node(result_object, node_id):
 
 
 # Domain: dispatcher
-async def _initialize_deps_and_queue(result_object: Result) -> int:
-    """Initialize the data structures controlling when tasks are queued for execution.
+async def _get_initial_tasks_and_deps(result_object: Result) -> Tuple[int, int, Dict]:
+    """Compute the initial batch of tasks to submit and initialize each task's dep count
 
-    Returns the total number of nodes in the transport graph."""
+    Returns: (num_tasks, ready_nodes, pending_deps) where num_tasks is
+        the total number of tasks in the graph, ready_nodes is the
+        initial list of tasks to dispatch, and pending_deps is a map
+        from `node_id` to the number of parents that have yet to
+        complete.
+
+    """
 
     num_tasks = 0
     ready_nodes = []
@@ -315,7 +321,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: Queue = Non
     upsert._lattice_data(result_object)
     app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
 
-    tasks_left, initial_nodes, pending_deps = await _initialize_deps_and_queue(result_object)
+    tasks_left, initial_nodes, pending_deps = await _get_initial_tasks_and_deps(result_object)
 
     unresolved_tasks = 0
     resolved_tasks = 0
