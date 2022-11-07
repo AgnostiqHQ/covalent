@@ -113,15 +113,13 @@ async def test_update_failed_node(mocker):
 
     status_queue = AsyncMock()
 
-    pending_deps = {}
-
     result_object = get_mock_result()
     mock_fail_handler = mocker.patch("covalent_dispatcher._core.dispatcher._handle_failed_node")
     mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
     mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
 
     node_result = {"node_id": 0, "status": Result.FAILED}
-    await _update_node_result(result_object, node_result, pending_deps, status_queue)
+    await _update_node_result(result_object, node_result, status_queue)
 
     status_queue.put.assert_awaited_with((0, Result.FAILED))
 
@@ -132,8 +130,6 @@ async def test_update_cancelled_node(mocker):
 
     status_queue = AsyncMock()
 
-    pending_deps = {}
-
     result_object = get_mock_result()
     mock_cancel_handler = mocker.patch(
         "covalent_dispatcher._core.dispatcher._handle_cancelled_node"
@@ -142,7 +138,7 @@ async def test_update_cancelled_node(mocker):
     mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
 
     node_result = {"node_id": 0, "status": Result.CANCELLED}
-    await _update_node_result(result_object, node_result, pending_deps, status_queue)
+    await _update_node_result(result_object, node_result, status_queue)
     status_queue.put.assert_awaited_with((0, Result.CANCELLED))
 
 
@@ -151,7 +147,6 @@ async def test_update_completed_node(mocker):
     """Check that update_node_result correctly invokes _handle_completed_node"""
 
     status_queue = AsyncMock()
-    pending_deps = {}
 
     result_object = get_mock_result()
     mock_completed_handler = mocker.patch(
@@ -161,7 +156,7 @@ async def test_update_completed_node(mocker):
     mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
 
     node_result = {"node_id": 0, "status": Result.COMPLETED}
-    await _update_node_result(result_object, node_result, pending_deps, status_queue)
+    await _update_node_result(result_object, node_result, status_queue)
     status_queue.put.assert_awaited_with((0, Result.COMPLETED))
 
 

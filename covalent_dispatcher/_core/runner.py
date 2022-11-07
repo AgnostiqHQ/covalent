@@ -307,12 +307,12 @@ def _gather_deps(result_object: Result, node_id: int) -> Tuple[List, List]:
 
 
 # Domain: runner
-async def _run_task_and_update(run_task_callable, result_object, pending_deps, status_queue):
+async def _run_task_and_update(run_task_callable, result_object, status_queue):
     node_result = await run_task_callable()
 
     # NOTE: This is a blocking operation because of db writes and needs special handling when
     # we switch to an event loop for processing tasks
-    await resultsvc._update_node_result(result_object, node_result, pending_deps, status_queue)
+    await resultsvc._update_node_result(result_object, node_result, status_queue)
     return node_result
 
 

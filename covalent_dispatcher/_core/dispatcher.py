@@ -208,7 +208,7 @@ async def _get_initial_tasks_and_deps(result_object: Result) -> Tuple[int, int, 
 
 
 # Domain: dispatcher
-async def _submit_task(result_object, node_id, pending_deps, status_queue, task_futures):
+async def _submit_task(result_object, node_id, status_queue, task_futures):
 
     # Get name of the node for the current task
     node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
@@ -228,7 +228,7 @@ async def _submit_task(result_object, node_id, pending_deps, status_queue, task_
             "status": Result.COMPLETED,
             "output": output,
         }
-        await resultsvc._update_node_result(result_object, node_result, pending_deps, status_queue)
+        await resultsvc._update_node_result(result_object, node_result, status_queue)
         app_log.debug("8A: Update node success (run_planned_workflow).")
 
     else:
@@ -260,7 +260,7 @@ async def _submit_task(result_object, node_id, pending_deps, status_queue, task_
             start_time=start_time,
             status=Result.RUNNING,
         )
-        await resultsvc._update_node_result(result_object, node_result, pending_deps, status_queue)
+        await resultsvc._update_node_result(result_object, node_result, status_queue)
         app_log.debug(f"7: Marking node {node_id} as running (_submit_task)")
 
         app_log.debug(f"Submitting task {node_id} to executor")
@@ -280,7 +280,6 @@ async def _submit_task(result_object, node_id, pending_deps, status_queue, task_
             runner._run_task_and_update(
                 run_task_callable=run_task_callable,
                 result_object=result_object,
-                pending_deps=pending_deps,
                 status_queue=status_queue,
             )
         )
@@ -328,7 +327,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: Queue = Non
 
     for node_id in initial_nodes:
         unresolved_tasks += 1
-        await _submit_task(result_object, node_id, pending_deps, status_queue, task_futures)
+        await _submit_task(result_object, node_id, status_queue, task_futures)
 
     while unresolved_tasks > 0:
         app_log.debug(f"{tasks_left} tasks left to complete")
@@ -347,9 +346,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: Queue = Non
             ready_nodes = await _handle_completed_node(result_object, node_id, pending_deps)
             for node_id in ready_nodes:
                 unresolved_tasks += 1
-                await _submit_task(
-                    result_object, node_id, pending_deps, status_queue, task_futures
-                )
+                await _submit_task(result_object, node_id, status_queue, task_futures)
 
         if node_status == Result.FAILED:
             await _handle_failed_node(result_object, node_id)

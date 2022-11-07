@@ -63,7 +63,7 @@ def generate_node_result(
 
 
 # Domain: result
-async def _update_node_result(result_object, node_result, pending_deps, status_queue):
+async def _update_node_result(result_object, node_result, status_queue):
     app_log.warning("Updating node result (run_planned_workflow).")
     update._node(result_object, **node_result)
     await result_webhook.send_update(result_object)
