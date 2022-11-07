@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Added DNN tutorial
+
 ## [0.208.0-rc.0] - 2022-11-05
 
 ### Authors
@@ -24,7 +28,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support for transferring the contents of folders to and from S3 buckets using the file transfer module.
-- DNN tutorial nb.
 
 ### Fixed
 
@@ -373,7 +376,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Fixed a notebook which was not rendering
-- Add DNN tutorial.
 
 ### Operations
 
