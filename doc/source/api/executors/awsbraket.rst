@@ -21,12 +21,6 @@ To use this plugin with Covalent, simply install it using :code:`pip`:
 
    pip install covalent-awsbraket-plugin
 
-.. note::
-
-   Users will also need to have `Docker <https://docs.docker.com/get-docker/>`_ installed on their local machine to use this plugin.
-
-
-
 ===========================================
 2. Usage Example
 ===========================================
