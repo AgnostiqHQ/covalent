@@ -49,12 +49,12 @@ def seed_electron_data():
             },
             "case_invalid": {
                 "status_code": 400,
-                "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd", "electron_id": 8},
+                "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9ef", "electron_id": 8},
                 "response_data": {
                     "detail": [
                         {
                             "loc": ["path", "dispatch_id"],
-                            "msg": "Dispatch ID 78525234-72ec-42dc-94a0-f4751707f9cd or Electron ID does not exist",
+                            "msg": "Dispatch ID 78525234-72ec-42dc-94a0-f4751707f9ef or Electron ID does not exist",
                             "type": None,
                         }
                     ]
@@ -165,6 +165,23 @@ def seed_electron_data():
                 },
                 "response_data": {"data": "", "python_object": None},
             },
+            "case_error_2": {
+                "status_code": 400,
+                "path": {
+                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
+                    "electron_id": 0,
+                    "name": "inputs",
+                },
+                "response_data": {
+                    "detail": [
+                        {
+                            "loc": ["path", "dispatch_id"],
+                            "msg": "Dispatch ID 78525234-72ec-42dc-94a0-f4751707f9cd or Electron ID does not exist",
+                            "type": None,
+                        }
+                    ]
+                },
+            },
             "case_info_1": {
                 "status_code": 200,
                 "path": {
@@ -192,6 +209,23 @@ def seed_electron_data():
                     "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
                     "electron_id": 0,
                     "name": "results",
+                },
+            },
+            "case_invalid": {
+                "status_code": 400,
+                "path": {
+                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9ef",
+                    "electron_id": 8,
+                    "name": "function_string",
+                },
+                "response_data": {
+                    "detail": [
+                        {
+                            "loc": ["path", "dispatch_id"],
+                            "msg": "Dispatch ID 78525234-72ec-42dc-94a0-f4751707f9ef or Electron ID does not exist",
+                            "type": None,
+                        }
+                    ]
                 },
             },
         },

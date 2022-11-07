@@ -105,7 +105,7 @@ class Electrons:
 
         result = get_result(dispatch_id=str(dispatch_id), wait=False)
         if isinstance(result, JSONResponse):
-            return result
+            raise Exception(result)
         result_object = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
         electron_result = self.get_electrons_id(dispatch_id, electron_id)
         inputs = get_task_inputs(

@@ -19,6 +19,10 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+from pathlib import Path
+
+from fastapi.templating import Jinja2Templates
+
 import tests.covalent_ui_backend_tests.utils.main as main
 from tests.covalent_ui_backend_tests.utils.assert_data.main import main_mock_data
 from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
@@ -53,3 +57,17 @@ def test_draw():
     assert response.status_code == test_data["status_code"]
     if "response_data" in test_data:
         assert response.json() == test_data["response_data"]
+
+
+def test_root(mocker):
+    """Test root api"""
+    path = str(Path(__file__).parent.parent.parent.parent.absolute()) + "/covalent_ui/webapp/build"
+    mocker.patch("covalent_ui.app.templates", Jinja2Templates(directory=path))
+    test_data = output_data["test_misc"]["case1"]
+    response = object_test_template(
+        api_path=output_data["test_misc"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+        path=test_data["path"],
+    )
+    assert response.status_code == test_data["status_code"]

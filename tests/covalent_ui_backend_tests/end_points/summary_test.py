@@ -20,13 +20,26 @@
 
 from os.path import abspath, dirname
 
+from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy.orm import declarative_base
+
 import tests.covalent_ui_backend_tests.utils.main as main
 from tests.covalent_ui_backend_tests.utils.assert_data.summary import seed_summary_data
 from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
 
 object_test_template = TestClientTemplate()
+MockBase = declarative_base()
 output_path = dirname(abspath(__file__)) + "/utils/assert_data/summary_data.json"
 output_data = seed_summary_data()
+
+
+class MockLattice(MockBase):
+    __tablename__ = "lattice"
+    id = Column(Integer, primary_key=True)
+    dispatch_id = Column(String(2), nullable=False)
+    status = Column(String(24), nullable=False)
+    name = Column(String(24), nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
 
 
 def test_overview():
@@ -208,6 +221,35 @@ def test_delete_none():
         assert response.json() == test_data["response_data"]
 
 
+def test_partial_delete():
+    """Test deleting with NULL value"""
+    test_data = output_data["test_delete"]["case8"]
+    response = object_test_template(
+        api_path=output_data["test_delete"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.POST,
+        body_data=test_data["request_data"]["body"],
+    )
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
+
+
+def test_delete_bad_request(mocker):
+    """Test deleting with NULL value"""
+    test_data = output_data["test_delete"]["case7"]
+    mocker.patch("covalent_ui.api.v1.data_layer.summary_dal.Lattice", MockLattice)
+    response = object_test_template(
+        api_path=output_data["test_delete"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.POST,
+        body_data=test_data["request_data"]["body"],
+    )
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
+
+
 def test_delete_all():
     """Test delete all dispatches"""
     test_data = output_data["test_delete_all"]["case1"]
@@ -272,3 +314,18 @@ def test_delete_all_invalid_filter():
     assert response.status_code == test_data["status_code"]
     response_detail = response.json()["detail"][0]
     assert response_detail["type"] == "type_error.enum"
+
+
+def test_delete_all_bad_request(mocker):
+    """Test delete all dispatches"""
+    test_data = output_data["test_delete_all"]["case6"]
+    mocker.patch("covalent_ui.api.v1.data_layer.summary_dal.Lattice", MockLattice)
+    response = object_test_template(
+        api_path=output_data["test_delete_all"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.POST,
+        body_data=test_data["request_data"]["body"],
+    )
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]

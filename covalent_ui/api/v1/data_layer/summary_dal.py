@@ -20,7 +20,6 @@
 
 import uuid
 from datetime import datetime, timezone
-from sqlite3 import InterfaceError
 from typing import List
 
 from sqlalchemy import case, update
@@ -254,13 +253,7 @@ class Summary:
         success = []
         failure = []
         message = "No dispatches were deleted"
-        if data.dispatches is None:
-            return DeleteDispatchesResponse(
-                success_items=success,
-                failure_items=failure,
-                message=message,
-            )
-        if len(data.dispatches) == 0:
+        if data.dispatches is None or len(data.dispatches) == 0:
             return DeleteDispatchesResponse(
                 success_items=success,
                 failure_items=failure,
@@ -327,7 +320,7 @@ class Summary:
                 self.db_con.execute(update_lattice)
                 self.db_con.commit()
                 success.append(dispatch_id)
-            except InterfaceError:
+            except Exception:
                 failure.append(dispatch_id)
         if len(success) > 0:
             message = "Dispatch(es) have been deleted successfully!"
@@ -350,23 +343,24 @@ class Summary:
         """
         success = []
         failure = []
+        dispatches = []
         status_filters = self.get_filters(data.status_filter)
-        filter_dispatches = (
-            self.db_con.query(Lattice.id, Lattice.dispatch_id)
-            .filter(
-                or_(
-                    Lattice.name.ilike(f"%{data.search_string}%"),
-                    Lattice.dispatch_id.ilike(f"%{data.search_string}%"),
-                ),
-                Lattice.status.in_(status_filters),
-                Lattice.is_active.is_not(False),
+        try:
+            filter_dispatches = (
+                self.db_con.query(Lattice.id, Lattice.dispatch_id)
+                .filter(
+                    or_(
+                        Lattice.name.ilike(f"%{data.search_string}%"),
+                        Lattice.dispatch_id.ilike(f"%{data.search_string}%"),
+                    ),
+                    Lattice.status.in_(status_filters),
+                    Lattice.is_active.is_not(False),
+                )
+                .all()
             )
-            .all()
-        )
-        dispatch_ids = [o.id for o in filter_dispatches]
-        dispatches = [uuid.UUID(o.dispatch_id) for o in filter_dispatches]
-        if len(dispatches) >= 1:
-            try:
+            dispatch_ids = [o.id for o in filter_dispatches]
+            dispatches = [uuid.UUID(o.dispatch_id) for o in filter_dispatches]
+            if len(dispatches) >= 1:
                 electron_ids = (
                     self.db_con.query(Electron.id)
                     .filter(
@@ -420,8 +414,8 @@ class Summary:
                 )
                 self.db_con.commit()
                 success = dispatches
-            except InterfaceError:
-                failure = dispatches
+        except Exception:
+            failure = dispatches
         if (len(failure) == 0 and len(success) == 0) or (len(failure) > 0 and len(success) == 0):
             message = "No dispatches were deleted"
         elif len(failure) > 0 and len(success) > 0:

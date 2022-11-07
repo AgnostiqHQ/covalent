@@ -204,4 +204,74 @@ def seed_logs_data():
             "case1": {"status_code": 200},
             "case_functional_1": {"response_type": "Response"},
         },
+        "test_logs_handler": {
+            "handler_format1": {
+                "version": 1,
+                "disable_existing_loggers": False,
+                "formatters": {
+                    "default": {
+                        "()": "uvicorn.logging.DefaultFormatter",
+                        "datefmt": "%Y-%m-%d %H:%M:%S",
+                        "format": "[%(asctime)s,%(msecs)03d] [%(levelname)s] %(message)s",
+                    },
+                    "access": {
+                        "()": "uvicorn.logging.AccessFormatter",
+                        "datefmt": "%Y-%m-%d %H:%M:%S",
+                        "format": "[%(asctime)s,%(msecs)03d] [%(levelname)s] %(message)s",
+                    },
+                },
+                "handlers": {
+                    "default": {
+                        "formatter": "default",
+                        "class": "logging.StreamHandler",
+                        "stream": "ext://sys.stderr",
+                    },
+                    "access": {
+                        "formatter": "access",
+                        "class": "logging.StreamHandler",
+                        "stream": "ext://sys.stdout",
+                    },
+                },
+                "loggers": {
+                    "uvicorn.error": {
+                        "level": "INFO",
+                        "handlers": ["default"],
+                        "propogate": False,
+                    },
+                    "uvicorn.access": {"level": "INFO", "handlers": ["access"], "propagate": "no"},
+                },
+            },
+            "handler_format2": {
+                "version": 1,
+                "disable_existing_loggers": False,
+                "formatters": {
+                    "default": {
+                        "()": "uvicorn.logging.DefaultFormatter",
+                        "datefmt": "%Y-%m-%d %H:%M:%S",
+                        "format": "[%(asctime)s,%(msecs)03d] [%(levelname)s] %(message)s",
+                    },
+                    "access": {
+                        "()": "uvicorn.logging.AccessFormatter",
+                        "datefmt": "%Y-%m-%d %H:%M:%S",
+                        "format": "[%(asctime)s,%(msecs)03d] [%(levelname)s] %(message)s",
+                    },
+                },
+                "handlers": {
+                    "default": {
+                        "formatter": "default",
+                        "class": "logging.StreamHandler",
+                        "stream": "ext://sys.stderr",
+                    },
+                    "access": {
+                        "formatter": "access",
+                        "class": "logging.StreamHandler",
+                        "stream": "ext://sys.stdout",
+                    },
+                },
+                "loggers": {
+                    "uvicorn.error": {"level": None, "handlers": ["default"], "propogate": False},
+                    "uvicorn.access": {"level": None, "handlers": ["access"], "propagate": "no"},
+                },
+            },
+        },
     }

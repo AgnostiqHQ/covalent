@@ -242,6 +242,22 @@ def test_electrons_details_inputs(mocker, mock_db):
         assert response.json() == test_data["response_data"]
 
 
+def test_electrons_details_inputs_json(mocker):
+    """Test overview"""
+
+    mocker.patch("covalent_dispatcher._service.app.workflow_db", DataStore())
+    test_data = output_data["test_electrons_details"]["case_error_2"]
+    response = object_test_template(
+        api_path=output_data["test_electrons_details"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+        path=test_data["path"],
+    )
+    assert response.status_code == test_data["status_code"]
+    if "response_data" in test_data:
+        assert response.json() == test_data["response_data"]
+
+
 def test_electrons_file_bad_request():
     """Test electrons results"""
     test_data = output_data["test_electrons_details"]["case_bad_request"]
@@ -254,3 +270,17 @@ def test_electrons_file_bad_request():
     assert response.status_code == test_data["status_code"]
     response_detail = response.json()["detail"][0]
     assert response_detail["type"] == "type_error.enum"
+
+
+def test_electrons_inputs_bad_request():
+    """Test electrons"""
+    test_data = output_data["test_electrons_details"]["case_invalid"]
+    response = object_test_template(
+        api_path=output_data["test_electrons_details"]["api_path"],
+        app=main.fastapi_app,
+        method_type=MethodType.GET,
+        path=test_data["path"],
+    )
+    assert response.status_code == test_data["status_code"]
+    if test_data["response_data"]:
+        assert response.json() == test_data["response_data"]

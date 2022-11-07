@@ -19,29 +19,25 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-def main_mock_data():
+def mock_file_data():
     """Mock main data"""
     return {
-        "test_webhook": {
-            "api_path": "/api/webhook",
+        "test_read_text": {
+            "file_path": "tests/covalent_ui_backend_tests/utils/mock_files/78525234-72ec-42dc-94a0-f4751707f9cd",
             "case1": {
-                "status_code": 200,
-                "response_data": {"ok": True},
+                "file_name": "function_string.txt",
+                "response_data": """@ct.lattice
+def workflow(name):
+\tresult=join(hello(),moniker(name))
+\treturn result+" !!\"""",
             },
+            "case2": {"file_name": "function_strings.txt", "response_data": None},
         },
-        "test_draw": {
-            "api_path": "/api/draw",
+        "test_unpickle": {
+            "file_path": "tests/covalent_ui_backend_tests/utils/mock_files/78525234-72ec-42dc-94a0-f4751707f9cd",
             "case1": {
-                "status_code": 200,
-                "response_data": {"ok": True},
-            },
-        },
-        "test_misc": {
-            "api_path": "/{}",
-            "case1": {
-                "path": {"rest_of_path": "logs"},
-                "status_code": 200,
-                "response_data": {"ok": True},
+                "file_name": "result.pkl",
+                "response_data": "None",
             },
         },
     }

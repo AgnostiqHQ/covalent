@@ -56,7 +56,7 @@ def is_dict(unpickled_object):
     """
     if bool(unpickled_object):
         if "type" in unpickled_object:
-            return unpickled_object
+            return str(unpickled_object)
         deserialized_dict = TransportableObject.deserialize_dict(unpickled_object)
         to_transportable_object = TransportableObject(deserialized_dict)
         object_bytes = transportable_object(to_transportable_object)
@@ -92,11 +92,11 @@ def is_str(unpickled_object):
     return unpickled_object
 
 
-def is_none():
+def is_none(_):
     """
     Check if the unpickled object is string or not
     """
-    return ""
+    return "None"
 
 
 choices = {
@@ -135,17 +135,9 @@ class FileHandler:
         """Return data from text file"""
         try:
             with open(self.location + "/" + path, "r", encoding="utf-8") as read_file:
-                text_object = read_file.readlines()
-                list_str = ""
+                text_object = read_file.read()
                 read_file.close()
-                if isinstance(text_object, list):
-                    for i in text_object:
-                        list_str += i
-                    return list_str if (list_str != "" or list_str is not None) else None
-                else:
-                    return text_object if (text_object != "" or text_object is not None) else None
-        except EOFError:
-            return None
+                return text_object if text_object is not None else ""
         except Exception:
             return None
 
@@ -155,5 +147,5 @@ class FileHandler:
                 unpickled_object = pickle.load(read_file)
                 read_file.close()
                 return unpickled_object
-        except EOFError:
+        except Exception:
             return None

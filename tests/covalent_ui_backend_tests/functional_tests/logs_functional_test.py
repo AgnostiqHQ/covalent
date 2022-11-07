@@ -22,10 +22,9 @@
 
 
 from covalent_ui.api.v1.data_layer.logs_dal import Logs
+from covalent_ui.api.v1.utils.log_handler import log_config
 from tests.covalent_ui_backend_tests.utils.assert_data.logs import seed_logs_data
-from tests.covalent_ui_backend_tests.utils.client_template import TestClientTemplate
 
-object_test_template = TestClientTemplate()
 output_data = seed_logs_data()
 
 
@@ -36,3 +35,16 @@ def test_download_logs():
     response = logs.download_logs()
     if test_data["response_type"]:
         assert type(response).__name__ == test_data["response_type"]
+
+
+def test_log_handler():
+    test_data = output_data["test_logs_handler"]["handler_format1"]
+    config = log_config()
+    assert config == test_data
+
+
+def test_log_handler_without_level(mocker):
+    mocker.patch("covalent_ui.api.v1.utils.log_handler.log_to_file", False)
+    test_data = output_data["test_logs_handler"]["handler_format2"]
+    config = log_config()
+    assert config == test_data
