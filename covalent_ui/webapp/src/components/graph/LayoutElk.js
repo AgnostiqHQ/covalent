@@ -41,9 +41,9 @@ const nodeLabel = (type, name) => {
 export const layoutElk = (
   graph,
   direction,
-  showParams = true,
   hideLabels,
-  preview
+  preview,
+  showParams = true
 ) => {
   const elements = mapGraphToElements(
     graph,

@@ -1000,7 +1000,7 @@ const ResultListing = () => {
           <TableContainer>
             <StyledTable>
               <TableBody>
-                {[...Array(7)].map((_) => (
+                {[...Array(7)].map(() => (
                   <TableRow key={Math.random()}>
                     <TableCell padding="checkbox">
                       <Skeleton sx={{ my: 2, mx: 1 }} />

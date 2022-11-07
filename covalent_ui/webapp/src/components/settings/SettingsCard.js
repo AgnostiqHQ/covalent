@@ -67,7 +67,7 @@ const SettingsCard = () => {
   const [open, setOpen] = useState(false)
   const [subMenu, setSubMenu] = useState([])
   const [resultKey, setResultKey] = useState('sdk')
-  const [resultOutput, setResultOutput] = useState()
+  const [resultOutput, setResultOutput] = useState(null)
   const settings_result = useSelector(
     (state) => state.settingsResults.settingsList
   )

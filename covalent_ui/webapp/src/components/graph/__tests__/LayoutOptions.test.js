@@ -21,7 +21,6 @@
 //  */
 
 import { fireEvent, render, screen } from '@testing-library/react'
-// import {screen} from '@testing-library/dom'
 import { LayoutOptions } from '../LayoutOptions'
 import { BrowserRouter } from 'react-router-dom'
 import React from 'react'

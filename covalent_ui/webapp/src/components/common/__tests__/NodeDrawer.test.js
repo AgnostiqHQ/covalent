@@ -178,7 +178,6 @@ describe('electronNode file Rendered', () => {
   })
 
   test('renders Node drawer for node box function', async () => {
-    const electronInputResult = {}
     reduxRender(
       <NodeDrawer
         electronDetailIsFetching={false}
@@ -204,7 +203,6 @@ describe('electronNode file Rendered', () => {
         '/home/prasannavenkatesh/Desktop/workflows/results/edcd9b3e-6d52-44ac-baa5-d45614e25699/node_14',
       type: 'function',
     }
-    const electronInputResult = {}
     reduxRender(
       <NodeDrawer
         electronDetailIsFetching={false}

@@ -43,9 +43,8 @@ import { ReactComponent as Logs } from '../../assets/logs.svg'
 
 import { ReactComponent as ExitNewIcon } from '../../assets/exit.svg'
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
-import { useMatch } from 'react-router-dom'
+import { useMatch, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
 import DialogBox from '../../components/settings/DialogBox'
 import { updateSettings } from '../../redux/settingsSlice'
 import { toggleLatticeDrawer } from '../../redux/popupSlice'
@@ -190,17 +189,17 @@ export const LinkButton = ({
   const [hovered, sethovered] = useState(false)
   let navigate = useNavigate()
 
-  const menuClick = (path) => {
+  const menuClick = (pathname) => {
     if (dRes === null) {
-      navigate(path)
+      navigate(pathname)
     } else if (dRes.isChanged === true) {
-      if (path === '/settings') {
+      if (pathname === '/settings') {
         setPopupShow(false)
       } else {
         setPopupShow(true)
       }
     } else {
-      navigate(path)
+      navigate(pathname)
     }
   }
 
@@ -322,8 +321,6 @@ export const LinkButton = ({
               },
             }}
             onClick={() => menuClick(path)}
-            // component={Link}
-            // to={path}
             selected={!!selected}
           >
             {!!selected ? (

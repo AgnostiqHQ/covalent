@@ -20,15 +20,14 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 import { useEffect, useRef, useState, createRef } from 'react'
-import { useScreenshot, createFileName } from "use-react-screenshot"
+import { useScreenshot, createFileName } from 'use-react-screenshot'
 import ReactFlow, {
   MiniMap,
   getIncomers,
   getOutgoers,
   isEdge,
 } from 'react-flow-renderer'
-import ElectronNode from './ElectronNode'
-import { NODE_TEXT_COLOR } from './ElectronNode'
+import { NODE_TEXT_COLOR, ElectronNode } from './ElectronNode'
 import ParameterNode from './ParameterNode'
 import DirectedEdge from './DirectedEdge'
 import layout from './Layout'
@@ -151,35 +150,33 @@ const LatticeGraph = ({
 
   useEffect(() => {
     if (screen) {
-      var svgElements = ref_chart.current.querySelectorAll('svg');
+      var svgElements = ref_chart.current.querySelectorAll('svg')
       svgElements.forEach(function (item) {
-        item.style.marginBottom = '14px';
-      });
-      takeScreenShot(ref_chart.current).then(download);
+        item.style.marginBottom = '14px'
+      })
+      takeScreenShot(ref_chart.current).then(download)
       svgElements.forEach(function (item) {
-        item.style.marginBottom = '0px';
-      });
-      setScreen(false);
+        item.style.marginBottom = '0px'
+      })
+      setScreen(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen]);
+  }, [screen])
 
-
-  const ref_chart = createRef(null);
+  const ref_chart = createRef(null)
 
   // eslint-disable-next-line no-unused-vars
   const [image, takeScreenShot] = useScreenshot({
-    type: "image/jpeg",
+    type: 'image/jpeg',
     quality: 1.0,
-  });
+  })
 
-  const download = (image, { name = dispatchId, extension = "jpg" } = {}) => {
-    const a = document.createElement("a");
-    a.href = image;
-    a.download = createFileName(extension, name);
-    a.click();
-  };
-
+  const download = (image, { name = dispatchId, extension = 'jpg' } = {}) => {
+    const a = document.createElement('a')
+    a.href = image
+    a.download = createFileName(extension, name)
+    a.click()
+  }
 
   // highlight links of selected nodes
   const getAllIncomers = (node, elements) => {
