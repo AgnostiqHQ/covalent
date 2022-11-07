@@ -40,6 +40,7 @@ describe('Result Section', () => {
     const tooltipElement = screen.getByLabelText('Copy python object')
     expect(tooltipElement).toBeInTheDocument()
   })
+
   test('renders component with isFetching true', () => {
     render(
       <App
@@ -54,6 +55,7 @@ describe('Result Section', () => {
     const element = screen.getByTestId('skeleton')
     expect(element).toBeInTheDocument()
   })
+
   test('on clicking copy', () => {
     render(
       <App
@@ -73,5 +75,21 @@ describe('Result Section', () => {
     const text = screen.getByLabelText('Python object copied')
     expect(text).toBeInTheDocument()
     window.prompt = jsdomAlert
+  })
+
+  test('renders component with preview value', () => {
+    render(
+      <App
+        results={{
+          data: '"Hello, World!"',
+          python_object:
+            "import pickle\npickle.loads(b'\\x80\\x05\\x95\\x11\\x00\\x00\\x00\\x00\\x00\\x00\\x00\\x8c\\rHello, World!\\x94.')",
+        }}
+        isFetching={false}
+        preview={true}
+      />
+    )
+    const headerElement = screen.getByTestId('resultSection')
+    expect(headerElement).toBeInTheDocument()
   })
 })

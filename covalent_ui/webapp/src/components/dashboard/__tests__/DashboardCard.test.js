@@ -22,6 +22,7 @@
 
 import { screen, render, fireEvent } from '@testing-library/react'
 import App from '../DashboardCard'
+import { DashBoardCardItems } from '../DashboardCard'
 import { BrowserRouter } from 'react-router-dom'
 import React from 'react'
 import { Provider } from 'react-redux'
@@ -30,6 +31,21 @@ import { configureStore } from '@reduxjs/toolkit'
 import theme from '../../../utils/theme'
 import ThemeProvider from '@mui/system/ThemeProvider'
 
+const initialStateMock = {
+  dashboard: {
+    dashboardOverview: {
+      latest_running_task_status: 'COMPLETED',
+      total_dispatcher_duration: 4000,
+      total_jobs: 5,
+      total_jobs_cancelled: 0,
+      total_jobs_completed: 4,
+      total_jobs_failed: 1,
+      total_jobs_new_object: 0,
+      total_jobs_running: 0,
+    },
+    fetchDashboardOverview: { isFetching: false, error: 'hi man' },
+  },
+}
 function mockRender(renderedComponent) {
   const store = configureStore({
     reducer: reducers,
@@ -43,7 +59,7 @@ function mockRender(renderedComponent) {
   )
 }
 
-const initialState = {
+var initialState = {
   dashboard: {
     totalDispatches: 0,
     runningDispatches: 0,
@@ -100,6 +116,19 @@ describe('dashboard card', () => {
   test.each(dashboardCardCases)('render %p section', (firstArg) => {
     mockRender(<App />)
     const element = screen.getByText(firstArg)
+    expect(element).toBeInTheDocument()
+  })
+
+  test('render with dispatcher duration', () => {
+    initialState = initialStateMock
+    mockRenderSlice(<App />)
+    const element = screen.getByTestId('dashboardCard')
+    expect(element).toBeInTheDocument()
+  })
+
+  test('render DashBoardCardItems', () => {
+    mockRenderSlice(<DashBoardCardItems isSkeletonPresent={true} />)
+    const element = screen.getByTestId('skeleton')
     expect(element).toBeInTheDocument()
   })
 })
