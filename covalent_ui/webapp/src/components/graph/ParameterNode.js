@@ -66,7 +66,6 @@ const ParameterNode = ({
               borderRadius: '5px 5px 0px 0px',
               minWidth: '30%',
               overflow: 'hidden',
-              // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
               color: (theme) => theme.palette.text.tertiary,
               cursor: 'default',
               '&:hover': {
