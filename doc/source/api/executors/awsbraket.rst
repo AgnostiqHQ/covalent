@@ -21,12 +21,6 @@ To use this plugin with Covalent, simply install it using :code:`pip`:
 
    pip install covalent-awsbraket-plugin
 
-.. note::
-
-   Users will also need to have `Docker <https://docs.docker.com/get-docker/>`_ installed on their local machine to use this plugin.
-
-
-
 ===========================================
 2. Usage Example
 ===========================================
@@ -52,17 +46,16 @@ states and then measures the state. We use the `Pennylane
 
     # Instantiate the executor
     ex = BraketExecutor(
-	credentials=credentials,
-	profile=profile,
-	region=region,
-	s3_bucket_name=s3_bucket_name,
-	ecr_repo_name=ecr_repo_name,
-	braket_job_execution_role_name=iam_role_name,
-	quantum_device="arn:aws:braket:::device/quantum-simulator/amazon/sv1",
-	classical_device="ml.m5.large",
-	storage=30,
-	time_limit=300,
-    )
+		profile=profile,
+		credentials=credentials_file,
+		s3_bucket_name=s3_bucket_name,
+		ecr_image_uri=ecr_image_uri,
+		braket_job_execution_role_name=iam_role_name,
+		quantum_device="arn:aws:braket:::device/quantum-simulator/amazon/sv1",
+		classical_device="ml.m5.large",
+		storage=30,
+		time_limit=300,
+	)
 
 
     # Execute the following circuit:
@@ -143,10 +136,10 @@ should also output a value with the output of the quantum measurement.
      - Yes
      - amazon-braket-covalent-job-resources
      - The S3 bucket where Covalent will store input and output files for the task.
-   * - ecr_repo_name
-     - No
-     - "covalent-braket-job-images"
-     - The ECR repo where the job container will be uploaded
+   * - ecr_image_uri
+     - Yes
+     -
+     - An ECR repository for storing container images to be run by Braket.
    * - quantum_device
      - No
      - "arn:aws:braket:::device/quantum-simulator/amazon/sv1"
@@ -211,29 +204,40 @@ role with the appropriate permissions to be passed to Braket.
      - An IAM role granting permissions to Braket, S3, ECR, and a few other resources.
    * - ECR repository
      - Yes
-     - :code:`ecr_repo_name`
+     - :code:`ecr_image_uri`
      - An ECR repository for storing container images to be run by Braket.
    * - S3 bucket
      - Yes
      - :code:`s3_bucket`
      - An S3 bucket for storing task-specific data, such as Braket outputs or function inputs.
 
+One can either follow the below instructions to manually create the resources or use the provided terraform script to auto-provision the resources needed.
 
-
-#. Braket jobs are packaged and shipped in containers together with
-   some supporting packages; for more context, see the `"Bring your
-   own container"
-   <https://docs.aws.amazon.com/braket/latest/developerguide/braket-jobs-byoc.html>`_
-   documentation on AWS. This is why an ECR repo is needed.  For more
-   information on configuring an ECR repository, consult the `AWS
-   documentation
-   <https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html>`_.
 #. The `AWS documentation on S3
    <https://docs.aws.amazon.com/AmazonS3/latest/userguide/GetStartedWithS3.html>`_
    details how to configure an S3 bucket.
 #.  The permissions required for the the IAM role are documented in the article
     `"managing access to Amazon Braket" <https://docs.aws.amazon.com/braket/latest/developerguide/braket-manage-access.html>`_.
     The following policy is attached to the default role "CovalentBraketJobsExecutionRole":
+#. In order to use the Braket executor plugin one must create a private ECR registry with a container image that will be used to execute the Braket jobs using covalent. One can either create an ECR repository `manually <https://docs.aws.amazon.com/AmazonECR/latest/userguide/repository-create.html>`_ or use the terraform script provided below. We host the image in our public repository at :code:`public.ecr.aws/covalent/covalent-braket-executor:stable`
+
+.. note::
+
+    The container image can be uploaded to a private ECR as follows
+
+    .. code:: bash
+
+        docker pull public.ecr.aws/covalent/covalent-braket-executor:stable
+
+    Once the image has been obtained, user's can tag it with their registry information and upload to ECR as follows
+
+    .. code:: bash
+
+        aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.<region>.amazonaws.com
+        docker tag public.ecr.aws/covalent/covalent-braket-executor:stable <aws_account_id>.dkr.ecr.<region>.amazonaws.com/<my-repository>:tag
+        docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/<my-repository>:tag
+
+
 
 .. dropdown:: Sample IAM policy for Braket's execution role
 
@@ -242,127 +246,174 @@ role with the appropriate permissions to be passed to Braket.
     {
 	"Version": "2012-10-17",
 	"Statement": [
-	    {
-		"Sid": "VisualEditor0",
-		"Effect": "Allow",
-		"Action": "cloudwatch:PutMetricData",
-		"Resource": "*",
-		"Condition": {
-		    "StringEquals": {
-			"cloudwatch:namespace": "/aws/braket"
-		    }
-		}
-	    },
-	    {
-		"Sid": "VisualEditor1",
-		"Effect": "Allow",
-		"Action": [
-		    "logs:CreateLogStream",
-		    "logs:DescribeLogStreams",
-		    "ecr:GetDownloadUrlForLayer",
-		    "ecr:BatchGetImage",
-		    "logs:StartQuery",
-		    "logs:GetLogEvents",
-		    "logs:CreateLogGroup",
-		    "logs:PutLogEvents",
-		    "ecr:BatchCheckLayerAvailability"
-		],
-		"Resource": [
-		    "arn:aws:ecr:*:348041629502:repository/*",
-		    "arn:aws:logs:*:*:log-group:/aws/braket*"
+			{
+				"Sid": "VisualEditor0",
+				"Effect": "Allow",
+				"Action": "cloudwatch:PutMetricData",
+				"Resource": "*",
+				"Condition": {
+					"StringEquals": {
+					"cloudwatch:namespace": "/aws/braket"
+					}
+				}
+			},
+			{
+				"Sid": "VisualEditor1",
+				"Effect": "Allow",
+				"Action": [
+					"logs:CreateLogStream",
+					"logs:DescribeLogStreams",
+					"ecr:GetDownloadUrlForLayer",
+					"ecr:BatchGetImage",
+					"logs:StartQuery",
+					"logs:GetLogEvents",
+					"logs:CreateLogGroup",
+					"logs:PutLogEvents",
+					"ecr:BatchCheckLayerAvailability"
+				],
+				"Resource": [
+					"arn:aws:ecr:*:348041629502:repository/*",
+					"arn:aws:logs:*:*:log-group:/aws/braket*"
+				]
+			},
+			{
+				"Sid": "VisualEditor2",
+				"Effect": "Allow",
+				"Action": "iam:PassRole",
+				"Resource": "arn:aws:iam::348041629502:role/CovalentBraketJobsExecutionRole",
+				"Condition": {
+					"StringLike": {
+					"iam:PassedToService": "braket.amazonaws.com"
+					}
+				}
+			},
+			{
+				"Sid": "VisualEditor3",
+				"Effect": "Allow",
+				"Action": [
+					"braket:SearchDevices",
+					"s3:CreateBucket",
+					"ecr:BatchDeleteImage",
+					"ecr:BatchGetRepositoryScanningConfiguration",
+					"ecr:DeleteRepository",
+					"ecr:TagResource",
+					"ecr:BatchCheckLayerAvailability",
+					"ecr:GetLifecyclePolicy",
+					"braket:CreateJob",
+					"ecr:DescribeImageScanFindings",
+					"braket:GetJob",
+					"ecr:CreateRepository",
+					"ecr:PutImageScanningConfiguration",
+					"ecr:GetDownloadUrlForLayer",
+					"ecr:DescribePullThroughCacheRules",
+					"ecr:GetAuthorizationToken",
+					"ecr:DeleteLifecyclePolicy",
+					"braket:ListTagsForResource",
+					"ecr:PutImage",
+					"s3:PutObject",
+					"s3:GetObject",
+					"braket:GetDevice",
+					"ecr:UntagResource",
+					"ecr:BatchGetImage",
+					"ecr:DescribeImages",
+					"braket:CancelQuantumTask",
+					"ecr:StartLifecyclePolicyPreview",
+					"braket:CancelJob",
+					"ecr:InitiateLayerUpload",
+					"ecr:PutImageTagMutability",
+					"ecr:StartImageScan",
+					"ecr:DescribeImageReplicationStatus",
+					"ecr:ListTagsForResource",
+					"s3:ListBucket",
+					"ecr:UploadLayerPart",
+					"ecr:CreatePullThroughCacheRule",
+					"ecr:ListImages",
+					"ecr:GetRegistryScanningConfiguration",
+					"braket:TagResource",
+					"ecr:CompleteLayerUpload",
+					"ecr:DescribeRepositories",
+					"ecr:ReplicateImage",
+					"ecr:GetRegistryPolicy",
+					"ecr:PutLifecyclePolicy",
+					"s3:PutBucketPublicAccessBlock",
+					"ecr:GetLifecyclePolicyPreview",
+					"ecr:DescribeRegistry",
+					"braket:SearchJobs",
+					"braket:CreateQuantumTask",
+					"iam:ListRoles",
+					"ecr:PutRegistryScanningConfiguration",
+					"ecr:DeletePullThroughCacheRule",
+					"braket:UntagResource",
+					"ecr:BatchImportUpstreamImage",
+					"braket:GetQuantumTask",
+					"s3:PutBucketPolicy",
+					"braket:SearchQuantumTasks",
+					"ecr:GetRepositoryPolicy",
+					"ecr:PutReplicationConfiguration"
+				],
+				"Resource": "*"
+			},
+			{
+				"Sid": "VisualEditor4",
+				"Effect": "Allow",
+				"Action": "logs:GetQueryResults",
+				"Resource": "arn:aws:logs:*:*:log-group:*"
+			},
+			{
+				"Sid": "VisualEditor5",
+				"Effect": "Allow",
+				"Action": "logs:StopQuery",
+				"Resource": "arn:aws:logs:*:*:log-group:/aws/braket*"
+			}
 		]
-	    },
-	    {
-		"Sid": "VisualEditor2",
-		"Effect": "Allow",
-		"Action": "iam:PassRole",
-		"Resource": "arn:aws:iam::348041629502:role/CovalentBraketJobsExecutionRole",
-		"Condition": {
-		    "StringLike": {
-			"iam:PassedToService": "braket.amazonaws.com"
-		    }
-		}
-	    },
-	    {
-		"Sid": "VisualEditor3",
-		"Effect": "Allow",
-		"Action": [
-		    "braket:SearchDevices",
-		    "s3:CreateBucket",
-		    "ecr:BatchDeleteImage",
-		    "ecr:BatchGetRepositoryScanningConfiguration",
-		    "ecr:DeleteRepository",
-		    "ecr:TagResource",
-		    "ecr:BatchCheckLayerAvailability",
-		    "ecr:GetLifecyclePolicy",
-		    "braket:CreateJob",
-		    "ecr:DescribeImageScanFindings",
-		    "braket:GetJob",
-		    "ecr:CreateRepository",
-		    "ecr:PutImageScanningConfiguration",
-		    "ecr:GetDownloadUrlForLayer",
-		    "ecr:DescribePullThroughCacheRules",
-		    "ecr:GetAuthorizationToken",
-		    "ecr:DeleteLifecyclePolicy",
-		    "braket:ListTagsForResource",
-		    "ecr:PutImage",
-		    "s3:PutObject",
-		    "s3:GetObject",
-		    "braket:GetDevice",
-		    "ecr:UntagResource",
-		    "ecr:BatchGetImage",
-		    "ecr:DescribeImages",
-		    "braket:CancelQuantumTask",
-		    "ecr:StartLifecyclePolicyPreview",
-		    "braket:CancelJob",
-		    "ecr:InitiateLayerUpload",
-		    "ecr:PutImageTagMutability",
-		    "ecr:StartImageScan",
-		    "ecr:DescribeImageReplicationStatus",
-		    "ecr:ListTagsForResource",
-		    "s3:ListBucket",
-		    "ecr:UploadLayerPart",
-		    "ecr:CreatePullThroughCacheRule",
-		    "ecr:ListImages",
-		    "ecr:GetRegistryScanningConfiguration",
-		    "braket:TagResource",
-		    "ecr:CompleteLayerUpload",
-		    "ecr:DescribeRepositories",
-		    "ecr:ReplicateImage",
-		    "ecr:GetRegistryPolicy",
-		    "ecr:PutLifecyclePolicy",
-		    "s3:PutBucketPublicAccessBlock",
-		    "ecr:GetLifecyclePolicyPreview",
-		    "ecr:DescribeRegistry",
-		    "braket:SearchJobs",
-		    "braket:CreateQuantumTask",
-		    "iam:ListRoles",
-		    "ecr:PutRegistryScanningConfiguration",
-		    "ecr:DeletePullThroughCacheRule",
-		    "braket:UntagResource",
-		    "ecr:BatchImportUpstreamImage",
-		    "braket:GetQuantumTask",
-		    "s3:PutBucketPolicy",
-		    "braket:SearchQuantumTasks",
-		    "ecr:GetRepositoryPolicy",
-		    "ecr:PutReplicationConfiguration"
-		],
-		"Resource": "*"
-	    },
-	    {
-		"Sid": "VisualEditor4",
-		"Effect": "Allow",
-		"Action": "logs:GetQueryResults",
-		"Resource": "arn:aws:logs:*:*:log-group:*"
-	    },
-	    {
-		"Sid": "VisualEditor5",
-		"Effect": "Allow",
-		"Action": "logs:StopQuery",
-		"Resource": "arn:aws:logs:*:*:log-group:/aws/braket*"
-	    }
-	]
     }
+
+Users can use the following `Terraform <https://www.terraform.io/>`_ snippet as a starting point to spin up the required resources
+
+.. code-block:: terraform
+
+	provider "aws" {}
+
+	data "aws_caller_identity" "current" {}
+
+
+	resource "aws_s3_bucket" "braket_bucket" {
+		bucket        = "my-s3-bucket-name"
+		force_destroy = true
+	}
+
+	resource "aws_ecr_repository" "braket_ecr_repo" {
+		name                 = "amazon-braket-base-executor-repo"
+		image_tag_mutability = "MUTABLE"
+
+		force_delete = true
+		image_scanning_configuration {
+			scan_on_push = false
+		}
+
+		provisioner "local-exec" {
+			command = "docker pull public.ecr.aws/covalent/covalent-braket-executor:stable && aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin ${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.aws_region}.amazonaws.com && docker tag public.ecr.aws/covalent/covalent-braket-executor:stable ${aws_ecr_repository.braket_ecr_repo.repository_url}:stable && docker push ${aws_ecr_repository.braket_ecr_repo.repository_url}:stable"
+		}
+	}
+
+	resource "aws_iam_role" "braket_iam_role" {
+		name = "amazon-braket-execution-role"
+		assume_role_policy = jsonencode({
+			Version = "2012-10-17"
+			Statement = [
+			{
+				Action = "sts:AssumeRole"
+				Effect = "Allow"
+				Sid    = ""
+				Principal = {
+				Service = "braket.amazonaws.com"
+				}
+			},
+			]
+		})
+		managed_policy_arns = ["arn:aws:iam::aws:policy/AmazonBraketFullAccess"]
+	}
+
 
 .. ===========================================
 .. 5. Source
