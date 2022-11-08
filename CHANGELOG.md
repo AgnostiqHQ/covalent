@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Front-end pending unit tests for the GUI.
+### Docs
+
+- Added DNN tutorial
+- Updated AWS Plugins install instructions
 
 ## [0.208.0-rc.0] - 2022-11-05
 
