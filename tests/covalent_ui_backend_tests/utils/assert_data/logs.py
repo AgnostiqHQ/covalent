@@ -18,6 +18,11 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"Logs mock data"
+import copy
+
+from .config_data import LOG_FORMAT, LOG_LEVEL, LOG_TO_FILE
+
 
 def seed_logs_data():
     """Mock db logs data"""
@@ -26,7 +31,49 @@ def seed_logs_data():
         "wait": "Waiting for application startup.",
         "started": "Started server process [41482]",
     }
+    access = "uvicorn.access"
+    error = "uvicorn.error"
 
+    log = LOG_LEVEL if LOG_TO_FILE else None
+
+    handler_format = {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "default": {
+                "()": "uvicorn.logging.DefaultFormatter",
+                "datefmt": "%Y-%m-%d %H:%M:%S",
+                "format": LOG_FORMAT,
+            },
+            "access": {
+                "()": "uvicorn.logging.AccessFormatter",
+                "datefmt": "%Y-%m-%d %H:%M:%S",
+                "format": LOG_FORMAT,
+            },
+        },
+        "handlers": {
+            "default": {
+                "formatter": "default",
+                "class": "logging.StreamHandler",
+                "stream": "ext://sys.stderr",
+            },
+            "access": {
+                "formatter": "access",
+                "class": "logging.StreamHandler",
+                "stream": "ext://sys.stdout",
+            },
+        },
+        "loggers": {
+            error: {"level": "INFO", "handlers": ["default"], "propogate": False},
+            access: {"level": "INFO", "handlers": ["access"], "propagate": "no"},
+        },
+    }
+    handler_format_1 = copy.deepcopy(handler_format)
+    handler_format_2 = copy.deepcopy(handler_format)
+    handler_format_1["loggers"][error]["level"] = log
+    handler_format_1["loggers"][access]["level"] = log
+    handler_format_2["loggers"][error]["level"] = None
+    handler_format_2["loggers"][access]["level"] = None
     return {
         "test_logs": {
             "api_path": "/api/v1/logs/",
@@ -47,17 +94,17 @@ def seed_logs_data():
                         {
                             "log_date": "2022-09-23 13:14:01.753000+05:30",
                             "status": "INFO",
-                            "message": "Application startup complete.",
+                            "message": messages["startup"],
                         },
                         {
                             "log_date": "2022-09-23 13:13:59.753000+05:30",
                             "status": "INFO",
-                            "message": "Waiting for application startup.",
+                            "message": messages["wait"],
                         },
                         {
                             "log_date": "2022-09-23 13:13:59.752000+05:30",
                             "status": "INFO",
-                            "message": "Started server process [41482]",
+                            "message": messages["started"],
                         },
                     ],
                     "total_count": 5,
@@ -180,17 +227,17 @@ def seed_logs_data():
                         {
                             "log_date": "2022-09-23 09:13:57.753000+05:30",
                             "status": "INFO",
-                            "message": "Application startup complete.",
+                            "message": messages["startup"],
                         },
                         {
                             "log_date": "2022-09-23 08:41:11.753000+05:30",
                             "status": "INFO",
-                            "message": "Waiting for application startup.",
+                            "message": messages["wait"],
                         },
                         {
                             "log_date": "2022-09-23 08:31:52.752000+05:30",
                             "status": "INFO",
-                            "message": "Started server process [41482]",
+                            "message": messages["started"],
                         },
                         {"log_date": None, "status": "INFO", "message": "Killed"},
                     ],
@@ -205,73 +252,7 @@ def seed_logs_data():
             "case_functional_1": {"response_type": "Response"},
         },
         "test_logs_handler": {
-            "handler_format1": {
-                "version": 1,
-                "disable_existing_loggers": False,
-                "formatters": {
-                    "default": {
-                        "()": "uvicorn.logging.DefaultFormatter",
-                        "datefmt": "%Y-%m-%d %H:%M:%S",
-                        "format": "[%(asctime)s,%(msecs)03d] [%(levelname)s] %(message)s",
-                    },
-                    "access": {
-                        "()": "uvicorn.logging.AccessFormatter",
-                        "datefmt": "%Y-%m-%d %H:%M:%S",
-                        "format": "[%(asctime)s,%(msecs)03d] [%(levelname)s] %(message)s",
-                    },
-                },
-                "handlers": {
-                    "default": {
-                        "formatter": "default",
-                        "class": "logging.StreamHandler",
-                        "stream": "ext://sys.stderr",
-                    },
-                    "access": {
-                        "formatter": "access",
-                        "class": "logging.StreamHandler",
-                        "stream": "ext://sys.stdout",
-                    },
-                },
-                "loggers": {
-                    "uvicorn.error": {
-                        "level": "INFO",
-                        "handlers": ["default"],
-                        "propogate": False,
-                    },
-                    "uvicorn.access": {"level": "INFO", "handlers": ["access"], "propagate": "no"},
-                },
-            },
-            "handler_format2": {
-                "version": 1,
-                "disable_existing_loggers": False,
-                "formatters": {
-                    "default": {
-                        "()": "uvicorn.logging.DefaultFormatter",
-                        "datefmt": "%Y-%m-%d %H:%M:%S",
-                        "format": "[%(asctime)s,%(msecs)03d] [%(levelname)s] %(message)s",
-                    },
-                    "access": {
-                        "()": "uvicorn.logging.AccessFormatter",
-                        "datefmt": "%Y-%m-%d %H:%M:%S",
-                        "format": "[%(asctime)s,%(msecs)03d] [%(levelname)s] %(message)s",
-                    },
-                },
-                "handlers": {
-                    "default": {
-                        "formatter": "default",
-                        "class": "logging.StreamHandler",
-                        "stream": "ext://sys.stderr",
-                    },
-                    "access": {
-                        "formatter": "access",
-                        "class": "logging.StreamHandler",
-                        "stream": "ext://sys.stdout",
-                    },
-                },
-                "loggers": {
-                    "uvicorn.error": {"level": None, "handlers": ["default"], "propogate": False},
-                    "uvicorn.access": {"level": None, "handlers": ["access"], "propagate": "no"},
-                },
-            },
+            "handler_format1": handler_format_1,
+            "handler_format2": handler_format_2,
         },
     }

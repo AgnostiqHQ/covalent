@@ -18,17 +18,14 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Settings data"""
+"""Settings mock data"""
 
-import os
+
+from .config_data import BASE_DIR, CONFIG_PATH, EXECUTOR_DIR, LOG_DIR
 
 
 def seed_settings_data():
     """Mock db assert settings data"""
-    config_path = os.environ.get("COVALENT_CONFIG_DIR")
-    log_dir = os.environ.get("COVALENT_LOGDIR")
-    executor_dir = os.environ.get("COVALENT_EXECUTOR_DIR")
-    base_dir = os.environ.get("COVALENT_DATA_DIR")
 
     messages = {"update": "settings updated successfully"}
     return {
@@ -42,11 +39,11 @@ def seed_settings_data():
                 "request_body": {
                     "client": {
                         "sdk": {
-                            "config_file": config_path,
-                            "log_dir": log_dir,
+                            "config_file": CONFIG_PATH,
+                            "log_dir": LOG_DIR,
                             "log_level": "info",
                             "enable_logging": "true",
-                            "executor_dir": executor_dir,
+                            "executor_dir": EXECUTOR_DIR,
                             "no_cluster": "true",
                         }
                     }
@@ -59,11 +56,11 @@ def seed_settings_data():
                 "request_body": {
                     "client": {
                         "": {
-                            "config_file": config_path,
-                            "log_dir": log_dir,
+                            "config_file": CONFIG_PATH,
+                            "log_dir": LOG_DIR,
                             "log_level": "info",
                             "enable_logging": "true",
-                            "executor_dir": executor_dir,
+                            "executor_dir": EXECUTOR_DIR,
                             "no_cluster": "true",
                         }
                     }
@@ -76,15 +73,15 @@ def seed_settings_data():
                 "request_body": {
                     "client": {
                         "sdk": {
-                            "config_file": config_path,
-                            "log_dir": log_dir,
+                            "config_file": CONFIG_PATH,
+                            "log_dir": LOG_DIR,
                             "log_level": "info",
                             "enable_logging": "true",
-                            "executor_dir": executor_dir,
+                            "executor_dir": EXECUTOR_DIR,
                             "no_cluster": "true",
                         },
                     },
-                    "workflow_data": {"storage_type": "local", "base_dir": base_dir},
+                    "workflow_data": {"storage_type": "local", "base_dir": BASE_DIR},
                 },
                 "request_params": {"override_existing": True},
                 "response_data": {"data": messages["update"]},

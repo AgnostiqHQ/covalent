@@ -99,7 +99,7 @@ def is_none(_):
     return "None"
 
 
-choices = {
+types_switch = {
     "list": is_list,
     "dict": is_dict,
     "TransportableObject": is_transportable_object,
@@ -112,7 +112,7 @@ choices = {
 def validate_data(unpickled_object):
     """Validate unpickled object"""
     object_type = type(unpickled_object).__name__
-    switcher = choices.get(object_type, unpickled_object)
+    switcher = types_switch.get(object_type, unpickled_object)
     return switcher(unpickled_object)
 
 

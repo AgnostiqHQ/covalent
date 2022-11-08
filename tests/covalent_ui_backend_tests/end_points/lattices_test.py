@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""Lattices test"""
 from os.path import abspath, dirname
 
 import tests.covalent_ui_backend_tests.utils.main as main
@@ -30,7 +31,7 @@ output_data = seed_lattice_data()
 
 
 def test_lattices():
-    """Test lattices results"""
+    """Test lattices AP"""
     test_data = output_data["test_lattices"]["case1"]
     response = object_test_template(
         api_path=output_data["test_lattices"]["api_path"],

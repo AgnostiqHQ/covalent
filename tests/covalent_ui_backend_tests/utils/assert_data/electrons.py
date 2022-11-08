@@ -18,8 +18,11 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"Electrons mock data"
 
 import os
+
+from .config_data import INVALID_DISPATCH_ID, INVALID_NODE_ID, VALID_DISPATCH_ID, VALID_NODE_ID
 
 
 def seed_electron_data():
@@ -29,7 +32,7 @@ def seed_electron_data():
             "api_path": "/api/v1/dispatches/{}/electron/{}",
             "case1": {
                 "status_code": 200,
-                "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd", "electron_id": 0},
+                "path": {"dispatch_id": VALID_DISPATCH_ID, "electron_id": VALID_NODE_ID},
                 "response_data": {
                     "id": 1,
                     "node_id": 0,
@@ -38,7 +41,7 @@ def seed_electron_data():
                     "storage_path": os.path.abspath(
                         os.path.join(os.path.dirname(__file__), os.pardir)
                     )
-                    + "/mock_files/78525234-72ec-42dc-94a0-f4751707f9cd/node_0",
+                    + f"/mock_files/{VALID_DISPATCH_ID}/node_{VALID_NODE_ID}",
                     "name": "hello",
                     "status": "COMPLETED",
                     "started_at": "2022-09-23T15:31:11",
@@ -49,12 +52,12 @@ def seed_electron_data():
             },
             "case_invalid": {
                 "status_code": 400,
-                "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9ef", "electron_id": 8},
+                "path": {"dispatch_id": INVALID_DISPATCH_ID, "electron_id": INVALID_NODE_ID},
                 "response_data": {
                     "detail": [
                         {
                             "loc": ["path", "dispatch_id"],
-                            "msg": "Dispatch ID 78525234-72ec-42dc-94a0-f4751707f9ef or Electron ID does not exist",
+                            "msg": f"Dispatch ID {INVALID_DISPATCH_ID} or Electron ID does not exist",
                             "type": None,
                         }
                     ]
@@ -66,8 +69,8 @@ def seed_electron_data():
             "case_function_string_1": {
                 "status_code": 200,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
-                    "electron_id": 0,
+                    "dispatch_id": VALID_DISPATCH_ID,
+                    "electron_id": VALID_NODE_ID,
                     "name": "function_string",
                 },
                 "response_data": {
@@ -78,8 +81,8 @@ def seed_electron_data():
             "case_function_1": {
                 "status_code": 200,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
-                    "electron_id": 0,
+                    "dispatch_id": VALID_DISPATCH_ID,
+                    "electron_id": VALID_NODE_ID,
                     "name": "function",
                 },
                 "response_data": {
@@ -90,8 +93,8 @@ def seed_electron_data():
             "case_executor_1": {
                 "status_code": 200,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
-                    "electron_id": 0,
+                    "dispatch_id": VALID_DISPATCH_ID,
+                    "electron_id": VALID_NODE_ID,
                     "name": "executor",
                 },
                 "response_data": {"executor_name": "dask", "executor_details": None},
@@ -99,8 +102,8 @@ def seed_electron_data():
             "case_result_1": {
                 "status_code": 200,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
-                    "electron_id": 0,
+                    "dispatch_id": VALID_DISPATCH_ID,
+                    "electron_id": VALID_NODE_ID,
                     "name": "result",
                 },
                 "response_data": {
@@ -111,8 +114,8 @@ def seed_electron_data():
             "case_value_1": {
                 "status_code": 200,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
-                    "electron_id": 0,
+                    "dispatch_id": VALID_DISPATCH_ID,
+                    "electron_id": VALID_NODE_ID,
                     "name": "value",
                 },
                 "response_data": {"data": "None", "python_object": None},
@@ -120,8 +123,8 @@ def seed_electron_data():
             "case_stdout_1": {
                 "status_code": 200,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
-                    "electron_id": 0,
+                    "dispatch_id": VALID_DISPATCH_ID,
+                    "electron_id": VALID_NODE_ID,
                     "name": "stdout",
                 },
                 "response_data": {
@@ -132,8 +135,8 @@ def seed_electron_data():
             "case_deps_1": {
                 "status_code": 200,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
-                    "electron_id": 0,
+                    "dispatch_id": VALID_DISPATCH_ID,
+                    "electron_id": VALID_NODE_ID,
                     "name": "deps",
                 },
                 "response_data": {"data": None, "python_object": None},
@@ -141,8 +144,8 @@ def seed_electron_data():
             "case_call_before_1": {
                 "status_code": 200,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
-                    "electron_id": 0,
+                    "dispatch_id": VALID_DISPATCH_ID,
+                    "electron_id": VALID_NODE_ID,
                     "name": "call_before",
                 },
                 "response_data": {"data": "", "python_object": None},
@@ -150,8 +153,8 @@ def seed_electron_data():
             "case_call_after_1": {
                 "status_code": 200,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
-                    "electron_id": 0,
+                    "dispatch_id": VALID_DISPATCH_ID,
+                    "electron_id": VALID_NODE_ID,
                     "name": "call_after",
                 },
                 "response_data": {"data": "", "python_object": None},
@@ -159,8 +162,8 @@ def seed_electron_data():
             "case_error_1": {
                 "status_code": 200,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
-                    "electron_id": 0,
+                    "dispatch_id": VALID_DISPATCH_ID,
+                    "electron_id": VALID_NODE_ID,
                     "name": "error",
                 },
                 "response_data": {"data": "", "python_object": None},
@@ -168,15 +171,15 @@ def seed_electron_data():
             "case_error_2": {
                 "status_code": 400,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
-                    "electron_id": 0,
+                    "dispatch_id": VALID_DISPATCH_ID,
+                    "electron_id": VALID_NODE_ID,
                     "name": "inputs",
                 },
                 "response_data": {
                     "detail": [
                         {
                             "loc": ["path", "dispatch_id"],
-                            "msg": "Dispatch ID 78525234-72ec-42dc-94a0-f4751707f9cd or Electron ID does not exist",
+                            "msg": f"Dispatch ID {VALID_DISPATCH_ID} or Electron ID does not exist",
                             "type": None,
                         }
                     ]
@@ -185,8 +188,8 @@ def seed_electron_data():
             "case_info_1": {
                 "status_code": 200,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
-                    "electron_id": 0,
+                    "dispatch_id": VALID_DISPATCH_ID,
+                    "electron_id": VALID_NODE_ID,
                     "name": "info",
                 },
                 "response_data": {"data": "", "python_object": None},
@@ -194,8 +197,8 @@ def seed_electron_data():
             "case_inputs_1": {
                 "status_code": 200,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
-                    "electron_id": 0,
+                    "dispatch_id": VALID_DISPATCH_ID,
+                    "electron_id": VALID_NODE_ID,
                     "name": "inputs",
                 },
                 "response_data": {
@@ -206,23 +209,23 @@ def seed_electron_data():
             "case_bad_request": {
                 "status_code": 422,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
-                    "electron_id": 0,
+                    "dispatch_id": VALID_DISPATCH_ID,
+                    "electron_id": VALID_NODE_ID,
                     "name": "results",
                 },
             },
             "case_invalid": {
                 "status_code": 400,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9ef",
-                    "electron_id": 8,
+                    "dispatch_id": INVALID_DISPATCH_ID,
+                    "electron_id": INVALID_NODE_ID,
                     "name": "function_string",
                 },
                 "response_data": {
                     "detail": [
                         {
                             "loc": ["path", "dispatch_id"],
-                            "msg": "Dispatch ID 78525234-72ec-42dc-94a0-f4751707f9ef or Electron ID does not exist",
+                            "msg": f"Dispatch ID {INVALID_DISPATCH_ID} or Electron ID does not exist",
                             "type": None,
                         }
                     ]

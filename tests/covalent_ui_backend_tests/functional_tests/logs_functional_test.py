@@ -38,12 +38,14 @@ def test_download_logs():
 
 
 def test_log_handler():
+    """Test Log Handler config data"""
     test_data = output_data["test_logs_handler"]["handler_format1"]
     config = log_config()
     assert config == test_data
 
 
 def test_log_handler_without_level(mocker):
+    """Test Log Handler config data (without level information)"""
     mocker.patch("covalent_ui.api.v1.utils.log_handler.log_to_file", False)
     test_data = output_data["test_logs_handler"]["handler_format2"]
     config = log_config()

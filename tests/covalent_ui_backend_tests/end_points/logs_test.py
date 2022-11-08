@@ -17,6 +17,7 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+"""Logs Test"""
 
 import tests.covalent_ui_backend_tests.utils.main as main
 from tests.covalent_ui_backend_tests.utils.assert_data.logs import seed_logs_data
@@ -29,6 +30,7 @@ UI_LOGFILE = "covalent_ui.api.v1.data_layer.logs_dal.UI_LOGFILE"
 
 
 def __get_custom_response(case: str):
+    """Get custom response for logs test case"""
     test_data = output_data["test_logs"][case]
     request = test_data["request_data"]["query"]
     response = object_test_template(
@@ -41,7 +43,7 @@ def __get_custom_response(case: str):
 
 
 def test_logs(mocker):
-    """Test Logs"""
+    """Test Logs API"""
     mocker.patch(
         UI_LOGFILE,
         "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_1.log",
@@ -58,7 +60,7 @@ def test_logs(mocker):
 
 
 def test_logs_case2(mocker):
-    """Test Logs"""
+    """Test Logs API"""
     mocker.patch(
         UI_LOGFILE,
         "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_3.log",
@@ -99,7 +101,7 @@ def test_logs_with_queries(mocker):
 
 
 def test_non_existing_logs(mocker):
-    """Test Missing Logs"""
+    """Test Logs with missing file / data"""
     mocker.patch(
         UI_LOGFILE,
         "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_4.log",
@@ -116,6 +118,7 @@ def test_non_existing_logs(mocker):
 
 
 def test_download_log(mocker):
+    """Test download logs"""
     mocker.patch(
         UI_LOGFILE,
         "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_b.log",

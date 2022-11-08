@@ -18,6 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"Result Webhook mock data"
+
 
 def result_mock_data():
     """Mock data for result webhook"""

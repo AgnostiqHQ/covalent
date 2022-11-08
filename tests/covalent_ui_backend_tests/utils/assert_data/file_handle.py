@@ -18,6 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"File Handler mock data"
+
 
 def mock_file_data():
     """Mock main data"""

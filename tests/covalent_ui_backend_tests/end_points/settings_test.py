@@ -18,6 +18,9 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""Settings API"""
+
+
 import tests.covalent_ui_backend_tests.utils.main as main
 from tests.covalent_ui_backend_tests.utils.assert_data.settings import seed_settings_data
 from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate

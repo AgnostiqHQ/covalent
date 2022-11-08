@@ -18,32 +18,20 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"Main app mock data"
+"""Config data"""
 
+import os
 
-def main_mock_data():
-    """Mock main data"""
-    return {
-        "test_webhook": {
-            "api_path": "/api/webhook",
-            "case1": {
-                "status_code": 200,
-                "response_data": {"ok": True},
-            },
-        },
-        "test_draw": {
-            "api_path": "/api/draw",
-            "case1": {
-                "status_code": 200,
-                "response_data": {"ok": True},
-            },
-        },
-        "test_misc": {
-            "api_path": "/{}",
-            "case1": {
-                "path": {"rest_of_path": "logs"},
-                "status_code": 200,
-                "response_data": {"ok": True},
-            },
-        },
-    }
+from covalent._shared_files.config import get_config
+
+VALID_DISPATCH_ID = "78525234-72ec-42dc-94a0-f4751707f9cd"
+INVALID_DISPATCH_ID = "78525234-72ec-42dc-94a0-f4751707f9ef"
+VALID_NODE_ID = 0
+INVALID_NODE_ID = 8
+CONFIG_PATH = os.environ.get("COVALENT_CONFIG_DIR")
+LOG_DIR = os.environ.get("COVALENT_LOGDIR")
+EXECUTOR_DIR = os.environ.get("COVALENT_EXECUTOR_DIR")
+BASE_DIR = os.environ.get("COVALENT_DATA_DIR")
+LOG_FORMAT = "[%(asctime)s,%(msecs)03d] [%(levelname)s] %(message)s"
+LOG_LEVEL = get_config("sdk.log_level").upper()
+LOG_TO_FILE = get_config("sdk.enable_logging").upper() == "TRUE"

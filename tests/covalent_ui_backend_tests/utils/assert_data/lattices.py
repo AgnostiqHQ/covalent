@@ -18,9 +18,11 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Lattice data"""
+"""Lattice mock data"""
 
 import os
+
+from .config_data import INVALID_DISPATCH_ID, VALID_DISPATCH_ID
 
 
 def seed_lattice_data():
@@ -31,9 +33,9 @@ def seed_lattice_data():
             "api_path": "/api/v1/dispatches/{}",
             "case1": {
                 "status_code": 200,
-                "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd"},
+                "path": {"dispatch_id": VALID_DISPATCH_ID},
                 "response_data": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
+                    "dispatch_id": VALID_DISPATCH_ID,
                     "status": "COMPLETED",
                     "total_electrons": 6,
                     "total_electrons_completed": 6,
@@ -43,7 +45,7 @@ def seed_lattice_data():
                         os.path.join(os.path.dirname(__file__), os.pardir)
                     )
                     + "/mock_files/"
-                    + "78525234-72ec-42dc-94a0-f4751707f9cd",
+                    + VALID_DISPATCH_ID,
                     "description": "",
                     "runtime": 0,
                     "updated_at": None,
@@ -51,7 +53,7 @@ def seed_lattice_data():
             },
             "case_invalid_1": {
                 "status_code": 400,
-                "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9c1"},
+                "path": {"dispatch_id": INVALID_DISPATCH_ID},
                 "response_string": "does not exist",
             },
             "case_invalid_2": {
@@ -62,7 +64,7 @@ def seed_lattice_data():
         "test_lattices_file": {
             "api_path": "/api/v1/dispatches/{}/details/{}",
             "case_results_1": {
-                "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd", "name": "result"},
+                "path": {"dispatch_id": VALID_DISPATCH_ID, "name": "result"},
                 "status_code": 200,
                 "response_data": {
                     "data": '"Hello shore - lattice  !!"',
@@ -72,7 +74,7 @@ def seed_lattice_data():
             "case_function_string_1": {
                 "status_code": 200,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
+                    "dispatch_id": VALID_DISPATCH_ID,
                     "name": "function_string",
                 },
                 "response_data": {
@@ -83,7 +85,7 @@ def seed_lattice_data():
             "case_function_1": {
                 "status_code": 200,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
+                    "dispatch_id": VALID_DISPATCH_ID,
                     "name": "function",
                 },
                 "response_data": {
@@ -93,7 +95,7 @@ def seed_lattice_data():
             },
             "case_inputs_1": {
                 "status_code": 200,
-                "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd", "name": "inputs"},
+                "path": {"dispatch_id": VALID_DISPATCH_ID, "name": "inputs"},
                 "response_data": {
                     "data": "{'args': [], 'kwargs': {'name': 'shore'}}",
                     "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95)\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94]\\x94\\x8c\\x06kwargs\\x94}\\x94\\x8c\\x04name\\x94\\x8c\\x05shore\\x94su.')",
@@ -101,13 +103,13 @@ def seed_lattice_data():
             },
             "case_error_1": {
                 "status_code": 200,
-                "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd", "name": "error"},
+                "path": {"dispatch_id": VALID_DISPATCH_ID, "name": "error"},
                 "response_data": {"data": "", "python_object": None},
             },
             "case_executor_1": {
                 "status_code": 200,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
+                    "dispatch_id": VALID_DISPATCH_ID,
                     "name": "executor",
                 },
                 "response_data": {"executor_name": "dask", "executor_details": None},
@@ -115,7 +117,7 @@ def seed_lattice_data():
             "case_workflow_executor_1": {
                 "status_code": 200,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
+                    "dispatch_id": VALID_DISPATCH_ID,
                     "name": "workflow_executor",
                 },
                 "response_data": {
@@ -126,7 +128,7 @@ def seed_lattice_data():
             "case_transport_graph_1": {
                 "status_code": 200,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
+                    "dispatch_id": VALID_DISPATCH_ID,
                     "name": "transport_graph",
                 },
                 "response_data": "'lattice_metadata': {'executor': 'dask', 'results_dir': '/home/arunmukesh/Desktop/files/results', 'workflow_executor': 'dask', 'deps': {}, 'call_before': [], 'call_after': [], 'executor_data': {}, 'workflow_executor_data': {}}, 'dirty_nodes': []",
@@ -134,7 +136,7 @@ def seed_lattice_data():
             "case_invalid_1": {
                 "status_code": 422,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
+                    "dispatch_id": VALID_DISPATCH_ID,
                     "name": "results",
                 },
                 "response_type": "type_error.enum",
@@ -142,7 +144,7 @@ def seed_lattice_data():
             "case_bad_request": {
                 "status_code": 400,
                 "path": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9c1",
+                    "dispatch_id": INVALID_DISPATCH_ID,
                     "name": "result",
                 },
                 "response_string": "does not exist",
@@ -212,7 +214,5 @@ def seed_lattice_data():
                 },
             },
         },
-        "functional_test_lattices": {
-            "case1": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd", "lattice_id": 1}
-        },
+        "functional_test_lattices": {"case1": {"dispatch_id": VALID_DISPATCH_ID, "lattice_id": 1}},
     }

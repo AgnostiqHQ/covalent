@@ -18,6 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""Summary Test"""
+
 from os.path import abspath, dirname
 
 from sqlalchemy import Boolean, Column, Integer, String
@@ -34,6 +36,8 @@ output_data = seed_summary_data()
 
 
 class MockLattice(MockBase):
+    """Mock Lattice"""
+
     __tablename__ = "lattice"
     id = Column(Integer, primary_key=True)
     dispatch_id = Column(String(2), nullable=False)
@@ -83,7 +87,7 @@ def test_list():
 
 
 def test_list_count():
-    """Test list"""
+    """Test list count"""
     test_data = output_data["test_list"]["case2"]
     response = object_test_template(
         api_path=output_data["test_list"]["api_path"],
@@ -97,7 +101,7 @@ def test_list_count():
 
 
 def test_list_invalid_count():
-    """Test list"""
+    """Test list with invalid count"""
     test_data = output_data["test_list"]["case4"]
     response = object_test_template(
         api_path=output_data["test_list"]["api_path"],
@@ -111,7 +115,7 @@ def test_list_invalid_count():
 
 
 def test_list_search():
-    """Test list"""
+    """Test list with search"""
     test_data = output_data["test_list"]["case2"]
     response = object_test_template(
         api_path=output_data["test_list"]["api_path"],
@@ -167,7 +171,7 @@ def test_delete_invalid_dispatch_id():
 
 
 def test_delete_dispatch_multiple_times():
-    """Test delete from dispatch list"""
+    """Test delete multiple dispatches list"""
     test_data = output_data["test_delete"]["case3"]
     response = object_test_template(
         api_path=output_data["test_delete"]["api_path"],
@@ -181,7 +185,7 @@ def test_delete_dispatch_multiple_times():
 
 
 def test_delete_invalid_uuid():
-    """Test List with invalid offset"""
+    """Test List with invalid UUID"""
     test_data = output_data["test_delete"]["case4"]
     response = object_test_template(
         api_path=output_data["test_delete"]["api_path"],
@@ -222,7 +226,7 @@ def test_delete_none():
 
 
 def test_partial_delete():
-    """Test deleting with NULL value"""
+    """Test deleting with partial dispatches"""
     test_data = output_data["test_delete"]["case8"]
     response = object_test_template(
         api_path=output_data["test_delete"]["api_path"],
@@ -236,7 +240,7 @@ def test_partial_delete():
 
 
 def test_delete_bad_request(mocker):
-    """Test deleting with NULL value"""
+    """Test deleting with bad request"""
     test_data = output_data["test_delete"]["case7"]
     mocker.patch("covalent_ui.api.v1.data_layer.summary_dal.Lattice", MockLattice)
     response = object_test_template(
@@ -317,7 +321,7 @@ def test_delete_all_invalid_filter():
 
 
 def test_delete_all_bad_request(mocker):
-    """Test delete all dispatches"""
+    """Test delete all dispatches with bad request"""
     test_data = output_data["test_delete_all"]["case6"]
     mocker.patch("covalent_ui.api.v1.data_layer.summary_dal.Lattice", MockLattice)
     response = object_test_template(

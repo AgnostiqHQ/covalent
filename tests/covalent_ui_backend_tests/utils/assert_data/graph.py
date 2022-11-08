@@ -18,9 +18,11 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Graph data"""
+"""Graph mock data"""
 
 import datetime
+
+from .config_data import INVALID_DISPATCH_ID, VALID_DISPATCH_ID
 
 
 def seed_graph_data():
@@ -31,9 +33,9 @@ def seed_graph_data():
             "api_path": "api/v1/dispatches/{}/graph",
             "case_test_get_graph": {
                 "status_code": 200,
-                "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd"},
+                "path": {"dispatch_id": VALID_DISPATCH_ID},
                 "response_data": {
-                    "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
+                    "dispatch_id": VALID_DISPATCH_ID,
                     "graph": {
                         "nodes": [
                             {
@@ -145,12 +147,12 @@ def seed_graph_data():
             },
             "case_test_graph_invalid_dispatch_id": {
                 "status_code": 400,
-                "path": {"dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9c1"},
+                "path": {"dispatch_id": INVALID_DISPATCH_ID},
                 "response_data": {
                     "detail": [
                         {
                             "loc": ["path", "dispatch_id"],
-                            "msg": "Dispatch ID 78525234-72ec-42dc-94a0-f4751707f9c1 does not exist",
+                            "msg": f"Dispatch ID {INVALID_DISPATCH_ID} does not exist",
                             "type": None,
                         }
                     ]

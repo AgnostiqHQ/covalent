@@ -18,6 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"Service app mock data"
+
 
 def seed_service_app_data():
     return {

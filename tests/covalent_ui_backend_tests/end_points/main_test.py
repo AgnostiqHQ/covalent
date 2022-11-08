@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""Main Test"""
 
 from pathlib import Path
 
@@ -45,8 +46,8 @@ def test_webhook():
         assert response.json() == test_data["response_data"]
 
 
-def test_draw():
-    """Test webhook"""
+def test_draw(mocker):
+    """Test Draw API"""
     test_data = output_data["test_draw"]["case1"]
     response = object_test_template(
         api_path=output_data["test_draw"]["api_path"],
@@ -60,7 +61,7 @@ def test_draw():
 
 
 def test_root(mocker):
-    """Test root api"""
+    """Test root API"""
     path = str(Path(__file__).parent.parent.parent.parent.absolute()) + "/covalent_ui/webapp/build"
     mocker.patch("covalent_ui.app.templates", Jinja2Templates(directory=path))
     test_data = output_data["test_misc"]["case1"]

@@ -18,6 +18,10 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"Summary mock data"
+
+from .config_data import VALID_DISPATCH_ID
+
 
 def seed_summary_data():
     """Mock db sumary data"""
@@ -72,7 +76,7 @@ def seed_summary_data():
                             "updated_at": "2022-10-27T15:38:43",
                         },
                         {
-                            "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
+                            "dispatch_id": VALID_DISPATCH_ID,
                             "lattice_name": "workflow",
                             "runtime": 0,
                             "total_electrons": 6,
@@ -99,7 +103,7 @@ def seed_summary_data():
                 "response_data": {
                     "items": [
                         {
-                            "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
+                            "dispatch_id": VALID_DISPATCH_ID,
                             "lattice_name": "workflow",
                             "runtime": 0,
                             "total_electrons": 6,
@@ -153,9 +157,9 @@ def seed_summary_data():
             "api_path": "/api/v1/dispatches/delete",
             "case1": {
                 "status_code": 200,
-                "request_data": {"body": {"dispatches": ["78525234-72ec-42dc-94a0-f4751707f9cd"]}},
+                "request_data": {"body": {"dispatches": [VALID_DISPATCH_ID]}},
                 "response_data": {
-                    "success_items": ["78525234-72ec-42dc-94a0-f4751707f9cd"],
+                    "success_items": [VALID_DISPATCH_ID],
                     "failure_items": [],
                     "message": messages["success"],
                 },
@@ -226,7 +230,7 @@ def seed_summary_data():
                 "response_data": {
                     "success_items": [],
                     "failure_items": ["78525234-72ec-42dc-94a0-f4751707f9cd"],
-                    "message": "No dispatches were deleted",
+                    "message": messages["none"],
                 },
             },
             "case8": {
@@ -296,7 +300,7 @@ def seed_summary_data():
                 "response_data": {
                     "success_items": [],
                     "failure_items": [],
-                    "message": "No dispatches were deleted",
+                    "message": messages["none"],
                 },
             },
         },

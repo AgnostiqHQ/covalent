@@ -29,7 +29,7 @@ output_data = seed_graph_data()
 
 
 def test_get_graph():
-    """test get graph"""
+    """test graph API"""
     test_data = output_data["test_graph"]["case_test_get_graph"]
     response = object_test_template(
         api_path=output_data["test_graph"]["api_path"],
@@ -43,7 +43,7 @@ def test_get_graph():
 
 
 def test_graph_invalid_dispatch_id():
-    """test graph invalid dispatch id"""
+    """test graph with invalid dispatch id"""
     test_data = output_data["test_graph"]["case_test_graph_invalid_dispatch_id"]
     response = object_test_template(
         api_path=output_data["test_graph"]["api_path"],

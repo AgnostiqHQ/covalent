@@ -67,6 +67,7 @@ def test_validate_none():
 
 
 def test_read_from_text():
+    """Test read from text"""
     seed_files()
     test_data = mock_data["test_read_text"]
     handler = FileHandler(test_data["file_path"])
@@ -76,6 +77,7 @@ def test_read_from_text():
 
 
 def test_read_from_text_exception():
+    """Test read from text with exceptions"""
     seed_files()
     test_data = mock_data["test_read_text"]
     handler = FileHandler(test_data["file_path"])
@@ -85,9 +87,16 @@ def test_read_from_text_exception():
 
 
 def test_unpickle_data_exception():
+    """Test unpickling data with exceptions"""
     seed_files()
     test_data = mock_data["test_unpickle"]
     handler = FileHandler(test_data["file_path"])
     text_value = handler.read_from_pickle(test_data["case1"]["file_name"])
     assert text_value == test_data["case1"]["response_data"]
     shutil.rmtree(log_output_data["lattice_files"]["path"])
+
+
+def test_models_helper():
+    from covalent_ui.api.v1.utils.models_helper import SortBy
+
+    assert (SortBy._missing_("runtime")) is not None

@@ -45,7 +45,7 @@ def mock_db():
 
 
 def test_electrons():
-    """Test electrons"""
+    """Test electrons API"""
     test_data = output_data["test_electrons"]["case1"]
     response = object_test_template(
         api_path=output_data["test_electrons"]["api_path"],
@@ -59,7 +59,7 @@ def test_electrons():
 
 
 def test_electrons_bad_request():
-    """Test electrons"""
+    """Test electrons for details with bad request"""
     test_data = output_data["test_electrons"]["case_invalid"]
     response = object_test_template(
         api_path=output_data["test_electrons"]["api_path"],
@@ -73,7 +73,7 @@ def test_electrons_bad_request():
 
 
 def test_electrons_details_function_string():
-    """Test overview"""
+    """Test electrons for function string details"""
     test_data = output_data["test_electrons_details"]["case_function_string_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
@@ -87,7 +87,7 @@ def test_electrons_details_function_string():
 
 
 def test_electrons_details_function():
-    """Test overview"""
+    """Test electrons for function details"""
     test_data = output_data["test_electrons_details"]["case_function_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
@@ -101,7 +101,7 @@ def test_electrons_details_function():
 
 
 def test_electrons_details_executor():
-    """Test overview"""
+    """ "Test electrons for executor details"""
     test_data = output_data["test_electrons_details"]["case_executor_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
@@ -115,7 +115,7 @@ def test_electrons_details_executor():
 
 
 def test_electrons_details_result():
-    """Test overview"""
+    """Test electrons for result details"""
     test_data = output_data["test_electrons_details"]["case_result_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
@@ -129,7 +129,7 @@ def test_electrons_details_result():
 
 
 def test_electrons_details_value():
-    """Test overview"""
+    """Test electrons for value details"""
     test_data = output_data["test_electrons_details"]["case_value_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
@@ -143,7 +143,7 @@ def test_electrons_details_value():
 
 
 def test_electrons_details_stdout():
-    """Test overview"""
+    """Test electrons for stdout details"""
     test_data = output_data["test_electrons_details"]["case_stdout_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
@@ -157,7 +157,7 @@ def test_electrons_details_stdout():
 
 
 def test_electrons_details_deps():
-    """Test overview"""
+    """Test electrons for deps details"""
     test_data = output_data["test_electrons_details"]["case_deps_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
@@ -171,7 +171,7 @@ def test_electrons_details_deps():
 
 
 def test_electrons_details_call_before():
-    """Test overview"""
+    """Test electrons for call_before details"""
     test_data = output_data["test_electrons_details"]["case_call_before_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
@@ -185,7 +185,7 @@ def test_electrons_details_call_before():
 
 
 def test_electrons_details_call_after():
-    """Test overview"""
+    """Test electrons for call_after details"""
     test_data = output_data["test_electrons_details"]["case_call_after_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
@@ -199,7 +199,7 @@ def test_electrons_details_call_after():
 
 
 def test_electrons_details_call_error():
-    """Test overview"""
+    """Test electrons for error details"""
     test_data = output_data["test_electrons_details"]["case_error_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
@@ -213,7 +213,7 @@ def test_electrons_details_call_error():
 
 
 def test_electrons_details_info():
-    """Test overview"""
+    """Test electrons for info details"""
     test_data = output_data["test_electrons_details"]["case_info_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
@@ -227,8 +227,7 @@ def test_electrons_details_info():
 
 
 def test_electrons_details_inputs(mocker, mock_db):
-    """Test overview"""
-
+    """Test electrons with detailed inputs"""
     mocker.patch("covalent_dispatcher._service.app.workflow_db", mock_db)
     test_data = output_data["test_electrons_details"]["case_inputs_1"]
     response = object_test_template(
@@ -243,8 +242,7 @@ def test_electrons_details_inputs(mocker, mock_db):
 
 
 def test_electrons_details_inputs_json(mocker):
-    """Test overview"""
-
+    """Test electrons with detailed inputs with JSON data"""
     mocker.patch("covalent_dispatcher._service.app.workflow_db", DataStore())
     test_data = output_data["test_electrons_details"]["case_error_2"]
     response = object_test_template(
@@ -259,7 +257,7 @@ def test_electrons_details_inputs_json(mocker):
 
 
 def test_electrons_file_bad_request():
-    """Test electrons results"""
+    """Test electrons file with bad request"""
     test_data = output_data["test_electrons_details"]["case_bad_request"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
@@ -273,7 +271,7 @@ def test_electrons_file_bad_request():
 
 
 def test_electrons_inputs_bad_request():
-    """Test electrons"""
+    """Test electrons for inputs with bad request"""
     test_data = output_data["test_electrons_details"]["case_invalid"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],

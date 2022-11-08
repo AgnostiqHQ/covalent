@@ -21,6 +21,7 @@
 import uuid
 from datetime import timezone
 
+from fastapi import HTTPException
 from sqlalchemy.sql import func
 
 from covalent._results_manager.results_manager import get_result
@@ -104,8 +105,8 @@ class Electrons:
         from covalent_dispatcher._service.app import get_result
 
         result = get_result(dispatch_id=str(dispatch_id), wait=False)
-        if isinstance(result, JSONResponse):
-            raise Exception(result)
+        if isinstance(result, JSONResponse) and result.status_code == 404:
+            raise HTTPException(status_code=400, detail=result)
         result_object = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
         electron_result = self.get_electrons_id(dispatch_id, electron_id)
         inputs = get_task_inputs(

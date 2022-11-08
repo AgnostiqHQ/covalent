@@ -20,6 +20,7 @@
 
 """Result webhook functional test"""
 
+
 import pytest
 
 import covalent as ct
@@ -60,6 +61,7 @@ def get_mock_result() -> Result:
 
 
 def test_get_ui_url():
+    """Test get UI URL"""
     case1_test = mock_data["test_result_webhooks"]["case1"]
     ui_url = get_ui_url(case1_test["test_path"])
     if case1_test["response_data"]:
@@ -68,12 +70,14 @@ def test_get_ui_url():
 
 @pytest.mark.asyncio
 async def test_send_update():
+    """Test send update"""
     result_object = get_mock_result()
     response = await send_update(result_object)
     assert response is None
 
 
 def test_send_draw_request():
+    """Test draw request"""
     workflow = get_mock_simple_workflow()
     lattice = Lattice.deserialize_from_json(workflow.serialize_to_json())
     response = send_draw_request(lattice)
