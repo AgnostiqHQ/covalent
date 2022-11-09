@@ -56,19 +56,21 @@ Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting
     <td><b style="font-size:30px">✍️ Tutorials and Examples</b></td>
  </tr>
  <tr>
-    <td>Trying to understand more about Covalent? Check out the following resources to understand more about Covalent:
+    <td>
 
   - [What is covalent ?](https://www.covalent.xyz/what-is-covalent/)
   - [Covalent in the era of cloud-HPC](https://www.covalent.xyz/navigating-the-modern-hpc-landscape/)
   - [Basic Concepts of Covalent](https://covalent.readthedocs.io/en/stable/concepts/concepts.html)
-  - [How does covalent work ?](#how-does-it-work)</td>
-    <td>Covalent works seamlessly with any and all standard Python libraries. Here are some examples of how you can use Covalent to run your experiments using various tools to get you started:
+  - [How does covalent work ?](#how-does-it-work)
+</td>
+    <td>
 
   - [Covalent with pytorch for classical machine learning](https://covalent.readthedocs.io/en/latest/tutorials/0_ClassicalMachineLearning/mnist_images/source.html)
   - [Covalent with pennylane for quantum machine learning](https://covalent.readthedocs.io/en/latest/tutorials/1_QuantumMachineLearning/quantum_embedding_kernel/source.html)
   - [Covalent with Qiskit for quantum-SVM](https://covalent.readthedocs.io/en/latest/tutorials/1_QuantumMachineLearning/classical_quantum_svm/source.html)
   - [Covalent with Dask for scaling Ensemble classification](https://covalent.readthedocs.io/en/latest/tutorials/1_QuantumMachineLearning/pennylane_ensemble_classification/source.html)
-  - [Covalent for Deep Neural Network on AWS](https://covalent.readthedocs.io/en/latest/tutorials/machine_learning/dnn_comparison.html)</td>
+  - [Covalent for Deep Neural Network on AWS](https://covalent.readthedocs.io/en/latest/tutorials/machine_learning/dnn_comparison.html)
+</td>
  </tr>
 </table>
 
