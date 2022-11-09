@@ -145,15 +145,15 @@ def _get_abstract_task_inputs(node_id: int, node_name: str, result_object: Resul
 
 
 # Domain: dispatcher
-async def _handle_completed_node(result_object, node_id, pending_deps):
+async def _handle_completed_node(result_object, node_id, pending_parents):
     g = result_object.lattice.transport_graph._graph
 
     ready_nodes = []
     app_log.debug(f"Node {node_id} completed")
     for child, edges in g.adj[node_id].items():
         for edge in edges:
-            pending_deps[child] -= 1
-        if pending_deps[child] < 1:
+            pending_parents[child] -= 1
+        if pending_parents[child] < 1:
             app_log.debug(f"Queuing node {child} for execution")
             ready_nodes.append(child)
 
@@ -183,9 +183,9 @@ async def _handle_cancelled_node(result_object, node_id):
 async def _get_initial_tasks_and_deps(result_object: Result) -> Tuple[int, int, Dict]:
     """Compute the initial batch of tasks to submit and initialize each task's dep count
 
-    Returns: (num_tasks, ready_nodes, pending_deps) where num_tasks is
+    Returns: (num_tasks, ready_nodes, pending_parents) where num_tasks is
         the total number of tasks in the graph, ready_nodes is the
-        initial list of tasks to dispatch, and pending_deps is a map
+        initial list of tasks to dispatch, and pending_parents is a map
         from `node_id` to the number of parents that have yet to
         complete.
 
@@ -193,18 +193,18 @@ async def _get_initial_tasks_and_deps(result_object: Result) -> Tuple[int, int, 
 
     num_tasks = 0
     ready_nodes = []
-    pending_deps = {}
+    pending_parents = {}
 
     g = result_object.lattice.transport_graph._graph
     for node_id, d in g.in_degree():
         app_log.debug(f"Node {node_id} has {d} parents")
 
-        pending_deps[node_id] = d
+        pending_parents[node_id] = d
         num_tasks += 1
         if d == 0:
             ready_nodes.append(node_id)
 
-    return num_tasks, ready_nodes, pending_deps
+    return num_tasks, ready_nodes, pending_parents
 
 
 # Domain: dispatcher
@@ -320,7 +320,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: Queue = Non
     upsert._lattice_data(result_object)
     app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
 
-    tasks_left, initial_nodes, pending_deps = await _get_initial_tasks_and_deps(result_object)
+    tasks_left, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(result_object)
 
     unresolved_tasks = 0
     resolved_tasks = 0
@@ -343,7 +343,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: Queue = Non
 
         if node_status == Result.COMPLETED:
             tasks_left -= 1
-            ready_nodes = await _handle_completed_node(result_object, node_id, pending_deps)
+            ready_nodes = await _handle_completed_node(result_object, node_id, pending_parents)
             for node_id in ready_nodes:
                 unresolved_tasks += 1
                 await _submit_task(result_object, node_id, status_queue, task_futures)

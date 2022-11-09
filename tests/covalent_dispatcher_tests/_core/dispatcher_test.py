@@ -202,36 +202,36 @@ def test_get_abstract_task_inputs():
 async def test_handle_completed_node(mocker):
     """Unit test for completed node handler"""
     status_queue = Queue()
-    pending_deps = {}
+    pending_parents = {}
 
     result_object = get_mock_result()
 
     # tg edges are (1, 0), (0, 2)
-    pending_deps[0] = 1
-    pending_deps[1] = 0
-    pending_deps[2] = 1
+    pending_parents[0] = 1
+    pending_parents[1] = 0
+    pending_parents[2] = 1
 
     mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
 
     node_result = {"node_id": 1, "status": Result.COMPLETED}
 
-    next_nodes = await _handle_completed_node(result_object, 1, pending_deps)
+    next_nodes = await _handle_completed_node(result_object, 1, pending_parents)
     assert next_nodes == [0]
-    assert pending_deps == {0: 0, 1: 0, 2: 1}
+    assert pending_parents == {0: 0, 1: 0, 2: 1}
 
 
 @pytest.mark.asyncio
 async def test_handle_failed_node(mocker):
     """Unit test for failed node handler"""
     status_queue = Queue()
-    pending_deps = {}
+    pending_parents = {}
 
     result_object = get_mock_result()
 
     # tg edges are (1, 0), (0, 2)
-    pending_deps[0] = 1
-    pending_deps[1] = 0
-    pending_deps[2] = 1
+    pending_parents[0] = 1
+    pending_parents[1] = 0
+    pending_parents[2] = 1
 
     mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
     mock_get_node_name = mocker.patch("covalent._results_manager.result.Result._get_node_name")
@@ -242,7 +242,7 @@ async def test_handle_failed_node(mocker):
 
     await _handle_failed_node(result_object, 1)
 
-    assert pending_deps == {0: 1, 1: 0, 2: 1}
+    assert pending_parents == {0: 1, 1: 0, 2: 1}
     assert result_object.status == Result.FAILED
     mock_get_node_name.assert_called_once()
     mock_get_node_error.assert_called_once()
@@ -252,14 +252,14 @@ async def test_handle_failed_node(mocker):
 async def test_handle_cancelled_node(mocker):
     """Unit test for cancelled node handler"""
     status_queue = Queue()
-    pending_deps = {}
+    pending_parents = {}
 
     result_object = get_mock_result()
 
     # tg edges are (1, 0), (0, 2)
-    pending_deps[0] = 1
-    pending_deps[1] = 0
-    pending_deps[2] = 1
+    pending_parents[0] = 1
+    pending_parents[1] = 0
+    pending_parents[2] = 1
 
     mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
 
@@ -267,21 +267,21 @@ async def test_handle_cancelled_node(mocker):
 
     await _handle_cancelled_node(result_object, 1)
 
-    assert pending_deps == {0: 1, 1: 0, 2: 1}
+    assert pending_parents == {0: 1, 1: 0, 2: 1}
     assert result_object.status == Result.CANCELLED
 
 
 @pytest.mark.asyncio
 async def test_get_initial_tasks_and_deps(mocker):
-    """Test internal function for initializing status_queue and pending_deps"""
+    """Test internal function for initializing status_queue and pending_parents"""
     status_queue = Queue()
-    pending_deps = {}
+    pending_parents = {}
 
     result_object = get_mock_result()
-    num_tasks, initial_nodes, pending_deps = await _get_initial_tasks_and_deps(result_object)
+    num_tasks, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(result_object)
 
     assert initial_nodes == [1]
-    assert pending_deps == {0: 1, 1: 0, 2: 1}
+    assert pending_parents == {0: 1, 1: 0, 2: 1}
     assert num_tasks == len(result_object.lattice.transport_graph._graph.nodes)
 
 
