@@ -39,6 +39,10 @@ With Covalent, you:
 - Run experiments from a Jupyter notebook (or whatever your preferred interactive Python environment is).
 - Track workflows and examine results in a browser-based GUI.
 
+<p align="center">
+<img src="./doc/source/_static/Cover-banner-readme.png" width="60%" alt="Covalent value"></img>
+</p>
+
 ## 📦 Installation
 
 Covalent is developed using Python version 3.8 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager:
@@ -57,7 +61,6 @@ Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting
  </tr>
  <tr>
     <td>
-Trying to understand more about Covalent? Check out the following resources to understand more about Covalent:
 
   - [What is covalent ?](https://www.covalent.xyz/what-is-covalent/)
   - [Covalent in the era of cloud-HPC](https://www.covalent.xyz/navigating-the-modern-hpc-landscape/)
@@ -65,7 +68,6 @@ Trying to understand more about Covalent? Check out the following resources to u
   - [How does covalent work ?](#how-does-it-work)
 </td>
     <td>
-Covalent works seamlessly with any and all standard Python libraries. Here are some examples of how you can use Covalent to run your experiments using various tools to get you started:
 
   - [Covalent with pytorch for classical machine learning](https://covalent.readthedocs.io/en/latest/tutorials/0_ClassicalMachineLearning/mnist_images/source.html)
   - [Covalent with pennylane for quantum machine learning](https://covalent.readthedocs.io/en/latest/tutorials/1_QuantumMachineLearning/quantum_embedding_kernel/source.html)
@@ -76,26 +78,6 @@ Covalent works seamlessly with any and all standard Python libraries. Here are s
  </tr>
 </table>
 
-<!-- ## 📚 Know more !
-
-Trying to understand more about Covalent? Check out the following resources to understand more about Covalent:
-
-- [What is covalent ?](https://www.covalent.xyz/what-is-covalent/)
-- [Covalent in the era of cloud-HPC](https://www.covalent.xyz/navigating-the-modern-hpc-landscape/)
-- [Basic Concepts of Covalent](https://covalent.readthedocs.io/en/stable/concepts/concepts.html)
-- [How does covalent work ?](#how-does-it-work)
-
-For a more detailed overview of Covalent, check out the [Covalent documentation](https://covalent.readthedocs.io/en/latest/).
-
-## ✍️ Tutorials and Examples
-
-Covalent works seamlessly with any and all standard Python libraries. Here are some examples of how you can use Covalent to run your experiments using various tools to get you started:
-
-- [Covalent with pytorch for classical machine learning](https://covalent.readthedocs.io/en/latest/tutorials/0_ClassicalMachineLearning/mnist_images/source.html)
-- [Covalent with pennylane for quantum machine learning](https://covalent.readthedocs.io/en/latest/tutorials/1_QuantumMachineLearning/quantum_embedding_kernel/source.html)
-- [Covalent with Qiskit for quantum-SVM](https://covalent.readthedocs.io/en/latest/tutorials/1_QuantumMachineLearning/classical_quantum_svm/source.html)
-- [Covalent with Dask for scaling Ensemble classification](https://covalent.readthedocs.io/en/latest/tutorials/1_QuantumMachineLearning/pennylane_ensemble_classification/source.html)
-- [Covalent for Deep Neural Network on AWS](https://covalent.readthedocs.io/en/latest/tutorials/machine_learning/dnn_comparison.html) -->
 
 ## How Does It Work?
 <img src="https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/cova_archi.png" align="right" width="40%" alt="Covalent Architecture"/>
