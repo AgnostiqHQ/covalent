@@ -57,6 +57,10 @@ Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting
 
 ## 🚀 Getting started
 
+Ready to try it? Go to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide in the documentation.
+
+For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://covalent.readthedocs.io/en/latest/concepts/concepts.html) page in the documentation.
+
 <table border="0">
  <tr>
     <td><b style="font-size:30px">📚 Know more !</b></td>
@@ -90,7 +94,7 @@ Covalent has three main components:
 - A set of services that run locally or on a server to dispatch and execute workflow tasks.
 - A browser-based UI from which to to manage workflows and view results.
 
-You compose workflows using the Covalent API and submit them to the Covalent server. The server analyzes the workflow to determine dependencies between tasks, then dispatches each task to its specified execution backend. Independent tasks are executed concurrently if resources are available.
+You compose workflows using the Covalent API by simply adding a single line of python decorator and submit them to the Covalent server. The server analyzes the workflow to determine dependencies between tasks, then dispatches each task to its specified execution backend. Independent tasks are executed concurrently if resources are available.
 
 The Covalent UI displays the progress of each workflow at the level of individual tasks.
 
@@ -110,10 +114,6 @@ The Covalent server is a lightweight service that runs on your local machine or 
 <summary> <h3>  The Covalent GUI </h3> </summary>
 The Covalent user interface runs as a web server on the machine where the Covalent server is running. The GUI dashboard shows a list of dispatched workflows. From there, you can drill down to workflow details or a graphical view of the workflow. You can also view logs, settings, and result sets.
 </details>
-
-Ready to try it? Go to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide in the documentation.
-
-For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://covalent.readthedocs.io/en/latest/concepts/concepts.html) page in the documentation.
 
 ## 📚 Documentation
 
