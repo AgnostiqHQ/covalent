@@ -26,6 +26,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - When an electron raises an exception during execution, the local and dask executors now try to recover any output that was already
   written.
 
+### Docs
+
+- Added DNN tutorial
+- Updated AWS Plugins install instructions
+- Updated AWS Plugins documentation (minor fixes)
+
 ## [0.208.0-rc.0] - 2022-11-05
 
 ### Authors
