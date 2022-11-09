@@ -53,7 +53,7 @@ Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting
 
 Trying to understand more about Covalent? Check out the following resources to understand more about Covalent:
 
-- [What is covalent ?](https://www.covalent.xyz/what-is-covalent/) 
+- [What is covalent ?](https://www.covalent.xyz/what-is-covalent/)
 - [Covalent in the era of cloud-HPC](https://www.covalent.xyz/navigating-the-modern-hpc-landscape/)
 - [Basic Concepts of Covalent](https://covalent.readthedocs.io/en/stable/concepts/concepts.html)
 - [How does covalent work ?](#how-does-it-work)
