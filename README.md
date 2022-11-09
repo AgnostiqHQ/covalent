@@ -58,10 +58,10 @@ Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting
  <tr>
     <td>Trying to understand more about Covalent? Check out the following resources to understand more about Covalent:
 
-- [What is covalent ?](https://www.covalent.xyz/what-is-covalent/)
-- [Covalent in the era of cloud-HPC](https://www.covalent.xyz/navigating-the-modern-hpc-landscape/)
-- [Basic Concepts of Covalent](https://covalent.readthedocs.io/en/stable/concepts/concepts.html)
-- [How does covalent work ?](#how-does-it-work)</td>
+  - [What is covalent ?](https://www.covalent.xyz/what-is-covalent/)
+  - [Covalent in the era of cloud-HPC](https://www.covalent.xyz/navigating-the-modern-hpc-landscape/)
+  - [Basic Concepts of Covalent](https://covalent.readthedocs.io/en/stable/concepts/concepts.html)
+  - [How does covalent work ?](#how-does-it-work)</td>
     <td>Covalent works seamlessly with any and all standard Python libraries. Here are some examples of how you can use Covalent to run your experiments using various tools to get you started:
 
   - [Covalent with pytorch for classical machine learning](https://covalent.readthedocs.io/en/latest/tutorials/0_ClassicalMachineLearning/mnist_images/source.html)
