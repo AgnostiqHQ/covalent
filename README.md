@@ -28,9 +28,9 @@ Covalent enables a researcher to run computation tasks on an advanced hardware p
 
 Covalent overcomes computational and operational challenges inherent in AI/ML experimentation.
 
-| **Computational challenges**  | **Operational challenges**    |
-|:------------------------------|:------------------------------|
-| <ul><li>Advanced compute hardware is expensive, and access is often limited – shared with other researchers, for example.</li><li>You'd like to iterate quickly, but running large models takes time.</li><li>Parallel computation speeds execution, but requires careful attention to data relationships.</li></ul>|<ul><li>Proliferation of models, datasets, and hardware trials.</li><li> Switching between development tools, including notebooks, scripts, and submission queues.</li><li>Tracking, repeating, and sharing results.</li></ul>|
+| **Computational challenges**                                                                                                                                                                                                                                                                                         | **Operational challenges**                                                                                                                                                                                                     |
+| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <ul><li>Advanced compute hardware is expensive, and access is often limited – shared with other researchers, for example.</li><li>You'd like to iterate quickly, but running large models takes time.</li><li>Parallel computation speeds execution, but requires careful attention to data relationships.</li></ul> | <ul><li>Proliferation of models, datasets, and hardware trials.</li><li> Switching between development tools, including notebooks, scripts, and submission queues.</li><li>Tracking, repeating, and sharing results.</li></ul> |
 
 With Covalent, you:
 - Assign functions to appropriate resources: Use advanced hardware (quantum computers, HPC clusters) for the heavy lifting and commodity hardware for bookkeeping.
@@ -40,7 +40,7 @@ With Covalent, you:
 - Track workflows and examine results in a browser-based GUI.
 
 ## How Does It Work?
-
+<img src="https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/cova_archi.png" align="right" width="40%" alt="Covalent Architecture"/>
 Covalent has three main components:
 - A Python module containing an API that you use to build manageable workflows out of new or existing Python functions.
 - A set of services that run locally or on a server to dispatch and execute workflow tasks.
@@ -49,31 +49,22 @@ Covalent has three main components:
 You compose workflows using the Covalent API and submit them to the Covalent server. The server analyzes the workflow to determine dependencies between tasks, then dispatches each task to its specified execution backend. Independent tasks are executed concurrently if resources are available.
 
 The Covalent UI displays the progress of each workflow at the level of individual tasks.
+
 <details>
-
 <summary> <h3> The Covalent API </h3> </summary>
-
-
 The Covalent API is a Python module containing a small collection of classes that implement server-based workflow management. The key elements are two decorators that wrap functions to create managed *tasks* and *workflows*.
 
 The task decorator is called an *electron*. The electron decorator simply turns the function into a dispatchable task.
 
 The workflow decorator is called a *lattice*. The lattice decorator turns a function composed of electrons into a manageable workflow.
 </details>
-<img src="https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/cova_archi.png" align="right" width="40%" alt="Covalent Architecture"/>
-
 
 <details>
 <summary> <h3>  Covalent Services </h3> </summary>
-
-
 The Covalent server is a lightweight service that runs on your local machine or a server. A dispatcher analyzes workflows (lattices) and hands its component functions (electrons) off to executors. Each executor is an adaptor to a backend hardware resource. Covalent has a growing list of turn-key executors for common compute backends. If no executor exists yet for your compute platform, Covalent supports writing your own.
 </details>
-
 <details>
 <summary> <h3>  The Covalent GUI </h3> </summary>
-
-
 The Covalent user interface runs as a web server on the machine where the Covalent server is running. The GUI dashboard shows a list of dispatched workflows. From there, you can drill down to workflow details or a graphical view of the workflow. You can also view logs, settings, and result sets.
 </details>
 
