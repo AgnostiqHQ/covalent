@@ -21,7 +21,7 @@ Covalent is a Pythonic workflow tool for computational scientists, AI/ML softwar
 
 Covalent enables a researcher to run computation tasks on an advanced hardware platform – such as a quantum computer or serverless HPC cluster – using a single line of code.
 <p align="center">
-<img src="./doc/source/_static/Executor_Gif_Full_List.gif" width="60%" alt="Covalent Executors"></img>
+<img src="./doc/source/_static/Executor_Gif_Full_List.gif" width="100%" alt="Covalent Executors"></img>
 </p>
 
 ## 💭 Why Covalent?
