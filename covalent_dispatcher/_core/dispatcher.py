@@ -39,7 +39,7 @@ from covalent_ui import result_webhook
 
 from .._db import update, upsert
 from .._db.write_result_to_db import update_lattices_data, write_lattice_error
-from . import result as resultsvc
+from . import datamanager as resultsvc
 from . import runner
 
 app_log = logger.app_log

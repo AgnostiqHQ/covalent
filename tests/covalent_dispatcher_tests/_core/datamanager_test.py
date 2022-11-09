@@ -30,7 +30,7 @@ import pytest
 import covalent as ct
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
-from covalent_dispatcher._core.result import (
+from covalent_dispatcher._core.datamanager import (
     _register_result_object,
     _registered_dispatches,
     _update_node_result,
@@ -163,10 +163,10 @@ async def test_update_completed_node(mocker):
 def test_make_dispatch(mocker):
     res = get_mock_result()
     mock_init_result = mocker.patch(
-        "covalent_dispatcher._core.result.initialize_result_object", return_value=res
+        "covalent_dispatcher._core.datamanager.initialize_result_object", return_value=res
     )
     mock_register = mocker.patch(
-        "covalent_dispatcher._core.result._register_result_object", return_value=res
+        "covalent_dispatcher._core.datamanager._register_result_object", return_value=res
     )
     json_lattice = '{"workflow_function": "asdf"}'
     dispatch_id = make_dispatch(json_lattice)

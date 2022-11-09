@@ -40,8 +40,8 @@ from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
 
 from .._db import upsert
 from .._db.write_result_to_db import get_sublattice_electron_id
+from . import datamanager as resultsvc
 from . import dispatcher
-from . import result as resultsvc
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
