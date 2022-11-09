@@ -32,6 +32,10 @@ Covalent overcomes computational and operational challenges inherent in AI/ML ex
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | <ul><li>Advanced compute hardware is expensive, and access is often limited – shared with other researchers, for example.</li><li>You'd like to iterate quickly, but running large models takes time.</li><li>Parallel computation speeds execution, but requires careful attention to data relationships.</li></ul> | <ul><li>Proliferation of models, datasets, and hardware trials.</li><li> Switching between development tools, including notebooks, scripts, and submission queues.</li><li>Tracking, repeating, and sharing results.</li></ul> |
 
+<p align="center">
+<img src="./doc/source/_static/Cover-banner-readme.png" width="100%" alt="Covalent value"></img>
+</p>
+
 With Covalent, you:
 - Assign functions to appropriate resources: Use advanced hardware (quantum computers, HPC clusters) for the heavy lifting and commodity hardware for bookkeeping.
 - Test functions on local servers before shipping them to advanced hardware.
@@ -39,9 +43,7 @@ With Covalent, you:
 - Run experiments from a Jupyter notebook (or whatever your preferred interactive Python environment is).
 - Track workflows and examine results in a browser-based GUI.
 
-<p align="center">
-<img src="./doc/source/_static/Cover-banner-readme.png" width="100%" alt="Covalent value"></img>
-</p>
+
 
 ## 📦 Installation
 
