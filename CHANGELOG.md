@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Added `requirements-client.txt` to MANIFEST file
+
 ### Docs
 
 - Added DNN tutorial
