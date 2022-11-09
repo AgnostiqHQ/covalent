@@ -142,7 +142,7 @@ def test_local_executor_run_exception_handling(mocker):
 def test_local_wrapper_fn_exception_handling(mocker):
     import multiprocessing as mp
 
-    from covalent.executor.utils.local_executor_utils import local_wrapper
+    from covalent.executor.utils.wrappers import local_wrapper
 
     def failing_task():
         raise RuntimeError("Err")

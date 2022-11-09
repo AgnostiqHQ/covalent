@@ -35,7 +35,7 @@ from covalent.executor import BaseExecutor
 
 # Store the wrapper function in an external module to avoid module
 # import errors during pickling
-from covalent.executor.utils.local_executor_utils import local_wrapper
+from covalent.executor.utils.wrappers import local_wrapper
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "LocalExecutor"
