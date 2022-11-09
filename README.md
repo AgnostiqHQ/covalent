@@ -117,7 +117,7 @@ The Covalent user interface runs as a web server on the machine where the Covale
 
 ## 📚 Documentation
 
-The official documentation includes tips on getting started, high level concepts, tutorials, and the API documentation, and more. To learn more, see the [Covalent documentation](https://covalent.readthedocs.io/en/latest/).
+The official documentation includes tips on getting started, high-level concepts, tutorials, and the API documentation, and more. To learn more, see the [Covalent documentation](https://covalent.readthedocs.io/en/latest/).
 
 ## ✔️  Contributing
 
