@@ -92,7 +92,7 @@ Covalent has three main components:
 
 - A Python module containing an API that you use to build manageable workflows out of new or existing Python functions.
 - A set of services that run locally or on a server to dispatch and execute workflow tasks.
-- A browser-based UI from which to to manage workflows and view results.
+- A browser-based UI from which to manage workflows and view results.
 
 You compose workflows using the Covalent API by simply adding a single line of python decorator and submit them to the Covalent server. The server analyzes the workflow to determine dependencies between tasks, then dispatches each task to its specified execution backend. Independent tasks are executed concurrently if resources are available.
 
