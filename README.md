@@ -21,7 +21,7 @@ Covalent is a Pythonic workflow tool for computational scientists, AI/ML softwar
 
 Covalent enables a researcher to run computation tasks on an advanced hardware platform – such as a quantum computer or serverless HPC cluster – using a single line of code.
 <p align="center">
-<img src="./doc/source/_static/Executor_Gif_Full_List.gif" width="80%" alt="Covalent Executors" style="border-radius:10%"></img>
+<img src="./doc/source/_static/Executor_Gif_Full_List.gif" width="60%" alt="Covalent Executors"></img>
 </p>
 
 ## 💭 Why Covalent?
@@ -39,9 +39,40 @@ With Covalent, you:
 - Run experiments from a Jupyter notebook (or whatever your preferred interactive Python environment is).
 - Track workflows and examine results in a browser-based GUI.
 
+## 📦 Installation
+
+Covalent is developed using Python version 3.8 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager:
+
+```console
+pip install covalent
+```
+
+Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide for detailed setup instructions. For a full list of supported platforms, see the Covalent [compatibility matrix](https://covalent.readthedocs.io/en/latest/getting_started/compatibility.html).
+
+## 📚 Know more !
+
+Trying to understand more about Covalent? Check out the following resources to understand more about Covalent:
+
+- [What is covalent ?](https://www.covalent.xyz/what-is-covalent/) 
+- [Covalent in the era of cloud-HPC](https://www.covalent.xyz/navigating-the-modern-hpc-landscape/)
+- [Basic Concepts of Covalent](https://covalent.readthedocs.io/en/stable/concepts/concepts.html)
+- [How does covalent work ?](#how-does-it-work)
+
+
+## Tutorials and Examples
+
+Covalent works seamlessly with any and all standard Python libraries. Here are some examples of how you can use Covalent to run your experiments using various tools to get you started:
+
+- [Covalent with pytorch for classical machine learning](https://covalent.readthedocs.io/en/latest/tutorials/0_ClassicalMachineLearning/mnist_images/source.html)
+- [Covalent with pennylane for quantum machine learning](https://covalent.readthedocs.io/en/latest/tutorials/1_QuantumMachineLearning/quantum_embedding_kernel/source.html)
+- [Covalent with Qiskit for quantum-SVM](https://covalent.readthedocs.io/en/latest/tutorials/1_QuantumMachineLearning/classical_quantum_svm/source.html)
+- [Covalent with Dask for scaling Ensemble classification](https://covalent.readthedocs.io/en/latest/tutorials/1_QuantumMachineLearning/pennylane_ensemble_classification/source.html)
+- [Covalent for Deep Neural Network on AWS](https://covalent.readthedocs.io/en/latest/tutorials/machine_learning/dnn_comparison.html)
+
 ## How Does It Work?
 <img src="https://raw.githubusercontent.com/AgnostiqHQ/covalent/master/doc/source/_static/cova_archi.png" align="right" width="40%" alt="Covalent Architecture"/>
 Covalent has three main components:
+
 - A Python module containing an API that you use to build manageable workflows out of new or existing Python functions.
 - A set of services that run locally or on a server to dispatch and execute workflow tasks.
 - A browser-based UI from which to to manage workflows and view results.
@@ -58,7 +89,6 @@ The task decorator is called an *electron*. The electron decorator simply turns 
 
 The workflow decorator is called a *lattice*. The lattice decorator turns a function composed of electrons into a manageable workflow.
 </details>
-
 <details>
 <summary> <h3>  Covalent Services </h3> </summary>
 The Covalent server is a lightweight service that runs on your local machine or a server. A dispatcher analyzes workflows (lattices) and hands its component functions (electrons) off to executors. Each executor is an adaptor to a backend hardware resource. Covalent has a growing list of turn-key executors for common compute backends. If no executor exists yet for your compute platform, Covalent supports writing your own.
@@ -72,17 +102,6 @@ Ready to try it? Go to the [Getting Started](https://covalent.readthedocs.io/en/
 
 For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://covalent.readthedocs.io/en/latest/concepts/concepts.html) page in the documentation.
 
-
-## 📦 Installation
-
-Covalent is developed using Python version 3.8 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager:
-
-```console
-pip install covalent
-```
-
-Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide for detailed setup instructions. For a full list of supported platforms, see the Covalent [compatibility matrix](https://covalent.readthedocs.io/en/latest/getting_started/compatibility.html).
-
 ## 📚 Documentation
 
 The official documentation includes tips on getting started, high level concepts, tutorials, and the API documentation, and more. To learn more, see the [Covalent documentation](https://covalent.readthedocs.io/en/latest/).
@@ -90,9 +109,6 @@ The official documentation includes tips on getting started, high level concepts
 ## ✔️  Contributing
 
 To contribute to Covalent, refer to the [Contribution Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/CONTRIBUTING.md). We use GitHub's [issue tracking](https://github.com/AgnostiqHQ/covalent/issues) to manage known issues, bugs, and pull requests. Get started by forking the develop branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. Participation in the Covalent community is governed by the [Code of Conduct](https://github.com/AgnostiqHQ/covalent/blob/master/CODE_OF_CONDUCT.md).
-
-
-
 
 ## ⚓ Citation
 
