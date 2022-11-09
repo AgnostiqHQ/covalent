@@ -55,6 +55,7 @@ pip install covalent
 
 Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide for detailed setup instructions. For a full list of supported platforms, see the Covalent [compatibility matrix](https://covalent.readthedocs.io/en/latest/getting_started/compatibility.html).
 
+## 🚀 Getting started
 
 <table border="0">
  <tr>
