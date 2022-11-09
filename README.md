@@ -61,7 +61,7 @@ Ready to try it? Go to the [Getting Started](https://covalent.readthedocs.io/en/
 
 For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://covalent.readthedocs.io/en/latest/concepts/concepts.html) page in the documentation.
 
-<table border="0">
+<table border="0" style="width:100% !important">
  <tr>
     <td><b style="font-size:30px">📚 Know more !</b></td>
     <td><b style="font-size:30px">✍️ Tutorials and Examples</b></td>
