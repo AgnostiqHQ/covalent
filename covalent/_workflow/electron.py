@@ -319,7 +319,7 @@ class Electron:
             active_lattice.electron_outputs.pop(0)
             return output.get_deserialized()
 
-        # Setting metadata for default values according to lattice's metadata
+        # Setting metadata for default values according to lattice's metadata.
         for k in self.metadata:
             if k != "executor":
                 if (
