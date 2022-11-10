@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Electrons will inherit the lattice executors.
 
+### Added 
+
+- Sublattices inherit the parent lattice executor.
+
 ### Docs
 
 - Added DNN tutorial
