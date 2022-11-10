@@ -7,8 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Added DNN tutorial
+- Updated AWS Plugins install instructions
+- Updated AWS Plugins documentation (minor fixes)
+- Rewrote intro material in README.
+- Changed "Citation" in the README.
+- Renamed "Release Notes" to "What's New?" in the README. Updated What's New with a description of the newest GUI functionality.
+
+## [0.208.0-rc.0] - 2022-11-05
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
 ### Operations
 
+- Reverted nightly schedule back to daily at 4:00am
 - Added Alejandro to PAUL_BLART group to allow trigerring of releases
 
 ### Added
@@ -17,6 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Folder transfer unit test.
 - Folder transfer download bug
 - Result objects now print correctly when nodes fail
 - Electrons will inherit the lattice executors.
