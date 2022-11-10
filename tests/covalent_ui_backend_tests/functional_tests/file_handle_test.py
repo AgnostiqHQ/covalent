@@ -33,6 +33,11 @@ output_data = seed_lattice_data()
 mock_data = mock_file_data()
 
 
+def remove_mock_files():
+    shutil.rmtree(log_output_data["lattice_files"]["path"])
+    shutil.rmtree(log_output_data["log_files"]["path"])
+
+
 def test_transportable_object():
     """Handle file objects / unpickled objects for transportable objects"""
     obj_res = transportable_object(None)
@@ -73,7 +78,7 @@ def test_read_from_text():
     handler = FileHandler(test_data["file_path"])
     text_value = handler.read_from_text(test_data["case1"]["file_name"])
     assert text_value == test_data["case1"]["response_data"]
-    shutil.rmtree(log_output_data["lattice_files"]["path"])
+    remove_mock_files()
 
 
 def test_read_from_text_exception():
@@ -83,7 +88,7 @@ def test_read_from_text_exception():
     handler = FileHandler(test_data["file_path"])
     text_value = handler.read_from_text(test_data["case2"]["file_name"])
     assert text_value == test_data["case2"]["response_data"]
-    shutil.rmtree(log_output_data["lattice_files"]["path"])
+    remove_mock_files()
 
 
 def test_unpickle_data_exception():
@@ -93,7 +98,7 @@ def test_unpickle_data_exception():
     handler = FileHandler(test_data["file_path"])
     text_value = handler.read_from_pickle(test_data["case1"]["file_name"])
     assert text_value == test_data["case1"]["response_data"]
-    shutil.rmtree(log_output_data["lattice_files"]["path"])
+    remove_mock_files()
 
 
 def test_models_helper():
