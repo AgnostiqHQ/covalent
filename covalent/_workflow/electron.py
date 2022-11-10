@@ -325,7 +325,7 @@ class Electron:
                 if (
                     k not in consumable_constraints
                     and k in DEFAULT_METADATA_VALUES
-                    and self.get_metadata(k) is DEFAULT_METADATA_VALUES[k]
+                    and self.get_metadata(k) == DEFAULT_METADATA_VALUES[k]
                 ):
                     self.set_metadata(k, active_lattice.get_metadata(k))
             else:
