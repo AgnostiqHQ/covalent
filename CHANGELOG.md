@@ -7,8 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Electrons will inherit the lattice executors.
+
+### Added
+
+- Sublattices inherit the parent lattice executor.
+
 ### Docs
 
+
+- Added DNN tutorial
+- Updated AWS Plugins install instructions
+- Updated AWS Plugins documentation (minor fixes)
+- Rewrote intro material in README.
+- Changed "Citation" in the README.
+- Renamed "Release Notes" to "What's New?" in the README. Updated What's New with a description of the newest GUI functionality.
 - Added "Quick Start" guide.
 - Modified and moved "Getting Started" to "Installation from Source".
 - Corrected some API class names in headers.
