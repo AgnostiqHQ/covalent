@@ -319,15 +319,20 @@ class Electron:
             active_lattice.electron_outputs.pop(0)
             return output.get_deserialized()
 
-        # Setting metadata for default values according to lattice's metadata
-        # If metadata is default, then set it to lattice's default
+        # Setting metadata for default values according to lattice's metadata.
         for k in self.metadata:
-            if (
-                k not in consumable_constraints
-                and k in DEFAULT_METADATA_VALUES
-                and self.get_metadata(k) is DEFAULT_METADATA_VALUES[k]
-            ):
-                self.set_metadata(k, active_lattice.get_metadata(k))
+            if k != "executor":
+                if (
+                    k not in consumable_constraints
+                    and k in DEFAULT_METADATA_VALUES
+                    and self.get_metadata(k) == DEFAULT_METADATA_VALUES[k]
+                ):
+                    self.set_metadata(k, active_lattice.get_metadata(k))
+            else:
+                if self.get_metadata(k) != "":
+                    self.set_metadata(k, self.get_metadata(k))
+                else:
+                    self.set_metadata(k, active_lattice.get_metadata(k))
 
         # Add a node to the transport graph of the active lattice
         self.node_id = active_lattice.transport_graph.add_node(
@@ -520,9 +525,7 @@ def electron(
     _func: Optional[Callable] = None,
     *,
     backend: Optional[str] = None,
-    executor: Optional[
-        Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = DEFAULT_METADATA_VALUES["executor"],
+    executor: Optional[Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]] = "",
     # Add custom metadata fields here
     files: List[FileTransfer] = [],
     deps_bash: Union[DepsBash, List, str] = DEFAULT_METADATA_VALUES["deps"].get("bash", []),

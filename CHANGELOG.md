@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Electrons will inherit the lattice executors.
+- Sublattices inherit the parent lattice executor.
 - When several electrons are running concurrently, their stdout and stderr are stored in the correct graph nodes.
 - Electron errors now appear in the Electron ErrorCard when one clicks on a failed task in the UI.
 - When an electron raises an exception during execution, the local and dask executors now try to recover any output that was already
