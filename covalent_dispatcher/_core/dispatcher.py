@@ -243,8 +243,6 @@ async def _submit_task(result_object, node_id, status_queue, task_futures):
 
         abs_task_input = _get_abstract_task_inputs(node_id, node_name, result_object)
 
-        start_time = datetime.now(timezone.utc)
-
         selected_executor = result_object.lattice.transport_graph.get_node_value(
             node_id, "metadata"
         )["executor"]
@@ -252,16 +250,6 @@ async def _submit_task(result_object, node_id, status_queue, task_futures):
         selected_executor_data = result_object.lattice.transport_graph.get_node_value(
             node_id, "metadata"
         )["executor_data"]
-
-        app_log.debug(f"Collecting deps for task {node_id}")
-
-        node_result = resultsvc.generate_node_result(
-            node_id=node_id,
-            start_time=start_time,
-            status=Result.RUNNING,
-        )
-        await resultsvc._update_node_result(result_object, node_result, status_queue)
-        app_log.debug(f"7: Marking node {node_id} as running (_submit_task)")
 
         app_log.debug(f"Submitting task {node_id} to executor")
 
@@ -273,6 +261,7 @@ async def _submit_task(result_object, node_id, status_queue, task_futures):
             node_name=node_name,
             abstract_inputs=abs_task_input,
             workflow_executor=post_processor,
+            status_queue=status_queue,
         )
 
         # Add the task generated for the node to the list of tasks

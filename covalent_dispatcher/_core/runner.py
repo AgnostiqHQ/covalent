@@ -101,6 +101,7 @@ async def _run_abstract_task(
     abstract_inputs: Dict,
     selected_executor: Any,
     workflow_executor: Any,
+    status_queue: asyncio.Queue,
 ) -> None:
 
     # Resolve abstract task and inputs to their concrete (serialized) values
@@ -114,12 +115,25 @@ async def _run_abstract_task(
     kwargs = {k: input_values[v] for k, v in abstract_kwargs.items()}
     task_input = {"args": args, "kwargs": kwargs}
 
+    app_log.debug(f"Collecting deps for task {node_id}")
+
     try:
         call_before, call_after = _gather_deps(result_object, node_id)
 
     except Exception as ex:
         app_log.error(f"Exception when trying to collect deps: {ex}")
         raise ex
+
+    start_time = datetime.now(timezone.utc)
+
+    node_result = resultsvc.generate_node_result(
+        node_id=node_id,
+        start_time=start_time,
+        status=Result.RUNNING,
+    )
+    app_log.debug(f"7: Marking node {node_id} as running (_submit_task)")
+
+    await resultsvc._update_node_result(result_object, node_result, status_queue)
 
     return await _run_task(
         result_object=result_object,
