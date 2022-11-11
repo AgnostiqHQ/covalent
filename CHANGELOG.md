@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Added "Quick Start" guide.
+- Modified and moved "Getting Started" to "Installation from Source".
+- Corrected some API class names in headers.
+- Added an executors-and-UI graphic.
+
 ## [0.208.0-rc.0] - 2022-11-05
 
 ### Authors
