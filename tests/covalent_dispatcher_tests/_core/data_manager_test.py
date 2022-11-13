@@ -30,7 +30,7 @@ import pytest
 import covalent as ct
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
-from covalent_dispatcher._core.datamanager import (
+from covalent_dispatcher._core.data_manager import (
     _register_result_object,
     _registered_dispatches,
     _update_node_result,
@@ -118,7 +118,7 @@ async def test_update_failed_node(mocker):
     mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
     mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
     mocker.patch(
-        "covalent_dispatcher._core.datamanager.get_status_queue", return_value=status_queue
+        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
     node_result = {"node_id": 0, "status": Result.FAILED}
     await _update_node_result(result_object, node_result)
@@ -139,7 +139,7 @@ async def test_update_cancelled_node(mocker):
     mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
     mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
     mocker.patch(
-        "covalent_dispatcher._core.datamanager.get_status_queue", return_value=status_queue
+        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
 
     node_result = {"node_id": 0, "status": Result.CANCELLED}
@@ -160,7 +160,7 @@ async def test_update_completed_node(mocker):
     mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
     mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
     mocker.patch(
-        "covalent_dispatcher._core.datamanager.get_status_queue", return_value=status_queue
+        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
 
     node_result = {"node_id": 0, "status": Result.COMPLETED}
@@ -171,10 +171,10 @@ async def test_update_completed_node(mocker):
 def test_make_dispatch(mocker):
     res = get_mock_result()
     mock_init_result = mocker.patch(
-        "covalent_dispatcher._core.datamanager.initialize_result_object", return_value=res
+        "covalent_dispatcher._core.data_manager.initialize_result_object", return_value=res
     )
     mock_register = mocker.patch(
-        "covalent_dispatcher._core.datamanager._register_result_object", return_value=res
+        "covalent_dispatcher._core.data_manager._register_result_object", return_value=res
     )
     json_lattice = '{"workflow_function": "asdf"}'
     dispatch_id = make_dispatch(json_lattice)

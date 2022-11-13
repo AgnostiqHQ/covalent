@@ -121,7 +121,7 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
 
     status_queue = asyncio.Queue()
     mocker.patch(
-        "covalent_dispatcher._core.datamanager.get_status_queue", return_value=status_queue
+        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
 
     update.persist(result_object)
@@ -176,7 +176,7 @@ async def test_run_workflow_with_failing_leaf(mocker):
 
     status_queue = asyncio.Queue()
     mocker.patch(
-        "covalent_dispatcher._core.datamanager.get_status_queue", return_value=status_queue
+        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
 
     update.persist(result_object)
@@ -254,7 +254,7 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
 
     status_queue = asyncio.Queue()
     mocker.patch(
-        "covalent_dispatcher._core.datamanager.get_status_queue", return_value=status_queue
+        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
 
     update.persist(result_object)
@@ -286,7 +286,7 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
 
     status_queue = asyncio.Queue()
     mocker.patch(
-        "covalent_dispatcher._core.datamanager.get_status_queue", return_value=status_queue
+        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
 
     def failing_workflow(x):
