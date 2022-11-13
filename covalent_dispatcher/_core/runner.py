@@ -101,7 +101,6 @@ async def _run_abstract_task(
     abstract_inputs: Dict,
     selected_executor: Any,
     workflow_executor: Any,
-    status_queue: asyncio.Queue,
 ) -> None:
 
     # Resolve abstract task and inputs to their concrete (serialized) values
@@ -133,7 +132,7 @@ async def _run_abstract_task(
     )
     app_log.debug(f"7: Marking node {node_id} as running (_submit_task)")
 
-    await resultsvc._update_node_result(result_object, node_result, status_queue)
+    await resultsvc._update_node_result(result_object, node_result)
 
     return await _run_task(
         result_object=result_object,
@@ -321,12 +320,12 @@ def _gather_deps(result_object: Result, node_id: int) -> Tuple[List, List]:
 
 
 # Domain: runner
-async def _run_task_and_update(run_task_callable, result_object, status_queue):
+async def _run_task_and_update(run_task_callable, result_object):
     node_result = await run_task_callable()
 
     # NOTE: This is a blocking operation because of db writes and needs special handling when
     # we switch to an event loop for processing tasks
-    await resultsvc._update_node_result(result_object, node_result, status_queue)
+    await resultsvc._update_node_result(result_object, node_result)
     return node_result
 
 

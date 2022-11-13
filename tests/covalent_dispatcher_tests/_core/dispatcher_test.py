@@ -23,7 +23,6 @@ Tests for the core functionality of the dispatcher.
 """
 
 
-from asyncio import Queue
 from typing import Dict, List
 
 import cloudpickle as pickle
@@ -201,7 +200,6 @@ def test_get_abstract_task_inputs():
 @pytest.mark.asyncio
 async def test_handle_completed_node(mocker):
     """Unit test for completed node handler"""
-    status_queue = Queue()
     pending_parents = {}
 
     result_object = get_mock_result()
@@ -223,7 +221,6 @@ async def test_handle_completed_node(mocker):
 @pytest.mark.asyncio
 async def test_handle_failed_node(mocker):
     """Unit test for failed node handler"""
-    status_queue = Queue()
     pending_parents = {}
 
     result_object = get_mock_result()
@@ -251,7 +248,6 @@ async def test_handle_failed_node(mocker):
 @pytest.mark.asyncio
 async def test_handle_cancelled_node(mocker):
     """Unit test for cancelled node handler"""
-    status_queue = Queue()
     pending_parents = {}
 
     result_object = get_mock_result()
@@ -274,7 +270,6 @@ async def test_handle_cancelled_node(mocker):
 @pytest.mark.asyncio
 async def test_get_initial_tasks_and_deps(mocker):
     """Test internal function for initializing status_queue and pending_parents"""
-    status_queue = Queue()
     pending_parents = {}
 
     result_object = get_mock_result()

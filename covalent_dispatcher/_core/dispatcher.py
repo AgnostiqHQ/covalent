@@ -25,7 +25,6 @@ Defines the core functionality of the dispatcher
 import asyncio
 import json
 import traceback
-from asyncio import Queue
 from datetime import datetime, timezone
 from functools import partial
 from typing import Any, Dict, Tuple
@@ -208,7 +207,7 @@ async def _get_initial_tasks_and_deps(result_object: Result) -> Tuple[int, int, 
 
 
 # Domain: dispatcher
-async def _submit_task(result_object, node_id, status_queue, task_futures):
+async def _submit_task(result_object, node_id):
 
     # Get name of the node for the current task
     node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
@@ -228,7 +227,7 @@ async def _submit_task(result_object, node_id, status_queue, task_futures):
             "status": Result.COMPLETED,
             "output": output,
         }
-        await resultsvc._update_node_result(result_object, node_result, status_queue)
+        await resultsvc._update_node_result(result_object, node_result)
         app_log.debug("8A: Update node success (run_planned_workflow).")
 
     else:
@@ -261,7 +260,6 @@ async def _submit_task(result_object, node_id, status_queue, task_futures):
             node_name=node_name,
             abstract_inputs=abs_task_input,
             workflow_executor=post_processor,
-            status_queue=status_queue,
         )
 
         # Add the task generated for the node to the list of tasks
@@ -269,15 +267,12 @@ async def _submit_task(result_object, node_id, status_queue, task_futures):
             runner._run_task_and_update(
                 run_task_callable=run_task_callable,
                 result_object=result_object,
-                status_queue=status_queue,
             )
         )
 
-        task_futures.append(future)
-
 
 # Domain: dispatcher
-async def _run_planned_workflow(result_object: Result, status_queue: Queue = None) -> Result:
+async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Queue) -> Result:
     """
     Run the workflow in the topological order of their position on the
     transport graph. Does this in an asynchronous manner so that nodes
@@ -294,18 +289,12 @@ async def _run_planned_workflow(result_object: Result, status_queue: Queue = Non
 
     app_log.debug("3: Inside run_planned_workflow (run_planned_workflow).")
 
-    if not status_queue:
-        status_queue = Queue()
-
-    task_futures: list = []
+    result_object._status = Result.RUNNING
+    result_object._start_time = datetime.now(timezone.utc)
 
     app_log.debug(
         f"4: Workflow status changed to running {result_object.dispatch_id} (run_planned_workflow)."
     )
-
-    result_object._status = Result.RUNNING
-    result_object._start_time = datetime.now(timezone.utc)
-
     upsert._lattice_data(result_object)
     app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
 
@@ -316,7 +305,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: Queue = Non
 
     for node_id in initial_nodes:
         unresolved_tasks += 1
-        await _submit_task(result_object, node_id, status_queue, task_futures)
+        await _submit_task(result_object, node_id)
 
     while unresolved_tasks > 0:
         app_log.debug(f"{tasks_left} tasks left to complete")
@@ -335,7 +324,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: Queue = Non
             ready_nodes = await _handle_completed_node(result_object, node_id, pending_parents)
             for node_id in ready_nodes:
                 unresolved_tasks += 1
-                await _submit_task(result_object, node_id, status_queue, task_futures)
+                await _submit_task(result_object, node_id)
 
         if node_status == Result.FAILED:
             await _handle_failed_node(result_object, node_id)
@@ -402,7 +391,8 @@ async def run_workflow(result_object: Result) -> Result:
 
     try:
         _plan_workflow(result_object)
-        result_object = await _run_planned_workflow(result_object)
+        status_queue = resultsvc.get_status_queue(result_object.dispatch_id)
+        result_object = await _run_planned_workflow(result_object, status_queue)
 
     except Exception as ex:
         app_log.error(f"Exception during _run_planned_workflow: {ex}")

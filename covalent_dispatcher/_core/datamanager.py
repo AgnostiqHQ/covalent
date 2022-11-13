@@ -22,6 +22,7 @@
 Defines the core functionality of the result service
 """
 
+import asyncio
 import uuid
 
 from covalent._results_manager import Result
@@ -34,7 +35,12 @@ from .._db import update
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
+# References to result objects of live dispatches
 _registered_dispatches = {}
+
+# Map of dispatch_id -> message_queue for pushing node status updates
+# to dispatcher
+_dispatch_status_queues = {}
 
 
 def generate_node_result(
@@ -63,12 +69,14 @@ def generate_node_result(
 
 
 # Domain: result
-async def _update_node_result(result_object, node_result, status_queue):
+async def _update_node_result(result_object, node_result):
     app_log.warning("Updating node result (run_planned_workflow).")
     update._node(result_object, **node_result)
     await result_webhook.send_update(result_object)
     node_id = node_result["node_id"]
     node_status = node_result["status"]
+    dispatch_id = result_object.dispatch_id
+    status_queue = get_status_queue(dispatch_id)
     await status_queue.put((node_id, node_status))
 
 
@@ -135,7 +143,13 @@ def get_result_object(dispatch_id: str) -> Result:
 def _register_result_object(result_object: Result):
     dispatch_id = result_object.dispatch_id
     _registered_dispatches[dispatch_id] = result_object
+    _dispatch_status_queues[dispatch_id] = asyncio.Queue()
 
 
 def unregister_dispatch(dispatch_id: str):
+    del _dispatch_status_queues[dispatch_id]
     del _registered_dispatches[dispatch_id]
+
+
+def get_status_queue(dispatch_id: str):
+    return _dispatch_status_queues[dispatch_id]

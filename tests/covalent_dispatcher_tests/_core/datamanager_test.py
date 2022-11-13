@@ -117,9 +117,11 @@ async def test_update_failed_node(mocker):
     mock_fail_handler = mocker.patch("covalent_dispatcher._core.dispatcher._handle_failed_node")
     mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
     mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
-
+    mocker.patch(
+        "covalent_dispatcher._core.datamanager.get_status_queue", return_value=status_queue
+    )
     node_result = {"node_id": 0, "status": Result.FAILED}
-    await _update_node_result(result_object, node_result, status_queue)
+    await _update_node_result(result_object, node_result)
 
     status_queue.put.assert_awaited_with((0, Result.FAILED))
 
@@ -136,9 +138,12 @@ async def test_update_cancelled_node(mocker):
     )
     mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
     mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
+    mocker.patch(
+        "covalent_dispatcher._core.datamanager.get_status_queue", return_value=status_queue
+    )
 
     node_result = {"node_id": 0, "status": Result.CANCELLED}
-    await _update_node_result(result_object, node_result, status_queue)
+    await _update_node_result(result_object, node_result)
     status_queue.put.assert_awaited_with((0, Result.CANCELLED))
 
 
@@ -154,9 +159,12 @@ async def test_update_completed_node(mocker):
     )
     mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
     mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
+    mocker.patch(
+        "covalent_dispatcher._core.datamanager.get_status_queue", return_value=status_queue
+    )
 
     node_result = {"node_id": 0, "status": Result.COMPLETED}
-    await _update_node_result(result_object, node_result, status_queue)
+    await _update_node_result(result_object, node_result)
     status_queue.put.assert_awaited_with((0, Result.COMPLETED))
 
 

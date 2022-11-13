@@ -22,6 +22,7 @@
 Integration tests for the dispatcher, runner, and result modules
 """
 
+import asyncio
 
 import pytest
 
@@ -118,6 +119,11 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
         "covalent_dispatcher._core.runner.resultsvc.get_result_object", return_value=result_object
     )
 
+    status_queue = asyncio.Queue()
+    mocker.patch(
+        "covalent_dispatcher._core.datamanager.get_status_queue", return_value=status_queue
+    )
+
     update.persist(result_object)
     result_object = await run_workflow(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
@@ -166,6 +172,11 @@ async def test_run_workflow_with_failing_leaf(mocker):
     )
     mocker.patch(
         "covalent_dispatcher._core.runner.resultsvc.get_result_object", return_value=result_object
+    )
+
+    status_queue = asyncio.Queue()
+    mocker.patch(
+        "covalent_dispatcher._core.datamanager.get_status_queue", return_value=status_queue
     )
 
     update.persist(result_object)
@@ -241,6 +252,11 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
         "covalent_dispatcher._core.runner.resultsvc.get_result_object", return_value=result_object
     )
 
+    status_queue = asyncio.Queue()
+    mocker.patch(
+        "covalent_dispatcher._core.datamanager.get_status_queue", return_value=status_queue
+    )
+
     update.persist(result_object)
 
     result_object = await run_workflow(result_object)
@@ -267,6 +283,11 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     )
 
     update.persist(result_object)
+
+    status_queue = asyncio.Queue()
+    mocker.patch(
+        "covalent_dispatcher._core.datamanager.get_status_queue", return_value=status_queue
+    )
 
     def failing_workflow(x):
         assert False
