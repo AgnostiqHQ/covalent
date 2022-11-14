@@ -964,6 +964,9 @@ async def test_run_workflow_exception(mocker):
     mock_update_lattices_data = mocker.patch(
         "covalent_dispatcher._core.execution.update_lattices_data"
     )
+    mock_upsert_lattice_data = mocker.patch(
+        "covalent_dispatcher._core.execution.upsert._lattice_data"
+    )
     mock_write_lattice_error = mocker.patch(
         "covalent_dispatcher._core.execution.write_lattice_error"
     )
@@ -972,4 +975,5 @@ async def test_run_workflow_exception(mocker):
 
     assert result.status == Result.FAILED
     mock_update_lattices_data.assert_called_once()
+    mock_upsert_lattice_data.assert_called_once()
     mock_write_lattice_error.assert_called_once()
