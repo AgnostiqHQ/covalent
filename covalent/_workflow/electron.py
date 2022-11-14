@@ -595,10 +595,8 @@ def electron(
     if isinstance(call_after, DepsCall):
         call_after = [call_after]
 
-    if call_before:
-        call_before = internal_call_before_deps + call_before
-    if call_after:
-        call_after = internal_call_after_deps + call_after
+    call_before = internal_call_before_deps + call_before
+    call_after = internal_call_after_deps + call_after
 
     constraints = {
         "executor": executor,

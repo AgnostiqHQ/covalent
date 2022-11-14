@@ -29,33 +29,32 @@ def test_electrons_get_lattice_metadata_1():
 
     electron_bash_dep = ct.DepsBash(["yum install rustc"])
     lattice_bash_dep = ct.DepsBash(["yum install kernel"])
+    ft_before = ct.fs.FileTransfer("/home/ubuntu/src_file", "/home/ubuntu/dest_file")
 
     # Construct tasks as "electrons"
-    @ct.electron(executor="electron_executor", deps_bash=electron_bash_dep)
-    def join_words(a, b):
-        return ", ".join([a, b])
-
-    @ct.electron(executor="electron_executor", deps_bash=electron_bash_dep)
-    def excitement(a):
-        return f"{a}!"
+    @ct.electron(executor="electron_executor", deps_bash=electron_bash_dep, files=[ft_before])
+    def task(x):
+        return x
 
     # Construct a workflow of tasks
     @ct.lattice(executor="awslambda", deps_bash=lattice_bash_dep)
-    def hello_world(a, b):
+    def hello_world(x):
         """This is a basic hello world dispatch"""
-        phrase = join_words(a, b)
-        return excitement(phrase)
+        return task(x)
 
     # Dispatch the workflow
-    hello_world.build_graph("hello", "world")
+    hello_world.build_graph(1)
 
     data = hello_world.transport_graph.serialize_to_json()
     data = json.loads(data)
 
     for i in data["nodes"]:
         if "parameter" not in i["name"]:
+            print(i)
             assert i["metadata"]["executor"] == "electron_executor"
             assert i["metadata"]["deps"]["bash"] == electron_bash_dep.to_dict()
+            assert len(i["metadata"]["call_before"]) == 2
+            assert len(i["metadata"]["call_after"]) == 0
 
 
 def test_electrons_get_lattice_metadata_2():
@@ -64,25 +63,23 @@ def test_electrons_get_lattice_metadata_2():
 
     electron_bash_dep = ct.DepsBash(["yum install rustc"])
     lattice_bash_dep = ct.DepsBash(["yum install kernel"])
+    ft_after = ct.fs.FileTransfer(
+        "/home/ubuntu/src_file", "/home/ubuntu/dest_file", order=ct.fs.Order.AFTER
+    )
 
     # Construct tasks as "electrons"
-    @ct.electron
-    def join_words(a, b):
-        return ", ".join([a, b])
-
-    @ct.electron
-    def excitement(a):
-        return f"{a}!"
+    @ct.electron(files=[ft_after])
+    def task(x):
+        return x
 
     # Construct a workflow of tasks
     @ct.lattice(executor="lattice_executor", deps_bash=lattice_bash_dep)
-    def hello_world(a, b):
+    def hello_world(x):
         """This is a basic hello world dispatch"""
-        phrase = join_words(a, b)
-        return excitement(phrase)
+        return task(x)
 
     # Dispatch the workflow
-    hello_world.build_graph("hello", "world")
+    hello_world.build_graph(1)
 
     data = hello_world.transport_graph.serialize_to_json()
     data = json.loads(data)
@@ -91,6 +88,8 @@ def test_electrons_get_lattice_metadata_2():
         if "parameter" not in i["name"]:
             assert i["metadata"]["executor"] == "lattice_executor"
             assert i["metadata"]["deps"]["bash"] == lattice_bash_dep.to_dict()
+            assert len(i["metadata"]["call_before"]) == 1
+            assert len(i["metadata"]["call_after"]) == 1
 
 
 def test_electrons_get_lattice_metadata_3():
