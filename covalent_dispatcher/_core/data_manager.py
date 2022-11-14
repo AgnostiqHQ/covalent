@@ -101,6 +101,7 @@ def initialize_result_object(
     if parent_result_object:
         result_object._root_dispatch_id = parent_result_object._root_dispatch_id
 
+    result_object._electron_id = parent_electron_id
     result_object._initialize_nodes()
     app_log.debug("2: Constructed result object and initialized nodes.")
 
