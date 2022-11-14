@@ -21,3 +21,7 @@
 
 class MissingLatticeRecordError(Exception):
     pass
+
+
+class TaskRuntimeError(Exception):
+    pass
