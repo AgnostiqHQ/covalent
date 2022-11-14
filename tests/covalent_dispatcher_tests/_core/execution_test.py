@@ -78,7 +78,7 @@ def get_mock_result() -> Result:
         print("Error!", file=sys.stderr)
         return x
 
-    @ct.lattice(results_dir=TEST_RESULTS_DIR)
+    @ct.lattice(results_dir=TEST_RESULTS_DIR, deps_bash=ct.DepsBash(["ls"]))
     def pipeline(x):
         res1 = task(x)
         res2 = task(res1)
@@ -691,10 +691,26 @@ def test_build_sublattice_graph():
     def workflow(x):
         return task(x)
 
-    json_lattice = _build_sublattice_graph(workflow, 1)
+    parent_metadata = {
+        "executor": "parent_executor",
+        "executor_data": {},
+        "workflow_executor": "my_postprocessor",
+        "workflow_executor_data": {},
+        "deps": {"bash": None, "pip": None},
+        "call_before": [],
+        "call_after": [],
+        "results_dir": None,
+    }
+
+    json_lattice = _build_sublattice_graph(workflow, parent_metadata, 1)
     lattice = Lattice.deserialize_from_json(json_lattice)
 
     assert list(lattice.transport_graph._graph.nodes) == [0, 1]
+
+    for k in lattice.metadata.keys():
+        # results_dir will be deprecated soon
+        if k != "results_dir" and k != "workflow_executor" and k != "workflow_executor_data":
+            assert parent_metadata[k] == lattice.metadata[k]
 
 
 @pytest.mark.asyncio
@@ -722,9 +738,27 @@ async def test_dispatch_sync_sublattice(test_db, mocker):
         serialized_callable=serialized_callable,
         workflow_executor=["local", {}],
     )
+
+    # check that sublattice inherits parent lattice's bash dep
+    sub_bash_dep = sub_result.lattice.metadata["deps"]["bash"]["attributes"]["commands"]
+    assert sub_bash_dep[0] == "ls"
     assert sub_result.result == 2
 
-    # Check handling of invalid workflow executors
+    sub_workflow.metadata["deps"]["bash"] = ct.DepsBash(["pwd"])
+    serialized_callable = ct.TransportableObject(sub_workflow)
+    sub_result = await _dispatch_sync_sublattice(
+        parent_result_object=result_object,
+        parent_electron_id=1,
+        inputs=inputs,
+        serialized_callable=serialized_callable,
+        workflow_executor=["local", {}],
+    )
+
+    # check that sublattice's explicit bash dep overrides parent lattice's bash dep
+    sub_bash_dep = sub_result.lattice.metadata["deps"]["bash"]["attributes"]["commands"]
+    assert sub_bash_dep[0] == "pwd"
+
+    # Now Check handling of invalid workflow executors
 
     sub_result = await _dispatch_sync_sublattice(
         parent_result_object=result_object,

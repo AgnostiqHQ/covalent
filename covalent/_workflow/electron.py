@@ -326,7 +326,10 @@ class Electron:
                 and k in DEFAULT_METADATA_VALUES
                 and not self.get_metadata(k)
             ):
-                self.set_metadata(k, active_lattice.get_metadata(k))
+                meta = active_lattice.get_metadata(k)
+                if not meta:
+                    meta = DEFAULT_METADATA_VALUES[k]
+                self.set_metadata(k, meta)
 
         # Add a node to the transport graph of the active lattice
         self.node_id = active_lattice.transport_graph.add_node(

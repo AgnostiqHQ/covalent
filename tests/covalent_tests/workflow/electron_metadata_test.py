@@ -91,3 +91,34 @@ def test_electrons_get_lattice_metadata_2():
         if "parameter" not in i["name"]:
             assert i["metadata"]["executor"] == "lattice_executor"
             assert i["metadata"]["deps"]["bash"] == lattice_bash_dep.to_dict()
+
+
+def test_electrons_get_lattice_metadata_3():
+    """case 3: check that default metadata applies if both electron
+    and lattice metadata are unset"""
+
+    from dataclasses import asdict
+
+    import covalent as ct
+    from covalent._shared_files.defaults import DefaultMetadataValues
+
+    DEFAULT_METADATA_VALUES = asdict(DefaultMetadataValues())
+    electron_bash_dep = ct.DepsBash(["yum install rustc"])
+    lattice_bash_dep = ct.DepsBash(["yum install kernel"])
+
+    # Construct tasks as "electrons"
+    @ct.electron
+    def task(x):
+        return x
+
+    # Construct a workflow of tasks
+    @ct.lattice
+    def hello_world(x):
+        """This is a basic hello world dispatch"""
+        return task(x)
+
+    # Dispatch the workflow
+    hello_world.build_graph(1)
+
+    node_meta = hello_world.transport_graph.get_node_value(0, "metadata")
+    node_meta["executor"] == DEFAULT_METADATA_VALUES["executor"]
