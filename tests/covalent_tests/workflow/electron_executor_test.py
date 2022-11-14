@@ -18,27 +18,29 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Unit tests to test whether electrons inherit lattice executor"""
+"""Unit tests to test whether electrons inherit lattice metadata correctly"""
 
 import json
 
 
-def test_electrons_get_lattice_executor():
-    """case 1 - covalent started with local, Lattice executor set to dask.
-    This checks electron executors are changed to dask."""
+def test_electrons_get_lattice_metadata_1():
+    """case 1: test explicit electron metadata always wins"""
     import covalent as ct
 
+    electron_bash_dep = ct.DepsBash(["yum install rustc"])
+    lattice_bash_dep = ct.DepsBash(["yum install kernel"])
+
     # Construct tasks as "electrons"
-    @ct.electron
+    @ct.electron(executor="electron_executor", deps_bash=electron_bash_dep)
     def join_words(a, b):
         return ", ".join([a, b])
 
-    @ct.electron
+    @ct.electron(executor="electron_executor", deps_bash=electron_bash_dep)
     def excitement(a):
         return f"{a}!"
 
     # Construct a workflow of tasks
-    @ct.lattice(executor="dask")
+    @ct.lattice(executor="awslambda", deps_bash=lattice_bash_dep)
     def hello_world(a, b):
         """This is a basic hello world dispatch"""
         phrase = join_words(a, b)
@@ -52,25 +54,28 @@ def test_electrons_get_lattice_executor():
 
     for i in data["nodes"]:
         if "parameter" not in i["name"]:
-            assert i["metadata"]["executor"] == "dask"
+            assert i["metadata"]["executor"] == "electron_executor"
+            assert i["metadata"]["deps"]["bash"] == electron_bash_dep.to_dict()
 
 
-def test_electrons_precede_lattice_executor():
-    """case 2 - covalent started with local, Lattice executor set to dask, excitement electron executor changed to local.
-    This checks whether the electron executor is preceded over the lattice executor."""
+def test_electrons_get_lattice_metadata_2():
+    """case 2: electron with unset metadata inherits lattice metadata"""
     import covalent as ct
+
+    electron_bash_dep = ct.DepsBash(["yum install rustc"])
+    lattice_bash_dep = ct.DepsBash(["yum install kernel"])
 
     # Construct tasks as "electrons"
     @ct.electron
     def join_words(a, b):
         return ", ".join([a, b])
 
-    @ct.electron(executor="local")
+    @ct.electron
     def excitement(a):
         return f"{a}!"
 
     # Construct a workflow of tasks
-    @ct.lattice(executor="dask")
+    @ct.lattice(executor="lattice_executor", deps_bash=lattice_bash_dep)
     def hello_world(a, b):
         """This is a basic hello world dispatch"""
         phrase = join_words(a, b)
@@ -83,7 +88,6 @@ def test_electrons_precede_lattice_executor():
     data = json.loads(data)
 
     for i in data["nodes"]:
-        if ("parameter" not in i["name"]) and ("excitement" in i["name"]):
-            assert i["metadata"]["executor"] == "local"
-        elif "parameter" not in i["name"]:
-            assert i["metadata"]["executor"] == "dask"
+        if "parameter" not in i["name"]:
+            assert i["metadata"]["executor"] == "lattice_executor"
+            assert i["metadata"]["deps"]["bash"] == lattice_bash_dep.to_dict()
