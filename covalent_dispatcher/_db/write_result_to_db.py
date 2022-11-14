@@ -220,6 +220,7 @@ def insert_electrons_data(
 
     with workflow_db.session() as session:
         session.add(electron_row)
+        session.flush()
         electron_id = electron_row.id
         session.commit()
 
@@ -396,6 +397,22 @@ def get_sublattice_electron_id(parent_dispatch_id: str, sublattice_node_id: int)
         )
 
     return sublattice_electron_id
+
+
+def resolve_electron_id(eid: int):
+    """Given an electron's unique id, return the corresponding
+    dispatch_id and node_id
+    """
+    with workflow_db.session() as session:
+        row = (
+            session.query(Lattice, Electron)
+            .where(Electron.id == eid, Lattice.id == Electron.parent_lattice_id)
+            .first()
+        )
+        dispatch_id = row.Lattice.dispatch_id
+        node_id = row.Electron.transport_graph_node_id
+
+    return dispatch_id, node_id
 
 
 def write_lattice_error(dispatch_id: str, error: str):
