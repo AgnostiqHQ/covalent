@@ -20,6 +20,7 @@
 
 """File handlers"""
 
+import base64
 import json
 
 import cloudpickle as pickle
@@ -27,15 +28,28 @@ import cloudpickle as pickle
 from covalent._workflow.transport import TransportableObject, _TransportGraph
 
 
+def transportable_object(obj):
+    """Decode transportable object
+
+    Args:
+        obj: Covalent transportable object
+    Returns:
+        Decoded transportable object
+    """
+    if obj:
+        load_pickle = base64.b64decode(obj._object.encode("utf-8"))
+        return f"\npickle.loads({load_pickle})"
+    return None
+
+
 def validate_data(unpickled_object):
+
     """Validate unpickled object"""
     if isinstance(unpickled_object, list):
         if not (unpickled_object):
             return ""
         else:
-            list_str = ""
-            for obj in unpickled_object:
-                list_str += obj
+            list_str = "".join([obj for obj in unpickled_object])
             return list_str
     if isinstance(unpickled_object, dict):
         args_array = []
@@ -53,7 +67,14 @@ def validate_data(unpickled_object):
                     else None
                 )
 
-            return json.dumps({"args": args_array, "kwargs": kwargs_array})
+            to_transportable_object = TransportableObject(
+                {"args": tuple(args_array), "kwargs": kwargs_array}
+            )
+            object_bytes = transportable_object(to_transportable_object)
+            return (
+                str(({"args": tuple(args_array), "kwargs": kwargs_array})),
+                f"import pickle{object_bytes}",
+            )
         else:
             return None
     elif isinstance(unpickled_object, str):
@@ -61,12 +82,16 @@ def validate_data(unpickled_object):
             unpickled_object if (unpickled_object != "" or unpickled_object is not None) else None
         )
     elif isinstance(unpickled_object, TransportableObject):
+        object_bytes = transportable_object(unpickled_object)
         res = unpickled_object.object_string
-        return json.dumps(res)
+        return (
+            json.dumps(res),
+            f"import pickle{object_bytes}",
+        )
     elif isinstance(unpickled_object, _TransportGraph):
         return str(unpickled_object.__dict__)
     else:
-        return unpickled_object
+        return unpickled_object, unpickled_object
 
 
 class FileHandler:
@@ -80,7 +105,7 @@ class FileHandler:
         try:
             unpickled_object = self.__unpickle_file(path)
             return validate_data(unpickled_object)
-        except Exception:
+        except Exception as e:
             return None
 
     def read_from_text(self, path):

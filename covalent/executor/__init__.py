@@ -31,7 +31,7 @@ from typing import Any, Dict, List, Union
 import pkg_resources
 
 from .._shared_files import logger
-from .._shared_files.config import CMType, get_config, update_config
+from .._shared_files.config import get_config, update_config
 from .base import BaseExecutor, wrapper_fn
 
 app_log = logger.app_log
@@ -79,7 +79,7 @@ class _ExecutorManager:
         self._load_executors(pkg_plugins_path)
 
         # Look for executor plugins in a user-defined path:
-        user_plugins_path = get_config(CMType.CLIENT, "sdk.executor_dir")
+        user_plugins_path = get_config("sdk.executor_dir")
         self._load_executors(user_plugins_path)
 
         # Look for pip-installed plugins:
@@ -106,13 +106,13 @@ class _ExecutorManager:
 
         elif isinstance(name, str):
             if name in self.executor_plugins_map:
-                update_config(CMType.CLIENT)
-                default_options = get_config(CMType.CLIENT, f"executors.{name}")
+                update_config()
+                default_options = get_config(f"executors.{name}")
                 return self.executor_plugins_map[name](**default_options)
             else:
                 message = f"No executor found by name: {name}."
                 app_log.error(message)
-                raise ValueError
+                raise ValueError(f"No executor found by name: {name}")
         else:
             message = f"Input must be of type str or BaseExecutor, not {type(name)}"
             app_log.error(message)
@@ -171,7 +171,7 @@ class _ExecutorManager:
                 default_params = {
                     "executors": {short_name: getattr(the_module, "_EXECUTOR_PLUGIN_DEFAULTS")},
                 }
-                update_config(CMType.CLIENT, default_params, override_existing=False)
+                update_config(default_params, override_existing=False)
 
         else:
             # The requested plugin (the_module.module_name) was not found in the module.

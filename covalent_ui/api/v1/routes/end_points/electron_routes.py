@@ -15,6 +15,7 @@
 # Covalent is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
 # Relief from the License may be granted by purchasing a commercial license.
 
 """Electrons Route"""
@@ -89,6 +90,7 @@ def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
     from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
 
     result_object = get_result(dispatch_id=str(dispatch_id), wait=False)
+
     with Session(engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
@@ -110,20 +112,23 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
     Returns:
         Returns electron details based on the given name
     """
-    if name == "inputs":
-        response = get_electron_inputs(dispatch_id=dispatch_id, electron_id=electron_id)
-        return ElectronFileResponse(data=response)
+
     with Session(engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
         if result is not None:
             handler = FileHandler(result["storage_path"])
-            if name == "function_string":
+            if name == "inputs":
+                response, python_object = get_electron_inputs(
+                    dispatch_id=dispatch_id, electron_id=electron_id
+                )
+                return ElectronFileResponse(data=str(response), python_object=str(python_object))
+            elif name == "function_string":
                 response = handler.read_from_text(result["function_string_filename"])
                 return ElectronFileResponse(data=response)
             elif name == "function":
-                response = handler.read_from_pickle(result["function_filename"])
-                return ElectronFileResponse(data=response)
+                response, python_object = handler.read_from_pickle(result["function_filename"])
+                return ElectronFileResponse(data=response, python_object=python_object)
             elif name == "executor":
                 executor_name = result["executor"]
                 executor_data = handler.read_from_pickle(result["executor_data_filename"])
@@ -131,14 +136,11 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
                     executor_name=executor_name, executor_details=executor_data
                 )
             elif name == "result":
-                response = handler.read_from_pickle(result["results_filename"])
-                return ElectronFileResponse(data=str(response))
+                response, python_object = handler.read_from_pickle(result["results_filename"])
+                return ElectronFileResponse(data=str(response), python_object=python_object)
             elif name == "value":
                 response = handler.read_from_pickle(result["value_filename"])
-                return ElectronFileResponse(data=response)
-            elif name == "key":
-                response = handler.read_from_pickle(result["key_filename"])
-                return ElectronFileResponse(data=response)
+                return ElectronFileResponse(data=str(response))
             elif name == "stdout":
                 response = handler.read_from_text(result["stdout_filename"])
                 return ElectronFileResponse(data=response)
@@ -152,10 +154,11 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
                 response = handler.read_from_pickle(result["call_after_filename"])
                 return ElectronFileResponse(data=response)
             elif name == "error":
-                response = handler.read_from_text(result["stderr_filename"])
-                return ElectronFileResponse(data=response)
-            elif name == "info":
-                response = handler.read_from_text(result["info_filename"])
+                # Error and stderr won't be both populated if `error`
+                # is only used for fatal dispatcher-executor interaction errors
+                error_response = handler.read_from_text(result["error_filename"])
+                stderr_response = handler.read_from_text(result["stderr_filename"])
+                response = stderr_response + error_response
                 return ElectronFileResponse(data=response)
             else:
                 return ElectronFileResponse(data=None)

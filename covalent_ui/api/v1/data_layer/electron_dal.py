@@ -24,8 +24,6 @@ from sqlalchemy.sql import func
 
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.lattices import Lattice
-from covalent_ui.api.v1.utils.file_handle import FileHandler
-from covalent_ui.api.v1.utils.file_name import FileName
 
 
 class Electrons:
@@ -60,7 +58,7 @@ class Electrons:
                 Electron.call_before_filename,
                 Electron.call_after_filename,
                 Electron.stderr_filename,
-                Electron.info_filename,
+                Electron.error_filename,
                 Electron.name,
                 Electron.status,
                 func.datetime(Electron.started_at, "localtime").label("started_at"),
@@ -84,25 +82,3 @@ class Electrons:
             .first()
         )
         return data
-
-    def read_file(self, electron_id, file_module) -> str:
-        """
-        File read based on electron id and file module
-        Args:
-            electron_id: Refers to the electron's PK
-            file_module: Refers to file module present from electron
-        Return:
-            file data as str
-        """
-        data = (
-            self.db_con.query(Electron)
-            .filter(Electron.id == electron_id, Electron.electron_id is None)
-            .first()
-        )
-        electron = data[0]
-        if file_module == FileName.RESULTS.value:
-            file_handler = FileHandler(
-                path=electron.storage_path, file_name=electron.results_filename
-            )
-            return file_handler.read()
-        return None

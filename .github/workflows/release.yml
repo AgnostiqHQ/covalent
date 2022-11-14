@@ -38,11 +38,16 @@ on:
         required: true
         type: boolean
         default: true
+      prerelease_version:
+        description: "The prerelease version to release"
+        required: false
+        type: string
+        default: "master"
 
 env:
   PAUL_BLART: >
     '['
-    '"scottwn",'
+    '"AlejandroEsquivel",'
     '"FyzHsn",'
     '"wjcunningham7",'
     '"santoshkumarradha"]'
@@ -52,20 +57,43 @@ env:
 jobs:
   github:
     runs-on: ubuntu-latest
+    outputs:
+      release: ${{ env.RELEASE }}
     steps:
-      - name: Check out release tag
+      - name: Check out stable release tag
         uses: actions/checkout@v2
         if: github.event.inputs.stable_version
         with:
           persist-credentials: false
           fetch-depth: 0
           ref: "v${{ github.event.inputs.stable_version }}"
-      - name: Check out master
+      - name: Format prerelease ref
+        if: inputs.prerelease
+        run: |
+          re='^[0-9]+$'
+          IFS='.' read -ra version <<< "${{ inputs.prerelease_version }}"
+          if [[ ${version[0]} =~ $re ]] ; then
+            echo "PRERELEASE=v$version" >> $GITHUB_ENV
+          else
+            echo "PRERELEASE=$version" >> $GITHUB_ENV
+          fi
+      - name: Check out prerelease tag
         uses: actions/checkout@v2
         if: inputs.prerelease
         with:
           persist-credentials: false
           fetch-depth: 0
+          ref: "${{ env.PRERELEASE }}"
+      - name: Generate stable release message
+        if: >
+          github.event.inputs.stable_version
+          && contains(env.PAUL_BLART, github.actor)
+        id: stable-changelog
+        uses: ./.github/actions/stable-changelog
+        with:
+          changelog-path: CHANGELOG.md
+          version-path: VERSION
+
       - name: Read version
         run: |
           if [ -z ${{ inputs.prerelease }} ] && \
@@ -76,22 +104,8 @@ jobs:
           VERSION="$(cat ./VERSION)"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "RELEASE=v$VERSION" >> $GITHUB_ENV
-      - name: Tag commit
+      - name: Generate prerelease message
         if: inputs.prerelease
-        id: push
-        run: |
-          git config user.name "CovalentOpsBot"
-          git config user.email "covalentopsbot@users.noreply.github.com"
-          git tag -a $RELEASE -m "Release $RELEASE"
-          git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
-          git push origin $RELEASE
-      - name: Check conditions for stable release
-        if: >
-          github.event.inputs.stable_version
-          && contains(env.PAUL_BLART, github.actor)
-        id: no-push
-        run: echo "Stable release for version ${{ github.event.inputs.stable_version }}"
-      - name: Generate release message
         id: message
         run: |
           begin=$(grep -n "\b${VERSION}\b" ./CHANGELOG.md | cut -d ':' -f 1)
@@ -100,22 +114,43 @@ jobs:
           echo 'MESSAGE<<EOF' >> $GITHUB_ENV
           tail +$begin ./CHANGELOG.md | head -$end >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
-      - name: Create release
+      - name: Tag commit
+        id: push
+        run: |
+          git config user.name "CovalentOpsBot"
+          git config user.email "covalentopsbot@users.noreply.github.com"
+          git tag -a $RELEASE -m "Release $RELEASE"
+          git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
+          git push origin $RELEASE
+      - name: Create prerelease
         if: >-
-          ${{ (steps.push.outcome == 'success' || steps.no-push.outcome == 'success')
+          inputs.prerelease
           && steps.message.outcome == 'success'
-          && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false') }}
+          && steps.push.outcome == 'success'
+          && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false')
         uses: ncipollo/release-action@v1
         with:
           body: ${{ env.MESSAGE }}
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
           tag: ${{ env.RELEASE }}
-          prerelease: ${{ inputs.prerelease }}
+          prerelease: true
+      - name: Create stable release
+        if: >-
+          github.event.inputs.stable_version
+          && contains(env.PAUL_BLART, github.actor)
+          && steps.stable-changelog.outcome == 'success'
+          && steps.push.outcome == 'success'
+          && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false')
+        uses: ncipollo/release-action@v1
+        with:
+          body: ${{ steps.stable-changelog.outputs.message }}
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+          tag: ${{ env.RELEASE }}
       - name: Alert Slack
         if: failure()
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_CHANNEL: "covalent"
+          SLACK_CHANNEL: "covalent-ci"
           SLACK_USERNAME: "CovalentOpsBot"
           SLACK_MESSAGE: "The release.yml workflow is failing in ${{ github.ref }}!"
           SLACK_COLOR: ${{ job.status }}
@@ -124,22 +159,16 @@ jobs:
 
   pypi:
     runs-on: ubuntu-latest
+    needs: github
     outputs:
       version: ${{ steps.validate.outputs.version }}
     steps:
       - name: Check out release tag
         uses: actions/checkout@v2
-        if: github.event.inputs.stable_version
         with:
           persist-credentials: false
           fetch-depth: 0
-          ref: "v${{ github.event.inputs.stable_version }}"
-      - name: Check out master
-        uses: actions/checkout@v2
-        if: inputs.prerelease
-        with:
-          persist-credentials: false
-          fetch-depth: 0
+          ref: ${{ needs.github.outputs.release }}
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
@@ -157,29 +186,23 @@ jobs:
           cd ./covalent_ui/webapp
           yarn install
           yarn build
-      - name: Build Prerelease Distribution
-        if: inputs.prerelease
-        id: pre-build
-        run: python setup.py egg_info --tag-build=pre sdist
-      - name: Build Stable Distribution
-        if: >
-          github.event.inputs.stable_version
-          && contains(env.PAUL_BLART, github.actor)
-        id: stable-build
+      - name: Build Stable or Pre-Release Distribution
+        id: pre-or-stable-build
         run: python setup.py sdist
+      - name: Transform semver version to pep440
+        id: version-transform
+        uses: ./.github/actions/version-transform
+        with:
+          version-path: VERSION
       - name: Validate Distribution
         id: validate
         run: |
-          VERSION="$(cat ./VERSION)"
           if [ -z ${{ inputs.prerelease }} ] && \
              [ -z ${{ github.event.inputs.stable_version }} ] ; then
             echo "You can't create a stable release without specifying the stable version number."
             exit 1
           fi
-          if ${{ inputs.prerelease == true }} ; then
-            VERSION="${VERSION}rc0"
-          fi
-          VERSION="$(echo $VERSION | sed 's/-/.post/')"
+          VERSION="${{ steps.version-transform.outputs.version }}"
           cd dist
           tar xzf covalent-${VERSION}.tar.gz
           diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
@@ -191,8 +214,7 @@ jobs:
           echo "::set-output name=version::$VERSION"
       - name: Upload Distribution
         if: >
-          steps.pre-build.outcome == 'success'
-          || steps.stable-build.outcome == 'success'
+          steps.pre-or-stable-build.outcome == 'success'
           && steps.validate.outcome == 'success'
           && ${{ !github.event.inputs.test_release }}
         env:
@@ -203,7 +225,7 @@ jobs:
         if: failure()
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_CHANNEL: "covalent"
+          SLACK_CHANNEL: "covalent-ci"
           SLACK_USERNAME: "CovalentOpsBot"
           SLACK_MESSAGE: "The release.yml workflow is failing in ${{ github.ref }}!"
           SLACK_COLOR: ${{ job.status }}
@@ -239,7 +261,7 @@ jobs:
         if: failure()
         uses: rtCamp/action-slack-notify@v2
         env:
-          SLACK_CHANNEL: "covalent"
+          SLACK_CHANNEL: "covalent-ci"
           SLACK_USERNAME: "CovalentOpsBot"
           SLACK_MESSAGE: "The release.yml workflow is failing in ${{ github.ref }}!"
           SLACK_COLOR: ${{ job.status }}

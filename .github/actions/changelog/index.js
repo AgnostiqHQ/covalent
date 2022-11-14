@@ -1,6 +1,7 @@
 const core = require("@actions/core");
 const github = require("@actions/github");
 const fs = require("fs");
+const semverUtils = require("semver");
 const readline = require("readline");
 
 const check_author = (author, authors) => {
@@ -39,8 +40,7 @@ try {
     .trim();
   const changelog = fs.readFileSync(core.getInput("changelog-path"), "utf8");
   const basehead = core.getInput("basehead");
-  const owner = github.context.payload.repository.organization
-  const repo = github.context.payload.repository.name
+  const {owner:owner,repo:repo} = github.context.repo
   const octokit = github.getOctokit(token);
   octokit.rest.repos
     .compareCommitsWithBasehead({
@@ -95,26 +95,38 @@ try {
         curline++;
       });
       rl.on("close", () => {
-        const semver = head_version.split(".");
-        let vmajor = semver[0];
-        let vminor = semver[1];
-        let vpatch = semver[2];
-        if (minor) {
-          vminor++;
-          vpatch = 0;
-        } else if (patch) {
-          vpatch++;
-        } else if (noupdate) {
-          //do nothing
-        } else {
+
+        let semver = semverUtils.valid(head_version);
+
+        if(!semver){
+          core.setFailed(
+            `Invalid Semver for VERSION file contents: ${head_version}`
+          );
+        } else if (!minor && !noupdate && !patch) {
           core.setFailed(
             "Changelog does not contain enough information to update the version."
           );
         }
-        const version = vmajor + "." + vminor + "." + vpatch;
+        let simplifiedSemver = `${semverUtils.major(semver)}.${semverUtils.minor(semver)}.${semverUtils.patch(semver)}`;
+
+        console.log(`VERSION file contents: ${head_version} | Parsed: ${semver} | Simplified: ${simplifiedSemver}`)
+
+        if(minor){
+          simplifiedSemver = semverUtils.inc(simplifiedSemver,'minor')
+        }
+        else if(patch){
+          simplifiedSemver = semverUtils.inc(simplifiedSemver,'patch')
+        }
+
+        const version = `${simplifiedSemver}-rc.0`;
+
+        console.log(`Incremented semver version: ${simplifiedSemver}`);
+
         const changelog_header =
           "## [" + version + "] - " + new Date().toISOString().split("T")[0];
+
         let message = "noop";
+
         if (minor || patch) {
           message = "The new version will be " + version;
           unreleased = "UNRELEASED";
@@ -152,7 +164,9 @@ try {
         } else {
           console.log("No release will be created due to a failure.");
         }
+        console.log(message)
         core.setOutput("message", message);
+        core.setOutput("version", version)
       });
     })
     .catch((error) => {

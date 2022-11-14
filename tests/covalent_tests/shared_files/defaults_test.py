@@ -23,12 +23,13 @@
 import os
 from unittest import mock
 
-import dask.system as dask_system
 import pytest
 
 
 @pytest.fixture
-def env_vars():
+def env_vars(mocker):
+    mocker.patch("logging.getLogger")
+    mocker.patch("logging.StreamHandler")
     return {
         "HOME": "test_home",
         "LOGLEVEL": "TEST_LOG_LEVEL",
@@ -42,7 +43,7 @@ def env_vars():
     }
 
 
-def test_get_default_sdk_config(env_vars):
+def test_get_default_sdk_config(env_vars, mocker):
     """Tests that the default SDK configuration is as expected"""
 
     with mock.patch.dict(os.environ, env_vars, clear=True):
@@ -58,35 +59,6 @@ def test_get_default_sdk_config(env_vars):
         assert received_config["no_cluster"] == "false"
 
 
-def test_get_default_server_config(env_vars):
-    """Tests that the default server configuration is as expected"""
-
-    with mock.patch.dict(os.environ, env_vars, clear=True):
-        from covalent._shared_files.defaults import get_default_server_config
-
-        received_config = get_default_server_config()
-
-        assert received_config["address"] == "test_dispatcher_addr"
-        assert received_config["port"] == 0000
-
-
-def test_get_default_service_config(env_vars):
-    """Tests that the default service configuration is as expected"""
-
-    with mock.patch.dict(os.environ, env_vars, clear=True):
-        from covalent._shared_files.defaults import get_default_service_config
-
-        received_config = get_default_service_config()
-
-        assert received_config["address"] == "0.0.0.0"
-        assert received_config["port"] == 0000
-        assert received_config["dev_port"] == 1111
-        assert received_config["results_dir"] == "test_results_dir"
-        assert received_config["cache_dir"] == "test_home/.cache/covalent"
-        assert received_config["log_dir"] == "test_home/.cache/covalent"
-        assert received_config["db_path"] == "test_home/.local/share/covalent/dispatcher_db.sqlite"
-
-
 def test_get_default_dask_config(env_vars):
     """Tests that the default dask configuration is as expected"""
 
@@ -97,9 +69,6 @@ def test_get_default_dask_config(env_vars):
 
         assert received_config["cache_dir"] == "test_home/.cache/covalent"
         assert received_config["log_dir"] == "test_home/.cache/covalent"
-        assert received_config["mem_per_worker"] == "auto"
-        assert received_config["threads_per_worker"] == 1
-        assert received_config["num_workers"] == dask_system.CPU_COUNT
 
 
 def test_get_default_workflow_data_config(env_vars):
@@ -110,7 +79,6 @@ def test_get_default_workflow_data_config(env_vars):
 
         received_config = get_default_workflow_data_config()
 
-        assert received_config["storage_type"] == "local"
         assert received_config["base_dir"] == "test_home/.local/share/covalent/workflow_data"
 
 
@@ -126,18 +94,3 @@ def test_get_default_executor():
         from covalent._shared_files.defaults import get_default_executor
 
         assert get_default_executor() == "dask"
-
-
-def test_get_default_config_path(env_vars):
-    """
-    Tests that the default configuration path is as expected
-    depending on whether the client or the server is accessing it
-    """
-
-    with mock.patch.dict(os.environ, env_vars, clear=True):
-        from covalent._shared_files.defaults import CMType, get_default_config_path
-
-        assert get_default_config_path(CMType.CLIENT) == "test_home/.config/covalent/covalent.conf"
-        assert (
-            get_default_config_path(CMType.SERVER) == "test_home/.config/covalent/covalentd.conf"
-        )

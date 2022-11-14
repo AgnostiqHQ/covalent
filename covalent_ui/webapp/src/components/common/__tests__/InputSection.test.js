@@ -23,10 +23,15 @@
 import { render, screen } from '@testing-library/react'
 import App from '../InputSection'
 
-const data = { args: [], kwargs: { n: '15', serial: 'True', parallel: 'True' } }
+const data = {
+  data: {
+    args: [], kwargs: { n: '15', serial: 'True', parallel: 'True' }
+  },
+  python_object: 'import pickle'
+}
 
 test('renders input section', () => {
-  render(<App inputs="input" preview />)
+  render(<App inputs={data} preview />)
   const linkElement = screen.getByTestId('inputSection')
   expect(linkElement).toBeInTheDocument()
 })

@@ -25,13 +25,13 @@ import os
 import sys
 import time
 
-from .config import CMType, get_config
+from .config import get_config
 
 logging.Formatter.converter = time.gmtime
 
 app_log = logging.getLogger(__name__)
 
-log_level = get_config(CMType.CLIENT, "sdk.log_level").upper()
+log_level = get_config("sdk.log_level").upper()
 app_log.setLevel(log_level)
 
 # Set the format
@@ -50,28 +50,3 @@ app_log.propagate = False
 
 # Show stack traces
 log_stack_info = os.environ.get("LOGSTACK", "TRUE").upper() == "TRUE"
-# Show debug statements
-log_debug_info = os.environ.get("LOGDEBUG", "FALSE").upper() == "TRUE"
-
-# Also log to file
-log_to_file = get_config(CMType.CLIENT, "sdk.enable_logging").upper() == "TRUE"
-
-if log_to_file:
-    import datetime
-    import logging.handlers
-
-    log_dir = get_config(CMType.CLIENT, "sdk.log_dir")
-    os.makedirs(log_dir, exist_ok=True)
-
-    timestamp = datetime.datetime.utcnow().strftime("%Y-%m-%d_%H.%M.%S_UTC")
-    log_file = os.path.join(log_dir, timestamp + ".log")
-
-    file_handler = logging.handlers.RotatingFileHandler(log_file)
-    file_handler.setLevel(log_level)
-    file_formatter = logging.Formatter(
-        "[%(asctime)s]: " + "%(filename)s: " + "Line "
-        "%(lineno)s in %(funcName)s:" + "%(levelname)s - %(message)s",
-        "%Y-%m-%d %H:%M:%S UTC",
-    )
-    file_handler.setFormatter(file_formatter)
-    app_log.addHandler(file_handler)

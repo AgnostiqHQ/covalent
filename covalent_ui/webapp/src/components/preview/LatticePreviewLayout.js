@@ -20,83 +20,83 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import _ from 'lodash'
-import { Box, Typography } from '@mui/material'
-import { useSelector } from 'react-redux'
-import { useStoreActions, useStoreState } from 'react-flow-renderer'
-import LatticeMain from '../graph/LatticeGraph'
-import NotFound from '../NotFound'
-import NodeDrawer, { nodeDrawerWidth } from './NodePreviewDrawer'
-import { useEffect } from 'react'
-import { graphBgColor } from '../../utils/theme'
-import LatticeDrawer, { latticeDrawerWidth } from '../common/LatticeDrawer'
-import NavDrawer, { navDrawerWidth } from '../common/NavDrawer'
+ import _ from 'lodash'
+ import { Box, Typography } from '@mui/material'
+ import { useSelector } from 'react-redux'
+ import { useStoreActions, useStoreState } from 'react-flow-renderer'
+ import LatticeMain from '../graph/LatticeGraph'
+ import NotFound from '../NotFound'
+ import NodeDrawer, { nodeDrawerWidth } from './NodePreviewDrawer'
+ import { useEffect } from 'react'
+ import { graphBgColor } from '../../utils/theme'
+ import LatticeDrawer, { latticeDrawerWidth } from '../common/LatticeDrawer'
+ import NavDrawer, { navDrawerWidth } from '../common/NavDrawer'
 
-import PreviewDrawerContents from './PreviewDrawerContents'
+ import PreviewDrawerContents from './PreviewDrawerContents'
 
-const LatticePreviewLayout = () => {
-  const lattice = useSelector((state) => state.latticePreview.lattice)
-  const selectedElectron = useStoreState((state) => {
-    const nodeId = _.get(
-      _.find(state.selectedElements, { type: 'electron' }),
-      'id'
-    )
-    return _.find(
-      _.get(lattice, 'graph.nodes'),
-      (node) => nodeId === String(_.get(node, 'id'))
-    )
-  })
+ const LatticePreviewLayout = () => {
+   const lattice = useSelector((state) => state.latticePreview.lattice)
+   const selectedElectron = useStoreState((state) => {
+     const nodeId = _.get(
+       _.find(state.selectedElements, { type: 'electron' }),
+       'id'
+     )
+     return _.find(
+       _.get(lattice, 'graph.nodes'),
+       (node) => nodeId === String(_.get(node, 'id'))
+     )
+   })
 
-  const setSelectedElements = useStoreActions(
-    (actions) => actions.setSelectedElements
-  )
+   const setSelectedElements = useStoreActions(
+     (actions) => actions.setSelectedElements
+   )
 
-  // unselect on change of lattice
-  useEffect(() => {
-    setSelectedElements([])
-  }, [lattice, setSelectedElements])
+   // unselect on change of lattice
+   useEffect(() => {
+     setSelectedElements([])
+   }, [lattice, setSelectedElements])
 
-  if (!lattice) {
-    return (
-      <NotFound>
-        <Typography variant="h6" sx={{ mb: 1 }}>
-          Lattice preview not found.
-        </Typography>
-        <Typography color="text.secondary">
-          Try running <code>[lattice].draw_ui()</code> again.
-        </Typography>
-      </NotFound>
-    )
-  }
+   if (!lattice) {
+     return (
+       <NotFound>
+         <Typography variant="h6" sx={{ mb: 1 }}>
+           Lattice preview not found.
+         </Typography>
+         <Typography color="text.secondary">
+           Try running <code>[lattice].draw_ui()</code> again.
+         </Typography>
+       </NotFound>
+     )
+   }
 
-  return (
-    <>
-      <Box
-        sx={{
-          display: 'flex',
-          width: '100vw',
-          height: '100vh',
-          bgcolor: graphBgColor,
-        }}
-      >
-        <LatticeMain
-          preview
-          graph={lattice.graph}
-          hasSelectedNode={!!selectedElectron}
-          marginLeft={latticeDrawerWidth + navDrawerWidth}
-          marginRight={!!selectedElectron ? nodeDrawerWidth : 0}
-        />
-      </Box>
+   return (
+     <>
+       <Box
+         sx={{
+           display: 'flex',
+           width: '100vw',
+           height: '100vh',
+           bgcolor: graphBgColor,
+         }}
+       >
+         <LatticeMain
+           preview
+           graph={lattice.graph}
+           hasSelectedNode={!!selectedElectron}
+           marginLeft={latticeDrawerWidth + navDrawerWidth}
+           marginRight={!!selectedElectron ? nodeDrawerWidth : 0}
+         />
+       </Box>
 
-      {/* <MobileAppBar /> */}
-      <NavDrawer />
-      <LatticeDrawer>
-        <PreviewDrawerContents />
-      </LatticeDrawer>
+       {/* <MobileAppBar /> */}
+       <NavDrawer />
+       <LatticeDrawer>
+         <PreviewDrawerContents />
+       </LatticeDrawer>
 
-      <NodeDrawer node={selectedElectron} />
-    </>
-  )
-}
+       <NodeDrawer node={selectedElectron} />
+     </>
+   )
+ }
 
-export default LatticePreviewLayout
+ export default LatticePreviewLayout
