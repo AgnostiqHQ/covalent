@@ -30,7 +30,7 @@ from covalent._shared_files import logger
 from covalent._workflow.lattice import Lattice
 from covalent_ui import result_webhook
 
-from .._db import update
+from .._db import update, upsert
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -154,3 +154,13 @@ def unregister_dispatch(dispatch_id: str):
 
 def get_status_queue(dispatch_id: str):
     return _dispatch_status_queues[dispatch_id]
+
+
+async def persist_result(dispatch_id: str):
+    result_object = get_result_object(dispatch_id)
+    update.persist(result_object)
+
+
+def upsert_lattice_data(dispatch_id: str):
+    result_object = get_result_object(dispatch_id)
+    upsert._lattice_data(result_object)

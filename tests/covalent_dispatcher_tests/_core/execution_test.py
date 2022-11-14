@@ -110,8 +110,6 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
     mocker.patch(
         "covalent._results_manager.result.Result._get_node_error", return_value="AssertionError"
     )
-    mocker.patch("covalent_dispatcher._core.dispatcher.update_lattices_data")
-    mocker.patch("covalent_dispatcher._core.dispatcher.write_lattice_error")
     mock_unregister = mocker.patch(
         "covalent_dispatcher._core.dispatcher.resultsvc.unregister_dispatch"
     )
@@ -165,8 +163,6 @@ async def test_run_workflow_with_failing_leaf(mocker):
     mocker.patch(
         "covalent._results_manager.result.Result._get_node_error", return_value="AssertionError"
     )
-    mocker.patch("covalent_dispatcher._core.dispatcher.update_lattices_data")
-    mocker.patch("covalent_dispatcher._core.dispatcher.write_lattice_error")
     mock_unregister = mocker.patch(
         "covalent_dispatcher._core.dispatcher.resultsvc.unregister_dispatch"
     )

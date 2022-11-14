@@ -209,7 +209,9 @@ async def test_handle_completed_node(mocker):
     pending_parents[1] = 0
     pending_parents[2] = 1
 
-    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
+    mock_upsert_lattice = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.resultsvc.upsert_lattice_data"
+    )
 
     node_result = {"node_id": 1, "status": Result.COMPLETED}
 
@@ -230,7 +232,9 @@ async def test_handle_failed_node(mocker):
     pending_parents[1] = 0
     pending_parents[2] = 1
 
-    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
+    mock_upsert_lattice = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.resultsvc.upsert_lattice_data"
+    )
     mock_get_node_name = mocker.patch("covalent._results_manager.result.Result._get_node_name")
 
     mock_get_node_error = mocker.patch("covalent._results_manager.result.Result._get_node_error")
@@ -257,7 +261,9 @@ async def test_handle_cancelled_node(mocker):
     pending_parents[1] = 0
     pending_parents[2] = 1
 
-    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
+    mock_upsert_lattice = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.resultsvc.upsert_lattice_data"
+    )
 
     node_result = {"node_id": 1, "status": Result.CANCELLED}
 

@@ -36,8 +36,6 @@ from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
 from covalent_ui import result_webhook
 
-from .._db import update, upsert
-from .._db.write_result_to_db import update_lattices_data, write_lattice_error
 from . import data_manager as resultsvc
 from . import runner
 
@@ -165,7 +163,7 @@ async def _handle_failed_node(result_object, node_id):
     result_object._end_time = datetime.now(timezone.utc)
     result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
     app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
-    upsert._lattice_data(result_object)
+    resultsvc.upsert_lattice_data(result_object.dispatch_id)
     await result_webhook.send_update(result_object)
 
 
@@ -174,7 +172,7 @@ async def _handle_cancelled_node(result_object, node_id):
     result_object._status = Result.CANCELLED
     result_object._end_time = datetime.now(timezone.utc)
     app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
-    upsert._lattice_data(result_object)
+    resultsvc.upsert_lattice_data(result_object.dispatch_id)
     await result_webhook.send_update(result_object)
 
 
@@ -295,7 +293,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
     app_log.debug(
         f"4: Workflow status changed to running {result_object.dispatch_id} (run_planned_workflow)."
     )
-    upsert._lattice_data(result_object)
+    resultsvc.upsert_lattice_data(result_object.dispatch_id)
     app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
 
     tasks_left, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(result_object)
@@ -334,14 +332,12 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
 
     if result_object._status in [Result.FAILED, Result.CANCELLED]:
         app_log.debug(f"Workflow {result_object.dispatch_id} cancelled or failed")
-        update.persist(result_object)
         return result_object
 
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
 
     result_object = await runner.postprocess_workflow(result_object.dispatch_id)
 
-    update.persist(result_object)
     await result_webhook.send_update(result_object)
 
     return result_object
@@ -396,19 +392,14 @@ async def run_workflow(result_object: Result) -> Result:
 
     except Exception as ex:
         app_log.error(f"Exception during _run_planned_workflow: {ex}")
-        update_lattices_data(
-            result_object.dispatch_id,
-            status=str(Result.FAILED),
-            completed_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc),
-        )
 
-        write_lattice_error(
-            result_object.dispatch_id,
-            "".join(traceback.TracebackException.from_exception(ex).format()),
-        )
-        raise
+        error_msg = "".join(traceback.TracebackException.from_exception(ex).format())
+        result_object._status = Result.FAILED
+        result_object._error = error_msg
+        result_object._end_time = datetime.now(timezone.utc)
+
     finally:
+        await resultsvc.persist_result(result_object.dispatch_id)
         resultsvc.unregister_dispatch(result_object.dispatch_id)
 
     return result_object
