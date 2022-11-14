@@ -233,6 +233,15 @@ class Lattice:
                     )
                     raise
 
+        # Set workflow executor if not set by user
+        postprocessor = self.metadata["workflow_executor"]
+        if not postprocessor:
+            pp = {}
+            pp["workflow_executor"] = DEFAULT_METADATA_VALUES["workflow_executor"]
+            pp = encode_metadata(pp)
+            self.metadata["workflow_executor"] = pp["workflow_executor"]
+            self.metadata["workflow_executor_data"] = pp["workflow_executor_data"]
+
     def draw(self, *args, **kwargs) -> None:
         """
         Generate lattice graph and display in UI taking into account passed in
@@ -308,7 +317,7 @@ def lattice(
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     workflow_executor: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = DEFAULT_METADATA_VALUES["workflow_executor"],
+    ] = None,
     # Add custom metadata fields here
     deps_bash: Union[DepsBash, list, str] = None,
     deps_pip: Union[DepsPip, list] = None,

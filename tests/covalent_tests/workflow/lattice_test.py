@@ -20,7 +20,12 @@
 
 """Unit tests for electron"""
 
+from dataclasses import asdict
+
 import covalent as ct
+from covalent._shared_files.defaults import DefaultMetadataValues
+
+DEFAULT_METADATA_VALUES = asdict(DefaultMetadataValues())
 
 
 def test_lattice_draw(mocker):
@@ -37,3 +42,25 @@ def test_lattice_draw(mocker):
     workflow.draw(2)
 
     mock_send_draw_req.assert_called_once()
+
+
+def test_lattice_workflow_executor_settings():
+    """Check that workflow executor is set from defaults if not set explicitly"""
+
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    @ct.lattice(workflow_executor="custom_postprocessor")
+    def workflow_2(x):
+        return task(x)
+
+    assert not workflow.metadata["workflow_executor"]
+    workflow.build_graph(1)
+    assert workflow.metadata["workflow_executor"] == DEFAULT_METADATA_VALUES["workflow_executor"]
+    workflow_2.build_graph(1)
+    assert workflow_2.metadata["workflow_executor"] == "custom_postprocessor"
