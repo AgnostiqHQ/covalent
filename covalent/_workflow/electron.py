@@ -524,8 +524,8 @@ def electron(
     files: List[FileTransfer] = [],
     deps_bash: Union[DepsBash, List, str] = None,
     deps_pip: Union[DepsPip, list] = None,
-    call_before: Union[List[DepsCall], DepsCall] = None,
-    call_after: Union[List[DepsCall], DepsCall] = None,
+    call_before: Union[List[DepsCall], DepsCall] = [],
+    call_after: Union[List[DepsCall], DepsCall] = [],
 ) -> Callable:
     """Electron decorator to be called upon a function. Returns the wrapper function with the same functionality as `_func`.
 

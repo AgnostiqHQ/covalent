@@ -260,7 +260,7 @@ def encode_metadata(metadata: dict) -> dict:
     if "deps" in metadata:
         if metadata["deps"] is not None:
             for dep_type, dep_object in metadata["deps"].items():
-                if not isinstance(dep_object, dict):
+                if dep_object and not isinstance(dep_object, dict):
                     encoded_metadata["deps"][dep_type] = dep_object.to_dict()
 
     # call_before/after
