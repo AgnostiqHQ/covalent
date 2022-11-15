@@ -23,6 +23,7 @@ Integration tests for the dispatcher, runner, and result modules
 """
 
 import asyncio
+from typing import Dict, List
 
 import pytest
 
@@ -31,6 +32,7 @@ from covalent._results_manager import Result
 from covalent._shared_files.defaults import sublattice_prefix
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.dispatcher import run_workflow
+from covalent_dispatcher._core.execution import _get_task_inputs
 from covalent_dispatcher._core.runner import _run_task
 from covalent_dispatcher._db import update
 from covalent_dispatcher._db.datastore import DataStore
@@ -72,6 +74,109 @@ def get_mock_result() -> Result:
     )
 
     return result_object
+
+
+def test_get_task_inputs():
+    """Test _get_task_inputs for both dicts and list parameter types"""
+
+    @ct.electron
+    def list_task(arg: List):
+        return len(arg)
+
+    @ct.electron
+    def dict_task(arg: Dict):
+        return len(arg)
+
+    @ct.electron
+    def multivariable_task(x, y):
+        return x, y
+
+    @ct.lattice
+    def list_workflow(arg):
+        return list_task(arg)
+
+    @ct.lattice
+    def dict_workflow(arg):
+        return dict_task(arg)
+
+    #    1   2
+    #     \   \
+    #      0   3
+    #     / /\/
+    #     4   5
+
+    @ct.electron
+    def identity(x):
+        return x
+
+    @ct.lattice
+    def multivar_workflow(x, y):
+        electron_x = identity(x)
+        electron_y = identity(y)
+        res1 = multivariable_task(electron_x, electron_y)
+        res2 = multivariable_task(electron_y, electron_x)
+        res3 = multivariable_task(electron_y, electron_x)
+        res4 = multivariable_task(electron_x, electron_y)
+        return 1
+
+    # list-type inputs
+
+    list_workflow.build_graph([1, 2, 3])
+    serialized_args = [ct.TransportableObject(i) for i in [1, 2, 3]]
+    tg = list_workflow.transport_graph
+    # Nodes 0=task, 1=:electron_list:, 2=1, 3=2, 4=3
+    tg.set_node_value(2, "output", ct.TransportableObject(1))
+    tg.set_node_value(3, "output", ct.TransportableObject(2))
+    tg.set_node_value(4, "output", ct.TransportableObject(3))
+
+    result_object = Result(lattice=list_workflow, results_dir="/tmp", dispatch_id="asdf")
+    task_inputs = _get_task_inputs(1, tg.get_node_value(1, "name"), result_object)
+
+    expected_inputs = {"args": serialized_args, "kwargs": {}}
+
+    assert task_inputs == expected_inputs
+
+    # dict-type inputs
+
+    dict_workflow.build_graph({"a": 1, "b": 2})
+    serialized_args = {"a": ct.TransportableObject(1), "b": ct.TransportableObject(2)}
+    tg = dict_workflow.transport_graph
+    # Nodes 0=task, 1=:electron_dict:, 2=1, 3=2
+    tg.set_node_value(2, "output", ct.TransportableObject(1))
+    tg.set_node_value(3, "output", ct.TransportableObject(2))
+
+    result_object = Result(lattice=dict_workflow, results_dir="/tmp", dispatch_id="asdf")
+    task_inputs = _get_task_inputs(1, tg.get_node_value(1, "name"), result_object)
+    expected_inputs = {"args": [], "kwargs": serialized_args}
+
+    assert task_inputs == expected_inputs
+
+    # Check arg order
+    multivar_workflow.build_graph(1, 2)
+    received_lattice = Lattice.deserialize_from_json(multivar_workflow.serialize_to_json())
+    result_object = Result(lattice=received_lattice, results_dir="/tmp", dispatch_id="asdf")
+    tg = received_lattice.transport_graph
+
+    assert list(tg._graph.nodes) == [0, 1, 2, 3, 4, 5, 6, 7]
+    tg.set_node_value(0, "output", ct.TransportableObject(1))
+    tg.set_node_value(2, "output", ct.TransportableObject(2))
+
+    task_inputs = _get_task_inputs(4, tg.get_node_value(4, "name"), result_object)
+
+    input_args = [arg.get_deserialized() for arg in task_inputs["args"]]
+    assert input_args == [1, 2]
+
+    task_inputs = _get_task_inputs(5, tg.get_node_value(5, "name"), result_object)
+    input_args = [arg.get_deserialized() for arg in task_inputs["args"]]
+    assert input_args == [2, 1]
+
+    task_inputs = _get_task_inputs(6, tg.get_node_value(6, "name"), result_object)
+    input_args = [arg.get_deserialized() for arg in task_inputs["args"]]
+    assert input_args == [2, 1]
+
+    task_inputs = _get_task_inputs(7, tg.get_node_value(7, "name"), result_object)
+    input_args = [arg.get_deserialized() for arg in task_inputs["args"]]
+    assert input_args == [1, 2]
 
 
 @pytest.mark.asyncio
