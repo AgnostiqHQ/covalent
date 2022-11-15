@@ -32,7 +32,7 @@ from covalent._shared_files import logger
 from covalent._shared_files.defaults import parameter_prefix
 from covalent_ui import result_webhook
 
-from . import data_manager as resultsvc
+from . import data_manager as datasvc
 from . import runner
 
 app_log = logger.app_log
@@ -97,7 +97,7 @@ async def _handle_failed_node(result_object, node_id):
     result_object._end_time = datetime.now(timezone.utc)
     result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
     app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
-    resultsvc.upsert_lattice_data(result_object.dispatch_id)
+    datasvc.upsert_lattice_data(result_object.dispatch_id)
     await result_webhook.send_update(result_object)
 
 
@@ -106,7 +106,7 @@ async def _handle_cancelled_node(result_object, node_id):
     result_object._status = Result.CANCELLED
     result_object._end_time = datetime.now(timezone.utc)
     app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
-    resultsvc.upsert_lattice_data(result_object.dispatch_id)
+    datasvc.upsert_lattice_data(result_object.dispatch_id)
     await result_webhook.send_update(result_object)
 
 
@@ -159,7 +159,7 @@ async def _submit_task(result_object, node_id):
             "status": Result.COMPLETED,
             "output": output,
         }
-        await resultsvc.update_node_result(result_object, node_result)
+        await datasvc.update_node_result(result_object, node_result)
         app_log.debug("8A: Update node success (run_planned_workflow).")
 
     else:
@@ -219,7 +219,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
     app_log.debug(
         f"4: Workflow status changed to running {result_object.dispatch_id} (run_planned_workflow)."
     )
-    resultsvc.upsert_lattice_data(result_object.dispatch_id)
+    datasvc.upsert_lattice_data(result_object.dispatch_id)
     app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
 
     tasks_left, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(result_object)
@@ -313,7 +313,7 @@ async def run_workflow(result_object: Result) -> Result:
 
     try:
         _plan_workflow(result_object)
-        status_queue = resultsvc.get_status_queue(result_object.dispatch_id)
+        status_queue = datasvc.get_status_queue(result_object.dispatch_id)
         result_object = await _run_planned_workflow(result_object, status_queue)
 
     except Exception as ex:
@@ -325,8 +325,8 @@ async def run_workflow(result_object: Result) -> Result:
         result_object._end_time = datetime.now(timezone.utc)
 
     finally:
-        await resultsvc.persist_result(result_object.dispatch_id)
-        resultsvc.unregister_dispatch(result_object.dispatch_id)
+        await datasvc.persist_result(result_object.dispatch_id)
+        datasvc.unregister_dispatch(result_object.dispatch_id)
 
     return result_object
 
@@ -350,5 +350,5 @@ def cancel_workflow(dispatch_id: str) -> None:
 
 
 def run_dispatch(dispatch_id: str) -> asyncio.Future:
-    result_object = resultsvc.get_result_object(dispatch_id)
+    result_object = datasvc.get_result_object(dispatch_id)
     return asyncio.create_task(run_workflow(result_object))

@@ -111,10 +111,10 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
         "covalent._results_manager.result.Result._get_node_error", return_value="AssertionError"
     )
     mock_unregister = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.resultsvc.unregister_dispatch"
+        "covalent_dispatcher._core.dispatcher.datasvc.unregister_dispatch"
     )
     mocker.patch(
-        "covalent_dispatcher._core.runner.resultsvc.get_result_object", return_value=result_object
+        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
     )
     status_queue = asyncio.Queue()
     mocker.patch(
@@ -163,10 +163,10 @@ async def test_run_workflow_with_failing_leaf(mocker):
         "covalent._results_manager.result.Result._get_node_error", return_value="AssertionError"
     )
     mock_unregister = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.resultsvc.unregister_dispatch"
+        "covalent_dispatcher._core.dispatcher.datasvc.unregister_dispatch"
     )
     mocker.patch(
-        "covalent_dispatcher._core.runner.resultsvc.get_result_object", return_value=result_object
+        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
     )
 
     status_queue = asyncio.Queue()
@@ -215,7 +215,7 @@ async def test_run_workflow_does_not_deserialize(mocker):
 
     mocker.patch("covalent_dispatcher._db.datastore.DataStore.factory", return_value=test_db)
     mocker.patch(
-        "covalent_dispatcher._core.runner.resultsvc.get_result_object", return_value=result_object
+        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
     )
     update.persist(result_object)
 
@@ -241,10 +241,10 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     mock_unregister = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.resultsvc.unregister_dispatch"
+        "covalent_dispatcher._core.dispatcher.datasvc.unregister_dispatch"
     )
     mocker.patch(
-        "covalent_dispatcher._core.runner.resultsvc.get_result_object", return_value=result_object
+        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
     )
 
     status_queue = asyncio.Queue()
@@ -271,10 +271,10 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     mock_unregister = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.resultsvc.unregister_dispatch"
+        "covalent_dispatcher._core.dispatcher.datasvc.unregister_dispatch"
     )
     mocker.patch(
-        "covalent_dispatcher._core.runner.resultsvc.get_result_object", return_value=result_object
+        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
     )
 
     update.persist(result_object)

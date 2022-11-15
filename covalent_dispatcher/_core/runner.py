@@ -41,7 +41,7 @@ from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
 
 from .._db import upsert
 from .._db.write_result_to_db import get_sublattice_electron_id
-from . import data_manager as resultsvc
+from . import data_manager as datasvc
 from . import dispatcher
 
 app_log = logger.app_log
@@ -99,7 +99,7 @@ async def _dispatch_sublattice(
     if res["status"] == Result.COMPLETED:
         json_sublattice = json.loads(res["output"].json)
 
-        sub_dispatch_id = resultsvc.make_dispatch(
+        sub_dispatch_id = datasvc.make_dispatch(
             json_sublattice, parent_result_object, parent_electron_id
         )
         app_log.debug(f"Sublattice dispatch id: {sub_dispatch_id}")
@@ -167,7 +167,7 @@ async def _run_abstract_task(
 ) -> None:
 
     # Resolve abstract task and inputs to their concrete (serialized) values
-    result_object = resultsvc.get_result_object(dispatch_id)
+    result_object = datasvc.get_result_object(dispatch_id)
 
     try:
         serialized_callable = result_object.lattice.transport_graph.get_node_value(
@@ -188,19 +188,19 @@ async def _run_abstract_task(
 
     except Exception as ex:
         app_log.error(f"Exception when trying to resolve inputs or deps: {ex}")
-        node_result = resultsvc.generate_node_result(
+        node_result = datasvc.generate_node_result(
             node_id=node_id, start_time=start_time, status=Result.FAILED, error=str(ex)
         )
         return node_result
 
-    node_result = resultsvc.generate_node_result(
+    node_result = datasvc.generate_node_result(
         node_id=node_id,
         start_time=start_time,
         status=Result.RUNNING,
     )
     app_log.debug(f"7: Marking node {node_id} as running (_run_abstract_task)")
 
-    await resultsvc.update_node_result(result_object, node_result)
+    await datasvc.update_node_result(result_object, node_result)
 
     return await _run_task(
         result_object=result_object,
@@ -258,7 +258,7 @@ async def _run_task(
         executor.from_dict(object_dict)
     except Exception as ex:
         app_log.debug(f"Exception when trying to instantiate executor: {ex}")
-        node_result = resultsvc.generate_node_result(
+        node_result = datasvc.generate_node_result(
             node_id=node_id,
             end_time=datetime.now(timezone.utc),
             status=Result.FAILED,
@@ -283,7 +283,7 @@ async def _run_task(
                 workflow_executor=workflow_executor,
             )
 
-            node_result = resultsvc.generate_node_result(
+            node_result = datasvc.generate_node_result(
                 node_id=node_id,
                 sub_dispatch_id=sub_dispatch_id,
             )
@@ -310,7 +310,7 @@ async def _run_task(
                 loop = asyncio.get_running_loop()
                 output, stdout, stderr = await loop.run_in_executor(None, execute_callable)
 
-            node_result = resultsvc.generate_node_result(
+            node_result = datasvc.generate_node_result(
                 node_id=node_id,
                 end_time=datetime.now(timezone.utc),
                 status=Result.COMPLETED,
@@ -321,7 +321,7 @@ async def _run_task(
 
     except Exception as ex:
         app_log.error(f"Exception occurred when running task {node_id}: {ex}")
-        node_result = resultsvc.generate_node_result(
+        node_result = datasvc.generate_node_result(
             node_id=node_id,
             end_time=datetime.now(timezone.utc),
             status=Result.FAILED,
@@ -391,8 +391,8 @@ async def run_abstract_task_and_update(
         selected_executor=selected_executor,
         workflow_executor=workflow_executor,
     )
-    result_object = resultsvc.get_result_object(dispatch_id)
-    await resultsvc.update_node_result(result_object, node_result)
+    result_object = datasvc.get_result_object(dispatch_id)
+    await datasvc.update_node_result(result_object, node_result)
 
 
 # Domain: runner
@@ -528,5 +528,5 @@ async def _postprocess_workflow(result_object: Result) -> Result:
 
 
 async def postprocess_workflow(dispatch_id: str) -> Result:
-    result_object = resultsvc.get_result_object(dispatch_id)
+    result_object = datasvc.get_result_object(dispatch_id)
     return await _postprocess_workflow(result_object)

@@ -209,7 +209,7 @@ async def test_handle_completed_node(mocker):
     pending_parents[2] = 1
 
     mock_upsert_lattice = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.resultsvc.upsert_lattice_data"
+        "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
     )
 
     node_result = {"node_id": 1, "status": Result.COMPLETED}
@@ -232,7 +232,7 @@ async def test_handle_failed_node(mocker):
     pending_parents[2] = 1
 
     mock_upsert_lattice = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.resultsvc.upsert_lattice_data"
+        "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
     )
     mock_get_node_name = mocker.patch("covalent._results_manager.result.Result._get_node_name")
 
@@ -261,7 +261,7 @@ async def test_handle_cancelled_node(mocker):
     pending_parents[2] = 1
 
     mock_upsert_lattice = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.resultsvc.upsert_lattice_data"
+        "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
     )
 
     node_result = {"node_id": 1, "status": Result.CANCELLED}
@@ -289,7 +289,7 @@ async def test_get_initial_tasks_and_deps(mocker):
 async def test_run_dispatch(mocker):
     res = get_mock_result()
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.resultsvc.get_result_object", return_value=res
+        "covalent_dispatcher._core.dispatcher.datasvc.get_result_object", return_value=res
     )
     mock_run = mocker.patch("covalent_dispatcher._core.dispatcher.run_workflow")
     run_dispatch(res.dispatch_id)
