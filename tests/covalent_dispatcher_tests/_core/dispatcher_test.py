@@ -32,7 +32,6 @@ import covalent as ct
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.dispatcher import (
-    _build_sublattice_graph,
     _get_abstract_task_inputs,
     _get_initial_tasks_and_deps,
     _handle_cancelled_node,
@@ -284,21 +283,6 @@ async def test_get_initial_tasks_and_deps(mocker):
     assert initial_nodes == [1]
     assert pending_parents == {0: 1, 1: 0, 2: 1}
     assert num_tasks == len(result_object.lattice.transport_graph._graph.nodes)
-
-
-def test_build_sublattice_graph():
-    @ct.electron
-    def task(x):
-        return x
-
-    @ct.lattice
-    def workflow(x):
-        return task(x)
-
-    json_lattice = _build_sublattice_graph(workflow, 1)
-    lattice = Lattice.deserialize_from_json(json_lattice)
-
-    assert list(lattice.transport_graph._graph.nodes) == [0, 1]
 
 
 @pytest.mark.asyncio

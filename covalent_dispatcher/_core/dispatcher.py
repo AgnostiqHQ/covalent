@@ -23,17 +23,14 @@ Defines the core functionality of the dispatcher
 """
 
 import asyncio
-import json
 import traceback
 from datetime import datetime, timezone
 from functools import partial
-from typing import Any, Dict, Tuple
+from typing import Dict, Tuple
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.defaults import parameter_prefix
-from covalent._workflow.lattice import Lattice
-from covalent._workflow.transport import TransportableObject
 from covalent_ui import result_webhook
 
 from . import data_manager as resultsvc
@@ -41,68 +38,6 @@ from . import runner
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-
-# This is to be run out-of-process
-def _build_sublattice_graph(sub: Lattice, *args, **kwargs):
-    sub.build_graph(*args, **kwargs)
-    return sub.serialize_to_json()
-
-
-async def _dispatch_sync_sublattice(
-    parent_result_object: Result,
-    parent_electron_id: int,
-    inputs: Dict,
-    serialized_callable: Any,
-    workflow_executor: Any,
-) -> str:
-    """Dispatch a sublattice using the workflow_executor."""
-
-    app_log.debug("Inside _dispatch_sync_sublattice")
-
-    try:
-        short_name, object_dict = workflow_executor
-
-        if short_name == "client":
-            app_log.error("No executor selected for dispatching sublattices")
-            raise RuntimeError("No executor selected for dispatching sublattices")
-
-    except Exception as ex:
-        app_log.debug(f"Exception when trying to determine sublattice executor: {ex}")
-        return None
-
-    sub_dispatch_inputs = {"args": [serialized_callable], "kwargs": inputs["kwargs"]}
-    for arg in inputs["args"]:
-        sub_dispatch_inputs["args"].append(arg)
-
-    # Build the sublattice graph. This must be run
-    # externally since it involves deserializing the
-    # sublattice workflow function.
-    fut = asyncio.create_task(
-        runner._run_task(
-            result_object=parent_result_object,
-            node_id=-1,
-            serialized_callable=TransportableObject.make_transportable(_build_sublattice_graph),
-            selected_executor=workflow_executor,
-            node_name="build_sublattice_graph",
-            call_before=[],
-            call_after=[],
-            inputs=sub_dispatch_inputs,
-            workflow_executor=workflow_executor,
-        )
-    )
-
-    res = await fut
-    if res["status"] == Result.COMPLETED:
-        json_sublattice = json.loads(res["output"].json)
-
-        sub_dispatch_id = resultsvc.make_dispatch(
-            json_sublattice, parent_result_object, parent_electron_id
-        )
-        app_log.debug(f"Sublattice dispatch id: {sub_dispatch_id}")
-        return await run_dispatch(sub_dispatch_id)
-    else:
-        return None
 
 
 # Domain: dispatcher
@@ -286,7 +221,6 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
     """
 
     app_log.debug("3: Inside run_planned_workflow (run_planned_workflow).")
-
     result_object._status = Result.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
 
@@ -310,7 +244,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
         app_log.debug(f"Waiting to hear from {unresolved_tasks} tasks")
         node_id, node_status = await status_queue.get()
 
-        app_log.debug(f"Processing result for node {node_id}")
+        app_log.debug(f"Received node status update {node_id}: {node_status}")
 
         if node_status == Result.RUNNING:
             continue

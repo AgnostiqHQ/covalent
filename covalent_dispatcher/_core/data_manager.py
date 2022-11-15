@@ -31,6 +31,7 @@ from covalent._workflow.lattice import Lattice
 from covalent_ui import result_webhook
 
 from .._db import update, upsert
+from .._db.write_result_to_db import resolve_electron_id
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -52,6 +53,7 @@ def generate_node_result(
     error=None,
     stdout=None,
     stderr=None,
+    sub_dispatch_id=None,
     sublattice_result=None,
 ):
 
@@ -64,6 +66,7 @@ def generate_node_result(
         "error": error,
         "stdout": stdout,
         "stderr": stderr,
+        "sub_dispatch_id": sub_dispatch_id,
         "sublattice_result": sublattice_result,
     }
 
@@ -76,8 +79,9 @@ async def _update_node_result(result_object, node_result):
     node_id = node_result["node_id"]
     node_status = node_result["status"]
     dispatch_id = result_object.dispatch_id
-    status_queue = get_status_queue(dispatch_id)
-    await status_queue.put((node_id, node_status))
+    if node_status:
+        status_queue = get_status_queue(dispatch_id)
+        await status_queue.put((node_id, node_status))
 
 
 # Domain: result
@@ -159,6 +163,28 @@ def get_status_queue(dispatch_id: str):
 async def persist_result(dispatch_id: str):
     result_object = get_result_object(dispatch_id)
     update.persist(result_object)
+    await _update_parent_electron(result_object)
+
+
+async def _update_parent_electron(result_object: Result):
+    parent_eid = result_object._electron_id
+
+    if parent_eid:
+        dispatch_id, node_id = resolve_electron_id(parent_eid)
+        status = result_object.status
+        if status == Result.POSTPROCESSING_FAILED:
+            status = Result.FAILED
+        node_result = generate_node_result(
+            node_id=node_id,
+            end_time=result_object.end_time,
+            status=status,
+            output=result_object._result,
+            error=result_object._error,
+            sublattice_result=result_object,
+        )
+        parent_result_obj = get_result_object(dispatch_id)
+        app_log.debug(f"Updating sublattice parent node {dispatch_id}:{node_id}")
+        await _update_node_result(parent_result_obj, node_result)
 
 
 def upsert_lattice_data(dispatch_id: str):

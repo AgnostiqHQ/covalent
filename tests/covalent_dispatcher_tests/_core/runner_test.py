@@ -30,14 +30,28 @@ import pytest
 import covalent as ct
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
+from covalent_dispatcher._core.data_manager import get_result_object
 from covalent_dispatcher._core.runner import (
+    _build_sublattice_graph,
+    _dispatch_sublattice,
     _gather_deps,
     _get_task_inputs,
     _post_process,
     _run_task,
 )
+from covalent_dispatcher._db.datastore import DataStore
 
 TEST_RESULTS_DIR = "/tmp/results"
+
+
+@pytest.fixture
+def test_db():
+    """Instantiate and return an in-memory database."""
+
+    return DataStore(
+        db_URL="sqlite+pysqlite:///:memory:",
+        initialize_db=True,
+    )
 
 
 def get_mock_result() -> Result:
@@ -275,3 +289,72 @@ def test_post_process():
     execution_result = _post_process(compute_energy, encoded_node_outputs)
 
     assert execution_result == compute_energy()
+
+
+def test_build_sublattice_graph():
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    json_lattice = _build_sublattice_graph(workflow, 1)
+    lattice = Lattice.deserialize_from_json(json_lattice)
+
+    assert list(lattice.transport_graph._graph.nodes) == [0, 1]
+
+
+@pytest.mark.asyncio
+async def test_dispatch_sublattice(test_db, mocker):
+    @ct.electron(executor="local")
+    def task(x):
+        return x
+
+    @ct.lattice(executor="local", workflow_executor="local")
+    def sub_workflow(x):
+        return task(x)
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._core.dispatcher.resultsvc.unregister_dispatch")
+
+    result_object = get_mock_result()
+
+    serialized_callable = ct.TransportableObject(sub_workflow)
+    inputs = {"args": [ct.TransportableObject(2)], "kwargs": {}}
+
+    sub_dispatch_id = await _dispatch_sublattice(
+        parent_result_object=result_object,
+        parent_node_id=2,
+        parent_electron_id=1,
+        inputs=inputs,
+        serialized_callable=serialized_callable,
+        workflow_executor=["local", {}],
+    )
+    sub_result_obj = get_result_object(sub_dispatch_id)
+    assert sub_result_obj.dispatch_id == sub_dispatch_id
+    assert sub_result_obj._electron_id == 1
+
+    # Check handling of invalid workflow executors
+
+    with pytest.raises(RuntimeError):
+        sub_dispatch_id = await _dispatch_sublattice(
+            parent_result_object=result_object,
+            parent_node_id=2,
+            parent_electron_id=1,
+            inputs=inputs,
+            serialized_callable=serialized_callable,
+            workflow_executor=["client", {}],
+        )
+
+    with pytest.raises(RuntimeError):
+        sub_dispatch_id = await _dispatch_sublattice(
+            parent_result_object=result_object,
+            parent_node_id=2,
+            parent_electron_id=1,
+            inputs=inputs,
+            serialized_callable=serialized_callable,
+            workflow_executor=["fake_executor", {}],
+        )

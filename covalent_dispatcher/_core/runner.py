@@ -23,6 +23,7 @@ Defines the core functionality of the runner
 """
 
 import asyncio
+import json
 import traceback
 from datetime import datetime, timezone
 from functools import partial
@@ -45,6 +46,68 @@ from . import dispatcher
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+
+# This is to be run out-of-process
+def _build_sublattice_graph(sub: Lattice, *args, **kwargs):
+    sub.build_graph(*args, **kwargs)
+    return sub.serialize_to_json()
+
+
+async def _dispatch_sublattice(
+    parent_result_object: Result,
+    parent_node_id: int,
+    parent_electron_id: int,
+    inputs: Dict,
+    serialized_callable: Any,
+    workflow_executor: Any,
+) -> str:
+    """Dispatch a sublattice using the workflow_executor."""
+
+    app_log.debug("Inside _dispatch_sublattice")
+
+    try:
+        short_name, object_dict = workflow_executor
+
+        if short_name == "client":
+            app_log.error("No executor selected for dispatching sublattices")
+            raise RuntimeError("No executor selected for dispatching sublattices")
+
+    except Exception as ex:
+        app_log.debug(f"Exception when trying to determine sublattice executor: {ex}")
+        raise ex
+
+    sub_dispatch_inputs = {"args": [serialized_callable], "kwargs": inputs["kwargs"]}
+    for arg in inputs["args"]:
+        sub_dispatch_inputs["args"].append(arg)
+
+    # Build the sublattice graph. This must be run
+    # externally since it involves deserializing the
+    # sublattice workflow function.
+    res = await _run_task(
+        result_object=parent_result_object,
+        node_id=parent_node_id,
+        serialized_callable=TransportableObject.make_transportable(_build_sublattice_graph),
+        selected_executor=workflow_executor,
+        node_name="build_sublattice_graph",
+        call_before=[],
+        call_after=[],
+        inputs=sub_dispatch_inputs,
+        workflow_executor=workflow_executor,
+    )
+
+    if res["status"] == Result.COMPLETED:
+        json_sublattice = json.loads(res["output"].json)
+
+        sub_dispatch_id = resultsvc.make_dispatch(
+            json_sublattice, parent_result_object, parent_electron_id
+        )
+        app_log.debug(f"Sublattice dispatch id: {sub_dispatch_id}")
+        return sub_dispatch_id
+    else:
+        app_log.debug("Error building sublattice graph")
+        stderr = res["stderr"]
+        raise RuntimeError("Error building sublattice graph: {stderr}")
 
 
 # Domain: runner
@@ -105,6 +168,7 @@ async def _run_abstract_task(
 
     # Resolve abstract task and inputs to their concrete (serialized) values
     result_object = resultsvc.get_result_object(dispatch_id)
+
     serialized_callable = result_object.lattice.transport_graph.get_node_value(node_id, "function")
     input_values = _get_task_input_values(result_object, abstract_inputs)
 
@@ -206,36 +270,22 @@ async def _run_task(
                 parent_dispatch_id=dispatch_id, sublattice_node_id=node_id
             )
 
-            # Read the result object directly from the server
-
-            sublattice_result = await dispatcher._dispatch_sync_sublattice(
+            sub_dispatch_id = await _dispatch_sublattice(
                 parent_result_object=result_object,
+                parent_node_id=node_id,
                 parent_electron_id=sub_electron_id,
                 inputs=inputs,
                 serialized_callable=serialized_callable,
                 workflow_executor=workflow_executor,
             )
 
-            if not sublattice_result:
-                raise RuntimeError("Sublattice execution failed")
-
-            output = sublattice_result.encoded_result
-            end_time = datetime.now(timezone.utc)
             node_result = resultsvc.generate_node_result(
                 node_id=node_id,
-                end_time=end_time,
-                status=Result.COMPLETED,
-                output=output,
-                sublattice_result=sublattice_result,
+                sub_dispatch_id=sub_dispatch_id,
             )
 
-            app_log.debug("Sublattice dispatched (run_task)")
-            # Don't continue unless sublattice finishes
-            if sublattice_result.status != Result.COMPLETED:
-                node_result["status"] = Result.FAILED
-                node_result["error"] = "Sublattice workflow failed to complete"
-
-                upsert._lattice_data(sublattice_result)
+            dispatcher.run_dispatch(sub_dispatch_id)
+            app_log.debug(f"Running sublattice dispatch {sub_dispatch_id}")
 
         else:
             app_log.debug(f"Executing task {node_name}")

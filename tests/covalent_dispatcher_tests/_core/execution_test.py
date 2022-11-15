@@ -30,7 +30,7 @@ import covalent as ct
 from covalent._results_manager import Result
 from covalent._shared_files.defaults import sublattice_prefix
 from covalent._workflow.lattice import Lattice
-from covalent_dispatcher._core.dispatcher import _dispatch_sync_sublattice, run_workflow
+from covalent_dispatcher._core.dispatcher import run_workflow
 from covalent_dispatcher._core.runner import _run_task
 from covalent_dispatcher._db import update
 from covalent_dispatcher._db.datastore import DataStore
@@ -116,7 +116,6 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
     mocker.patch(
         "covalent_dispatcher._core.runner.resultsvc.get_result_object", return_value=result_object
     )
-
     status_queue = asyncio.Queue()
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
@@ -304,55 +303,6 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
 
 
 @pytest.mark.asyncio
-async def test_dispatch_sync_sublattice(test_db, mocker):
-    @ct.electron(executor="local")
-    def task(x):
-        return x
-
-    @ct.lattice(executor="local", workflow_executor="local")
-    def sub_workflow(x):
-        return task(x)
-
-    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._core.dispatcher.resultsvc.unregister_dispatch")
-
-    result_object = get_mock_result()
-
-    serialized_callable = ct.TransportableObject(sub_workflow)
-    inputs = {"args": [ct.TransportableObject(2)], "kwargs": {}}
-
-    sub_result = await _dispatch_sync_sublattice(
-        parent_result_object=result_object,
-        parent_electron_id=1,
-        inputs=inputs,
-        serialized_callable=serialized_callable,
-        workflow_executor=["local", {}],
-    )
-    assert sub_result.result == 2
-
-    # Check handling of invalid workflow executors
-
-    sub_result = await _dispatch_sync_sublattice(
-        parent_result_object=result_object,
-        parent_electron_id=1,
-        inputs=inputs,
-        serialized_callable=serialized_callable,
-        workflow_executor=["client", {}],
-    )
-    assert sub_result is None
-
-    sub_result = await _dispatch_sync_sublattice(
-        parent_result_object=result_object,
-        parent_electron_id=1,
-        inputs=inputs,
-        serialized_callable=serialized_callable,
-        workflow_executor=["fake_executor", {}],
-    )
-    assert sub_result is None
-
-
-@pytest.mark.asyncio
 async def test_run_task_sublattice_handling(test_db, mocker):
 
     result_object = get_mock_result()
@@ -365,10 +315,11 @@ async def test_run_task_sublattice_handling(test_db, mocker):
     mock_get_sublattice_electron_id = mocker.patch(
         "covalent_dispatcher._core.runner.get_sublattice_electron_id", return_value=1
     )
-    mock_dispatch_sync = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._dispatch_sync_sublattice",
-        return_value=sub_result_object,
+    mock_dispatch_sub = mocker.patch(
+        "covalent_dispatcher._core.runner._dispatch_sublattice",
+        return_value=sub_result_object.dispatch_id,
     )
+    mock_run_dispatch = mocker.patch("covalent_dispatcher._core.dispatcher.run_dispatch")
 
     inputs = {"args": [], "kwargs": {}}
 
@@ -385,14 +336,16 @@ async def test_run_task_sublattice_handling(test_db, mocker):
     )
 
     mock_get_sublattice_electron_id.assert_called_once()
-    mock_dispatch_sync.assert_awaited_once()
-    assert node_result["output"].get_deserialized() == 5
+    mock_dispatch_sub.assert_awaited_once()
+    assert node_result["sub_dispatch_id"] == sub_result_object.dispatch_id
+    mock_run_dispatch.assert_called_once()
 
     # Test failed sublattice workflows
     sub_result_object._status = Result.FAILED
-    mock_dispatch_sync = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._dispatch_sync_sublattice",
-        return_value=sub_result_object,
+    mock_run_dispatch = mocker.patch("covalent_dispatcher._core.dispatcher.run_dispatch")
+
+    mock_dispatch_sub = mocker.patch(
+        "covalent_dispatcher._core.runner._dispatch_sublattice", side_effect=RuntimeError()
     )
     node_result = await _run_task(
         result_object=result_object,
@@ -406,22 +359,6 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         workflow_executor=["local", {}],
     )
 
-    mock_dispatch_sync.assert_awaited_once()
-    assert node_result["status"] == Result.FAILED
-
-    mock_dispatch_sync = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._dispatch_sync_sublattice", return_value=None
-    )
-    node_result = await _run_task(
-        result_object=result_object,
-        node_id=1,
-        inputs=inputs,
-        serialized_callable=None,
-        selected_executor=["local", {}],
-        call_before=[],
-        call_after=[],
-        node_name=sublattice_prefix,
-        workflow_executor=["local", {}],
-    )
-
+    mock_dispatch_sub.assert_awaited_once()
+    mock_run_dispatch.assert_not_called()
     assert node_result["status"] == Result.FAILED

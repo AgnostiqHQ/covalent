@@ -34,10 +34,13 @@ from covalent_dispatcher._core.data_manager import (
     _register_result_object,
     _registered_dispatches,
     _update_node_result,
+    _update_parent_electron,
     get_result_object,
     initialize_result_object,
     make_dispatch,
+    persist_result,
     unregister_dispatch,
+    upsert_lattice_data,
 )
 from covalent_dispatcher._db.datastore import DataStore
 
@@ -205,3 +208,69 @@ def test_unregister_result_object(mocker):
     _registered_dispatches[dispatch_id] = result_object
     unregister_dispatch(dispatch_id)
     assert dispatch_id not in _registered_dispatches
+
+
+@pytest.mark.asyncio
+async def test_persist_result(mocker):
+    result_object = get_mock_result()
+
+    mock_get_result = mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
+    )
+    mock_update_parent = mocker.patch(
+        "covalent_dispatcher._core.data_manager._update_parent_electron"
+    )
+    mock_persist = mocker.patch("covalent_dispatcher._core.data_manager.update.persist")
+
+    await persist_result(result_object.dispatch_id)
+    mock_update_parent.assert_awaited_with(result_object)
+    mock_persist.assert_called_with(result_object)
+
+
+@pytest.mark.asyncio
+async def test_update_parent_electron(mocker):
+    parent_result_obj = get_mock_result()
+    sub_result_obj = get_mock_result()
+    eid = 5
+    parent_dispatch_id = (parent_result_obj.dispatch_id,)
+    parent_node_id = 2
+    sub_result_obj._electron_id = eid
+    sub_result_obj._status = Result.COMPLETED
+    sub_result_obj._result = 42
+
+    mock_node_result = {
+        "node_id": parent_node_id,
+        "end_time": sub_result_obj._end_time,
+        "status": sub_result_obj._status,
+        "output": sub_result_obj._result,
+        "error": sub_result_obj._error,
+    }
+
+    mock_gen_node_result = mocker.patch(
+        "covalent_dispatcher._core.data_manager.generate_node_result",
+        return_value=mock_node_result,
+    )
+
+    mock_update_node = mocker.patch("covalent_dispatcher._core.data_manager._update_node_result")
+    mock_resolve_eid = mocker.patch(
+        "covalent_dispatcher._core.data_manager.resolve_electron_id",
+        return_value=(parent_dispatch_id, parent_node_id),
+    )
+    mock_get_res = mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_result_object", return_value=parent_result_obj
+    )
+
+    await _update_parent_electron(sub_result_obj)
+
+    mock_get_res.assert_called_with(parent_dispatch_id)
+    mock_update_node.assert_awaited_with(parent_result_obj, mock_node_result)
+
+
+def test_upsert_lattice_data(mocker):
+    result_object = get_mock_result()
+    mock_get_result = mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
+    )
+    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
+    upsert_lattice_data(result_object.dispatch_id)
+    mock_upsert_lattice.assert_called_with(result_object)
