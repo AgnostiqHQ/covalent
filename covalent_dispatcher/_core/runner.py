@@ -345,7 +345,7 @@ def _gather_deps(result_object: Result, node_id: int) -> Tuple[List, List]:
 
 
 # Domain: runner
-async def run_abstract_task_and_update(
+async def run_abstract_task(
     dispatch_id: str,
     node_id: int,
     node_name: str,
