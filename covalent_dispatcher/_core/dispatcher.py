@@ -25,7 +25,6 @@ Defines the core functionality of the dispatcher
 import asyncio
 import traceback
 from datetime import datetime, timezone
-from functools import partial
 from typing import Dict, Tuple
 
 from covalent._results_manager import Result
@@ -160,7 +159,7 @@ async def _submit_task(result_object, node_id):
             "status": Result.COMPLETED,
             "output": output,
         }
-        await resultsvc._update_node_result(result_object, node_result)
+        await resultsvc.update_node_result(result_object, node_result)
         app_log.debug("8A: Update node success (run_planned_workflow).")
 
     else:
@@ -185,8 +184,7 @@ async def _submit_task(result_object, node_id):
 
         app_log.debug(f"Submitting task {node_id} to executor")
 
-        run_task_callable = partial(
-            runner._run_abstract_task,
+        coro = runner.run_abstract_task_and_update(
             dispatch_id=result_object.dispatch_id,
             node_id=node_id,
             selected_executor=[selected_executor, selected_executor_data],
@@ -195,13 +193,7 @@ async def _submit_task(result_object, node_id):
             workflow_executor=post_processor,
         )
 
-        # Add the task generated for the node to the list of tasks
-        future = asyncio.create_task(
-            runner._run_task_and_update(
-                run_task_callable=run_task_callable,
-                result_object=result_object,
-            )
-        )
+        asyncio.create_task(coro)
 
 
 # Domain: dispatcher

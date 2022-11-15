@@ -200,7 +200,7 @@ async def _run_abstract_task(
     )
     app_log.debug(f"7: Marking node {node_id} as running (_run_abstract_task)")
 
-    await resultsvc._update_node_result(result_object, node_result)
+    await resultsvc.update_node_result(result_object, node_result)
 
     return await _run_task(
         result_object=result_object,
@@ -374,13 +374,25 @@ def _gather_deps(result_object: Result, node_id: int) -> Tuple[List, List]:
 
 
 # Domain: runner
-async def _run_task_and_update(run_task_callable, result_object):
-    node_result = await run_task_callable()
+async def run_abstract_task_and_update(
+    dispatch_id: str,
+    node_id: int,
+    node_name: str,
+    abstract_inputs: Dict,
+    selected_executor: Any,
+    workflow_executor: Any,
+) -> None:
 
-    # NOTE: This is a blocking operation because of db writes and needs special handling when
-    # we switch to an event loop for processing tasks
-    await resultsvc._update_node_result(result_object, node_result)
-    return node_result
+    node_result = await _run_abstract_task(
+        dispatch_id=dispatch_id,
+        node_id=node_id,
+        node_name=node_name,
+        abstract_inputs=abstract_inputs,
+        selected_executor=selected_executor,
+        workflow_executor=workflow_executor,
+    )
+    result_object = resultsvc.get_result_object(dispatch_id)
+    await resultsvc.update_node_result(result_object, node_result)
 
 
 # Domain: runner

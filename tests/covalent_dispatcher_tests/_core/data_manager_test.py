@@ -33,13 +33,13 @@ from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.data_manager import (
     _register_result_object,
     _registered_dispatches,
-    _update_node_result,
     _update_parent_electron,
     get_result_object,
     initialize_result_object,
     make_dispatch,
     persist_result,
     unregister_dispatch,
+    update_node_result,
     upsert_lattice_data,
 )
 from covalent_dispatcher._db.datastore import DataStore
@@ -124,7 +124,7 @@ async def test_update_failed_node(mocker):
         "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
     node_result = {"node_id": 0, "status": Result.FAILED}
-    await _update_node_result(result_object, node_result)
+    await update_node_result(result_object, node_result)
 
     status_queue.put.assert_awaited_with((0, Result.FAILED))
 
@@ -146,7 +146,7 @@ async def test_update_cancelled_node(mocker):
     )
 
     node_result = {"node_id": 0, "status": Result.CANCELLED}
-    await _update_node_result(result_object, node_result)
+    await update_node_result(result_object, node_result)
     status_queue.put.assert_awaited_with((0, Result.CANCELLED))
 
 
@@ -167,7 +167,7 @@ async def test_update_completed_node(mocker):
     )
 
     node_result = {"node_id": 0, "status": Result.COMPLETED}
-    await _update_node_result(result_object, node_result)
+    await update_node_result(result_object, node_result)
     status_queue.put.assert_awaited_with((0, Result.COMPLETED))
 
 
@@ -251,7 +251,7 @@ async def test_update_parent_electron(mocker):
         return_value=mock_node_result,
     )
 
-    mock_update_node = mocker.patch("covalent_dispatcher._core.data_manager._update_node_result")
+    mock_update_node = mocker.patch("covalent_dispatcher._core.data_manager.update_node_result")
     mock_resolve_eid = mocker.patch(
         "covalent_dispatcher._core.data_manager.resolve_electron_id",
         return_value=(parent_dispatch_id, parent_node_id),

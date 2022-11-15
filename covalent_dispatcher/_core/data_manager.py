@@ -72,7 +72,7 @@ def generate_node_result(
 
 
 # Domain: result
-async def _update_node_result(result_object, node_result):
+async def update_node_result(result_object, node_result):
     app_log.warning("Updating node result (run_planned_workflow).")
     update._node(result_object, **node_result)
     await result_webhook.send_update(result_object)
@@ -184,7 +184,7 @@ async def _update_parent_electron(result_object: Result):
         )
         parent_result_obj = get_result_object(dispatch_id)
         app_log.debug(f"Updating sublattice parent node {dispatch_id}:{node_id}")
-        await _update_node_result(parent_result_obj, node_result)
+        await update_node_result(parent_result_obj, node_result)
 
 
 def upsert_lattice_data(dispatch_id: str):
