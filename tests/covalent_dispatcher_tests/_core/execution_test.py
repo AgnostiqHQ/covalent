@@ -26,6 +26,7 @@ Tests for the core functionality of the dispatcher.
 import asyncio
 from asyncio import Queue
 from typing import Dict, List
+from unittest.mock import AsyncMock, MagicMock
 
 import cloudpickle as pickle
 import pytest
@@ -444,8 +445,6 @@ async def test_handle_failed_node(mocker):
     assert await asyncio.wait_for(tasks_queue.get(), timeout=1) == -1
     assert pending_deps == {0: 1, 1: 0, 2: 1}
     assert result_object.status == Result.FAILED
-    mock_get_node_name.assert_called_once()
-    mock_get_node_error.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -524,11 +523,18 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
     )
     mocker.patch("covalent_dispatcher._core.execution.update_lattices_data")
     mocker.patch("covalent_dispatcher._core.execution.write_lattice_error")
+    mock_get_failed_nodes = mocker.patch(
+        "covalent._results_manager.result.Result._get_failed_nodes",
+        return_value=[(0, "failing_task")],
+    )
 
     update.persist(result_object)
     result_object = await run_workflow(result_object)
 
     assert result_object.status == Result.FAILED
+
+    mock_get_failed_nodes.assert_called()
+    assert result_object._error == "The following tasks failed:\n0: failing_task"
 
 
 @pytest.mark.asyncio
@@ -568,12 +574,17 @@ async def test_run_workflow_with_failing_leaf(mocker):
     )
     mocker.patch("covalent_dispatcher._core.execution.update_lattices_data")
     mocker.patch("covalent_dispatcher._core.execution.write_lattice_error")
+    mock_get_failed_nodes = mocker.patch(
+        "covalent._results_manager.result.Result._get_failed_nodes",
+        return_value=[(0, "failing_task")],
+    )
 
     update.persist(result_object)
 
     result_object = await run_workflow(result_object)
-
+    mock_get_failed_nodes.assert_called()
     assert result_object.status == Result.FAILED
+    assert result_object._error == "The following tasks failed:\n0: failing_task"
 
 
 async def test_run_workflow_does_not_deserialize(mocker):
@@ -833,3 +844,98 @@ async def test_run_task_executor_exception_handling(mocker):
     )
 
     assert node_result["status"] == Result.FAILED
+
+
+@pytest.mark.asyncio
+async def test_run_task_runtime_exception_handling(mocker):
+
+    result_object = get_mock_result()
+    inputs = {"args": [], "kwargs": {}}
+    mock_executor = MagicMock()
+    mock_executor._execute = AsyncMock(return_value=("", "", "error", True))
+    mock_get_executor = mocker.patch(
+        "covalent_dispatcher._core.execution._executor_manager.get_executor",
+        return_value=mock_executor,
+    )
+
+    node_result = await _run_task(
+        result_object=result_object,
+        node_id=1,
+        inputs=inputs,
+        serialized_callable=None,
+        selected_executor=["local", {}],
+        call_before=[],
+        call_after=[],
+        node_name="task",
+        workflow_executor=["local", {}],
+    )
+
+    mock_executor._execute.assert_awaited_once()
+
+    assert node_result["stderr"] == "error"
+
+
+@pytest.mark.asyncio
+async def test_run_workflow_normal(mocker):
+    result_object = get_mock_result()
+    mocker.patch("covalent_dispatcher._core.execution._plan_workflow")
+    mocker.patch(
+        "covalent_dispatcher._core.execution._run_planned_workflow", return_value=result_object
+    )
+    mock_update_lattices_data = mocker.patch(
+        "covalent_dispatcher._core.execution.update_lattices_data"
+    )
+    mock_write_lattice_error = mocker.patch(
+        "covalent_dispatcher._core.execution.write_lattice_error"
+    )
+
+    await run_workflow(result_object)
+
+    mock_update_lattices_data.assert_not_called()
+    mock_write_lattice_error.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_run_completed_workflow(mocker):
+    result_object = get_mock_result()
+    result_object._status = Result.COMPLETED
+    mock_plan = mocker.patch("covalent_dispatcher._core.execution._plan_workflow")
+    mock_run_planned_workflow = mocker.patch(
+        "covalent_dispatcher._core.execution._run_planned_workflow", return_value=result_object
+    )
+    mock_update_lattices_data = mocker.patch(
+        "covalent_dispatcher._core.execution.update_lattices_data"
+    )
+    mock_write_lattice_error = mocker.patch(
+        "covalent_dispatcher._core.execution.write_lattice_error"
+    )
+
+    await run_workflow(result_object)
+
+    mock_plan.assert_not_called()
+    mock_run_planned_workflow.assert_not_called()
+    mock_update_lattices_data.assert_not_called()
+    mock_write_lattice_error.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_run_workflow_exception(mocker):
+    result_object = get_mock_result()
+    mocker.patch("covalent_dispatcher._core.execution._plan_workflow")
+    mocker.patch(
+        "covalent_dispatcher._core.execution._run_planned_workflow",
+        return_value=result_object,
+        side_effect=RuntimeError("Error"),
+    )
+    mock_update_lattices_data = mocker.patch(
+        "covalent_dispatcher._core.execution.update_lattices_data"
+    )
+    mock_write_lattice_error = mocker.patch(
+        "covalent_dispatcher._core.execution.write_lattice_error"
+    )
+
+    result = await run_workflow(result_object)
+
+    assert result.status == Result.FAILED
+    mock_update_lattices_data.assert_called_once()
+    mock_write_lattice_error.assert_called_once()
