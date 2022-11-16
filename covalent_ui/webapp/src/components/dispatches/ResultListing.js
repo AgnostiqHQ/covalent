@@ -809,6 +809,9 @@ const ResultListing = () => {
                 '@media (min-width: 1700px)': {
                   height: _.isEmpty(dashboardListView) ? 50 : '53vh',
                 },
+                '@media (min-height: 900px)': {
+                  height: _.isEmpty(dashboardListView) ? 50 : '62vh',
+                },
               }}
             >
               <StyledTable stickyHeader>
@@ -844,7 +847,10 @@ const ResultListing = () => {
                 <TableBody sx={{ height: 'max-content' }}>
                   {dashboardListView &&
                     dashboardListView.map((result, index) => (
-                      <TableRow hover key={result.dispatchId}>
+                      <TableRow
+                        hover
+                        key={result.dispatchId}
+                      >
                         <TableCell padding="checkbox">
                           <Checkbox
                             disableRipple
@@ -878,7 +884,10 @@ const ResultListing = () => {
                         </TableCell>
 
                         <TableCell>
-                          <OverflowTip value={result.latticeName} />
+                          <OverflowTip
+                            value={result.latticeName}
+                            width='280px'
+                          />
                         </TableCell>
                         {result.status === 'RUNNING' ? (
                           <TableCell>
@@ -935,6 +944,7 @@ const ResultListing = () => {
                       ? Math.ceil(totalRecords / 10)
                       : 1
                   }
+                  disabled={totalRecords <= 10}
                   page={page}
                   onChange={handlePageChanges}
                   showFirstButton

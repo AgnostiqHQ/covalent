@@ -124,7 +124,7 @@ Node Outputs
 
         node_outputs = self.get_all_node_outputs()
         for k, v in node_outputs.items():
-            show_result_str += f"{k}: {v.object_string}\n"
+            show_result_str += f"{k}: {TransportableObject.make_transportable(v).object_string}\n"
 
         return show_result_str
 
@@ -371,41 +371,6 @@ Node Outputs
         """
         return self._lattice.transport_graph.get_node_value(node_id, "output")
 
-    def _get_node_value(self, node_id: int) -> Any:
-        """
-        Return the output of a node.
-
-        Args:
-            node_id: The node id.
-
-        Returns:
-            output: The output of said node.
-                    Will return None if error occured in execution.
-        """
-        # TODO: update from the node value branch
-        #        with workflow_db.session() as session:
-        #
-        #            lattice_id = (
-        #                session.query(models.Lattice)
-        #                .where(models.Lattice.dispatch_id == self.dispatch_id)
-        #                .first()
-        #                .id
-        #            )
-        #            electron = (
-        #                session.query(models.Electron)
-        #                .where(
-        #                    (
-        #                        and_(
-        #                            models.Electron.parent_lattice_id == lattice_id,
-        #                            models.Electron.transport_graph_node_id == node_id,
-        #                        )
-        #                    )
-        #                )
-        #                .first()
-        #            )
-        #            return load_file(storage_path=electron.storage_path, filename=electron.value_filename)
-        return
-
     def _get_node_error(self, node_id: int) -> Union[None, str]:
         """
         Return the error of a node.
@@ -417,6 +382,16 @@ Node Outputs
             The error of said node. Will return None if no error occured in execution.
         """
         return self._lattice.transport_graph.get_node_value(node_id, "error")
+
+    def _get_failed_nodes(self) -> List[int]:
+        """
+        Get the node_id of each failed task
+        """
+        return [
+            (i, self._get_node_name(i))
+            for i in range(self._num_nodes)
+            if self._get_node_status(i) == Result.FAILED
+        ]
 
     def _update_node(
         self,

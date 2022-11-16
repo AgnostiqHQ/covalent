@@ -25,9 +25,17 @@ import ELK from 'elkjs/lib/elk.bundled.js'
 import { isNode } from 'react-flow-renderer'
 import { isParameter } from '../../utils/misc'
 
-const layoutElk = (graph, direction, showParams = true, hideLabels, preview) => {
-  const elements = mapGraphToElements(graph, direction, showParams, hideLabels, preview)
-  return elements
+const nodeLabel = (type, name) => {
+  switch (type) {
+    case 'parameter':
+      return name.replace(':parameter:', '')
+    case 'electron_list':
+      return name.replace(':electron_list:', 'electron list')
+    case 'sublattice':
+      return name.replace(':sublattice:', 'Sublattice:')
+    default:
+      return name
+  }
 }
 
 /**
@@ -43,7 +51,13 @@ const filterGraph = (graph, nodePredicate) => {
 /**
  * Map Covalent graph nodes and links to ReactFlow graph elements.
  */
-const mapGraphToElements = (graph, direction, showParams, hideLabels, preview) => {
+const mapGraphToElements = (
+  graph,
+  direction,
+  showParams,
+  hideLabels,
+  preview
+) => {
   if (!showParams) {
     graph = filterGraph(graph, (node) => !isParameter(node))
   }
@@ -51,8 +65,7 @@ const mapGraphToElements = (graph, direction, showParams, hideLabels, preview) =
   const nodes = _.map(graph.nodes, (node) => {
     const handlePositions = getHandlePositions(direction)
     const isParam = isParameter(node)
-    const name = isParam ? _.trim(node.name, ':parameter:') : node.name
-
+    const name = isParam ? _.trim(node.name, ':parameter:') : nodeLabel(node.type, node.name)
     return {
       id: String(node.id),
       type: isParam ? 'parameter' : 'electron',
@@ -65,8 +78,11 @@ const mapGraphToElements = (graph, direction, showParams, hideLabels, preview) =
         executor: preview ? node?.metadata.executor_name : node.executor_label,
         node_id: preview ? node.id : node.node_id,
         hideLabels: hideLabels,
-        nodeType:node.type,
-        preview
+        nodeType: node.type,
+        preview,
+        sublattices_id: node.sublattice_dispatch_id
+          ? node.sublattice_dispatch_id
+          : null,
       },
       targetPosition: handlePositions.target,
       sourcePosition: handlePositions.source,
@@ -95,35 +111,25 @@ const assignNodePositions = async (
   hideLabels,
   preview
 ) => {
-  const elements = layoutElk(graph, direction, showParams, hideLabels, preview)
+  const elements = mapGraphToElements(graph, direction, showParams, hideLabels, preview)
   const nodes = []
   const edges = []
   const DEFAULT_HEIGHT = 75
 
-  const elk =
-    algorithm === 'layered'
-      ? new ELK({
-        defaultLayoutOptions: {
-          'elk.algorithm': algorithm,
-          'elk.direction': direction,
-          'elk.edgeRouting': 'POLYLINE',
-          'elk.layered.nodePlacement.strategy': 'SIMPLE',
-          'elk.spacing.edgeEdge': hideLabels ? 10 : 20,
-          'elk.spacing.nodeNode': hideLabels ? 60 : 40,
-          'elk.spacing.edgeNode': hideLabels ? 60 : 40,
-          'elk.spacing.edgeLabel': 10,
-          'elk.layered.spacing.nodeNodeBetweenLayers': 80,
-        },
-      })
-      : new ELK({
-        defaultLayoutOptions: {
-          'elk.algorithm': algorithm,
-          'elk.direction': direction,
-          'elk.spacing.nodeNode': 60,
-          'elk.spacing.edgeEdge': hideLabels ? 10 : 0,
-          'elk.spacing.edgeNode': hideLabels ? 60 : 80,
-        },
-      })
+  const elk = new ELK({
+    defaultLayoutOptions: {
+      'elk.algorithm': algorithm,
+      'elk.direction': direction,
+      'elk.edgeRouting': 'POLYLINE',
+      'elk.layered.nodePlacement.strategy': 'SIMPLE',
+      'elk.spacing.edgeEdge': hideLabels ? 10 : 20,
+      'elk.spacing.nodeNode': hideLabels ? 60 : 40,
+      'elk.spacing.edgeNode': hideLabels ? 60 : 40,
+      'elk.spacing.edgeLabel': 10,
+      'elk.layered.spacing.nodeNodeBetweenLayers': 80,
+      'elk.layered.spacing.baseValue': hideLabels ? 40 : 10,
+    },
+  })
   _.each(elements, (el) => {
     if (isNode(el)) {
       nodes.push({
@@ -180,22 +186,6 @@ const getHandlePositions = (direction) => {
     default:
       throw new Error(`Illegal direction: ${direction}`)
   }
-}
-
-export const countEdges = (nodeId, edges) => {
-  return _.reduce(
-    edges,
-    (res, edge) => {
-      if (edge.source === nodeId) {
-        res.outputs++
-      }
-      if (edge.target === nodeId) {
-        res.inputs++
-      }
-      return res
-    },
-    { inputs: 0, outputs: 0 }
-  )
 }
 
 export default assignNodePositions

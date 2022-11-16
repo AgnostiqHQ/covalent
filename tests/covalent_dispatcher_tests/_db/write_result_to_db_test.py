@@ -54,6 +54,7 @@ from covalent_dispatcher._db.write_result_to_db import (
     update_electrons_data,
     update_lattice_completed_electron_num,
     update_lattices_data,
+    upsert_electron_dependency_data,
 )
 
 STORAGE_TYPE = "local"
@@ -70,7 +71,7 @@ RESULTS_FILENAME = "results.pkl"
 VALUE_FILENAME = "value.pkl"
 STDOUT_FILENAME = "stdout.log"
 STDERR_FILENAME = "stderr.log"
-INFO_FILENAME = "info.log"
+ERROR_FILENAME = "error.log"
 TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
 DEPS_FILENAME = "deps.pkl"
 CALL_BEFORE_FILENAME = "call_before.pkl"
@@ -203,7 +204,7 @@ def get_electron_kwargs(
     value_filename=VALUE_FILENAME,
     stdout_filename=STDOUT_FILENAME,
     stderr_filename=STDERR_FILENAME,
-    info_filename=INFO_FILENAME,
+    error_filename=ERROR_FILENAME,
     deps_filename=DEPS_FILENAME,
     call_before_filename=CALL_BEFORE_FILENAME,
     call_after_filename=CALL_AFTER_FILENAME,
@@ -230,7 +231,7 @@ def get_electron_kwargs(
         "value_filename": value_filename,
         "stdout_filename": stdout_filename,
         "stderr_filename": stderr_filename,
-        "info_filename": info_filename,
+        "error_filename": error_filename,
         "deps_filename": deps_filename,
         "call_before_filename": call_before_filename,
         "call_after_filename": call_after_filename,
@@ -445,6 +446,76 @@ def test_insert_electron_dependency_data(test_db, workflow_lattice, mocker):
 
             assert electron_dependency.is_active
             assert electron_dependency.updated_at is not None
+
+
+def test_upsert_electron_dependency_data(test_db, workflow_lattice, mocker):
+    """Test that upsert_electron_dependency_data is idempotent"""
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    cur_time = dt.now(timezone.utc)
+    insert_lattices_data(
+        **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
+    )
+
+    electron_ids = []
+    cur_time = dt.now(timezone.utc)
+    for (name, node_id) in [
+        ("task_1", 0),
+        (":parameter:1", 1),
+        (":parameter:2", 2),
+        (":sublattice:task_2", 3),
+        (":parameter:2", 4),
+    ]:
+        electron_kwargs = get_electron_kwargs(
+            name=name,
+            transport_graph_node_id=node_id,
+            created_at=cur_time,
+            updated_at=cur_time,
+        )
+        electron_ids.append(insert_electrons_data(**electron_kwargs))
+
+    mock_insert = mocker.patch(
+        "covalent_dispatcher._db.write_result_to_db.insert_electron_dependency_data"
+    )
+
+    upsert_electron_dependency_data(dispatch_id="dispatch_1", lattice=workflow_lattice)
+
+    mock_insert.assert_called_once_with(dispatch_id="dispatch_1", lattice=workflow_lattice)
+
+
+def test_upsert_electron_dependency_data_idempotent(test_db, workflow_lattice, mocker):
+    """Test that upsert_electron_dependency_data is idempotent"""
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    cur_time = dt.now(timezone.utc)
+    insert_lattices_data(
+        **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
+    )
+
+    electron_ids = []
+    cur_time = dt.now(timezone.utc)
+    for (name, node_id) in [
+        ("task_1", 0),
+        (":parameter:1", 1),
+        (":parameter:2", 2),
+        (":sublattice:task_2", 3),
+        (":parameter:2", 4),
+    ]:
+        electron_kwargs = get_electron_kwargs(
+            name=name,
+            transport_graph_node_id=node_id,
+            created_at=cur_time,
+            updated_at=cur_time,
+        )
+        electron_ids.append(insert_electrons_data(**electron_kwargs))
+
+    insert_electron_dependency_data(dispatch_id="dispatch_1", lattice=workflow_lattice)
+
+    mock_insert = mocker.patch(
+        "covalent_dispatcher._db.write_result_to_db.insert_electron_dependency_data"
+    )
+    upsert_electron_dependency_data(dispatch_id="dispatch_1", lattice=workflow_lattice)
+    mock_insert.assert_not_called()
 
 
 def test_update_lattices_data(test_db, mocker):

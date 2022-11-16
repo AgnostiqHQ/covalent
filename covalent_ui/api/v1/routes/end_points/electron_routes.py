@@ -112,17 +112,18 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
     Returns:
         Returns electron details based on the given name
     """
-    if name == "inputs":
-        response, python_object = get_electron_inputs(
-            dispatch_id=dispatch_id, electron_id=electron_id
-        )
-        return ElectronFileResponse(data=str(response), python_object=str(python_object))
+
     with Session(engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
         if result is not None:
             handler = FileHandler(result["storage_path"])
-            if name == "function_string":
+            if name == "inputs":
+                response, python_object = get_electron_inputs(
+                    dispatch_id=dispatch_id, electron_id=electron_id
+                )
+                return ElectronFileResponse(data=str(response), python_object=str(python_object))
+            elif name == "function_string":
                 response = handler.read_from_text(result["function_string_filename"])
                 return ElectronFileResponse(data=response)
             elif name == "function":
@@ -153,10 +154,11 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
                 response = handler.read_from_pickle(result["call_after_filename"])
                 return ElectronFileResponse(data=response)
             elif name == "error":
-                response = handler.read_from_text(result["stderr_filename"])
-                return ElectronFileResponse(data=response)
-            elif name == "info":
-                response = handler.read_from_text(result["info_filename"])
+                # Error and stderr won't be both populated if `error`
+                # is only used for fatal dispatcher-executor interaction errors
+                error_response = handler.read_from_text(result["error_filename"])
+                stderr_response = handler.read_from_text(result["stderr_filename"])
+                response = stderr_response + error_response
                 return ElectronFileResponse(data=response)
             else:
                 return ElectronFileResponse(data=None)

@@ -41,7 +41,18 @@ const PreviewDrawerContents = () => {
     <>
       <Box sx={{ p: 3 }}>
         {/* dispatch id */}
-        <IconButton href="/" sx={{ color: 'text.disabled', mr: 1 }}>
+        <IconButton
+          href="/"
+          sx={{
+            color: 'text.disabled',
+            mr: 1,
+            mb:1,
+            backgroundColor: (theme) => theme.palette.background.buttonBg,
+            borderRadius: '10px',
+            width: '32px',
+            height: '32px',
+          }}
+        >
           <ChevronLeft />
         </IconButton>
 
@@ -108,16 +119,27 @@ const LatticePreviewOverview = ({ preview }) => {
       )}
 
       {/* Input */}
-      <InputSection preview inputs={_.get(preview, 'lattice.inputs')} />
+      <InputSection
+        preview
+        inputs={_.get(preview, 'lattice.inputs')}
+        sx={(theme) => ({ bgcolor: theme.palette.background.outRunBg })}
+      />
 
       {/* Executor */}
-      <ExecutorSection preview metadata={_.get(preview, 'lattice.metadata')} />
+      <ExecutorSection
+        sx={(theme) => ({ bgcolor: theme.palette.background.outRunBg })}
+        preview
+        metadata={_.get(preview, 'lattice.metadata')}
+      />
 
       <Divider sx={{ my: 3 }} />
 
       {/* Source */}
       <Heading />
-      <Paper elevation={0}>
+      <Paper
+        elevation={0}
+        sx={(theme) => ({ bgcolor: theme.palette.background.outRunBg })}
+      >
         <SyntaxHighlighter src={src} />
       </Paper>
     </>

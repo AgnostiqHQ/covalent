@@ -31,8 +31,6 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import Status
 
-from .datastore import DataStore
-
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 # DB Schema:
@@ -177,8 +175,3 @@ class DispatchDB:
 
     def __exit__(self, exc_type, exc_value, traceback):
         return False
-
-    def _get_data_store(self, initialize_db: bool = False) -> DataStore:
-        """Return the DataStore instance to write records."""
-
-        return DataStore(db_URL=f"sqlite+pysqlite:///{self._dbpath}", initialize_db=initialize_db)

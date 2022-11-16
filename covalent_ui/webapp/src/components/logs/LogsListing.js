@@ -48,9 +48,9 @@ import {
   Snackbar,
   SvgIcon,
   Pagination,
-  Tooltip,
 } from '@mui/material'
 import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
+import ReactTooltip from "react-tooltip";
 import { useDebounce } from 'use-debounce'
 import {
   fetchLogsList,
@@ -401,6 +401,9 @@ const LogsListing = () => {
                 '@media (min-width: 1700px)': {
                   height: _.isEmpty(logListView) ? 50 : '66vh',
                 },
+                '@media (min-height: 900px)': {
+                  height: _.isEmpty(logListView) ? 50 : '72vh',
+                },
                 width: _.isEmpty(logListView) ? '40%' : null,
 
                 borderRadius:
@@ -423,16 +426,13 @@ const LogsListing = () => {
                 <TableBody>
                   {logListView &&
                     logListView.map((result, index) => (
-                      <Tooltip
-                        title={!copied ? 'Click to copy log message' : 'Copied'}
-                        data-testid="log"
-                        followCursor={true}
-                      >
+                      <>
                         <TableRow
+                          data-tip data-for="logRow"
                           onClick={() => {
                             copy(result.message)
                             setCopied(true)
-                            setTimeout(() => setCopied(false), 1200)
+                            setTimeout(() => setCopied(false), 300)
                           }}
                           hover
                           key={index}
@@ -496,7 +496,12 @@ const LogsListing = () => {
                             </Typography>
                           </TableCell>
                         </TableRow>
-                      </Tooltip>
+                        <ReactTooltip
+                          id="logRow" place="top" effect="float" arrowColor="#1C1C46" backgroundColor="#1C1C46" delayShow={300}
+                        >
+                          {!copied ? 'Click to copy log message' : 'Copied'}
+                        </ReactTooltip>
+                      </>
                     ))}
                 </TableBody>
               </StyledTable>
@@ -534,6 +539,7 @@ const LogsListing = () => {
                       ? Math.ceil(totalRecords / 70)
                       : 1
                   }
+                  disabled={totalRecords <= 70}
                   page={page}
                   onChange={handlePageChanges}
                   showFirstButton
