@@ -38,6 +38,8 @@ from covalent_dispatcher._core.dispatcher import (
     _handle_completed_node,
     _handle_failed_node,
     _plan_workflow,
+    _run_planned_workflow,
+    cancel_workflow,
     run_dispatch,
     run_workflow,
 )
@@ -354,3 +356,73 @@ async def test_run_workflow_exception(mocker):
     assert result.status == Result.FAILED
     mock_persist.assert_awaited_with(result_object.dispatch_id)
     mock_unregister.assert_called_with(result_object.dispatch_id)
+
+
+@pytest.mark.asyncio
+async def test_run_planned_workflow_cancelled_update(mocker):
+    import asyncio
+
+    result_object = get_mock_result()
+
+    mock_upsert_lattice = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
+    )
+    tasks_left = 1
+    initial_nodes = [0]
+    pending_deps = {0: 0}
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher._get_initial_tasks_and_deps",
+        return_value=(tasks_left, initial_nodes, pending_deps),
+    )
+
+    mock_submit_task = mocker.patch("covalent_dispatcher._core.dispatcher._submit_task")
+
+    def side_effect(result_object, node_id):
+        result_object._status = Result.CANCELLED
+
+    mock_handle_cancelled = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._handle_cancelled_node", side_effect=side_effect
+    )
+    status_queue = asyncio.Queue()
+    status_queue.put_nowait((0, Result.CANCELLED))
+    await _run_planned_workflow(result_object, status_queue)
+    assert mock_submit_task.await_count == 1
+    mock_handle_cancelled.assert_awaited_with(result_object, 0)
+
+
+@pytest.mark.asyncio
+async def test_run_planned_workflow_failed_update(mocker):
+    import asyncio
+
+    result_object = get_mock_result()
+
+    mock_upsert_lattice = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
+    )
+    tasks_left = 1
+    initial_nodes = [0]
+    pending_deps = {0: 0}
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher._get_initial_tasks_and_deps",
+        return_value=(tasks_left, initial_nodes, pending_deps),
+    )
+
+    mock_submit_task = mocker.patch("covalent_dispatcher._core.dispatcher._submit_task")
+
+    def side_effect(result_object, node_id):
+        result_object._status = Result.FAILED
+
+    mock_handle_failed = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._handle_failed_node", side_effect=side_effect
+    )
+    status_queue = asyncio.Queue()
+    status_queue.put_nowait((0, Result.FAILED))
+    await _run_planned_workflow(result_object, status_queue)
+    assert mock_submit_task.await_count == 1
+    mock_handle_failed.assert_awaited_with(result_object, 0)
+
+
+def test_cancelled_workflow():
+    cancel_workflow("asdf")

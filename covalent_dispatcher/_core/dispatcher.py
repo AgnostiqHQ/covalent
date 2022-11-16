@@ -95,7 +95,8 @@ async def _handle_completed_node(result_object, node_id, pending_parents):
 async def _handle_failed_node(result_object, node_id):
     result_object._status = Result.FAILED
     result_object._end_time = datetime.now(timezone.utc)
-    app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
+    app_log.debug(f"Node {result_object.dispatch_id}:{node_id} failed")
+    app_log.debug("8A: Failed node upsert statement (run_planned_workflow)")
     datasvc.upsert_lattice_data(result_object.dispatch_id)
     await result_webhook.send_update(result_object)
 
@@ -104,7 +105,8 @@ async def _handle_failed_node(result_object, node_id):
 async def _handle_cancelled_node(result_object, node_id):
     result_object._status = Result.CANCELLED
     result_object._end_time = datetime.now(timezone.utc)
-    app_log.warning("9: Failed node upsert statement (run_planned_workflow)")
+    app_log.debug(f"Node {result_object.dispatch_id}:{node_id} cancelled")
+    app_log.debug("9: Cancelled node upsert statement (run_planned_workflow)")
     datasvc.upsert_lattice_data(result_object.dispatch_id)
     await result_webhook.send_update(result_object)
 
@@ -251,9 +253,11 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
 
         if node_status == Result.FAILED:
             await _handle_failed_node(result_object, node_id)
+            continue
 
         if node_status == Result.CANCELLED:
             await _handle_cancelled_node(result_object, node_id)
+            continue
 
     if result_object._status in [Result.FAILED, Result.CANCELLED]:
         app_log.debug(f"Workflow {result_object.dispatch_id} cancelled or failed")
