@@ -154,10 +154,11 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
                 response = handler.read_from_pickle(result["call_after_filename"])
                 return ElectronFileResponse(data=response)
             elif name == "error":
-                response = handler.read_from_text(result["stderr_filename"])
-                return ElectronFileResponse(data=response)
-            elif name == "info":
-                response = handler.read_from_text(result["info_filename"])
+                # Error and stderr won't be both populated if `error`
+                # is only used for fatal dispatcher-executor interaction errors
+                error_response = handler.read_from_text(result["error_filename"])
+                stderr_response = handler.read_from_text(result["stderr_filename"])
+                response = stderr_response + error_response
                 return ElectronFileResponse(data=response)
             else:
                 return ElectronFileResponse(data=None)
