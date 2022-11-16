@@ -7,6 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Added `TaskRuntimeError` exception for executor plugin implementations to signal to Covalent that a task raised an
+  unhandled exception while running in the executor backend.
+
+### Changed
+
+- Electron errors are segregated by type; task runtime errors are
+  stored in `stderr` while the `error` attribute of a node is reserved
+  for exceptions raised by Covalent itself.
+- When tasks fail in a workflow, the Lattice ErrorCard in the UI summarizes the failed tasks.
+
+### Fixed
+
+- Electrons will inherit the lattice executors.
+- Sublattices inherit the parent lattice executor.
+- When several electrons are running concurrently, their stdout and stderr are stored in the correct graph nodes.
+- Electron errors now appear in the Electron ErrorCard when one clicks on a failed task in the UI.
+- When an electron raises an exception during execution, the local and dask executors now try to recover any output that was already
+  written.
+
+### Docs
+
+- Added DNN tutorial
+- Updated AWS Plugins install instructions
+- Updated AWS Plugins documentation (minor fixes)
+- Rewrote intro material in README.
+- Changed "Citation" in the README.
+- Renamed "Release Notes" to "What's New?" in the README. Updated What's New with a description of the newest GUI functionality.
+
 ## [0.208.0-rc.0] - 2022-11-05
 
 ### Authors
@@ -14,7 +44,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Casey Jao <casey@agnostiq.ai>
 - Alejandro Esquivel <ae@alejandro.ltd>
-
 
 ### Operations
 

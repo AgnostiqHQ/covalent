@@ -225,11 +225,18 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
+    mock_get_failed_nodes = mocker.patch(
+        "covalent._results_manager.result.Result._get_failed_nodes",
+        return_value=[(0, "failing_task")],
+    )
 
     update.persist(result_object)
     result_object = await run_workflow(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
     assert result_object.status == Result.FAILED
+
+    mock_get_failed_nodes.assert_called()
+    assert result_object._error == "The following tasks failed:\n0: failing_task"
 
 
 @pytest.mark.asyncio
@@ -278,12 +285,17 @@ async def test_run_workflow_with_failing_leaf(mocker):
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
+    mock_get_failed_nodes = mocker.patch(
+        "covalent._results_manager.result.Result._get_failed_nodes",
+        return_value=[(0, "failing_task")],
+    )
 
     update.persist(result_object)
 
     result_object = await run_workflow(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
     assert result_object.status == Result.FAILED
+    assert result_object._error == "The following tasks failed:\n0: failing_task"
 
 
 async def test_run_workflow_does_not_deserialize(mocker):

@@ -388,6 +388,16 @@ Node Outputs
         """
         return self._lattice.transport_graph.get_node_value(node_id, "error")
 
+    def _get_failed_nodes(self) -> List[int]:
+        """
+        Get the node_id of each failed task
+        """
+        return [
+            (i, self._get_node_name(i))
+            for i in range(self._num_nodes)
+            if self._get_node_status(i) == Result.FAILED
+        ]
+
     def _update_node(
         self,
         node_id: int,

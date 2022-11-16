@@ -95,7 +95,6 @@ async def _handle_completed_node(result_object, node_id, pending_parents):
 async def _handle_failed_node(result_object, node_id):
     result_object._status = Result.FAILED
     result_object._end_time = datetime.now(timezone.utc)
-    result_object._error = f"Node {result_object._get_node_name(node_id)} failed: \n{result_object._get_node_error(node_id)}"
     app_log.warning("8A: Failed node upsert statement (run_planned_workflow)")
     datasvc.upsert_lattice_data(result_object.dispatch_id)
     await result_webhook.send_update(result_object)
@@ -258,6 +257,10 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
 
     if result_object._status in [Result.FAILED, Result.CANCELLED]:
         app_log.debug(f"Workflow {result_object.dispatch_id} cancelled or failed")
+        failed_nodes = result_object._get_failed_nodes()
+        failed_nodes = map(lambda x: f"{x[0]}: {x[1]}", failed_nodes)
+        failed_nodes_msg = "\n".join(failed_nodes)
+        result_object._error = "The following tasks failed:\n" + failed_nodes_msg
         return result_object
 
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
@@ -309,6 +312,7 @@ async def run_workflow(result_object: Result) -> Result:
     app_log.debug("Inside run_workflow.")
 
     if result_object.status == Result.COMPLETED:
+        datasvc.unregister_dispatch(result_object.dispatch_id)
         return result_object
 
     try:

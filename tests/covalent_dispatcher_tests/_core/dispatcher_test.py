@@ -39,6 +39,7 @@ from covalent_dispatcher._core.dispatcher import (
     _handle_failed_node,
     _plan_workflow,
     run_dispatch,
+    run_workflow,
 )
 from covalent_dispatcher._db.datastore import DataStore
 
@@ -225,27 +226,14 @@ async def test_handle_failed_node(mocker):
     pending_parents = {}
 
     result_object = get_mock_result()
-
     # tg edges are (1, 0), (0, 2)
-    pending_parents[0] = 1
-    pending_parents[1] = 0
-    pending_parents[2] = 1
 
     mock_upsert_lattice = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
     )
-    mock_get_node_name = mocker.patch("covalent._results_manager.result.Result._get_node_name")
-
-    mock_get_node_error = mocker.patch("covalent._results_manager.result.Result._get_node_error")
-
-    node_result = {"node_id": 1, "status": Result.FAILED}
-
     await _handle_failed_node(result_object, 1)
 
-    assert pending_parents == {0: 1, 1: 0, 2: 1}
-    assert result_object.status == Result.FAILED
-    mock_get_node_name.assert_called_once()
-    mock_get_node_error.assert_called_once()
+    mock_upsert_lattice.assert_called()
 
 
 @pytest.mark.asyncio
@@ -254,11 +242,7 @@ async def test_handle_cancelled_node(mocker):
     pending_parents = {}
 
     result_object = get_mock_result()
-
     # tg edges are (1, 0), (0, 2)
-    pending_parents[0] = 1
-    pending_parents[1] = 0
-    pending_parents[2] = 1
 
     mock_upsert_lattice = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
@@ -267,9 +251,8 @@ async def test_handle_cancelled_node(mocker):
     node_result = {"node_id": 1, "status": Result.CANCELLED}
 
     await _handle_cancelled_node(result_object, 1)
-
-    assert pending_parents == {0: 1, 1: 0, 2: 1}
     assert result_object.status == Result.CANCELLED
+    mock_upsert_lattice.assert_called()
 
 
 @pytest.mark.asyncio
@@ -294,3 +277,80 @@ async def test_run_dispatch(mocker):
     mock_run = mocker.patch("covalent_dispatcher._core.dispatcher.run_workflow")
     run_dispatch(res.dispatch_id)
     mock_run.assert_called_with(res)
+
+
+@pytest.mark.asyncio
+async def test_run_workflow_normal(mocker):
+    import asyncio
+
+    result_object = get_mock_result()
+    msg_queue = asyncio.Queue()
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_status_queue", return_value=msg_queue
+    )
+    mocker.patch("covalent_dispatcher._core.dispatcher._plan_workflow")
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher._run_planned_workflow", return_value=result_object
+    )
+    mock_persist = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.persist_result")
+    mock_unregister = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.unregister_dispatch"
+    )
+    await run_workflow(result_object)
+
+    mock_persist.assert_awaited_with(result_object.dispatch_id)
+    mock_unregister.assert_called_with(result_object.dispatch_id)
+
+
+@pytest.mark.asyncio
+async def test_run_completed_workflow(mocker):
+    import asyncio
+
+    result_object = get_mock_result()
+    result_object._status = Result.COMPLETED
+    msg_queue = asyncio.Queue()
+    mock_get_status_queue = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_status_queue", return_value=msg_queue
+    )
+    mock_unregister = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.unregister_dispatch"
+    )
+    mock_plan = mocker.patch("covalent_dispatcher._core.dispatcher._plan_workflow")
+    mock_run_planned_workflow = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._run_planned_workflow", return_value=result_object
+    )
+    mock_persist = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.persist_result")
+
+    await run_workflow(result_object)
+
+    mock_plan.assert_not_called()
+    mock_get_status_queue.assert_not_called()
+    mock_unregister.assert_called_with(result_object.dispatch_id)
+
+
+@pytest.mark.asyncio
+async def test_run_workflow_exception(mocker):
+    import asyncio
+
+    result_object = get_mock_result()
+    msg_queue = asyncio.Queue()
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_status_queue", return_value=msg_queue
+    )
+    mock_unregister = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.unregister_dispatch"
+    )
+    mocker.patch("covalent_dispatcher._core.dispatcher._plan_workflow")
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher._run_planned_workflow",
+        return_value=result_object,
+        side_effect=RuntimeError("Error"),
+    )
+    mock_persist = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.persist_result")
+
+    result = await run_workflow(result_object)
+
+    assert result.status == Result.FAILED
+    mock_persist.assert_awaited_with(result_object.dispatch_id)
+    mock_unregister.assert_called_with(result_object.dispatch_id)
