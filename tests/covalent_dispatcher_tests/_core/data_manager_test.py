@@ -31,10 +31,12 @@ import covalent as ct
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.data_manager import (
+    _dispatch_status_queues,
     _register_result_object,
     _registered_dispatches,
     _update_parent_electron,
     get_result_object,
+    get_status_queue,
     initialize_result_object,
     make_dispatch,
     persist_result,
@@ -210,6 +212,15 @@ def test_unregister_result_object(mocker):
     assert dispatch_id not in _registered_dispatches
 
 
+def test_get_status_queue():
+    import asyncio
+
+    dispatch_id = "dispatch"
+    q = asyncio.Queue()
+    _dispatch_status_queues[dispatch_id] = q
+    assert get_status_queue(dispatch_id) is q
+
+
 @pytest.mark.asyncio
 async def test_persist_result(mocker):
     result_object = get_mock_result()
@@ -227,21 +238,25 @@ async def test_persist_result(mocker):
     mock_persist.assert_called_with(result_object)
 
 
+@pytest.mark.parametrize(
+    "sub_status,mapped_status",
+    [(Result.COMPLETED, Result.COMPLETED), (Result.POSTPROCESSING_FAILED, Result.FAILED)],
+)
 @pytest.mark.asyncio
-async def test_update_parent_electron(mocker):
+async def test_update_parent_electron(mocker, sub_status, mapped_status):
     parent_result_obj = get_mock_result()
     sub_result_obj = get_mock_result()
     eid = 5
     parent_dispatch_id = (parent_result_obj.dispatch_id,)
     parent_node_id = 2
     sub_result_obj._electron_id = eid
-    sub_result_obj._status = Result.COMPLETED
+    sub_result_obj._status = sub_status
     sub_result_obj._result = 42
 
     mock_node_result = {
         "node_id": parent_node_id,
         "end_time": sub_result_obj._end_time,
-        "status": sub_result_obj._status,
+        "status": mapped_status,
         "output": sub_result_obj._result,
         "error": sub_result_obj._error,
     }
