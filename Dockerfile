@@ -65,4 +65,4 @@ HEALTHCHECK CMD wget --no-verbose --tries=1 --spider http://localhost:8080 || ex
 RUN covalent config \
   && sed -i 's|^results_dir.*$|results_dir = "/covalent/results"|' /home/ubuntu/.config/covalent/covalent.conf
 
-CMD ["covalent", "start", "--ignore-migrations", "--port", "8080", "&&", "bash"]
+CMD ["covalent", "start", "--port", "8080", "&&", "bash"]
