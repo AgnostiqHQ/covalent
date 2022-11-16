@@ -34,6 +34,7 @@ from covalent_dispatcher._core.runner import (
     _dispatch_sublattice,
     _gather_deps,
     _post_process,
+    _run_abstract_task,
     _run_task,
 )
 from covalent_dispatcher._db.datastore import DataStore
@@ -84,7 +85,12 @@ def test_gather_deps():
     def square(x):
         return x * x
 
-    @ct.electron(deps_bash=ct.DepsBash("ls -l"), call_after=[ct.DepsCall(square, [3])])
+    @ct.electron(
+        deps_bash=ct.DepsBash("ls -l"),
+        deps_pip=ct.DepsPip(["pandas"]),
+        call_before=[ct.DepsCall(square, [5])],
+        call_after=[ct.DepsCall(square, [3])],
+    )
     def task(x):
         return x
 
@@ -98,8 +104,34 @@ def test_gather_deps():
     result_object = Result(received_workflow, "/tmp", "asdf")
 
     before, after = _gather_deps(result_object, 0)
-    assert len(before) == 1
+    assert len(before) == 3
     assert len(after) == 1
+
+
+@pytest.mark.asyncio
+async def test_run_abstract_task_exception_handling(mocker):
+    """Test that exceptions from resolving abstract inputs are handled"""
+
+    result_object = get_mock_result()
+    inputs = {"args": [], "kwargs": {}}
+    mock_get_result = mocker.patch(
+        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+    )
+    mock_get_task_input_values = mocker.patch(
+        "covalent_dispatcher._core.runner._get_task_input_values",
+        side_effect=RuntimeError(),
+    )
+
+    node_result = await _run_abstract_task(
+        dispatch_id=result_object.dispatch_id,
+        node_id=0,
+        node_name="test_node",
+        abstract_inputs=inputs,
+        selected_executor=["local", {}],
+        workflow_executor=["local", {}],
+    )
+
+    assert node_result["status"] == Result.FAILED
 
 
 @pytest.mark.asyncio

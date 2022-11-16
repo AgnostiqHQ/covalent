@@ -139,6 +139,7 @@ async def _run_abstract_task(
 
     # Resolve abstract task and inputs to their concrete (serialized) values
     result_object = datasvc.get_result_object(dispatch_id)
+    timestamp = datetime.now(timezone.utc)
 
     try:
         serialized_callable = result_object.lattice.transport_graph.get_node_value(
@@ -153,20 +154,23 @@ async def _run_abstract_task(
         task_input = {"args": args, "kwargs": kwargs}
 
         app_log.debug(f"Collecting deps for task {node_id}")
-        start_time = datetime.now(timezone.utc)
 
         call_before, call_after = _gather_deps(result_object, node_id)
 
     except Exception as ex:
         app_log.error(f"Exception when trying to resolve inputs or deps: {ex}")
         node_result = datasvc.generate_node_result(
-            node_id=node_id, start_time=start_time, status=Result.FAILED, error=str(ex)
+            node_id=node_id,
+            start_time=timestamp,
+            end_time=timestamp,
+            status=Result.FAILED,
+            error=str(ex),
         )
         return node_result
 
     node_result = datasvc.generate_node_result(
         node_id=node_id,
-        start_time=start_time,
+        start_time=timestamp,
         status=Result.RUNNING,
     )
     app_log.debug(f"7: Marking node {node_id} as running (_run_abstract_task)")
