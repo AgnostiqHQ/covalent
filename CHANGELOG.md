@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Electron errors now appear in the Electron ErrorCard when one clicks on a failed task in the UI.
 - When an electron raises an exception during execution, the local and dask executors now try to recover any output that was already
   written.
+- Added `requirements-client.txt` to MANIFEST file
 
 ### Docs
 
