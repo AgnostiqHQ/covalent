@@ -170,7 +170,7 @@ def insert_electrons_data(
     value_filename: str,
     stdout_filename: str,
     stderr_filename: str,
-    info_filename: str,
+    error_filename: str,
     deps_filename: str,
     call_before_filename: str,
     call_after_filename: str,
@@ -207,7 +207,7 @@ def insert_electrons_data(
             value_filename=value_filename,
             stdout_filename=stdout_filename,
             stderr_filename=stderr_filename,
-            info_filename=info_filename,
+            error_filename=error_filename,
             deps_filename=deps_filename,
             call_before_filename=call_before_filename,
             call_after_filename=call_after_filename,
@@ -318,7 +318,6 @@ def update_electrons_data(
 ) -> None:
     """This function updates the electrons record."""
 
-    print("DEBUG: update_electrons_data called on node", transport_graph_node_id)
     with workflow_db.session() as session:
         parent_lattice_id = (
             session.query(Lattice).where(Lattice.dispatch_id == parent_dispatch_id).all()[0].id

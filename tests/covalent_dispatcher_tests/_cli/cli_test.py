@@ -31,11 +31,15 @@ from covalent_dispatcher._cli.cli import cli
 def test_cli(mocker):
     """Test the main CLI function."""
 
-    runner = CliRunner()
-    response = runner.invoke(cli, "--version")
+    importlib_mock = mocker.patch("covalent_dispatcher._cli.cli.metadata")
 
     with open("VERSION", "r") as f:
         current_version = f.readline()
+
+    importlib_mock.version.return_value = current_version
+
+    runner = CliRunner()
+    response = runner.invoke(cli, "--version")
 
     assert (
         ("python" in response.output.lower())

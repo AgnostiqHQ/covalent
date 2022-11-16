@@ -49,8 +49,10 @@ UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
 UI_SRVDIR = f"{os.path.dirname(os.path.abspath(__file__))}/../../covalent_ui"
 
-MIGRATION_WARNING_MSG = "There have been changes applied to the database."
-MIGRATION_COMMAND_MSG = '   (use "covalent db migrate" to run database migrations)'
+MIGRATION_WARNING_MSG = "Covalent not started. The database needs to be upgraded."
+MIGRATION_COMMAND_MSG = (
+    '   (use "covalent db migrate" to run database migrations and then retry "covalent start")'
+)
 
 
 def _read_pid(filename: str) -> int:
@@ -304,7 +306,7 @@ def start(
     ctx: click.Context,
     port: int,
     develop: bool,
-    no_cluster: bool,
+    no_cluster: str,
     mem_per_worker: str,
     threads_per_worker: int,
     workers: int,
@@ -317,10 +319,21 @@ def start(
         set_config({"sdk.log_level": "debug"})
 
     db = DataStore.factory()
+
+    # No migrations have run as of yet - run them automatically
+    if not ignore_migrations and db.current_revision() is None:
+        db.run_migrations(logging_enabled=False)
+
     if db.is_migration_pending and not ignore_migrations:
         click.secho(MIGRATION_WARNING_MSG, fg="yellow")
         click.echo(MIGRATION_COMMAND_MSG)
         return ctx.exit(1)
+
+    if ignore_migrations and db.is_migration_pending:
+        click.secho(
+            'Warning: Ignoring migrations is not recommended and may have unanticipated side effects. Use "covalent db migrate" to run migrations.',
+            fg="yellow",
+        )
 
     set_config("user_interface.port", port)
     set_config("dispatcher.port", port)
@@ -365,13 +378,14 @@ def restart(ctx, port: bool, develop: bool) -> None:
     Restart the server.
     """
 
+    no_cluster_map = {"true": True, "false": False}
     configuration = {
         "port": port or get_config("user_interface.port"),
         "develop": develop or (get_config("sdk.log_level") == "debug"),
-        "no_cluster": get_config("user_interface.port"),
+        "no_cluster": no_cluster_map[get_config("sdk.no_cluster")],
         "mem_per_worker": get_config("dask.mem_per_worker"),
         "threads_per_worker": get_config("dask.threads_per_worker"),
-        "workers": set_config("dask.num_workers"),
+        "workers": get_config("dask.num_workers"),
     }
 
     ctx.invoke(stop)

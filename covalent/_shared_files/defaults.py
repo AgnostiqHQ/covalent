@@ -55,7 +55,7 @@ def get_default_sdk_config():
         )
         + "/covalent",
         "log_level": os.environ.get("LOGLEVEL", "WARNING").lower(),
-        "enable_logging": os.environ.get("COVALENT_LOG_TO_FILE", "false").lower(),
+        "enable_logging": os.environ.get("COVALENT_LOG_TO_FILE", "true").lower(),
         "executor_dir": os.environ.get("COVALENT_EXECUTOR_DIR")
         or (
             (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))

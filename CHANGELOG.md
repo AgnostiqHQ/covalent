@@ -11,6 +11,185 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add steps to build, tag and push the AWS lambda executor base container image to ECR
 
+### Added
+
+- Added `TaskRuntimeError` exception for executor plugin implementations to signal to Covalent that a task raised an
+  unhandled exception while running in the executor backend.
+
+### Changed
+
+- Electron errors are segregated by type; task runtime errors are
+  stored in `stderr` while the `error` attribute of a node is reserved
+  for exceptions raised by Covalent itself.
+- When tasks fail in a workflow, the Lattice ErrorCard in the UI summarizes the failed tasks.
+
+### Fixed
+
+- Electrons will inherit the lattice executors.
+- Sublattices inherit the parent lattice executor.
+- When several electrons are running concurrently, their stdout and stderr are stored in the correct graph nodes.
+- Electron errors now appear in the Electron ErrorCard when one clicks on a failed task in the UI.
+- When an electron raises an exception during execution, the local and dask executors now try to recover any output that was already
+  written.
+- Added `requirements-client.txt` to MANIFEST file
+
+### Docs
+
+- Added DNN tutorial
+- Updated AWS Plugins install instructions
+- Updated AWS Plugins documentation (minor fixes)
+- Rewrote intro material in README.
+- Changed "Citation" in the README.
+- Renamed "Release Notes" to "What's New?" in the README. Updated What's New with a description of the newest GUI functionality.
+
+## [0.208.0-rc.0] - 2022-11-05
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+### Operations
+
+- Reverted nightly schedule back to daily at 4:00am
+- Added Alejandro to PAUL_BLART group to allow trigerring of releases
+
+### Added
+
+- Support for transferring the contents of folders to and from S3 buckets using the file transfer module.
+
+### Fixed
+
+- Folder transfer unit test.
+- Folder transfer download bug
+- Result objects now print correctly when nodes fail
+
+### Changed
+
+- Width of lattice name column on dispatch list GUI.
+- Optimzing larger graphs for better performance.
+
+## [0.207.0-rc.0] - 2022-10-26
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Changed
+
+- Running migrations automatically if none have run in the past (fresh installs, after purging)
+
+## [0.206.0-rc.0] - 2022-10-26
+
+### Authors
+
+- Akalanka <8133713+boneyag@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
+- Scott Wyman Neagle <wymnea@protonmail.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+
+
+### Docs
+
+- Updated AWS Lambda executor docs to address conflict with using public ecr registries
+
+### Docs
+
+- Fixed missing RTD content under API section for covalent, cli, leptons, deps, data transfer
+
+### Fixed
+
+- Enabling logging by default
+- Removed debugging output
+- Clarify cli output when `covalent db migrate` needs to be run
+
+### Changed
+
+- Single line call to join instead of a for loop
+- Updated black, mirrors-prettier, and detect-secrets in pre-commit hooks
+
+### Operations
+
+- Updated hotfix logic to run on a merge to a release branch
+- CodeQL workflow uses a test matrix to scan all repos in the Covalent ecosystem
+
+## [0.205.0-rc.0] - 2022-10-19
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Made `root_dispatch_id` nullable to circumvent migration issues with sqlite in certain platforms
+
+### Operations
+
+- Updated all CI Slack alerts to all go to the #covalent-ci channel
+
+### Fixed
+
+- Rendering newlines in ErrorCard on the UI for displaying error stacktraces
+- VERSION incrementing logic in changelog
+- Fixed v11 migration to use render as batch to make DROP operations compatible with sqlite
+
+## [0.204.1-rc.0] - 2022-10-18
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Fixed
+
+- `covalent restart` honors the `sdk.no_cluster` setting
+
+### Docs
+
+- Updated RTD with details about the new AWS lambda executor interface
+
+### Operations
+
+- Removed PAUL_BLART check on build sdist step in release.yml
+- Consolidated pre & stable build into one step in release.yml
+
+## [0.204.0-rc.0] - 2022-10-17
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Aravind-psiog <aravind.prabaharan@psiog.com>
+- Co-authored-by: Manjunath PV <manjunath.poilath@psiog.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: RaviPsiog <raviteja.gurram@psiog.com>
+- Co-authored-by: RaviPsiog <ravieja.gurram@psiog.com>
+- Aravind <100823292+Aravind-psiog@users.noreply.github.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+
+
+### Operations
+
+- Fixing the validate distribution step given changes in -rc0 suffix to version
+
+### Added
+
+- RTD for User Interface
+- Minor GUI fixes
+
 ### Fixed
 
 - Re-applying default executor fix post config file reunification
@@ -351,8 +530,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced DB tests to check faithfulness of persist and rehydrate operations
 
 ### Docs
-
-### Docs
 - Update user interface docs for filter and delete features.
 - Added credential management page
 
@@ -568,7 +745,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
-- Added read the docs for user interface
 - Added db schema migration error guide in RTD
 - Removed `get_data_store` from quantum chemistry tutorial #1046
 
@@ -577,6 +753,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Front-end test coverage measured and reported in CI
 - Added reusable version action
 
+- Added read the docs for user interface
+ 
 ## [0.187.0] - 2022-08-28
 
 ### Authors

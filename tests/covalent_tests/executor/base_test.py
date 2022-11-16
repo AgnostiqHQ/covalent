@@ -28,6 +28,7 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from covalent import DepsCall, TransportableObject
+from covalent._shared_files.exceptions import TaskRuntimeError
 from covalent.executor import BaseExecutor, wrapper_fn
 from covalent.executor.base import AsyncBaseExecutor
 
@@ -219,7 +220,7 @@ def test_base_executor_execute(mocker):
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
-    result, stdout, stderr = me.execute(
+    result, stdout, stderr, exception_raised = me.execute(
         function=assembled_callable,
         args=args,
         kwargs=kwargs,
@@ -251,6 +252,78 @@ async def test_async_base_executor_run(mocker):
         assert True
 
 
+@pytest.mark.asyncio
+async def test_base_executor_private_execute(mocker):
+    """Test that `BaseExecutor._execute()` correctly invokes the real execute method"""
+
+    def f(x, y):
+        return x, y
+
+    me = MockExecutor()
+
+    me.execute = MagicMock()
+
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    await me._execute(
+        function=function,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+    me.execute.assert_called_with(
+        function,
+        args,
+        kwargs,
+        dispatch_id,
+        results_dir,
+        node_id,
+    )
+
+
+@pytest.mark.asyncio
+async def test_async_base_executor_private_execute(mocker):
+    """Test that `AsyncBaseExecutor._execute()` correctly invokes the real execute method"""
+
+    def f(x, y):
+        return x, y
+
+    async_me = MockAsyncExecutor()
+
+    async_me.execute = AsyncMock()
+
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    await async_me._execute(
+        function=function,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+    async_me.execute.assert_awaited_with(
+        function,
+        args,
+        kwargs,
+        dispatch_id,
+        results_dir,
+        node_id,
+    )
+
+
 def test_base_executor_passes_task_metadata(mocker):
     def f(x, y):
         return x, y
@@ -271,7 +344,7 @@ def test_base_executor_passes_task_metadata(mocker):
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
-    metadata, stdout, stderr = me.execute(
+    metadata, stdout, stderr, exception_raised = me.execute(
         function=assembled_callable,
         args=args,
         kwargs=kwargs,
@@ -314,7 +387,7 @@ def test_base_async_executor_passes_task_metadata(mocker):
         node_id=node_id,
     )
 
-    metadata, stdout, stderr = asyncio.run(awaitable)
+    metadata, stdout, stderr, exception_raised = asyncio.run(awaitable)
     task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
     assert metadata == task_metadata
 
@@ -382,7 +455,7 @@ def test_executor_setup_teardown_method(mocker):
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
-    result, stdout, stderr = me.execute(
+    result, stdout, stderr, exception_raised = me.execute(
         function=assembled_callable,
         args=args,
         kwargs=kwargs,
@@ -443,3 +516,68 @@ def test_executor_from_dict_makes_deepcopy():
     me = me.from_dict(object_dict)
     me._state = "runtime_state"
     assert "_state" not in object_dict["attributes"]
+
+
+def test_executor_execute_runtime_error_handling(mocker):
+    """Check handling of `TaskRuntimeError` exceptions"""
+
+    def f(x, y):
+        return x, y
+
+    me = MockExecutor(log_stdout="/tmp/stdout.log")
+    me.run = MagicMock(side_effect=TaskRuntimeError("error"))
+
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
+    output, stdout, stderr, exception_raised = me.execute(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+
+    assert exception_raised is True
+
+
+@pytest.mark.asyncio
+async def test_async_base_executor_execute_runtime_error_handling(mocker):
+    """Check handling of `TaskRuntimeError` exceptions"""
+
+    def f(x, y):
+        return x, y
+
+    me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
+    me.run = AsyncMock(side_effect=TaskRuntimeError("error"))
+
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+
+    output, stdout, stderr, exception_raised = await me.execute(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+
+    assert exception_raised is True
