@@ -38,6 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed "Citation" in the README.
 - Renamed "Release Notes" to "What's New?" in the README. Updated What's New with a description of the newest GUI functionality.
 
+### Operations
+
+- Adding a new `aws_ami` job to `release.yml` to build the Covalent self-hosted AMI using packer
+
 ## [0.208.0-rc.0] - 2022-11-05
 
 ### Authors
@@ -284,10 +288,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - move `persist()` to dispatcher
 - move `get_unique_id()` to dispatcher
 - move `initialize_result_object()` to dispatcher
-
-### Operations
-
-- Adding a new `aws_ami` job to `release.yml` to build the Covalent self-hosted AMI using packer
 
 ### Removed
 
