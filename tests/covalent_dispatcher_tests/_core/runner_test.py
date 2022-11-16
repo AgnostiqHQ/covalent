@@ -36,6 +36,7 @@ from covalent_dispatcher._core.runner import (
     _dispatch_sublattice,
     _gather_deps,
     _post_process,
+    _postprocess_workflow,
     _run_abstract_task,
     _run_task,
 )
@@ -246,6 +247,32 @@ def test_post_process():
     execution_result = _post_process(compute_energy, encoded_node_outputs)
 
     assert execution_result == compute_energy()
+
+
+@pytest.mark.asyncio
+async def test_postprocess_workflow(mocker):
+    """Unit test for _postprocess_workflow"""
+
+    result_object = get_mock_result()
+    node_result = {"node_id": -1, "status": Result.COMPLETED, "output": 42}
+    failed_node_result = {"node_id": -1, "status": Result.FAILED, "stderr": "OOM", "error": None}
+    mock_run_task = mocker.patch(
+        "covalent_dispatcher._core.runner._run_task", return_value=node_result
+    )
+    mock_get_node_outputs = mocker.patch(
+        "covalent._results_manager.result.Result.get_all_node_outputs", return_value=[0]
+    )
+
+    await _postprocess_workflow(result_object)
+    assert result_object._status == Result.COMPLETED
+    assert result_object._result == 42
+
+    mock_run_task = mocker.patch(
+        "covalent_dispatcher._core.runner._run_task", return_value=failed_node_result
+    )
+    await _postprocess_workflow(result_object)
+    assert result_object._status == Result.POSTPROCESSING_FAILED
+    assert "OOM" in result_object._error
 
 
 def test_build_sublattice_graph():

@@ -22,7 +22,6 @@
 Defines the core functionality of the runner
 """
 
-import asyncio
 import json
 import traceback
 from datetime import datetime, timezone
@@ -464,47 +463,33 @@ async def _postprocess_workflow(result_object: Result) -> Result:
     ]
     post_processing_inputs["kwargs"] = {}
 
-    try:
-        future = asyncio.create_task(
-            _run_task(
-                result_object=result_object,
-                node_id=-1,
-                serialized_callable=TransportableObject(_post_process),
-                selected_executor=post_processor,
-                node_name="post_process",
-                call_before=[],
-                call_after=[],
-                inputs=post_processing_inputs,
-                workflow_executor=post_processor,
-            )
-        )
-        pp_start_time = datetime.now(timezone.utc)
-        app_log.debug(
-            f"Submitted post-processing job to executor {post_processor} at {pp_start_time}"
-        )
-
-        post_process_result = await future
-    except Exception as ex:
-        app_log.debug(f"Exception during post-processing: {ex}")
-        result_object._status = Result.POSTPROCESSING_FAILED
-        result_object._error = "Post-processing failed"
-        result_object._end_time = datetime.now(timezone.utc)
-        upsert._lattice_data(result_object)
-
-        return result_object
+    app_log.debug(f"Submitted post-processing job to executor {post_processor}")
+    post_process_result = await _run_task(
+        result_object=result_object,
+        node_id=-1,
+        serialized_callable=TransportableObject(_post_process),
+        selected_executor=post_processor,
+        node_name="post_process",
+        call_before=[],
+        call_after=[],
+        inputs=post_processing_inputs,
+        workflow_executor=post_processor,
+    )
 
     if post_process_result["status"] != Result.COMPLETED:
-        err = post_process_result["stderr"]
+        stderr = post_process_result["stderr"] if post_process_result["stderr"] else ""
+        err = post_process_result["error"] if post_process_result["error"] else ""
+        error_msg = stderr + err
+
         app_log.debug(f"Post-processing failed: {err}")
         result_object._status = Result.POSTPROCESSING_FAILED
-        result_object._error = f"Post-processing failed: {err}"
+        result_object._error = f"Post-processing failed: {error_msg}"
         result_object._end_time = datetime.now(timezone.utc)
         upsert._lattice_data(result_object)
 
+        app_log.debug("Returning from _postprocess_workflow")
         return result_object
 
-    pp_end_time = post_process_result["end_time"]
-    app_log.debug(f"Post-processing completed at {pp_end_time}")
     result_object._result = post_process_result["output"]
     result_object._status = Result.COMPLETED
     result_object._end_time = datetime.now(timezone.utc)

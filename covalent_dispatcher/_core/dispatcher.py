@@ -267,6 +267,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
 
     result_object = await runner.postprocess_workflow(result_object.dispatch_id)
 
+    app_log.debug(f"Status after PP: {result_object._status}")
     await result_webhook.send_update(result_object)
 
     return result_object
