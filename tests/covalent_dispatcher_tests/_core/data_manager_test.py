@@ -112,65 +112,41 @@ def test_initialize_result_object(mocker, test_db):
     assert sub_result_object._root_dispatch_id == result_object.dispatch_id
 
 
+@pytest.mark.parametrize("node_status", [Result.COMPLETED, Result.FAILED, Result.CANCELLED])
 @pytest.mark.asyncio
-async def test_update_failed_node(mocker):
-    """Check that update_node_result correctly invokes _handle_failed_node"""
+async def test_update_node_result(mocker, node_status):
+    """Check that update_node_result pushes the correct status updates"""
 
     status_queue = AsyncMock()
 
     result_object = get_mock_result()
-    mock_fail_handler = mocker.patch("covalent_dispatcher._core.dispatcher._handle_failed_node")
-    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
     mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
-    node_result = {"node_id": 0, "status": Result.FAILED}
+
+    node_result = {"node_id": 0, "status": node_status}
+    await update_node_result(result_object, node_result)
+    status_queue.put.assert_awaited_with((0, node_status))
+
+
+@pytest.mark.asyncio
+async def test_update_node_result_handles_db_exceptions(mocker):
+    """Check that update_node_result handles db write failures"""
+
+    status_queue = AsyncMock()
+
+    result_object = get_mock_result()
+    mock_update_node = mocker.patch(
+        "covalent_dispatcher._db.update._node", side_effect=RuntimeError()
+    )
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
+    )
+    node_result = {"node_id": 0, "status": Result.COMPLETED}
     await update_node_result(result_object, node_result)
 
     status_queue.put.assert_awaited_with((0, Result.FAILED))
-
-
-@pytest.mark.asyncio
-async def test_update_cancelled_node(mocker):
-    """Check that update_node_result correctly invokes _handle_cancelled_node"""
-
-    status_queue = AsyncMock()
-
-    result_object = get_mock_result()
-    mock_cancel_handler = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._handle_cancelled_node"
-    )
-    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
-    mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
-    )
-
-    node_result = {"node_id": 0, "status": Result.CANCELLED}
-    await update_node_result(result_object, node_result)
-    status_queue.put.assert_awaited_with((0, Result.CANCELLED))
-
-
-@pytest.mark.asyncio
-async def test_update_completed_node(mocker):
-    """Check that update_node_result correctly invokes _handle_completed_node"""
-
-    status_queue = AsyncMock()
-
-    result_object = get_mock_result()
-    mock_completed_handler = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._handle_completed_node"
-    )
-    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
-    mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
-    )
-
-    node_result = {"node_id": 0, "status": Result.COMPLETED}
-    await update_node_result(result_object, node_result)
-    status_queue.put.assert_awaited_with((0, Result.COMPLETED))
 
 
 def test_make_dispatch(mocker):

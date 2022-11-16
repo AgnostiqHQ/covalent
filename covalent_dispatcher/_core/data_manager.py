@@ -28,7 +28,6 @@ import uuid
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._workflow.lattice import Lattice
-from covalent_ui import result_webhook
 
 from .._db import update, upsert
 from .._db.write_result_to_db import resolve_electron_id
@@ -74,14 +73,18 @@ def generate_node_result(
 # Domain: result
 async def update_node_result(result_object, node_result):
     app_log.warning("Updating node result (run_planned_workflow).")
-    update._node(result_object, **node_result)
-    await result_webhook.send_update(result_object)
-    node_id = node_result["node_id"]
-    node_status = node_result["status"]
-    dispatch_id = result_object.dispatch_id
-    if node_status:
-        status_queue = get_status_queue(dispatch_id)
-        await status_queue.put((node_id, node_status))
+    try:
+        update._node(result_object, **node_result)
+    except Exception as ex:
+        app_log.exception("Error persisting node update: {ex}")
+        node_result["status"] = Result.FAILED
+    finally:
+        node_id = node_result["node_id"]
+        node_status = node_result["status"]
+        dispatch_id = result_object.dispatch_id
+        if node_status:
+            status_queue = get_status_queue(dispatch_id)
+            await status_queue.put((node_id, node_status))
 
 
 # Domain: result
