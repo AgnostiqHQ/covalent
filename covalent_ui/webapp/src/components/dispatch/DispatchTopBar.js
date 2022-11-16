@@ -138,7 +138,7 @@ const LatticeStatusCard = ({
             pr: 4.4,
           }}
         >
-          {isFetching ? (
+          {!latDetails && isFetching ? (
             <Skeleton
               width={150}
               height={60}
@@ -166,7 +166,7 @@ const LatticeStatusCard = ({
         </Box>
 
         <Box sx={{ justifySelf: 'center' }}>
-          {isFetching ? (
+          {!latDetails &&isFetching ? (
             <Skeleton
               width={150}
               height={60}
