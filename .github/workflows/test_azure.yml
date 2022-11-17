@@ -74,7 +74,32 @@ jobs:
           tenant-id: ${{ secrets.AZURE_APP_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Test Azure CLI commands
+      - name: Login to AZ Container Registry
         run: |
-          az account show
-          az group list
+          az --version
+          az acr login --name myregistry
+          docker info
+
+      - name: Generate tag
+        run: |
+          TAG="$(cat ./VERSION)"
+          echo "TAG: $TAG"
+          echo "TAG=$TAG" >> $GITHUB_ENV
+
+      - name: Build and push pre-release
+        # if: >
+        #   inputs.prerelease
+        #   && !inputs.azurebatch_executor_base_image_stable_version
+        #   && github.event_name == 'schedule'
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile
+          platforms: "linux/amd64,linux/arm64"
+          push: true
+          build-args: |
+            COVALENT_BASE_IMAGE=python:3.8-slim-buster
+          tags: |
+            covalentbatch.azurecr.io/covalent-azurebatch-executor:latest
+            covalentbatch.azurecr.io/covalent-azurebatch-executor:${{ env.TAG }}
