@@ -35,12 +35,12 @@ from covalent_dispatcher._core.data_manager import (
     _register_result_object,
     _registered_dispatches,
     _update_parent_electron,
+    finalize_dispatch,
     get_result_object,
     get_status_queue,
     initialize_result_object,
     make_dispatch,
     persist_result,
-    unregister_dispatch,
     update_node_result,
     upsert_lattice_data,
 )
@@ -184,7 +184,7 @@ def test_unregister_result_object(mocker):
     result_object = get_mock_result()
     dispatch_id = result_object.dispatch_id
     _registered_dispatches[dispatch_id] = result_object
-    unregister_dispatch(dispatch_id)
+    finalize_dispatch(dispatch_id)
     assert dispatch_id not in _registered_dispatches
 
 

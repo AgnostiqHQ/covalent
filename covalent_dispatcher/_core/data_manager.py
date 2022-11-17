@@ -154,7 +154,7 @@ def _register_result_object(result_object: Result):
     _dispatch_status_queues[dispatch_id] = asyncio.Queue()
 
 
-def unregister_dispatch(dispatch_id: str):
+def finalize_dispatch(dispatch_id: str):
     del _dispatch_status_queues[dispatch_id]
     del _registered_dispatches[dispatch_id]
 

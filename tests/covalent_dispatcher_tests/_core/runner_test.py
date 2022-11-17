@@ -303,7 +303,7 @@ async def test_dispatch_sublattice(test_db, mocker):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.unregister_dispatch")
+    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch")
 
     result_object = get_mock_result()
 

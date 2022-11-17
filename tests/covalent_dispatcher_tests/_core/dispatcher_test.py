@@ -296,7 +296,7 @@ async def test_run_workflow_normal(mocker):
     )
     mock_persist = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.persist_result")
     mock_unregister = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.unregister_dispatch"
+        "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
     await run_workflow(result_object)
 
@@ -315,7 +315,7 @@ async def test_run_completed_workflow(mocker):
         "covalent_dispatcher._core.dispatcher.datasvc.get_status_queue", return_value=msg_queue
     )
     mock_unregister = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.unregister_dispatch"
+        "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
     mock_plan = mocker.patch("covalent_dispatcher._core.dispatcher._plan_workflow")
     mock_run_planned_workflow = mocker.patch(
@@ -341,7 +341,7 @@ async def test_run_workflow_exception(mocker):
         "covalent_dispatcher._core.dispatcher.datasvc.get_status_queue", return_value=msg_queue
     )
     mock_unregister = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.unregister_dispatch"
+        "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
     mocker.patch("covalent_dispatcher._core.dispatcher._plan_workflow")
     mocker.patch(

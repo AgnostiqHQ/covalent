@@ -317,7 +317,7 @@ async def run_workflow(result_object: Result) -> Result:
     app_log.debug("Inside run_workflow.")
 
     if result_object.status == Result.COMPLETED:
-        datasvc.unregister_dispatch(result_object.dispatch_id)
+        datasvc.finalize_dispatch(result_object.dispatch_id)
         return result_object
 
     try:
@@ -335,7 +335,7 @@ async def run_workflow(result_object: Result) -> Result:
 
     finally:
         await datasvc.persist_result(result_object.dispatch_id)
-        datasvc.unregister_dispatch(result_object.dispatch_id)
+        datasvc.finalize_dispatch(result_object.dispatch_id)
 
     return result_object
 
