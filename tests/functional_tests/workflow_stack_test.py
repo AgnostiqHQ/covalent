@@ -126,6 +126,39 @@ def test_sublatticing():
     assert workflow_result.get_node_result(node_id=0)["sublattice_result"].result == 3
 
 
+def test_lattice_electron_metadata_propagation():
+    """
+    Check whether lattice metadata is propagated correctly to electrons
+    """
+
+    e_bash_dep = ct.DepsBash(["ls"])
+    l_bash_dep = ct.DepsBash(["ls -l"])
+
+    @ct.electron(deps_bash=e_bash_dep)
+    def task_1():
+        pass
+
+    @ct.electron
+    def task_2():
+        pass
+
+    @ct.lattice(deps_bash=l_bash_dep)
+    def workflow():
+        task_1()
+        task_2()
+
+    dispatch_id = ct.dispatch(workflow)()
+    res = ct.get_result(dispatch_id, wait=True)
+    tg = res.lattice.transport_graph
+
+    dep_0 = ct.DepsBash().from_dict(tg.get_node_value(0, "metadata")["deps"]["bash"])
+    dep_1 = ct.DepsBash().from_dict(tg.get_node_value(1, "metadata")["deps"]["bash"])
+
+    assert dep_0.commands == ["ls"]
+    assert dep_1.commands == ["ls -l"]
+    rm._delete_result(dispatch_id)
+
+
 def test_parallelization():
     """
     Test parallelization of multiple electrons and check if calling the lattice
