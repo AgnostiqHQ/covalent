@@ -433,7 +433,6 @@ jobs:
   # Build Covalent Azure Batch Executor base image
   docker_azurebatch_executor_base_image:
     runs-on: ubuntu-latest
-    needs: docker
     permissions:
       id-token: write
       contents: read
@@ -448,14 +447,14 @@ jobs:
           ref: "v${{ github.event.inputs.azurebatch_executor_base_image_stable_version }}"
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
 
-      - name: Check out master
+      - name: Check out main
         uses: actions/checkout@v3
         if: inputs.prerelease
         with:
           persist-credentials: false
           fetch-depth: 0
-          repository: AgnostiqHQ/covalent-awslambda-plugin
-          ref: "master"
+          repository: AgnostiqHQ/covalent-azurebatch-plugin
+          ref: "main"
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
 
       - name: Set up QEMU
@@ -466,26 +465,29 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@master
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: "Az CLI login"
+        uses: azure/login@v1
         with:
-          role-to-assume: ${{ secrets.ECR_PUBLIC_UPLOAD_ROLE }}
-          aws-region: us-east-1
+          client-id: ${{ secrets.AZURE_APP_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_APP_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Login to Public Registry
+      - name: Login to AZ Container Registry
         run: |
-          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+          az --version
+          az acr login --name covalentbatch
+          docker info
+
       - name: Generate tag
         run: |
-          aws --version
-          docker info
           TAG="$(cat ./VERSION)"
           echo "TAG: $TAG"
           echo "TAG=$TAG" >> $GITHUB_ENV
+
       - name: Build and push pre-release
         if: >
           inputs.prerelease
-          && !inputs.awslambda_executor_base_image_stable_version
+          && !inputs.azurebatch_executor_base_image_stable_version
           && github.event_name == 'schedule'
         uses: docker/build-push-action@v2
         with:
@@ -495,14 +497,15 @@ jobs:
           platforms: "linux/amd64,linux/arm64"
           push: true
           build-args: |
-            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:latestsdk
+            COVALENT_BASE_IMAGE=python:3.8-slim-buster
           tags: |
-            public.ecr.aws/covalent/covalent-lambda-executor:latest
-            public.ecr.aws/covalent/covalent-lambda-executor:${{ env.TAG }}
+            covalentbatch.azurecr.io/covalent-azurebatch-executor:latest
+            covalentbatch.azurecr.io/covalent-azurebatch-executor:${{ env.TAG }}
+
       - name: Build stable image
         if: >
           !inputs.prerelease
-          && github.events.inputs.awslambda_executor_base_image_stable_version
+          && github.events.inputs.azurebatch_executor_base_image_stable_version
           && !github.events.inputs.test_release
           && contains(env.PAUL_BLART, github.actor)
         uses: docker/build-push-action@v2
@@ -512,7 +515,7 @@ jobs:
           file: ./Dockerfile
           platforms: "linux/amd64,linux/arm64"
           build-args: |
-            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:stablesdk
+            COVALENT_BASE_IMAGE=python:3.8-slim-buster
           push: true
           tags: |
-            public.ecr.aws/covalent/covalent-lambda-executor:stable
+            covalentbatch.azurecr.io/covalent-azurebatch-executor:stable
