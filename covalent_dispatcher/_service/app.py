@@ -32,7 +32,7 @@ from covalent import lattice
 from covalent._results_manager.result import Result
 from covalent._shared_files import logger
 from covalent._shared_files.util_classes import Status
-from covalent._workflow.transport import TransportableObject
+from covalent._workflow.transport import TransportableObject, _TransportGraph
 
 from .._db.datastore import workflow_db
 from .._db.dispatchdb import DispatchDB
@@ -45,7 +45,7 @@ log_stack_info = logger.log_stack_info
 router: APIRouter = APIRouter()
 
 
-def _result_from(lattice_record: Lattice) -> Result:
+def _result_from(lattice_record: Lattice, intermediate_outputs=True) -> Result:
     """Re-hydrate result object from the lattice record."""
 
     function = load_file(
@@ -76,9 +76,15 @@ def _result_from(lattice_record: Lattice) -> Result:
     error = load_file(
         storage_path=lattice_record.storage_path, filename=lattice_record.error_filename
     )
-    transport_graph = load_file(
-        storage_path=lattice_record.storage_path, filename=lattice_record.transport_graph_filename
-    )
+
+    if intermediate_outputs:
+        transport_graph = load_file(
+            storage_path=lattice_record.storage_path,
+            filename=lattice_record.transport_graph_filename,
+        )
+    else:
+        transport_graph = _TransportGraph()
+
     output = load_file(
         storage_path=lattice_record.storage_path, filename=lattice_record.results_filename
     )
@@ -201,7 +207,10 @@ def db_path() -> str:
 
 @router.get("/result/{dispatch_id}")
 def get_result(
-    dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
+    dispatch_id: str,
+    wait: Optional[bool] = False,
+    status_only: Optional[bool] = False,
+    intermediate_outputs: Optional[bool] = True,
 ):
     with workflow_db.session() as session:
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
@@ -224,7 +233,7 @@ def get_result(
             }
             if not status_only:
                 output["result"] = codecs.encode(
-                    pickle.dumps(_result_from(lattice_record)), "base64"
+                    pickle.dumps(_result_from(lattice_record, intermediate_outputs)), "base64"
                 ).decode()
             return output
 

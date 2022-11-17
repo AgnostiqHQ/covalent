@@ -38,7 +38,7 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-def get_result(dispatch_id: str, wait: bool = False) -> Result:
+def get_result(dispatch_id: str, wait: bool = False, intermediate_outputs=True) -> Result:
     """
     Get the results of a dispatch from a file.
 
@@ -52,10 +52,7 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
     """
 
     try:
-        result = _get_result_from_dispatcher(
-            dispatch_id,
-            wait,
-        )
+        result = _get_result_from_dispatcher(dispatch_id, wait, intermediate_outputs)
         result_object = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
 
     except MissingLatticeRecordError as ex:
@@ -71,6 +68,7 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
 def _get_result_from_dispatcher(
     dispatch_id: str,
     wait: bool = False,
+    intermediate_outputs: bool = True,
     dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
     status_only: bool = False,
 ) -> Dict:
@@ -99,7 +97,11 @@ def _get_result_from_dispatcher(
     url = "http://" + dispatcher + "/api/result/" + dispatch_id
     response = http.get(
         url,
-        params={"wait": bool(int(wait)), "status_only": status_only},
+        params={
+            "wait": bool(int(wait)),
+            "status_only": status_only,
+            "intermediate_outputs": intermediate_outputs,
+        },
     )
     if response.status_code == 404:
         raise MissingLatticeRecordError
