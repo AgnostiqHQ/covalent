@@ -56,7 +56,8 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
           repository: AgnostiqHQ/covalent-azurebatch-plugin
-          ref: "main"
+          # ref: "main"
+          ref: "develop"
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
 
       - name: Set up QEMU
@@ -79,9 +80,7 @@ jobs:
           az --version
           az acr login --name covalentbatch
           docker info
-      - name: List dir
-        run: |
-          ls
+
       - name: Generate tag
         run: |
           TAG="$(cat ./VERSION)"
