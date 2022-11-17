@@ -158,12 +158,6 @@ describe('Dispatch layout contents', () => {
     expect(linkElement).toBeInTheDocument()
   })
 
-  test('dispatch layout copy icon is rendered', () => {
-    reduxRender(<DispatchLayout />)
-    const linkElement = screen.getByTestId('copyIcon')
-    expect(linkElement).toBeInTheDocument()
-  })
-
   test('dispatch layout overview text is rendered', () => {
     const { container } = reduxRender(<DispatchLayout />)
     expect(

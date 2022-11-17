@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - When an electron raises an exception during execution, the local and dask executors now try to recover any output that was already
   written.
 - Fixed functional tests.
+- Added `requirements-client.txt` to MANIFEST file
 
 ### Docs
 
@@ -60,6 +61,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Folder transfer unit test.
 - Folder transfer download bug
 - Result objects now print correctly when nodes fail
+
+### Changed
+
+- Width of lattice name column on dispatch list GUI.
+- Optimzing larger graphs for better performance.
 
 ## [0.207.0-rc.0] - 2022-10-26
 
