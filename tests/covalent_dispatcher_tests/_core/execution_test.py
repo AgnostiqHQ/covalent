@@ -61,7 +61,7 @@ def get_mock_result() -> Result:
         print("Error!", file=sys.stderr)
         return x
 
-    @ct.lattice(results_dir=TEST_RESULTS_DIR)
+    @ct.lattice(results_dir=TEST_RESULTS_DIR, deps_bash=ct.DepsBash(["ls"]))
     def pipeline(x):
         res1 = task(x)
         res2 = task(res1)

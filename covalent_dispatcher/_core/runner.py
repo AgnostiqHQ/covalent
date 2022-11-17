@@ -50,7 +50,11 @@ debug_mode = get_config("sdk.log_level") == "debug"
 
 
 # This is to be run out-of-process
-def _build_sublattice_graph(sub: Lattice, *args, **kwargs):
+def _build_sublattice_graph(sub: Lattice, parent_metadata: Dict, *args, **kwargs):
+    for k in sub.metadata.keys():
+        if not sub.metadata[k]:
+            sub.metadata[k] = parent_metadata[k]
+
     sub.build_graph(*args, **kwargs)
     return sub.serialize_to_json()
 
@@ -78,7 +82,11 @@ async def _dispatch_sublattice(
         app_log.debug(f"Exception when trying to determine sublattice executor: {ex}")
         raise ex
 
-    sub_dispatch_inputs = {"args": [serialized_callable], "kwargs": inputs["kwargs"]}
+    parent_metadata = TransportableObject.make_transportable(parent_result_object.lattice.metadata)
+    sub_dispatch_inputs = {
+        "args": [serialized_callable, parent_metadata],
+        "kwargs": inputs["kwargs"],
+    }
     for arg in inputs["args"]:
         sub_dispatch_inputs["args"].append(arg)
 

@@ -99,7 +99,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       {hasStarted && (
         <>
           <Heading>Started{hasEnded ? ' - Ended' : ''}</Heading>
-          {isFetching ? (
+          {!result && isFetching ? (
             <Skeleton />
           ) : (
             <Typography fontSize="body2.fontSize">
@@ -112,7 +112,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
 
       {/* Runtime */}
       <Heading>Runtime</Heading>
-      {isFetching ? (
+      {!result && isFetching ? (
         <Skeleton />
       ) : (
         <Runtime startTime={result?.started_at} endTime={result?.ended_at} />
@@ -120,7 +120,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
 
       {/* Directory */}
       <Heading>Directory</Heading>
-      {isFetching ? (
+      {!result && isFetching ? (
         <Skeleton />
       ) : (
         <Typography
@@ -194,7 +194,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       <Heading />
 
       {Object.keys(drawerFunctionString).length === 0 &&
-      drawerFunctionStringListFetching ? (
+        drawerFunctionStringListFetching ? (
         <Skeleton height={100} />
       ) : (
         <Paper
