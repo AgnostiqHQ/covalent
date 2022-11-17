@@ -51,7 +51,7 @@ jobs:
 
       - name: Check out master
         uses: actions/checkout@v3
-        if: inputs.prerelease
+        # if: inputs.prerelease
         with:
           persist-credentials: false
           fetch-depth: 0
