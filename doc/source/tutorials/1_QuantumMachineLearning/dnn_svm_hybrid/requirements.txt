@@ -1,0 +1,6 @@
+numpy
+pennylane
+scikit-learn
+seaborn
+torch
+torchvision
