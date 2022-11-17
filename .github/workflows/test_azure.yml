@@ -49,14 +49,14 @@ jobs:
           ref: "v${{ github.event.inputs.azurebatch_executor_base_image_stable_version }}"
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
 
-      - name: Check out master
+      - name: Check out main
         uses: actions/checkout@v3
         # if: inputs.prerelease
         with:
           persist-credentials: false
           fetch-depth: 0
-          repository: AgnostiqHQ/covalent-awslambda-plugin
-          ref: "master"
+          repository: AgnostiqHQ/covalent-azurebatch-plugin
+          ref: "main"
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
 
       - name: Set up QEMU
