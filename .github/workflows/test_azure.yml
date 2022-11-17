@@ -79,11 +79,12 @@ jobs:
           az --version
           az acr login --name covalentbatch
           docker info
-
-      - name: Generate tag
+      - name: List dir
         run: |
           ls
-          TAG="$(cat ./VERSION)"
+      - name: Generate tag
+        run: |
+          TAG="$(cat ./covalent-awslambda-plugin/VERSION)"
           echo "TAG: $TAG"
           echo "TAG=$TAG" >> $GITHUB_ENV
 
@@ -96,7 +97,7 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          file: ./Dockerfile
+          file: ./covalent-awslambda-plugin/Dockerfile
           platforms: "linux/amd64,linux/arm64"
           push: true
           build-args: |
