@@ -497,7 +497,7 @@ jobs:
           platforms: "linux/amd64,linux/arm64"
           push: true
           build-args: |
-            COVALENT_BASE_IMAGE=python:3.8-slim-buster
+            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:latestsdk
           tags: |
             covalentbatch.azurecr.io/covalent-azurebatch-executor:latest
             covalentbatch.azurecr.io/covalent-azurebatch-executor:${{ env.TAG }}
@@ -515,7 +515,7 @@ jobs:
           file: ./Dockerfile
           platforms: "linux/amd64,linux/arm64"
           build-args: |
-            COVALENT_BASE_IMAGE=python:3.8-slim-buster
+            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:stablesdk
           push: true
           tags: |
             covalentbatch.azurecr.io/covalent-azurebatch-executor:stable
