@@ -82,6 +82,7 @@ jobs:
 
       - name: Generate tag
         run: |
+          ls
           TAG="$(cat ./VERSION)"
           echo "TAG: $TAG"
           echo "TAG=$TAG" >> $GITHUB_ENV
