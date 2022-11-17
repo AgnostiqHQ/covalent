@@ -31,6 +31,8 @@ on:
         required: true
         type: boolean
         default: true
+      azurebatch_executor_base_image_stable_version:
+        description: "Stable version number for the azure batch executor base image, e.g. 0.32.3"
   workflow_call:
     inputs:
       prerelease:
@@ -427,3 +429,90 @@ jobs:
           push: true
           tags: |
             public.ecr.aws/covalent/covalent-executor-base:stable
+
+  # Build Covalent Azure Batch Executor base image
+  docker_azurebatch_executor_base_image:
+    runs-on: ubuntu-latest
+    needs: docker
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Check out release tag
+        uses: actions/checkout@v3
+        if: inputs.azurebatch_executor_base_image_stable_version
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          repository: AgnostiqHQ/covalent-azurebatch-plugin
+          ref: "v${{ github.event.inputs.azurebatch_executor_base_image_stable_version }}"
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+
+      - name: Check out master
+        uses: actions/checkout@v3
+        if: inputs.prerelease
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          repository: AgnostiqHQ/covalent-awslambda-plugin
+          ref: "master"
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@master
+        with:
+          platforms: "linux/amd64,linux/arm64"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@master
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.ECR_PUBLIC_UPLOAD_ROLE }}
+          aws-region: us-east-1
+
+      - name: Login to Public Registry
+        run: |
+          aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+      - name: Generate tag
+        run: |
+          aws --version
+          docker info
+          TAG="$(cat ./VERSION)"
+          echo "TAG: $TAG"
+          echo "TAG=$TAG" >> $GITHUB_ENV
+      - name: Build and push pre-release
+        if: >
+          inputs.prerelease
+          && !inputs.awslambda_executor_base_image_stable_version
+          && github.event_name == 'schedule'
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile
+          platforms: "linux/amd64,linux/arm64"
+          push: true
+          build-args: |
+            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:latestsdk
+          tags: |
+            public.ecr.aws/covalent/covalent-lambda-executor:latest
+            public.ecr.aws/covalent/covalent-lambda-executor:${{ env.TAG }}
+      - name: Build stable image
+        if: >
+          !inputs.prerelease
+          && github.events.inputs.awslambda_executor_base_image_stable_version
+          && !github.events.inputs.test_release
+          && contains(env.PAUL_BLART, github.actor)
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: ./Dockerfile
+          platforms: "linux/amd64,linux/arm64"
+          build-args: |
+            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:stablesdk
+          push: true
+          tags: |
+            public.ecr.aws/covalent/covalent-lambda-executor:stable

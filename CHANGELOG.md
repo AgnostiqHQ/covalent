@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Added azure batch docker base image deployment workflow
+
 ### Added
 
 - Added `TaskRuntimeError` exception for executor plugin implementations to signal to Covalent that a task raised an
