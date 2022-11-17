@@ -77,7 +77,7 @@ jobs:
       - name: Login to AZ Container Registry
         run: |
           az --version
-          az acr login --name myregistry
+          az acr login --name covalentbatch
           docker info
 
       - name: Generate tag
