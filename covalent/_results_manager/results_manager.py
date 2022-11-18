@@ -31,6 +31,8 @@ from urllib3.util import Retry
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.exceptions import MissingLatticeRecordError
+from .._workflow.electron import Electron
+from .._workflow.transport import TransportableObject
 from .result import Result
 from .wait import EXTREME
 
@@ -63,6 +65,79 @@ def get_result(dispatch_id: str, wait: bool = False, intermediate_outputs=True) 
         raise ex
 
     return result_object
+
+
+def get_node_output(dispatch_id: str, node_id) -> TransportableObject:
+    """
+    Get the results of a dispatch from a file.
+
+    Args:
+        dispatch_id: The dispatch id of the result.
+        wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
+
+    Returns:
+        The result from the file.
+
+    """
+
+    try:
+        json = _get_node_output_from_dispatcher(dispatch_id, node_id)
+        to = TransportableObject.deserialize_from_json(json)
+        return to
+
+    except MissingLatticeRecordError as ex:
+        app_log.warning(
+            f"Dispatch ID {dispatch_id} was not found in the database. Incorrect dispatch id."
+        )
+
+        raise ex
+
+
+def _postprocess_recursively(dispatch_id, retval):
+    if isinstance(retval, Electron):
+        print(f"Looking up node {dispatch_id}:{retval.node_id}")
+        node_output = get_node_output(dispatch_id, retval.node_id)
+        return node_output.get_deserialized()
+    elif isinstance(retval, list):
+        print("Recursively postprocessing list")
+        return list(map(lambda x: _postprocess_recursively(dispatch_id, x), retval))
+    elif isinstance(retval, tuple):
+        print("Recursively postprocessing tuple")
+        return tuple(map(lambda x: _postprocess_recursively(dispatch_id, x), retval))
+    elif isinstance(retval, set):
+        print("Recursively postprocessing set")
+        return {_postprocess_recursively(dispatch_id, x) for x in retval}
+    elif isinstance(retval, dict):
+        print("Recursively postprocessing dictionary")
+        return {k: _postprocess_recursively(dispatch_id, v) for k, v in retval.items()}
+    else:
+        return retval
+
+
+def postprocess_ex(result_object):
+    """Experimental heuristic postprocessor
+
+    Downloads referenced intermediate outputs on-demand instead of
+    loading all intermediate results into memory.
+
+    Assumes output is a composition of collections (list, dict, set,
+    tuple) of electrons or primitive scalar types
+
+    """
+    args = result_object.inputs["args"]
+    kwargs = result_object.inputs["kwargs"]
+    retval = result_object.lattice.build_graph(*args, **kwargs)
+    return _postprocess_recursively(result_object.dispatch_id, retval)
+
+
+def _get_node_output_from_dispatcher(
+    dispatch_id: str,
+    node_id: int,
+    dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
+):
+    url = "http://" + dispatcher + "/api/result/" + dispatch_id + f"/{node_id}/output"
+    resp = requests.get(url)
+    return resp.json()
 
 
 def _get_result_from_dispatcher(

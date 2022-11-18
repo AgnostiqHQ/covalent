@@ -36,6 +36,7 @@ from covalent._workflow.transport import TransportableObject, _TransportGraph
 
 from .._db.datastore import workflow_db
 from .._db.dispatchdb import DispatchDB
+from .._db.load import _electron_record, _record_to_node_dict, load_node_attribute
 from .._db.models import Lattice
 from .._db.write_result_to_db import load_file
 
@@ -158,6 +159,10 @@ def _result_from(lattice_record: Lattice, intermediate_outputs=True) -> Result:
     return result
 
 
+def _electron_metadata(dispatch_id: str, node_id: int):
+    return _record_to_node_dict(_electron_record(dispatch_id, node_id))
+
+
 @router.post("/submit")
 async def submit(request: Request) -> UUID:
     """
@@ -245,3 +250,42 @@ def get_result(
             headers={"Retry-After": "2"},
         )
         return response
+
+
+@router.get("/result/{dispatch_id}/{node_id}")
+def get_node(
+    dispatch_id: str,
+    node_id: int,
+):
+    app_log.debug(f"Calling get_node for node {dispatch_id}:{node_id}")
+
+    with workflow_db.session() as session:
+        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+        status = lattice_record.status if lattice_record else None
+        if not lattice_record:
+            return JSONResponse(
+                status_code=404,
+                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+            )
+
+    return JSONResponse(status_code=200, content=_electron_metadata(dispatch_id, node_id))
+
+
+@router.get("/result/{dispatch_id}/{node_id}/output")
+def get_node_output(
+    dispatch_id: str,
+    node_id: int,
+):
+    app_log.debug(f"Calling get_node for node {dispatch_id}:{node_id}")
+
+    with workflow_db.session() as session:
+        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+        status = lattice_record.status if lattice_record else None
+        if not lattice_record:
+            return JSONResponse(
+                status_code=404,
+                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+            )
+
+    to = load_node_attribute(dispatch_id, node_id, "output")
+    return JSONResponse(status_code=200, content=to.serialize_to_json())

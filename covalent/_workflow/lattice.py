@@ -226,7 +226,7 @@ class Lattice:
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
                 try:
-                    workflow_function(*new_args, **new_kwargs)
+                    retval = workflow_function(*new_args, **new_kwargs)
                 except Exception:
                     warnings.warn(
                         "Please make sure you are not manipulating an object inside the lattice."
@@ -241,6 +241,8 @@ class Lattice:
             pp = encode_metadata(pp)
             self.metadata["workflow_executor"] = pp["workflow_executor"]
             self.metadata["workflow_executor_data"] = pp["workflow_executor_data"]
+
+        return retval
 
     def draw(self, *args, **kwargs) -> None:
         """
