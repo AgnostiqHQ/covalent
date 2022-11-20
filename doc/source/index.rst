@@ -31,94 +31,112 @@ COVALENT DOCUMENTATION
 
 |
 
-Covalent is a Pythonic distributed workflow tool used to prototype and run high performance classical and quantum software. Covalent can be used to...
+Covalent is a Pythonic workflow tool for computational scientists, AI/ML software engineers, and anyone who needs to run experiments on limited or expensive computing resources including quantum computers, HPC clusters, GPU arrays, and cloud services.
 
-- rapidly iterate prototypes and exploratory research models
-- construct complex workflows consisting of tasks written in a variety of languages
-- automate, manage, and share reproducible experiments
-- build data pipelines across distributed infrastructure
-- visualize data and task dependencies in an interactive user interface
-- run software in heterogeneous compute environments, including in hybrid-cloud and hybrid-quantum configurations
-- understand where time and money is spent across a project
+Covalent enables a researcher to run computation tasks on an advanced hardware platform – such as a quantum computer or serverless HPC cluster – using a single line of code.
 
-.. |
+💭 Why Covalent?
+################
 
-.. .. raw:: html
+Covalent overcomes computational and operational challenges inherent in AI/ML experimentation.
 
-   <div style="position: relative; padding-bottom: 56.25%; padding-top: 30px; height: 0; overflow: hidden; margin-bottom: -15px">
+.. list-table::
+    :widths: auto
+    :header-rows: 1
 
-   <iframe
-   style="position: absolute; top: 0; left: 50%; width: 100%; height: 100%; max-width: 600px; max-height: 400px; transform:translateX(-50%); -webkit-transform:translateX(-50%); -moz-transform: translateX(-50%);"
-   src="https://www.youtube.com/embed/tZ92zRbnuAA"
-   frameborder="0"
-   allowfullscreen="">
-   </iframe>
-   </div>
+    * -  Computational Challenges
+      - Operational Challenges
+    * - Advanced compute hardware is expensive, and access is often limited – shared with other researchers, for example.
+      - Proliferation of models, datasets, and hardware trials.
+    * - You'd like to iterate quickly, but running large models takes time
+      - Switching between development tools, including notebooks, scripts, and submission queues.
+    * - Parallel computation speeds execution, but requires careful attention to data relationships.
+      - Tracking, repeating, and sharing results.
 
-Next Steps
-##########
+With Covalent, you:
 
-Check out the :doc:`Getting Started <./getting_started/index>` page to learn how to immediately start using Covalent. After you're set up, come back and dig deeper in the Concepts and Tutorials. Once you're comfortable with the basics, use the How-To Guides and the API Reference to start building your own applications.
+* Assign functions to appropriate resources: Use advanced hardware (quantum computers, HPC clusters) for the heavy lifting and commodity hardware for bookkeeping.
+* Test functions on local servers before shipping them to advanced hardware.
+* Let Covalent's services analyze functions for data independence and automatically parallelize them.
+* Run experiments from a Jupyter notebook (or whatever your preferred interactive Python environment is).
+* Track workflows and examine results in a browser-based GUI.
+
+
+Get Started
+~~~~~~~~~~~
 
 .. panels::
 
-   :column: col-lg-12 p-2
-   .. link-button:: getting_started/index
-    :type: ref
-    :text: Getting Started
-    :classes: btn-outline-primary btn-block
+    .. link-button:: getting_started/quick_start
+        :type: ref
+        :text: Quick Start
+        :classes: btn-outline-primary btn-block stretched-link
 
-   ----------------
+    +++
 
-   Concepts
-   ^^^^^^^^^^^^^^^^^^^^^^
-   What is a workflow? How does Covalent work? This section covers the "big picture", including design principles and motivations for using Covalent.
+    Install Covalent, start a local server, and run an example workflow in 10 minutes.
 
-   +++
+    ------------------------------------------------
 
-   .. link-button:: concepts/concepts
-      :type: ref
-      :text: Go To Concepts
-      :classes: btn-outline-primary btn-block stretched-link
+    .. link-button:: getting_started/index
+        :type: ref
+        :text: Getting Started
+        :classes: btn-outline-primary btn-block stretched-link
 
-   ------------------------------------------------
+    +++
 
-   Tutorials
-   ^^^^^^^^^^^^^^^^^^^^^^
-   Learn how Covalent is being used in real-world research applications. The tutorials range in difficulty and span a variety of subjects.
+    Install Covalent and see how easy it is to execute the same task on different backends. Also describes how to build Covalent from source – start here if you want to contribute to the Covalent OS project.
 
-   +++
+Learn More
+~~~~~~~~~~
 
-   .. link-button:: tutorials/tutorials
-       :type: ref
-       :text: Go To Tutorials
-       :classes: btn-outline-primary btn-block stretched-link
+.. panels::
 
-   ------------------------------------------------
+    .. link-button:: concepts/concepts
+        :type: ref
+        :text: Concepts
+        :classes: btn-outline-primary btn-block stretched-link
 
-   How-To Guides
-   ^^^^^^^^^^^^^^^^^^^^^^
-   Quick references and examples for users who know what they're looking for.
+    +++
 
-   +++
+    How does Covalent work? An architectural overview.
 
-   .. link-button:: how_to/index
-       :type: ref
-       :text: Go To How-To Guides
-       :classes: btn-outline-primary btn-block stretched-link
+    ------------------------------------------------
 
-   ------------------------------------------------
+    .. link-button:: api/api
+        :type: ref
+        :text: API Reference
+        :classes: btn-outline-primary btn-block stretched-link
 
-   API Reference
-   ^^^^^^^^^^^^^^^^^^^^^^
-   Learn more about the syntax of Covalent's classes, functions, and modules.
+    +++
 
-   +++
+    Covalent's classes, functions, and modules. Parameters and attributes of Workflows, Tasks, and Executors.
 
-   .. link-button:: api/api
-      :type: ref
-      :text: Go To API Reference
-      :classes: btn-outline-primary btn-block stretched-link
+Build Workflows
+~~~~~~~~~~~~~~~
+
+.. panels::
+
+    .. link-button:: how_to/index
+        :type: ref
+        :text: How-To Guides
+        :classes: btn-outline-primary btn-block stretched-link
+
+    +++
+
+    Build your own workflows with this cookbook-style collection of instructions for every stage of a project, from orchestration to execution to results.
+
+    ------------------------------------------------
+
+    .. link-button:: tutorials/tutorials
+        :type: ref
+        :text: Tutorials
+        :classes: btn-outline-primary btn-block stretched-link
+
+    +++
+
+    Learn how to apply Covalent in real-world research applications. The tutorials range in complexity from beginner to advanced and span a variety of topic areas.
+
 
 Recent Changes
 ##############
@@ -135,21 +153,20 @@ Summary of major features/enhancements
 Join the Community
 ##################
 
-Covalent is a quickly growing and vibrant community of enthusiasts, researchers, scientists, and engineers. Start contributing now by navigating to Covalent's `GitHub <https://github.com/AgnostiqHQ/covalent>`_ homepage or learn more about how Covalent can be used in your business on Covalent's `product <https://agnostiq.ai/covalent>`_ page. You are also welcome to engage with other users in the GitHub `discussions <https://github.com/AgnostiqHQ/covalent/discussions>`_ page.
+Covalent is a quickly growing and vibrant community of enthusiasts, researchers, scientists, and engineers. Start contributing now by navigating to Covalent's `GitHub <https://github.com/AgnostiqHQ/covalent>`_ homepage or learn more about how Covalent can be used in your business on Covalent's `product <https://agnostiq.ai/covalent>`_ page. You can also engage with other users in the GitHub `discussions <https://github.com/AgnostiqHQ/covalent/discussions>`_ page.
 
 
 .. toctree::
    :maxdepth: 3
 
-   Quick Start <build_and_install/quick_start>
+   Quick Start <getting_started/quick_start>
+   Getting Started <getting_started/index>
    Concepts <concepts/concepts>
-   Tutorials <tutorials/tutorials>
+   API Reference <api/index>
    How-To Guides <how_to/index>
+   Tutorials <tutorials/tutorials>
    User Interface <webapp_ui/index>
-   Building and Installing from Source <build_and_install/index>
-   🔌 Plugins <plugins>
    Credentials <credentials>
-   API Documentation <api/index>
 
 
 .. toctree::

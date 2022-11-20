@@ -25,7 +25,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed "Citation" in the README.
 - Renamed "Release Notes" to "What's New?" in the README. Updated What's New with a description of the newest GUI functionality.
 - Added "Quick Start" guide.
-- Modified and moved "Getting Started" to "Installation from Source".
+- Updated and reorganized doc landing page.
+- Rewrote "Getting Started" page.
+- Broke out "Installing from Source" instructions to separate page.
 - Corrected some API class names in headers.
 - Added an executors-and-UI graphic.
 
