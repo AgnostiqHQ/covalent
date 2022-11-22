@@ -3,7 +3,7 @@
 🔌 Slurm Executor
 """""""""""""""""""""""""""
 
-Executing tasks (electrons) in a remote cluster via SLURM. This executor plugin interfaces Covalent with HPC systems managed by `Slurm <https://slurm.schedmd.com/documentation.html>`_. In order for workflows to be deployable, users must have SSH access to the Slurm login node, writable storage space on the remote filesystem, and permissions to submit jobs to Slurm.
+This executor plugin interfaces Covalent with HPC systems managed by `Slurm <https://slurm.schedmd.com/documentation.html>`_. For workflows to be deployable, users must have SSH access to the Slurm login node, writable storage space on the remote filesystem, and permissions to submit jobs to Slurm.
 
 To use this plugin with Covalent, simply install it using :code:`pip`:
 
@@ -12,7 +12,7 @@ To use this plugin with Covalent, simply install it using :code:`pip`:
     pip install covalent-slurm-plugin
 
 
-The following shows an example of how a user might modify their Covalent `configuration <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_ to support Slurm:
+The following shows an example of a Covalent `configuration <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_ that is modified to support Slurm:
 
 .. code:: bash
 
@@ -36,15 +36,15 @@ The following shows an example of how a user might modify their Covalent `config
    gpus = 4
    gpu-bind = "single:1"
 
-The first stanza describes default connection parameters for a user who is able to successfully connect to the Slurm login node using, for example
+The first stanza describes default connection parameters for a user who can connect to the Slurm login node using, for example:
 
 .. code:: bash
-    
-    `ssh -i /home/user/.ssh/id_rsa user@login.cluster.org`.
 
-The second stanza describes default parameters for ``#SBATCH`` directives in a Slurm submit script. Similarly, the final stanza describes default parameters passed directly to ``srun``, which may be necessary in some use cases.
+    ssh -i /home/user/.ssh/id_rsa user@login.cluster.org
 
-Accordingly, the example above generates a script with the following preamble,
+The second and third stanzas describe default parameters for ``#SBATCH`` directives and default parameters passed directly to ``srun``, respectively.
+
+This example generates a script containing the following preamble:
 
 .. code:: bash
 
@@ -56,7 +56,7 @@ Accordingly, the example above generates a script with the following preamble,
    #SBATCH --gpus=4
    #SBATCH --qos=regular
 
-where the job is submitted with:
+and subsequent workflow submission with:
 
 .. code:: bash
 
@@ -72,31 +72,34 @@ To use the configuration settings, an electron’s executor must be specified wi
    def my_task(x, y):
        return x + y
 
-Alternatively, specifying a ``SlurmExecutor`` instance allows users customize behavior scoped to specific tasks. The ``prerun_commands`` parameter can be used here to provide a list of shell commands to execute before submitting the workflow. Similarly, the ``postrun_commands`` parameter takes a list of shell commands to execute *after* submitting the script. Finally, the ``srun_append`` parameter can be used to modify the call to ``srun`` that submits the workflow, by adding commands outside the scope of ``srun``\ ’s options.
+Alternatively, passing a ``SlurmExecutor`` instance enables custom behavior scoped to specific tasks. Here, the executor's ``prerun_commands`` and ``postrun_commands`` parameters can be used to list shell commands to be executed before and after submitting the workflow. These may include any additional ``srun`` commands apart from workflow submission. Commands can also be nested inside the submission call to ``srun`` by using the ``srun_append`` parameter.
 
-An example of a custom executor instance is shown below:
+More complex jobs can be crafted by using these optional parameters. For example, the instance below runs a job that accesses CPU and GPU resources on a single node, while profiling GPU usage via ``nsys`` and issuing complementary commands that pause/resume the central hardware counter.
 
 .. code:: python
 
    executor = ct.executor.SlurmExecutor(
        remote_workdir="/scratch/user/experiment1",
        options={
+           "qos": "regular",
+           "time": "01:30:00",
            "nodes": 1,
-           "cpus-per-task": 8,
-           "qos": "regular"
+           "constraint": "gpu",
        },
-       srun_options={
-           "slurmd-debug": 4,
-           "cpu_bind": "cores"
-       },
-       srun_append="nsys profile --stats=true -t cuda --gpu-metrics-device=all",
-       prerun_commands = [
+       prerun_commands=[
            "module load package/1.2.3",
            "srun --ntasks-per-node 1 dcgmi profile --pause"
        ],
-       postrun_commands = [
+       srun_options={
+           "n": 4,
+           "c": 8,
+           "cpu-bind": "cores",
+           "G": 4,
+           "gpu-bind": "single:1"
+       }
+       srun_append="nsys profile --stats=true -t cuda --gpu-metrics-device=all",
+       postrun_commands=[
            "srun --ntasks-per-node 1 dcgmi profile --resume",
-           "python ./path/to/my/post_process.py -j $SLURM_JOB_ID"
        ]
    )
 
@@ -104,20 +107,18 @@ An example of a custom executor instance is shown below:
    def my_custom_task(x, y):
        return x + y
 
-The executor example above corresponds to an ``sbatch`` script with the following sequence of commands:
+Here the corresponding submit script contains the following commands:
 
 .. code:: sh
 
-   module load package/1.2.3  # load module
-   srun --ntasks-per-node 1 dcgmi profile --pause  # pause hardware counter
+   module load package/1.2.3
+   srun --ntasks-per-node 1 dcgmi profile --pause
 
-   # run profiled workflow execution
-   srun --slurmd-debug=4 --cpu_bind=cores \
+   srun -n 4 -c 8 --cpu-bind=cores -G 4 --gpu-bind=single:1 \
    nsys profile --stats=true -t cuda --gpu-metrics-device=all \
    python /scratch/user/experiment1/workflow_script.py
 
-   srun --ntasks-per-node 1 dcgmi profile --resume  # resume hardware counter
-   python ./path/to/my/post_process.py -j $SLURM_JOB_ID  # do some post-processing
+   srun --ntasks-per-node 1 dcgmi profile --resume
 
 
 .. autoclass:: covalent.executor.SlurmExecutor
