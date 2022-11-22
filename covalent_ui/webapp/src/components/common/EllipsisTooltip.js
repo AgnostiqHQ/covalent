@@ -54,14 +54,20 @@ const OverflowTip = (props) => {
       title={props.value}
       disableHoverListener={!hoverStatus}
       style={{ fontSize: props.fontSize || '2em' }}
-      >
+    >
       <div
         ref={textElementRef}
         style={{
           whiteSpace: 'nowrap',
           overflow: 'hidden',
           textOverflow: 'ellipsis',
-          width: props.width || '200px'
+          width: props.width || '200px',
+          '@media (min-width: 1500px)': {
+            width: '280px',
+          },
+          '@media (min-width: 1700px)': {
+            width: '300px',
+          },
         }}
       >
         {props.value}

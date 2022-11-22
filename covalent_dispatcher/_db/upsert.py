@@ -44,7 +44,7 @@ ELECTRON_VALUE_FILENAME = "value.pkl"
 ELECTRON_EXECUTOR_DATA_FILENAME = "executor_data.pkl"
 ELECTRON_STDOUT_FILENAME = "stdout.log"
 ELECTRON_STDERR_FILENAME = "stderr.log"
-ELECTRON_INFO_FILENAME = "info.log"
+ELECTRON_ERROR_FILENAME = "error.log"
 ELECTRON_RESULTS_FILENAME = "results.pkl"
 ELECTRON_DEPS_FILENAME = "deps.pkl"
 ELECTRON_CALL_BEFORE_FILENAME = "call_before.pkl"
@@ -193,9 +193,9 @@ def _electron_data(result: Result):
             except KeyError:
                 node_stderr = None
             try:
-                node_info = tg.get_node_value(node_id, "info")
+                node_error = tg.get_node_value(node_id, "error")
             except KeyError:
-                node_info = None
+                node_error = None
             try:
                 node_output = tg.get_node_value(node_id, "output")
             except KeyError:
@@ -224,7 +224,7 @@ def _electron_data(result: Result):
                 ),
                 (ELECTRON_STDOUT_FILENAME, node_stdout),
                 (ELECTRON_STDERR_FILENAME, node_stderr),
-                (ELECTRON_INFO_FILENAME, node_info),
+                (ELECTRON_ERROR_FILENAME, node_error),
                 (ELECTRON_RESULTS_FILENAME, node_output),
             ]:
                 store_file(node_path, filename, data)
@@ -260,7 +260,7 @@ def _electron_data(result: Result):
                     "value_filename": ELECTRON_VALUE_FILENAME,
                     "stdout_filename": ELECTRON_STDOUT_FILENAME,
                     "stderr_filename": ELECTRON_STDERR_FILENAME,
-                    "info_filename": ELECTRON_INFO_FILENAME,
+                    "error_filename": ELECTRON_ERROR_FILENAME,
                     "deps_filename": ELECTRON_DEPS_FILENAME,
                     "call_before_filename": ELECTRON_CALL_BEFORE_FILENAME,
                     "call_after_filename": ELECTRON_CALL_AFTER_FILENAME,
