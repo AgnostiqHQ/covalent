@@ -116,7 +116,7 @@ const DispatchDrawerContents = () => {
           component={TreeSvg}
           sx={{ verticalAlign: 'middle', marginTop: 1 }}
         />
-        {drawerLatticeDetailsFetching ? (
+        {!dispatchId ? (
           <Skeleton width={200} />
         ) : (
           <Tooltip title={dispatchId} placement="top">

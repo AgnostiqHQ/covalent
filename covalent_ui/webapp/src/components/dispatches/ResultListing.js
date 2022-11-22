@@ -886,7 +886,7 @@ const ResultListing = () => {
                         <TableCell>
                           <OverflowTip
                             value={result.latticeName}
-                            width="70px"
+                            width='280px'
                           />
                         </TableCell>
                         {result.status === 'RUNNING' ? (

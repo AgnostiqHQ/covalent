@@ -13,7 +13,63 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `TaskRuntimeError` exception for executor plugin implementations to signal to Covalent that a task raised an
+  unhandled exception while running in the executor backend.
+
+### Changed
+
+- Electron errors are segregated by type; task runtime errors are
+  stored in `stderr` while the `error` attribute of a node is reserved
+  for exceptions raised by Covalent itself.
+- When tasks fail in a workflow, the Lattice ErrorCard in the UI summarizes the failed tasks.
+
+### Fixed
+
+- Electrons will inherit the lattice executors.
+- Sublattices inherit the parent lattice executor.
+- When several electrons are running concurrently, their stdout and stderr are stored in the correct graph nodes.
+- Electron errors now appear in the Electron ErrorCard when one clicks on a failed task in the UI.
+- When an electron raises an exception during execution, the local and dask executors now try to recover any output that was already
+  written.
+- Fixed functional tests.
+- Added `requirements-client.txt` to MANIFEST file
+
+### Docs
+
+- Added DNN tutorial
+- Updated AWS Plugins install instructions
+- Updated AWS Plugins documentation (minor fixes)
+- Rewrote intro material in README.
+- Changed "Citation" in the README.
+- Renamed "Release Notes" to "What's New?" in the README. Updated What's New with a description of the newest GUI functionality.
+
+## [0.208.0-rc.0] - 2022-11-05
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+### Operations
+
+- Reverted nightly schedule back to daily at 4:00am
+- Added Alejandro to PAUL_BLART group to allow trigerring of releases
+
+### Added
+
 - Support for transferring the contents of folders to and from S3 buckets using the file transfer module.
+
+### Fixed
+
+- Folder transfer unit test.
+- Folder transfer download bug
+- Result objects now print correctly when nodes fail
+
+### Changed
+
+- Width of lattice name column on dispatch list GUI.
+- Optimzing larger graphs for better performance.
 
 ## [0.207.0-rc.0] - 2022-10-26
 

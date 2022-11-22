@@ -112,7 +112,7 @@ class _ExecutorManager:
             else:
                 message = f"No executor found by name: {name}."
                 app_log.error(message)
-                raise ValueError
+                raise ValueError(f"No executor found by name: {name}")
         else:
             message = f"Input must be of type str or BaseExecutor, not {type(name)}"
             app_log.error(message)
