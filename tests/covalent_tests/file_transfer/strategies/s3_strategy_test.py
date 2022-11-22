@@ -18,7 +18,6 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import os
 import sys
 from unittest.mock import MagicMock
 
@@ -38,24 +37,18 @@ class TestS3Strategy:
     MOCK_AWS_REGION = "us-east-1"
 
     def test_init(self, mocker):
-        # test S3 init fails due to not having boto3
-        with pytest.raises(ImportError):
-            strategy = S3()
 
-        # test with boto3 module defined and failure resolving aws credentials
         boto3_mock = MagicMock()
         sys.modules["boto3"] = boto3_mock
         boto3_client_mock = mocker.patch("boto3.client")
-        boto3_client_mock().get_caller_identity().get.return_value = None
-        with pytest.raises(Exception):
-            strategy = S3()
 
         # test with boto3 module defined and successfully resolving aws credentials - success initating S3 strategy
         account_mock = MagicMock()
         boto3_client_mock().get_caller_identity().get.return_value = account_mock
         strategy = S3(self.MOCK_AWS_CREDENTIALS, self.MOCK_AWS_PROFILE, self.MOCK_AWS_REGION)
-        assert os.environ["AWS_SHARED_CREDENTIALS_FILE"] == self.MOCK_AWS_CREDENTIALS
-        assert os.environ["AWS_PROFILE"] == self.MOCK_AWS_PROFILE
+        assert strategy.credentials == self.MOCK_AWS_CREDENTIALS
+        assert strategy.profile == self.MOCK_AWS_PROFILE
+        assert strategy.region_name == self.MOCK_AWS_REGION
 
     def test_download(self, mocker):
         # validate boto3.client('s3').download_file is called with appropriate arguments
@@ -63,7 +56,7 @@ class TestS3Strategy:
         boto3_mock = MagicMock()
         sys.modules["boto3"] = boto3_mock
 
-        boto3_client_mock = mocker.patch("boto3.client")
+        boto3_client_mock = boto3_mock.Session().client
         boto3_client_mock.download_file.return_value = None
 
         from_file = File(self.MOCK_REMOTE_FILEPATH)
@@ -83,7 +76,7 @@ class TestS3Strategy:
         boto3_mock = MagicMock()
         sys.modules["boto3"] = boto3_mock
 
-        boto3_client_mock = mocker.patch("boto3.client")
+        boto3_client_mock = boto3_mock.Session().client
         boto3_client_mock.download_file.return_value = None
 
         to_file = File(self.MOCK_REMOTE_FILEPATH)
@@ -111,7 +104,7 @@ def test_folder_download(mocker):
     boto3_mock = MagicMock()
     sys.modules["boto3"] = boto3_mock
 
-    boto3_client_mock = mocker.patch("boto3.client")
+    boto3_client_mock = boto3_mock.Session().client
 
     from_folder = Folder("s3://mock-bucket/")
     to_folder = Folder("/tmp/")
@@ -136,7 +129,7 @@ def test_folder_upload(mocker):
     boto3_mock = MagicMock()
     sys.modules["boto3"] = boto3_mock
 
-    boto3_client_mock = mocker.patch("boto3.client")
+    boto3_client_mock = boto3_mock.Session().client
 
     os_mock = MagicMock()
     sys.modules["os"] = os_mock
