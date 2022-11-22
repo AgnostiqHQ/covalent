@@ -80,6 +80,14 @@ class S3(FileTransferStrategy):
 
         if from_file._is_dir:
 
+            def get_boto_options(profile=None, region=None):
+                boto_options = {}
+                if profile:
+                    boto_options["profile_name"] = profile
+                if region:
+                    boto_options["region_name"] = region
+                return boto_options
+
             def callable():
                 """Download files from a folder in s3 bucket."""
                 from pathlib import Path
@@ -88,7 +96,7 @@ class S3(FileTransferStrategy):
 
                 profile = executor_profile or os.environ.get("AWS_PROFILE")
                 region = executor_region or os.getenv("AWS_REGION")
-                s3 = boto3.Session(profile_name=profile, region_name=region).client("s3")
+                s3 = boto3.Session(**get_boto_options(profile, region)).client("s3")
 
                 for obj_metadata in s3.list_objects(Bucket=bucket_name, Prefix=from_filepath)[
                     "Contents"
@@ -114,7 +122,7 @@ class S3(FileTransferStrategy):
 
                 profile = executor_profile or os.environ.get("AWS_PROFILE")
                 region = executor_region or os.getenv("AWS_REGION")
-                s3 = boto3.Session(profile_name=profile, region_name=region).client("s3")
+                s3 = boto3.Session(**get_boto_options(profile, region)).client("s3")
 
                 s3.download_file(bucket_name, from_filepath, to_filepath)
 
