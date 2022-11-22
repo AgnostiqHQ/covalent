@@ -138,6 +138,14 @@ class S3(FileTransferStrategy):
         executor_profile = self.profile
         executor_region = self.region_name
 
+        def get_boto_options(profile=None, region=None):
+            boto_options = {}
+            if profile:
+                boto_options["profile_name"] = profile
+            if region:
+                boto_options["region_name"] = region
+            return boto_options
+
         if from_file._is_dir:
 
             def callable():
@@ -147,9 +155,9 @@ class S3(FileTransferStrategy):
 
                 import boto3
 
-                profile = executor_profile or os.environ.get("AWS_PROFILE")
-                region = executor_region or os.getenv("AWS_REGION")
-                s3 = boto3.Session(profile_name=profile, region_name=region).client("s3")
+                profile = executor_profile
+                region = executor_region
+                s3 = boto3.Session(**get_boto_options(profile, region)).client("s3")
 
                 for dir_, _, files in os.walk(from_filepath):
                     for file_name in files:
@@ -166,9 +174,9 @@ class S3(FileTransferStrategy):
                 """Upload file to remote S3 bucket."""
                 import boto3
 
-                profile = executor_profile or os.environ.get("AWS_PROFILE")
-                region = executor_region or os.getenv("AWS_REGION")
-                s3 = boto3.Session(profile_name=profile, region_name=region).client("s3")
+                profile = executor_profile
+                region = executor_region
+                s3 = boto3.Session(**get_boto_options(profile, region)).client("s3")
 
                 s3.upload_file(from_filepath, bucket_name, to_filepath)
 
