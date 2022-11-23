@@ -586,30 +586,6 @@ const ResultListing = () => {
   const [openDialogBox, setOpenDialogBox] = useState(false)
   const [openDialogBoxAll, setOpenDialogBoxAll] = useState(false)
   const [anchorEl, setAnchorEl] = useState(null)
-  const [innerWidth, setInnerWidth] = useState(window.innerWidth)
-
-  function debounce(fn, ms) {
-    let timer
-    return (_) => {
-      clearTimeout(timer)
-      timer = setTimeout((_) => {
-        timer = null
-        fn.apply(this, arguments)
-      }, ms)
-    }
-  }
-
-  useEffect(() => {
-    const debouncedHandleResize = debounce(function handleResize() {
-      setInnerWidth(window.innerWidth)
-    }, 1000)
-
-    window.addEventListener('resize', debouncedHandleResize)
-
-    return (_) => {
-      window.removeEventListener('resize', debouncedHandleResize)
-    }
-  })
 
   const isError = useSelector(
     (state) => state.dashboard.fetchDashboardList.error
