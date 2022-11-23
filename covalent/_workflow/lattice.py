@@ -233,6 +233,15 @@ class Lattice:
                     )
                     raise
 
+        # Set workflow executor if not set by user
+        postprocessor = self.metadata["workflow_executor"]
+        if not postprocessor:
+            pp = {}
+            pp["workflow_executor"] = DEFAULT_METADATA_VALUES["workflow_executor"]
+            pp = encode_metadata(pp)
+            self.metadata["workflow_executor"] = pp["workflow_executor"]
+            self.metadata["workflow_executor_data"] = pp["workflow_executor_data"]
+
     def draw(self, *args, **kwargs) -> None:
         """
         Generate lattice graph and display in UI taking into account passed in
@@ -304,18 +313,16 @@ def lattice(
     _func: Optional[Callable] = None,
     *,
     backend: Optional[str] = None,
-    executor: Optional[
-        Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = DEFAULT_METADATA_VALUES["executor"],
+    executor: Optional[Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]] = None,
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     workflow_executor: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = DEFAULT_METADATA_VALUES["workflow_executor"],
+    ] = None,
     # Add custom metadata fields here
-    deps_bash: Union[DepsBash, list, str] = DEFAULT_METADATA_VALUES["deps"].get("bash", None),
-    deps_pip: Union[DepsPip, list] = DEFAULT_METADATA_VALUES["deps"].get("pip", None),
-    call_before: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_before"],
-    call_after: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_after"],
+    deps_bash: Union[DepsBash, list, str] = None,
+    deps_pip: Union[DepsPip, list] = None,
+    call_before: Union[List[DepsCall], DepsCall] = [],
+    call_after: Union[List[DepsCall], DepsCall] = [],
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
     """

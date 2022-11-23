@@ -106,6 +106,7 @@ jobs:
             build:
             - 'MANIFEST.in'
             - '**/requirements.txt'
+            - 'requirements-client.txt'
             - 'setup.py'
             actions:
             - '.github/workflows/*'

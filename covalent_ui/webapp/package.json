@@ -20,7 +20,6 @@
     "date-fns": "^2.27.0",
     "elkjs": "^0.7.1",
     "fuse.js": "^6.4.6",
-    "html-to-image": "^1.10.8",
     "html2canvas": "^1.4.1",
     "humanize-duration": "^3.27.1",
     "lodash": "^4.17.21",
@@ -38,8 +37,6 @@
     "use-debounce": "^8.0.1",
     "use-react-screenshot": "3.0.0",
     "xterm-addon-fit": "^0.5.0",
-    "xterm-addon-search": "^0.9.0",
-    "xterm-addon-web-links": "^0.6.0",
     "xterm-for-react": "^1.0.4"
   },
   "scripts": {

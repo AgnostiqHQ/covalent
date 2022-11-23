@@ -1,5 +1,6 @@
 include VERSION
 include requirements.txt
+include requirements-client.txt
 include covalent_ui/log_config.yml
 recursive-include covalent/executor/executor_plugins/ *
 recursive-include covalent_dispatcher/_service/ *

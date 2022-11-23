@@ -20,12 +20,30 @@
 
 """Tests for Covalent local executor."""
 
+import io
 import tempfile
 from functools import partial
 
+import pytest
+
 import covalent as ct
+from covalent._shared_files import TaskRuntimeError
 from covalent._workflow.transport import TransportableObject
-from covalent.executor.executor_plugins.local import LocalExecutor, wrapper_fn
+from covalent.executor.base import wrapper_fn
+from covalent.executor.executor_plugins.local import LocalExecutor
+
+
+def _local_executor_run_mock_function(x):
+    return x**2
+
+
+def _local_executor_run_exception_handling_mock_function(x):
+    print("f output")
+    raise RuntimeError("error")
+
+
+def _test_local_wrapper_fn_exception_handling_mock_function(x):
+    raise RuntimeError("Err")
 
 
 def test_local_executor_passes_results_dir(mocker):
@@ -107,11 +125,42 @@ def test_wrapper_fn_calldep_non_unique_retval_keys_injection():
 
 
 def test_local_executor_run():
-    def f(x):
-        return x**2
-
     le = LocalExecutor()
     args = [5]
     kwargs = {}
     task_metadata = {"dispatch_id": "asdf", "node_id": 1}
-    assert le.run(f, args, kwargs, task_metadata) == 25
+    assert le.run(_local_executor_run_mock_function, args, kwargs, task_metadata) == 25
+
+
+def test_local_executor_run_exception_handling(mocker):
+
+    le = LocalExecutor()
+    le._task_stdout = io.StringIO()
+    le._task_stderr = io.StringIO()
+    args = [5]
+    kwargs = {}
+    task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+    with pytest.raises(TaskRuntimeError) as ex:
+        le.run(_local_executor_run_exception_handling_mock_function, args, kwargs, task_metadata)
+    assert "f output" in le._task_stdout.getvalue()
+    assert "RuntimeError" in le._task_stderr.getvalue()
+
+
+def test_local_wrapper_fn_exception_handling(mocker):
+    import multiprocessing as mp
+
+    from covalent.executor.utils.wrappers import local_wrapper
+
+    args = [5]
+    kwargs = {}
+    q = mp.Queue()
+    p = mp.Process(
+        target=local_wrapper,
+        args=(_test_local_wrapper_fn_exception_handling_mock_function, args, kwargs, q),
+    )
+    p.start()
+    p.join()
+    output, stdout, stderr, tb = q.get(False)
+
+    assert "RuntimeError" in tb
+    assert output is None

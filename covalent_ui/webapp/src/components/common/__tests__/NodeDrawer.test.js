@@ -176,49 +176,4 @@ describe('electronNode file Rendered', () => {
     fireEvent.click(screen.getByTestId('CloseIcon'))
     expect(linkElement).toBeInTheDocument()
   })
-
-  test('renders Node drawer for node box function', async () => {
-    reduxRender(
-      <NodeDrawer
-        electronDetailIsFetching={false}
-        node={node}
-        electronDetail={electronDetail}
-      />
-    )
-    const linkElement = screen.getByTestId('node__box_skl')
-    expect(linkElement).toBeInTheDocument()
-  })
-
-  test('renders Node drawer for checking runtime function', async () => {
-    const electronDetail = {
-      ended_at: '2022-08-09T11:49:26',
-      id: 43,
-      name: 'identity',
-      node_id: 14,
-      parent_lattice_id: 2,
-      runtime: 0,
-      started_at: '2022-08-09T11:49:26',
-      status: 'RUNNING',
-      storage_path:
-        '/home/prasannavenkatesh/Desktop/workflows/results/edcd9b3e-6d52-44ac-baa5-d45614e25699/node_14',
-      type: 'function',
-    }
-    reduxRender(
-      <NodeDrawer
-        electronDetailIsFetching={false}
-        node={node}
-        electronDetail={electronDetail}
-      />
-    )
-    const linkElement = screen.getByTestId('node__box_skl')
-    expect(linkElement).toBeInTheDocument()
-  })
-
-  test('renders with initalState values', async () => {
-    mockRender(<NodeDrawer node={node} />)
-    const linkElement = screen.getByTestId('node__desc_skl')
-    expect(linkElement).toBeInTheDocument()
-    const linkElementrunskeleton = screen.getByTestId('node__run_skeleton')
-    expect(linkElementrunskeleton).toBeInTheDocument()
-  })
 })

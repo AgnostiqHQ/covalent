@@ -38,24 +38,6 @@ const nodeLabel = (type, name) => {
   }
 }
 
-export const layoutElk = (
-  graph,
-  direction,
-  showParams = true,
-  hideLabels,
-  preview
-) => {
-  const elements = mapGraphToElements(
-    graph,
-    direction,
-    showParams,
-    hideLabels,
-    preview
-  )
-
-  return elements
-}
-
 /**
  * Filter graph by node type.
  */
@@ -131,36 +113,25 @@ const assignNodePositions = async (
   hideLabels,
   preview
 ) => {
-  const elements = layoutElk(graph, direction, showParams, hideLabels, preview)
+  const elements = mapGraphToElements(graph, direction, showParams, hideLabels, preview)
   const nodes = []
   const edges = []
   const DEFAULT_HEIGHT = 75
 
-  const elk =
-    algorithm === 'layered'
-      ? new ELK({
-          defaultLayoutOptions: {
-            'elk.algorithm': algorithm,
-            'elk.direction': direction,
-            'elk.edgeRouting': 'POLYLINE',
-            'elk.layered.nodePlacement.strategy': 'SIMPLE',
-            'elk.spacing.edgeEdge': hideLabels ? 10 : 20,
-            'elk.spacing.nodeNode': hideLabels ? 60 : 40,
-            'elk.spacing.edgeNode': hideLabels ? 60 : 40,
-            'elk.spacing.edgeLabel': 10,
-            'elk.layered.spacing.nodeNodeBetweenLayers': 80,
-            'elk.layered.spacing.baseValue': hideLabels ? 40 : 10,
-          },
-        })
-      : new ELK({
-          defaultLayoutOptions: {
-            'elk.algorithm': algorithm,
-            'elk.direction': direction,
-            'elk.spacing.nodeNode': 60,
-            'elk.spacing.edgeEdge': hideLabels ? 10 : 0,
-            'elk.spacing.edgeNode': hideLabels ? 60 : 80,
-          },
-        })
+  const elk = new ELK({
+    defaultLayoutOptions: {
+      'elk.algorithm': algorithm,
+      'elk.direction': direction,
+      'elk.edgeRouting': 'POLYLINE',
+      'elk.layered.nodePlacement.strategy': 'SIMPLE',
+      'elk.spacing.edgeEdge': hideLabels ? 10 : 20,
+      'elk.spacing.nodeNode': hideLabels ? 60 : 40,
+      'elk.spacing.edgeNode': hideLabels ? 60 : 40,
+      'elk.spacing.edgeLabel': 10,
+      'elk.layered.spacing.nodeNodeBetweenLayers': 80,
+      'elk.layered.spacing.baseValue': hideLabels ? 40 : 10,
+    },
+  })
   _.each(elements, (el) => {
     if (isNode(el)) {
       nodes.push({
@@ -217,22 +188,6 @@ const getHandlePositions = (direction) => {
     default:
       throw new Error(`Illegal direction: ${direction}`)
   }
-}
-
-export const countEdges = (nodeId, edges) => {
-  return _.reduce(
-    edges,
-    (res, edge) => {
-      if (edge.source === nodeId) {
-        res.outputs++
-      }
-      if (edge.target === nodeId) {
-        res.inputs++
-      }
-      return res
-    },
-    { inputs: 0, outputs: 0 }
-  )
 }
 
 export default assignNodePositions
