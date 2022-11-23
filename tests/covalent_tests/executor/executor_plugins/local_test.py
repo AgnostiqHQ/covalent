@@ -33,6 +33,19 @@ from covalent.executor.base import wrapper_fn
 from covalent.executor.executor_plugins.local import LocalExecutor
 
 
+def _local_executor_run_mock_function(x):
+    return x**2
+
+
+def _local_executor_run_exception_handling_mock_function(x):
+    print("f output")
+    raise RuntimeError("error")
+
+
+def _test_local_wrapper_fn_exception_handling_mock_function(x):
+    raise RuntimeError("Err")
+
+
 def test_local_executor_passes_results_dir(mocker):
     """Test that the local executor calls the stream writing function with the results directory specified."""
 
@@ -112,20 +125,14 @@ def test_wrapper_fn_calldep_non_unique_retval_keys_injection():
 
 
 def test_local_executor_run():
-    def f(x):
-        return x**2
-
     le = LocalExecutor()
     args = [5]
     kwargs = {}
     task_metadata = {"dispatch_id": "asdf", "node_id": 1}
-    assert le.run(f, args, kwargs, task_metadata) == 25
+    assert le.run(_local_executor_run_mock_function, args, kwargs, task_metadata) == 25
 
 
 def test_local_executor_run_exception_handling(mocker):
-    def f(x):
-        print("f output")
-        raise RuntimeError("error")
 
     le = LocalExecutor()
     le._task_stdout = io.StringIO()
@@ -134,8 +141,8 @@ def test_local_executor_run_exception_handling(mocker):
     kwargs = {}
     task_metadata = {"dispatch_id": "asdf", "node_id": 1}
     with pytest.raises(TaskRuntimeError) as ex:
-        le.run(f, args, kwargs, task_metadata)
-    le._task_stdout.getvalue() == "f output"
+        le.run(_local_executor_run_exception_handling_mock_function, args, kwargs, task_metadata)
+    assert "f output" in le._task_stdout.getvalue()
     assert "RuntimeError" in le._task_stderr.getvalue()
 
 
@@ -144,18 +151,16 @@ def test_local_wrapper_fn_exception_handling(mocker):
 
     from covalent.executor.utils.wrappers import local_wrapper
 
-    def failing_task():
-        raise RuntimeError("Err")
-
     args = [5]
     kwargs = {}
-    error_msg = "task failed"
     q = mp.Queue()
-    mocker.patch("traceback.TracebackException.from_exception", return_value=error_msg)
-    p = mp.Process(target=local_wrapper, args=(failing_task, args, kwargs, q))
+    p = mp.Process(
+        target=local_wrapper,
+        args=(_test_local_wrapper_fn_exception_handling_mock_function, args, kwargs, q),
+    )
     p.start()
     p.join()
     output, stdout, stderr, tb = q.get(False)
 
-    assert tb == error_msg
+    assert "RuntimeError" in tb
     assert output is None
