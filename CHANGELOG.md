@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Respecting specified AWS profile & region in remote executed S3 file transfers, defaulting to env vars of execution backend
+
 ### Added
 
 - Added `TaskRuntimeError` exception for executor plugin implementations to signal to Covalent that a task raised an
