@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Docs for Covalent's Slurm plugin updated with explanation for optional `srun` parameters.
 - Electron errors are segregated by type; task runtime errors are
   stored in `stderr` while the `error` attribute of a node is reserved
   for exceptions raised by Covalent itself.
