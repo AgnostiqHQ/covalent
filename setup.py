@@ -173,7 +173,8 @@ setup_info = {
     },
     "install_requires": required,
     "extras_require": {
-        "aws": ["boto3==1.20.48"],
+        "aws": ["boto3>=1.20.48"],
+        "postgres": ["psycopg2>=2.9.5"],
     },
     "classifiers": [
         "Development Status :: 4 - Beta",

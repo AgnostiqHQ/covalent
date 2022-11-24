@@ -81,7 +81,7 @@ class LocalDispatcher(BaseDispatcher):
             # Serialize the transport graph to JSON
             json_lattice = lattice.serialize_to_json()
 
-            test_url = f"http://{dispatcher_addr}/api/submit"
+            test_url = f"https://{dispatcher_addr}/api/submit"
 
             r = requests.post(test_url, data=json_lattice)
             r.raise_for_status()
