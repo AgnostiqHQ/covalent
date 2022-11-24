@@ -174,6 +174,7 @@ setup_info = {
     "install_requires": required,
     "extras_require": {
         "aws": ["boto3>=1.20.48"],
+        "mysql": ["mysqlclient>=2.1.1"],
         "postgres": ["psycopg2>=2.9.5"],
     },
     "classifiers": [
