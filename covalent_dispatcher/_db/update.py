@@ -111,6 +111,6 @@ def _initialize_results_dir(result):
     """Create the results directory."""
 
     result_folder_path = os.path.join(
-        os.environ("COVALENT_DATA_DIR") or result.results_dir, f"{result.dispatch_id}"
+        os.environ.get("COVALENT_DATA_DIR") or result.results_dir, f"{result.dispatch_id}"
     )
     Path(result_folder_path).mkdir(parents=True, exist_ok=True)
