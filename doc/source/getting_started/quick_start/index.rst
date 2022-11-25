@@ -1,5 +1,5 @@
 =================
-Quick Start Guide
+:octicon:`stopwatch;1em;` Quick Start
 =================
 
 To quickly install Covalent and run a short demo, follow the four steps below.
@@ -13,18 +13,18 @@ To quickly install Covalent and run a short demo, follow the four steps below.
 
   Type the following in a terminal window:
 
-  .. code:: bash
+.. code:: bash
 
-      $ pip install covalent
+    $ pip install covalent
 
 2. Start the Covalent server.
 
   In the terminal window, type:
 
-  .. code:: console
+.. code:: console
 
-      $ covalent start
-      Covalent server has started at http://localhost:48008
+    $ covalent start
+    Covalent server has started at http://localhost:48008
 
 3. Run a workflow.
 
@@ -53,21 +53,21 @@ Open a Jupyter notebook or Python console and run the following Python code:
 
   Navigate to the Covalent UI at `<http://localhost:48008>`_ to see your workflow in the queue:
 
-  .. image:: ./../_static/ui_list_pi_wf.png
+.. image:: ./../../_static/ui_list_pi_wf.png
     :align: center
 
   Click on the dispatch ID to view the workflow graph:
 
-  .. image:: ./../_static/ui_detail_pi_wf.png
+.. image:: ./../../_static/ui_detail_pi_wf.png
     :align: center
 
 What to Do Next
 ###############
 
-Read :doc:`Concepts <../concepts/concepts>` gain a deeper understanding of how Covalent works.
+Read :doc:`Concepts <../../concepts/concepts>` gain a deeper understanding of how Covalent works.
 
-See the :doc:`Tutorials <../tutorials/tutorials>` to see how to apply Covalent to real-world machine learning problems in a variety of subject domains.
+See the :doc:`Tutorials <../../tutorials/tutorials>` to see how to apply Covalent to real-world machine learning problems in a variety of subject domains.
 
-See the :doc:`API Reference <../api/index>` for usage information on ``electron``, ``lattice``, and ready-to-use executors.
+See the :doc:`API Reference <../../api/index>` for usage information on ``electron``, ``lattice``, and ready-to-use executors.
 
-See :doc:`AWS Plugins <../api/executors/awsplugins>` to see how you can specify an executor to run this example on an AWS node using only two more lines of code.
+See :doc:`AWS Plugins <../../api/executors/awsplugins>` to see how you can specify an executor to run this example on an AWS node using only two more lines of code.

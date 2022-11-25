@@ -1,6 +1,6 @@
 .. _awsbraket_executor:
 
-🔌 AWS Braket Executor
+AWS Braket Executor
 """""""""""""""""""""""""""
 
 .. image:: AWS_Braket.jpg

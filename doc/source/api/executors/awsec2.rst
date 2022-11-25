@@ -1,6 +1,6 @@
 .. _awsec2_executor:
 
-🔌 AWS EC2 Executor
+AWS EC2 Executor
 """""""""""""""""""""""""""
 
 .. image:: AWS_EC2.jpg
