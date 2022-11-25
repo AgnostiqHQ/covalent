@@ -167,6 +167,7 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
 .. toctree::
    :maxdepth: 2
    :caption:  Get Started
+   :hidden:
 
    getting_started/quick_start/index
    First experiment <getting_started/first_experiment/index>
@@ -175,12 +176,14 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
 .. toctree::
    :maxdepth: 2
    :caption:  Extensions
+   :hidden:
 
    plugins
 
 .. toctree::
    :maxdepth: 3
    :caption:  User Guide
+   :hidden:
    
    concepts/concepts
    Tutorials <tutorials/tutorials>
