@@ -14,7 +14,7 @@ Installing Covalent
 
 .. admonition:: Before you start
 
-  Ensure you are using a compatible OS and Python version. See the :doc:`Compatibility <./compatibility>` page for supported Python versions and operating systems.
+  Ensure you are using a compatible OS and Python version. See the :doc:`Compatibility <./../compatibility>` page for supported Python versions and operating systems.
 
 You can install Covalent using Pip, the Python package manager, or you can download the Covalent source repository from GitHub and build Covalent yourself. Unless you are contributing to Covalent or have some other compelling reason to build from source, we strongly recommend using Pip. To build from source, see :doc:`Building and Installing Covalent from Source <build_from_source>`.
 

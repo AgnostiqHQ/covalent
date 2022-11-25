@@ -157,8 +157,16 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
 
 
 .. toctree::
+   :maxdepth: 1
+   :caption: Introduction
+   :hidden:
+
+   What is Covalent <https://www.covalent.xyz/what-is-covalent/>
+   Covalent in the era of Cloud-HPC <https://www.covalent.xyz/navigating-the-modern-hpc-landscape/>
+
+.. toctree::
    :maxdepth: 2
-   :caption:  Get Started:
+   :caption:  Get Started
 
    getting_started/quick_start/index
    First experiment <getting_started/first_experiment/index>
@@ -166,13 +174,13 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
 
 .. toctree::
    :maxdepth: 2
-   :caption:  Extensions:
+   :caption:  Extensions
 
    plugins
 
 .. toctree::
    :maxdepth: 3
-   :caption:  User Guide:
+   :caption:  User Guide
    
    concepts/concepts
    Tutorials <tutorials/tutorials>
@@ -184,7 +192,7 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
 
 .. toctree::
    :maxdepth: 1
-   :caption: Developers:
+   :caption: Developers
    :hidden:
 
    Project Homepage <https://github.com/AgnostiqHQ/covalent>

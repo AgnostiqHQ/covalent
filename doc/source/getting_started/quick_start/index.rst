@@ -6,60 +6,80 @@ To quickly install Covalent and run a short demo, follow the four steps below.
 
 .. admonition:: Before you start
 
-   Ensure you are using a compatible OS and Python version. See the :doc:`Compatibility <./compatibility>` page for supported Python versions and operating systems.
+   Ensure you are using a compatible OS and Python version. See the :doc:`Compatibility <./../compatibility>` page for supported Python versions and operating systems.
+
+.. card:: 1. Use Pip to install the Covalent server and libraries locally.
 
 
-1. Use Pip to install the Covalent server and libraries locally.
+    Type the following in a terminal window:
 
-  Type the following in a terminal window:
+    .. code:: bash
 
-.. code:: bash
+        $ pip install covalent
 
-    $ pip install covalent
 
-2. Start the Covalent server.
 
-  In the terminal window, type:
+.. card:: 2. Start the Covalent server.
 
-.. code:: console
 
-    $ covalent start
-    Covalent server has started at http://localhost:48008
+    In the terminal window, type:
 
-3. Run a workflow.
+    .. code:: console
 
-Open a Jupyter notebook or Python console and run the following Python code:
+        $ covalent start
+        Covalent server has started at http://localhost:48008
 
-.. code:: python
 
-  # Compute π (pi) to arbitrary precision using the Leibiz series.
-  # Precision depends on the number of terms (TERM_COUNT in the code).
-  import covalent as ct  # The Covalent API
 
-  @ct.electron  # No executor specified, so defaults to Dask on localhost
-  def compute_pi(n):
-      # Leibniz formula for π
-      return 4 * sum(1.0/(2*i + 1)*(-1)**i for i in range(n))
 
-  @ct.lattice
-  def workflow(n):
-      return compute_pi(n)
+.. card:: 3. Run a workflow.
 
-  dispatch_id = ct.dispatch(workflow)(100000)
-  result = ct.get_result(dispatch_id=dispatch_id, wait=True)
-  print(result.result)
 
-4. View the workflow progress.
+    
+    Open a Jupyter notebook or Python console and run the following Python code:
 
-  Navigate to the Covalent UI at `<http://localhost:48008>`_ to see your workflow in the queue:
+    .. code:: python
 
-.. image:: ./../../_static/ui_list_pi_wf.png
-    :align: center
+      # Compute π (pi) to arbitrary precision using the Leibiz series.
+      # Precision depends on the number of terms (TERM_COUNT in the code).
+      import covalent as ct  # The Covalent API
 
-  Click on the dispatch ID to view the workflow graph:
+      @ct.electron  # No executor specified, so defaults to Dask on localhost
+      def compute_pi(n):
+          # Leibniz formula for π
+          return 4 * sum(1.0/(2*i + 1)*(-1)**i for i in range(n))
 
-.. image:: ./../../_static/ui_detail_pi_wf.png
-    :align: center
+      @ct.lattice
+      def workflow(n):
+          return compute_pi(n)
+
+      dispatch_id = ct.dispatch(workflow)(100000)
+      result = ct.get_result(dispatch_id=dispatch_id, wait=True)
+      print(result.result)
+
+
+
+.. card:: 4. View the workflow progress.
+
+    Navigate to the Covalent UI at `<http://localhost:48008>`_ to see your workflow in the queue:
+
+    .. image:: ./../../_static/ui_list_pi_wf.png
+      :align: center
+
+    Click on the dispatch ID to view the workflow graph:
+
+    .. image:: ./../../_static/ui_detail_pi_wf.png
+        :align: center
+
+
+
+
+
+
+
+
+
+
 
 What to Do Next
 ###############
