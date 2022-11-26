@@ -46,7 +46,7 @@ from covalent._shared_files.exceptions import MissingLatticeRecordError
 from covalent._workflow.lattice import Lattice as LatticeClass
 
 from .datastore import workflow_db
-from .models import Electron, ElectronDependency, Lattice
+from .models import Electron, ElectronDependency, Job, Lattice
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -174,6 +174,7 @@ def insert_electrons_data(
     deps_filename: str,
     call_before_filename: str,
     call_after_filename: str,
+    cancel_requested: bool,
     created_at: dt,
     updated_at: dt,
     started_at: dt,
@@ -189,7 +190,10 @@ def insert_electrons_data(
             raise MissingLatticeRecordError
 
         parent_lattice_id = row[0].id
-        app_log.debug(parent_lattice_id)
+
+        job_row = Job(cancel_requested=cancel_requested)
+        session.add(job_row)
+        session.flush()
 
         electron_row = Electron(
             parent_lattice_id=parent_lattice_id,
@@ -212,14 +216,15 @@ def insert_electrons_data(
             call_before_filename=call_before_filename,
             call_after_filename=call_after_filename,
             is_active=True,
+            job_id=job_row.id,
             created_at=created_at,
             updated_at=updated_at,
             started_at=started_at,
             completed_at=completed_at,
         )
 
-    with workflow_db.session() as session:
         session.add(electron_row)
+
         session.flush()
         electron_id = electron_row.id
         session.commit()
