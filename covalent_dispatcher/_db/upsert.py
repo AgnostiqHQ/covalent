@@ -159,7 +159,7 @@ def _lattice_data(result: Result, electron_id: int = None):
         update_lattices_data(**lattice_record_kwarg)
 
 
-def _electron_data(result: Result):
+def _electron_data(result: Result, cancel_requested: bool = False):
     """Update electron data"""
     tg = result.lattice.transport_graph
     dirty_nodes = set(tg.dirty_nodes)
@@ -264,6 +264,7 @@ def _electron_data(result: Result):
                     "deps_filename": ELECTRON_DEPS_FILENAME,
                     "call_before_filename": ELECTRON_CALL_BEFORE_FILENAME,
                     "call_after_filename": ELECTRON_CALL_AFTER_FILENAME,
+                    "cancel_requested": cancel_requested,
                     "created_at": datetime.now(timezone.utc),
                     "updated_at": datetime.now(timezone.utc),
                     "started_at": started_at,

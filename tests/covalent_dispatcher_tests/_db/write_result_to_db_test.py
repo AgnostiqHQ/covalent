@@ -39,7 +39,7 @@ from covalent._shared_files.defaults import (
     subscript_prefix,
 )
 from covalent_dispatcher._db.datastore import DataStore
-from covalent_dispatcher._db.models import Electron, ElectronDependency, Lattice
+from covalent_dispatcher._db.models import Electron, ElectronDependency, Job, Lattice
 from covalent_dispatcher._db.write_result_to_db import (
     InvalidFileExtension,
     MissingElectronRecordError,
@@ -209,6 +209,7 @@ def get_electron_kwargs(
     deps_filename=DEPS_FILENAME,
     call_before_filename=CALL_BEFORE_FILENAME,
     call_after_filename=CALL_AFTER_FILENAME,
+    cancel_requested=False,
     created_at=None,
     updated_at=None,
     started_at=None,
@@ -236,6 +237,7 @@ def get_electron_kwargs(
         "deps_filename": deps_filename,
         "call_before_filename": call_before_filename,
         "call_after_filename": call_after_filename,
+        "cancel_requested": cancel_requested,
         "created_at": created_at,
         "updated_at": updated_at,
         "started_at": started_at,
@@ -328,7 +330,8 @@ def test_insert_lattices_data(test_db, mocker):
         assert not rows
 
 
-def test_insert_electrons_data(test_db, mocker):
+@pytest.mark.parametrize("cancel_requested", [True, False])
+def test_insert_electrons_data(cancel_requested, test_db, mocker):
     """Test the function that inserts the electron data to the Electrons table."""
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
@@ -339,6 +342,7 @@ def test_insert_electrons_data(test_db, mocker):
 
     electron_kwargs = {
         **get_electron_kwargs(
+            cancel_requested=cancel_requested,
             created_at=cur_time,
             updated_at=cur_time,
         )
@@ -358,11 +362,15 @@ def test_insert_electrons_data(test_db, mocker):
                     assert getattr(electron, key).strftime("%m/%d/%Y, %H:%M:%S") == value.strftime(
                         "%m/%d/%Y, %H:%M:%S"
                     )
+                elif key == "cancel_requested":
+                    continue
                 else:
                     assert getattr(electron, key) == value
             assert electron.is_active
 
-        insert_electrons_data(**electron_kwargs)
+        rows = session.query(Job).all()
+        assert len(rows) == 1
+        assert rows[0].cancel_requested == cancel_requested
 
 
 def test_insert_electrons_data_missing_lattice_record(test_db, mocker):
