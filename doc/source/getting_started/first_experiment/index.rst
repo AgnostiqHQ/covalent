@@ -1,6 +1,6 @@
-===============
-First experiment
-===============
+================
+First Experiment
+================
 
 This page describes how to get started with Covalent. Follow the procedures on this page to:
 
@@ -24,39 +24,45 @@ You can install Covalent using Pip, the Python package manager, or you can downl
 Installing with Pip
 ~~~~~~~~~~~~~~~~~~~
 
-To install Covalent using Pip, type the following on the command line:
+To install Covalent, use Pip.
 
-.. code:: bash
+.. code:: type the following on the command line:
 
-    $ pip install covalent
+    .. code:: bash
+
+        $ pip install covalent
 
 
 Validating the Installation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Optionally, validate the installation. Covalent has been properly installed if the following returns without error:
+Optionally, validate the installation.
 
-.. code:: bash
+.. card:: Covalent has been properly installed if the following returns without error:
 
-    $ python -c "import covalent"
+    .. code:: bash
+
+        $ python -c "import covalent"
 
 
 Starting the Server
 ###################
 
-Start the Covalent server from the command line:
+Start the Covalent server from the command line.
 
-.. code:: console
+.. card:: To start the server:
 
-    $ covalent start
-    Covalent server has started at http://localhost:48008
+    .. code:: console
 
-At any time, you can verify that the server is running by typing:
+        $ covalent start
+        Covalent server has started at http://localhost:48008
 
-.. code:: console
+    At any time, you can verify that the server is running by typing:
 
-    $ covalent status
-    Covalent server is running at http://localhost:48008.
+    .. code:: console
+
+        $ covalent status
+        Covalent server is running at http://localhost:48008.
 
 
 Stopping the Server
@@ -64,54 +70,55 @@ Stopping the Server
 
 When you are done using Covalent to run workflows, stop the server.
 
-.. warning::
+    .. warning::
 
-    Do not stop the server while you have running workflows. Stopping the server will kill the workflows.
+        Do not stop the server while you have running workflows. Stopping the server will kill the workflows.
 
-To stop the Covalent server:
+.. card:: To stop the Covalent server:
 
-.. code:: console
+    .. code:: console
 
-    $ covalent stop
-    Covalent server has stopped.
+        $ covalent stop
+        Covalent server has stopped.
+
 
 Managing the Server
 ~~~~~~~~~~~~~~~~~~~
 
 Use the Covalent CLI tool, ``covalent``, to manage the Covalent server. You can start and stop the server, view its status, and view the server logs.
 
-View available subcommands with the --help option:
+.. card:: View available subcommands with the --help option:
 
-.. code:: console
+    .. code:: console
 
-    $ covalent --help
-    Usage: covalent [OPTIONS] COMMAND [ARGS]...
+        $ covalent --help
+        Usage: covalent [OPTIONS] COMMAND [ARGS]...
 
-    Covalent CLI tool used to manage the servers.
-
-    Options:
-    -v, --version  Display version information.
-    --help         Show this message and exit.
-
-    Commands:
-    logs     Show Covalent server logs.
-    purge    Shutdown server and delete the cache and config settings.
-    restart  Restart the server.
-    start    Start the Covalent server.
-    status   Query the status of the Covalent server.
-    stop     Stop the Covalent server.
-
-You can also view help for any subcommand. For example:
-
-.. code:: console
-
-    $ covalent stop --help
-    Usage: covalent stop [OPTIONS]
-
-        Stop the Covalent server.
+        Covalent CLI tool used to manage the servers.
 
         Options:
-        --help  Show this message and exit.
+        -v, --version  Display version information.
+        --help         Show this message and exit.
+
+        Commands:
+        logs     Show Covalent server logs.
+        purge    Shutdown server and delete the cache and config settings.
+        restart  Restart the server.
+        start    Start the Covalent server.
+        status   Query the status of the Covalent server.
+        stop     Stop the Covalent server.
+
+    You can also view help for any subcommand. For example:
+
+    .. code:: console
+
+        $ covalent stop --help
+        Usage: covalent stop [OPTIONS]
+
+            Stop the Covalent server.
+
+            Options:
+            --help  Show this message and exit.
 
 
 Running a Workflow
@@ -123,30 +130,43 @@ Follow the steps below to run an example workflow.
 
     Ensure that you have installed Covalent and started the Covalent server.
 
-1. Open a Jupyter notebook or Python console.
+.. card:: 1. Open a Jupyter notebook or Python console.
 
-2. In the notebook, create a workflow by typing (or pasting) the following Python code:
 
-.. code:: python
+.. card:: 2. In the notebook, create a workflow in Python.
 
-    import covalent as ct
+    Type (or paste) the following Python code:
 
-    executor = ct.executor.LocalExecutor()
+        .. code:: python
 
-    @ct.electron(
-        executor=executor
-    )
-    def compute_pi(n):
-        # Leibniz formula for π
-        return 4 * sum(1.0/(2*i + 1)*(-1)**i for i in range(n))
+          import covalent as ct
 
-        @ct.lattice
-        def workflow(n):
-        return compute_pi(n)
+          # Construct manageable tasks out of functions
+          # by adding the @covalent.electron decorator
+          @ct.electron
+          def add(x, y):
+             return x + y
 
-        dispatch_id = ct.dispatch(workflow)(1000)
-        result = ct.get_result(dispatch_id=dispatch_id, wait=True)
-        print(result.result)
+          @ct.electron
+          def multiply(x, y):
+             return x*y
+
+          @ct.electron
+          def divide(x, y):
+             return x/y
+
+          # Construct the workflow by stitching together
+          # the electrons defined earlier in a function with
+          # the @covalent.lattice decorator
+          @ct.lattice
+          def workflow(x, y):
+             r1 = add(x, y)
+             r2 = [multiply(r1, y) for _ in range(4)]
+             r3 = [divide(x, value) for value in r2]
+             return r3
+
+          # Dispatch the workflow
+          dispatch_id = ct.dispatch(workflow)(1, 2)
 
 
 Viewing the Workflow
@@ -154,28 +174,38 @@ Viewing the Workflow
 
 Do the following to view your workflow in the GUI.
 
-1. Navigate to the Covalent UI at `<http://localhost:48008>`_ to see your workflow in the queue:
+.. card:: 1. Navigate to the Covalent UI at `<http://localhost:48008>`_ to see your workflow in the queue:
 
-.. image:: ./../../_static/ui_list_pi_wf.png
-    :align: center
+    .. image:: ./../../_static/qs_ui_queue.png
+        :align: center
 
-.. note:: With n = 1000, the workflow finishes quickly (less than one second, as shown above.)
+    .. note:: This simple workflow finishes quickly (less than one second, as shown above.)
 
-2. Set n to a large value to see the workflow still running in the UI.
+.. card:: 2. Insert a :code:`sleep()` statement to prolong execution so you can see the workflow running in the UI.
 
-    Change the number of iterations in the example code:
+    Modify the example code as follows:
 
-.. code:: python
+    .. code:: python
 
-    dispatch_id = ct.dispatch(workflow)(10000000)
+        import covalent as ct
+        import time
 
-.. image:: ./../../_static/ui_list_pi_wf_running.png
-    :align: center
+        # Construct manageable tasks out of functions
+        # by adding the @covalent.electron decorator
+        @ct.electron
+        def add(x, y):
+           sleep(10) # seconds
+           return x + y
 
-3. Click on the dispatch ID to view the workflow graph:
+        # ...
 
-.. image:: ./../../_static/ui_detail_pi_wf.png
-    :align: center
+    .. image:: ./../../_static/qs_ui_queue_running.png
+        :align: center
+
+.. card:: 3. Click on the dispatch ID to view the workflow graph:
+
+    .. image:: ./../../_static/qs_ui_graph.png
+        :align: center
 
 While the workflow is being processed by the dispatch server, you can terminate the Jupyter kernel or Python console process without losing access to the results.
 

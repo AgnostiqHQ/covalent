@@ -35,43 +35,54 @@ To quickly install Covalent and run a short demo, follow the four steps below.
 .. card:: 3. Run a workflow.
 
 
-    
+
     Open a Jupyter notebook or Python console and run the following Python code:
 
     .. code:: python
 
-      # Compute π (pi) to arbitrary precision using the Leibiz series.
-      # Precision depends on the number of terms (TERM_COUNT in the code).
-      import covalent as ct  # The Covalent API
+      import covalent as ct
 
-      @ct.electron  # No executor specified, so defaults to Dask on localhost
-      def compute_pi(n):
-          # Leibniz formula for π
-          return 4 * sum(1.0/(2*i + 1)*(-1)**i for i in range(n))
+      # Construct manageable tasks out of functions
+      # by adding the @covalent.electron decorator
+      @ct.electron
+      def add(x, y):
+         return x + y
 
+      @ct.electron
+      def multiply(x, y):
+         return x*y
+
+      @ct.electron
+      def divide(x, y):
+         return x/y
+
+      # Construct the workflow by stitching together
+      # the electrons defined earlier in a function with
+      # the @covalent.lattice decorator
       @ct.lattice
-      def workflow(n):
-          return compute_pi(n)
+      def workflow(x, y):
+         r1 = add(x, y)
+         r2 = [multiply(r1, y) for _ in range(4)]
+         r3 = [divide(x, value) for value in r2]
+         return r3
 
-      dispatch_id = ct.dispatch(workflow)(100000)
-      result = ct.get_result(dispatch_id=dispatch_id, wait=True)
-      print(result.result)
-
+      # Dispatch the workflow
+      dispatch_id = ct.dispatch(workflow)(1, 2)
 
 
 .. card:: 4. View the workflow progress.
 
     Navigate to the Covalent UI at `<http://localhost:48008>`_ to see your workflow in the queue:
 
-    .. image:: ./../../_static/ui_list_pi_wf.png
+    .. image:: ./../../_static/qs_ui_queue.png
       :align: center
 
     Click on the dispatch ID to view the workflow graph:
 
-    .. image:: ./../../_static/ui_detail_pi_wf.png
+    .. image:: ./../../_static/qs_ui_graph.png
         :align: center
 
-
+    Note that the computed result is displayed in the Overview.
 
 
 

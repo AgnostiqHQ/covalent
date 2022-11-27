@@ -161,8 +161,8 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    :caption: Introduction
    :hidden:
 
-   What is Covalent <https://www.covalent.xyz/what-is-covalent/>
-   Covalent in the era of Cloud-HPC <https://www.covalent.xyz/navigating-the-modern-hpc-landscape/>
+   What is Covalent? <https://www.covalent.xyz/what-is-covalent/>
+   Covalent in the Era of Cloud-HPC <https://www.covalent.xyz/navigating-the-modern-hpc-landscape/>
 
 .. toctree::
    :maxdepth: 2
@@ -170,7 +170,20 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    :hidden:
 
    getting_started/quick_start/index
-   First experiment <getting_started/first_experiment/index>
+   First Experiment <getting_started/first_experiment/index>
+
+
+.. toctree::
+   :maxdepth: 3
+   :caption:  User Documentation
+   :hidden:
+
+   Concepts <concepts/concepts>
+   Tutorials <tutorials/tutorials>
+   How-To Guides <how_to/index>
+   User Interface <webapp_ui/index>
+   API Reference <api/index>
+   Credentials <credentials>
 
 
 .. toctree::
@@ -181,21 +194,8 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    plugins
 
 .. toctree::
-   :maxdepth: 3
-   :caption:  User Guide
-   :hidden:
-   
-   concepts/concepts
-   Tutorials <tutorials/tutorials>
-   How-To Guides <how_to/index>
-   User Interface <webapp_ui/index>
-   API Reference <api/index>
-   Credentials <credentials>
-
-
-.. toctree::
    :maxdepth: 1
-   :caption: Developers
+   :caption: For Contributors
    :hidden:
 
    Project Homepage <https://github.com/AgnostiqHQ/covalent>
