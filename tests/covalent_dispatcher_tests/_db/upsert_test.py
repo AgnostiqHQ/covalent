@@ -32,7 +32,7 @@ from covalent_dispatcher._db.upsert import (
     ELECTRON_RESULTS_FILENAME,
     ELECTRON_STDERR_FILENAME,
     ELECTRON_STDOUT_FILENAME,
-    _electron_data,
+    electron_data,
 )
 
 TEMP_RESULTS_DIR = os.environ.get("COVALENT_DATA_DIR") or ct.get_config("dispatcher.results_dir")
@@ -75,12 +75,12 @@ def test_db():
 
 
 def test_upsert_electron_data_handles_missing_keys(test_db, result_1, mocker):
-    """Test the _electron_data method handles missing node attributes"""
+    """Test the electron_data method handles missing node attributes"""
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     mock_store_file = mocker.patch("covalent_dispatcher._db.upsert.store_file")
-    mocker.patch("covalent_dispatcher._db.upsert.insert_electrons_data")
+    mocker.patch("covalent_dispatcher._db.upsert.txn_insert_electrons_data")
     mocker.patch("covalent_dispatcher._db.write_result_to_db.update_electrons_data")
     mocker.patch(
         "covalent_dispatcher._db.write_result_to_db.update_lattice_completed_electron_num"
@@ -92,7 +92,7 @@ def test_upsert_electron_data_handles_missing_keys(test_db, result_1, mocker):
     del tg._graph.nodes[0]["stdout"]
     del tg._graph.nodes[0]["output"]
 
-    _electron_data(result_1)
+    electron_data(result_1)
 
     node_path = Path(TEMP_RESULTS_DIR) / result_1.dispatch_id / "node_0"
     mock_store_file.assert_any_call(node_path, ELECTRON_ERROR_FILENAME, None)

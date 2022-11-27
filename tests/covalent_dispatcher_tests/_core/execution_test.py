@@ -204,8 +204,8 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
     result_object._initialize_nodes()
 
     # patch all methods that reference a DB
-    mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
-    mocker.patch("covalent_dispatcher._db.upsert._electron_data")
+    mocker.patch("covalent_dispatcher._db.upsert.lattice_data")
+    mocker.patch("covalent_dispatcher._db.upsert.electron_data")
     mocker.patch("covalent_dispatcher._db.update.persist")
     mocker.patch(
         "covalent._results_manager.result.Result._get_node_name", return_value="failing_task"
@@ -263,8 +263,8 @@ async def test_run_workflow_with_failing_leaf(mocker):
     result_object._root_dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
-    mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
-    mocker.patch("covalent_dispatcher._db.upsert._electron_data")
+    mocker.patch("covalent_dispatcher._db.upsert.lattice_data")
+    mocker.patch("covalent_dispatcher._db.upsert.electron_data")
     mocker.patch("covalent_dispatcher._db.update.persist")
     mocker.patch(
         "covalent._results_manager.result.Result._get_node_name", return_value="failing_task"
