@@ -29,6 +29,7 @@ from typing import Any
 import cloudpickle
 import networkx as nx
 from sqlalchemy import update
+from sqlalchemy.orm import Session
 
 from covalent._shared_files import logger
 from covalent._shared_files.defaults import (
@@ -73,7 +74,8 @@ def update_lattice_completed_electron_num(dispatch_id: str) -> None:
         session.commit()
 
 
-def insert_lattices_data(
+def txn_insert_lattices_data(
+    session: Session,
     dispatch_id: str,
     electron_id: int,
     name: str,
@@ -145,16 +147,20 @@ def insert_lattices_data(
         completed_at=completed_at,
     )
 
-    with workflow_db.session() as session:
-        session.add(lattice_row)
-        lattice_id = lattice_row.id
-        session.commit()
+    session.add(lattice_row)
+    lattice_id = lattice_row.id
 
     app_log.debug(f"returning lattice id {lattice_id}")
     return lattice_id
 
 
-def insert_electrons_data(
+def insert_lattices_data(*args, **kwargs):
+    with workflow_db.session() as session:
+        txn_insert_lattices_data(session, *args, **kwargs)
+
+
+def txn_insert_electrons_data(
+    session: Session,
     parent_dispatch_id: str,
     transport_graph_node_id: int,
     type: str,
@@ -184,133 +190,148 @@ def insert_electrons_data(
 
     # Check that the foreign key corresponding to this table exists
     app_log.debug("insert_electrons_data")
-    with workflow_db.session() as session:
-        row = session.query(Lattice).where(Lattice.dispatch_id == parent_dispatch_id).all()
-        if len(row) == 0:
-            raise MissingLatticeRecordError
 
-        parent_lattice_id = row[0].id
+    row = session.query(Lattice).where(Lattice.dispatch_id == parent_dispatch_id).all()
+    if len(row) == 0:
+        raise MissingLatticeRecordError
 
-        job_row = Job(cancel_requested=cancel_requested)
-        session.add(job_row)
-        session.flush()
+    parent_lattice_id = row[0].id
 
-        electron_row = Electron(
-            parent_lattice_id=parent_lattice_id,
-            transport_graph_node_id=transport_graph_node_id,
-            type=type,
-            name=name,
-            status=status,
-            storage_type=storage_type,
-            storage_path=storage_path,
-            function_filename=function_filename,
-            function_string_filename=function_string_filename,
-            executor=executor,
-            executor_data_filename=executor_data_filename,
-            results_filename=results_filename,
-            value_filename=value_filename,
-            stdout_filename=stdout_filename,
-            stderr_filename=stderr_filename,
-            error_filename=error_filename,
-            deps_filename=deps_filename,
-            call_before_filename=call_before_filename,
-            call_after_filename=call_after_filename,
-            is_active=True,
-            job_id=job_row.id,
-            created_at=created_at,
-            updated_at=updated_at,
-            started_at=started_at,
-            completed_at=completed_at,
-        )
+    job_row = Job(cancel_requested=cancel_requested)
+    session.add(job_row)
+    session.flush()
 
-        session.add(electron_row)
+    electron_row = Electron(
+        parent_lattice_id=parent_lattice_id,
+        transport_graph_node_id=transport_graph_node_id,
+        type=type,
+        name=name,
+        status=status,
+        storage_type=storage_type,
+        storage_path=storage_path,
+        function_filename=function_filename,
+        function_string_filename=function_string_filename,
+        executor=executor,
+        executor_data_filename=executor_data_filename,
+        results_filename=results_filename,
+        value_filename=value_filename,
+        stdout_filename=stdout_filename,
+        stderr_filename=stderr_filename,
+        error_filename=error_filename,
+        deps_filename=deps_filename,
+        call_before_filename=call_before_filename,
+        call_after_filename=call_after_filename,
+        is_active=True,
+        job_id=job_row.id,
+        created_at=created_at,
+        updated_at=updated_at,
+        started_at=started_at,
+        completed_at=completed_at,
+    )
 
-        session.flush()
-        electron_id = electron_row.id
-        session.commit()
+    session.add(electron_row)
+
+    session.flush()
+    electron_id = electron_row.id
 
     return electron_id
 
 
-def insert_electron_dependency_data(dispatch_id: str, lattice: LatticeClass):
+def insert_electrons_data(*args, **kwargs):
+    with workflow_db.session() as session:
+        return txn_insert_electrons_data(session, *args, **kwargs)
+
+
+def txn_insert_electron_dependency_data(session: Session, dispatch_id: str, lattice: LatticeClass):
     """Extract electron dependencies from the lattice transport graph and add them to the DB."""
 
     # TODO - Update how we access the transport graph edges directly in favor of using some interface provied by the TransportGraph class.
     node_links = nx.readwrite.node_link_data(lattice.transport_graph._graph)["links"]
 
     electron_dependency_ids = []
-    with workflow_db.session() as session:
-        for edge_data in node_links:
-            electron_id = (
-                session.query(Lattice, Electron)
-                .filter(Lattice.id == Electron.parent_lattice_id)
-                .filter(Lattice.dispatch_id == dispatch_id)
-                .filter(Electron.transport_graph_node_id == edge_data["target"])
-                .first()
-                .Electron.id
-            )
-            parent_electron_id = (
-                session.query(Lattice, Electron)
-                .filter(Lattice.id == Electron.parent_lattice_id)
-                .filter(Lattice.dispatch_id == dispatch_id)
-                .filter(Electron.transport_graph_node_id == edge_data["source"])
-                .first()
-                .Electron.id
-            )
 
-            electron_dependency_row = ElectronDependency(
-                electron_id=electron_id,
-                parent_electron_id=parent_electron_id,
-                edge_name=edge_data["edge_name"],
-                parameter_type=edge_data["param_type"] if "param_type" in edge_data else None,
-                arg_index=edge_data["arg_index"] if "arg_index" in edge_data else None,
-                is_active=True,
-                created_at=dt.now(timezone.utc),
-                updated_at=dt.now(timezone.utc),
-            )
+    for edge_data in node_links:
+        electron_id = (
+            session.query(Lattice, Electron)
+            .filter(Lattice.id == Electron.parent_lattice_id)
+            .filter(Lattice.dispatch_id == dispatch_id)
+            .filter(Electron.transport_graph_node_id == edge_data["target"])
+            .first()
+            .Electron.id
+        )
+        parent_electron_id = (
+            session.query(Lattice, Electron)
+            .filter(Lattice.id == Electron.parent_lattice_id)
+            .filter(Lattice.dispatch_id == dispatch_id)
+            .filter(Electron.transport_graph_node_id == edge_data["source"])
+            .first()
+            .Electron.id
+        )
 
-            session.add(electron_dependency_row)
-            electron_dependency_ids.append(electron_dependency_row.id)
-        session.commit()
+        electron_dependency_row = ElectronDependency(
+            electron_id=electron_id,
+            parent_electron_id=parent_electron_id,
+            edge_name=edge_data["edge_name"],
+            parameter_type=edge_data["param_type"] if "param_type" in edge_data else None,
+            arg_index=edge_data["arg_index"] if "arg_index" in edge_data else None,
+            is_active=True,
+            created_at=dt.now(timezone.utc),
+            updated_at=dt.now(timezone.utc),
+        )
+
+        session.add(electron_dependency_row)
+        electron_dependency_ids.append(electron_dependency_row.id)
 
     return electron_dependency_ids
 
 
-def upsert_electron_dependency_data(dispatch_id: str, lattice: LatticeClass):
+def insert_electron_dependency_data(*args, **kwargs):
+    with workflow_db.session() as session:
+        txn_insert_electron_dependency_data(session, *args, **kwargs)
+
+
+def txn_upsert_electron_dependency_data(session: Session, dispatch_id: str, lattice: LatticeClass):
     """Update electron dependency data"""
 
     # Insert electron dependency records if they don't exist
-    with workflow_db.session() as session:
-        electron_dependencies_exist = (
-            session.query(ElectronDependency, Electron, Lattice)
-            .where(
-                Electron.id == ElectronDependency.electron_id,
-                Electron.parent_lattice_id == Lattice.id,
-                Lattice.dispatch_id == dispatch_id,
-            )
-            .first()
-            is not None
+
+    electron_dependencies_exist = (
+        session.query(ElectronDependency, Electron, Lattice)
+        .where(
+            Electron.id == ElectronDependency.electron_id,
+            Electron.parent_lattice_id == Lattice.id,
+            Lattice.dispatch_id == dispatch_id,
         )
+        .first()
+        is not None
+    )
     app_log.debug("electron_dependencies_exist is " + str(electron_dependencies_exist))
     if not electron_dependencies_exist:
-        insert_electron_dependency_data(dispatch_id=dispatch_id, lattice=lattice)
+        txn_insert_electron_dependency_data(
+            session=session, dispatch_id=dispatch_id, lattice=lattice
+        )
+
+
+def txn_update_lattices_data(session: Session, dispatch_id: str, **kwargs) -> None:
+    """This function updates the lattices record."""
+
+    valid_update = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+
+    if not valid_update:
+        raise MissingLatticeRecordError
+
+    for attr, value in kwargs.items():
+        if value:
+            setattr(valid_update, attr, value)
+
+    session.add(valid_update)
 
 
 def update_lattices_data(dispatch_id: str, **kwargs) -> None:
     """This function updates the lattices record."""
 
     with workflow_db.session() as session:
-        valid_update = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-
-        if not valid_update:
-            raise MissingLatticeRecordError
-
-        for attr, value in kwargs.items():
-            if value:
-                setattr(valid_update, attr, value)
-
-        session.add(valid_update)
-        session.commit()
+        txn_update_lattices_data(session, dispatch_id, **kwargs)
 
 
 def update_electrons_data(

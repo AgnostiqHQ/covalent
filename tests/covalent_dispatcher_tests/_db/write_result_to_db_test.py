@@ -52,10 +52,10 @@ from covalent_dispatcher._db.write_result_to_db import (
     load_file,
     resolve_electron_id,
     store_file,
+    txn_upsert_electron_dependency_data,
     update_electrons_data,
     update_lattice_completed_electron_num,
     update_lattices_data,
-    upsert_electron_dependency_data,
 )
 
 STORAGE_TYPE = "local"
@@ -457,8 +457,8 @@ def test_insert_electron_dependency_data(test_db, workflow_lattice, mocker):
             assert electron_dependency.updated_at is not None
 
 
-def test_upsert_electron_dependency_data(test_db, workflow_lattice, mocker):
-    """Test that upsert_electron_dependency_data is idempotent"""
+def test_txn_upsert_electron_dependency_data(test_db, workflow_lattice, mocker):
+    """Test that txn_upsert_electron_dependency_data is idempotent"""
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     cur_time = dt.now(timezone.utc)
@@ -484,12 +484,17 @@ def test_upsert_electron_dependency_data(test_db, workflow_lattice, mocker):
         electron_ids.append(insert_electrons_data(**electron_kwargs))
 
     mock_insert = mocker.patch(
-        "covalent_dispatcher._db.write_result_to_db.insert_electron_dependency_data"
+        "covalent_dispatcher._db.write_result_to_db.txn_insert_electron_dependency_data"
     )
 
-    upsert_electron_dependency_data(dispatch_id="dispatch_1", lattice=workflow_lattice)
+    with test_db.session() as session:
+        txn_upsert_electron_dependency_data(
+            session=session, dispatch_id="dispatch_1", lattice=workflow_lattice
+        )
 
-    mock_insert.assert_called_once_with(dispatch_id="dispatch_1", lattice=workflow_lattice)
+    mock_insert.assert_called_once_with(
+        session=session, dispatch_id="dispatch_1", lattice=workflow_lattice
+    )
 
 
 def test_upsert_electron_dependency_data_idempotent(test_db, workflow_lattice, mocker):
@@ -523,7 +528,11 @@ def test_upsert_electron_dependency_data_idempotent(test_db, workflow_lattice, m
     mock_insert = mocker.patch(
         "covalent_dispatcher._db.write_result_to_db.insert_electron_dependency_data"
     )
-    upsert_electron_dependency_data(dispatch_id="dispatch_1", lattice=workflow_lattice)
+    with test_db.session() as session:
+        txn_upsert_electron_dependency_data(
+            session, dispatch_id="dispatch_1", lattice=workflow_lattice
+        )
+
     mock_insert.assert_not_called()
 
 

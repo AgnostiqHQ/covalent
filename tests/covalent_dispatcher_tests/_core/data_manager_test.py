@@ -280,7 +280,7 @@ def test_upsert_lattice_data(mocker):
     mock_get_result = mocker.patch(
         "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
     )
-    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
+    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert.lattice_data")
     upsert_lattice_data(result_object.dispatch_id)
     mock_upsert_lattice.assert_called_with(result_object)
 

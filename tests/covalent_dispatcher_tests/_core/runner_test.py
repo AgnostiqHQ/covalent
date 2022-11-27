@@ -40,6 +40,7 @@ from covalent_dispatcher._core.runner import (
     _run_abstract_task,
     _run_task,
 )
+from covalent_dispatcher._db import update
 from covalent_dispatcher._db.datastore import DataStore
 
 TEST_RESULTS_DIR = "/tmp/results"
@@ -77,6 +78,8 @@ def get_mock_result() -> Result:
     result_object = Result(
         received_workflow, pipeline.metadata["results_dir"], "pipeline_workflow"
     )
+
+    result_object._initialize_nodes()
 
     return result_object
 
@@ -262,7 +265,7 @@ async def test_postprocess_workflow(mocker):
     mock_get_node_outputs = mocker.patch(
         "covalent._results_manager.result.Result.get_all_node_outputs", return_value=[0]
     )
-    mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
+    mocker.patch("covalent_dispatcher._db.upsert.lattice_data")
 
     await _postprocess_workflow(result_object)
     assert result_object._status == Result.COMPLETED
@@ -319,8 +322,9 @@ async def test_dispatch_sublattice(test_db, mocker):
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch")
-
+    mocker.patch("covalent_dispatcher._db.load.workflow_db", test_db)
     result_object = get_mock_result()
+    update.persist(result_object)
 
     serialized_callable = ct.TransportableObject(sub_workflow)
     inputs = {"args": [ct.TransportableObject(2)], "kwargs": {}}
