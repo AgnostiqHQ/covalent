@@ -28,6 +28,7 @@ from covalent._shared_files import logger
 
 from . import models
 from .datastore import workflow_db
+from .jobdb import txn_get_job_record
 from .write_result_to_db import (
     get_electron_type,
     store_file,
@@ -297,5 +298,12 @@ def electron_data(result: Result, cancel_requested: bool = False):
 def persist_result(result: Result, electron_id: int = None):
     with workflow_db.session() as session:
         _lattice_data(session, result, electron_id)
-        _electron_data(session, result, False)
+        if electron_id:
+            e_record = (
+                session.query(models.Electron).where(models.Electron.id == electron_id).first()
+            )
+            cancel_requested = txn_get_job_record(session, e_record.job_id)["cancel_requested"]
+        else:
+            cancel_requested = False
+        _electron_data(session, result, cancel_requested)
         txn_upsert_electron_dependency_data(session, result.dispatch_id, result.lattice)
