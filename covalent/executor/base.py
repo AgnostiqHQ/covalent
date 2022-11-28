@@ -25,7 +25,9 @@ Class that defines the base executor template.
 import asyncio
 import copy
 import io
+import json
 import os
+import queue
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
@@ -203,6 +205,30 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         super().__init__(*args, **kwargs)
 
+    def _init_runtime(self, loop=None):
+        self._send_queue = asyncio.Queue()
+        self._recv_queue = queue.Queue()
+        self._loop = loop
+
+    def _notify(self, action: str, body: Any = None):
+        self._loop.call_soon_threadsafe(self._send_queue.put_nowait, (action, body))
+
+    def _notify_sync(self, action: str, body: Any = None):
+        self._notify(action, body)
+        return self._wait_for_response()
+
+    def _wait_for_response(self, timeout: int = 5):
+        status, body = self._recv_queue.get(timeout=timeout)
+        if status is False:
+            raise RuntimeError("Error waiting for response")
+        return body
+
+    def get_cancel_requested(self):
+        return self._notify_sync("get", "cancel_requested")
+
+    def set_job_handle(self, handle):
+        return self._notify_sync("put", ("job_handle", json.dumps(handle)))
+
     def write_streams_to_file(
         self,
         stream_strings: Iterable[str],
@@ -306,6 +332,7 @@ class BaseExecutor(_AbstractBaseExecutor):
             result = None
 
         finally:
+            self._notify("bye")
             self.teardown(task_metadata=task_metadata)
 
         self.write_streams_to_file(
@@ -373,6 +400,30 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
     ) -> None:
 
         super().__init__(*args, **kwargs)
+
+    def _init_runtime(self, loop=None):
+        self._send_queue = asyncio.Queue()
+        self._recv_queue = asyncio.Queue()
+
+    def _notify(self, action: str, body: Any = None):
+        self._send_queue.put_nowait((action, body))
+
+    async def _notify_sync(self, action: str, body: Any = None):
+        self._notify(action, body)
+        return await self._wait_for_response()
+
+    async def _wait_for_response(self, timeout: int = 5):
+        aw = self._recv_queue.get()
+        status, body = await asyncio.wait_for(aw, timeout=timeout)
+        if status is False:
+            raise RuntimeError("Error waiting for response")
+        return body
+
+    async def get_cancel_requested(self):
+        return await self._notify_sync("get", "cancel_requested")
+
+    async def set_job_handle(self, handle):
+        return await self._notify_sync("put", ("job_handle", json.dumps(handle)))
 
     async def write_streams_to_file(
         self,
@@ -456,6 +507,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             result = None
 
         finally:
+            self._notify("bye")
             await self.teardown(task_metadata=task_metadata)
 
         await self.write_streams_to_file(
