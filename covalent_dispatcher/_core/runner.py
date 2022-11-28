@@ -22,6 +22,7 @@
 Defines the core functionality of the runner
 """
 
+import asyncio
 import json
 import traceback
 from datetime import datetime, timezone
@@ -43,6 +44,7 @@ from .._db import upsert
 from .._db.write_result_to_db import get_sublattice_electron_id
 from . import data_manager as datasvc
 from . import dispatcher
+from .runner_modules import executor_monitor
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -240,6 +242,8 @@ async def _run_task(
         # the executor is determined during scheduling and provided in the execution metadata
         executor = _executor_manager.get_executor(short_name)
         executor.from_dict(object_dict)
+        executor._init_runtime(loop=asyncio.get_running_loop())
+
     except Exception as ex:
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
         app_log.debug("Exception when trying to instantiate executor:")
@@ -290,6 +294,9 @@ async def _run_task(
                 results_dir=results_dir,
                 node_id=node_id,
             )
+
+            asyncio.create_task(executor_monitor.watch(dispatch_id, node_id, executor))
+
             output, stdout, stderr, exception_raised = await executor._execute(
                 function=assembled_callable,
                 args=inputs["args"],
