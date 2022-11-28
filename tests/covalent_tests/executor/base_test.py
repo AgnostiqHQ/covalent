@@ -219,7 +219,7 @@ def test_base_executor_execute(mocker):
     node_id = -1
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
-
+    mock_notify = mocker.patch("covalent.executor.BaseExecutor._notify")
     result, stdout, stderr, exception_raised = me.execute(
         function=assembled_callable,
         args=args,
@@ -230,6 +230,7 @@ def test_base_executor_execute(mocker):
     )
 
     assert result.get_deserialized() == 5
+    mock_notify.assert_called_with("bye")
 
 
 @pytest.mark.asyncio
@@ -343,7 +344,7 @@ def test_base_executor_passes_task_metadata(mocker):
     node_id = -1
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
-
+    mock_notify = mocker.patch("covalent.executor.BaseExecutor._notify")
     metadata, stdout, stderr, exception_raised = me.execute(
         function=assembled_callable,
         args=args,
@@ -354,6 +355,7 @@ def test_base_executor_passes_task_metadata(mocker):
     )
     task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
     assert metadata == task_metadata
+    mock_notify.assert_called_with("bye")
 
 
 def test_base_async_executor_passes_task_metadata(mocker):
@@ -378,6 +380,7 @@ def test_base_async_executor_passes_task_metadata(mocker):
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
+    mock_notify = mocker.patch("covalent.executor.base.AsyncBaseExecutor._notify")
     awaitable = me.execute(
         function=assembled_callable,
         args=args,
@@ -390,6 +393,7 @@ def test_base_async_executor_passes_task_metadata(mocker):
     metadata, stdout, stderr, exception_raised = asyncio.run(awaitable)
     task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
     assert metadata == task_metadata
+    mock_notify.assert_called_with("bye")
 
 
 def test_async_write_streams_to_file(mocker):
@@ -455,6 +459,7 @@ def test_executor_setup_teardown_method(mocker):
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
+    mock_notify = mocker.patch("covalent.executor.BaseExecutor._notify")
     result, stdout, stderr, exception_raised = me.execute(
         function=assembled_callable,
         args=args,
@@ -467,6 +472,7 @@ def test_executor_setup_teardown_method(mocker):
     assert result.get_deserialized() == 5
     me.setup.assert_called_once_with(task_metadata=task_metadata)
     me.teardown.assert_called_once_with(task_metadata=task_metadata)
+    mock_notify.assert_called_with("bye")
 
 
 def test_async_executor_setup_teardown(mocker):
@@ -489,7 +495,7 @@ def test_async_executor_setup_teardown(mocker):
     node_id = -1
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
-
+    mock_notify = mocker.patch("covalent.executor.base.AsyncBaseExecutor._notify")
     awaitable = me.execute(
         function=assembled_callable,
         args=args,
@@ -504,6 +510,7 @@ def test_async_executor_setup_teardown(mocker):
     me.run.assert_called_once_with(assembled_callable, args, kwargs, task_metadata)
     me.setup.assert_called_once_with(task_metadata=task_metadata)
     me.teardown.assert_called_once_with(task_metadata=task_metadata)
+    mock_notify.assert_called_with("bye")
 
 
 def test_executor_from_dict_makes_deepcopy():
@@ -538,6 +545,7 @@ def test_executor_execute_runtime_error_handling(mocker):
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
+    mock_notify = mocker.patch("covalent.executor.BaseExecutor._notify")
     output, stdout, stderr, exception_raised = me.execute(
         function=assembled_callable,
         args=args,
@@ -548,6 +556,7 @@ def test_executor_execute_runtime_error_handling(mocker):
     )
 
     assert exception_raised is True
+    mock_notify.assert_called_with("bye")
 
 
 @pytest.mark.asyncio
@@ -571,6 +580,7 @@ async def test_async_base_executor_execute_runtime_error_handling(mocker):
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
 
+    mock_notify = mocker.patch("covalent.executor.base.AsyncBaseExecutor._notify")
     output, stdout, stderr, exception_raised = await me.execute(
         function=assembled_callable,
         args=args,
@@ -581,3 +591,66 @@ async def test_async_base_executor_execute_runtime_error_handling(mocker):
     )
 
     assert exception_raised is True
+    mock_notify.assert_called_with("bye")
+
+
+def test_base_executor_get_cancel_requested(mocker):
+
+    me = MockExecutor()
+    me._init_runtime()
+    send_queue = me._send_queue
+    recv_queue = me._recv_queue
+    recv_queue.put_nowait((True, True))
+    mock_notify = mocker.patch("covalent.executor.base.BaseExecutor._notify")
+
+    assert me.get_cancel_requested() is True
+    mock_notify.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_async_base_executor_get_cancel_requested(mocker):
+
+    me = MockAsyncExecutor()
+    me._init_runtime()
+    send_queue = me._send_queue
+    recv_queue = me._recv_queue
+    recv_queue.put_nowait((True, True))
+    assert await me.get_cancel_requested() is True
+
+
+def test_base_executor_set_job_handle(mocker):
+
+    me = MockExecutor()
+    me._init_runtime()
+    send_queue = me._send_queue
+    recv_queue = me._recv_queue
+    recv_queue.put_nowait((True, None))
+
+    mock_notify = mocker.patch("covalent.executor.base.BaseExecutor._notify")
+    me.set_job_handle(42)
+
+    mock_notify.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_async_base_executor_set_job_handle(mocker):
+
+    me = MockAsyncExecutor()
+    me._init_runtime()
+    send_queue = me._send_queue
+    recv_queue = me._recv_queue
+    mock_notify = mocker.patch("covalent.executor.base.AsyncBaseExecutor._notify")
+    recv_queue.put_nowait((True, None))
+    await me.set_job_handle(42)
+
+    mock_notify.assert_called_once()
+
+
+def test_base_executor_notify(mocker):
+
+    me = MockExecutor()
+    me._init_runtime(loop=MagicMock())
+    me._loop.call_soon_threadsafe = MagicMock()
+
+    me._notify("get")
+    me._loop.call_soon_threadsafe.assert_called_with(me._send_queue.put_nowait, ("get", None))
