@@ -60,3 +60,10 @@ The following table lists out all the supported environment variables that users
      - Memory limit for each dask worker
    * - COVALENT_THREADS_PER_WORKER
      - Number of threads to start each worker with
+
+
+As an example users can start Covalent with 2 workers on port 8000 as follows
+
+.. code:: bash
+
+   docker container run --name covalent -p 8000:8000 -e COVALENT_NUM_WORKERS=2 -e COVALENT_SVC_PORT=8000 public.ecr.aws/covalent/covalent:latest
