@@ -36,9 +36,9 @@ import aiofiles
 
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
 
-from .._shared_files import TaskRuntimeError, logger
+from .._shared_files import TaskCancelledError, TaskRuntimeError, logger
 from .._shared_files.context_managers import active_dispatch_info_manager
-from .._shared_files.util_classes import DispatchInfo
+from .._shared_files.util_classes import RESULT_STATUS, DispatchInfo
 from .._workflow.transport import TransportableObject
 
 app_log = logger.app_log
@@ -325,10 +325,13 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         try:
             result = self.run(function, args, kwargs, task_metadata)
-            exception_raised = False
+            job_status = RESULT_STATUS.COMPLETED
+
+        except TaskCancelledError as ex:
+            job_status = RESULT_STATUS.CANCELLED
+            result = None
         except TaskRuntimeError as err:
-            app_log.error(f"TaskRuntimeError: {err}")
-            exception_raised = True
+            job_status = RESULT_STATUS.FAILED
             result = None
 
         finally:
@@ -346,7 +349,7 @@ class BaseExecutor(_AbstractBaseExecutor):
             result,
             self._task_stdout.getvalue(),
             self._task_stderr.getvalue(),
-            exception_raised,
+            job_status,
         )
 
     def setup(self, task_metadata: Dict) -> Any:
@@ -501,9 +504,12 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
         try:
             result = await self.run(function, args, kwargs, task_metadata)
-            exception_raised = False
+            job_status = RESULT_STATUS.COMPLETED
+        except TaskCancelledError as ex:
+            job_status = RESULT_STATUS.CANCELLED
+            result = None
         except TaskRuntimeError as err:
-            exception_raised = True
+            job_status = RESULT_STATUS.FAILED
             result = None
 
         finally:
@@ -521,7 +527,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             result,
             self._task_stdout.getvalue(),
             self._task_stderr.getvalue(),
-            exception_raised,
+            job_status,
         )
 
     async def setup(self, task_metadata: Dict):
