@@ -158,6 +158,9 @@ class Electron(Base):
     # Short name describing the executor ("local", "dask", etc)
     executor = Column(Text)
 
+    # JSON-serialized executor attributes
+    executor_data = Column(Text)
+
     # Name of the file containing the serialized executor data
     executor_data_filename = Column(Text)
 
