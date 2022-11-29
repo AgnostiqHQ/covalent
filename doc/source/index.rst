@@ -126,7 +126,7 @@ Check out the :doc:`Getting Started <./getting_started/index>` page to learn how
 
    +++
 
-   .. link-button:: deployment/main
+   .. link-button:: deployment/index
       :type: ref
       :text: Go to Deployment reference
       :classes: btn-outline-primary btn-block stretched-link
