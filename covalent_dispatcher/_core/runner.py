@@ -297,7 +297,7 @@ async def _run_task(
 
             asyncio.create_task(executor_monitor.watch(dispatch_id, node_id, executor))
 
-            output, stdout, stderr, exception_raised = await executor._execute(
+            output, stdout, stderr, status = await executor._execute(
                 function=assembled_callable,
                 args=inputs["args"],
                 kwargs=inputs["kwargs"],
@@ -305,10 +305,6 @@ async def _run_task(
                 results_dir=results_dir,
                 node_id=node_id,
             )
-            if exception_raised:
-                status = Result.FAILED
-            else:
-                status = Result.COMPLETED
 
             node_result = datasvc.generate_node_result(
                 node_id=node_id,
