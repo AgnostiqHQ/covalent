@@ -36,8 +36,8 @@ With Covalent, you:
 For More Information
 ####################
 
-:doc:`Covalent Technical Documentation <../index>`
+:doc:`Covalent Documentation <../index>`
 
 `What is Covalent? <https://www.covalent.xyz/what-is-covalent/>`_
 
-`Covalent in the Era of Cloud-HPC <https://www.covalent.xyz/navigating-the-modern-hpc-landscape/>`_.
+`Covalent in the Era of Cloud-HPC <https://www.covalent.xyz/navigating-the-modern-hpc-landscape/>`_
