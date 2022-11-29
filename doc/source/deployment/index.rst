@@ -69,6 +69,7 @@ As an example users can start Covalent with 2 workers on port 8000 as follows
    docker container run --name covalent -p 8000:8000 -e COVALENT_NUM_WORKERS=2 -e COVALENT_SVC_PORT=8000 public.ecr.aws/covalent/covalent:latest
 
 
-
 Deployment on AWS
 ##################
+
+Users can deploy Covalent in their own AWS accounts with any ``x86`` based EC2 instance of their choice. This can allow users to vertically scale up their workloads as they can choose the compute instance type that is optimal for their use case. There are several ways users can go about this as Covalent is already provided as a portable docker container. Users can deploy an EC2 virtual machine that is capable of running docker containers and simply follow the steps listed in :ref:`Deployment with Docker <Deployment with Docker>`
