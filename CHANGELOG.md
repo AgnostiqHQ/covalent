@@ -9,11 +9,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Electrons will inherit the lattice executors.
+- Respecting specified AWS profile & region in remote executed S3 file transfers, defaulting to env vars of execution backend
+- Fixed local executor tests on MacOS (second attempt)
 
 ### Added
 
+- Added `TaskRuntimeError` exception for executor plugin implementations to signal to Covalent that a task raised an
+  unhandled exception while running in the executor backend.
+
+### Changed
+
+- Docs for Covalent's Slurm plugin updated with explanation for optional `srun` parameters.
+- Electron errors are segregated by type; task runtime errors are
+  stored in `stderr` while the `error` attribute of a node is reserved
+  for exceptions raised by Covalent itself.
+- When tasks fail in a workflow, the Lattice ErrorCard in the UI summarizes the failed tasks.
+
+### Fixed
+
+- Electrons will inherit the lattice executors.
 - Sublattices inherit the parent lattice executor.
+- When several electrons are running concurrently, their stdout and stderr are stored in the correct graph nodes.
+- Electron errors now appear in the Electron ErrorCard when one clicks on a failed task in the UI.
+- When an electron raises an exception during execution, the local and dask executors now try to recover any output that was already
+  written.
+- Fixed functional tests.
+- Added `requirements-client.txt` to MANIFEST file
 
 ### Docs
 
@@ -39,7 +60,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Casey Jao <casey@agnostiq.ai>
 - Alejandro Esquivel <ae@alejandro.ltd>
 
-
 ### Operations
 
 - Reverted nightly schedule back to daily at 4:00am
@@ -60,6 +80,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Folder transfer unit test.
 - Folder transfer download bug
 - Result objects now print correctly when nodes fail
+
+### Changed
+
+- Width of lattice name column on dispatch list GUI.
+- Optimzing larger graphs for better performance.
 
 ## [0.207.0-rc.0] - 2022-10-26
 
