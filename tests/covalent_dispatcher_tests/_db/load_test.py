@@ -20,6 +20,7 @@
 
 """Unit tests for the module used to load transport graphs from the DB."""
 
+import json
 from datetime import datetime as dt
 from datetime import timezone
 
@@ -178,6 +179,7 @@ def get_electron_kwargs(
     function_filename=FUNCTION_STRING_FILENAME,
     function_string_filename=FUNCTION_STRING_FILENAME,
     executor="dask",
+    executor_data=json.dumps({"scheduler": "tcp://127.0.0.1:8786"}),
     executor_data_filename=EXECUTOR_DATA_FILENAME,
     results_filename=RESULTS_FILENAME,
     value_filename=VALUE_FILENAME,
@@ -206,6 +208,7 @@ def get_electron_kwargs(
         "function_filename": function_filename,
         "function_string_filename": function_string_filename,
         "executor": executor,
+        "executor_data": executor_data,
         "executor_data_filename": executor_data_filename,
         "results_filename": results_filename,
         "value_filename": value_filename,

@@ -20,6 +20,7 @@
 
 """This module rehydrates a transport graph from the db"""
 
+import json
 from typing import Dict, List, Tuple
 
 from sqlalchemy import select
@@ -66,6 +67,10 @@ def _to_abstract_node(e_record: Electron) -> Tuple[int, Dict]:
     attrs = {
         "uid": e_record.id,
         "type": e_record.type,
+        "metadata": {
+            "executor": e_record.executor,
+            "executor_data": json.loads(e_record.executor_data),
+        },
         "job_id": e_record.job_id,
     }
     return node_id, attrs
