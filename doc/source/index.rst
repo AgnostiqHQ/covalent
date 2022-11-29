@@ -120,17 +120,6 @@ Check out the :doc:`Getting Started <./getting_started/index>` page to learn how
       :text: Go To API Reference
       :classes: btn-outline-primary btn-block stretched-link
 
-   Deployment
-   ^^^^^^^^^^^^^^^^^^^^^^
-   Learn about self-hosting a Covalent server and deployment best practices
-
-   +++
-
-   .. link-button:: deployment/index
-      :type: ref
-      :text: Go to Deployment reference
-      :classes: btn-outline-primary btn-block stretched-link
-
 Recent Changes
 ##############
 
@@ -159,6 +148,7 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    How-To Guides <how_to/index>
    User Interface <webapp_ui/index>
    🔌 Plugins <plugins>
+   Deployment <deployment/index>
    Credentials <credentials>
    API Documentation <api/index>
    Deployment <deployment/index>
