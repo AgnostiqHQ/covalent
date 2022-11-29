@@ -33,7 +33,7 @@ The following table lists out all the supported environment variables that users
 .. list-table:: Covalent configuration environment variables
    :widths: 20 80
    :header-rows: 1
-   
+
    * - Environment Variable
      - Description
    * - COVALENT_ROOT
