@@ -353,6 +353,8 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
+    mocker.patch("covalent_dispatcher._db.jobdb.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.load.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     mock_unregister = mocker.patch(
@@ -383,6 +385,8 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
+    mocker.patch("covalent_dispatcher._db.jobdb.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.load.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     mock_unregister = mocker.patch(

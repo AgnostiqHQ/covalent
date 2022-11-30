@@ -28,9 +28,9 @@ This is a plugin executor module; it is loaded if found and properly structured.
 import os
 from typing import Callable, Dict, List
 
-from dask.distributed import Client
+from dask.distributed import CancelledError, Client, Future
 
-from covalent._shared_files import TaskRuntimeError, logger
+from covalent._shared_files import TaskCancelledError, TaskRuntimeError, logger
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files.config import get_config
@@ -88,6 +88,10 @@ class DaskExecutor(AsyncBaseExecutor):
     async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         """Submit the function and inputs to the dask cluster"""
 
+        if await self.get_cancel_requested():
+            app_log.debug("Task has been cancelled don't proceed")
+            raise TaskCancelledError
+
         node_id = task_metadata["node_id"]
 
         dask_client = _address_client_mapper.get(self.scheduler_address)
@@ -99,9 +103,14 @@ class DaskExecutor(AsyncBaseExecutor):
             await dask_client
 
         future = dask_client.submit(dask_wrapper, function, args, kwargs)
-        app_log.debug(f"Submitted task {node_id} to dask")
+        await self.set_job_handle(future.key)
 
-        result, worker_stdout, worker_stderr, tb = await future
+        app_log.debug(f"Submitted task {node_id} to dask with key {future.key}")
+
+        try:
+            result, worker_stdout, worker_stderr, tb = await future
+        except CancelledError:
+            raise TaskCancelledError()
 
         print(worker_stdout, end="", file=self.task_stdout)
         print(worker_stderr, end="", file=self.task_stderr)
@@ -112,3 +121,17 @@ class DaskExecutor(AsyncBaseExecutor):
 
         # FIX: need to get stdout and stderr from dask worker and print them
         return result
+
+    async def cancel(self, task_metadata: Dict, job_handle):
+        dask_client = _address_client_mapper.get(self.scheduler_address)
+
+        if not dask_client:
+            dask_client = Client(address=self.scheduler_address, asynchronous=True)
+            _address_client_mapper[self.scheduler_address] = dask_client
+
+            await dask_client
+
+        fut = Future(key=job_handle, client=dask_client)
+        await fut.cancel()
+        app_log.debug(f"Cancelled future with key {job_handle}")
+        return True
