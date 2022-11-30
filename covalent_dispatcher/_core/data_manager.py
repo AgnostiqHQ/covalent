@@ -29,8 +29,9 @@ from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._workflow.lattice import Lattice
 
-from .._db import update, upsert
+from .._db import load, update, upsert
 from .._db.write_result_to_db import resolve_electron_id
+from .data_modules.shared_data import _metadata_graphs
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -151,11 +152,13 @@ def get_result_object(dispatch_id: str) -> Result:
 def _register_result_object(result_object: Result):
     dispatch_id = result_object.dispatch_id
     _registered_dispatches[dispatch_id] = result_object
+    _metadata_graphs[dispatch_id] = load.abstract_tg(dispatch_id)
     _dispatch_status_queues[dispatch_id] = asyncio.Queue()
 
 
 def finalize_dispatch(dispatch_id: str):
     del _dispatch_status_queues[dispatch_id]
+    del _metadata_graphs[dispatch_id]
     del _registered_dispatches[dispatch_id]
 
 
@@ -192,4 +195,16 @@ async def _update_parent_electron(result_object: Result):
 
 def upsert_lattice_data(dispatch_id: str):
     result_object = get_result_object(dispatch_id)
-    upsert._lattice_data(result_object)
+    upsert.lattice_data(result_object)
+
+
+async def _get_metadata_graph(dispatch_id: str):
+    tg = _metadata_graphs.get(dispatch_id, None)
+    if not tg:
+        tg = load.abstract_tg(dispatch_id)
+    return tg
+
+
+async def get_node_metadata(dispatch_id: str, node_id: int, key: str):
+    tg = await _get_metadata_graph(dispatch_id)
+    return tg.get_node_value(node_id, key)
