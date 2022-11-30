@@ -19,4 +19,4 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from .data_manager import make_dispatch
-from .dispatcher import cancel_workflow, run_dispatch
+from .dispatcher import cancel_dispatch, run_dispatch
