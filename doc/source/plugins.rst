@@ -19,4 +19,3 @@ Covalent offers various forms of plugins, first set of which are executor Plugin
    api/executors/awsbatch.rst
    api/executors/awsecs.rst
    api/executors/awsbraket.rst
-   api/executors/azurebatch.rst

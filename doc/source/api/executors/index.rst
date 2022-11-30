@@ -24,7 +24,6 @@ Plugins
    awslambda
    awsecs
    awsbatch
-   azurebatch
 
 Base executor
 *************
