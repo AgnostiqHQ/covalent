@@ -205,10 +205,11 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         super().__init__(*args, **kwargs)
 
-    def _init_runtime(self, loop=None):
+    def _init_runtime(self, loop=None, cancel_pool=None):
         self._send_queue = asyncio.Queue()
         self._recv_queue = queue.Queue()
         self._loop = loop
+        self._cancel_pool = cancel_pool
 
     def _notify(self, action: str, body: Any = None):
         self._loop.call_soon_threadsafe(self._send_queue.put_nowait, (action, body))
@@ -321,9 +322,8 @@ class BaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
 
-        self.setup(task_metadata=task_metadata)
-
         try:
+            self.setup(task_metadata=task_metadata)
             result = self.run(function, args, kwargs, task_metadata)
             job_status = RESULT_STATUS.COMPLETED
 
@@ -377,6 +377,19 @@ class BaseExecutor(_AbstractBaseExecutor):
         """Placeholder to run nay executor specific cleanup/teardown actions"""
         pass
 
+    def cancel(self, task_metadata: Dict, job_handle: Any):
+        app_log.debug(f"Cancel not implemented for executor {type(self)}")
+        return False
+
+    async def _cancel(self, task_metadata: Dict, job_handle: Any):
+        cancel_result = await self._loop.run_in_executor(
+            self._cancel_pool, self.cancel, task_metadata, job_handle
+        )
+
+        await self._loop.run_in_executor(self._cancel_pool, self.teardown, task_metadata)
+
+        return cancel_result
+
 
 class AsyncBaseExecutor(_AbstractBaseExecutor):
     """Async base executor class to be used for defining any executor
@@ -404,7 +417,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
         super().__init__(*args, **kwargs)
 
-    def _init_runtime(self, loop=None):
+    def _init_runtime(self, loop=None, cancel_pool=None):
         self._send_queue = asyncio.Queue()
         self._recv_queue = asyncio.Queue()
 
@@ -500,9 +513,8 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
 
-        await self.setup(task_metadata=task_metadata)
-
         try:
+            await self.setup(task_metadata=task_metadata)
             result = await self.run(function, args, kwargs, task_metadata)
             job_status = RESULT_STATUS.COMPLETED
         except TaskCancelledError as ex:
@@ -554,3 +566,12 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         """
 
         raise NotImplementedError
+
+    async def cancel(self, task_metadata: Dict, job_handle: Any):
+        app_log.debug(f"Cancel not implemented for executor {type(self)}")
+        return False
+
+    async def _cancel(self, task_metadata: Dict, job_handle: Any):
+        cancel_result = await self.cancel(task_metadata, job_handle)
+        await self.teardown(task_metadata)
+        return cancel_result
