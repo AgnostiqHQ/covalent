@@ -25,6 +25,7 @@ Defines the core functionality of the runner
 import asyncio
 import json
 import traceback
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from functools import partial
 from typing import Any, Dict, List, Tuple
@@ -44,11 +45,14 @@ from .._db import upsert
 from .._db.write_result_to_db import get_sublattice_electron_id
 from . import data_manager as datasvc
 from . import dispatcher
+from .data_modules import job_manager
 from .runner_modules import executor_monitor
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 debug_mode = get_config("sdk.log_level") == "debug"
+
+_cancel_threadpool = ThreadPoolExecutor()
 
 
 # This is to be run out-of-process
@@ -118,7 +122,7 @@ async def _dispatch_sublattice(
     else:
         app_log.debug("Error building sublattice graph")
         stderr = res["stderr"]
-        raise RuntimeError("Error building sublattice graph: {stderr}")
+        raise RuntimeError(f"Error building sublattice graph: {stderr}")
 
 
 # Domain: runner
@@ -515,3 +519,44 @@ async def _postprocess_workflow(result_object: Result) -> Result:
 async def postprocess_workflow(dispatch_id: str) -> Result:
     result_object = datasvc.get_result_object(dispatch_id)
     return await _postprocess_workflow(result_object)
+
+
+async def _cancel_task(
+    dispatch_id: str, task_id: int, executor: str, executor_data: Dict, job_handle: str
+):
+
+    app_log.debug(f"Cancel task {task_id} using executor {executor}, {executor_data}")
+    app_log.debug(f"job_handle: {job_handle}")
+    try:
+
+        # the executor is determined during scheduling and provided in the execution metadata
+        executor = _executor_manager.get_executor(executor)
+        executor.from_dict(executor_data)
+        executor._init_runtime(loop=asyncio.get_running_loop(), cancel_pool=_cancel_threadpool)
+        task_metadata = {"dispatch_id": dispatch_id, "node_id": task_id}
+
+        cancel_job_result = await executor._cancel(task_metadata, json.loads(job_handle))
+    except Exception as ex:
+        app_log.debug(f"Exception when cancel task {dispatch_id}:{task_id}: {ex}")
+        cancel_job_result = False
+    await job_manager.set_cancel_result(dispatch_id, task_id, cancel_job_result)
+    return cancel_job_result
+
+
+async def cancel_tasks(dispatch_id: str, task_ids: List[int]):
+    job_metadata = await job_manager.get_jobs_metadata(dispatch_id, task_ids)
+
+    node_metadata = await datasvc.get_metadata_for_nodes(dispatch_id, task_ids)
+
+    def to_cancel_kwargs(i, node_id):
+        return {
+            "task_id": node_id,
+            "executor": node_metadata[i]["executor"],
+            "executor_data": node_metadata[i]["executor_data"],
+            "job_handle": job_metadata[i]["job_handle"],
+        }
+
+    cancel_task_kwargs = [to_cancel_kwargs(i, x) for i, x in enumerate(task_ids)]
+    app_log.debug(f"cancel_task_kwargs {cancel_task_kwargs}")
+    for kwargs in cancel_task_kwargs:
+        asyncio.create_task(_cancel_task(dispatch_id, **kwargs))

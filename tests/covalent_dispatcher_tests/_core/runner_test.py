@@ -33,12 +33,14 @@ from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.data_manager import get_result_object
 from covalent_dispatcher._core.runner import (
     _build_sublattice_graph,
+    _cancel_task,
     _dispatch_sublattice,
     _gather_deps,
     _post_process,
     _postprocess_workflow,
     _run_abstract_task,
     _run_task,
+    cancel_tasks,
 )
 from covalent_dispatcher._db import update
 from covalent_dispatcher._db.datastore import DataStore
@@ -384,3 +386,54 @@ async def test_dispatch_sublattice(test_db, mocker):
             serialized_callable=serialized_callable,
             workflow_executor=["fake_executor", {}],
         )
+
+
+@pytest.mark.asyncio
+async def test_cancel_task(mocker):
+
+    mock_executor = MagicMock()
+    mock_executor._cancel = AsyncMock(return_value=True)
+
+    mocker.patch(
+        "covalent_dispatcher._core.runner._executor_manager.get_executor",
+        return_value=mock_executor,
+    )
+
+    mock_set_cancel = mocker.patch(
+        "covalent_dispatcher._core.runner.job_manager.set_cancel_result"
+    )
+    executor = "mock_executor"
+    executor_data = {"scheduler_address": "tcp://127.0.0.1:39842"}
+    dispatch_id = "dispatch"
+    task_id = 5
+    job_handle = "null"
+
+    cancel_result = await _cancel_task(dispatch_id, task_id, executor, executor_data, job_handle)
+    assert cancel_result is True
+
+    mock_executor._cancel = AsyncMock(side_effect=RuntimeError())
+    cancel_result = await _cancel_task(dispatch_id, task_id, executor, executor_data, job_handle)
+    assert cancel_result is False
+
+
+@pytest.mark.asyncio
+async def test_cancel_tasks(mocker):
+
+    dispatch_id = "dispatch"
+    executor = "local"
+    executor_data = {}
+    job_metadata = [{"job_id": 5, "job_handle": "1"}]
+    node_metadata = [{"executor": executor, "executor_data": executor_data}]
+
+    mock_cancel = mocker.patch("covalent_dispatcher._core.runner._cancel_task")
+    mocker.patch(
+        "covalent_dispatcher._core.runner.job_manager.get_jobs_metadata", return_value=job_metadata
+    )
+    mocker.patch(
+        "covalent_dispatcher._core.runner.datasvc.get_metadata_for_nodes",
+        return_value=node_metadata,
+    )
+    await cancel_tasks(dispatch_id, [5])
+    mock_cancel.assert_called_with(
+        dispatch_id, task_id=5, executor=executor, executor_data=executor_data, job_handle="1"
+    )
