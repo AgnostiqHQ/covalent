@@ -208,3 +208,9 @@ async def _get_metadata_graph(dispatch_id: str):
 async def get_node_metadata(dispatch_id: str, node_id: int, key: str):
     tg = await _get_metadata_graph(dispatch_id)
     return tg.get_node_value(node_id, key)
+
+
+async def get_metadata_for_nodes(dispatch_id: str, node_ids: list):
+
+    tg = await _get_metadata_graph(dispatch_id)
+    return list(map(lambda x: tg._graph.nodes[x].copy(), node_ids))
