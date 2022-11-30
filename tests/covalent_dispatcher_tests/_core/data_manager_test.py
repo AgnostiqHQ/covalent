@@ -38,6 +38,7 @@ from covalent_dispatcher._core.data_manager import (
     _registered_dispatches,
     _update_parent_electron,
     finalize_dispatch,
+    get_metadata_for_nodes,
     get_node_metadata,
     get_result_object,
     get_status_queue,
@@ -296,3 +297,18 @@ async def test_get_node_metadata(mock_tg, mocker):
     )
     assert await get_node_metadata("asdf", 1, "executor") == "dask"
     assert await get_node_metadata("asdf123", 0, "executor") == "local"
+
+
+@pytest.mark.asyncio
+async def test_get_metadata_for_nodes(mock_tg, mocker):
+    dispatch_id = "asdf123"
+    if dispatch_id in _metadata_graphs:
+        del _metadata_graphs[dispatch_id]
+
+    _metadata_graphs[dispatch_id] = mock_tg
+    mock_abstract_tg = mocker.patch(
+        "covalent_dispatcher._core.data_manager.load.abstract_tg", return_value=mock_tg
+    )
+    records = await get_metadata_for_nodes("asdf123", [0, 1])
+    assert records[0]["executor"] == "local"
+    assert records[1]["executor"] == "dask"
