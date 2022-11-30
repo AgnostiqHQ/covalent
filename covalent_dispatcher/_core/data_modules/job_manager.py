@@ -51,7 +51,8 @@ async def set_cancel_requested(dispatch_id: str, task_ids: List[int]):
 
 
 async def get_job_metadata(dispatch_id: str, task_id: int):
-    return await get_jobs_metadata(dispatch_id, [task_id])
+    record = await get_jobs_metadata(dispatch_id, [task_id])
+    return record[0]
 
 
 async def get_jobs_metadata(dispatch_id: str, task_ids: List[int]):
