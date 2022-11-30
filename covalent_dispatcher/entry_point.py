@@ -52,7 +52,7 @@ async def run_dispatcher(json_lattice: str):
     return dispatch_id
 
 
-def cancel_running_dispatch(dispatch_id: str) -> None:
+async def cancel_running_dispatch(dispatch_id: str) -> None:
     """
     Cancels a running dispatch job.
 
@@ -63,6 +63,6 @@ def cancel_running_dispatch(dispatch_id: str) -> None:
         None
     """
 
-    from ._core import cancel_workflow
+    from ._core import cancel_dispatch
 
-    cancel_workflow(dispatch_id)
+    await cancel_dispatch(dispatch_id)
