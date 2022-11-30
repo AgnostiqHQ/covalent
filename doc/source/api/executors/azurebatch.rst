@@ -198,7 +198,7 @@ The following shows an example of how a user might modify their `covalent config
 4. Required Cloud Resources
 ===========================
 
-In order to use this plugin, you will need to have the following Azure resources provisioned first.
+In order to use this plugin, the following Azure resources need to be provisioned first. These resources can be created using the `Azure Portal <https://learn.microsoft.com/en-us/azure/batch/batch-account-create-portal>`_ or the Azure CLI.
 
 .. list-table::
    :widths: 2 1 2 3
@@ -210,21 +210,25 @@ In order to use this plugin, you will need to have the following Azure resources
      - Description
    * - Batch Account
      - Yes
-     -
-     -
+     - :code:`batch_account_url`
+     - A `batch account <https://learn.microsoft.com/en-us/azure/batch/accounts>`_ is required to submit jobs to Azure Batch. The URL can be found under the `Account endpoint` field in the Batch account. Furthermore, ensure that :code:`https://` is prepended to the value.
    * - Storage Account
      - Yes
-     -
-     -
+     - :code:`storage_account_name`
+     - `Storage account <https://learn.microsoft.com/en-us/azure/batch/accounts>`_ must be created with blob service enabled in order for covalent to store essential files that are needed during execution.
    * - Resource Group
      - Yes
-     -
-     -
+     - N/A
+     - The resource group is a logical grouping of Azure resources that can be managed as one entity in terms of lifecycle and security.
    * - Container Registry
      - Yes
-     -
-     -
+     - N/A
+     - Container registry is required to store the containers that are used to run Batch jobs.
    * - Virtual Network
      - Yes
-     -
-     -
+     - N/A
+     - `Azure Virtual Network <https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-overview>`_ is used by resources to securely communicate with each other.
+   * - Pool ID
+     - Yes
+     - :code:`pool_id`
+     - A `pool <https://docs.microsoft.com/en-us/azure/batch/batch-pool-vm-sizes>`_ is a collection of compute nodes that are managed together. The pool ID is the name of the pool that will be used to execute the jobs.
