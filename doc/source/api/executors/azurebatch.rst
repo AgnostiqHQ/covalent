@@ -114,3 +114,117 @@ During the execution of the workflow, one can navigate to the UI to see the stat
 ============================
 3. Overview of Configuration
 ============================
+
+.. list-table::
+   :widths: 2 1 2 3
+   :header-rows: 1
+
+   * - Config Key
+     - Required
+     - Default
+     - Description
+   * - tenant_id
+     - Yes
+     - None
+     - Azure tenant ID
+   * - client_id
+     - Yes
+     - None
+     - Azure client ID
+   * - client_secret
+     - Yes
+     - None
+     - Azure client secret
+   * - batch_account_url
+     - Yes
+     - None
+     - Azure Batch account URL
+   * - batch_account_domain
+     - No
+     - batch.core.windows.net
+     - Azure Batch account domain
+   * - storage_account_name
+     - Yes
+     - None
+     - Azure Storage account name
+   * - storage_account_domain
+     - No
+     - blob.core.windows.net
+     - Azure Storage account domain
+   * - pool_id
+     - Yes
+     - None
+     - Azure Batch pool ID
+   * - retries
+     - No
+     - 3
+     - Number of retries for Azure Batch job
+   * - time_limit
+     - No
+     - 300
+     - Time limit for Azure Batch job
+   * - cache_dir
+     - No
+     - /tmp/covalent
+     - Directory to store cached files
+   * - poll_freq
+     - No
+     - 10
+     - Polling frequency for Azure Batch job
+
+#. Configuration options can be passed in as constructor keys to the executor class :code:`ct.executor.AzureBatchExecutor`
+
+#. By modifying the `covalent configuration file <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_ under the section :code:`[executors.azurebatch]`
+
+The following shows an example of how a user might modify their `covalent configuration file <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_  to support this plugin:
+
+.. code:: shell
+
+    [executors.azurebatch]
+    tenant_id="tenant-id",
+    client_id="client-id",
+    client_secret="client-secret",  # pragma: allowlist secret
+    batch_account_url="https://covalent.eastus.batch.azure.com",
+    batch_account_domain="batch.core.windows.net",
+    storage_account_name="covalentbatch",
+    storage_account_domain="blob.core.windows.net",
+    pool_id="covalent-pool",
+    retries=5,
+    time_limit=500,
+    ...
+
+
+===========================
+4. Required Cloud Resources
+===========================
+
+In order to use this plugin, you will need to have the following Azure resources provisioned first.
+
+.. list-table::
+   :widths: 2 1 2 3
+   :header-rows: 1
+
+   * - Resource
+     - Is Required
+     - Config Key
+     - Description
+   * - Batch Account
+     - Yes
+     -
+     -
+   * - Storage Account
+     - Yes
+     -
+     -
+   * - Resource Group
+     - Yes
+     -
+     -
+   * - Container Registry
+     - Yes
+     -
+     -
+   * - Virtual Network
+     - Yes
+     -
+     -
