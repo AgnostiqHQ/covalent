@@ -25,7 +25,7 @@ Defines the core functionality of the dispatcher
 import asyncio
 import traceback
 from datetime import datetime, timezone
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
@@ -34,6 +34,7 @@ from covalent_ui import result_webhook
 
 from . import data_manager as datasvc
 from . import runner
+from .data_modules import job_manager
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -341,7 +342,7 @@ async def run_workflow(result_object: Result) -> Result:
 
 
 # Domain: dispatcher
-def cancel_workflow(dispatch_id: str) -> None:
+async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = []) -> None:
     """
     Cancels a dispatched workflow using publish subscribe mechanism
     provided by Dask.
@@ -353,9 +354,22 @@ def cancel_workflow(dispatch_id: str) -> None:
         None
     """
 
-    # shared_var = Variable(dispatch_id)
-    # shared_var.set(str(Result.CANCELLED))
-    pass
+    if not dispatch_id:
+        return
+
+    result_object = datasvc.get_result_object(dispatch_id)
+    tg = result_object.lattice.transport_graph
+
+    if not task_ids:
+        task_ids = list(result_object.lattice.transport_graph._graph.nodes)
+
+    await job_manager.set_cancel_requested(dispatch_id, task_ids)
+    await runner.cancel_tasks(dispatch_id, task_ids)
+
+    # Recursively cancel running sublattice dispatches
+    sub_ids = list(map(lambda x: tg.get_node_value(x, "sub_dispatch_id"), task_ids))
+    for sub_dispatch_id in sub_ids:
+        await cancel_dispatch(sub_dispatch_id)
 
 
 def run_dispatch(dispatch_id: str) -> asyncio.Future:
