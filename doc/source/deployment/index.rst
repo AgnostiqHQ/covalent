@@ -111,7 +111,7 @@ We can now install ``Covalent`` in this virtual environment as follows
    If users are looking to use the AWS executor plugins with their Covalent deployment the ``covalent-aws-plugins`` must be installed via ``/opt/virtualenvs/covalent/bin/python -m pip install 'covalent-aws-plugins[all]'``
 
 This will ensure that the latest release of ``Covalent`` along with all its dependencies are properly installed in the virtual environment. We can now create a ``systemd`` unit file for Covalent and enable it to be managed by ``systemd``.
-Systemd provides a convenient inferface to configure environment variables that will be exposed to the process being managed via the ``Environment`` and ``EnvironmentFile`` directive. We will leverage these interfaces to configure Covalent's runtime behvaiour and environment by injecting variables. In the following block we give a sample systemd unit file for the Covalent service, `covalent.service`. On most linux systems, this service file can be created under ``/usr/lib/systemd/system``
+Systemd provides a convenient inferface to configure environment variables that will be exposed to the covalent server via the ``Environment`` and ``EnvironmentFile`` directives. We will leverage these interfaces to configure Covalent's startup and runtime behaviour. Users can use the following sample ``covalent.service`` systemd unit file and customize it for their needs when hosting Covalent themselves. On most linux systems, this service file can be installed under ``/usr/lib/systemd/system``. Users are encouraged to review the systemd documentation `here <https://www.freedesktop.org/software/systemd/man/systemd.html>`_.
 
 .. code:: bash
 
@@ -120,12 +120,16 @@ Systemd provides a convenient inferface to configure environment variables that 
    After=network.target
 
    [Service]
+   Type=forking
    Environment=VIRTUAL_ENV=/opt/virtualenvs/covalent
+   Environment=PATH=/opt/virtualenvs/covalent/bin:$PATH
+   Environment=HOME=/var/lib/covalent
    Environment=COVALENT_SERVER_IFACE_ANY=1
    EnvironmentFile=/etc/covalent/covalent.env
    ExecStartPre=-/opt/virtualenvs/covalent/bin/covalent stop
    ExecStart=/opt/virtualenvs/covalent/bin/covalent start
    ExecStop=/opt/virtualenvs/covalent/bin/covalent stop
+   TimeoutStopSec=10
 
    [Install]
    WantedBy=multi-user.target
