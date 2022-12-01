@@ -55,4 +55,4 @@ async def test_run_dispatcher(mocker):
 async def test_cancel_running_dispatch(mocker):
     mock_cancel_dispatch = mocker.patch("covalent_dispatcher._core.cancel_dispatch")
     await cancel_running_dispatch(DISPATCH_ID)
-    mock_cancel_dispatch.assert_awaited_once_with(DISPATCH_ID)
+    mock_cancel_dispatch.assert_awaited_once_with(DISPATCH_ID, [])
