@@ -7,8 +7,9 @@ might be sufficient but for dispatching large compute intensive workflows which 
 users can still develop their workflows locally and dispatch them to the remote Covalent server for execution.
 
 
+=========================
 Deployment with Docker
-#######################
+=========================
 
 Apart from installing ``Covalent`` locally within a Python virtual environment, users can also run Covalent as a docker container using the public images. The latest docker image for ``Covalent`` can be obtained as
 
@@ -74,6 +75,18 @@ On-prem deployment
 ==============================
 
 The ``Covalent`` server can be installed and deployed on on-prem servers or virtual machines quite easily in order to centralize the deployment. This would enable users to host their Covalent servers on on-prem machines they may have access to or run them inside virtual machines. If the remote machines have `Docker <https://www.docker.com/>`_ support enabled then the deployment is trivally simple and amounts to simply pulling and running the Covalent container from our public registries. The deployment can be customized by following the steps outlined in :ref:`Deployment with Docker <Deployment with Docker>` section.
+
+
+-----------------------
+Deployment with Systemd
+-----------------------
+The Covalent server can also be installed and managed as a `systemd <https://systemd.io/>`_ service if desired. This can be a preferred approach if one would like to manage and administer the server via `systemd <https://systemd.io/>`_. There are several ways Covalent can be installed on a system and managed via systemd. For instance, users can directly install Covalent at the system level, install all the required plugins, create a ``covalent.service`` unit file and enable the service.
+
+.. note::
+
+   Installing Covalent at the system level is not recommended as its Python package dependencies can potentially conflict with system packages. Moreover, the system Python version may not be compatible with Covalent. Refer to our compatibility matrix to see all the support Python versions
+
+
 
 
 
