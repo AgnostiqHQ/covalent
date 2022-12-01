@@ -105,15 +105,20 @@ We can now install ``Covalent`` in this virtual environment as follows
    $COVALENT_PYTHON -m pip install covalent
 
 
-This will ensure that the latest stable release of ``Covalent`` along with all its dependencies are properly installed in the virtual environment.
-
-
-
-
-
 .. note::
 
    On Debian/Ubuntu based systems the **virtualenv** Python module can be installed at the system level via pip as follows ``python3 -m pip install virtualenv``
+
+
+This will ensure that the latest release of ``Covalent`` along with all its dependencies are properly installed in the virtual environment. We can now create a ``systemd`` unit file for Covalent and enable it to be managed by ``systemd``.
+Systemd provides a convenient inferface to configure environment variables that will be exposed to the process being managed via the ``Environment`` and ``EnvironmentFile`` directive. We will leverage these interfaces to configure Covalent's runtime behvaiour and environment by injecting variables. To ensure that when systemd invokes the ``Covalent`` server, its from within the virtual environment created earlier, we need to the set ``VIRTUAL_ENV`` environment variable to its proer value
+
+.. code:: bash
+
+   VIRTUAL_ENV=/opt/virtualenvs/covalent
+
+Setting this variable to the location where we first created the virtual environment will by sufficient to ensure that the Python used to run Covalent is properly sourced and all the ``site-packages`` are visible to the interpreter at runtime.
+
 
 
 
