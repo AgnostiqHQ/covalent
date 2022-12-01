@@ -5,9 +5,9 @@
 
 .. image:: Azure_Batch.png
 
-Azure Batch Executor plugin is an interface between Covalent and `Microsoft Azure Batch <https://azure.microsoft.com/en-us/products/batch/#overview>`_. It allows execution of Covalent tasks on Azure Batch.
+Covalent Azure Batch executor is an interface between Covalent and `Microsoft Azure Batch <https://azure.microsoft.com/en-us/products/batch/#overview>`_. This executor allows execution of Covalent tasks on Azure's Batch service.
 
-Azure Batch is well suited for compute/memory intensive tasks since the resource pool of compute virtual machines can be scaled accordingly. Furthermore, Azure Batch allows to run tasks in parallel on multiple virtual machines and their scheduling engine manages execution of the tasks.
+The batch executor is well suited for compute/memory intensive tasks since the resource pool of compute virtual machines can be scaled accordingly. Furthermore, Azure Batch allows running tasks in parallel on multiple virtual machines and their scheduling engine manages execution of the tasks.
 
 ===============
 1. Installation
@@ -24,7 +24,7 @@ To use this plugin with Covalent, simply install it using :code:`pip`:
 2. Usage Example
 ================
 
-In this example, we train a Support Vector Machine (SVM) using an instance of the Azure Batch executor. The :code:`train_svm` electron is submitted as a batch job in an existing Azure Batch Compute environment. Note that we also require :doc:`DepsPip <../../concepts/concepts>`) in order to install the python package dependencies before executing the electron in the batch environment.
+In this example, we train a Support Vector Machine (SVM) using an instance of the Azure Batch executor. The :code:`train_svm` electron is submitted as a batch job in an existing Azure Batch Compute environment. Note that we also require :doc:`DepsPip <../../concepts/concepts>` in order to install the python package dependencies before executing the electron in the batch environment.
 
 .. code-block:: python
 
@@ -41,7 +41,7 @@ In this example, we train a Support Vector Machine (SVM) using an instance of th
     executor = AzureBatchExecutor(
         tenant_id="tenant-id",
         client_id="client-id",
-        client_secret="client-secret",  # pragma: allowlist secret
+        client_secret="client-secret",
         batch_account_url="https://covalent.eastus.batch.azure.com",
         batch_account_domain="batch.core.windows.net",
         storage_account_name="covalentbatch",
@@ -183,7 +183,7 @@ The following shows an example of how a user might modify their `covalent config
     [executors.azurebatch]
     tenant_id="tenant-id",
     client_id="client-id",
-    client_secret="client-secret",  # pragma: allowlist secret
+    client_secret="client-secret",
     batch_account_url="https://covalent.eastus.batch.azure.com",
     batch_account_domain="batch.core.windows.net",
     storage_account_name="covalentbatch",
@@ -232,3 +232,9 @@ In order to use this plugin, the following Azure resources need to be provisione
      - Yes
      - :code:`pool_id`
      - A `pool <https://docs.microsoft.com/en-us/azure/batch/batch-pool-vm-sizes>`_ is a collection of compute nodes that are managed together. The pool ID is the name of the pool that will be used to execute the jobs.
+
+==================
+4. Troubleshooting
+==================
+
+For more information on error handling and detection in Batch, refer to the `Microsoft Azure documentation <https://learn.microsoft.com/en-us/azure/batch/error-handling>`_. Furthermore, information on best practices can be found `here <https://learn.microsoft.com/en-us/azure/batch/best-practices>`_.
