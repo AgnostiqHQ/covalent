@@ -20,6 +20,7 @@
 
 
 import codecs
+import json
 import os
 from typing import Dict, List, Optional, Union
 
@@ -188,6 +189,7 @@ def sync(
 
 def cancel(
     dispatch_id: str,
+    task_ids: List[int] = [],
     dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
 ) -> str:
     """
@@ -203,6 +205,8 @@ def cancel(
 
     url = "http://" + dispatcher + "/api/cancel"
 
-    r = requests.post(url, data=dispatch_id.encode("utf-8"))
+    if isinstance(task_ids, int):
+        task_ids = [task_ids]
+    r = requests.post(url, data=json.dumps({"dispatch_id": dispatch_id, "task_ids": task_ids}))
     r.raise_for_status()
     return r.content.decode("utf-8").strip().replace('"', "")
