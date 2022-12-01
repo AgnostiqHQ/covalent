@@ -86,7 +86,7 @@ The Covalent server can also be installed and managed as a `systemd <https://sys
 
    Installing Covalent at the system level is **NOT** recommended as its Python package dependencies can potentially conflict with system packages. Moreover, the system Python version may not be compatible with Covalent. Refer to our compatibility matrix to see all the support Python versions
 
-The recommended approach for running Covalent under systemd is to create a Python virtual environment with Covalent installed and then run the systemd service with the environment properly configured. This approach ensures that the system level Python settings are not altered and any potential Python package dependency issues are avoided.
+The recommended approach for running Covalent under systemd is to create a Python virtual environment with Covalent installed and then run the systemd service with the environment properly configured. This approach ensures that the system level Python settings are not altered and any potential Python package dependency issues are avoided. In this guide, we assume ``Python v3.8`` is available on the system and all the commands are carried out as the root user.
 
 
 ====================
