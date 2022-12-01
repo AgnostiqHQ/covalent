@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Adding support for PostgresQL DB backend
+- Added check for `COVALENT_DATABASE_URL`, if exists connect sqlalchemy engine using that
+- Adding `COVALENT_DATABASE_USER` and `COVALENT_DATABASE_PASSWORD` environment variables
+- Adding `COVALENT_DATABASE_HOSTNAME` and `COVALENT_DATABASE_PORT` environment variables for easy configuration
+
+### Changed
+
+- Updated `requirements.txt` to include `pyscopg2`
+
 ### Fixed
 
 - Fixed all failing functional tests
