@@ -6,6 +6,10 @@ Covalent supports both local and remote installations to suit different uses cas
 might be sufficient but for dispatching large compute intensive workflows which may require lots of CPU cores and memory, deploying ``Covalent`` as a **remote** server (cloud/on-prem) would be a better alternative. This way
 users can still develop their workflows locally and dispatch them to the remote Covalent server for execution.
 
+.. image:: ./covalent-self-hosted.png
+   :width: 400
+   :alt: Covalent self hosted deployment
+
 =========================
 Deployment with Docker
 =========================
@@ -133,7 +137,7 @@ To ensure that when systemd invokes the ``Covalent`` server, its from within the
 
    VIRTUAL_ENV=/opt/virtualenvs/covalent
 
-Setting this variable to the location of the virtual environment is sufficient to ensure that the proper Python interpreter is used by Covalent at runtime. In the ``[Service]`` directive we set the ``EnvironmentFile`` location to ``/etc/covalent/covalent.env``. Users can optionally create this file and populate it with Covalent specific environment variables such as ``COVALENT_CACHE_DIR, COVALENT_DATABASE, COVALENT_SVC_PORT ... `` in order customize Covalent's runtime environment.
+Setting this variable to the location of the virtual environment is sufficient to ensure that the proper Python interpreter is used by Covalent at runtime. In the ``[Service]`` directive we set the ``EnvironmentFile`` location to ``/etc/covalent/covalent.env``. Users can optionally create this file and populate it with Covalent specific environment variables such as COVALENT_CACHE_DIR, COVALENT_DATABASE, COVALENT_SVC_PORT ... in order customize Covalent's runtime environment.
 
 Once all the settings have been configured, Covalent can be started as follows
 
