@@ -128,6 +128,11 @@ async def test_run_abstract_task_exception_handling(mocker):
         side_effect=RuntimeError(),
     )
 
+    job_metadata = {"job_id": 5, "job_handle": "1", "cancel_requested": False}
+    mocker.patch(
+        "covalent_dispatcher._core.runner.job_manager.get_job_metadata", return_value=job_metadata
+    )
+
     node_result = await _run_abstract_task(
         dispatch_id=result_object.dispatch_id,
         node_id=0,
@@ -436,3 +441,29 @@ async def test_cancel_tasks(mocker):
     mock_cancel.assert_called_with(
         dispatch_id, task_id=5, executor=executor, executor_data=executor_data, job_handle="1"
     )
+
+
+@pytest.mark.asyncio
+async def test_run_abstract_task_cancelled_handling(mocker):
+    """Test handling of  cancelled abstract tasks"""
+
+    result_object = get_mock_result()
+    inputs = {"args": [], "kwargs": {}}
+    mock_get_result = mocker.patch(
+        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+    )
+    job_metadata = {"job_id": 5, "job_handle": "1", "cancel_requested": True}
+    mocker.patch(
+        "covalent_dispatcher._core.runner.job_manager.get_job_metadata", return_value=job_metadata
+    )
+
+    node_result = await _run_abstract_task(
+        dispatch_id=result_object.dispatch_id,
+        node_id=0,
+        node_name="test_node",
+        abstract_inputs=inputs,
+        selected_executor=["local", {}],
+        workflow_executor=["local", {}],
+    )
+
+    assert node_result["status"] == Result.CANCELLED
