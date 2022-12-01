@@ -6,8 +6,8 @@ Covalent supports both local and remote installations to suit different uses cas
 might be sufficient but for dispatching large compute intensive workflows which may require lots of CPU cores and memory, deploying ``Covalent`` as a **remote** server (cloud/on-prem) would be a better alternative. This way
 users can still develop their workflows locally and dispatch them to the remote Covalent server for execution.
 
-.. image:: ./covalent-self-hosted.png
-   :width: 400
+.. image:: ./covalent-self-hosted.svg
+   :width: 800
    :alt: Covalent self hosted deployment
 
 =========================
