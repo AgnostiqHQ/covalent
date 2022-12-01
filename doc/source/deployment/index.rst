@@ -86,7 +86,35 @@ The Covalent server can also be installed and managed as a `systemd <https://sys
 
    Installing Covalent at the system level is **NOT** recommended as its Python package dependencies can potentially conflict with system packages. Moreover, the system Python version may not be compatible with Covalent. Refer to our compatibility matrix to see all the support Python versions
 
-The recommended approach for running Covalent under systemd is to create a Python virtual environment with Covalent installed and then run the systemd service with the environment properly configured. This approach ensures that the system level Python settings are not altered and any potential Python package dependency issues are avoided. In this guide, we assume ``Python v3.8`` is available on the system and all the commands are carried out as the root user.
+The recommended approach for running Covalent under systemd is to create a Python virtual environment with Covalent installed and then run the systemd service. This approach ensures that the system level Python settings are not altered and any potential Python package dependency conflicts are averted. In this guide, we assume ``Python v3.8`` is available on the system and all the commands are carried out as the **root** user. We first being by creating the Python virtual environment in which Covalent will be subsequently installed
+
+.. code:: bash
+
+   python3 -m virtualenv /opt/virtualenvs/covalent
+   export COVALENT_PYTHON=/opt/virtualenv/covalent/bin/python
+
+.. note::
+
+   We export the ``COVALENT_PYTHON`` environment variable for convenience as it will be used for executing any commands within the virtual environment.
+
+
+We can now install ``Covalent`` in this virtual environment as follows
+
+.. code:: bash
+
+   $COVALENT_PYTHON -m pip install covalent
+
+
+This will ensure that the latest stable release of ``Covalent`` along with all its dependencies are properly installed in the virtual environment.
+
+
+
+
+
+.. note::
+
+   On Debian/Ubuntu based systems the **virtualenv** Python module can be installed at the system level via pip as follows ``python3 -m pip install virtualenv``
+
 
 
 ====================
