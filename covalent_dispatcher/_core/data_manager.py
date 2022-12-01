@@ -155,7 +155,11 @@ def make_dispatch(
 
 
 def get_result_object(dispatch_id: str) -> Result:
-    return _registered_dispatches[dispatch_id]
+    try:
+        res = _registered_dispatches[dispatch_id]
+    except KeyError:
+        res = _get_res_obj_from_db_exp(dispatch_id)
+    return res
 
 
 def _register_result_object(result_object: Result):
@@ -211,6 +215,7 @@ async def _get_metadata_graph(dispatch_id: str):
     tg = _metadata_graphs.get(dispatch_id, None)
     if not tg:
         tg = load.abstract_tg(dispatch_id)
+
     return tg
 
 
@@ -223,3 +228,16 @@ async def get_metadata_for_nodes(dispatch_id: str, node_ids: list):
 
     tg = await _get_metadata_graph(dispatch_id)
     return list(map(lambda x: tg._graph.nodes[x].copy(), node_ids))
+
+
+# Temporary hack consumed only by `get_result_object`. This allows the
+# dispatcher to use the same interface for both online and offline
+# (after restarting) cancellation
+def _get_res_obj_from_db_exp(dispatch_id: str):
+    tg = load.abstract_tg(dispatch_id)
+    app_log.debug("Rehydrated metadata transport graph from DB")
+
+    lattice = Lattice(lambda x: x, tg)
+    res = Result(lattice, "/tmp", dispatch_id)
+    res._initialize_nodes()
+    return res

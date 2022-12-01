@@ -310,3 +310,15 @@ async def test_get_metadata_for_nodes(mock_tg, mocker):
     records = await get_metadata_for_nodes("asdf123", [0, 1])
     assert records[0]["executor"] == "local"
     assert records[1]["executor"] == "dask"
+
+
+def test_exp_get_result_from_db(mock_tg, mocker):
+    mock_abstract_tg = mocker.patch(
+        "covalent_dispatcher._core.data_manager.load.abstract_tg", return_value=mock_tg
+    )
+
+    fake_id = "fake_dispatch_id"
+    assert fake_id not in _registered_dispatches
+    res = get_result_object(fake_id)
+    assert res.dispatch_id == fake_id
+    assert res.lattice.transport_graph is mock_tg
