@@ -23,6 +23,8 @@ Self-contained entry point for the dispatcher
 """
 
 
+from typing import List
+
 from covalent._shared_files import logger
 
 app_log = logger.app_log
@@ -52,7 +54,7 @@ async def run_dispatcher(json_lattice: str):
     return dispatch_id
 
 
-async def cancel_running_dispatch(dispatch_id: str) -> None:
+async def cancel_running_dispatch(dispatch_id: str, task_ids: List[int] = []) -> None:
     """
     Cancels a running dispatch job.
 
@@ -65,4 +67,4 @@ async def cancel_running_dispatch(dispatch_id: str) -> None:
 
     from ._core import cancel_dispatch
 
-    await cancel_dispatch(dispatch_id)
+    await cancel_dispatch(dispatch_id, task_ids)

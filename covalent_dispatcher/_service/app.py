@@ -187,10 +187,16 @@ async def cancel(request: Request) -> str:
         has been cancelled.
     """
     data = await request.body()
-    dispatch_id = data.decode("utf-8")
+    data = json.loads(data)
+    dispatch_id = data["dispatch_id"]
+    task_ids = data["task_ids"]
 
-    await dispatcher.cancel_running_dispatch(dispatch_id)
-    return f"Dispatch {dispatch_id} cancelled."
+    await dispatcher.cancel_running_dispatch(dispatch_id, task_ids)
+    if task_ids:
+        resp = f"Cancelled tasks {task_ids} in dispatch {dispatch_id}"
+    else:
+        resp = f"Dispatch {dispatch_id} cancelled."
+    return resp
 
 
 @router.get("/db-path")
