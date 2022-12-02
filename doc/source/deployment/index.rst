@@ -83,13 +83,15 @@ The ``Covalent`` server can be installed and deployed on on-prem servers or virt
 -----------------------
 Deployment with Systemd
 -----------------------
+
+
 The Covalent server can also be installed and managed as a `systemd <https://systemd.io/>`_ service if desired. This can be a preferred approach if one would like to manage and administer the server via `systemd <https://systemd.io/>`_. There are several ways Covalent can be installed on a system and managed via systemd. For instance, users can directly install Covalent at the system level, install all the required plugins, create a ``covalent.service`` unit file and enable the service.
 
-.. note::
+.. warning::
 
    Installing Covalent at the system level is **NOT** recommended as its Python package dependencies can potentially conflict with system packages. Moreover, the system Python version may not be compatible with Covalent. Refer to our compatibility matrix to see all the support Python versions
 
-The recommended approach for running Covalent under systemd is to create a Python virtual environment with Covalent installed and then run the systemd service. This approach ensures that the system level Python settings are not altered and any potential Python package dependency conflicts are averted. In this guide, we assume ``Python3.8`` is available on the system and all the commands are carried out as the **root** user. We first being by creating the Python virtual environment in which Covalent will be subsequently installed
+The recommended approach for running Covalent under systemd is to create a Python virtual environment with Covalent installed and then run the systemd service. This approach ensures that the system level Python settings are not altered and any potential Python package dependency conflicts are averted. In this guide, for convenience we assume ``Python3.8`` is available on the system and all the commands are carried out as the **root** user. We first being by creating the Python virtual environment in which Covalent will be subsequently installed
 
 .. code:: bash
 
@@ -135,7 +137,7 @@ Systemd provides a convenient inferface to configure environment variables that 
    WantedBy=multi-user.target
 
 
-To ensure that when systemd invokes the ``Covalent`` server, its from within the virtual environment created earlier, we need to the set ``VIRTUAL_ENV`` environment variable to its proer value
+To ensure that when systemd invokes the ``Covalent`` server, its from within the virtual environment created earlier, we need to the set ``VIRTUAL_ENV`` environment variable to its proper value
 
 .. code:: bash
 
@@ -170,6 +172,11 @@ Once the service is running properly, users can connect to the Covalent's UI fro
    systemctl stop covalent.service
 
 
+.. warning::
+
+   Running Covalent as the root user is **NOT** recommended as it can have several security implications for the remote server. If possible, users must configure a ``service`` account on the system with just the right amount of privileges to ensure proper Covalent functionality. The Covalent UI has an in-built terminal for convenience and it present a login shell as the Covalent user i.e. if the Covalent server is running as root, then users will have access to a root shell on the server. This can potentially have major security implications, thus proper UNIX security polices and best practices must be followed when self-hosting Covalent on remote servers
+
+
 ====================
 Deployment on AWS
 ====================
@@ -194,6 +201,7 @@ For more complicated deployments infrastructure as code tools such as `AWS Cloud
 ===============
 Best Practices
 ===============
+
 
 Self-hosting Covalent on remote machines is an easy way to run compute intensive workflows on machines other than a user's local workstation. Although the experience of creating and dispatching workflows is largely the same, there a few subtleties to consider.
 
@@ -249,7 +257,7 @@ Executors
 
 When Covalent is deployed remotely, it is important to understand how ``executors`` are handled by the server. For instance, in Covalent there are multiple ways users can specify an ``executor`` for an electron in their workflows and each of the cases has certain implications on how the executor information is parsed and handled by the remote server
 
-# Using the executor short name
+#. Using the executor short name
 
 .. code:: python
 
@@ -260,10 +268,14 @@ When Covalent is deployed remotely, it is important to understand how ``executor
     ...
     return result
 
-In this case, the server receives only the short name of the executor that ought to be used for executing the electron, thus the server will construct an instance of the specified executor using the configuration values specified in its config file i.e. **server side** during workflow execution just prior the the task being sent to the backend for execution. This is a very convenient way to choose executors in a workflow then the compute resources are being managed entirely by the remote server. Users however should be cautious of any changes being made to the **server side** configurations from the UI or directly over a SSH connection to the remote server.
+In this case, the server receives only the short name of the executor that ought to be used for executing the electron, thus the server will construct an instance of the specified executor using the configuration values specified in its config file i.e. **server side** during workflow execution just prior the the task being sent to the backend for execution. This is a very convenient way to choose executors in a workflow then the compute resources are being managed entirely by the remote server.
+
+.. warning::
+
+  Users however should be cautious of any changes being made to the **server side** configurations from the UI or directly over a SSH connection to the remote server.
 
 
-# Passing an instance of the executor class with fully specified input arguments
+#. Passing an instance of the executor class with fully specified input arguments
 
 .. code:: python
 
@@ -276,8 +288,15 @@ In this case, the server receives only the short name of the executor that ought
     ...
     return result
 
+When a fully specified instance of an executor is passed to the remote server then the client passed instance is pickled and transported to the remote server, which then uses that to execute the task on the user specified backend. In this case there is not ambiguity between the client and the server as to which values of the executor ought to be parsed from the **server side** configuration file since all the values are specified by the client at workflow dispatch time.
 
-# Passing an instance of an executor with partially specified input arguments
+
+.. warning::
+
+   When providing executor information this way, users must ensure that the remote Covalent server has access to the executor backend. For instance, if the user is looking to use the ``AWSBatchExecutor`` in their workflows, then the remote Covalent server must have the proper IAM permissions and policies configured so that it can execute that task on the user's behalf using the AWS Batch service.
+
+
+#. Passing an instance of an executor with partially specified input arguments
 
 .. code:: python
 
@@ -289,3 +308,25 @@ In this case, the server receives only the short name of the executor that ought
    def task(*args, **kwargs):
     ...
     return result
+
+In this case, all the parameter values that are omitted from the executor's constructor are inferred from the **client side** configuration/environment during workflow construction time. This occurs offline and the dispatcher/remote server is not interacted with until the workflow is submitted for execution.
+
+
+------------------
+Environment Sanity
+------------------
+
+Covalent by default starts a local Dask cluster that it uses to execute tasks when executor metadata. This cluster by default runs in the same environment as Covalent and shares all the Python packages. In this case, users must be cautious of using any ``DepsPip`` call in their workflows as the user requested ``pip`` packages will be installed in the same environment as Covalent. This can potentially lead to unwarranted package conflicts and de-stabilize the Covalent server.
+
+As a best practice, it is **recommended** that users start a separate Dask cluster that runs either on an entirely different machine or in a separate virtual environment on the same machine. This way users can ensure that Covalent's virtual environment will remain unmodified even if the workflows use frequent calls to ``DepsPip``.
+
+.. note::
+
+   When running a separate Dask cluster, users must make Covalent aware of the cluster's scheduler address and port by modifying the **server side** configuration file so that Covalent can submit tasks to it as they appear in the workflow
+
+
+----------------------------
+LocalExecutor & I/O
+----------------------------
+
+For performance and stability reasons, users must avoid using the ``LocalExecutor`` as much as possible and only use it for debugging purposes. Secondly, users must aim to avoid excessively large inputs and outputs for their electrons as they can consume a lot of system memory.
