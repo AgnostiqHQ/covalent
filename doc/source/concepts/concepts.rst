@@ -28,10 +28,10 @@ These components are briefly described below. A more detailed look at each compo
 To install Covalent and run a sample workflow, see the :doc:`Quick Start <../getting_started/quick_start/index>` or :doc:`First Experiment <../getting_started/first_experiment/index>` Guide.
 
 
-The Covalent API
+The Covalent SDK
 ----------------
 
-The Covalent API is a Python module containing a small collection of classes that implement server-based workflow management. The key elements are two decorators that wrap functions to create managed *tasks* and *workflows*.
+The Covalent API is a Python module containing a small collection of classes that implement server-based workflow management. The Covalent SDK is the subset of the API used to create and run workflows from Python code. The key elements are two decorators that wrap functions to create managed *tasks* and *workflows*.
 
 The task decorator is called an *electron*. The electron decorator simply turns the function into a dispatchable task.
 
@@ -45,11 +45,12 @@ The Covalent server is a lightweight service that runs on your local machine or 
 The Covalent GUI
 ----------------
 
-The Covalent user interface runs as a web server on the machine where the Covalent server is running. The GUI dashboard shows a list of dispatched workflows. From there, you can drill down to workflow details or a graphical view of the workflow. You can also view logs, settings, and result sets.
+The Covalent graphical user interface (GUI) is a browser-based dashboard displayed by the dispatch service. The GUI dashboard shows a list of dispatched workflows. From there, you can drill down to workflow details or a graphical view of the workflow. You can also view logs, settings, and result sets.
 
 .. toctree::
    :maxdepth: 1
+   :hidden:
 
-   API Concepts <./api_concepts/index>
-   Server Concepts <./server_concepts/index>
-   User Interface Concepts <./ui_concepts/concepts>
+   api_concepts
+   server_concepts
+   ui_concepts
