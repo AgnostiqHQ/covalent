@@ -187,3 +187,18 @@ The above CLI example illustrates one can query details about the AMI released f
 .. code:: bash
 
    aws ec2 run-instances --image-id <ami-id> --instance-type <instance-type> --subnet-id <subnet-id> -security-group-ids <security-group-id> --key-name <ec2-key-pair-name>
+
+For more complicated deployments infrastructure as code tools such as `AWS CloudFormation <https://aws.amazon.com/cloudformation/>`_ or `Terraform <https://www.terraform.io/>`_ can be used.
+
+
+===============
+Best Practices
+===============
+
+Self-hosting Covalent on remote machines is an easy way to run compute intensive workflows on machines other than a user's local workstation. Although the experience of creating and dispatching workflows is largely the same, there a few subtleties to consider.
+
+
+Configuration Changes
+~~~~~~~~~~~~~~~~~~~~~
+
+When Covalent is deployed on remote machines, users need to keep in mind the server side configuration with which Covalent was deployed.
