@@ -42,7 +42,7 @@ The following table lists out all the supported environment variables that users
      - Description
    * - COVALENT_ROOT
      - Root directory for the ``covalent`` process
-   * - COVALENT_CONFIG
+   * - COVALENT_CONFIG_DIR
      - Directory that ``covalent`` will search for its configuration file, ``covalent.conf``
    * - COVALENT_PLUGINS_DIR
      - Path where ``covalent`` will look to load any executor plugins installed
@@ -201,4 +201,42 @@ Self-hosting Covalent on remote machines is an easy way to run compute intensive
 Configuration Changes
 ~~~~~~~~~~~~~~~~~~~~~
 
-When Covalent is deployed on remote machines, users need to keep in mind the server side configuration with which Covalent was deployed.
+When Covalent is deployed on remote machines Covalent parses all its configuration values from the configuration file it was deployed with i.e. **server side config**. The client side/local configuration file can be used by the client to set the dispatcher address and port information so that workflows can be dispatched to the remote server.
+
+.. note::
+
+   It is important to realize that when Covalent is hosted remotely there is no need for the Covalent server to be running on the user's local machine. Setting the server address and port in the user's local i.e. **client side** configuration file is enough for dispatching workflows
+
+On the client side, when Covalent is imported it renders a `config` file based on its default values. Users can edit the ``dispatcher`` section of the client side configuration with the new values for the ``address`` and ``port``. These values default to ``localhost`` and ``48008`` on client side.
+
+.. code:: bash
+
+   [dispatcher]
+   address = <remote covalent address/hostname>
+   port = <remote covalent port>
+   ...
+
+The dispatcher ``address`` and ``port`` can also via the ``get_config`` method before dispatching any workflows
+
+.. code:: python
+
+   import covalent as ct
+
+   ct.set_config({"dispatcher.address": "<dispatcher address>"})
+   ct.set_config({"dispatcher.port": "<dispatcher port>"})
+
+   ...
+
+   dispatch_id = ct.dispatch(my_workflow)(*args, **kwargs)
+
+
+Lastly, the dispatcher address can also be specified directly in the `ct.dispatch` and `ct.get_result` methods
+
+.. code:: python
+
+   import covalent as ct
+
+   ...
+
+   dispatch_id = ct.dispatch(workflow, dispatcher_addr="<addr>:<port>")(*args, **kwargs)
+   result = ct.get_result(dispatch_id, dispatcher_addr="<addr>:<port>")
