@@ -260,7 +260,7 @@ When Covalent is deployed remotely, it is important to understand how ``executor
     ...
     return result
 
-In this case, the server receives only the short name of the executor that ought to be used for executing the electron, thus the server will construct an instance of the specified executor using the configuration values specified in its config file i.e. **server side** and use that to execute the electron.
+In this case, the server receives only the short name of the executor that ought to be used for executing the electron, thus the server will construct an instance of the specified executor using the configuration values specified in its config file i.e. **server side** during workflow execution just prior the the task being sent to the backend for execution. This is a very convenient way to choose executors in a workflow then the compute resources are being managed entirely by the remote server. Users however should be cautious of any changes being made to the **server side** configurations from the UI or directly over a SSH connection to the remote server.
 
 
 # Passing an instance of the executor class with fully specified input arguments
