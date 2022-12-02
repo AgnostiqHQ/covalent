@@ -5,9 +5,9 @@
 The Covalent GUI
 ################
 
-The Covalent graphical user interface (GUI) is a browser-based dashboard displayed by the dispatch service. The GUI dashboard shows a list of dispatched workflows. From there, you can drill down to workflow details or a graphical view of the workflow. You can also view logs, settings, and result sets.
+The Covalent UI is a graphical tool that combines with the Covalent database to store, monitor, visualize, and compare dispatched workflows. Aside from the ability to delete completed dispatches, the UI does not affect the workflows in any way. It is described here as a separate component of the Covalent system because its power to store and visualize the dispatched workflows makes it essential to using Covalent.
 
-The Covalent GUI is a convenient way to monitor and visualize dispatched workflows. Its functionality is documented in :doc:`The User Interface<../webapp_ui/index>`. This page discusses some of the GUI's features as they relate to the concepts in :doc:`The Covalent SDK <api_concepts>` and :doc:`Covalent Services <server_concepts>`.
+The UI's functionality is documented in :doc:`The User Interface<../webapp_ui/index>`. This page discusses some of the GUI's features as they relate to the concepts in :doc:`The Covalent SDK <api_concepts>` and :doc:`Covalent Services <server_concepts>`.
 
 .. _Dispatches:
 
@@ -18,39 +18,71 @@ The UI dashboard displays a list of all dispatches that have been created by the
 
 .. image:: ./../_static/ui_list_incomplete_and_error.png
 
-Note that the second workflow in the screen above failed (*Status* shows 4 of 5 tasks successful completed), and that the first workflow is still in progress with 11 seconds of runtime and two tasks completed.
+Note that the second workflow in the screen above failed (*Status* shows 4 of 5 tasks successfully completed), and that the first workflow is still in progress with 11 seconds of runtime and two tasks completed.
 
-.. note:: The node count includes parameters, which are always counted as successful. A more useful metric might be to subtract the two values to determine how many tasks failed.
+Dispatch Status
+---------------
 
+The status of each dispatch on the Dashboard is one of the following. Statuses are color-coded in the dispatch list:
+
+Pending (orange)
+    Not yet running.
+* Running (white)
+    Started, with one or more tasks executing.
+* Failed (red)
+    Stopped. Did not complete successfully because one or more tasks threw fatal errors.
+* Completed (green)
+    All tasks completed. Result available.
 
 Transport Graph
 ===============
 
-You can click on a dispatch ID to view the :ref:`transport graph <Transport Graph>`. The nodes in the graph shows the executor, name, and ID number of each task. The graph's edges are labeled with the data dependencies betwen nodes. Below is a transport graph for the :ref:`machine-learning workflow<ml example>` example.
+.. image:: ../_static/tgraph_icons.png
+    :align: left
+
+Click on a dispatch ID to view the :ref:`transport graph <Transport Graph>`. The nodes in the graph shows the executor, name, and ID number of each task. The graph's edges are labeled with the data dependencies betwen nodes.
+
+.. note:: In some default display configurations, edges can run behind other nodes, labels can be obscured, and other display anomalies can occur. The icons on the left side of the transport graph (shown here on the left) contain a number of tools to manipulate the display for clarity.
+
+Below is a transport graph for the :ref:`machine-learning workflow<ml example>` example.
 
 .. image:: ./images/transport_graph.png
     :align: center
-    :scale: 45 %
+    :scale: 30 %
 
+.. note:: The node count includes parameters, which (except in rare cases) are counted as successful. To explicitly view parameters in the transport graph, click the *P* icon in the transport graph icon array.
 
+Transport Graph Nodes
+---------------------
 
-.. _Workflow Status Polling:
+.. image:: ../_static/electron_node_callout.png
+    :align: right
 
-Workflow Status Polling
-=======================
+Each electron node in the transport graph shows the following by default:
 
-Once a workflow has been dispatched, users will want to track the progress of the tasks. This can be viewed using the Covalent UI. The user can view the dependencies between the various electrons.
-
-.. _Status:
-
+Executor
+    The type of executor to which the electron is assigned.
 Status
-======
+    An icon indicating the real-time status of the electron. Possible statuses are the same as for dispatches: Pending, Running, Failed, or Completed.
+Name
+    The name of the function as defined in the Python code.
+ID
+    A unique (within the dispatch) integer value that can be used to fetch the electron in the SDK.
 
-The status of each electron execution can be tracked using the Covalent UI.
+The Node Dialog
+---------------
+.. image:: ../_static/electron_detail_dialog.png
+    :align: right
 
-.. image:: ./images/status_check.png
-    :align: center
-    :scale: 40 %
+Click on the node to view an informational dialog, as shown here. In addition to what is displayed on the node, the dialog shows this information about the task:
 
+Started - Ended
+    The local times at which the task began and finished.
+Runtime
+    The approximate clock time (not processor time) that the task ran.
+Input
+    The input arguments to the task function.
+Result
+    The value or object returned by the task function.
 
-The user can view the dependencies among the various electrons in addition to the execution status (running, completed, not started, failed, or cancelled). Additional information on how long each task has been running for, or the total execution time is also shown in the Covalent UI.
+The text box at the bottom of the dialog displays the Python definition the task.

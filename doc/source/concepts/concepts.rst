@@ -16,7 +16,7 @@ Covalent Components
 
 Covalent consists of three component systems:
 
-* A Python module containing an API (or SKD) that you use to build manageable workflows out of new or existing Python functions.
+* A Python module containing an SDK that you use to build manageable workflows out of new or existing Python functions.
 * A set of services that run locally or on a server to dispatch and execute workflow tasks.
 * A browser-based UI from which to manage workflows and view results.
 
@@ -40,12 +40,12 @@ The workflow decorator is called a *lattice*. The lattice decorator turns a func
 Covalent Services
 -----------------
 
-The Covalent server is a lightweight service that runs on your local machine or on a server. A dispatcher analyzes workflows (lattices) and hands its component functions (electrons) off to executors. Each executor is an adaptor to a backend hardware resource. Covalent has a growing list of turn-key executors for common compute backends. If no executor exists yet for your compute platform, Covalent supports writing your own.
+The Covalent server is a lightweight service that runs on your local machine or on a server. A dispatcher analyzes workflows (lattices) and hands its component functions (electrons) off to executors. Each executor is an adaptor to a backend hardware resource. Covalent has a growing list of turn-key executors for common compute backends. If no executor exists yet for your compute platform, Covalent provides base classes for writing your own.
 
 The Covalent GUI
 ----------------
 
-The Covalent graphical user interface (GUI) is a browser-based dashboard displayed by the dispatch service. The GUI dashboard shows a list of dispatched workflows. From there, you can drill down to workflow details or a graphical view of the workflow. You can also view logs, settings, and result sets.
+The Covalent graphical user interface (GUI) is a browser-based dashboard displayed by the dispatch service. Covalent keeps a database of dispatched workflows, and the  GUI dashboard lists these dispatched workflows. From this list, you can select a single dispatched workflow and examine a graph and runtime details. You can also view logs, settings, and result sets.
 
 .. toctree::
    :maxdepth: 1

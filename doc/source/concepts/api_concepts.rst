@@ -2,7 +2,7 @@
 The Covalent SDK
 #################
 
-The Covalent SDK exists to enable compute-intensive workloads, such as ML training and testing, to run as server-managed workflows. To accomplish this, the workload is broken down into tasks that are arranged in a workflow. This page explains how this is done.
+The Covalent SDK exists to enable compute-intensive workloads, such as ML training and testing, to run as server-managed workflows. To accomplish this, the workload is broken down into tasks that are arranged in a workflow. The tasks and the workflow are Python functions decorated with Covalent's *electron* and *lattice* interfaces, respectively.
 
 .. _Electron:
 
@@ -13,20 +13,20 @@ The simplest unit of computational work in Covalent is a task, called an *electr
 
 In discussing object-oriented code, it's important to distinguish between classes and objects. Here are notational conventions used in this documentation:
 
-Electron (code font, capital "E")
+:code:`Electron` (:code:`code font`, capital "E")
     The :doc:`Covalent API class <../api/electrons>` representing a computational task that can be run by a Covalent executor.
 
 electron (lower-case "e")
     An object that is an instantiation of the :code:`Electron` class.
 
 :code:`@covalent.electron`
-    The decorator used to (1) turn a function into an electron; (2) wrap a function in an electron, and (3) instantiate an instance of Electron containing the decorated function (all three descriptions are equivalent).
+    The decorator used to (1) turn a function into an electron; (2) wrap a function in an electron, and (3) instantiate an instance of :code:`Electron` containing the decorated function (all three descriptions are equivalent).
 
-The :code:`@covalent.electron` makes the function runnable in a Covalent executor. It does not change the function in any other way.
+The :code:`@covalent.electron` decorator makes the function runnable in a Covalent executor. It does not change the function in any other way.
 
-The function decorated with :code:`@covalent.electron` can be any Python function; however, it should be thought of, and operate as, a single task. Best practice is to write an electron with a single, well defined purpose, for example performing a single tranformation of some input or writing or reading a record to a file or database.
+The function decorated with :code:`@covalent.electron` can be any Python function; however, it should be thought of, and operate as, a single task. Best practice is to write an electron with a single, well defined purpose; for example, performing a single tranformation of some input or writing or reading a record to a file or database.
 
-For example, here is a simple electron that adds two numbers:
+Here is a simple electron that adds two numbers:
 
 .. code-block:: python
     :linenos:
@@ -49,26 +49,26 @@ An electron is a building block, from which you compose a :ref:`lattice<lattice>
 Lattice
 =======
 
-A runnable workflow in Covalent is called a *lattice*, created with the :code:`@covalent.lattice` decorator. Similarly to electrons, here the notational conventions:
+A runnable workflow in Covalent is called a *lattice*, created with the :code:`@covalent.lattice` decorator. Similarly to electrons, here are the notational conventions:
 
-Lattice (code font, capital "L")
+:code:`Lattice` (:code:`code font`, capital "L")
     The :doc:`Covalent API class <../api/lattice>` representing a workflow that can be run by a Covalent dispatcher.
 
 lattice (lower-case "l")
     An obect that is an instantiation of the :code:`Lattice` class.
 
 :code:`@covalent.lattice`
-    The decorator used to create a lattice by wrapping a function in the Lattice class. (The synonymous descriptions given for electron hold here as well.)
+    The decorator used to create a lattice by wrapping a function in the :code:`Lattice` class. (The three synonymous descriptions given for electron hold here as well.)
 
 The function decorated with :code:`@covalent.lattice` must contain one or more electrons. The lattice is a *workflow*, a sequence of operations on one or more datasets instantiated in Python code.
 
-For Covalent to work properly, the lattice must operate on data only by calling electrons. By "work properly," we mean dispatch all tasks to executors. The flexibility and power of Covalent comes from the ability to assign and reassign tasks (electrons) to executors, which has two main advantages, *hardware independence* and *parallelization*.
+For Covalent to work properly, the lattice must operate on data only by calling electrons. By "work properly," we mean "dispatch all tasks to executors." The flexibility and power of Covalent comes from the ability to assign and reassign tasks (electrons) to executors, which has two main advantages, *hardware independence* and *parallelization*.
 
 Hardware indepdendence
     The task's code is decoupled from the details of the hardware it is run on.
 
 Parallelization
-    Independent tasks can be run in parallel on the same or different backends. Here, *indepedent* means that for any two tasks, their inputs are unaffected by each others' execution outcomes (that is, their outputs or side effects). The Covalent dispatcher can run two independent electrons in parallel. For example, in the workflow structure shown below, electron 2 and electron 3 are executed in parallel.
+    Independent tasks can be run in parallel on the same or different backends. Here, *indepedent* means that for any two tasks, their inputs are unaffected by each others' execution outcomes (that is, their outputs or side effects). The Covalent dispatcher can run independent electrons in parallel. For example, in the workflow structure shown below, electron 2 and electron 3 are executed in parallel.
 
 .. image:: ./images/parallel_lattice.png
    :width: 400
@@ -86,6 +86,8 @@ The example below illustrates this simple but powerful paradigm. The tasks are c
 
 .. code-block:: python
     :linenos:
+
+    # ML example: electrons and lattice
 
     from numpy.random import permutation
     from sklearn import svm, datasets
@@ -118,7 +120,7 @@ The example below illustrates this simple but powerful paradigm. The tasks are c
         score = score_svm(data=data, clf=clf)
         return score
 
-Notice that all the data manipulation in the lattice is done by electrons.
+Notice that all the data manipulation in the lattice is done by electrons. The :doc:`How-to Guide <../how-to/index>` contains articles on containing data manipulation within electrons.
 
 
 .. _Sublattice:
@@ -126,13 +128,13 @@ Notice that all the data manipulation in the lattice is done by electrons.
 Sublattice
 ==========
 
-It is common practice to perform a nested set of experiments. For example, you design an experiment from a set of tasks defined as electrons. You then construct the experiment as a lattice, then dispatch the experiment using some test parameters.
+It is common practice to perform a nested set of experiments. For example, you design an experiment from a set of tasks defined as electrons. You construct the experiment as a lattice, then dispatch the experiment using some test parameters.
 
 Now assume that you want to run a series of these experiments in parallel across a spectrum of input parameters. Covalent enables exactly this technique through the use of *sublattices*.
 
 A sublattice is a lattice transformed into an electron by applying an electron decorator after applying the lattice decorator.
 
-For example, the lattice :code:`experiment` defined below performs some experiment for a given set of parameters. To carry out a series of experiments for a range of parameters, you just wrap the :code:`experiment` lattice with the :code:`@electron` decorator to construct the :code:`run_experiment` sublattice. (The example below explicitly wraps :code:`experiment` in :code:`electron` rather than using decorator notation. The result is the same.)
+For example, the lattice :code:`experiment` defined below performs some experiment for a given set of parameters. To carry out a series of experiments for a range of parameters, you wrap the :code:`experiment` lattice with the :code:`@electron` decorator to construct the :code:`run_experiment` sublattice. (The example below explicitly calls :code:`electron` to wrap :code:`experiment` rather than using "@" notation. The result is the same.)
 
 When :code:`run_experiment_suite` is dispatched for execution, it runs the experiment with an array of different input parameter sets. Since this arrangement meets the criteria for independence of the sublattices' inputs and outputs, Covalent executes the sublattices in parallel!
 
@@ -169,3 +171,16 @@ Conceptually, as shown in the figure below, executing a sublattice adds the cons
    :align: center
 
 .. note:: Don't confuse :code:`ct.electron(lattice)`, which creates a sublattice, with :code:`ct.lattice(electron)`, which is a workflow consisting of a single task.
+
+.. _Dispatch:
+
+Dispatch
+========
+
+You dispatch a workflow in your Python code using the Covalent :code:`dispatch()` function. For example, to dispatch the :code:`run_experiment` lattice in the :ref:`ML example <ml example>`:
+
+.. code-block:: python
+    :linenos:
+
+    # Send the run_experiment() lattice to the dispatch server
+    dispatch_id = ct.dispatch(run_experiment)(C=1.0, gamma=0.7)

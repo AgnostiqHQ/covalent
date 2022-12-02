@@ -2,18 +2,18 @@
 Covalent Services
 #################
 
-The Covalent server is a service that runs on your local machine or on a server. The service contains a *dispatcher* that analyzes workflows (lattices) and hands its component functions (electrons) off to executors. Each executor is an adaptor to a backend hardware resource. Covalent has a growing list of turn-key executors for common compute backends. If no executor exists yet for your compute platform, Covalent supports writing your own.
+The Covalent server runs as a service on your local machine or on a server. The service contains a *dispatcher* that analyzes workflows (lattices) and hands its component functions (electrons) off to *executors*. Each executor is an adaptor to a backend hardware resource. Covalent has a growing list of turn-key executors for common compute backends. If no executor exists yet for your compute platform, Covalent provides base classes for writing your own.
 
-The examples that follow assume that the Covalent server is running lcoally. You start and manage the local server using the :ref:`Covalent command-line interface (CLI)<dispatcher_api>` tool. (See also :doc:`How-to Guide <../how_to/execution/covalent_cli>`.)
+The examples that follow assume that the Covalent server is running locally. You start and manage the local server using the :ref:`Covalent command-line interface (CLI)<dispatcher_api>` tool. (See also :doc:`How-to Guide <../how_to/execution/covalent_cli>`.)
 
 .. _Transport Graph:
 
 Transport Graph
 ===============
 
-Before executing the workflow, the dispatcher constructs a dependency graph of the tasks, called the *transport graph*. Transport graphs are *directed acyclic graphs*, which are commonly used as a model for workflows. In this model, the nodes of the graph represent tasks and the edges represent dependencies.
+Before executing the workflow, the dispatcher constructs a dependency graph of the tasks, called the *transport graph*. Transport graphs are *directed acyclic graphs*, which are a commonly used model for workflows. In this model, the nodes of the graph represent tasks and the edges represent dependencies.
 
-The dispatcher constructs the transport graph by sequentially inspecting the electrons used within the lattice. As each electron is examined, a corresponding node and its input-output relations are added to the transport graph. You can view the transport graph in the GUI.
+The dispatcher constructs the transport graph by sequentially inspecting the electrons within the lattice. As each electron is examined, a corresponding node and its input-output relations are added to the transport graph. You can view the transport graph in the GUI.
 
 
 .. _Workflow Dispatch:
@@ -21,14 +21,13 @@ The dispatcher constructs the transport graph by sequentially inspecting the ele
 Workflow Dispatch
 =================
 
-You dispatch a workflow in your Python code using the Covalent :code:`dispatch()` function, as shown in this example:
+Recall that you dispatch a workflow in your Python code using the Covalent :code:`dispatch()` function::
 
 .. code-block:: python
     :linenos:
 
-    dispatch_id = covalent.dispatch(run_experiment)(C=1.0, gamma=0.7)
-
-In the example, the :code:`dispatch()` function sends the lattice named :code:`run_experiment` to the dispatcher.
+    # Send the run_experiment() lattice to the dispatch server
+    dispatch_id = ct.dispatch(run_experiment)(C=1.0, gamma=0.7)
 
 The dispatcher ingests the workflow and generates a dispatch ID, then tags all information about the dispatched workflow with the dispatch ID. This information includes:
 * The lattice definition
@@ -47,7 +46,7 @@ An executor is responsible for taking a task – an electron – and executing i
 
 .. note:: It would be reasonable to expect that the local executor is the default, but it is not. Instead, the local dispatch server starts a local Dask cluster and, for any task not explicitly assigned an executor, queues the task to the Dask cluster. This is usually more efficient than native local execution for parallel tasks.
 
-For example, consider one of the electrons defined in the :doc:`API Concepts <api_concepts>` Lattice description:
+For example, consider one of the electrons defined in the :ref:`ML example <ml example>`:
 
 .. code-block:: python
 
@@ -58,7 +57,7 @@ For example, consider one of the electrons defined in the :doc:`API Concepts <ap
 
 The definition uses the electron decorator without an executor parameter. By default, the dispatcher uses the Dask executor for that electron.
 
-.. note:: Covalent has executors for many backend platforms, but if you need an executor that does not yet exist, you can define a custom executors for any remote backend system. See the :doc:`API Reference <../api/executors/index>` for a list of executors.
+.. note:: Covalent has executors for many backend platforms, but if you need an executor that does not yet exist, you can define a custom executors for any remote backend system. See the :doc:`Executors <../api/executors/index>` in the :doc:`API Reference <../api/index>` for a list of executors.
 
 Covalent enables you to break down your workflow by compute requirements. You can:
 * Use a different executors for every electron
@@ -80,32 +79,39 @@ For example, you might need to compute one task on a quantum platform and a diff
         ...
         return val
 
+
 .. _Results:
 
 Results
 =======
 
+Covalent stores the result of every lattice computation in a :doc:`Result <../api/results>` object.
+
+The :code:`Result` object contains not just the computed return value of the lattice function, but dispatch-related data including task and workflow times and durations, return statuses, and references to the lattice and parameters that generated the dispatch.
+
 
 .. _Workflow Result Collection:
 
 Workflow Result Collection
-==========================
+--------------------------
 
-Regardless of the eventual workflow outcome, a :code:`Result` object is created and associated with the :ref:`dispatch ID <Workflow Dispatch>`
+Regardless of the eventual workflow outcome, a :code:`Result` object is created and associated with the :ref:`dispatch ID <Workflow Dispatch>` upon dispatch and is updated as tasks complete.
+
+The Covalent UI provides a list of dispatched workflows. As each workflow task is terminated, either due to an error, cancellation, or successful completion, the :ref:`result<Results>` object is updated by the :ref:`result manager<Result manager>`.
 
 
-A list of dispatch IDs corresponding to previously submitted workflows can be easily viewed in the Covalent UI. As each task is terminated, either due to an error, cancellation, or successful completion, the :ref:`result<Results>` object is updated by the :ref:`result manager<Result manager>`.
-
-.. _Results:
+.. _Result manager:
 
 Result Manager
 --------------
 
-The Covalent result manager is responsible for storing, updating, and retrieving the workflow result object. The philosophy behind the result manager is to separate the experiment outcomes from the workflow that was initially defined in a Jupyter notebook or Python script. This decoupling ensures that once the workflow has been dispatched, users can easily track the progress in the Covalent UI even without the original source code. This has the added benefit that experiment outcomes are safely stored regardless of any mishaps. The result object can be retrieved in the following way.
+The Covalent server contains a Result Manager responsible for storing, updating, and retrieving workflow :code:`Result` objects. The Result Manager sits between the dispatched :code:`@lattice` and the :code:`Result` object, storing the experiment result and decoupling it from the workflow defined in a Jupyter notebook or Python script.
+
+This decoupling ensures that once the workflow has been dispatched, updated outcomes are viewable in the Covalent UI even without the original source code. Partial outcomes are recorded at every task completion and are available thereafter, even in the event of a hardware failure or other mishap.
+
+You can retrieve the result object even if the computations have not completed by setting the :code:`wait` parameter to :code:`False` as shown here:
 
 .. code-block:: python
 
     dispatch_id = ct.dispatch(workflow)(**params)
     result = ct.get_result(dispatch_id=dispatch_id, wait=False)
-
-The result manager allows us to retrieve the result object even if the computations have not completed by setting the :code:`wait` parameter to :code:`False` as shown above.
