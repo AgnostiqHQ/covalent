@@ -163,7 +163,11 @@ The ``covalent.service`` can also be enabled to start on boot via systemd as fol
    systemctl enable covalent.service
 
 
-Once the service is running properly, users can connect to the Covalent's UI from their browser by via their remote machines hostname and the port they configured Covalent to run on via the ``COVALENT_SVC_PORT`` environment variable. By default, Covalent start on port ``48008``.
+Once the service is running properly, users can connect to the Covalent's UI from their browser by via their remote machines hostname and the port they configured Covalent to run on via the ``COVALENT_SVC_PORT`` environment variable. By default, Covalent start on port ``48008``. The server can be stopped using systemd as follows
+
+.. code:: bash
+
+   systemctl stop covalent.service
 
 
 ====================
