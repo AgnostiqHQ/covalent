@@ -33,9 +33,11 @@ Welcome to Covalent
    :align: right
    :width: 60%
 
-Welcome to the Covalent Documentation. Here you can find out how to install and get started using the Covalent workflow manager.
+Covalent is a Pythonic workflow tool for computational scientists, AI/ML software engineers, and anyone who needs to run experiments on limited or expensive computing resources including quantum computers, HPC clusters, GPU arrays, and cloud services.
 
-For a description of what challenges Covalent was designed to solve, see :doc:`Introduction to Covalent <./about/intro>`. For a more in-depth discussion, see `What is Covalent? <https://www.covalent.xyz/what-is-covalent/>`_.
+Covalent enables a researcher to run computation tasks on an advanced hardware platform – such as a quantum computer or serverless HPC cluster – using a single line of code.
+
+For a description of what challenges Covalent was designed to solve, see :doc:`Why Covalent? <./about/why_covalent>`. For a more in-depth discussion, see `What is Covalent? <https://www.covalent.xyz/what-is-covalent/>`_.
 
 To learn more about Covalent in the context of modern high-performance computing, read `Covalent in the Era of Cloud-HPC <https://www.covalent.xyz/navigating-the-modern-hpc-landscape/>`_.
 
@@ -133,6 +135,12 @@ Join the Community
 
 Covalent is a quickly growing and vibrant community of enthusiasts, researchers, scientists, and engineers. Start contributing now by navigating to Covalent's `GitHub <https://github.com/AgnostiqHQ/covalent>`_ homepage or learn more about how Covalent can be used in your business on Covalent's `product <https://agnostiq.ai/covalent>`_ page. You can also engage with other users in the GitHub `discussions <https://github.com/AgnostiqHQ/covalent/discussions>`_ page.
 
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   Why Covalent? <about/why_covalent>
 
 .. toctree::
    :maxdepth: 2
