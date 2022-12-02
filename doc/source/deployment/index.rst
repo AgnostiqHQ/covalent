@@ -198,8 +198,9 @@ Best Practices
 Self-hosting Covalent on remote machines is an easy way to run compute intensive workflows on machines other than a user's local workstation. Although the experience of creating and dispatching workflows is largely the same, there a few subtleties to consider.
 
 
-Configuration Changes
-~~~~~~~~~~~~~~~~~~~~~
+---------------------------------
+Client/Server Side configuration
+---------------------------------
 
 When Covalent is deployed on remote machines Covalent parses all its configuration values from the configuration file it was deployed with i.e. **server side config**. The client side/local configuration file can be used by the client to set the dispatcher address and port information so that workflows can be dispatched to the remote server.
 
@@ -240,3 +241,51 @@ Lastly, the dispatcher address can also be specified directly in the `ct.dispatc
 
    dispatch_id = ct.dispatch(workflow, dispatcher_addr="<addr>:<port>")(*args, **kwargs)
    result = ct.get_result(dispatch_id, dispatcher_addr="<addr>:<port>")
+
+
+------------------
+Executors
+------------------
+
+When Covalent is deployed remotely, it is important to understand how ``executors`` are handled by the server. For instance, in Covalent there are multiple ways users can specify an ``executor`` for an electron in their workflows and each of the cases has certain implications on how the executor information is parsed and handled by the remote server
+
+# Using the executor short name
+
+.. code:: python
+
+   import covalent as ct
+
+   @ct.electron(executor="awsbatch")
+   def task(*args, **kwargs):
+    ...
+    return result
+
+In this case, the server receives only the short name of the executor that ought to be used for executing the electron, thus the server will construct an instance of the specified executor using the configuration values specified in its config file i.e. **server side** and use that to execute the electron.
+
+
+# Passing an instance of the executor class with fully specified input arguments
+
+.. code:: python
+
+   import covalent as ct
+
+   awslambda = ct.executor.AWSLambdaExecutor(function_name="my-lambda-function", s3_bucket_name="my-s3-bucket-name")
+
+   @ct.electron(executor=awslambda)
+   def task(*args, **kwargs):
+    ...
+    return result
+
+
+# Passing an instance of an executor with partially specified input arguments
+
+.. code:: python
+
+   import covalent as ct
+
+   awsbatch = ct.executor.AWSBatchExecutor(vcpus=2)
+
+   @ct.electron(executor=awsbatch)
+   def task(*args, **kwargs):
+    ...
+    return result
