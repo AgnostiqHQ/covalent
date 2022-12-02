@@ -170,4 +170,16 @@ Once the service is running properly, users can connect to the Covalent's UI fro
 Deployment on AWS
 ====================
 
-Users can deploy Covalent in their own AWS accounts with any ``x86`` based EC2 instance of their choice. This can allow users to vertically scale up their workloads as they can choose the compute instance type that is optimal for their use case. Similar to the docker image, we also regularly release Amazon Virtual Machine images (AMIs) with the latest version of Covalent pre-configured to run on instance boot. Users can query the Amazon Marketplace for the latest Covalent machine image provided by `Agnostiq` and use that for launching an EC2 instance. Steps to launch in EC2 instance from the AWS console can be found `here <https://docs.aws.amazon.com/efs/latest/ug/gs-step-one-create-ec2-resources.html>`_. Users can also use any infrastructure provisioning tool such as AWS CloudFormation or Terraform  to provision a Covalent server in their AWS accounts and setup the necessary policies as per their security requirements.
+Users can deploy Covalent in their own AWS accounts with any ``x86`` based EC2 instance of their choice. Deploying on AWS cloud will allow users to vertically/horizontally scale up their deployments depending on their compute needs.
+
+Similar to the docker image, with each stable release, a ready to use Amazon Machine Image (AMI) is also released that is fully configured to start a Covalent server on instance boot. Users can query AWS Marketplace for the AMI ID directly from the console or via the ``aws cli`` command line tool.
+
+.. code:: bash
+
+   aws ec2 describe-images --owners Agnostiq --filter "Name=tag:Version,Values=0.202.0"
+
+The above CLI example illustrates one can query details about the AMI released for version ``covalent==0.202.0``. Once the AMI id is retrieved, users can launch on EC2 instance in their account as follows
+
+.. code:: bash
+
+   aws ec2 run-instances --image-id <ami-id> --instance-type <instance-type> --subnet-id <subnet-id> -security-group-ids <security-group-id> --key-name <ec2-key-pair-name>
