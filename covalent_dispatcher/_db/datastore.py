@@ -30,7 +30,7 @@ from alembic.migration import MigrationContext
 from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
-from sqlalchemy.utils import create_database, database_exists
+from sqlalchemy_utils import create_database, database_exists
 
 from covalent._shared_files.config import get_config
 
