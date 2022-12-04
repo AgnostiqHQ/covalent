@@ -412,6 +412,8 @@ def write_lattice_error(dispatch_id: str, error: str):
 def store_file(storage_path: str, filename: str, data: Any = None) -> None:
     """This function writes data corresponding to the filepaths in the DB."""
 
+    app_log.debug(f"STORAGE PATH IS: {storage_path}")
+
     if filename.endswith(".pkl"):
         with open(Path(storage_path) / filename, "wb") as f:
             cloudpickle.dump(data, f)
