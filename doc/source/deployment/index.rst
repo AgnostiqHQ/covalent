@@ -54,6 +54,8 @@ The following table lists out all the supported environment variables that users
      - Directory to be used by ``covalent`` for storing temporary objects during runtime
    * - COVALENT_DATA_DIR
      - Path to ``covalent``'s database directory
+   * - COVALENT_RESULTS_DIR
+     - Directory on the filesystem to store the intermediate result objects
    * - COVALENT_SVC_PORT
      - TCP port on which ``covalent`` will start running
    * - COVALENT_SERVER_IFACE_ANY
