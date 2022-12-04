@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -84,7 +85,8 @@ def _lattice_data(result: Result, electron_id: int = None):
         workflow_func_string = None
 
     # Store all lattice info that belongs in filenames in the results directory
-    data_storage_path = Path(result.results_dir) / result.dispatch_id
+    # data_storage_path = Path(result.results_dir) / result.dispatch_id
+    data_storage_path = Path(os.environ.get("COVALENT_RESULTS_DIR")) / result.dispatch_id
     for filename, data in [
         (LATTICE_FUNCTION_FILENAME, result.lattice.workflow_function),
         (LATTICE_FUNCTION_STRING_FILENAME, workflow_func_string),
