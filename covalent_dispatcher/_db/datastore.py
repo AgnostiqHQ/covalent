@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from contextlib import contextmanager
-from os import path
+from os import environ, path
 from pathlib import Path
 from typing import BinaryIO, Generator, Optional
 
@@ -30,6 +30,7 @@ from alembic.migration import MigrationContext
 from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.utils import create_database, database_exists
 
 from covalent._shared_files.config import get_config
 
@@ -49,6 +50,8 @@ class DataStore:
             self.db_URL = "sqlite+pysqlite:///" + get_config("dispatcher.db_path")
 
         self.engine = create_engine(self.db_URL, **kwargs)
+        if not database_exists(self.engine.url):
+            create_database(self.engine.url)
         self.Session = sessionmaker(self.engine)
 
         # flag should only be used in pytest - tables should be generated using migrations
@@ -57,7 +60,7 @@ class DataStore:
 
     @staticmethod
     def factory():
-        return DataStore(echo=False)
+        return DataStore(db_URL=environ.get("COVALENT_DATABASE_URL"), echo=False)
 
     def get_alembic_config(self, logging_enabled: bool = True):
         alembic_ini_path = Path(path.join(__file__, "./../../../covalent_migrations/alembic.ini"))
