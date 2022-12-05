@@ -151,7 +151,6 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    Deployment <deployment/index>
    Credentials <credentials>
    API Documentation <api/index>
-   Deployment <deployment/index>
 
 
 .. toctree::
