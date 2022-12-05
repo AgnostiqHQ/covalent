@@ -233,6 +233,8 @@ In order to use this plugin, the following Azure resources need to be provisione
      - :code:`pool_id`
      - A `pool <https://docs.microsoft.com/en-us/azure/batch/batch-pool-vm-sizes>`_ is a collection of compute nodes that are managed together. The pool ID is the name of the pool that will be used to execute the jobs.
 
+More information on authentication with service principals and necessary permissions for this executor can be found `here <https://learn.microsoft.com/en-us/azure/batch/batch-aad-auth#use-a-service-principal>`_.
+
 ==================
 4. Troubleshooting
 ==================
