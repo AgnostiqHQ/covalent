@@ -36,7 +36,7 @@ class BasicUser(HttpUser):
     to the Covalent server continuously with a duration anywhere between [0.5, 5] seconds
     """
 
-    host = "http://localhost:48008"
+    host = "http://covalent.balavk.net"
     wait_time = between(0.5, 5)
 
     @staticmethod

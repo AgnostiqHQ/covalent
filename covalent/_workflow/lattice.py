@@ -314,7 +314,8 @@ def lattice(
     *,
     backend: Optional[str] = None,
     executor: Optional[Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]] = None,
-    results_dir: Optional[str] = get_config("dispatcher.results_dir"),
+    results_dir: Optional[str] = os.environ.get("COVALENT_DATA_DIR")
+    or get_config("dispatcher.results_dir"),
     workflow_executor: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
     ] = None,
