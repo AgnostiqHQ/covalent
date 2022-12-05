@@ -1,7 +1,7 @@
-===================
+===========
 Pagination
-===================
-Pagination divides dispatches into discrete pages with up to 10 records per page.
+===========
+Pagination divides the dispatch list into pages with up to 10 records per page.
 
 .. |next| image:: ../images/navigate_next.png
     :width: 20px
@@ -19,6 +19,6 @@ Pagination divides dispatches into discrete pages with up to 10 records per page
    :align: center
    :width: 5000px
 
-- Users can navigate to next page by clicking |next| and similarly can navigate back by clicking the |previous| button.
-- Users can click |skip last| to jump to last and |skip first| to jump to first page from current page.
-- Users can navigate to a particular page by clicking on the page number directly.
+- Navigate to the next page by clicking |next| and back by clicking |previous|.
+- Click |skip last| to jump to the last page and |skip first| to the first page.
+- Navigate to an intermediate page by clicking on the page number.

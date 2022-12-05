@@ -1,6 +1,14 @@
 ========
 Sort
 ========
+
+Sort the dispatch list on any column except Dispatch ID by clicking the column heading. Click |ascending| and |descending| to toggle between ascending and descending sort.
+
+"Ascending" and "Descending" are alphabetical for Lattice; chronological for Started and Ended; by magnitude for Runtime; and ordered (Running < Completed < Failed) for Status.
+
+The page default is to sort by descending "Started" value; that is, most recent dispatches first.
+
+
 .. image:: ../images/dispatchlist_sort.gif
    :align: center
    :width: 5000px
@@ -10,7 +18,3 @@ Sort
 
 .. |descending| image:: ../images/descending_arrow.png
     :width: 20px
-
-- Users can sort through a column by ascending |ascending| and descending |descending| orderings. By default, sorting is done in descending order of the started column.
-- Users can sort by the lattice, runtime, started, ended and status columns.
-- Lattices are sorted alphabetically; times are sorted chronologically; statuses are sorted by Running, Completed, and Failed states.
