@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated all references to `results_dir` to use the environment variable `COVALENT_DATA_DIR` if set or fall back to `~/.local/share/covalent/data`
 
+### Docs
+
+- Adding `Deployment` section for self-hosting guide
+
 ### Fixed
 
 - Respecting specified AWS profile & region in remote executed S3 file transfers, defaulting to env vars of execution backend
@@ -48,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rewrote intro material in README.
 - Changed "Citation" in the README.
 - Renamed "Release Notes" to "What's New?" in the README. Updated What's New with a description of the newest GUI functionality.
+- Added Azure Batch RTD.
 
 ## [0.208.0-rc.0] - 2022-11-05
 
