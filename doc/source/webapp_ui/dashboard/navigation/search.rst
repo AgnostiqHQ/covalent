@@ -8,11 +8,11 @@ Search filters the dispatch list by dispatch ID and workflow name when three or 
 
 Click |clear| to clear the Search text box.
 
-.. image:: ../images/dispatchlist_search.gif
+.. image:: ../../images/dispatchlist_search.gif
    :align: center
    :width: 5000px
 
-.. |clear| image:: ../images/clear_search.png
+.. |clear| image:: ../../images/clear_search.png
     :width: 20px
 
 -

@@ -11,6 +11,9 @@ The Electron sidebar shows information about a selected task node. Click an elec
 
 This sidebar contains the following attributes:
 
+.. image:: ../../_static/ui_electron_side.png
+   :align: right
+
 Status
     The status for that particular node/electron.
 

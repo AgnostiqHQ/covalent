@@ -6,5 +6,5 @@ Click one of (All, Running, Completed, Failed) above the dispatch list to filter
 
 Default is to display all statuses.
 
-.. image:: ../images/dispatchlist_filter.gif
+.. image:: ../../images/dispatchlist_filter.gif
    :align: center

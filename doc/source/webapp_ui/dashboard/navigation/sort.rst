@@ -9,12 +9,12 @@ Sort the dispatch list on any column except Dispatch ID by clicking the column h
 The page default is to sort by descending "Started" value; that is, most recent dispatches first.
 
 
-.. image:: ../images/dispatchlist_sort.gif
+.. image:: ../../images/dispatchlist_sort.gif
    :align: center
    :width: 5000px
 
-.. |ascending| image:: ../images/ascending_arrow.png
+.. |ascending| image:: ../../images/ascending_arrow.png
     :width: 20px
 
-.. |descending| image:: ../images/descending_arrow.png
+.. |descending| image:: ../../images/descending_arrow.png
     :width: 20px

@@ -2,11 +2,11 @@
 Lattice Sidebar
 ===================
 
+The Lattice sidebar shows details for the selected workflow dispatch. It displays the following:
+
 .. image:: ../images/Lattice_sidebar.png
    :width: 350px
    :align: left
-
-The Lattice sidebar shows details for the selected workflow dispatch. It displays the following:
 
 Dispatch ID
     The ID of the selected dispatch. Click |copy| to copy the ID.
