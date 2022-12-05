@@ -167,6 +167,10 @@ Follow the steps below to run an example workflow.
 
           # Dispatch the workflow
           dispatch_id = ct.dispatch(workflow)(1, 2)
+          result = ct.get_result(dispatch_id)
+          print(result)
+
+   See :doc:`../../api/results` for a description of the result object returned by Covalent.
 
 
 Viewing the Workflow
