@@ -2,52 +2,29 @@
 The User Interface
 ******************
 
-The following describes the features available in the Covalent GUI. The features are organized by screen, starting with the Dashboard.
+This User Interface Reference describes the functionality available in the Covalent GUI, organized by screen.
 
-Dashboard
-=========
+For help performing specific tasks using the Covalent GUI, refer to the :ref:`User Interface` portion of the :doc:`../how_to/index`.
 
-The Dashboard shows a list of workflows dispatched to the server, with summary of the dispatches at the top. The Dashboard is the default screen in the Covalent GUI.
+The following screens are available in the Covalent GUI:
 
-:doc:`Dispatch Summary <dashboard/index>`
+:doc:`Dashboard<dashboard/index>`
+    Displays a list of workflows that have been dispatched to the server. The dispatches are summarized at the top of the screen. The Dashboard is the default screen in the Covalent GUI.
 
-:doc:`Dispatch List <dispatch_list/dispatch_list>`
+:doc:`Graph View<graph_view/index>`
+    Displays details of a selected dispatch. Click a dispatch ID on the :doc:`Dashboard<dashboard/index>` to see the Graph View for that dispatch.
 
-The following navigation tools are available for the Dispatch List:
-    * :doc:`Pagination <dispatch_list/pagination>`
-    * :doc:`Search <dispatch_list/search>`
-    * :doc:`Sort <dispatch_list/sort>`
-    * :doc:`Filter <dispatch_list/filter>`
-    * :doc:`Workflow Dispatch Deletion <dispatch_list/delete_dispatches>`
+:doc:`Sublattice Views<sublattices/index>`
+    When you open the  page for a lattice that contains sublattices, controls in the Graph View include extra options to view details of the sublattices.
 
-Graph View
-==========
+:doc:`Lattice Graph Preview<preview/index>`
+    Built into the Covalent GUI as a convenience in workflow development. View the transport graph of a lattice that you have not yet dispatched.
 
-The Graph View displays details of a selected dispatch. It consists of the Transport Graph in the main window on the right, with the Lattice Sidebar to the left.
+:doc:`Logs<logs/index>`
+    Displays a list of logs for dispatches.
 
-:doc:`Transport Graph <graph_view/graphs>`
+:doc:`Settings<settings/index`>
 
-:doc:`Lattice Sidebar <graph_view/lattice>`
-
-:doc:`Electron Sidebar <graph_view/electron>`
-
-Sublattices
-===========
-
-:doc:`Sublattices Sidebar <sublattices/sublattices_sidebar>`
-
-:doc:`Sublattices Sort <sublattices/sublattices_sort>`
-
-:doc:`Sublattices Transport Graph <sublattices/sublattices_graph>`
-
-Lattice Graph Preview
-=====================
-
-:doc:`Preview Lattice sidebar<preview/preview_lattice>`
-
-:doc:`Preview Electron sidebar<preview/preview_electron>`
-
-:doc:`Preview Transport Graph<preview/preview>`
 
 Logs
 ====

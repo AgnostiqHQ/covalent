@@ -2,10 +2,21 @@
 Sublattices Sidebar
 ===================
 
+The Sublattices sidebar has two tabs:
+
+Overview
+    Shows runtime information including start and end times, input, results, and executor type.
+
+Sublattices
+    Displays a list view of sublattices in the lattice. Click a row to display a sublattice in the Transport Graph area. The Sublattices tab is only shown if the transport graph contains one or more sublattices.
+
 .. image:: ../images/sublattice_sidebar.png
    :align: center
 
-- Sublattcies section shows the lattices that are transformed into electrons, which are called sublattices.
-- Sublattices section will only be shown to the dispatches which actually have the sublattices.
-- Here, as the user clicks on any sublattice, the transport graph view will only show the constituent nodes/electrons following that particular sublattice.
-- These sublattices can be sorted in the following ways: according to the alphabetical order of title; according to the runtime; according to the count of nodes.
+Click a Sublattice list column heading to sort the list by that column: Title, Runtime, or Node count. Click |ascending| and |descending| to toggle between ascending and descending sort.
+
+.. |ascending| image:: ../images/ascending_arrow.png
+    :width: 20px
+
+.. |descending| image:: ../images/descending_arrow.png
+    :width: 20px

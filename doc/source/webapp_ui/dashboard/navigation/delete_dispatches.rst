@@ -6,7 +6,7 @@ Select checkboxes on the left of dispatch lines to delete records of those dispa
 
 .. warning:: Deleting a dispatch removes the dispatch and its results permanently from the database. Deletion cannot be undone.
 
-.. image:: ../../_static/ui_list_select_delete.png
+.. image:: ../../../_static/ui_list_select_delete.png
 
 When one or more lines are selected, the |delete| icon appears above the dispatch list. Click the icon to delete the selected records.
 
@@ -36,8 +36,8 @@ Search and Delete
 
 If the list is currently filtered by a :doc:`search` term, the Delete Options dropdown menu only applies to lines that match the search criteria *and* the selected status. For example, if a search term limits the list to four items and only one of those items has a Failed status, then choosing Failed from the Delete Options dropdown deletes only that line.
 
-.. image:: ../images/dispatchlist_delete.gif
+.. image:: ../../images/dispatchlist_delete.gif
    :align: center
 
-.. |delete| image:: ../images/delete_icon.png
+.. |delete| image:: ../../images/delete_icon.png
     :width: 20px
