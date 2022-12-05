@@ -1,29 +1,32 @@
-===================================================
+=======================
 Workflow Dispatch List
-===================================================
+=======================
+
+A typical dispatch list is shown below.
+
 .. image:: ../images/dispatches_with_appropriate_metadata.png
    :align: center
 
-**Dispatch ID**
+Each line represents one dispatch, and contains the following information:
 
-Shows the unique dispatch ID for a workflow invocation.
+Dispatch ID
+    The unique dispatch ID for the workflow invocation. This ID is used to identify the dispatch in the SDK.
+Lattice
+    The name of the dispatched lattice function.
+Runtime
+    The approximate run time of the dispatch.
+Started
+    The local time when a dispatch started.
+Ended
+    The local time when a dispatch ended (completed or failed). A dash is displayed while the dispatch is Running.
+Status
+    The status of a dispatch. The four possible statuses are:
 
-**Lattice**
-
-Shows the name of lattice function.
-
-**Runtime**
-
-Shows live runtime of a workflow dispatch.
-
-**Started**
-
-Shows the local time when a dispatch started.
-
-**Ended**
-
-Shows the local time when a dispatch completed or failed. A hyphen is displayed while the dispatch is in the Running state.
-
-**Status**
-
-Shows the status of a dispatch. The available statuses are Pending, Running, Failed, and Completed.
+    Pending
+        Not yet running due to scheduling or resource availability.
+    Running
+        Started, with one or more tasks handed off to executors.
+    Failed
+        Finished with one or more tasks throwing an error.
+    Completed
+        Finished with all tasks successful.
