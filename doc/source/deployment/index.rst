@@ -53,8 +53,6 @@ The following table lists out all the supported environment variables that users
    * - COVALENT_CACHE_DIR
      - Directory to be used by ``covalent`` for storing temporary objects during runtime
    * - COVALENT_DATA_DIR
-     - Path to ``covalent``'s database directory
-   * - COVALENT_RESULTS_DIR
      - Directory on the filesystem to store the intermediate result objects
    * - COVALENT_SVC_PORT
      - TCP port on which ``covalent`` will start running
@@ -259,7 +257,7 @@ Executors
 
 When Covalent is deployed remotely, it is important to understand how ``executors`` are handled by the server. For instance, in Covalent there are multiple ways users can specify an ``executor`` for an electron in their workflows and each of the cases has certain implications on how the executor information is parsed and handled by the remote server
 
-#. Using the executor short name
+* Using the executor short name
 
 .. code:: python
 
@@ -277,7 +275,7 @@ In this case, the server receives only the short name of the executor that ought
   Users however should be cautious of any changes being made to the **server side** configurations from the UI or directly over a SSH connection to the remote server.
 
 
-#. Passing an instance of the executor class with fully specified input arguments
+* Passing an instance of the executor class with fully specified input arguments
 
 .. code:: python
 
@@ -298,7 +296,7 @@ When a fully specified instance of an executor is passed to the remote server th
    When providing executor information this way, users must ensure that the remote Covalent server has access to the executor backend. For instance, if the user is looking to use the ``AWSBatchExecutor`` in their workflows, then the remote Covalent server must have the proper IAM permissions and policies configured so that it can execute that task on the user's behalf using the AWS Batch service.
 
 
-#. Passing an instance of an executor with partially specified input arguments
+* Passing an instance of an executor with partially specified input arguments
 
 .. code:: python
 
