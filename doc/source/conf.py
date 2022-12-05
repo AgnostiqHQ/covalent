@@ -44,6 +44,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.viewcode",
     "sphinx.ext.autosummary",
+    "sphinx_design",
     "autodocsumm",
     "nbsphinx",
     "sphinx_autodoc_typehints",
