@@ -82,5 +82,7 @@ repos:
             "./.detect_secrets_filters/ipynb_hash_filter.py::is_pynb_hash",
             "--filter",
             "./.detect_secrets_filters/ipynb_hash_filter.py::is_pynb_image",
+            "--filter",
+            "./.detect_secrets_filters/azure_keyword_filter.py::is_secret_keyword",
           ]
         verbose: true

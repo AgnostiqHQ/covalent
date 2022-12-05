@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Adding `Deployment` section for self-hosting guide
+
+### Fixed
+
+- Respecting specified AWS profile & region in remote executed S3 file transfers, defaulting to env vars of execution backend
+- Fixed local executor tests on MacOS (second attempt)
+
 ### Added
 
 - Added `TaskRuntimeError` exception for executor plugin implementations to signal to Covalent that a task raised an
@@ -14,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Docs for Covalent's Slurm plugin updated with explanation for optional `srun` parameters.
 - Electron errors are segregated by type; task runtime errors are
   stored in `stderr` while the `error` attribute of a node is reserved
   for exceptions raised by Covalent itself.
