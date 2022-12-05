@@ -4,10 +4,10 @@ First Experiment
 
 This page describes how to get started with Covalent. Follow the procedures on this page to:
 
-    1. Install Covalent;
-    2. Start the Covalent server;
-    3. Run a workflow using Covalent; and
-    4. View the workflow using the browser-based interface (GUI).
+1. Install Covalent;
+2. Start the Covalent server;
+3. Run a workflow using Covalent; and
+4. View the workflow using the browser-based interface (GUI).
 
 Installing Covalent
 ###################
@@ -26,7 +26,7 @@ Installing with Pip
 
 To install Covalent, use Pip.
 
-.. code:: type the following on the command line:
+.. card:: Type the following on the command line:
 
     .. code:: bash
 
@@ -70,9 +70,9 @@ Stopping the Server
 
 When you are done using Covalent to run workflows, stop the server.
 
-    .. warning::
+.. warning::
 
-        Do not stop the server while you have running workflows. Stopping the server will kill the workflows.
+    Do not stop the server while you have running workflows. Stopping the server will kill the workflows.
 
 .. card:: To stop the Covalent server:
 
@@ -137,36 +137,36 @@ Follow the steps below to run an example workflow.
 
     Type (or paste) the following Python code:
 
-        .. code:: python
+    .. code:: python
 
-          import covalent as ct
+      import covalent as ct
 
-          # Construct manageable tasks out of functions
-          # by adding the @covalent.electron decorator
-          @ct.electron
-          def add(x, y):
-             return x + y
+      # Construct manageable tasks out of functions
+      # by adding the @covalent.electron decorator
+      @ct.electron
+      def add(x, y):
+         return x + y
 
-          @ct.electron
-          def multiply(x, y):
-             return x*y
+      @ct.electron
+      def multiply(x, y):
+         return x*y
 
-          @ct.electron
-          def divide(x, y):
-             return x/y
+      @ct.electron
+      def divide(x, y):
+         return x/y
 
-          # Construct the workflow by stitching together
-          # the electrons defined earlier in a function with
-          # the @covalent.lattice decorator
-          @ct.lattice
-          def workflow(x, y):
-             r1 = add(x, y)
-             r2 = [multiply(r1, y) for _ in range(4)]
-             r3 = [divide(x, value) for value in r2]
-             return r3
+      # Construct the workflow by stitching together
+      # the electrons defined earlier in a function with
+      # the @covalent.lattice decorator
+      @ct.lattice
+      def workflow(x, y):
+         r1 = add(x, y)
+         r2 = [multiply(r1, y) for _ in range(4)]
+         r3 = [divide(x, value) for value in r2]
+         return r3
 
-          # Dispatch the workflow
-          dispatch_id = ct.dispatch(workflow)(1, 2)
+      # Dispatch the workflow
+      dispatch_id = ct.dispatch(workflow)(1, 2)
 
 
 Viewing the Workflow
