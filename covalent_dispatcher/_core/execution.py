@@ -172,7 +172,7 @@ def _post_process(lattice: Lattice, node_outputs: Dict) -> Any:
         node_outputs: Dictionary containing the output of all the nodes.
         execution_order: List of lists containing the order of execution of the nodes.
 
-    Reurns:
+    Returns:
         result: The result of the lattice function.
     """
 
