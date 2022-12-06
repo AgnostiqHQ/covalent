@@ -30,7 +30,7 @@ from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Union
 from .._file_transfer.enums import Order
 from .._file_transfer.file_transfer import FileTransfer
 from .._shared_files import logger
-from .._shared_files.context_managers import active_lattice_manager
+from .._shared_files.context_managers import active_dispatch_info_manager, active_lattice_manager
 from .._shared_files.defaults import (
     WAIT_EDGE_NAME,
     DefaultMetadataValues,
@@ -621,6 +621,10 @@ def electron(
             for k, v in constraints.items():
                 electron_object.set_metadata(k, v)
             electron_object.__doc__ = func.__doc__
+            active_dispatch_info = active_dispatch_info_manager.get_active_dispatch_info()
+            if active_dispatch_info:
+                return electron_object
+
             return electron_object(*args, **kwargs)
 
         return wrapper
