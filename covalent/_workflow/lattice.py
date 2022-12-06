@@ -66,7 +66,7 @@ class Lattice:
         post_processing: Boolean to indicate if the lattice is in post processing mode or not.
         kwargs: Keyword arguments passed to the workflow function.
         electron_outputs: Dictionary of electron outputs received after workflow execution.
-        return_info: Dictionary of 
+        return_info: Dictionary containing placeholder workflow result and corresponding node ids.
     """
 
     def __init__(
@@ -118,6 +118,8 @@ class Lattice:
         for node_name, output in self.electron_outputs.items():
             attributes["electron_outputs"][node_name] = output.to_dict()
 
+        attributes["return_info"]["return_value"] = self.return_info["return_value"].to_dict()
+
         attributes["cova_imports"] = list(self.cova_imports)
         # for k, v in attributes.items():
         #     print(k, type(v))
@@ -129,6 +131,9 @@ class Lattice:
         attributes = json.loads(json_data)
 
         attributes["cova_imports"] = set(attributes["cova_imports"])
+
+        rv = attributes["return_info"]["return_value"]
+        attributes["return_info"]["return_value"] = TransportableObject.from_dict(rv)
 
         for node_name, object_dict in attributes["electron_outputs"].items():
             attributes["electron_outputs"][node_name] = TransportableObject.from_dict(object_dict)
@@ -228,7 +233,11 @@ class Lattice:
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
                 try:
-                    workflow_function(*new_args, **new_kwargs)
+                    return_value, electron_ids = Lattice.preprocess_return(
+                        workflow_function(*new_args, **new_kwargs)
+                    )
+                    self.return_info["return_value"] = TransportableObject.make_transportable(return_value)
+                    self.return_info["electron_ids"] = electron_ids
                 except Exception:
                     warnings.warn(
                         "Please make sure you are not manipulating an object inside the lattice."
