@@ -23,7 +23,7 @@
 import json
 import os
 import warnings
-from builtins import list
+from builtins import list, tuple
 from contextlib import redirect_stdout
 from copy import deepcopy
 from dataclasses import asdict
@@ -66,6 +66,7 @@ class Lattice:
         post_processing: Boolean to indicate if the lattice is in post processing mode or not.
         kwargs: Keyword arguments passed to the workflow function.
         electron_outputs: Dictionary of electron outputs received after workflow execution.
+        return_info: Dictionary of 
     """
 
     def __init__(
@@ -83,6 +84,7 @@ class Lattice:
         self.named_args = {}
         self.named_kwargs = {}
         self.electron_outputs = {}
+        self.return_info = {}
         self.lattice_imports, self.cova_imports = get_imports(self.workflow_function)
         self.cova_imports.update({"electron"})
 
@@ -307,6 +309,50 @@ class Lattice:
         from .._dispatcher_plugins import local_dispatch_sync
 
         return local_dispatch_sync(self)(*args, **kwargs)
+
+    @staticmethod
+    def preprocess_return(value: Any, electron_ids: list = None) -> 'tuple[Any, list]':
+        """
+        Recursively inspects the input value to construct a placeholder copy wherein
+        electrons are replaced by an identifier string based on their `node_id`.
+
+        Args:
+            value: a literal or `Electron` instance or any tuple/list/dict thereof
+
+        Returns:
+            a copy of `value` with a placeholder substituted for each electron
+        """
+        electron_placeholder = ":-{node_id}-:"
+
+        if value.__class__.__name__ == "Electron" and hasattr(value, "node_id"):
+            if electron_ids is None:
+                electron_ids = [value.node_id]
+            else:
+                electron_ids.append(value.node_id)
+            return electron_placeholder.format(node_id=electron_ids[-1]), electron_ids
+
+        elif isinstance(value, tuple):
+            new_return_value = tuple()
+            for v in value:
+                v, electron_ids = Lattice.preprocess_return(v, electron_ids)
+                new_return_value += (v,)
+            return new_return_value, electron_ids
+
+        elif isinstance(value, list):
+            new_return_value = []
+            for v in value:
+                v, electron_ids = Lattice.preprocess_return(v, electron_ids)
+                new_return_value.append(v)
+            return new_return_value, electron_ids
+
+        elif isinstance(value, dict):
+            new_return_value = {}
+            for k, v in value.items():
+                v, electron_ids = Lattice.preprocess_return(v, electron_ids)
+                new_return_value[k] = v
+            return new_return_value, electron_ids
+
+        return value, electron_ids
 
 
 def lattice(
