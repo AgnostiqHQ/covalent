@@ -30,6 +30,7 @@ from .._results_manager.results_manager import get_result
 from .._shared_files.config import get_config
 from .._workflow.lattice import Lattice
 from .base import BaseDispatcher
+from .utils.redispatch_helpers import redispatch_real
 
 
 class LocalDispatcher(BaseDispatcher):
@@ -131,3 +132,24 @@ class LocalDispatcher(BaseDispatcher):
             )
 
         return wrapper
+
+    @staticmethod
+    def redispatch(
+        dispatch_id,
+        dispatcher_addr: str = get_config("dispatcher.address")
+        + ":"
+        + str(get_config("dispatcher.port")),
+        replace_electrons={},
+        reuse_previous_results=False,
+    ):
+        def func(*new_args, **new_kwargs):
+            body = redispatch_real(
+                dispatch_id, new_args, new_kwargs, replace_electrons, reuse_previous_results
+            )
+
+            test_url = f"http://{dispatcher_addr}/api/redispatch"
+            r = requests.post(test_url, json=body)
+            r.raise_for_status()
+            return r.content.decode("utf-8").strip().replace('"', "")
+
+        return func
