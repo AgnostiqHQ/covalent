@@ -153,11 +153,11 @@ async def _submit_task(result_object, node_id):
         output = result_object.lattice.transport_graph.get_node_value(node_id, "value")
         app_log.debug(f"7C: Node output: {output} (run_planned_workflow).")
         app_log.debug("8: Starting update node (run_planned_workflow).")
-
+        ts = datetime.now(timezone.utc)
         node_result = {
             "node_id": node_id,
-            "start_time": datetime.now(timezone.utc),
-            "end_time": datetime.now(timezone.utc),
+            "start_time": ts,
+            "end_time": ts,
             "status": Result.COMPLETED,
             "output": output,
         }
@@ -165,10 +165,11 @@ async def _submit_task(result_object, node_id):
         app_log.debug("8A: Update node success (run_planned_workflow).")
 
     elif node_status == Result.COMPLETED:
+        ts = datetime.now(timezone.utc)
         node_result = {
             "node_id": node_id,
-            "start_time": datetime.now(timezone.utc),
-            "end_time": datetime.now(timezone.utc),
+            "start_time": ts,
+            "end_time": ts,
             "status": Result.COMPLETED,
         }
         await datasvc.update_node_result(result_object, node_result)
