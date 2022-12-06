@@ -4,7 +4,7 @@
 Setting Defaults
 """"""""""""""""""
 
-Default configuration for covalent can be set by defining the environment variable :code:`COVALENT_CONFIG_DIR`, by default, config files are stored in :code:`~/.config/covalent/covalent.conf`.
+Default configuration for covalent can be set by defining the environment variable :code:`COVALENT_CONFIG_DIR`. By default, config files are stored in :code:`~/.config/covalent/covalent.conf`.
 
 
 Example settings in config file

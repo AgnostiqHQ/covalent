@@ -46,13 +46,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+
 - Added DNN tutorial
 - Updated AWS Plugins install instructions
 - Updated AWS Plugins documentation (minor fixes)
 - Rewrote intro material in README.
 - Changed "Citation" in the README.
 - Renamed "Release Notes" to "What's New?" in the README. Updated What's New with a description of the newest GUI functionality.
-- Added Azure Batch RTD.
+- Added "Quick Start" guide.
+- Updated and reorganized doc landing page.
+- Rewrote "Getting Started" page.
+- Broke out "Installing from Source" instructions to separate page.
+- Corrected some API class names in headers.
+- Added an executors-and-UI graphic.
 
 ## [0.208.0-rc.0] - 2022-11-05
 
@@ -70,6 +76,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support for transferring the contents of folders to and from S3 buckets using the file transfer module.
+
+### Docs
+
+- Rewrote intro material in README.
+- Changed "Citation" in the README.
+- Renamed "Release Notes" to "What's New?" in the README. Updated What's New with a description of the newest GUI functionality.
 
 ### Fixed
 
@@ -222,7 +234,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Will Cunningham <wjcunningham7@gmail.com>
 
 
-### Added 
+### Added
 
 - Ability to use terminal on the GUI.
 
@@ -475,7 +487,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ConfigManager` is now thread safe since it is initialized whenever needed instead of one object being accessed by multiple processes/threads leading to corruption of the config file.
 - Using `contextlib.supress` to ignore `psutil.NoSuchProcess` errors instead of `try/except` with `pass`.
 - Filter workflow dispatches by status on the GUI.
-- Delete all workflow dispatches present in the database from the GUI and add filter level deletion of workflow dispatches as well. 
+- Delete all workflow dispatches present in the database from the GUI and add filter level deletion of workflow dispatches as well.
 - Theme changes as part of latest wireframe.
 - Factory functions to generate configurations and default metadata at the time when required. This is because certain values like default executors are only determined when the covalent server starts.
 - Respecting the configuration options like default executor, no. of workers, developer mode, etc. when restarting the server.
@@ -766,7 +778,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added reusable version action
 
 - Added read the docs for user interface
- 
+
 ## [0.187.0] - 2022-08-28
 
 ### Authors
@@ -886,7 +898,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Electron metadata is serialized earlier during workflow construction
   to reduce unexpected executor pip requirements.
-  
+
 ### Operations
 
 - Updating conditional logic for the different steps in `release` workflow
@@ -1382,7 +1394,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Configured default dask configuration options in `defaults.py`
 
-### Fixed 
+### Fixed
 
 - Overwriting config address issue.
 
@@ -2072,7 +2084,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- New fields to the decomposed result object Database: 
+- New fields to the decomposed result object Database:
 
 ## [0.131.0] - 2022-07-13
 
@@ -2340,7 +2352,7 @@ Casey Jao <casey@agnostiq.ai>
 
 ## [0.119.0] - 2022-07-03
 ### Authors
-@cjao 
+@cjao
 
 
 ### Added
@@ -2349,7 +2361,7 @@ Casey Jao <casey@agnostiq.ai>
 
 ## [0.118.0] - 2022-07-02
 ### Authors
-@AlejandroEsquivel 
+@AlejandroEsquivel
 
 
 ### Added
@@ -2358,7 +2370,7 @@ Casey Jao <casey@agnostiq.ai>
 
 ## [0.117.0] - 2022-07-02
 ### Authors
-@Emmanuel289 
+@Emmanuel289
 
 
 ### Added
@@ -2367,7 +2379,7 @@ Casey Jao <casey@agnostiq.ai>
 
 ## [0.116.0] - 2022-06-29
 ### Authors
-@Prasy12 
+@Prasy12
 
 ### Changed
 
@@ -2379,7 +2391,7 @@ Casey Jao <casey@agnostiq.ai>
 
 ## [0.115.0] - 2022-06-28
 ### Authors
-@cjao 
+@cjao
 
 
 ### Added
@@ -2394,7 +2406,7 @@ Casey Jao <casey@agnostiq.ai>
 
 ## [0.114.0] - 2022-06-23
 ### Authors
-@dependabot[bot] 
+@dependabot[bot]
 
 
 ### Changed
