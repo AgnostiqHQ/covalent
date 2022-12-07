@@ -610,6 +610,40 @@ async def _postprocess_workflow(result_object: Result) -> Result:
     return result_object
 
 
+async def _restructure_sublattice_workflow(result_object: Result) -> Result:
+    """
+    Restructure a sublattice workflow result by making electron output substitutions.
+
+    Args:
+        result_object: Result object being used for current dispatch
+
+    Returns:
+        The result object with a restructured result value
+    """
+    result_object._status = Result.POSTPROCESSING
+    upsert._lattice_data(result_object)
+
+    outputs_map = {
+        node_id: result_object._lattice.transport_graph.get_node_value(node_id, "output")
+        for node_id in set(result_object.lattice.return_info["electron_ids"])
+    }
+
+    result = Result.reconstruct_result(
+        outputs_map=outputs_map,
+        retval=result_object._lattice.return_info["return_value"].get_deserialized(),
+    )
+
+    result_object._result = TransportableObject.make_transportable(result)
+    result_object._rebuild_ids = []
+    result_object._status = Result.COMPLETED
+    result_object._end_time = datetime.now(timezone.utc)
+
+    upsert._lattice_data(result_object)
+    await result_webhook.send_update(result_object)
+
+    return result_object
+
+
 async def _run_planned_workflow(result_object: Result) -> Result:
     """
     Run the workflow in the topological order of their position on the
@@ -756,21 +790,24 @@ async def _run_planned_workflow(result_object: Result) -> Result:
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
 
     # conditional/optional post-processing of the result object
-    if result_object._root_dispatch_id != result_object._dispatch_id:
-        app_log.debug(f"Running post-processing on sublattice result {result_object._dispatch_id}\n"
-                      f"(root {result_object._root_dispatch_id})")
-        result_object = await _postprocess_workflow(result_object)  # TODO: special instructions for this
-
-    elif result_object.lattice.get_metadata("postprocess"):
+    if result_object.lattice.get_metadata("postprocess"):
+        # server-side post-process by re-running workflow w/ ready electron outputs
         app_log.debug(f"Running post-processing on workflow result {result_object._dispatch_id}")
         result_object = await _postprocess_workflow(result_object)
 
+    elif result_object._root_dispatch_id != result_object._dispatch_id:
+        # sub-lattice result: restructure
+        ids = result_object._dispatch_id, result_object._root_dispatch_id
+        app_log.debug(f"Structuring sublattice result {ids[0]} (root {ids[1]})")
+        result_object = await _restructure_sublattice_workflow(result_object)
+
     else:
+        # workflow result: set up for client-side restructure
         app_log.debug(f"Reconstructing workflow result {result_object._dispatch_id}")
         result_object._rebuild_ids = result_object.lattice.return_info["electron_ids"]
         result_object._result = result_object.lattice.return_info["return_value"]
-        result_object._end_time = datetime.now(timezone.utc)
         result_object._status = Result.COMPLETED
+        result_object._end_time = datetime.now(timezone.utc)
         upsert._lattice_data(result_object)
 
     update.persist(result_object)

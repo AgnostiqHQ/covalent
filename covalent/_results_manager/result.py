@@ -200,7 +200,12 @@ Node Outputs
         if self._result.object_string == "None" or len(self._rebuild_ids) == 0:
             return self._result.get_deserialized()
 
-        self._result = self._reconstruct_result(self._result.get_deserialized())
+        outputs_map = {}
+        for node_id in set(self._rebuild_ids):
+            outputs_map[node_id] = self._get_node_output(node_id)
+        retval = self._result.get_deserialized()
+
+        self._result = Result.reconstruct_result(outputs_map, retval)
         self._rebuild_ids = []
         return self._result
 
@@ -220,13 +225,11 @@ Node Outputs
 
         return self._error
 
-    def _reconstruct_result(self, retval: Any) -> Union[int, float, list, dict, tuple]:
+    @staticmethod
+    def reconstruct_result(outputs_map: dict, retval: Any) -> Union[int, float, list, dict, tuple]:
         """
         Recursively reconstruct the workflow return value.
         """
-        outputs_map = {}
-        for node_id in set(self._rebuild_ids):
-            outputs_map[node_id] = self._get_node_output(node_id)
 
         def _reconstructor(retval):
             """
