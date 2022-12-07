@@ -82,6 +82,9 @@ def _result_from(lattice_record: Lattice) -> Result:
     output = load_file(
         storage_path=lattice_record.storage_path, filename=lattice_record.results_filename
     )
+    return_info = load_file(
+        storage_path=lattice_record.storage_path, filename=lattice_record.return_info_filename
+    )
     deps = load_file(
         storage_path=lattice_record.storage_path, filename=lattice_record.deps_filename
     )
@@ -128,6 +131,7 @@ def _result_from(lattice_record: Lattice) -> Result:
         "lattice_imports": lattice_imports,
         "post_processing": False,
         "electron_outputs": {},
+        "return_info": return_info,
     }
 
     def dummy_function(x):
@@ -147,7 +151,8 @@ def _result_from(lattice_record: Lattice) -> Result:
     result._inputs = inputs
     result._start_time = lattice_record.started_at
     result._end_time = lattice_record.completed_at
-    result._result = output if output is not None else TransportableObject(None)
+    result._result = TransportableObject(None) if output is None else output
+    result._rebuild_ids = return_info["electron_ids"]
     result._num_nodes = num_nodes
     return result
 

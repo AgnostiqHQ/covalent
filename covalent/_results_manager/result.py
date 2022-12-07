@@ -86,6 +86,7 @@ class Result:
         self._status = Result.NEW_OBJ
 
         self._result = TransportableObject(None)
+        self._rebuild_ids = None
 
         self._num_nodes = -1
 
@@ -192,12 +193,16 @@ Node Outputs
         return self._result
 
     @property
-    def result(self) -> Union[int, float, list, dict]:
+    def result(self) -> Union[int, float, list, dict, tuple]:
         """
         Final result of current dispatch.
         """
+        if self._result.object_string == "None" or len(self._rebuild_ids) == 0:
+            return self._result.get_deserialized()
 
-        return self._result.get_deserialized()
+        self._result = self._reconstruct_result(self._result.get_deserialized())
+        self._rebuild_ids = []
+        return self._result
 
     @property
     def inputs(self) -> dict:
@@ -214,6 +219,52 @@ Node Outputs
         """
 
         return self._error
+
+    def _reconstruct_result(self, retval: Any) -> Union[int, float, list, dict, tuple]:
+        """
+        Recursively reconstruct the workflow return value.
+        """
+        outputs_map = {}
+        for node_id in set(self._rebuild_ids):
+            outputs_map[node_id] = self._get_node_output(node_id)
+
+        def _reconstructor(retval):
+            """
+            Helper
+            """
+            if isinstance(retval, str):
+                output = retval
+                if retval.startswith(":-") and retval.endswith("-:"):
+                    node_id = int(retval.strip(":-"))
+                    output = outputs_map[node_id]
+                if isinstance(output, TransportableObject):
+                    output = output.get_deserialized()
+                return output
+
+            if isinstance(retval, tuple):
+                output = tuple()
+                for v in retval:
+                    val = _reconstructor(v)
+                    output += (val,)
+                return output
+
+            if isinstance(retval, list):
+                output = []
+                for v in retval:
+                    val = _reconstructor(v)
+                    output.append(val)
+                return output
+
+            if isinstance(retval, dict):
+                output = {}
+                for k, v in retval.items():
+                    val = _reconstructor(v)
+                    output[k] = val
+                return output
+
+            return retval
+
+        return _reconstructor(retval)
 
     def _initialize_nodes(self) -> None:
         """
