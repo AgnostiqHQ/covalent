@@ -87,8 +87,11 @@ class Lattice(Base):
     # Name of the file containing the serialized named kwargs
     named_kwargs_filename = Column(Text)
 
-    # name of the file containing the serialized output
+    # Name of the file containing the serialized output
     results_filename = Column(Text)
+
+    # Name of the file containing workflow result information
+    return_info_filename = Column(Text)
 
     # Name of the file containing the transport graph
     transport_graph_filename = Column(Text)

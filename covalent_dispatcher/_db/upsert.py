@@ -60,6 +60,7 @@ LATTICE_INPUTS_FILENAME = "inputs.pkl"
 LATTICE_NAMED_ARGS_FILENAME = "named_args.pkl"
 LATTICE_NAMED_KWARGS_FILENAME = "named_kwargs.pkl"
 LATTICE_RESULTS_FILENAME = "results.pkl"
+LATTICE_RETURN_INFO_FILENAME = "return_info.pkl"
 LATTICE_TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
 LATTICE_DEPS_FILENAME = "deps.pkl"
 LATTICE_CALL_BEFORE_FILENAME = "call_before.pkl"
@@ -99,6 +100,7 @@ def _lattice_data(result: Result, electron_id: int = None):
         (LATTICE_NAMED_ARGS_FILENAME, result.lattice.named_args),
         (LATTICE_NAMED_KWARGS_FILENAME, result.lattice.named_kwargs),
         (LATTICE_RESULTS_FILENAME, result._result),
+        (LATTICE_RETURN_INFO_FILENAME, result.lattice.return_info),
         (LATTICE_TRANSPORT_GRAPH_FILENAME, result._lattice.transport_graph),
         (LATTICE_DEPS_FILENAME, result.lattice.metadata["deps"]),
         (LATTICE_CALL_BEFORE_FILENAME, result.lattice.metadata["call_before"]),
@@ -132,6 +134,7 @@ def _lattice_data(result: Result, electron_id: int = None):
             "named_args_filename": LATTICE_NAMED_ARGS_FILENAME,
             "named_kwargs_filename": LATTICE_NAMED_KWARGS_FILENAME,
             "results_filename": LATTICE_RESULTS_FILENAME,
+            "return_info_filename": LATTICE_RETURN_INFO_FILENAME,
             "transport_graph_filename": LATTICE_TRANSPORT_GRAPH_FILENAME,
             "deps_filename": LATTICE_DEPS_FILENAME,
             "call_before_filename": LATTICE_CALL_BEFORE_FILENAME,
