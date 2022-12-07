@@ -233,11 +233,10 @@ class Lattice:
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
                 try:
-                    placeholder, electron_ids = Lattice.preprocess_return(
-                        workflow_function(*new_args, **new_kwargs)
-                    )
-                    self.return_info["placeholder"] = TransportableObject.make_transportable(
-                        placeholder)
+                    return_value = workflow_function(*new_args, **new_kwargs)
+                    placeholder, electron_ids = Lattice.preprocess_return(return_value)
+                    placeholder = TransportableObject.make_transportable(placeholder)
+                    self.return_info["placeholder"] = placeholder
                     self.return_info["electron_ids"] = electron_ids
                 except Exception:
                     warnings.warn(
