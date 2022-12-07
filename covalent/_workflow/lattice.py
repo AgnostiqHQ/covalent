@@ -236,7 +236,8 @@ class Lattice:
                     return_value, electron_ids = Lattice.preprocess_return(
                         workflow_function(*new_args, **new_kwargs)
                     )
-                    self.return_info["return_value"] = TransportableObject.make_transportable(return_value)
+                    self.return_info["return_value"] = TransportableObject.make_transportable(
+                        return_value)
                     self.return_info["electron_ids"] = electron_ids
                 except Exception:
                     warnings.warn(
@@ -359,6 +360,12 @@ class Lattice:
             for k, v in value.items():
                 val, electron_ids = Lattice.preprocess_return(v, electron_ids)
                 new_return_value[k] = val
+            return new_return_value, electron_ids
+
+        if isinstance(value, set):
+            new_return_value = set()
+            for v in value:
+                val = Lattice.preprocess_return(v, electron_ids)
             return new_return_value, electron_ids
 
         return value, [] if electron_ids is None else electron_ids

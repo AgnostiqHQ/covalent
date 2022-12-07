@@ -265,6 +265,13 @@ Node Outputs
                     output[k] = val
                 return output
 
+            if isinstance(retval, set):
+                output = set()
+                for v in retval:
+                    val = _reconstructor(v)
+                    output.add(val)
+                return output
+
             return retval
 
         return _reconstructor(retval)
