@@ -118,7 +118,7 @@ class Lattice:
         for node_name, output in self.electron_outputs.items():
             attributes["electron_outputs"][node_name] = output.to_dict()
 
-        attributes["return_info"]["return_value"] = self.return_info["return_value"].to_dict()
+        attributes["return_info"]["placeholder"] = self.return_info["placeholder"].to_dict()
 
         attributes["cova_imports"] = list(self.cova_imports)
         # for k, v in attributes.items():
@@ -132,8 +132,8 @@ class Lattice:
 
         attributes["cova_imports"] = set(attributes["cova_imports"])
 
-        rv = attributes["return_info"]["return_value"]
-        attributes["return_info"]["return_value"] = TransportableObject.from_dict(rv)
+        rv = attributes["return_info"]["placeholder"]
+        attributes["return_info"]["placeholder"] = TransportableObject.from_dict(rv)
 
         for node_name, object_dict in attributes["electron_outputs"].items():
             attributes["electron_outputs"][node_name] = TransportableObject.from_dict(object_dict)
@@ -233,11 +233,11 @@ class Lattice:
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
                 try:
-                    return_value, electron_ids = Lattice.preprocess_return(
+                    placeholder, electron_ids = Lattice.preprocess_return(
                         workflow_function(*new_args, **new_kwargs)
                     )
-                    self.return_info["return_value"] = TransportableObject.make_transportable(
-                        return_value)
+                    self.return_info["placeholder"] = TransportableObject.make_transportable(
+                        placeholder)
                     self.return_info["electron_ids"] = electron_ids
                 except Exception:
                     warnings.warn(

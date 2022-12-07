@@ -610,9 +610,9 @@ async def _postprocess_workflow(result_object: Result) -> Result:
     return result_object
 
 
-async def _restructure_sublattice_workflow(result_object: Result) -> Result:
+async def _reconstruct_sublattice_result(result_object: Result) -> Result:
     """
-    Restructure a sublattice workflow result by making electron output substitutions.
+    Reconstruct a sublattice workflow result by making electron output substitutions.
 
     Args:
         result_object: Result object being used for current dispatch
@@ -628,9 +628,9 @@ async def _restructure_sublattice_workflow(result_object: Result) -> Result:
         for node_id in set(result_object.lattice.return_info["electron_ids"])
     }
 
-    result = Result.reconstruct_result(
+    result = Result.unprocess_return(
         outputs_map=outputs_map,
-        retval=result_object._lattice.return_info["return_value"].get_deserialized(),
+        retval=result_object._lattice.return_info["placeholder"].get_deserialized(),
     )
 
     result_object._result = TransportableObject.make_transportable(result)
@@ -796,16 +796,16 @@ async def _run_planned_workflow(result_object: Result) -> Result:
         result_object = await _postprocess_workflow(result_object)
 
     elif result_object._root_dispatch_id != result_object._dispatch_id:
-        # sub-lattice result: restructure
+        # sub-lattice result: server-side reconstruct
         ids = result_object._dispatch_id, result_object._root_dispatch_id
-        app_log.debug(f"Structuring sublattice result {ids[0]} (root {ids[1]})")
-        result_object = await _restructure_sublattice_workflow(result_object)
+        app_log.debug(f"Reconstructing sublattice result {ids[0]} (root {ids[1]})")
+        result_object = await _reconstruct_sublattice_result(result_object)
 
     else:
-        # workflow result: set up for client-side restructure
+        # workflow result: set up for client-side reconstruct
         app_log.debug(f"Reconstructing workflow result {result_object._dispatch_id}")
         result_object._rebuild_ids = result_object.lattice.return_info["electron_ids"]
-        result_object._result = result_object.lattice.return_info["return_value"]
+        result_object._result = result_object.lattice.return_info["placeholder"]
         result_object._status = Result.COMPLETED
         result_object._end_time = datetime.now(timezone.utc)
         upsert._lattice_data(result_object)

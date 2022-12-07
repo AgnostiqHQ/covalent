@@ -205,7 +205,7 @@ Node Outputs
             outputs_map[node_id] = self._get_node_output(node_id)
         retval = self._result.get_deserialized()
 
-        self._result = Result.reconstruct_result(outputs_map, retval)
+        self._result = Result.unprocess_return(outputs_map, retval)
         self._rebuild_ids = []
         return self._result
 
@@ -226,7 +226,7 @@ Node Outputs
         return self._error
 
     @staticmethod
-    def reconstruct_result(outputs_map: dict, retval: Any) -> Union[int, float, list, dict, tuple]:
+    def unprocess_return(outputs_map: dict, retval: Any) -> Union[int, float, list, dict, tuple]:
         """
         Recursively reconstruct the workflow return value.
         """
