@@ -340,28 +340,28 @@ class Lattice:
                 electron_ids.append(value.node_id)
             return electron_placeholder.format(node_id=electron_ids[-1]), electron_ids
 
-        elif isinstance(value, tuple):
+        if isinstance(value, tuple):
             new_return_value = tuple()
             for v in value:
-                v, electron_ids = Lattice.preprocess_return(v, electron_ids)
-                new_return_value += (v,)
+                val, electron_ids = Lattice.preprocess_return(v, electron_ids)
+                new_return_value += (val,)
             return new_return_value, electron_ids
 
-        elif isinstance(value, list):
+        if isinstance(value, list):
             new_return_value = []
             for v in value:
-                v, electron_ids = Lattice.preprocess_return(v, electron_ids)
-                new_return_value.append(v)
+                val, electron_ids = Lattice.preprocess_return(v, electron_ids)
+                new_return_value.append(val)
             return new_return_value, electron_ids
 
-        elif isinstance(value, dict):
+        if isinstance(value, dict):
             new_return_value = {}
             for k, v in value.items():
-                v, electron_ids = Lattice.preprocess_return(v, electron_ids)
-                new_return_value[k] = v
+                val, electron_ids = Lattice.preprocess_return(v, electron_ids)
+                new_return_value[k] = val
             return new_return_value, electron_ids
 
-        return value, electron_ids
+        return value, [] if electron_ids is None else electron_ids
 
 
 def lattice(
@@ -369,6 +369,7 @@ def lattice(
     *,
     backend: Optional[str] = None,
     executor: Optional[Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]] = None,
+    postprocess: bool = False,
     results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     workflow_executor: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
@@ -390,6 +391,8 @@ def lattice(
         backend: DEPRECATED: Same as `executor`.
         executor: Alternative executor object to be used in the execution of each node. If not passed, the local
             executor is used by default.
+        postprocess: If True, run post-processing on the workflow's return value to guarantee correct type.
+            Note that this option is ignored for sublattice workflows.
         workflow_executor: Executor for postprocessing the workflow. Defaults to the built-in dask executor or
             the local executor depending on whether Covalent is started with the `--no-cluster` option.
         results_dir: Directory to store the results
@@ -432,6 +435,7 @@ def lattice(
     constraints = {
         "executor": executor,
         "results_dir": results_dir,
+        "postprocess": postprocess,
         "workflow_executor": workflow_executor,
         "deps": deps,
         "call_before": call_before,

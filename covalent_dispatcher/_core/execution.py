@@ -755,7 +755,23 @@ async def _run_planned_workflow(result_object: Result) -> Result:
 
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
 
-    result_object = await _postprocess_workflow(result_object)
+    # conditional/optional post-processing of the result object
+    if result_object._root_dispatch_id != result_object._dispatch_id:
+        app_log.debug(f"Running post-processing on sublattice result {result_object._dispatch_id}\n"
+                      f"(root {result_object._root_dispatch_id})")
+        result_object = await _postprocess_workflow(result_object)  # TODO: special instructions for this
+
+    elif result_object.lattice.get_metadata("postprocess"):
+        app_log.debug(f"Running post-processing on workflow result {result_object._dispatch_id}")
+        result_object = await _postprocess_workflow(result_object)
+
+    else:
+        app_log.debug(f"Reconstructing workflow result {result_object._dispatch_id}")
+        result_object._rebuild_ids = result_object.lattice.return_info["electron_ids"]
+        result_object._result = result_object.lattice.return_info["return_value"]
+        result_object._end_time = datetime.now(timezone.utc)
+        result_object._status = Result.COMPLETED
+        upsert._lattice_data(result_object)
 
     update.persist(result_object)
     await result_webhook.send_update(result_object)
