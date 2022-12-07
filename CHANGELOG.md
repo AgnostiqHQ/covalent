@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [UNRELEASED]
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ### Added
 
 - Adding support for PostgresQL DB backend
@@ -36,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Respecting specified AWS profile & region in remote executed S3 file transfers, defaulting to env vars of execution backend
 - Fixed local executor tests on MacOS (second attempt)
 
+=======
+>>>>>>> a69cd972 (changelog)
 ### Added
 
 - Added `TaskRuntimeError` exception for executor plugin implementations to signal to Covalent that a task raised an
