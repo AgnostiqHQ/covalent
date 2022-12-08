@@ -23,7 +23,7 @@
 import pytest
 
 from covalent_dispatcher._db.datastore import DataStore
-from covalent_dispatcher._db.jobdb import get_job_record, update_job_records
+from covalent_dispatcher._db.jobdb import MissingJobRecordError, get_job_record, update_job_records
 from covalent_dispatcher._db.models import Job
 
 
@@ -46,6 +46,9 @@ def test_get_job_record(test_db, mocker):
     record = get_job_record(1)
     assert record["job_handle"] == "aws_job_id"
 
+    with pytest.raises(MissingJobRecordError):
+        get_job_record(42)
+
 
 def test_update_job_records(test_db, mocker):
     mocker.patch("covalent_dispatcher._db.jobdb.workflow_db", test_db)
@@ -57,7 +60,7 @@ def test_update_job_records(test_db, mocker):
         session.add(job)
 
     job_1_kwargs = {"job_id": 1, "cancel_requested": True, "cancel_successful": True}
-    job_2_kwargs = {"job_id": 2, "cancel_requested": True}
+    job_2_kwargs = {"job_id": 2, "cancel_requested": True, "job_handle": "42"}
 
     update_job_records([job_1_kwargs, job_2_kwargs])
 
@@ -67,3 +70,6 @@ def test_update_job_records(test_db, mocker):
     assert record_1["cancel_successful"] is True
     assert record_2["cancel_requested"] is True
     assert record_2["cancel_successful"] is False
+
+    with pytest.raises(MissingJobRecordError):
+        update_job_records([{"job_id": 5, "cancel_requested": True}])

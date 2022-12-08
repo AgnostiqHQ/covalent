@@ -30,16 +30,14 @@ import pytest
 import covalent as ct
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
-from covalent._workflow.transport import _TransportGraph
 from covalent_dispatcher._core.data_manager import (
     _dispatch_status_queues,
-    _metadata_graphs,
     _register_result_object,
     _registered_dispatches,
+    _task_job_maps,
     _update_parent_electron,
     finalize_dispatch,
     get_metadata_for_nodes,
-    get_node_metadata,
     get_result_object,
     get_status_queue,
     initialize_result_object,
@@ -61,14 +59,6 @@ def test_db():
         db_URL="sqlite+pysqlite:///:memory:",
         initialize_db=True,
     )
-
-
-@pytest.fixture
-def mock_tg():
-    tg = _TransportGraph()
-    tg.add_node_by_id(0, job_id=1, executor="local")
-    tg.add_node_by_id(1, job_id=2, executor="dask")
-    return tg
 
 
 def get_mock_result() -> Result:
@@ -182,26 +172,30 @@ def test_get_result_object(mocker):
     del _registered_dispatches[dispatch_id]
 
 
-def test_register_result_object(mock_tg, mocker):
+def test_register_result_object(mocker):
     result_object = get_mock_result()
     dispatch_id = result_object.dispatch_id
-    mock_abstract_tg = mocker.patch(
-        "covalent_dispatcher._core.data_manager.load.abstract_tg", return_value=mock_tg
+    task_job_map = {0: 1}
+    mock_load = mocker.patch(
+        "covalent_dispatcher._db.load.task_job_map", return_value=task_job_map
     )
+
     _register_result_object(result_object)
     assert _registered_dispatches[dispatch_id] is result_object
+    assert _task_job_maps[dispatch_id] is task_job_map
     del _registered_dispatches[dispatch_id]
+    del _task_job_maps[dispatch_id]
 
 
-def test_unregister_result_object(mock_tg, mocker):
+def test_unregister_result_object(mocker):
     result_object = get_mock_result()
     dispatch_id = result_object.dispatch_id
+    task_job_map = {0: 1}
     _registered_dispatches[dispatch_id] = result_object
-    mock_abstract_tg = mocker.patch(
-        "covalent_dispatcher._core.data_manager.load.abstract_tg", return_value=mock_tg
-    )
+    _task_job_maps[dispatch_id] = task_job_map
     finalize_dispatch(dispatch_id)
     assert dispatch_id not in _registered_dispatches
+    assert dispatch_id not in _task_job_maps
 
 
 def test_get_status_queue():
@@ -284,28 +278,13 @@ def test_upsert_lattice_data(mocker):
 
 
 @pytest.mark.asyncio
-async def test_get_node_metadata(mock_tg, mocker):
+async def test_get_metadata_for_nodes(mocker):
     dispatch_id = "asdf123"
-    if dispatch_id in _metadata_graphs:
-        del _metadata_graphs[dispatch_id]
 
-    _metadata_graphs[dispatch_id] = mock_tg
-    mock_abstract_tg = mocker.patch(
-        "covalent_dispatcher._core.data_manager.load.abstract_tg", return_value=mock_tg
-    )
-    assert await get_node_metadata("asdf", 1, "executor") == "dask"
-    assert await get_node_metadata("asdf123", 0, "executor") == "local"
-
-
-@pytest.mark.asyncio
-async def test_get_metadata_for_nodes(mock_tg, mocker):
-    dispatch_id = "asdf123"
-    if dispatch_id in _metadata_graphs:
-        del _metadata_graphs[dispatch_id]
-
-    _metadata_graphs[dispatch_id] = mock_tg
-    mock_abstract_tg = mocker.patch(
-        "covalent_dispatcher._core.data_manager.load.abstract_tg", return_value=mock_tg
+    result_obj = get_mock_result()
+    mock_get_result_obj = mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_result_object",
+        return_value=result_obj,
     )
     records = await get_metadata_for_nodes("asdf123", [0, 1])
     assert records[0]["executor"] == "local"

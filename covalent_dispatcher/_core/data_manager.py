@@ -31,7 +31,7 @@ from covalent._workflow.lattice import Lattice
 
 from .._db import load, update, upsert
 from .._db.write_result_to_db import resolve_electron_id
-from .data_modules.shared_data import _metadata_graphs
+from .data_modules.shared_data import _task_job_maps
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -161,13 +161,13 @@ def get_result_object(dispatch_id: str) -> Result:
 def _register_result_object(result_object: Result):
     dispatch_id = result_object.dispatch_id
     _registered_dispatches[dispatch_id] = result_object
-    _metadata_graphs[dispatch_id] = load.abstract_tg(dispatch_id)
+    _task_job_maps[dispatch_id] = load.task_job_map(dispatch_id)
     _dispatch_status_queues[dispatch_id] = asyncio.Queue()
 
 
 def finalize_dispatch(dispatch_id: str):
     del _dispatch_status_queues[dispatch_id]
-    del _metadata_graphs[dispatch_id]
+    del _task_job_maps[dispatch_id]
     del _registered_dispatches[dispatch_id]
 
 
@@ -207,19 +207,8 @@ def upsert_lattice_data(dispatch_id: str):
     upsert.lattice_data(result_object)
 
 
-async def _get_metadata_graph(dispatch_id: str):
-    tg = _metadata_graphs.get(dispatch_id, None)
-    if not tg:
-        tg = load.abstract_tg(dispatch_id)
-    return tg
-
-
-async def get_node_metadata(dispatch_id: str, node_id: int, key: str):
-    tg = await _get_metadata_graph(dispatch_id)
-    return tg.get_node_value(node_id, key)
-
-
 async def get_metadata_for_nodes(dispatch_id: str, node_ids: list):
 
-    tg = await _get_metadata_graph(dispatch_id)
-    return list(map(lambda x: tg._graph.nodes[x].copy(), node_ids))
+    res = get_result_object(dispatch_id)
+    tg = res.lattice.transport_graph
+    return list(map(lambda x: tg.get_node_value(x, "metadata"), node_ids))

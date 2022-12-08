@@ -22,4 +22,4 @@
 Global data structures for the data manager
 """
 
-_metadata_graphs = {}
+_task_job_maps = {}

@@ -427,7 +427,7 @@ async def test_cancel_tasks(mocker):
     executor = "local"
     executor_data = {}
     job_metadata = [{"job_id": 5, "job_handle": "1"}]
-    node_metadata = [{"metadata": {"executor": executor, "executor_data": executor_data}}]
+    node_metadata = [{"executor": executor, "executor_data": executor_data}]
 
     mock_cancel = mocker.patch("covalent_dispatcher._core.runner._cancel_task")
     mocker.patch(

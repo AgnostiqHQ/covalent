@@ -28,7 +28,7 @@ import pytest
 import covalent as ct
 from covalent._shared_files.defaults import parameter_prefix, prefix_separator
 from covalent_dispatcher._db.datastore import DataStore
-from covalent_dispatcher._db.load import abstract_tg
+from covalent_dispatcher._db.load import task_job_map
 from covalent_dispatcher._db.write_result_to_db import (
     get_electron_type,
     insert_electron_dependency_data,
@@ -223,7 +223,7 @@ def get_electron_kwargs(
     }
 
 
-def test_abstract_tg(test_db, workflow_lattice, mocker):
+def test_task_job_map(test_db, workflow_lattice, mocker):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.load.workflow_db", test_db)
@@ -248,15 +248,7 @@ def test_abstract_tg(test_db, workflow_lattice, mocker):
 
     insert_electron_dependency_data("dispatch_1", workflow_lattice)
 
-    tg = abstract_tg("dispatch_1")
+    job_map = task_job_map("dispatch_1")
 
-    assert list(tg._graph.nodes) == [0, 1, 2, 3, 4]
-    assert tg.get_node_value(0, "type") == "function"
-    assert tg.get_node_value(1, "type") == "parameter"
-    assert tg.get_node_value(2, "type") == "parameter"
-    assert tg.get_node_value(3, "type") == "sublattice"
-    assert tg.get_node_value(4, "type") == "parameter"
-    assert (1, 0, 0) in tg._graph.edges
-    assert (2, 0, 0) in tg._graph.edges
-    assert (0, 3, 0) in tg._graph.edges
-    assert (4, 3, 0) in tg._graph.edges
+    for i in range(5):
+        assert job_map[i] == i + 1

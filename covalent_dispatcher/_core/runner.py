@@ -561,8 +561,8 @@ async def cancel_tasks(dispatch_id: str, task_ids: List[int]):
     def to_cancel_kwargs(i, node_id):
         return {
             "task_id": node_id,
-            "executor": node_metadata[i]["metadata"]["executor"],
-            "executor_data": node_metadata[i]["metadata"]["executor_data"],
+            "executor": node_metadata[i]["executor"],
+            "executor_data": node_metadata[i]["executor_data"],
             "job_handle": job_metadata[i]["job_handle"],
         }
 

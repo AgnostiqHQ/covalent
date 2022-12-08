@@ -22,8 +22,6 @@
 
 import os
 
-import pytest
-
 import covalent as ct
 import covalent._results_manager.results_manager as rm
 from covalent._results_manager.result import Result
@@ -541,7 +539,6 @@ def test_intermediate_electron_failure():
     assert tg.get_node_value(0, "status") == Result.FAILED
 
 
-@pytest.mark.skip(reason="Inconsistent outcomes")
 def test_dispatch_cancellation():
     """
     Test whether a running dispatch can be successfully cancelled.
