@@ -631,7 +631,7 @@ def test_client_workflow_executor():
     def new_func(a, b, c, d, e):
         return a + b + c + d + e
 
-    @ct.lattice(workflow_executor="client")
+    @ct.lattice(workflow_executor="client", postprocess=True)
     def work_func(a, b, c):
         return new_func(a, b, c, d=4, e=5)
 
