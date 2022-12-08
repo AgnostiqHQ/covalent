@@ -84,9 +84,14 @@ class Lattice:
         self.named_args = {}
         self.named_kwargs = {}
         self.electron_outputs = {}
-        self.return_info = {"placeholder": TransportableObject(None), "electron_ids": []}
         self.lattice_imports, self.cova_imports = get_imports(self.workflow_function)
         self.cova_imports.update({"electron"})
+
+        self.return_info = {
+            "placeholder": TransportableObject(None),
+            "electron_ids": [],
+            "postprocess": False
+        }
 
         self.workflow_function = TransportableObject.make_transportable(self.workflow_function)
 
@@ -234,15 +239,20 @@ class Lattice:
             with active_lattice_manager.claim(self):
                 try:
                     return_value = workflow_function(*new_args, **new_kwargs)
-                    placeholder, electron_ids = Lattice.preprocess_return(return_value)
-                    placeholder = TransportableObject.make_transportable(placeholder)
-                    self.return_info["placeholder"] = placeholder
-                    self.return_info["electron_ids"] = electron_ids
                 except Exception:
                     warnings.warn(
                         "Please make sure you are not manipulating an object inside the lattice."
                     )
                     raise
+
+        # store result info if postprocessing not requested
+        if self.get_metadata("postprocess"):
+            self.return_info["postprocess"] = True
+        else:
+            placeholder, electron_ids = Lattice.preprocess_return(return_value)
+            placeholder = TransportableObject.make_transportable(placeholder)
+            self.return_info["placeholder"] = placeholder
+            self.return_info["electron_ids"] = electron_ids
 
         # Set workflow executor if not set by user
         postprocessor = self.metadata["workflow_executor"]

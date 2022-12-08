@@ -121,6 +121,7 @@ def _result_from(lattice_record: Lattice) -> Result:
             "call_before": call_before,
             "call_after": call_after,
             "results_dir": results_dir,
+            "postprocess": return_info["postprocess"],
         },
         "args": inputs["args"],
         "kwargs": inputs["kwargs"],
