@@ -21,12 +21,12 @@ The dispatcher constructs the transport graph by sequentially inspecting the ele
 Workflow Dispatch
 =================
 
-Recall that you dispatch a workflow in your Python code using the Covalent :code:`dispatch()` function::
+Recall that you dispatch a workflow in your Python code using the Covalent :code:`dispatch()` function:
 
 .. code-block:: python
-    :linenos:
 
     # Send the run_experiment() lattice to the dispatch server
+
     dispatch_id = ct.dispatch(run_experiment)(C=1.0, gamma=0.7)
 
 The dispatcher ingests the workflow and generates a dispatch ID, then tags all information about the dispatched workflow with the dispatch ID. This information includes:
