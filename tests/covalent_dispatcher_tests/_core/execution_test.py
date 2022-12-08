@@ -640,6 +640,7 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
     dispatch_id = "asdf"
     result_object = get_mock_result()
     result_object.lattice.set_metadata("workflow_executor", "client")
+    result_object.lattice.set_metadata("postprocess", True)
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
@@ -670,6 +671,7 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
         assert False
 
     result_object.lattice.set_metadata("workflow_executor", "bogus")
+    result_object.lattice.set_metadata("postprocess", True)
     result_object = await run_workflow(result_object)
 
     assert result_object.status == Result.POSTPROCESSING_FAILED
@@ -700,6 +702,7 @@ def test_build_sublattice_graph():
         "call_before": [],
         "call_after": [],
         "results_dir": None,
+        "postprocess": False,
     }
 
     json_lattice = _build_sublattice_graph(workflow, parent_metadata, 1)
