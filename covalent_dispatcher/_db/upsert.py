@@ -18,7 +18,6 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
@@ -209,7 +208,6 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
             node_output = None
 
         executor = tg.get_node_value(node_id, "metadata")["executor"]
-        executor_data = tg.get_node_value(node_id, "metadata")["executor_data"]
         started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
         completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
 
@@ -263,7 +261,6 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
                 "function_filename": ELECTRON_FUNCTION_FILENAME,
                 "function_string_filename": ELECTRON_FUNCTION_STRING_FILENAME,
                 "executor": executor,
-                "executor_data": json.dumps(executor_data),
                 "executor_data_filename": ELECTRON_EXECUTOR_DATA_FILENAME,
                 "results_filename": ELECTRON_RESULTS_FILENAME,
                 "value_filename": ELECTRON_VALUE_FILENAME,

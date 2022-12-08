@@ -20,7 +20,6 @@
 
 """Unit tests for the module used to write the decomposed result object to the database."""
 
-import json
 import tempfile
 from datetime import datetime as dt
 from datetime import timezone
@@ -201,7 +200,6 @@ def get_electron_kwargs(
     function_filename=FUNCTION_STRING_FILENAME,
     function_string_filename=FUNCTION_STRING_FILENAME,
     executor="dask",
-    executor_data=json.dumps({"scheduler": "tcp://localhost:8786"}),
     executor_data_filename=EXECUTOR_DATA_FILENAME,
     results_filename=RESULTS_FILENAME,
     value_filename=VALUE_FILENAME,
@@ -230,7 +228,6 @@ def get_electron_kwargs(
         "function_filename": function_filename,
         "function_string_filename": function_string_filename,
         "executor": executor,
-        "executor_data": executor_data,
         "executor_data_filename": executor_data_filename,
         "results_filename": results_filename,
         "value_filename": value_filename,
@@ -367,10 +364,6 @@ def test_insert_electrons_data(cancel_requested, test_db, mocker):
                     )
                 elif key == "cancel_requested":
                     continue
-                elif key == "executor_data":
-                    assert getattr(electron, key) == json.dumps(
-                        {"scheduler": "tcp://localhost:8786"}
-                    )
                 else:
                     assert getattr(electron, key) == value
             assert electron.is_active
