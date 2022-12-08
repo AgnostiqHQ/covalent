@@ -86,7 +86,7 @@ class Result:
         self._status = Result.NEW_OBJ
 
         self._result = TransportableObject(None)
-        self._rebuild_ids = None
+        self._rebuild_ids = []
 
         self._num_nodes = -1
 
