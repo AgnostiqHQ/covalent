@@ -196,6 +196,34 @@ def _post_process(lattice: Lattice, node_outputs: Dict) -> Any:
         return result
 
 
+# This is to be run out-of-process
+def _reconstruct(lattice: Lattice) -> None:
+    """
+    Reconstructing function to be called after lattice execution.
+    Un-processes placeholder result by substituting in electrons outputs
+    from corresponding node ids.
+
+    This function implements an alternative to `_post_process(lattice, node_output)`
+
+    Args:
+        lattice: Lattice object that was dispatched.
+
+    Returns:
+        result: The result of the lattice function
+    """
+    node_outputs = {}
+    for node_id in set(lattice.return_info["electron_ids"]):
+        val = lattice.transport_graph.get_node_value(node_id, "output")
+        node_outputs[node_id] = val
+
+    result = Result.unprocess_return(
+        outputs_map=node_outputs,
+        retval=lattice.return_info["placeholder"].get_deserialized(),
+    )
+
+    return result
+
+
 async def _dispatch_sync_sublattice(
     parent_result_object: Result,
     parent_electron_id: int,
@@ -620,26 +648,72 @@ async def _reconstruct_sublattice_result(result_object: Result) -> Result:
     Returns:
         The result object with a restructured result value
     """
-    result_object._status = Result.POSTPROCESSING
+    rc_executor = result_object.lattice.get_metadata("workflow_executor")
+    rc_executor_data = result_object.lattice.get_metadata("workflow_executor_data")
+    selected_executor = [rc_executor, rc_executor_data]
+
+    result_object._status = Result.PENDING_RECONSTRUCTION
     upsert._lattice_data(result_object)
 
-    outputs_map = {
-        node_id: result_object._lattice.transport_graph.get_node_value(node_id, "output")
-        for node_id in set(result_object.lattice.return_info["electron_ids"])
+    app_log.debug(f"Preparing to reconstruct sublattice result {result_object.dispatch_id}")
+
+    reconstruct_inputs = {
+        "args": [TransportableObject.make_transportable(result_object._lattice)],
+        "kwargs": {}
     }
 
-    result = Result.unprocess_return(
-        outputs_map=outputs_map,
-        retval=result_object._lattice.return_info["placeholder"].get_deserialized(),
-    )
+    try:
+        future = asyncio.create_task(
+            _run_task(
+                result_object=result_object,
+                node_id=-2,
+                serialized_callable=TransportableObject(_reconstruct),
+                selected_executor=selected_executor,
+                node_name="reconstruct",
+                call_before=[],
+                call_after=[],
+                inputs=reconstruct_inputs,
+                workflow_executor=selected_executor,
+            )
+        )
+        rc_start_time = datetime.now(timezone.utc)
+        app_log.debug(
+            "Submitting reconstruction job to executor "
+            f"{selected_executor} at {rc_start_time}"
+        )
 
-    result_object._result = TransportableObject.make_transportable(result)
+        rc_result = await future
+    except Exception as ex:
+        # Error during dispatch, no useful result
+        app_log.debug(f"Exception during reconstruction: {ex}")
+        result_object._result = TransportableObject(None)
+        result_object._status = Result.RECONSTRUCTION_FAILED
+        result_object._error = "Reconstruction failed"
+        result_object._end_time = datetime.now(timezone.utc)
+        upsert._lattice_data(result_object)
+        await result_webhook.send_update(result_object)
+
+        return result_object
+    
+    if rc_result["status"] != Result.COMPLETED:
+        # Dispatch successful, but error on executor
+        err = rc_result["stderr"]
+        app_log.debug(f"Reconstruction failed: {err}")
+        result_object._result = TransportableObject(None)
+        result_object._status = Result.RECONSTRUCTION_FAILED
+        result_object._error = f"Reconstruction failed: {err}"
+        result_object._end_time = datetime.now(timezone.utc)
+        upsert._lattice_data(result_object)
+        await result_webhook.send_update(result_object)
+
+        return result_object
+
+    # Completed without errors
+    app_log.debug(f"Reconstruction completed at {rc_result['end_time']}")
+    result_object._result = rc_result["output"]
     result_object._rebuild_ids = []
     result_object._status = Result.COMPLETED
     result_object._end_time = datetime.now(timezone.utc)
-
-    upsert._lattice_data(result_object)
-    await result_webhook.send_update(result_object)
 
     return result_object
 
@@ -804,11 +878,9 @@ async def _run_planned_workflow(result_object: Result) -> Result:
     else:
         # workflow result: set up for client-side reconstruct
         app_log.debug(f"Reconstructing workflow result {result_object._dispatch_id}")
-        result_object._rebuild_ids = result_object.lattice.return_info["electron_ids"]
-        result_object._result = result_object.lattice.return_info["placeholder"]
+        result_object._result = result_object._lattice.return_info["placeholder"]
         result_object._status = Result.COMPLETED
         result_object._end_time = datetime.now(timezone.utc)
-        upsert._lattice_data(result_object)
 
     update.persist(result_object)
     await result_webhook.send_update(result_object)
