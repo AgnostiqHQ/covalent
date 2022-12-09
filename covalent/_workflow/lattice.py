@@ -28,11 +28,9 @@ from contextlib import redirect_stdout
 from copy import deepcopy
 from dataclasses import asdict
 from functools import wraps
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 from .._shared_files import logger
-from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import DefaultMetadataValues
 from .._shared_files.utils import get_named_params, get_serialized_function_str
@@ -314,7 +312,6 @@ def lattice(
     *,
     backend: Optional[str] = None,
     executor: Optional[Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]] = None,
-    results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     workflow_executor: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
     ] = None,
@@ -337,7 +334,6 @@ def lattice(
             executor is used by default.
         workflow_executor: Executor for postprocessing the workflow. Defaults to the built-in dask executor or
             the local executor depending on whether Covalent is started with the `--no-cluster` option.
-        results_dir: Directory to store the results
         deps_bash: An optional DepsBash object specifying a list of shell commands to run before `_func`
         deps_pip: An optional DepsPip object specifying a list of PyPI packages to install before running `_func`
         call_before: An optional list of DepsCall objects specifying python functions to invoke before the electron
@@ -353,8 +349,6 @@ def lattice(
             exc_info=DeprecationWarning,
         )
         executor = backend
-
-    results_dir = str(Path(results_dir).expanduser().resolve())
 
     deps = {}
 
@@ -376,7 +370,6 @@ def lattice(
 
     constraints = {
         "executor": executor,
-        "results_dir": results_dir,
         "workflow_executor": workflow_executor,
         "deps": deps,
         "call_before": call_before,
