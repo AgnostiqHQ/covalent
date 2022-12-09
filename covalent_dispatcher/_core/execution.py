@@ -694,7 +694,7 @@ async def _reconstruct_sublattice_result(result_object: Result) -> Result:
         await result_webhook.send_update(result_object)
 
         return result_object
-    
+
     if rc_result["status"] != Result.COMPLETED:
         # Dispatch successful, but error on executor
         err = rc_result["stderr"]
