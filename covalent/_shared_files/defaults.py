@@ -46,7 +46,7 @@ def get_default_sdk_config():
         "config_file": (
             os.environ.get("COVALENT_CONFIG_DIR")
             or os.environ.get("XDG_CONFIG_DIR")
-            or os.environ["HOME"] + "/.config/covalent"
+            or (os.environ["HOME"] + "/.config/covalent")
         )
         + "/covalent.conf",
         "log_dir": (
