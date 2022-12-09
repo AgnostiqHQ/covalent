@@ -78,7 +78,7 @@ def get_mock_result() -> Result:
         print("Error!", file=sys.stderr)
         return x
 
-    @ct.lattice(results_dir=TEST_RESULTS_DIR, deps_bash=ct.DepsBash(["ls"]))
+    @ct.lattice(deps_bash=ct.DepsBash(["ls"]))
     def pipeline(x):
         res1 = task(x)
         res2 = task(res1)
@@ -86,9 +86,7 @@ def get_mock_result() -> Result:
 
     pipeline.build_graph(x="absolute")
     received_workflow = Lattice.deserialize_from_json(pipeline.serialize_to_json())
-    result_object = Result(
-        received_workflow, pipeline.metadata["results_dir"], "pipeline_workflow"
-    )
+    result_object = Result(received_workflow, "pipeline_workflow")
 
     return result_object
 
@@ -133,7 +131,7 @@ def test_plan_workflow():
 
     workflow.metadata["schedule"] = True
     received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
-    result_object = Result(received_workflow, "/tmp", "asdf")
+    result_object = Result(received_workflow, "asdf")
     _plan_workflow(result_object=result_object)
 
     # Updated transport graph post planning
@@ -252,7 +250,7 @@ def test_get_task_inputs():
     tg.set_node_value(3, "output", ct.TransportableObject(2))
     tg.set_node_value(4, "output", ct.TransportableObject(3))
 
-    result_object = Result(lattice=list_workflow, results_dir="/tmp", dispatch_id="asdf")
+    result_object = Result(lattice=list_workflow, dispatch_id="asdf")
     task_inputs = _get_task_inputs(1, tg.get_node_value(1, "name"), result_object)
 
     expected_inputs = {"args": [], "kwargs": {"x": ct.TransportableObject(serialized_args)}}
@@ -271,7 +269,7 @@ def test_get_task_inputs():
     tg.set_node_value(2, "output", ct.TransportableObject(1))
     tg.set_node_value(3, "output", ct.TransportableObject(2))
 
-    result_object = Result(lattice=dict_workflow, results_dir="/tmp", dispatch_id="asdf")
+    result_object = Result(lattice=dict_workflow, dispatch_id="asdf")
     task_inputs = _get_task_inputs(1, tg.get_node_value(1, "name"), result_object)
     expected_inputs = {"args": [], "kwargs": {"x": ct.TransportableObject(serialized_args)}}
 
@@ -283,7 +281,7 @@ def test_get_task_inputs():
     # Check arg order
     multivar_workflow.build_graph(1, 2)
     received_lattice = Lattice.deserialize_from_json(multivar_workflow.serialize_to_json())
-    result_object = Result(lattice=received_lattice, results_dir="/tmp", dispatch_id="asdf")
+    result_object = Result(lattice=received_lattice, dispatch_id="asdf")
     tg = received_lattice.transport_graph
 
     assert list(tg._graph.nodes) == [0, 1, 2, 3, 4, 5, 6, 7]
@@ -326,7 +324,7 @@ def test_gather_deps():
     workflow.build_graph(5)
 
     received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
-    result_object = Result(received_workflow, "/tmp", "asdf")
+    result_object = Result(received_workflow, "asdf")
 
     before, after = _gather_deps(result_object, 0)
     assert len(before) == 1
@@ -506,7 +504,7 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
     json_lattice = workflow.serialize_to_json()
     dispatch_id = "asdf"
     lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice, lattice.metadata["results_dir"])
+    result_object = Result(lattice)
     result_object._dispatch_id = dispatch_id
     result_object._root_dispatch_id = dispatch_id
     result_object._initialize_nodes()
@@ -558,7 +556,7 @@ async def test_run_workflow_with_failing_leaf(mocker):
     json_lattice = workflow.serialize_to_json()
     dispatch_id = "asdf"
     lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice, lattice.metadata["results_dir"])
+    result_object = Result(lattice)
     result_object._dispatch_id = dispatch_id
     result_object._root_dispatch_id = dispatch_id
     result_object._initialize_nodes()
