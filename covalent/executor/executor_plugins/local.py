@@ -24,7 +24,6 @@ Module for defining a local executor that directly invokes the input python func
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
-
 import multiprocessing as mp
 import os
 from typing import Callable, Dict, List
@@ -40,6 +39,9 @@ from covalent.executor.utils.wrappers import local_wrapper
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "LocalExecutor"
 
+# Platform enums for determening multiprocessing start mode
+PLATFORM_DARWIN = "Darwin"
+
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
@@ -52,6 +54,15 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
 }
 
 
+# try:
+#     #app_log.debug("Setting ")
+#     print("Setting start method")
+#     mp.set_start_method('fork',)
+# except RuntimeError as e:
+#     print(e)
+#     pass
+
+
 class LocalExecutor(BaseExecutor):
     """
     Local executor class that directly invokes the input function.
@@ -61,6 +72,7 @@ class LocalExecutor(BaseExecutor):
         app_log.debug(f"Running function {function} locally")
         q = mp.Queue()
 
+        print(f"Using start method: {mp.get_start_method()}")
         # Run the target function in a separate process
         proc = mp.Process(target=local_wrapper, args=(function, args, kwargs, q))
         proc.start()
