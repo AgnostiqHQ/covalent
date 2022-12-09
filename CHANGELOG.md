@@ -64,6 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Respecting specified AWS profile & region in remote executed S3 file transfers, defaulting to env vars of execution backend
 - Fixed local executor tests on MacOS (second attempt)
 - The `initialize_results_dir` method attempts to use an environment variable instead of the results directory in the payload
+- Modified certain sqlalchemy commands for postgres compatibility
+- Removed references to results_dir in the payload
 
 ### Docs
 
