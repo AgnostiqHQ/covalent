@@ -28,7 +28,7 @@ import covalent_dispatcher as dispatcher
 from covalent._results_manager import results_manager as rm
 from covalent._shared_files.defaults import parameter_prefix
 
-from .data import TEST_RESULTS_DIR, get_mock_result, get_mock_result_2, get_mock_result_3
+from .data import get_mock_result, get_mock_result_2, get_mock_result_3
 
 
 @pytest.mark.parametrize(
@@ -64,6 +64,4 @@ def test_dispatcher_flow(mock_result, expected_res, expected_node_outputs):
 
     awaitable = dispatcher.run_dispatcher(json_lattice=serialized_lattice)
     dispatch_id = asyncio.run(awaitable)
-    rm._delete_result(
-        dispatch_id=dispatch_id, results_dir=TEST_RESULTS_DIR, remove_parent_directory=True
-    )
+    rm._delete_result(dispatch_id=dispatch_id, remove_parent_directory=True)
