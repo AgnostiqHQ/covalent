@@ -342,14 +342,14 @@ class Lattice:
             a copy of `value` with a placeholder substituted for each electron
         """
         from .electron import Electron
-        electron_placeholder = ":-{node_id}-:"
+        from .._results_manager.result import _Placeholder
 
         if isinstance(value, Electron):
             if electron_ids is None:
                 electron_ids = [value.node_id]
             else:
                 electron_ids.append(value.node_id)
-            return electron_placeholder.format(node_id=electron_ids[-1]), electron_ids
+            return _Placeholder(value), electron_ids
 
         if isinstance(value, tuple):
             new_return_value = tuple()

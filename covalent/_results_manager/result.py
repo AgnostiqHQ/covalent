@@ -20,6 +20,7 @@
 
 """Result object."""
 
+from dataclasses import dataclass, InitVar
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
@@ -27,6 +28,7 @@ from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
+from .._workflow.electron import Electron
 from .._workflow.lattice import Lattice
 from .._workflow.transport import TransportableObject
 
@@ -238,16 +240,12 @@ Node Outputs
         """
         Recursively reconstruct the workflow return value.
         """
-
         def _reconstructor(retval):
             """
             Helper
             """
-            if isinstance(retval, str):
-                output = retval
-                if retval.startswith(":-") and retval.endswith("-:"):
-                    node_id = int(retval.strip(":-"))
-                    output = outputs_map[node_id]
+            if isinstance(retval, _Placeholder):
+                output = outputs_map[retval.node_id]
                 if isinstance(output, TransportableObject):
                     output = output.get_deserialized()
                 return output
@@ -540,6 +538,20 @@ Node Outputs
         """
 
         return self._result
+
+
+@dataclass
+class _Placeholder:
+    """
+    Represents an electron output in the return value of a workflow lattice.
+    Placeholders are replaced with deserialized outputs during reconstruction.
+    """
+
+    value: InitVar[Any]
+    node_id: int = None
+
+    def __post_init__(self, value):
+        self.node_id = value.node_id
 
 
 def _filter_cova_decorators(function_string: str, cova_imports: Set[str]) -> str:
