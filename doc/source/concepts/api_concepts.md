@@ -30,7 +30,6 @@ The function decorated with {code}`@covalent.electron` can be any Python functio
 Here is a simple electron that adds two numbers:
 
 ```{code-block} python
-:linenos: true
 
 import covalent as ct
 
@@ -94,7 +93,6 @@ The example below illustrates this simple but powerful paradigm. The tasks are c
 (ml-example)=
 
 ```{code-block} python
-:linenos: true
 
 # ML example: electrons and lattice
 
@@ -190,7 +188,6 @@ Don't confuse {code}`ct.electron(lattice)`, which creates a sublattice, with {co
 You dispatch a workflow in your Python code using the Covalent {code}`dispatch()` function. For example, to dispatch the {code}`run_experiment` lattice in the {ref}`ML example <ml example>`:
 
 ```{code-block} python
-:linenos: true
 
 # Send the run_experiment() lattice to the dispatch server
 dispatch_id = ct.dispatch(run_experiment)(C=1.0, gamma=0.7)

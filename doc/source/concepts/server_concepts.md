@@ -4,16 +4,16 @@ The Covalent server runs as a service on your local machine or on a server. The 
 
 The examples that follow assume that the Covalent server is running locally. You start and manage the local server using the {ref}`Covalent command-line interface (CLI)<dispatcher_api>` tool. (See also {doc}`How-to Guide <../how_to/execution/covalent_cli>`.)
 
-(transport-graph)=
 
+(transport-graph)=
 ## Transport Graph
 
 Before executing the workflow, the dispatcher constructs a dependency graph of the tasks, called the *transport graph*. Transport graphs are *directed acyclic graphs*, which are a commonly used model for workflows. In this model, the nodes of the graph represent tasks and the edges represent dependencies.
 
 The dispatcher constructs the transport graph by sequentially inspecting the electrons within the lattice. As each electron is examined, a corresponding node and its input-output relations are added to the transport graph. You can view the transport graph in the GUI.
 
-(workflow-dispatch)=
 
+(workflow-dispatch)=
 ## Workflow Dispatch
 
 Recall that you dispatch a workflow in your Python code using the Covalent {code}`dispatch()` function:
@@ -32,8 +32,8 @@ The dispatcher ingests the workflow and generates a dispatch ID, then tags all i
 
 ... in short, everything about the instantiated workflow before, during, and after its execution. Every time you dispatch a workflow, all this information is saved and the process is executed on the server. This means that after the workflow is dispatched you can close the Jupyter notebook or console on which you ran the script. You can view information about the process in the {doc}`GUI <ui_concepts>`.
 
-(executors)=
 
+(executors)=
 ## Executors
 
 An executor is responsible for taking a task – an electron – and executing it on a particular platform in a certain way. For example, the *local* executor invokes the task on your local computer. You can specify an executor as a parameter when you define an electron, or omit the parameter to use the default executor.
@@ -65,7 +65,6 @@ Covalent enables you to break down your workflow by compute requirements. You ca
 For example, you might need to compute one task on a quantum platform and a different task on a GPU cluster:
 
 ```{code-block} python
-:linenos: true
 
 @ct.electron(executor=quantum_executor)
 def task_1(**params):
@@ -78,24 +77,24 @@ def task_2(**params):
     return val
 ```
 
-(results)=
 
+(results)=
 ## Results
 
 Covalent stores the result of every lattice computation in a {doc}`Result <../api/results>` object.
 
 The {code}`Result` object contains not just the computed return value of the lattice function, but dispatch-related data including task and workflow times and durations, return statuses, and references to the lattice and parameters that generated the dispatch.
 
-(workflow-result-collection)=
 
+(workflow-result-collection)=
 ### Workflow Result Collection
 
 Regardless of the eventual workflow outcome, a {code}`Result` object is created and associated with the {ref}`dispatch ID <Workflow Dispatch>` upon dispatch and is updated as tasks complete.
 
 The Covalent UI provides a list of dispatched workflows. As each workflow task is terminated, either due to an error, cancellation, or successful completion, the {ref}`result<Results>` object is updated by the {ref}`result manager<Result manager>`.
 
-(result-manager)=
 
+(result-manager)=
 ### Result Manager
 
 The Covalent server contains a Result Manager responsible for storing, updating, and retrieving workflow {code}`Result` objects. The Result Manager sits between the dispatched {code}`@lattice` and the {code}`Result` object, storing the experiment result and decoupling it from the workflow defined in a Jupyter notebook or Python script.
