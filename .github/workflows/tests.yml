@@ -127,12 +127,7 @@ jobs:
           if [ ${{ steps.modified-files.outputs.ui_frontend }} = 'true' ] ; then
             NEED_FRONTEND=true
           fi
-          if [ ${{ github.event_name }} != 'pull_request' ] \
-            || [ ${{ steps.modified-files.outputs.functional_tests }} = 'true' ] \
-            || [ ${{ steps.modified-files.outputs.build }} = 'true' ] \
-            || [ ${{ steps.modified-files.outputs.actions }} = 'true' ] ; then
-            BUILD_AND_RUN_ALL=true
-          fi
+          BUILD_AND_RUN_ALL=true
           echo "RECOMMENDED_PLATFORM=$RECOMMENDED_PLATFORM" >> $GITHUB_ENV
           echo "NEED_PYTHON=$NEED_PYTHON" >> $GITHUB_ENV
           echo "NEED_FRONTEND=$NEED_FRONTEND" >> $GITHUB_ENV
