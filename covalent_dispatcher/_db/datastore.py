@@ -60,7 +60,7 @@ class DataStore:
 
     @staticmethod
     def factory():
-        return DataStore(db_URL=environ.get("COVALENT_DATABASE_URL", ""), echo=False)
+        return DataStore(db_URL=environ.get("COVALENT_DATABASE_URL"), echo=False)
 
     def get_alembic_config(self, logging_enabled: bool = True):
         alembic_ini_path = Path(path.join(__file__, "./../../../covalent_migrations/alembic.ini"))
