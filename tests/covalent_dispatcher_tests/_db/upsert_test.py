@@ -48,7 +48,7 @@ def result_1():
     def task_2(x, y):
         return x + y
 
-    @ct.lattice(executor=le, workflow_executor=le, results_dir=TEMP_RESULTS_DIR)
+    @ct.lattice(executor=le, workflow_executor=le)
     def workflow_1(a, b):
         """Docstring"""
         res_1 = task_1(a, b)
@@ -57,10 +57,8 @@ def result_1():
     Path(f"{TEMP_RESULTS_DIR}/dispatch_1").mkdir(parents=True, exist_ok=True)
     workflow_1.build_graph(a=1, b=2)
     received_lattice = LatticeClass.deserialize_from_json(workflow_1.serialize_to_json())
-    result = Result(
-        lattice=received_lattice, results_dir=TEMP_RESULTS_DIR, dispatch_id="dispatch_1"
-    )
-    result.lattice.metadata["results_dir"] = TEMP_RESULTS_DIR
+    result = Result(lattice=received_lattice, dispatch_id="dispatch_1")
+    #    result.lattice.metadata["results_dir"] = TEMP_RESULTS_DIR
     result._initialize_nodes()
     return result
 

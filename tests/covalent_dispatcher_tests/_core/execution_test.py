@@ -78,7 +78,7 @@ def get_mock_result() -> Result:
         print("Error!", file=sys.stderr)
         return x
 
-    @ct.lattice(results_dir=TEST_RESULTS_DIR, deps_bash=ct.DepsBash(["ls"]))
+    @ct.lattice(deps_bash=ct.DepsBash(["ls"]))
     def pipeline(x):
         res1 = task(x)
         res2 = task(res1)
@@ -86,9 +86,7 @@ def get_mock_result() -> Result:
 
     pipeline.build_graph(x="absolute")
     received_workflow = Lattice.deserialize_from_json(pipeline.serialize_to_json())
-    result_object = Result(
-        received_workflow, pipeline.metadata["results_dir"], "pipeline_workflow"
-    )
+    result_object = Result(received_workflow, "pipeline_workflow")
 
     return result_object
 
@@ -112,9 +110,7 @@ def test_initialize_result_object(mocker, test_db):
 
     mock_persist = mocker.patch("covalent_dispatcher._db.update.persist")
 
-    sub_result_object = initialize_result_object(
-        json_lattice=json_lattice, parent_result_object=result_object, parent_electron_id=5
-    )
+    sub_result_object = initialize_result_object(json_lattice=json_lattice, parent_electron_id=5)
 
     mock_persist.assert_called_with(sub_result_object, electron_id=5)
     assert sub_result_object._root_dispatch_id == result_object.dispatch_id
@@ -133,7 +129,7 @@ def test_plan_workflow():
 
     workflow.metadata["schedule"] = True
     received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
-    result_object = Result(received_workflow, "/tmp", "asdf")
+    result_object = Result(received_workflow, "asdf")
     _plan_workflow(result_object=result_object)
 
     # Updated transport graph post planning
