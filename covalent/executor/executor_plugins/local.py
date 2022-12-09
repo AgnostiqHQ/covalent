@@ -51,6 +51,13 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     ),
 }
 
+try:
+    print("Setting start method")
+    mp.set_start_method("fork")
+except RuntimeError as e:
+    print(e)
+    pass
+
 
 class LocalExecutor(BaseExecutor):
     """
