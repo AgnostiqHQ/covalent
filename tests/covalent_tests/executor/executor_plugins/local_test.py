@@ -42,7 +42,7 @@ def _local_executor_run_exception_handling_mock_function(x):
     raise RuntimeError("error")
 
 
-def _test_local_wrapper_fn_exception_handling_mock_function(x):
+def _test_local_wrapper_fn_exception_handling_mock_function():
     raise RuntimeError("Err")
 
 
@@ -142,7 +142,7 @@ def test_local_executor_run_exception_handling(mocker):
     task_metadata = {"dispatch_id": "asdf", "node_id": 1}
     with pytest.raises(TaskRuntimeError) as ex:
         le.run(_local_executor_run_exception_handling_mock_function, args, kwargs, task_metadata)
-    assert "f output" in le._task_stdout.getvalue()
+    le._task_stdout.getvalue() == "f output"
     assert "RuntimeError" in le._task_stderr.getvalue()
 
 
@@ -153,7 +153,9 @@ def test_local_wrapper_fn_exception_handling(mocker):
 
     args = [5]
     kwargs = {}
+    error_msg = "task failed"
     q = mp.Queue()
+    mocker.patch("traceback.TracebackException.from_exception", return_value=error_msg)
     p = mp.Process(
         target=local_wrapper,
         args=(_test_local_wrapper_fn_exception_handling_mock_function, args, kwargs, q),
@@ -162,5 +164,5 @@ def test_local_wrapper_fn_exception_handling(mocker):
     p.join()
     output, stdout, stderr, tb = q.get(False)
 
-    assert "RuntimeError" in tb
+    assert tb == error_msg
     assert output is None
