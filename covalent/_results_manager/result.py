@@ -19,11 +19,12 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 """Result object."""
-
+import os
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
 from .._shared_files import logger
+from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
@@ -71,12 +72,14 @@ class Result:
     FAILED = RESULT_STATUS.FAILED
     CANCELLED = RESULT_STATUS.CANCELLED
 
-    def __init__(self, lattice: Lattice, results_dir: str, dispatch_id: str = None) -> None:
+    def __init__(self, lattice: Lattice, dispatch_id: str = "") -> None:
 
         self._start_time = None
         self._end_time = None
 
-        self._results_dir = results_dir
+        self._results_dir = os.environ.get("COVALENT_DATA_DIR") or get_config(
+            "dispatcher.results_dir"
+        )
 
         self._lattice = lattice
         self._dispatch_id = dispatch_id
