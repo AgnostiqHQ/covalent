@@ -341,9 +341,10 @@ class Lattice:
         Returns:
             a copy of `value` with a placeholder substituted for each electron
         """
+        from .electron import Electron
         electron_placeholder = ":-{node_id}-:"
 
-        if value.__class__.__name__ == "Electron" and hasattr(value, "node_id"):
+        if isinstance(value, Electron):
             if electron_ids is None:
                 electron_ids = [value.node_id]
             else:
