@@ -68,6 +68,7 @@ INPUTS_FILENAME = "inputs.pkl"
 NAMED_ARGS_FILENAME = "named_args.pkl"
 NAMED_KWARGS_FILENAME = "named_kwargs.pkl"
 RESULTS_FILENAME = "results.pkl"
+RETURN_INFO_FILENAME = "return_info.pkl"
 VALUE_FILENAME = "value.pkl"
 STDOUT_FILENAME = "stdout.log"
 STDERR_FILENAME = "stderr.log"
@@ -137,6 +138,7 @@ def get_lattice_kwargs(
     named_args_filename=NAMED_ARGS_FILENAME,
     named_kwargs_filename=NAMED_KWARGS_FILENAME,
     results_filename=RESULTS_FILENAME,
+    return_info_filename=RETURN_INFO_FILENAME,
     transport_graph_filename=TRANSPORT_GRAPH_FILENAME,
     deps_filename=DEPS_FILENAME,
     call_before_filename=CALL_BEFORE_FILENAME,
@@ -173,6 +175,7 @@ def get_lattice_kwargs(
         "named_args_filename": named_args_filename,
         "named_kwargs_filename": named_kwargs_filename,
         "results_filename": results_filename,
+        "return_info_filename": return_info_filename,
         "transport_graph_filename": transport_graph_filename,
         "deps_filename": deps_filename,
         "call_before_filename": call_before_filename,
@@ -303,6 +306,7 @@ def test_insert_lattices_data(test_db, mocker):
             assert lattice.named_args_filename == NAMED_ARGS_FILENAME
             assert lattice.named_kwargs_filename == NAMED_KWARGS_FILENAME
             assert lattice.results_filename == RESULTS_FILENAME
+            assert lattice.return_info_filename == RETURN_INFO_FILENAME
             assert lattice.deps_filename == DEPS_FILENAME
             assert lattice.call_before_filename == CALL_BEFORE_FILENAME
             assert lattice.call_after_filename == CALL_AFTER_FILENAME
