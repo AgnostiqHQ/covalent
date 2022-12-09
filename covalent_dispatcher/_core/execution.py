@@ -24,6 +24,7 @@ Defines the core functionality of the dispatcher
 
 import asyncio
 import json
+import os
 import traceback
 import uuid
 from asyncio import Queue
@@ -286,7 +287,7 @@ async def _run_task(
     """
 
     dispatch_id = result_object.dispatch_id
-    results_dir = result_object.results_dir
+    results_dir = os.environ.get("COVALENT_DATA_DIR") or get_config("dispatcher.results_dir")
 
     # Instantiate the executor from JSON
     try:
