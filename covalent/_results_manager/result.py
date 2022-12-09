@@ -193,7 +193,7 @@ Node Outputs
         return self._result
 
     @property
-    def result(self) -> Union[int, float, list, dict, tuple]:
+    def result(self) -> Any:
         """
         Final result of current dispatch.
         """
@@ -229,7 +229,7 @@ Node Outputs
         return self._error
 
     @staticmethod
-    def unprocess_return(outputs_map: dict, retval: Any) -> Union[int, float, list, dict, tuple]:
+    def unprocess_return(outputs_map: dict, retval: Any) -> Any:
         """
         Recursively reconstruct the workflow return value.
         """
