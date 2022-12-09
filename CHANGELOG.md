@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Updated all references to `results_dir` to use the environment variable `COVALENT_DATA_DIR` if set or fall back to `~/.local/share/covalent/data`
+- Updated `directory` like default environment variable paths to avoid creating redundant nested directories when self-hosting
 
 ### Docs
 

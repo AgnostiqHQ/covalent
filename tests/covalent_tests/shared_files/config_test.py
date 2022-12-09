@@ -32,8 +32,8 @@ DEFAULT_CONFIG = asdict(DefaultConfig())
 @pytest.mark.parametrize(
     "dir_env, conf_dir",
     [
-        ("COVALENT_CONFIG_DIR", "covalent/covalent.conf"),
-        ("XDG_CONFIG_DIR", "covalent/covalent.conf"),
+        ("COVALENT_CONFIG_DIR", "covalent.conf"),
+        ("XDG_CONFIG_DIR", "covalent.conf"),
         ("HOME", ".config/covalent/covalent.conf"),
     ],
 )
