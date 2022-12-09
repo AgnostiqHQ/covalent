@@ -197,9 +197,12 @@ Node Outputs
         """
         Final result of current dispatch.
         """
+        if not isinstance(self._result, TransportableObject):
+            return self._result
         if self._result.object_string == "None" or len(self._rebuild_ids) == 0:
             return self._result.get_deserialized()
 
+        # reconstruct return value from electron outputs
         outputs_map = {}
         for node_id in set(self._rebuild_ids):
             outputs_map[node_id] = self._get_node_output(node_id)
