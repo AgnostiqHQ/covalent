@@ -72,7 +72,7 @@ def get_default_dispatcher_config():
         "cache_dir": os.environ.get("COVALENT_CACHE_DIR")
         or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
         "results_dir": os.environ.get("COVALENT_DATA_DIR")
-        or os.path.join(os.environ["HOME"], "/.local/share/covalent/data"),
+        or os.path.join(os.environ["HOME"], ".local/share/covalent/data"),
         "log_dir": os.environ.get("COVALENT_LOGDIR")
         or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
         "db_path": os.environ.get("COVALENT_DATABASE")
