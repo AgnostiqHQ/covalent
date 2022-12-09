@@ -48,7 +48,7 @@ Below is a transport graph for the {ref}`machine-learning workflow<ml example>` 
 
 ```{image} ./images/transport_graph.png
 :align: center
-:scale: 30 %
+:width: 60%
 ```
 
 :::{note}

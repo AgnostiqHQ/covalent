@@ -173,7 +173,6 @@ Conceptually, as shown in the figure below, executing a sublattice adds the cons
 
 ```{image} ./images/sublattice.png
 :align: center
-:height: 400
 :width: 600
 ```
 
