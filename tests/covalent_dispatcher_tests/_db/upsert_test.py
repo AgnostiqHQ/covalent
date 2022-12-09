@@ -17,6 +17,7 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+import os
 from pathlib import Path
 
 import pytest
@@ -34,7 +35,7 @@ from covalent_dispatcher._db.upsert import (
     _electron_data,
 )
 
-TEMP_RESULTS_DIR = "/tmp/results"
+TEMP_RESULTS_DIR = os.environ.get("COVALENT_DATA_DIR") or ct.get_config("dispatcher.results_dir")
 le = LocalExecutor(log_stdout="/tmp/stdout.log")
 
 
