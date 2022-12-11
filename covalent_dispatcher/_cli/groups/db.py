@@ -54,6 +54,20 @@ def migrate(ctx: click.Context) -> None:
         return ctx.exit(1)
 
 
+@click.command()
+@click.pass_context
+def init(ctx: click.Context) -> None:
+    """
+    Initialize the Covalent database/tables
+    """
+    try:
+        DataStore.factory(initialize_db=True)
+        click.secho("Initialized all Covalent data tables")
+    except Exception as db_init_error:
+        click.echo(str(db_init_error))
+        return ctx.exit(1)
+
+
 @click.command(
     context_settings=dict(
         ignore_unknown_options=True,

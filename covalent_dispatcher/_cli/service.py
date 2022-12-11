@@ -470,6 +470,10 @@ def purge(hard: bool, yes: bool, hell_yeah: bool) -> None:
 
         click.echo(f"Removed {rem_path}.")
 
+    if hard:
+        # Drop all tables from remote (Use with caution)
+        DataStore.factory().drop_all()
+
     click.echo("Covalent server files have been purged.")
 
 
