@@ -103,3 +103,4 @@ def alembic(ctx: click.Context, alembic_args) -> None:
 
 db.add_command(alembic)
 db.add_command(migrate)
+db.add_command(init)
