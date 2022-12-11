@@ -58,9 +58,14 @@ class DataStore:
         if initialize_db:
             models.Base.metadata.create_all(self.engine)
 
+    def drop_all(self):
+        models.Base.metadata.drop_all(self.engine)
+
     @staticmethod
-    def factory():
-        return DataStore(db_URL=environ.get("COVALENT_DATABASE_URL"), echo=False)
+    def factory(initialize_db: bool = False):
+        return DataStore(
+            db_URL=environ.get("COVALENT_DATABASE_URL"), initialize_db=initialize_db, echo=False
+        )
 
     def get_alembic_config(self, logging_enabled: bool = True):
         alembic_ini_path = Path(path.join(__file__, "./../../../covalent_migrations/alembic.ini"))
