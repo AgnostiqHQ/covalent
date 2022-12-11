@@ -20,6 +20,7 @@
 
 """Lattice Data Layer"""
 
+from datetime import timezone
 from typing import List
 from uuid import UUID
 
@@ -65,7 +66,7 @@ class Lattices:
                     (
                         func.strftime(
                             "%s",
-                            func.coalesce(Lattice.completed_at, func.datetime.utcnow()),
+                            func.coalesce(Lattice.completed_at, func.datetime.now(timezone.utc)),
                         )
                         - func.strftime("%s", Lattice.started_at)
                     )
@@ -148,7 +149,7 @@ class Lattices:
                     (
                         func.strftime(
                             "%s",
-                            func.coalesce(Lattice.completed_at, func.datetime.utcnow()),
+                            func.coalesce(Lattice.completed_at, func.datetime.now(timezone.utc)),
                         )
                         - func.strftime("%s", Lattice.started_at)
                     )
