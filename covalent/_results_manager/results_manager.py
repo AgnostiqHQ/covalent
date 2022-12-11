@@ -110,7 +110,7 @@ def _get_result_from_dispatcher(
 
 def _delete_result(
     dispatch_id: str,
-    results_dir: str = get_config("dispatcher.results_dir"),
+    results_dir: str = os.environ.get("COVALENT_DATA_DIR") or get_config("dispatcher.results_dir"),
     remove_parent_directory: bool = False,
 ) -> None:
     """

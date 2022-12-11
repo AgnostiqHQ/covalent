@@ -1,6 +1,6 @@
 .. _dask_executor:
 
-🔌 Dask Executor
+Dask Executor
 """""""""""""""""""""""""""
 
 Executing tasks (electrons) in a Dask cluster. This is the default executor when covalent is started without the :code:`--no-cluster` flag.
