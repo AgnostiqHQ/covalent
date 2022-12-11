@@ -45,7 +45,7 @@ def migrate(ctx: click.Context) -> None:
     Run DB Migrations programatically
     """
     try:
-        db = DataStore.factory()
+        db = DataStore.factory(initialize_db=True)
         db.run_migrations()
         click.secho("Migrations are up to date.", fg="green")
     except Exception as migration_error:
