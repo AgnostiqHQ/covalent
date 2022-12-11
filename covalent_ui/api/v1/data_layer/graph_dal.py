@@ -54,15 +54,15 @@ class Graph:
             electrons.status,
             electrons.type,
             electrons.executor as executor_label,
-            (case when electrons.type == 'sublattice'
+            (case when electrons.type = 'sublattice'
             then
             (select lattices.dispatch_id from lattices
-            where lattices.electron_id == electrons.id)
+            where lattices.electron_id = electrons.id)
             else Null
             END
             ) as sublattice_dispatch_id
-            from electrons join lattices on electrons.parent_lattice_id == lattices.id
-            where lattices.id == :a
+            from electrons join lattices on electrons.parent_lattice_id = lattices.id
+            where lattices.id = :a
         """
         )
         result = self.db_con.execute(sql, {"a": parent_lattice_id}).fetchall()
