@@ -57,7 +57,7 @@ class Lattices:
                 Lattice.results_filename,
                 Lattice.docstring_filename,
                 func.datetime(Lattice.started_at, "localtime").label("start_time"),
-                func.IFNULL(func.datetime(Lattice.completed_at, "localtime"), None).label(
+                func.coalesce(func.datetime(Lattice.completed_at, "localtime"), None).label(
                     "end_time"
                 ),
                 Lattice.electron_num.label("total_electrons"),
@@ -66,13 +66,13 @@ class Lattices:
                     (
                         func.strftime(
                             "%s",
-                            func.IFNULL(Lattice.completed_at, func.datetime.now(timezone.utc)),
+                            func.coalesce(Lattice.completed_at, func.datetime.now(timezone.utc)),
                         )
                         - func.strftime("%s", Lattice.started_at)
                     )
                     * 1000
                 ).label("runtime"),
-                func.IFNULL(func.datetime(Lattice.updated_at, "localtime"), None).label(
+                func.coalesce(func.datetime(Lattice.updated_at, "localtime"), None).label(
                     "updated_at"
                 ),
             )
@@ -149,7 +149,7 @@ class Lattices:
                     (
                         func.strftime(
                             "%s",
-                            func.IFNULL(Lattice.completed_at, func.datetime.now(timezone.utc)),
+                            func.coalesce(Lattice.completed_at, func.datetime.now(timezone.utc)),
                         )
                         - func.strftime("%s", Lattice.started_at)
                     )
@@ -159,7 +159,7 @@ class Lattices:
                 Lattice.completed_electron_num.label("total_electrons_completed"),
                 Lattice.status.label("status"),
                 func.datetime(Lattice.started_at, "localtime").label("started_at"),
-                func.IFNULL(func.datetime(Lattice.completed_at, "localtime"), None).label(
+                func.coalesce(func.datetime(Lattice.completed_at, "localtime"), None).label(
                     "ended_at"
                 ),
                 func.datetime(Lattice.updated_at, "localtime").label("updated_at"),

@@ -67,7 +67,7 @@ class Electrons:
                     (
                         func.strftime(
                             "%s",
-                            func.IFNULL(Electron.completed_at, func.datetime.now(timezone.utc)),
+                            func.coalesce(Electron.completed_at, func.datetime.now(timezone.utc)),
                         )
                         - func.strftime("%s", Electron.started_at)
                     )
