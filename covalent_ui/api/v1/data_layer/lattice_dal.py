@@ -55,20 +55,25 @@ class Lattices:
                 Lattice.error_filename,
                 Lattice.results_filename,
                 Lattice.docstring_filename,
-                func.to_char(Lattice.started_at).label("start_time"),
-                func.coalesce(func.to_char(Lattice.completed_at), None).label("end_time"),
+                func.to_char(Lattice.started_at, "DD Mon YYYY HH24:MI:SS").label("start_time"),
+                func.coalesce(
+                    func.to_char(Lattice.completed_at, "DD Mon YYYY HH24:MI:SS"), None
+                ).label("end_time"),
                 Lattice.electron_num.label("total_electrons"),
                 Lattice.completed_electron_num.label("total_electrons_completed"),
                 (
                     (
                         func.to_char(
                             func.coalesce(Lattice.completed_at, func.now()),
+                            "DD Mon YYYY HH24:MI:SS",
                         )
-                        - func.to_char(Lattice.started_at)
+                        - func.to_char(Lattice.started_at, "DD Mon YYYY HH24:MI:SS")
                     )
                     * 1000
                 ).label("runtime"),
-                func.coalesce(func.to_char(Lattice.updated_at), None).label("updated_at"),
+                func.coalesce(
+                    func.to_char(Lattice.updated_at, "DD Mon YYYY HH24:MI:SS"), None
+                ).label("updated_at"),
             )
             .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
             .first()
