@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Adding support for PostgresQL DB backend
+- Added check for `COVALENT_DATABASE_URL`, if exists connect sqlalchemy engine using that
+- Adding `COVALENT_DATABASE_USER` and `COVALENT_DATABASE_PASSWORD` environment variables
+- Adding `COVALENT_DATABASE_HOSTNAME` and `COVALENT_DATABASE_PORT` environment variables for easy configuration
+
+### Changed
+
+- Updated `requirements.txt` to include `pyscopg2`
+
+### Fixed
+
+- Fixed all failing functional tests
+
+### Changed
+
+- Updated `directory` like default environment variable paths to avoid creating redundant nested directories when self-hosting
+
 ### Docs
 
 - Adding `Deployment` section for self-hosting guide
@@ -20,6 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `TaskRuntimeError` exception for executor plugin implementations to signal to Covalent that a task raised an
   unhandled exception while running in the executor backend.
+- Added environment variable for a remote database backend
+- Added support for mysql and postgresql
 
 ### Changed
 
@@ -39,9 +60,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   written.
 - Fixed functional tests.
 - Added `requirements-client.txt` to MANIFEST file
+- Respecting specified AWS profile & region in remote executed S3 file transfers, defaulting to env vars of execution backend
+- Fixed local executor tests on MacOS (second attempt)
+- The `initialize_results_dir` method attempts to use an environment variable instead of the results directory in the payload
+- Modified certain sqlalchemy commands for postgres compatibility
+- Removed references to results_dir in the payload
 
 ### Docs
-
 
 - Added DNN tutorial
 - Updated AWS Plugins install instructions
@@ -55,6 +80,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Broke out "Installing from Source" instructions to separate page.
 - Corrected some API class names in headers.
 - Added an executors-and-UI graphic.
+- Adding `Deployment` section for self-hosting guide
+
 
 ## [0.208.0-rc.0] - 2022-11-05
 
