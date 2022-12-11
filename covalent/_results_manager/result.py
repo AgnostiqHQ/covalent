@@ -21,7 +21,7 @@
 """Result object."""
 
 import os
-from dataclasses import dataclass, InitVar
+from dataclasses import InitVar, dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 

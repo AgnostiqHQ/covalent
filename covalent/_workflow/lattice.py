@@ -339,8 +339,8 @@ class Lattice:
         Returns:
             a copy of `value` with a placeholder substituted for each electron
         """
-        from .electron import Electron
         from .._results_manager.result import _Placeholder
+        from .electron import Electron
 
         if isinstance(value, Electron):
             if electron_ids is None:
