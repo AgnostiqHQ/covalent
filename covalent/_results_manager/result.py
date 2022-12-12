@@ -544,18 +544,14 @@ Node Outputs
         return self._result
 
 
-@dataclass
+@dataclass(frozen=True, eq=True)
 class _Placeholder:
     """
     Represents an electron output in the return value of a workflow lattice.
     Placeholders are replaced with deserialized outputs during reconstruction.
     """
 
-    value: InitVar[Any]
-    node_id: int = None
-
-    def __post_init__(self, value):
-        self.node_id = value.node_id
+    node_id: int
 
 
 def _filter_cova_decorators(function_string: str, cova_imports: Set[str]) -> str:
