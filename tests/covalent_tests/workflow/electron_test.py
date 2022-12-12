@@ -227,6 +227,7 @@ def test_autogen_list_electrons():
     workflow.build_graph([5, 7])
 
     g = workflow.transport_graph._graph
+    assert g.nodes[1]["task_gid"] == g.nodes[0]["task_gid"]
 
     assert list(g.nodes) == [0, 1, 2, 3]
     fn = g.nodes[1]["function"].get_deserialized()
@@ -249,6 +250,7 @@ def test_autogen_dict_electrons():
     workflow.build_graph({"x": 5, "y": 7})
 
     g = workflow.transport_graph._graph
+    assert g.nodes[1]["task_gid"] == g.nodes[0]["task_gid"]
 
     assert list(g.nodes) == [0, 1, 2, 3]
     fn = g.nodes[1]["function"].get_deserialized()
@@ -256,3 +258,66 @@ def test_autogen_dict_electrons():
     assert g.nodes[2]["value"].get_deserialized() == 5
     assert g.nodes[3]["value"].get_deserialized() == 7
     assert set(g.edges) == set([(1, 0, 0), (2, 1, 0), (3, 1, 0)])
+
+
+def test_autogen_getiter_electrons():
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        x, y = task(x)
+
+        return x, y
+
+    workflow.build_graph([1, 2])
+
+    g = workflow.transport_graph._graph
+
+    assert g.nodes[1]["task_gid"] == g.nodes[0]["task_gid"]
+    assert len(g.nodes) == 8
+    assert g.nodes[4]["task_gid"] == g.nodes[0]["task_gid"]
+    assert g.nodes[6]["task_gid"] == g.nodes[0]["task_gid"]
+
+
+def test_autogen_getitem_electrons():
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        res = task(x)
+
+        return res[0], res[1]
+
+    workflow.build_graph([1, 2])
+
+    g = workflow.transport_graph._graph
+
+    assert g.nodes[1]["task_gid"] == g.nodes[0]["task_gid"]
+    assert len(g.nodes) == 8
+    assert g.nodes[4]["task_gid"] == g.nodes[0]["task_gid"]
+    assert g.nodes[6]["task_gid"] == g.nodes[0]["task_gid"]
+
+
+def test_autogen_attr_electrons():
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        res = task(x)
+
+        append_electron = getattr(res, "append")
+        return res
+
+    workflow.build_graph([1, 2])
+
+    g = workflow.transport_graph._graph
+
+    assert g.nodes[1]["task_gid"] == g.nodes[0]["task_gid"]
+    assert len(g.nodes) == 6
+    assert g.nodes[4]["task_gid"] == g.nodes[0]["task_gid"]

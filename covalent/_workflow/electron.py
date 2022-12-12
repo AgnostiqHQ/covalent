@@ -249,7 +249,13 @@ class Electron:
                 iterable_metadata["call_before"] = filtered_call_before
 
                 get_item_electron = Electron(function=get_item, metadata=iterable_metadata)
-                yield get_item_electron(self, i)
+
+                get_item_electron = get_item_electron(self, i)
+                if not isinstance(self.function, Lattice):
+                    active_lattice.transport_graph.set_node_value(
+                        get_item_electron.node_id, "task_gid", self.node_id
+                    )
+                yield get_item_electron
 
     def __getattr__(self, attr: str) -> "Electron":
         # This is to handle the cases where magic functions are attempted
@@ -272,7 +278,15 @@ class Electron:
 
             get_attr.__name__ = prefix_separator + self.function.__name__ + ".__getattr__"
             get_attr_electron = Electron(function=get_attr, metadata=self.metadata.copy())
-            return get_attr_electron(self, attr)
+            # Group auto generated electrons with the main node
+
+            get_attr_electron = get_attr_electron(self, attr)
+            if not isinstance(self.function, Lattice):
+                active_lattice.transport_graph.set_node_value(
+                    get_attr_electron.node_id, "task_gid", self.node_id
+                )
+
+            return get_attr_electron
 
         return super().__getattr__(attr)
 
@@ -285,8 +299,14 @@ class Electron:
 
             get_item.__name__ = prefix_separator + self.function.__name__ + ".__getitem__"
 
-            get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())
-            return get_item_electron(self, key)
+            get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())(
+                self, key
+            )
+            if not isinstance(self.function, Lattice):
+                active_lattice.transport_graph.set_node_value(
+                    get_item_electron.node_id, "task_gid", self.node_id
+                )
+            return get_item_electron
 
         raise StopIteration
 
@@ -338,6 +358,9 @@ class Electron:
             metadata=self.metadata.copy(),
             function_string=get_serialized_function_str(self.function),
         )
+
+        # Default node gid to node id
+        active_lattice.transport_graph.set_node_value(self.node_id, "task_gid", self.node_id)
 
         if self.function:
             named_args, named_kwargs = get_named_params(self.function, args, kwargs)
@@ -418,6 +441,9 @@ class Electron:
                 param_type=param_type,
                 arg_index=arg_index,
             )
+            # Group list and dict nodes with the main node
+            if not isinstance(self.function, Lattice):
+                transport_graph.set_node_value(list_electron.node_id, "task_gid", node_id)
 
         elif isinstance(param_value, dict):
             dict_electron = Electron(function=_auto_dict_node, metadata=collection_metadata)
@@ -429,6 +455,8 @@ class Electron:
                 param_type=param_type,
                 arg_index=arg_index,
             )
+            if not isinstance(self.function, Lattice):
+                transport_graph.set_node_value(dict_electron.node_id, "task_gid", node_id)
 
         else:
 
@@ -439,6 +467,7 @@ class Electron:
                 metadata=encode_metadata(DEFAULT_METADATA_VALUES.copy()),
                 value=encoded_param_value,
             )
+            transport_graph.set_node_value(parameter_node, "task_gid", parameter_node)
             transport_graph.add_edge(
                 parameter_node,
                 node_id,

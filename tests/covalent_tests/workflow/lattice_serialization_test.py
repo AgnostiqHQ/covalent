@@ -74,3 +74,8 @@ def test_lattice_json_serialization():
     )
 
     assert json_workflow == new_workflow.serialize_to_json()
+
+    tg_old = workflow.transport_graph
+    tg_new = new_workflow.transport_graph
+    for n in tg_old._graph.nodes:
+        assert tg_old._graph.nodes[n]["task_gid"] == tg_new._graph.nodes[n]["task_gid"]
