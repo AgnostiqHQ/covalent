@@ -31,6 +31,7 @@ from typing import Callable, Dict, List
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import TaskRuntimeError, logger
+from covalent._shared_files.config import get_config
 from covalent.executor import BaseExecutor
 
 # Store the wrapper function in an external module to avoid module
@@ -51,12 +52,15 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     ),
 }
 
-try:
-    print("Setting start method")
-    mp.set_start_method("fork")
-except RuntimeError as e:
-    print(e)
-    pass
+is_local_executor_active = get_config("sdk.no_cluster") != "false"
+
+if is_local_executor_active:
+    try:
+        print("Setting mp start method to fork...")
+        mp.set_start_method("fork")
+    except RuntimeError as e:
+        print(e)
+        pass
 
 
 class LocalExecutor(BaseExecutor):
