@@ -51,7 +51,7 @@ jobs:
       - name: Filter test matrix
         id: filter-matrix
         run: |
-          matrix=$(jq --arg trigger "schedule" --arg os "macos-latest" 'map(. | select(.trigger | index($trigger)) and select(.os==$os))' .github/workflows/test_matrix.json)
+          matrix=$(jq --arg trigger "schedule" 'map(. | select(.trigger | index($trigger)))' .github/workflows/test_matrix.json)
           echo "Test matrix:"
           echo "$matrix" | jq
           echo ::set-output name=matrix::{\"include\":$(echo $matrix)}
