@@ -23,7 +23,7 @@ from datetime import datetime, timezone
 from sqlite3 import InterfaceError
 from typing import List
 
-from sqlalchemy import case, update
+from sqlalchemy import case, extract, update
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import desc, func, or_
 from sqlalchemy.util import immutabledict
@@ -43,7 +43,7 @@ from covalent_ui.api.v1.utils.status import Status
 
 
 class Summary:
-    """Summery data access layer"""
+    """Summary data access layer"""
 
     def __init__(self, db_con: Session) -> None:
         self.db_con = db_con
@@ -71,11 +71,11 @@ class Summary:
             Lattice.name.label("lattice_name"),
             (
                 (
-                    func.strftime(
-                        "%s",
-                        func.IFNULL(Lattice.completed_at, func.datetime.now(timezone.utc)),
+                    func.coalesce(
+                        extract("epoch", Lattice.completed_at),
+                        extract("epoch", func.now()),
                     )
-                    - func.strftime("%s", Lattice.started_at)
+                    - extract("epoch", Lattice.started_at)
                 )
                 * 1000
             ).label("runtime"),
@@ -183,8 +183,8 @@ class Summary:
             self.db_con.query(
                 (
                     func.sum(
-                        func.strftime("%s", Lattice.completed_at)
-                        - func.strftime("%s", Lattice.started_at)
+                        extract("epoch", Lattice.completed_at)
+                        - extract("epoch", Lattice.started_at)
                     )
                     * 1000
                 ).label("run_time")
