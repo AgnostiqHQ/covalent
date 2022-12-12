@@ -18,11 +18,9 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""DB Config"""
+"""Filters for `detect-secrets` pre-commit hook for Azure keywords."""
 
-from sqlalchemy.ext.declarative import declarative_base
 
-from covalent_dispatcher._db.datastore import DataStore
-
-engine = DataStore.factory().engine
-Base = declarative_base()
+def is_secret_keyword(secret: str) -> bool:
+    """Ensure that Azure Batch, 'client_secret' is not flagged as potential secret."""
+    return "client_secret" not in secret

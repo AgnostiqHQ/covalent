@@ -158,10 +158,17 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
 
    Concepts <concepts/concepts>
    Tutorials <tutorials/tutorials>
-   How-To Guides <how_to/index>
-   The User Interface <webapp_ui/index>
+   How-To Guide <how_to/index>
+   User Interface <webapp_ui/index>
    API Reference <api/index>
    Credentials <credentials>
+
+.. toctree::
+   :maxdepth: 2
+   :caption:  Extensions
+   :hidden:
+
+   plugins
 
 .. toctree::
    :maxdepth: 2
@@ -176,5 +183,6 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    :hidden:
 
    Project Homepage <https://github.com/AgnostiqHQ/covalent>
+   ../getting_started/build_from_source
    Contribution Guidelines <https://github.com/AgnostiqHQ/covalent/blob/develop/CONTRIBUTING.md>
    Code of Conduct <https://github.com/AgnostiqHQ/covalent/blob/develop/CODE_OF_CONDUCT.md>

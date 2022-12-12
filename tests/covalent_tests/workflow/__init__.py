@@ -17,12 +17,3 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
-
-"""DB Config"""
-
-from sqlalchemy.ext.declarative import declarative_base
-
-from covalent_dispatcher._db.datastore import DataStore
-
-engine = DataStore.factory().engine
-Base = declarative_base()

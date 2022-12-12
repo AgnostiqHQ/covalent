@@ -24,6 +24,7 @@ Defines the core functionality of the dispatcher
 
 import asyncio
 import json
+import os
 import traceback
 import uuid
 from asyncio import Queue
@@ -286,7 +287,7 @@ async def _run_task(
     """
 
     dispatch_id = result_object.dispatch_id
-    results_dir = result_object.results_dir
+    results_dir = os.environ.get("COVALENT_DATA_DIR") or get_config("dispatcher.results_dir")
 
     # Instantiate the executor from JSON
     try:
@@ -864,7 +865,7 @@ def initialize_result_object(
 
     dispatch_id = get_unique_id()
     lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice, lattice.metadata["results_dir"], dispatch_id)
+    result_object = Result(lattice, dispatch_id)
     if parent_result_object:
         result_object._root_dispatch_id = parent_result_object._root_dispatch_id
 

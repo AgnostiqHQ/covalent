@@ -4,10 +4,10 @@ First Experiment
 
 This page describes how to get started with Covalent. Follow the procedures on this page to:
 
-    1. Install Covalent;
-    2. Start the Covalent server;
-    3. Run a workflow using Covalent; and
-    4. View the workflow using the browser-based interface (GUI).
+1. Install Covalent;
+2. Start the Covalent server;
+3. Run a workflow using Covalent; and
+4. View the workflow using the browser-based interface (GUI).
 
 Installing Covalent
 ###################
@@ -26,7 +26,7 @@ Installing with Pip
 
 To install Covalent, use Pip.
 
-.. code:: type the following on the command line:
+.. card:: Type the following on the command line:
 
     .. code:: bash
 
@@ -70,9 +70,9 @@ Stopping the Server
 
 When you are done using Covalent to run workflows, stop the server.
 
-    .. warning::
+.. warning::
 
-        Do not stop the server while you have running workflows. Stopping the server will kill the workflows.
+    Do not stop the server while you have running workflows. Stopping the server will kill the workflows.
 
 .. card:: To stop the Covalent server:
 

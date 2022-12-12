@@ -1,10 +1,10 @@
-============================================
-Building and Installing Covalent from Source
-============================================
+=============================
+Building Covalent from Source
+=============================
 
 To download and install Covalent from source, follow the steps below.
 
-Step 1. Clone the GitHub repo:
+.. card:: 1. Clone the GitHub repo:
 
     .. code:: bash
 
@@ -15,14 +15,14 @@ Step 1. Clone the GitHub repo:
 
     .. note:: All file paths hereafter are relative to <project_directory>.
 
-Step 2. The Python packages required to build Covalent are listed in ``covalent/requirements.txt``. Make sure you have them installed:
+.. card:: 2. The Python packages required to build Covalent are listed in ``covalent/requirements.txt``. Make sure you have them installed:
 
     .. code:: bash
 
         $ cd covalent
         $ pip install -r requirements.txt
 
-Step 3. Use the setup script to build and deploy Covalent:
+.. card:: 3. Use the setup script to build and deploy Covalent:
 
     .. code:: bash
 
@@ -40,14 +40,14 @@ Building the Documentation
 
 Optionally, you can build the documentation locally. Follow these steps:
 
-1. The required packages are listed in ``covalent/doc/requirements.txt``. Make sure you have them installed:
+.. card:: 1. The required packages are listed in ``covalent/doc/requirements.txt``. Make sure you have them installed:
 
     .. code:: bash
 
         $ cd covalent/doc
         $ pip install -r requirements.txt
 
-2. Use the setup script to build the documentation:
+.. card:: 2. Use the setup script to build the documentation:
 
     .. code:: bash
 
@@ -59,7 +59,9 @@ The script builds the documentation in ``covalent/doc/build/html``. View the loc
 Validating the Installation
 ---------------------------
 
-Optionally, validate the installation. Covalent has been properly installed if the following returns without error:
+Optionally, validate the installation.
+
+.. card:: Covalent has been properly installed if the following returns without error:
 
     .. code:: bash
 
