@@ -68,6 +68,8 @@ To quickly install Covalent and run a short demo, follow the four steps below.
 
       # Dispatch the workflow
       dispatch_id = ct.dispatch(workflow)(1, 2)
+      result = ct.get_result(dispatch_id)
+      print(result)
 
 
 .. card:: 4. View the workflow progress.
