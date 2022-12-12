@@ -20,6 +20,7 @@
 
 """Unit tests for the Result object."""
 
+import os
 from pathlib import Path
 
 import pytest
@@ -29,7 +30,10 @@ from covalent._results_manager.result import Result
 from covalent._workflow.lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
 
-TEMP_RESULTS_DIR = "/tmp/results"
+# TEMP_RESULTS_DIR = "/tmp/results"
+TEMP_RESULTS_DIR = os.environ.get("COVALENT_DATA_DIR") or os.path.join(
+    os.environ["HOME"], ".local/share/covalent/data"
+)
 
 
 def get_mock_result() -> Result:
@@ -43,7 +47,7 @@ def get_mock_result() -> Result:
         print("Error!", file=sys.stderr)
         return x
 
-    @ct.lattice(results_dir=TEMP_RESULTS_DIR)
+    @ct.lattice
     def pipeline(x):
         res1 = task(x)
         res2 = task(res1)
@@ -52,7 +56,8 @@ def get_mock_result() -> Result:
     pipeline.build_graph(x="absolute")
     received_workflow = LatticeClass.deserialize_from_json(pipeline.serialize_to_json())
     result_object = Result(
-        received_workflow, pipeline.metadata["results_dir"], "pipeline_workflow"
+        received_workflow,
+        "pipeline_workflow",  # pipeline.metadata["results_dir"], "pipeline_workflow"
     )
 
     return result_object
@@ -71,7 +76,7 @@ def result_1():
     def task_2(x, y):
         return x + y
 
-    @ct.lattice(executor=le, workflow_executor=le, results_dir=TEMP_RESULTS_DIR)
+    @ct.lattice(executor=le, workflow_executor=le)
     def workflow_1(a, b):
         """Docstring"""
         res_1 = task_1(a, b)
@@ -80,10 +85,8 @@ def result_1():
     Path(f"{TEMP_RESULTS_DIR}/dispatch_1").mkdir(parents=True, exist_ok=True)
     workflow_1.build_graph(a=1, b=2)
     received_lattice = LatticeClass.deserialize_from_json(workflow_1.serialize_to_json())
-    result = Result(
-        lattice=received_lattice, results_dir=TEMP_RESULTS_DIR, dispatch_id="dispatch_1"
-    )
-    result.lattice.metadata["results_dir"] = TEMP_RESULTS_DIR
+    result = Result(lattice=received_lattice, dispatch_id="dispatch_1")
+    #    result.lattice.metadata["results_dir"] = TEMP_RESULTS_DIR
     result._initialize_nodes()
     return result
 
@@ -94,7 +97,7 @@ def result_2():
     def task_1(x, y):
         raise RuntimeError("error")
 
-    @ct.lattice(executor=le, workflow_executor=le, results_dir=TEMP_RESULTS_DIR)
+    @ct.lattice(executor=le, workflow_executor=le)
     def workflow_1(a, b):
         """Docstring"""
         res_1 = task_1(a, b)
@@ -103,10 +106,8 @@ def result_2():
     Path(f"{TEMP_RESULTS_DIR}/dispatch_1").mkdir(parents=True, exist_ok=True)
     workflow_1.build_graph(a=1, b=2)
     received_lattice = LatticeClass.deserialize_from_json(workflow_1.serialize_to_json())
-    result = Result(
-        lattice=received_lattice, results_dir=TEMP_RESULTS_DIR, dispatch_id="dispatch_1"
-    )
-    result.lattice.metadata["results_dir"] = TEMP_RESULTS_DIR
+    result = Result(lattice=received_lattice, dispatch_id="dispatch_1")
+    #    result.lattice.metadata["results_dir"] = TEMP_RESULTS_DIR
     result._initialize_nodes()
     return result
 
@@ -204,7 +205,7 @@ def test_result_post_process(
         k: ct.TransportableObject.make_transportable(v) for k, v in node_outputs.items()
     }
 
-    res = Result(compute_energy, compute_energy.metadata["results_dir"])
+    res = Result(compute_energy)
     res._initialize_nodes()
 
     for i, v in enumerate(encoded_node_outputs.values()):

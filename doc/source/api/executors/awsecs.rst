@@ -1,6 +1,6 @@
 .. _awsecs_executor:
 
-🔌 AWS ECS Executor
+AWS ECS Executor
 """""""""""""""""""""""""""
 
 .. image:: AWS_ECS.jpg
