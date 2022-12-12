@@ -244,6 +244,7 @@ Node Outputs
         """
         Recursively reconstruct the workflow return value.
         """
+
         def _reconstructor(retval):
             """
             Helper

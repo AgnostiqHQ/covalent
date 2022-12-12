@@ -88,7 +88,7 @@ class Lattice:
         self.return_info = {
             "placeholder": TransportableObject(None),
             "electron_ids": [],
-            "postprocess": False
+            "postprocess": False,
         }
 
         self.workflow_function = TransportableObject.make_transportable(self.workflow_function)
@@ -328,7 +328,7 @@ class Lattice:
         return local_dispatch_sync(self)(*args, **kwargs)
 
     @staticmethod
-    def preprocess_return(value: Any, electron_ids: list = None) -> 'tuple[Any, list]':
+    def preprocess_return(value: Any, electron_ids: list = None) -> "tuple[Any, list]":
         """
         Recursively inspects the input value to construct a placeholder copy.
 

@@ -660,7 +660,7 @@ async def _reconstruct_sublattice_result(result_object: Result) -> Result:
 
     reconstruct_inputs = {
         "args": [TransportableObject.make_transportable(result_object._lattice)],
-        "kwargs": {}
+        "kwargs": {},
     }
 
     try:
@@ -679,8 +679,7 @@ async def _reconstruct_sublattice_result(result_object: Result) -> Result:
         )
         rc_start_time = datetime.now(timezone.utc)
         app_log.debug(
-            "Submitting reconstruction job to executor "
-            f"{selected_executor} at {rc_start_time}"
+            "Submitting reconstruction job to executor " f"{selected_executor} at {rc_start_time}"
         )
 
         rc_result = await future
