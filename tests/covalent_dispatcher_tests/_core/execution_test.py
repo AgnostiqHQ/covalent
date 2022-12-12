@@ -629,6 +629,54 @@ async def test_run_workflow_does_not_deserialize(mocker):
 
 
 @pytest.mark.asyncio
+async def test_run_workflow_reconstruct(test_db, mocker):
+    """Check that run_workflow handles "client" workflow_executor for
+    postprocessing"""
+
+    import asyncio
+
+    result_object = get_mock_result()
+    result_object._initialize_nodes()
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+
+    update.persist(result_object)
+
+    result_object = await run_workflow(result_object)
+    assert result_object.status == Result.COMPLETED
+
+
+@pytest.mark.asyncio
+async def test_run_workflow_reconstruct_failed(test_db, mocker):
+    """Check that run_workflow handles "client" workflow_executor for
+    postprocessing"""
+
+    import asyncio
+
+    dispatch_id = "1234"
+    result_object = get_mock_result()
+    result_object.lattice.set_metadata("workflow_executor", "local")
+    result_object._initialize_nodes()
+
+    # alter dispatch id (make sublattice) so reconstruction happens through executor
+    result_object._dispatch_id = dispatch_id
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+
+    def _reconstruct(*_):
+        raise ValueError
+
+    mocker.patch("covalent_dispatcher._core.execution._reconstruct", _reconstruct)
+
+    update.persist(result_object)
+
+    result_object = await run_workflow(result_object)
+    assert result_object.status == Result.RECONSTRUCTION_FAILED
+
+
+@pytest.mark.asyncio
 async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
     """Check that run_workflow handles "client" workflow_executor for
     postprocessing"""
