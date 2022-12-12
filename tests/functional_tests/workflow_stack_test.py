@@ -27,6 +27,7 @@ import pytest
 import covalent as ct
 import covalent._results_manager.results_manager as rm
 from covalent._results_manager.result import Result
+from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._db import update
 
 
@@ -711,12 +712,12 @@ def test_wait_for():
 
     assert result.status == Result.COMPLETED
     assert (
-        result.get_node_result(node_id=6)["start_time"]
-        > result.get_node_result(node_id=0)["end_time"]
+        result.get_node_result(node_id=6)["start_time"] >
+        result.get_node_result(node_id=0)["end_time"]
     )
     assert (
-        result.get_node_result(node_id=6)["start_time"]
-        > result.get_node_result(node_id=2)["end_time"]
+        result.get_node_result(node_id=6)["start_time"] >
+        result.get_node_result(node_id=2)["end_time"]
     )
     assert result.result == 1500
     rm._delete_result(dispatch_id)
@@ -786,3 +787,124 @@ def test_electron_getattr():
     workflow_result = rm.get_result(dispatch_id, wait=True)
     assert workflow_result.result == 25
     rm._delete_result(dispatch_id)
+
+
+def test_preprocess_unprocess_return_values():
+    """Test that workflow return values are correctly processed/unprocessed"""
+    import random
+    import string
+    import re
+    from covalent._workflow.electron import Electron
+
+    _types = (int, float, str)
+    _iterable_types = [tuple, list, set, dict]
+    _outputs_map = {}
+
+    def _get_random(typ, store=True):
+        """Return a random-ish instance of each type"""
+
+        if typ is int:
+            retval = random.randint(0, 1_000_000)
+        elif typ is float:
+            retval = random.uniform(0, 1e6)
+        elif typ is str:
+            retval = ''.join(random.choice(string.ascii_letters) for _ in range(5))
+        elif typ is tuple:
+            retval = tuple(random.randint(0, 1_000_000) for _ in range(5))
+        elif typ is list:
+            retval = [random.uniform(0, 1e6) for _ in range(5)]
+        elif typ is set:
+            retval = set(_get_random(random.choice(_types), False) for _ in range(5))
+        elif typ is dict:
+            retval = {k: _get_random(random.choice(_types), False)
+                      for k in set(_get_random(str, False) for _ in range(5))}
+
+        if not store:
+            return retval
+
+        # get unique (fake) node id
+        fake_node_id = random.randint(0, 1_000_000_000)
+        while fake_node_id in _outputs_map:
+            fake_node_id = random.randint(0, 1_000_000_000)
+
+        # node id to result map for reconstruction
+        # in practice, `reval` would be a node result from the transport graph
+        _outputs_map[fake_node_id] = retval
+
+        return retval, fake_node_id
+
+    def _generate_random_output(retval_a, retval_e, member_typ, iter_typ, depth):
+        """Recursively creates a random object and its electron-containing counterpart"""
+        if depth < 1:
+            return retval_a, retval_e
+
+        value_actual, fake_node_id = _get_random(member_typ)
+        value_electron = Electron(lambda _: None, node_id=fake_node_id)
+
+        if retval_a is None:
+            return _generate_random_output(value_actual, value_electron,
+                                           member_typ, iter_typ, depth)
+
+        if iter_typ is tuple:
+            new_retval_actual = (retval_a, value_actual)
+            new_retval_electron = (retval_e, value_electron)
+        elif iter_typ is list:
+            new_retval_actual = [retval_a, value_actual]
+            new_retval_electron = [retval_e, value_electron]
+        elif iter_typ is set:
+            # avoid unhashable types
+            new_retval_actual = retval_a
+            new_retval_electron = retval_e
+            if isinstance(retval_a, _types) and isinstance(value_actual, _types):
+                new_retval_actual = {retval_a, value_actual}
+                new_retval_electron = {retval_e, value_electron}
+        elif iter_typ is dict:
+            k1 = _get_random(str, False)
+            k2 = _get_random(str, False)
+            while k2 == k1:
+                k2 = _get_random(str, False)
+            new_retval_actual = {k1: retval_a, k2: value_actual}
+            new_retval_electron = {k1: retval_e, k2: value_electron}
+
+        new_member_typ = random.choice(list(_types) + _iterable_types)
+        new_iter_typ = random.choice(_iterable_types)
+
+        return _generate_random_output(new_retval_actual, new_retval_electron,
+                                       new_member_typ, new_iter_typ, depth - 1)
+
+    # RUN 10,000 RANDOM TRIALS
+    for _ in range(10_000):
+        depth = random.randint(1, 5)
+        iter_typ = random.choice(_iterable_types)
+        member_typ = random.choice(_types)
+
+        # literal & electron-containing return values
+        # former is used ONLY to validate
+        retval_a, retval_e = _generate_random_output(None, None,
+                                                     member_typ, iter_typ, depth)
+
+        # pre-process electron-containing return value, substitute `_Placeholder`s
+        pp = Lattice.preprocess_return(retval_e)
+
+        # un-process (reconstruct) the literal return value from the above
+        rv, _ = Result.unprocess_return(_outputs_map, pp)
+
+        # validate equality of nested objects
+        s1 = str(retval_a)
+        s2 = str(rv)
+
+        # extract sets to compare manually, since insertion order not guaranteed
+        sets_1 = re.findall("\\{[^:]*\\}", s1)
+        sets_2 = re.findall("\\{[^:]*\\}", s2)
+        assert len(sets_1) == len(sets_2)
+
+        for set_1, set_2 in zip(sets_1, sets_2):
+            set_1 = set(s.strip('{ }') for s in set_1.strip('{ }').split(','))
+            set_2 = set(s.strip('{ }') for s in set_2.strip('{ }').split(','))
+            assert set_1 == set_2
+
+        s1 = re.sub("\\{[^:]*\\}", 'SET', s1)
+        s2 = re.sub("\\{[^:]*\\}", 'SET', s2)
+
+        # compare remaining components via string conversion
+        assert str(s1) == str(s2)
