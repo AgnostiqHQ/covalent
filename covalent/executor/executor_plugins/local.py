@@ -27,11 +27,11 @@ This is a plugin executor module; it is loaded if found and properly structured.
 
 import multiprocessing as mp
 import os
+import platform
 from typing import Callable, Dict, List
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import TaskRuntimeError, logger
-from covalent._shared_files.config import get_config
 from covalent.executor import BaseExecutor
 
 # Store the wrapper function in an external module to avoid module
@@ -52,15 +52,11 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     ),
 }
 
-is_local_executor_active = get_config("sdk.no_cluster") != "false"
+# Platform enums for determening multiprocessing start mode
+PLATFORM_DARWIN = "Darwin"
 
-if is_local_executor_active:
-    try:
-        print("Setting mp start method to fork...")
-        mp.set_start_method("fork")
-    except RuntimeError as e:
-        print(e)
-        pass
+# Multiprocessing start mododes
+START_MODE__FORK = "fork"
 
 
 class LocalExecutor(BaseExecutor):
@@ -68,7 +64,25 @@ class LocalExecutor(BaseExecutor):
     Local executor class that directly invokes the input function.
     """
 
+    def set_fork_start_mode(self):
+        current_start_mode = mp.get_start_method()
+        os_name = platform.system()
+        try:
+            if os_name == PLATFORM_DARWIN and current_start_mode != START_MODE__FORK:
+                print(
+                    f"Setting mp start method to fork from {current_start_mode} in {platform.system()}..."
+                )
+                mp.set_start_method(START_MODE__FORK, force=True)
+        except RuntimeError as e:
+            print(e)
+
+    def reset_start_mode(self):
+        mp.set_start_method(None, force=True)
+
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
+
+        self.set_fork_start_mode()
+
         app_log.debug(f"Running function {function} locally")
         q = mp.Queue()
 
@@ -85,4 +99,5 @@ class LocalExecutor(BaseExecutor):
             print(tb, end="", file=self.task_stderr)
             raise TaskRuntimeError(tb)
 
+        self.reset_start_mode()
         return output
