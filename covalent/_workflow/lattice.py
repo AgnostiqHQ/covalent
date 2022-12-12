@@ -346,7 +346,7 @@ class Lattice:
                 electron_ids = [value.node_id]
             else:
                 electron_ids.append(value.node_id)
-            return _Placeholder(value), electron_ids
+            return _Placeholder(value.node_id), electron_ids
 
         if isinstance(value, tuple):
             new_return_value = tuple()
@@ -372,7 +372,8 @@ class Lattice:
         if isinstance(value, set):
             new_return_value = set()
             for v in value:
-                val = Lattice.preprocess_return(v, electron_ids)
+                val, electron_ids = Lattice.preprocess_return(v, electron_ids)
+                new_return_value.add(val)
             return new_return_value, electron_ids
 
         return value, [] if electron_ids is None else electron_ids
