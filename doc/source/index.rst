@@ -47,7 +47,7 @@ Get Started
 
 .. panels::
 
-    .. link-button:: getting_started/quick_start
+    .. link-button:: getting_started/quick_start/index
         :type: ref
         :text: Quick Start
         :classes: btn-outline-primary btn-block stretched-link
@@ -60,7 +60,7 @@ Get Started
 
     .. link-button:: getting_started/index
         :type: ref
-        :text: Getting Started
+        :text: First Experiment
         :classes: btn-outline-primary btn-block stretched-link
 
     ^^^
@@ -163,6 +163,12 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    API Reference <api/index>
    Credentials <credentials>
 
+.. toctree::
+   :maxdepth: 2
+   :caption:  Extensions
+   :hidden:
+
+   plugins
 
 .. toctree::
    :maxdepth: 2

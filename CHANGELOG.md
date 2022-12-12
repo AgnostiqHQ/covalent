@@ -30,6 +30,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Adding `Deployment` section for self-hosting guide
 
+### Docs
+
+- Rewrote Concepts section in docs
+- Split Concepts into API, server, and UI sections
+- Added new examples and graphics for Concepts
+
 ### Fixed
 
 - Respecting specified AWS profile & region in remote executed S3 file transfers, defaulting to env vars of execution backend
@@ -68,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+
 - Added DNN tutorial
 - Updated AWS Plugins install instructions
 - Updated AWS Plugins documentation (minor fixes)
@@ -82,6 +89,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added an executors-and-UI graphic.
 - Adding `Deployment` section for self-hosting guide
 
+>>>>>>> develop
 
 ## [0.208.0-rc.0] - 2022-11-05
 
