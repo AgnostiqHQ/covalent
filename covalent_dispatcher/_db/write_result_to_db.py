@@ -157,6 +157,7 @@ def insert_lattices_data(
 def insert_electrons_data(
     parent_dispatch_id: str,
     transport_graph_node_id: int,
+    transport_graph_task_gid: int,
     type: str,
     name: str,
     status: str,
@@ -194,6 +195,7 @@ def insert_electrons_data(
         electron_row = Electron(
             parent_lattice_id=parent_lattice_id,
             transport_graph_node_id=transport_graph_node_id,
+            transport_graph_task_gid=transport_graph_task_gid,
             type=type,
             name=name,
             status=status,

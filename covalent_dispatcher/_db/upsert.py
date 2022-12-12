@@ -182,6 +182,8 @@ def _electron_data(result: Result):
 
             node_name = tg.get_node_value(node_key=node_id, value_key="name")
 
+            task_gid = tg.get_node_value(node_key=node_id, value_key="task_gid")
+
             try:
                 function_string = tg.get_node_value(node_id, "function_string")
             except KeyError:

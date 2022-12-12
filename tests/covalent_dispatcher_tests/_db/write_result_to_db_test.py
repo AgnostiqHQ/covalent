@@ -192,6 +192,7 @@ def get_lattice_kwargs(
 def get_electron_kwargs(
     parent_dispatch_id="dispatch_1",
     transport_graph_node_id=0,
+    transport_graph_task_gid=0,
     type=parameter_prefix.strip(prefix_separator),
     name=f"{parameter_prefix}0",
     status="NEW_OBJ",
@@ -219,6 +220,7 @@ def get_electron_kwargs(
     return {
         "parent_dispatch_id": parent_dispatch_id,
         "transport_graph_node_id": transport_graph_node_id,
+        "transport_graph_task_gid": transport_graph_task_gid,
         "type": type,
         "name": name,
         "status": status,
@@ -361,8 +363,6 @@ def test_insert_electrons_data(test_db, mocker):
                 else:
                     assert getattr(electron, key) == value
             assert electron.is_active
-
-        insert_electrons_data(**electron_kwargs)
 
 
 def test_insert_electrons_data_missing_lattice_record(test_db, mocker):

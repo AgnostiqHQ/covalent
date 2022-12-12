@@ -134,6 +134,9 @@ class Electron(Base):
     # id of the node in the context of a transport graph
     transport_graph_node_id = Column(Integer, nullable=False)
 
+    # id of the node group in the context of a transport graph
+    transport_graph_task_gid = Column(Integer, nullable=False)
+
     # Node type
     type = Column(String(24), nullable=False)
 
