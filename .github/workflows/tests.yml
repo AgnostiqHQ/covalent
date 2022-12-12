@@ -153,16 +153,16 @@ jobs:
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
 
-      # - name: Build webapp
-      #   if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
-      #   uses: nick-fields/retry@v2
-      #   with:
-      #     timeout_minutes: 10
-      #     max_attempts: 2
-      #     command: |
-      #       cd ./covalent_ui/webapp
-      #       yarn install
-      #       yarn build
+      - name: Build webapp
+        if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 2
+          command: |
+            cd ./covalent_ui/webapp
+            yarn install
+            yarn build
 
       - name: Transform semver version to pep440
         id: version-transform
@@ -174,19 +174,19 @@ jobs:
         if: env.NEED_PYTHON || env.BUILD_AND_RUN_ALL
         run: python setup.py sdist
 
-      # - name: Validate distribution
-      #   if: env.BUILD_AND_RUN_ALL
-      #   run: |
-      #     VERSION="${{ steps.version-transform.outputs.version }}"
-      #     echo "Using transformed VERSION: $VERSION"
-      #     cd dist
-      #     tar xzf covalent-${VERSION}.tar.gz
-      #     diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
-      #     diff -x .gitignore -r covalent-${VERSION}/covalent_dispatcher ../covalent_dispatcher
-      #     diff -x README.md -r covalent-${VERSION}/covalent_migrations ../covalent_migrations
-      #     diff -x .gitignore -x README.md -x webapp covalent-${VERSION}/covalent_ui ../covalent_ui
-      #     diff -r covalent-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
-      #     rm -rf covalent-${VERSION}/
+      - name: Validate distribution
+        if: env.BUILD_AND_RUN_ALL
+        run: |
+          VERSION="${{ steps.version-transform.outputs.version }}"
+          echo "Using transformed VERSION: $VERSION"
+          cd dist
+          tar xzf covalent-${VERSION}.tar.gz
+          diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
+          diff -x .gitignore -r covalent-${VERSION}/covalent_dispatcher ../covalent_dispatcher
+          diff -x README.md -r covalent-${VERSION}/covalent_migrations ../covalent_migrations
+          diff -x .gitignore -x README.md -x webapp covalent-${VERSION}/covalent_ui ../covalent_ui
+          diff -r covalent-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
+          rm -rf covalent-${VERSION}/
 
       - name: Install Covalent
         if: steps.build-dist.outcome == 'success'
