@@ -87,8 +87,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Broke out "Installing from Source" instructions to separate page.
 - Corrected some API class names in headers.
 - Added an executors-and-UI graphic.
-<<<<<<< HEAD
-=======
 - Adding `Deployment` section for self-hosting guide
 
 >>>>>>> develop
