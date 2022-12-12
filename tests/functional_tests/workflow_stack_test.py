@@ -792,8 +792,9 @@ def test_electron_getattr():
 def test_preprocess_unprocess_return_values():
     """Test that workflow return values are correctly processed/unprocessed"""
     import random
-    import string
     import re
+    import string
+
     from covalent._workflow.electron import Electron
 
     _types = (int, float, str)
