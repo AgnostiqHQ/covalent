@@ -330,8 +330,7 @@ class Lattice:
     @staticmethod
     def preprocess_return(value: Any, electron_ids: list = None) -> 'tuple[Any, list]':
         """
-        Recursively inspects the input value to construct a placeholder copy wherein
-        electrons are replaced by an identifier string based on their `node_id`.
+        Recursively inspects the input value to construct a placeholder copy.
 
         Args:
             value: a literal or `Electron` instance or any tuple/list/dict thereof
@@ -406,7 +405,6 @@ def lattice(
         executor: Alternative executor object to be used in the execution of each node. If not passed, the local
             executor is used by default.
         postprocess: If True, run post-processing on the workflow's return value to guarantee correct type.
-            Note that this option is ignored for sublattice workflows.
         workflow_executor: Executor for postprocessing the workflow. Defaults to the built-in dask executor or
             the local executor depending on whether Covalent is started with the `--no-cluster` option.
         deps_bash: An optional DepsBash object specifying a list of shell commands to run before `_func`
