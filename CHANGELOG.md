@@ -9,6 +9,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added complementary methods `Lattice.preprocess_return` and `Result.unprocess_return` to allow return value reconstruction
+- Added `return_info` attribute to `Lattice` to store reconstruction information
+- Added `_reconstruct_sublattice_result` to do server-side reconstruction through chosen executor
+- Added `Result` statuses `PENDING_RECONSTRUCTION` and `RECONSTRUCTION_FAILED`
+- Added `_Placeholder` class to represent electron outputs in workflow return value
+
+### Changed
+
+- Made workflow post-processing disabled by default - instead reconstruct return values from electron outputs
+- Modified `_run_planned_workflow` behavior after all tasks finished running
+- Update DB to handle new lattice attribute, `return_info`
+- Update tests to handle new lattice attribute, `return_info`
+
+### Added
+
 - Adding support for PostgresQL DB backend
 - Added check for `COVALENT_DATABASE_URL`, if exists connect sqlalchemy engine using that
 - Adding `COVALENT_DATABASE_USER` and `COVALENT_DATABASE_PASSWORD` environment variables
