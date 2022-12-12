@@ -111,7 +111,7 @@ def test_wrapper_fn_calldep_non_unique_retval_keys_injection():
     assert output.get_deserialized() == 6
 
 
-def test_local_executor_run__mock_task(x):
+def local_executor_run__mock_task(x):
     return x**2
 
 
@@ -120,7 +120,7 @@ def test_local_executor_run():
     args = [5]
     kwargs = {}
     task_metadata = {"dispatch_id": "asdf", "node_id": 1}
-    assert le.run(test_local_executor_run__mock_task, args, kwargs, task_metadata) == 25
+    assert le.run(local_executor_run__mock_task, args, kwargs, task_metadata) == 25
 
 
 def local_executor_run_exception_handling__mock_task(x):
