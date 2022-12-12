@@ -56,7 +56,7 @@ class DataStore:
 
         # flag should only be used in pytest - tables should be generated using migrations
         if initialize_db:
-            models.Base.metadata.create_all(self.engine)
+            models.Base.metadata.create_all(self.engine, checkfirst=True)
 
     def drop_all(self):
         models.Base.metadata.drop_all(self.engine)
