@@ -88,6 +88,8 @@ class Result:
         self._electron_id = None
 
         self._status = Result.NEW_OBJ
+        self._failed_tasks = []
+        self._cancelled_tasks = []
 
         self._result = TransportableObject(None)
 
