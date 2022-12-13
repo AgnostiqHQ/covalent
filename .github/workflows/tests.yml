@@ -272,6 +272,16 @@ jobs:
           || steps.ui-frontend-tests.outcome == 'failed')
         run: covalent logs
 
+      - name: Dump cloudpickle.py
+        if: >
+          steps.covalent_start.outcome == 'success'
+          && (steps.sdk-tests.outcome == 'failed'
+          || steps.dispatcher-tests.outcome == 'failed'
+          || steps.functional-tests.outcome == 'failed'
+          || steps.ui-backend-tests.outcome == 'failed'
+          || steps.ui-frontend-tests.outcome == 'failed')
+        run: cat /Users/runner/hostedtoolcache/Python/3.8.15/x64/lib/python3.8/site-packages/cloudpickle/cloudpickle.py
+
       - name: Upload SDK report to Codecov
         id: upload-sdk-report
         if: >
