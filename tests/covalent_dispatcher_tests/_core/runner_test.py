@@ -66,7 +66,7 @@ def get_mock_result() -> Result:
         print("Error!", file=sys.stderr)
         return x
 
-    @ct.lattice(results_dir=TEST_RESULTS_DIR, deps_bash=ct.DepsBash(["ls"]))
+    @ct.lattice(deps_bash=ct.DepsBash(["ls"]))
     def pipeline(x):
         res1 = task(x)
         res2 = task(res1)
@@ -74,9 +74,7 @@ def get_mock_result() -> Result:
 
     pipeline.build_graph(x="absolute")
     received_workflow = Lattice.deserialize_from_json(pipeline.serialize_to_json())
-    result_object = Result(
-        received_workflow, pipeline.metadata["results_dir"], "pipeline_workflow"
-    )
+    result_object = Result(received_workflow, "pipeline_workflow")
 
     return result_object
 
@@ -104,7 +102,7 @@ def test_gather_deps():
     workflow.build_graph(5)
 
     received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
-    result_object = Result(received_workflow, "/tmp", "asdf")
+    result_object = Result(received_workflow, "asdf")
 
     before, after = _gather_deps(result_object, 0)
     assert len(before) == 3

@@ -70,7 +70,7 @@ def get_mock_result() -> Result:
         print("Error!", file=sys.stderr)
         return x
 
-    @ct.lattice(results_dir=TEST_RESULTS_DIR)
+    @ct.lattice
     def pipeline(x):
         res1 = task(x)
         res2 = task(res1)
@@ -78,9 +78,7 @@ def get_mock_result() -> Result:
 
     pipeline.build_graph(x="absolute")
     received_workflow = Lattice.deserialize_from_json(pipeline.serialize_to_json())
-    result_object = Result(
-        received_workflow, pipeline.metadata["results_dir"], "pipeline_workflow"
-    )
+    result_object = Result(received_workflow, "pipeline_workflow")
 
     return result_object
 

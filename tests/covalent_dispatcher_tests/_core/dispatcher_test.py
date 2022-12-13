@@ -69,7 +69,7 @@ def get_mock_result() -> Result:
         print("Error!", file=sys.stderr)
         return x
 
-    @ct.lattice(results_dir=TEST_RESULTS_DIR)
+    @ct.lattice
     def pipeline(x):
         res1 = task(x)
         res2 = task(res1)
@@ -77,9 +77,7 @@ def get_mock_result() -> Result:
 
     pipeline.build_graph(x="absolute")
     received_workflow = Lattice.deserialize_from_json(pipeline.serialize_to_json())
-    result_object = Result(
-        received_workflow, pipeline.metadata["results_dir"], "pipeline_workflow"
-    )
+    result_object = Result(received_workflow, "pipeline_workflow")
 
     return result_object
 
@@ -97,7 +95,7 @@ def test_plan_workflow():
 
     workflow.metadata["schedule"] = True
     received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
-    result_object = Result(received_workflow, "/tmp", "asdf")
+    result_object = Result(received_workflow, "asdf")
     _plan_workflow(result_object=result_object)
 
     # Updated transport graph post planning
@@ -156,7 +154,7 @@ def test_get_abstract_task_inputs():
     abstract_args = [2, 3, 4]
     tg = list_workflow.transport_graph
 
-    result_object = Result(lattice=list_workflow, results_dir="/tmp", dispatch_id="asdf")
+    result_object = Result(lattice=list_workflow, dispatch_id="asdf")
     abs_task_inputs = _get_abstract_task_inputs(1, tg.get_node_value(1, "name"), result_object)
 
     expected_inputs = {"args": abstract_args, "kwargs": {}}
@@ -170,7 +168,7 @@ def test_get_abstract_task_inputs():
     abstract_args = {"a": 2, "b": 3}
     tg = dict_workflow.transport_graph
 
-    result_object = Result(lattice=dict_workflow, results_dir="/tmp", dispatch_id="asdf")
+    result_object = Result(lattice=dict_workflow, dispatch_id="asdf")
     task_inputs = _get_abstract_task_inputs(1, tg.get_node_value(1, "name"), result_object)
     expected_inputs = {"args": [], "kwargs": abstract_args}
 
@@ -179,7 +177,7 @@ def test_get_abstract_task_inputs():
     # Check arg order
     multivar_workflow.build_graph(1, 2)
     received_lattice = Lattice.deserialize_from_json(multivar_workflow.serialize_to_json())
-    result_object = Result(lattice=received_lattice, results_dir="/tmp", dispatch_id="asdf")
+    result_object = Result(lattice=received_lattice, dispatch_id="asdf")
     tg = received_lattice.transport_graph
 
     assert list(tg._graph.nodes) == [0, 1, 2, 3, 4, 5, 6, 7]
