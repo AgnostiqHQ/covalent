@@ -146,6 +146,10 @@ def local_wrapper_fn_exception_handling__mock_task(x):
     raise RuntimeError("Err")
 
 
+def local_wrapper_fn_exception_handling__mock_task(x):
+    raise RuntimeError("Err")
+
+
 @pytest.mark.skip(reason="Unable to mock traceback in subprocess")
 def test_local_wrapper_fn_exception_handling(mocker):
     import multiprocessing as mp
