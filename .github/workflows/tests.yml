@@ -196,7 +196,6 @@ jobs:
         if: env.BUILD_AND_RUN_ALL
         id: covalent_start
         run: |
-          covalent db migrate
           if [ "${{ matrix.backend }}" = 'dask' ] ; then
             covalent start
           elif [ "${{ matrix.backend }}" = 'local' ] ; then
@@ -205,6 +204,7 @@ jobs:
             echo "Invalid backend specified in test matrix."
             exit 1
           fi
+          covalent config
 
       - name: Run SDK tests and measure coverage
         id: sdk-tests
