@@ -93,7 +93,7 @@ async def _handle_completed_node(result_object, node_id, pending_parents):
 
 # Domain: dispatcher
 async def _handle_failed_node(result_object, node_id):
-    result_object._failed_tasks.append(node_id)
+    result_object._task_failed = True
     result_object._end_time = datetime.now(timezone.utc)
     app_log.debug(f"Node {result_object.dispatch_id}:{node_id} failed")
     app_log.debug("8A: Failed node upsert statement (run_planned_workflow)")
@@ -103,7 +103,7 @@ async def _handle_failed_node(result_object, node_id):
 
 # Domain: dispatcher
 async def _handle_cancelled_node(result_object, node_id):
-    result_object._cancelled_tasks.append(node_id)
+    result_object._task_cancelled = True
     result_object._end_time = datetime.now(timezone.utc)
     app_log.debug(f"Node {result_object.dispatch_id}:{node_id} cancelled")
     app_log.debug("9: Cancelled node upsert statement (run_planned_workflow)")
@@ -259,13 +259,13 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
             await _handle_cancelled_node(result_object, node_id)
             continue
 
-    if result_object._failed_tasks or result_object._cancelled_tasks:
+    if result_object._task_failed or result_object._task_cancelled:
         app_log.debug(f"Workflow {result_object.dispatch_id} cancelled or failed")
         failed_nodes = result_object._get_failed_nodes()
         failed_nodes = map(lambda x: f"{x[0]}: {x[1]}", failed_nodes)
         failed_nodes_msg = "\n".join(failed_nodes)
         result_object._error = "The following tasks failed:\n" + failed_nodes_msg
-        result_object._status = Result.FAILED if result_object._failed_tasks else Result.CANCELLED
+        result_object._status = Result.FAILED if result_object._task_failed else Result.CANCELLED
         return result_object
 
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
