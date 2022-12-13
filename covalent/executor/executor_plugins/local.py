@@ -57,6 +57,7 @@ PLATFORM_DARWIN = "Darwin"
 
 # Multiprocessing start mododes
 START_MODE__FORK = "fork"
+START_MODE__SPAWN = "spawn"
 
 
 class LocalExecutor(BaseExecutor):
@@ -67,21 +68,16 @@ class LocalExecutor(BaseExecutor):
     def set_fork_start_mode(self):
         current_start_mode = mp.get_start_method()
         os_name = platform.system()
-        try:
-            if os_name == PLATFORM_DARWIN and current_start_mode != START_MODE__FORK:
-                print(
-                    f"Setting mp start method to fork from {current_start_mode} in {platform.system()}..."
-                )
-                mp.set_start_method(START_MODE__FORK, force=True)
-        except RuntimeError as e:
-            print(e)
+        if os_name == PLATFORM_DARWIN and current_start_mode != START_MODE__FORK:
+            app_log.debug(
+                f"Setting mp start method to fork from {current_start_mode} in {platform.system()}..."
+            )
+            mp.set_start_method(START_MODE__FORK, force=True)
 
     def reset_start_mode(self):
         mp.set_start_method(None, force=True)
 
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
-
-        self.set_fork_start_mode()
 
         app_log.debug(f"Running function {function} locally")
         q = mp.Queue()
@@ -99,5 +95,4 @@ class LocalExecutor(BaseExecutor):
             print(tb, end="", file=self.task_stderr)
             raise TaskRuntimeError(tb)
 
-        self.reset_start_mode()
         return output
