@@ -218,3 +218,11 @@ def test_result_post_process(
     execution_result = res.post_process()
 
     assert execution_result == compute_energy(3)
+
+
+def test_update_node(result_1, mocker):
+    result_1._update_node(node_id=0, status=Result.COMPLETED, sub_dispatch_id="subdispatch")
+
+    tg = result_1.lattice.transport_graph
+    assert tg.get_node_value(0, "sub_dispatch_id") == "subdispatch"
+    assert tg.get_node_value(0, "status") == Result.COMPLETED
