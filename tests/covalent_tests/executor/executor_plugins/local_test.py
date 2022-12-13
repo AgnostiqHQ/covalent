@@ -144,23 +144,3 @@ def test_local_executor_run_exception_handling(mocker):
         le.run(_local_executor_run_exception_handling_mock_function, args, kwargs, task_metadata)
     assert "f output" in le._task_stdout.getvalue()
     assert "RuntimeError" in le._task_stderr.getvalue()
-
-
-def test_local_wrapper_fn_exception_handling(mocker):
-    import multiprocessing as mp
-
-    from covalent.executor.utils.wrappers import local_wrapper
-
-    args = [5]
-    kwargs = {}
-    q = mp.Queue()
-    p = mp.Process(
-        target=local_wrapper,
-        args=(_test_local_wrapper_fn_exception_handling_mock_function, args, kwargs, q),
-    )
-    p.start()
-    p.join()
-    output, stdout, stderr, tb = q.get(False)
-
-    assert "RuntimeError" in tb
-    assert output is None
