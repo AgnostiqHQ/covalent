@@ -30,12 +30,7 @@ import covalent as ct
 from covalent._shared_files import TaskRuntimeError
 from covalent._workflow.transport import TransportableObject
 from covalent.executor.base import wrapper_fn
-from covalent.executor.executor_plugins.local import (
-    PLATFORM_DARWIN,
-    START_MODE__FORK,
-    START_MODE__SPAWN,
-    LocalExecutor,
-)
+from covalent.executor.executor_plugins.local import LocalExecutor
 
 
 def test_local_executor_passes_results_dir(mocker):
@@ -53,7 +48,6 @@ def test_local_executor_passes_results_dir(mocker):
         )
         le = LocalExecutor()
 
-        le.set_fork_start_mode()
         assembled_callable = partial(wrapper_fn, TransportableObject(simple_task), [], [])
 
         le.execute(
@@ -64,7 +58,6 @@ def test_local_executor_passes_results_dir(mocker):
             results_dir=tmp_dir,
             node_id=0,
         )
-        le.reset_start_mode()
         mocked_function.assert_called_once()
 
 
@@ -123,12 +116,10 @@ def test_local_executor_run():
         return x**2
 
     le = LocalExecutor()
-    le.set_fork_start_mode()
     args = [5]
     kwargs = {}
     task_metadata = {"dispatch_id": "asdf", "node_id": 1}
     assert le.run(f, args, kwargs, task_metadata) == 25
-    le.reset_start_mode()
 
 
 def test_local_executor_run_exception_handling(mocker):
@@ -142,12 +133,10 @@ def test_local_executor_run_exception_handling(mocker):
     args = [5]
     kwargs = {}
     task_metadata = {"dispatch_id": "asdf", "node_id": 1}
-    le.set_fork_start_mode()
     with pytest.raises(TaskRuntimeError) as ex:
         le.run(f, args, kwargs, task_metadata)
     le._task_stdout.getvalue() == "f output"
     assert "RuntimeError" in le._task_stderr.getvalue()
-    le.reset_start_mode()
 
 
 def test_local_wrapper_fn_exception_handling(mocker):
@@ -163,45 +152,9 @@ def test_local_wrapper_fn_exception_handling(mocker):
     error_msg = "task failed"
     q = mp.Queue()
     mocker.patch("traceback.TracebackException.from_exception", return_value=error_msg)
-    LocalExecutor().set_fork_start_mode()
     p = mp.Process(target=local_wrapper, args=(failing_task, args, kwargs, q))
     p.start()
     p.join()
     output, stdout, stderr, tb = q.get(False)
     assert tb == error_msg
     assert output is None
-    LocalExecutor().reset_start_mode()
-
-
-@pytest.mark.parametrize(
-    "os_name,current_start_mode",
-    [
-        ("Linux", START_MODE__FORK),
-        ("Linux", START_MODE__SPAWN),
-        (PLATFORM_DARWIN, START_MODE__FORK),
-        (PLATFORM_DARWIN, START_MODE__SPAWN),
-    ],
-)
-def test_local_executor_set_start_method(mocker, os_name, current_start_mode):
-    mp_mock = mocker.patch("covalent.executor.executor_plugins.local.mp")
-    platform_mock = mocker.patch("covalent.executor.executor_plugins.local.platform")
-
-    le = LocalExecutor()
-
-    platform_mock.system.return_value = os_name
-    mp_mock.get_start_method.return_value = current_start_mode
-
-    le.set_fork_start_mode()
-
-    if os_name == PLATFORM_DARWIN and current_start_mode != START_MODE__FORK:
-        mp_mock.set_start_method.assert_called_once()
-    else:
-        mp_mock.set_start_method.assert_not_called()
-
-
-def test_local_executor_reset_start_mode(mocker):
-    mp_mock = mocker.patch("covalent.executor.executor_plugins.local.mp")
-
-    le = LocalExecutor()
-    le.reset_start_mode()
-    mp_mock.set_start_method.assert_called_once_with(None, force=True)

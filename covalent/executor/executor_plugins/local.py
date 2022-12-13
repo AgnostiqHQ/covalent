@@ -25,9 +25,8 @@ This is a plugin executor module; it is loaded if found and properly structured.
 """
 
 
-import multiprocessing as mp
 import os
-import platform
+from concurrent.futures import ProcessPoolExecutor
 from typing import Callable, Dict, List
 
 # Relative imports are not allowed in executor plugins
@@ -36,7 +35,7 @@ from covalent.executor import BaseExecutor
 
 # Store the wrapper function in an external module to avoid module
 # import errors during pickling
-from covalent.executor.utils.wrappers import local_wrapper
+from covalent.executor.utils.wrappers import io_wrapper
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "LocalExecutor"
@@ -52,12 +51,7 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     ),
 }
 
-# Platform enums for determening multiprocessing start mode
-PLATFORM_DARWIN = "Darwin"
-
-# Multiprocessing start mododes
-START_MODE__FORK = "fork"
-START_MODE__SPAWN = "spawn"
+proc_pool = ProcessPoolExecutor()
 
 
 class LocalExecutor(BaseExecutor):
@@ -65,28 +59,14 @@ class LocalExecutor(BaseExecutor):
     Local executor class that directly invokes the input function.
     """
 
-    def set_fork_start_mode(self):
-        current_start_mode = mp.get_start_method()
-        os_name = platform.system()
-        if os_name == PLATFORM_DARWIN and current_start_mode != START_MODE__FORK:
-            app_log.debug(
-                f"Setting mp start method to fork from {current_start_mode} in {platform.system()}..."
-            )
-            mp.set_start_method(START_MODE__FORK, force=True)
-
-    def reset_start_mode(self):
-        mp.set_start_method(None, force=True)
-
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
 
         app_log.debug(f"Running function {function} locally")
-        q = mp.Queue()
 
         # Run the target function in a separate process
-        proc = mp.Process(target=local_wrapper, args=(function, args, kwargs, q))
-        proc.start()
-        proc.join()
-        output, worker_stdout, worker_stderr, tb = q.get(False)
+        fut = proc_pool.submit(io_wrapper, function, args, kwargs)
+
+        output, worker_stdout, worker_stderr, tb = fut.result()
 
         print(worker_stdout, end="", file=self.task_stdout)
         print(worker_stderr, end="", file=self.task_stderr)
