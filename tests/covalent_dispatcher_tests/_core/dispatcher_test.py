@@ -251,7 +251,7 @@ async def test_handle_cancelled_node(mocker):
     node_result = {"node_id": 1, "status": Result.CANCELLED}
 
     await _handle_cancelled_node(result_object, 1)
-    assert result_object.status == Result.CANCELLED
+    assert result_object._cancelled_tasks == [1]
     mock_upsert_lattice.assert_called()
 
 
@@ -377,7 +377,7 @@ async def test_run_planned_workflow_cancelled_update(mocker):
     mock_submit_task = mocker.patch("covalent_dispatcher._core.dispatcher._submit_task")
 
     def side_effect(result_object, node_id):
-        result_object._status = Result.CANCELLED
+        result_object._cancelled_tasks.append(node_id)
 
     mock_handle_cancelled = mocker.patch(
         "covalent_dispatcher._core.dispatcher._handle_cancelled_node", side_effect=side_effect
@@ -410,7 +410,7 @@ async def test_run_planned_workflow_failed_update(mocker):
     mock_submit_task = mocker.patch("covalent_dispatcher._core.dispatcher._submit_task")
 
     def side_effect(result_object, node_id):
-        result_object._status = Result.FAILED
+        result_object._failed_tasks.append(node_id)
 
     mock_handle_failed = mocker.patch(
         "covalent_dispatcher._core.dispatcher._handle_failed_node", side_effect=side_effect
