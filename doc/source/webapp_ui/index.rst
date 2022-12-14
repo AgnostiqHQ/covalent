@@ -21,10 +21,13 @@ The following screens are available in the Covalent GUI:
     Built into the Covalent GUI as a convenience in workflow development. View the transport graph of a lattice that you have not yet dispatched.
 
 :doc:`Logs<logs/index>`
-    Displays a list of logs for dispatches.
+    Displays the server log. Log entries do not disclose which dispatch generated them; for information about dispatches, see the :doc:`Graph View<graph_view/index>`.
 
-:doc:`Settings<settings/index`>
+:doc:`Settings<settings/index>`
+    Provides controls to customize the Covalent GUI.
 
+:doc:`Terminal<terminal/index>`
+    Opens a terminal where you can type shell commands.
 
 Logs
 ====
@@ -50,3 +53,16 @@ Terminal
 ========
 
 :doc:`Terminal <terminal/terminal>`
+
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   dashboard/index
+   graph_view/index
+   sublattices/index
+   preview/index
+   logs/index
+   settings/index
+   terminal/index
