@@ -14,8 +14,8 @@ The Dashboard shows a list of workflows dispatched to the server, with summary o
 
 The following navigation tools are available on the Dashboard:
 
-    * :doc:`Pagination <navigation/pagination>`
-    * :doc:`Search <navigation/search>`
-    * :doc:`Sort <navigation/sort>`
-    * :doc:`Filter <navigation/filter>`
-    * :doc:`Workflow Dispatch Deletion <navigation/delete_dispatches>`
+* :doc:`Pagination <navigation/pagination>`
+* :doc:`Search <navigation/search>`
+* :doc:`Sort <navigation/sort>`
+* :doc:`Filter <navigation/filter>`
+* :doc:`Workflow Dispatch Deletion <navigation/delete_dispatches>`
