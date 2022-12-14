@@ -1,6 +1,6 @@
 .. _slurm_executor:
 
-🔌 Slurm Executor
+Slurm Executor
 """""""""""""""""""""""""""
 
 This executor plugin interfaces Covalent with HPC systems managed by `Slurm <https://slurm.schedmd.com/documentation.html>`_. For workflows to be deployable, users must have SSH access to the Slurm login node, writable storage space on the remote filesystem, and permissions to submit jobs to Slurm.

@@ -17,6 +17,7 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+import os
 from pathlib import Path
 
 import pytest
@@ -34,7 +35,7 @@ from covalent_dispatcher._db.upsert import (
     _electron_data,
 )
 
-TEMP_RESULTS_DIR = "/tmp/results"
+TEMP_RESULTS_DIR = os.environ.get("COVALENT_DATA_DIR") or ct.get_config("dispatcher.results_dir")
 le = LocalExecutor(log_stdout="/tmp/stdout.log")
 
 
@@ -48,7 +49,7 @@ def result_1():
     def task_2(x, y):
         return x + y
 
-    @ct.lattice(executor=le, workflow_executor=le, results_dir=TEMP_RESULTS_DIR)
+    @ct.lattice(executor=le, workflow_executor=le)
     def workflow_1(a, b):
         """Docstring"""
         res_1 = task_1(a, b)
@@ -57,10 +58,8 @@ def result_1():
     Path(f"{TEMP_RESULTS_DIR}/dispatch_1").mkdir(parents=True, exist_ok=True)
     workflow_1.build_graph(a=1, b=2)
     received_lattice = LatticeClass.deserialize_from_json(workflow_1.serialize_to_json())
-    result = Result(
-        lattice=received_lattice, results_dir=TEMP_RESULTS_DIR, dispatch_id="dispatch_1"
-    )
-    result.lattice.metadata["results_dir"] = TEMP_RESULTS_DIR
+    result = Result(lattice=received_lattice, dispatch_id="dispatch_1")
+    #    result.lattice.metadata["results_dir"] = TEMP_RESULTS_DIR
     result._initialize_nodes()
     return result
 

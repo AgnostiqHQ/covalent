@@ -136,10 +136,17 @@ class TestS3Strategy:
 
         boto3_client_mock = boto3_mock.Session().client
 
-        os_mock = MagicMock()
-        sys.modules["os"] = os_mock
-
-        mocker.patch("os.walk", return_value=[["", "", ["test.csv"]]])
+        mocker.patch(
+            "covalent._file_transfer.strategies.s3_strategy.os.walk",
+            return_value=[["", "", ["test.csv"]]],
+        )
+        mocker.patch(
+            "covalent._file_transfer.strategies.s3_strategy.os.path.relpath",
+            return_value="mock_path",
+        )
+        mocker.patch(
+            "covalent._file_transfer.strategies.s3_strategy.os.path.join", return_value="mock_join"
+        )
 
         to_folder = Folder("s3://mock-bucket/")
         from_folder = Folder("/tmp/")
@@ -151,9 +158,6 @@ class TestS3Strategy:
                 {"Key": "test.csv"},
             ]
         }
-
-        os_mock.path.relpath.return_value = "mock_path"
-        os_mock.path.join.return_value = "mock_join"
 
         callable_func = S3(**self.MOCK_STRATEGY_CONFIG).upload(from_folder, to_folder)
         callable_func()

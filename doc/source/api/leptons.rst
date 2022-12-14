@@ -1,6 +1,6 @@
 .. _leptons:
 
-Leptons
+Lepton
 ==============
 
 

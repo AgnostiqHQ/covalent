@@ -29,32 +29,6 @@ The following screens are available in the Covalent GUI:
 :doc:`Terminal<terminal/index>`
     Opens a terminal where you can type shell commands.
 
-Logs
-====
-
-:doc:`List <logs/logs_list>`
-
-:doc:`Pagination <logs/pagination>`
-
-:doc:`Search <logs/search>`
-
-:doc:`Sort <logs/sort>`
-
-:doc:`Download <logs/download>`
-
-Settings
-========
-
-:doc:`Settings <settings/settings>`
-
-:doc:`Settings Search <settings/search>`
-
-Terminal
-========
-
-:doc:`Terminal <terminal/terminal>`
-
-
 .. toctree::
    :maxdepth: 1
    :hidden:

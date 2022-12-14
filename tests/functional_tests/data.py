@@ -22,10 +22,12 @@
 Mock data for integration testing.
 """
 
+import os
+
 import covalent as ct
 from covalent._results_manager import Result
 
-TEST_RESULTS_DIR = "/tmp/results"
+TEST_RESULTS_DIR = os.environ.get("COVALENT_DATA_DIR") or ct.get_config("dispatcher.results_dir")
 
 
 def get_mock_result() -> Result:
@@ -35,16 +37,13 @@ def get_mock_result() -> Result:
     def identity(x):
         return x
 
-    @ct.lattice(results_dir=TEST_RESULTS_DIR)
+    @ct.lattice
     def pipeline(y):
         return identity(x=y)
 
     pipeline.build_graph(y=1)
 
-    return Result(
-        lattice=pipeline,
-        results_dir=pipeline.metadata["results_dir"],
-    )
+    return Result(lattice=pipeline)
 
 
 def get_mock_result_2() -> Result:
@@ -58,7 +57,7 @@ def get_mock_result_2() -> Result:
     def product(x, y):
         return x * y
 
-    @ct.lattice(results_dir=TEST_RESULTS_DIR)
+    @ct.lattice
     def pipeline(x, y):
         res = product(x=x, y=y)
         return identity(x=res)
@@ -67,14 +66,13 @@ def get_mock_result_2() -> Result:
 
     return Result(
         lattice=pipeline,
-        results_dir=pipeline.metadata["results_dir"],
     )
 
 
 def get_mock_result_3() -> Result:
     """Construct and return a result object corresponding to a lattice."""
 
-    @ct.lattice(results_dir=TEST_RESULTS_DIR)
+    @ct.lattice
     @ct.electron
     def pipeline(x, y):
         return x * y
@@ -83,5 +81,4 @@ def get_mock_result_3() -> Result:
 
     return Result(
         lattice=pipeline,
-        results_dir=pipeline.metadata["results_dir"],
     )
