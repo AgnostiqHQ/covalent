@@ -28,11 +28,9 @@ from contextlib import redirect_stdout
 from copy import deepcopy
 from dataclasses import asdict
 from functools import wraps
-from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 from .._shared_files import logger
-from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import DefaultMetadataValues
 from .._shared_files.utils import get_named_params, get_serialized_function_str
@@ -223,6 +221,17 @@ class Lattice:
         new_args = [v.get_deserialized() for _, v in named_args.items()]
         new_kwargs = {k: v.get_deserialized() for k, v in named_kwargs.items()}
 
+        # Set any lattice metadata not explicitly set by the user
+        constraint_names = {"executor", "workflow_executor", "deps", "call_before", "call_after"}
+        new_metadata = {}
+        for name in constraint_names:
+            if not self.metadata[name]:
+                new_metadata[name] = DEFAULT_METADATA_VALUES[name]
+        new_metadata = encode_metadata(new_metadata)
+
+        for k, v in new_metadata.items():
+            self.metadata[k] = v
+
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
                 try:
@@ -232,15 +241,6 @@ class Lattice:
                         "Please make sure you are not manipulating an object inside the lattice."
                     )
                     raise
-
-        # Set workflow executor if not set by user
-        postprocessor = self.metadata["workflow_executor"]
-        if not postprocessor:
-            pp = {}
-            pp["workflow_executor"] = DEFAULT_METADATA_VALUES["workflow_executor"]
-            pp = encode_metadata(pp)
-            self.metadata["workflow_executor"] = pp["workflow_executor"]
-            self.metadata["workflow_executor_data"] = pp["workflow_executor_data"]
 
     def draw(self, *args, **kwargs) -> None:
         """
@@ -314,7 +314,6 @@ def lattice(
     *,
     backend: Optional[str] = None,
     executor: Optional[Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]] = None,
-    results_dir: Optional[str] = get_config("dispatcher.results_dir"),
     workflow_executor: Optional[
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
     ] = None,
@@ -337,7 +336,6 @@ def lattice(
             executor is used by default.
         workflow_executor: Executor for postprocessing the workflow. Defaults to the built-in dask executor or
             the local executor depending on whether Covalent is started with the `--no-cluster` option.
-        results_dir: Directory to store the results
         deps_bash: An optional DepsBash object specifying a list of shell commands to run before `_func`
         deps_pip: An optional DepsPip object specifying a list of PyPI packages to install before running `_func`
         call_before: An optional list of DepsCall objects specifying python functions to invoke before the electron
@@ -353,8 +351,6 @@ def lattice(
             exc_info=DeprecationWarning,
         )
         executor = backend
-
-    results_dir = str(Path(results_dir).expanduser().resolve())
 
     deps = {}
 
@@ -376,7 +372,6 @@ def lattice(
 
     constraints = {
         "executor": executor,
-        "results_dir": results_dir,
         "workflow_executor": workflow_executor,
         "deps": deps,
         "call_before": call_before,

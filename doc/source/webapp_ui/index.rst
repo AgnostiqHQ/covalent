@@ -1,7 +1,7 @@
 ******************
-UI Documentation
+The User Interface
 ******************
-The following UI documentation describes how and what can be done using the user interface.
+The following UI documentation describes the features available in the Covalent GUI. The features are organized by screen, starting with the Dashboard. The Dashboard shows a list of workflows dispatched to the server and is the default screen in the Covalent GUI.
 
 Dashboard
 ***********************

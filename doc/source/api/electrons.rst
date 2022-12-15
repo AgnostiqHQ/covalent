@@ -1,6 +1,6 @@
 .. _electrons_api:
 
-Electrons
+Electron
 """""""""""""""""""""""""""
 
 .. autodecorator:: covalent.electron

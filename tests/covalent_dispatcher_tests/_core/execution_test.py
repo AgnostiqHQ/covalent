@@ -19,38 +19,21 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 """
-Tests for the core functionality of the dispatcher.
+Integration tests for the dispatcher, runner, and result modules
 """
 
-
 import asyncio
-from asyncio import Queue
 from typing import Dict, List
-from unittest.mock import AsyncMock, MagicMock
 
-import cloudpickle as pickle
 import pytest
 
 import covalent as ct
 from covalent._results_manager import Result
 from covalent._shared_files.defaults import sublattice_prefix
 from covalent._workflow.lattice import Lattice
-from covalent_dispatcher._core.execution import (
-    _build_sublattice_graph,
-    _dispatch_sync_sublattice,
-    _gather_deps,
-    _get_task_inputs,
-    _handle_cancelled_node,
-    _handle_completed_node,
-    _handle_failed_node,
-    _initialize_deps_and_queue,
-    _plan_workflow,
-    _post_process,
-    _run_task,
-    _update_node_result,
-    initialize_result_object,
-    run_workflow,
-)
+from covalent_dispatcher._core.dispatcher import run_workflow
+from covalent_dispatcher._core.execution import _get_task_inputs
+from covalent_dispatcher._core.runner import _run_task
 from covalent_dispatcher._db import update
 from covalent_dispatcher._db.datastore import DataStore
 
@@ -78,7 +61,7 @@ def get_mock_result() -> Result:
         print("Error!", file=sys.stderr)
         return x
 
-    @ct.lattice(results_dir=TEST_RESULTS_DIR, deps_bash=ct.DepsBash(["ls"]))
+    @ct.lattice(deps_bash=ct.DepsBash(["ls"]))
     def pipeline(x):
         res1 = task(x)
         res2 = task(res1)
@@ -86,117 +69,9 @@ def get_mock_result() -> Result:
 
     pipeline.build_graph(x="absolute")
     received_workflow = Lattice.deserialize_from_json(pipeline.serialize_to_json())
-    result_object = Result(
-        received_workflow, pipeline.metadata["results_dir"], "pipeline_workflow"
-    )
+    result_object = Result(received_workflow, "pipeline_workflow")
 
     return result_object
-
-
-def test_initialize_result_object(mocker, test_db):
-    """Test the `initialize_result_object` function"""
-
-    @ct.electron
-    def task(x):
-        return x
-
-    @ct.lattice
-    def workflow(x):
-        return task(x)
-
-    workflow.build_graph(1)
-    json_lattice = workflow.serialize_to_json()
-    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", return_value=test_db)
-    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", return_value=test_db)
-    result_object = get_mock_result()
-
-    mock_persist = mocker.patch("covalent_dispatcher._db.update.persist")
-
-    sub_result_object = initialize_result_object(
-        json_lattice=json_lattice, parent_result_object=result_object, parent_electron_id=5
-    )
-
-    mock_persist.assert_called_with(sub_result_object, electron_id=5)
-    assert sub_result_object._root_dispatch_id == result_object.dispatch_id
-
-
-def test_plan_workflow():
-    """Test workflow planning method."""
-
-    @ct.electron
-    def task(x):
-        return x
-
-    @ct.lattice
-    def workflow(x):
-        return task(x)
-
-    workflow.metadata["schedule"] = True
-    received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
-    result_object = Result(received_workflow, "/tmp", "asdf")
-    _plan_workflow(result_object=result_object)
-
-    # Updated transport graph post planning
-    updated_tg = pickle.loads(result_object.lattice.transport_graph.serialize(metadata_only=True))
-
-    assert updated_tg["lattice_metadata"]["schedule"]
-
-
-def test_post_process():
-    """Test post-processing of results."""
-
-    import covalent as ct
-
-    @ct.electron
-    def construct_cu_slab(x):
-        return x
-
-    @ct.electron
-    def compute_system_energy(x):
-        return x
-
-    @ct.electron
-    def construct_n_molecule(x):
-        return x
-
-    @ct.electron
-    def get_relaxed_slab(x):
-        return x
-
-    @ct.lattice
-    def compute_energy():
-        N2 = construct_n_molecule(1)
-        e_N2 = compute_system_energy(N2)
-
-        slab = construct_cu_slab(2)
-        e_slab = compute_system_energy(slab)
-
-        relaxed_slab = get_relaxed_slab(3)
-        e_relaxed_slab = compute_system_energy(relaxed_slab)
-
-        return (N2, e_N2, slab, e_slab, relaxed_slab, e_relaxed_slab)
-
-    compute_energy.build_graph()
-
-    node_outputs = {
-        "construct_n_molecule(0)": 1,
-        ":parameter:1(1)": 1,
-        "compute_system_energy(2)": 1,
-        "construct_cu_slab(3)": 2,
-        ":parameter:2(4)": 2,
-        "compute_system_energy(5)": 2,
-        "get_relaxed_slab(6)": 3,
-        ":parameter:3(7)": 3,
-        "compute_system_energy(8)": 3,
-    }
-
-    encoded_node_outputs = {
-        k: ct.TransportableObject.make_transportable(v) for k, v in node_outputs.items()
-    }
-
-    execution_result = _post_process(compute_energy, encoded_node_outputs)
-
-    assert execution_result == compute_energy()
 
 
 def test_get_task_inputs():
@@ -252,15 +127,12 @@ def test_get_task_inputs():
     tg.set_node_value(3, "output", ct.TransportableObject(2))
     tg.set_node_value(4, "output", ct.TransportableObject(3))
 
-    result_object = Result(lattice=list_workflow, results_dir="/tmp", dispatch_id="asdf")
+    result_object = Result(lattice=list_workflow, dispatch_id="asdf")
     task_inputs = _get_task_inputs(1, tg.get_node_value(1, "name"), result_object)
 
-    expected_inputs = {"args": [], "kwargs": {"x": ct.TransportableObject(serialized_args)}}
+    expected_inputs = {"args": serialized_args, "kwargs": {}}
 
-    assert (
-        task_inputs["kwargs"]["x"].get_deserialized()
-        == expected_inputs["kwargs"]["x"].get_deserialized()
-    )
+    assert task_inputs == expected_inputs
 
     # dict-type inputs
 
@@ -271,19 +143,16 @@ def test_get_task_inputs():
     tg.set_node_value(2, "output", ct.TransportableObject(1))
     tg.set_node_value(3, "output", ct.TransportableObject(2))
 
-    result_object = Result(lattice=dict_workflow, results_dir="/tmp", dispatch_id="asdf")
+    result_object = Result(lattice=dict_workflow, dispatch_id="asdf")
     task_inputs = _get_task_inputs(1, tg.get_node_value(1, "name"), result_object)
-    expected_inputs = {"args": [], "kwargs": {"x": ct.TransportableObject(serialized_args)}}
+    expected_inputs = {"args": [], "kwargs": serialized_args}
 
-    assert (
-        task_inputs["kwargs"]["x"].get_deserialized()
-        == expected_inputs["kwargs"]["x"].get_deserialized()
-    )
+    assert task_inputs == expected_inputs
 
     # Check arg order
     multivar_workflow.build_graph(1, 2)
     received_lattice = Lattice.deserialize_from_json(multivar_workflow.serialize_to_json())
-    result_object = Result(lattice=received_lattice, results_dir="/tmp", dispatch_id="asdf")
+    result_object = Result(lattice=received_lattice, dispatch_id="asdf")
     tg = received_lattice.transport_graph
 
     assert list(tg._graph.nodes) == [0, 1, 2, 3, 4, 5, 6, 7]
@@ -308,183 +177,6 @@ def test_get_task_inputs():
     assert input_args == [1, 2]
 
 
-def test_gather_deps():
-    """Test internal _gather_deps for assembling deps into call_before and
-    call_after"""
-
-    def square(x):
-        return x * x
-
-    @ct.electron(deps_bash=ct.DepsBash("ls -l"), call_after=[ct.DepsCall(square, [3])])
-    def task(x):
-        return x
-
-    @ct.lattice
-    def workflow(x):
-        return task(x)
-
-    workflow.build_graph(5)
-
-    received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
-    result_object = Result(received_workflow, "/tmp", "asdf")
-
-    before, after = _gather_deps(result_object, 0)
-    assert len(before) == 1
-    assert len(after) == 1
-
-
-@pytest.mark.asyncio
-async def test_update_failed_node(mocker):
-    """Check that update_node_result correctly invokes _handle_failed_node"""
-
-    tasks_queue = Queue()
-    pending_deps = {}
-
-    result_object = get_mock_result()
-    mock_fail_handler = mocker.patch("covalent_dispatcher._core.execution._handle_failed_node")
-    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
-    mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
-
-    node_result = {"node_id": 0, "status": Result.FAILED}
-    await _update_node_result(result_object, node_result, pending_deps, tasks_queue)
-
-    mock_fail_handler.assert_called_once_with(
-        result_object, node_result, pending_deps, tasks_queue
-    )
-
-
-@pytest.mark.asyncio
-async def test_update_cancelled_node(mocker):
-    """Check that update_node_result correctly invokes _handle_cancelled_node"""
-
-    tasks_queue = Queue()
-    pending_deps = {}
-
-    result_object = get_mock_result()
-    mock_cancel_handler = mocker.patch(
-        "covalent_dispatcher._core.execution._handle_cancelled_node"
-    )
-    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
-    mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
-
-    node_result = {"node_id": 0, "status": Result.CANCELLED}
-    await _update_node_result(result_object, node_result, pending_deps, tasks_queue)
-
-    mock_cancel_handler.assert_called_once_with(
-        result_object, node_result, pending_deps, tasks_queue
-    )
-
-
-@pytest.mark.asyncio
-async def test_update_completed_node(mocker):
-    """Check that update_node_result correctly invokes _handle_completed_node"""
-
-    tasks_queue = Queue()
-    pending_deps = {}
-
-    result_object = get_mock_result()
-    mock_completed_handler = mocker.patch(
-        "covalent_dispatcher._core.execution._handle_completed_node"
-    )
-    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
-    mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
-
-    node_result = {"node_id": 0, "status": Result.COMPLETED}
-    await _update_node_result(result_object, node_result, pending_deps, tasks_queue)
-
-    mock_completed_handler.assert_called_once_with(
-        result_object, node_result, pending_deps, tasks_queue
-    )
-
-
-@pytest.mark.asyncio
-async def test_handle_completed_node(mocker):
-    """Unit test for completed node handler"""
-    tasks_queue = Queue()
-    pending_deps = {}
-
-    result_object = get_mock_result()
-
-    # tg edges are (1, 0), (0, 2)
-    pending_deps[0] = 1
-    pending_deps[1] = 0
-    pending_deps[2] = 1
-
-    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
-
-    node_result = {"node_id": 1, "status": Result.COMPLETED}
-
-    await _handle_completed_node(result_object, node_result, pending_deps, tasks_queue)
-
-    assert await asyncio.wait_for(tasks_queue.get(), timeout=1) == 0
-    assert pending_deps == {0: 0, 1: 0, 2: 1}
-
-
-@pytest.mark.asyncio
-async def test_handle_failed_node(mocker):
-    """Unit test for failed node handler"""
-    tasks_queue = Queue()
-    pending_deps = {}
-
-    result_object = get_mock_result()
-
-    # tg edges are (1, 0), (0, 2)
-    pending_deps[0] = 1
-    pending_deps[1] = 0
-    pending_deps[2] = 1
-
-    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
-    mock_get_node_name = mocker.patch("covalent._results_manager.result.Result._get_node_name")
-
-    mock_get_node_error = mocker.patch("covalent._results_manager.result.Result._get_node_error")
-
-    node_result = {"node_id": 1, "status": Result.FAILED}
-
-    await _handle_failed_node(result_object, node_result, pending_deps, tasks_queue)
-
-    assert await asyncio.wait_for(tasks_queue.get(), timeout=1) == -1
-    assert pending_deps == {0: 1, 1: 0, 2: 1}
-    assert result_object.status == Result.FAILED
-
-
-@pytest.mark.asyncio
-async def test_handle_cancelled_node(mocker):
-    """Unit test for cancelled node handler"""
-    tasks_queue = Queue()
-    pending_deps = {}
-
-    result_object = get_mock_result()
-
-    # tg edges are (1, 0), (0, 2)
-    pending_deps[0] = 1
-    pending_deps[1] = 0
-    pending_deps[2] = 1
-
-    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
-
-    node_result = {"node_id": 1, "status": Result.CANCELLED}
-
-    await _handle_cancelled_node(result_object, node_result, pending_deps, tasks_queue)
-
-    assert await asyncio.wait_for(tasks_queue.get(), timeout=1) == -1
-    assert pending_deps == {0: 1, 1: 0, 2: 1}
-    assert result_object.status == Result.CANCELLED
-
-
-@pytest.mark.asyncio
-async def test_initialize_deps_and_queue(mocker):
-    """Test internal function for initializing tasks_queue and pending_deps"""
-    tasks_queue = Queue()
-    pending_deps = {}
-
-    result_object = get_mock_result()
-    num_tasks = await _initialize_deps_and_queue(result_object, tasks_queue, pending_deps)
-
-    assert await asyncio.wait_for(tasks_queue.get(), timeout=1) == 1
-    assert pending_deps == {0: 1, 1: 0, 2: 1}
-    assert num_tasks == len(result_object.lattice.transport_graph._graph.nodes)
-
-
 @pytest.mark.asyncio
 async def test_run_workflow_with_failing_nonleaf(mocker):
     """Test running workflow with a failing intermediate node"""
@@ -506,7 +198,7 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
     json_lattice = workflow.serialize_to_json()
     dispatch_id = "asdf"
     lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice, lattice.metadata["results_dir"])
+    result_object = Result(lattice)
     result_object._dispatch_id = dispatch_id
     result_object._root_dispatch_id = dispatch_id
     result_object._initialize_nodes()
@@ -521,8 +213,16 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
     mocker.patch(
         "covalent._results_manager.result.Result._get_node_error", return_value="AssertionError"
     )
-    mocker.patch("covalent_dispatcher._core.execution.update_lattices_data")
-    mocker.patch("covalent_dispatcher._core.execution.write_lattice_error")
+    mock_unregister = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
+    )
+    mocker.patch(
+        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+    )
+    status_queue = asyncio.Queue()
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
+    )
     mock_get_failed_nodes = mocker.patch(
         "covalent._results_manager.result.Result._get_failed_nodes",
         return_value=[(0, "failing_task")],
@@ -530,7 +230,7 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
 
     update.persist(result_object)
     result_object = await run_workflow(result_object)
-
+    mock_unregister.assert_called_with(result_object.dispatch_id)
     assert result_object.status == Result.FAILED
 
     mock_get_failed_nodes.assert_called()
@@ -558,7 +258,7 @@ async def test_run_workflow_with_failing_leaf(mocker):
     json_lattice = workflow.serialize_to_json()
     dispatch_id = "asdf"
     lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice, lattice.metadata["results_dir"])
+    result_object = Result(lattice)
     result_object._dispatch_id = dispatch_id
     result_object._root_dispatch_id = dispatch_id
     result_object._initialize_nodes()
@@ -572,8 +272,17 @@ async def test_run_workflow_with_failing_leaf(mocker):
     mocker.patch(
         "covalent._results_manager.result.Result._get_node_error", return_value="AssertionError"
     )
-    mocker.patch("covalent_dispatcher._core.execution.update_lattices_data")
-    mocker.patch("covalent_dispatcher._core.execution.write_lattice_error")
+    mock_unregister = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
+    )
+    mocker.patch(
+        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+    )
+
+    status_queue = asyncio.Queue()
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
+    )
     mock_get_failed_nodes = mocker.patch(
         "covalent._results_manager.result.Result._get_failed_nodes",
         return_value=[(0, "failing_task")],
@@ -582,7 +291,7 @@ async def test_run_workflow_with_failing_leaf(mocker):
     update.persist(result_object)
 
     result_object = await run_workflow(result_object)
-    mock_get_failed_nodes.assert_called()
+    mock_unregister.assert_called_with(result_object.dispatch_id)
     assert result_object.status == Result.FAILED
     assert result_object._error == "The following tasks failed:\n0: failing_task"
 
@@ -620,6 +329,9 @@ async def test_run_workflow_does_not_deserialize(mocker):
     result_object._initialize_nodes()
 
     mocker.patch("covalent_dispatcher._db.datastore.DataStore.factory", return_value=test_db)
+    mocker.patch(
+        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+    )
     update.persist(result_object)
 
     mock_to_deserialize = mocker.patch("covalent.TransportableObject.get_deserialized")
@@ -635,8 +347,6 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
     """Check that run_workflow handles "client" workflow_executor for
     postprocessing"""
 
-    import asyncio
-
     dispatch_id = "asdf"
     result_object = get_mock_result()
     result_object.lattice.set_metadata("workflow_executor", "client")
@@ -645,10 +355,22 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mock_unregister = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
+    )
+    mocker.patch(
+        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+    )
+
+    status_queue = asyncio.Queue()
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
+    )
 
     update.persist(result_object)
 
     result_object = await run_workflow(result_object)
+    mock_unregister.assert_called_with(result_object.dispatch_id)
     assert result_object.status == Result.PENDING_POSTPROCESSING
 
 
@@ -663,14 +385,26 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mock_unregister = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
+    )
+    mocker.patch(
+        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+    )
 
     update.persist(result_object)
+
+    status_queue = asyncio.Queue()
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
+    )
 
     def failing_workflow(x):
         assert False
 
     result_object.lattice.set_metadata("workflow_executor", "bogus")
     result_object = await run_workflow(result_object)
+    mock_unregister.assert_called_with(result_object.dispatch_id)
 
     assert result_object.status == Result.POSTPROCESSING_FAILED
 
@@ -678,105 +412,9 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     result_object.lattice.set_metadata("workflow_executor", "local")
 
     result_object = await run_workflow(result_object)
+    mock_unregister.assert_called_with(result_object.dispatch_id)
 
     assert result_object.status == Result.POSTPROCESSING_FAILED
-
-
-def test_build_sublattice_graph():
-    @ct.electron
-    def task(x):
-        return x
-
-    @ct.lattice
-    def workflow(x):
-        return task(x)
-
-    parent_metadata = {
-        "executor": "parent_executor",
-        "executor_data": {},
-        "workflow_executor": "my_postprocessor",
-        "workflow_executor_data": {},
-        "deps": {"bash": None, "pip": None},
-        "call_before": [],
-        "call_after": [],
-        "results_dir": None,
-    }
-
-    json_lattice = _build_sublattice_graph(workflow, parent_metadata, 1)
-    lattice = Lattice.deserialize_from_json(json_lattice)
-
-    assert list(lattice.transport_graph._graph.nodes) == [0, 1]
-
-    for k in lattice.metadata.keys():
-        # results_dir will be deprecated soon
-        if k != "results_dir" and k != "workflow_executor" and k != "workflow_executor_data":
-            assert parent_metadata[k] == lattice.metadata[k]
-
-
-@pytest.mark.asyncio
-async def test_dispatch_sync_sublattice(test_db, mocker):
-    @ct.electron(executor="local")
-    def task(x):
-        return x
-
-    @ct.lattice(executor="local", workflow_executor="local")
-    def sub_workflow(x):
-        return task(x)
-
-    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-
-    result_object = get_mock_result()
-
-    serialized_callable = ct.TransportableObject(sub_workflow)
-    inputs = {"args": [ct.TransportableObject(2)], "kwargs": {}}
-
-    sub_result = await _dispatch_sync_sublattice(
-        parent_result_object=result_object,
-        parent_electron_id=1,
-        inputs=inputs,
-        serialized_callable=serialized_callable,
-        workflow_executor=["local", {}],
-    )
-
-    # check that sublattice inherits parent lattice's bash dep
-    sub_bash_dep = sub_result.lattice.metadata["deps"]["bash"]["attributes"]["commands"]
-    assert sub_bash_dep[0] == "ls"
-    assert sub_result.result == 2
-
-    sub_workflow.metadata["deps"]["bash"] = ct.DepsBash(["pwd"])
-    serialized_callable = ct.TransportableObject(sub_workflow)
-    sub_result = await _dispatch_sync_sublattice(
-        parent_result_object=result_object,
-        parent_electron_id=1,
-        inputs=inputs,
-        serialized_callable=serialized_callable,
-        workflow_executor=["local", {}],
-    )
-
-    # check that sublattice's explicit bash dep overrides parent lattice's bash dep
-    sub_bash_dep = sub_result.lattice.metadata["deps"]["bash"]["attributes"]["commands"]
-    assert sub_bash_dep[0] == "pwd"
-
-    # Now Check handling of invalid workflow executors
-
-    sub_result = await _dispatch_sync_sublattice(
-        parent_result_object=result_object,
-        parent_electron_id=1,
-        inputs=inputs,
-        serialized_callable=serialized_callable,
-        workflow_executor=["client", {}],
-    )
-    assert sub_result is None
-
-    sub_result = await _dispatch_sync_sublattice(
-        parent_result_object=result_object,
-        parent_electron_id=1,
-        inputs=inputs,
-        serialized_callable=serialized_callable,
-        workflow_executor=["fake_executor", {}],
-    )
-    assert sub_result is None
 
 
 @pytest.mark.asyncio
@@ -790,12 +428,13 @@ async def test_run_task_sublattice_handling(test_db, mocker):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mock_get_sublattice_electron_id = mocker.patch(
-        "covalent_dispatcher._core.execution.get_sublattice_electron_id", return_value=1
+        "covalent_dispatcher._core.runner.get_sublattice_electron_id", return_value=1
     )
-    mock_dispatch_sync = mocker.patch(
-        "covalent_dispatcher._core.execution._dispatch_sync_sublattice",
-        return_value=sub_result_object,
+    mock_dispatch_sub = mocker.patch(
+        "covalent_dispatcher._core.runner._dispatch_sublattice",
+        return_value=sub_result_object.dispatch_id,
     )
+    mock_run_dispatch = mocker.patch("covalent_dispatcher._core.dispatcher.run_dispatch")
 
     inputs = {"args": [], "kwargs": {}}
 
@@ -812,14 +451,16 @@ async def test_run_task_sublattice_handling(test_db, mocker):
     )
 
     mock_get_sublattice_electron_id.assert_called_once()
-    mock_dispatch_sync.assert_awaited_once()
-    assert node_result["output"].get_deserialized() == 5
+    mock_dispatch_sub.assert_awaited_once()
+    assert node_result["sub_dispatch_id"] == sub_result_object.dispatch_id
+    mock_run_dispatch.assert_called_once()
 
     # Test failed sublattice workflows
     sub_result_object._status = Result.FAILED
-    mock_dispatch_sync = mocker.patch(
-        "covalent_dispatcher._core.execution._dispatch_sync_sublattice",
-        return_value=sub_result_object,
+    mock_run_dispatch = mocker.patch("covalent_dispatcher._core.dispatcher.run_dispatch")
+
+    mock_dispatch_sub = mocker.patch(
+        "covalent_dispatcher._core.runner._dispatch_sublattice", side_effect=RuntimeError()
     )
     node_result = await _run_task(
         result_object=result_object,
@@ -833,147 +474,6 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         workflow_executor=["local", {}],
     )
 
-    mock_dispatch_sync.assert_awaited_once()
+    mock_dispatch_sub.assert_awaited_once()
+    mock_run_dispatch.assert_not_called()
     assert node_result["status"] == Result.FAILED
-
-    mock_dispatch_sync = mocker.patch(
-        "covalent_dispatcher._core.execution._dispatch_sync_sublattice", return_value=None
-    )
-    node_result = await _run_task(
-        result_object=result_object,
-        node_id=1,
-        inputs=inputs,
-        serialized_callable=None,
-        selected_executor=["local", {}],
-        call_before=[],
-        call_after=[],
-        node_name=sublattice_prefix,
-        workflow_executor=["local", {}],
-    )
-
-    assert node_result["status"] == Result.FAILED
-
-
-@pytest.mark.asyncio
-async def test_run_task_executor_exception_handling(mocker):
-    """Test that exceptions from initializing executors are caught"""
-
-    result_object = get_mock_result()
-    inputs = {"args": [], "kwargs": {}}
-    mock_get_executor = mocker.patch(
-        "covalent_dispatcher._core.execution._executor_manager.get_executor",
-        side_effect=Exception(),
-    )
-
-    node_result = await _run_task(
-        result_object=result_object,
-        node_id=1,
-        inputs=inputs,
-        serialized_callable=None,
-        selected_executor=["nonexistent", {}],
-        call_before=[],
-        call_after=[],
-        node_name=sublattice_prefix,
-        workflow_executor=["local", {}],
-    )
-
-    assert node_result["status"] == Result.FAILED
-
-
-@pytest.mark.asyncio
-async def test_run_task_runtime_exception_handling(mocker):
-
-    result_object = get_mock_result()
-    inputs = {"args": [], "kwargs": {}}
-    mock_executor = MagicMock()
-    mock_executor._execute = AsyncMock(return_value=("", "", "error", True))
-    mock_get_executor = mocker.patch(
-        "covalent_dispatcher._core.execution._executor_manager.get_executor",
-        return_value=mock_executor,
-    )
-
-    node_result = await _run_task(
-        result_object=result_object,
-        node_id=1,
-        inputs=inputs,
-        serialized_callable=None,
-        selected_executor=["local", {}],
-        call_before=[],
-        call_after=[],
-        node_name="task",
-        workflow_executor=["local", {}],
-    )
-
-    mock_executor._execute.assert_awaited_once()
-
-    assert node_result["stderr"] == "error"
-
-
-@pytest.mark.asyncio
-async def test_run_workflow_normal(mocker):
-    result_object = get_mock_result()
-    mocker.patch("covalent_dispatcher._core.execution._plan_workflow")
-    mocker.patch(
-        "covalent_dispatcher._core.execution._run_planned_workflow", return_value=result_object
-    )
-    mock_update_lattices_data = mocker.patch(
-        "covalent_dispatcher._core.execution.update_lattices_data"
-    )
-    mock_write_lattice_error = mocker.patch(
-        "covalent_dispatcher._core.execution.write_lattice_error"
-    )
-
-    await run_workflow(result_object)
-
-    mock_update_lattices_data.assert_not_called()
-    mock_write_lattice_error.assert_not_called()
-
-
-@pytest.mark.asyncio
-async def test_run_completed_workflow(mocker):
-    result_object = get_mock_result()
-    result_object._status = Result.COMPLETED
-    mock_plan = mocker.patch("covalent_dispatcher._core.execution._plan_workflow")
-    mock_run_planned_workflow = mocker.patch(
-        "covalent_dispatcher._core.execution._run_planned_workflow", return_value=result_object
-    )
-    mock_update_lattices_data = mocker.patch(
-        "covalent_dispatcher._core.execution.update_lattices_data"
-    )
-    mock_write_lattice_error = mocker.patch(
-        "covalent_dispatcher._core.execution.write_lattice_error"
-    )
-
-    await run_workflow(result_object)
-
-    mock_plan.assert_not_called()
-    mock_run_planned_workflow.assert_not_called()
-    mock_update_lattices_data.assert_not_called()
-    mock_write_lattice_error.assert_not_called()
-
-
-@pytest.mark.asyncio
-async def test_run_workflow_exception(mocker):
-    result_object = get_mock_result()
-    mocker.patch("covalent_dispatcher._core.execution._plan_workflow")
-    mocker.patch(
-        "covalent_dispatcher._core.execution._run_planned_workflow",
-        return_value=result_object,
-        side_effect=RuntimeError("Error"),
-    )
-    mock_update_lattices_data = mocker.patch(
-        "covalent_dispatcher._core.execution.update_lattices_data"
-    )
-    mock_upsert_lattice_data = mocker.patch(
-        "covalent_dispatcher._core.execution.upsert._lattice_data"
-    )
-    mock_write_lattice_error = mocker.patch(
-        "covalent_dispatcher._core.execution.write_lattice_error"
-    )
-
-    result = await run_workflow(result_object)
-
-    assert result.status == Result.FAILED
-    mock_update_lattices_data.assert_called_once()
-    mock_upsert_lattice_data.assert_called_once()
-    mock_write_lattice_error.assert_called_once()

@@ -1,6 +1,6 @@
 .. _awsbatch_executor:
 
-🔌 AWS Batch Executor
+AWS Batch Executor
 """""""""""""""""""""""""""
 
 .. image:: AWS_Batch.jpg
