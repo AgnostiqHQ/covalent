@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Removed merge conflict symbols in changelog
+
 ## [0.209.0-rc.0] - 2022-12-15
 
 ### Authors
@@ -112,7 +116,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added an executors-and-UI graphic.
 - Adding `Deployment` section for self-hosting guide
 
->>>>>>> develop
 
 ## [0.208.0-rc.0] - 2022-11-05
 
