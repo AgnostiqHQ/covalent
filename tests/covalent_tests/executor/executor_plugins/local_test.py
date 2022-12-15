@@ -159,7 +159,6 @@ def test_local_wrapper_fn_exception_handling(mocker):
     args = [5]
     kwargs = {}
     error_msg = "task failed"
-    error_msg = "task failed"
     q = mp.Queue()
     mocker.patch("traceback.TracebackException.from_exception", return_value=error_msg)
     p = mp.Process(

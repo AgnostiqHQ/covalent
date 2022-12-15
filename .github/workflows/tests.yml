@@ -51,7 +51,7 @@ jobs:
       - name: Filter test matrix
         id: filter-matrix
         run: |
-          matrix=$(jq --arg trigger "schedule" 'map(. | select(.trigger | index($trigger)))' .github/workflows/test_matrix.json)
+          matrix=$(jq --arg trigger "${{ github.event_name }}" 'map(. | select(.trigger | index($trigger)))' .github/workflows/test_matrix.json)
           echo "Test matrix:"
           echo "$matrix" | jq
           echo ::set-output name=matrix::{\"include\":$(echo $matrix)}
@@ -196,6 +196,7 @@ jobs:
         if: env.BUILD_AND_RUN_ALL
         id: covalent_start
         run: |
+          covalent db migrate
           if [ "${{ matrix.backend }}" = 'dask' ] ; then
             covalent start
           elif [ "${{ matrix.backend }}" = 'local' ] ; then
@@ -204,7 +205,6 @@ jobs:
             echo "Invalid backend specified in test matrix."
             exit 1
           fi
-          covalent config
 
       - name: Run SDK tests and measure coverage
         id: sdk-tests
@@ -263,7 +263,13 @@ jobs:
           npm test -- --coverage --watchAll=false
 
       - name: Dump Covalent logs
-        if: always()
+        if: >
+          steps.covalent_start.outcome == 'success'
+          && (steps.sdk-tests.outcome == 'failed'
+          || steps.dispatcher-tests.outcome == 'failed'
+          || steps.functional-tests.outcome == 'failed'
+          || steps.ui-backend-tests.outcome == 'failed'
+          || steps.ui-frontend-tests.outcome == 'failed')
         run: covalent logs
 
       - name: Upload SDK report to Codecov
