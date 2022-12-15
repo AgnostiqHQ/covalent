@@ -22,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Build graph now sets all unset lattice constraints from defaults
 - Fixed all failing functional tests
+- Fixed UI pagination not working for more than 11 pages 
+- Runtime field counting down for select running dispatches
 
 ### Changed
 
