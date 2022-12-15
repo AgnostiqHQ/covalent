@@ -38,10 +38,6 @@ def failing_task_1():
     import sys
 
     print("Hello from Task 1", file=sys.stdout)
-    print("Hello from Task 1", file=sys.stderr)
-
-    # return 1
-    raise RuntimeError("Error 1")
 
 
 @ct.electron(executor="nonexistent")
@@ -74,12 +70,12 @@ def test_task_runtime_error_reporting():
 
     assert res.status == Result.FAILED
     tg = res.lattice.transport_graph
+    assert tg.get_node_value(0, "status") == Result.FAILED
     assert tg.get_node_value(0, "stdout") == "Hello from Task 0\n"
     assert tg.get_node_value(0, "stderr").startswith("Hello from Task 0\n")
     assert "RuntimeError" in tg.get_node_value(0, "stderr")
+    assert tg.get_node_value(1, "status") == Result.COMPLETED
     assert tg.get_node_value(1, "stdout") == "Hello from Task 1\n"
-    assert tg.get_node_value(1, "stderr").startswith("Hello from Task 1\n")
-    assert "RuntimeError" in tg.get_node_value(1, "stderr")
 
 
 def test_task_covalent_error_reporting():
