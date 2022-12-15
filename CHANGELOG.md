@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Build graph now sets all unset lattice constraints from defaults
 - Fixed all failing functional tests
 - Fixed local executor tests on MacOS by adding ProcessPoolExecutor
 
