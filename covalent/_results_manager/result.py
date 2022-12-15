@@ -85,8 +85,11 @@ class Result:
         self._dispatch_id = dispatch_id
 
         self._root_dispatch_id = dispatch_id
+        self._electron_id = None
 
         self._status = Result.NEW_OBJ
+        self._task_failed = False
+        self._task_cancelled = False
 
         self._result = TransportableObject(None)
 
@@ -243,6 +246,8 @@ Node Outputs
 
             self.lattice.transport_graph.set_node_value(node_id, "error", None)
 
+            self.lattice.transport_graph.set_node_value(node_id, "sub_dispatch_id", None)
+
             self.lattice.transport_graph.set_node_value(node_id, "sublattice_result", None)
 
             self.lattice.transport_graph.set_node_value(node_id, "stdout", None)
@@ -332,8 +337,10 @@ Node Outputs
         with active_lattice_manager.claim(lattice):
             lattice.post_processing = True
             lattice.electron_outputs = ordered_node_outputs
+            args = [arg.get_deserialized() for arg in lattice.args]
+            kwargs = {k: v.get_deserialized() for k, v in lattice.kwargs.items()}
             workflow_function = lattice.workflow_function.get_deserialized()
-            result = workflow_function(*lattice.args, **lattice.kwargs)
+            result = workflow_function(*args, **kwargs)
             lattice.post_processing = False
         return result
 
@@ -405,6 +412,7 @@ Node Outputs
         status: "Status" = None,
         output: Any = None,
         error: Exception = None,
+        sub_dispatch_id: str = None,
         sublattice_result: "Result" = None,
         stdout: str = None,
         stderr: str = None,
@@ -448,6 +456,11 @@ Node Outputs
 
         if error is not None:
             self.lattice.transport_graph.set_node_value(node_id, "error", error)
+
+        if sub_dispatch_id is not None:
+            self.lattice.transport_graph.set_node_value(
+                node_id, "sub_dispatch_id", sub_dispatch_id
+            )
 
         if sublattice_result is not None:
             self.lattice.transport_graph.set_node_value(

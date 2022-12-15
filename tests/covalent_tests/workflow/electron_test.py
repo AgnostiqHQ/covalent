@@ -213,3 +213,46 @@ def test_electron_metadata_is_serialized_early():
     assert node_0_metadata == encode_metadata(node_0_metadata)
     node_1_metadata = workflow.transport_graph.get_node_value(1, "metadata")
     assert node_1_metadata == encode_metadata(node_1_metadata)
+
+
+def test_autogen_list_electrons():
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    workflow.build_graph([5, 7])
+
+    g = workflow.transport_graph._graph
+
+    assert list(g.nodes) == [0, 1, 2, 3]
+    fn = g.nodes[1]["function"].get_deserialized()
+    assert fn(2, 5, 7) == [2, 5, 7]
+
+    assert g.nodes[2]["value"].get_deserialized() == 5
+    assert g.nodes[3]["value"].get_deserialized() == 7
+    assert set(g.edges) == set([(1, 0, 0), (2, 1, 0), (3, 1, 0)])
+
+
+def test_autogen_dict_electrons():
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    workflow.build_graph({"x": 5, "y": 7})
+
+    g = workflow.transport_graph._graph
+
+    assert list(g.nodes) == [0, 1, 2, 3]
+    fn = g.nodes[1]["function"].get_deserialized()
+    assert fn(x=2, y=5, z=7) == {"x": 2, "y": 5, "z": 7}
+    assert g.nodes[2]["value"].get_deserialized() == 5
+    assert g.nodes[3]["value"].get_deserialized() == 7
+    assert set(g.edges) == set([(1, 0, 0), (2, 1, 0), (3, 1, 0)])

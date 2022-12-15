@@ -64,3 +64,25 @@ def test_lattice_workflow_executor_settings():
     assert workflow.metadata["workflow_executor"] == DEFAULT_METADATA_VALUES["workflow_executor"]
     workflow_2.build_graph(1)
     assert workflow_2.metadata["workflow_executor"] == "custom_postprocessor"
+
+
+def test_lattice_executor_settings():
+    """Check that executor is set from defaults if not set explicitly"""
+
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    @ct.lattice(executor="custom_executor")
+    def workflow_2(x):
+        return task(x)
+
+    assert not workflow.metadata["executor"]
+    workflow.build_graph(1)
+    assert workflow.metadata["executor"] == DEFAULT_METADATA_VALUES["executor"]
+    workflow_2.build_graph(1)
+    assert workflow_2.metadata["executor"] == "custom_executor"

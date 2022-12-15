@@ -17,10 +17,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated `requirements.txt` to include `pyscopg2`
+- Refactored execution.py into loosely coupled modular pieces
 
 ### Fixed
 
+- Build graph now sets all unset lattice constraints from defaults
 - Fixed all failing functional tests
+- Fixed local executor tests on MacOS by adding ProcessPoolExecutor
 
 ### Changed
 
@@ -39,7 +42,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Respecting specified AWS profile & region in remote executed S3 file transfers, defaulting to env vars of execution backend
-- Fixed local executor tests on MacOS (second attempt)
 
 ### Added
 
