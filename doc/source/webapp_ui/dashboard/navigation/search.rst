@@ -14,5 +14,3 @@ Click |clear| to clear the Search text box.
 
 .. |clear| image:: ../../images/clear_search.png
     :width: 20px
-
--

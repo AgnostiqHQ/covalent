@@ -18,7 +18,7 @@ The following screens are available in the Covalent GUI:
     When you open the  page for a lattice that contains sublattices, controls in the Graph View include extra options to view details of the sublattices.
 
 :doc:`Lattice Graph Preview<preview/index>`
-    Built into the Covalent GUI as a convenience in workflow development. View the transport graph of a lattice that you have not yet dispatched.
+    View the transport graph of a lattice that you have not yet dispatched. This feature is built into the Covalent GUI as a convenience in workflow development.
 
 :doc:`Logs<logs/index>`
     Displays the server log. Log entries do not disclose which dispatch generated them; for information about dispatches, see the :doc:`Graph View<graph_view/index>`.

@@ -4,7 +4,7 @@ Workflow Dispatch List
 
 A filterable, sortable list of all dispatches in the Covalent server database. A typical dispatch list is shown below.
 
-.. image:: ../../images/dispatches_with_appropriate_metadata.png
+.. image:: ../images/dispatches_with_appropriate_metadata.png
    :align: center
 
 Each line represents one dispatch, and contains the following information:
@@ -20,21 +20,19 @@ Started
 Ended
     The local time when a dispatch ended (completed or failed). A dash is displayed while the dispatch is Running.
 Status
-    The status of a dispatch. The seven possible statuses are:
+   The status of a dispatch. The possible statuses are:
 
-    Pending
+   Pending
         Not yet running due to scheduling or resource availability.
-    Running
+   Running
         Started, with one or more tasks handed off to executors.
-    Failed
+   Failed
         Finished with one or more tasks throwing an error.
-    Cancelled
+   Cancelled
         The dispatch was shut down before completion.
-    Completed
+   Completed
         Finished with all tasks successful, and postprocessing is complete.
    Pending Postprocessing
         The dispatch has finished running, but postprocessing tasks defined for the dispatch have not started yet.
-  Postprocessing
+   Postprocessing
         The postprocessing tasks defined for the dispatch are running.
-
-.. note:: An eighth status, New Object, is available for undispatched lattices. Lattices previewed in :doc:`../preview/preview` have status New Object.
