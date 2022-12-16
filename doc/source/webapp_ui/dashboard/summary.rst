@@ -10,8 +10,8 @@ The Dispatch Summary is at the top of the Dashboard screen. It lists the followi
 Total jobs running
     The count of workflow dispatches that are currently running.
 Total jobs done
-    The count of workflow dispatches that have completed.
+    The count of workflow dispatches that have completed. Does not include failed dispatches.
 Latest running task status
-    The status of the most recent workflow dispatch. Options are: Pending, Running, Completed, or Failed.
+    The status of the most recent workflow dispatch. Options are Pending, Running, Completed, or Failed.
 Total dispatcher duration
     Shows the sum total of clock time consumed by all listed workflow dispatches.

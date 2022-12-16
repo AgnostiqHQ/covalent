@@ -8,7 +8,7 @@ Click |next| to see the next page and |previous| to see the previous page.
 
 Click |skip last| to jump to the end of the log and |skip first| to jump to the beginning.
 
-Click a page number to jump to a that page.
+Click a page number to jump to that page.
 
 .. image:: ../images/logs_pagination.gif
    :align: center

@@ -29,11 +29,13 @@ Layout |layout|
 Change Orientation |orient|
     Cycle through four orientations: top-to-bottom (default); right-to-left; bottom-to-top; and left-to-right. The orientation affects the graph differently depending on the layout.
 Labels |label|
-    Toggle labels on the node on or off. Labels include the executor; the task name; and the node ID.
+    Toggle labels on the node on or off. Labels include the executor, the task name, and the node ID.
 Parameters |param|
-    Toggle parameter nodes. Parameter nodes show input parameters to the task nodes. Clicking a parameter node highlights the dependencies that contain the selected parameter. With parameter nodes off (default), the graph displays only electron nodes.
+    Toggle parameter nodes. Parameter nodes show input parameters to the task nodes. With parameter nodes off (default), the graph displays only electron nodes.
+
+    Clicking a parameter node also highlights the dependencies (graph edges) that contain the selected parameter.
 Lock Nodes |lock|
-    Toggle locking of draggable nodes. Toggle off to drag nodes to improve readability of the graph. Toggle on (default) to keep from accidentally dragging nodes.
+    Toggle locking of draggable nodes. Toggle to "unlock" to enable dragging nodes to improve readability of the graph. Toggle to "lock" (default) to keep from accidentally dragging nodes.
 
 
 .. |plus| image:: ../../_static/tg_plus.png

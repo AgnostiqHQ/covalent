@@ -15,19 +15,19 @@ This sidebar contains the following attributes:
    :align: right
 
 Status
-    The status for that particular node/electron.
+    The status for the selected node/electron.
 
 Started - Ended
-    The local time when a workflow dispatch started and when a workflow dispatch ended.
+    The local time when the electron dispatch started and ended.
 
 Runtime
-    The live runtime for that particular node.
+    The live runtime for the selected node.
 
 Input
-    The input parameters for that particular node.
+    The input parameters for the selected node.
 
 Executor
-    The executor's type and its relevant information for that particular node.
+    The executor's type and its relevant information for the selected node.
 
 Function String
-    The detailed string representation of a workflow function for that particular node (python format).
+    The :code:`electron`-decorated Python function.

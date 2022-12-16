@@ -76,18 +76,22 @@ The second part, {doc}`architecture`, outlines the three main parts of the Coval
 :::{grid-item-card}  Covalent SDK
 :link: architecture_sdk
 :link-type: ref
+:img-top: ../_static/covalent_sdk2x.png
+
 
 Describes the workflow model embodied in Covalent's API, including the Python code elements introduced in Basics.
 :::
 :::{grid-item-card}  Covalent Server
 :link: architecture_server
 :link-type: ref
+:img-top: ../_static/covalent_server2x.png
 
 Describes in detail how the Covalent server handles workflows and dispatches tasks for execution.
 :::
 :::{grid-item-card}  Covalent GUI
 :link: architecture_gui
 :link-type: ref
+:img-top: ../_static/covalent_gui2x.png
 
 Shows how the Covalent GUI displays dispatched workflows in summary and detail forms, and how it saves and retrieves results.
 

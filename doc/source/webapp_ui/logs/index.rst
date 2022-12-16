@@ -7,7 +7,7 @@ To view the Covalent server log, click the |logs| icon.
 .. image:: ../images/logs_list.gif
    :align: center
 
-Each log entry represents a single event; most are one line but some (such as tracebacks) are multi-line. An entry contains the following information:
+Each log entry represents a single event; most are one line but some (such as tracebacks) are multi-line. An entry contains the following columns:
 
 Time
     The time and date of the log entry. Time format for time and date are hh:mm:ss,ms and yyyy-mm-dd.
