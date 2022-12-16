@@ -7,6 +7,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.209.1-rc.0] - 2022-12-15
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- dwelsch-esi <116022979+dwelsch-esi@users.noreply.github.com>
+- Co-authored-by: dwelsch-memverge <david.welsch@memverge.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
+- RaviPsiog <111348352+RaviPsiog@users.noreply.github.com>
+- Co-authored-by: RaviPsiog <ravieja.gurram@psiog.com>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Fixed
+
+- Removed merge conflict symbols in changelog
+
+## [0.209.0-rc.0] - 2022-12-15
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- dwelsch-esi <116022979+dwelsch-esi@users.noreply.github.com>
+- Co-authored-by: dwelsch-memverge <david.welsch@memverge.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
+- RaviPsiog <111348352+RaviPsiog@users.noreply.github.com>
+- Co-authored-by: RaviPsiog <ravieja.gurram@psiog.com>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
 ### Added
 
 - Adding support for PostgresQL DB backend
@@ -17,10 +63,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated `requirements.txt` to include `pyscopg2`
+- Refactored execution.py into loosely coupled modular pieces
 
 ### Fixed
 
+- Build graph now sets all unset lattice constraints from defaults
 - Fixed all failing functional tests
+- Fixed local executor tests on MacOS by adding ProcessPoolExecutor
 
 ### Changed
 
@@ -39,7 +88,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Respecting specified AWS profile & region in remote executed S3 file transfers, defaulting to env vars of execution backend
-- Fixed local executor tests on MacOS (second attempt)
 
 ### Added
 
@@ -89,7 +137,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added an executors-and-UI graphic.
 - Adding `Deployment` section for self-hosting guide
 
->>>>>>> develop
 
 ## [0.208.0-rc.0] - 2022-11-05
 
