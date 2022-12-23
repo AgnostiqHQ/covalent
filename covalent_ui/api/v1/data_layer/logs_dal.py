@@ -44,9 +44,15 @@ class Logs:
                 split_reg = r"\[(.*)\] \[(TRACE|DEBUG|INFO|NOTICE|WARN|WARNING|ERROR|SEVERE|CRITICAL|FATAL)\]"  # r"\[(.*)\] \[(.*)\] ((.|\n)*)"
                 data = re.split(pattern=split_reg, string=i)
                 if len(data) > 1:
-                    data = re.split(pattern=split_reg, string=i)
-                    parse_str = datetime.strptime(data[1], "%Y-%m-%d %H:%M:%S,%f")
-                    json_data = {"log_date": f"{parse_str}", "status": data[2], "message": data[3]}
+                    try:
+                        parse_str = datetime.strptime(data[1], "%Y-%m-%d %H:%M:%S,%f")
+                        json_data = {
+                            "log_date": f"{parse_str}",
+                            "status": data[2],
+                            "message": data[3],
+                        }
+                    except ValueError:
+                        json_data = {"log_date": f"{None}", "status": data[2], "message": data[1:]}
                     log.append(json_data)
                 else:
                     len_log = len(log)
@@ -59,7 +65,6 @@ class Logs:
                     else:
                         log.append({"log_date": None, "status": "INFO", "message": unmatch_str})
                         unmatch_str = ""
-            print(search)
             log = [
                 i
                 for i in log
@@ -71,9 +76,9 @@ class Logs:
                 key=lambda e: (e[sort_by.value] is not None, e[sort_by.value]),
                 reverse=reverse_list,
             )
-
+            total_count = len(result)
             result = result[offset : count + offset] if count != 0 else log[offset:]
-            return {"item": result}
+            return {"items": result, "total_count": total_count}
 
     def download_logs(self):
         """Download logs"""
