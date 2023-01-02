@@ -104,7 +104,7 @@ Build Workflows
 
     ^^^
 
-    Build your own workflows with this cookbook-style collection of instructions for every stage of a project, from orchestration to execution to results.
+    Build your own workflows with this cookbook-style collection of instructions for every stage of a project, from coding to execution to results.
 
     ------------------------------------------------
 
