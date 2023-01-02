@@ -1,13 +1,14 @@
-===============
-Database Migration Errors
-===============
+###################################
+Remedying Database Migration Errors
+###################################
 
-How to approach failed database schema migrations
-############
+When upgrading Covalent versions from 0.177.0 to a newer version, you may need to run database migrations.
 
-When upgrading Covalent versions from 0.177.0 to a newer version, users may need to run database migrations. In some edge cases, migrations may fail to run as a result of having existing data that violates SQL database constraints, or for other reasons specific to the type of schema updates that may occur.
+.. warning:: Ensure that you back up your database before attempting to alter it's data as follows :code:`cp ~/.local/share/covalent/dispatcher_db.sqlite /some/safe/location/dispatcher_db.sqlite` it may be worth opening an issue in the covalent repo to get additional guidance from maintainers about the specific migration issue in question.
 
-For example, the following migration causes an issue due to existing data in the database.
+In a small number of cases, migrations can fail to run because existing data violates SQL database constraints, or for other reasons specific to the type of schema update.
+
+For example, the following migration fails due to existing data in the database.
 
 .. code:: bash
 
@@ -22,11 +23,11 @@ For example, the following migration causes an issue due to existing data in the
     There was an issue running migrations.
     Please read https://covalent.readthedocs.io/en/latest/how_to/db/migration_error.html for more information.
 
-.. warning:: Ensure that you back up your database before attempting to alter it's data as follows :code:`cp ~/.local/share/covalent/dispatcher_db.sqlite /some/safe/location/dispatcher_db.sqlite` it may be worth opening an issue in the covalent repo to get additional guidance from maintainers about the specific migration issue in question.
+In this above example, :code:`electron_id` is now prohibited from having NULL values, but there are NULL values in the existing database.
 
-There may be table alterations that fail as a result of some existing data in the database violating SQL constraints. In the above example that shows the migration error, :code:`electron_id` is now intended to not have NULL values however NULL values may be present in our database.
-In order to avoid the migration issue we must remove any data that violates this constraint manually in the SQLlite database which resides in :code:`~/.local/share/covalent/dispatcher_db.sqlite`.
-Doing this requires advanced knowledge of Covalent. It is not recommended unless you are fully acquainted with how Covalent works, since it may cause unexpected behavior.
+To remedy the situation, data that violates this constraint is removed manually from the database. By default, the Covalent database is an SQLlite database has this file path: :code:`~/.local/share/covalent/dispatcher_db.sqlite`.
+
+Making these changes requires advanced knowledge of Covalent. It is not recommended unless you are fully acquainted with how Covalent works, since it may cause unexpected behavior.
 
 Lastly, if you are unable to solve the issue in this manner, you may need to delete the database and re-run the migrations as follows.
 

@@ -1,31 +1,65 @@
-============
-How to manage the Covalent server
-============
+############################
+Managing the Covalent Server
+############################
 
-In order to dispatch lattice workflows for execution, the user needs to start the Covalent server. The pre-requisite is the installation of the Covalent package. Then, the python environment where the Covalent package has been installed needs to be activated. Covalent provides a Command Line Interface (CLI) to start, stop or check the status of the server in the shell. In order to start the server, the following shell command can be used.
+Covalent provides a command line interface (CLI) to start, stop, and check the status of the server. Covalent also provides a browser-based GUI to view and manage workflow dispatches and results.
+
+Prerequisites
+-------------
+
+Before using any of the Covalent server tools, you must:
+
+1. :doc:`Install<../../getting_started/quick_start/index>` the Covalent package.
+2. Activate the Python environment where the Covalent package has been installed.
+
+Procedures
+----------
+
+Starting the Server
+~~~~~~~~~~~~~~~~~~~
+
+In order to dispatch lattice workflows for execution, you must start the Covalent server.
+
+To start the server, use the following command:
 
 .. code-block:: sh
 
     $ covalent start
     Covalent server has started at http://localhost:48008
 
-.. note:: By default, the server port is set to `48008`. Users should navigate to http://localhost:48008 to view the browser-based UI.
+.. note:: By default, the server port is set to :code:`48008`.
 
-The user can check the server status using the command below.
+Using the GUI
+~~~~~~~~~~~~~
+
+Use the Covalent GUI to view and manage workflow dispatches and results.
+
+Navigate to http://localhost:48008 to view the Covalent GUI.
+
+Checking the Server Status
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Check the server status using the following command:
 
 .. code-block:: sh
 
     $ covalent status
     Covalent server is running at http://localhost:48008.
 
-In order to stop the server, use the shell command below.
+Stopping the Server
+~~~~~~~~~~~~~~~~~~~
+
+Use the following command to stop the server:
 
 .. code-block:: sh
 
     $ covalent stop
     Covalent server has stopped.
 
-Covalent also lets the user stop and restart the server via:
+Restarting the Server
+~~~~~~~~~~~~~~~~~~~~~
+
+To stop and restart the server (for example, to pick up a changed parameter in the configuration):
 
 .. code-block:: sh
 
@@ -33,24 +67,31 @@ Covalent also lets the user stop and restart the server via:
     Covalent server has stopped.
     Covalent server has started at http://localhost:48008
 
-Custom ports can be specified using the `--port` flag.
+Using a Custom Port
+~~~~~~~~~~~~~~~~~~~
+
+You can force the server to use a port other than the default if necessary. To specify a custom port, use the `--port` flag:
 
 .. code-block:: sh
 
     $ covalent start --port 5001
     Covalent server has started at http://localhost:5001
 
-It is important to note that the default port value can also be specified in the global config file as discussed in the :doc:`configuration customization<../config/customization>` how-to guide.
+The default port value can also be changed in the global config file as discussed in :doc:`Configuration Customization<../config/customization>` in the How-To Guide.
 
-Lastly, the config file can be reset using the following command:
+Resetting the Configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+At some point you might need to reset the server configuration to the shipped defaults.
+
+.. warning::
+
+    Resetting the configuration deletes all directories referenced in the config file, including log and cache directories, with the exception of the results directory.
+
+
+Reset the configuration using the :code:`purge` subcommand:
 
 .. code-block:: sh
 
     $ covalent purge
     Covalent server files have been purged.
-
-This is useful when the user wishes to reset the default port value etc.
-
-.. warning::
-
-    This will also delete all directories referenced in the config file (logs, caches) with the exception of the results directory.
