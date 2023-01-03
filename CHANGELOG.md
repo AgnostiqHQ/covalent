@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed 
+
+- Optimization of logs on the GUI for large log file sizes. 
+
 ## [0.209.1-rc.0] - 2022-12-15
 
 ### Authors
