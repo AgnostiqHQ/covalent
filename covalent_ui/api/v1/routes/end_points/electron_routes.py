@@ -20,6 +20,7 @@
 
 """Electrons Route"""
 
+import asyncio
 import uuid
 
 from fastapi import APIRouter, HTTPException
@@ -87,6 +88,7 @@ def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
     Returns:
         Returns the inputs data from Result object
     """
+    from covalent_dispatcher._core.execution import _event_loop as event_loop
     from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
 
     result_object = get_result(dispatch_id=str(dispatch_id), wait=False)
@@ -94,9 +96,12 @@ def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
     with Session(engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
-        inputs = get_task_inputs(
-            node_id=electron_id, node_name=result.name, result_object=result_object
-        )
+        inputs = asyncio.run_coroutine_threadsafe(
+            get_task_inputs(
+                node_id=electron_id, node_name=result.name, result_object=result_object
+            ),
+            event_loop,
+        ).result()
         return validate_data(inputs)
 
 

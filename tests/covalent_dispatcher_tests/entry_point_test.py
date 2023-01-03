@@ -47,7 +47,7 @@ async def test_run_dispatcher(mocker):
     json_lattice = '{"workflow_function": "asdf"}'
     dispatch_id = await run_dispatcher(json_lattice)
     assert dispatch_id == DISPATCH_ID
-    mock_make_dispatch.assert_called_with(json_lattice)
+    mock_make_dispatch.assert_awaited_with(json_lattice)
     mock_run_dispatch.assert_called_with(dispatch_id)
 
 

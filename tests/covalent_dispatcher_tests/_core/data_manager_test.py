@@ -23,7 +23,7 @@ Tests for the core functionality of the dispatcher.
 """
 
 
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -118,13 +118,16 @@ async def test_update_node_result(mocker, node_status):
     status_queue = AsyncMock()
 
     result_object = get_mock_result()
-    mock_update_node = mocker.patch("covalent_dispatcher._db.update._node")
+    mock_update_node = mocker.patch("covalent_dispatcher._dal.result.Result._update_node")
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
+    mock_get_result = mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
+    )
 
     node_result = {"node_id": 0, "status": node_status}
-    await update_node_result(result_object, node_result)
+    await update_node_result(result_object.dispatch_id, node_result)
     status_queue.put.assert_awaited_with((0, node_status))
 
 
@@ -135,19 +138,22 @@ async def test_update_node_result_handles_db_exceptions(mocker):
     status_queue = AsyncMock()
 
     result_object = get_mock_result()
-    mock_update_node = mocker.patch(
-        "covalent_dispatcher._db.update._node", side_effect=RuntimeError()
-    )
+    result_object._update_node = MagicMock(side_effect=RuntimeError())
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
+    mock_get_result = mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
+    )
+
     node_result = {"node_id": 0, "status": Result.COMPLETED}
-    await update_node_result(result_object, node_result)
+    await update_node_result(result_object.dispatch_id, node_result)
 
     status_queue.put.assert_awaited_with((0, Result.FAILED))
 
 
-def test_make_dispatch(mocker):
+@pytest.mark.asyncio
+async def test_make_dispatch(mocker):
     res = get_mock_result()
     mock_init_result = mocker.patch(
         "covalent_dispatcher._core.data_manager.initialize_result_object", return_value=res
@@ -156,7 +162,7 @@ def test_make_dispatch(mocker):
         "covalent_dispatcher._core.data_manager._register_result_object", return_value=res
     )
     json_lattice = '{"workflow_function": "asdf"}'
-    dispatch_id = make_dispatch(json_lattice)
+    dispatch_id = await make_dispatch(json_lattice)
 
     assert dispatch_id == res.dispatch_id
     mock_register.assert_called_with(res)
@@ -172,9 +178,13 @@ def test_get_result_object(mocker):
 
 def test_register_result_object(mocker):
     result_object = get_mock_result()
+    srvres_obj = MagicMock()
     dispatch_id = result_object.dispatch_id
+    mock_get_res_from_db = mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_result_object_from_db", return_value=srvres_obj
+    )
     _register_result_object(result_object)
-    assert _registered_dispatches[dispatch_id] is result_object
+    assert _registered_dispatches[dispatch_id] is srvres_obj
     del _registered_dispatches[dispatch_id]
 
 
@@ -197,7 +207,7 @@ def test_get_status_queue():
 
 @pytest.mark.asyncio
 async def test_persist_result(mocker):
-    result_object = get_mock_result()
+    result_object = MagicMock()
 
     mock_get_result = mocker.patch(
         "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
@@ -205,11 +215,9 @@ async def test_persist_result(mocker):
     mock_update_parent = mocker.patch(
         "covalent_dispatcher._core.data_manager._update_parent_electron"
     )
-    mock_persist = mocker.patch("covalent_dispatcher._core.data_manager.update.persist")
 
     await persist_result(result_object.dispatch_id)
     mock_update_parent.assert_awaited_with(result_object)
-    mock_persist.assert_called_with(result_object)
 
 
 @pytest.mark.parametrize(
@@ -218,14 +226,22 @@ async def test_persist_result(mocker):
 )
 @pytest.mark.asyncio
 async def test_update_parent_electron(mocker, sub_status, mapped_status):
-    parent_result_obj = get_mock_result()
-    sub_result_obj = get_mock_result()
+    import datetime
+
+    mock_res = get_mock_result()
+    parent_result_obj = MagicMock()
+    sub_result_obj = MagicMock()
     eid = 5
+
+    parent_result_obj.dispatch_id = mock_res.dispatch_id
+
     parent_dispatch_id = (parent_result_obj.dispatch_id,)
     parent_node_id = 2
     sub_result_obj._electron_id = eid
-    sub_result_obj._status = sub_status
+    sub_result_obj.status = sub_status
     sub_result_obj._result = 42
+    sub_result_obj._error = ""
+    sub_result_obj._end_time = datetime.datetime.now()
 
     mock_node_result = {
         "node_id": parent_node_id,
@@ -246,13 +262,14 @@ async def test_update_parent_electron(mocker, sub_status, mapped_status):
         return_value=(parent_dispatch_id, parent_node_id),
     )
     mock_get_res = mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_result_object", return_value=parent_result_obj
+        "covalent_dispatcher._core.data_manager.get_result_object",
+        return_value=parent_result_obj,
     )
 
     await _update_parent_electron(sub_result_obj)
 
     mock_get_res.assert_called_with(parent_dispatch_id)
-    mock_update_node.assert_awaited_with(parent_result_obj, mock_node_result)
+    mock_update_node.assert_awaited_with(parent_result_obj.dispatch_id, mock_node_result)
 
 
 def test_upsert_lattice_data(mocker):

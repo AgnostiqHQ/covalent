@@ -518,3 +518,73 @@ def _filter_cova_decorators(function_string: str, cova_imports: Set[str]) -> str
                 in_decorator -= line.count(")")
 
     return "\n".join(function_lines) if has_cova_decorator else function_string
+
+
+# Reconstruct a Result object from server-side export_serialized_result
+
+
+def import_result_object(result_export: dict) -> Result:
+    """
+    Reconstruct an exported Result object from `get_result`.
+
+    Export format:
+    ```
+    {
+      "result": {
+                  "start_time": [isoformat],
+                  "end_time": [isoformat],
+                  "result": [json-serialized TransportableObject],
+                  "status": [result status string],
+      },
+      "lattice": [json-serialized lattice]
+    }
+
+    The included transport graph includes all attributes except electron
+    outputs.
+
+    """
+
+    result_attrs = result_export["result"]
+    dispatch_id = result_attrs["dispatch_id"]
+    lat_json = result_export["lattice"]
+
+    lat = Lattice.deserialize_from_json(lat_json)
+
+    result_object = Result(lat, dispatch_id)
+
+    start_time = None
+    end_time = None
+    status = None
+    inputs = {"args": [], "kwargs": {}}
+    result = None
+    error = None
+
+    if result_attrs["start_time"]:
+        start_time = datetime.fromisoformat(result_attrs["start_time"])
+
+    if result_attrs["end_time"]:
+        end_time = datetime.fromisoformat(result_attrs["end_time"])
+
+    status = Status(result_attrs["status"])
+    result = TransportableObject.deserialize_from_json(result_attrs["result"])
+    error = result_attrs["error"]
+
+    inputs["args"] = [v for _, v in lat.named_args.items()]
+    inputs["kwargs"] = lat.named_kwargs
+    lat.args = inputs["args"]
+    lat.kwargs = inputs["kwargs"]
+
+    result_object._start_time = start_time
+    result_object._end_time = end_time
+    result_object._status = status
+    result_object._inputs = inputs
+    result_object._result = result
+    result_object._error = error
+
+    result_object._lattice = lat
+    result_object._root_dispatch_id = result_attrs["root_dispatch_id"]
+
+    for node_id in result_object.lattice.transport_graph._graph.nodes:
+        result_object.lattice.transport_graph.set_node_value(node_id, "output", None)
+
+    return result_object

@@ -26,11 +26,11 @@ Tests for the core functionality of the runner.
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from sqlalchemy.pool import StaticPool
 
 import covalent as ct
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
-from covalent_dispatcher._core.data_manager import get_result_object
 from covalent_dispatcher._core.runner import (
     _build_sublattice_graph,
     _dispatch_sublattice,
@@ -40,6 +40,9 @@ from covalent_dispatcher._core.runner import (
     _run_abstract_task,
     _run_task,
 )
+from covalent_dispatcher._dal.result import Result as SRVResult
+from covalent_dispatcher._dal.result import get_result_object
+from covalent_dispatcher._db import update
 from covalent_dispatcher._db.datastore import DataStore
 
 TEST_RESULTS_DIR = "/tmp/results"
@@ -52,6 +55,8 @@ def test_db():
     return DataStore(
         db_URL="sqlite+pysqlite:///:memory:",
         initialize_db=True,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
     )
 
 
@@ -79,8 +84,16 @@ def get_mock_result() -> Result:
     return result_object
 
 
-@pytest.mark.skip
-def test_gather_deps():
+def get_mock_srvresult(sdkres, test_db) -> SRVResult:
+
+    sdkres._initialize_nodes()
+
+    update.persist(sdkres)
+
+    return get_result_object(sdkres.dispatch_id)
+
+
+def test_gather_deps(mocker, test_db):
     """Test internal _gather_deps for assembling deps into call_before and
     call_after"""
 
@@ -100,25 +113,44 @@ def test_gather_deps():
     def workflow(x):
         return task(x)
 
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
     workflow.build_graph(5)
 
     received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
-    result_object = Result(received_workflow, "asdf")
+    sdkres = Result(received_workflow, "asdf")
+    result_object = get_mock_srvresult(sdkres, test_db)
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_result_object",
+        return_value=result_object,
+    )
 
     before, after = _gather_deps(result_object, 0)
     assert len(before) == 3
     assert len(after) == 1
 
 
-@pytest.mark.skip
 @pytest.mark.asyncio
-async def test_run_abstract_task_exception_handling(mocker):
+async def test_run_abstract_task_exception_handling(mocker, test_db):
     """Test that exceptions from resolving abstract inputs are handled"""
 
-    result_object = get_mock_result()
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    sdkres = get_mock_result()
+    result_object = get_mock_srvresult(sdkres, test_db)
+
     inputs = {"args": [], "kwargs": {}}
     mock_get_result = mocker.patch(
-        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+        "covalent_dispatcher._core.runner.datasvc.get_result_object",
+        return_value=result_object,
     )
     mock_get_task_input_values = mocker.patch(
         "covalent_dispatcher._core.runner._get_task_input_values",
@@ -137,12 +169,19 @@ async def test_run_abstract_task_exception_handling(mocker):
     assert node_result["status"] == Result.FAILED
 
 
-@pytest.mark.skip
 @pytest.mark.asyncio
-async def test_run_task_executor_exception_handling(mocker):
+async def test_run_task_executor_exception_handling(mocker, test_db):
     """Test that exceptions from initializing executors are caught"""
 
-    result_object = get_mock_result()
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    sdkres = get_mock_result()
+    result_object = get_mock_srvresult(sdkres, test_db)
+
     inputs = {"args": [], "kwargs": {}}
     mock_get_executor = mocker.patch(
         "covalent_dispatcher._core.runner._executor_manager.get_executor",
@@ -165,9 +204,17 @@ async def test_run_task_executor_exception_handling(mocker):
 
 
 @pytest.mark.asyncio
-async def test_run_task_runtime_exception_handling(mocker):
+async def test_run_task_runtime_exception_handling(mocker, test_db):
 
-    result_object = get_mock_result()
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    sdkres = get_mock_result()
+    result_object = get_mock_srvresult(sdkres, test_db)
+
     inputs = {"args": [], "kwargs": {}}
     mock_executor = MagicMock()
     mock_executor._execute = AsyncMock(return_value=("", "", "error", True))
@@ -193,7 +240,6 @@ async def test_run_task_runtime_exception_handling(mocker):
     assert node_result["stderr"] == "error"
 
 
-@pytest.mark.skip
 def test_post_process():
     """Test post-processing of results."""
 
@@ -246,17 +292,29 @@ def test_post_process():
         k: ct.TransportableObject.make_transportable(v) for k, v in node_outputs.items()
     }
 
-    execution_result = _post_process(compute_energy, encoded_node_outputs)
+    inputs = {"args": [], "kwargs": {}}
+
+    execution_result = _post_process(
+        compute_energy.workflow_function.get_deserialized(), inputs, encoded_node_outputs
+    )
 
     assert execution_result == compute_energy()
 
 
-@pytest.mark.skip
 @pytest.mark.asyncio
-async def test_postprocess_workflow(mocker):
+async def test_postprocess_workflow(mocker, test_db):
     """Unit test for _postprocess_workflow"""
 
-    result_object = get_mock_result()
+    sdkres = get_mock_result()
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    sdkres._initialize_nodes()
+    result_object = get_mock_srvresult(sdkres, test_db)
+
     node_result = {"node_id": -1, "status": Result.COMPLETED, "output": 42}
     failed_node_result = {"node_id": -1, "status": Result.FAILED, "stderr": "OOM", "error": None}
     mock_run_task = mocker.patch(
@@ -279,7 +337,6 @@ async def test_postprocess_workflow(mocker):
     assert "OOM" in result_object._error
 
 
-@pytest.mark.skip
 def test_build_sublattice_graph():
     @ct.electron
     def task(x):
@@ -310,7 +367,6 @@ def test_build_sublattice_graph():
             assert parent_metadata[k] == lattice.metadata[k]
 
 
-@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_dispatch_sublattice(test_db, mocker):
 
@@ -332,10 +388,11 @@ async def test_dispatch_sublattice(test_db, mocker):
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
 
-    result_object = get_mock_result()
-    result_object._initialize_nodes()
+    sdkres = get_mock_result()
+    sdkres._initialize_nodes()
 
-    update.persist(result_object)
+    update.persist(sdkres)
+    result_object = get_mock_srvresult(sdkres, test_db)
 
     serialized_callable = ct.TransportableObject(sub_workflow)
     inputs = {"args": [ct.TransportableObject(2)], "kwargs": {}}
@@ -352,7 +409,7 @@ async def test_dispatch_sublattice(test_db, mocker):
     assert sub_result.dispatch_id == sub_dispatch_id
 
     # check that sublattice inherits parent lattice's bash dep
-    sub_bash_dep = sub_result.lattice.metadata["deps"]["bash"]["attributes"]["commands"]
+    sub_bash_dep = sub_result.lattice.get_value("deps")["bash"]["attributes"]["commands"]
     assert sub_bash_dep[0] == "ls"
     assert sub_result._electron_id == 1
 
@@ -371,7 +428,7 @@ async def test_dispatch_sublattice(test_db, mocker):
     assert sub_result.dispatch_id == sub_dispatch_id
 
     # check that sublattice inherits parent lattice's bash dep
-    sub_bash_dep = sub_result.lattice.metadata["deps"]["bash"]["attributes"]["commands"]
+    sub_bash_dep = sub_result.lattice.get_value("deps")["bash"]["attributes"]["commands"]
     assert sub_bash_dep[0] == "pwd"
 
     # Check handling of invalid workflow executors

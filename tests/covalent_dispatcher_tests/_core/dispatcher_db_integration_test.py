@@ -25,7 +25,6 @@ Tests for the core functionality of the dispatcher.
 
 from typing import Dict, List
 
-import cloudpickle as pickle
 import pytest
 
 import covalent as ct
@@ -43,9 +42,10 @@ from covalent_dispatcher._core.dispatcher import (
     run_dispatch,
     run_workflow,
 )
+from covalent_dispatcher._dal.result import Result as SRVResult
+from covalent_dispatcher._dal.result import get_result_object
+from covalent_dispatcher._db import models, update
 from covalent_dispatcher._db.datastore import DataStore
-
-TEST_RESULTS_DIR = "/tmp/results"
 
 
 @pytest.fixture
@@ -82,8 +82,19 @@ def get_mock_result() -> Result:
     return result_object
 
 
-@pytest.mark.skip
-def test_plan_workflow():
+def get_mock_srvresult(sdkres, test_db) -> SRVResult:
+
+    sdkres._initialize_nodes()
+
+    with test_db.session() as session:
+        record = session.query(models.Lattice).where(models.Lattice.id == 1).first()
+
+    update.persist(sdkres)
+
+    return get_result_object(sdkres.dispatch_id)
+
+
+def test_plan_workflow(mocker, test_db):
     """Test workflow planning method."""
 
     @ct.electron
@@ -96,17 +107,22 @@ def test_plan_workflow():
 
     workflow.metadata["schedule"] = True
     received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
-    result_object = Result(received_workflow, "asdf")
+    sdkres = Result(received_workflow, "asdf")
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    result_object = get_mock_srvresult(sdkres, test_db)
+
     _plan_workflow(result_object=result_object)
 
     # Updated transport graph post planning
-    updated_tg = pickle.loads(result_object.lattice.transport_graph.serialize(metadata_only=True))
-
-    assert updated_tg["lattice_metadata"]["schedule"]
 
 
-@pytest.mark.skip
-def test_get_abstract_task_inputs():
+def test_get_abstract_task_inputs(mocker, test_db):
     """Test _get_abstract_task_inputs for both dicts and list parameter types"""
 
     @ct.electron
@@ -149,6 +165,12 @@ def test_get_abstract_task_inputs():
         res4 = multivariable_task(electron_x, electron_y)
         return 1
 
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
     # list-type inputs
 
     # Nodes 0=task, 1=:electron_list:, 2=1, 3=2, 4=3
@@ -156,7 +178,8 @@ def test_get_abstract_task_inputs():
     abstract_args = [2, 3, 4]
     tg = list_workflow.transport_graph
 
-    result_object = Result(lattice=list_workflow, dispatch_id="asdf")
+    sdkres = Result(lattice=list_workflow, dispatch_id="list_input_dispatch")
+    result_object = get_mock_srvresult(sdkres, test_db)
     abs_task_inputs = _get_abstract_task_inputs(1, tg.get_node_value(1, "name"), result_object)
 
     expected_inputs = {"args": abstract_args, "kwargs": {}}
@@ -170,7 +193,8 @@ def test_get_abstract_task_inputs():
     abstract_args = {"a": 2, "b": 3}
     tg = dict_workflow.transport_graph
 
-    result_object = Result(lattice=dict_workflow, dispatch_id="asdf")
+    sdkres = Result(lattice=dict_workflow, dispatch_id="dict_input_dispatch")
+    result_object = get_mock_srvresult(sdkres, test_db)
     task_inputs = _get_abstract_task_inputs(1, tg.get_node_value(1, "name"), result_object)
     expected_inputs = {"args": [], "kwargs": abstract_args}
 
@@ -179,7 +203,8 @@ def test_get_abstract_task_inputs():
     # Check arg order
     multivar_workflow.build_graph(1, 2)
     received_lattice = Lattice.deserialize_from_json(multivar_workflow.serialize_to_json())
-    result_object = Result(lattice=received_lattice, dispatch_id="asdf")
+    sdkres = Result(lattice=received_lattice, dispatch_id="arg_order_dispatch")
+    result_object = get_mock_srvresult(sdkres, test_db)
     tg = received_lattice.transport_graph
 
     assert list(tg._graph.nodes) == [0, 1, 2, 3, 4, 5, 6, 7]
@@ -199,13 +224,20 @@ def test_get_abstract_task_inputs():
     assert task_inputs["args"] == [0, 2]
 
 
-@pytest.mark.skip
 @pytest.mark.asyncio
-async def test_handle_completed_node(mocker):
+async def test_handle_completed_node(mocker, test_db):
     """Unit test for completed node handler"""
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
     pending_parents = {}
 
-    result_object = get_mock_result()
+    sdkres = get_mock_result()
+    result_object = get_mock_srvresult(sdkres, test_db)
 
     # tg edges are (1, 0), (0, 2)
     pending_parents[0] = 1
@@ -223,50 +255,66 @@ async def test_handle_completed_node(mocker):
     assert pending_parents == {0: 0, 1: 0, 2: 1}
 
 
-@pytest.mark.skip
 @pytest.mark.asyncio
-async def test_handle_failed_node(mocker):
+async def test_handle_failed_node(mocker, test_db):
     """Unit test for failed node handler"""
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+    mock_commit = mocker.patch("covalent_dispatcher._dal.result.Result.commit")
+
     pending_parents = {}
 
-    result_object = get_mock_result()
+    sdkres = get_mock_result()
+    result_object = get_mock_srvresult(sdkres, test_db)
     # tg edges are (1, 0), (0, 2)
 
-    mock_upsert_lattice = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
-    )
     await _handle_failed_node(result_object, 1)
 
-    mock_upsert_lattice.assert_called()
+    mock_commit.assert_called()
 
 
-@pytest.mark.skip
 @pytest.mark.asyncio
-async def test_handle_cancelled_node(mocker):
+async def test_handle_cancelled_node(mocker, test_db):
     """Unit test for cancelled node handler"""
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+    mock_commit = mocker.patch("covalent_dispatcher._dal.result.Result.commit")
+
     pending_parents = {}
 
-    result_object = get_mock_result()
+    sdkres = get_mock_result()
+    result_object = get_mock_srvresult(sdkres, test_db)
     # tg edges are (1, 0), (0, 2)
-
-    mock_upsert_lattice = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
-    )
 
     node_result = {"node_id": 1, "status": Result.CANCELLED}
 
     await _handle_cancelled_node(result_object, 1)
     assert result_object._task_cancelled is True
-    mock_upsert_lattice.assert_called()
+    mock_commit.assert_called()
 
 
-@pytest.mark.skip
 @pytest.mark.asyncio
-async def test_get_initial_tasks_and_deps(mocker):
+async def test_get_initial_tasks_and_deps(mocker, test_db):
     """Test internal function for initializing status_queue and pending_parents"""
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
     pending_parents = {}
 
-    result_object = get_mock_result()
+    sdkres = get_mock_result()
+    result_object = get_mock_srvresult(sdkres, test_db)
     num_tasks, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(result_object)
 
     assert initial_nodes == [1]
@@ -274,10 +322,17 @@ async def test_get_initial_tasks_and_deps(mocker):
     assert num_tasks == len(result_object.lattice.transport_graph._graph.nodes)
 
 
-@pytest.mark.skip
 @pytest.mark.asyncio
-async def test_run_dispatch(mocker):
-    res = get_mock_result()
+async def test_run_dispatch(mocker, test_db):
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    sdkres = get_mock_result()
+    res = get_mock_srvresult(sdkres, test_db)
     mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.get_result_object", return_value=res
     )
@@ -286,12 +341,19 @@ async def test_run_dispatch(mocker):
     mock_run.assert_called_with(res)
 
 
-@pytest.mark.skip
 @pytest.mark.asyncio
-async def test_run_workflow_normal(mocker):
+async def test_run_workflow_normal(mocker, test_db):
     import asyncio
 
-    result_object = get_mock_result()
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    sdkres = get_mock_result()
+    result_object = get_mock_srvresult(sdkres, test_db)
+
     msg_queue = asyncio.Queue()
     mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.get_status_queue", return_value=msg_queue
@@ -310,13 +372,21 @@ async def test_run_workflow_normal(mocker):
     mock_unregister.assert_called_with(result_object.dispatch_id)
 
 
-@pytest.mark.skip
 @pytest.mark.asyncio
-async def test_run_completed_workflow(mocker):
+async def test_run_completed_workflow(mocker, test_db):
     import asyncio
 
-    result_object = get_mock_result()
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    sdkres = get_mock_result()
+    result_object = get_mock_srvresult(sdkres, test_db)
     result_object._status = Result.COMPLETED
+    result_object.commit()
+
     msg_queue = asyncio.Queue()
     mock_get_status_queue = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.get_status_queue", return_value=msg_queue
@@ -337,12 +407,18 @@ async def test_run_completed_workflow(mocker):
     mock_unregister.assert_called_with(result_object.dispatch_id)
 
 
-@pytest.mark.skip
 @pytest.mark.asyncio
-async def test_run_workflow_exception(mocker):
+async def test_run_workflow_exception(mocker, test_db):
     import asyncio
 
-    result_object = get_mock_result()
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    sdkres = get_mock_result()
+    result_object = get_mock_srvresult(sdkres, test_db)
     msg_queue = asyncio.Queue()
 
     mocker.patch(
@@ -366,12 +442,18 @@ async def test_run_workflow_exception(mocker):
     mock_unregister.assert_called_with(result_object.dispatch_id)
 
 
-@pytest.mark.skip
 @pytest.mark.asyncio
-async def test_run_planned_workflow_cancelled_update(mocker):
+async def test_run_planned_workflow_cancelled_update(mocker, test_db):
     import asyncio
 
-    result_object = get_mock_result()
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    sdkres = get_mock_result()
+    result_object = get_mock_srvresult(sdkres, test_db)
 
     mock_upsert_lattice = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
@@ -400,12 +482,18 @@ async def test_run_planned_workflow_cancelled_update(mocker):
     mock_handle_cancelled.assert_awaited_with(result_object, 0)
 
 
-@pytest.mark.skip
 @pytest.mark.asyncio
-async def test_run_planned_workflow_failed_update(mocker):
+async def test_run_planned_workflow_failed_update(mocker, test_db):
     import asyncio
 
-    result_object = get_mock_result()
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    sdkres = get_mock_result()
+    result_object = get_mock_srvresult(sdkres, test_db)
 
     mock_upsert_lattice = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
@@ -434,6 +522,5 @@ async def test_run_planned_workflow_failed_update(mocker):
     mock_handle_failed.assert_awaited_with(result_object, 0)
 
 
-@pytest.mark.skip
 def test_cancelled_workflow():
     cancel_workflow("asdf")

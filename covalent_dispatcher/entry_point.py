@@ -44,7 +44,7 @@ async def run_dispatcher(json_lattice: str):
 
     from ._core import make_dispatch, run_dispatch
 
-    dispatch_id = make_dispatch(json_lattice)
+    dispatch_id = await make_dispatch(json_lattice)
     run_dispatch(dispatch_id)
 
     app_log.debug("Submitted result object to run_workflow.")

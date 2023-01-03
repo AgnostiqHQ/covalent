@@ -30,17 +30,17 @@ from typing import Dict, Tuple
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.defaults import parameter_prefix
-from covalent_ui import result_webhook
 
 from . import data_manager as datasvc
 from . import runner
+from .data_manager import SRVResult
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
 # Domain: dispatcher
-def _get_abstract_task_inputs(node_id: int, node_name: str, result_object: Result) -> dict:
+def _get_abstract_task_inputs(node_id: int, node_name: str, result_object: SRVResult) -> dict:
     """Return placeholders for the required inputs for a task execution.
 
     Args:
@@ -56,18 +56,19 @@ def _get_abstract_task_inputs(node_id: int, node_name: str, result_object: Resul
 
     abstract_task_input = {"args": [], "kwargs": {}}
 
-    for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
+    for edge in result_object.lattice.transport_graph.get_incoming_edges(node_id):
 
-        edge_data = result_object.lattice.transport_graph.get_edge_data(parent, node_id)
+        parent = edge["source"]
+
+        d = edge["attrs"]
         # value = result_object.lattice.transport_graph.get_node_value(parent, "output")
 
-        for e_key, d in edge_data.items():
-            if not d.get("wait_for"):
-                if d["param_type"] == "arg":
-                    abstract_task_input["args"].append((parent, d["arg_index"]))
-                elif d["param_type"] == "kwarg":
-                    key = d["edge_name"]
-                    abstract_task_input["kwargs"][key] = parent
+        if not d.get("wait_for"):
+            if d["param_type"] == "arg":
+                abstract_task_input["args"].append((parent, d["arg_index"]))
+            elif d["param_type"] == "kwarg":
+                key = d["edge_name"]
+                abstract_task_input["kwargs"][key] = parent
 
     sorted_args = sorted(abstract_task_input["args"], key=lambda x: x[1])
     abstract_task_input["args"] = [x[0] for x in sorted_args]
@@ -76,14 +77,13 @@ def _get_abstract_task_inputs(node_id: int, node_name: str, result_object: Resul
 
 
 # Domain: dispatcher
-async def _handle_completed_node(result_object, node_id, pending_parents):
-    g = result_object.lattice.transport_graph._graph
+async def _handle_completed_node(result_object: SRVResult, node_id: int, pending_parents: Dict):
+    g = result_object.lattice.transport_graph
 
     ready_nodes = []
     app_log.debug(f"Node {node_id} completed")
-    for child, edges in g.adj[node_id].items():
-        for edge in edges:
-            pending_parents[child] -= 1
+    for child in g.get_successors(node_id):
+        pending_parents[child] -= 1
         if pending_parents[child] < 1:
             app_log.debug(f"Queuing node {child} for execution")
             ready_nodes.append(child)
@@ -92,23 +92,23 @@ async def _handle_completed_node(result_object, node_id, pending_parents):
 
 
 # Domain: dispatcher
-async def _handle_failed_node(result_object, node_id):
+async def _handle_failed_node(result_object: SRVResult, node_id: int):
     result_object._task_failed = True
     result_object._end_time = datetime.now(timezone.utc)
     app_log.debug(f"Node {result_object.dispatch_id}:{node_id} failed")
     app_log.debug("8A: Failed node upsert statement (run_planned_workflow)")
-    datasvc.upsert_lattice_data(result_object.dispatch_id)
-    await result_webhook.send_update(result_object)
+    result_object.commit()
+    # datasvc.upsert_lattice_data(result_object.dispatch_id)
 
 
 # Domain: dispatcher
-async def _handle_cancelled_node(result_object, node_id):
+async def _handle_cancelled_node(result_object: SRVResult, node_id: int):
     result_object._task_cancelled = True
     result_object._end_time = datetime.now(timezone.utc)
     app_log.debug(f"Node {result_object.dispatch_id}:{node_id} cancelled")
     app_log.debug("9: Cancelled node upsert statement (run_planned_workflow)")
-    datasvc.upsert_lattice_data(result_object.dispatch_id)
-    await result_webhook.send_update(result_object)
+    # datasvc.upsert_lattice_data(result_object.dispatch_id)
+    result_object.commit()
 
 
 # Domain: dispatcher
@@ -160,14 +160,14 @@ async def _submit_task(result_object, node_id):
             "status": Result.COMPLETED,
             "output": output,
         }
-        await datasvc.update_node_result(result_object, node_result)
+        await datasvc.update_node_result(result_object.dispatch_id, node_result)
         app_log.debug("8A: Update node success (run_planned_workflow).")
 
     else:
 
         # Executor for post_processing and dispatching sublattices
-        pp_executor = result_object.lattice.get_metadata("workflow_executor")
-        pp_executor_data = result_object.lattice.get_metadata("workflow_executor_data")
+        pp_executor = result_object.lattice.get_value("workflow_executor")
+        pp_executor_data = result_object.lattice.get_value("workflow_executor_data")
         post_processor = [pp_executor, pp_executor_data]
 
         # Gather inputs and dispatch task
@@ -176,12 +176,12 @@ async def _submit_task(result_object, node_id):
         abs_task_input = _get_abstract_task_inputs(node_id, node_name, result_object)
 
         selected_executor = result_object.lattice.transport_graph.get_node_value(
-            node_id, "metadata"
-        )["executor"]
+            node_id, "executor"
+        )
 
         selected_executor_data = result_object.lattice.transport_graph.get_node_value(
-            node_id, "metadata"
-        )["executor_data"]
+            node_id, "executor_data"
+        )
 
         app_log.debug(f"Submitting task {node_id} to executor")
 
@@ -198,7 +198,9 @@ async def _submit_task(result_object, node_id):
 
 
 # Domain: dispatcher
-async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Queue) -> Result:
+async def _run_planned_workflow(
+    result_object: SRVResult, status_queue: asyncio.Queue
+) -> SRVResult:
     """
     Run the workflow in the topological order of their position on the
     transport graph. Does this in an asynchronous manner so that nodes
@@ -220,7 +222,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
     app_log.debug(
         f"4: Workflow status changed to running {result_object.dispatch_id} (run_planned_workflow)."
     )
-    datasvc.upsert_lattice_data(result_object.dispatch_id)
+    result_object.commit()
     app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
 
     tasks_left, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(result_object)
@@ -266,19 +268,19 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
         failed_nodes_msg = "\n".join(failed_nodes)
         result_object._error = "The following tasks failed:\n" + failed_nodes_msg
         result_object._status = Result.FAILED if result_object._task_failed else Result.CANCELLED
+        result_object.commit()
         return result_object
 
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
 
     result_object = await runner.postprocess_workflow(result_object.dispatch_id)
 
-    app_log.debug(f"Status after PP: {result_object._status}")
-    await result_webhook.send_update(result_object)
+    app_log.debug(f"Status after PP: {result_object.status}")
 
     return result_object
 
 
-def _plan_workflow(result_object: Result) -> None:
+def _plan_workflow(result_object: SRVResult) -> None:
     """
     Function to plan a workflow according to a schedule.
     Planning means to decide which executors (along with their arguments) will
@@ -300,7 +302,7 @@ def _plan_workflow(result_object: Result) -> None:
         pass
 
 
-async def run_workflow(result_object: Result) -> Result:
+async def run_workflow(result_object: SRVResult) -> SRVResult:
     """
     Plan and run the workflow by loading the result object corresponding to the
     dispatch id and retrieving essential information from it.
@@ -335,6 +337,7 @@ async def run_workflow(result_object: Result) -> Result:
         result_object._end_time = datetime.now(timezone.utc)
 
     finally:
+        result_object.commit()
         await datasvc.persist_result(result_object.dispatch_id)
         datasvc.finalize_dispatch(result_object.dispatch_id)
 

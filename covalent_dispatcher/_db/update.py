@@ -19,14 +19,12 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import os
-from datetime import datetime
 from pathlib import Path
-from typing import Any, Union
+from typing import Union
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-from covalent._shared_files.util_classes import Status
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import _TransportGraph
 
@@ -57,57 +55,6 @@ def persist(record: Union[Result, Lattice, _TransportGraph], electron_id: int = 
         persist(record.transport_graph)
     if isinstance(record, _TransportGraph):
         record.dirty_nodes.clear()
-
-
-def _node(
-    result,
-    node_id: int,
-    node_name: str = None,
-    start_time: "datetime" = None,
-    end_time: "datetime" = None,
-    status: "Status" = None,
-    output: Any = None,
-    error: Exception = None,
-    sub_dispatch_id: str = None,
-    sublattice_result: "Result" = None,
-    stdout: str = None,
-    stderr: str = None,
-) -> None:
-    """
-    Update the node result in the transport graph.
-    Called after any change in node's execution state.
-
-    Args:
-        node_id: The node id.
-        node_name: The name of the node.
-        start_time: The start time of the node execution.
-        end_time: The end time of the node execution.
-        status: The status of the node execution.
-        output: The output of the node unless error occured in which case None.
-        error: The error of the node if occured else None.
-        sublattice_result: The result of the sublattice if any.
-        stdout: The stdout of the node execution.
-        stderr: The stderr of the node execution.
-
-    Returns:
-        None
-    """
-
-    result._update_node(
-        node_id=node_id,
-        node_name=node_name,
-        start_time=start_time,
-        end_time=end_time,
-        status=status,
-        output=output,
-        error=error,
-        sub_dispatch_id=sub_dispatch_id,
-        sublattice_result=sublattice_result,
-        stdout=stdout,
-        stderr=stderr,
-    )
-
-    upsert._electron_data(result)
 
 
 def _initialize_results_dir(result):

@@ -21,6 +21,7 @@
 """Class implementation of the transport graph in the workflow graph."""
 
 import base64
+import datetime
 import json
 import platform
 from copy import deepcopy
@@ -30,6 +31,7 @@ import cloudpickle
 import networkx as nx
 
 from .._shared_files.defaults import parameter_prefix
+from .._shared_files.util_classes import Status
 
 
 class TransportableObject:
@@ -514,6 +516,14 @@ class _TransportGraph:
                 node["value"] = node["value"].to_dict()
             if "metadata" in node:
                 node["metadata"] = encode_metadata(node["metadata"])
+            if "start_time" in node:
+                if node["start_time"]:
+                    node["start_time"] = node["start_time"].isoformat()
+            if "end_time" in node:
+                if node["end_time"]:
+                    node["end_time"] = node["end_time"].isoformat()
+            if "status" in node:
+                node["status"] = str(node["status"])
 
         if metadata_only:
             parameter_node_id = [
@@ -591,5 +601,13 @@ class _TransportGraph:
             node_link_data["nodes"][idx]["function"] = TransportableObject.from_dict(function_ser)
             if "value" in node:
                 node["value"] = TransportableObject.from_dict(node["value"])
+            if "start_time" in node:
+                if node["start_time"]:
+                    node["start_time"] = datetime.datetime.fromisoformat(node["start_time"])
+            if "end_time" in node:
+                if node["end_time"]:
+                    node["end_time"] = datetime.datetime.fromisoformat(node["end_time"])
+            if "status" in node:
+                node["status"] = Status(node["status"])
 
         self._graph = nx.readwrite.node_link_graph(node_link_data)

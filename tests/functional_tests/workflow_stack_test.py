@@ -120,7 +120,7 @@ def test_sublatticing():
     dispatch_id = ct.dispatch(workflow)(a=1, b=2)
     workflow_result = rm.get_result(dispatch_id, wait=True)
 
-    assert workflow_result.error is None
+    assert workflow_result.error == ""
     assert workflow_result.status == Result.COMPLETED
     assert workflow_result.result == 3
     assert workflow_result.get_node_result(node_id=0)["sublattice_result"].result == 3
@@ -263,7 +263,7 @@ def test_electron_deps_call_before():
     dispatch_id = ct.dispatch(workflow)(file_path=tmp_path)
     res = ct.get_result(dispatch_id, wait=True)
 
-    assert res.error is None
+    assert res.error == ""
 
     assert res.result == (True, "Hello")
 

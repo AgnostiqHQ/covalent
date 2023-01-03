@@ -355,6 +355,7 @@ def test_transport_graph_deserialize(workflow_transport_graph):
 def test_transport_graph_json_serialization():
     """Test the transport graph JSON serialization method"""
 
+    import datetime
     import json
 
     @ct.electron(executor="local", deps_bash=ct.DepsBash("yum install gcc"))
@@ -367,6 +368,11 @@ def test_transport_graph_json_serialization():
 
     workflow.build_graph(5)
     workflow_tg = workflow.transport_graph
+    ts = datetime.datetime.now((datetime.timezone.utc))
+
+    workflow_tg.set_node_value(1, "start_time", ts)
+    workflow_tg.set_node_value(1, "end_time", ts)
+    workflow_tg.set_node_value(1, "status", ct.status.COMPLETED)
 
     json_graph = workflow_tg.serialize_to_json()
 
@@ -394,6 +400,13 @@ def test_transport_graph_json_serialization():
 
     # Check link field "edge_name" is filtered out when metadata_only is True
     assert "edge_name" not in serialized_data["links"][0]
+
+    # Check timestamps
+    assert tg.get_node_value(1, "start_time") == ts
+    assert tg.get_node_value(1, "end_time") == ts
+
+    # Check status
+    assert tg.get_node_value(1, "status") == ct.status.COMPLETED
 
 
 def test_encode_metadata():

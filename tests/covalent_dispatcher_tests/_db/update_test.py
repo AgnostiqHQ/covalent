@@ -83,81 +83,6 @@ def test_db():
     )
 
 
-def test_update_node(test_db, result_1, mocker):
-    """Test the node update method."""
-
-    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    update.persist(result_1)
-    update._node(
-        result_1,
-        node_id=0,
-        node_name="test_name",
-        start_time=dt.now(timezone.utc),
-        status="RUNNING",
-        error="test_error",
-        sublattice_result="test_sublattice",
-        stdout="test_stdout",
-        stderr="test_stderr",
-    )
-
-    with test_db.session() as session:
-        lattice_record = session.query(Lattice).first()
-        electron_record = (
-            session.query(Electron).where(Electron.transport_graph_node_id == 0).first()
-        )
-
-        assert electron_record.name == "test_name"
-        assert electron_record.status == "RUNNING"
-        assert electron_record.started_at is not None
-
-        stdout = load_file(
-            storage_path=electron_record.storage_path, filename=electron_record.stdout_filename
-        )
-        assert stdout == "test_stdout"
-
-        stderr = load_file(
-            storage_path=electron_record.storage_path, filename=electron_record.stderr_filename
-        )
-        assert stderr == "test_stderr"
-
-        assert result_1.lattice.transport_graph.get_node_value(0, "error") == "test_error"
-        assert (
-            result_1.lattice.transport_graph.get_node_value(0, "sublattice_result")
-            == "test_sublattice"
-        )
-
-        assert lattice_record.electron_num == 5
-        assert lattice_record.completed_electron_num == 0
-        assert lattice_record.updated_at is not None
-    update._node(
-        result_1,
-        node_id=0,
-        end_time=dt.now(timezone.utc),
-        status=Result.COMPLETED,
-        output=5,
-    )
-
-    with test_db.session() as session:
-        lattice_record = session.query(Lattice).first()
-        electron_record = (
-            session.query(Electron).where(Electron.transport_graph_node_id == 0).first()
-        )
-
-        assert electron_record.status == "COMPLETED"
-        assert electron_record.completed_at is not None
-        assert electron_record.updated_at is not None
-
-        result = load_file(
-            storage_path=electron_record.storage_path, filename=electron_record.results_filename
-        )
-        assert result == 5
-
-        assert lattice_record.electron_num == 5
-        assert lattice_record.completed_electron_num == 1
-        assert lattice_record.updated_at is not None
-
-
 def test_result_persist_workflow_1(test_db, result_1, mocker):
     """Test the persist method for the Result object."""
 
@@ -266,8 +191,7 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         result_1._result = ct.TransportableObject({"helo": 1, "world": 2})
 
         for node_id in range(5):
-            update._node(
-                result_1,
+            result_1._update_node(
                 node_id=node_id,
                 start_time=cur_time,
                 end_time=cur_time,

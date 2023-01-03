@@ -54,12 +54,15 @@ Defines the core functionality of the dispatcher
 #     _run_task_and_update,
 # )
 
+
 from covalent._results_manager import Result
 
-from . import dispatcher, runner
+from . import runner
+
+_event_loop = None
 
 
-def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dict:
+async def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dict:
     """
     Return the required inputs for a task execution.
     This makes sure that any node with child nodes isn't executed twice and fetches the
@@ -76,8 +79,25 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
                 and any parent node execution results if present.
     """
 
-    abstract_inputs = dispatcher._get_abstract_task_inputs(node_id, node_name, result_object)
-    input_values = runner._get_task_input_values(result_object, abstract_inputs)
+    abstract_inputs = {"args": [], "kwargs": {}}
+
+    for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
+
+        edge_data = result_object.lattice.transport_graph.get_edge_data(parent, node_id)
+        # value = result_object.lattice.transport_graph.get_node_value(parent, "output")
+
+        for e_key, d in edge_data.items():
+            if not d.get("wait_for"):
+                if d["param_type"] == "arg":
+                    abstract_inputs["args"].append((parent, d["arg_index"]))
+                elif d["param_type"] == "kwarg":
+                    key = d["edge_name"]
+                    abstract_inputs["kwargs"][key] = parent
+
+    sorted_args = sorted(abstract_inputs["args"], key=lambda x: x[1])
+    abstract_inputs["args"] = [x[0] for x in sorted_args]
+
+    input_values = await runner._get_task_input_values(result_object, abstract_inputs)
 
     abstract_args = abstract_inputs["args"]
     abstract_kwargs = abstract_inputs["kwargs"]

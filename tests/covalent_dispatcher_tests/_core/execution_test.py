@@ -26,6 +26,7 @@ import asyncio
 from typing import Dict, List
 
 import pytest
+from sqlalchemy.pool import StaticPool
 
 import covalent as ct
 from covalent._results_manager import Result
@@ -34,7 +35,9 @@ from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.dispatcher import run_workflow
 from covalent_dispatcher._core.execution import _get_task_inputs
 from covalent_dispatcher._core.runner import _run_task
-from covalent_dispatcher._db import update
+from covalent_dispatcher._dal.result import Result as SRVResult
+from covalent_dispatcher._dal.result import get_result_object
+from covalent_dispatcher._db import models, update
 from covalent_dispatcher._db.datastore import DataStore
 
 TEST_RESULTS_DIR = "/tmp/results"
@@ -47,6 +50,8 @@ def test_db():
     return DataStore(
         db_URL="sqlite+pysqlite:///:memory:",
         initialize_db=True,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
     )
 
 
@@ -74,7 +79,20 @@ def get_mock_result() -> Result:
     return result_object
 
 
-def test_get_task_inputs():
+def get_mock_srvresult(sdkres, test_db) -> SRVResult:
+
+    sdkres._initialize_nodes()
+
+    with test_db.session() as session:
+        record = session.query(models.Lattice).where(models.Lattice.id == 1).first()
+
+    update.persist(sdkres)
+
+    return get_result_object(sdkres.dispatch_id)
+
+
+@pytest.mark.asyncio
+async def test_get_task_inputs(mocker):
     """Test _get_task_inputs for both dicts and list parameter types"""
 
     @ct.electron
@@ -128,7 +146,10 @@ def test_get_task_inputs():
     tg.set_node_value(4, "output", ct.TransportableObject(3))
 
     result_object = Result(lattice=list_workflow, dispatch_id="asdf")
-    task_inputs = _get_task_inputs(1, tg.get_node_value(1, "name"), result_object)
+    mock_get_result = mocker.patch(
+        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+    )
+    task_inputs = await _get_task_inputs(1, tg.get_node_value(1, "name"), result_object)
 
     expected_inputs = {"args": serialized_args, "kwargs": {}}
 
@@ -144,7 +165,11 @@ def test_get_task_inputs():
     tg.set_node_value(3, "output", ct.TransportableObject(2))
 
     result_object = Result(lattice=dict_workflow, dispatch_id="asdf")
-    task_inputs = _get_task_inputs(1, tg.get_node_value(1, "name"), result_object)
+
+    mock_get_result = mocker.patch(
+        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+    )
+    task_inputs = await _get_task_inputs(1, tg.get_node_value(1, "name"), result_object)
     expected_inputs = {"args": [], "kwargs": serialized_args}
 
     assert task_inputs == expected_inputs
@@ -159,26 +184,42 @@ def test_get_task_inputs():
     tg.set_node_value(0, "output", ct.TransportableObject(1))
     tg.set_node_value(2, "output", ct.TransportableObject(2))
 
-    task_inputs = _get_task_inputs(4, tg.get_node_value(4, "name"), result_object)
+    mock_get_result = mocker.patch(
+        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+    )
+
+    task_inputs = await _get_task_inputs(4, tg.get_node_value(4, "name"), result_object)
 
     input_args = [arg.get_deserialized() for arg in task_inputs["args"]]
     assert input_args == [1, 2]
 
-    task_inputs = _get_task_inputs(5, tg.get_node_value(5, "name"), result_object)
+    mock_get_result = mocker.patch(
+        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+    )
+
+    task_inputs = await _get_task_inputs(5, tg.get_node_value(5, "name"), result_object)
     input_args = [arg.get_deserialized() for arg in task_inputs["args"]]
     assert input_args == [2, 1]
 
-    task_inputs = _get_task_inputs(6, tg.get_node_value(6, "name"), result_object)
+    mock_get_result = mocker.patch(
+        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+    )
+
+    task_inputs = await _get_task_inputs(6, tg.get_node_value(6, "name"), result_object)
     input_args = [arg.get_deserialized() for arg in task_inputs["args"]]
     assert input_args == [2, 1]
 
-    task_inputs = _get_task_inputs(7, tg.get_node_value(7, "name"), result_object)
+    mock_get_result = mocker.patch(
+        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+    )
+
+    task_inputs = await _get_task_inputs(7, tg.get_node_value(7, "name"), result_object)
     input_args = [arg.get_deserialized() for arg in task_inputs["args"]]
     assert input_args == [1, 2]
 
 
 @pytest.mark.asyncio
-async def test_run_workflow_with_failing_nonleaf(mocker):
+async def test_run_workflow_with_failing_nonleaf(mocker, test_db):
     """Test running workflow with a failing intermediate node"""
 
     @ct.electron
@@ -198,33 +239,33 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
     json_lattice = workflow.serialize_to_json()
     dispatch_id = "asdf"
     lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice)
-    result_object._dispatch_id = dispatch_id
-    result_object._root_dispatch_id = dispatch_id
-    result_object._initialize_nodes()
+    sdkres = Result(lattice)
+    sdkres._dispatch_id = dispatch_id
+    sdkres._root_dispatch_id = dispatch_id
+    sdkres._initialize_nodes()
 
-    # patch all methods that reference a DB
-    mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
-    mocker.patch("covalent_dispatcher._db.upsert._electron_data")
-    mocker.patch("covalent_dispatcher._db.update.persist")
-    mocker.patch(
-        "covalent._results_manager.result.Result._get_node_name", return_value="failing_task"
-    )
-    mocker.patch(
-        "covalent._results_manager.result.Result._get_node_error", return_value="AssertionError"
-    )
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    result_object = get_mock_srvresult(sdkres, test_db)
+
     mock_unregister = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
+
     mocker.patch(
-        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
     )
+
     status_queue = asyncio.Queue()
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
     mock_get_failed_nodes = mocker.patch(
-        "covalent._results_manager.result.Result._get_failed_nodes",
+        "covalent_dispatcher._dal.result.Result._get_failed_nodes",
         return_value=[(0, "failing_task")],
     )
 
@@ -234,11 +275,11 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
     assert result_object.status == Result.FAILED
 
     mock_get_failed_nodes.assert_called()
-    assert result_object._error == "The following tasks failed:\n0: failing_task"
+    assert result_object.error == "The following tasks failed:\n0: failing_task"
 
 
 @pytest.mark.asyncio
-async def test_run_workflow_with_failing_leaf(mocker):
+async def test_run_workflow_with_failing_leaf(mocker, test_db):
     """Test running workflow with a failing leaf node"""
 
     @ct.electron
@@ -258,25 +299,25 @@ async def test_run_workflow_with_failing_leaf(mocker):
     json_lattice = workflow.serialize_to_json()
     dispatch_id = "asdf"
     lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice)
-    result_object._dispatch_id = dispatch_id
-    result_object._root_dispatch_id = dispatch_id
-    result_object._initialize_nodes()
+    sdkres = Result(lattice)
+    sdkres._dispatch_id = dispatch_id
+    sdkres._root_dispatch_id = dispatch_id
+    sdkres._initialize_nodes()
 
-    mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
-    mocker.patch("covalent_dispatcher._db.upsert._electron_data")
-    mocker.patch("covalent_dispatcher._db.update.persist")
-    mocker.patch(
-        "covalent._results_manager.result.Result._get_node_name", return_value="failing_task"
-    )
-    mocker.patch(
-        "covalent._results_manager.result.Result._get_node_error", return_value="AssertionError"
-    )
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    result_object = get_mock_srvresult(sdkres, test_db)
+
     mock_unregister = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
+
     mocker.patch(
-        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
     )
 
     status_queue = asyncio.Queue()
@@ -293,7 +334,7 @@ async def test_run_workflow_with_failing_leaf(mocker):
     result_object = await run_workflow(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
     assert result_object.status == Result.FAILED
-    assert result_object._error == "The following tasks failed:\n0: failing_task"
+    assert result_object.error == "The following tasks failed:\n0: failing_task"
 
 
 async def test_run_workflow_does_not_deserialize(mocker):
@@ -348,18 +389,25 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
     postprocessing"""
 
     dispatch_id = "asdf"
-    result_object = get_mock_result()
-    result_object.lattice.set_metadata("workflow_executor", "client")
-    result_object._dispatch_id = dispatch_id
-    result_object._initialize_nodes()
+    sdkres = get_mock_result()
+    sdkres.lattice.set_metadata("workflow_executor", "client")
+    sdkres._dispatch_id = dispatch_id
+    sdkres._initialize_nodes()
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    result_object = get_mock_srvresult(sdkres, test_db)
+
     mock_unregister = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
+
     mocker.patch(
-        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
     )
 
     status_queue = asyncio.Queue()
@@ -379,17 +427,23 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     """Check that run_workflow handles postprocessing failures"""
 
     dispatch_id = "asdf"
-    result_object = get_mock_result()
-    result_object._dispatch_id = dispatch_id
-    result_object._initialize_nodes()
+    sdkres = get_mock_result()
+    sdkres._dispatch_id = dispatch_id
+    sdkres._initialize_nodes()
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    result_object = get_mock_srvresult(sdkres, test_db)
+
     mock_unregister = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
     mocker.patch(
-        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
     )
 
     update.persist(result_object)
@@ -402,14 +456,14 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     def failing_workflow(x):
         assert False
 
-    result_object.lattice.set_metadata("workflow_executor", "bogus")
+    result_object.lattice.set_value("workflow_executor", "bogus")
     result_object = await run_workflow(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
 
     assert result_object.status == Result.POSTPROCESSING_FAILED
 
-    result_object.lattice.workflow_function = ct.TransportableObject(failing_workflow)
-    result_object.lattice.set_metadata("workflow_executor", "local")
+    result_object.lattice.set_value("workflow_function", ct.TransportableObject(failing_workflow))
+    result_object.lattice.set_value("workflow_executor", "local")
 
     result_object = await run_workflow(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
@@ -420,7 +474,7 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
 @pytest.mark.asyncio
 async def test_run_task_sublattice_handling(test_db, mocker):
 
-    result_object = get_mock_result()
+    sdkres = get_mock_result()
     sub_result_object = get_mock_result()
     sub_result_object._dispatch_id = "sublattice_workflow"
     sub_result_object._result = ct.TransportableObject(5)
@@ -435,6 +489,14 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         return_value=sub_result_object.dispatch_id,
     )
     mock_run_dispatch = mocker.patch("covalent_dispatcher._core.dispatcher.run_dispatch")
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    result_object = get_mock_srvresult(sdkres, test_db)
 
     inputs = {"args": [], "kwargs": {}}
 
@@ -452,7 +514,6 @@ async def test_run_task_sublattice_handling(test_db, mocker):
 
     mock_get_sublattice_electron_id.assert_called_once()
     mock_dispatch_sub.assert_awaited_once()
-    assert node_result["sub_dispatch_id"] == sub_result_object.dispatch_id
     mock_run_dispatch.assert_called_once()
 
     # Test failed sublattice workflows

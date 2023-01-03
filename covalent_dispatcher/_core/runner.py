@@ -26,7 +26,7 @@ import json
 import traceback
 from datetime import datetime, timezone
 from functools import partial
-from typing import Any, Dict, List, Tuple
+from typing import Any, Callable, Dict, List, Tuple
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
@@ -39,7 +39,7 @@ from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
 from covalent.executor.base import wrapper_fn
 
-from .._db import upsert
+from .._dal.result import Result as SRVResult
 from .._db.write_result_to_db import get_sublattice_electron_id
 from . import data_manager as datasvc
 from . import dispatcher
@@ -60,7 +60,7 @@ def _build_sublattice_graph(sub: Lattice, parent_metadata: Dict, *args, **kwargs
 
 
 async def _dispatch_sublattice(
-    parent_result_object: Result,
+    parent_result_object: SRVResult,
     parent_node_id: int,
     parent_electron_id: int,
     inputs: Dict,
@@ -82,7 +82,16 @@ async def _dispatch_sublattice(
         app_log.debug(f"Exception when trying to determine sublattice executor: {ex}")
         raise ex
 
-    parent_metadata = TransportableObject.make_transportable(parent_result_object.lattice.metadata)
+    parent_metadata = {
+        "executor": parent_result_object.lattice.get_value("executor"),
+        "executor_data": parent_result_object.lattice.get_value("executor_data"),
+        "workflow_executor": parent_result_object.lattice.get_value("workflow_executor"),
+        "workflow_executor_data": parent_result_object.lattice.get_value("workflow_executor_data"),
+        "deps": parent_result_object.lattice.get_value("deps"),
+        "call_before": parent_result_object.lattice.get_value("call_before"),
+        "call_after": parent_result_object.lattice.get_value("call_after"),
+    }
+    parent_metadata = TransportableObject.make_transportable(parent_metadata)
     sub_dispatch_inputs = {
         "args": [serialized_callable, parent_metadata],
         "kwargs": inputs["kwargs"],
@@ -108,7 +117,7 @@ async def _dispatch_sublattice(
     if res["status"] == Result.COMPLETED:
         json_sublattice = json.loads(res["output"].json)
 
-        sub_dispatch_id = datasvc.make_dispatch(
+        sub_dispatch_id = await datasvc.make_dispatch(
             json_sublattice, parent_result_object, parent_electron_id
         )
         app_log.debug(f"Sublattice dispatch id: {sub_dispatch_id}")
@@ -121,16 +130,16 @@ async def _dispatch_sublattice(
 
 # Domain: runner
 # to be called by _run_abstract_task
-def _get_task_input_values(result_object: Result, abs_task_inputs: dict) -> dict:
+async def _get_task_input_values(result_object: Result, abs_task_inputs: dict) -> dict:
     node_values = {}
     args = abs_task_inputs["args"]
     for node_id in args:
-        value = result_object.lattice.transport_graph.get_node_value(node_id, "output")
+        value = await datasvc.get_electron_attribute(result_object.dispatch_id, node_id, "output")
         node_values[node_id] = value
 
     kwargs = abs_task_inputs["kwargs"]
     for key, node_id in kwargs.items():
-        value = result_object.lattice.transport_graph.get_node_value(node_id, "output")
+        value = await datasvc.get_electron_attribute(result_object.dispatch_id, node_id, "output")
         node_values[node_id] = value
 
     return node_values
@@ -154,7 +163,7 @@ async def _run_abstract_task(
         serialized_callable = result_object.lattice.transport_graph.get_node_value(
             node_id, "function"
         )
-        input_values = _get_task_input_values(result_object, abstract_inputs)
+        input_values = await _get_task_input_values(result_object, abstract_inputs)
 
         abstract_args = abstract_inputs["args"]
         abstract_kwargs = abstract_inputs["kwargs"]
@@ -184,7 +193,7 @@ async def _run_abstract_task(
     )
     app_log.debug(f"7: Marking node {node_id} as running (_run_abstract_task)")
 
-    await datasvc.update_node_result(result_object, node_result)
+    await datasvc.update_node_result(result_object.dispatch_id, node_result)
 
     return await _run_task(
         result_object=result_object,
@@ -201,7 +210,7 @@ async def _run_abstract_task(
 
 # Domain: runner
 async def _run_task(
-    result_object: Result,
+    result_object: SRVResult,
     node_id: int,
     inputs: Dict,
     serialized_callable: Any,
@@ -272,7 +281,7 @@ async def _run_task(
 
             node_result = datasvc.generate_node_result(
                 node_id=node_id,
-                sub_dispatch_id=sub_dispatch_id,
+                status=Result.RUNNING,
             )
 
             dispatcher.run_dispatch(sub_dispatch_id)
@@ -328,19 +337,19 @@ async def _run_task(
 
 
 # Domain: runner
-def _gather_deps(result_object: Result, node_id: int) -> Tuple[List, List]:
+def _gather_deps(result_object: SRVResult, node_id: int) -> Tuple[List, List]:
     """Assemble deps for a node into the final call_before and call_after"""
 
-    deps = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")["deps"]
+    deps = result_object.lattice.transport_graph.get_node_value(node_id, "deps")
 
     # Assemble call_before and call_after from all the deps
 
     call_before_objs_json = result_object.lattice.transport_graph.get_node_value(
-        node_id, "metadata"
-    )["call_before"]
+        node_id, "call_before"
+    )
     call_after_objs_json = result_object.lattice.transport_graph.get_node_value(
-        node_id, "metadata"
-    )["call_after"]
+        node_id, "call_after"
+    )
 
     call_before = []
     call_after = []
@@ -387,13 +396,12 @@ async def run_abstract_task(
         selected_executor=selected_executor,
         workflow_executor=workflow_executor,
     )
-    result_object = datasvc.get_result_object(dispatch_id)
-    await datasvc.update_node_result(result_object, node_result)
+    await datasvc.update_node_result(dispatch_id, node_result)
 
 
 # Domain: runner
 # This is to be run out-of-process
-def _post_process(lattice: Lattice, node_outputs: Dict) -> Any:
+def _post_process(workflow_function: Callable, inputs: Dict, node_outputs: Dict) -> Any:
     """
     Post processing function to be called after the lattice execution.
     This takes care of executing statements that were not an electron
@@ -414,6 +422,10 @@ def _post_process(lattice: Lattice, node_outputs: Dict) -> Any:
     Reurns:
         result: The result of the lattice function.
     """
+
+    lattice = Lattice(workflow_function)
+    lattice.args = inputs["args"]
+    lattice.kwargs = inputs["kwargs"]
 
     ordered_node_outputs = []
     app_log.debug(f"node_outputs: {node_outputs}")
@@ -436,7 +448,7 @@ def _post_process(lattice: Lattice, node_outputs: Dict) -> Any:
 
 
 # Domain: runner
-async def _postprocess_workflow(result_object: Result) -> Result:
+async def _postprocess_workflow(result_object: SRVResult) -> SRVResult:
     """
     Postprocesses a workflow with a completed computational graph
 
@@ -448,12 +460,12 @@ async def _postprocess_workflow(result_object: Result) -> Result:
     """
 
     # Executor for post_processing
-    pp_executor = result_object.lattice.get_metadata("workflow_executor")
-    pp_executor_data = result_object.lattice.get_metadata("workflow_executor_data")
+    pp_executor = result_object.lattice.get_value("workflow_executor")
+    pp_executor_data = result_object.lattice.get_value("workflow_executor_data")
     post_processor = [pp_executor, pp_executor_data]
 
     result_object._status = Result.POSTPROCESSING
-    upsert._lattice_data(result_object)
+    result_object.commit()
 
     app_log.debug(f"Preparing to post-process workflow {result_object.dispatch_id}")
 
@@ -461,13 +473,15 @@ async def _postprocess_workflow(result_object: Result) -> Result:
         app_log.debug("Workflow to be postprocessed client side")
         result_object._status = Result.PENDING_POSTPROCESSING
         result_object._end_time = datetime.now(timezone.utc)
-        upsert._lattice_data(result_object)
         return result_object
 
     post_processing_inputs = {}
+    serialized_workflow = result_object.lattice.get_value("workflow_function")
+
     post_processing_inputs["args"] = [
-        TransportableObject.make_transportable(result_object.lattice),
-        TransportableObject.make_transportable(result_object.get_all_node_outputs()),
+        serialized_workflow,
+        TransportableObject(result_object.get_value("inputs")),
+        TransportableObject((result_object.get_all_node_outputs())),
     ]
     post_processing_inputs["kwargs"] = {}
 
@@ -493,7 +507,6 @@ async def _postprocess_workflow(result_object: Result) -> Result:
         result_object._status = Result.POSTPROCESSING_FAILED
         result_object._error = f"Post-processing failed: {error_msg}"
         result_object._end_time = datetime.now(timezone.utc)
-        upsert._lattice_data(result_object)
 
         app_log.debug("Returning from _postprocess_workflow")
         return result_object
@@ -509,6 +522,6 @@ async def _postprocess_workflow(result_object: Result) -> Result:
     return result_object
 
 
-async def postprocess_workflow(dispatch_id: str) -> Result:
-    result_object = datasvc.get_result_object(dispatch_id)
-    return await _postprocess_workflow(result_object)
+async def postprocess_workflow(dispatch_id: str) -> SRVResult:
+    sdkres = datasvc.get_result_object(dispatch_id)
+    return await _postprocess_workflow(sdkres)
