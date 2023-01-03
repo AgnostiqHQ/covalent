@@ -23,6 +23,7 @@
 import fcntl
 import os
 import pty
+import re
 import select
 import signal
 import struct
@@ -39,9 +40,12 @@ from fastapi.responses import JSONResponse
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent_ui.api.v1.routes import routes
+from covalent_ui.api.v1.utils.models_helper import TerminalHelper
 
 file_descriptor = None
 child_process_id = None
+command_list = []
+stripped = []
 
 # Config
 WEBHOOK_PATH = "/api/webhook"
@@ -94,12 +98,26 @@ async def disconnect_terminal():
 
 
 @sio.on("pty-input")
-def pty_input(sid, data):
-    """write to the child pty. The pty sees this as if you are typing in a real
-    terminal.
+async def pty_input(sid, data):
+    print(data)
+    """create and write to the child pty.
+        The pty sees this as if commands are typing and executed in a real terminal.
     """
-    if file_descriptor:
-        os.write(file_descriptor, data["input"].encode())
+    if TerminalHelper.backspace.value != data["input"]:
+        command_list.append(data["input"])
+    command = "".join(map(str, command_list))
+    match_string = re.match(TerminalHelper.exit_regex.value, command)
+    if match_string or data["input"] == TerminalHelper.ctrl_d.value:
+        await disconnect_terminal()
+        command_list.clear()
+    else:
+        if TerminalHelper.enter.value in command_list:
+            command_list.clear()
+        if TerminalHelper.backspace.value == data["input"]:
+            command_list.pop() if len(command_list) != 0 else None
+
+        if file_descriptor:
+            os.write(file_descriptor, data["input"].encode())
 
 
 @sio.on("resize")
@@ -110,6 +128,7 @@ def resize(sid, data):
 
 @sio.on("start_terminal")
 async def on_start_start_terminal(*args):
+    command_list.clear()
     global terminal_subprocess
     terminal_subprocess = True
     global child_process_id
