@@ -40,7 +40,7 @@ repos:
         args: ["--profile", "black"]
 
   - repo: https://github.com/psf/black
-    rev: 22.8.0
+    rev: 22.10.0
     hooks:
       - id: black
         language_version: python3.8
@@ -57,7 +57,7 @@ repos:
           )$
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.0-alpha.0
+    rev: v3.0.0-alpha.2
     hooks:
       - id: prettier
         types: [yaml]
@@ -71,7 +71,7 @@ repos:
       - id: pycln
         args: [--config=pyproject.toml]
   - repo: https://github.com/Yelp/detect-secrets
-    rev: v1.3.0
+    rev: v1.4.0
     hooks:
       - id: detect-secrets
         args:
@@ -82,5 +82,7 @@ repos:
             "./.detect_secrets_filters/ipynb_hash_filter.py::is_pynb_hash",
             "--filter",
             "./.detect_secrets_filters/ipynb_hash_filter.py::is_pynb_image",
+            "--filter",
+            "./.detect_secrets_filters/azure_keyword_filter.py::is_secret_keyword",
           ]
         verbose: true

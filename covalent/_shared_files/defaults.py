@@ -46,16 +46,15 @@ def get_default_sdk_config():
         "config_file": (
             os.environ.get("COVALENT_CONFIG_DIR")
             or os.environ.get("XDG_CONFIG_DIR")
-            or os.environ["HOME"] + "/.config"
+            or (os.environ["HOME"] + "/.config/covalent")
         )
-        + "/covalent/covalent.conf",
+        + "/covalent.conf",
         "log_dir": (
             os.environ.get("COVALENT_LOGDIR")
-            or (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
-        )
-        + "/covalent",
+            or (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache/covalent"))
+        ),
         "log_level": os.environ.get("LOGLEVEL", "WARNING").lower(),
-        "enable_logging": os.environ.get("COVALENT_LOG_TO_FILE", "false").lower(),
+        "enable_logging": os.environ.get("COVALENT_LOG_TO_FILE", "true").lower(),
         "executor_dir": os.environ.get("COVALENT_EXECUTOR_DIR")
         or (
             (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
@@ -71,9 +70,10 @@ def get_default_dispatcher_config():
         "port": int(os.environ.get("COVALENT_SVC_PORT", 48008)),
         "cache_dir": os.environ.get("COVALENT_CACHE_DIR")
         or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
-        "results_dir": os.environ.get("COVALENT_RESULTS_DIR", "results"),
+        "results_dir": os.environ.get("COVALENT_DATA_DIR")
+        or os.path.join(os.environ["HOME"], ".local/share/covalent/data"),
         "log_dir": os.environ.get("COVALENT_LOGDIR")
-        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
+        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache/covalent"))),
         "db_path": os.environ.get("COVALENT_DATABASE")
         or (
             (os.environ.get("XDG_DATA_HOME") or (os.environ["HOME"] + "/.local/share"))
@@ -85,9 +85,9 @@ def get_default_dispatcher_config():
 def get_default_dask_config():
     return {
         "cache_dir": os.environ.get("COVALENT_CACHE_DIR")
-        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
+        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache/covalent"))),
         "log_dir": os.environ.get("COVALENT_LOGDIR")
-        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
+        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache/covalent"))),
         "mem_per_worker": "auto",
         "threads_per_worker": 1,
         "num_workers": dask.system.CPU_COUNT,
@@ -113,7 +113,7 @@ def get_default_ui_config():
         else 48008,
         "dev_port": 49009,
         "log_dir": os.environ.get("COVALENT_LOGDIR")
-        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
+        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache/covalent"))),
     }
 
 

@@ -175,7 +175,7 @@ Dispatching jobs to the server
 
 .. _results_interface:
 
-Results
+Result
 """"""""""""""
 
 Collecting and managing results

@@ -34,8 +34,6 @@ from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import (
     WAIT_EDGE_NAME,
     DefaultMetadataValues,
-    electron_dict_prefix,
-    electron_list_prefix,
     parameter_prefix,
     prefix_separator,
     sublattice_prefix,
@@ -319,15 +317,17 @@ class Electron:
             active_lattice.electron_outputs.pop(0)
             return output.get_deserialized()
 
-        # Setting metadata for default values according to lattice's metadata
-        # If metadata is default, then set it to lattice's default
+        # Setting metadata for default values according to lattice's metadata.
         for k in self.metadata:
             if (
                 k not in consumable_constraints
                 and k in DEFAULT_METADATA_VALUES
-                and self.get_metadata(k) is DEFAULT_METADATA_VALUES[k]
+                and not self.get_metadata(k)
             ):
-                self.set_metadata(k, active_lattice.get_metadata(k))
+                meta = active_lattice.get_metadata(k)
+                if not meta:
+                    meta = DEFAULT_METADATA_VALUES[k]
+                self.set_metadata(k, meta)
 
         # Add a node to the transport graph of the active lattice
         self.node_id = active_lattice.transport_graph.add_node(
@@ -394,6 +394,11 @@ class Electron:
             None
         """
 
+        collection_metadata = encode_metadata(DEFAULT_METADATA_VALUES.copy())
+        if "executor" in self.metadata:
+            collection_metadata["executor"] = self.metadata["executor"]
+            collection_metadata["executor_data"] = self.metadata["executor_data"]
+
         if isinstance(param_value, Electron):
             transport_graph.add_edge(
                 param_value.node_id,
@@ -404,15 +409,10 @@ class Electron:
             )
 
         elif isinstance(param_value, list):
-            list_node = self.add_collection_node_to_graph(transport_graph, electron_list_prefix)
-
-            for index, v in enumerate(param_value):
-                self.connect_node_with_others(
-                    list_node, param_name, v, "kwarg", index, transport_graph
-                )
-
+            list_electron = Electron(function=_auto_list_node, metadata=collection_metadata)
+            list_electron(*param_value)
             transport_graph.add_edge(
-                list_node,
+                list_electron.node_id,
                 node_id,
                 edge_name=param_name,
                 param_type=param_type,
@@ -420,13 +420,10 @@ class Electron:
             )
 
         elif isinstance(param_value, dict):
-            dict_node = self.add_collection_node_to_graph(transport_graph, electron_dict_prefix)
-
-            for k, v in param_value.items():
-                self.connect_node_with_others(dict_node, k, v, "kwarg", None, transport_graph)
-
+            dict_electron = Electron(function=_auto_dict_node, metadata=collection_metadata)
+            dict_electron(**param_value)
             transport_graph.add_edge(
-                dict_node,
+                dict_electron.node_id,
                 node_id,
                 edge_name=param_name,
                 param_type=param_type,
@@ -520,15 +517,13 @@ def electron(
     _func: Optional[Callable] = None,
     *,
     backend: Optional[str] = None,
-    executor: Optional[
-        Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
-    ] = DEFAULT_METADATA_VALUES["executor"],
+    executor: Optional[Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]] = None,
     # Add custom metadata fields here
     files: List[FileTransfer] = [],
-    deps_bash: Union[DepsBash, List, str] = DEFAULT_METADATA_VALUES["deps"].get("bash", []),
-    deps_pip: Union[DepsPip, list] = DEFAULT_METADATA_VALUES["deps"].get("pip", None),
-    call_before: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_before"],
-    call_after: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_after"],
+    deps_bash: Union[DepsBash, List, str] = None,
+    deps_pip: Union[DepsPip, list] = None,
+    call_before: Union[List[DepsCall], DepsCall] = [],
+    call_after: Union[List[DepsCall], DepsCall] = [],
 ) -> Callable:
     """Electron decorator to be called upon a function. Returns the wrapper function with the same functionality as `_func`.
 
@@ -566,22 +561,23 @@ def electron(
     internal_call_before_deps = []
     internal_call_after_deps = []
 
-    for file_transfer in files:
-        _file_transfer_pre_hook_, _file_transfer_call_dep_ = file_transfer.cp()
+    if files:
+        for file_transfer in files:
+            _file_transfer_pre_hook_, _file_transfer_call_dep_ = file_transfer.cp()
 
-        # pre-file transfer hook to create any necessary temporary files
-        internal_call_before_deps.append(
-            DepsCall(
-                _file_transfer_pre_hook_,
-                retval_keyword=RESERVED_RETVAL_KEY__FILES,
-                override_reserved_retval_keys=True,
+            # pre-file transfer hook to create any necessary temporary files
+            internal_call_before_deps.append(
+                DepsCall(
+                    _file_transfer_pre_hook_,
+                    retval_keyword=RESERVED_RETVAL_KEY__FILES,
+                    override_reserved_retval_keys=True,
+                )
             )
-        )
 
-        if file_transfer.order == Order.AFTER:
-            internal_call_after_deps.append(DepsCall(_file_transfer_call_dep_))
-        else:
-            internal_call_before_deps.append(DepsCall(_file_transfer_call_dep_))
+            if file_transfer.order == Order.AFTER:
+                internal_call_after_deps.append(DepsCall(_file_transfer_call_dep_))
+            else:
+                internal_call_before_deps.append(DepsCall(_file_transfer_call_dep_))
 
     if isinstance(deps_pip, DepsPip):
         deps["pip"] = deps_pip
@@ -654,3 +650,11 @@ def to_decoded_electron_collection(**x):
         return TransportableObject.deserialize_list(collection)
     elif isinstance(collection, dict):
         return TransportableObject.deserialize_dict(collection)
+
+
+def _auto_list_node(*args, **kwargs):
+    return list(args)
+
+
+def _auto_dict_node(*args, **kwargs):
+    return dict(kwargs)
