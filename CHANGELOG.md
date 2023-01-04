@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Reverted nightly frequency back to once a day
+
 ### Docs
 
 - Updated compatibility matrix
