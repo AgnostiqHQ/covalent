@@ -33,11 +33,11 @@ If you are using Covalent v0.110.2 or later you can upgrade to Covalent v0.177.0
      $ pip install covalent==0.202.0 --upgrade
      $ pip show covalent | grep Version
      Version: 0.202.0
-     
+
 4. Migrate the database.
 
   .. code:: bash
-  
+
      $ covalent db migrate
      INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
      INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
@@ -48,7 +48,7 @@ If you are using Covalent v0.110.2 or later you can upgrade to Covalent v0.177.0
 5. Start the server.
 
   .. code:: bash
-  
+
      $ covalent start
      Covalent server has started at http://localhost:48008
 
