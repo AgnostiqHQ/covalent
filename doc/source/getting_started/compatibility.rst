@@ -107,7 +107,7 @@ v0.202.0
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Beta testing.</td>
           </tr>
         <tr style="background-color: white;">
-          <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Fedora 35</td>
+          <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Fedora 36</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.8</td>
           <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
           <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Officially supported.</td>
