@@ -4,7 +4,7 @@ The User Interface
 
 This User Interface Reference describes the functionality available in the Covalent GUI, organized by screen.
 
-For help performing specific tasks using the Covalent GUI, refer to the :ref:`User Interface` portion of the :doc:`../how_to/index`.
+For help performing specific tasks using the Covalent GUI, refer to the :doc:`../how_to/index`.
 
 The following screens are available in the Covalent GUI:
 
