@@ -15,7 +15,7 @@ The first part, {doc}`basics`, introduces the key code elements that make up Cov
 
 :::::{grid-item-card}
 
-::::{grid} 1 2 4 4
+::::{grid} 1 2 3 3
 
 :::{grid-item-card} `@electron`
 :link: basic_primitives_electrons
@@ -41,6 +41,15 @@ A workflow composed of tasks
 :img-top: images/dispatch.png
 
 A function to submit a workflow to the Covalent server
+
+:::
+
+:::{grid-item-card} `executor`
+:link: basic_primitives_executor
+:link-type: ref
+:img-top: images/executor.jpg
+
+A plugin to execute individual tasks
 
 :::
 

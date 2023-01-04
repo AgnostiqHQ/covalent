@@ -14,10 +14,10 @@ Address
 Port
     The port on which the dispatcher receives Covalent API calls. The default is port 48008 (this port also serves the Covalent GUI).
 Cache Directory
-    The directory used by the dispatcher to temporarily ?? cache  ??
+    The directory used by the dispatcher to cache serialized data and results.
 Results Directory
     The name of the subdirectory, relative to a dispatch-specific directory in the execution directory, where the results of the dispatch are stored.
 Log Directory
-    Directory path of the dispatch log.
+    Directory path of the Covalent log.
 DB Path
     File path of the SQLite file containing the Covalent database.
