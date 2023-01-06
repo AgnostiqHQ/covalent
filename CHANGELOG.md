@@ -10,6 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed 
 
 - Optimization of logs on the GUI for large log file sizes. 
+## [0.210.0-rc.0] - 2023-01-05
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Changed
+
+- Reverted nightly frequency back to once a day
+
+### Docs
+
+- Updated compatibility matrix
 
 ## [0.209.1-rc.0] - 2022-12-15
 
