@@ -59,7 +59,9 @@ class LocalDispatcher(BaseDispatcher):
         """
 
         if dispatcher_addr is None:
-            dispatcher_addr = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
 
         @wraps(orig_lattice)
         def wrapper(*args, **kwargs) -> str:
@@ -111,7 +113,9 @@ class LocalDispatcher(BaseDispatcher):
         """
 
         if dispatcher_addr is None:
-            dispatcher_addr = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
 
         @wraps(lattice)
         def wrapper(*args, **kwargs) -> Result:

@@ -95,7 +95,9 @@ def _get_result_from_dispatcher(
     """
 
     if dispatcher_addr is None:
-        dispatcher_addr = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+        dispatcher_addr = (
+            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+        )
 
     retries = int(EXTREME) if wait else 5
 
