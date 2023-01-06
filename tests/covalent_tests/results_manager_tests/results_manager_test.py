@@ -41,9 +41,9 @@ def test_get_result_from_dispatcher(mocker):
     mock_response.append(Mock(status=200, msg=HTTPMessage()))
     getconn_mock.return_value.getresponse.side_effect = mock_response
     dispatch_id = "9d1b308b-4763-4990-ae7f-6a6e36d35893"
-    dispatcher = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+    dispatcher_addr = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
     _get_result_from_dispatcher(
-        dispatch_id, wait=wait.LONG, dispatcher=dispatcher, status_only=False
+        dispatch_id, wait=wait.LONG, dispatcher_addr=dispatcher_addr, status_only=False
     )
     assert (
         getconn_mock.return_value.request.mock_calls
