@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- The range of `networkx` versions in requirements.txt weren't compatible with each other, thus it is pinned to `2.8.6` now
+
+### Added
+
+- Added `dispatcher_addr` argument to `ct.get_result` similar to `ct.dispatch` so that it doesn't always fallback to using the default configured address
+
+
 ## [0.210.0-rc.0] - 2023-01-05
 
 ### Authors
