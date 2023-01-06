@@ -20,11 +20,11 @@
 
 
 import codecs
+import contextlib
 import os
 from typing import Dict, List, Optional, Union
 
 import cloudpickle as pickle
-import contextlib
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
