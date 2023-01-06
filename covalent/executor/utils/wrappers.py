@@ -23,7 +23,6 @@ Helper functions for the local executor
 """
 
 import io
-import multiprocessing as mp
 import traceback
 from contextlib import redirect_stderr, redirect_stdout
 from typing import Any, Callable, Dict, List, Tuple
@@ -40,16 +39,3 @@ def io_wrapper(fn: Callable, args: List, kwargs: Dict) -> Tuple[Any, str, str, s
             output = None
             tb = "".join(traceback.TracebackException.from_exception(ex).format())
     return output, stdout.getvalue(), stderr.getvalue(), tb
-
-
-def local_wrapper(fn: Callable, args: List, kwargs: Dict, q: mp.Queue):
-    """Wrapper function for use with LocalExecutor
-
-    Sends function output back to the main dispatcher process through
-    a multiprocessing queue
-
-    """
-
-    output, stdout, stderr, tb = io_wrapper(fn, args, kwargs)
-
-    q.put((output, stdout, stderr, tb))
