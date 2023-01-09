@@ -19,7 +19,7 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
-import { useEffect, useRef, useState, createRef } from 'react'
+import { useEffect, useRef, useState, createRef, memo, useMemo } from 'react'
 import { useScreenshot, createFileName } from "use-react-screenshot"
 import ReactFlow, {
   MiniMap,
@@ -182,24 +182,61 @@ const LatticeGraph = ({
 
 
   // highlight links of selected nodes
-  const getAllIncomers = (node, elements) => {
-    return getIncomers(node, elements).reduce(
-      (memo, incomer) => [
-        ...memo,
-        incomer,
-        ...getAllIncomers(incomer, elements),
-      ],
+  // const getAllIncomers = (node, elements) => {
+  //   return getIncomers(node, elements).reduce(
+  //     (memo, incomer) => [
+  //       ...memo,
+  //       incomer,
+  //       ...getAllIncomers(incomer, elements),
+  //     ],
+  //     []
+  //   )
+  // }
+
+  const getAllIncomers = (node, elements, prevIncomers = []) => {
+    const incomers = getIncomers(node, elements);
+    const result = incomers.reduce(
+      (memo, incomer) => {
+        memo.push(incomer);
+
+        if ((prevIncomers.findIndex(n => n.id === incomer.id) === -1)) {
+          prevIncomers.push(incomer);
+
+          getAllIncomers(incomer, elements, prevIncomers).forEach((foundNode) => {
+            memo.push(foundNode);
+
+            if ((prevIncomers.findIndex(n => n.id === foundNode.id) === -1)) {
+              prevIncomers.push(incomer);
+
+            }
+          });
+        }
+        return memo;
+      },
       []
-    )
+    );
+    return result;
   }
 
-  const getAllOutgoers = (node, elements) => {
-    return getOutgoers(node, elements).reduce(
-      (memo, outgoer) => [
-        ...memo,
-        outgoer,
-        ...getAllOutgoers(outgoer, elements),
-      ],
+  const getAllOutgoers = (node, elements, prevOutgoers = []) => {
+    const outgoers = getOutgoers(node, elements);
+    return outgoers.reduce(
+      (memo, outgoer) => {
+        memo.push(outgoer);
+
+        if ((prevOutgoers.findIndex(n => n.id === outgoer.id) === -1)) {
+          prevOutgoers.push(outgoer);
+
+          getAllOutgoers(outgoer, elements, prevOutgoers).forEach((foundNode) => {
+            memo.push(foundNode);
+
+            if ((prevOutgoers.findIndex(n => n.id === foundNode.id) === -1)) {
+              prevOutgoers.push(foundNode);
+            }
+          });
+        }
+        return memo;
+      },
       []
     )
   }
@@ -243,6 +280,7 @@ const LatticeGraph = ({
     }
   }
 
+
   useEffect(() => {
     if (!hasSelectedNode) resetNodeStyles()
   }, [hasSelectedNode])
@@ -263,6 +301,9 @@ const LatticeGraph = ({
     })
   }
 
+  const nodeTypes = useMemo(() => ({ electron: ElectronNode, parameter: ParameterNode }), []);
+  const edgeTypes = useMemo(() => ({ directed: DirectedEdge }), []);
+
   return (
     <>
       {elements?.length > 0 && (
@@ -270,8 +311,8 @@ const LatticeGraph = ({
           <ReactFlow
             ref={ref_chart}
             data-testid="lattice__graph"
-            nodeTypes={{ electron: ElectronNode, parameter: ParameterNode }}
-            edgeTypes={{ directed: DirectedEdge }}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
             nodesDraggable={nodesDraggable}
             nodesConnectable={false}
             elements={elements}
@@ -350,4 +391,4 @@ const LatticeGraph = ({
   )
 }
 
-export default LatticeGraph
+export default memo(LatticeGraph)

@@ -101,7 +101,6 @@ def _result_from(lattice_record: Lattice) -> Result:
     name = lattice_record.name
     executor = lattice_record.executor
     workflow_executor = lattice_record.workflow_executor
-    results_dir = lattice_record.results_dir
     num_nodes = lattice_record.electron_num
 
     attributes = {
@@ -117,7 +116,6 @@ def _result_from(lattice_record: Lattice) -> Result:
             "deps": deps,
             "call_before": call_before,
             "call_after": call_after,
-            "results_dir": results_dir,
         },
         "args": inputs["args"],
         "kwargs": inputs["kwargs"],
@@ -138,7 +136,6 @@ def _result_from(lattice_record: Lattice) -> Result:
 
     result = Result(
         lat,
-        results_dir,
         dispatch_id=lattice_record.dispatch_id,
     )
     result._root_dispatch_id = lattice_record.root_dispatch_id

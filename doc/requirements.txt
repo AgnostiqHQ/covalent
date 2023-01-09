@@ -14,6 +14,7 @@ sphinx-autodoc-typehints
 sphinx-automodapi==0.13
 sphinx-click
 sphinx-copybutton==0.3.3
+sphinx-design
 sphinx-gallery==0.9.0
 sphinx-inline-tabs==2021.3.28b7
 sphinx-panels==0.6.0
