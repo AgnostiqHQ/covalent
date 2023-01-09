@@ -16,4 +16,4 @@ Port
 Dev Port
     ??
 Log Directory
-    The directory path of the UI log, :code:`covalent_ui.log`. The process ID of the UI is also stored here.
+    The directory path of the Covalent log.
