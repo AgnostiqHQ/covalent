@@ -1,6 +1,6 @@
 .. _awslambda_executor:
 
-🔌 AWS Lambda Executor
+AWS Lambda Executor
 """""""""""""""""""""""""""
 
 .. image:: AWS_Lambda.jpg

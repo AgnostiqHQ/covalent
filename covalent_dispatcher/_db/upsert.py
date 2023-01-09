@@ -18,11 +18,13 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import os
 from datetime import datetime, timezone
 from pathlib import Path
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
+from covalent._shared_files.config import get_config
 
 from . import models
 from .datastore import workflow_db
@@ -44,7 +46,7 @@ ELECTRON_VALUE_FILENAME = "value.pkl"
 ELECTRON_EXECUTOR_DATA_FILENAME = "executor_data.pkl"
 ELECTRON_STDOUT_FILENAME = "stdout.log"
 ELECTRON_STDERR_FILENAME = "stderr.log"
-ELECTRON_INFO_FILENAME = "info.log"
+ELECTRON_ERROR_FILENAME = "error.log"
 ELECTRON_RESULTS_FILENAME = "results.pkl"
 ELECTRON_DEPS_FILENAME = "deps.pkl"
 ELECTRON_CALL_BEFORE_FILENAME = "call_before.pkl"
@@ -84,7 +86,8 @@ def _lattice_data(result: Result, electron_id: int = None):
         workflow_func_string = None
 
     # Store all lattice info that belongs in filenames in the results directory
-    data_storage_path = Path(result.results_dir) / result.dispatch_id
+    results_dir = os.environ.get("COVALENT_DATA_DIR") or get_config("dispatcher.results_dir")
+    data_storage_path = os.path.join(results_dir, result.dispatch_id)
     for filename, data in [
         (LATTICE_FUNCTION_FILENAME, result.lattice.workflow_function),
         (LATTICE_FUNCTION_STRING_FILENAME, workflow_func_string),
@@ -138,7 +141,7 @@ def _lattice_data(result: Result, electron_id: int = None):
             "call_after_filename": LATTICE_CALL_AFTER_FILENAME,
             "cova_imports_filename": LATTICE_COVA_IMPORTS_FILENAME,
             "lattice_imports_filename": LATTICE_LATTICE_IMPORTS_FILENAME,
-            "results_dir": result.results_dir,
+            "results_dir": results_dir,
             "root_dispatch_id": result.root_dispatch_id,
             "created_at": datetime.now(timezone.utc),
             "updated_at": datetime.now(timezone.utc),
@@ -169,7 +172,10 @@ def _electron_data(result: Result):
         app_log.debug("upsert_electron_data session success")
         for node_id in dirty_nodes:
 
-            node_path = Path(result.results_dir) / result.dispatch_id / f"node_{node_id}"
+            results_dir = os.environ.get("COVALENT_DATA_DIR") or get_config(
+                "dispatcher.results_dir"
+            )
+            node_path = Path(os.path.join(results_dir, result.dispatch_id, f"node_{node_id}"))
 
             if not node_path.exists():
                 node_path.mkdir()
@@ -193,9 +199,9 @@ def _electron_data(result: Result):
             except KeyError:
                 node_stderr = None
             try:
-                node_info = tg.get_node_value(node_id, "info")
+                node_error = tg.get_node_value(node_id, "error")
             except KeyError:
-                node_info = None
+                node_error = None
             try:
                 node_output = tg.get_node_value(node_id, "output")
             except KeyError:
@@ -224,7 +230,7 @@ def _electron_data(result: Result):
                 ),
                 (ELECTRON_STDOUT_FILENAME, node_stdout),
                 (ELECTRON_STDERR_FILENAME, node_stderr),
-                (ELECTRON_INFO_FILENAME, node_info),
+                (ELECTRON_ERROR_FILENAME, node_error),
                 (ELECTRON_RESULTS_FILENAME, node_output),
             ]:
                 store_file(node_path, filename, data)
@@ -260,7 +266,7 @@ def _electron_data(result: Result):
                     "value_filename": ELECTRON_VALUE_FILENAME,
                     "stdout_filename": ELECTRON_STDOUT_FILENAME,
                     "stderr_filename": ELECTRON_STDERR_FILENAME,
-                    "info_filename": ELECTRON_INFO_FILENAME,
+                    "error_filename": ELECTRON_ERROR_FILENAME,
                     "deps_filename": ELECTRON_DEPS_FILENAME,
                     "call_before_filename": ELECTRON_CALL_BEFORE_FILENAME,
                     "call_after_filename": ELECTRON_CALL_AFTER_FILENAME,

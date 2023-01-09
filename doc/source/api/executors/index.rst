@@ -22,6 +22,7 @@ Plugins
    slurm
    awsbraket
    awslambda
+   awsec2
    awsecs
    awsbatch
 

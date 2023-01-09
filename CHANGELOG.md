@@ -7,19 +7,190 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+- Changed decode-uri-component package version on webapp yarn-lock file.
+- Changed json5 package version on webapp yarn-lock file.
+
+## [0.210.0-rc.0] - 2023-01-05
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Changed
+
+- Reverted nightly frequency back to once a day
+
+### Docs
+
+- Updated compatibility matrix
+
+## [0.209.1-rc.0] - 2022-12-15
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- dwelsch-esi <116022979+dwelsch-esi@users.noreply.github.com>
+- Co-authored-by: dwelsch-memverge <david.welsch@memverge.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
+- RaviPsiog <111348352+RaviPsiog@users.noreply.github.com>
+- Co-authored-by: RaviPsiog <ravieja.gurram@psiog.com>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Fixed
+
+- Removed merge conflict symbols in changelog
+
+## [0.209.0-rc.0] - 2022-12-15
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- dwelsch-esi <116022979+dwelsch-esi@users.noreply.github.com>
+- Co-authored-by: dwelsch-memverge <david.welsch@memverge.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
+- RaviPsiog <111348352+RaviPsiog@users.noreply.github.com>
+- Co-authored-by: RaviPsiog <ravieja.gurram@psiog.com>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Added
+
+- Adding support for PostgresQL DB backend
+- Added check for `COVALENT_DATABASE_URL`, if exists connect sqlalchemy engine using that
+- Adding `COVALENT_DATABASE_USER` and `COVALENT_DATABASE_PASSWORD` environment variables
+- Adding `COVALENT_DATABASE_HOSTNAME` and `COVALENT_DATABASE_PORT` environment variables for easy configuration
+
+### Changed
+
+- Updated `requirements.txt` to include `pyscopg2`
+- Refactored execution.py into loosely coupled modular pieces
+
+### Fixed
+
+- Build graph now sets all unset lattice constraints from defaults
+- Fixed all failing functional tests
+- Fixed local executor tests on MacOS by adding ProcessPoolExecutor
+
+### Changed
+
+- Updated `directory` like default environment variable paths to avoid creating redundant nested directories when self-hosting
+
+### Docs
+
+- Adding `Deployment` section for self-hosting guide
+
+### Docs
+
+- Rewrote Concepts section in docs
+- Split Concepts into API, server, and UI sections
+- Added new examples and graphics for Concepts
+
+### Fixed
+
+- Respecting specified AWS profile & region in remote executed S3 file transfers, defaulting to env vars of execution backend
+
+### Added
+
+- Added `TaskRuntimeError` exception for executor plugin implementations to signal to Covalent that a task raised an
+  unhandled exception while running in the executor backend.
+- Added environment variable for a remote database backend
+- Added support for mysql and postgresql
+
+### Changed
+
+- Docs for Covalent's Slurm plugin updated with explanation for optional `srun` parameters.
+- Electron errors are segregated by type; task runtime errors are
+  stored in `stderr` while the `error` attribute of a node is reserved
+  for exceptions raised by Covalent itself.
+- When tasks fail in a workflow, the Lattice ErrorCard in the UI summarizes the failed tasks.
+
+### Fixed
+
+- Electrons will inherit the lattice executors.
+- Sublattices inherit the parent lattice executor.
+- When several electrons are running concurrently, their stdout and stderr are stored in the correct graph nodes.
+- Electron errors now appear in the Electron ErrorCard when one clicks on a failed task in the UI.
+- When an electron raises an exception during execution, the local and dask executors now try to recover any output that was already
+  written.
+- Fixed functional tests.
+- Added `requirements-client.txt` to MANIFEST file
+- Respecting specified AWS profile & region in remote executed S3 file transfers, defaulting to env vars of execution backend
+- Fixed local executor tests on MacOS (second attempt)
+- The `initialize_results_dir` method attempts to use an environment variable instead of the results directory in the payload
+- Modified certain sqlalchemy commands for postgres compatibility
+- Removed references to results_dir in the payload
+
+### Docs
+
+
+- Added DNN tutorial
+- Updated AWS Plugins install instructions
+- Updated AWS Plugins documentation (minor fixes)
+- Rewrote intro material in README.
+- Changed "Citation" in the README.
+- Renamed "Release Notes" to "What's New?" in the README. Updated What's New with a description of the newest GUI functionality.
+- Added "Quick Start" guide.
+- Updated and reorganized doc landing page.
+- Rewrote "Getting Started" page.
+- Broke out "Installing from Source" instructions to separate page.
+- Corrected some API class names in headers.
+- Added an executors-and-UI graphic.
+- Adding `Deployment` section for self-hosting guide
+
+
+## [0.208.0-rc.0] - 2022-11-05
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Casey Jao <casey@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+
 ### Operations
 
+- Reverted nightly schedule back to daily at 4:00am
 - Added Alejandro to PAUL_BLART group to allow trigerring of releases
 
 ### Added
 
 - Support for transferring the contents of folders to and from S3 buckets using the file transfer module.
 
+### Docs
+
+- Rewrote intro material in README.
+- Changed "Citation" in the README.
+- Renamed "Release Notes" to "What's New?" in the README. Updated What's New with a description of the newest GUI functionality.
+
 ### Fixed
 
+- Folder transfer unit test.
 - Folder transfer download bug
 - Result objects now print correctly when nodes fail
 - Replaced AttributeError with a meaningful error for non-lattice dispatches
+
+### Changed
+
+- Width of lattice name column on dispatch list GUI.
+- Optimzing larger graphs for better performance.
 
 ## [0.207.0-rc.0] - 2022-10-26
 
@@ -161,7 +332,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Will Cunningham <wjcunningham7@gmail.com>
 
 
-### Added 
+### Added
 
 - Ability to use terminal on the GUI.
 
@@ -414,7 +585,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ConfigManager` is now thread safe since it is initialized whenever needed instead of one object being accessed by multiple processes/threads leading to corruption of the config file.
 - Using `contextlib.supress` to ignore `psutil.NoSuchProcess` errors instead of `try/except` with `pass`.
 - Filter workflow dispatches by status on the GUI.
-- Delete all workflow dispatches present in the database from the GUI and add filter level deletion of workflow dispatches as well. 
+- Delete all workflow dispatches present in the database from the GUI and add filter level deletion of workflow dispatches as well.
 - Theme changes as part of latest wireframe.
 - Factory functions to generate configurations and default metadata at the time when required. This is because certain values like default executors are only determined when the covalent server starts.
 - Respecting the configuration options like default executor, no. of workers, developer mode, etc. when restarting the server.
@@ -705,7 +876,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added reusable version action
 
 - Added read the docs for user interface
- 
+
 ## [0.187.0] - 2022-08-28
 
 ### Authors
@@ -825,7 +996,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Electron metadata is serialized earlier during workflow construction
   to reduce unexpected executor pip requirements.
-  
+
 ### Operations
 
 - Updating conditional logic for the different steps in `release` workflow
@@ -1321,7 +1492,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Configured default dask configuration options in `defaults.py`
 
-### Fixed 
+### Fixed
 
 - Overwriting config address issue.
 
@@ -2011,7 +2182,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- New fields to the decomposed result object Database: 
+- New fields to the decomposed result object Database:
 
 ## [0.131.0] - 2022-07-13
 
@@ -2279,7 +2450,7 @@ Casey Jao <casey@agnostiq.ai>
 
 ## [0.119.0] - 2022-07-03
 ### Authors
-@cjao 
+@cjao
 
 
 ### Added
@@ -2288,7 +2459,7 @@ Casey Jao <casey@agnostiq.ai>
 
 ## [0.118.0] - 2022-07-02
 ### Authors
-@AlejandroEsquivel 
+@AlejandroEsquivel
 
 
 ### Added
@@ -2297,7 +2468,7 @@ Casey Jao <casey@agnostiq.ai>
 
 ## [0.117.0] - 2022-07-02
 ### Authors
-@Emmanuel289 
+@Emmanuel289
 
 
 ### Added
@@ -2306,7 +2477,7 @@ Casey Jao <casey@agnostiq.ai>
 
 ## [0.116.0] - 2022-06-29
 ### Authors
-@Prasy12 
+@Prasy12
 
 ### Changed
 
@@ -2318,7 +2489,7 @@ Casey Jao <casey@agnostiq.ai>
 
 ## [0.115.0] - 2022-06-28
 ### Authors
-@cjao 
+@cjao
 
 
 ### Added
@@ -2333,7 +2504,7 @@ Casey Jao <casey@agnostiq.ai>
 
 ## [0.114.0] - 2022-06-23
 ### Authors
-@dependabot[bot] 
+@dependabot[bot]
 
 
 ### Changed

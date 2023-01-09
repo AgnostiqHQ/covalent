@@ -50,6 +50,7 @@ from covalent_dispatcher._db.write_result_to_db import (
     insert_electrons_data,
     insert_lattices_data,
     load_file,
+    resolve_electron_id,
     store_file,
     update_electrons_data,
     update_lattice_completed_electron_num,
@@ -71,7 +72,7 @@ RESULTS_FILENAME = "results.pkl"
 VALUE_FILENAME = "value.pkl"
 STDOUT_FILENAME = "stdout.log"
 STDERR_FILENAME = "stderr.log"
-INFO_FILENAME = "info.log"
+ERROR_FILENAME = "error.log"
 TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
 DEPS_FILENAME = "deps.pkl"
 CALL_BEFORE_FILENAME = "call_before.pkl"
@@ -204,7 +205,7 @@ def get_electron_kwargs(
     value_filename=VALUE_FILENAME,
     stdout_filename=STDOUT_FILENAME,
     stderr_filename=STDERR_FILENAME,
-    info_filename=INFO_FILENAME,
+    error_filename=ERROR_FILENAME,
     deps_filename=DEPS_FILENAME,
     call_before_filename=CALL_BEFORE_FILENAME,
     call_after_filename=CALL_AFTER_FILENAME,
@@ -231,7 +232,7 @@ def get_electron_kwargs(
         "value_filename": value_filename,
         "stdout_filename": stdout_filename,
         "stderr_filename": stderr_filename,
-        "info_filename": info_filename,
+        "error_filename": error_filename,
         "deps_filename": deps_filename,
         "call_before_filename": call_before_filename,
         "call_after_filename": call_after_filename,
@@ -676,6 +677,39 @@ def test_write_sublattice_electron_id(test_db, mocker):
         assert rows[0].dispatch_id == "dispatch_1"
         assert rows[0].electron_id is None
         assert rows[1].dispatch_id == "dispatch_2"
+
+
+def test_resolve_electron_id(test_db, mocker):
+    """Test looking up dispatch_id and node_id corresponding to an electron_id"""
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    cur_time = dt.now(timezone.utc)
+    insert_lattices_data(
+        **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
+    )
+
+    # Create electron records.
+    electron_ids = []
+    cur_time = dt.now(timezone.utc)
+    for (name, node_id) in [
+        ("task_1", 0),
+        (":parameter:1", 1),
+        (":parameter:2", 2),
+        (":sublattice:task_2", 3),  # Sublattice node id
+        (":parameter:2", 4),
+    ]:
+        electron_kwargs = get_electron_kwargs(
+            name=name,
+            transport_graph_node_id=node_id,
+            created_at=cur_time,
+            updated_at=cur_time,
+        )
+        eid = insert_electrons_data(**electron_kwargs)
+        electron_ids.append(eid)
+
+    dispatch_id, node_id = resolve_electron_id(electron_ids[3])
+    assert dispatch_id == "dispatch_1"
+    assert node_id == 3
 
 
 def test_store_file_invalid_extension():
