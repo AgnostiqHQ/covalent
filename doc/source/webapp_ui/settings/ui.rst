@@ -16,4 +16,4 @@ Port
 Dev Port
     A port for contributors to use with debugging code.
 Log Directory
-    The directory path of the Covalent log. 
+    The directory path of the Covalent log.
