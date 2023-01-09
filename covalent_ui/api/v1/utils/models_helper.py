@@ -56,4 +56,4 @@ class TerminalHelper(Enum):
     backspace = "\x7f"
     delete = "\x1b[3~"
     ctrl_d = "\x04"
-    exit_regex = r"^\sexit[\sA-Za-z0-9!-\/:-@[-`{-~]*\\r$"
+    exit_regex = r"^[\s]*exit[\sA-Za-z0-9!-\/:-@[-`{-~]*\\r$"
