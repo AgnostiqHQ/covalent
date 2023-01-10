@@ -2,13 +2,13 @@
 Deleting Dispatches
 ======================
 
-Select checkboxes on the left of dispatch lines to delete records of those dispatches.
+Select checkboxes on the left of dispatch lines to delete those dispatches.
 
-.. warning:: Deleting a dispatch removes the dispatch and its results permanently from the database. Deletion cannot be undone.
+.. note:: Deleting a dispatch removes the dispatch and its results only from the UI. The dispatch is still in the database. This behavior could change in a future version of Covalent.
 
 .. image:: ../../../_static/ui_list_select_delete.png
 
-When one or more lines are selected, the |delete| icon appears above the dispatch list. Click the icon to delete the selected records.
+When one or more lines are selected, the |delete| icon appears above the dispatch list. Click the icon to delete the selected records from the UI.
 
 Alternatively, click the dropdown arrow to the left of the Dispatch ID heading. If all lines are currently visible ("Running", "Completed", and "Failed" filters unselected) then the dropdown menu contains the following Delete options:
 
