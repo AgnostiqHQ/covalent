@@ -24,10 +24,10 @@ Directory
     The folder path where the result objects are stored for the lattice. Click |copy| to copy the folder path.
 
 Input
-   The input parameters passed to the lattice function. Click the parameter string to copy a serialized version of the input. You can unserialize the object with the Python :code:`pickle` module.
+   The input parameters passed to the lattice function. Click the parameter string to :ref:`copy a serialized representation <pickle_copy>` of the input.
 
 Result
-    The :code:`Result` object returned by the lattice execution. Click the parameter string to copy a serialized version of the result. You can unserialize the object with the Python :code:`pickle` module.
+    The :code:`Result` object returned by the lattice execution. Click the result string to :ref:`copy a serialized representation <pickle_copy>` of the input.
 
 Executor
     The type of executor to which the lattice is assigned.
