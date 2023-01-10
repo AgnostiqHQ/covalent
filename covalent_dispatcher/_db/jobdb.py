@@ -22,12 +22,13 @@
 
 from typing import Dict, List
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from covalent._shared_files import logger
 
 from .datastore import workflow_db
-from .models import Job
+from .models import Electron, Job, Lattice
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -86,3 +87,21 @@ def get_job_records(job_ids: List[int]) -> Dict:
     with workflow_db.session() as session:
         records = list(map(lambda x: txn_get_job_record(session, x), job_ids))
     return records
+
+
+def to_job_ids(dispatch_id: str, task_ids: List[int]) -> List[int]:
+    with workflow_db.session() as session:
+        stmt = select(Lattice).where(Lattice.dispatch_id == dispatch_id)
+        lattice_rec = session.scalars(stmt).first()
+        if not lattice_rec:
+            raise KeyError(f"Invalid dispatch {dispatch_id}")
+
+        stmt = (
+            select(Electron.job_id)
+            .where(Electron.parent_lattice_id == lattice_rec.id)
+            .where(Electron.transport_graph_node_id.in_(task_ids))
+        )
+
+        records = session.scalars(stmt).all()
+
+        return records

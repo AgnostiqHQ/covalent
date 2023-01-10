@@ -29,9 +29,8 @@ from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._workflow.lattice import Lattice
 
-from .._db import load, update, upsert
+from .._db import update, upsert
 from .._db.write_result_to_db import resolve_electron_id
-from .data_modules.shared_data import _task_job_maps
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -161,13 +160,11 @@ def get_result_object(dispatch_id: str) -> Result:
 def _register_result_object(result_object: Result):
     dispatch_id = result_object.dispatch_id
     _registered_dispatches[dispatch_id] = result_object
-    _task_job_maps[dispatch_id] = load.task_job_map(dispatch_id)
     _dispatch_status_queues[dispatch_id] = asyncio.Queue()
 
 
 def finalize_dispatch(dispatch_id: str):
     del _dispatch_status_queues[dispatch_id]
-    del _task_job_maps[dispatch_id]
     del _registered_dispatches[dispatch_id]
 
 

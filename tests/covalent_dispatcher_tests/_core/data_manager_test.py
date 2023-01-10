@@ -34,7 +34,6 @@ from covalent_dispatcher._core.data_manager import (
     _dispatch_status_queues,
     _register_result_object,
     _registered_dispatches,
-    _task_job_maps,
     _update_parent_electron,
     finalize_dispatch,
     get_metadata_for_nodes,
@@ -175,27 +174,18 @@ def test_get_result_object(mocker):
 def test_register_result_object(mocker):
     result_object = get_mock_result()
     dispatch_id = result_object.dispatch_id
-    task_job_map = {0: 1}
-    mock_load = mocker.patch(
-        "covalent_dispatcher._db.load.task_job_map", return_value=task_job_map
-    )
 
     _register_result_object(result_object)
     assert _registered_dispatches[dispatch_id] is result_object
-    assert _task_job_maps[dispatch_id] is task_job_map
     del _registered_dispatches[dispatch_id]
-    del _task_job_maps[dispatch_id]
 
 
 def test_unregister_result_object(mocker):
     result_object = get_mock_result()
     dispatch_id = result_object.dispatch_id
-    task_job_map = {0: 1}
     _registered_dispatches[dispatch_id] = result_object
-    _task_job_maps[dispatch_id] = task_job_map
     finalize_dispatch(dispatch_id)
     assert dispatch_id not in _registered_dispatches
-    assert dispatch_id not in _task_job_maps
 
 
 def test_get_status_queue():

@@ -20,11 +20,22 @@
 
 """Unit tests for the module used to interface with the jobs table"""
 
+from datetime import datetime as dt
+from datetime import timezone
+
 import pytest
 
 from covalent_dispatcher._db.datastore import DataStore
-from covalent_dispatcher._db.jobdb import MissingJobRecordError, get_job_record, update_job_records
-from covalent_dispatcher._db.models import Job
+from covalent_dispatcher._db.jobdb import (
+    MissingJobRecordError,
+    get_job_record,
+    to_job_ids,
+    update_job_records,
+)
+from covalent_dispatcher._db.models import Job, Lattice
+from covalent_dispatcher._db.write_result_to_db import insert_electrons_data, insert_lattices_data
+
+from .write_result_to_db_test import get_electron_kwargs, get_lattice_kwargs
 
 
 @pytest.fixture
@@ -73,3 +84,48 @@ def test_update_job_records(test_db, mocker):
 
     with pytest.raises(MissingJobRecordError):
         update_job_records([{"job_id": 5, "cancel_requested": True}])
+
+
+def test_to_job_ids(test_db, mocker):
+
+    mocker.patch("covalent_dispatcher._db.jobdb.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    cur_time = dt.now(timezone.utc)
+    lattice_kwargs = get_lattice_kwargs(
+        dispatch_id="test_dispatch", created_at=cur_time, updated_at=cur_time, started_at=cur_time
+    )
+    insert_lattices_data(**lattice_kwargs)
+
+    with test_db.session() as session:
+        rows = session.query(Lattice).all()
+        assert len(rows) == 1
+
+    electron_kwargs = {
+        **get_electron_kwargs(
+            parent_dispatch_id="test_dispatch",
+            transport_graph_node_id=0,
+            cancel_requested=False,
+            created_at=cur_time,
+            updated_at=cur_time,
+        )
+    }
+
+    insert_electrons_data(**electron_kwargs)
+
+    electron_kwargs = {
+        **get_electron_kwargs(
+            parent_dispatch_id="test_dispatch",
+            transport_graph_node_id=1,
+            cancel_requested=False,
+            created_at=cur_time,
+            updated_at=cur_time,
+        )
+    }
+
+    insert_electrons_data(**electron_kwargs)
+
+    job_ids = to_job_ids("test_dispatch", [0])
+    assert job_ids == [1]
+
+    job_ids = to_job_ids("test_dispatch", [0, 1])
+    assert job_ids == [1, 2]

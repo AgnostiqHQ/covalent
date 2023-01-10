@@ -22,12 +22,12 @@
 Tests for the job manager
 """
 
+from functools import partial
+
 import pytest
 
 from covalent._workflow.transport import _TransportGraph
 from covalent_dispatcher._core.data_modules.job_manager import (
-    _get_task_job_map,
-    _task_job_maps,
     get_job_metadata,
     set_cancel_requested,
     set_cancel_result,
@@ -42,20 +42,15 @@ def get_mock_tg():
     return tg
 
 
-def test_get_task_job_map():
-    task_job_map = {0: 1, 1: 2}
-    _task_job_maps["dispatch"] = task_job_map
-    assert _get_task_job_map("dispatch") is task_job_map
-    del _task_job_maps["dispatch"]
+def to_job_ids(dispatch_id, task_ids, task_job_map):
+    return list(map(lambda x: task_job_map[x], task_ids))
 
 
 @pytest.mark.asyncio
 async def test_get_job_metadata(mocker):
     task_job_map = {0: 1, 1: 2}
-    mock_get_task_job_map = mocker.patch(
-        "covalent_dispatcher._core.data_modules.job_manager._get_task_job_map",
-        return_value=task_job_map,
-    )
+    mock_to_job_ids = partial(to_job_ids, task_job_map=task_job_map)
+    mocker.patch("covalent_dispatcher._core.data_modules.job_manager.to_job_ids", mock_to_job_ids)
     mock_get = mocker.patch("covalent_dispatcher._core.data_modules.job_manager.get_job_records")
 
     await get_job_metadata("dispatch", 1)
@@ -67,10 +62,8 @@ async def test_get_job_metadata(mocker):
 async def test_set_cancel_requested(mocker):
 
     task_job_map = {0: 1, 1: 2}
-    mock_get_task_job_map = mocker.patch(
-        "covalent_dispatcher._core.data_modules.job_manager._get_task_job_map",
-        return_value=task_job_map,
-    )
+    mock_to_job_ids = partial(to_job_ids, task_job_map=task_job_map)
+    mocker.patch("covalent_dispatcher._core.data_modules.job_manager.to_job_ids", mock_to_job_ids)
 
     mock_update = mocker.patch(
         "covalent_dispatcher._core.data_modules.job_manager.update_job_records"
@@ -90,10 +83,8 @@ async def test_set_job_handle(mocker):
     import json
 
     task_job_map = {0: 1, 1: 2}
-    mock_get_task_job_map = mocker.patch(
-        "covalent_dispatcher._core.data_modules.job_manager._get_task_job_map",
-        return_value=task_job_map,
-    )
+    mock_to_job_ids = partial(to_job_ids, task_job_map=task_job_map)
+    mocker.patch("covalent_dispatcher._core.data_modules.job_manager.to_job_ids", mock_to_job_ids)
 
     mock_update = mocker.patch(
         "covalent_dispatcher._core.data_modules.job_manager.update_job_records"
