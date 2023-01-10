@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1.4
 # Copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
@@ -18,49 +19,168 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-# syntax=docker/dockerfile:1
-FROM python:3.8-slim-bullseye AS build
+# Options are local,pypi,sha
+ARG COVALENT_SOURCE=local
+# Options are sdk,server
+ARG COVALENT_INSTALL_TYPE=sdk
+# Must include a compatible version of Python
+ARG BASE_IMAGE=docker.io/python:3.8-slim-bullseye
 
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends rsync wget \
-  && rm -rf /var/lib/apt/lists/*
+# Global settings
+FROM ${BASE_IMAGE} as base
 
-RUN python -m venv --copies /covalent/.venv \
-  && . /covalent/.venv/bin/activate \
-  && pip install --upgrade pip \
-  && pip install covalent==0.177.0
+ENV PYTHONHASHSEED=random \
+    PYTHONUNBUFFERED=1 \
+    DEBIAN_FRONTEND=noninteractive \
+    BUILDROOT=/build \
+    INSTALLROOT=/app \
+    USER=covalent
 
-FROM python:3.8-slim-bullseye AS prod
-LABEL org.label-schema.name="Covalent Server"
-LABEL org.label-schema.vendor="Agnostiq"
-LABEL org.label-schema.url="https://covalent.xyz"
-LABEL org.label-schema.vcs-url="https://github.com/AgnostiqHQ/covalent"
-LABEL org.label-schema.vcs-ref="f2e85397ea4609df274a38b03e6e17dcbae6bc52" # pragma: allowlist secret
-LABEL org.label-schema.version="0.177.0"
-LABEL org.label-schema.docker.cmd="docker run -it -p 8080:8080 -d covalent:latest"
-LABEL org.label-schema.schema-version=1.0
+USER root
+WORKDIR ${BUILDROOT}
 
-COPY --from=build /usr/bin/rsync /usr/bin/rsync
-COPY --from=build /usr/lib/x86_64-linux-gnu/libpopt.so.0 /usr/lib/x86_64-linux-gnu/libpopt.so.0
+# Tools required for all build patterns
+FROM base AS build_base
 
-COPY --from=build /usr/bin/wget /usr/bin/wget
-COPY --from=build /usr/lib/x86_64-linux-gnu/libpcre2-8.so.0 /usr/lib/x86_64-linux-gnu/libpcre2-8.so.0
-COPY --from=build /usr/lib/x86_64-linux-gnu/libpsl.so.5 /usr/lib/x86_64-linux-gnu/libpsl.so.5
+RUN <<EOL
+  apt-get update
+  apt-get install -y --no-install-recommends \
+    rsync \
+    unzip \
+    wget
+  rm -rf /var/lib/apt/lists/*
+  python -m venv --copies $BUILDROOT/.venv
+  python -m pip install --upgrade pip
+EOL
 
-COPY --from=build /covalent/.venv/ /covalent/.venv
+ENV PATH=$BUILDROOT/.venv/bin:$PATH
 
-RUN useradd -ms /bin/bash ubuntu \
-  && chown ubuntu:users /covalent
+ENTRYPOINT [ "/bin/bash" ]
 
-WORKDIR /covalent
-USER ubuntu
+# Settings required to create an SDK-only container
+FROM build_base as build_sdk
+
+ENV COVALENT_SDK_ONLY True
+
+# Tools required to build Covalent from source
+FROM build_base as build_server
+
+RUN <<EOL
+  apt-get update
+  apt-get install -y --no-install-recommends \
+    curl \
+    gcc
+  curl -sL https://deb.nodesource.com/setup_16.x | bash -
+  apt-get install -y nodejs
+  npm install --global yarn
+  rm -rf /var/lib/apt/lists/*
+EOL
+
+# Copy Covalent from local source
+FROM build_base as covalent_local_src
+
+COPY . $BUILDROOT
+
+# Fetch Covalent from PyPI
+FROM build_base as covalent_pypi_src
+
+ARG COVALENT_RELEASE
+
+RUN python -m pip download --no-deps -d $BUILDROOT/dist covalent==${COVALENT_RELEASE}
+
+# Fetch Covalent from GitHub SHA
+FROM build_base as covalent_sha_src
+
+ARG COVALENT_COMMIT_SHA
+
+RUN <<EOL
+  wget https://github.com/AgnostiqHQ/covalent/archive/${COVALENT_COMMIT_SHA}.zip
+  unzip -d $BUILDROOT ${COVALENT_COMMIT_SHA}.zip
+EOL
+
+# Alias the Covalent source into a new layer
+FROM covalent_${COVALENT_SOURCE}_src as covalent_src
+
+# Build Covalent SDK
+FROM build_sdk as covalent_sdk
+
+COPY --from=covalent_src $BUILDROOT/ $BUILDROOT
+
+RUN <<EOL
+  if [ ! -d $BUILDROOT/dist ] ; then
+    python setup.py sdist
+  fi
+  python -m pip install dist/covalent-*.tar.gz
+EOL
+
+# Build Covalent Server
+FROM build_server as covalent_server
+
+COPY --from=covalent_src $BUILDROOT/ $BUILDROOT
+
+RUN <<EOL
+  if [ ! -d $BUILDROOT/dist ] ; then
+    cd $BUILDROOT/covalent_ui/webapp
+    yarn install --network-timeout 100000
+    yarn build --network-timeout 100000
+    cd $BUILDROOT
+    python setup.py sdist
+  fi
+  python -m pip install dist/covalent-*.tar.gz
+EOL
+
+# Alias installed Covalent
+FROM covalent_${COVALENT_INSTALL_TYPE} as covalent_install
+
+# Production SDK container
+FROM base AS prod_sdk
+
+ARG BUILD_DATE
+ARG BUILD_VERSION
+
+LABEL org.opencontainers.image.title="Covalent ${COVALENT_INSTALL_TYPE}"
+LABEL org.opencontainers.image.vendor="Agnostiq"
+LABEL org.opencontainers.image.url="https://covalent.xyz"
+LABEL org.opencontainers.image.documentation="https://covalent.readthedocs.io"
+LABEL org.opencontainers.image.source="https://github.com/AgnostiqHQ/covalent"
+LABEL org.opencontainers.image.licenses="GNU AGPL v3"
+LABEL org.opencontainers.image.created="${BUILD_DATE}"
+LABEL org.opencontainers.image.version="${BUILD_VERSION}"
+LABEL org.opencontainers.image.revision="${COVALENT_COMMIT_SHA}"
+LABEL org.opencontainers.image.base.name="${BASE_IMAGE}"
+
+COPY --from=build_base /usr/bin/rsync /usr/bin/rsync
+COPY --from=build_base /usr/lib/x86_64-linux-gnu/libpopt.so.0 /usr/lib/x86_64-linux-gnu/libpopt.so.0
+
+COPY --from=covalent_install $BUILDROOT/.venv/ $INSTALLROOT/.venv
+
+RUN <<EOL
+  /usr/sbin/adduser --shell /bin/bash --disabled-password --gecos "" $USER
+  chown -R $USER:$USER $INSTALLROOT
+EOL
+
+WORKDIR $INSTALLROOT
+USER $USER
+ENV PATH=$INSTALLROOT/.venv/bin:$PATH
+
+ENTRYPOINT [ "python" ]
+
+# Production server container
+FROM prod_sdk as prod_server
+
+COPY --from=build_base /usr/bin/wget /usr/bin/wget
+COPY --from=build_base /usr/lib/x86_64-linux-gnu/libpcre2-8.so.0 /usr/lib/x86_64-linux-gnu/libpcre2-8.so.0
+COPY --from=build_base /usr/lib/x86_64-linux-gnu/libpsl.so.5 /usr/lib/x86_64-linux-gnu/libpsl.so.5
+
+ARG COVALENT_SERVER_PORT=48008
 
 ENV COVALENT_SERVER_IFACE_ANY=1
-ENV PATH=/covalent/.venv/bin:$PATH
-EXPOSE 8080
-HEALTHCHECK CMD wget --no-verbose --tries=1 --spider http://localhost:8080 || exit 1
 
-RUN covalent config \
-  && sed -i 's|^results_dir.*$|results_dir = "/covalent/results"|' /home/ubuntu/.config/covalent/covalent.conf
+EXPOSE ${COVALENT_SERVER_PORT}
 
-CMD covalent start --ignore-migrations --port 8080 && bash
+HEALTHCHECK CMD wget --no-verbose --tries=1 --spider http://localhost:${COVALENT_SERVER_PORT} || exit 1
+
+ENTRYPOINT [ "/bin/bash" ]
+CMD [ "covalent", "start", "--port", "${COVALENT_SERVER_PORT}", "&&", "tail", "-f", "/dev/null" ]
+
+FROM prod_${COVALENT_INSTALL_TYPE} as prod
