@@ -13,4 +13,4 @@ The page has three display areas:
 :doc:`Electron Sidebar<electron>`
     Shows detailed information about an electron in a popup sidebar to the right of the Transport Graph area.
 
-.. note:: Some fields in the Graph View are :ref:`copyable as string-serialized Python objects <pickle_copy>`. 
+.. note:: Some fields in the Graph View are :ref:`copyable as string-serialized Python objects <pickle_copy>`.
