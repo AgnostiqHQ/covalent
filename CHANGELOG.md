@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `dispatcher_addr` argument to `ct.get_result` similar to `ct.dispatch` so that it doesn't always fallback to using the default configured address
 
+### Tests
+
+- Updated `_get_result_from_dispatcher` test to check whether using a link directly works or not
+
 ## [0.211.0-rc.0] - 2023-01-10
 
 ### Authors
