@@ -27,7 +27,7 @@ import asyncio
 import pytest
 
 from covalent.executor.base import AsyncBaseExecutor, BaseExecutor
-from covalent_dispatcher._core.runner_modules.executor_monitor import watch
+from covalent_dispatcher._core.runner_modules.executor_proxy import watch
 
 
 class MockExecutor(BaseExecutor):
@@ -76,7 +76,7 @@ async def test_watch_get(mocker):
     dispatch_id = "dispatch"
     task_id = 0
     mock_get = mocker.patch(
-        "covalent_dispatcher._core.runner_modules.executor_monitor.job_manager.get_job_metadata",
+        "covalent_dispatcher._core.runner_modules.executor_proxy.job_manager.get_job_metadata",
         return_value=job_record,
     )
     send_queue.put_nowait(("get", "cancel_requested"))
@@ -108,7 +108,7 @@ async def test_watch_put(mocker):
     dispatch_id = "dispatch"
     task_id = 0
     mock_set = mocker.patch(
-        "covalent_dispatcher._core.runner_modules.executor_monitor.job_manager.set_job_handle",
+        "covalent_dispatcher._core.runner_modules.executor_proxy.job_manager.set_job_handle",
     )
     job_handle = 42
     send_queue.put_nowait(("put", ("job_handle", json.dumps(job_handle))))
@@ -140,7 +140,7 @@ async def test_watch_error(mocker):
     dispatch_id = "dispatch"
     task_id = 0
     mock_set = mocker.patch(
-        "covalent_dispatcher._core.runner_modules.executor_monitor.job_manager.set_job_handle",
+        "covalent_dispatcher._core.runner_modules.executor_proxy.job_manager.set_job_handle",
     )
     job_handle = 42
     send_queue.put_nowait(("unknown_action", ("job_handle", json.dumps(job_handle))))

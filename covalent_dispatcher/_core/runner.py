@@ -46,7 +46,7 @@ from .._db.write_result_to_db import get_sublattice_electron_id
 from . import data_manager as datasvc
 from . import dispatcher
 from .data_modules import job_manager
-from .runner_modules import executor_monitor
+from .runner_modules import executor_proxy
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -309,7 +309,7 @@ async def _run_task(
                 node_id=node_id,
             )
 
-            asyncio.create_task(executor_monitor.watch(dispatch_id, node_id, executor))
+            asyncio.create_task(executor_proxy.watch(dispatch_id, node_id, executor))
 
             output, stdout, stderr, status = await executor._execute(
                 function=assembled_callable,
