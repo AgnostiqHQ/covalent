@@ -10,6 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed 
 - Fixed UI pagination not working for more than 11 pages 
 - Runtime field counting down for select running dispatches
+## [0.211.0-rc.0] - 2023-01-10
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Changed
+- Changed decode-uri-component package version on webapp yarn-lock file.
+- Changed json5 package version on webapp yarn-lock file.
 
 ## [0.210.0-rc.0] - 2023-01-05
 
