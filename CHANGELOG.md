@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added `dispatcher_addr` argument to `ct.get_result` similar to `ct.dispatch` so that it doesn't always fallback to using the default configured address
 
+## [0.211.0-rc.0] - 2023-01-10
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Changed
+- Changed decode-uri-component package version on webapp yarn-lock file.
+- Changed json5 package version on webapp yarn-lock file.
 
 ## [0.210.0-rc.0] - 2023-01-05
 
