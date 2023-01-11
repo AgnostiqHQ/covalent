@@ -28,7 +28,7 @@ ARG COVALENT_SOURCE=local
 # Options are sdk,server
 ARG COVALENT_INSTALL_TYPE=server
 # Must include a compatible version of Python
-ARG BASE_IMAGE=docker.io/python:3.8-slim-bullseye
+ARG COVALENT_BASE_IMAGE=docker.io/python:3.8-slim-bullseye
 
 ###################
 # Covalent Options
@@ -72,7 +72,7 @@ ARG COVALENT_MEM_PER_WORKER=1GB
 # Global Settings
 ##################
 
-FROM ${BASE_IMAGE} as base
+FROM ${COVALENT_BASE_IMAGE} as base
 
 ENV PYTHONHASHSEED=random \
     PYTHONUNBUFFERED=1 \
@@ -217,7 +217,7 @@ LABEL org.opencontainers.image.vendor="Agnostiq"
 LABEL org.opencontainers.image.url="https://covalent.xyz"
 LABEL org.opencontainers.image.documentation="https://covalent.readthedocs.io"
 LABEL org.opencontainers.image.licenses="GNU AGPL v3"
-LABEL org.opencontainers.image.base.name="${BASE_IMAGE}"
+LABEL org.opencontainers.image.base.name="${COVALENT_BASE_IMAGE}"
 
 COPY --from=covalent_src $BUILDROOT/ $BUILDROOT
 
@@ -244,8 +244,8 @@ FROM covalent_${COVALENT_INSTALL_TYPE} as covalent_install
 
 FROM base AS prod_sdk
 
-ARG BUILD_DATE
-ARG BUILD_VERSION
+ARG COVALENT_BUILD_DATE
+ARG COVALENT_BUILD_VERSION
 
 LABEL org.opencontainers.image.title="Covalent ${COVALENT_INSTALL_TYPE}"
 LABEL org.opencontainers.image.vendor="Agnostiq"
@@ -253,10 +253,10 @@ LABEL org.opencontainers.image.url="https://covalent.xyz"
 LABEL org.opencontainers.image.documentation="https://covalent.readthedocs.io"
 LABEL org.opencontainers.image.source="https://github.com/AgnostiqHQ/covalent"
 LABEL org.opencontainers.image.licenses="GNU AGPL v3"
-LABEL org.opencontainers.image.created="${BUILD_DATE}"
-LABEL org.opencontainers.image.version="${BUILD_VERSION}"
+LABEL org.opencontainers.image.created="${COVALENT_BUILD_DATE}"
+LABEL org.opencontainers.image.version="${COVALENT_BUILD_VERSION}"
 LABEL org.opencontainers.image.revision="${COVALENT_COMMIT_SHA}"
-LABEL org.opencontainers.image.base.name="${BASE_IMAGE}"
+LABEL org.opencontainers.image.base.name="${COVALENT_BASE_IMAGE}"
 
 COPY --from=build_base /usr/bin/rsync /usr/bin/rsync
 COPY --from=build_base /usr/lib/x86_64-linux-gnu/libpopt.so.0 /usr/lib/x86_64-linux-gnu/libpopt.so.0
