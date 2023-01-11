@@ -7,7 +7,7 @@ Some fields in the Graph View are copyable as string-serialized Python objects. 
 
 To copy a Python object field, mouse over the field and click. The object is copied as a byte stream wrapped in a :code:`pickle.loads()` statement. To view the data object, paste the string into a Python interpreter or notebook and execute it.
 
-.. note:: The Python environment in which you view the pickled data structure must contain all packages on which it depends. 
+.. note:: The Python environment in which you view the pickled data structure must contain all packages on which it depends.
 
 For example, the following string was copied from a simple input in the Covalent GUI Electron Sidebar Input text field:
 
