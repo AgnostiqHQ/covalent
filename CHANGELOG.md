@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Enhanced the Dockerfile to include builds from various sources and a differentiation between SDK and Server builds
+
 ## [0.211.0-rc.0] - 2023-01-10
 
 ### Authors
