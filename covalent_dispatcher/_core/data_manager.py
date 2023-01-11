@@ -202,10 +202,3 @@ async def _update_parent_electron(result_object: Result):
 def upsert_lattice_data(dispatch_id: str):
     result_object = get_result_object(dispatch_id)
     upsert.lattice_data(result_object)
-
-
-async def get_metadata_for_nodes(dispatch_id: str, node_ids: list):
-
-    res = get_result_object(dispatch_id)
-    tg = res.lattice.transport_graph
-    return list(map(lambda x: tg.get_node_value(x, "metadata"), node_ids))

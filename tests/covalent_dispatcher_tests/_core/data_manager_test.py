@@ -36,7 +36,6 @@ from covalent_dispatcher._core.data_manager import (
     _registered_dispatches,
     _update_parent_electron,
     finalize_dispatch,
-    get_metadata_for_nodes,
     get_result_object,
     get_status_queue,
     initialize_result_object,
@@ -265,17 +264,3 @@ def test_upsert_lattice_data(mocker):
     mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert.lattice_data")
     upsert_lattice_data(result_object.dispatch_id)
     mock_upsert_lattice.assert_called_with(result_object)
-
-
-@pytest.mark.asyncio
-async def test_get_metadata_for_nodes(mocker):
-    dispatch_id = "asdf123"
-
-    result_obj = get_mock_result()
-    mock_get_result_obj = mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_result_object",
-        return_value=result_obj,
-    )
-    records = await get_metadata_for_nodes("asdf123", [0, 1])
-    assert records[0]["executor"] == "local"
-    assert records[1]["executor"] == "dask"

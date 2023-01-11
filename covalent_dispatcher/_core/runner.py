@@ -556,7 +556,7 @@ async def _cancel_task(
 async def cancel_tasks(dispatch_id: str, task_ids: List[int]):
     job_metadata = await job_manager.get_jobs_metadata(dispatch_id, task_ids)
 
-    node_metadata = await datasvc.get_metadata_for_nodes(dispatch_id, task_ids)
+    node_metadata = _get_metadata_for_nodes(dispatch_id, task_ids)
 
     def to_cancel_kwargs(i, node_id):
         return {
@@ -569,6 +569,13 @@ async def cancel_tasks(dispatch_id: str, task_ids: List[int]):
     cancel_task_kwargs = [to_cancel_kwargs(i, x) for i, x in enumerate(task_ids)]
     for kwargs in cancel_task_kwargs:
         asyncio.create_task(_cancel_task(dispatch_id, **kwargs))
+
+
+def _get_metadata_for_nodes(dispatch_id: str, node_ids: list):
+
+    res = datasvc.get_result_object(dispatch_id)
+    tg = res.lattice.transport_graph
+    return list(map(lambda x: tg.get_node_value(x, "metadata"), node_ids))
 
 
 async def _get_cancel_requested(dispatch_id: str, task_id: int):

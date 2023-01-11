@@ -36,6 +36,7 @@ from covalent_dispatcher._core.runner import (
     _cancel_task,
     _dispatch_sublattice,
     _gather_deps,
+    _get_metadata_for_nodes,
     _post_process,
     _postprocess_workflow,
     _run_abstract_task,
@@ -433,7 +434,7 @@ async def test_cancel_tasks(mocker):
         "covalent_dispatcher._core.runner.job_manager.get_jobs_metadata", return_value=job_metadata
     )
     mocker.patch(
-        "covalent_dispatcher._core.runner.datasvc.get_metadata_for_nodes",
+        "covalent_dispatcher._core.runner._get_metadata_for_nodes",
         return_value=node_metadata,
     )
     await cancel_tasks(dispatch_id, [5])
@@ -466,3 +467,17 @@ async def test_run_abstract_task_cancelled_handling(mocker):
     )
 
     assert node_result["status"] == Result.CANCELLED
+
+
+@pytest.mark.asyncio
+async def test_get_metadata_for_nodes(mocker):
+    dispatch_id = "asdf123"
+
+    result_obj = get_mock_result()
+    mock_get_result_obj = mocker.patch(
+        "covalent_dispatcher._core.runner.datasvc.get_result_object",
+        return_value=result_obj,
+    )
+    records = _get_metadata_for_nodes("asdf123", [0, 1])
+    assert records[0]["executor"] == "local"
+    assert records[1]["executor"] == "dask"
