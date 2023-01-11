@@ -11,6 +11,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Enhanced the Dockerfile to include builds from various sources and a differentiation between SDK and Server builds
 
+### Fixed 
+
+- Optimization of logs on the GUI for large log file sizes. 
+- Fixed UI pagination not working for more than 11 pages 
+- Runtime field counting down for select running dispatches
+
 ## [0.211.0-rc.0] - 2023-01-10
 
 ### Authors

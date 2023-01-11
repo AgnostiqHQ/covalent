@@ -82,7 +82,7 @@ class Summary:
             Lattice.electron_num.label("total_electrons"),
             Lattice.completed_electron_num.label("total_electrons_completed"),
             Lattice.started_at.label("started_at"),
-            func.coalesce(Lattice.completed_at, None).label("ended_at"),
+            func.IFNULL(Lattice.completed_at, None).label("ended_at"),
             Lattice.status.label("status"),
             Lattice.updated_at.label("updated_at"),
         ).filter(
