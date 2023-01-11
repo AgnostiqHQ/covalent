@@ -41,6 +41,7 @@ import {
   statusColor,
   statusIcon,
   statusLabel,
+  getLocalStartTime,
 } from '../../utils/misc'
 import Runtime from '../dispatches/Runtime'
 import SyntaxHighlighter from './SyntaxHighlighter'
@@ -241,8 +242,11 @@ const NodeDrawer = ({ node, dispatchId }) => {
                 <Skeleton data-testid="node__start_time" />
               ) : (
                 <Typography fontSize="body2.fontSize" color="text.tertiary">
-                  {formatDate(electronDetail.started_at)}
-                  {hasEnded && ` - ${formatDate(electronDetail.ended_at)}`}
+                  {formatDate(getLocalStartTime(electronDetail.started_at))}
+                  {hasEnded &&
+                    ` - ${formatDate(
+                      getLocalStartTime(electronDetail.ended_at)
+                    )}`}
                 </Typography>
               )}
             </>
@@ -301,7 +305,9 @@ const NodeDrawer = ({ node, dispatchId }) => {
               sx={(theme) => ({
                 bgcolor: theme.palette.background.outRunBg,
               })}
-              isFetching={!electronExecutorResult && electronExecutorResultIsFetching}
+              isFetching={
+                !electronExecutorResult && electronExecutorResultIsFetching
+              }
             />
           )}
 

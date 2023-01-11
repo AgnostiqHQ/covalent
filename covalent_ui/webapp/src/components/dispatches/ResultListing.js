@@ -61,7 +61,7 @@ import {
   deleteAllDispatches,
 } from '../../redux/dashboardSlice'
 import CopyButton from '../common/CopyButton'
-import { formatDate, secondsToHms } from '../../utils/misc'
+import { formatDate, secondsToHms, getLocalStartTime } from '../../utils/misc'
 import ResultProgress from './ResultProgress'
 import SortDispatch from './SortDispatch'
 import DialogBox from '../common/DialogBox'
@@ -242,8 +242,8 @@ export const ResultsTableHead = ({
             </MenuItem>
             <MenuItem divider onClick={onSelectAllClick} onClose={handleClose}>
               {/* {numSelected > 0 && numSelected === total
-                  ? 'Unselect all'
-                  : 'Select all records'} */}
+                 ? 'Unselect all'
+                 : 'Select all records'} */}
               All visible{' '}
             </MenuItem>
             {filterValue === 'ALL' ? (
@@ -299,16 +299,16 @@ export const ResultsTableHead = ({
               </MenuItem>
             ) : null}
             {/* {(filterValue === 'CANCELLED' || filterValue === 'ALL') &&
-              cancelledDispatches !== 0 ? (
-                <MenuItem
-                  onClick={() => {
-                    handleAllDelete('CANCELLED', cancelledDispatches)
-                  }}
-                  onClose={handleClose}
-                >
-                  Cancelled
-                </MenuItem>
-              ) : null} */}
+             cancelledDispatches !== 0 ? (
+               <MenuItem
+                 onClick={() => {
+                   handleAllDelete('CANCELLED', cancelledDispatches)
+                 }}
+                 onClose={handleClose}
+               >
+                 Cancelled
+               </MenuItem>
+             ) : null} */}
           </Menu>
           <DialogBox
             openDialogBox={openDialogBoxAll}
@@ -458,14 +458,14 @@ export const ResultsTableToolbar = ({
           setOffset={setOffset}
         />
         {/* <SortDispatch
-            title="Cancelled"
-            count={cancelledDispatches}
-            isFetching={!dashboardOverviewFetching}
-            setFilterValue={setFilterValue}
-            isSelected={filterValue === 'CANCELLED' ? true : false}
-            setSelected={setSelected}
-            setOffset={setOffset}
-          /> */}
+           title="Cancelled"
+           count={cancelledDispatches}
+           isFetching={!dashboardOverviewFetching}
+           setFilterValue={setFilterValue}
+           isSelected={filterValue === 'CANCELLED' ? true : false}
+           setSelected={setSelected}
+           setOffset={setOffset}
+         /> */}
       </Grid>
       <Input
         data-testid="input"
@@ -896,7 +896,7 @@ const ResultListing = () => {
                         <TableCell>
                           <OverflowTip
                             value={result.latticeName}
-                            width='280px'
+                            width="280px"
                           />
                         </TableCell>
                         {result.status === 'RUNNING' ? (
@@ -910,9 +910,17 @@ const ResultListing = () => {
                           <TableCell>{secondsToHms(result.runTime)}</TableCell>
                         )}
 
-                        <TableCell>{formatDate(result.startTime)}</TableCell>
+                        <TableCell>
+                          {formatDate(getLocalStartTime(result.startTime))}
+                        </TableCell>
 
-                        <TableCell>{formatDate(result.endTime)}</TableCell>
+                        <TableCell>
+                          {formatDate(
+                            result.endTime
+                              ? getLocalStartTime(result.endTime)
+                              : result.endTime
+                          )}
+                        </TableCell>
 
                         <TableCell>
                           <ResultProgress result={result} />

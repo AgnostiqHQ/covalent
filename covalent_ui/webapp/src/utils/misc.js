@@ -398,3 +398,8 @@ export const sublatticeIconTopBar = (type, sub) => {
       return null
   }
 }
+
+export const getLocalStartTime = (time) => {
+  let startTimeToLocal = new Date((time = time + 'Z'))
+  return startTimeToLocal.toISOString()
+}
