@@ -244,8 +244,8 @@ FROM covalent_${COVALENT_INSTALL_TYPE} as covalent_install
 
 FROM base AS prod_sdk
 
-ARG COVALENT_BUILD_DATE
-ARG COVALENT_BUILD_VERSION
+ARG COVALENT_BUILD_DATE=""
+ARG COVALENT_BUILD_VERSION=""
 
 LABEL org.opencontainers.image.title="Covalent ${COVALENT_INSTALL_TYPE}"
 LABEL org.opencontainers.image.vendor="Agnostiq"
