@@ -22,7 +22,7 @@
 # Options are local,pypi,sha
 ARG COVALENT_SOURCE=local
 # Options are sdk,server
-ARG COVALENT_INSTALL_TYPE=sdk
+ARG COVALENT_INSTALL_TYPE=server
 # Must include a compatible version of Python
 ARG BASE_IMAGE=docker.io/python:3.8-slim-bullseye
 
@@ -45,8 +45,10 @@ FROM base AS build_base
 RUN <<EOL
   apt-get update
   apt-get install -y --no-install-recommends \
+    git \
     rsync \
     unzip \
+    vim \
     wget
   rm -rf /var/lib/apt/lists/*
   python -m venv --copies $BUILDROOT/.venv
@@ -96,6 +98,7 @@ ARG COVALENT_COMMIT_SHA
 RUN <<EOL
   wget https://github.com/AgnostiqHQ/covalent/archive/${COVALENT_COMMIT_SHA}.zip
   unzip -d $BUILDROOT ${COVALENT_COMMIT_SHA}.zip
+  mv $BUILDROOT/covalent-${COVALENT_COMMIT_SHA}/* $BUILDROOT/
 EOL
 
 # Alias the Covalent source into a new layer
@@ -115,6 +118,13 @@ EOL
 
 # Build Covalent Server
 FROM build_server as covalent_server
+
+LABEL org.opencontainers.image.title="Covalent Build Environment"
+LABEL org.opencontainers.image.vendor="Agnostiq"
+LABEL org.opencontainers.image.url="https://covalent.xyz"
+LABEL org.opencontainers.image.documentation="https://covalent.readthedocs.io"
+LABEL org.opencontainers.image.licenses="GNU AGPL v3"
+LABEL org.opencontainers.image.base.name="${BASE_IMAGE}"
 
 COPY --from=covalent_src $BUILDROOT/ $BUILDROOT
 
@@ -172,15 +182,20 @@ COPY --from=build_base /usr/bin/wget /usr/bin/wget
 COPY --from=build_base /usr/lib/x86_64-linux-gnu/libpcre2-8.so.0 /usr/lib/x86_64-linux-gnu/libpcre2-8.so.0
 COPY --from=build_base /usr/lib/x86_64-linux-gnu/libpsl.so.5 /usr/lib/x86_64-linux-gnu/libpsl.so.5
 
-ARG COVALENT_SERVER_PORT=48008
+ARG COVALENT_SVC_PORT=48008
 
+ENV COVALENT_SVC_PORT ${COVALENT_SVC_PORT}
 ENV COVALENT_SERVER_IFACE_ANY=1
 
 EXPOSE ${COVALENT_SERVER_PORT}
 
-HEALTHCHECK CMD wget --no-verbose --tries=1 --spider http://localhost:${COVALENT_SERVER_PORT} || exit 1
+HEALTHCHECK CMD wget --no-verbose --tries=1 --spider http://localhost:${COVALENT_SVC_PORT} || exit 1
 
+RUN sed -i "s#$BUILDROOT#$INSTALLROOT#" $INSTALLROOT/.venv/bin/covalent
+
+#ENTRYPOINT [ "covalent" ]
 ENTRYPOINT [ "/bin/bash" ]
-CMD [ "covalent", "start", "--port", "${COVALENT_SERVER_PORT}", "&&", "tail", "-f", "/dev/null" ]
+
+CMD [ "-c", "covalent start --port ${COVALENT_SVC_PORT} && tail -f /dev/null" ]
 
 FROM prod_${COVALENT_INSTALL_TYPE} as prod
