@@ -28,7 +28,7 @@ import pytest
 
 from covalent._workflow.transport import _TransportGraph
 from covalent_dispatcher._core.data_modules.job_manager import (
-    get_job_metadata,
+    get_jobs_metadata,
     set_cancel_requested,
     set_cancel_result,
     set_job_handle,
@@ -47,13 +47,13 @@ def to_job_ids(dispatch_id, task_ids, task_job_map):
 
 
 @pytest.mark.asyncio
-async def test_get_job_metadata(mocker):
+async def test_get_jobs_metadata(mocker):
     task_job_map = {0: 1, 1: 2}
     mock_to_job_ids = partial(to_job_ids, task_job_map=task_job_map)
     mocker.patch("covalent_dispatcher._core.data_modules.job_manager.to_job_ids", mock_to_job_ids)
     mock_get = mocker.patch("covalent_dispatcher._core.data_modules.job_manager.get_job_records")
 
-    await get_job_metadata("dispatch", 1)
+    await get_jobs_metadata("dispatch", [1])
 
     mock_get.assert_called_with([task_job_map[1]])
 
@@ -99,7 +99,7 @@ async def test_set_job_handle(mocker):
 @pytest.mark.asyncio
 async def test_set_cancel_result(mocker):
     mock_set = mocker.patch(
-        "covalent_dispatcher._core.data_modules.job_manager.set_job_metadata",
+        "covalent_dispatcher._core.data_modules.job_manager._set_job_metadata",
     )
     await set_cancel_result("dispatch", 1, True)
     mock_set.assert_awaited_with("dispatch", 1, cancel_successful=True)

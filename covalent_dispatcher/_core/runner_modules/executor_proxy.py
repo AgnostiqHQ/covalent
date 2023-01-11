@@ -36,9 +36,9 @@ _getters = {}
 
 async def _get_cancel_requested(dispatch_id: str, task_id: int):
     app_log.debug(f"Get _handle_requested for executor {dispatch_id}:{task_id}")
-    job_record = await job_manager.get_job_metadata(dispatch_id, task_id)
-    app_log.debug(f"Job record: {job_record}")
-    return job_record["cancel_requested"]
+    job_records = await job_manager.get_jobs_metadata(dispatch_id, [task_id])
+    app_log.debug(f"Job record: {job_records[0]}")
+    return job_records[0]["cancel_requested"]
 
 
 async def _put_job_handle(dispatch_id: str, task_id: int, job_handle: str):

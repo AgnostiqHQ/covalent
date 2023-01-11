@@ -72,11 +72,11 @@ async def test_watch_get(mocker):
     me = get_mock_executor()
     send_queue = me._send_queue
     recv_queue = me._recv_queue
-    job_record = {"job_id": 1, "cancel_requested": True}
+    job_record = [{"job_id": 1, "cancel_requested": True}]
     dispatch_id = "dispatch"
     task_id = 0
     mock_get = mocker.patch(
-        "covalent_dispatcher._core.runner_modules.executor_proxy.job_manager.get_job_metadata",
+        "covalent_dispatcher._core.runner_modules.executor_proxy.job_manager.get_jobs_metadata",
         return_value=job_record,
     )
     send_queue.put_nowait(("get", "cancel_requested"))
@@ -84,7 +84,7 @@ async def test_watch_get(mocker):
 
     await asyncio.wait_for(watch(dispatch_id, task_id, me), 2)
     assert recv_queue.get_nowait() == (True, True)
-    mock_get.assert_called_with(dispatch_id, task_id)
+    mock_get.assert_called_with(dispatch_id, [task_id])
 
     me = get_mock_async_executor()
     send_queue = me._send_queue
@@ -94,7 +94,7 @@ async def test_watch_get(mocker):
 
     await asyncio.wait_for(watch(dispatch_id, task_id, me), 2)
     assert recv_queue.get_nowait() == (True, True)
-    mock_get.assert_called_with(dispatch_id, task_id)
+    mock_get.assert_called_with(dispatch_id, [task_id])
 
 
 @pytest.mark.asyncio

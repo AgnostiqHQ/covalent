@@ -128,9 +128,9 @@ async def test_run_abstract_task_exception_handling(mocker):
         side_effect=RuntimeError(),
     )
 
-    job_metadata = {"job_id": 5, "job_handle": "1", "cancel_requested": False}
+    job_metadata = [{"job_id": 5, "job_handle": "1", "cancel_requested": False}]
     mocker.patch(
-        "covalent_dispatcher._core.runner.job_manager.get_job_metadata", return_value=job_metadata
+        "covalent_dispatcher._core.runner.job_manager.get_jobs_metadata", return_value=job_metadata
     )
 
     node_result = await _run_abstract_task(
@@ -451,9 +451,9 @@ async def test_run_abstract_task_cancelled_handling(mocker):
     mock_get_result = mocker.patch(
         "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
     )
-    job_metadata = {"job_id": 5, "job_handle": "1", "cancel_requested": True}
+    job_metadata = [{"job_id": 5, "job_handle": "1", "cancel_requested": True}]
     mocker.patch(
-        "covalent_dispatcher._core.runner.job_manager.get_job_metadata", return_value=job_metadata
+        "covalent_dispatcher._core.runner.job_manager.get_jobs_metadata", return_value=job_metadata
     )
 
     node_result = await _run_abstract_task(

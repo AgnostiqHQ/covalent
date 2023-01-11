@@ -572,5 +572,5 @@ async def cancel_tasks(dispatch_id: str, task_ids: List[int]):
 
 
 async def _get_cancel_requested(dispatch_id: str, task_id: int):
-    record = await job_manager.get_job_metadata(dispatch_id, task_id)
-    return record["cancel_requested"]
+    records = await job_manager.get_jobs_metadata(dispatch_id, [task_id])
+    return records[0]["cancel_requested"]

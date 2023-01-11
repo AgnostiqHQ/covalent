@@ -35,17 +35,12 @@ async def set_cancel_requested(dispatch_id: str, task_ids: List[int]):
     _set_cancel_requested(job_ids)
 
 
-async def get_job_metadata(dispatch_id: str, task_id: int):
-    record = await get_jobs_metadata(dispatch_id, [task_id])
-    return record[0]
-
-
-async def get_jobs_metadata(dispatch_id: str, task_ids: List[int]):
+async def get_jobs_metadata(dispatch_id: str, task_ids: List[int]) -> List:
     job_ids = to_job_ids(dispatch_id, task_ids)
     return get_job_records(job_ids)
 
 
-async def set_job_metadata(dispatch_id: str, task_id: int, **kwargs):
+async def _set_job_metadata(dispatch_id: str, task_id: int, **kwargs):
     job_id = to_job_ids(dispatch_id, [task_id])[0]
     update_kwargs = kwargs
     update_kwargs["job_id"] = job_id
@@ -53,8 +48,8 @@ async def set_job_metadata(dispatch_id: str, task_id: int, **kwargs):
 
 
 async def set_job_handle(dispatch_id: str, task_id: int, job_handle: str):
-    await set_job_metadata(dispatch_id, task_id, job_handle=job_handle)
+    await _set_job_metadata(dispatch_id, task_id, job_handle=job_handle)
 
 
 async def set_cancel_result(dispatch_id: str, task_id: int, cancel_status: bool):
-    await set_job_metadata(dispatch_id, task_id, cancel_successful=cancel_status)
+    await _set_job_metadata(dispatch_id, task_id, cancel_successful=cancel_status)
