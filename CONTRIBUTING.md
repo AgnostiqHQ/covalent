@@ -513,6 +513,66 @@ Some important commands to know about:
 This module can be used to mock module variables, environment variables etc. Check out the official [monkeypatch documentation](https://docs.pytest.org/en/6.2.x/monkeypatch.html).
 
 
+## Covalent with Docker
+
+This repository contains a Dockerfile that can be used in a variety of ways for development and deployment. Note that we use the Dockerfile 1.4 syntax which requires BuildKit. For most users, it is sufficient to set the environment variable `DOCKER_BUILDKIT=1` before attempting to build images. All of the examples below use build arguments and target stages referenced in the Dockerfile. For a full list of build arguments, run `grep ARG Dockerfile`.
+
+### Covalent Server
+
+The Covalent server can run inside a container. Build this container using the default options:
+
+```shell
+docker build --tag covalent-server:latest .
+```
+
+It is recommended a date and version are included using build arguments whenever an image is build. This can be done by including these options:
+
+```shell
+--build-arg COVALENT_BUILD_DATE=`date -u +%Y-%m-%d` --build-arg COVALENT_BUILD_VERSION=`cat ./VERSION` --tag covalent-server:`cat ./VERSION`
+```
+
+### Covalent SDK
+
+The Covalent SDK can also run inside a container. This is useful in scenarios where containerized tasks use Covalent, e.g., in executor plugins.  Build the container using these options:
+
+```shell
+docker build --build-arg COVALENT_INSTALL_TYPE=sdk --tag covalent-sdk:latest .
+```
+
+### Development Images
+
+By referencing an intermediate build target, we can also generate a build environment that can be used for developing Covalent:
+
+```shell
+# Does not include Covalent source
+docker build --tag covalent-build:latest --target build_server .
+
+# Includes Covalent source
+docker build --tag covalent-dev:latest --target covalent_install .
+```
+
+### Selecting a Covalent Source
+
+Different circumstances will require Covalent coming from different sources. The build arguments can be leveraged to specify either a local source, a PyPI release, or a commit SHA checked into GitHub. The default source is local, i.e., it uses the Covalent source code next to the Dockerfile.
+
+```shell
+# PyPI Release
+--build-arg COVALENT_SOURCE=pypi --build-arg COVALENT_RELEASE=0.202.0.post1
+
+# GitHub Commit
+--build-arg COVALENT_SOURCE=sha --build-arg COVALENT_COMMIT_SHA=abcdef
+```
+
+### Custom Base Image
+
+Finally, users can specify a custom base image, which can be useful when users are trying to incorporate Covalent SDK or Server into their existing tech stack:
+
+```shell
+--build-arg COVALENT_BASE_IMAGE=<my_registry.io>/<my_image>:<my_tag>
+```
+
+Note that the base image must include a compatible version of Python and must be based on either Ubuntu or Debian.
+
 Building Read the Docs (RTD) locally
 ====================================
 
