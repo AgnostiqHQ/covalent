@@ -68,7 +68,10 @@ ARG COVALENT_THREADS_PER_WORKER=1
 # Memory per worker (in GB)
 ARG COVALENT_MEM_PER_WORKER=1GB
 
-# Global settings
+##################
+# Global Settings
+##################
+
 FROM ${BASE_IMAGE} as base
 
 ENV PYTHONHASHSEED=random \
@@ -102,7 +105,10 @@ EOL
 
 WORKDIR ${BUILDROOT}
 
-# Tools required for all build patterns
+#########################
+# Base Build Environment
+#########################
+
 FROM base AS build_base
 
 RUN <<EOL
@@ -122,12 +128,18 @@ ENV PATH=$BUILDROOT/.venv/bin:$PATH
 
 ENTRYPOINT [ "/bin/bash" ]
 
-# Settings required to create an SDK-only container
+########################
+# SDK Build Environment
+########################
+
 FROM build_base as build_sdk
 
 ENV COVALENT_SDK_ONLY True
 
-# Tools required to build Covalent from source
+###########################
+# Server Build Environment
+###########################
+
 FROM build_base as build_server
 
 RUN <<EOL
@@ -141,19 +153,28 @@ RUN <<EOL
   rm -rf /var/lib/apt/lists/*
 EOL
 
-# Copy Covalent from local source
+################################
+# Obtain Local Copy of Covalent
+################################
+
 FROM build_base as covalent_local_src
 
 COPY . $BUILDROOT
 
+###########################
 # Fetch Covalent from PyPI
+###########################
+
 FROM build_base as covalent_pypi_src
 
 ARG COVALENT_RELEASE
 
 RUN python -m pip download --no-deps -d $BUILDROOT/dist covalent==${COVALENT_RELEASE}
 
+#################################
 # Fetch Covalent from GitHub SHA
+#################################
+
 FROM build_base as covalent_sha_src
 
 ARG COVALENT_COMMIT_SHA
@@ -164,10 +185,16 @@ RUN <<EOL
   mv $BUILDROOT/covalent-${COVALENT_COMMIT_SHA}/* $BUILDROOT/
 EOL
 
-# Alias the Covalent source into a new layer
+############################
+# Alias the Covalent Source
+############################
+
 FROM covalent_${COVALENT_SOURCE}_src as covalent_src
 
+#####################
 # Build Covalent SDK
+#####################
+
 FROM build_sdk as covalent_sdk
 
 COPY --from=covalent_src $BUILDROOT/ $BUILDROOT
@@ -179,7 +206,10 @@ RUN <<EOL
   python -m pip install dist/covalent-*.tar.gz
 EOL
 
+########################
 # Build Covalent Server
+########################
+
 FROM build_server as covalent_server
 
 LABEL org.opencontainers.image.title="Covalent Build Environment"
@@ -202,10 +232,16 @@ RUN <<EOL
   python -m pip install dist/covalent-*.tar.gz
 EOL
 
-# Alias installed Covalent
+##############################
+# Alias Covalent Installation
+##############################
+
 FROM covalent_${COVALENT_INSTALL_TYPE} as covalent_install
 
-# Production SDK container
+#############################
+# Production SDK Environment
+#############################
+
 FROM base AS prod_sdk
 
 ARG BUILD_DATE
@@ -238,7 +274,10 @@ ENV PATH=$INSTALLROOT/.venv/bin:$PATH
 
 ENTRYPOINT [ "python" ]
 
-# Production server container
+################################
+# Production Server Environment
+################################
+
 FROM prod_sdk as prod_server
 
 COPY --from=build_base /usr/bin/wget /usr/bin/wget
@@ -265,5 +304,9 @@ RUN sed -i "s#$BUILDROOT#$INSTALLROOT#" $INSTALLROOT/.venv/bin/covalent
 ENTRYPOINT [ "/bin/bash" ]
 
 CMD [ "-c", "covalent start --workers ${COVALENT_NUM_WORKERS} --threads-per-worker ${COVALENT_THREADS_PER_WORKER} --mem-per-worker ${COVALENT_MEM_PER_WORKER} --port ${COVALENT_SVC_PORT} && tail -f ${COVALENT_LOGDIR}/covalent_ui.log" ]
+
+#########################
+# Alias Production Image
+#########################
 
 FROM prod_${COVALENT_INSTALL_TYPE} as prod
