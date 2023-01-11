@@ -19,12 +19,54 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+#######################
+# Docker Build Options
+#######################
+
 # Options are local,pypi,sha
 ARG COVALENT_SOURCE=local
 # Options are sdk,server
 ARG COVALENT_INSTALL_TYPE=server
 # Must include a compatible version of Python
 ARG BASE_IMAGE=docker.io/python:3.8-slim-bullseye
+
+###################
+# Covalent Options
+###################
+
+# Installation path
+ARG COVALENT_ROOT=/var/lib/covalent
+# Configuration file path
+ARG COVALENT_CONFIG_DIR=/etc/covalent
+# Service port for dispatcher / UI
+ARG COVALENT_SVC_PORT=48008
+# Local plugins path
+ARG COVALENT_PLUGINS_DIR=/etc/covalent/plugins
+# SQLite database path (do not use in production)
+ARG COVALENT_DATABASE=/var/lib/covalent/dispatch.db
+# Remote database path (overrides SQLite database if defined)
+ARG COVALENT_DATABASE_URL=""
+# Local object storage path
+ARG COVALENT_DATA_DIR=/var/lib/covalent/data
+# Log file path
+ARG COVALENT_LOGDIR=/var/log/covalent
+# Cache path
+ARG COVALENT_CACHE_DIR=/var/cache/covalent
+# Debug mode
+ARG COVALENT_DEBUG_MODE=1
+
+########################
+# Covalent Dask Options
+########################
+
+# Disable Dask inside the container
+ARG COVALENT_DISABLE_DASK=1
+# Number of Dask workers used by dispatcher
+ARG COVALENT_NUM_WORKERS=1
+# Number of threads per Dask worker
+ARG COVALENT_THREADS_PER_WORKER=1
+# Memory per worker (in GB)
+ARG COVALENT_MEM_PER_WORKER=1GB
 
 # Global settings
 FROM ${BASE_IMAGE} as base
@@ -33,10 +75,31 @@ ENV PYTHONHASHSEED=random \
     PYTHONUNBUFFERED=1 \
     DEBIAN_FRONTEND=noninteractive \
     BUILDROOT=/build \
-    INSTALLROOT=/app \
-    USER=covalent
+    INSTALLROOT=${COVALENT_ROOT} \
+    USER=covalent \
+    COVALENT_ROOT=${COVALENT_ROOT} \
+    COVALENT_CONFIG_DIR=${COVALENT_CONFIG_DIR} \
+    COVALENT_PLUGINS_DIR=${COVALENT_PLUGINS_DIR} \
+    COVALENT_LOGDIR=${COVALENT_LOGDIR} \
+    COVALENT_CACHE_DIR=${COVALENT_CACHE_DIR}
 
 USER root
+
+RUN <<EOL
+  mkdir -p \
+    ${COVALENT_CONFIG_DIR} \
+    ${COVALENT_PLUGINS_DIR} \
+    ${COVALENT_DATA_DIR} \
+    ${COVALENT_LOGDIR} \
+    ${COVALENT_CACHE_DIR}
+  chown -R ${USER}:${USER} \
+    ${COVALENT_CONFIG_DIR} \
+    ${COVALENT_PLUGINS_DIR} \
+    ${COVALENT_DATA_DIR} \
+    ${COVALENT_LOGDIR} \
+    ${COVALENT_CACHE_DIR}
+EOL
+
 WORKDIR ${BUILDROOT}
 
 # Tools required for all build patterns
@@ -182,20 +245,25 @@ COPY --from=build_base /usr/bin/wget /usr/bin/wget
 COPY --from=build_base /usr/lib/x86_64-linux-gnu/libpcre2-8.so.0 /usr/lib/x86_64-linux-gnu/libpcre2-8.so.0
 COPY --from=build_base /usr/lib/x86_64-linux-gnu/libpsl.so.5 /usr/lib/x86_64-linux-gnu/libpsl.so.5
 
-ARG COVALENT_SVC_PORT=48008
+ENV COVALENT_SVC_PORT=${COVALENT_SVC_PORT} \
+    COVALENT_DATABASE_DIR=${COVALENT_DATABASE_DIR} \
+    COVALENT_DATABASE_URL=${COVALENT_DATABASE_URL} \
+    COVALENT_DATA_DIR=${COVALENT_DATA_DIR} \
+    COVALENT_DEBUG_MODE=${COVALENT_DEBUG_MODE} \
+    COVALENT_NUM_WORKERS=${COVALENT_NUM_WORKERS} \
+    COVALENT_THREADS_PER_WORKER=${COVALENT_THREADS_PER_WORKER} \
+    COVALENT_MEM_PER_WORKER=${COVALENT_MEM_PER_WORKER} \
+    COVALENT_DISABLE_DASK=${COVALENT_DISABLE_DASK} \
+    COVALENT_SERVER_IFACE_ANY=1
 
-ENV COVALENT_SVC_PORT ${COVALENT_SVC_PORT}
-ENV COVALENT_SERVER_IFACE_ANY=1
-
-EXPOSE ${COVALENT_SERVER_PORT}
+EXPOSE ${COVALENT_SVC_PORT}
 
 HEALTHCHECK CMD wget --no-verbose --tries=1 --spider http://localhost:${COVALENT_SVC_PORT} || exit 1
 
 RUN sed -i "s#$BUILDROOT#$INSTALLROOT#" $INSTALLROOT/.venv/bin/covalent
 
-#ENTRYPOINT [ "covalent" ]
 ENTRYPOINT [ "/bin/bash" ]
 
-CMD [ "-c", "covalent start --port ${COVALENT_SVC_PORT} && tail -f /dev/null" ]
+CMD [ "-c", "covalent start --workers ${COVALENT_NUM_WORKERS} --threads-per-worker ${COVALENT_THREADS_PER_WORKER} --mem-per-worker ${COVALENT_MEM_PER_WORKER} --port ${COVALENT_SVC_PORT} && tail -f ${COVALENT_LOGDIR}/covalent_ui.log" ]
 
 FROM prod_${COVALENT_INSTALL_TYPE} as prod

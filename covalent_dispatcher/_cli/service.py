@@ -315,6 +315,13 @@ def start(
     """
     Start the Covalent server.
     """
+
+    if os.environ.get("COVALENT_DEBUG_MODE") == "1":
+        develop = True
+
+    if os.environ.get("COVALENT_DISABLE_DASK") == "1":
+        no_cluster = True
+
     if develop:
         set_config({"sdk.log_level": "debug"})
 
