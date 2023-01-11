@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Front-end pending unit tests for the GUI.
 
 ### Fixed 
+
+- Optimization of logs on the GUI for large log file sizes. 
 - Fixed UI pagination not working for more than 11 pages 
 - Runtime field counting down for select running dispatches
 

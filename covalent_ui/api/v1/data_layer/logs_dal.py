@@ -21,11 +21,9 @@ import os
 import re
 from datetime import datetime
 
-from dateutil import tz
 from fastapi.responses import Response
 
 from covalent._shared_files.config import get_config
-from covalent_ui.api.v1.models.logs_model import LogsResponse
 
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
 
@@ -36,81 +34,51 @@ class Logs:
     def __init__(self) -> None:
         self.config = get_config
 
-    def __split_merge_line(self, output_arr: list, split_reg, line, last_msg=""):
-        match = re.match(split_reg, line)
-        if match:
-            if last_msg == "":
-                output_arr.append(line)
-            else:
-                if len(output_arr) == 0:
-                    output_arr.append(last_msg)
-                else:
-                    output_arr[len(output_arr) - 1] += last_msg
-                last_msg = ""
-                output_arr.append(line)
-        else:
-            last_msg += line + "\n"
-        return last_msg
-
-    def __split_merge_json(self, line, regex_expr, result_data, search):
-        reg = regex_expr.split(line.rstrip("\n"))
-        json_data = {"log_date": None, "status": "INFO", "message": reg[0]}
-        if len(reg) >= 3:
-            parse_str = datetime.strptime(reg[1], "%Y-%m-%d %H:%M:%S,%f")
-            parse_str = parse_str.replace(tzinfo=tz.tzutc())
-            dt_local = parse_str.astimezone(tz.tzlocal())
-            json_data = {"log_date": f"{dt_local}", "status": reg[2], "message": reg[3]}
-        if search != "":
-            if (search in json_data["message"].lower()) or (search in json_data["status"].lower()):
-                result_data.append(json_data)
-        else:
-            result_data.append(json_data)
-
     def get_logs(self, sort_by, direction, search, count, offset):
-        """
-        Get Logs
-        Args:
-            req.count: number of rows to be selected
-            req.offset: number rows to be skipped
-            req.sort_by: sort by field name(run_time, status, started, lattice)
-            req.search: search by text
-            req.direction: sort by direction ASE, DESC
-        Return:
-            List of top most Lattices and count
-        """
-        output_data, result_data = [], []
-        last_msg = ""
-        reverse_list = direction.value == "DESC"
-        split_line, split_words = (
-            r"\[[0-9]{4}-[0-9]{2}-[0-9]{2} [0-9]{2}:[0-9]{2}:[0-9]{2}(\.[0-9]{1,3})?,[0-9]+]"
-        ), (
-            r"\[(.*)\] \[(TRACE|DEBUG|INFO|NOTICE|WARN|WARNING|ERROR|SEVERE|CRITICAL|FATAL)\] ((.|\n)*)"
-        )
-        try:
-            with open(UI_LOGFILE, "r", encoding="utf-8") as logfile:
-                for line in logfile:
-                    last_msg = self.__split_merge_line(output_data, split_line, line, last_msg)
-                if last_msg != "":
-                    if len(output_data) == 0:
-                        output_data.append(last_msg)
-                    output_data[len(output_data) - 1] += last_msg
-                    last_msg = ""
-        except FileNotFoundError:
-            output_data = []
-        if len(output_data) == 0:
-            return LogsResponse(items=[], total_count=len(result_data))
-        regex_expr = re.compile(split_words)
-        for line in output_data:
-            self.__split_merge_json(line, regex_expr, result_data, search.lower())
-        modified_data = sorted(
-            result_data,
-            key=lambda e: (e[sort_by.value] is not None, e[sort_by.value]),
-            reverse=reverse_list,
-        )
-        modified_data = (
-            modified_data[offset : count + offset] if count != 0 else modified_data[offset:]
-        )
-        return LogsResponse(items=modified_data, total_count=len(result_data))
+        with open(UI_LOGFILE, "r", encoding="utf-8") as logfile:
+            search.lower()
+            unmatch_str = ""
+            log = []
+            reverse_list = direction.value == "DESC"
+            for i in logfile:
+                split_reg = r"\[(.*)\] \[(TRACE|DEBUG|INFO|NOTICE|WARN|WARNING|ERROR|SEVERE|CRITICAL|FATAL)\]"  # r"\[(.*)\] \[(.*)\] ((.|\n)*)"
+                data = re.split(pattern=split_reg, string=i)
+                if len(data) > 1:
+                    try:
+                        parse_str = datetime.strptime(data[1], "%Y-%m-%d %H:%M:%S,%f")
+                        json_data = {
+                            "log_date": f"{parse_str}",
+                            "status": data[2],
+                            "message": data[3],
+                        }
+                    except ValueError:
+                        json_data = {"log_date": f"{None}", "status": data[2], "message": data[1:]}
+                    log.append(json_data)
+                else:
+                    len_log = len(log)
+                    unmatch_str += i
+                    if len_log > 0 and ((unmatch_str != "")):
+
+                        msg = log[len_log - 1]["message"] + "\n"
+                        log[len_log - 1]["message"] = msg + unmatch_str
+                        unmatch_str = ""
+                    else:
+                        log.append({"log_date": None, "status": "INFO", "message": unmatch_str})
+                        unmatch_str = ""
+            log = [
+                i
+                for i in log
+                if (i["message"].lower().__contains__(search))
+                or (i["status"].lower().__contains__(search))
+            ]
+            result = sorted(
+                log,
+                key=lambda e: (e[sort_by.value] is not None, e[sort_by.value]),
+                reverse=reverse_list,
+            )
+            total_count = len(result)
+            result = result[offset : count + offset] if count != 0 else log[offset:]
+            return {"items": result, "total_count": total_count}
 
     def download_logs(self):
         """Download logs"""
