@@ -34,6 +34,8 @@ from .._shared_files.context_managers import active_dispatch_info_manager, activ
 from .._shared_files.defaults import (
     WAIT_EDGE_NAME,
     DefaultMetadataValues,
+    electron_dict_prefix,
+    electron_list_prefix,
     parameter_prefix,
     prefix_separator,
     sublattice_prefix,
@@ -410,7 +412,8 @@ class Electron:
 
         elif isinstance(param_value, list):
             list_electron = Electron(function=_auto_list_node, metadata=collection_metadata)
-            list_electron(*param_value)
+            bound_electron = list_electron(*param_value)
+            transport_graph.set_node_value(bound_electron.node_id, "name", electron_list_prefix)
             transport_graph.add_edge(
                 list_electron.node_id,
                 node_id,
@@ -422,6 +425,8 @@ class Electron:
         elif isinstance(param_value, dict):
             dict_electron = Electron(function=_auto_dict_node, metadata=collection_metadata)
             dict_electron(**param_value)
+            bound_electron = dict_electron(*param_value)
+            transport_graph.set_node_value(bound_electron.node_id, "name", electron_dict_prefix)
             transport_graph.add_edge(
                 dict_electron.node_id,
                 node_id,
