@@ -26,6 +26,7 @@ from typing import Callable, Dict, List
 from covalent.executor import BaseExecutor
 
 executor_plugin_name = "TimingExecutor"
+_EXECUTOR_PLUGIN_DEFAULTS = {"timing_filepath": ""}
 
 
 class TimingExecutor(BaseExecutor):

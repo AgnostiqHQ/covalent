@@ -257,14 +257,14 @@ class _ExecutorManager:
         return executor_list
 
 
-def initialize_executor_manager():
-    _executor_manager = _ExecutorManager()
+# def initialize_executor_manager():
+_executor_manager = _ExecutorManager()
 
-    for name in _executor_manager.executor_plugins_map:
-        plugin_class = _executor_manager.executor_plugins_map[name]
-        globals()[plugin_class.__name__] = plugin_class
+for name in _executor_manager.executor_plugins_map:
+    plugin_class = _executor_manager.executor_plugins_map[name]
+    globals()[plugin_class.__name__] = plugin_class
 
-    globals()["_executor_manager"] = _executor_manager
+# globals()["_executor_manager"] = _executor_manager
 
-    app_log.debug(f"e_dir: {_executor_manager.executor_plugins_map.get('timing_plugin')}")
-    app_log.debug(f"environ: {os.environ.get('COVALENT_EXECUTOR_DIR')}")
+app_log.debug(f"e_dir: {_executor_manager.executor_plugins_map.get('timing_plugin')}")
+app_log.debug(f"environ: {os.environ.get('COVALENT_EXECUTOR_DIR')}")

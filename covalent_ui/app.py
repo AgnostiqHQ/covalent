@@ -28,7 +28,6 @@ from fastapi.templating import Jinja2Templates
 
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-from covalent.executor import initialize_executor_manager
 from covalent_dispatcher._service.app_dask import DaskCluster
 from covalent_ui.api.main import app as fastapi_app
 from covalent_ui.api.main import sio
@@ -101,8 +100,6 @@ if __name__ == "__main__":
     if args.cluster:
         dask_cluster = DaskCluster(name="LocalDaskCluster", logger=app_log)
         dask_cluster.start()
-
-    initialize_executor_manager()
 
     # Start covalent main app
     uvicorn.run(
