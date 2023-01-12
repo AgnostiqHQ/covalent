@@ -27,8 +27,10 @@ from typing import Callable
 
 import networkx as nx
 
+from covalent._shared_files import logger
 from covalent._workflow.transport import _TransportGraph
 
+app_log = logger.app_log
 _status_map = {1: True, -1: False}
 
 
@@ -73,8 +75,8 @@ def max_cbms(
 
     A_node_status = {node_id: 0 for node_id in A.nodes}
     B_node_status = {node_id: 0 for node_id in B.nodes}
-    print("A node status:", A_node_status)
-    print("B node status:", B_node_status)
+    app_log.debug(f"A node status: {A_node_status}")
+    app_log.debug(f"B node status: {B_node_status}")
 
     virtual_root = -1
 
@@ -100,7 +102,7 @@ def max_cbms(
     while nodes_to_visit:
         current_node = nodes_to_visit.pop()
 
-        print(f"Visiting node {current_node}")
+        app_log.debug(f"Visiting node {current_node}")
         for y in A.adj[current_node]:
             # Don't process already failed nodes
             if A_node_status[y] == -1:
@@ -108,27 +110,27 @@ def max_cbms(
 
             # Check if y is a valid child of current_node in B
             if y not in B.adj[current_node]:
-                print(f"A: {y} not adjacent to node {current_node} in B")
+                app_log.debug(f"A: {y} not adjacent to node {current_node} in B")
                 _invalidate_successors(A, A_node_status, y)
                 continue
 
             if y in B.adj[current_node] and B_node_status[y] == -1:
-                print(f"A: Node {y} is marked as failed in B")
+                app_log.debug(f"A: Node {y} is marked as failed in B")
                 _invalidate_successors(A, A_node_status, y)
                 continue
 
             # Compare edges
             if not edge_cmp(A, B, current_node, y):
-                print(f"Edges between {current_node} and {y} differ")
+                app_log.debug(f"Edges between {current_node} and {y} differ")
                 _invalidate_successors(A, A_node_status, y)
                 _invalidate_successors(B, B_node_status, y)
                 continue
 
             # Compare nodes
             if not node_cmp(A, B, y):
-                print(f"Attributes of node {y} differ:")
-                print(f"A[y] = {A.nodes[y]}")
-                print(f"B[y] = {B.nodes[y]}")
+                app_log.debug(f"Attributes of node {y} differ:")
+                app_log.debug(f"A[y] = {A.nodes[y]}")
+                app_log.debug(f"B[y] = {B.nodes[y]}")
                 _invalidate_successors(A, A_node_status, y)
                 _invalidate_successors(B, B_node_status, y)
                 continue
@@ -139,7 +141,7 @@ def max_cbms(
             if A_node_status[y] == 0:
                 A_node_status[y] = 1
                 B_node_status[y] = 1
-                print(f"Enqueueing node {y}")
+                app_log.debug(f"Enqueueing node {y}")
                 nodes_to_visit.appendleft(y)
 
         # Prune children of current_node in B that aren't valid children in A
@@ -147,18 +149,18 @@ def max_cbms(
             if B_node_status[y] == -1:
                 continue
             if y not in A.adj[current_node]:
-                print(f"B: {y} not adjacent to node {current_node} in A")
+                app_log.debug(f"B: {y} not adjacent to node {current_node} in A")
                 _invalidate_successors(B, B_node_status, y)
                 continue
             if y in A.adj[current_node] and B_node_status[y] == -1:
-                print(f"B: Node {y} is marked as failed in A")
+                app_log.debug(f"B: Node {y} is marked as failed in A")
                 _invalidate_successors(B, B_node_status, y)
 
     A.remove_node(-1)
     B.remove_node(-1)
 
-    print("A node status:", A_node_status)
-    print("B node status:", B_node_status)
+    app_log.debug(f"A node status: {A_node_status}")
+    app_log.debug(f"B node status: {B_node_status}")
 
     for k, v in A_node_status.items():
         A_node_status[k] = _status_map[v]
