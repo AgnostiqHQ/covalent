@@ -786,3 +786,53 @@ def test_electron_getattr():
     workflow_result = rm.get_result(dispatch_id, wait=True)
     assert workflow_result.result == 25
     rm._delete_result(dispatch_id)
+
+
+def test_workflows_with_list_nodes():
+    """Test workflows with auto generated list nodes"""
+
+    @ct.electron
+    def sum_array(arr):
+        return sum(arr)
+
+    @ct.electron
+    def square(x):
+        return x * x
+
+    @ct.lattice
+    def workflow(x):
+        res_1 = sum_array(x)
+        return square(res_1)
+
+    dispatch_id = ct.dispatch(workflow)([1, 2, 3])
+
+    res_obj = rm.get_result(dispatch_id, wait=True)
+
+    assert res_obj.result == 36
+
+    rm._delete_result(dispatch_id)
+
+
+def test_workflows_with_dict_nodes():
+    """Test workflows with auto generated dictionary nodes"""
+
+    @ct.electron
+    def sum_values(assoc_array):
+        return sum(assoc_array.values())
+
+    @ct.electron
+    def square(x):
+        return x * x
+
+    @ct.lattice
+    def workflow(x):
+        res_1 = sum_values(x)
+        return square(res_1)
+
+    dispatch_id = ct.dispatch(workflow)({"x": 1, "y": 2, "z": 3})
+
+    res_obj = rm.get_result(dispatch_id, wait=True)
+
+    assert res_obj.result == 36
+
+    rm._delete_result(dispatch_id)
