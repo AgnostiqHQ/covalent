@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - MNIST tutorial now shows non-Null outputs and the classifier training log image has been updated.
+- Fixed naming of collection nodes (was breaking postprocessing)
+- Restored compatibility with stable release of AWS executors
 
 ## [0.212.0-rc.0] - 2023-01-13
 
