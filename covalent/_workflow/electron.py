@@ -34,6 +34,8 @@ from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import (
     WAIT_EDGE_NAME,
     DefaultMetadataValues,
+    electron_dict_prefix,
+    electron_list_prefix,
     parameter_prefix,
     prefix_separator,
     sublattice_prefix,
@@ -409,8 +411,13 @@ class Electron:
             )
 
         elif isinstance(param_value, list):
+
+            def _auto_list_node(*args, **kwargs):
+                return list(args)
+
             list_electron = Electron(function=_auto_list_node, metadata=collection_metadata)
-            list_electron(*param_value)
+            bound_electron = list_electron(*param_value)
+            transport_graph.set_node_value(bound_electron.node_id, "name", electron_list_prefix)
             transport_graph.add_edge(
                 list_electron.node_id,
                 node_id,
@@ -420,8 +427,13 @@ class Electron:
             )
 
         elif isinstance(param_value, dict):
+
+            def _auto_dict_node(*args, **kwargs):
+                return dict(kwargs)
+
             dict_electron = Electron(function=_auto_dict_node, metadata=collection_metadata)
-            dict_electron(**param_value)
+            bound_electron = dict_electron(**param_value)
+            transport_graph.set_node_value(bound_electron.node_id, "name", electron_dict_prefix)
             transport_graph.add_edge(
                 dict_electron.node_id,
                 node_id,
@@ -650,11 +662,3 @@ def to_decoded_electron_collection(**x):
         return TransportableObject.deserialize_list(collection)
     elif isinstance(collection, dict):
         return TransportableObject.deserialize_dict(collection)
-
-
-def _auto_list_node(*args, **kwargs):
-    return list(args)
-
-
-def _auto_dict_node(*args, **kwargs):
-    return dict(kwargs)
