@@ -42,9 +42,7 @@ class LocalDispatcher(BaseDispatcher):
     @staticmethod
     def dispatch(
         orig_lattice: Lattice,
-        dispatcher_addr: str = get_config("dispatcher.address")
-        + ":"
-        + str(get_config("dispatcher.port")),
+        dispatcher_addr: str = None,
     ) -> Callable:
         """
         Wrapping the dispatching functionality to allow input passing
@@ -55,11 +53,16 @@ class LocalDispatcher(BaseDispatcher):
 
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
-            dispatcher_addr: The address of the dispatcher server.
+            dispatcher_addr: The address of the dispatcher server.  If None then then defaults to the address set in Covalent's config.
 
         Returns:
             Wrapper function which takes the inputs of the workflow as arguments
         """
+
+        if dispatcher_addr is None:
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
 
         @wraps(orig_lattice)
         def wrapper(*args, **kwargs) -> str:
@@ -93,9 +96,7 @@ class LocalDispatcher(BaseDispatcher):
     @staticmethod
     def dispatch_sync(
         lattice: Lattice,
-        dispatcher_addr: str = get_config("dispatcher.address")
-        + ":"
-        + str(get_config("dispatcher.port")),
+        dispatcher_addr: str = None,
     ) -> Callable:
         """
         Wrapping the synchronous dispatching functionality to allow input
@@ -106,11 +107,16 @@ class LocalDispatcher(BaseDispatcher):
 
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
-            dispatcher_addr: The address of the dispatcher server.
+            dispatcher_addr: The address of the dispatcher server. If None then then defaults to the address set in Covalent's config.
 
         Returns:
             Wrapper function which takes the inputs of the workflow as arguments
         """
+
+        if dispatcher_addr is None:
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
 
         @wraps(lattice)
         def wrapper(*args, **kwargs) -> Result:
