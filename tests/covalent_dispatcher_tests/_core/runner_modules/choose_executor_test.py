@@ -22,11 +22,11 @@
 Test for choosing executors.
 """
 
-import covalent as ct
+from covalent_dispatcher._core.runner import _executor_manager
 
 
 def test_executors_exist():
     """Test that there is at least one executor loaded."""
 
-    executor_list = ct.executor._executor_manager.list_executors(print_names=False)
+    executor_list = _executor_manager.list_executors(print_names=False)
     assert len(executor_list) > 0

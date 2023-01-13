@@ -36,17 +36,25 @@ from covalent._shared_files.defaults import prefix_separator, sublattice_prefix
 from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
-from covalent.executor import _executor_manager
 from covalent.executor.base import wrapper_fn
 
 from .._db import upsert
 from .._db.write_result_to_db import get_sublattice_electron_id
 from . import data_manager as datasvc
 from . import dispatcher
+from .runner_modules.executor_manager import _ExecutorManager
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 debug_mode = get_config("sdk.log_level") == "debug"
+
+
+_executor_manager = _ExecutorManager()
+
+
+for name in _executor_manager.executor_plugins_map:
+    plugin_class = _executor_manager.executor_plugins_map[name]
+    globals()[plugin_class.__name__] = plugin_class
 
 
 # This is to be run out-of-process

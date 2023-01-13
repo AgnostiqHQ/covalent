@@ -18,19 +18,23 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Tests for Covalent executor init file."""
+"""Tests for Covalent executor manager."""
 
 from unittest.mock import MagicMock
 
 import pytest
 
-from covalent.executor import BaseExecutor, _executor_manager, _ExecutorManager
+from covalent.executor.base import BaseExecutor
+from covalent_dispatcher._core.runner_modules.executor_manager import _ExecutorManager
 
 
 def test_get_executor_local(mocker):
     """Test that config is reloaded when the get_executor method is called for the local executor."""
 
-    update_config_mock = mocker.patch("covalent.executor.update_config")
+    _executor_manager = _ExecutorManager()
+    update_config_mock = mocker.patch(
+        "covalent_dispatcher._core.runner_modules.executor_manager.update_config"
+    )
     _executor_manager.get_executor(name="local")
     update_config_mock.assert_called_once_with()
 
@@ -39,7 +43,7 @@ def test_executor_manager_init(mocker):
     """Test the init method of the executor manager object."""
 
     generate_plugins_list_mock = mocker.patch(
-        "covalent.executor._ExecutorManager.generate_plugins_list"
+        "covalent_dispatcher._core.runner_modules.executor_manager._ExecutorManager.generate_plugins_list"
     )
 
     _ExecutorManager()
@@ -49,20 +53,26 @@ def test_executor_manager_init(mocker):
 def test_executor_manager_generate_plugins_list(mocker):
     """Test the generate plugins list method of the executor manager object."""
 
-    init_mock = mocker.patch("covalent.executor._ExecutorManager.__init__", return_value=None)
+    init_mock = mocker.patch(
+        "covalent_dispatcher._core.runner_modules.executor_manager._ExecutorManager.__init__",
+        return_value=None,
+    )
 
     em = _ExecutorManager()
     init_mock.called_once_with()
 
-    load_executors_mock = mocker.patch("covalent.executor._ExecutorManager._load_executors")
+    load_executors_mock = mocker.patch(
+        "covalent_dispatcher._core.runner_modules.executor_manager._ExecutorManager._load_executors"
+    )
 
     os_path_dirname_mock = mocker.patch("os.path.dirname", return_value="covalent")
     os_path_join_mock = mocker.patch("os.path.join", return_value="pkg_plugins_path")
     get_config_mock = mocker.patch(
-        "covalent.executor.get_config", return_value="user_plugins_path"
+        "covalent_dispatcher._core.runner_modules.executor_manager.get_config",
+        return_value="user_plugins_path",
     )
     load_installed_plugins_mock = mocker.patch(
-        "covalent.executor._ExecutorManager._load_installed_plugins"
+        "covalent_dispatcher._core.runner_modules.executor_manager._ExecutorManager._load_installed_plugins"
     )
 
     em.generate_plugins_list()
@@ -86,7 +96,10 @@ def test_get_executor(mocker):
     def plugin_mock(**kwargs):
         return "plugin map func called"
 
-    mocker.patch("covalent.executor._ExecutorManager.__init__", return_value=None)
+    mocker.patch(
+        "covalent_dispatcher._core.runner_modules.executor_manager._ExecutorManager.__init__",
+        return_value=None,
+    )
 
     # Case 1 - name is BaseExecutor type
     em = _ExecutorManager()
@@ -94,8 +107,13 @@ def test_get_executor(mocker):
     assert isinstance(resp, MockExecutor)
 
     # Case 2 - name is str and in executor_plugin_map
-    get_config_mock = mocker.patch("covalent.executor.get_config", return_value={"test_arg": 1})
-    update_config_mock = mocker.patch("covalent.executor.update_config")
+    get_config_mock = mocker.patch(
+        "covalent_dispatcher._core.runner_modules.executor_manager.get_config",
+        return_value={"test_arg": 1},
+    )
+    update_config_mock = mocker.patch(
+        "covalent_dispatcher._core.runner_modules.executor_manager.update_config"
+    )
 
     em.executor_plugins_map = {"mock_name": plugin_mock}
     resp = em.get_executor(name="mock_name")
@@ -115,9 +133,12 @@ def test_get_executor(mocker):
 def test_load_installed_plugins(mocker):
     """Test load installed plugins."""
 
-    mocker.patch("covalent.executor._ExecutorManager.__init__", return_value=None)
+    mocker.patch(
+        "covalent_dispatcher._core.runner_modules.executor_manager._ExecutorManager.__init__",
+        return_value=None,
+    )
     populate_executor_map_from_module_mock = mocker.patch(
-        "covalent.executor._ExecutorManager._load_installed_plugins"
+        "covalent_dispatcher._core.runner_modules.executor_manager._ExecutorManager._load_installed_plugins"
     )
     em = _ExecutorManager()
     em._load_installed_plugins()
@@ -130,7 +151,9 @@ def test_warning_when_plugin_name_is_invalid(mocker):
     the_module = MagicMock()
     the_module.__name__ = "test_module"
     em._is_plugin_name_valid = MagicMock(return_value=False)
-    app_log_mock = mocker.patch("covalent.executor.app_log")
+    app_log_mock = mocker.patch(
+        "covalent_dispatcher._core.runner_modules.executor_manager.app_log"
+    )
 
     em._populate_executor_map_from_module(the_module)
 
@@ -144,9 +167,11 @@ def test_zero_plugin_class_else_case(mocker):
     the_module.__name__ = "test_module"
     em._is_plugin_name_valid = MagicMock(return_value=True)
     em.nonzero_plugin_classes = MagicMock(return_value=False)
-    app_log_mock = mocker.patch("covalent.executor.app_log")
+    app_log_mock = mocker.patch(
+        "covalent_dispatcher._core.runner_modules.executor_manager.app_log"
+    )
 
-    mocker.patch("covalent.executor.inspect.getmembers")
+    mocker.patch("covalent_dispatcher._core.runner_modules.executor_manager.inspect.getmembers")
 
     em._populate_executor_map_from_module(the_module)
 

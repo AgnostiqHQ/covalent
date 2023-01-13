@@ -25,7 +25,7 @@ from covalent import electron as etron
 from covalent._shared_files.utils import get_serialized_function_str
 from covalent._workflow.lattice import Lattice
 
-executor = covalent.executor._executor_manager.list_executors(print_names=False)[0]
+executor = "local"
 
 
 def non_electron(x):
