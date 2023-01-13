@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- MNIST tutorial now shows non-Null outputs and the classifier training log image has been updated.
+
 ## [0.211.1-rc.0] - 2023-01-12
 
 ### Authors
