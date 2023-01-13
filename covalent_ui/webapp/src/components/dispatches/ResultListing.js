@@ -117,7 +117,7 @@ const headers = [
   },
 ]
 
-const ResultsTableHead = ({
+export const ResultsTableHead = ({
   order,
   orderBy,
   onSort,
@@ -183,6 +183,7 @@ const ResultsTableHead = ({
             />
             {dashboardListView.length !== 0 ? (
               <KeyboardArrowDownIcon
+                data-testid="KeyboardArrowDownIcon"
                 onClick={handleClick}
                 sx={{
                   '&:hover': {
@@ -247,6 +248,7 @@ const ResultsTableHead = ({
             </MenuItem>
             {filterValue === 'ALL' ? (
               <MenuItem
+                data-testid="menuitem"
                 divider
                 onClick={() => {
                   handleAllDelete('ALL', allDispatches)
@@ -259,6 +261,7 @@ const ResultsTableHead = ({
             {(filterValue === 'COMPLETED' || filterValue === 'ALL') &&
             completedDispatches !== 0 ? (
               <MenuItem
+                data-testid="menuitem"
                 divider
                 onClick={() => {
                   handleAllDelete('COMPLETED', completedDispatches)
@@ -272,6 +275,7 @@ const ResultsTableHead = ({
             {(filterValue === 'RUNNING' || filterValue === 'ALL') &&
             runningDispatches !== 0 ? (
               <MenuItem
+                data-testid="menuitem"
                 divider
                 onClick={() => {
                   handleAllDelete('RUNNING', runningDispatches)
@@ -284,6 +288,7 @@ const ResultsTableHead = ({
             {(filterValue === 'FAILED' || filterValue === 'ALL') &&
             failedDispatches !== 0 ? (
               <MenuItem
+                data-testid="menuitem"
                 divider
                 onClick={() => {
                   handleAllDelete('FAILED', failedDispatches)
@@ -330,6 +335,7 @@ const ResultsTableHead = ({
             >
               {header.sortable ? (
                 <TableSortLabel
+                  data-testid="tablesortlabel"
                   active={orderBy === header.id}
                   direction={orderBy === header.id ? order : 'asc'}
                   onClick={() => onSort(header.id)}
@@ -347,7 +353,7 @@ const ResultsTableHead = ({
   )
 }
 
-const ResultsTableToolbar = ({
+export const ResultsTableToolbar = ({
   query,
   onSearch,
   setQuery,
@@ -388,6 +394,7 @@ const ResultsTableToolbar = ({
             }}
           >
             <IconButton
+              data-testid="iconButtonDelete"
               onClick={() => setOpenDialogBox(true)}
               mt={2}
               sx={{
@@ -461,6 +468,7 @@ const ResultsTableToolbar = ({
          /> */}
       </Grid>
       <Input
+        data-testid="input"
         sx={{
           ml: 'auto',
           px: 1,
@@ -484,7 +492,11 @@ const ResultsTableToolbar = ({
             position="end"
             sx={{ visibility: !!query ? 'visible' : 'hidden' }}
           >
-            <IconButton size="small" onClick={() => setQuery('')}>
+            <IconButton
+              data-testid="closeIconButton"
+              size="small"
+              onClick={() => setQuery('')}
+            >
               <ClearIcon fontSize="inherit" sx={{ color: 'text.secondary' }} />
             </IconButton>
           </InputAdornment>
@@ -850,6 +862,7 @@ const ResultListing = () => {
                       <TableRow hover key={result.dispatchId}>
                         <TableCell padding="checkbox">
                           <Checkbox
+                            data-testid="checkbox"
                             disableRipple
                             checked={_.includes(selected, result.dispatchId)}
                             onClick={() =>
@@ -941,6 +954,7 @@ const ResultListing = () => {
             >
               {!_.isEmpty(dashboardListView) && (
                 <Pagination
+                  data-testid="pagination"
                   color="primary"
                   shape="rounded"
                   variant="outlined"
@@ -970,7 +984,7 @@ const ResultListing = () => {
           <TableContainer>
             <StyledTable>
               <TableBody>
-                {[...Array(7)].map((_) => (
+                {[...Array(7)].map(() => (
                   <TableRow key={Math.random()}>
                     <TableCell padding="checkbox">
                       <Skeleton sx={{ my: 2, mx: 1 }} />
