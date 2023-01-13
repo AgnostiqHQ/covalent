@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Front-end pending unit tests for the GUI.
+
 ## [0.211.1-rc.0] - 2023-01-12
 
 ### Authors
@@ -15,7 +19,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Aravind-psiog <aravind.prabaharan@psiog.com>
 - Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
-
 
 ### Fixed 
 
