@@ -43,9 +43,8 @@ import { ReactComponent as Logs } from '../../assets/logs.svg'
 
 import { ReactComponent as ExitNewIcon } from '../../assets/exit.svg'
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
-import { useMatch } from 'react-router-dom'
+import { useMatch, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
-import { useNavigate } from 'react-router-dom'
 import DialogBox from '../../components/settings/DialogBox'
 import { updateSettings } from '../../redux/settingsSlice'
 import { toggleLatticeDrawer } from '../../redux/popupSlice'
@@ -139,7 +138,7 @@ const NavDrawer = () => {
   )
 }
 
-const DialogToolbar = ({
+export const DialogToolbar = ({
   openDialogBox,
   setOpenDialogBox,
   onClickHand,
@@ -147,7 +146,7 @@ const DialogToolbar = ({
   handlePopClose,
 }) => {
   return (
-    <Toolbar disableGutters sx={{ mb: 1 }}>
+    <Toolbar data-testid="toolBar" disableGutters sx={{ mb: 1 }}>
       <Typography
         sx={{
           display: 'flex',
@@ -169,7 +168,7 @@ const DialogToolbar = ({
   )
 }
 
-const LinkButton = ({
+export const LinkButton = ({
   title,
   icon,
   path,
@@ -190,17 +189,17 @@ const LinkButton = ({
   const [hovered, sethovered] = useState(false)
   let navigate = useNavigate()
 
-  const menuClick = (path) => {
+  const menuClick = (pathname) => {
     if (dRes === null) {
-      navigate(path)
+      navigate(pathname)
     } else if (dRes.isChanged === true) {
-      if (path === '/settings') {
+      if (pathname === '/settings') {
         setPopupShow(false)
       } else {
         setPopupShow(true)
       }
     } else {
-      navigate(path)
+      navigate(pathname)
     }
   }
 
@@ -259,6 +258,7 @@ const LinkButton = ({
         />
       )}
       <Snackbar
+        data-testid="snackbar"
         open={openSnackbar}
         autoHideDuration={3000}
         message={snackbarMessage}
@@ -277,6 +277,7 @@ const LinkButton = ({
       />
       {title === 'Logo' ? (
         <ListItemButton
+          data-testid="LogoListItemButton"
           sx={{
             position: 'fixed',
             top: 5,
@@ -307,6 +308,7 @@ const LinkButton = ({
           enterNextDelay={750}
         >
           <ListItemButton
+            data-testid="SpecificListItemButton"
             disableRipple
             sx={{
               textAlign: 'left',
@@ -319,8 +321,6 @@ const LinkButton = ({
               },
             }}
             onClick={() => menuClick(path)}
-            // component={Link}
-            // to={path}
             selected={!!selected}
           >
             {!!selected ? (
