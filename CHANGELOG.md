@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - MNIST tutorial now shows non-Null outputs and the classifier training log image has been updated.
+- Minor changes to tutorials: autoencoder, quantum and classical svm
 - Fixed naming of collection nodes (was breaking postprocessing)
 - Restored compatibility with stable release of AWS executors
 
