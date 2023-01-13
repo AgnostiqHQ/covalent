@@ -86,6 +86,7 @@ const DashboardCard = () => {
           onClose={() => setOpenSnackbar(false)}
           action={
             <SvgIcon
+              data-testid="closeIcon"
               sx={{
                 mt: 2,
                 zIndex: 2,
@@ -136,7 +137,12 @@ const DashboardCard = () => {
   )
 }
 
-const DashBoardCardItems = ({ desc, content, align, isSkeletonPresent }) => (
+export const DashBoardCardItems = ({
+  desc,
+  content,
+  align,
+  isSkeletonPresent,
+}) => (
   <Box
     sx={{
       display: 'flex',
@@ -155,7 +161,7 @@ const DashBoardCardItems = ({ desc, content, align, isSkeletonPresent }) => (
     >
       <Typography fontSize="h5.fontSize" color="text.secondary">
         {isSkeletonPresent ? (
-          <Skeleton width={25} />
+          <Skeleton data-testid="skeleton" width={25} />
         ) : content || content === 0 ? (
           content
         ) : (

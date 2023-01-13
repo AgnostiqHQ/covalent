@@ -11,6 +11,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - MNIST tutorial now shows non-Null outputs and the classifier training log image has been updated.
 
+## [0.212.0-rc.0] - 2023-01-13
+
+### Authors
+
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- Front-end pending unit tests for the GUI.
+
 ## [0.211.1-rc.0] - 2023-01-12
 
 ### Authors
@@ -19,7 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Aravind-psiog <aravind.prabaharan@psiog.com>
 - Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
-
 
 ### Fixed 
 

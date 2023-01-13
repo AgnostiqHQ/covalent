@@ -20,39 +20,39 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
- import { screen } from '@testing-library/react'
- import App from '../DispatchTopBar'
- import { BrowserRouter } from 'react-router-dom'
- import React from 'react'
- import { Provider } from 'react-redux'
- import { render } from '@testing-library/react'
- import reducers from '../../../redux/reducers'
- import { configureStore } from '@reduxjs/toolkit'
- import theme from '../../../utils/theme'
- import ThemeProvider from '@mui/system/ThemeProvider'
+import { screen, render } from '@testing-library/react'
+import App from '../DispatchTopBar'
+import { BrowserRouter } from 'react-router-dom'
+import React from 'react'
+import { Provider } from 'react-redux'
+import reducers from '../../../redux/reducers'
+import { configureStore } from '@reduxjs/toolkit'
+import theme from '../../../utils/theme'
+import ThemeProvider from '@mui/system/ThemeProvider'
 
- function reduxRender(renderedComponent) {
-   const store = configureStore({
-     reducer: reducers,
-   })
+function reduxRender(renderedComponent) {
+  const store = configureStore({
+    reducer: reducers,
+  })
 
-   return render(
-     <Provider store={store}>
-       <ThemeProvider theme={theme}>
-         <BrowserRouter>{renderedComponent}</BrowserRouter>
-       </ThemeProvider>
-     </Provider>
-   )
- }
+  return render(
+    <Provider store={store}>
+      <ThemeProvider theme={theme}>
+        <BrowserRouter>{renderedComponent}</BrowserRouter>
+      </ThemeProvider>
+    </Provider>
+  )
+}
 
- describe('Dispatch TopBar', () => {
+describe('Dispatch TopBar', () => {
   const latDetails = {
-    directory: "/home/prasannavenkatesh/Desktop/workflows/results/4be2f8f9-528d-4006-9e13-0ddf84172c98",
-    dispatch_id: "4be2f8f9-528d-4006-9e13-0ddf84172c98",
-    ended_at: "2022-08-09T11:49:33",
+    directory:
+      '/home/prasannavenkatesh/Desktop/workflows/results/4be2f8f9-528d-4006-9e13-0ddf84172c98',
+    dispatch_id: '4be2f8f9-528d-4006-9e13-0ddf84172c98',
+    ended_at: '2022-08-09T11:49:33',
     runtime: 2000,
-    started_at: "2022-08-09T11:49:31",
-    status: "COMPLETED",
+    started_at: '2022-08-09T11:49:31',
+    status: 'COMPLETED',
     total_electrons: 54,
     total_electrons_completed: 54,
     updated_at: null,
@@ -70,14 +70,14 @@
   })
 
   test('status card isfetching rendered', () => {
-    reduxRender(<App isFetching={false}/>)
+    reduxRender(<App isFetching={false} />)
     const linkElement = screen.getByTestId('topbarcard')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('status card latDetails rendered', () => {
-    reduxRender(<App latDetails={latDetails}/>)
+    reduxRender(<App latDetails={latDetails} />)
     const linkElement = screen.getByTestId('topbarcard')
     expect(linkElement).toBeInTheDocument()
   })
- })
+})

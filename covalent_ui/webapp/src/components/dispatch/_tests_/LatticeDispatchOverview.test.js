@@ -20,12 +20,11 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { screen } from '@testing-library/react'
+import { screen, render } from '@testing-library/react'
 import App from '../LatticeDispatchOverview'
 import { BrowserRouter } from 'react-router-dom'
 import React from 'react'
 import { Provider } from 'react-redux'
-import { render } from '@testing-library/react'
 import reducers from '../../../redux/reducers'
 import { configureStore } from '@reduxjs/toolkit'
 import theme from '../../../utils/theme'
@@ -47,16 +46,17 @@ function reduxRender(renderedComponent) {
 
 describe('Displattice dispatch overview contents', () => {
   const result = {
-    directory: "/home/prasannavenkatesh/Desktop/workflows/results/4be2f8f9-528d-4006-9e13-0ddf84172c98",
-    dispatch_id: "4be2f8f9-528d-4006-9e13-0ddf84172c98",
-    ended_at: "2022-08-09T11:49:33",
+    directory:
+      '/home/prasannavenkatesh/Desktop/workflows/results/4be2f8f9-528d-4006-9e13-0ddf84172c98',
+    dispatch_id: '4be2f8f9-528d-4006-9e13-0ddf84172c98',
+    ended_at: '2022-08-09T11:49:33',
     runtime: 2000,
-    started_at: "2022-08-09T11:49:31",
-    status: "COMPLETED",
+    started_at: '2022-08-09T11:49:31',
+    status: 'COMPLETED',
     total_electrons: 54,
     total_electrons_completed: 54,
     updated_at: null,
-    lattice: "safsaf"
+    lattice: 'safsaf',
   }
 
   test('Dispatch drawer contents is rendered', () => {
@@ -72,7 +72,14 @@ describe('Displattice dispatch overview contents', () => {
   })
 
   test('run time rendered', () => {
-    reduxRender(<App result={result} status='Completed' startTime={result.started_at} endTime={result.ended_at} />)
+    reduxRender(
+      <App
+        result={result}
+        status="Completed"
+        startTime={result.started_at}
+        endTime={result.ended_at}
+      />
+    )
     const linkElement = screen.getByTestId('dispatchoverview')
     expect(linkElement).toBeInTheDocument()
   })
@@ -107,32 +114,21 @@ describe('Displattice dispatch overview contents', () => {
     expect(linkElement).toBeInTheDocument()
   })
 
-  test('Source section rendered', () => {
-    reduxRender(<App src="x=0" />)
-    const linkElement = screen.getByTestId('dispatchoverview')
-    expect(linkElement).toBeInTheDocument()
-  })
-
   test('function to string rendered', () => {
     reduxRender(<App src="function x=0" />)
     const linkElement = screen.getByTestId('dispatchoverview')
     expect(linkElement).toBeInTheDocument()
   })
 
-  describe("dispatchoverview should rendered", () => {
-    const result = {
-      lattice: "callValue", isFetching: "callValue", status: "COMPLETED",
-    }
-
+  describe('dispatchoverview should rendered', () => {
     test('renders dispatchoverview hasStarted', async () => {
-      reduxRender(<App hasStarted='Completed' />)
-      const linkElement = screen.getByTestId("copyButton")
+      reduxRender(<App hasStarted="Completed" />)
+      const linkElement = screen.getByTestId('copyButton')
       expect(linkElement).toBeInTheDocument()
-
     })
 
     test('renders dispatchoverview hasEnded', async () => {
-      reduxRender(<App hasEnded='Completed' />)
+      reduxRender(<App hasEnded="Completed" />)
       const linkElement = screen.getByTestId('copyIcon')
       expect(linkElement).toBeInTheDocument()
     })
@@ -156,11 +152,11 @@ describe('Displattice dispatch overview contents', () => {
     })
 
     test('renders skeleton', async () => {
-      reduxRender(<App lattice={result.lattice} dispatchoverview={true} result={result} />)
+      reduxRender(
+        <App lattice={result.lattice} dispatchoverview={true} result={result} />
+      )
       const linkElement = screen.getByTestId('copyButton')
       expect(linkElement).toBeInTheDocument()
     })
-
   })
-
 })
