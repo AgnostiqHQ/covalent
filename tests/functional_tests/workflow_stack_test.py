@@ -786,3 +786,23 @@ def test_electron_getattr():
     workflow_result = rm.get_result(dispatch_id, wait=True)
     assert workflow_result.result == 25
     rm._delete_result(dispatch_id)
+
+
+def test_workflows_with_list_nodes():
+    """Test workflows with auto generated list nodes"""
+
+    @ct.electron
+    def sum_array(arr):
+        return sum(arr)
+
+    @ct.lattice
+    def workflow(x):
+        return sum_array(x)
+
+    dispatch_id = ct.dispatch(workflow)([1, 2, 3])
+
+    res_obj = rm.get_result(dispatch_id, wait=True)
+
+    assert res_obj.result == 6
+
+    rm._delete_result(dispatch_id)
