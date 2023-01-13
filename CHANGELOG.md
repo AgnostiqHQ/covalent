@@ -11,6 +11,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Front-end pending unit tests for the GUI.
 
+## [0.211.1-rc.0] - 2023-01-12
+
+### Authors
+
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Aravind-psiog <aravind.prabaharan@psiog.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
 ### Fixed 
 
 - Optimization of logs on the GUI for large log file sizes. 
