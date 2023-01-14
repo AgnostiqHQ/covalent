@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.212.1-rc.0] - 2023-01-14
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+
+
 
 ### Fixed
 
