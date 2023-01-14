@@ -190,7 +190,7 @@ async def cancel(request: Request) -> str:
 
     await dispatcher.cancel_running_dispatch(dispatch_id, task_ids)
     if task_ids:
-        resp = f"Cancelled tasks {task_ids} in dispatch {dispatch_id}"
+        resp = f"Cancelled tasks {task_ids} in dispatch {dispatch_id}."
     else:
         resp = f"Dispatch {dispatch_id} cancelled."
     return resp
