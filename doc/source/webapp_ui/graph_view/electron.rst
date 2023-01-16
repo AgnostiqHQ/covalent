@@ -2,33 +2,35 @@
 Electron Sidebar
 ===================
 
+The Electron sidebar shows information about a selected task node. Click an electron node in the transport graph to display the sidebar.
+
+
 .. image:: ../images/electron_sidebar.gif
    :align: center
    :width: 5000px
 
-The electron sidebar provides node-level details for a particular workflow dispatch. The sidebar will be shown on the right-hand side when one of the nodes is clicked.
 This sidebar contains the following attributes:
 
-- **Status**
+.. image:: ../../_static/ui_electron_side.png
+   :align: right
 
-  Shows the status for that particular node/electron.
+Status
+    The status for the selected node/electron.
 
-- **Started - Ended**
+Started - Ended
+    The local time when the electron dispatch started and ended.
 
-  Shows the local time when a workflow dispatch started and when a workflow dispatch ended.
+Runtime
+    The live runtime for the selected node.
 
-- **Runtime**
+Input
+   The input parameters passed to the selected node. Click the parameter string to :ref:`copy a serialized representation <pickle_copy>` of the input.
 
-  Shows the live runtime for that particular node.
+Result
+    The :code:`Result` returned by the electron function. Click the result string to :ref:`copy a serialized representation <pickle_copy>` of the result.
 
-- **Input**
+Executor
+    The executor's type and its relevant information for the selected node.
 
-  Shows the input parameters for that particular node.
-
-- **Executor**
-
-  Shows the executor's type and its relevant information for that particular node.
-
-- **Function String**
-
-  Shows the detailed string representation of a workflow function for that particular node (python format).
+Function String
+    The :code:`electron`-decorated Python function.
