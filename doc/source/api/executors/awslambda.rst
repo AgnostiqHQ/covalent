@@ -377,12 +377,13 @@ All of our base AWS executor images are available in the public registries and c
 
 .. code-block:: bash
 
+   aws ecr-public get-login-password --region <aws-region> | docker login --username AWS --password-stdin publc.ecr.aws
    docker pull public.ecr.aws/covalent/covalent-lambda-executor:stable
 
 
 .. note::
 
-   Executor images with the ``latest`` tag are also routinely pushed to the same registry. However, we strongly recommended using the **stable** tag when running executing workflows usin the AWS Lambda executor
+   Executor images with the ``latest`` tag are also routinely pushed to the same registry. However, we strongly recommended using the **stable** tag when running executing workflows usin the AWS Lambda executor. The ``<aws-region>`` is a placeholder for the actual AWS region to be used by the user
 
 
 Once the base executor images have been downloaded to the local machines, users can extend the image and install all the necessary Python packages required by their tasks. The base executor uses a build time argument named ``LAMBDA_TASK_ROOT`` to specify the install path of all python packages to ``/var/task`` inside the image. When extending the base image with custom packages, it is **recommended** to install all packages to the same location so that they get resolved properly during runtime. Following is a simple example of how users can extend the base image in their own ``Dockerfile`` to install additional packages (``numpy``, ``pandas`` and ``scipy``)
