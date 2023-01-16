@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Casey Jao <casey@agnostiq.ai>
 
+
+
 ### Fixed
 
 - Fixed naming of collection nodes (was breaking postprocessing)
