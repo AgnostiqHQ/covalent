@@ -360,3 +360,22 @@ For more information on AWS S3, refer to `AWS S3 <https://aws.amazon.com/s3/>`_.
         aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.<region>.amazonaws.com
         docker tag public.ecr.aws/covalent/covalent-lambda-executor:stable <aws_account_id>.dkr.ecr.<region>.amazonaws.com/<my-repository>:tag
         docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/<my-repository>:tag
+
+
+5. Custom Docker images
+##########################
+
+As mentioned earlier, the AWS Lambda executor using a ``docker`` image to execute an electron from a workflow. We distribute AWS Lambda executor docker images that contain just the essential dependencies such as ``covalent``. However, when the electron depends on external Python packages that are not included by default in the base executor image, users would need to build custom images prior to running workflows using the AWS Lambda executor. In the section we cover the steps necessary to extend the base executor image to include all the necessary python dependencies that would be required for successful electron execution.
+
+
+All of our base AWS executor images are available in the public registries and can be downloaded locally from the public ECR using the steps outlined `here <https://docs.aws.amazon.com/AmazonECR/latest/public/docker-pull-ecr-image.html>`_. For instance the ``stable`` AWS Lambda executor image can be downloaded from public ECR as follows
+
+
+.. code-block:: bash
+
+   docker pull public.ecr.aws/covalent/covalent-lambda-executor:stable
+
+
+.. note::
+
+   Executor images with the ``latest`` tag are also routinely pushed to the same registry. However, we strongly recommended using the **stable** tag when running executing workflows usin the AWS Lambda executor
