@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated `_get_result_from_dispatcher` test to check whether using a link directly works or not
 
+### Docs
+- Revised UI reference. Added Settings page documentation.
 
 ## [0.212.1-rc.0] - 2023-01-14
 
