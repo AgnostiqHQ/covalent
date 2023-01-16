@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [UNRELEASED]
 
 ### Docs
+
+- Update `AWS Lambda` executor RTD with steps to extend the base executor image for installing custom packages
+
+### Docs
 - Revised UI reference. Added Settings page documentation.
 
 ## [0.212.1-rc.0] - 2023-01-14
