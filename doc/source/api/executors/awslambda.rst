@@ -379,3 +379,27 @@ All of our base AWS executor images are available in the public registries and c
 .. note::
 
    Executor images with the ``latest`` tag are also routinely pushed to the same registry. However, we strongly recommended using the **stable** tag when running executing workflows usin the AWS Lambda executor
+
+
+Once the base executor images have been downloaded to the local machines, users can extend the image and install all the necessary Python packages required by their tasks. The base executor images exposes a few enviroment variables that facilitate installing new packages to the right locations so that during runtime their paths can be properly resolved the AWS Lambda. Following is a simple example of how users can extend the base image in their own ``Dockerfile`` to install additional packages (``numpy``, ``pandas`` and ``scipy``)
+
+
+.. code-block:: docker
+
+   FROM public.ecr.aws/covalent/covalent-lambda-executor:stable as base
+
+   RUN pip install --target ${LAMBDA_TASK_ROOT} numpy pandas scipy
+
+
+.. warning::
+
+   Do **not** override the entrypoint of the base image in the derived image when installing new packages. The docker  ``ENTRYPOINT`` of the base image is what that gets trigged when AWS invokes your lambda function to execute the workflow electron
+
+
+The ``LAMBDA_TASK_ROOT`` enviroment variable is exposed from the base image and contains the location of the path where all additional python packages need to be installed in order for them to be available to the handler at runtime.
+
+Once the ``Dockerfile`` has been created with all the necessary Python dependencies, the derived image can be simply built as follows
+
+.. code-block:: bash
+
+   docker build -f Dockerfile -t my-custom-awslambda-executor:latest
