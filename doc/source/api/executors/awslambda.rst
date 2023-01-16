@@ -402,8 +402,37 @@ Once the base executor images have been downloaded to the local machines, users 
 
 The ``LAMBDA_TASK_ROOT`` enviroment variable is exposed from the base image and contains the location of the path where all additional python packages need to be installed in order for them to be available to the handler at runtime.
 
-Once the ``Dockerfile`` has been created with all the necessary Python dependencies, the derived image can be simply built as follows
+Once the ``Dockerfile`` has been created the derived image can be built as follows
 
 .. code-block:: bash
 
-   docker build -f Dockerfile -t my-custom-awslambda-executor:latest
+   docker build -f Dockerfile -t my-custom-lambda-executor:latest
+
+
+
+Pushing to ECR
+^^^^^^^^^^^^^^^^^^^^^
+
+Once the base executor image has been extended to include the necessary packages, the dervied image needs to be uploaded to ECR so that it can be consumed by a Lambda function when triggered by Covalent. As as first step, it is required to create an elastic container registry to hold the dervied executor images. This can be easily done via using the AWS CLI tool as follows
+
+.. code-block:: bash
+
+   aws ecr create-repository --repository-name covalent/my-custom-lambda-executor
+
+
+To upload the derived image to this registry, we would need to tag our local image as per the AWS guide and push the image to the registry as described `here <https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html>`_. To push an image, first one needs to authenticate with AWS and login their docker client
+
+.. code-block:: bash
+
+   aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.region.amazonaws.com
+
+Once the login is successful, the local image needs to be re-tagged with the ECR repository information. If the image tag is omitted, ``latest`` is applied by default. In the following code block we show how to tag the derived image ``my-custom-lambda-executor:latest`` with the ECR information so that it can be uploaded successfully
+
+.. code-block:: bash
+
+   docker tag my-custom-lambda-executor:latest <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/my-custom-lambda-executor
+
+
+.. note::
+
+   <aws-account-id> and <aws-region> are placeholders for the actual AWS account ID and region to be used by the users
