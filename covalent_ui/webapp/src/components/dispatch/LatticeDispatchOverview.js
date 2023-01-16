@@ -29,7 +29,7 @@ import {
 } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import React, { useEffect } from 'react'
-import { formatDate, truncateMiddle } from '../../utils/misc'
+import { formatDate, truncateMiddle, getLocalStartTime } from '../../utils/misc'
 import CopyButton from '../common/CopyButton'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import Heading from '../common/Heading'
@@ -103,8 +103,9 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
             <Skeleton />
           ) : (
             <Typography fontSize="body2.fontSize">
-              {formatDate(result?.started_at)}
-              {hasEnded && ` - ${formatDate(result?.ended_at)}`}
+              {formatDate(getLocalStartTime(result?.started_at))}
+              {hasEnded &&
+                ` - ${formatDate(getLocalStartTime(result?.ended_at))}`}
             </Typography>
           )}
         </>
@@ -160,20 +161,22 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       )}
 
       {/* Result */}
-      {Object.keys(drawerResult).length !== 0 && result.status === 'COMPLETED' && (
-        <>
-          <ResultSection
-            isFetching={
-              drawerResultListFetching && Object.keys(drawerResult).length === 0
-            }
-            sx={(theme) => ({
-              bgcolor: theme.palette.background.outRunBg,
-              cursor: 'pointer',
-            })}
-            results={drawerResult}
-          />
-        </>
-      )}
+      {Object.keys(drawerResult).length !== 0 &&
+        result.status === 'COMPLETED' && (
+          <>
+            <ResultSection
+              isFetching={
+                drawerResultListFetching &&
+                Object.keys(drawerResult).length === 0
+              }
+              sx={(theme) => ({
+                bgcolor: theme.palette.background.outRunBg,
+                cursor: 'pointer',
+              })}
+              results={drawerResult}
+            />
+          </>
+        )}
 
       {/* Executor */}
       {Object.keys(drawerExecutorDetail).length !== 0 && (
@@ -194,7 +197,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       <Heading />
 
       {Object.keys(drawerFunctionString).length === 0 &&
-        drawerFunctionStringListFetching ? (
+      drawerFunctionStringListFetching ? (
         <Skeleton height={100} />
       ) : (
         <Paper

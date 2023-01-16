@@ -24,28 +24,47 @@ import { render, screen } from '@testing-library/react'
 import App from '../ExecutorSection'
 
 const metadata = {
-  executor_name: 'dask',
-  executor_details: {
-    attributes: {
-      log_stdout: 'log_stdout.txt',
-      log_stderr: 'log_stderr.txt',
-    },
+  executor: {
+    log_stdout: 'stdout.log',
+    log_stderr: 'stderr.log',
+    cache_dir: '/home/kamaleshsuresh/.cache/covalent',
+    time_limit: '-1',
+    retries: '0',
   },
+  results_dir: '/home/kamaleshsuresh/Downloads/Dispatches/results',
+  workflow_executor: 'local',
+  deps: {},
+  call_before: [],
+  call_after: [],
+  executor_data: {},
+  workflow_executor_data: {},
+  executor_name: 'local',
 }
+
 describe('executor section', () => {
   test('renders Executor section', () => {
-    render(<App metadata={metadata} />)
+    render(
+      <App
+        metadata={metadata}
+        sx={(theme) => ({ bgcolor: theme.palette.background.outRunBg })}
+      />
+    )
     const linkElement = screen.getByTestId('executorSection')
     expect(linkElement).toBeInTheDocument()
   })
   test('renders Executor type', () => {
-    render(<App metadata={metadata} />)
+    render(
+      <App
+        metadata={metadata}
+        sx={(theme) => ({ bgcolor: theme.palette.background.outRunBg })}
+      />
+    )
     const linkElement = screen.getByText('Executor:')
     expect(linkElement).toBeInTheDocument()
   })
   test('renders Executor details', () => {
     render(<App metadata={metadata} />)
-    const linkElement = screen.getByText(/dask/i)
+    const linkElement = screen.getByText(/local/i)
     expect(linkElement).toBeInTheDocument()
   })
   test('renders preview section', () => {
