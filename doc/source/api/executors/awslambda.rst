@@ -363,9 +363,13 @@ For more information on AWS S3, refer to `AWS S3 <https://aws.amazon.com/s3/>`_.
 
 
 5. Custom Docker images
-##########################
+########################
 
 As mentioned earlier, the AWS Lambda executor using a ``docker`` image to execute an electron from a workflow. We distribute AWS Lambda executor docker images that contain just the essential dependencies such as ``covalent``. However, when the electron depends on external Python packages that are not included by default in the base executor image, users would need to build custom images prior to running workflows using the AWS Lambda executor. In the section we cover the steps necessary to extend the base executor image to include all the necessary python dependencies that would be required for successful electron execution.
+
+.. note::
+
+   Using ``PipDeps`` :doc:`../deps` with the AWS Lambda executor is currently not supported as it modifies the execution environment of the lambda during runtime. As per AWS best practices for Lambda it is recommended to ship the lambda function with all its dependencies in a ``deployment`` package as described `here <https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-package.html>`_
 
 
 All of our base AWS executor images are available in the public registries and can be downloaded locally from the public ECR using the steps outlined `here <https://docs.aws.amazon.com/AmazonECR/latest/public/docker-pull-ecr-image.html>`_. For instance the ``stable`` AWS Lambda executor image can be downloaded from public ECR as follows
