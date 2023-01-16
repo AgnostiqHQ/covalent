@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+- Revised UI reference. Added Settings page documentation.
+
 ## [0.212.1-rc.0] - 2023-01-14
 
 ### Authors
@@ -17,9 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed naming of collection nodes (was breaking postprocessing)
 - Restored compatibility with stable release of AWS executors
-
-### Docs
-- Revised UI reference. Added Settings page documentation.
 
 ## [0.212.0-rc.0] - 2023-01-13
 
