@@ -7,6 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.212.1-rc.0] - 2023-01-14
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+
+
+
+### Fixed
+
+- Fixed naming of collection nodes (was breaking postprocessing)
+- Restored compatibility with stable release of AWS executors
+
+## [0.212.0-rc.0] - 2023-01-13
+
+### Authors
+
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- Front-end pending unit tests for the GUI.
+
+## [0.211.1-rc.0] - 2023-01-12
+
+### Authors
+
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: Aravind-psiog <aravind.prabaharan@psiog.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+### Fixed 
+
+- Optimization of logs on the GUI for large log file sizes. 
+- Fixed UI pagination not working for more than 11 pages 
+- Runtime field counting down for select running dispatches
+
+## [0.211.0-rc.0] - 2023-01-10
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
 ### Changed
 - Changed decode-uri-component package version on webapp yarn-lock file.
 - Changed json5 package version on webapp yarn-lock file.
