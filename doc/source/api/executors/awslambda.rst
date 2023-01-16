@@ -385,12 +385,14 @@ All of our base AWS executor images are available in the public registries and c
    Executor images with the ``latest`` tag are also routinely pushed to the same registry. However, we strongly recommended using the **stable** tag when running executing workflows usin the AWS Lambda executor
 
 
-Once the base executor images have been downloaded to the local machines, users can extend the image and install all the necessary Python packages required by their tasks. The base executor images exposes a few enviroment variables that facilitate installing new packages to the right locations so that during runtime their paths can be properly resolved the AWS Lambda. Following is a simple example of how users can extend the base image in their own ``Dockerfile`` to install additional packages (``numpy``, ``pandas`` and ``scipy``)
+Once the base executor images have been downloaded to the local machines, users can extend the image and install all the necessary Python packages required by their tasks. The base executor uses a build time argument named ``LAMBDA_TASK_ROOT`` to specify the install path of all python packages to ``/var/task`` inside the image. When extending the base image with custom packages, it is **recommended** to install all packages to the same location so that they get resolved properly during runtime. Following is a simple example of how users can extend the base image in their own ``Dockerfile`` to install additional packages (``numpy``, ``pandas`` and ``scipy``)
 
 
 .. code-block:: docker
 
    FROM public.ecr.aws/covalent/covalent-lambda-executor:stable as base
+
+   ARG LAMBDA_TASK_ROOT=/var/task
 
    RUN pip install --target ${LAMBDA_TASK_ROOT} numpy pandas scipy
 
@@ -399,8 +401,6 @@ Once the base executor images have been downloaded to the local machines, users 
 
    Do **not** override the entrypoint of the base image in the derived image when installing new packages. The docker  ``ENTRYPOINT`` of the base image is what that gets trigged when AWS invokes your lambda function to execute the workflow electron
 
-
-The ``LAMBDA_TASK_ROOT`` enviroment variable is exposed from the base image and contains the location of the path where all additional python packages need to be installed in order for them to be available to the handler at runtime.
 
 Once the ``Dockerfile`` has been created the derived image can be built as follows
 
@@ -430,9 +430,27 @@ Once the login is successful, the local image needs to be re-tagged with the ECR
 
 .. code-block:: bash
 
-   docker tag my-custom-lambda-executor:latest <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/my-custom-lambda-executor
+   docker tag my-custom-lambda-executor:latest <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/my-custom-lambda-executor:latest
 
 
 .. note::
 
    <aws-account-id> and <aws-region> are placeholders for the actual AWS account ID and region to be used by the users
+
+
+
+Deploying AWS Lambda function
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Once the derived image has been built and pushed to ECR, users need to create a Lambda function or update an existing one to use the new derived image instead of the base image executor image at runtime. A new AWS Lambda function can be quite easily created using the AWS Lambda CLI ``create-function`` command as follows
+
+.. code-block:: bash
+
+   aws lambda create-function --function-name "my-covalent-lambda-function" --region <aws-region> \
+        --package-type Image \
+        --code ImageUri=<aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/my-custom-lambda-executor:latest \
+        --role <Lambda executor role ARN> \
+        --memory-size 512 \
+        --timeout 900
+
+The above CLI command will register a new AWS lambda function that will use the user's custom derived image ``my-custom-lambda-executor:latest`` with a memory size of  ``512 MB`` and a timeout values of ``900`` seconds. The ``role`` argument is used to specify the ARN of the IAM role the AWS Lambda can assume during execution. The necessary permissions for the IAM role have been provided in ``Required AWS resources`` section. More details about creating and updating AWS lambda functions can be found `here <https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-images.html>`_.
