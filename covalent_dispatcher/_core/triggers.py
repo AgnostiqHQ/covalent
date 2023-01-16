@@ -19,18 +19,32 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-import time
+import uuid
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
-SLEEP = 5
+from covalent._shared_files import logger
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
+
+
+SLEEP = 10
+
+all_triggers = {}
 
 
 class DirEventHandler(FileSystemEventHandler):
+    def __init__(self) -> None:
+        super().__init__()
+        self.n_times = 0
+
     def on_modified(self, event):
         super().on_modified(event)
-        print("File modified")
+        self.n_times += 1
+
+        app_log.warning(f"File modified {self.n_times}")
 
 
 class DirTrigger:
@@ -41,7 +55,7 @@ class DirTrigger:
     def start(self):
         event_handler = DirEventHandler()
         self.observer = Observer()
-        self.observer.schedule(event_handler, self.dir_path, recursive=True)
+        self.observer.schedule(event_handler, self.dir_path)
         self.observer.start()
 
     def stop(self):
@@ -51,13 +65,28 @@ class DirTrigger:
 
 def start_triggers():
     # do create_task for all the triggers here
-    trigger = DirTrigger(dir_path=".")
+    trigger = DirTrigger(dir_path="/home/neptune/dev/covalent/covalent_dispatcher/_core/")
     trigger.start()
 
-    print(f"Gonna do doo dee la di doo for {SLEEP} seconds")
-    time.sleep(SLEEP)
+    t_id = str(uuid.uuid4())[-4:]
+    all_triggers[t_id] = trigger
+
+    app_log.warning(f"Started trigger with id: {t_id}")
+
+    return t_id
+
+
+def stop_triggers(t_id):
+    trigger = all_triggers[t_id]
     trigger.stop()
 
+    app_log.warning(f"Stopped trigger with id: {t_id}")
 
-if __name__ == "__main__":
-    start_triggers()
+
+# if __name__ == "__main__":
+#     trigger_id = start_triggers()
+
+#     print(f"Gonna do doo dee la di doo for {SLEEP} seconds")
+#     time.sleep(SLEEP)
+
+#     stop_triggers(trigger_id)
