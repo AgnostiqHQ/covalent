@@ -365,14 +365,13 @@ For more information on AWS S3, refer to `AWS S3 <https://aws.amazon.com/s3/>`_.
 5. Custom Docker images
 ########################
 
-As mentioned earlier, the AWS Lambda executor using a ``docker`` image to execute an electron from a workflow. We distribute AWS Lambda executor docker images that contain just the essential dependencies such as ``covalent``. However, when the electron depends on external Python packages that are not included by default in the base executor image, users would need to build custom images prior to running workflows using the AWS Lambda executor. In the section we cover the steps necessary to extend the base executor image to include all the necessary python dependencies that would be required for successful electron execution.
+As mentioned earlier, the AWS Lambda executor uses a ``docker`` image to execute an electron from a workflow. We distribute AWS Lambda executor base docker images that contain just the essential dependencies such as ``covalent`` and ``covalent-aws-plugins``. However if the electron to be executed using the Lambda executor depends on Python packages that are not present in the base image by default, users will have to a build custom images prior to running their Covalent workflows using the AWS Lambda executor. In this section we cover the necessary steps required to extend the base executor image by installing additional Python packages and pushing the **derived** image to a private elastic container registry (ECR)
 
 .. note::
 
-   Using ``PipDeps`` :doc:`../deps` with the AWS Lambda executor is currently not supported as it modifies the execution environment of the lambda during runtime. As per AWS best practices for Lambda it is recommended to ship the lambda function with all its dependencies in a ``deployment`` package as described `here <https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-package.html>`_
+   Using ``PipDeps`` as described in the :doc:`../deps` section with the AWS Lambda executor is currently not supported as it modifies the execution environment of the lambda function at runtime. As per AWS best practices for Lambda it is recommended to ship the lambda function as a self-contained object that has all of its dependencies in a ``deployment`` package/container image as described in detail `here <https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-package.html>`_
 
-
-All of our base AWS executor images are available in the public registries and can be downloaded locally from the public ECR using the steps outlined `here <https://docs.aws.amazon.com/AmazonECR/latest/public/docker-pull-ecr-image.html>`_. For instance the ``stable`` AWS Lambda executor image can be downloaded from public ECR as follows
+All of our base AWS executor images are available in the AWS public registries and can be downloaded locally for consumption as described here `here <https://docs.aws.amazon.com/AmazonECR/latest/public/docker-pull-ecr-image.html>`_. For instance the ``stable`` AWS Lambda executor image can be downloaded from public ECR as follows
 
 
 .. code-block:: bash
@@ -386,10 +385,12 @@ All of our base AWS executor images are available in the public registries and c
    Executor images with the ``latest`` tag are also routinely pushed to the same registry. However, we strongly recommended using the **stable** tag when running executing workflows usin the AWS Lambda executor. The ``<aws-region>`` is a placeholder for the actual AWS region to be used by the user
 
 
-Once the base executor images have been downloaded to the local machines, users can extend the image and install all the necessary Python packages required by their tasks. The base executor uses a build time argument named ``LAMBDA_TASK_ROOT`` to specify the install path of all python packages to ``/var/task`` inside the image. When extending the base image with custom packages, it is **recommended** to install all packages to the same location so that they get resolved properly during runtime. Following is a simple example of how users can extend the base image in their own ``Dockerfile`` to install additional packages (``numpy``, ``pandas`` and ``scipy``)
+Once the lambda base executor image has been downloaded, users can build upon that image by installing all the Python packages required by their tasks. The base executor uses a build time argument named ``LAMBDA_TASK_ROOT`` to set the install path of all python packages to ``/var/task`` inside the image. When extending the base image by installing additional python packages, it is **recommended** to install them to the same location so that they get resolved properly during runtime. Following is a simple example of how users can extend the AWS lambda base image by creating their own ``Dockerfile`` and installting additional packages such as ``numpy``, ``pandas`` and ``scipy``.
 
 
 .. code-block:: docker
+
+   # Dockerfile
 
    FROM public.ecr.aws/covalent/covalent-lambda-executor:stable as base
 
@@ -414,7 +415,7 @@ Once the ``Dockerfile`` has been created the derived image can be built as follo
 Pushing to ECR
 ^^^^^^^^^^^^^^^^^^^^^
 
-Once the base executor image has been extended to include the necessary packages, the dervied image needs to be uploaded to ECR so that it can be consumed by a Lambda function when triggered by Covalent. As as first step, it is required to create an elastic container registry to hold the dervied executor images. This can be easily done via using the AWS CLI tool as follows
+After a successful build of the derived image, it needs to be uploaded to ECR so that it can be consumed by a lambda function when triggered by Covalent. As as first step, it is required to create an elastic container registry to hold the dervied executor images. This can be easily done by using the AWS CLI tool as follows
 
 .. code-block:: bash
 
