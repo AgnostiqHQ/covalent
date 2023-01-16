@@ -58,9 +58,9 @@ Covalent has executors for many backend platforms, but if you need an executor t
 :::
 
 Covalent enables you to break down your workflow by compute requirements. You can:
-\* Use a different executors for every electron
-\* Change the executor of an electron simply by changing a parameter
-\* Pass custom executors to the dispatcher
+* Use a different executors for every electron
+* Change the executor of an electron simply by changing a parameter
+* Pass custom executors to the dispatcher
 
 For example, you might need to compute one task on a quantum platform and a different task on a GPU cluster:
 
