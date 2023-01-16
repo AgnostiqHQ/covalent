@@ -4,7 +4,7 @@ The User Interface
 
 This User Interface Reference describes the functionality available in the Covalent GUI, organized by screen.
 
-For help performing specific tasks using the Covalent GUI, refer to the :ref:`User Interface` portion of the :doc:`../how_to/index`.
+For help performing specific tasks using the Covalent GUI, refer to the :doc:`../how_to/index`.
 
 The following screens are available in the Covalent GUI:
 
@@ -28,32 +28,6 @@ The following screens are available in the Covalent GUI:
 
 :doc:`Terminal<terminal/index>`
     Opens a terminal where you can type shell commands.
-
-Logs
-====
-
-:doc:`List <logs/logs_list>`
-
-:doc:`Pagination <logs/pagination>`
-
-:doc:`Search <logs/search>`
-
-:doc:`Sort <logs/sort>`
-
-:doc:`Download <logs/download>`
-
-Settings
-========
-
-:doc:`Settings <settings/settings>`
-
-:doc:`Settings Search <settings/search>`
-
-Terminal
-========
-
-:doc:`Terminal <terminal/terminal>`
-
 
 .. toctree::
    :maxdepth: 1
