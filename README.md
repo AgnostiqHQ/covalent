@@ -53,11 +53,11 @@ Covalent is developed using Python version 3.8 on Linux and macOS. The easiest w
 pip install covalent
 ```
 
-Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide for detailed setup instructions. For a full list of supported platforms, see the Covalent [compatibility matrix](https://covalent.readthedocs.io/en/latest/getting_started/compatibility.html).
+Refer to the [Quick Start](https://covalent.readthedocs.io/en/latest/getting_started/quick_start/index.html) guide for quick setup instructions, or to the [First Experiment](https://covalent.readthedocs.io/en/latest/getting_started/first_experiment/index.html) guide for a more thorough approach. For a full list of supported platforms, see the Covalent [compatibility matrix](https://covalent.readthedocs.io/en/latest/getting_started/compatibility.html).
 
 ## 🚀 Getting started
 
-Ready to try it? Go to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide in the documentation.
+Ready to try it? Go to the [First Experiment](https://covalent.readthedocs.io/en/latest/getting_started/first_experiment/index.html) guide in the documentation.
 
 For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://covalent.readthedocs.io/en/latest/concepts/concepts.html) page in the documentation.
 
@@ -69,10 +69,10 @@ For a more in-depth description of Covalent's features and how they work, see th
  <tr>
     <td>
 
-  - [What is covalent ?](https://www.covalent.xyz/what-is-covalent/)
+  - [What is covalent?](https://www.covalent.xyz/what-is-covalent/)
   - [Covalent in the era of cloud-HPC](https://www.covalent.xyz/navigating-the-modern-hpc-landscape/)
-  - [Basic Concepts of Covalent](https://covalent.readthedocs.io/en/stable/concepts/concepts.html)
-  - [How does covalent work ?](#how-does-it-work)
+  - [Basic Concepts of Covalent](https://covalent.readthedocs.io/en/latest/concepts/concepts.html)
+  - [How does covalent work?](#how-does-it-work)
 </td>
     <td>
 
