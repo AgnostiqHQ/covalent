@@ -1,7 +1,18 @@
-===================
+===========
 Pagination
-===================
-Pagination divides logs into discrete pages with up to 70 records per page.
+===========
+
+The Covalent GUI presents the server log in pages of up to 70 records per page.
+
+Click |next| to see the next page and |previous| to see the previous page.
+
+Click |skip last| to jump to the end of the log and |skip first| to jump to the beginning.
+
+Click a page number to jump to that page.
+
+.. image:: ../images/logs_pagination.gif
+   :align: center
+   :width: 5000px
 
 .. |next| image:: ../images/navigate_next.png
     :width: 20px
@@ -15,10 +26,4 @@ Pagination divides logs into discrete pages with up to 70 records per page.
 .. |skip last| image:: ../images/skip_last.png
     :width: 20px
 
-.. image:: ../images/logs_pagination.gif
-   :align: center
-   :width: 5000px
-
-- Users can navigate to next page by clicking |next| and similarly can navigate back by clicking the |previous| button.
-- Users can click |skip last| to jump to last and |skip first| to jump to first page from current page.
-- Users can navigate to a particular page by clicking on the page number directly.
+.

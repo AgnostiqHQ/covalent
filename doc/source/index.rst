@@ -171,13 +171,6 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    plugins
 
 .. toctree::
-   :maxdepth: 2
-   :caption:  Extensions
-   :hidden:
-
-   plugins
-
-.. toctree::
    :maxdepth: 1
    :caption: For Contributors
    :hidden:

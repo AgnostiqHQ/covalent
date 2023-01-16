@@ -77,7 +77,7 @@ You dispatch a workflow in your Python code using the Covalent {code}`dispatch()
     dispatch_id = ct.dispatch(cart_dist)(x=3, y=4)
 ```
 
-The dispatch server sends individual tasks to {ref}`executors<concept intro executor>`.
+The dispatch server sends individual tasks to {ref}`executors<basic_primitives_executor>`.
 
 For more on how the Covalent dispatcher analyzes and runs lattices, see {ref}`Workflow Dispatch` in {doc}`server_concepts`.
 
@@ -98,7 +98,7 @@ You can view the Result object in your notebook with {code}`covalent.get_result(
 For more on how the Covalent result manager saves and presents results, see {ref}`Results` in {doc}`server_concepts`.
 
 
-(concept intro executor)=
+(basic_primitives_executor)=
 ## Executor
 
 An executor runs a single task on a particular compute resource such as your local machine or an AWS cluster. Depending on how a lattice is written, a dispatcher might execute many electrons in parallel on several executors. The default executor is a Dask cluster running on the Covalent server.
