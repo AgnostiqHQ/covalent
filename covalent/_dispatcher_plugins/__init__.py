@@ -23,5 +23,6 @@ from .local import LocalDispatcher
 
 local_dispatch = LocalDispatcher.dispatch
 local_dispatch_sync = LocalDispatcher.dispatch_sync
-# stop_trigger = LocalDispatcher.stop_trigger
 local_redispatch = LocalDispatcher.redispatch
+
+stop_triggers = LocalDispatcher.stop_triggers

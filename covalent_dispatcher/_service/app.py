@@ -20,7 +20,7 @@
 
 import codecs
 import json
-from typing import List, Optional, Union
+from typing import Optional
 from uuid import UUID
 
 import cloudpickle as pickle
@@ -45,7 +45,7 @@ SLEEP = 5
 
 
 @router.post("/submit")
-async def submit(request: Request) -> UUID:
+async def submit(request: Request, disable_run: bool) -> UUID:
     """
     Function to accept the submit request of
     new dispatch and return the dispatch id
@@ -59,19 +59,10 @@ async def submit(request: Request) -> UUID:
                      returned as a Fast API Response object.
     """
 
-    from .._core.triggers import _start_triggers
-
     data = await request.json()
+    data = json.dumps(data).encode("utf-8")
 
-    app_log.warning(f"DATA from submit: {data}")
-
-    # This will be None in case there are no triggers
-    # Done this way to not break existing compatibility
-    triggered_dispatch_id = _start_triggers(data["trigger_data"])
-
-    data = json.dumps(data["non_trigger_data"]).encode("utf-8")
-
-    dispatch_id = await dispatcher.run_dispatcher(data)
+    dispatch_id = await dispatcher.run_dispatcher(data, disable_run)
     return dispatch_id
 
 
@@ -159,8 +150,14 @@ def get_result(
         return response
 
 
-@router.post("/triggers/stop")
-async def stop_triggers(trigger_ids: Union[str, List[str]]):
-    from .._core.triggers import _stop_triggers
+@router.post("/triggers/start")
+async def start_triggers(request: Request):
+    trigger_data = await request.json()
+    trigger_id = dispatcher.start_triggers(trigger_data)
+    return trigger_id
 
-    _stop_triggers(trigger_ids)
+
+@router.post("/triggers/stop")
+async def stop_triggers(request: Request):
+    trigger_ids = await request.json()
+    dispatcher.stop_triggers(trigger_ids)

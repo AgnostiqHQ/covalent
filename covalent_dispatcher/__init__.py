@@ -18,4 +18,5 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+from ._core import start_triggers, stop_triggers
 from .entry_point import cancel_running_dispatch, run_dispatcher, run_redispatch

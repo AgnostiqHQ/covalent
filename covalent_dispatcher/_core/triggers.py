@@ -67,7 +67,7 @@ class DirTrigger:
         return {"name": "DirTrigger", "dir_path": self.dir_path, "event_name": self.event_name}
 
 
-def _start_triggers(trigger_dict):
+def start_triggers(trigger_dict):
 
     if trigger_dict:
 
@@ -79,7 +79,7 @@ def _start_triggers(trigger_dict):
         trigger = globals()[name](dir_path, event_name)
 
         # trigger_id = f"trigger{str(uuid.uuid4())[7:]}"
-        trigger_id = str(uuid.uuid4())
+        trigger_id = f"trigger--{str(uuid.uuid4())[-4:]}"
 
         trigger._parent_trigger_id = trigger_id
         trigger.start()
@@ -91,19 +91,10 @@ def _start_triggers(trigger_dict):
         return trigger_id
 
 
-def _stop_triggers(trigger_ids):
+def stop_triggers(trigger_ids):
 
     triggers = [(t_id, all_triggers[t_id]) for t_id in trigger_ids]
 
     for t_id, trigger in triggers:
         trigger.stop()
         app_log.warning(f"Stopped trigger with id: {t_id}")
-
-
-# if __name__ == "__main__":
-#     trigger_id = start_triggers()
-
-#     print(f"Gonna do doo dee la di doo for {SLEEP} seconds")
-#     time.sleep(SLEEP)
-
-#     stop_triggers(trigger_id)

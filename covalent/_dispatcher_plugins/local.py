@@ -21,7 +21,7 @@
 import json
 from copy import deepcopy
 from functools import wraps
-from typing import Callable
+from typing import Callable, List, Union
 
 import requests
 
@@ -90,16 +90,24 @@ class LocalDispatcher(BaseDispatcher):
             json_lattice = json.loads(json_lattice)
             trigger_data = json_lattice["metadata"].pop("trigger")
 
-            json_data = {}
-            json_data["trigger_data"] = trigger_data
-            json_data["non_trigger_data"] = json_lattice
-            json_data = json.dumps(json_data)
+            # Determine whether to disable first run
+            disable_run = trigger_data is not None
+
+            json_lattice = json.dumps(json_lattice)
 
             test_url = f"http://{dispatcher_addr}/api/submit"
 
-            r = requests.post(test_url, data=json_data)
+            r = requests.post(test_url, data=json_lattice, params={"disable_run": disable_run})
             r.raise_for_status()
-            return r.content.decode("utf-8").strip().replace('"', "")
+
+            lattice_dispatch_id = r.content.decode("utf-8").strip().replace('"', "")
+
+            if not disable_run:
+                return lattice_dispatch_id
+
+            trigger_data["lattice_dispatch_id"] = lattice_dispatch_id
+            trigger_id = LocalDispatcher.start_triggers(trigger_data)
+            return trigger_id
 
         return wrapper
 
@@ -173,3 +181,38 @@ class LocalDispatcher(BaseDispatcher):
             return r.content.decode("utf-8").strip().replace('"', "")
 
         return func
+
+    @staticmethod
+    def start_triggers(trigger_data, dispatcher_addr: str = None):
+
+        if dispatcher_addr is None:
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
+
+        start_trigger_url = f"http://{dispatcher_addr}/api/triggers/start"
+
+        r = requests.post(start_trigger_url, json=trigger_data)
+        r.raise_for_status()
+        return r.content.decode("utf-8").strip().replace('"', "")
+
+    @staticmethod
+    def stop_triggers(trigger_ids: Union[str, List[str]], dispatcher_addr: str = None):
+
+        if dispatcher_addr is None:
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
+
+        if isinstance(trigger_ids, str):
+            trigger_ids = [trigger_ids]
+
+        start_trigger_url = f"http://{dispatcher_addr}/api/triggers/stop"
+
+        r = requests.post(start_trigger_url, json=trigger_ids)
+        r.raise_for_status()
+
+        print("The following triggers ids should have stopped now:")
+
+        for tid in trigger_ids:
+            print(tid)
