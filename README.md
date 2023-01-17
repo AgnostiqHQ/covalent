@@ -69,7 +69,7 @@ For a more in-depth description of Covalent's features and how they work, see th
  <tr>
     <td>
 
-  - [What is covalent?](https://www.covalent.xyz/what-is-covalent/)
+  - [What is Covalent?](https://www.covalent.xyz/what-is-covalent/)
   - [Covalent in the era of cloud-HPC](https://www.covalent.xyz/navigating-the-modern-hpc-landscape/)
   - [Basic Concepts of Covalent](https://covalent.readthedocs.io/en/latest/concepts/concepts.html)
   - [How does covalent work?](#how-does-it-work)
