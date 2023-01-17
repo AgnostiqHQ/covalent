@@ -26,6 +26,8 @@ from . import _file_transfer as fs  # nopycln: import
 from . import executor, leptons  # nopycln: import
 from ._dispatcher_plugins import local_dispatch as dispatch  # nopycln: import
 from ._dispatcher_plugins import local_dispatch_sync as dispatch_sync  # nopycln: import
+
+# from ._dispatcher_plugins import stop_trigger  # nopycln: import
 from ._file_transfer import strategies as fs_strategies  # nopycln: import
 from ._results_manager.results_manager import cancel, get_result, sync  # nopycln: import
 from ._shared_files.config import get_config, reload_config, set_config  # nopycln: import
