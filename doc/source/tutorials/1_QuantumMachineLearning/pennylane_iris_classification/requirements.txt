@@ -1,3 +1,4 @@
 covalent
+matplotlib==3.4.3
 pennylane==0.25.1
-pennylane-sf=0.20.1
+pennylane-sf==0.20.1
