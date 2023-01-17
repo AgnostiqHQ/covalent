@@ -27,7 +27,7 @@ Deployment with Systemd
 
 We recommend that you  *not* install Covalent directly at the system level as its Python :doc:`version <../getting_started/compatibility>` and package dependencies can conflict with those of the system.
 
-To run Covalent under :code:`systemd`, we recommend that you create a Python virtual environment with Covalent installed and manage Covalent with the :code:`systemd` service. This approach ensures that the system-level Python settings are unchanged and averts Python package dependency conflicts.
+To run Covalent under ``systemd``, we recommend that you create a Python virtual environment with Covalent installed and manage Covalent with the ``systemd`` service. This approach ensures that the system-level Python settings are unchanged and averts Python package dependency conflicts.
 
 To install and run Covalent under :code:`systemd`, use the instructions in :doc:`./deploy_with_systemd`.
 
