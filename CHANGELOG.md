@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minor changes to tutorials: autoencoder, quantum and classical svm, ensemble classification, iris classification with Pennylane, quantum chemistry, DNN tutorial, qaoa, spacetime tutorial etc.
 - The range of `networkx` versions in requirements.txt weren't compatible with each other, thus it is pinned to `2.8.6` now
 - SDK-only sdist and installation should now work as expected, not packaging the server
+- Load plugins only when COVALENT_PLUGIN_LOAD environment variable has been set to a Truthy value.
 
 ### Added
 

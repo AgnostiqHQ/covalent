@@ -47,7 +47,8 @@ class _ExecutorManager:
     """
 
     def __init__(self) -> None:
-        self.generate_plugins_list()
+        if os.environ.get("COVALENT_PLUGIN_LOAD"):
+            self.generate_plugins_list()
 
     def generate_plugins_list(self) -> None:
         """
