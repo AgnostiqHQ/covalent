@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - The range of `networkx` versions in requirements.txt weren't compatible with each other, thus it is pinned to `2.8.6` now
+- SDK-only sdist and installation should now work as expected, not packaging the server
 
 ### Added
 
