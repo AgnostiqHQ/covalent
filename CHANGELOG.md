@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- MNIST tutorial now shows non-Null outputs and the classifier training log image has been updated.
+- Minor changes to tutorials: autoencoder, quantum and classical svm, ensemble classification, iris classification with Pennylane, quantum chemistry, DNN tutorial, qaoa, spacetime tutorial etc.
+- The range of `networkx` versions in requirements.txt weren't compatible with each other, thus it is pinned to `2.8.6` now
+
+### Added
+
+- Added `dispatcher_addr` argument to `ct.get_result` similar to `ct.dispatch` so that it doesn't always fallback to using the default configured address
+
+### Tests
+
+- Updated `_get_result_from_dispatcher` test to verify whether using a link directly works or not
+
 ### Docs
 - Revised UI reference. Added Settings page documentation.
 - Added broken UI links in README
@@ -18,11 +32,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Casey Jao <casey@agnostiq.ai>
 
 
-
 ### Fixed
 
 - Fixed naming of collection nodes (was breaking postprocessing)
 - Restored compatibility with stable release of AWS executors
+
 
 ## [0.212.0-rc.0] - 2023-01-13
 
