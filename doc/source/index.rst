@@ -58,7 +58,7 @@ Get Started
 
     ------------------------------------------------
 
-    .. link-button:: getting_started/index
+    .. link-button:: getting_started/first_experiment/index
         :type: ref
         :text: First Experiment
         :classes: btn-outline-primary btn-block stretched-link
