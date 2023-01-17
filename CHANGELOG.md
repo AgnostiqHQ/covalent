@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- MNIST tutorial now shows non-Null outputs and the classifier training log image has been updated.
+- Minor changes to tutorials: autoencoder, quantum and classical svm, ensemble classification, iris classification with Pennylane, quantum chemistry, DNN tutorial, qaoa, spacetime tutorial etc.
 - The range of `networkx` versions in requirements.txt weren't compatible with each other, thus it is pinned to `2.8.6` now
 - SDK-only sdist and installation should now work as expected, not packaging the server
 
@@ -22,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 - Revised UI reference. Added Settings page documentation.
+- Added broken UI links in README
 
 ## [0.212.1-rc.0] - 2023-01-14
 
