@@ -161,6 +161,7 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    How-To Guide <how_to/index>
    User Interface <webapp_ui/index>
    API Reference <api/index>
+   Server Deployment <deployment/index>
    Credentials <credentials>
 
 .. toctree::
