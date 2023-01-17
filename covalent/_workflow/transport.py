@@ -276,6 +276,15 @@ def encode_metadata(metadata: dict) -> dict:
                 if not isinstance(dep, dict):
                     encoded_metadata["call_after"][i] = dep.to_dict()
 
+    if "trigger" in metadata:
+        if metadata["trigger"] is not None:
+            if isinstance(metadata["trigger"], dict):
+                encoded_metadata["trigger"] = metadata["trigger"]
+            else:
+                encoded_metadata["trigger"] = metadata["trigger"].to_dict()
+        else:
+            encoded_metadata["trigger"] = None
+
     return encoded_metadata
 
 

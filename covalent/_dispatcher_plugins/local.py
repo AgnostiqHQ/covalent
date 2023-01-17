@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import json
 from copy import deepcopy
 from functools import wraps
 from typing import Callable
@@ -81,9 +82,18 @@ class LocalDispatcher(BaseDispatcher):
             # Serialize the transport graph to JSON
             json_lattice = lattice.serialize_to_json()
 
+            # Extract triggers here
+            json_lattice = json.loads(json_lattice)
+            trigger_data = json_lattice["metadata"].pop("trigger")
+
+            json_data = {}
+            json_data["trigger_data"] = trigger_data
+            json_data["non_trigger_data"] = json_lattice
+            json_data = json.dumps(json_data)
+
             test_url = f"http://{dispatcher_addr}/api/submit"
 
-            r = requests.post(test_url, data=json_lattice)
+            r = requests.post(test_url, data=json_data)
             r.raise_for_status()
             return r.content.decode("utf-8").strip().replace('"', "")
 

@@ -20,7 +20,7 @@
 
 import codecs
 import json
-from typing import Optional
+from typing import List, Optional, Union
 from uuid import UUID
 
 import cloudpickle as pickle
@@ -43,6 +43,8 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 router: APIRouter = APIRouter()
+
+SLEEP = 5
 
 
 def _result_from(lattice_record: Lattice) -> Result:
@@ -163,10 +165,20 @@ async def submit(request: Request) -> UUID:
         dispatch_id: The dispatch id in a json format
                      returned as a Fast API Response object.
     """
-    data = await request.json()
-    data = json.dumps(data).encode("utf-8")
 
-    dispatch_id = await dispatcher.run_dispatcher(data)
+    from .._core.triggers import _start_triggers
+
+    data = await request.json()
+
+    app_log.warning(f"DATA from submit: {data}")
+
+    # This will be None in case there are no triggers
+    # Done this way to not break existing compatibility
+    triggered_dispatch_id = _start_triggers(data["trigger_data"])
+
+    data = json.dumps(data["non_trigger_data"]).encode("utf-8")
+
+    dispatch_id = await dispatcher.run_dispatcher(data, assigned_dispatch_id=triggered_dispatch_id)
     return dispatch_id
 
 
@@ -233,3 +245,10 @@ def get_result(
             headers={"Retry-After": "2"},
         )
         return response
+
+
+@router.post("/triggers/stop")
+async def stop_triggers(trigger_ids: Union[str, List[str]]):
+    from .._core.triggers import _stop_triggers
+
+    _stop_triggers(trigger_ids)

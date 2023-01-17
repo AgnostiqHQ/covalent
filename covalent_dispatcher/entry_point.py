@@ -23,8 +23,6 @@ Self-contained entry point for the dispatcher
 """
 
 
-import asyncio
-
 from covalent._shared_files import logger
 
 app_log = logger.app_log
@@ -34,7 +32,7 @@ log_stack_info = logger.log_stack_info
 SLEEP = 5
 
 
-async def run_dispatcher(json_lattice: str):
+async def run_dispatcher(json_lattice: str, assigned_dispatch_id: str = None):
     """
     Run the dispatcher from the lattice asynchronously using Dask.
     Assign a new dispatch id to the result object and return it.
@@ -48,19 +46,11 @@ async def run_dispatcher(json_lattice: str):
     """
 
     from ._core import make_dispatch, run_dispatch
-    from ._core.triggers import start_triggers, stop_triggers
 
-    trigger_id = start_triggers()
-
-    dispatch_id = make_dispatch(json_lattice)
+    dispatch_id = make_dispatch(json_lattice, assigned_dispatch_id=assigned_dispatch_id)
     run_dispatch(dispatch_id)
 
     app_log.debug("Submitted result object to run_workflow.")
-
-    app_log.warning(f"Gonna do doo dee la di doo for {SLEEP} seconds")
-    await asyncio.sleep(SLEEP)
-
-    stop_triggers(trigger_id)
 
     return dispatch_id
 

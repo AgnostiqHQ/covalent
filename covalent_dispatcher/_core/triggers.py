@@ -44,13 +44,14 @@ class DirEventHandler(FileSystemEventHandler):
         super().on_modified(event)
         self.n_times += 1
 
-        app_log.warning(f"File modified {self.n_times}")
+        app_log.warning(f"File modified {self.n_times}th time")
 
 
 class DirTrigger:
     def __init__(self, dir_path, event_name=None) -> None:
         self.dir_path = dir_path
         self.event_name = event_name or "modified"
+        self._parent_trigger_id = None
 
     def start(self):
         event_handler = DirEventHandler()
@@ -62,25 +63,41 @@ class DirTrigger:
         self.observer.stop()
         self.observer.join()
 
-
-def start_triggers():
-    # do create_task for all the triggers here
-    trigger = DirTrigger(dir_path="/home/neptune/dev/covalent/covalent_dispatcher/_core/")
-    trigger.start()
-
-    t_id = str(uuid.uuid4())[-4:]
-    all_triggers[t_id] = trigger
-
-    app_log.warning(f"Started trigger with id: {t_id}")
-
-    return t_id
+    def to_dict(self):
+        return {"name": "DirTrigger", "dir_path": self.dir_path, "event_name": self.event_name}
 
 
-def stop_triggers(t_id):
-    trigger = all_triggers[t_id]
-    trigger.stop()
+def _start_triggers(trigger_dict):
 
-    app_log.warning(f"Stopped trigger with id: {t_id}")
+    if trigger_dict:
+
+        name, dir_path, event_name = (
+            trigger_dict["name"],
+            trigger_dict["dir_path"],
+            trigger_dict["event_name"],
+        )
+        trigger = globals()[name](dir_path, event_name)
+
+        trigger_id = f"parent-trigger---{uuid.uuid4()}"
+        # trigger = DirTrigger(dir_path="/home/neptune/dev/covalent/covalent_dispatcher/_core/")
+
+        trigger._parent_trigger_id = trigger_id
+        trigger.start()
+
+        all_triggers[trigger_id] = trigger
+
+        app_log.warning(f"Started trigger with id: {trigger_id}")
+
+        return trigger_id
+
+
+def _stop_triggers(trigger_ids):
+
+    triggers = [(t_id, all_triggers[t_id]) for t_id in trigger_ids]
+
+    for t_id, trigger in triggers:
+        trigger.stop()
+        app_log.warning(f"Stopped trigger with id: {t_id}")
 
 
 # if __name__ == "__main__":

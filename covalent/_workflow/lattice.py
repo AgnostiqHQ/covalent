@@ -172,6 +172,9 @@ class Lattice:
 
         self.metadata[name] = value
 
+        if name == "trigger":
+            print(value)
+
     def get_metadata(self, name: str) -> Any:
         """
         Get value of the metadata of given name.
@@ -322,6 +325,7 @@ def lattice(
     deps_pip: Union[DepsPip, list] = None,
     call_before: Union[List[DepsCall], DepsCall] = [],
     call_after: Union[List[DepsCall], DepsCall] = [],
+    trigger: Any = None
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
     """
@@ -376,6 +380,7 @@ def lattice(
         "deps": deps,
         "call_before": call_before,
         "call_after": call_after,
+        "trigger": trigger,
     }
 
     constraints = encode_metadata(constraints)
