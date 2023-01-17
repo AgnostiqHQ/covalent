@@ -2,115 +2,113 @@
 Installing Covalent with Systemd
 ################################
 
-.. note:: In these installation instructions, we assume :code:`Python3.8` is available on the system and that all the commands are issued as :code:`root`.
+.. note:: In these installation instructions, we assume ``Python3.8`` is available on the system and that all the commands are issued as ``root``.
 
-To install Covalent on a Linux physical or virtual host with :code:`systemd`, do the following:
+To install Covalent on a Linux physical or virtual host with ``systemd``, do the following:
 
-.. card:: 1. Use Pip to install the Covalent server and libraries locally.
+Prerequisites
+-------------
 
+On Debian/Ubuntu based systems, install the *virtualenv* Python module at the system level:
 
-    Type the following in a terminal window:
+..code:: bash
+
+    python3 -m pip install virtualenv
+
+Procedure
+---------
+
+.. card:: 1. Create the Python virtual environment in which to install Covalent:
 
     .. code:: bash
 
-        $ pip install covalent
+       python3 -m virtualenv /opt/virtualenvs/covalent
+
+.. card:: 2. Install Covalent in the virtual environment:
+
+    .. code:: bash
+
+       /opt/virtualenvs/covalent/bin/python -m pip install covalent
+
+   This ensures that the latest release of Covalent along with all its dependencies are properly installed in the virtual environment.
+
+.. card:: 3. If you plan to use the AWS executor plugins with your Covalent deployment, install the ``covalent-aws-plugins``:
+
+    .. code:: bash
+
+        /opt/virtualenvs/covalent/bin/python -m pip install 'covalent-aws-plugins[all]'
+
+.. card:: 4. Create a ``systemd`` unit file for Covalent.
+
+    Use the ``systemd`` ``Environment`` and ``EnvironmentFile`` directives to configure environment variables that determine Covalent's startup and runtime behavior.
+
+    Customize the following sample ``covalent.service`` systemd unit file to your needs for hosting Covalent. On most Linux systems, this service file can be installed under ``/usr/lib/systemd/system``. For more information about the service file, see the ``systemd`` documentation `here <https://www.freedesktop.org/software/systemd/man/systemd.html>`_.
+
+    .. code:: bash
+
+       [Unit]
+       Description=Covalent Dispatcher server
+       After=network.target
+
+       [Service]
+       Type=forking
+       Environment=VIRTUAL_ENV=/opt/virtualenvs/covalent
+       Environment=PATH=/opt/virtualenvs/covalent/bin:$PATH
+       Environment=HOME=/var/lib/covalent
+       Environment=COVALENT_SERVER_IFACE_ANY=1
+       EnvironmentFile=/etc/covalent/covalent.env
+       ExecStartPre=-/opt/virtualenvs/covalent/bin/covalent stop
+       ExecStart=/opt/virtualenvs/covalent/bin/covalent start
+       ExecStop=/opt/virtualenvs/covalent/bin/covalent stop
+       TimeoutStopSec=10
+
+       [Install]
+       WantedBy=multi-user.target
+
+.. card:: 5. Configure a ``service`` account on the server with only the privileges required to ensure proper Covalent functionality.
+
+    Running Covalent as the root user is *not* recommended; this compromises security on the server. For one thing, the Covalent GUI's built-in terminal provides a login shell as the Covalent user – so if the Covalent server is running as root, users have access to a root shell on the server.
+
+.. card:: 6. To ensure that systemd invokes the Covalent server from within the virtual environment created earlier, set the ``VIRTUAL_ENV`` environment variable to the location of the virtual environment:
+
+    .. code:: bash
+
+       VIRTUAL_ENV=/opt/virtualenvs/covalent
+
+    This ensures that the proper Python interpreter is used by Covalent at runtime.
+
+.. card:: 7. (Optional) Customize Covalent-specific environment variables:
+
+    Create the file specified in the In the ``[Service]`` directive ``EnvironmentFile`` location (in the above example, ``/etc/covalent/covalent.env``).
+
+   Populate the file with Covalent-specific environment variables such as ``COVALENT_CACHE_DIR``, ``COVALENT_DATABASE``, ``COVALENT_SVC_PORT`` and so on to customize Covalent's runtime environment.
+
+.. card::  8. Once all the settings have been configured, start Covalent:
+
+    .. code:: bash
+
+       systemctl daemon-reload
+       systemclt start covalent.service
+
+    .. note:: You only need to update systemd by executing the ``systemd daemon-reload`` command when a unit file is modified.
+
+.. card:: 9. Check the status of the service at any time with:
+
+    .. code:: bash
+
+        systemctl status covalent
+
+.. card:: 10. (Optional) Configure ``covalent.service`` to start on system bootup:
+
+    .. code:: bash
+
+       systemctl enable covalent.service
 
 
+.. card:: 11. Once the service is running properly, connect to the Covalent GUI from a browser with the server hostname and the port configured in the ``COVALENT_SVC_PORT`` environment variable. By default, Covalent start on port ``48008``.
 
-.. card:: 2. Start the Covalent server.
+.. card:: 12. If you need to stop the server, use:
 
+    .. code:: bash
 
-    In the terminal window, type:
-
-    .. code:: console
-
-        $ covalent start
-        Covalent server has started at http://localhost:48008
-
-
-
-
-.. card:: 1. Create the Python virtual environment in which to install Covalent.
-
-.. code:: bash
-
-   python3 -m virtualenv /opt/virtualenvs/covalent
-
-.. note::
-
-   On Debian/Ubuntu based systems the **virtualenv** Python module can be installed at the system level via pip as follows ``python3 -m pip install virtualenv``
-
-We can now install Covalent in this virtual environment as follows
-
-.. code:: bash
-
-   /opt/virtualenvs/covalent/bin/python -m pip install covalent
-
-
-.. note::
-
-   If users are looking to use the AWS executor plugins with their Covalent deployment the ``covalent-aws-plugins`` must be installed via ``/opt/virtualenvs/covalent/bin/python -m pip install 'covalent-aws-plugins[all]'``
-
-This will ensure that the latest release of Covalent along with all its dependencies are properly installed in the virtual environment. We can now create a ``systemd`` unit file for Covalent and enable it to be managed by ``systemd``.
-Systemd provides a convenient inferface to configure environment variables that will be exposed to the covalent server via the ``Environment`` and ``EnvironmentFile`` directives. We will leverage these interfaces to configure Covalent's startup and runtime behaviour. Users can use the following sample ``covalent.service`` systemd unit file and customize it for their needs when hosting Covalent themselves. On most linux systems, this service file can be installed under ``/usr/lib/systemd/system``. Users are encouraged to review the systemd documentation `here <https://www.freedesktop.org/software/systemd/man/systemd.html>`_.
-
-.. code:: bash
-
-   [Unit]
-   Description=Covalent Dispatcher server
-   After=network.target
-
-   [Service]
-   Type=forking
-   Environment=VIRTUAL_ENV=/opt/virtualenvs/covalent
-   Environment=PATH=/opt/virtualenvs/covalent/bin:$PATH
-   Environment=HOME=/var/lib/covalent
-   Environment=COVALENT_SERVER_IFACE_ANY=1
-   EnvironmentFile=/etc/covalent/covalent.env
-   ExecStartPre=-/opt/virtualenvs/covalent/bin/covalent stop
-   ExecStart=/opt/virtualenvs/covalent/bin/covalent start
-   ExecStop=/opt/virtualenvs/covalent/bin/covalent stop
-   TimeoutStopSec=10
-
-   [Install]
-   WantedBy=multi-user.target
-
-
-To ensure that when systemd invokes the Covalent server, its from within the virtual environment created earlier, we need to the set ``VIRTUAL_ENV`` environment variable to its proper value
-
-.. code:: bash
-
-   VIRTUAL_ENV=/opt/virtualenvs/covalent
-
-Setting this variable to the location of the virtual environment is sufficient to ensure that the proper Python interpreter is used by Covalent at runtime. In the ``[Service]`` directive we set the ``EnvironmentFile`` location to ``/etc/covalent/covalent.env``. Users can optionally create this file and populate it with Covalent specific environment variables such as COVALENT_CACHE_DIR, COVALENT_DATABASE, COVALENT_SVC_PORT ... in order customize Covalent's runtime environment.
-
-Once all the settings have been configured, Covalent can be started as follows
-
-.. code:: bash
-
-   systemctl daemon-reload
-   systemclt start covalent.service
-
-
-.. note::
-
-   The status of the service can be inspected by ``systemctl status covalent``. The systemd ``daemon-reload`` command must be executed each time a unit file has been modified to notify systemd about the changes
-
-
-The ``covalent.service`` can also be enabled to start on boot via systemd as follows
-
-.. code:: bash
-
-   systemctl enable covalent.service
-
-
-Once the service is running properly, users can connect to the Covalent's UI from their browser by via their remote machines hostname and the port they configured Covalent to run on via the ``COVALENT_SVC_PORT`` environment variable. By default, Covalent start on port ``48008``. The server can be stopped using systemd as follows
-
-.. code:: bash
-
-   systemctl stop covalent.service
-
-
-.. warning::
-
-   Running Covalent as the root user is **NOT** recommended as it can have several security implications for the remote server. If possible, users must configure a ``service`` account on the system with just the right amount of privileges to ensure proper Covalent functionality. The Covalent UI has an in-built terminal for convenience and it present a login shell as the Covalent user i.e. if the Covalent server is running as root, then users will have access to a root shell on the server. This can potentially have major security implications, thus proper UNIX security polices and best practices must be followed when self-hosting Covalent on remote servers
+       systemctl stop covalent.service

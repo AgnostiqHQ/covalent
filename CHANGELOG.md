@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 - Revised UI reference. Added Settings page documentation.
 - Added broken UI links in README
+- Published Self-Deployment Guide
 
 ## [0.212.1-rc.0] - 2023-01-14
 
