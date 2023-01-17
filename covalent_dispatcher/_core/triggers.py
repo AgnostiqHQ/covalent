@@ -21,6 +21,7 @@
 
 import asyncio
 import uuid
+from types import MethodType
 
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
@@ -37,56 +38,72 @@ SLEEP = 10
 all_triggers = {}
 
 
-# def triggered_dispatch(event, lattice_dispatch_id)
+def triggered_dispatch(self, event):
+    from .._service.app import get_result
+    from ..entry_point import run_dispatcher, run_redispatch
+
+    status = asyncio.run_coroutine_threadsafe(
+        get_result(self.lattice_dispatch_id, status_only=True), self.covalent_event_loop
+    ).result()["status"]
+
+    if status == str(Result.NEW_OBJ):
+        # To continue pending dispatch
+        future = asyncio.run_coroutine_threadsafe(
+            run_dispatcher(None, pending_dispatch_id=self.lattice_dispatch_id),
+            self.covalent_event_loop,
+        )
+        same_dispatch_id = future.result()
+        app_log.warning(f"Initiating run for same dispatch_id: {same_dispatch_id}")
+    else:
+        # To run new redispatch
+        future = asyncio.run_coroutine_threadsafe(
+            run_redispatch(self.lattice_dispatch_id, None, None, False),
+            self.covalent_event_loop,
+        )
+        new_dispatch_id = future.result()
+        app_log.warning(f"Redispatching, new dispatch_id: {new_dispatch_id}")
 
 
 class DirEventHandler(FileSystemEventHandler):
     def __init__(self, lattice_dispatch_id, covalent_event_loop) -> None:
-        super().__init__()
-        self.n_times = 0
         self.lattice_dispatch_id = lattice_dispatch_id
         self.covalent_event_loop = covalent_event_loop
 
-    def on_modified(self, event):
+        self.supported_event_to_func_names = {
+            "created": "on_created",
+            "deleted": "on_deleted",
+            "modified": "on_modified",
+            "moved": "on_moved",
+            "closed": "on_closed",
+        }
 
-        self.n_times += 1
-        app_log.warning(f"File modified {self.n_times}th time")
 
-        from .._service.app import get_result
-        from ..entry_point import run_dispatcher, run_redispatch
+def attach_methods_to_handler(event_handler: DirEventHandler, event_names: list):
 
-        status = asyncio.run_coroutine_threadsafe(
-            get_result(self.lattice_dispatch_id, status_only=True), self.covalent_event_loop
-        ).result()["status"]
+    for en in event_names:
+        func_name = event_handler.supported_event_to_func_names[en]
+        triggered_dispatch.__name__ = func_name
+        setattr(event_handler, func_name, MethodType(triggered_dispatch, event_handler))
 
-        if status == str(Result.NEW_OBJ):
-            # To continue pending dispatch
-            future = asyncio.run_coroutine_threadsafe(
-                run_dispatcher(None, pending_dispatch_id=self.lattice_dispatch_id),
-                self.covalent_event_loop,
-            )
-            same_dispatch_id = future.result()
-            app_log.warning(f"Initiating run for same dispatch_id: {same_dispatch_id}")
-        else:
-            # To run new redispatch
-            future = asyncio.run_coroutine_threadsafe(
-                run_redispatch(self.lattice_dispatch_id, None, None, False),
-                self.covalent_event_loop,
-            )
-            new_dispatch_id = future.result()
-            app_log.warning(f"Redispatching, new dispatch_id: {new_dispatch_id}")
+    return event_handler
 
 
 class DirTrigger:
-    def __init__(self, dir_path, event_name=None) -> None:
+    def __init__(self, dir_path, event_names) -> None:
         self.dir_path = dir_path
-        self.event_name = event_name or "modified"
+
+        if isinstance(event_names, str):
+            event_names = [event_names]
+
+        self.event_names = event_names
 
     def start(self, lattice_dispatch_id):
 
         covalent_event_loop = asyncio.get_running_loop()
 
         event_handler = DirEventHandler(lattice_dispatch_id, covalent_event_loop)
+        event_handler = attach_methods_to_handler(event_handler, self.event_names)
+
         self.observer = Observer()
         self.observer.schedule(event_handler, self.dir_path)
         self.observer.start()
@@ -96,22 +113,25 @@ class DirTrigger:
         self.observer.join()
 
     def to_dict(self):
-        return {"name": "DirTrigger", "dir_path": self.dir_path, "event_name": self.event_name}
+        return {
+            "name": str(self.__class__.__name__),
+            "dir_path": self.dir_path,
+            "event_names": self.event_names,
+        }
 
 
 def start_triggers(trigger_dict):
 
     if trigger_dict:
 
-        lattice_dispatch_id, name, dir_path, event_name = (
+        lattice_dispatch_id, name, dir_path, event_names = (
             trigger_dict["lattice_dispatch_id"],
             trigger_dict["name"],
             trigger_dict["dir_path"],
-            trigger_dict["event_name"],
+            trigger_dict["event_names"],
         )
-        trigger = globals()[name](dir_path, event_name)
+        trigger = globals()[name](dir_path, event_names)
 
-        # trigger_id = f"trigger{str(uuid.uuid4())[7:]}"
         trigger_id = f"trigger--{str(uuid.uuid4())[-4:]}"
 
         trigger.start(lattice_dispatch_id)
