@@ -152,12 +152,16 @@ class LocalDispatcher(BaseDispatcher):
     @staticmethod
     def redispatch(
         dispatch_id,
-        dispatcher_addr: str = get_config("dispatcher.address")
-        + ":"
-        + str(get_config("dispatcher.port")),
+        dispatcher_addr: str = None,
         replace_electrons={},
         reuse_previous_results=False,
     ):
+
+        if dispatcher_addr is None:
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
+
         def func(*new_args, **new_kwargs):
             body = redispatch_real(
                 dispatch_id, new_args, new_kwargs, replace_electrons, reuse_previous_results

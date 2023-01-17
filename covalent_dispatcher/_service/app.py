@@ -71,7 +71,7 @@ async def submit(request: Request) -> UUID:
 
     data = json.dumps(data["non_trigger_data"]).encode("utf-8")
 
-    dispatch_id = await dispatcher.run_dispatcher(data, assigned_dispatch_id=triggered_dispatch_id)
+    dispatch_id = await dispatcher.run_dispatcher(data)
     return dispatch_id
 
 

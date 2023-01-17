@@ -32,7 +32,7 @@ log_stack_info = logger.log_stack_info
 SLEEP = 5
 
 
-async def run_dispatcher(json_lattice: str, assigned_dispatch_id: str = None):
+async def run_dispatcher(json_lattice: str):
     """
     Run the dispatcher from the lattice asynchronously using Dask.
     Assign a new dispatch id to the result object and return it.
@@ -47,7 +47,7 @@ async def run_dispatcher(json_lattice: str, assigned_dispatch_id: str = None):
 
     from ._core import make_dispatch, run_dispatch
 
-    dispatch_id = make_dispatch(json_lattice, assigned_dispatch_id=assigned_dispatch_id)
+    dispatch_id = make_dispatch(json_lattice)
     run_dispatch(dispatch_id)
 
     app_log.debug("Submitted result object to run_workflow.")

@@ -93,7 +93,6 @@ def initialize_result_object(
     json_lattice: str,
     parent_result_object: Result = None,
     parent_electron_id: int = None,
-    assigned_dispatch_id: str = None,
 ) -> Result:
     """Convenience function for constructing a result object from a json-serialized lattice.
 
@@ -106,7 +105,7 @@ def initialize_result_object(
         Result: result object
     """
 
-    dispatch_id = assigned_dispatch_id or get_unique_id()
+    dispatch_id = get_unique_id()
     lattice = Lattice.deserialize_from_json(json_lattice)
     result_object = Result(lattice, dispatch_id)
     if parent_result_object:
@@ -141,11 +140,10 @@ def make_dispatch(
     json_lattice: str,
     parent_result_object: Result = None,
     parent_electron_id: int = None,
-    assigned_dispatch_id: str = None,
 ) -> Result:
 
     result_object = initialize_result_object(
-        json_lattice, parent_result_object, parent_electron_id, assigned_dispatch_id
+        json_lattice, parent_result_object, parent_electron_id
     )
     _register_result_object(result_object)
     return result_object.dispatch_id

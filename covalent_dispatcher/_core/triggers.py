@@ -78,8 +78,8 @@ def _start_triggers(trigger_dict):
         )
         trigger = globals()[name](dir_path, event_name)
 
-        trigger_id = f"parent-trigger---{uuid.uuid4()}"
-        # trigger = DirTrigger(dir_path="/home/neptune/dev/covalent/covalent_dispatcher/_core/")
+        # trigger_id = f"trigger{str(uuid.uuid4())[7:]}"
+        trigger_id = str(uuid.uuid4())
 
         trigger._parent_trigger_id = trigger_id
         trigger.start()
