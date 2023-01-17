@@ -112,7 +112,7 @@ def db_path() -> str:
 
 
 @router.get("/result/{dispatch_id}")
-def get_result(
+async def get_result(
     dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
 ):
     with workflow_db.session() as session:

@@ -25,6 +25,7 @@ import uuid
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
+from covalent._results_manager import Result
 from covalent._shared_files import logger
 
 app_log = logger.app_log
@@ -39,12 +40,6 @@ all_triggers = {}
 # def triggered_dispatch(event, lattice_dispatch_id)
 
 
-async def coro_run_dispatch(lattice_dispatch_id):
-    from .dispatcher import run_dispatch
-
-    run_dispatch(lattice_dispatch_id)
-
-
 class DirEventHandler(FileSystemEventHandler):
     def __init__(self, lattice_dispatch_id, covalent_event_loop) -> None:
         super().__init__()
@@ -57,24 +52,29 @@ class DirEventHandler(FileSystemEventHandler):
         self.n_times += 1
         app_log.warning(f"File modified {self.n_times}th time")
 
-        from ..entry_point import run_redispatch
+        from .._service.app import get_result
+        from ..entry_point import run_dispatcher, run_redispatch
 
-        # status = get_result(self.lattice_dispatch_id, status_only=True)["status"]
-        # if status == str(Result.NEW_OBJ):
-        #     # To continue pending dispatch
-        #     asyncio.run_coroutine_threadsafe(coro_run_dispatch(self.lattice_dispatch_id), self.covalent_event_loop)
-        #     app_log.warning(f"Initiating run for dispatch_id: {self.lattice_dispatch_id}")
-        # else:
-        #     # To run new redispatch
-        #     future = asyncio.run_coroutine_threadsafe(run_redispatch(self.lattice_dispatch_id, None, None, False), self.covalent_event_loop)
-        #     new_dispatch_id = future.result()
-        #     app_log.warning(f"Redispatching, new dispatch_id: {new_dispatch_id}")
+        status = asyncio.run_coroutine_threadsafe(
+            get_result(self.lattice_dispatch_id, status_only=True), self.covalent_event_loop
+        ).result()["status"]
 
-        future = asyncio.run_coroutine_threadsafe(
-            run_redispatch(self.lattice_dispatch_id, None, None, False), self.covalent_event_loop
-        )
-        new_dispatch_id = future.result()
-        app_log.warning(f"Redispatching, new dispatch_id: {new_dispatch_id}")
+        if status == str(Result.NEW_OBJ):
+            # To continue pending dispatch
+            future = asyncio.run_coroutine_threadsafe(
+                run_dispatcher(None, pending_dispatch_id=self.lattice_dispatch_id),
+                self.covalent_event_loop,
+            )
+            same_dispatch_id = future.result()
+            app_log.warning(f"Initiating run for same dispatch_id: {same_dispatch_id}")
+        else:
+            # To run new redispatch
+            future = asyncio.run_coroutine_threadsafe(
+                run_redispatch(self.lattice_dispatch_id, None, None, False),
+                self.covalent_event_loop,
+            )
+            new_dispatch_id = future.result()
+            app_log.warning(f"Redispatching, new dispatch_id: {new_dispatch_id}")
 
 
 class DirTrigger:
