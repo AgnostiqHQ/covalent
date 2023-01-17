@@ -20,7 +20,6 @@
 
 
 import asyncio
-import uuid
 from types import MethodType
 
 from watchdog.events import FileSystemEventHandler
@@ -120,7 +119,7 @@ class DirTrigger:
         }
 
 
-def start_triggers(trigger_dict):
+def start_triggers(trigger_dict):  # sourcery skip: use-assigned-variable
 
     if trigger_dict:
 
@@ -132,15 +131,14 @@ def start_triggers(trigger_dict):
         )
         trigger = globals()[name](dir_path, event_names)
 
-        trigger_id = f"trigger--{str(uuid.uuid4())[-4:]}"
+        trigger_id = f"trigger-{lattice_dispatch_id}"
+        # trigger_id = lattice_dispatch_id
 
         trigger.start(lattice_dispatch_id)
 
         all_triggers[trigger_id] = trigger
 
         app_log.warning(f"Started trigger with id: {trigger_id}")
-
-        return trigger_id
 
 
 def stop_triggers(trigger_ids):

@@ -107,7 +107,10 @@ class LocalDispatcher(BaseDispatcher):
 
             trigger_data["lattice_dispatch_id"] = lattice_dispatch_id
             trigger_id = LocalDispatcher.start_triggers(trigger_data)
-            return trigger_id
+
+            print("The trigger id for dispatches is simply trigger-{dispatch_id}")
+
+            return lattice_dispatch_id
 
         return wrapper
 
@@ -194,7 +197,6 @@ class LocalDispatcher(BaseDispatcher):
 
         r = requests.post(start_trigger_url, json=trigger_data)
         r.raise_for_status()
-        return r.content.decode("utf-8").strip().replace('"', "")
 
     @staticmethod
     def stop_triggers(trigger_ids: Union[str, List[str]], dispatcher_addr: str = None):

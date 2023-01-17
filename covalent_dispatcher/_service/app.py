@@ -153,8 +153,7 @@ async def get_result(
 @router.post("/triggers/start")
 async def start_triggers(request: Request):
     trigger_data = await request.json()
-    trigger_id = dispatcher.start_triggers(trigger_data)
-    return trigger_id
+    dispatcher.start_triggers(trigger_data)
 
 
 @router.post("/triggers/stop")

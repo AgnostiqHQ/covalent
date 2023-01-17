@@ -172,9 +172,6 @@ class Lattice:
 
         self.metadata[name] = value
 
-        if name == "trigger":
-            print(value)
-
     def get_metadata(self, name: str) -> Any:
         """
         Get value of the metadata of given name.
