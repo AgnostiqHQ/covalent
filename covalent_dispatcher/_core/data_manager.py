@@ -29,8 +29,9 @@ from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._workflow.lattice import Lattice
 
-from .._db import update, upsert
+from .._db import load, update, upsert
 from .._db.write_result_to_db import resolve_electron_id
+from .data_utils.redispatch import diff, patch
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -199,3 +200,33 @@ async def _update_parent_electron(result_object: Result):
 def upsert_lattice_data(dispatch_id: str):
     result_object = get_result_object(dispatch_id)
     upsert._lattice_data(result_object)
+
+
+def make_derived_dispatch(
+    parent_dispatch_id: str, json_lattice: str, electron_updates={}, reuse_previous_results=False
+):
+    old_res = load.get_result_object_from_storage(parent_dispatch_id, wait=False)
+
+    if json_lattice:
+        lat = Lattice.deserialize_from_json(json_lattice)
+        res = Result(lat, get_unique_id())
+        res._initialize_nodes()
+
+        tg = res.lattice.transport_graph
+        tg_old = old_res.lattice.transport_graph
+        if reuse_previous_results:
+            reusable_nodes = diff.compare_transport_graphs(tg_old, tg)
+            patch.copy_nodes(tg_old, tg, reusable_nodes)
+            print(f"Reused nodes {reusable_nodes} from {parent_dispatch_id}")
+    else:
+        res = Result(old_res.lattice, get_unique_id())
+        res._num_nodes = old_res._num_nodes
+        if not reuse_previous_results:
+            res._initialize_nodes()
+
+    patch.apply_electron_updates(res.lattice.transport_graph, electron_updates)
+    res.lattice.transport_graph.dirty_nodes = list(res.lattice.transport_graph._graph.nodes)
+    update.persist(res)
+    _register_result_object(res)
+
+    return res.dispatch_id

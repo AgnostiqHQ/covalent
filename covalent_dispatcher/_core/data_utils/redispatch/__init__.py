@@ -18,10 +18,6 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .base import BaseDispatcher
-from .local import LocalDispatcher
-
-local_dispatch = LocalDispatcher.dispatch
-local_dispatch_sync = LocalDispatcher.dispatch_sync
-# stop_trigger = LocalDispatcher.stop_trigger
-local_redispatch = LocalDispatcher.redispatch
+"""
+Helpers for redispatch
+"""

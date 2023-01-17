@@ -31,6 +31,7 @@ from .._results_manager.results_manager import get_result
 from .._shared_files.config import get_config
 from .._workflow.lattice import Lattice
 from .base import BaseDispatcher
+from .utils.redispatch_helpers import redispatch_real
 
 
 class LocalDispatcher(BaseDispatcher):
@@ -42,9 +43,7 @@ class LocalDispatcher(BaseDispatcher):
     @staticmethod
     def dispatch(
         orig_lattice: Lattice,
-        dispatcher_addr: str = get_config("dispatcher.address")
-        + ":"
-        + str(get_config("dispatcher.port")),
+        dispatcher_addr: str = None,
     ) -> Callable:
         """
         Wrapping the dispatching functionality to allow input passing
@@ -55,11 +54,16 @@ class LocalDispatcher(BaseDispatcher):
 
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
-            dispatcher_addr: The address of the dispatcher server.
+            dispatcher_addr: The address of the dispatcher server.  If None then then defaults to the address set in Covalent's config.
 
         Returns:
             Wrapper function which takes the inputs of the workflow as arguments
         """
+
+        if dispatcher_addr is None:
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
 
         @wraps(orig_lattice)
         def wrapper(*args, **kwargs) -> str:
@@ -102,9 +106,7 @@ class LocalDispatcher(BaseDispatcher):
     @staticmethod
     def dispatch_sync(
         lattice: Lattice,
-        dispatcher_addr: str = get_config("dispatcher.address")
-        + ":"
-        + str(get_config("dispatcher.port")),
+        dispatcher_addr: str = None,
     ) -> Callable:
         """
         Wrapping the synchronous dispatching functionality to allow input
@@ -115,11 +117,16 @@ class LocalDispatcher(BaseDispatcher):
 
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
-            dispatcher_addr: The address of the dispatcher server.
+            dispatcher_addr: The address of the dispatcher server. If None then then defaults to the address set in Covalent's config.
 
         Returns:
             Wrapper function which takes the inputs of the workflow as arguments
         """
+
+        if dispatcher_addr is None:
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
 
         @wraps(lattice)
         def wrapper(*args, **kwargs) -> Result:
@@ -141,3 +148,24 @@ class LocalDispatcher(BaseDispatcher):
             )
 
         return wrapper
+
+    @staticmethod
+    def redispatch(
+        dispatch_id,
+        dispatcher_addr: str = get_config("dispatcher.address")
+        + ":"
+        + str(get_config("dispatcher.port")),
+        replace_electrons={},
+        reuse_previous_results=False,
+    ):
+        def func(*new_args, **new_kwargs):
+            body = redispatch_real(
+                dispatch_id, new_args, new_kwargs, replace_electrons, reuse_previous_results
+            )
+
+            test_url = f"http://{dispatcher_addr}/api/redispatch"
+            r = requests.post(test_url, json=body)
+            r.raise_for_status()
+            return r.content.decode("utf-8").strip().replace('"', "")
+
+        return func
