@@ -131,20 +131,17 @@ def start_triggers(trigger_dict):  # sourcery skip: use-assigned-variable
         )
         trigger = globals()[name](dir_path, event_names)
 
-        trigger_id = f"trigger-{lattice_dispatch_id}"
-        # trigger_id = lattice_dispatch_id
-
         trigger.start(lattice_dispatch_id)
 
-        all_triggers[trigger_id] = trigger
+        all_triggers[lattice_dispatch_id] = trigger
 
-        app_log.warning(f"Started trigger with id: {trigger_id}")
+        app_log.warning(f"Started trigger with id: {lattice_dispatch_id}")
 
 
-def stop_triggers(trigger_ids):
+def stop_triggers(dispatch_ids):
 
-    triggers = [(t_id, all_triggers[t_id]) for t_id in trigger_ids]
+    triggers = [(d_id, all_triggers[d_id]) for d_id in dispatch_ids]
 
-    for t_id, trigger in triggers:
+    for d_id, trigger in triggers:
         trigger.stop()
-        app_log.warning(f"Stopped trigger with id: {t_id}")
+        app_log.warning(f"Stopped trigger with lattice dispatch id: {d_id}")

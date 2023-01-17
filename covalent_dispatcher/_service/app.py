@@ -158,5 +158,5 @@ async def start_triggers(request: Request):
 
 @router.post("/triggers/stop")
 async def stop_triggers(request: Request):
-    trigger_ids = await request.json()
-    dispatcher.stop_triggers(trigger_ids)
+    dispatch_ids = await request.json()
+    dispatcher.stop_triggers(dispatch_ids)

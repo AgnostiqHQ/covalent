@@ -199,22 +199,22 @@ class LocalDispatcher(BaseDispatcher):
         r.raise_for_status()
 
     @staticmethod
-    def stop_triggers(trigger_ids: Union[str, List[str]], dispatcher_addr: str = None):
+    def stop_triggers(dispatch_ids: Union[str, List[str]], dispatcher_addr: str = None):
 
         if dispatcher_addr is None:
             dispatcher_addr = (
                 get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
             )
 
-        if isinstance(trigger_ids, str):
-            trigger_ids = [trigger_ids]
+        if isinstance(dispatch_ids, str):
+            dispatch_ids = [dispatch_ids]
 
         start_trigger_url = f"http://{dispatcher_addr}/api/triggers/stop"
 
-        r = requests.post(start_trigger_url, json=trigger_ids)
+        r = requests.post(start_trigger_url, json=dispatch_ids)
         r.raise_for_status()
 
-        print("The following triggers ids should have stopped now:")
+        print("The following dispatch id's triggers should have stopped now:")
 
-        for tid in trigger_ids:
-            print(tid)
+        for did in dispatch_ids:
+            print(did)
