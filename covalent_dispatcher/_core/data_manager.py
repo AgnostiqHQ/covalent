@@ -201,8 +201,12 @@ def upsert_lattice_data(dispatch_id: str):
 
 
 def make_derived_dispatch(
-    parent_dispatch_id: str, json_lattice: str, electron_updates={}, reuse_previous_results=False
+    parent_dispatch_id: str, json_lattice: str, electron_updates=None, reuse_previous_results=False
 ):
+
+    if electron_updates is None:
+        electron_updates = {}
+
     old_res = load.get_result_object_from_storage(parent_dispatch_id, wait=False)
 
     if json_lattice:

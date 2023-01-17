@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import asyncio
 import uuid
 
 from watchdog.events import FileSystemEventHandler
@@ -35,26 +36,57 @@ SLEEP = 10
 all_triggers = {}
 
 
+# def triggered_dispatch(event, lattice_dispatch_id)
+
+
+async def coro_run_dispatch(lattice_dispatch_id):
+    from .dispatcher import run_dispatch
+
+    run_dispatch(lattice_dispatch_id)
+
+
 class DirEventHandler(FileSystemEventHandler):
-    def __init__(self) -> None:
+    def __init__(self, lattice_dispatch_id, covalent_event_loop) -> None:
         super().__init__()
         self.n_times = 0
+        self.lattice_dispatch_id = lattice_dispatch_id
+        self.covalent_event_loop = covalent_event_loop
 
     def on_modified(self, event):
-        super().on_modified(event)
-        self.n_times += 1
 
+        self.n_times += 1
         app_log.warning(f"File modified {self.n_times}th time")
+
+        from ..entry_point import run_redispatch
+
+        # status = get_result(self.lattice_dispatch_id, status_only=True)["status"]
+        # if status == str(Result.NEW_OBJ):
+        #     # To continue pending dispatch
+        #     asyncio.run_coroutine_threadsafe(coro_run_dispatch(self.lattice_dispatch_id), self.covalent_event_loop)
+        #     app_log.warning(f"Initiating run for dispatch_id: {self.lattice_dispatch_id}")
+        # else:
+        #     # To run new redispatch
+        #     future = asyncio.run_coroutine_threadsafe(run_redispatch(self.lattice_dispatch_id, None, None, False), self.covalent_event_loop)
+        #     new_dispatch_id = future.result()
+        #     app_log.warning(f"Redispatching, new dispatch_id: {new_dispatch_id}")
+
+        future = asyncio.run_coroutine_threadsafe(
+            run_redispatch(self.lattice_dispatch_id, None, None, False), self.covalent_event_loop
+        )
+        new_dispatch_id = future.result()
+        app_log.warning(f"Redispatching, new dispatch_id: {new_dispatch_id}")
 
 
 class DirTrigger:
     def __init__(self, dir_path, event_name=None) -> None:
         self.dir_path = dir_path
         self.event_name = event_name or "modified"
-        self._parent_trigger_id = None
 
-    def start(self):
-        event_handler = DirEventHandler()
+    def start(self, lattice_dispatch_id):
+
+        covalent_event_loop = asyncio.get_running_loop()
+
+        event_handler = DirEventHandler(lattice_dispatch_id, covalent_event_loop)
         self.observer = Observer()
         self.observer.schedule(event_handler, self.dir_path)
         self.observer.start()
@@ -71,7 +103,8 @@ def start_triggers(trigger_dict):
 
     if trigger_dict:
 
-        name, dir_path, event_name = (
+        lattice_dispatch_id, name, dir_path, event_name = (
+            trigger_dict["lattice_dispatch_id"],
             trigger_dict["name"],
             trigger_dict["dir_path"],
             trigger_dict["event_name"],
@@ -81,8 +114,7 @@ def start_triggers(trigger_dict):
         # trigger_id = f"trigger{str(uuid.uuid4())[7:]}"
         trigger_id = f"trigger--{str(uuid.uuid4())[-4:]}"
 
-        trigger._parent_trigger_id = trigger_id
-        trigger.start()
+        trigger.start(lattice_dispatch_id)
 
         all_triggers[trigger_id] = trigger
 
