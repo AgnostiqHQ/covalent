@@ -22,7 +22,7 @@
 import asyncio
 from types import MethodType
 
-from watchdog.events import FileSystemEventHandler
+from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
 
 from covalent._results_manager import Result
@@ -37,7 +37,7 @@ SLEEP = 10
 all_triggers = {}
 
 
-def triggered_dispatch(self, event):
+def triggered_dispatch(self, event: FileSystemEvent):
     from .._service.app import get_result
     from ..entry_point import run_dispatcher, run_redispatch
 
@@ -62,6 +62,8 @@ def triggered_dispatch(self, event):
         new_dispatch_id = future.result()
         app_log.warning(f"Redispatching, new dispatch_id: {new_dispatch_id}")
 
+    app_log.warning(f"File path that triggered this event: {event.src_path}")
+
 
 class DirEventHandler(FileSystemEventHandler):
     def __init__(self, lattice_dispatch_id, covalent_event_loop) -> None:
@@ -77,6 +79,8 @@ class DirEventHandler(FileSystemEventHandler):
         }
 
 
+# To dynamically attach and override "on_*" methods to the handler
+# depending on which ones are requested by the user
 def attach_methods_to_handler(event_handler: DirEventHandler, event_names: list):
 
     for en in event_names:
