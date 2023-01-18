@@ -106,9 +106,7 @@ class LocalDispatcher(BaseDispatcher):
                 return lattice_dispatch_id
 
             trigger_data["lattice_dispatch_id"] = lattice_dispatch_id
-            trigger_id = LocalDispatcher.start_triggers(trigger_data)
-
-            print("The trigger id for dispatches is simply trigger-{dispatch_id}")
+            LocalDispatcher.start_triggers(trigger_data)
 
             return lattice_dispatch_id
 
