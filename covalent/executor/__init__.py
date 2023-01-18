@@ -47,7 +47,13 @@ class _ExecutorManager:
     """
 
     def __init__(self) -> None:
-        self.generate_plugins_list()
+
+        # Dictionary mapping executor name to executor class
+        self.executor_plugins_map: Dict[str, Any] = {}
+        self.executor_plugins_exports_map: Dict[str, Any] = {}
+
+        if os.environ.get("COVALENT_PLUGIN_LOAD", "true").lower() == "true":
+            self.generate_plugins_list()
 
     def generate_plugins_list(self) -> None:
         """
@@ -69,10 +75,6 @@ class _ExecutorManager:
         Returns:
             None
         """
-
-        # Dictionary mapping executor name to executor class
-        self.executor_plugins_map: Dict[str, Any] = {}
-        self.executor_plugins_exports_map: Dict[str, Any] = {}
 
         # Load plugins that are part of the covalent path:
         pkg_plugins_path = os.path.join(os.path.dirname(__file__), "executor_plugins")
