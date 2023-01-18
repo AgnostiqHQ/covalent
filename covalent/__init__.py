@@ -23,6 +23,7 @@
 from importlib import metadata
 
 from . import _file_transfer as fs  # nopycln: import
+from . import triggers  # nopycln: import
 from . import executor, leptons  # nopycln: import
 from ._dispatcher_plugins import local_dispatch as dispatch  # nopycln: import
 from ._dispatcher_plugins import local_dispatch_sync as dispatch_sync  # nopycln: import

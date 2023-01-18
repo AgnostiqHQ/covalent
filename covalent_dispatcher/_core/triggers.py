@@ -20,19 +20,18 @@
 
 
 import asyncio
-from types import MethodType
 
-from watchdog.events import FileSystemEvent, FileSystemEventHandler
-from watchdog.observers import Observer
+from watchdog.events import FileSystemEvent
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 
+# Importing all supported triggers here
+from covalent.triggers import *  # nopycln: import
+
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
-
-SLEEP = 10
 
 all_triggers = {}
 
@@ -65,64 +64,6 @@ def triggered_dispatch(self, event: FileSystemEvent):
     app_log.warning(f"File path that triggered this event: {event.src_path}")
 
 
-class DirEventHandler(FileSystemEventHandler):
-    def __init__(self, lattice_dispatch_id, covalent_event_loop) -> None:
-        self.lattice_dispatch_id = lattice_dispatch_id
-        self.covalent_event_loop = covalent_event_loop
-
-        self.supported_event_to_func_names = {
-            "created": "on_created",
-            "deleted": "on_deleted",
-            "modified": "on_modified",
-            "moved": "on_moved",
-            "closed": "on_closed",
-        }
-
-
-# To dynamically attach and override "on_*" methods to the handler
-# depending on which ones are requested by the user
-def attach_methods_to_handler(event_handler: DirEventHandler, event_names: list):
-
-    for en in event_names:
-        func_name = event_handler.supported_event_to_func_names[en]
-        triggered_dispatch.__name__ = func_name
-        setattr(event_handler, func_name, MethodType(triggered_dispatch, event_handler))
-
-    return event_handler
-
-
-class DirTrigger:
-    def __init__(self, dir_path, event_names) -> None:
-        self.dir_path = dir_path
-
-        if isinstance(event_names, str):
-            event_names = [event_names]
-
-        self.event_names = event_names
-
-    def start(self, lattice_dispatch_id):
-
-        covalent_event_loop = asyncio.get_running_loop()
-
-        event_handler = DirEventHandler(lattice_dispatch_id, covalent_event_loop)
-        event_handler = attach_methods_to_handler(event_handler, self.event_names)
-
-        self.observer = Observer()
-        self.observer.schedule(event_handler, self.dir_path)
-        self.observer.start()
-
-    def stop(self):
-        self.observer.stop()
-        self.observer.join()
-
-    def to_dict(self):
-        return {
-            "name": str(self.__class__.__name__),
-            "dir_path": self.dir_path,
-            "event_names": self.event_names,
-        }
-
-
 def start_triggers(trigger_dict):  # sourcery skip: use-assigned-variable
 
     if trigger_dict:
@@ -135,7 +76,7 @@ def start_triggers(trigger_dict):  # sourcery skip: use-assigned-variable
         )
         trigger = globals()[name](dir_path, event_names)
 
-        trigger.start(lattice_dispatch_id)
+        trigger.start(lattice_dispatch_id, triggered_dispatch)
 
         all_triggers[lattice_dispatch_id] = trigger
 
