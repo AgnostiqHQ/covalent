@@ -259,7 +259,7 @@ export const ResultsTableHead = ({
               </MenuItem>
             ) : null}
             {(filterValue === 'COMPLETED' || filterValue === 'ALL') &&
-            completedDispatches !== 0 ? (
+              completedDispatches !== 0 ? (
               <MenuItem
                 data-testid="menuitem"
                 divider
@@ -273,7 +273,7 @@ export const ResultsTableHead = ({
             ) : null}
 
             {(filterValue === 'RUNNING' || filterValue === 'ALL') &&
-            runningDispatches !== 0 ? (
+              runningDispatches !== 0 ? (
               <MenuItem
                 data-testid="menuitem"
                 divider
@@ -286,7 +286,7 @@ export const ResultsTableHead = ({
               </MenuItem>
             ) : null}
             {(filterValue === 'FAILED' || filterValue === 'ALL') &&
-            failedDispatches !== 0 ? (
+              failedDispatches !== 0 ? (
               <MenuItem
                 data-testid="menuitem"
                 divider
@@ -515,9 +515,9 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize text
   [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
-    {
-      fontSize: '1rem',
-    },
+  {
+    fontSize: '1rem',
+  },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
@@ -907,11 +907,15 @@ const ResultListing = () => {
                             />
                           </TableCell>
                         ) : (
-                          <TableCell>{secondsToHms(result.runTime)}</TableCell>
+                          <TableCell>{result.runTime === null ? '-' : secondsToHms(result.runTime)}</TableCell>
                         )}
 
                         <TableCell>
-                          {formatDate(getLocalStartTime(result.startTime))}
+                          {formatDate(
+                            result.startTime
+                              ? getLocalStartTime(result.startTime)
+                              : result.startTime
+                          )}
                         </TableCell>
 
                         <TableCell>
