@@ -65,7 +65,6 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       COVALENT_SERVER_IFACE_ANY: true
-      COVALENT_PLUGIN_LOAD: true
     container: ${{ matrix.container }}
     continue-on-error: ${{ matrix.experimental }}
     outputs:

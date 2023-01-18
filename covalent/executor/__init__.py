@@ -52,7 +52,7 @@ class _ExecutorManager:
         self.executor_plugins_map: Dict[str, Any] = {}
         self.executor_plugins_exports_map: Dict[str, Any] = {}
 
-        if os.environ.get("COVALENT_PLUGIN_LOAD"):
+        if os.environ.get("COVALENT_PLUGIN_LOAD", True):
             self.generate_plugins_list()
 
     def generate_plugins_list(self) -> None:
