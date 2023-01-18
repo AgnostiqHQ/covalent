@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Load plugins only when COVALENT_PLUGIN_LOAD environment variable has been set to a Truthy value.
+
 ## [0.213.0-rc.0] - 2023-01-18
 
 ### Authors
