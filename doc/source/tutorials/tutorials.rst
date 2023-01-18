@@ -35,7 +35,7 @@ Intermediate
    * - Topic
      - Title
    * - Machine Learning
-     - :doc:`Iris classification<./1_QuantumMachineLearning/pennylane_ensemble_classification/source>`
+     - :doc:`Iris classification<./1_QuantumMachineLearning/pennylane_iris_classification/source>`
    * - Machine Learning
      - :doc:`Variational parity classification<./1_QuantumMachineLearning/pennylane_parity_classifier/source>`
    * - Machine Learning
