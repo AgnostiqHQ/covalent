@@ -1,3 +1,5 @@
 ##
 S3
 ##
+
+Simple Storage System. S3 is a cloud object storage system offered on Amazon Web Services' (AWS). f
