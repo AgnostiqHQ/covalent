@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 - Published Self-Deployment Guide
+- Added a note to First Experiment offering initial intro to executors.
 
 ## [0.213.0-rc.0] - 2023-01-18
 
