@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Load plugins only when COVALENT_PLUGIN_LOAD environment variable has been set to a Truthy value.
 
+### Docs
+- Published Self-Deployment Guide
+
 ## [0.213.0-rc.0] - 2023-01-18
 
 ### Authors
@@ -83,10 +86,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 
-### Fixed 
+### Fixed
 
-- Optimization of logs on the GUI for large log file sizes. 
-- Fixed UI pagination not working for more than 11 pages 
+- Optimization of logs on the GUI for large log file sizes.
+- Fixed UI pagination not working for more than 11 pages
 - Runtime field counting down for select running dispatches
 
 ## [0.211.0-rc.0] - 2023-01-10
