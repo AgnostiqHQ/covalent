@@ -224,13 +224,20 @@ async def _listen_for_job_events():
     while True:
         msg = await _job_events.get()
         try:
-            task_metadata = msg["task_metadata"]
             event = msg["event"]
+            app_log.debug(f"Received job event {event}")
+            if event == "BYE":
+                app_log.debug("Terminating job event listener")
+                break
 
             # job has reached a terminal state
             if event == "READY":
+                task_metadata = msg["task_metadata"]
                 asyncio.create_task(_get_task_result(task_metadata))
+                continue
+
             if event == "FAILED":
+                task_metadata = msg["task_metadata"]
                 dispatch_id = task_metadata["dispatch_id"]
                 node_id = task_metadata["node_id"]
                 detail = msg["detail"]
