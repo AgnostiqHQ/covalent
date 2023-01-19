@@ -21,7 +21,6 @@ To quickly install Covalent and run a short demo, follow the four steps below.
 
 .. card:: 2. Start the Covalent server.
 
-
     In the terminal window, type:
 
     .. code:: console
@@ -30,11 +29,7 @@ To quickly install Covalent and run a short demo, follow the four steps below.
         Covalent server has started at http://localhost:48008
 
 
-
-
 .. card:: 3. Run a workflow.
-
-
 
     Open a Jupyter notebook or Python console and run the following Python code:
 
@@ -87,15 +82,10 @@ To quickly install Covalent and run a short demo, follow the four steps below.
     Note that the computed result is displayed in the Overview.
 
 
-
-
-
-
-
-
-
 What to Do Next
 ###############
+
+Read :doc:`First Experiment <../first_experiment/index>` for a more thorough discussion of the components of this simple workflow, including the important role of *executors*.
 
 Read :doc:`Concepts <../../concepts/concepts>` gain a deeper understanding of how Covalent works.
 
