@@ -23,6 +23,7 @@ Tests for the core functionality of the runner.
 """
 
 
+import asyncio
 from unittest.mock import AsyncMock
 
 import pytest
@@ -30,9 +31,17 @@ from sqlalchemy.pool import StaticPool
 
 import covalent as ct
 from covalent._results_manager import Result
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 from covalent.executor.base import AsyncBaseExecutor
-from covalent_dispatcher._core.runner_exp import _submit_abstract_task
+from covalent_dispatcher._core.runner_exp import (
+    _get_task_result,
+    _listen_for_job_events,
+    _mark_failed,
+    _mark_ready,
+    _poll_task_status,
+    _submit_abstract_task,
+)
 from covalent_dispatcher._dal.result import Result as SRVResult
 from covalent_dispatcher._dal.result import get_result_object
 from covalent_dispatcher._db import update
@@ -41,7 +50,7 @@ from covalent_dispatcher._db.datastore import DataStore
 TEST_RESULTS_DIR = "/tmp/results"
 
 
-class MockExecutor(AsyncBaseExecutor):
+class MockManagedExecutor(AsyncBaseExecutor):
     SUPPORTS_MANAGED_EXECUTION = True
 
     async def run(self, function, args, kwargs, task_metadata):
@@ -101,7 +110,7 @@ async def test_submit_abstract_task(mocker):
 
     import datetime
 
-    me = MockExecutor()
+    me = MockManagedExecutor()
     me.send = AsyncMock(return_value="42")
 
     mocker.patch(
@@ -157,3 +166,212 @@ async def test_submit_abstract_task(mocker):
         {"key": mock_node_upload_uri_2},
         task_metadata,
     )
+
+
+@pytest.mark.asyncio
+async def test_submit_requires_opt_in(mocker):
+    """Checks submit rejects old-style executors"""
+
+    import datetime
+
+    class MockExecutor(AsyncBaseExecutor):
+        async def run(self, function, args, kwargs, task_metadata):
+            pass
+
+    me = MockExecutor()
+    me.send = AsyncMock(return_value="42")
+    ts = datetime.datetime.now()
+    dispatch_id = "dispatch"
+    task_id = 0
+    name = "task"
+    abstract_inputs = {"args": [1], "kwargs": {"key": 2}}
+
+    mocker.patch(
+        "covalent_dispatcher._core.runner_exp.datamgr.get_electron_attribute",
+        return_value="managed_dask",
+    )
+
+    mocker.patch(
+        "covalent_dispatcher._core.runner_exp.get_executor",
+        return_value=me,
+    )
+
+    error_msg = str(NotImplementedError("Executor does not support managed execution"))
+
+    node_result = {
+        "node_id": 0,
+        "end_time": ts,
+        "status": RESULT_STATUS.FAILED,
+        "error": error_msg,
+    }
+
+    mocker.patch(
+        "covalent_dispatcher._core.runner_exp.datamgr.generate_node_result",
+        return_value=node_result,
+    )
+
+    assert node_result == await _submit_abstract_task(dispatch_id, task_id, name, abstract_inputs)
+
+
+@pytest.mark.asyncio
+async def test_get_task_result(mocker):
+
+    import datetime
+
+    me = MockManagedExecutor()
+    asset_uri = "file:///tmp/asset.pkl"
+    me.receive = AsyncMock(return_value=(asset_uri, asset_uri, asset_uri, False))
+
+    mocker.patch(
+        "covalent_dispatcher._core.runner_exp.datamgr.get_electron_attribute",
+        return_value="managed_dask",
+    )
+
+    mocker.patch(
+        "covalent_dispatcher._core.runner_exp.get_executor",
+        return_value=me,
+    )
+
+    ts = datetime.datetime.now()
+
+    node_result = {
+        "node_id": 0,
+        "start_time": ts,
+        "end_time": ts,
+        "status": RESULT_STATUS.COMPLETED,
+    }
+
+    expected_node_result = {
+        "node_id": 0,
+        "start_time": ts,
+        "end_time": ts,
+        "status": RESULT_STATUS.COMPLETED,
+        "output_uri": asset_uri,
+        "stdout_uri": asset_uri,
+        "stderr_uri": asset_uri,
+    }
+
+    mocker.patch(
+        "covalent_dispatcher._core.runner_exp.datamgr.generate_node_result",
+        return_value=node_result,
+    )
+
+    mock_update = mocker.patch(
+        "covalent_dispatcher._core.runner_exp.datamgr.update_node_result_refs",
+    )
+
+    mock_upload = mocker.patch(
+        "covalent_dispatcher._core.data_modules.asset_manager.upload_asset_for_nodes",
+    )
+
+    dispatch_id = "dispatch"
+    task_id = 0
+    name = "task"
+
+    task_metadata = {"dispatch_id": dispatch_id, "node_id": task_id}
+    mock_job_handles = {(dispatch_id, task_id): 42}
+
+    mocker.patch("covalent_dispatcher._core.runner_exp._job_handles", mock_job_handles)
+
+    await _get_task_result(task_metadata)
+
+    me.receive.assert_awaited_with(task_metadata, 42)
+
+    mock_update.assert_awaited_with(dispatch_id, expected_node_result)
+
+
+@pytest.mark.asyncio
+async def test_poll_status(mocker):
+
+    me = MockManagedExecutor()
+    me.poll = AsyncMock(return_value=0)
+    mocker.patch(
+        "covalent_dispatcher._core.runner_exp.get_executor",
+        return_value=me,
+    )
+    mock_mark_ready = mocker.patch(
+        "covalent_dispatcher._core.runner_exp._mark_ready",
+    )
+
+    dispatch_id = "dispatch"
+    task_id = 1
+    task_metadata = {"dispatch_id": dispatch_id, "node_id": task_id}
+
+    mock_job_handles = {(dispatch_id, task_id): 42}
+
+    mocker.patch("covalent_dispatcher._core.runner_exp._job_handles", mock_job_handles)
+
+    await _poll_task_status(task_metadata, ["mock_exec", {}])
+
+    mock_mark_ready.assert_awaited()
+
+    me.poll = AsyncMock(return_value=-1)
+    mock_mark_ready.reset_mock()
+
+    await _poll_task_status(task_metadata, ["mock_exec", {}])
+    mock_mark_ready.assert_not_awaited()
+
+    me.poll = AsyncMock(side_effect=RuntimeError())
+    mock_mark_ready.reset_mock()
+    mock_mark_failed = mocker.patch(
+        "covalent_dispatcher._core.runner_exp._mark_failed",
+    )
+
+    await _poll_task_status(task_metadata, ["mock_exec", {}])
+    mock_mark_ready.assert_not_awaited()
+    mock_mark_failed.assert_awaited()
+
+
+@pytest.mark.asyncio
+async def test_event_listener(mocker):
+    import datetime
+
+    ts = datetime.datetime.now()
+    node_result = {
+        "node_id": 0,
+        "start_time": ts,
+        "end_time": ts,
+        "status": RESULT_STATUS.FAILED,
+        "error": "error",
+    }
+
+    mocker.patch(
+        "covalent_dispatcher._core.runner_exp.datamgr.generate_node_result",
+        return_value=node_result,
+    )
+
+    mock_update = mocker.patch(
+        "covalent_dispatcher._core.runner_exp.datamgr.update_node_result_refs",
+    )
+
+    mock_get = mocker.patch("covalent_dispatcher._core.runner_exp._get_task_result")
+
+    task_metadata = {"dispatch_id": "dispatch", "node_id": 1}
+
+    job_events = [{"event": "READY", "task_metadata": task_metadata}, {"event": "BYE"}]
+
+    mock_event_queue = asyncio.Queue()
+
+    mocker.patch(
+        "covalent_dispatcher._core.runner_exp._job_events",
+        mock_event_queue,
+    )
+    fut = asyncio.create_task(_listen_for_job_events())
+    await _mark_ready(task_metadata)
+    await _mark_ready(task_metadata)
+    await mock_event_queue.put({"event": "BYE"})
+
+    await asyncio.wait_for(fut, 1)
+
+    assert mock_get.call_count == 2
+
+    mock_get.reset_mock()
+
+    fut = asyncio.create_task(_listen_for_job_events())
+
+    await _mark_failed(task_metadata, "error")
+    await mock_event_queue.put({"event": "BYE"})
+
+    await asyncio.wait_for(fut, 1)
+
+    mock_update.assert_awaited_with(task_metadata["dispatch_id"], node_result)
