@@ -308,3 +308,31 @@ async def test_update_node_result_refs(mocker):
 
     mock_download.assert_awaited_with(dispatch_id, 2, src_uris)
     mock_update.assert_awaited_with(dispatch_id, {"node_id": 2})
+
+
+@pytest.mark.asyncio
+async def test_update_node_result_refs_handles_failed_download(mocker):
+    from covalent._shared_files.util_classes import RESULT_STATUS
+
+    mock_download = mocker.patch(
+        "covalent_dispatcher._core.data_manager.am.download_assets_for_node",
+        side_effect=RuntimeError(),
+    )
+    stdout_uri = "file:///tmp/stdout.txt"
+    stderr_uri = "file:///tmp/stderr.txt"
+    output_uri = "file:///tmp/output/pkl"
+    node_result = {
+        "node_id": 2,
+        "stdout_uri": stdout_uri,
+        "stderr_uri": stderr_uri,
+        "output_uri": output_uri,
+    }
+
+    src_uris = {"stdout": stdout_uri, "stderr": stderr_uri, "output": output_uri}
+    mock_update = mocker.patch("covalent_dispatcher._core.data_manager.update_node_result")
+
+    dispatch_id = "dispatch"
+
+    await update_node_result_refs(dispatch_id, node_result)
+
+    mock_update.assert_awaited_with(dispatch_id, {"node_id": 2, "status": RESULT_STATUS.FAILED})
