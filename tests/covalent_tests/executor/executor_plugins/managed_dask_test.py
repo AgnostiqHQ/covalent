@@ -29,6 +29,9 @@ import pytest
 from covalent import TransportableObject
 
 
+@pytest.mark.skipif(
+    not os.environ.get("DASK_SCHEDULER_ADDR"), reason="DASK_SCHEDULER_ADDR not set"
+)
 @pytest.mark.asyncio
 async def test_managed_dask_send_poll_receive():
     """Test a full job execution sequence"""
