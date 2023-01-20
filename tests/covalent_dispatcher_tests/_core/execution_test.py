@@ -26,6 +26,7 @@ import asyncio
 from typing import Dict, List
 
 import pytest
+import pytest_asyncio
 from sqlalchemy.pool import StaticPool
 
 import covalent as ct
@@ -53,6 +54,14 @@ def test_db():
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
+
+
+@pytest_asyncio.fixture(scope="session")
+def event_loop(request):
+    """Create an instance of the default event loop for each test case."""
+    loop = asyncio.get_event_loop_policy().new_event_loop()
+    yield loop
+    loop.close()
 
 
 def get_mock_result() -> Result:
@@ -279,7 +288,7 @@ async def test_run_workflow_with_failing_nonleaf(mocker, test_db):
         return_value=[(0, "failing_task")],
     )
 
-    update.persist(result_object)
+    update.persist(sdkres)
     result_object = await run_workflow(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
     assert result_object.status == Result.FAILED
@@ -307,7 +316,7 @@ async def test_run_workflow_with_failing_leaf(mocker, test_db):
     workflow.build_graph(5)
 
     json_lattice = workflow.serialize_to_json()
-    dispatch_id = "asdf"
+    dispatch_id = "asdf_failing_leaf"
     lattice = Lattice.deserialize_from_json(json_lattice)
     sdkres = Result(lattice)
     sdkres._dispatch_id = dispatch_id
@@ -338,8 +347,6 @@ async def test_run_workflow_with_failing_leaf(mocker, test_db):
         "covalent._results_manager.result.Result._get_failed_nodes",
         return_value=[(0, "failing_task")],
     )
-
-    update.persist(result_object)
 
     result_object = await run_workflow(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
