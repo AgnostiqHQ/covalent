@@ -36,13 +36,13 @@ from covalent._shared_files.defaults import prefix_separator, sublattice_prefix
 from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
-from covalent.executor import _executor_manager
 from covalent.executor.base import wrapper_fn
 
 from .._dal.result import Result as SRVResult
 from .._db.write_result_to_db import get_sublattice_electron_id
 from . import data_manager as datasvc
 from . import dispatcher
+from .runner_modules.utils import get_executor
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -242,13 +242,7 @@ async def _run_task(
 
     # Instantiate the executor from JSON
     try:
-        short_name, object_dict = selected_executor
-
-        app_log.debug(f"Running task {node_name} using executor {short_name}, {object_dict}")
-
-        # the executor is determined during scheduling and provided in the execution metadata
-        executor = _executor_manager.get_executor(short_name)
-        executor.from_dict(object_dict)
+        executor = get_executor(node_id, selected_executor)
     except Exception as ex:
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
         app_log.debug("Exception when trying to instantiate executor:")
