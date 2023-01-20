@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Removing the entrypoint for SDK-only install
+- Updating client requirements to match server versions
+
 ## [0.213.1-rc.0] - 2023-01-20
 
 ### Authors
