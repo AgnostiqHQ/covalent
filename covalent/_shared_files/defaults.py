@@ -79,6 +79,7 @@ def get_default_dispatcher_config():
             (os.environ.get("XDG_DATA_HOME") or (os.environ["HOME"] + "/.local/share"))
             + "/covalent/dispatcher_db.sqlite"
         ),
+        "use_legacy_runner": os.environ.get("COVALENT_DISABLE_NEW_RUNNER") or "false",
     }
 
 
