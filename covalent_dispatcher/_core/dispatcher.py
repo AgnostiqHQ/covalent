@@ -29,6 +29,7 @@ from typing import Dict, Tuple
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
+from covalent._shared_files.config import get_config
 from covalent._shared_files.defaults import parameter_prefix
 
 from . import data_manager as datasvc
@@ -37,6 +38,8 @@ from .data_manager import SRVResult
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+NEW_RUNNER_ENABLED = get_config("dispatcher.use_legacy_runner") == "false"
 
 
 # Domain: dispatcher
@@ -185,15 +188,26 @@ async def _submit_task(result_object, node_id):
 
         app_log.debug(f"Submitting task {node_id} to executor")
 
-        coro = runner_exp.run_abstract_task(
-            dispatch_id=result_object.dispatch_id,
-            node_id=node_id,
-            selected_executor=[selected_executor, selected_executor_data],
-            node_name=node_name,
-            abstract_inputs=abs_task_input,
-            workflow_executor=post_processor,
-        )
-
+        if NEW_RUNNER_ENABLED:
+            app_log.debug(f"Using new runner for task {node_id}")
+            coro = runner_exp.run_abstract_task(
+                dispatch_id=result_object.dispatch_id,
+                node_id=node_id,
+                selected_executor=[selected_executor, selected_executor_data],
+                node_name=node_name,
+                abstract_inputs=abs_task_input,
+                workflow_executor=post_processor,
+            )
+        else:
+            app_log.debug(f"Using legacy runner for task {node_id}")
+            coro = runner.run_abstract_task(
+                dispatch_id=result_object.dispatch_id,
+                node_id=node_id,
+                selected_executor=[selected_executor, selected_executor_data],
+                node_name=node_name,
+                abstract_inputs=abs_task_input,
+                workflow_executor=post_processor,
+            )
         asyncio.create_task(coro)
 
 
