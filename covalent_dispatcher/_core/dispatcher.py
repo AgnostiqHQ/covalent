@@ -32,7 +32,7 @@ from covalent._shared_files import logger
 from covalent._shared_files.defaults import parameter_prefix
 
 from . import data_manager as datasvc
-from . import runner
+from . import runner, runner_exp
 from .data_manager import SRVResult
 
 app_log = logger.app_log
@@ -185,7 +185,7 @@ async def _submit_task(result_object, node_id):
 
         app_log.debug(f"Submitting task {node_id} to executor")
 
-        coro = runner.run_abstract_task(
+        coro = runner_exp.run_abstract_task(
             dispatch_id=result_object.dispatch_id,
             node_id=node_id,
             selected_executor=[selected_executor, selected_executor_data],

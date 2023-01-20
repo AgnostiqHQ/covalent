@@ -51,6 +51,11 @@ from covalent_dispatcher._db.datastore import DataStore
 TEST_RESULTS_DIR = "/tmp/results"
 
 
+class MockExecutor(AsyncBaseExecutor):
+    async def run(self, function, args, kwargs, task_metadata):
+        pass
+
+
 class MockManagedExecutor(AsyncBaseExecutor):
     SUPPORTS_MANAGED_EXECUTION = True
 
@@ -154,7 +159,7 @@ async def test_submit_abstract_task(mocker):
     mock_node_upload_uri_1 = me.get_upload_uri(task_metadata, "node_1")
     mock_node_upload_uri_2 = me.get_upload_uri(task_metadata, "node_2")
 
-    await _submit_abstract_task(dispatch_id, task_id, name, abstract_inputs)
+    await _submit_abstract_task(dispatch_id, task_id, name, abstract_inputs, me)
 
     mock_upload.assert_awaited()
 
@@ -174,10 +179,6 @@ async def test_submit_requires_opt_in(mocker):
     """Checks submit rejects old-style executors"""
 
     import datetime
-
-    class MockExecutor(AsyncBaseExecutor):
-        async def run(self, function, args, kwargs, task_metadata):
-            pass
 
     me = MockExecutor()
     me.send = AsyncMock(return_value="42")
@@ -211,7 +212,53 @@ async def test_submit_requires_opt_in(mocker):
         return_value=node_result,
     )
 
-    assert node_result == await _submit_abstract_task(dispatch_id, task_id, name, abstract_inputs)
+    assert node_result == await _submit_abstract_task(
+        dispatch_id, task_id, name, abstract_inputs, me
+    )
+
+
+@pytest.mark.asyncio
+async def test_submit_rejects_sublattices(mocker):
+    """Checks submit rejects sublattices (not yet supported)"""
+    import datetime
+
+    from covalent._shared_files.defaults import sublattice_prefix
+
+    me = MockManagedExecutor()
+    me.send = AsyncMock(return_value="42")
+    ts = datetime.datetime.now()
+    dispatch_id = "dispatch"
+    task_id = 0
+    name = sublattice_prefix
+    abstract_inputs = {"args": [1], "kwargs": {"key": 2}}
+
+    mocker.patch(
+        "covalent_dispatcher._core.runner_exp.datamgr.get_electron_attribute",
+        return_value="managed_dask",
+    )
+
+    mocker.patch(
+        "covalent_dispatcher._core.runner_exp.get_executor",
+        return_value=me,
+    )
+
+    error_msg = str(NotImplementedError("Sublattices not yet supported"))
+
+    node_result = {
+        "node_id": 0,
+        "end_time": ts,
+        "status": RESULT_STATUS.FAILED,
+        "error": error_msg,
+    }
+
+    mocker.patch(
+        "covalent_dispatcher._core.runner_exp.datamgr.generate_node_result",
+        return_value=node_result,
+    )
+
+    assert node_result == await _submit_abstract_task(
+        dispatch_id, task_id, name, abstract_inputs, me
+    )
 
 
 @pytest.mark.asyncio
@@ -309,14 +356,14 @@ async def test_poll_status(mocker):
 
     mocker.patch("covalent_dispatcher._core.runner_exp._job_handles", mock_job_handles)
 
-    await _poll_task_status(task_metadata, ["mock_exec", {}])
+    await _poll_task_status(task_metadata, me)
 
     mock_mark_ready.assert_awaited()
 
     me.poll = AsyncMock(return_value=-1)
     mock_mark_ready.reset_mock()
 
-    await _poll_task_status(task_metadata, ["mock_exec", {}])
+    await _poll_task_status(task_metadata, me)
     mock_mark_ready.assert_not_awaited()
 
     me.poll = AsyncMock(side_effect=RuntimeError())
@@ -325,7 +372,7 @@ async def test_poll_status(mocker):
         "covalent_dispatcher._core.runner_exp._mark_failed",
     )
 
-    await _poll_task_status(task_metadata, ["mock_exec", {}])
+    await _poll_task_status(task_metadata, me)
     mock_mark_ready.assert_not_awaited()
     mock_mark_failed.assert_awaited()
 
@@ -384,10 +431,27 @@ async def test_event_listener(mocker):
 
     mock_update.assert_awaited_with(task_metadata["dispatch_id"], node_result)
 
+    await mock_event_queue.put({"BAD_EVENT": "asdf"})
+    await mock_event_queue.put({"event": "BYE"})
+    mock_log = mocker.patch("covalent_dispatcher._core.runner_exp.app_log.exception")
+
+    fut = asyncio.create_task(_listen_for_job_events())
+
+    await _mark_failed(task_metadata, "error")
+    await mock_event_queue.put({"event": "BYE"})
+
+    await asyncio.wait_for(fut, 1)
+
 
 @pytest.mark.asyncio
 async def test_run_abstract_task(mocker):
     mock_listen = AsyncMock()
+    me = MockManagedExecutor()
+    me.poll = AsyncMock(return_value=0)
+    mocker.patch(
+        "covalent_dispatcher._core.runner_exp.get_executor",
+        return_value=me,
+    )
 
     mock_poll = mocker.patch(
         "covalent_dispatcher._core.runner_exp._poll_task_status",
@@ -421,3 +485,102 @@ async def test_run_abstract_task(mocker):
     mock_submit.assert_awaited()
     mock_update.assert_awaited()
     mock_poll.assert_awaited()
+
+
+@pytest.mark.asyncio
+async def test_run_abstract_task_handles_old_execs(mocker):
+    mock_listen = AsyncMock()
+    me = MockExecutor()
+    mocker.patch(
+        "covalent_dispatcher._core.runner_exp.get_executor",
+        return_value=me,
+    )
+
+    mock_legacy_run = mocker.patch("covalent_dispatcher._core.runner.run_abstract_task")
+
+    mock_submit = mocker.patch("covalent_dispatcher._core.runner_exp._submit_abstract_task")
+
+    dispatch_id = "dispatch"
+    node_id = 0
+    node_name = "task"
+    abstract_inputs = {"args": [], "kwargs": {}}
+    selected_executor = ["local", {}]
+    workflow_executor = selected_executor
+
+    await run_abstract_task(
+        dispatch_id,
+        node_id,
+        node_name,
+        abstract_inputs,
+        selected_executor,
+        workflow_executor,
+    )
+
+    mock_legacy_run.assert_called()
+    mock_submit.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_run_abstract_task_handles_sublattices(mocker):
+    """Check that sublattices are redirected to old runner"""
+
+    from covalent._shared_files.defaults import sublattice_prefix
+
+    me = MockExecutor()
+    mocker.patch(
+        "covalent_dispatcher._core.runner_exp.get_executor",
+        return_value=me,
+    )
+
+    mock_legacy_run = mocker.patch("covalent_dispatcher._core.runner.run_abstract_task")
+
+    mock_submit = mocker.patch("covalent_dispatcher._core.runner_exp._submit_abstract_task")
+
+    dispatch_id = "dispatch"
+    node_id = 0
+    node_name = sublattice_prefix
+    abstract_inputs = {"args": [], "kwargs": {}}
+    selected_executor = ["local", {}]
+    workflow_executor = selected_executor
+
+    await run_abstract_task(
+        dispatch_id,
+        node_id,
+        node_name,
+        abstract_inputs,
+        selected_executor,
+        workflow_executor,
+    )
+
+    mock_legacy_run.assert_called()
+    mock_submit.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_run_abstract_task_handles_bad_executors(mocker):
+    """Check handling of executors during get_executor"""
+
+    from covalent._shared_files.defaults import sublattice_prefix
+
+    mocker.patch("covalent_dispatcher._core.runner_exp.get_executor", side_effect=RuntimeError())
+
+    mock_update = mocker.patch(
+        "covalent_dispatcher._core.runner_exp.datamgr.update_node_result_refs",
+    )
+    dispatch_id = "dispatch"
+    node_id = 0
+    node_name = sublattice_prefix
+    abstract_inputs = {"args": [], "kwargs": {}}
+    selected_executor = ["local", {}]
+    workflow_executor = selected_executor
+
+    await run_abstract_task(
+        dispatch_id,
+        node_id,
+        node_name,
+        abstract_inputs,
+        selected_executor,
+        workflow_executor,
+    )
+
+    mock_update.assert_awaited()
