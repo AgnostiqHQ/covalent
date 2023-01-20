@@ -50,15 +50,6 @@ log_stack_info = logger.log_stack_info
 templates = Jinja2Templates(directory=WEBAPP_PATH)
 
 
-@fastapi_app.on_event("startup")
-async def set_event_loop():
-    import asyncio
-
-    from covalent_dispatcher._core.execution import _event_loop as event_loop
-
-    event_loop = asyncio.get_running_loop()
-
-
 @fastapi_app.get("/{rest_of_path}")
 def get_home(request: Request, rest_of_path: str):
     return templates.TemplateResponse("index.html", {"request": request})

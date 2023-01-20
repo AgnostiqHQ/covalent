@@ -59,8 +59,6 @@ from covalent._results_manager import Result
 
 from . import runner
 
-_event_loop = None
-
 
 async def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dict:
     """
