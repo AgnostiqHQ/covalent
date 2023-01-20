@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.213.1-rc.0] - 2023-01-20
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- dwelsch-esi <116022979+dwelsch-esi@users.noreply.github.com>
+
+
 ### Fixed
 
 - Load plugins only when COVALENT_PLUGIN_LOAD environment variable has been set to a Truthy value.
