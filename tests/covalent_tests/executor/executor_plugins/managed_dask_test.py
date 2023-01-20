@@ -37,19 +37,22 @@ async def test_managed_dask_send_poll_receive():
 
     from covalent.executor.executor_plugins.managed_dask import ManagedDaskExecutor, _clients
 
-    scheduler_address = "tcp://192.168.1.156:8786"
+    scheduler_address = os.environ.get("DASK_SCHEDULER_ADDR", None)
+    if not scheduler_address:
+        raise RuntimeError("DASK_SCHEDULER_ADDR not set")
 
     executor = ManagedDaskExecutor(scheduler_address, cache_dir="/tmp")
 
-    def task(x):
+    def task(x, y):
         import sys
 
         print("HELLO!!")
         print("Error", file=sys.stderr)
-        return x**3
+        return x**3 + y
 
     serialized_fn = TransportableObject(task)
     serialized_x = TransportableObject(3)
+    serialized_y = TransportableObject(1)
 
     with tempfile.NamedTemporaryFile("wb", delete=False, suffix=".pkl") as temp:
         function_uri = temp.name
@@ -59,27 +62,38 @@ async def test_managed_dask_send_poll_receive():
         arg_uri = temp.name
         cloudpickle.dump(serialized_x, temp)
 
+    with tempfile.NamedTemporaryFile("wb", delete=False, suffix=".pkl") as temp:
+        kwarg_uri = temp.name
+        cloudpickle.dump(serialized_y, temp)
+
     dispatch_id = "dispatch"
     node_id = 2
     task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id}
 
     key = await executor.send(
-        f"file://{function_uri}", "", "", "", [f"file://{arg_uri}"], {}, task_metadata
+        f"file://{function_uri}",
+        "",
+        "",
+        "",
+        [f"file://{arg_uri}"],
+        {"y": kwarg_uri},
+        task_metadata,
     )
 
-    client = _clients[(dispatch_id, node_id)]
+    client = _clients[key]
 
     fut_2 = Future(key=key, client=client)
     await executor.poll(task_metadata, key)
 
+    assert fut_2.done()
+
     output_uri, stdout_uri, stderr_uri, exception_raised = await executor.receive(
         task_metadata, key
     )
-    # output_uri, stdout_uri, stderr_uri, exception_raised = await fut_2.result(2)
 
     with open(output_uri, "rb") as f:
         ser_output = cloudpickle.load(f)
-        assert ser_output.get_deserialized() == 27
+        assert ser_output.get_deserialized() == 28
 
     with open(stdout_uri, "r") as f:
         assert f.read() == "HELLO!!\n"

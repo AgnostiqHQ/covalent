@@ -27,6 +27,7 @@ This is a plugin executor module; it is loaded if found and properly structured.
 
 import os
 import sys
+import traceback
 from contextlib import redirect_stderr, redirect_stdout
 from typing import Any, Callable, Dict, List
 
@@ -59,6 +60,10 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
 
 # See https://github.com/dask/distributed/issues/5667
 _clients = {}
+
+# See
+# https://stackoverflow.com/questions/62164283/why-do-my-dask-futures-get-stuck-in-pending-and-never-finish
+_futures = {}
 
 
 # URIs are just file paths
@@ -94,7 +99,7 @@ def run_task_from_uris(
                     with open(uri, "rb") as f:
                         ser_args.append(pickle.load(f))
 
-                for key, uri in kwargs_uris:
+                for key, uri in kwargs_uris.items():
                     if uri.startswith(prefix):
                         uri = uri[prefix_len:]
                     with open(uri, "rb") as f:
@@ -113,7 +118,9 @@ def run_task_from_uris(
 
             except Exception as ex:
                 exception_occurred = True
+                tb = "".join(traceback.TracebackException.from_exception(ex).format())
                 print(str(ex), file=sys.stderr)
+                output_uri = None
 
     return output_uri, stdout_uri, stderr_uri, exception_occurred
 
@@ -123,14 +130,16 @@ class ManagedDaskExecutor(AsyncBaseExecutor):
     Dask executor class that submits the input function to a running LOCAL dask cluster.
     """
 
+    SUPPORTS_MANAGED_EXECUTION = True
+
     def __init__(
         self,
         scheduler_address: str = "",
         log_stdout: str = "stdout.log",
         log_stderr: str = "stderr.log",
-        conda_env: str = "",
         cache_dir: str = "",
         current_env_on_conda_fail: bool = False,
+        time_limit: int = 600,
     ) -> None:
         if not cache_dir:
             cache_dir = os.path.join(
@@ -146,9 +155,10 @@ class ManagedDaskExecutor(AsyncBaseExecutor):
                     "No dask scheduler address found in config. Address must be set manually."
                 )
 
-        super().__init__(log_stdout, log_stderr, conda_env, cache_dir, current_env_on_conda_fail)
+        super().__init__(log_stdout, log_stderr, cache_dir=cache_dir)
 
         self.scheduler_address = scheduler_address
+        self.time_limit = time_limit
 
     async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         """Submit the function and inputs to the dask cluster"""
@@ -205,13 +215,12 @@ class ManagedDaskExecutor(AsyncBaseExecutor):
         node_id = task_metadata["node_id"]
         dispatch_id = task_metadata["dispatch_id"]
 
-        output_uri = os.path.join("/tmp", f"result_{dispatch_id}-{node_id}.pkl")
-        stdout_uri = os.path.join("/tmp", f"stdout_{dispatch_id}-{node_id}.txt")
-        stderr_uri = os.path.join("/tmp", f"stderr_{dispatch_id}-{node_id}.txt")
+        output_uri = os.path.join(self.cache_dir, f"result_{dispatch_id}-{node_id}.pkl")
+        stdout_uri = os.path.join(self.cache_dir, f"stdout_{dispatch_id}-{node_id}.txt")
+        stderr_uri = os.path.join(self.cache_dir, f"stderr_{dispatch_id}-{node_id}.txt")
         # future = dask_client.submit(lambda x: x**3, 3)
 
-        print(f"DEBUG: cache_dir = {self.cache_dir}, output_uri = {output_uri}")
-
+        key = f"dask_job_{dispatch_id}:{node_id}"
         future = dask_client.submit(
             run_task_from_uris,
             function_uri=function_uri,
@@ -223,9 +232,15 @@ class ManagedDaskExecutor(AsyncBaseExecutor):
             output_uri=output_uri,
             stdout_uri=stdout_uri,
             stderr_uri=stderr_uri,
+            key=key,
         )
 
-        _clients[(dispatch_id, node_id)] = dask_client
+        _clients[key] = dask_client
+        app_log.debug(f"Dask client {id(dask_client)}")
+        app_log.debug(f"Submitted task {dispatch_id}:{node_id}, key {future.key}")
+
+        _futures[key] = future
+        app_log.debug(f"Retaining a reference to the future {dispatch_id}:{node_id}")
 
         return future.key
 
@@ -233,11 +248,22 @@ class ManagedDaskExecutor(AsyncBaseExecutor):
         dispatch_id = task_metadata["dispatch_id"]
         node_id = task_metadata["node_id"]
 
-        dask_client = _clients[(dispatch_id, node_id)]
+        app_log.debug(f"Waiting for task {dispatch_id}:{node_id}, key {job_handle}")
+
+        dask_client = _clients[job_handle]
+        app_log.debug(f"Dask client {id(dask_client)}")
 
         fut = Future(key=job_handle, client=dask_client)
-        await fut
+        app_log.debug(f"Future {fut}")
+        try:
+            await fut.result(timeout=self.time_limit)
 
+            app_log.debug(f"ManagedDask: task {dispatch_id}:{node_id} finished")
+            app_log.debug(f"Future {fut}")
+        except Exception as ex:
+            app_log.debug(f"Exception while polling: {ex}")
+            app_log.debug(f"Future {fut}")
+            pass
         return 0
 
     async def receive(self, task_metadata: Dict, job_handle: Any):
@@ -248,9 +274,10 @@ class ManagedDaskExecutor(AsyncBaseExecutor):
         # Job should have reached a terminal state by the time this is invoked.
         dispatch_id = task_metadata["dispatch_id"]
         node_id = task_metadata["node_id"]
-        dask_client = _clients.pop((dispatch_id, node_id))
+        dask_client = _clients.pop(job_handle)
 
         fut = Future(key=job_handle, client=dask_client)
+        fut = _futures.pop(job_handle)
 
         # Result should be ready to read immediately
 
