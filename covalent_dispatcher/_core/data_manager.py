@@ -236,6 +236,7 @@ async def get_electron_attributes(
 
 
 async def update_node_result_refs(dispatch_id, node_result):
+
     node_id = node_result["node_id"]
     src_uris = {}
 
@@ -250,7 +251,11 @@ async def update_node_result_refs(dispatch_id, node_result):
         node_result.pop("stderr_uri")
 
     # Download assets
-    await am.download_assets_for_node(dispatch_id, node_id, src_uris)
+    try:
+        await am.download_assets_for_node(dispatch_id, node_id, src_uris)
+    except Exception as ex:
+        app_log.exception(f"Unable to download assets: {ex}")
+        node_result["status"] = Result.FAILED
 
     # Notify dispatcher
     await update_node_result(dispatch_id, node_result)
