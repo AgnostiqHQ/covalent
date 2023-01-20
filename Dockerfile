@@ -74,6 +74,12 @@ ARG COVALENT_MEM_PER_WORKER=1GB
 
 FROM ${COVALENT_BASE_IMAGE} as base
 
+ARG COVALENT_ROOT
+ARG COVALENT_CONFIG_DIR
+ARG COVALENT_PLUGINS_DIR
+ARG COVALENT_LOGDIR
+ARG COVALENT_CACHE_DIR
+
 ENV PYTHONHASHSEED=random \
     PYTHONUNBUFFERED=1 \
     DEBIAN_FRONTEND=noninteractive \
@@ -92,15 +98,9 @@ RUN <<EOL
   mkdir -p \
     ${COVALENT_CONFIG_DIR} \
     ${COVALENT_PLUGINS_DIR} \
-    ${COVALENT_DATA_DIR} \
     ${COVALENT_LOGDIR} \
-    ${COVALENT_CACHE_DIR}
-  chown -R ${USER}:${USER} \
-    ${COVALENT_CONFIG_DIR} \
-    ${COVALENT_PLUGINS_DIR} \
-    ${COVALENT_DATA_DIR} \
-    ${COVALENT_LOGDIR} \
-    ${COVALENT_CACHE_DIR}
+    ${COVALENT_CACHE_DIR} \
+    ${INSTALLROOT}
 EOL
 
 WORKDIR ${BUILDROOT}
@@ -120,11 +120,11 @@ RUN <<EOL
     vim \
     wget
   rm -rf /var/lib/apt/lists/*
-  python -m venv --copies $BUILDROOT/.venv
+  python -m venv --copies $INSTALLROOT/.venv
   python -m pip install --upgrade pip
 EOL
 
-ENV PATH=$BUILDROOT/.venv/bin:$PATH
+ENV PATH=$INSTALLROOT/.venv/bin:$PATH
 
 ENTRYPOINT [ "/bin/bash" ]
 
@@ -134,7 +134,7 @@ ENTRYPOINT [ "/bin/bash" ]
 
 FROM build_base as build_sdk
 
-ENV COVALENT_SDK_ONLY True
+ENV COVALENT_SDK_ONLY=1
 
 ###########################
 # Server Build Environment
@@ -204,6 +204,8 @@ RUN <<EOL
     python setup.py sdist
   fi
   python -m pip install dist/covalent-*.tar.gz
+  # The following line can be removed once covalent#1489 is merged
+  python -m pip install dask[distributed]==2022.9.0
 EOL
 
 ########################
@@ -247,7 +249,7 @@ FROM base AS prod_sdk
 ARG COVALENT_BUILD_DATE=""
 ARG COVALENT_BUILD_VERSION=""
 
-LABEL org.opencontainers.image.title="Covalent ${COVALENT_INSTALL_TYPE}"
+LABEL org.opencontainers.image.title="Covalent SDK"
 LABEL org.opencontainers.image.vendor="Agnostiq"
 LABEL org.opencontainers.image.url="https://covalent.xyz"
 LABEL org.opencontainers.image.documentation="https://covalent.readthedocs.io"
@@ -261,11 +263,17 @@ LABEL org.opencontainers.image.base.name="${COVALENT_BASE_IMAGE}"
 COPY --from=build_base /usr/bin/rsync /usr/bin/rsync
 COPY --from=build_base /usr/lib/x86_64-linux-gnu/libpopt.so.0 /usr/lib/x86_64-linux-gnu/libpopt.so.0
 
-COPY --from=covalent_install $BUILDROOT/.venv/ $INSTALLROOT/.venv
+COPY --from=covalent_install $INSTALLROOT/.venv/ $INSTALLROOT/.venv
 
 RUN <<EOL
-  /usr/sbin/adduser --shell /bin/bash --disabled-password --gecos "" $USER
+  /usr/sbin/adduser --shell /bin/bash --disabled-password --gecos "" ${USER}
   chown -R $USER:$USER $INSTALLROOT
+  chown -R ${USER}:${USER} \
+    ${COVALENT_CONFIG_DIR} \
+    ${COVALENT_PLUGINS_DIR} \
+    ${COVALENT_LOGDIR} \
+    ${COVALENT_CACHE_DIR} \
+    ${INSTALLROOT}
 EOL
 
 WORKDIR $INSTALLROOT
@@ -280,9 +288,30 @@ ENTRYPOINT [ "python" ]
 
 FROM prod_sdk as prod_server
 
+ARG COVALENT_SVC_PORT
+ARG COVALENT_DATABASE_DIR
+ARG COVALENT_DATABASE_URL
+ARG COVALENT_DATA_DIR
+ARG COVALENT_DEBUG_MODE
+ARG COVALENT_DISABLE_DASK
+ARG COVALENT_NUM_WORKERS
+ARG COVALENT_THREADS_PER_WORKER
+ARG COVALENT_MEM_PER_WORKER
+
+LABEL org.opencontainers.image.title="Covalent Server"
+
 COPY --from=build_base /usr/bin/wget /usr/bin/wget
 COPY --from=build_base /usr/lib/x86_64-linux-gnu/libpcre2-8.so.0 /usr/lib/x86_64-linux-gnu/libpcre2-8.so.0
 COPY --from=build_base /usr/lib/x86_64-linux-gnu/libpsl.so.5 /usr/lib/x86_64-linux-gnu/libpsl.so.5
+
+USER root
+
+RUN <<EOL
+  mkdir -p ${COVALENT_DATA_DIR}
+  chown -R ${USER}:${USER} ${COVALENT_DATA_DIR}
+EOL
+
+USER $USER
 
 ENV COVALENT_SVC_PORT=${COVALENT_SVC_PORT} \
     COVALENT_DATABASE_DIR=${COVALENT_DATABASE_DIR} \
@@ -298,8 +327,6 @@ ENV COVALENT_SVC_PORT=${COVALENT_SVC_PORT} \
 EXPOSE ${COVALENT_SVC_PORT}
 
 HEALTHCHECK CMD wget --no-verbose --tries=1 --spider http://localhost:${COVALENT_SVC_PORT} || exit 1
-
-RUN sed -i "s#$BUILDROOT#$INSTALLROOT#" $INSTALLROOT/.venv/bin/covalent
 
 ENTRYPOINT [ "/bin/bash" ]
 

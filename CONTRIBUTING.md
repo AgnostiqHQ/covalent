@@ -531,12 +531,24 @@ It is recommended a date and version are included using build arguments whenever
 --build-arg COVALENT_BUILD_DATE=`date -u +%Y-%m-%d` --build-arg COVALENT_BUILD_VERSION=`cat ./VERSION` --tag covalent-server:`cat ./VERSION`
 ```
 
+To run the server, use the command
+
+```shell
+docker run -d -p 48008:48008 covalent-server:latest
+```
+
 ### Covalent SDK
 
 The Covalent SDK can also run inside a container. This is useful in scenarios where containerized tasks use Covalent, e.g., in executor plugins.  Build the container using these options:
 
 ```shell
 docker build --build-arg COVALENT_INSTALL_TYPE=sdk --tag covalent-sdk:latest .
+```
+
+To run the SDK interactively against a server running somewhere else accessible by the host network, start the container using
+
+```shell
+docker run -it --rm --network=host covalent-sdk:latest
 ```
 
 ### Development Images
