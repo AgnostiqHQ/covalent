@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Removing the entrypoint for SDK-only install
+- Updating client requirements to match server versions
+
 ## [0.213.1-rc.0] - 2023-01-20
 
 ### Authors
@@ -46,8 +51,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Minor changes to tutorials: autoencoder, quantum and classical svm, ensemble classification, iris classification with Pennylane, quantum chemistry, DNN tutorial, qaoa, spacetime tutorial etc.
 - The range of `networkx` versions in requirements.txt weren't compatible with each other, thus it is pinned to `2.8.6` now
 - SDK-only sdist and installation should now work as expected, not packaging the server
-- Removing the entrypoint for SDK-only install
-- Updating client requirements to match server versions
 
 ### Added
 
