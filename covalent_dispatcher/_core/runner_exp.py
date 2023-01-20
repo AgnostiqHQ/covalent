@@ -25,14 +25,16 @@ Defines the core functionality of the runner
 import asyncio
 import traceback
 from datetime import datetime, timezone
-from typing import Any, Dict, List
+from typing import Any, Dict
 
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.defaults import sublattice_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS
+from covalent.executor.base import AsyncBaseExecutor
 
 from . import data_manager as datamgr
+from . import runner as runner_legacy
 from .data_modules import asset_manager as am
 from .runner_modules.utils import get_executor
 
@@ -58,15 +60,14 @@ _job_event_listener = None
 
 # Domain: runner
 async def _submit_abstract_task(
-    dispatch_id: str, task_id: int, node_name: str, abstract_inputs: Dict
+    dispatch_id: str,
+    task_id: int,
+    node_name: str,
+    abstract_inputs: Dict,
+    executor: AsyncBaseExecutor,
 ) -> None:
 
     try:
-        executor_name = await datamgr.get_electron_attribute(dispatch_id, task_id, "executor")
-        executor_data = await datamgr.get_electron_attribute(dispatch_id, task_id, "executor_data")
-
-        app_log.debug(f"Instantiating executor for {dispatch_id}:{task_id}")
-        executor = get_executor(task_id, [executor_name, executor_data])
 
         if not type(executor).SUPPORTS_MANAGED_EXECUTION:
             raise NotImplementedError("Executor does not support managed execution")
@@ -189,16 +190,50 @@ async def run_abstract_task(
     if not _job_event_listener:
         _job_event_listener = asyncio.create_task(_listen_for_job_events())
 
-    node_result = await _submit_abstract_task(
-        dispatch_id,
-        node_id,
-        node_name,
-        abstract_inputs,
-    )
+    try:
+        app_log.debug(f"Attempting to instantiate executor {selected_executor}")
+        executor = get_executor(node_id, selected_executor)
+        if not type(executor).SUPPORTS_MANAGED_EXECUTION or node_name.startswith(
+            sublattice_prefix
+        ):
+            coro = runner_legacy.run_abstract_task(
+                dispatch_id,
+                node_id,
+                node_name,
+                abstract_inputs,
+                selected_executor,
+                workflow_executor,
+            )
+            app_log.debug(f"Using legacy runner for task {dispatch_id}:{node_id}")
+            asyncio.create_task(coro)
+            return
+
+        node_result = await _submit_abstract_task(
+            dispatch_id,
+            node_id,
+            node_name,
+            abstract_inputs,
+            executor,
+        )
+
+    except Exception as ex:
+        tb = "".join(traceback.TracebackException.from_exception(ex).format())
+        app_log.debug("Exception when trying to instantiate executor:")
+        app_log.debug(tb)
+        error_msg = tb if debug_mode else str(ex)
+        ts = datetime.now(timezone.utc)
+        node_result = datamgr.generate_node_result(
+            node_id=node_id,
+            start_time=ts,
+            end_time=ts,
+            status=RESULT_STATUS.FAILED,
+            error=error_msg,
+        )
+
     await datamgr.update_node_result_refs(dispatch_id, node_result)
     if node_result["status"] == RESULT_STATUS.RUNNING:
         task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id}
-        await _poll_task_status(task_metadata, selected_executor)
+        await _poll_task_status(task_metadata, executor)
 
 
 async def _listen_for_job_events():
@@ -242,14 +277,13 @@ async def _mark_failed(task_metadata: dict, detail: str):
     await _job_events.put({"task_metadata": task_metadata, "event": "FAILED", "detail": detail})
 
 
-async def _poll_task_status(task_metadata: Dict, selected_executor: List):
+async def _poll_task_status(task_metadata: Dict, executor: AsyncBaseExecutor):
     # Return immediately if no polling logic (default return value is -1)
 
     dispatch_id = task_metadata["dispatch_id"]
     task_id = task_metadata["node_id"]
 
     try:
-        executor = get_executor(task_id, selected_executor)
         job_handle = _job_handles[(dispatch_id, task_id)]
 
         app_log.debug(f"Polling task status for {dispatch_id}:{task_id}")
