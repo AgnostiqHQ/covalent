@@ -31,11 +31,10 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.defaults import sublattice_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS
-from covalent.executor import _executor_manager
-from covalent.executor.base import AsyncBaseExecutor
 
 from . import data_manager as datamgr
 from .data_modules import asset_manager as am
+from .runner_modules.utils import get_executor
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -55,25 +54,6 @@ _job_event_listener = None
 # Unable to retrieve result (e.g. credentials expired)
 #
 # {"task_metadata": dict, "event": "FAILED", "detail": str}
-
-
-def get_executor(node_id, selected_executor) -> AsyncBaseExecutor:
-    # Instantiate the executor from JSON
-    try:
-        short_name, object_dict = selected_executor
-
-        app_log.debug(f"Running task {node_id} using executor {short_name}, {object_dict}")
-
-        # the executor is determined during scheduling and provided in the execution metadata
-        executor = _executor_manager.get_executor(short_name)
-        executor.from_dict(object_dict)
-    except Exception as ex:
-        tb = "".join(traceback.TracebackException.from_exception(ex).format())
-        app_log.debug("Exception when trying to instantiate executor:")
-        app_log.debug(tb)
-        error_msg = tb if debug_mode else str(ex)
-
-    return executor
 
 
 # Domain: runner

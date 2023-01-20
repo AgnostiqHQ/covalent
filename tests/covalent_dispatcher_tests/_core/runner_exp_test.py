@@ -41,6 +41,7 @@ from covalent_dispatcher._core.runner_exp import (
     _mark_ready,
     _poll_task_status,
     _submit_abstract_task,
+    run_abstract_task,
 )
 from covalent_dispatcher._dal.result import Result as SRVResult
 from covalent_dispatcher._dal.result import get_result_object
@@ -279,6 +280,13 @@ async def test_get_task_result(mocker):
 
     mock_update.assert_awaited_with(dispatch_id, expected_node_result)
 
+    # Test exception during get
+    me.receive = AsyncMock(side_effect=RuntimeError())
+    mock_update.reset_mock()
+
+    await _get_task_result(task_metadata)
+    mock_update.assert_awaited()
+
 
 @pytest.mark.asyncio
 async def test_poll_status(mocker):
@@ -375,3 +383,41 @@ async def test_event_listener(mocker):
     await asyncio.wait_for(fut, 1)
 
     mock_update.assert_awaited_with(task_metadata["dispatch_id"], node_result)
+
+
+@pytest.mark.asyncio
+async def test_run_abstract_task(mocker):
+    mock_listen = AsyncMock()
+
+    mock_poll = mocker.patch(
+        "covalent_dispatcher._core.runner_exp._poll_task_status",
+    )
+
+    node_result = {"node_id": 0, "status": RESULT_STATUS.RUNNING}
+
+    mock_submit = mocker.patch(
+        "covalent_dispatcher._core.runner_exp._submit_abstract_task", return_value=node_result
+    )
+
+    mock_update = mocker.patch(
+        "covalent_dispatcher._core.runner_exp.datamgr.update_node_result_refs",
+    )
+
+    dispatch_id = "dispatch"
+    node_id = 0
+    node_name = "task"
+    abstract_inputs = {"args": [], "kwargs": {}}
+    selected_executor = ["local", {}]
+    workflow_executor = selected_executor
+    await run_abstract_task(
+        dispatch_id,
+        node_id,
+        node_name,
+        abstract_inputs,
+        selected_executor,
+        workflow_executor,
+    )
+
+    mock_submit.assert_awaited()
+    mock_update.assert_awaited()
+    mock_poll.assert_awaited()

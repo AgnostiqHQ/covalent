@@ -43,7 +43,6 @@ log_stack_info = logger.log_stack_info
 
 # References to result objects of live dispatches
 _registered_dispatches = {}
-_registered_dispatches_exp = {}
 
 # Map of dispatch_id -> message_queue for pushing node status updates
 # to dispatcher
