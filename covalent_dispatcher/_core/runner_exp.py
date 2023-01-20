@@ -42,7 +42,8 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 debug_mode = get_config("sdk.log_level") == "debug"
 
-_job_events = asyncio.Queue()
+# Asyncio Queue
+_job_events = None
 
 # This should go in the Jobs table
 _job_handles = {}
@@ -185,6 +186,10 @@ async def run_abstract_task(
     selected_executor: Any,
     workflow_executor: Any,
 ) -> None:
+
+    global _job_events
+    if not _job_events:
+        _job_events = asyncio.Queue()
 
     global _job_event_listener
     if not _job_event_listener:
