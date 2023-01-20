@@ -65,6 +65,7 @@ async def _submit_abstract_task(
         executor_name = await datamgr.get_electron_attribute(dispatch_id, task_id, "executor")
         executor_data = await datamgr.get_electron_attribute(dispatch_id, task_id, "executor_data")
 
+        app_log.debug(f"Instantiating executor for {dispatch_id}:{task_id}")
         executor = get_executor(task_id, [executor_name, executor_data])
 
         if not type(executor).SUPPORTS_MANAGED_EXECUTION:
@@ -251,6 +252,7 @@ async def _poll_task_status(task_metadata: Dict, selected_executor: List):
         executor = get_executor(task_id, selected_executor)
         job_handle = _job_handles[(dispatch_id, task_id)]
 
+        app_log.debug(f"Polling task status for {dispatch_id}:{task_id}")
         if await executor.poll(task_metadata, job_handle) == 0:
             await _mark_ready(task_metadata)
     except Exception as ex:

@@ -242,6 +242,7 @@ async def _run_task(
 
     # Instantiate the executor from JSON
     try:
+        app_log.debug(f"Instantiating executor for {dispatch_id}:{node_id}")
         executor = get_executor(node_id, selected_executor)
     except Exception as ex:
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
