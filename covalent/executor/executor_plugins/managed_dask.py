@@ -39,7 +39,6 @@ from covalent._shared_files import TaskRuntimeError, logger
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import RESULT_STATUS
-from covalent._shared_files.utils import _address_client_mapper
 from covalent.executor.base import AsyncBaseExecutor, TransportableObject
 from covalent.executor.utils.wrappers import io_wrapper as dask_wrapper
 
@@ -57,6 +56,8 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     ),
 }
 
+
+_address_client_mapper = {}
 
 # See https://github.com/dask/distributed/issues/5667
 _clients = {}
@@ -119,7 +120,7 @@ def run_task_from_uris(
             except Exception as ex:
                 exception_occurred = True
                 tb = "".join(traceback.TracebackException.from_exception(ex).format())
-                print(str(ex), file=sys.stderr)
+                print(tb, end="", file=sys.stderr)
                 output_uri = None
 
     return output_uri, stdout_uri, stderr_uri, exception_occurred
@@ -204,13 +205,8 @@ class ManagedDaskExecutor(AsyncBaseExecutor):
         # The Asset Manager is responsible for uploading all assets
         # Returns a job handle (should be JSONable)
 
-        dask_client = _address_client_mapper.get(self.scheduler_address)
-
-        if not dask_client:
-            dask_client = Client(address=self.scheduler_address, asynchronous=True)
-            _address_client_mapper[self.scheduler_address] = dask_client
-
-            await dask_client
+        dask_client = Client(address=self.scheduler_address, asynchronous=True)
+        await dask_client
 
         node_id = task_metadata["node_id"]
         dispatch_id = task_metadata["dispatch_id"]
@@ -242,6 +238,7 @@ class ManagedDaskExecutor(AsyncBaseExecutor):
         _futures[key] = future
         app_log.debug(f"Retaining a reference to the future {dispatch_id}:{node_id}")
 
+        await future
         return future.key
 
     async def poll(self, task_metadata: Dict, job_handle: Any):

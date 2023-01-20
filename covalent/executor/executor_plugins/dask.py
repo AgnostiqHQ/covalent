@@ -119,7 +119,7 @@ def run_task_from_uris(
             except Exception as ex:
                 exception_occurred = True
                 tb = "".join(traceback.TracebackException.from_exception(ex).format())
-                print(str(ex), file=sys.stderr)
+                print(tb, file=sys.stderr)
                 output_uri = None
 
     return output_uri, stdout_uri, stderr_uri, exception_occurred
@@ -204,13 +204,8 @@ class DaskExecutor(AsyncBaseExecutor):
         # The Asset Manager is responsible for uploading all assets
         # Returns a job handle (should be JSONable)
 
-        dask_client = _address_client_mapper.get(self.scheduler_address)
-
-        if not dask_client:
-            dask_client = Client(address=self.scheduler_address, asynchronous=True)
-            _address_client_mapper[self.scheduler_address] = dask_client
-
-            await dask_client
+        dask_client = Client(address=self.scheduler_address, asynchronous=True)
+        await dask_client
 
         node_id = task_metadata["node_id"]
         dispatch_id = task_metadata["dispatch_id"]
