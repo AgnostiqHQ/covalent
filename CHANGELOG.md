@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.213.2-rc.0] - 2023-01-21
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+
+
 ### Fixed
 
 - Removing the entrypoint for SDK-only install
