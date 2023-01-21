@@ -38,13 +38,13 @@ async def test_managed_dask_send_poll_receive():
 
     from dask.distributed import Future
 
-    from covalent.executor.executor_plugins.managed_dask import ManagedDaskExecutor, _clients
+    from covalent.executor.executor_plugins.dask import DaskExecutor, _clients
 
     scheduler_address = os.environ.get("DASK_SCHEDULER_ADDR", None)
     if not scheduler_address:
         raise RuntimeError("DASK_SCHEDULER_ADDR not set")
 
-    executor = ManagedDaskExecutor(scheduler_address, cache_dir="/tmp")
+    executor = DaskExecutor(scheduler_address, cache_dir="/tmp")
 
     def task(x, y):
         import sys
@@ -56,6 +56,10 @@ async def test_managed_dask_send_poll_receive():
     serialized_fn = TransportableObject(task)
     serialized_x = TransportableObject(3)
     serialized_y = TransportableObject(1)
+
+    deps_json = {}
+    call_before_objs_json = []
+    call_after_objs_json = []
 
     with tempfile.NamedTemporaryFile("wb", delete=False, suffix=".pkl") as temp:
         function_uri = temp.name
@@ -69,15 +73,27 @@ async def test_managed_dask_send_poll_receive():
         kwarg_uri = temp.name
         cloudpickle.dump(serialized_y, temp)
 
+    with tempfile.NamedTemporaryFile("wb", delete=False, suffix=".pkl") as temp:
+        deps_uri = temp.name
+        cloudpickle.dump(deps_json, temp)
+
+    with tempfile.NamedTemporaryFile("wb", delete=False, suffix=".pkl") as temp:
+        call_before_uri = temp.name
+        cloudpickle.dump(call_before_objs_json, temp)
+
+    with tempfile.NamedTemporaryFile("wb", delete=False, suffix=".pkl") as temp:
+        call_after_uri = temp.name
+        cloudpickle.dump(call_after_objs_json, temp)
+
     dispatch_id = "dispatch"
     node_id = 2
     task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id}
 
     key = await executor.send(
         f"file://{function_uri}",
-        "",
-        "",
-        "",
+        f"file://{deps_uri}",
+        f"file://{call_before_uri}",
+        f"file://{call_after_uri}",
         [f"file://{arg_uri}"],
         {"y": kwarg_uri},
         task_metadata,
@@ -119,17 +135,13 @@ async def test_managed_dask_handles_runtime_exceptions():
 
     from dask.distributed import Future
 
-    from covalent.executor.executor_plugins.managed_dask import (
-        ManagedDaskExecutor,
-        _clients,
-        _futures,
-    )
+    from covalent.executor.executor_plugins.dask import DaskExecutor, _clients, _futures
 
     scheduler_address = os.environ.get("DASK_SCHEDULER_ADDR", None)
     if not scheduler_address:
         raise RuntimeError("DASK_SCHEDULER_ADDR not set")
 
-    executor = ManagedDaskExecutor(scheduler_address, cache_dir="/tmp")
+    executor = DaskExecutor(scheduler_address, cache_dir="/tmp")
 
     def task(x, y):
         import sys
@@ -141,6 +153,10 @@ async def test_managed_dask_handles_runtime_exceptions():
     serialized_fn = TransportableObject(task)
     serialized_x = TransportableObject(3)
     serialized_y = TransportableObject(1)
+
+    deps_json = {}
+    call_before_objs_json = []
+    call_after_objs_json = []
 
     with tempfile.NamedTemporaryFile("wb", delete=False, suffix=".pkl") as temp:
         function_uri = temp.name
@@ -154,15 +170,27 @@ async def test_managed_dask_handles_runtime_exceptions():
         kwarg_uri = temp.name
         cloudpickle.dump(serialized_y, temp)
 
-    dispatch_id = "failed_dispatch"
+    with tempfile.NamedTemporaryFile("wb", delete=False, suffix=".pkl") as temp:
+        deps_uri = temp.name
+        cloudpickle.dump(deps_json, temp)
+
+    with tempfile.NamedTemporaryFile("wb", delete=False, suffix=".pkl") as temp:
+        call_before_uri = temp.name
+        cloudpickle.dump(call_before_objs_json, temp)
+
+    with tempfile.NamedTemporaryFile("wb", delete=False, suffix=".pkl") as temp:
+        call_after_uri = temp.name
+        cloudpickle.dump(call_after_objs_json, temp)
+
+    dispatch_id = "failed-dispatch"
     node_id = 2
     task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id}
 
     key = await executor.send(
         f"file://{function_uri}",
-        "",
-        "",
-        "",
+        f"file://{deps_uri}",
+        f"file://{call_before_uri}",
+        f"file://{call_after_uri}",
         [f"file://{arg_uri}"],
         {"y": kwarg_uri},
         task_metadata,

@@ -29,7 +29,7 @@ import os
 import sys
 import traceback
 from contextlib import redirect_stderr, redirect_stdout
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Tuple
 
 import cloudpickle as pickle
 from dask.distributed import Client, Future
@@ -40,7 +40,10 @@ from covalent._shared_files import TaskRuntimeError, logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._shared_files.utils import _address_client_mapper
-from covalent.executor.base import AsyncBaseExecutor, TransportableObject
+from covalent._workflow.depsbash import DepsBash
+from covalent._workflow.depscall import DepsCall
+from covalent._workflow.depspip import DepsPip
+from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
 from covalent.executor.utils.wrappers import io_wrapper as dask_wrapper
 
 # The plugin class name must be given by the executor_plugin_name attribute:
@@ -64,6 +67,37 @@ _clients = {}
 # See
 # https://stackoverflow.com/questions/62164283/why-do-my-dask-futures-get-stuck-in-pending-and-never-finish
 _futures = {}
+
+
+# Copied from runner.py
+def _gather_deps(deps, call_before_objs_json, call_after_objs_json) -> Tuple[List, List]:
+    """Assemble deps for a node into the final call_before and call_after"""
+
+    call_before = []
+    call_after = []
+
+    # Rehydrate deps from JSON
+    if "bash" in deps:
+        dep = DepsBash()
+        dep.from_dict(deps["bash"])
+        call_before.append(dep.apply())
+
+    if "pip" in deps:
+        dep = DepsPip()
+        dep.from_dict(deps["pip"])
+        call_before.append(dep.apply())
+
+    for dep_json in call_before_objs_json:
+        dep = DepsCall()
+        dep.from_dict(dep_json)
+        call_before.append(dep.apply())
+
+    for dep_json in call_after_objs_json:
+        dep = DepsCall()
+        dep.from_dict(dep_json)
+        call_after.append(dep.apply())
+
+    return call_before, call_after
 
 
 # URIs are just file paths
@@ -105,14 +139,31 @@ def run_task_from_uris(
                     with open(uri, "rb") as f:
                         ser_kwargs[key] = pickle.load(f)
 
-                fn = serialized_fn.get_deserialized()
-                args = [arg.get_deserialized() for arg in ser_args]
-                kwargs = {k: v.get_deserialized() for k, v in ser_kwargs.items()}
+                if deps_uris.startswith(prefix):
+                    deps_uris = deps_uris[prefix_len:]
+                with open(deps_uris, "rb") as f:
+                    deps_json = pickle.load(f)
+
+                if call_before_uris.startswith(prefix):
+                    call_before_uris = call_before_uris[prefix_len:]
+                with open(call_before_uris, "rb") as f:
+                    call_before_json = pickle.load(f)
+
+                if call_after_uris.startswith(prefix):
+                    call_after_uris = call_after_uris[prefix_len:]
+                with open(call_after_uris, "rb") as f:
+                    call_after_json = pickle.load(f)
+
+                call_before, call_after = _gather_deps(
+                    deps_json, call_before_json, call_after_json
+                )
 
                 exception_occurred = False
 
-                output = fn(*args, **kwargs)
-                ser_output = TransportableObject(output)
+                ser_output = wrapper_fn(
+                    serialized_fn, call_before, call_after, *ser_args, **ser_kwargs
+                )
+
                 with open(output_uri, "wb") as f:
                     pickle.dump(ser_output, f)
 
@@ -258,7 +309,6 @@ class DaskExecutor(AsyncBaseExecutor):
         except Exception as ex:
             app_log.debug(f"Exception while polling: {ex}")
             app_log.debug(f"Future {fut}")
-            pass
         return 0
 
     async def receive(self, task_metadata: Dict, job_handle: Any):
