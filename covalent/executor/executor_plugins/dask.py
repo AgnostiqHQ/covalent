@@ -61,6 +61,8 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
 }
 
 
+MANAGED_EXECUTION = os.environ.get("COVALENT_USE_MANAGED_DASK") == "1"
+
 # See https://github.com/dask/distributed/issues/5667
 _clients = {}
 
@@ -181,7 +183,7 @@ class DaskExecutor(AsyncBaseExecutor):
     Dask executor class that submits the input function to a running LOCAL dask cluster.
     """
 
-    SUPPORTS_MANAGED_EXECUTION = True
+    SUPPORTS_MANAGED_EXECUTION = MANAGED_EXECUTION
 
     def __init__(
         self,
