@@ -23,6 +23,7 @@ Defines the core functionality of the dispatcher
 """
 
 import asyncio
+import os
 import traceback
 from datetime import datetime, timezone
 from typing import Dict, Tuple
@@ -44,6 +45,9 @@ _status_queues = {}
 
 NEW_RUNNER_ENABLED = get_config("dispatcher.force_legacy_runner") == "false"
 POSTPROCESS_SEPARATELY = os.environ.get("COVALENT_POSTPROCESS_SEPARATELY") == "1"
+
+
+INTEGRATED_POSTPROCESS = os.environ.get("COVALENT_INTEGRATED_POSTPROCESS") == "1"
 
 
 # Domain: dispatcher
@@ -297,7 +301,10 @@ async def _run_planned_workflow(
 
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
 
-    result_object = await runner.postprocess_workflow(result_object.dispatch_id)
+    if not INTEGRATED_POSTPROCESS:
+        result_object = await runner.postprocess_workflow(result_object.dispatch_id)
+    else:
+        app_log.debug("Workflow already postprocessed")
 
     app_log.debug(f"Status after PP: {result_object.status}")
 

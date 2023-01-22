@@ -323,7 +323,7 @@ def _post_process(workflow_function: Callable, inputs: Dict, node_outputs: Dict)
         key, val = item
         app_log.debug(f"Here's the key: {key}")
         if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix):
-            ordered_node_outputs.append((i, val))
+            ordered_node_outputs.append(val)
 
     with active_lattice_manager.claim(lattice):
         lattice.post_processing = True
