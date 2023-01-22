@@ -234,12 +234,7 @@ Node Outputs
         """
 
         self._num_nodes = self.lattice.transport_graph.get_internal_graph_copy().number_of_nodes()
-
-        # Don't count virtual postprocess nodes
-        if -1 in self._lattice.transport_graph._graph.nodes:
-            self._num_nodes -= 1
-
-        for node_id in self._lattice.transport_graph._graph.nodes:
+        for node_id in range(self._num_nodes):
 
             self.lattice.transport_graph.set_node_value(node_id, "start_time", None)
 

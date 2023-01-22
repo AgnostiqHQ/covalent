@@ -211,31 +211,29 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
         started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
         completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
 
-        # virtual postprocessing nodes bypass object store
-        if node_id != -1:
-            for filename, data in [
-                (ELECTRON_FUNCTION_FILENAME, tg.get_node_value(node_id, "function")),
-                (ELECTRON_FUNCTION_STRING_FILENAME, function_string),
-                (ELECTRON_VALUE_FILENAME, node_value),
-                (
-                    ELECTRON_EXECUTOR_DATA_FILENAME,
-                    tg.get_node_value(node_id, "metadata")["executor_data"],
-                ),
-                (ELECTRON_DEPS_FILENAME, tg.get_node_value(node_id, "metadata")["deps"]),
-                (
-                    ELECTRON_CALL_BEFORE_FILENAME,
-                    tg.get_node_value(node_id, "metadata")["call_before"],
-                ),
-                (
-                    ELECTRON_CALL_AFTER_FILENAME,
-                    tg.get_node_value(node_id, "metadata")["call_after"],
-                ),
-                (ELECTRON_STDOUT_FILENAME, node_stdout),
-                (ELECTRON_STDERR_FILENAME, node_stderr),
-                (ELECTRON_ERROR_FILENAME, node_error),
-                (ELECTRON_RESULTS_FILENAME, node_output),
-            ]:
-                store_file(node_path, filename, data)
+        for filename, data in [
+            (ELECTRON_FUNCTION_FILENAME, tg.get_node_value(node_id, "function")),
+            (ELECTRON_FUNCTION_STRING_FILENAME, function_string),
+            (ELECTRON_VALUE_FILENAME, node_value),
+            (
+                ELECTRON_EXECUTOR_DATA_FILENAME,
+                tg.get_node_value(node_id, "metadata")["executor_data"],
+            ),
+            (ELECTRON_DEPS_FILENAME, tg.get_node_value(node_id, "metadata")["deps"]),
+            (
+                ELECTRON_CALL_BEFORE_FILENAME,
+                tg.get_node_value(node_id, "metadata")["call_before"],
+            ),
+            (
+                ELECTRON_CALL_AFTER_FILENAME,
+                tg.get_node_value(node_id, "metadata")["call_after"],
+            ),
+            (ELECTRON_STDOUT_FILENAME, node_stdout),
+            (ELECTRON_STDERR_FILENAME, node_stderr),
+            (ELECTRON_ERROR_FILENAME, node_error),
+            (ELECTRON_RESULTS_FILENAME, node_output),
+        ]:
+            store_file(node_path, filename, data)
 
         electron_exists = (
             session.query(models.Electron, models.Lattice)

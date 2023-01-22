@@ -62,7 +62,7 @@ class Graph:
             END
             ) as sublattice_dispatch_id
             from electrons join lattices on electrons.parent_lattice_id == lattices.id
-            where lattices.id == :a and electrons.transport_graph_node_id != -1
+            where lattices.id == :a
         """
         )
         result = self.db_con.execute(sql, {"a": parent_lattice_id}).fetchall()

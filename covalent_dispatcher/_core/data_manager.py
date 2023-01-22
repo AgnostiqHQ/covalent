@@ -109,20 +109,11 @@ def initialize_result_object(
         result_object._root_dispatch_id = parent_result_object._root_dispatch_id
 
     result_object._electron_id = parent_electron_id
-    tg = result_object.lattice.transport_graph
-
-    we = lattice.get_metadata("workflow_executor")
-    we_data = lattice.get_metadata("workflow_executor_data")
-    tg.add_node_by_id(-1, name="postprocess", metadata={"executor": we, "executor_data": we_data})
-    app_log.debug("Added virtual postprocess node")
     result_object._initialize_nodes()
     app_log.debug("2: Constructed result object and initialized nodes.")
 
     update.persist(result_object, electron_id=parent_electron_id)
     app_log.debug("Result object persisted.")
-
-    tg._graph.remove_node(-1)
-    app_log.debug("Removed virtual postprocess node")
 
     return result_object
 
