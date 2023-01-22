@@ -36,7 +36,6 @@ from .._dal.result import Result as SRVResult
 from .._dal.result import get_result_object as get_result_object_from_db
 from .._db import update, upsert
 from .._db.write_result_to_db import resolve_electron_id
-from .data_modules import asset_manager as am
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -61,6 +60,9 @@ def generate_node_result(
     error=None,
     stdout=None,
     stderr=None,
+    output_uri=None,
+    stdout_uri=None,
+    stderr_uri=None,
 ):
 
     return {
@@ -72,6 +74,9 @@ def generate_node_result(
         "error": error,
         "stdout": stdout,
         "stderr": stderr,
+        "output_uri": output_uri,
+        "stdout_uri": stdout_uri,
+        "stderr_uri": stderr_uri,
     }
 
 
@@ -85,7 +90,7 @@ async def update_node_result(dispatch_id, node_result):
         await loop.run_in_executor(dm_pool, update_partial)
 
     except Exception as ex:
-        app_log.exception("Error persisting node update: {ex}")
+        app_log.exception(f"Error persisting node update: {ex}")
         node_result["status"] = Result.FAILED
     finally:
         node_id = node_result["node_id"]
@@ -221,29 +226,3 @@ async def get_electron_attribute(dispatch_id: str, node_id: int, key: str) -> An
         node_id,
         key,
     )
-
-
-async def update_node_result_refs(dispatch_id, node_result):
-
-    node_id = node_result["node_id"]
-    src_uris = {}
-
-    if "output_uri" in node_result:
-        src_uris["output"] = node_result["output_uri"]
-        node_result.pop("output_uri")
-    if "stdout_uri" in node_result:
-        src_uris["stdout"] = node_result["stdout_uri"]
-        node_result.pop("stdout_uri")
-    if "stderr_uri" in node_result:
-        src_uris["stderr"] = node_result["stderr_uri"]
-        node_result.pop("stderr_uri")
-
-    # Download assets
-    try:
-        await am.download_assets_for_node(dispatch_id, node_id, src_uris)
-    except Exception as ex:
-        app_log.exception(f"Unable to download assets: {ex}")
-        node_result["status"] = Result.FAILED
-
-    # Notify dispatcher
-    await update_node_result(dispatch_id, node_result)
