@@ -170,6 +170,7 @@ async def _run_abstract_task(
         app_log.error(f"Exception when trying to resolve inputs or deps: {ex}")
         node_result = datasvc.generate_node_result(
             node_id=node_id,
+            node_name=node_name,
             start_time=timestamp,
             end_time=timestamp,
             status=Result.FAILED,
@@ -247,6 +248,7 @@ async def _run_task(
         error_msg = tb if debug_mode else str(ex)
         node_result = datasvc.generate_node_result(
             node_id=node_id,
+            node_name=node_name,
             end_time=datetime.now(timezone.utc),
             status=Result.FAILED,
             error=error_msg,
@@ -305,6 +307,7 @@ async def _run_task(
 
             node_result = datasvc.generate_node_result(
                 node_id=node_id,
+                node_name=node_name,
                 end_time=datetime.now(timezone.utc),
                 status=status,
                 output=output,
@@ -319,6 +322,7 @@ async def _run_task(
         error_msg = tb if debug_mode else str(ex)
         node_result = datasvc.generate_node_result(
             node_id=node_id,
+            node_name=node_name,
             end_time=datetime.now(timezone.utc),
             status=Result.FAILED,
             error=error_msg,
@@ -422,7 +426,7 @@ def _post_process(lattice: Lattice, node_outputs: Dict) -> Any:
         key, val = item
         app_log.debug(f"Here's the key: {key}")
         if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix):
-            ordered_node_outputs.append((i, val))
+            ordered_node_outputs.append(val)
 
     with active_lattice_manager.claim(lattice):
         lattice.post_processing = True

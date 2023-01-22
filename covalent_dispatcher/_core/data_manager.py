@@ -45,6 +45,7 @@ _dispatch_status_queues = {}
 
 def generate_node_result(
     node_id,
+    node_name=None,
     start_time=None,
     end_time=None,
     status=None,
@@ -58,6 +59,7 @@ def generate_node_result(
 
     return {
         "node_id": node_id,
+        "node_name": node_name,
         "start_time": start_time,
         "end_time": end_time,
         "status": status,

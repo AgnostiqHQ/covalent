@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
-from .._shared_files.defaults import prefix_separator, sublattice_prefix
+from .._shared_files.defaults import postprocess_prefix, prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.lattice import Lattice
 from .._workflow.transport import TransportableObject
@@ -330,7 +330,7 @@ Node Outputs
         for i, item in enumerate(node_outputs.items()):
             key, val = item
             if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix):
-                ordered_node_outputs.append((i, val))
+                ordered_node_outputs.append(val)
 
         lattice = self._lattice
 
@@ -441,6 +441,11 @@ Node Outputs
 
         if node_name is not None:
             self.lattice.transport_graph.set_node_value(node_id, "name", node_name)
+            if node_name.startswith(postprocess_prefix) and end_time is not None:
+                self._result = output
+                self._status = status
+                self._end_time = end_time
+                app_log.debug(f"Postprocess status: {self._status}")
 
         if start_time is not None:
             self.lattice.transport_graph.set_node_value(node_id, "start_time", start_time)

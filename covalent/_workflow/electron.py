@@ -314,10 +314,13 @@ class Electron:
 
         if active_lattice.post_processing:
 
-            id, output = active_lattice.electron_outputs[0]
+            output = active_lattice.electron_outputs[0]
 
             active_lattice.electron_outputs.pop(0)
-            return output.get_deserialized()
+            if active_lattice.post_processing_ex:
+                return output
+            else:
+                return output.get_deserialized()
 
         # Setting metadata for default values according to lattice's metadata.
         for k in self.metadata:
@@ -367,11 +370,14 @@ class Electron:
                     self.node_id, key, value, "kwarg", None, active_lattice.transport_graph
                 )
 
-        return Electron(
+        bound_electron = Electron(
             self.function,
             metadata=self.metadata,
             node_id=self.node_id,
         )
+        active_lattice._bound_electrons[self.node_id] = bound_electron
+
+        return bound_electron
 
     def connect_node_with_others(
         self,
