@@ -66,7 +66,7 @@ def test_check_nodes():
     check.build_graph(a=1, b=2)
 
     # Account for the postprocess electrons
-    assert [0, 1, 2, 3, 4, 5] == list(check.transport_graph._graph.nodes)
+    assert [0, 1, 2, 3, 4] == list(check.transport_graph._graph.nodes)
 
 
 def test_electron_takes_nested_iterables():
@@ -663,7 +663,7 @@ def test_two_iterations():
     midword.build_graph("hello world", "beautiful", 6)
 
     # Account for pp electrons
-    assert [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11] == list(midword.transport_graph._graph.nodes)
+    assert [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] == list(midword.transport_graph._graph.nodes)
 
 
 def test_two_iterations_float():
@@ -681,7 +681,7 @@ def test_two_iterations_float():
     add_half_quarter.build_graph(0.1)
 
     # Account for pp electron
-    assert [0, 1, 2, 3, 4, 5, 6, 7, 8] == list(add_half_quarter.transport_graph._graph.nodes)
+    assert [0, 1, 2, 3, 4, 5, 6, 7] == list(add_half_quarter.transport_graph._graph.nodes)
 
 
 def test_wait_for():

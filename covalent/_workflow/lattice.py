@@ -31,6 +31,7 @@ from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 from .._shared_files import logger
+from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import (
     DefaultMetadataValues,
@@ -244,7 +245,7 @@ class Lattice:
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
                 try:
-                    workflow_function(*new_args, **new_kwargs)
+                    retval = workflow_function(*new_args, **new_kwargs)
                 except Exception:
                     warnings.warn(
                         "Please make sure you are not manipulating an object inside the lattice."
@@ -252,7 +253,11 @@ class Lattice:
                     raise
 
         # Add postprocessing node to graph
-        pre_process(self, self._bound_electrons)
+
+        if get_config("sdk.full_postprocess") != "true":
+            pre_process_new(self, retval, self._bound_electrons)
+        else:
+            pre_process(self, self._bound_electrons)
 
         self._bound_electrons = {}
 
@@ -497,3 +502,81 @@ def pre_process(lattice: Lattice, bound_electrons: Dict):
         tg.set_node_value(bound_pp.node_id, "name", postprocess_prefix)
 
     return lattice
+
+
+# Heuristic postprocess
+
+
+def _preprocess_retval(retval):
+    from .electron import Electron
+
+    node_ids = []
+    if isinstance(retval, Electron):
+        node_ids.append(retval.node_id)
+        print(f"Preprocess: Encountered node {retval.node_id}")
+    elif isinstance(retval, list) or isinstance(retval, tuple) or isinstance(retval, set):
+        print("Recursively preprocessing iterable")
+        for e in retval:
+            node_ids.extend(_preprocess_retval(e))
+    elif isinstance(retval, dict):
+        print("Recursively preprocessing dictionary")
+        for k, v in retval.items():
+            node_ids.extend(_preprocess_retval(v))
+    else:
+        print("Encountered primitive or unsupported type:", retval)
+        return []
+
+    return node_ids
+
+
+def _postprocess_recursively(retval, **referenced_outputs):
+    from .electron import Electron
+
+    if isinstance(retval, Electron):
+        print(f"Looking up node {retval.node_id}")
+        key = f"node:{retval.node_id}"
+        node_output = referenced_outputs[key]
+        return node_output
+    elif isinstance(retval, list):
+        print("Recursively postprocessing list")
+        return list(map(lambda x: _postprocess_recursively(x, **referenced_outputs), retval))
+    elif isinstance(retval, tuple):
+        print("Recursively postprocessing tuple")
+        return tuple(map(lambda x: _postprocess_recursively(x, **referenced_outputs), retval))
+    elif isinstance(retval, set):
+        print("Recursively postprocessing set")
+        return {_postprocess_recursively(x, **referenced_outputs) for x in retval}
+    elif isinstance(retval, dict):
+        print("Recursively postprocessing dictionary")
+        return {k: _postprocess_recursively(v, **referenced_outputs) for k, v in retval.items()}
+    else:
+        return retval
+
+
+def pre_process_new(lattice: Lattice, retval: Any, bound_electrons: Dict):
+    from .electron import Electron
+
+    node_id_refs = _preprocess_retval(retval)
+    referenced_electrons = {}
+    for node_id in node_id_refs:
+        key = f"node:{node_id}"
+        referenced_electrons[key] = bound_electrons[node_id]
+
+    with active_lattice_manager.claim(lattice):
+        tg = lattice.transport_graph
+        executor = lattice.get_metadata("workflow_executor")
+        executor_data = lattice.get_metadata("workflow_executor_data")
+        pp_metadata = encode_metadata(DEFAULT_METADATA_VALUES.copy())
+        pp_metadata["executor"] = executor
+        pp_metadata["executor_data"] = executor_data
+        pp_metadata = encode_metadata(pp_metadata)
+        pp_electron = Electron(function=_postprocess_recursively, metadata=pp_metadata)
+
+        num_nodes = len(lattice.transport_graph._graph.nodes)
+        # Add pp_electron to the graph -- this will also add a
+        # parameter node in case retval is not a single electron
+        print("lattice return value:", retval)
+        bound_pp = pp_electron(retval, **referenced_electrons)
+
+        # Edit pp electron name
+        tg.set_node_value(bound_pp.node_id, "name", f"{postprocess_prefix}reconstruct")
