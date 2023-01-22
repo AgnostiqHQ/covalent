@@ -33,9 +33,6 @@ from .._db.datastore import workflow_db
 from .asset import Asset
 from .base import DispatchedObject
 from .db_interfaces.result_utils import (
-    ASSET_KEYS,
-    METADATA_KEYS,
-    _asset_record_map,
     _meta_record_map,
     _to_asset_meta,
     _to_db_meta,
@@ -174,6 +171,9 @@ class Result(DispatchedObject):
         error: Exception = None,
         stdout: str = None,
         stderr: str = None,
+        output_uri: str = None,
+        stdout_uri: str = None,
+        stderr_uri: str = None,
     ) -> None:
         """
         Update the node result in the transport graph.
@@ -226,6 +226,16 @@ class Result(DispatchedObject):
             if stderr is not None:
                 self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr, session)
 
+        # Perform file transfers
+        if output_uri:
+            _download_assets_for_node(self, node_id, {"output": output_uri})
+
+        if stdout_uri:
+            _download_assets_for_node(self, node_id, {"stdout": stdout_uri})
+
+        if stderr_uri:
+            _download_assets_for_node(self, node_id, {"stderr": stderr_uri})
+
     def _get_failed_nodes(self) -> List[int]:
         """
         Get the node_id of each failed task
@@ -259,6 +269,22 @@ class Result(DispatchedObject):
             node_output = tg.get_node_value(node_id, "output")
             all_node_outputs[f"{node_name}({node_id})"] = node_output
         return all_node_outputs
+
+
+def _download_assets_for_node(result_object: Result, node_id: int, src_uris: dict):
+
+    # Keys for src_uris: "output", "stdout", "stderr"
+
+    tg = result_object.lattice.transport_graph
+
+    node = tg.get_node(node_id)
+
+    assets_to_download = [
+        node.get_asset(key).set_remote(src) for key, src in src_uris.items() if src
+    ]
+
+    for asset in assets_to_download:
+        asset.download()
 
 
 def get_result_object(dispatch_id: str, bare: bool = False) -> Result:

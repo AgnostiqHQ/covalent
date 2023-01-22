@@ -22,6 +22,7 @@
 
 
 import os
+import tempfile
 from datetime import datetime
 
 import pytest
@@ -273,6 +274,108 @@ def test_result_update_node_2(test_db, mocker):
         assert lattice_record.electron_num == 2
         assert lattice_record.completed_electron_num == 1
         assert lattice_record.updated_at is not None
+
+
+def test_result_update_node_3(test_db, mocker):
+    """Adapted from update_test.py"""
+
+    import datetime
+    import pickle
+
+    from covalent._workflow.transport import TransportableObject
+    from covalent_dispatcher._db.write_result_to_db import load_file
+
+    res = get_mock_result()
+    res._initialize_nodes()
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    update.persist(res)
+
+    with test_db.session() as session:
+        record = (
+            session.query(models.Lattice)
+            .where(models.Lattice.dispatch_id == "mock_dispatch")
+            .first()
+        )
+
+        srvres = Result(record)
+
+    timestamp = datetime.datetime.now()
+
+    with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
+        output_path = temp.name
+
+    with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
+        stdout_path = temp.name
+
+    with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
+        stderr_path = temp.name
+
+    with open(output_path, "wb") as f:
+        pickle.dump(5, f)
+
+    with open(stdout_path, "w") as f:
+        assert f.write("Hello\n")
+
+    with open(stderr_path, "w") as f:
+        assert f.write("Bye\n")
+
+    output_uri = os.path.join("file://", output_path)
+    stdout_uri = os.path.join("file://", stdout_path)
+    stderr_uri = os.path.join("file://", stderr_path)
+
+    srvres._update_node(
+        node_id=0,
+        end_time=timestamp,
+        status=SDKResult.COMPLETED,
+        output_uri=output_uri,
+        stdout_uri=stdout_uri,
+        stderr_uri=stderr_uri,
+    )
+
+    with test_db.session() as session:
+        lattice_record = session.query(models.Lattice).first()
+        electron_record = (
+            session.query(models.Electron)
+            .where(models.Electron.transport_graph_node_id == 0)
+            .first()
+        )
+
+        assert electron_record.status == "COMPLETED"
+        assert electron_record.completed_at is not None
+        assert electron_record.updated_at is not None
+
+        output = load_file(
+            storage_path=electron_record.storage_path,
+            filename=electron_record.results_filename,
+        )
+        assert output == 5
+
+        stdout = load_file(
+            storage_path=electron_record.storage_path,
+            filename=electron_record.stdout_filename,
+        )
+        assert stdout == "Hello\n"
+        stdout = load_file(
+            storage_path=electron_record.storage_path,
+            filename=electron_record.stdout_filename,
+        )
+        assert stdout == "Hello\n"
+
+        stderr = load_file(
+            storage_path=electron_record.storage_path,
+            filename=electron_record.stderr_filename,
+        )
+        assert stderr == "Bye\n"
+
+    os.unlink(output_path)
+    os.unlink(stdout_path)
+    os.unlink(stderr_path)
 
 
 def test_get_result_object(test_db, mocker):
