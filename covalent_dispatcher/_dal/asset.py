@@ -20,10 +20,16 @@
 
 """Asset class and utility functions"""
 
+import os
 from enum import Enum
 from typing import Any
 
+from covalent._shared_files import logger
+
 from .._db.write_result_to_db import load_file, store_file
+from .utils.file_transfer import cp
+
+app_log = logger.app_log
 
 
 class StorageType(Enum):
@@ -51,3 +57,17 @@ class Asset:
 
     def load_data(self) -> Any:
         return load_file(self.storage_path, self.object_key)
+
+    def download(self):
+        scheme = self.storage_type.value
+        dest_uri = scheme + "://" + os.path.join(self.storage_path, self.object_key)
+        src_uri = self.remote_uri
+        app_log.debug(f"Downloading asset from {src_uri} to {dest_uri}")
+
+        cp(src_uri, dest_uri)
+
+    def upload(self, dest_uri: str):
+        scheme = self.storage_type.value
+        src_uri = scheme + "://" + os.path.join(self.storage_path, self.object_key)
+        app_log.debug(f"Uploading asset from {src_uri} to {dest_uri}")
+        cp(src_uri, dest_uri)

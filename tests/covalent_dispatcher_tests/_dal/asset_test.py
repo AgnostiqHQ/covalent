@@ -50,3 +50,46 @@ def test_asset_store_data():
         assert f.read() == "Hello\n"
 
     os.unlink(temppath)
+
+
+def test_upload_asset():
+
+    with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
+        src_path = temp.name
+        src_key = os.path.basename(src_path)
+    storage_path = "/tmp"
+    a = Asset(storage_path, src_key)
+    a.store_data("Hello\n")
+
+    with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
+        dest_path = temp.name
+        dest_key = os.path.basename(dest_path)
+
+    a.upload(dest_path)
+
+    with open(dest_path, "r") as f:
+        assert f.read() == "Hello\n"
+    os.unlink(dest_path)
+
+
+def test_download_asset():
+
+    with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
+        src_path = temp.name
+        src_key = os.path.basename(src_path)
+    with open(src_path, "w") as f:
+        f.write("Hello\n")
+
+    storage_path = "/tmp"
+    with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
+        dest_path = temp.name
+        dest_key = os.path.basename(dest_path)
+
+    a = Asset(storage_path, dest_key)
+    a.set_remote(src_path)
+
+    a.download()
+
+    assert a.load_data() == "Hello\n"
+
+    os.unlink(dest_path)

@@ -23,33 +23,14 @@ Utilties to transfer data between Covalent and compute backends
 """
 
 import asyncio
-import os
 from concurrent.futures import ThreadPoolExecutor
 
 from covalent._shared_files import logger
 
-from ..._dal.asset import Asset
 from ..._dal.result import get_result_object as get_result_object
-from .file_transfer import cp
 
 app_log = logger.app_log
 am_pool = ThreadPoolExecutor()
-
-
-def _upload_asset(asset: Asset, dest_uri: str):
-    scheme = asset.storage_type.value
-    src_uri = scheme + "://" + os.path.join(asset.storage_path, asset.object_key)
-    app_log.debug(f"Uploading asset from {src_uri} to {dest_uri}")
-    cp(src_uri, dest_uri)
-
-
-def _download_asset(asset: Asset):
-    scheme = asset.storage_type.value
-    dest_uri = scheme + "://" + os.path.join(asset.storage_path, asset.object_key)
-    src_uri = asset.remote_uri
-    app_log.debug(f"Downloading asset from {src_uri} to {dest_uri}")
-
-    cp(src_uri, dest_uri)
 
 
 # Consumed by Runner
@@ -64,7 +45,7 @@ async def upload_asset_for_nodes(dispatch_id: str, key: str, dest_uris: dict):
     for node_id, dest_uri in dest_uris.items():
         node = tg.get_node(node_id)
         asset = node.get_asset(key)
-        futs.append(loop.run_in_executor(am_pool, _upload_asset, asset, dest_uri))
+        futs.append(loop.run_in_executor(am_pool, asset.upload, dest_uri))
 
     await asyncio.gather(*futs)
 
@@ -86,6 +67,6 @@ async def download_assets_for_node(dispatch_id: str, node_id: int, src_uris: dic
     ]
 
     for asset in assets_to_download:
-        futs.append(loop.run_in_executor(am_pool, _download_asset, asset))
+        futs.append(loop.run_in_executor(am_pool, asset.download))
 
     await asyncio.gather(*futs)
