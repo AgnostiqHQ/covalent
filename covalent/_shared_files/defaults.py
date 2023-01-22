@@ -62,6 +62,8 @@ def get_default_sdk_config():
             + "/covalent/executor_plugins"
         ),
         "no_cluster": "false",
+        "full_postprocess": "false",
+        "eager_postprocess": "false",
     }
 
 

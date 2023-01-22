@@ -199,7 +199,8 @@ async def test_get_task_inputs(mocker, test_db):
     result_object = get_mock_srvresult(sdkres, test_db)
     tg = result_object.lattice.transport_graph
 
-    assert list(tg._graph.nodes) == [0, 1, 2, 3, 4, 5, 6, 7]
+    # Account for injected postprocess electron
+    assert list(tg._graph.nodes) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     tg.set_node_value(0, "output", ct.TransportableObject(1))
     tg.set_node_value(2, "output", ct.TransportableObject(2))
 
@@ -431,6 +432,8 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
     mock_status_queues = {result_object.dispatch_id: msg_queue}
     mocker.patch("covalent_dispatcher._core.dispatcher._status_queues", mock_status_queues)
 
+    mocker.patch("covalent_dispatcher._core.dispatcher.POSTPROCESS_SEPARATELY", True)
+
     update.persist(result_object)
 
     result_object = await run_workflow(result_object)
@@ -459,6 +462,9 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     mock_unregister = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
+
+    mocker.patch("covalent_dispatcher._core.dispatcher.POSTPROCESS_SEPARATELY", True)
+
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
     )

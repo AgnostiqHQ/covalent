@@ -207,7 +207,8 @@ def test_get_abstract_task_inputs(mocker, test_db):
     result_object = get_mock_srvresult(sdkres, test_db)
     tg = received_lattice.transport_graph
 
-    assert list(tg._graph.nodes) == [0, 1, 2, 3, 4, 5, 6, 7]
+    # Account for injected postprocess electron
+    assert list(tg._graph.nodes) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     tg.set_node_value(0, "output", ct.TransportableObject(1))
     tg.set_node_value(2, "output", ct.TransportableObject(2))
 
@@ -318,7 +319,9 @@ async def test_get_initial_tasks_and_deps(mocker, test_db):
     num_tasks, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(result_object)
 
     assert initial_nodes == [1]
-    assert pending_parents == {0: 1, 1: 0, 2: 1}
+
+    # Account for injected postprocess electron
+    assert pending_parents == {0: 1, 1: 0, 2: 1, 3: 2}
     assert num_tasks == len(result_object.lattice.transport_graph._graph.nodes)
 
 
