@@ -37,6 +37,7 @@ generator_prefix = f"{prefix_separator}generated{prefix_separator}"
 sublattice_prefix = f"{prefix_separator}sublattice{prefix_separator}"
 attr_prefix = f"{prefix_separator}attribute{prefix_separator}"
 arg_prefix = f"{prefix_separator}arg{prefix_separator}"
+postprocess_prefix = f"{prefix_separator}postprocess{prefix_separator}"
 
 WAIT_EDGE_NAME = "!waiting_edge"
 

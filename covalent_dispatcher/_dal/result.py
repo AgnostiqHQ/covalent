@@ -20,12 +20,14 @@
 
 """DB-backed lattice"""
 
+import os
 from datetime import datetime
 from typing import Any, Dict, List
 
 from sqlalchemy.orm import Session
 
 from covalent._shared_files import logger
+from covalent._shared_files.defaults import postprocess_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS, Status
 
 from .._db import models
@@ -199,6 +201,9 @@ class Result(DispatchedObject):
         app_log.debug("Inside update node")
 
         with workflow_db.session() as session:
+            # Current node name
+            name = self.lattice.transport_graph.get_node_value(node_id, "name", session)
+
             if node_name is not None:
                 self.lattice.transport_graph.set_node_value(node_id, "name", node_name, session)
 
@@ -237,6 +242,17 @@ class Result(DispatchedObject):
 
         if stderr_uri:
             _download_assets_for_node(self, node_id, {"stderr": stderr_uri})
+
+        # Handle postprocessing node
+        tg = self.lattice.transport_graph
+        if name.startswith(postprocess_prefix) and end_time is not None:
+            workflow_result = self.get_asset("result")
+            node_output = tg.get_node(node_id).get_asset("output")
+            _copy_asset(node_output, workflow_result)
+            self._status = status
+            self._end_time = end_time
+            app_log.debug(f"Postprocess status: {self._status}")
+            self.commit()
 
     def _get_failed_nodes(self) -> List[int]:
         """
@@ -287,6 +303,12 @@ def _download_assets_for_node(result_object: Result, node_id: int, src_uris: dic
 
     for asset in assets_to_download:
         asset.download()
+
+
+def _copy_asset(src: Asset, dest: Asset):
+    scheme = dest.storage_type.value
+    dest_uri = scheme + "://" + os.path.join(dest.storage_path, dest.object_key)
+    src.upload(dest_uri)
 
 
 def get_result_object(dispatch_id: str, bare: bool = False) -> Result:

@@ -330,7 +330,7 @@ Node Outputs
         for i, item in enumerate(node_outputs.items()):
             key, val = item
             if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix):
-                ordered_node_outputs.append((i, val))
+                ordered_node_outputs.append(val)
 
         lattice = self._lattice
 
