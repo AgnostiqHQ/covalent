@@ -32,6 +32,8 @@ from .._db import models
 from .._db.datastore import workflow_db
 from .asset import Asset
 from .base import DispatchedObject
+from .db_interfaces.result_utils import ASSET_KEYS  # nopycln: import
+from .db_interfaces.result_utils import METADATA_KEYS  # nopycln: import
 from .db_interfaces.result_utils import (
     _meta_record_map,
     _to_asset_meta,
