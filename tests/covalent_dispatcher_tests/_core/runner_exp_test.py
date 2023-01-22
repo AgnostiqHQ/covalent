@@ -305,7 +305,7 @@ async def test_get_task_result(mocker):
     )
 
     mock_update = mocker.patch(
-        "covalent_dispatcher._core.runner_exp.datamgr.update_node_result_refs",
+        "covalent_dispatcher._core.runner_exp.datamgr.update_node_result",
     )
 
     mock_upload = mocker.patch(
@@ -396,7 +396,7 @@ async def test_event_listener(mocker):
     )
 
     mock_update = mocker.patch(
-        "covalent_dispatcher._core.runner_exp.datamgr.update_node_result_refs",
+        "covalent_dispatcher._core.runner_exp.datamgr.update_node_result",
     )
 
     mock_get = mocker.patch("covalent_dispatcher._core.runner_exp._get_task_result")
@@ -464,7 +464,7 @@ async def test_run_abstract_task(mocker):
     )
 
     mock_update = mocker.patch(
-        "covalent_dispatcher._core.runner_exp.datamgr.update_node_result_refs",
+        "covalent_dispatcher._core.runner_exp.datamgr.update_node_result",
     )
 
     dispatch_id = "dispatch"
@@ -565,7 +565,7 @@ async def test_run_abstract_task_handles_bad_executors(mocker):
     mocker.patch("covalent_dispatcher._core.runner_exp.get_executor", side_effect=RuntimeError())
 
     mock_update = mocker.patch(
-        "covalent_dispatcher._core.runner_exp.datamgr.update_node_result_refs",
+        "covalent_dispatcher._core.runner_exp.datamgr.update_node_result",
     )
     dispatch_id = "dispatch"
     node_id = 0

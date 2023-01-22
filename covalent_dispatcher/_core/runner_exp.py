@@ -175,7 +175,7 @@ async def _get_task_result(task_metadata: Dict):
             error=error_msg,
         )
 
-    await datamgr.update_node_result_refs(dispatch_id, node_result)
+    await datamgr.update_node_result(dispatch_id, node_result)
 
 
 async def run_abstract_task(
@@ -235,7 +235,7 @@ async def run_abstract_task(
             error=error_msg,
         )
 
-    await datamgr.update_node_result_refs(dispatch_id, node_result)
+    await datamgr.update_node_result(dispatch_id, node_result)
     if node_result["status"] == RESULT_STATUS.RUNNING:
         task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id}
         await _poll_task_status(task_metadata, executor)
@@ -268,7 +268,7 @@ async def _listen_for_job_events():
                     status=RESULT_STATUS.FAILED,
                     error=detail,
                 )
-                await datamgr.update_node_result_refs(dispatch_id, node_result)
+                await datamgr.update_node_result(dispatch_id, node_result)
 
         except Exception as ex:
             app_log.exception("Error reading message: {ex}")
