@@ -209,16 +209,11 @@ _address_client_mapper = {}
 def _log_mem(dispatch_id, node_id, status, detail=None):
     proc = psutil.Process(os.getpid())
 
-    MEM_LOGFILE = "/home/casey/Agnostiq/logs/srvmem.log"
-
     pid = proc.pid
     meminfo = proc.memory_info()
     rssmb = meminfo.rss / (1024 * 1024)
     vmsmb = meminfo.vms / (1024 * 1024)
     shrmb = meminfo.shared / (1024 * 1024)
 
-    with open(MEM_LOGFILE, "a") as f:
-        print(
-            f"PID: {pid} RSS(MB): {rssmb} VMS(MB): {vmsmb} SHR(MB): {shrmb} dispatch: {dispatch_id} node: {node_id} status: {status}, detail: {detail}",
-            file=f,
-        )
+    log_msg = f"PID: {pid} RSS(MB): {rssmb} VMS(MB): {vmsmb} SHR(MB): {shrmb} dispatch: {dispatch_id} node: {node_id} status: {status}, detail: {detail}"
+    app_log.debug(log_msg)
