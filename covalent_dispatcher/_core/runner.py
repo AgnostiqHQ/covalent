@@ -33,6 +33,7 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import prefix_separator, sublattice_prefix
+from covalent._shared_files.utils import _log_mem
 from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
@@ -294,6 +295,7 @@ async def _run_task(
                 results_dir=results_dir,
                 node_id=node_id,
             )
+            _log_mem(dispatch_id, node_id, Result.RUNNING, "Runner: before execute")
             output, stdout, stderr, exception_raised = await executor._execute(
                 function=assembled_callable,
                 args=inputs["args"],
@@ -302,6 +304,7 @@ async def _run_task(
                 results_dir=results_dir,
                 node_id=node_id,
             )
+            _log_mem(dispatch_id, node_id, Result.RUNNING, "Runner: after execute")
             if exception_raised:
                 status = Result.FAILED
             else:
