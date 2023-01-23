@@ -1,4 +1,4 @@
 covalent
-covalent-slurm-plugin==0.3.0
+covalent-slurm-plugin==0.8.0
 matplotlib==3.4.3
-pennylane==0.25.1
+pennylane==0.26.0
