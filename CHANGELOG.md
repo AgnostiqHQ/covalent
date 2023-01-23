@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Removed
+
+- Slurm executor reference from qaoa tutorial since it's not compatible with conda env at the moment.
+
+### Fixed
+
+- Braket pip installation instructions.
+
 ## [0.213.2-rc.0] - 2023-01-21
 
 ### Authors
