@@ -20,4 +20,4 @@ Enable Logging
 Executor Directory
     The directory path containing remote executor plugin modules used by the SDK.
 No Cluster
-    Turn Dask clustering on (False) or off (True). With `No Cluster` set to True, the default executor is local.
+    Turn Dask clustering on (False) or off (True). With No Cluster set to True, the default executor is local.
