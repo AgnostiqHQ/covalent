@@ -31,6 +31,7 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.defaults import sublattice_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS
+from covalent._shared_files.utils import _log_mem
 from covalent.executor.base import AsyncBaseExecutor
 
 from . import data_manager as datamgr
@@ -111,6 +112,7 @@ async def _submit_abstract_task(
         args_uris = [node_upload_uris[node_id] for node_id in abstract_args]
         kwargs_uris = {k: node_upload_uris[v] for k, v in abstract_kwargs.items()}
 
+        _log_mem(dispatch_id, task_id, RESULT_STATUS.RUNNING, "Runner(new): before send")
         job_handle = await executor.send(
             function_uri,
             deps_uri,
@@ -120,7 +122,7 @@ async def _submit_abstract_task(
             kwargs_uris,
             task_metadata,
         )
-
+        _log_mem(dispatch_id, task_id, RESULT_STATUS.RUNNING, "Runner(new): after send")
         _job_handles[(dispatch_id, task_id)] = job_handle
 
     except Exception as ex:
@@ -150,7 +152,7 @@ async def _get_task_result(task_metadata: Dict):
         executor = get_executor(task_id, [executor_name, executor_data])
 
         job_handle = _job_handles.pop((dispatch_id, task_id))
-
+        _log_mem(dispatch_id, task_id, RESULT_STATUS.RUNNING, "Runner(new): before receive")
         output_uri, stdout_uri, stderr_uri, status = await executor.receive(
             task_metadata, job_handle
         )
@@ -162,6 +164,7 @@ async def _get_task_result(task_metadata: Dict):
         node_result["output_uri"] = output_uri
         node_result["stdout_uri"] = stdout_uri
         node_result["stderr_uri"] = stderr_uri
+        _log_mem(dispatch_id, task_id, RESULT_STATUS.RUNNING, "Runner(new): after receive")
 
     except Exception as ex:
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
