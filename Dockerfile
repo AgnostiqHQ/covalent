@@ -214,6 +214,8 @@ EOL
 
 FROM build_server as covalent_server
 
+ARG COVALENT_BASE_IMAGE
+
 LABEL org.opencontainers.image.title="Covalent Build Environment"
 LABEL org.opencontainers.image.vendor="Agnostiq"
 LABEL org.opencontainers.image.url="https://covalent.xyz"
@@ -246,6 +248,8 @@ FROM covalent_${COVALENT_INSTALL_TYPE} as covalent_install
 
 FROM base AS prod_sdk
 
+ARG COVALENT_COMMIT_SHA
+ARG COVALENT_BASE_IMAGE
 ARG COVALENT_BUILD_DATE=""
 ARG COVALENT_BUILD_VERSION=""
 
