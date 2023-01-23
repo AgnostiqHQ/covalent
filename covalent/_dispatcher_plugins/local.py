@@ -20,7 +20,7 @@
 
 from copy import deepcopy
 from functools import wraps
-from typing import Callable
+from typing import Callable, Dict
 
 import requests
 
@@ -137,3 +137,23 @@ class LocalDispatcher(BaseDispatcher):
             )
 
         return wrapper
+
+    @staticmethod
+    def redispatch(
+        dispatch_id: str,
+        dispatcher_addr: str = None,
+        replace_electrons: Dict[str, Callable] = None,
+        reuse_previous_results: bool = False,
+    ) -> Callable:
+        if dispatcher_addr is None:
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
+
+        if replace_electrons is None:
+            replace_electrons = {}
+
+        def func():
+            pass
+
+        return func
