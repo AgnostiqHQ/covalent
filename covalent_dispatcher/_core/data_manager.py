@@ -27,6 +27,7 @@ import uuid
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
+from covalent._shared_files.utils import _log_mem
 from covalent._workflow.lattice import Lattice
 
 from .._db import update, upsert
@@ -82,6 +83,7 @@ async def update_node_result(result_object, node_result):
         node_id = node_result["node_id"]
         node_status = node_result["status"]
         dispatch_id = result_object.dispatch_id
+        _log_mem(dispatch_id, node_id, node_status)
         if node_status:
             status_queue = get_status_queue(dispatch_id)
             await status_queue.put((node_id, node_status))
