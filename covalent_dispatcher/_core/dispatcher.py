@@ -47,9 +47,6 @@ NEW_RUNNER_ENABLED = get_config("dispatcher.force_legacy_runner") == "false"
 POSTPROCESS_SEPARATELY = os.environ.get("COVALENT_POSTPROCESS_SEPARATELY") == "1"
 
 
-INTEGRATED_POSTPROCESS = os.environ.get("COVALENT_INTEGRATED_POSTPROCESS") == "1"
-
-
 # Domain: dispatcher
 def _get_abstract_task_inputs(node_id: int, node_name: str, result_object: SRVResult) -> dict:
     """Return placeholders for the required inputs for a task execution.
@@ -301,7 +298,7 @@ async def _run_planned_workflow(
 
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
 
-    if not INTEGRATED_POSTPROCESS:
+    if POSTPROCESS_SEPARATELY:
         result_object = await runner.postprocess_workflow(result_object.dispatch_id)
     else:
         app_log.debug("Workflow already postprocessed")
