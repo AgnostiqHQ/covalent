@@ -30,7 +30,7 @@ from .._results_manager.results_manager import get_result
 from .._shared_files.config import get_config
 from .._workflow.lattice import Lattice
 from .base import BaseDispatcher
-from .redispatch_utils import _get_request_body
+from .redispatch_utils import get_request_body
 
 
 class LocalDispatcher(BaseDispatcher):
@@ -155,7 +155,7 @@ class LocalDispatcher(BaseDispatcher):
             replace_electrons = {}
 
         def func(*new_args, **new_kwargs):
-            body = _get_request_body(
+            body = get_request_body(
                 dispatch_id, new_args, new_kwargs, replace_electrons, reuse_previous_results
             )
 

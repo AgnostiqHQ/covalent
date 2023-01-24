@@ -53,7 +53,7 @@ def _generate_electron_updates(dispatch_id: str, replace_electrons: Dict[str, Ca
     return {k: _get_transportable_electron(v) for k, v in electron_objects.items()}
 
 
-def _get_request_body(
+def get_request_body(
     dispatch_id: str,
     new_args: Optional[List] = None,
     new_kwargs: Optional[Dict] = None,
