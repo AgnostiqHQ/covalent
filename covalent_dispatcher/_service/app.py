@@ -183,11 +183,17 @@ async def cancel(request: Request) -> str:
         Fast API Response object confirming that the dispatch
         has been cancelled.
     """
-    data = await request.body()
-    dispatch_id = data.decode("utf-8")
 
-    dispatcher.cancel_running_dispatch(dispatch_id)
-    return f"Dispatch {dispatch_id} cancelled."
+    data = await request.json()
+
+    dispatch_id = data["dispatch_id"]
+    task_ids = data["task_ids"]
+
+    await dispatcher.cancel_running_dispatch(dispatch_id, task_ids)
+    if task_ids:
+        return f"Cancelled tasks {task_ids} in dispatch {dispatch_id}."
+    else:
+        return f"Dispatch {dispatch_id} cancelled."
 
 
 @router.get("/db-path")
