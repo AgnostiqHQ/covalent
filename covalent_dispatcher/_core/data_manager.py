@@ -101,7 +101,7 @@ async def update_node_result(dispatch_id, node_result):
         update_partial = functools.partial(result_object._update_node, **node_result)
         await loop.run_in_executor(dm_pool, update_partial)
 
-        if node_result["status"] == RESULT_STATUS.DISPATCHING_SUBLATTICE:
+        if node_result["status"] == RESULT_STATUS.DISPATCHING:
             app_log.debug("Received sublattice dispatch")
             try:
                 sub_dispatch_id = await _make_sublattice_dispatch(result_object, node_result)
@@ -263,7 +263,7 @@ async def _filter_sublattice_status(
     dispatch_id, node_id, status, node_type, sub_dispatch_id, node_result
 ):
     if status == Result.COMPLETED and node_type == "sublattice" and not sub_dispatch_id:
-        node_result["status"] = RESULT_STATUS.DISPATCHING_SUBLATTICE
+        node_result["status"] = RESULT_STATUS.DISPATCHING
     return node_result
 
 

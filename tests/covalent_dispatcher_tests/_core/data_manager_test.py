@@ -116,7 +116,7 @@ def test_initialize_result_object(mocker, test_db):
         (Result.COMPLETED, "function", Result.COMPLETED, ""),
         (Result.FAILED, "function", Result.FAILED, ""),
         (Result.CANCELLED, "function", Result.CANCELLED, ""),
-        (Result.COMPLETED, "sublattice", RESULT_STATUS.DISPATCHING_SUBLATTICE, ""),
+        (Result.COMPLETED, "sublattice", RESULT_STATUS.DISPATCHING, ""),
         (Result.COMPLETED, "sublattice", RESULT_STATUS.COMPLETED, "asdf"),
         (Result.FAILED, "sublattice", Result.FAILED, ""),
         (Result.CANCELLED, "sublattice", Result.CANCELLED, ""),

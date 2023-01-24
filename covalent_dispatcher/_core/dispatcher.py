@@ -262,7 +262,7 @@ async def _run_planned_workflow(
         if node_status == Result.RUNNING:
             continue
 
-        if node_status == RESULT_STATUS.DISPATCHING_SUBLATTICE:
+        if node_status == RESULT_STATUS.DISPATCHING:
             sub_dispatch_id = detail["sub_dispatch_id"]
             run_dispatch(sub_dispatch_id)
             app_log.debug(f"Running sublattice dispatch {sub_dispatch_id}")
