@@ -31,6 +31,7 @@ from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.defaults import parameter_prefix
+from covalent._shared_files.util_classes import RESULT_STATUS
 
 from . import data_manager as datasvc
 from . import runner, runner_exp
@@ -257,6 +258,14 @@ async def _run_planned_workflow(
         app_log.debug(f"Received node status update {node_id}: {node_status}")
 
         if node_status == Result.RUNNING:
+            continue
+
+        if node_status == RESULT_STATUS.DISPATCHING_SUBLATTICE:
+            sub_dispatch_id = await datasvc.get_electron_attribute(
+                result_object.dispatch_id, node_id, "sub_dispatch_id"
+            )
+            run_dispatch(sub_dispatch_id)
+            app_log.debug(f"Running sublattice dispatch {sub_dispatch_id}")
             continue
 
         unresolved_tasks -= 1

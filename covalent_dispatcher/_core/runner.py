@@ -39,9 +39,7 @@ from covalent._workflow.transport import TransportableObject
 from covalent.executor.base import wrapper_fn
 
 from .._dal.result import Result as SRVResult
-from .._db.write_result_to_db import get_sublattice_electron_id
 from . import data_manager as datasvc
-from . import dispatcher
 from .runner_modules.utils import get_executor
 
 app_log = logger.app_log
@@ -259,62 +257,38 @@ async def _run_task(
 
     # run the task on the executor and register any failures
     try:
-
-        if node_name.startswith(sublattice_prefix):
-            sub_electron_id = get_sublattice_electron_id(
-                parent_dispatch_id=dispatch_id, sublattice_node_id=node_id
-            )
-
-            sub_dispatch_id = await _dispatch_sublattice(
-                parent_result_object=result_object,
-                parent_node_id=node_id,
-                parent_electron_id=sub_electron_id,
-                inputs=inputs,
-                serialized_callable=serialized_callable,
-                workflow_executor=workflow_executor,
-            )
-
-            node_result = datasvc.generate_node_result(
-                node_id=node_id,
-                status=Result.RUNNING,
-            )
-
-            dispatcher.run_dispatch(sub_dispatch_id)
-            app_log.debug(f"Running sublattice dispatch {sub_dispatch_id}")
-
+        app_log.debug(f"Executing task {node_name}")
+        assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
+        execute_callable = partial(
+            executor.execute,
+            function=assembled_callable,
+            args=inputs["args"],
+            kwargs=inputs["kwargs"],
+            dispatch_id=dispatch_id,
+            results_dir=results_dir,
+            node_id=node_id,
+        )
+        output, stdout, stderr, exception_raised = await executor._execute(
+            function=assembled_callable,
+            args=inputs["args"],
+            kwargs=inputs["kwargs"],
+            dispatch_id=dispatch_id,
+            results_dir=results_dir,
+            node_id=node_id,
+        )
+        if exception_raised:
+            status = Result.FAILED
         else:
-            app_log.debug(f"Executing task {node_name}")
-            assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
-            execute_callable = partial(
-                executor.execute,
-                function=assembled_callable,
-                args=inputs["args"],
-                kwargs=inputs["kwargs"],
-                dispatch_id=dispatch_id,
-                results_dir=results_dir,
-                node_id=node_id,
-            )
-            output, stdout, stderr, exception_raised = await executor._execute(
-                function=assembled_callable,
-                args=inputs["args"],
-                kwargs=inputs["kwargs"],
-                dispatch_id=dispatch_id,
-                results_dir=results_dir,
-                node_id=node_id,
-            )
-            if exception_raised:
-                status = Result.FAILED
-            else:
-                status = Result.COMPLETED
+            status = Result.COMPLETED
 
-            node_result = datasvc.generate_node_result(
-                node_id=node_id,
-                end_time=datetime.now(timezone.utc),
-                status=status,
-                output=output,
-                stdout=stdout,
-                stderr=stderr,
-            )
+        node_result = datasvc.generate_node_result(
+            node_id=node_id,
+            end_time=datetime.now(timezone.utc),
+            status=status,
+            output=output,
+            stdout=stdout,
+            stderr=stderr,
+        )
 
     except Exception as ex:
         tb = "".join(traceback.TracebackException.from_exception(ex).format())

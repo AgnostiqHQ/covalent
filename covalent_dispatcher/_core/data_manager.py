@@ -24,12 +24,15 @@ Defines the core functionality of the result service
 
 import asyncio
 import functools
+import json
+import traceback
 import uuid
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 
 from .._dal.result import Result as SRVResult
@@ -85,9 +88,32 @@ async def update_node_result(dispatch_id, node_result):
     app_log.warning("Updating node result (run_planned_workflow).")
     try:
         result_object = get_result_object(dispatch_id)
+        node_id = node_result["node_id"]
+        node_status = node_result["status"]
+        node_info = await get_electron_attributes(
+            dispatch_id, node_id, ["type", "sub_dispatch_id"]
+        )
+        node_type = node_info["type"]
+        sub_dispatch_id = node_info["sub_dispatch_id"]
+
+        # Handle returns from _build_sublattice_graph
+        node_result = await _filter_sublattice_status(
+            dispatch_id, node_id, node_status, node_type, sub_dispatch_id, node_result
+        )
         loop = asyncio.get_running_loop()
         update_partial = functools.partial(result_object._update_node, **node_result)
         await loop.run_in_executor(dm_pool, update_partial)
+
+        if node_result["status"] == RESULT_STATUS.DISPATCHING_SUBLATTICE:
+            app_log.debug("Received sublattice dispatch")
+            try:
+                await _make_sublattice_dispatch(result_object, node_result)
+            except Exception as ex:
+                tb = "".join(traceback.TracebackException.from_exception(ex).format())
+                node_result["status"] = RESULT_STATUS.FAILED
+                node_result["error"] = tb
+                update_partial = functools.partial(result_object._update_node, **node_result)
+                await loop.run_in_executor(dm_pool, update_partial)
 
     except Exception as ex:
         app_log.exception(f"Error persisting node update: {ex}")
@@ -148,7 +174,7 @@ def get_unique_id() -> str:
 
 
 async def make_dispatch(
-    json_lattice: str, parent_result_object: Result = None, parent_electron_id: int = None
+    json_lattice: str, parent_result_object: SRVResult = None, parent_electron_id: int = None
 ) -> Result:
 
     loop = asyncio.get_running_loop()
@@ -238,3 +264,23 @@ async def get_electron_attributes(
         keys,
         refresh,
     )
+
+
+async def _filter_sublattice_status(
+    dispatch_id, node_id, status, node_type, sub_dispatch_id, node_result
+):
+    if status == Result.COMPLETED and node_type == "sublattice" and not sub_dispatch_id:
+        node_result["status"] = RESULT_STATUS.DISPATCHING_SUBLATTICE
+    return node_result
+
+
+# NB: this loads the JSON sublattice in memory
+async def _make_sublattice_dispatch(result_object: SRVResult, node_result: dict):
+
+    node_id = node_result["node_id"]
+    bg_output = await get_electron_attribute(result_object.dispatch_id, node_id, "output")
+    json_lattice = json.loads(bg_output.json)
+    parent_node = result_object.lattice.transport_graph.get_node(node_id)
+    parent_electron_id = parent_node._electron_id
+
+    await make_dispatch(json_lattice, result_object, parent_electron_id)
