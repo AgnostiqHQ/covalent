@@ -41,7 +41,7 @@ jobs:
           ref: "v${{ env.STABLE_VERSION }}"
       - name: Generate stable release message
         id: stable-changelog
-        uses: AgnostiqHQ/covalent/.github/actions/stable-changelog@develop
+        uses: AgnostiqHQ/covalent/.github/actions/stable-changelog@fix-release-workflow
         with:
           changelog-path: CHANGELOG.md
           version-path: VERSION
