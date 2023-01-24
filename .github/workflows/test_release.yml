@@ -29,7 +29,16 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.filter-matrix.outputs.matrix }}
+    env:
+      STABLE_VERSION: "0.209.1"
     steps:
+      - name: Check out release tag
+        uses: actions/checkout@v2
+        if: ${{ env.STABLE_VERSION }}
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: "v${{ env.STABLE_VERSION }}"
       - name: Generate stable release message
         id: stable-changelog
         uses: AgnostiqHQ/covalent/.github/actions/stable-changelog@develop
