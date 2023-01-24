@@ -349,38 +349,35 @@ jobs:
             public.ecr.aws/covalent/covalent:${{ inputs.stable_version }}
             public.ecr.aws/covalent/covalent:stable
 
-  docker_aws_plugins:
-    name: Trigger AWS Plugins Base Executor Image Pre-Release
-    needs: pypi
-    runs-on: ubuntu-latest
-    if: >
-      inputs.prerelease
-      && !inputs.stable_version
-      && github.event_name == 'schedule'
-    uses: AgnostiqHQ/covalent-aws-plugins/.github/workflows/docker.yml@develop
-    with:
-      prerelease: true
+  # docker_aws_plugins:
+  #   name: Trigger AWS Plugins Base Executor Image Pre-Release
+  #   needs: pypi
+  #   if: >
+  #     inputs.prerelease
+  #     && !inputs.stable_version
+  #     && github.event_name == 'schedule'
+  #   uses: AgnostiqHQ/covalent-aws-plugins/.github/workflows/docker.yml@develop
+  #   with:
+  #     prerelease: true
 
-  docker_aws_lambda:
-    name: Trigger AWS Lambda Base Executor Image Pre-Release
-    needs: pypi
-    runs-on: ubuntu-latest
-    if: >
-      inputs.prerelease
-      && !inputs.stable_version
-      && github.event_name == 'schedule'
-    uses: AgnostiqHQ/covalent-awslambda-plugin/.github/workflows/docker.yml@develop
-    with:
-      prerelease: true
+  # docker_aws_lambda:
+  #   name: Trigger AWS Lambda Base Executor Image Pre-Release
+  #   needs: pypi
+  #   if: >
+  #     inputs.prerelease
+  #     && !inputs.stable_version
+  #     && github.event_name == 'schedule'
+  #   uses: AgnostiqHQ/covalent-awslambda-plugin/.github/workflows/docker.yml@develop
+  #   with:
+  #     prerelease: true
 
-  docker_aws_braket:
-    name: Trigger AWS Braket Base Executor Image Pre-Release
-    needs: pypi
-    runs-on: ubuntu-latest
-    if: >
-      inputs.prerelease
-      && !inputs.stable_version
-      && github.event_name == 'schedule'
-    uses: AgnostiqHQ/covalent-braket-plugin/.github/workflows/docker.yml@develop
-    with:
-      prerelease: true
+  # docker_aws_braket:
+  #   name: Trigger AWS Braket Base Executor Image Pre-Release
+  #   needs: pypi
+  #   if: >
+  #     inputs.prerelease
+  #     && !inputs.stable_version
+  #     && github.event_name == 'schedule'
+  #   uses: AgnostiqHQ/covalent-braket-plugin/.github/workflows/docker.yml@develop
+  #   with:
+  #     prerelease: true

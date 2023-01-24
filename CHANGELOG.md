@@ -12,7 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed stable-changelog action removed `.catch` added `.on('error')`
 - Removed AWS base executor deployment from `release.yml`
 - Removed experimental tests from nightly test matrix (will be brought back but in different workflow)
-- Trigger plugin base executor image pre-release builds on nightly
 
 ### Removed
 
