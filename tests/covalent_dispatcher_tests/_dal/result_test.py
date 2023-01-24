@@ -250,7 +250,7 @@ def test_result_update_node_2(test_db, mocker):
 
         assert srvres.lattice.transport_graph.get_node_value(0, "error") == "test_error"
 
-        assert lattice_record.electron_num == 2
+        assert lattice_record.electron_num == 3
         assert lattice_record.completed_electron_num == 0
         assert lattice_record.updated_at is not None
 
@@ -278,7 +278,7 @@ def test_result_update_node_2(test_db, mocker):
         )
         assert result == 5
 
-        assert lattice_record.electron_num == 2
+        assert lattice_record.electron_num == 3
         assert lattice_record.completed_electron_num == 1
         assert lattice_record.updated_at is not None
 
@@ -458,9 +458,10 @@ def test_get_all_node_outputs(test_db, mocker):
 
     srvres.lattice.transport_graph.set_node_value(0, "output", 25)
     srvres.lattice.transport_graph.set_node_value(1, "output", 5)
+    srvres.lattice.transport_graph.set_node_value(2, "output", 25)
     node_outputs = srvres.get_all_node_outputs()
 
-    expected_outputs = [25, 5]
+    expected_outputs = [25, 5, 25]
     for i, item in enumerate(node_outputs.items()):
         key, val = item
         assert expected_outputs[i] == val

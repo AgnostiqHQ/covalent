@@ -85,7 +85,7 @@ def test_transport_graph_attributes(test_db, mocker):
         lat_id = record.id
 
     tg = get_compute_graph(lat_id)
-    assert list(tg._graph.nodes) == [0, 1, 2]
+    assert list(tg._graph.nodes) == [0, 1, 2, 3]
     assert tg.get_dependencies(0) == [1, 2]
     e_data = tg.get_edge_data(1, 0)
     assert e_data[0]["edge_name"] == "x"
@@ -318,4 +318,4 @@ def test_transport_graph_get_successors(bare_mode, test_db, mocker):
 
     tg = get_compute_graph(lat_id, bare=bare_mode)
 
-    assert tg.get_successors(0) == [4, 4, 6, 6, 6]
+    assert tg.get_successors(0) == [4, 4, 6, 6, 6, 7, 7]
