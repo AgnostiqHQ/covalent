@@ -20,6 +20,40 @@
 
 """Unit tests for redispatch utils module in dispatcher_plugins."""
 
+import pytest
+
+from covalent._dispatcher_plugins.redispatch_utils import _filter_null_metadata
+from covalent._workflow.electron import Electron
+
+
+@pytest.mark.parametrize(
+    "meta_dict,expected",
+    [
+        ({}, {}),
+        ({"a": 1}, {"a": 1}),
+        ({"a": 1, "b": None}, {"a": 1}),
+    ],
+)
+def test_filter_null_metadata(meta_dict, expected):
+    """Test the filter null metadata function."""
+    filtered = _filter_null_metadata(meta_dict)
+    assert filtered == expected
+
+
+def test_get_transportable_electron():
+    """Test the get transportable electron function."""
+
+    def test_func(a):
+        return a
+
+    electron = Electron(test_func, {"a": 1})
+
+
+def test_generate_electron_updates():
+    """Test the generate electron updates function."""
+    pass
+
 
 def test_get_request_body():
+    """Test the get request body function."""
     pass
