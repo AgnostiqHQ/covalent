@@ -9856,14 +9856,14 @@ try {
     fs.writeFileSync(core.getInput("changelog-path"), new_changelog, "utf8");
     fs.writeFileSync(core.getInput("version-path"), version[0], "utf8");
 
-    console.log('Old Changelog:')
-    console.log(changelog.split(EOL).slice(0,300).join(EOL))
-    console.log('New Changelog:')
-    console.log(new_changelog.split(EOL).slice(0,300).join(EOL))
-    console.log('New Version:')
+    console.log('-------------------------------------New Version-------------------------------------')
     console.log(version[0])
-    console.log('Message:')
+    console.log('-------------------------------------Message-------------------------------------')
     console.log(message);
+    console.log('-------------------------------------Old Changelog-------------------------------------')
+    console.log(changelog.split(EOL).slice(0,150).join(EOL))
+    console.log('-------------------------------------New Changelog-------------------------------------')
+    console.log(new_changelog.split(EOL).slice(0,150).join(EOL))
 
     core.setOutput("message", message);
   })
