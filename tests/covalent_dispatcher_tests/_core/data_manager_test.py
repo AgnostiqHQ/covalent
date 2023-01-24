@@ -23,7 +23,7 @@ Tests for the core functionality of the dispatcher.
 """
 
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -32,14 +32,12 @@ from covalent._results_manager import Result
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.data_manager import (
-    _dispatch_status_queues,
     _make_sublattice_dispatch,
     _register_result_object,
     _registered_dispatches,
     _update_parent_electron,
     finalize_dispatch,
     get_result_object,
-    get_status_queue,
     initialize_result_object,
     make_dispatch,
     persist_result,
@@ -128,8 +126,6 @@ def test_initialize_result_object(mocker, test_db):
 async def test_update_node_result(mocker, node_status, node_type, output_status, sub_id):
     """Check that update_node_result pushes the correct status updates"""
 
-    status_queue = AsyncMock()
-
     result_object = get_mock_result()
     node_result = {"node_id": 0, "status": node_status}
     mock_update_node = mocker.patch("covalent_dispatcher._dal.result.Result._update_node")
@@ -138,19 +134,22 @@ async def test_update_node_result(mocker, node_status, node_type, output_status,
         "covalent_dispatcher._core.data_manager.get_electron_attributes", return_value=node_info
     )
 
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
+    mock_notify = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.notify_node_status",
     )
+
     mock_get_result = mocker.patch(
         "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
     )
 
     mock_make_dispatch = mocker.patch(
-        "covalent_dispatcher._core.data_manager._make_sublattice_dispatch"
+        "covalent_dispatcher._core.data_manager._make_sublattice_dispatch",
+        return_value=sub_id,
     )
 
     await update_node_result(result_object.dispatch_id, node_result)
-    status_queue.put.assert_awaited_with((0, output_status))
+    detail = {"sub_dispatch_id": sub_id} if sub_id else {}
+    mock_notify.assert_awaited_with(result_object.dispatch_id, 0, output_status, detail)
 
     if node_status == Result.COMPLETED and node_type == "sublattice" and not sub_id:
         mock_make_dispatch.assert_awaited()
@@ -162,8 +161,6 @@ async def test_update_node_result(mocker, node_status, node_type, output_status,
 async def test_update_node_result_handles_subl_exceptions(mocker):
     """Check that update_node_result pushes the correct status updates"""
 
-    status_queue = AsyncMock()
-
     result_object = get_mock_result()
     node_type = "sublattice"
     sub_id = ""
@@ -173,10 +170,10 @@ async def test_update_node_result_handles_subl_exceptions(mocker):
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_electron_attributes", return_value=node_info
     )
-
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
+    mock_notify = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.notify_node_status",
     )
+
     mock_get_result = mocker.patch(
         "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
     )
@@ -190,8 +187,7 @@ async def test_update_node_result_handles_subl_exceptions(mocker):
 
     await update_node_result(result_object.dispatch_id, node_result)
     output_status = Result.FAILED
-    status_queue.put.assert_awaited_with((0, output_status))
-
+    mock_notify.assert_awaited_with(result_object.dispatch_id, 0, output_status, {})
     mock_make_dispatch.assert_awaited()
 
 
@@ -199,21 +195,19 @@ async def test_update_node_result_handles_subl_exceptions(mocker):
 async def test_update_node_result_handles_db_exceptions(mocker):
     """Check that update_node_result handles db write failures"""
 
-    status_queue = AsyncMock()
-
     result_object = get_mock_result()
     result_object._update_node = MagicMock(side_effect=RuntimeError())
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
-    )
     mock_get_result = mocker.patch(
         "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
+    )
+    mock_notify = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.notify_node_status",
     )
 
     node_result = {"node_id": 0, "status": Result.COMPLETED}
     await update_node_result(result_object.dispatch_id, node_result)
 
-    status_queue.put.assert_awaited_with((0, Result.FAILED))
+    mock_notify.assert_awaited_with(result_object.dispatch_id, 0, Result.FAILED, {})
 
 
 @pytest.mark.asyncio
@@ -258,15 +252,6 @@ def test_unregister_result_object(mocker):
     _registered_dispatches[dispatch_id] = result_object
     finalize_dispatch(dispatch_id)
     assert dispatch_id not in _registered_dispatches
-
-
-def test_get_status_queue():
-    import asyncio
-
-    dispatch_id = "dispatch"
-    q = asyncio.Queue()
-    _dispatch_status_queues[dispatch_id] = q
-    assert get_status_queue(dispatch_id) is q
 
 
 @pytest.mark.asyncio

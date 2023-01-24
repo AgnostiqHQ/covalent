@@ -279,10 +279,9 @@ async def test_run_workflow_with_failing_nonleaf(mocker, test_db):
         "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
     )
 
-    status_queue = asyncio.Queue()
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
-    )
+    msg_queue = asyncio.Queue()
+    mock_status_queues = {result_object.dispatch_id: msg_queue}
+    mocker.patch("covalent_dispatcher._core.dispatcher._status_queues", mock_status_queues)
     mock_get_failed_nodes = mocker.patch(
         "covalent_dispatcher._dal.result.Result._get_failed_nodes",
         return_value=[(0, "failing_task")],
@@ -340,10 +339,9 @@ async def test_run_workflow_with_failing_leaf(mocker, test_db):
         "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
     )
 
-    status_queue = asyncio.Queue()
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
-    )
+    msg_queue = asyncio.Queue()
+    mock_status_queues = {result_object.dispatch_id: msg_queue}
+    mocker.patch("covalent_dispatcher._core.dispatcher._status_queues", mock_status_queues)
     mock_get_failed_nodes = mocker.patch(
         "covalent._results_manager.result.Result._get_failed_nodes",
         return_value=[(0, "failing_task")],
@@ -429,10 +427,9 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
         "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
     )
 
-    status_queue = asyncio.Queue()
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
-    )
+    msg_queue = asyncio.Queue()
+    mock_status_queues = {result_object.dispatch_id: msg_queue}
+    mocker.patch("covalent_dispatcher._core.dispatcher._status_queues", mock_status_queues)
 
     update.persist(result_object)
 
@@ -468,10 +465,9 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
 
     update.persist(result_object)
 
-    status_queue = asyncio.Queue()
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
-    )
+    msg_queue = asyncio.Queue()
+    mock_status_queues = {result_object.dispatch_id: msg_queue}
+    mocker.patch("covalent_dispatcher._core.dispatcher._status_queues", mock_status_queues)
 
     def failing_workflow(x):
         assert False

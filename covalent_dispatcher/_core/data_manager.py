@@ -39,16 +39,13 @@ from .._dal.result import Result as SRVResult
 from .._dal.result import get_result_object as get_result_object_from_db
 from .._db import update, upsert
 from .._db.write_result_to_db import resolve_electron_id
+from . import dispatcher
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 # References to result objects of live dispatches
 _registered_dispatches = {}
-
-# Map of dispatch_id -> message_queue for pushing node status updates
-# to dispatcher
-_dispatch_status_queues = {}
 
 # Thread pool for Datastore I/O
 dm_pool = ThreadPoolExecutor()
@@ -107,7 +104,7 @@ async def update_node_result(dispatch_id, node_result):
         if node_result["status"] == RESULT_STATUS.DISPATCHING_SUBLATTICE:
             app_log.debug("Received sublattice dispatch")
             try:
-                await _make_sublattice_dispatch(result_object, node_result)
+                sub_dispatch_id = await _make_sublattice_dispatch(result_object, node_result)
             except Exception as ex:
                 tb = "".join(traceback.TracebackException.from_exception(ex).format())
                 node_result["status"] = RESULT_STATUS.FAILED
@@ -117,14 +114,16 @@ async def update_node_result(dispatch_id, node_result):
 
     except Exception as ex:
         app_log.exception(f"Error persisting node update: {ex}")
+        sub_dispatch_id = None
         node_result["status"] = Result.FAILED
     finally:
         node_id = node_result["node_id"]
         node_status = node_result["status"]
         dispatch_id = dispatch_id
+
+        detail = {"sub_dispatch_id": sub_dispatch_id} if sub_dispatch_id else {}
         if node_status:
-            status_queue = get_status_queue(dispatch_id)
-            await status_queue.put((node_id, node_status))
+            await dispatcher.notify_node_status(dispatch_id, node_id, node_status, detail)
 
 
 # Domain: result
@@ -196,16 +195,10 @@ def get_result_object(dispatch_id: str) -> SRVResult:
 def _register_result_object(result_object: Result):
     dispatch_id = result_object.dispatch_id
     _registered_dispatches[dispatch_id] = get_result_object_from_db(dispatch_id)
-    _dispatch_status_queues[dispatch_id] = asyncio.Queue()
 
 
 def finalize_dispatch(dispatch_id: str):
-    del _dispatch_status_queues[dispatch_id]
     del _registered_dispatches[dispatch_id]
-
-
-def get_status_queue(dispatch_id: str):
-    return _dispatch_status_queues[dispatch_id]
 
 
 async def persist_result(dispatch_id: str):

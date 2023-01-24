@@ -39,6 +39,8 @@ from .data_manager import SRVResult
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+_global_event_queue = asyncio.Queue()
+_status_queues = {}
 
 NEW_RUNNER_ENABLED = get_config("dispatcher.force_legacy_runner") == "false"
 POSTPROCESS_SEPARATELY = os.environ.get("COVALENT_POSTPROCESS_SEPARATELY") == "1"
@@ -253,7 +255,7 @@ async def _run_planned_workflow(
     while unresolved_tasks > 0:
         app_log.debug(f"{tasks_left} tasks left to complete")
         app_log.debug(f"Waiting to hear from {unresolved_tasks} tasks")
-        node_id, node_status = await status_queue.get()
+        node_id, node_status, detail = await status_queue.get()
 
         app_log.debug(f"Received node status update {node_id}: {node_status}")
 
@@ -261,9 +263,7 @@ async def _run_planned_workflow(
             continue
 
         if node_status == RESULT_STATUS.DISPATCHING_SUBLATTICE:
-            sub_dispatch_id = await datasvc.get_electron_attribute(
-                result_object.dispatch_id, node_id, "sub_dispatch_id"
-            )
+            sub_dispatch_id = detail["sub_dispatch_id"]
             run_dispatch(sub_dispatch_id)
             app_log.debug(f"Running sublattice dispatch {sub_dispatch_id}")
             continue
@@ -349,8 +349,9 @@ async def run_workflow(result_object: SRVResult) -> SRVResult:
 
     try:
         _plan_workflow(result_object)
-        status_queue = datasvc.get_status_queue(result_object.dispatch_id)
-        result_object = await _run_planned_workflow(result_object, status_queue)
+        dispatch_id = result_object.dispatch_id
+        _status_queues[dispatch_id] = asyncio.Queue()
+        result_object = await _run_planned_workflow(result_object, _status_queues[dispatch_id])
 
     except Exception as ex:
         app_log.error(f"Exception during _run_planned_workflow: {ex}")
@@ -364,7 +365,8 @@ async def run_workflow(result_object: SRVResult) -> SRVResult:
         result_object.commit()
         await datasvc.persist_result(result_object.dispatch_id)
         datasvc.finalize_dispatch(result_object.dispatch_id)
-
+        _status_queues.pop(result_object.dispatch_id)
+        print("DEBUG: status queues", _status_queues)
     return result_object
 
 
@@ -389,3 +391,16 @@ def cancel_workflow(dispatch_id: str) -> None:
 def run_dispatch(dispatch_id: str) -> asyncio.Future:
     result_object = datasvc.get_result_object(dispatch_id)
     return asyncio.create_task(run_workflow(result_object))
+
+
+async def notify_node_status(
+    dispatch_id: str, node_id: int, status: RESULT_STATUS, detail: Dict = {}
+):
+    msg = {
+        "dispatch_id": dispatch_id,
+        "node_id": node_id,
+        "status": status,
+        "detail": detail,
+    }
+    status_queue = _status_queues[dispatch_id]
+    await status_queue.put((node_id, status, detail))
