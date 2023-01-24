@@ -39,7 +39,7 @@ jobs:
       - name: Boilerplate
         env:
           boilerplate: |-
-            # Copyright 2021 Agnostiq Inc.
+            # Copyright 202'[1-3]' Agnostiq Inc.
             #
             # This file is part of Covalent.
             #
