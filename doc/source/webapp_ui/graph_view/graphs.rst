@@ -8,6 +8,9 @@ The Transport Graph displays the :ref:`directed acyclic graph <Transport Graph>`
    :align: center
    :width: 5000px
 
+
+.. _graph_controls:
+
 Controls
 ########
 
