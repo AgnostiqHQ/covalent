@@ -92,7 +92,7 @@ def get_mock_srvresult(sdkres, test_db) -> SRVResult:
 
 
 @pytest.mark.asyncio
-async def test_get_task_inputs(mocker):
+async def test_get_task_inputs(mocker, test_db):
     """Test _get_task_inputs for both dicts and list parameter types"""
 
     @ct.electron
@@ -139,13 +139,21 @@ async def test_get_task_inputs(mocker):
 
     list_workflow.build_graph([1, 2, 3])
     serialized_args = [ct.TransportableObject(i) for i in [1, 2, 3]]
-    tg = list_workflow.transport_graph
+
     # Nodes 0=task, 1=:electron_list:, 2=1, 3=2, 4=3
+    sdkres = Result(lattice=list_workflow, dispatch_id="asdf")
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    result_object = get_mock_srvresult(sdkres, test_db)
+    tg = result_object.lattice.transport_graph
     tg.set_node_value(2, "output", ct.TransportableObject(1))
     tg.set_node_value(3, "output", ct.TransportableObject(2))
     tg.set_node_value(4, "output", ct.TransportableObject(3))
 
-    result_object = Result(lattice=list_workflow, dispatch_id="asdf")
     mock_get_result = mocker.patch(
         "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
     )
@@ -159,12 +167,13 @@ async def test_get_task_inputs(mocker):
 
     dict_workflow.build_graph({"a": 1, "b": 2})
     serialized_args = {"a": ct.TransportableObject(1), "b": ct.TransportableObject(2)}
-    tg = dict_workflow.transport_graph
+
     # Nodes 0=task, 1=:electron_dict:, 2=1, 3=2
+    sdkres = Result(lattice=dict_workflow, dispatch_id="asdf_dict_workflow")
+    result_object = get_mock_srvresult(sdkres, test_db)
+    tg = result_object.lattice.transport_graph
     tg.set_node_value(2, "output", ct.TransportableObject(1))
     tg.set_node_value(3, "output", ct.TransportableObject(2))
-
-    result_object = Result(lattice=dict_workflow, dispatch_id="asdf")
 
     mock_get_result = mocker.patch(
         "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
@@ -177,8 +186,9 @@ async def test_get_task_inputs(mocker):
     # Check arg order
     multivar_workflow.build_graph(1, 2)
     received_lattice = Lattice.deserialize_from_json(multivar_workflow.serialize_to_json())
-    result_object = Result(lattice=received_lattice, dispatch_id="asdf")
-    tg = received_lattice.transport_graph
+    sdkres = Result(lattice=received_lattice, dispatch_id="asdf_multivar_workflow")
+    result_object = get_mock_srvresult(sdkres, test_db)
+    tg = result_object.lattice.transport_graph
 
     assert list(tg._graph.nodes) == [0, 1, 2, 3, 4, 5, 6, 7]
     tg.set_node_value(0, "output", ct.TransportableObject(1))

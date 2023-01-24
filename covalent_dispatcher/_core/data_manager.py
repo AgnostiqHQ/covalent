@@ -207,17 +207,22 @@ def upsert_lattice_data(dispatch_id: str):
     upsert._lattice_data(result_object)
 
 
-def _get_electron_attribute_sync(dispatch_id: str, node_id: int, key: str) -> Any:
+def _get_electron_attributes_sync(dispatch_id: str, node_id: int, keys: str) -> Any:
     result_object = get_result_object(dispatch_id)
-    return result_object.lattice.transport_graph.get_node_value(node_id, key)
+    return result_object.lattice.transport_graph.get_node_values(node_id, keys)
 
 
 async def get_electron_attribute(dispatch_id: str, node_id: int, key: str) -> Any:
+    query_res = await get_electron_attributes(dispatch_id, node_id, [key])
+    return query_res[key]
+
+
+async def get_electron_attributes(dispatch_id: str, node_id: int, keys: str) -> Any:
     loop = asyncio.get_running_loop()
     return await loop.run_in_executor(
         dm_pool,
-        _get_electron_attribute_sync,
+        _get_electron_attributes_sync,
         dispatch_id,
         node_id,
-        key,
+        keys,
     )
