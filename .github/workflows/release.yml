@@ -89,7 +89,7 @@ jobs:
           github.event.inputs.stable_version
           && contains(env.PAUL_BLART, github.actor)
         id: stable-changelog
-        uses: ./.github/actions/stable-changelog
+        uses: AgnostiqHQ/covalent/.github/actions/stable-changelog@develop
         with:
           changelog-path: CHANGELOG.md
           version-path: VERSION
@@ -331,99 +331,56 @@ jobs:
             public.ecr.aws/covalent/covalent:latest
             public.ecr.aws/covalent/covalent:${{ env.TAG }}
 
-      - name: Check if executor base Dockerfile exists
-        id: check_aws_executor_dockerfile
-        run: |
-          status_code=$(wget --server-response ${{ env.EXECUTOR_BASE_DOCKERFILE }} 2>&1 | grep HTTP/ | awk '{print $2}')
-          echo "::set-output name=status::value=$status_code"
-
-      - name: Download Covalent AWS executor Dockerfile
-        id: get_aws_executor_dockerfile
-        if: steps.check_aws_executor_dockerfile.outputs.status_code < 400
-        run: |
-          wget ${{ env.EXECUTOR_BASE_DOCKERFILE_URL }} -O Dockerfile.awsexecutor
-
-      - name: Check if covalent-aws-plugin VERSION file is present
-        id: check_aws_plugin_version_file
-        run: |
-          status_code=$(wget --server-response ${{ env.AWS_PLUGINS_VERSION_URL }} 2>&1 | grep HTTP/ | awk '{print $2}')
-          echo "::set-output name=status::value=$status_code"
-
-      - name: Download covalent-aws-plugin VERSION file
-        id: get_aws_plugin_version
-        if: steps.check_aws_plugin_version_file.outputs.status_code < 400
-        run: |
-          wget ${{ env.AWS_PLUGINS_VERSION_URL }} -O AWS_PLUGINS_VERSION
-
-      - name: Generate AWS executor base image tag
-        if: >
-          inputs.prerelease
-          && !github.events.inputs.stable_version
-          && github.event_name == 'schedule'
-          && steps.get_aws_plugin_dockerfile.outcome == 'success'
-          && steps.get_aws_plugin_version.outcome == 'success'
-        run: |
-          aws --version
-          docker info
-          AWS_PLUGINS_TAG="$(cat ./AWS_PLUGINS_VERSION)"
-          if aws ecr describe-images \
-            --repository-name covalent-executor-base
-            --image-ids imageTag=$AWS_PLUGINS_TAG &>/dev/null ; then
-            SHORT_SHA="${GITHUB_SHA::8}"
-            AWS_PLUGINS_TAG=$AWS_PLUGINS_TAG-$SHORT_SHA
-          fi
-          echo "AWS_PLUGINS_TAG: $AWS_PLUGINS_TAG"
-          echo "AWS_PLUGINS_TAG=$AWS_PLUGINS_TAG" >> $GITHUB_ENV
-
-      - name: Build and push pre-release AWS executor image
-        uses: docker/build-push-action@v2
-        if: >
-          inputs.prerelease
-          && !github.events.inputs.stable_version
-          && github.event_name == 'schedule'
-          && !github.events.inputs.test_release
-          && steps.get_aws_plugin_dockerfile.outcome == 'success'
-          && steps.get_aws_plugin_version.outcome == 'success'
-        with:
-          builder: ${{ steps.buildx.outputs.name }}
-          context: .
-          file: ./Dockerfile.awsexecutor
-          platforms: "linux/amd64,linux/arm64"
-          build-args: |
-            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:${{ env.TAG }}
-          push: true
-          tags: |
-            public.ecr.aws/covalent/covalent-executor-base:latest
-            public.ecr.aws/covalent/covalent-executor-base:${{ env.AWS_PLUGINS_TAG }}
-
-      - name: Tag stable release
+      - name: Build and push stable release
         if: >
           github.event_name == 'workflow_dispatch'
           && inputs.stable_version
           && !inputs.prerelease
           && !github.events.inputs.test_release
           && contains(env.PAUL_BLART, github.actor)
-        run: |
-          docker pull public.ecr.aws/covalent/covalent:${{ inputs.stable_version }}
-          docker tag public.ecr.aws/covalent/covalent:${{ inputs.stable_version }} public.ecr.aws/covalent/covalent:stable
-          docker push public.ecr.aws/covalent/covalent:stable
-
-      - name: Build AWS executor stable image
-        if: >
-          !inputs.prerelease
-          && github.events.inputs.stable_version
-          && !github.events.inputs.test_release
-          && contains(env.PAUL_BLART, github.actor)
-          && steps.get_aws_plugin_dockerfile.outcome == 'success'
-          && steps.get_aws_plugin_version.outcome == 'success'
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          file: ./Dockerfile.awsexecutor
-          platforms: "linux/amd64,linux/arm64"
-          build-args: |
-            COVALENT_BASE_IMAGE=public.ecr.aws/covalent/covalent:stable
+          file: ./Dockerfile.dev
+          platforms: linux/amd64
           push: true
           tags: |
-            public.ecr.aws/covalent/covalent-executor-base:stable
+            public.ecr.aws/covalent/covalent:${{ inputs.stable_version }}
+            public.ecr.aws/covalent/covalent:stable
+
+  docker_aws_plugins:
+    name: Trigger AWS Plugins Base Executor Image Pre-Release
+    needs: pypi
+    runs-on: ubuntu-latest
+    if: >
+      inputs.prerelease
+      && !inputs.stable_version
+      && github.event_name == 'schedule'
+    uses: AgnostiqHQ/covalent-aws-plugins/.github/workflows/docker.yml@develop
+    with:
+      prerelease: true
+
+  docker_aws_lambda:
+    name: Trigger AWS Lambda Base Executor Image Pre-Release
+    needs: pypi
+    runs-on: ubuntu-latest
+    if: >
+      inputs.prerelease
+      && !inputs.stable_version
+      && github.event_name == 'schedule'
+    uses: AgnostiqHQ/covalent-awslambda-plugin/.github/workflows/docker.yml@develop
+    with:
+      prerelease: true
+
+  docker_aws_braket:
+    name: Trigger AWS Braket Base Executor Image Pre-Release
+    needs: pypi
+    runs-on: ubuntu-latest
+    if: >
+      inputs.prerelease
+      && !inputs.stable_version
+      && github.event_name == 'schedule'
+    uses: AgnostiqHQ/covalent-braket-plugin/.github/workflows/docker.yml@develop
+    with:
+      prerelease: true
