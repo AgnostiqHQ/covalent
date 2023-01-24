@@ -218,50 +218,6 @@ async def test_submit_requires_opt_in(mocker):
 
 
 @pytest.mark.asyncio
-async def test_submit_rejects_sublattices(mocker):
-    """Checks submit rejects sublattices (not yet supported)"""
-    import datetime
-
-    from covalent._shared_files.defaults import sublattice_prefix
-
-    me = MockManagedExecutor()
-    me.send = AsyncMock(return_value="42")
-    ts = datetime.datetime.now()
-    dispatch_id = "dispatch"
-    task_id = 0
-    name = sublattice_prefix
-    abstract_inputs = {"args": [1], "kwargs": {"key": 2}}
-
-    mocker.patch(
-        "covalent_dispatcher._core.runner_exp.datamgr.get_electron_attribute",
-        return_value="managed_dask",
-    )
-
-    mocker.patch(
-        "covalent_dispatcher._core.runner_exp.get_executor",
-        return_value=me,
-    )
-
-    error_msg = str(NotImplementedError("Sublattices not yet supported"))
-
-    node_result = {
-        "node_id": 0,
-        "end_time": ts,
-        "status": RESULT_STATUS.FAILED,
-        "error": error_msg,
-    }
-
-    mocker.patch(
-        "covalent_dispatcher._core.runner_exp.datamgr.generate_node_result",
-        return_value=node_result,
-    )
-
-    assert node_result == await _submit_abstract_task(
-        dispatch_id, task_id, name, abstract_inputs, me
-    )
-
-
-@pytest.mark.asyncio
 async def test_get_task_result(mocker):
 
     import datetime

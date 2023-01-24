@@ -29,7 +29,6 @@ from typing import Any, Dict
 
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-from covalent._shared_files.defaults import sublattice_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent.executor.base import AsyncBaseExecutor
 
@@ -72,9 +71,6 @@ async def _submit_abstract_task(
 
         if not type(executor).SUPPORTS_MANAGED_EXECUTION:
             raise NotImplementedError("Executor does not support managed execution")
-
-        if node_name.startswith(sublattice_prefix):
-            raise NotImplementedError("Sublattices not yet supported")
 
         # Get upload URIs
 
@@ -198,9 +194,7 @@ async def run_abstract_task(
     try:
         app_log.debug(f"Attempting to instantiate executor {selected_executor}")
         executor = get_executor(node_id, selected_executor)
-        if not type(executor).SUPPORTS_MANAGED_EXECUTION or node_name.startswith(
-            sublattice_prefix
-        ):
+        if not type(executor).SUPPORTS_MANAGED_EXECUTION:
             coro = runner_legacy.run_abstract_task(
                 dispatch_id,
                 node_id,
