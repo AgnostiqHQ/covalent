@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-name: release
+name: release_test
 
 on:
   pull_request:
@@ -66,16 +66,16 @@ jobs:
     steps:
       - name: Check out stable release tag
         uses: actions/checkout@v2
-        if: $STABLE_VERSION
+        if: ${{ env.STABLE_VERSION }}
         with:
           persist-credentials: false
           fetch-depth: 0
-          ref: "v$STABLE_VERSION"
+          ref: "v${{ env.STABLE_VERSION }}"
       - name: Format prerelease ref
-        if: $PRE_RELEASE_VERSION
+        if: ${{ env.PRE_RELEASE_VERSION }}
         run: |
           re='^[0-9]+$'
-          IFS='.' read -ra version <<< "$PRE_RELEASE_VERSION"
+          IFS='.' read -ra version <<< "${{ env.PRE_RELEASE_VERSION }}"
           if [[ ${version[0]} =~ $re ]] ; then
             echo "PRERELEASE=v$version" >> $GITHUB_ENV
           else
@@ -83,14 +83,14 @@ jobs:
           fi
       - name: Check out prerelease tag
         uses: actions/checkout@v2
-        if: $PRE_RELEASE_VERSION
+        if: ${{ env.PRE_RELEASE_VERSION }}
         with:
           persist-credentials: false
           fetch-depth: 0
           ref: "${{ env.PRERELEASE }}"
       - name: Generate stable release message
         if: >
-          $STABLE_VERSION
+          ${{ env.STABLE_VERSION }}
           && contains(env.PAUL_BLART, github.actor)
         id: stable-changelog
         uses: AgnostiqHQ/covalent/.github/actions/stable-changelog@develop
