@@ -22,8 +22,12 @@
 
 import pytest
 
-from covalent._dispatcher_plugins.redispatch_utils import _filter_null_metadata
+from covalent._dispatcher_plugins.redispatch_utils import (
+    _filter_null_metadata,
+    _get_transportable_electron,
+)
 from covalent._workflow.electron import Electron
+from covalent._workflow.transport import TransportableObject
 
 
 @pytest.mark.parametrize(
@@ -40,13 +44,27 @@ def test_filter_null_metadata(meta_dict, expected):
     assert filtered == expected
 
 
-def test_get_transportable_electron():
+def test_get_transportable_electron(mocker):
     """Test the get transportable electron function."""
+    get_serialized_function_str_mock = mocker.patch(
+        "covalent._dispatcher_plugins.redispatch_utils.get_serialized_function_str",
+        return_value="mock-function-string",
+    )
+    filter_null_metadata_mock = mocker.patch(
+        "covalent._dispatcher_plugins.redispatch_utils._filter_null_metadata",
+        return_value="mock-metadata",
+    )
 
     def test_func(a):
         return a
 
-    electron = Electron(test_func, {"a": 1})
+    electron = Electron(function=test_func, node_id=1, metadata={"a": 1, "b": 2})
+    transportable_electron = _get_transportable_electron(electron)
+
+    assert transportable_electron["name"] == "test_func"
+    assert transportable_electron["metadata"] == "mock-metadata"
+    assert transportable_electron["function_string"] == "mock-function-string"
+    assert TransportableObject(test_func).to_dict() == transportable_electron["function"]
 
 
 def test_generate_electron_updates():
