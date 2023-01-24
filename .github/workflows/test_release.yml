@@ -32,7 +32,7 @@ jobs:
     steps:
       - name: Generate stable release message
         id: stable-changelog
-        uses: ./.github/actions/stable-changelog
+        uses: AgnostiqHQ/covalent/.github/actions/stable-changelog@develop
         with:
           changelog-path: CHANGELOG.md
           version-path: VERSION
