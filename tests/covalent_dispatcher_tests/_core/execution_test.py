@@ -325,6 +325,7 @@ async def test_run_workflow_with_failing_leaf(mocker, test_db):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.utils.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
@@ -413,6 +414,7 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.utils.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
@@ -450,6 +452,7 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.utils.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
@@ -488,6 +491,7 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     assert result_object.status == Result.POSTPROCESSING_FAILED
 
 
+@pytest.mark.skip(reason="Obsolete, to be removed soon")
 @pytest.mark.asyncio
 async def test_run_task_sublattice_handling(test_db, mocker):
 

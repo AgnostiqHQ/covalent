@@ -30,10 +30,7 @@ import pytest
 import covalent as ct
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
-from covalent_dispatcher._core.data_manager import get_result_object
 from covalent_dispatcher._core.runner import (
-    _build_sublattice_graph,
-    _dispatch_sublattice,
     _gather_deps,
     _post_process,
     _postprocess_workflow,
@@ -193,6 +190,39 @@ async def test_run_task_runtime_exception_handling(mocker):
     assert node_result["stderr"] == "error"
 
 
+@pytest.mark.asyncio
+async def test_run_task_exception_handling(mocker):
+
+    result_object = get_mock_result()
+    inputs = {"args": [], "kwargs": {}}
+    mock_executor = MagicMock()
+    mock_executor._execute = AsyncMock(side_effect=RuntimeError())
+    mock_get_executor = mocker.patch(
+        "covalent_dispatcher._core.runner.get_executor",
+        return_value=mock_executor,
+    )
+
+    mock_run_task = mocker.patch(
+        "covalent_dispatcher._core.runner.get_executor",
+        return_value=mock_executor,
+    )
+
+    node_result = await _run_task(
+        result_object=result_object,
+        node_id=1,
+        inputs=inputs,
+        serialized_callable=None,
+        selected_executor=["local", {}],
+        call_before=[],
+        call_after=[],
+        node_name="task",
+        workflow_executor=["local", {}],
+    )
+
+    mock_executor._execute.assert_awaited_once()
+    assert node_result["status"] == Result.FAILED
+
+
 @pytest.mark.skip
 def test_post_process():
     """Test post-processing of results."""
@@ -277,121 +307,3 @@ async def test_postprocess_workflow(mocker):
     await _postprocess_workflow(result_object)
     assert result_object._status == Result.POSTPROCESSING_FAILED
     assert "OOM" in result_object._error
-
-
-@pytest.mark.skip
-def test_build_sublattice_graph():
-    @ct.electron
-    def task(x):
-        return x
-
-    @ct.lattice
-    def workflow(x):
-        return task(x)
-
-    parent_metadata = {
-        "executor": "parent_executor",
-        "executor_data": {},
-        "workflow_executor": "my_postprocessor",
-        "workflow_executor_data": {},
-        "deps": {"bash": None, "pip": None},
-        "call_before": [],
-        "call_after": [],
-        "results_dir": None,
-    }
-
-    json_lattice = _build_sublattice_graph(workflow, parent_metadata, 1)
-    lattice = Lattice.deserialize_from_json(json_lattice)
-
-    assert list(lattice.transport_graph._graph.nodes) == [0, 1]
-    for k in lattice.metadata.keys():
-        # results_dir will be deprecated soon
-        if k != "results_dir":
-            assert parent_metadata[k] == lattice.metadata[k]
-
-
-@pytest.mark.skip
-@pytest.mark.asyncio
-async def test_dispatch_sublattice(test_db, mocker):
-
-    # This is an integration test
-
-    from covalent_dispatcher._db import update
-
-    @ct.electron(executor="local")
-    def task(x):
-        return x
-
-    @ct.lattice(executor="local", workflow_executor="local")
-    def sub_workflow(x):
-        return task(x)
-
-    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
-
-    result_object = get_mock_result()
-    result_object._initialize_nodes()
-
-    update.persist(result_object)
-
-    serialized_callable = ct.TransportableObject(sub_workflow)
-    inputs = {"args": [ct.TransportableObject(2)], "kwargs": {}}
-
-    sub_dispatch_id = await _dispatch_sublattice(
-        parent_result_object=result_object,
-        parent_node_id=2,
-        parent_electron_id=1,
-        inputs=inputs,
-        serialized_callable=serialized_callable,
-        workflow_executor=["local", {}],
-    )
-    sub_result = get_result_object(sub_dispatch_id)
-    assert sub_result.dispatch_id == sub_dispatch_id
-
-    # check that sublattice inherits parent lattice's bash dep
-    sub_bash_dep = sub_result.lattice.metadata["deps"]["bash"]["attributes"]["commands"]
-    assert sub_bash_dep[0] == "ls"
-    assert sub_result._electron_id == 1
-
-    # check that sublattice's explicit bash dep overrides parent lattice's bash dep
-    sub_workflow.metadata["deps"]["bash"] = ct.DepsBash(["pwd"])
-    serialized_callable = ct.TransportableObject(sub_workflow)
-    sub_dispatch_id = await _dispatch_sublattice(
-        parent_result_object=result_object,
-        parent_node_id=2,
-        parent_electron_id=1,
-        inputs=inputs,
-        serialized_callable=serialized_callable,
-        workflow_executor=["local", {}],
-    )
-    sub_result = get_result_object(sub_dispatch_id)
-    assert sub_result.dispatch_id == sub_dispatch_id
-
-    # check that sublattice inherits parent lattice's bash dep
-    sub_bash_dep = sub_result.lattice.metadata["deps"]["bash"]["attributes"]["commands"]
-    assert sub_bash_dep[0] == "pwd"
-
-    # Check handling of invalid workflow executors
-
-    with pytest.raises(RuntimeError):
-        sub_dispatch_id = await _dispatch_sublattice(
-            parent_result_object=result_object,
-            parent_node_id=2,
-            parent_electron_id=1,
-            inputs=inputs,
-            serialized_callable=serialized_callable,
-            workflow_executor=["client", {}],
-        )
-
-    with pytest.raises(RuntimeError):
-        sub_dispatch_id = await _dispatch_sublattice(
-            parent_result_object=result_object,
-            parent_node_id=2,
-            parent_electron_id=1,
-            inputs=inputs,
-            serialized_callable=serialized_callable,
-            workflow_executor=["fake_executor", {}],
-        )

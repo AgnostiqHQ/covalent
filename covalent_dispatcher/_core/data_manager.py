@@ -280,7 +280,11 @@ async def _make_sublattice_dispatch(result_object: SRVResult, node_result: dict)
     node_id = node_result["node_id"]
     bg_output = await get_electron_attribute(result_object.dispatch_id, node_id, "output")
     json_lattice = json.loads(bg_output.json)
-    parent_node = result_object.lattice.transport_graph.get_node(node_id)
+    loop = asyncio.get_running_loop()
+    parent_node = await loop.run_in_executor(
+        dm_pool, result_object.lattice.transport_graph.get_node, node_id
+    )
+
     parent_electron_id = parent_node._electron_id
 
-    await make_dispatch(json_lattice, result_object, parent_electron_id)
+    return await make_dispatch(json_lattice, result_object, parent_electron_id)
