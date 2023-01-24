@@ -22,7 +22,12 @@
 
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
-from covalent._workflow.electron import Electron, to_decoded_electron_collection
+from covalent._workflow.electron import (
+    Electron,
+    _build_sublattice_graph,
+    to_decoded_electron_collection,
+)
+from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 from covalent.executor.executor_plugins.local import LocalExecutor
 
@@ -256,3 +261,82 @@ def test_autogen_dict_electrons():
     assert g.nodes[2]["value"].get_deserialized() == 5
     assert g.nodes[3]["value"].get_deserialized() == 7
     assert set(g.edges) == set([(1, 0, 0), (2, 1, 0), (3, 1, 0)])
+
+
+def test_build_sublattice_graph():
+    import json
+
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    parent_metadata = {
+        "executor": "parent_executor",
+        "executor_data": {},
+        "workflow_executor": "my_postprocessor",
+        "workflow_executor_data": {},
+        "deps": {"bash": None, "pip": None},
+        "call_before": [],
+        "call_after": [],
+        "results_dir": None,
+    }
+
+    json_lattice = _build_sublattice_graph(workflow, json.dumps(parent_metadata), 1)
+    lattice = Lattice.deserialize_from_json(json_lattice)
+
+    # Account for injected reconstruct electron
+    assert list(lattice.transport_graph._graph.nodes) == [0, 1, 2]
+    for k in lattice.metadata.keys():
+        # results_dir will be deprecated soon
+        if k != "results_dir":
+            assert parent_metadata[k] == lattice.metadata[k]
+
+
+def test_injected_sublattice_electrons():
+    import json
+
+    from covalent._shared_files.defaults import sublattice_prefix
+
+    @ct.electron
+    def task(x):
+        return x**2
+
+    @ct.lattice
+    def subworkflow(x):
+        return task(x)
+
+    @ct.lattice
+    def workflow(x):
+        return ct.electron(subworkflow)(x)
+
+    parent_metadata = {
+        "executor": "parent_executor",
+        "executor_data": {},
+        "workflow_executor": "my_postprocessor",
+        "workflow_executor_data": {},
+        "deps": {"bash": None, "pip": None},
+        "call_before": [],
+        "call_after": [],
+        "results_dir": None,
+    }
+
+    workflow.metadata = parent_metadata
+    workflow.build_graph(3)
+
+    tg = workflow.transport_graph
+    assert len(tg._graph.nodes) == 5
+
+    assert tg.get_node_value(0, "name").startswith(sublattice_prefix)
+
+    lat = tg.get_node_value(1, "value").get_deserialized()
+    assert lat.serialize_to_json() == subworkflow.serialize_to_json()
+
+    json_meta = tg.get_node_value(2, "value").get_deserialized()
+    assert json.dumps(parent_metadata) == json_meta
+
+    lat_arg = tg.get_node_value(3, "value").get_deserialized()
+    assert lat_arg == 3
