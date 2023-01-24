@@ -376,7 +376,7 @@ All of our base AWS executor images are available in the AWS public registries a
 
 .. code-block:: bash
 
-   aws ecr-public get-login-password --region <aws-region> | docker login --username AWS --password-stdin publc.ecr.aws
+   aws ecr-public get-login-password --region <aws-region> | docker login --username AWS --password-stdin public.ecr.aws
    docker pull public.ecr.aws/covalent/covalent-lambda-executor:stable
 
 
@@ -393,8 +393,6 @@ Once the lambda base executor image has been downloaded, users can build upon th
    # Dockerfile
 
    FROM public.ecr.aws/covalent/covalent-lambda-executor:stable as base
-
-   ARG LAMBDA_TASK_ROOT=/var/task
 
    RUN pip install --target ${LAMBDA_TASK_ROOT} numpy pandas scipy
 
@@ -419,7 +417,7 @@ After a successful build of the derived image, it needs to be uploaded to ECR so
 
 .. code-block:: bash
 
-   aws ecr create-repository --repository-name covalent/my-custom-lambda-executor
+   aws ecr create-repository --region <aws-region> --repository-name covalent/my-custom-lambda-executor
 
 
 To upload the derived image to this registry, we would need to tag our local image as per the AWS guide and push the image to the registry as described `here <https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html>`_. To push an image, first one needs to authenticate with AWS and login their docker client
