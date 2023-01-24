@@ -348,3 +348,30 @@ jobs:
           tags: |
             public.ecr.aws/covalent/covalent:${{ inputs.stable_version }}
             public.ecr.aws/covalent/covalent:stable
+
+      - name: Trigger AWS Plugins Base Executor Image Pre-Release
+        if: >
+          inputs.prerelease
+          && !inputs.stable_version
+          && github.event_name == 'schedule'
+        uses: AgnostiqHQ/covalent-aws-plugins/.github/workflows/docker.yml@develop
+        with:
+          prerelease: true
+
+      - name: Trigger AWS Lambda Base Executor Image Pre-Release
+        if: >
+          inputs.prerelease
+          && !inputs.stable_version
+          && github.event_name == 'schedule'
+        uses: AgnostiqHQ/covalent-awslambda-plugin/.github/workflows/docker.yml@develop
+        with:
+          prerelease: true
+
+      - name: Trigger AWS Braket Base Executor Image Pre-Release
+        if: >
+          inputs.prerelease
+          && !inputs.stable_version
+          && github.event_name == 'schedule'
+        uses: AgnostiqHQ/covalent-braket-plugin/.github/workflows/docker.yml@develop
+        with:
+          prerelease: true
