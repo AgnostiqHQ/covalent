@@ -9784,6 +9784,8 @@ const core = __nccwpck_require__(2186);
 const github = __nccwpck_require__(5438);
 const fs = __nccwpck_require__(7147);
 const readline = __nccwpck_require__(4521);
+const {EOL} = __nccwpck_require__(2037);
+
 try {
   const headVersion = fs
     .readFileSync(core.getInput("version-path"), "utf8")
@@ -9854,15 +9856,18 @@ try {
     fs.writeFileSync(core.getInput("changelog-path"), new_changelog, "utf8");
     fs.writeFileSync(core.getInput("version-path"), version[0], "utf8");
 
+    console.log('Old Changelog:')
+    console.log(changelog.split(EOL).slice(0,300).join(EOL))
     console.log('New Changelog:')
-    console.log(new_changelog)
+    console.log(new_changelog.split(EOL).slice(0,300).join(EOL))
     console.log('New Version:')
     console.log(version[0])
     console.log('Message:')
     console.log(message);
 
     core.setOutput("message", message);
-  }).catch((error) => {
+  })
+  .on('error', function(error) {
     core.setFailed(error.message);
   });
 } catch (error) {
