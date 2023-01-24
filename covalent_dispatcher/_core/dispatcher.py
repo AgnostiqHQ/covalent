@@ -39,7 +39,8 @@ from .data_manager import SRVResult
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
-NEW_RUNNER_ENABLED = get_config("dispatcher.use_legacy_runner") == "false"
+NEW_RUNNER_ENABLED = get_config("dispatcher.force_legacy_runner") == "false"
+POSTPROCESS_SEPARATELY = os.environ.get("COVALENT_POSTPROCESS_SEPARATELY") == "1"
 
 
 # Domain: dispatcher
