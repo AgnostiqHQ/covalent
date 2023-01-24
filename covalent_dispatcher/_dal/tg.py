@@ -23,7 +23,6 @@
 from typing import Any, Dict, List, Tuple
 
 import networkx as nx
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from covalent._shared_files import logger
@@ -31,7 +30,6 @@ from covalent._shared_files import logger
 from .._db.datastore import workflow_db
 from .._db.models import Electron as ElectronRecord
 from .._db.models import ElectronDependency as EdgeRecord
-from .._db.models import Lattice as LatticeRecord
 from .db_interfaces.tg_utils import (
     _all_edge_records,
     _child_records,
@@ -75,6 +73,16 @@ class _TransportGraph:
     def get_node_value(self, node_id: int, key: str, session: Session = None):
         node = self.get_node(node_id, session)
         return node.get_value(key, session)
+
+    def get_node_values(self, node_id: int, keys: List[str], session: Session = None):
+        node = self.get_node(node_id, session)
+        return node.get_values(keys, session)
+
+    def set_node_values(
+        self, node_id: int, keyvals: List[Tuple[str, Any]], session: Session = None
+    ):
+        node = self.get_node(node_id, session)
+        node.set_values(keyvals, session)
 
     def set_node_value(self, node_id: int, key: str, val: Any, session: Session = None):
         node = self.get_node(node_id, session)

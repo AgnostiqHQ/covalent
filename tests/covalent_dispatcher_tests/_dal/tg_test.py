@@ -20,6 +20,7 @@
 
 """Tests for DB-backed electron"""
 
+from datetime import datetime
 
 import pytest
 
@@ -122,8 +123,15 @@ def test_transport_graph_get_set(bare_mode, test_db, mocker):
     assert tg.get_node_value(0, "executor") == "local"
     assert tg.get_node_value(0, "executor_data") == le.to_dict()
 
+    assert tg.get_node_values(0, ["name", "executor"]) == {"name": "task", "executor": "local"}
+
     tg.set_node_value(1, "status", SDKResult.COMPLETED)
     assert tg.get_node_value(1, "status") == SDKResult.COMPLETED
+
+    ts = datetime.now()
+    tg.set_node_values(0, [("end_time", ts), ("status", SDKResult.COMPLETED)])
+    assert tg.get_node_value(0, "status") == SDKResult.COMPLETED
+    assert tg.get_node_value(0, "end_time") == ts
 
 
 def test_transport_graph_get_internal_graph_copy(test_db, mocker):
