@@ -89,7 +89,7 @@ jobs:
           github.event.inputs.stable_version
           && contains(env.PAUL_BLART, github.actor)
         id: stable-changelog
-        uses: ./.github/actions/stable-changelog
+        uses: AgnostiqHQ/covalent/.github/actions/stable-changelog@develop
         with:
           changelog-path: CHANGELOG.md
           version-path: VERSION
