@@ -109,12 +109,15 @@ def test_electron_get_set_value(test_db, mocker):
     assert e.get_value("status") == SDKResult.NEW_OBJ
     assert e.get_value("type") == "function"
 
+    assert e.get_values(["status", "type"]) == {"status": SDKResult.NEW_OBJ, "type": "function"}
+
     with test_db.session() as session:
         e.set_value("status", SDKResult.RUNNING, session)
         assert e.get_value("status", session) == SDKResult.RUNNING
 
-    e.set_value("output", 5)
-    assert e.get_value("output", None) == 5
+    e.set_values([("output", 5), ("status", SDKResult.COMPLETED)])
+    assert e.get_value("output") == 5
+    assert e.get_value("status") == SDKResult.COMPLETED
 
 
 def test_electron_get_no_refresh(test_db, mocker):

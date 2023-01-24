@@ -21,7 +21,7 @@
 """Base classe for server-side analogues of workflow data types"""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Union
+from typing import Any, Dict, List, Tuple, Union
 
 from sqlalchemy.orm import Session
 
@@ -131,3 +131,11 @@ class DispatchedObject(ABC):
             self.set_db_metadata(key, val, session)
         else:
             self.get_asset(key).store_data(val)
+
+    def get_values(self, keys: List[str], session: Session = None, refresh: bool = True):
+        return {key: self.get_value(key, session, refresh) for key in keys}
+
+    def set_values(self, keyvals: List[Tuple[str, Any]], session: Session = None):
+        for item in keyvals:
+            k, v = item
+            self.set_value(k, v, session)
