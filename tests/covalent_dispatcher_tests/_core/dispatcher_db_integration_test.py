@@ -321,7 +321,7 @@ async def test_get_initial_tasks_and_deps(mocker, test_db):
     assert initial_nodes == [1]
 
     # Account for injected postprocess electron
-    assert pending_parents == {0: 1, 1: 0, 2: 1, 3: 2}
+    assert pending_parents == {0: 1, 1: 0, 2: 1, 3: 3}
     assert num_tasks == len(result_object.lattice.transport_graph._graph.nodes)
 
 

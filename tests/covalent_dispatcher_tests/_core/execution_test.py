@@ -410,7 +410,6 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
     sdkres.lattice.set_metadata("workflow_executor", "client")
     sdkres._dispatch_id = dispatch_id
     sdkres._initialize_nodes()
-
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.utils.workflow_db", test_db)
@@ -420,6 +419,7 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
 
     result_object = get_mock_srvresult(sdkres, test_db)
 
+    result_object.lattice.transport_graph.set_node_value(3, "executor", "local")
     mock_unregister = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
@@ -458,7 +458,7 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
 
     result_object = get_mock_srvresult(sdkres, test_db)
-
+    result_object.lattice.transport_graph.set_node_value(3, "executor", "local")
     mock_unregister = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
