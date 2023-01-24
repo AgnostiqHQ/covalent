@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Fixed stable-changelog action removed `.catch` added `.on('error')`
+- Removed AWS base executor deployment from `release.yml`
+- Removed experimental tests from nightly test matrix (will be brought back but in different workflow)
+
 ### Removed
 
 - Slurm executor reference from qaoa tutorial since it's not compatible with conda env at the moment.
