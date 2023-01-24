@@ -128,7 +128,6 @@ async def test_run_abstract_task_exception_handling(mocker):
         node_name="test_node",
         abstract_inputs=inputs,
         selected_executor=["local", {}],
-        workflow_executor=["local", {}],
     )
 
     assert node_result["status"] == Result.FAILED
@@ -155,7 +154,6 @@ async def test_run_task_executor_exception_handling(mocker):
         call_before=[],
         call_after=[],
         node_name="test_node",
-        workflow_executor=["local", {}],
     )
 
     assert node_result["status"] == Result.FAILED
@@ -182,7 +180,6 @@ async def test_run_task_runtime_exception_handling(mocker):
         call_before=[],
         call_after=[],
         node_name="task",
-        workflow_executor=["local", {}],
     )
 
     mock_executor._execute.assert_awaited_once()
@@ -216,7 +213,6 @@ async def test_run_task_exception_handling(mocker):
         call_before=[],
         call_after=[],
         node_name="task",
-        workflow_executor=["local", {}],
     )
 
     mock_executor._execute.assert_awaited_once()

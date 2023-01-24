@@ -70,7 +70,6 @@ async def _run_abstract_task(
     node_name: str,
     abstract_inputs: Dict,
     selected_executor: Any,
-    workflow_executor: Any,
 ) -> None:
 
     # Resolve abstract task and inputs to their concrete (serialized) values
@@ -122,7 +121,6 @@ async def _run_abstract_task(
         call_before=call_before,
         call_after=call_after,
         inputs=task_input,
-        workflow_executor=workflow_executor,
     )
 
 
@@ -136,7 +134,6 @@ async def _run_task(
     call_before: List,
     call_after: List,
     node_name: str,
-    workflow_executor: Any,
 ) -> None:
     """
     Run a task with given inputs on the selected executor.
@@ -274,7 +271,6 @@ async def run_abstract_task(
     node_name: str,
     abstract_inputs: Dict,
     selected_executor: Any,
-    workflow_executor: Any,
 ) -> None:
 
     node_result = await _run_abstract_task(
@@ -283,7 +279,6 @@ async def run_abstract_task(
         node_name=node_name,
         abstract_inputs=abstract_inputs,
         selected_executor=selected_executor,
-        workflow_executor=workflow_executor,
     )
     await datasvc.update_node_result(dispatch_id, node_result)
 
@@ -384,7 +379,6 @@ async def _postprocess_workflow(result_object: SRVResult) -> SRVResult:
         call_before=[],
         call_after=[],
         inputs=post_processing_inputs,
-        workflow_executor=post_processor,
     )
 
     if post_process_result["status"] != Result.COMPLETED:

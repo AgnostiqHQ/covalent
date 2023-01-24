@@ -180,7 +180,6 @@ async def run_abstract_task(
     node_name: str,
     abstract_inputs: Dict,
     selected_executor: Any,
-    workflow_executor: Any,
 ) -> None:
 
     global _job_events
@@ -201,7 +200,6 @@ async def run_abstract_task(
                 node_name,
                 abstract_inputs,
                 selected_executor,
-                workflow_executor,
             )
             app_log.debug(f"Using legacy runner for task {dispatch_id}:{node_id}")
             asyncio.create_task(coro)

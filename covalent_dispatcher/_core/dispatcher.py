@@ -201,7 +201,6 @@ async def _submit_task(result_object, node_id):
                 selected_executor=[selected_executor, selected_executor_data],
                 node_name=node_name,
                 abstract_inputs=abs_task_input,
-                workflow_executor=post_processor,
             )
         else:
             app_log.debug(f"Using legacy runner for task {node_id}")
@@ -211,7 +210,6 @@ async def _submit_task(result_object, node_id):
                 selected_executor=[selected_executor, selected_executor_data],
                 node_name=node_name,
                 abstract_inputs=abs_task_input,
-                workflow_executor=post_processor,
             )
         asyncio.create_task(coro)
 

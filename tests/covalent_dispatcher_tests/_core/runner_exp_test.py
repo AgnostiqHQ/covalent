@@ -428,14 +428,12 @@ async def test_run_abstract_task(mocker):
     node_name = "task"
     abstract_inputs = {"args": [], "kwargs": {}}
     selected_executor = ["local", {}]
-    workflow_executor = selected_executor
     await run_abstract_task(
         dispatch_id,
         node_id,
         node_name,
         abstract_inputs,
         selected_executor,
-        workflow_executor,
     )
 
     mock_submit.assert_awaited()
@@ -461,7 +459,6 @@ async def test_run_abstract_task_handles_old_execs(mocker):
     node_name = "task"
     abstract_inputs = {"args": [], "kwargs": {}}
     selected_executor = ["local", {}]
-    workflow_executor = selected_executor
 
     await run_abstract_task(
         dispatch_id,
@@ -469,7 +466,6 @@ async def test_run_abstract_task_handles_old_execs(mocker):
         node_name,
         abstract_inputs,
         selected_executor,
-        workflow_executor,
     )
 
     mock_legacy_run.assert_called()
@@ -497,7 +493,6 @@ async def test_run_abstract_task_handles_sublattices(mocker):
     node_name = sublattice_prefix
     abstract_inputs = {"args": [], "kwargs": {}}
     selected_executor = ["local", {}]
-    workflow_executor = selected_executor
 
     await run_abstract_task(
         dispatch_id,
@@ -505,7 +500,6 @@ async def test_run_abstract_task_handles_sublattices(mocker):
         node_name,
         abstract_inputs,
         selected_executor,
-        workflow_executor,
     )
 
     mock_legacy_run.assert_called()
@@ -528,7 +522,6 @@ async def test_run_abstract_task_handles_bad_executors(mocker):
     node_name = sublattice_prefix
     abstract_inputs = {"args": [], "kwargs": {}}
     selected_executor = ["local", {}]
-    workflow_executor = selected_executor
 
     await run_abstract_task(
         dispatch_id,
@@ -536,7 +529,6 @@ async def test_run_abstract_task_handles_bad_executors(mocker):
         node_name,
         abstract_inputs,
         selected_executor,
-        workflow_executor,
     )
 
     mock_update.assert_awaited()
