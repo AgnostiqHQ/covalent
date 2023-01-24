@@ -18,5 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""Unit tests for redispatch utils module in dispatcher_plugins."""
 
-"""Helper functions for re-dispatching workflows."""
+
+def test_get_request_body():
+    pass

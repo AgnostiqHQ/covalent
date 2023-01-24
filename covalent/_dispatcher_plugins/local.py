@@ -30,6 +30,7 @@ from .._results_manager.results_manager import get_result
 from .._shared_files.config import get_config
 from .._workflow.lattice import Lattice
 from .base import BaseDispatcher
+from .redispatch_utils import _get_request_body
 
 
 class LocalDispatcher(BaseDispatcher):
@@ -153,7 +154,14 @@ class LocalDispatcher(BaseDispatcher):
         if replace_electrons is None:
             replace_electrons = {}
 
-        def func():
-            pass
+        def func(*new_args, **new_kwargs):
+            body = _get_request_body(
+                dispatch_id, new_args, new_kwargs, replace_electrons, reuse_previous_results
+            )
+
+            test_url = f"http://{dispatcher_addr}/api/redispatch"
+            r = requests.post(test_url, json=body)
+            r.raise_for_status()
+            return r.content.decode("utf-8").strip().replace('"', "")
 
         return func
