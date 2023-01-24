@@ -150,7 +150,12 @@ class LocalDispatcher(BaseDispatcher):
     ):
         def func(*new_args, **new_kwargs):
             body = redispatch_real(
-                dispatch_id, new_args, new_kwargs, replace_electrons, reuse_previous_results
+                dispatch_id,
+                dispatcher_addr,
+                new_args,
+                new_kwargs,
+                replace_electrons,
+                reuse_previous_results,
             )
 
             test_url = f"http://{dispatcher_addr}/api/redispatch"

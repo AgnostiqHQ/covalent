@@ -49,13 +49,14 @@ def _generate_electron_updates(dispatch_id, replace_electrons):
 
 def redispatch_real(
     dispatch_id: str,
+    dispatcher_addr: str,
     new_args=[],
     new_kwargs={},
     replace_electrons={},
     reuse_previous_results=False,
 ):
     if new_args or new_kwargs:
-        res = get_result(dispatch_id)
+        res = get_result(dispatch_id, dispatcher_addr=dispatcher_addr)
         lat = res.lattice
         lat.build_graph(*new_args, **new_kwargs)
         json_lattice = lat.serialize_to_json()
