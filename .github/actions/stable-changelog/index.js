@@ -71,6 +71,14 @@ try {
       .concat(message, changelog.slice(changelog.indexOf(lastRelease)));
     fs.writeFileSync(core.getInput("changelog-path"), new_changelog, "utf8");
     fs.writeFileSync(core.getInput("version-path"), version[0], "utf8");
+
+    console.log('New Changelog:')
+    console.log(new_changelog)
+    console.log('New Version:')
+    console.log(version[0])
+    console.log('Message:')
+    console.log(message);
+
     core.setOutput("message", message);
   }).catch((error) => {
     core.setFailed(error.message);
