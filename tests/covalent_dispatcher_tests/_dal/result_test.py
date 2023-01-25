@@ -114,13 +114,20 @@ def test_result_get_set_value(test_db, mocker):
         srvres = Result(record)
 
     assert srvres.status == SDKResult.NEW_OBJ
+
+    start_time = datetime.now()
+    end_time = datetime.now()
+
+    srvres._update_dispatch(
+        start_time=start_time,
+        end_time=end_time,
+        status=SDKResult.RUNNING,
+        error="RuntimeException",
+        result=5,
+    )
     srvres._status = SDKResult.RUNNING
     srvres._error = "RuntimeException"
     srvres._result = 5
-    start_time = datetime.now()
-    srvres._start_time = start_time
-    end_time = datetime.now()
-    srvres._end_time = end_time
     srvres.commit()
 
     assert srvres.start_time == start_time

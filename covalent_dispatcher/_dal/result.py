@@ -45,6 +45,26 @@ from .lattice import Lattice
 app_log = logger.app_log
 
 
+def get_status_filter(raw: str):
+    return Status(raw)
+
+
+def set_status_filter(stat: Status):
+    return str(stat)
+
+
+get_filters = {key: lambda x: x for key in METADATA_KEYS.union(ASSET_KEYS)}
+
+set_filters = {key: lambda x: x for key in METADATA_KEYS.union(ASSET_KEYS)}
+
+custom_get_filters = {"status": get_status_filter, "completed_electron_num": lambda x: x}
+
+custom_set_filters = {"status": set_status_filter, "completed_electron_num": lambda x: x}
+
+get_filters.update(custom_get_filters)
+set_filters.update(custom_set_filters)
+
+
 class Result(DispatchedObject):
     def __init__(self, record: models.Lattice, bare: bool = False):
         pure_metadata = _to_pure_meta(record)
@@ -161,6 +181,32 @@ class Result(DispatchedObject):
             if self._result is not None:
                 self.set_value("result", self._result, session)
                 self._result = None
+
+    def get_value(self, key: str, session: Session = None, refresh: bool = True):
+        return get_filters[key](super().get_value(key, session, refresh))
+
+    def set_value(self, key: str, val: Any, session: Session = None) -> None:
+        super().set_value(key, set_filters[key](val), session)
+
+    def _update_dispatch(
+        self,
+        start_time: datetime = None,
+        end_time: datetime = None,
+        status: "Status" = None,
+        error: str = None,
+        result: Any = None,
+    ):
+        with workflow_db.session() as session:
+            if start_time is not None:
+                self.set_value("start_time", start_time, session)
+            if end_time is not None:
+                self.set_value("end_time", end_time, session)
+            if status is not None:
+                self.set_value("status", status, session)
+            if error is not None:
+                self.set_value("error", error, session)
+            if result is not None:
+                self.set_value("result", result, session)
 
     def _update_node(
         self,
