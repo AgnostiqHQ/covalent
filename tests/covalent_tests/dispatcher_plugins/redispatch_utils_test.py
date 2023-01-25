@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Unit tests for redispatch utils module in dispatcher_plugins."""
+"""Unit/integration tests for redispatch utils module in dispatcher_plugins."""
 
 import pytest
 
@@ -27,6 +27,7 @@ from covalent._dispatcher_plugins.redispatch_utils import (
     _filter_null_metadata,
     _generate_electron_updates,
     _get_transportable_electron,
+    get_request_body,
 )
 from covalent._workflow.electron import Electron
 from covalent._workflow.transport import TransportableObject
@@ -86,14 +87,6 @@ def test_generate_electron_updates(mocker):
     def add(a, b):
         return a + b
 
-    @ct.lattice
-    def workflow():
-        pass
-
-    # Construct bound electrons, i.e. electron with non-null function and node_id
-    identity_electron = Electron(function=identity, node_id=1, metadata={"executor": "local"})
-    add_electron = Electron(function=add, node_id=2, metadata={"executor": "local"})
-
     electron_updates = _generate_electron_updates(
         "mock-dispatch-id",
         {
@@ -107,6 +100,45 @@ def test_generate_electron_updates(mocker):
     }
 
 
-def test_get_request_body():
+def test_integration_generate_electron_updates():
+    """Test the generate electron updates function."""
+
+    @ct.electron
+    def identity(a):
+        return a
+
+    @ct.electron
+    def add(a, b):
+        return a + b
+
+    electron_updates = _generate_electron_updates(
+        "mock-dispatch-id",
+        {
+            "mock_task_id_1": identity,
+            "mock_task_id_2": add,
+        },
+    )
+    assert electron_updates["mock_task_id_1"]["name"] == "identity"
+    assert electron_updates["mock_task_id_2"]["name"] == "add"
+
+
+def test_get_request_body_null_arguments():
     """Test the get request body function."""
-    pass
+
+    @ct.electron
+    def identity(a):
+        return a
+
+    @ct.electron
+    def add(a, b):
+        return a + b
+
+    response = get_request_body(
+        "mock-dispatch-id",
+    )
+    assert response == {
+        "json_lattice": None,
+        "dispatch_id": "mock-dispatch-id",
+        "electron_updates": {},
+        "reuse_previous_results": False,
+    }

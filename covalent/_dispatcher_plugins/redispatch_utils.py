@@ -49,7 +49,6 @@ def _generate_electron_updates(dispatch_id: str, replace_electrons: Dict[str, Ca
     """Generate transportable electron object and metadata for the replacement electrons."""
     with active_dispatch_info_manager.claim(DispatchInfo(dispatch_id)):
         electron_objects = {k: v() for k, v in replace_electrons.items()}
-
     return {k: _get_transportable_electron(v) for k, v in electron_objects.items()}
 
 
