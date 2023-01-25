@@ -30,6 +30,8 @@ import uuid
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
+import networkx as nx
+
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.util_classes import RESULT_STATUS
@@ -335,3 +337,10 @@ async def get_incomplete_tasks(dispatch_id: str, refresh: bool = True):
 async def get_incoming_edges(dispatch_id: str, node_id: int):
     result_object = get_result_object(dispatch_id)
     return result_object.lattice.transport_graph.get_incoming_edges(node_id)
+
+
+async def get_graph_nodes_links(dispatch_id: str) -> dict:
+    """Return the internal transport graph in NX node-link form"""
+    result_object = get_result_object(dispatch_id)
+    g = result_object.lattice.transport_graph.get_internal_graph_copy()
+    return nx.readwrite.node_link_data(g)

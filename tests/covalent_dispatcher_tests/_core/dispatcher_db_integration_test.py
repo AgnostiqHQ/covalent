@@ -359,7 +359,21 @@ async def test_get_initial_tasks_and_deps(mocker, test_db):
 
     sdkres = get_mock_result()
     result_object = get_mock_srvresult(sdkres, test_db)
-    num_tasks, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(result_object)
+    dispatch_id = result_object.dispatch_id
+
+    async def get_graph_nodes_links(dispatch_id: str) -> dict:
+        import networkx as nx
+
+        """Return the internal transport graph in NX node-link form"""
+        g = result_object.lattice.transport_graph.get_internal_graph_copy()
+        return nx.readwrite.node_link_data(g)
+
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_graph_nodes_links",
+        side_effect=get_graph_nodes_links,
+    )
+
+    num_tasks, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(dispatch_id)
 
     assert initial_nodes == [1]
 
