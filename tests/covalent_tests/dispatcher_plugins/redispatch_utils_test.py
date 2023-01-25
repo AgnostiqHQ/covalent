@@ -28,7 +28,6 @@ from covalent._dispatcher_plugins.redispatch_utils import (
     _generate_electron_updates,
     _get_transportable_electron,
 )
-from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._workflow.electron import Electron
 from covalent._workflow.transport import TransportableObject
 
@@ -95,14 +94,13 @@ def test_generate_electron_updates(mocker):
     identity_electron = Electron(function=identity, node_id=1, metadata={"executor": "local"})
     add_electron = Electron(function=add, node_id=2, metadata={"executor": "local"})
 
-    with active_lattice_manager.claim(workflow):
-        electron_updates = _generate_electron_updates(
-            "mock-dispatch-id",
-            {
-                "mock_task_id_1": identity,
-                "mock_task_id_2": add,
-            },
-        )
+    electron_updates = _generate_electron_updates(
+        "mock-dispatch-id",
+        {
+            "mock_task_id_1": identity,
+            "mock_task_id_2": add,
+        },
+    )
     assert electron_updates == {
         "mock_task_id_1": "mock-transportable-electron-1",
         "mock_task_id_2": "mock-transportable-electron-2",
