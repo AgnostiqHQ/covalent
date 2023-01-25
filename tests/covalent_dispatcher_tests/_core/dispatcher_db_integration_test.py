@@ -248,6 +248,8 @@ async def test_get_abstract_task_inputs(mocker, test_db):
 async def test_handle_completed_node(mocker, test_db):
     """Unit test for completed node handler"""
 
+    from covalent_dispatcher._core.dispatcher import _initialize_caches, _pending_parents
+
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
@@ -272,15 +274,19 @@ async def test_handle_completed_node(mocker, test_db):
     pending_parents[1] = 0
     pending_parents[2] = 1
 
-    mock_upsert_lattice = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
-    )
+    await _initialize_caches(result_object.dispatch_id, pending_parents)
 
     node_result = {"node_id": 1, "status": Result.COMPLETED}
+    assert await _pending_parents.get_pending(result_object.dispatch_id, 0) == 1
+    assert await _pending_parents.get_pending(result_object.dispatch_id, 1) == 0
+    assert await _pending_parents.get_pending(result_object.dispatch_id, 2) == 1
 
-    next_nodes = await _handle_completed_node(result_object.dispatch_id, 1, pending_parents)
+    next_nodes = await _handle_completed_node(result_object.dispatch_id, 1)
     assert next_nodes == [0]
-    assert pending_parents == {0: 0, 1: 0, 2: 1}
+
+    assert await _pending_parents.get_pending(result_object.dispatch_id, 0) == 0
+    assert await _pending_parents.get_pending(result_object.dispatch_id, 1) == 0
+    assert await _pending_parents.get_pending(result_object.dispatch_id, 2) == 1
 
 
 @pytest.mark.asyncio

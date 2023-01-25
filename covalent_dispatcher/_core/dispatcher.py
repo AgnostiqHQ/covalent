@@ -36,6 +36,7 @@ from covalent._shared_files.util_classes import RESULT_STATUS
 
 from . import data_manager as datasvc
 from . import runner, runner_exp
+from .dispatcher_modules.caches import _pending_parents, _unresolved_tasks
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -81,13 +82,15 @@ async def _get_abstract_task_inputs(dispatch_id: str, node_id: int, node_name: s
 
 
 # Domain: dispatcher
-async def _handle_completed_node(dispatch_id: str, node_id: int, pending_parents: Dict):
+async def _handle_completed_node(dispatch_id: str, node_id: int):
 
     ready_nodes = []
     app_log.debug(f"Node {node_id} completed")
     for child in await datasvc.get_node_successors(dispatch_id, node_id):
-        pending_parents[child] -= 1
-        if pending_parents[child] < 1:
+        now_pending = await _pending_parents.get_pending(dispatch_id, child)
+        await _pending_parents.decrement(dispatch_id, child)
+        now_pending = await _pending_parents.get_pending(dispatch_id, child)
+        if now_pending < 1:
             app_log.debug(f"Queuing node {child} for execution")
             ready_nodes.append(child)
 
@@ -221,16 +224,15 @@ async def _run_planned_workflow(dispatch_id: str, status_queue: asyncio.Queue) -
 
     tasks_left, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(dispatch_id)
 
-    unresolved_tasks = 0
-    resolved_tasks = 0
+    await _initialize_caches(dispatch_id, pending_parents)
 
     for node_id in initial_nodes:
-        unresolved_tasks += 1
+        await _unresolved_tasks.increment(dispatch_id)
         await _submit_task(dispatch_id, node_id)
 
-    while unresolved_tasks > 0:
+    while unresolved := await _unresolved_tasks.get_unresolved(dispatch_id) > 0:
         app_log.debug(f"{tasks_left} tasks left to complete")
-        app_log.debug(f"Waiting to hear from {unresolved_tasks} tasks")
+        app_log.debug(f"Waiting to hear from {unresolved} tasks")
         node_id, node_status, detail = await status_queue.get()
 
         app_log.debug(f"Received node status update {node_id}: {node_status}")
@@ -244,13 +246,13 @@ async def _run_planned_workflow(dispatch_id: str, status_queue: asyncio.Queue) -
             app_log.debug(f"Running sublattice dispatch {sub_dispatch_id}")
             continue
 
-        unresolved_tasks -= 1
+        await _unresolved_tasks.decrement(dispatch_id)
 
         if node_status == RESULT_STATUS.COMPLETED:
             tasks_left -= 1
-            ready_nodes = await _handle_completed_node(dispatch_id, node_id, pending_parents)
+            ready_nodes = await _handle_completed_node(dispatch_id, node_id)
             for node_id in ready_nodes:
-                unresolved_tasks += 1
+                await _unresolved_tasks.increment(dispatch_id)
                 await _submit_task(dispatch_id, node_id)
 
         if node_status == RESULT_STATUS.FAILED:
@@ -391,3 +393,10 @@ async def _finalize_dispatch(dispatch_id: str):
 
     result_info = await datasvc.get_dispatch_attributes(dispatch_id, ["status"])
     return result_info["status"]
+
+
+async def _initialize_caches(dispatch_id, pending_parents):
+    for node_id, indegree in pending_parents.items():
+        await _pending_parents.set_pending(dispatch_id, node_id, indegree)
+
+    await _unresolved_tasks.set_unresolved(dispatch_id, 0)
