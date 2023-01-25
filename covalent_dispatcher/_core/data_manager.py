@@ -28,7 +28,7 @@ import json
 import traceback
 import uuid
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any
+from typing import Any, List
 
 import networkx as nx
 
@@ -289,7 +289,7 @@ async def _make_sublattice_dispatch(result_object: SRVResult, node_result: dict)
 
 # Common Result object queries
 
-# Lattice-level
+# Dispatch
 
 
 def generate_dispatch_result(
@@ -318,6 +318,22 @@ async def update_dispatch_result(dispatch_id, dispatch_result):
     await loop.run_in_executor(
         dm_pool,
         update_partial,
+    )
+
+
+def _get_dispatch_attributes_sync(dispatch_id: str, keys: List[str], refresh: bool = True) -> Any:
+    result_object = get_result_object(dispatch_id)
+    return result_object.get_values(keys, refresh=refresh)
+
+
+async def get_dispatch_attributes(dispatch_id: str, keys: List[str], refresh: bool = True) -> Any:
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(
+        dm_pool,
+        _get_dispatch_attributes_sync,
+        dispatch_id,
+        keys,
+        refresh,
     )
 
 

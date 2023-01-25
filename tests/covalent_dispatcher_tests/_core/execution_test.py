@@ -289,9 +289,9 @@ async def test_run_workflow_with_failing_nonleaf(mocker, test_db):
         return_value={"failed": [(0, "failing_task")], "cancelled": []},
     )
 
-    result_object = await run_workflow(result_object)
+    status = await run_workflow(result_object.dispatch_id)
     mock_unregister.assert_called_with(result_object.dispatch_id)
-    assert result_object.status == Result.FAILED
+    assert status == Result.FAILED
     mock_get_incomplete_nodes.assert_awaited()
     assert result_object.error == "The following tasks failed:\n0: failing_task"
 
@@ -347,9 +347,9 @@ async def test_run_workflow_with_failing_leaf(mocker, test_db):
         return_value=[(0, "failing_task")],
     )
 
-    result_object = await run_workflow(result_object)
+    status = await run_workflow(result_object.dispatch_id)
     mock_unregister.assert_called_with(result_object.dispatch_id)
-    assert result_object.status == Result.FAILED
+    assert status == Result.FAILED
     assert result_object.error == "The following tasks failed:\n0: failing_task"
 
 
@@ -393,10 +393,10 @@ async def test_run_workflow_does_not_deserialize(mocker):
 
     mock_to_deserialize = mocker.patch("covalent.TransportableObject.get_deserialized")
 
-    result_object = await run_workflow(result_object)
+    status = await run_workflow(result_object.dispatch_id)
 
     mock_to_deserialize.assert_not_called()
-    assert result_object.status == Result.COMPLETED
+    assert status == Result.COMPLETED
 
 
 @pytest.mark.asyncio
@@ -434,9 +434,9 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
     mocker.patch("covalent_dispatcher._core.dispatcher.POSTPROCESS_SEPARATELY", True)
 
     update.persist(result_object)
-    result_object = await run_workflow(result_object)
+    status = await run_workflow(result_object.dispatch_id)
     mock_unregister.assert_called_with(result_object.dispatch_id)
-    assert result_object.status == Result.PENDING_POSTPROCESSING
+    assert status == Result.PENDING_POSTPROCESSING
 
 
 @pytest.mark.asyncio
@@ -478,18 +478,18 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
 
     result_object.lattice.set_value("workflow_executor", "bogus")
 
-    result_object = await run_workflow(result_object)
+    status = await run_workflow(result_object.dispatch_id)
     mock_unregister.assert_called_with(result_object.dispatch_id)
 
-    assert result_object.status == Result.POSTPROCESSING_FAILED
+    assert status == Result.POSTPROCESSING_FAILED
 
     result_object.lattice.set_value("workflow_function", ct.TransportableObject(failing_workflow))
     result_object.lattice.set_value("workflow_executor", "local")
 
-    result_object = await run_workflow(result_object)
+    status = await run_workflow(result_object.dispatch_id)
     mock_unregister.assert_called_with(result_object.dispatch_id)
 
-    assert result_object.status == Result.POSTPROCESSING_FAILED
+    assert status == Result.POSTPROCESSING_FAILED
 
 
 @pytest.mark.skip(reason="Obsolete, to be removed soon")

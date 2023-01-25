@@ -377,7 +377,7 @@ async def test_run_dispatch(mocker, test_db):
     )
     mock_run = mocker.patch("covalent_dispatcher._core.dispatcher.run_workflow")
     run_dispatch(res.dispatch_id)
-    mock_run.assert_called_with(res)
+    mock_run.assert_called_with(res.dispatch_id)
 
 
 @pytest.mark.asyncio
@@ -396,9 +396,9 @@ async def test_run_workflow_normal(mocker, test_db):
     msg_queue = asyncio.Queue()
     mock_status_queues = {result_object.dispatch_id: msg_queue}
     mocker.patch("covalent_dispatcher._core.dispatcher._status_queues", mock_status_queues)
-    mocker.patch("covalent_dispatcher._core.dispatcher._plan_workflow")
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher._run_planned_workflow", return_value=result_object
+        "covalent_dispatcher._core.dispatcher._run_planned_workflow",
+        return_value=Result.COMPLETED,
     )
     mock_persist = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.persist_result")
     mock_unregister = mocker.patch(
@@ -407,7 +407,17 @@ async def test_run_workflow_normal(mocker, test_db):
     mock_update_dispatch_result = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.update_dispatch_result"
     )
-    await run_workflow(result_object)
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_result_object",
+        return_value=result_object,
+    )
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_dispatch_attributes",
+        return_value={"status": Result.NEW_OBJ},
+    )
+
+    dispatch_status = await run_workflow(result_object.dispatch_id)
+    assert dispatch_status == Result.COMPLETED
 
     mock_persist.assert_awaited_with(result_object.dispatch_id)
     assert result_object.dispatch_id not in mock_status_queues
@@ -434,11 +444,20 @@ async def test_run_completed_workflow(mocker, test_db):
     )
     mock_plan = mocker.patch("covalent_dispatcher._core.dispatcher._plan_workflow")
     mock_run_planned_workflow = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._run_planned_workflow", return_value=result_object
+        "covalent_dispatcher._core.dispatcher._run_planned_workflow",
+        return_value=Result.COMPLETED,
     )
     mock_persist = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.persist_result")
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_result_object",
+        return_value=result_object,
+    )
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_dispatch_attributes",
+        return_value={"status": Result.COMPLETED},
+    )
 
-    await run_workflow(result_object)
+    await run_workflow(result_object.dispatch_id)
 
     mock_plan.assert_not_called()
     mock_unregister.assert_called_with(result_object.dispatch_id)
@@ -466,7 +485,6 @@ async def test_run_workflow_exception(mocker, test_db):
     mocker.patch("covalent_dispatcher._core.dispatcher._plan_workflow")
     mocker.patch(
         "covalent_dispatcher._core.dispatcher._run_planned_workflow",
-        return_value=result_object,
         side_effect=RuntimeError("Error"),
     )
     mock_persist = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.persist_result")
@@ -478,9 +496,18 @@ async def test_run_workflow_exception(mocker, test_db):
         "covalent_dispatcher._core.dispatcher.datasvc.update_dispatch_result",
         mock_update,
     )
-    result = await run_workflow(result_object)
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_result_object",
+        return_value=result_object,
+    )
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_dispatch_attributes",
+        return_value={"status": Result.NEW_OBJ},
+    )
 
-    assert result.status == Result.FAILED
+    status = await run_workflow(result_object.dispatch_id)
+
+    assert status == Result.FAILED
     mock_persist.assert_awaited_with(result_object.dispatch_id)
     mock_unregister.assert_called_with(result_object.dispatch_id)
     assert result_object.dispatch_id not in mock_status_queues
@@ -520,7 +547,7 @@ async def test_run_planned_workflow_cancelled_update(mocker, test_db):
     mock_finalize = mocker.patch("covalent_dispatcher._core.dispatcher._finalize_dispatch")
     status_queue = asyncio.Queue()
     status_queue.put_nowait((0, Result.CANCELLED, {}))
-    await _run_planned_workflow(result_object, status_queue)
+    await _run_planned_workflow(result_object.dispatch_id, status_queue)
     assert mock_submit_task.await_count == 1
     mock_handle_cancelled.assert_awaited_with(result_object.dispatch_id, 0)
     mock_finalize.assert_awaited()
@@ -561,7 +588,7 @@ async def test_run_planned_workflow_failed_update(mocker, test_db):
 
     status_queue = asyncio.Queue()
     status_queue.put_nowait((0, Result.FAILED, {}))
-    await _run_planned_workflow(result_object, status_queue)
+    await _run_planned_workflow(result_object.dispatch_id, status_queue)
     assert mock_submit_task.await_count == 1
     mock_handle_failed.assert_awaited_with(result_object.dispatch_id, 0)
     mock_finalize.assert_awaited()

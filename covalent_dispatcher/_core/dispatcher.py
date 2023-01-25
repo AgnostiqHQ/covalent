@@ -30,7 +30,6 @@ from typing import Dict, Tuple
 
 import networkx as nx
 
-from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.defaults import parameter_prefix
@@ -38,7 +37,6 @@ from covalent._shared_files.util_classes import RESULT_STATUS
 
 from . import data_manager as datasvc
 from . import runner, runner_exp
-from .data_manager import SRVResult
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -54,10 +52,9 @@ async def _get_abstract_task_inputs(dispatch_id: str, node_id: int, node_name: s
     """Return placeholders for the required inputs for a task execution.
 
     Args:
+        dispatch_id: id of the current dispatch
         node_id: Node id of this task in the transport graph.
         node_name: Name of the node.
-        result_object: Result object to be used to update and store execution related
-                       info including the results.
 
     Returns: inputs: Input dictionary to be passed to the task with
         `node_id` placeholders for args, kwargs. These are to be
@@ -71,7 +68,6 @@ async def _get_abstract_task_inputs(dispatch_id: str, node_id: int, node_name: s
         parent = edge["source"]
 
         d = edge["attrs"]
-        # value = result_object.lattice.transport_graph.get_node_value(parent, "output")
 
         if not d.get("wait_for"):
             if d["param_type"] == "arg":
@@ -104,16 +100,12 @@ async def _handle_completed_node(dispatch_id: str, node_id: int, pending_parents
 async def _handle_failed_node(dispatch_id: str, node_id: int):
     app_log.debug(f"Node {dispatch_id}:{node_id} failed")
     app_log.debug("8A: Failed node upsert statement (run_planned_workflow)")
-    # result_object.commit()
-    # datasvc.upsert_lattice_data(result_object.dispatch_id)
 
 
 # Domain: dispatcher
 async def _handle_cancelled_node(dispatch_id: str, node_id: int):
     app_log.debug(f"Node {dispatch_id}:{node_id} cancelled")
     app_log.debug("9: Cancelled node upsert statement (run_planned_workflow)")
-    # datasvc.upsert_lattice_data(result_object.dispatch_id)
-    # result_object.commit()
 
 
 # Domain: dispatcher
@@ -135,7 +127,6 @@ async def _get_initial_tasks_and_deps(dispatch_id: str) -> Tuple[int, int, Dict]
     g_node_link = await datasvc.get_graph_nodes_links(dispatch_id)
     g = nx.readwrite.node_link_graph(g_node_link)
 
-    #    g = result_object.lattice.transport_graph._graph
     for node_id, d in g.in_degree():
         app_log.debug(f"Node {node_id} has {d} parents")
 
@@ -165,7 +156,7 @@ async def _submit_task(dispatch_id: str, node_id: int):
             "node_id": node_id,
             "start_time": datetime.now(timezone.utc),
             "end_time": datetime.now(timezone.utc),
-            "status": Result.COMPLETED,
+            "status": RESULT_STATUS.COMPLETED,
             "output": output,
         }
         await datasvc.update_node_result(dispatch_id, node_result)
@@ -206,9 +197,7 @@ async def _submit_task(dispatch_id: str, node_id: int):
 
 
 # Domain: dispatcher
-async def _run_planned_workflow(
-    result_object: SRVResult, status_queue: asyncio.Queue
-) -> SRVResult:
+async def _run_planned_workflow(dispatch_id: str, status_queue: asyncio.Queue) -> RESULT_STATUS:
     """
     Run the workflow in the topological order of their position on the
     transport graph. Does this in an asynchronous manner so that nodes
@@ -216,24 +205,20 @@ async def _run_planned_workflow(
     of the whole workflow execution.
 
     Args:
-        result_object: Result object being used for current dispatch
+        dispatch_id: id of the current dispatch
         status_queue: message queue for notifying the main loop of status updates
 
     Returns:
         None
     """
 
-    dispatch_id = result_object.dispatch_id
-
     app_log.debug("3: Inside run_planned_workflow (run_planned_workflow).")
     dispatch_result = datasvc.generate_dispatch_result(
-        dispatch_id, start_time=datetime.now(timezone.utc), status=Result.RUNNING
+        dispatch_id, start_time=datetime.now(timezone.utc), status=RESULT_STATUS.RUNNING
     )
     await datasvc.update_dispatch_result(dispatch_id, dispatch_result)
 
-    app_log.debug(
-        f"4: Workflow status changed to running {result_object.dispatch_id} (run_planned_workflow)."
-    )
+    app_log.debug(f"4: Workflow status changed to running {dispatch_id} (run_planned_workflow).")
     app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
 
     tasks_left, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(dispatch_id)
@@ -252,7 +237,7 @@ async def _run_planned_workflow(
 
         app_log.debug(f"Received node status update {node_id}: {node_status}")
 
-        if node_status == Result.RUNNING:
+        if node_status == RESULT_STATUS.RUNNING:
             continue
 
         if node_status == RESULT_STATUS.DISPATCHING:
@@ -263,34 +248,32 @@ async def _run_planned_workflow(
 
         unresolved_tasks -= 1
 
-        if node_status == Result.COMPLETED:
+        if node_status == RESULT_STATUS.COMPLETED:
             tasks_left -= 1
             ready_nodes = await _handle_completed_node(dispatch_id, node_id, pending_parents)
             for node_id in ready_nodes:
                 unresolved_tasks += 1
                 await _submit_task(dispatch_id, node_id)
 
-        if node_status == Result.FAILED:
+        if node_status == RESULT_STATUS.FAILED:
             await _handle_failed_node(dispatch_id, node_id)
             continue
 
-        if node_status == Result.CANCELLED:
+        if node_status == RESULT_STATUS.CANCELLED:
             await _handle_cancelled_node(dispatch_id, node_id)
             continue
 
-    await _finalize_dispatch(dispatch_id)
-
-    return result_object
+    return await _finalize_dispatch(dispatch_id)
 
 
-def _plan_workflow(result_object: SRVResult) -> None:
+async def _plan_workflow(dispatch_id: str) -> None:
     """
     Function to plan a workflow according to a schedule.
     Planning means to decide which executors (along with their arguments) will
     be used by each node.
 
     Args:
-        result_object: Result object being used for current dispatch
+        dispatch_id: id of current dispatch
 
     Returns:
         None
@@ -299,7 +282,7 @@ def _plan_workflow(result_object: SRVResult) -> None:
     pass
 
 
-async def run_workflow(result_object: SRVResult) -> SRVResult:
+async def run_workflow(dispatch_id: str) -> RESULT_STATUS:
     """
     Plan and run the workflow by loading the result object corresponding to the
     dispatch id and retrieving essential information from it.
@@ -316,15 +299,16 @@ async def run_workflow(result_object: SRVResult) -> SRVResult:
 
     app_log.debug("Inside run_workflow.")
 
-    if result_object.status == Result.COMPLETED:
-        datasvc.finalize_dispatch(result_object.dispatch_id)
-        return result_object
+    result_info = await datasvc.get_dispatch_attributes(dispatch_id, ["status"])
+
+    if result_info["status"] == RESULT_STATUS.COMPLETED:
+        datasvc.finalize_dispatch(dispatch_id)
+        return RESULT_STATUS.COMPLETED
 
     try:
-        _plan_workflow(result_object)
-        dispatch_id = result_object.dispatch_id
+        await _plan_workflow(dispatch_id)
         _status_queues[dispatch_id] = asyncio.Queue()
-        result_object = await _run_planned_workflow(result_object, _status_queues[dispatch_id])
+        dispatch_status = await _run_planned_workflow(dispatch_id, _status_queues[dispatch_id])
 
     except Exception as ex:
 
@@ -334,15 +318,17 @@ async def run_workflow(result_object: SRVResult) -> SRVResult:
         dispatch_result = datasvc.generate_dispatch_result(
             dispatch_id,
             end_time=datetime.now(timezone.utc),
-            status=Result.FAILED,
+            status=RESULT_STATUS.FAILED,
             error=error_msg,
         )
+        dispatch_status = RESULT_STATUS.FAILED
         await datasvc.update_dispatch_result(dispatch_id, dispatch_result)
     finally:
-        await datasvc.persist_result(result_object.dispatch_id)
-        datasvc.finalize_dispatch(result_object.dispatch_id)
-        _status_queues.pop(result_object.dispatch_id)
-    return result_object
+        await datasvc.persist_result(dispatch_id)
+        datasvc.finalize_dispatch(dispatch_id)
+        _status_queues.pop(dispatch_id)
+
+    return dispatch_status
 
 
 # Domain: dispatcher
@@ -359,13 +345,12 @@ def cancel_workflow(dispatch_id: str) -> None:
     """
 
     # shared_var = Variable(dispatch_id)
-    # shared_var.set(str(Result.CANCELLED))
+    # shared_var.set(str(RESULT_STATUS.CANCELLED))
     pass
 
 
 def run_dispatch(dispatch_id: str) -> asyncio.Future:
-    result_object = datasvc.get_result_object(dispatch_id)
-    return asyncio.create_task(run_workflow(result_object))
+    return asyncio.create_task(run_workflow(dispatch_id))
 
 
 async def notify_node_status(
@@ -393,7 +378,7 @@ async def _finalize_dispatch(dispatch_id: str):
         failed_nodes_msg = "\n".join(failed_nodes)
         error_msg = "The following tasks failed:\n" + failed_nodes_msg
         ts = datetime.now(timezone.utc)
-        status = Result.FAILED if failed else Result.CANCELLED
+        status = RESULT_STATUS.FAILED if failed else RESULT_STATUS.CANCELLED
         result_update = datasvc.generate_dispatch_result(
             dispatch_id,
             status=status,
@@ -404,8 +389,10 @@ async def _finalize_dispatch(dispatch_id: str):
 
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
 
-    result_object = datasvc.get_result_object(dispatch_id)
     if POSTPROCESS_SEPARATELY:
-        result_object = await runner.postprocess_workflow(dispatch_id)
+        await runner.postprocess_workflow(dispatch_id)
     else:
         app_log.debug("Workflow already postprocessed")
+
+    result_info = await datasvc.get_dispatch_attributes(dispatch_id, ["status"])
+    return result_info["status"]
