@@ -21,6 +21,31 @@
 
 """Unit tests for local module in dispatcher_plugins."""
 
+import pytest
 
-def test_redispatch():
-    pass
+from covalent._dispatcher_plugins.local import LocalDispatcher
+
+
+@pytest.mark.parametrize(
+    "replace_electrons,expected_arg",
+    [(None, {}), ({"mock-electron-1": "mock-electron-2"}, {"mock-electron-1": "mock-electron-2"})],
+)
+def test_redispatch(mocker, replace_electrons, expected_arg):
+    """Test the local re-dispatch function."""
+
+    mocker.patch("covalent._dispatcher_plugins.local.get_config", return_value="mock-config")
+    requests_mock = mocker.patch("covalent._dispatcher_plugins.local.requests")
+    get_request_body_mock = mocker.patch(
+        "covalent._dispatcher_plugins.local.get_request_body", return_value={"mock-request-body"}
+    )
+
+    local_dispatcher = LocalDispatcher()
+    func = local_dispatcher.redispatch("mock-dispatch-id", replace_electrons=replace_electrons)
+    func()
+    requests_mock.post.assert_called_once_with(
+        "http://mock-config:mock-config/api/redispatch", json={"mock-request-body"}
+    )
+    requests_mock.post().raise_for_status.assert_called_once()
+    requests_mock.post().content.decode().strip().replace.assert_called_once_with('"', "")
+
+    get_request_body_mock.assert_called_once_with("mock-dispatch-id", (), {}, expected_arg, False)
