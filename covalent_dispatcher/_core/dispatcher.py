@@ -213,55 +213,12 @@ async def _run_planned_workflow(dispatch_id: str, status_queue: asyncio.Queue) -
         None
     """
 
-    app_log.debug("3: Inside run_planned_workflow (run_planned_workflow).")
-    dispatch_result = datasvc.generate_dispatch_result(
-        dispatch_id, start_time=datetime.now(timezone.utc), status=RESULT_STATUS.RUNNING
-    )
-    await datasvc.update_dispatch_result(dispatch_id, dispatch_result)
-
-    app_log.debug(f"4: Workflow status changed to running {dispatch_id} (run_planned_workflow).")
-    app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
-
-    tasks_left, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(dispatch_id)
-
-    await _initialize_caches(dispatch_id, pending_parents)
-
-    for node_id in initial_nodes:
-        await _unresolved_tasks.increment(dispatch_id)
-        await _submit_task(dispatch_id, node_id)
+    await _submit_initial_tasks(dispatch_id)
 
     while unresolved := await _unresolved_tasks.get_unresolved(dispatch_id) > 0:
-        app_log.debug(f"{tasks_left} tasks left to complete")
         app_log.debug(f"Waiting to hear from {unresolved} tasks")
         node_id, node_status, detail = await status_queue.get()
-
-        app_log.debug(f"Received node status update {node_id}: {node_status}")
-
-        if node_status == RESULT_STATUS.RUNNING:
-            continue
-
-        if node_status == RESULT_STATUS.DISPATCHING:
-            sub_dispatch_id = detail["sub_dispatch_id"]
-            run_dispatch(sub_dispatch_id)
-            app_log.debug(f"Running sublattice dispatch {sub_dispatch_id}")
-            continue
-
-        await _unresolved_tasks.decrement(dispatch_id)
-
-        if node_status == RESULT_STATUS.COMPLETED:
-            tasks_left -= 1
-            ready_nodes = await _handle_completed_node(dispatch_id, node_id)
-            for node_id in ready_nodes:
-                await _unresolved_tasks.increment(dispatch_id)
-                await _submit_task(dispatch_id, node_id)
-
-        if node_status == RESULT_STATUS.FAILED:
-            await _handle_failed_node(dispatch_id, node_id)
-            continue
-
-        if node_status == RESULT_STATUS.CANCELLED:
-            await _handle_cancelled_node(dispatch_id, node_id)
-            continue
+        await _handle_node_status_update(dispatch_id, node_id, node_status, detail)
 
     return await _finalize_dispatch(dispatch_id)
 
@@ -400,3 +357,55 @@ async def _initialize_caches(dispatch_id, pending_parents):
         await _pending_parents.set_pending(dispatch_id, node_id, indegree)
 
     await _unresolved_tasks.set_unresolved(dispatch_id, 0)
+
+
+async def _submit_initial_tasks(dispatch_id: str):
+    app_log.debug("3: Inside run_planned_workflow (run_planned_workflow).")
+    dispatch_result = datasvc.generate_dispatch_result(
+        dispatch_id, start_time=datetime.now(timezone.utc), status=RESULT_STATUS.RUNNING
+    )
+    await datasvc.update_dispatch_result(dispatch_id, dispatch_result)
+
+    app_log.debug(f"4: Workflow status changed to running {dispatch_id} (run_planned_workflow).")
+    app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
+
+    tasks_left, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(dispatch_id)
+
+    await _initialize_caches(dispatch_id, pending_parents)
+
+    for node_id in initial_nodes:
+        await _unresolved_tasks.increment(dispatch_id)
+        await _submit_task(dispatch_id, node_id)
+
+
+async def _handle_node_status_update(dispatch_id, node_id, node_status, detail):
+
+    app_log.debug(f"Received node status update {node_id}: {node_status}")
+
+    if node_status == RESULT_STATUS.RUNNING:
+        return
+
+    if node_status == RESULT_STATUS.DISPATCHING:
+        sub_dispatch_id = detail["sub_dispatch_id"]
+        run_dispatch(sub_dispatch_id)
+        app_log.debug(f"Running sublattice dispatch {sub_dispatch_id}")
+
+        return
+
+    # Terminal node statuses
+    await _unresolved_tasks.decrement(dispatch_id)
+
+    if node_status == RESULT_STATUS.COMPLETED:
+        ready_nodes = await _handle_completed_node(dispatch_id, node_id)
+        for node_id in ready_nodes:
+            await _unresolved_tasks.increment(dispatch_id)
+            await _submit_task(dispatch_id, node_id)
+        return
+
+    if node_status == RESULT_STATUS.FAILED:
+        await _handle_failed_node(dispatch_id, node_id)
+        return
+
+    if node_status == RESULT_STATUS.CANCELLED:
+        await _handle_cancelled_node(dispatch_id, node_id)
+        return
