@@ -25,8 +25,8 @@ import pytest
 import covalent as ct
 from covalent._dispatcher_plugins.redispatch_utils import (
     _filter_null_metadata,
-    _generate_electron_updates,
     _get_transportable_electron,
+    get_electron_objects,
     get_request_body,
 )
 from covalent._workflow.electron import Electron
@@ -87,7 +87,7 @@ def test_generate_electron_updates(mocker):
     def add(a, b):
         return a + b
 
-    electron_updates = _generate_electron_updates(
+    electron_updates = get_electron_objects(
         "mock-dispatch-id",
         {
             "mock_task_id_1": identity,
@@ -111,7 +111,7 @@ def test_integration_generate_electron_updates():
     def add(a, b):
         return a + b
 
-    electron_updates = _generate_electron_updates(
+    electron_updates = get_electron_objects(
         "mock-dispatch-id",
         {
             "mock_task_id_1": identity,
@@ -156,6 +156,7 @@ def test_get_request_body_args_kwargs(mocker):
     response = get_request_body(
         "mock-dispatch-id",
         new_args=[1, 2],
+        new_kwargs={"a": 1, "b": 2},
         replace_electrons={"mock-task-id": "mock-electron"},
     )
     generate_electron_updates_mock.assert_called_once_with(
@@ -167,3 +168,4 @@ def test_get_request_body_args_kwargs(mocker):
         "electron_updates": "mock-electron-updates",
         "reuse_previous_results": False,
     }
+    get_result_mock().lattice.build_graph.assert_called_once_with(*[1, 2], **{"a": 1, "b": 2})

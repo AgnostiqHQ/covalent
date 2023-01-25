@@ -24,32 +24,6 @@
 from typing import Callable, Dict, List, Optional
 
 from .._results_manager.results_manager import get_result
-from .._shared_files.context_managers import active_dispatch_info_manager
-from .._shared_files.util_classes import DispatchInfo
-from .._workflow.electron import Electron, get_serialized_function_str
-from .._workflow.transport import TransportableObject
-
-
-def _filter_null_metadata(meta_dict: dict) -> Dict:
-    """Filter out metadata that is None or empty."""
-    return {k: v for k, v in meta_dict.items() if v}
-
-
-def _get_transportable_electron(e: Electron) -> Dict:
-    """Get transportable electron object and metadata."""
-    return {
-        "name": e.function.__name__,
-        "function": TransportableObject(e.function).to_dict(),
-        "function_string": get_serialized_function_str(e.function),
-        "metadata": _filter_null_metadata(e.metadata),
-    }
-
-
-def _generate_electron_updates(dispatch_id: str, replace_electrons: Dict[str, Callable]) -> Dict:
-    """Generate transportable electron object and metadata for the replacement electrons."""
-    with active_dispatch_info_manager.claim(DispatchInfo(dispatch_id)):
-        electron_objects = {k: v() for k, v in replace_electrons.items()}
-    return {k: _get_transportable_electron(v) for k, v in electron_objects.items()}
 
 
 def get_request_body(
@@ -73,7 +47,7 @@ def get_request_body(
         json_lattice = lat.serialize_to_json()
     else:
         json_lattice = None
-    updates = _generate_electron_updates(dispatch_id, replace_electrons)
+    updates = {k: v.electron_object.as_transportable_dict for k, v in replace_electrons.items()}
 
     return {
         "json_lattice": json_lattice,
