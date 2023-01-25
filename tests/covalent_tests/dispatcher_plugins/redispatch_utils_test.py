@@ -123,7 +123,7 @@ def test_integration_generate_electron_updates():
 
 
 def test_get_request_body_null_arguments():
-    """Test the get request body function."""
+    """Test the get request body function with null arguments."""
 
     @ct.electron
     def identity(a):
@@ -140,5 +140,30 @@ def test_get_request_body_null_arguments():
         "json_lattice": None,
         "dispatch_id": "mock-dispatch-id",
         "electron_updates": {},
+        "reuse_previous_results": False,
+    }
+
+
+def test_get_request_body_args_kwargs(mocker):
+    """Test the get request body function when args/kwargs is not null."""
+    generate_electron_updates_mock = mocker.patch(
+        "covalent._dispatcher_plugins.redispatch_utils._generate_electron_updates",
+        return_value="mock-electron-updates",
+    )
+    get_result_mock = mocker.patch("covalent._dispatcher_plugins.redispatch_utils.get_result")
+    get_result_mock().lattice.serialize_to_json.return_value = "mock-json-lattice"
+
+    response = get_request_body(
+        "mock-dispatch-id",
+        new_args=[1, 2],
+        replace_electrons={"mock-task-id": "mock-electron"},
+    )
+    generate_electron_updates_mock.assert_called_once_with(
+        "mock-dispatch-id", {"mock-task-id": "mock-electron"}
+    )
+    assert response == {
+        "json_lattice": "mock-json-lattice",
+        "dispatch_id": "mock-dispatch-id",
+        "electron_updates": "mock-electron-updates",
         "reuse_previous_results": False,
     }
