@@ -70,13 +70,17 @@ class _TransportGraph:
                 node = _node(session, self.lattice_id, node_id)
         return node
 
-    def get_node_value(self, node_id: int, key: str, session: Session = None):
+    def get_node_value(
+        self, node_id: int, key: str, session: Session = None, refresh: bool = True
+    ):
         node = self.get_node(node_id, session)
-        return node.get_value(key, session)
+        return node.get_value(key, session, refresh)
 
-    def get_node_values(self, node_id: int, keys: List[str], session: Session = None):
+    def get_node_values(
+        self, node_id: int, keys: List[str], session: Session = None, refresh: bool = True
+    ):
         node = self.get_node(node_id, session)
-        return node.get_values(keys, session)
+        return node.get_values(keys, session, refresh)
 
     def set_node_values(
         self, node_id: int, keyvals: List[Tuple[str, Any]], session: Session = None
