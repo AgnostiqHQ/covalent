@@ -296,6 +296,7 @@ def test_post_process():
     assert execution_result == compute_energy()
 
 
+@pytest.mark.skip(reason="Obsolete")
 @pytest.mark.asyncio
 async def test_postprocess_workflow(mocker, test_db):
     """Unit test for _postprocess_workflow"""

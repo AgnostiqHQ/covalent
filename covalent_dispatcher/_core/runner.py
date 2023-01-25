@@ -344,6 +344,7 @@ async def _postprocess_workflow(result_object: SRVResult) -> SRVResult:
     """
 
     # Executor for post_processing
+    dispatch_id = result_object.dispatch_id
     pp_executor = result_object.lattice.get_value("workflow_executor")
     pp_executor_data = result_object.lattice.get_value("workflow_executor_data")
     post_processor = [pp_executor, pp_executor_data]
@@ -355,8 +356,12 @@ async def _postprocess_workflow(result_object: SRVResult) -> SRVResult:
 
     if pp_executor == "client":
         app_log.debug("Workflow to be postprocessed client side")
-        result_object._status = Result.PENDING_POSTPROCESSING
-        result_object._end_time = datetime.now(timezone.utc)
+        dispatch_result = datasvc.generate_dispatch_result(
+            dispatch_id,
+            status=Result.PENDING_POSTPROCESSING,
+            end_time=datetime.now(timezone.utc),
+        )
+        await datasvc.update_dispatch_result(dispatch_id, dispatch_result)
         return result_object
 
     post_processing_inputs = {}
@@ -387,10 +392,13 @@ async def _postprocess_workflow(result_object: SRVResult) -> SRVResult:
         error_msg = stderr + err
 
         app_log.debug(f"Post-processing failed: {err}")
-        result_object._status = Result.POSTPROCESSING_FAILED
-        result_object._error = f"Post-processing failed: {error_msg}"
-        result_object._end_time = datetime.now(timezone.utc)
-
+        dispatch_result = datasvc.generate_dispatch_result(
+            dispatch_id,
+            status=Result.POSTPROCESSING_FAILED,
+            error=f"Post-processing failed: {error_msg}",
+            end_time=datetime.now(timezone.utc),
+        )
+        await datasvc.update_dispatch_result(dispatch_id, dispatch_result)
         app_log.debug("Returning from _postprocess_workflow")
         return result_object
 

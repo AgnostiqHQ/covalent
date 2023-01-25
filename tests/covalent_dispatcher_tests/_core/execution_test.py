@@ -434,7 +434,6 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
     mocker.patch("covalent_dispatcher._core.dispatcher.POSTPROCESS_SEPARATELY", True)
 
     update.persist(result_object)
-
     result_object = await run_workflow(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
     assert result_object.status == Result.PENDING_POSTPROCESSING
@@ -478,6 +477,7 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
         assert False
 
     result_object.lattice.set_value("workflow_executor", "bogus")
+
     result_object = await run_workflow(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
 

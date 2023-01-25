@@ -188,7 +188,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
 
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_incoming_edges",
-        side_effect=mock_get_incoming_edges,
+        mock_get_incoming_edges,
     )
 
     abs_task_inputs = await _get_abstract_task_inputs(
@@ -211,7 +211,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
 
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_incoming_edges",
-        side_effect=mock_get_incoming_edges,
+        mock_get_incoming_edges,
     )
 
     task_inputs = await _get_abstract_task_inputs(
@@ -235,7 +235,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
 
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_incoming_edges",
-        side_effect=mock_get_incoming_edges,
+        mock_get_incoming_edges,
     )
 
     task_inputs = await _get_abstract_task_inputs(
@@ -245,7 +245,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
 
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_incoming_edges",
-        side_effect=mock_get_incoming_edges,
+        mock_get_incoming_edges,
     )
 
     task_inputs = await _get_abstract_task_inputs(
@@ -255,7 +255,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
 
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_incoming_edges",
-        side_effect=mock_get_incoming_edges,
+        mock_get_incoming_edges,
     )
 
     task_inputs = await _get_abstract_task_inputs(
@@ -264,7 +264,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
     assert task_inputs["args"] == [2, 0]
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_incoming_edges",
-        side_effect=mock_get_incoming_edges,
+        mock_get_incoming_edges,
     )
 
     task_inputs = await _get_abstract_task_inputs(
@@ -433,6 +433,9 @@ async def test_run_workflow_normal(mocker, test_db):
     mock_unregister = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
+    mock_update_dispatch_result = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.update_dispatch_result"
+    )
     await run_workflow(result_object)
 
     mock_persist.assert_awaited_with(result_object.dispatch_id)
@@ -497,6 +500,13 @@ async def test_run_workflow_exception(mocker, test_db):
     )
     mock_persist = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.persist_result")
 
+    async def mock_update(dispatch_id, dispatch_result):
+        result_object.set_value("status", dispatch_result["status"])
+
+    mock_update_dispatch_result = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.update_dispatch_result",
+        mock_update,
+    )
     result = await run_workflow(result_object)
 
     assert result.status == Result.FAILED
@@ -518,8 +528,8 @@ async def test_run_planned_workflow_cancelled_update(mocker, test_db):
     sdkres = get_mock_result()
     result_object = get_mock_srvresult(sdkres, test_db)
 
-    mock_upsert_lattice = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
+    mock_update_dispatch_result = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.update_dispatch_result"
     )
     tasks_left = 1
     initial_nodes = [0]
@@ -558,9 +568,10 @@ async def test_run_planned_workflow_failed_update(mocker, test_db):
     sdkres = get_mock_result()
     result_object = get_mock_srvresult(sdkres, test_db)
 
-    mock_upsert_lattice = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
+    mock_update_dispatch_result = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.update_dispatch_result"
     )
+
     tasks_left = 1
     initial_nodes = [0]
     pending_deps = {0: 0}

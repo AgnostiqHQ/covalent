@@ -226,13 +226,14 @@ async def _run_planned_workflow(
     dispatch_id = result_object.dispatch_id
 
     app_log.debug("3: Inside run_planned_workflow (run_planned_workflow).")
-    result_object._status = Result.RUNNING
-    result_object._start_time = datetime.now(timezone.utc)
+    dispatch_result = datasvc.generate_dispatch_result(
+        dispatch_id, start_time=datetime.now(timezone.utc), status=Result.RUNNING
+    )
+    await datasvc.update_dispatch_result(dispatch_id, dispatch_result)
 
     app_log.debug(
         f"4: Workflow status changed to running {result_object.dispatch_id} (run_planned_workflow)."
     )
-    result_object.commit()
     app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
 
     tasks_left, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(dispatch_id)
@@ -332,15 +333,18 @@ async def run_workflow(result_object: SRVResult) -> SRVResult:
         result_object = await _run_planned_workflow(result_object, _status_queues[dispatch_id])
 
     except Exception as ex:
-        app_log.error(f"Exception during _run_planned_workflow: {ex}")
 
         error_msg = "".join(traceback.TracebackException.from_exception(ex).format())
-        result_object._status = Result.FAILED
-        result_object._error = error_msg
-        result_object._end_time = datetime.now(timezone.utc)
+        app_log.exception(f"Exception during _run_planned_workflow: {error_msg}")
 
+        dispatch_result = datasvc.generate_dispatch_result(
+            dispatch_id,
+            end_time=datetime.now(timezone.utc),
+            status=Result.FAILED,
+            error=error_msg,
+        )
+        await datasvc.update_dispatch_result(dispatch_id, dispatch_result)
     finally:
-        result_object.commit()
         await datasvc.persist_result(result_object.dispatch_id)
         datasvc.finalize_dispatch(result_object.dispatch_id)
         _status_queues.pop(result_object.dispatch_id)
