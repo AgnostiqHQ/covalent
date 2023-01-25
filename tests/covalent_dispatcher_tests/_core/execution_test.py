@@ -266,6 +266,7 @@ async def test_run_workflow_with_failing_nonleaf(mocker, test_db):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.utils.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
@@ -283,17 +284,15 @@ async def test_run_workflow_with_failing_nonleaf(mocker, test_db):
     msg_queue = asyncio.Queue()
     mock_status_queues = {result_object.dispatch_id: msg_queue}
     mocker.patch("covalent_dispatcher._core.dispatcher._status_queues", mock_status_queues)
-    mock_get_failed_nodes = mocker.patch(
-        "covalent_dispatcher._dal.result.Result._get_failed_nodes",
-        return_value=[(0, "failing_task")],
+    mock_get_incomplete_nodes = mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_incomplete_tasks",
+        return_value={"failed": [(0, "failing_task")], "cancelled": []},
     )
 
-    update.persist(sdkres)
     result_object = await run_workflow(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
     assert result_object.status == Result.FAILED
-
-    mock_get_failed_nodes.assert_called()
+    mock_get_incomplete_nodes.assert_awaited()
     assert result_object.error == "The following tasks failed:\n0: failing_task"
 
 

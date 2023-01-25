@@ -122,7 +122,8 @@ def test_plan_workflow(mocker, test_db):
     # Updated transport graph post planning
 
 
-def test_get_abstract_task_inputs(mocker, test_db):
+@pytest.mark.asyncio
+async def test_get_abstract_task_inputs(mocker, test_db):
     """Test _get_abstract_task_inputs for both dicts and list parameter types"""
 
     @ct.electron
@@ -180,7 +181,19 @@ def test_get_abstract_task_inputs(mocker, test_db):
 
     sdkres = Result(lattice=list_workflow, dispatch_id="list_input_dispatch")
     result_object = get_mock_srvresult(sdkres, test_db)
-    abs_task_inputs = _get_abstract_task_inputs(1, tg.get_node_value(1, "name"), result_object)
+    dispatch_id = result_object.dispatch_id
+
+    async def mock_get_incoming_edges(dispatch_id, node_id):
+        return result_object.lattice.transport_graph.get_incoming_edges(node_id)
+
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_incoming_edges",
+        side_effect=mock_get_incoming_edges,
+    )
+
+    abs_task_inputs = await _get_abstract_task_inputs(
+        result_object.dispatch_id, 1, tg.get_node_value(1, "name")
+    )
 
     expected_inputs = {"args": abstract_args, "kwargs": {}}
 
@@ -195,7 +208,15 @@ def test_get_abstract_task_inputs(mocker, test_db):
 
     sdkres = Result(lattice=dict_workflow, dispatch_id="dict_input_dispatch")
     result_object = get_mock_srvresult(sdkres, test_db)
-    task_inputs = _get_abstract_task_inputs(1, tg.get_node_value(1, "name"), result_object)
+
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_incoming_edges",
+        side_effect=mock_get_incoming_edges,
+    )
+
+    task_inputs = await _get_abstract_task_inputs(
+        result_object.dispatch_id, 1, tg.get_node_value(1, "name")
+    )
     expected_inputs = {"args": [], "kwargs": abstract_args}
 
     assert task_inputs == expected_inputs
@@ -212,16 +233,43 @@ def test_get_abstract_task_inputs(mocker, test_db):
     tg.set_node_value(0, "output", ct.TransportableObject(1))
     tg.set_node_value(2, "output", ct.TransportableObject(2))
 
-    task_inputs = _get_abstract_task_inputs(4, tg.get_node_value(4, "name"), result_object)
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_incoming_edges",
+        side_effect=mock_get_incoming_edges,
+    )
+
+    task_inputs = await _get_abstract_task_inputs(
+        result_object.dispatch_id, 4, tg.get_node_value(4, "name")
+    )
     assert task_inputs["args"] == [0, 2]
 
-    task_inputs = _get_abstract_task_inputs(5, tg.get_node_value(5, "name"), result_object)
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_incoming_edges",
+        side_effect=mock_get_incoming_edges,
+    )
+
+    task_inputs = await _get_abstract_task_inputs(
+        result_object.dispatch_id, 5, tg.get_node_value(5, "name")
+    )
     assert task_inputs["args"] == [2, 0]
 
-    task_inputs = _get_abstract_task_inputs(6, tg.get_node_value(6, "name"), result_object)
-    assert task_inputs["args"] == [2, 0]
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_incoming_edges",
+        side_effect=mock_get_incoming_edges,
+    )
 
-    task_inputs = _get_abstract_task_inputs(7, tg.get_node_value(7, "name"), result_object)
+    task_inputs = await _get_abstract_task_inputs(
+        result_object.dispatch_id, 6, tg.get_node_value(6, "name")
+    )
+    assert task_inputs["args"] == [2, 0]
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_incoming_edges",
+        side_effect=mock_get_incoming_edges,
+    )
+
+    task_inputs = await _get_abstract_task_inputs(
+        result_object.dispatch_id, 7, tg.get_node_value(7, "name")
+    )
     assert task_inputs["args"] == [0, 2]
 
 
@@ -265,7 +313,6 @@ async def test_handle_failed_node(mocker, test_db):
     mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
-    mock_commit = mocker.patch("covalent_dispatcher._dal.result.Result.commit")
 
     pending_parents = {}
 
@@ -274,8 +321,6 @@ async def test_handle_failed_node(mocker, test_db):
     # tg edges are (1, 0), (0, 2)
 
     await _handle_failed_node(result_object, 1)
-
-    mock_commit.assert_called()
 
 
 @pytest.mark.asyncio
@@ -298,8 +343,6 @@ async def test_handle_cancelled_node(mocker, test_db):
     node_result = {"node_id": 1, "status": Result.CANCELLED}
 
     await _handle_cancelled_node(result_object, 1)
-    assert result_object._task_cancelled is True
-    mock_commit.assert_called()
 
 
 @pytest.mark.asyncio
@@ -467,17 +510,17 @@ async def test_run_planned_workflow_cancelled_update(mocker, test_db):
 
     mock_submit_task = mocker.patch("covalent_dispatcher._core.dispatcher._submit_task")
 
-    def side_effect(result_object, node_id):
-        result_object._task_cancelled = True
-
     mock_handle_cancelled = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._handle_cancelled_node", side_effect=side_effect
+        "covalent_dispatcher._core.dispatcher._handle_cancelled_node",
     )
+
+    mock_finalize = mocker.patch("covalent_dispatcher._core.dispatcher._finalize_dispatch")
     status_queue = asyncio.Queue()
     status_queue.put_nowait((0, Result.CANCELLED, {}))
     await _run_planned_workflow(result_object, status_queue)
     assert mock_submit_task.await_count == 1
     mock_handle_cancelled.assert_awaited_with(result_object, 0)
+    mock_finalize.assert_awaited()
 
 
 @pytest.mark.asyncio
@@ -507,17 +550,17 @@ async def test_run_planned_workflow_failed_update(mocker, test_db):
 
     mock_submit_task = mocker.patch("covalent_dispatcher._core.dispatcher._submit_task")
 
-    def side_effect(result_object, node_id):
-        result_object._task_failed = True
-
     mock_handle_failed = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._handle_failed_node", side_effect=side_effect
+        "covalent_dispatcher._core.dispatcher._handle_failed_node",
     )
+    mock_finalize = mocker.patch("covalent_dispatcher._core.dispatcher._finalize_dispatch")
+
     status_queue = asyncio.Queue()
     status_queue.put_nowait((0, Result.FAILED, {}))
     await _run_planned_workflow(result_object, status_queue)
     assert mock_submit_task.await_count == 1
     mock_handle_failed.assert_awaited_with(result_object, 0)
+    mock_finalize.assert_awaited()
 
 
 def test_cancelled_workflow():

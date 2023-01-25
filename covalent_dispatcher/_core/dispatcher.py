@@ -48,7 +48,7 @@ POSTPROCESS_SEPARATELY = os.environ.get("COVALENT_POSTPROCESS_SEPARATELY") == "1
 
 
 # Domain: dispatcher
-def _get_abstract_task_inputs(node_id: int, node_name: str, result_object: SRVResult) -> dict:
+async def _get_abstract_task_inputs(dispatch_id: str, node_id: int, node_name: str) -> dict:
     """Return placeholders for the required inputs for a task execution.
 
     Args:
@@ -64,7 +64,7 @@ def _get_abstract_task_inputs(node_id: int, node_name: str, result_object: SRVRe
 
     abstract_task_input = {"args": [], "kwargs": {}}
 
-    for edge in result_object.lattice.transport_graph.get_incoming_edges(node_id):
+    for edge in await datasvc.get_incoming_edges(dispatch_id, node_id):
 
         parent = edge["source"]
 
@@ -101,22 +101,18 @@ async def _handle_completed_node(result_object: SRVResult, node_id: int, pending
 
 # Domain: dispatcher
 async def _handle_failed_node(result_object: SRVResult, node_id: int):
-    result_object._task_failed = True
-    result_object._end_time = datetime.now(timezone.utc)
     app_log.debug(f"Node {result_object.dispatch_id}:{node_id} failed")
     app_log.debug("8A: Failed node upsert statement (run_planned_workflow)")
-    result_object.commit()
+    # result_object.commit()
     # datasvc.upsert_lattice_data(result_object.dispatch_id)
 
 
 # Domain: dispatcher
 async def _handle_cancelled_node(result_object: SRVResult, node_id: int):
-    result_object._task_cancelled = True
-    result_object._end_time = datetime.now(timezone.utc)
     app_log.debug(f"Node {result_object.dispatch_id}:{node_id} cancelled")
     app_log.debug("9: Cancelled node upsert statement (run_planned_workflow)")
     # datasvc.upsert_lattice_data(result_object.dispatch_id)
-    result_object.commit()
+    # result_object.commit()
 
 
 # Domain: dispatcher
@@ -150,14 +146,16 @@ async def _get_initial_tasks_and_deps(result_object: Result) -> Tuple[int, int, 
 # Domain: dispatcher
 async def _submit_task(result_object, node_id):
 
+    dispatch_id = result_object.dispatch_id
+
     # Get name of the node for the current task
-    node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
+    node_name = await datasvc.get_electron_attribute(dispatch_id, node_id, "name")
     app_log.debug(f"7A: Node name: {node_name} (run_planned_workflow).")
 
     # Handle parameter nodes
     if node_name.startswith(parameter_prefix):
         app_log.debug("7C: Parameter if block (run_planned_workflow).")
-        output = result_object.lattice.transport_graph.get_node_value(node_id, "value")
+        output = await datasvc.get_electron_attribute(dispatch_id, node_id, "value")
         app_log.debug(f"7C: Node output: {output} (run_planned_workflow).")
         app_log.debug("8: Starting update node (run_planned_workflow).")
 
@@ -168,27 +166,18 @@ async def _submit_task(result_object, node_id):
             "status": Result.COMPLETED,
             "output": output,
         }
-        await datasvc.update_node_result(result_object.dispatch_id, node_result)
+        await datasvc.update_node_result(dispatch_id, node_result)
         app_log.debug("8A: Update node success (run_planned_workflow).")
 
     else:
-
-        # Executor for post_processing and dispatching sublattices
-        pp_executor = result_object.lattice.get_value("workflow_executor")
-        pp_executor_data = result_object.lattice.get_value("workflow_executor_data")
-        post_processor = [pp_executor, pp_executor_data]
-
         # Gather inputs and dispatch task
         app_log.debug(f"Gathering inputs for task {node_id} (run_planned_workflow).")
 
-        abs_task_input = _get_abstract_task_inputs(node_id, node_name, result_object)
+        abs_task_input = await _get_abstract_task_inputs(dispatch_id, node_id, node_name)
 
-        selected_executor = result_object.lattice.transport_graph.get_node_value(
-            node_id, "executor"
-        )
-
-        selected_executor_data = result_object.lattice.transport_graph.get_node_value(
-            node_id, "executor_data"
+        selected_executor = await datasvc.get_electron_attribute(dispatch_id, node_id, "executor")
+        selected_executor_data = await datasvc.get_electron_attribute(
+            dispatch_id, node_id, "executor_data"
         )
 
         app_log.debug(f"Submitting task {node_id} to executor")
@@ -284,24 +273,7 @@ async def _run_planned_workflow(
             await _handle_cancelled_node(result_object, node_id)
             continue
 
-    if result_object._task_failed or result_object._task_cancelled:
-        app_log.debug(f"Workflow {result_object.dispatch_id} cancelled or failed")
-        failed_nodes = result_object._get_failed_nodes()
-        failed_nodes = map(lambda x: f"{x[0]}: {x[1]}", failed_nodes)
-        failed_nodes_msg = "\n".join(failed_nodes)
-        result_object._error = "The following tasks failed:\n" + failed_nodes_msg
-        result_object._status = Result.FAILED if result_object._task_failed else Result.CANCELLED
-        result_object.commit()
-        return result_object
-
-    app_log.debug("8: All tasks finished running (run_planned_workflow)")
-
-    if POSTPROCESS_SEPARATELY:
-        result_object = await runner.postprocess_workflow(result_object.dispatch_id)
-    else:
-        app_log.debug("Workflow already postprocessed")
-
-    app_log.debug(f"Status after PP: {result_object.status}")
+    await _finalize_dispatch(result_object.dispatch_id)
 
     return result_object
 
@@ -368,7 +340,6 @@ async def run_workflow(result_object: SRVResult) -> SRVResult:
         await datasvc.persist_result(result_object.dispatch_id)
         datasvc.finalize_dispatch(result_object.dispatch_id)
         _status_queues.pop(result_object.dispatch_id)
-        print("DEBUG: status queues", _status_queues)
     return result_object
 
 
@@ -406,3 +377,33 @@ async def notify_node_status(
     }
     status_queue = _status_queues[dispatch_id]
     await status_queue.put((node_id, status, detail))
+
+
+async def _finalize_dispatch(dispatch_id: str):
+
+    incomplete_tasks = await datasvc.get_incomplete_tasks(dispatch_id)
+    failed = incomplete_tasks["failed"]
+    cancelled = incomplete_tasks["cancelled"]
+    if failed or cancelled:
+        app_log.debug(f"Workflow {dispatch_id} cancelled or failed")
+        failed_nodes = failed
+        failed_nodes = map(lambda x: f"{x[0]}: {x[1]}", failed_nodes)
+        failed_nodes_msg = "\n".join(failed_nodes)
+        error_msg = "The following tasks failed:\n" + failed_nodes_msg
+        ts = datetime.now(timezone.utc)
+        status = Result.FAILED if failed else Result.CANCELLED
+        result_update = datasvc.generate_dispatch_result(
+            dispatch_id,
+            status=status,
+            error=error_msg,
+            end_time=ts,
+        )
+        await datasvc.update_dispatch_result(dispatch_id, result_update)
+
+    app_log.debug("8: All tasks finished running (run_planned_workflow)")
+
+    result_object = datasvc.get_result_object(dispatch_id)
+    if POSTPROCESS_SEPARATELY:
+        result_object = await runner.postprocess_workflow(dispatch_id)
+    else:
+        app_log.debug("Workflow already postprocessed")

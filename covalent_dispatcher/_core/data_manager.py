@@ -283,3 +283,55 @@ async def _make_sublattice_dispatch(result_object: SRVResult, node_result: dict)
     parent_electron_id = parent_node._electron_id
 
     return await make_dispatch(json_lattice, result_object, parent_electron_id)
+
+
+# Common Result object queries
+
+# Lattice-level
+
+
+def generate_dispatch_result(
+    dispatch_id,
+    start_time=None,
+    end_time=None,
+    status=None,
+    error=None,
+    result=None,
+):
+
+    return {
+        "start_time": start_time,
+        "end_time": end_time,
+        "status": status,
+        "error": error,
+        "result": result,
+    }
+
+
+async def update_dispatch_result(dispatch_id, dispatch_result):
+
+    result_object = get_result_object(dispatch_id)
+    update_partial = functools.partial(result_object._update_dispatch, **dispatch_result)
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(
+        dm_pool,
+        update_partial,
+    )
+
+
+# Graph queries
+
+
+async def get_incomplete_tasks(dispatch_id: str, refresh: bool = True):
+    result_object = get_result_object(dispatch_id)
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(
+        dm_pool,
+        result_object._get_incomplete_nodes,
+        refresh,
+    )
+
+
+async def get_incoming_edges(dispatch_id: str, node_id: int):
+    result_object = get_result_object(dispatch_id)
+    return result_object.lattice.transport_graph.get_incoming_edges(node_id)
