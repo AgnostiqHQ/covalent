@@ -23,7 +23,6 @@ Defines the core functionality of the dispatcher
 """
 
 import asyncio
-import os
 import traceback
 from datetime import datetime, timezone
 from typing import Dict, Tuple
@@ -44,7 +43,6 @@ _global_event_queue = asyncio.Queue()
 _status_queues = {}
 
 NEW_RUNNER_ENABLED = get_config("dispatcher.force_legacy_runner") == "false"
-POSTPROCESS_SEPARATELY = os.environ.get("COVALENT_POSTPROCESS_SEPARATELY") == "1"
 
 
 # Domain: dispatcher
@@ -389,10 +387,7 @@ async def _finalize_dispatch(dispatch_id: str):
 
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
 
-    if POSTPROCESS_SEPARATELY:
-        await runner.postprocess_workflow(dispatch_id)
-    else:
-        app_log.debug("Workflow already postprocessed")
+    app_log.debug("Workflow already postprocessed")
 
     result_info = await datasvc.get_dispatch_attributes(dispatch_id, ["status"])
     return result_info["status"]

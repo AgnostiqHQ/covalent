@@ -25,19 +25,14 @@ Defines the core functionality of the runner
 import traceback
 from datetime import datetime, timezone
 from functools import partial
-from typing import Any, Callable, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
-from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-from covalent._shared_files.context_managers import active_lattice_manager
-from covalent._shared_files.defaults import prefix_separator, sublattice_prefix
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow import DepsBash, DepsCall, DepsPip
-from covalent._workflow.lattice import Lattice
-from covalent._workflow.transport import TransportableObject
 from covalent.executor.base import wrapper_fn
 
-from .._dal.result import Result as SRVResult
 from . import data_manager as datasvc
 from .runner_modules.utils import get_executor
 
@@ -97,7 +92,7 @@ async def _run_abstract_task(
             node_id=node_id,
             start_time=timestamp,
             end_time=timestamp,
-            status=Result.FAILED,
+            status=RESULT_STATUS.FAILED,
             error=str(ex),
         )
         return node_result
@@ -105,7 +100,7 @@ async def _run_abstract_task(
     node_result = datasvc.generate_node_result(
         node_id=node_id,
         start_time=timestamp,
-        status=Result.RUNNING,
+        status=RESULT_STATUS.RUNNING,
     )
     app_log.debug(f"7: Marking node {node_id} as running (_run_abstract_task)")
 
@@ -144,7 +139,6 @@ async def _run_task(
 
     Args:
         inputs: Inputs for the task.
-        result_object: Result object being used for current dispatch
         node_id: Node id of the task to be executed.
 
     Returns:
@@ -166,7 +160,7 @@ async def _run_task(
         node_result = datasvc.generate_node_result(
             node_id=node_id,
             end_time=datetime.now(timezone.utc),
-            status=Result.FAILED,
+            status=RESULT_STATUS.FAILED,
             error=error_msg,
         )
         return node_result
@@ -193,9 +187,9 @@ async def _run_task(
             node_id=node_id,
         )
         if exception_raised:
-            status = Result.FAILED
+            status = RESULT_STATUS.FAILED
         else:
-            status = Result.COMPLETED
+            status = RESULT_STATUS.COMPLETED
 
         node_result = datasvc.generate_node_result(
             node_id=node_id,
@@ -214,7 +208,7 @@ async def _run_task(
         node_result = datasvc.generate_node_result(
             node_id=node_id,
             end_time=datetime.now(timezone.utc),
-            status=Result.FAILED,
+            status=RESULT_STATUS.FAILED,
             error=error_msg,
         )
     app_log.debug(f"Node result: {node_result}")
@@ -279,138 +273,3 @@ async def run_abstract_task(
         selected_executor=selected_executor,
     )
     await datasvc.update_node_result(dispatch_id, node_result)
-
-
-# Domain: runner
-# This is to be run out-of-process
-def _post_process(workflow_function: Callable, inputs: Dict, node_outputs: Dict) -> Any:
-    """
-    Post processing function to be called after the lattice execution.
-    This takes care of executing statements that were not an electron
-    but were inside the lattice's function. It also replaces any calls
-    to an electron with the result of that electron execution, hence
-    preventing a local execution of electron's function.
-
-    Note: Here `node_outputs` is used instead of `electron_outputs`
-    since an electron can be called multiple times with possibly different
-    arguments, but every time it's called, it will be executed as a separate node.
-    Thus, output of every node is used.
-
-    Args:
-        lattice: Lattice object that was dispatched.
-        node_outputs: Dictionary containing the output of all the nodes.
-        execution_order: List of lists containing the order of execution of the nodes.
-
-    Reurns:
-        result: The result of the lattice function.
-    """
-
-    lattice = Lattice(workflow_function)
-    lattice.args = inputs["args"]
-    lattice.kwargs = inputs["kwargs"]
-
-    ordered_node_outputs = []
-    app_log.debug(f"node_outputs: {node_outputs}")
-    app_log.debug(f"node_outputs: {node_outputs.items()}")
-    for i, item in enumerate(node_outputs.items()):
-        key, val = item
-        app_log.debug(f"Here's the key: {key}")
-        if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix):
-            ordered_node_outputs.append(val)
-
-    with active_lattice_manager.claim(lattice):
-        lattice.post_processing = True
-        lattice.electron_outputs = ordered_node_outputs
-        args = [arg.get_deserialized() for arg in lattice.args]
-        kwargs = {k: v.get_deserialized() for k, v in lattice.kwargs.items()}
-        workflow_function = lattice.workflow_function.get_deserialized()
-        result = workflow_function(*args, **kwargs)
-        lattice.post_processing = False
-        return result
-
-
-# Domain: runner
-async def _postprocess_workflow(result_object: SRVResult) -> SRVResult:
-    """
-    Postprocesses a workflow with a completed computational graph
-
-    Args:
-        result_object: Result object being used for current dispatch
-
-    Returns:
-        The postprocessed result object
-    """
-
-    # Executor for post_processing
-    dispatch_id = result_object.dispatch_id
-    pp_executor = result_object.lattice.get_value("workflow_executor")
-    pp_executor_data = result_object.lattice.get_value("workflow_executor_data")
-    post_processor = [pp_executor, pp_executor_data]
-
-    result_object._status = Result.POSTPROCESSING
-    result_object.commit()
-
-    app_log.debug(f"Preparing to post-process workflow {result_object.dispatch_id}")
-
-    if pp_executor == "client":
-        app_log.debug("Workflow to be postprocessed client side")
-        dispatch_result = datasvc.generate_dispatch_result(
-            dispatch_id,
-            status=Result.PENDING_POSTPROCESSING,
-            end_time=datetime.now(timezone.utc),
-        )
-        await datasvc.update_dispatch_result(dispatch_id, dispatch_result)
-        return result_object
-
-    post_processing_inputs = {}
-    serialized_workflow = result_object.lattice.get_value("workflow_function")
-
-    post_processing_inputs["args"] = [
-        serialized_workflow,
-        TransportableObject(result_object.get_value("inputs")),
-        TransportableObject((result_object.get_all_node_outputs())),
-    ]
-    post_processing_inputs["kwargs"] = {}
-
-    app_log.debug(f"Submitted post-processing job to executor {post_processor}")
-    post_process_result = await _run_task(
-        dispatch_id=result_object.dispatch_id,
-        node_id=-1,
-        serialized_callable=TransportableObject(_post_process),
-        selected_executor=post_processor,
-        node_name="post_process",
-        call_before=[],
-        call_after=[],
-        inputs=post_processing_inputs,
-    )
-
-    if post_process_result["status"] != Result.COMPLETED:
-        stderr = post_process_result["stderr"] if post_process_result["stderr"] else ""
-        err = post_process_result["error"] if post_process_result["error"] else ""
-        error_msg = stderr + err
-
-        app_log.debug(f"Post-processing failed: {err}")
-        dispatch_result = datasvc.generate_dispatch_result(
-            dispatch_id,
-            status=Result.POSTPROCESSING_FAILED,
-            error=f"Post-processing failed: {error_msg}",
-            end_time=datetime.now(timezone.utc),
-        )
-        await datasvc.update_dispatch_result(dispatch_id, dispatch_result)
-        app_log.debug("Returning from _postprocess_workflow")
-        return result_object
-
-    result_object._result = post_process_result["output"]
-    result_object._status = Result.COMPLETED
-    result_object._end_time = datetime.now(timezone.utc)
-
-    app_log.debug(
-        f"10: Successfully post-processed result {result_object.dispatch_id} (run_planned_workflow)"
-    )
-
-    return result_object
-
-
-async def postprocess_workflow(dispatch_id: str) -> SRVResult:
-    sdkres = datasvc.get_result_object(dispatch_id)
-    return await _postprocess_workflow(sdkres)
