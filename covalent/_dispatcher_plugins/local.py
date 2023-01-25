@@ -32,7 +32,7 @@ from .._workflow.lattice import Lattice
 from .base import BaseDispatcher
 
 
-def get_request_body(
+def get_redispatch_request_body(
     dispatch_id: str,
     new_args: Optional[List] = None,
     new_kwargs: Optional[Dict] = None,
@@ -185,7 +185,7 @@ class LocalDispatcher(BaseDispatcher):
             replace_electrons = {}
 
         def func(*new_args, **new_kwargs):
-            body = get_request_body(
+            body = get_redispatch_request_body(
                 dispatch_id, new_args, new_kwargs, replace_electrons, reuse_previous_results
             )
 
