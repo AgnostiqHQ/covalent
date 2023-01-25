@@ -288,16 +288,25 @@ class Result(DispatchedObject):
         """
         Get the node_id of each failed task
         """
+        return self._get_incomplete_nodes()["failed"]
+
+    def _get_incomplete_nodes(self, refresh: bool = True):
         nodes = []
         num_nodes = self.pure_metadata["num_nodes"]
         tg = self.lattice.transport_graph
 
         with workflow_db.session() as session:
-            return [
-                (i, tg.get_node_value(i, "name", session))
+            failed_nodes = [
+                (i, tg.get_node_value(i, "name", session, refresh))
                 for i in range(num_nodes)
-                if tg.get_node_value(i, "status", session) == RESULT_STATUS.FAILED
+                if tg.get_node_value(i, "status", session, refresh) == RESULT_STATUS.FAILED
             ]
+            cancelled_nodes = [
+                (i, tg.get_node_value(i, "name", session, refresh))
+                for i in range(num_nodes)
+                if tg.get_node_value(i, "status", session, refresh) == RESULT_STATUS.CANCELLED
+            ]
+        return {"failed": failed_nodes, "cancelled": cancelled_nodes}
 
     def get_all_node_outputs(self) -> dict:
         """
