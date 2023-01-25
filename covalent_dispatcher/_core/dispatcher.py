@@ -296,13 +296,7 @@ def _plan_workflow(result_object: SRVResult) -> None:
         None
     """
 
-    if result_object.lattice.get_metadata("schedule"):
-        # Custom scheduling logic of the format:
-        # scheduled_executors = get_schedule(result_object)
-
-        # for node_id, executor in scheduled_executors.items():
-        #    result_object.lattice.transport_graph.set_node_value(node_id, "executor", executor)
-        pass
+    pass
 
 
 async def run_workflow(result_object: SRVResult) -> SRVResult:

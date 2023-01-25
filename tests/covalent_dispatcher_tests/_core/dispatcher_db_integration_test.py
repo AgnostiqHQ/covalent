@@ -36,7 +36,6 @@ from covalent_dispatcher._core.dispatcher import (
     _handle_cancelled_node,
     _handle_completed_node,
     _handle_failed_node,
-    _plan_workflow,
     _run_planned_workflow,
     cancel_workflow,
     run_dispatch,
@@ -92,34 +91,6 @@ def get_mock_srvresult(sdkres, test_db) -> SRVResult:
     update.persist(sdkres)
 
     return get_result_object(sdkres.dispatch_id)
-
-
-def test_plan_workflow(mocker, test_db):
-    """Test workflow planning method."""
-
-    @ct.electron
-    def task(x):
-        return x
-
-    @ct.lattice
-    def workflow(x):
-        return task(x)
-
-    workflow.metadata["schedule"] = True
-    received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
-    sdkres = Result(received_workflow, "asdf")
-
-    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
-
-    result_object = get_mock_srvresult(sdkres, test_db)
-
-    _plan_workflow(result_object=result_object)
-
-    # Updated transport graph post planning
 
 
 @pytest.mark.asyncio
