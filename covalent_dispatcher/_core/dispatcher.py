@@ -269,17 +269,8 @@ async def run_workflow(dispatch_id: str) -> RESULT_STATUS:
 
     except Exception as ex:
 
-        error_msg = "".join(traceback.TracebackException.from_exception(ex).format())
-        app_log.exception(f"Exception during _run_planned_workflow: {error_msg}")
+        dispatch_status = await _handle_dispatch_exception(dispatch_id, ex)
 
-        dispatch_result = datasvc.generate_dispatch_result(
-            dispatch_id,
-            end_time=datetime.now(timezone.utc),
-            status=RESULT_STATUS.FAILED,
-            error=error_msg,
-        )
-        dispatch_status = RESULT_STATUS.FAILED
-        await datasvc.update_dispatch_result(dispatch_id, dispatch_result)
     finally:
         await datasvc.persist_result(dispatch_id)
         datasvc.finalize_dispatch(dispatch_id)
@@ -409,3 +400,53 @@ async def _handle_node_status_update(dispatch_id, node_id, node_status, detail):
     if node_status == RESULT_STATUS.CANCELLED:
         await _handle_cancelled_node(dispatch_id, node_id)
         return
+
+
+async def _handle_dispatch_exception(dispatch_id: str, ex: Exception) -> RESULT_STATUS:
+    error_msg = "".join(traceback.TracebackException.from_exception(ex).format())
+    app_log.exception(f"Exception during _run_planned_workflow: {error_msg}")
+
+    dispatch_result = datasvc.generate_dispatch_result(
+        dispatch_id,
+        end_time=datetime.now(timezone.utc),
+        status=RESULT_STATUS.FAILED,
+        error=error_msg,
+    )
+
+    await datasvc.update_dispatch_result(dispatch_id, dispatch_result)
+    return RESULT_STATUS.FAILED
+
+
+# msg = {
+#     "dispatch_id": dispatch_id,
+#     "node_id": node_id,
+#     "status": status,
+#     "detail": detail,
+# }
+async def _node_event_listener():
+    while True:
+        msg = await _global_event_queue.get()
+
+        asyncio.create_task(_handle_event(msg))
+
+
+async def _handle_event(msg: Dict):
+    dispatch_id = msg["dispatch_id"]
+    node_id = msg["node_id"]
+    node_status = msg["status"]
+    detail = msg["detail"]
+
+    await _handle_node_status_update(dispatch_id, node_id, node_status, detail)
+
+    unresolved = await _unresolved_tasks.get_unresolved(dispatch_id)
+    if unresolved < 1:
+        app_log.debug("Finalizing dispatch")
+        try:
+            dispatch_status = await _finalize_dispatch(dispatch_id)
+        except Exception as ex:
+            dispatch_status = await _handle_dispatch_exception(dispatch_id, ex)
+
+        finally:
+            await datasvc.persist_result(dispatch_id)
+
+        return dispatch_status
