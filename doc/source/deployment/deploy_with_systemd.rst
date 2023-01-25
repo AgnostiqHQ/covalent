@@ -2,6 +2,8 @@
 Installing Covalent with Systemd
 ################################
 
+ We recommend that you *not* install Covalent directly at the system level as its Python version and package dependencies can conflict with those of the system. Instead, create a Python virtual environment with Covalent installed and manage Covalent with the ``systemd`` service. This approach prevents any Python conflicts.
+
 .. note:: In these installation instructions, we assume ``Python3.8`` is available on the system and that all the commands are issued as ``root``.
 
 To install Covalent on a Linux physical or virtual host with ``systemd``, do the following:
