@@ -87,12 +87,11 @@ async def _get_abstract_task_inputs(dispatch_id: str, node_id: int, node_name: s
 
 
 # Domain: dispatcher
-async def _handle_completed_node(result_object: SRVResult, node_id: int, pending_parents: Dict):
-    g = result_object.lattice.transport_graph
+async def _handle_completed_node(dispatch_id: str, node_id: int, pending_parents: Dict):
 
     ready_nodes = []
     app_log.debug(f"Node {node_id} completed")
-    for child in g.get_successors(node_id):
+    for child in await datasvc.get_node_successors(dispatch_id, node_id):
         pending_parents[child] -= 1
         if pending_parents[child] < 1:
             app_log.debug(f"Queuing node {child} for execution")
@@ -102,16 +101,16 @@ async def _handle_completed_node(result_object: SRVResult, node_id: int, pending
 
 
 # Domain: dispatcher
-async def _handle_failed_node(result_object: SRVResult, node_id: int):
-    app_log.debug(f"Node {result_object.dispatch_id}:{node_id} failed")
+async def _handle_failed_node(dispatch_id: str, node_id: int):
+    app_log.debug(f"Node {dispatch_id}:{node_id} failed")
     app_log.debug("8A: Failed node upsert statement (run_planned_workflow)")
     # result_object.commit()
     # datasvc.upsert_lattice_data(result_object.dispatch_id)
 
 
 # Domain: dispatcher
-async def _handle_cancelled_node(result_object: SRVResult, node_id: int):
-    app_log.debug(f"Node {result_object.dispatch_id}:{node_id} cancelled")
+async def _handle_cancelled_node(dispatch_id: str, node_id: int):
+    app_log.debug(f"Node {dispatch_id}:{node_id} cancelled")
     app_log.debug("9: Cancelled node upsert statement (run_planned_workflow)")
     # datasvc.upsert_lattice_data(result_object.dispatch_id)
     # result_object.commit()
@@ -149,9 +148,7 @@ async def _get_initial_tasks_and_deps(dispatch_id: str) -> Tuple[int, int, Dict]
 
 
 # Domain: dispatcher
-async def _submit_task(result_object, node_id):
-
-    dispatch_id = result_object.dispatch_id
+async def _submit_task(dispatch_id: str, node_id: int):
 
     # Get name of the node for the current task
     node_name = await datasvc.get_electron_attribute(dispatch_id, node_id, "name")
@@ -190,7 +187,7 @@ async def _submit_task(result_object, node_id):
         if NEW_RUNNER_ENABLED:
             app_log.debug(f"Using new runner for task {node_id}")
             coro = runner_exp.run_abstract_task(
-                dispatch_id=result_object.dispatch_id,
+                dispatch_id=dispatch_id,
                 node_id=node_id,
                 selected_executor=[selected_executor, selected_executor_data],
                 node_name=node_name,
@@ -199,7 +196,7 @@ async def _submit_task(result_object, node_id):
         else:
             app_log.debug(f"Using legacy runner for task {node_id}")
             coro = runner.run_abstract_task(
-                dispatch_id=result_object.dispatch_id,
+                dispatch_id=dispatch_id,
                 node_id=node_id,
                 selected_executor=[selected_executor, selected_executor_data],
                 node_name=node_name,
@@ -245,7 +242,7 @@ async def _run_planned_workflow(
 
     for node_id in initial_nodes:
         unresolved_tasks += 1
-        await _submit_task(result_object, node_id)
+        await _submit_task(dispatch_id, node_id)
 
     while unresolved_tasks > 0:
         app_log.debug(f"{tasks_left} tasks left to complete")
@@ -267,20 +264,20 @@ async def _run_planned_workflow(
 
         if node_status == Result.COMPLETED:
             tasks_left -= 1
-            ready_nodes = await _handle_completed_node(result_object, node_id, pending_parents)
+            ready_nodes = await _handle_completed_node(dispatch_id, node_id, pending_parents)
             for node_id in ready_nodes:
                 unresolved_tasks += 1
-                await _submit_task(result_object, node_id)
+                await _submit_task(dispatch_id, node_id)
 
         if node_status == Result.FAILED:
-            await _handle_failed_node(result_object, node_id)
+            await _handle_failed_node(dispatch_id, node_id)
             continue
 
         if node_status == Result.CANCELLED:
-            await _handle_cancelled_node(result_object, node_id)
+            await _handle_cancelled_node(dispatch_id, node_id)
             continue
 
-    await _finalize_dispatch(result_object.dispatch_id)
+    await _finalize_dispatch(dispatch_id)
 
     return result_object
 

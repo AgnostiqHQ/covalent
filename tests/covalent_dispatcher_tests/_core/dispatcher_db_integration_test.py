@@ -288,6 +288,14 @@ async def test_handle_completed_node(mocker, test_db):
     sdkres = get_mock_result()
     result_object = get_mock_srvresult(sdkres, test_db)
 
+    async def get_node_successors(dispatch_id: str, node_id: int):
+        return result_object.lattice.transport_graph.get_successors(node_id)
+
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_node_successors",
+        get_node_successors,
+    )
+
     # tg edges are (1, 0), (0, 2)
     pending_parents[0] = 1
     pending_parents[1] = 0
@@ -299,7 +307,7 @@ async def test_handle_completed_node(mocker, test_db):
 
     node_result = {"node_id": 1, "status": Result.COMPLETED}
 
-    next_nodes = await _handle_completed_node(result_object, 1, pending_parents)
+    next_nodes = await _handle_completed_node(result_object.dispatch_id, 1, pending_parents)
     assert next_nodes == [0]
     assert pending_parents == {0: 0, 1: 0, 2: 1}
 
@@ -320,7 +328,7 @@ async def test_handle_failed_node(mocker, test_db):
     result_object = get_mock_srvresult(sdkres, test_db)
     # tg edges are (1, 0), (0, 2)
 
-    await _handle_failed_node(result_object, 1)
+    await _handle_failed_node(result_object.dispatch_id, 1)
 
 
 @pytest.mark.asyncio
@@ -342,7 +350,7 @@ async def test_handle_cancelled_node(mocker, test_db):
 
     node_result = {"node_id": 1, "status": Result.CANCELLED}
 
-    await _handle_cancelled_node(result_object, 1)
+    await _handle_cancelled_node(result_object.dispatch_id, 1)
 
 
 @pytest.mark.asyncio
@@ -533,7 +541,7 @@ async def test_run_planned_workflow_cancelled_update(mocker, test_db):
     status_queue.put_nowait((0, Result.CANCELLED, {}))
     await _run_planned_workflow(result_object, status_queue)
     assert mock_submit_task.await_count == 1
-    mock_handle_cancelled.assert_awaited_with(result_object, 0)
+    mock_handle_cancelled.assert_awaited_with(result_object.dispatch_id, 0)
     mock_finalize.assert_awaited()
 
 
@@ -573,7 +581,7 @@ async def test_run_planned_workflow_failed_update(mocker, test_db):
     status_queue.put_nowait((0, Result.FAILED, {}))
     await _run_planned_workflow(result_object, status_queue)
     assert mock_submit_task.await_count == 1
-    mock_handle_failed.assert_awaited_with(result_object, 0)
+    mock_handle_failed.assert_awaited_with(result_object.dispatch_id, 0)
     mock_finalize.assert_awaited()
 
 
