@@ -95,7 +95,7 @@ async def _get_task_inputs(node_id: int, node_name: str, result_object: Result) 
     sorted_args = sorted(abstract_inputs["args"], key=lambda x: x[1])
     abstract_inputs["args"] = [x[0] for x in sorted_args]
 
-    input_values = await runner._get_task_input_values(result_object, abstract_inputs)
+    input_values = await runner._get_task_input_values(result_object.dispatch_id, abstract_inputs)
 
     abstract_args = abstract_inputs["args"]
     abstract_kwargs = abstract_inputs["kwargs"]

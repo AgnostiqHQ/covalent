@@ -28,7 +28,7 @@ import json
 import traceback
 import uuid
 from concurrent.futures import ThreadPoolExecutor
-from typing import Any, List
+from typing import Any, Dict, List
 
 import networkx as nx
 
@@ -326,7 +326,7 @@ def _get_dispatch_attributes_sync(dispatch_id: str, keys: List[str], refresh: bo
     return result_object.get_values(keys, refresh=refresh)
 
 
-async def get_dispatch_attributes(dispatch_id: str, keys: List[str], refresh: bool = True) -> Any:
+async def get_dispatch_attributes(dispatch_id: str, keys: List[str], refresh: bool = True) -> Dict:
     loop = asyncio.get_running_loop()
     return await loop.run_in_executor(
         dm_pool,

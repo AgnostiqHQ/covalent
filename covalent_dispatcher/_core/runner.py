@@ -48,16 +48,16 @@ debug_mode = get_config("sdk.log_level") == "debug"
 
 # Domain: runner
 # to be called by _run_abstract_task
-async def _get_task_input_values(result_object: Result, abs_task_inputs: dict) -> dict:
+async def _get_task_input_values(dispatch_id: str, abs_task_inputs: dict) -> dict:
     node_values = {}
     args = abs_task_inputs["args"]
     for node_id in args:
-        value = await datasvc.get_electron_attribute(result_object.dispatch_id, node_id, "output")
+        value = await datasvc.get_electron_attribute(dispatch_id, node_id, "output")
         node_values[node_id] = value
 
     kwargs = abs_task_inputs["kwargs"]
     for key, node_id in kwargs.items():
-        value = await datasvc.get_electron_attribute(result_object.dispatch_id, node_id, "output")
+        value = await datasvc.get_electron_attribute(dispatch_id, node_id, "output")
         node_values[node_id] = value
 
     return node_values
@@ -73,14 +73,13 @@ async def _run_abstract_task(
 ) -> None:
 
     # Resolve abstract task and inputs to their concrete (serialized) values
-    result_object = datasvc.get_result_object(dispatch_id)
     timestamp = datetime.now(timezone.utc)
 
     try:
-        serialized_callable = result_object.lattice.transport_graph.get_node_value(
-            node_id, "function"
+        serialized_callable = await datasvc.get_electron_attribute(
+            dispatch_id, node_id, "function"
         )
-        input_values = await _get_task_input_values(result_object, abstract_inputs)
+        input_values = await _get_task_input_values(dispatch_id, abstract_inputs)
 
         abstract_args = abstract_inputs["args"]
         abstract_kwargs = abstract_inputs["kwargs"]
@@ -90,7 +89,7 @@ async def _run_abstract_task(
 
         app_log.debug(f"Collecting deps for task {node_id}")
 
-        call_before, call_after = _gather_deps(result_object, node_id)
+        call_before, call_after = await _gather_deps(dispatch_id, node_id)
 
     except Exception as ex:
         app_log.error(f"Exception when trying to resolve inputs or deps: {ex}")
@@ -110,10 +109,10 @@ async def _run_abstract_task(
     )
     app_log.debug(f"7: Marking node {node_id} as running (_run_abstract_task)")
 
-    await datasvc.update_node_result(result_object.dispatch_id, node_result)
+    await datasvc.update_node_result(dispatch_id, node_result)
 
     return await _run_task(
-        result_object=result_object,
+        dispatch_id=dispatch_id,
         node_id=node_id,
         serialized_callable=serialized_callable,
         selected_executor=selected_executor,
@@ -126,7 +125,7 @@ async def _run_abstract_task(
 
 # Domain: runner
 async def _run_task(
-    result_object: SRVResult,
+    dispatch_id: str,
     node_id: int,
     inputs: Dict,
     serialized_callable: Any,
@@ -152,8 +151,8 @@ async def _run_task(
         None
     """
 
-    dispatch_id = result_object.dispatch_id
-    results_dir = result_object.results_dir
+    dispatch_info = await datasvc.get_dispatch_attributes(dispatch_id, ["results_dir"])
+    results_dir = dispatch_info["results_dir"]
 
     # Instantiate the executor from JSON
     try:
@@ -223,19 +222,18 @@ async def _run_task(
 
 
 # Domain: runner
-def _gather_deps(result_object: SRVResult, node_id: int) -> Tuple[List, List]:
+async def _gather_deps(dispatch_id: str, node_id: int) -> Tuple[List, List]:
     """Assemble deps for a node into the final call_before and call_after"""
 
-    deps = result_object.lattice.transport_graph.get_node_value(node_id, "deps")
+    deps = await datasvc.get_electron_attribute(dispatch_id, node_id, "deps")
 
     # Assemble call_before and call_after from all the deps
 
-    call_before_objs_json = result_object.lattice.transport_graph.get_node_value(
-        node_id, "call_before"
+    call_before_objs_json = await datasvc.get_electron_attribute(
+        dispatch_id, node_id, "call_before"
     )
-    call_after_objs_json = result_object.lattice.transport_graph.get_node_value(
-        node_id, "call_after"
-    )
+
+    call_after_objs_json = await datasvc.get_electron_attribute(dispatch_id, node_id, "call_after")
 
     call_before = []
     call_after = []
@@ -376,7 +374,7 @@ async def _postprocess_workflow(result_object: SRVResult) -> SRVResult:
 
     app_log.debug(f"Submitted post-processing job to executor {post_processor}")
     post_process_result = await _run_task(
-        result_object=result_object,
+        dispatch_id=result_object.dispatch_id,
         node_id=-1,
         serialized_callable=TransportableObject(_post_process),
         selected_executor=post_processor,

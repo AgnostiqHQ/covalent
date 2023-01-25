@@ -91,7 +91,8 @@ def get_mock_srvresult(sdkres, test_db) -> SRVResult:
     return get_result_object(sdkres.dispatch_id)
 
 
-def test_gather_deps(mocker, test_db):
+@pytest.mark.asyncio
+async def test_gather_deps(mocker, test_db):
     """Test internal _gather_deps for assembling deps into call_before and
     call_after"""
 
@@ -122,12 +123,15 @@ def test_gather_deps(mocker, test_db):
     sdkres = Result(received_workflow, "asdf")
     result_object = get_mock_srvresult(sdkres, test_db)
 
+    async def get_electron_attr(dispatch_id, node_id, key):
+        return result_object.lattice.transport_graph.get_node_value(node_id, key)
+
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.get_result_object",
-        return_value=result_object,
+        "covalent_dispatcher._core.data_manager.get_electron_attribute",
+        get_electron_attr,
     )
 
-    before, after = _gather_deps(result_object, 0)
+    before, after = await _gather_deps(result_object.dispatch_id, 0)
     assert len(before) == 3
     assert len(after) == 1
 
@@ -146,10 +150,6 @@ async def test_run_abstract_task_exception_handling(mocker, test_db):
     result_object = get_mock_srvresult(sdkres, test_db)
 
     inputs = {"args": [], "kwargs": {}}
-    mock_get_result = mocker.patch(
-        "covalent_dispatcher._core.runner.datasvc.get_result_object",
-        return_value=result_object,
-    )
     mock_get_task_input_values = mocker.patch(
         "covalent_dispatcher._core.runner._get_task_input_values",
         side_effect=RuntimeError(),
@@ -185,8 +185,21 @@ async def test_run_task_executor_exception_handling(mocker, test_db):
         side_effect=Exception(),
     )
 
+    async def get_electron_attr(dispatch_id, node_id, key):
+        return result_object.lattice.transport_graph.get_node_value(dispatch_id, node_id, key)
+
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_electron_attribute",
+        get_electron_attr,
+    )
+
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_dispatch_attributes",
+        return_value={"results_dir": "/tmp/result"},
+    )
+
     node_result = await _run_task(
-        result_object=result_object,
+        dispatch_id=result_object.dispatch_id,
         node_id=1,
         inputs=inputs,
         serialized_callable=None,
@@ -219,8 +232,20 @@ async def test_run_task_runtime_exception_handling(mocker, test_db):
         return_value=mock_executor,
     )
 
+    async def get_electron_attr(dispatch_id, node_id, key):
+        return result_object.lattice.transport_graph.get_node_value(dispatch_id, node_id, key)
+
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_electron_attribute",
+        get_electron_attr,
+    )
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_dispatch_attributes",
+        return_value={"results_dir": "/tmp/result"},
+    )
+
     node_result = await _run_task(
-        result_object=result_object,
+        dispatch_id=result_object.dispatch_id,
         node_id=1,
         inputs=inputs,
         serialized_callable=None,
