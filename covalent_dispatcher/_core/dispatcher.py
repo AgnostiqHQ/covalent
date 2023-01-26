@@ -42,6 +42,9 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 _global_event_queue = asyncio.Queue()
 _status_queues = {}
+_futures = {}
+
+_global_event_listener = None
 
 NEW_RUNNER_ENABLED = get_config("dispatcher.force_legacy_runner") == "false"
 
@@ -256,6 +259,11 @@ async def run_workflow(dispatch_id: str) -> RESULT_STATUS:
 
     app_log.debug("Inside run_workflow.")
 
+    global _global_event_listener
+
+    if not _global_event_listener:
+        _global_event_listener = asyncio.create_task(_node_event_listener())
+
     result_info = await datasvc.get_dispatch_attributes(dispatch_id, ["status"])
 
     if result_info["status"] == RESULT_STATUS.COMPLETED:
@@ -265,7 +273,13 @@ async def run_workflow(dispatch_id: str) -> RESULT_STATUS:
     try:
         await _plan_workflow(dispatch_id)
         _status_queues[dispatch_id] = asyncio.Queue()
-        dispatch_status = await _run_planned_workflow(dispatch_id, _status_queues[dispatch_id])
+        # dispatch_status = await _run_planned_workflow(dispatch_id, _status_queues[dispatch_id])
+        fut = asyncio.Future()
+        _futures[dispatch_id] = fut
+
+        await _submit_initial_tasks(dispatch_id)
+
+        dispatch_status = await fut
 
     except Exception as ex:
 
@@ -310,8 +324,9 @@ async def notify_node_status(
         "status": status,
         "detail": detail,
     }
-    status_queue = _status_queues[dispatch_id]
-    await status_queue.put((node_id, status, detail))
+    # status_queue = _status_queues[dispatch_id]
+    # await status_queue.put((node_id, status, detail))
+    await _global_event_queue.put(msg)
 
 
 async def _finalize_dispatch(dispatch_id: str):
@@ -424,6 +439,7 @@ async def _handle_dispatch_exception(dispatch_id: str, ex: Exception) -> RESULT_
 #     "detail": detail,
 # }
 async def _node_event_listener():
+    app_log.debug("Starting event listener")
     while True:
         msg = await _global_event_queue.get()
 
@@ -436,7 +452,15 @@ async def _handle_event(msg: Dict):
     node_status = msg["status"]
     detail = msg["detail"]
 
-    await _handle_node_status_update(dispatch_id, node_id, node_status, detail)
+    try:
+        await _handle_node_status_update(dispatch_id, node_id, node_status, detail)
+    except Exception as ex:
+        dispatch_status = await _handle_dispatch_exception(dispatch_id, ex)
+        await datasvc.persist_result(dispatch_id)
+        fut = _futures.get(dispatch_id, None)
+        if fut:
+            fut.set_result(dispatch_status)
+        return dispatch_status
 
     unresolved = await _unresolved_tasks.get_unresolved(dispatch_id)
     if unresolved < 1:
@@ -448,5 +472,8 @@ async def _handle_event(msg: Dict):
 
         finally:
             await datasvc.persist_result(dispatch_id)
+            fut = _futures.get(dispatch_id, None)
+            if fut:
+                fut.set_result(dispatch_status)
 
         return dispatch_status
