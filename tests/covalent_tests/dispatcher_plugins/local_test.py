@@ -51,11 +51,7 @@ def test_get_redispatch_request_body_null_arguments():
 
 def test_get_request_body_args_kwargs(mocker):
     """Test the get request body function when args/kwargs is not null."""
-    generate_electron_updates_mock = mocker.patch(
-        "covalent._dispatcher_plugins.redispatch_utils._generate_electron_updates",
-        return_value="mock-electron-updates",
-    )
-    get_result_mock = mocker.patch("covalent._dispatcher_plugins.redispatch_utils.get_result")
+    get_result_mock = mocker.patch("covalent._dispatcher_plugins.local.get_result")
     get_result_mock().lattice.serialize_to_json.return_value = "mock-json-lattice"
 
     response = get_redispatch_request_body(
@@ -63,9 +59,6 @@ def test_get_request_body_args_kwargs(mocker):
         new_args=[1, 2],
         new_kwargs={"a": 1, "b": 2},
         replace_electrons={"mock-task-id": "mock-electron"},
-    )
-    generate_electron_updates_mock.assert_called_once_with(
-        "mock-dispatch-id", {"mock-task-id": "mock-electron"}
     )
     assert response == {
         "json_lattice": "mock-json-lattice",
@@ -86,7 +79,8 @@ def test_redispatch(mocker, replace_electrons, expected_arg):
     mocker.patch("covalent._dispatcher_plugins.local.get_config", return_value="mock-config")
     requests_mock = mocker.patch("covalent._dispatcher_plugins.local.requests")
     get_request_body_mock = mocker.patch(
-        "covalent._dispatcher_plugins.local.get_request_body", return_value={"mock-request-body"}
+        "covalent._dispatcher_plugins.local.get_redispatch_request_body",
+        return_value={"mock-request-body"},
     )
 
     local_dispatcher = LocalDispatcher()
