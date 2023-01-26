@@ -242,8 +242,9 @@ async def run_workflow(dispatch_id: str, wait: bool = SYNC_DISPATCHES) -> RESULT
         _global_event_listener = asyncio.create_task(_node_event_listener())
 
     result_info = await datasvc.get_dispatch_attributes(dispatch_id, ["status"])
+    dispatch_status = result_info["status"]
 
-    if result_info["status"] == RESULT_STATUS.COMPLETED:
+    if dispatch_status == RESULT_STATUS.COMPLETED:
         datasvc.finalize_dispatch(dispatch_id)
         return RESULT_STATUS.COMPLETED
 
