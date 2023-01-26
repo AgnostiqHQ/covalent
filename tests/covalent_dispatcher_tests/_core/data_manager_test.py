@@ -42,7 +42,6 @@ from covalent_dispatcher._core.data_manager import (
     make_dispatch,
     persist_result,
     update_node_result,
-    upsert_lattice_data,
 )
 from covalent_dispatcher._db.datastore import DataStore
 
@@ -319,16 +318,6 @@ async def test_update_parent_electron(mocker, sub_status, mapped_status):
 
     mock_get_res.assert_called_with(parent_dispatch_id)
     mock_update_node.assert_awaited_with(parent_result_obj.dispatch_id, mock_node_result)
-
-
-def test_upsert_lattice_data(mocker):
-    result_object = get_mock_result()
-    mock_get_result = mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
-    )
-    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
-    upsert_lattice_data(result_object.dispatch_id)
-    mock_upsert_lattice.assert_called_with(result_object)
 
 
 @pytest.mark.asyncio

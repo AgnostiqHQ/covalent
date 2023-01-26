@@ -39,7 +39,7 @@ from covalent._workflow.lattice import Lattice
 
 from .._dal.result import Result as SRVResult
 from .._dal.result import get_result_object as get_result_object_from_db
-from .._db import update, upsert
+from .._db import update
 from .._db.write_result_to_db import resolve_electron_id
 from . import dispatcher
 
@@ -226,11 +226,6 @@ async def _update_parent_electron(result_object: SRVResult):
         parent_result_obj = get_result_object(dispatch_id)
         app_log.debug(f"Updating sublattice parent node {dispatch_id}:{node_id}")
         await update_node_result(parent_result_obj.dispatch_id, node_result)
-
-
-def upsert_lattice_data(dispatch_id: str):
-    result_object = get_result_object(dispatch_id)
-    upsert._lattice_data(result_object)
 
 
 def _get_electron_attributes_sync(
