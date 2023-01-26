@@ -90,7 +90,7 @@ async def _handle_completed_node(dispatch_id: str, node_id: int):
 
     ready_nodes = []
     app_log.debug(f"Node {node_id} completed")
-
+    app_log.debug(f"Removing pending counter for {dispatch_id}:{node_id}")
     await _pending_parents.remove(dispatch_id, node_id)
     app_log.debug(f"Removed pending counter for {dispatch_id}:{node_id}")
     for child in await datasvc.get_node_successors(dispatch_id, node_id):
@@ -283,9 +283,10 @@ async def run_workflow(dispatch_id: str) -> RESULT_STATUS:
         dispatch_status = await _submit_initial_tasks(dispatch_id)
 
         if SYNC_DISPATCHES:
+            app_log.debug(f"Waiting for dispatch {dispatch_id}")
             dispatch_status = await fut
         else:
-            app_log.debug("Not waiting for dispatch to complete")
+            app_log.debug(f"Not waiting for dispatch {dispatch_id} to complete")
 
     except Exception as ex:
 
@@ -293,7 +294,6 @@ async def run_workflow(dispatch_id: str) -> RESULT_STATUS:
 
     finally:
         if dispatch_status != RESULT_STATUS.RUNNING:
-            await datasvc.persist_result(dispatch_id)
             datasvc.finalize_dispatch(dispatch_id)
 
     return dispatch_status
