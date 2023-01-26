@@ -28,7 +28,7 @@ from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
-from .._workflow.lattice import Lattice
+from .._workflow._lattice import Lattice
 from .._workflow.transport import TransportableObject
 
 if TYPE_CHECKING:

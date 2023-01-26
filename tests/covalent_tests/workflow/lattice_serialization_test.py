@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import covalent as ct
-from covalent._workflow.lattice import Lattice
+from covalent._workflow._lattice import Lattice
 from covalent._workflow.transport import encode_metadata
 from covalent.executor import LocalExecutor
 

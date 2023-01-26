@@ -22,7 +22,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from .._results_manager.result import Result
-from .._workflow.lattice import Lattice
+from .._workflow._lattice import Lattice
 
 
 class BaseDispatcher(ABC):

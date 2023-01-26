@@ -32,8 +32,8 @@ from covalent._shared_files.defaults import (
     subscript_prefix,
 )
 from covalent._shared_files.utils import get_named_params
-from covalent._workflow.electron import to_decoded_electron_collection
-from covalent._workflow.lattice import Lattice
+from covalent._workflow._electron import to_decoded_electron_collection
+from covalent._workflow._lattice import Lattice
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 
 from .._db import update

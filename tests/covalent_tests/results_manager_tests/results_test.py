@@ -27,7 +27,7 @@ import pytest
 
 import covalent as ct
 from covalent._results_manager.result import Result
-from covalent._workflow.lattice import Lattice as LatticeClass
+from covalent._workflow._lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
 
 # TEMP_RESULTS_DIR = "/tmp/results"

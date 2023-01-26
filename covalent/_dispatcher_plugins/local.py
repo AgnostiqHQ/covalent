@@ -28,7 +28,7 @@ from .._results_manager import wait
 from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
 from .._shared_files.config import get_config
-from .._workflow.lattice import Lattice
+from .._workflow._lattice import Lattice
 from .base import BaseDispatcher
 
 

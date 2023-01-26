@@ -20,10 +20,10 @@
 
 """Import workflow utilities."""
 
+from ._electron import electron
+from ._lattice import lattice
 from .depsbash import DepsBash
 from .depscall import DepsCall
 from .depspip import DepsPip
-from .electron import electron
-from .lattice import lattice
 from .lepton import Lepton
 from .transport import TransportableObject

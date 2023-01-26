@@ -29,7 +29,7 @@ import pytest
 
 import covalent as ct
 from covalent._results_manager import Result
-from covalent._workflow.lattice import Lattice
+from covalent._workflow._lattice import Lattice
 from covalent_dispatcher._core.data_manager import get_result_object
 from covalent_dispatcher._core.runner import (
     _build_sublattice_graph,

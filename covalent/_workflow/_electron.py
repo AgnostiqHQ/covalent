@@ -45,10 +45,10 @@ from .._shared_files.utils import (
     get_named_params,
     get_serialized_function_str,
 )
+from ._lattice import Lattice
 from .depsbash import DepsBash
 from .depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from .depspip import DepsPip
-from .lattice import Lattice
 from .transport import TransportableObject, encode_metadata
 
 consumable_constraints = ["budget", "time_limit"]
