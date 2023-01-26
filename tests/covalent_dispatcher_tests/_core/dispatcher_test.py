@@ -129,8 +129,9 @@ async def test_run_workflow_normal(mocker, wait, expected_status):
         mock_unregister.assert_called_with(dispatch_id)
 
 
+@pytest.mark.parametrize("wait", [True, False])
 @pytest.mark.asyncio
-async def test_run_completed_workflow(mocker):
+async def test_run_completed_workflow(mocker, wait):
     import asyncio
 
     dispatch_id = "completed_dispatch"
@@ -147,14 +148,15 @@ async def test_run_completed_workflow(mocker):
         return_value={"status": Result.COMPLETED},
     )
     mock_plan = mocker.patch("covalent_dispatcher._core.dispatcher._plan_workflow")
-    dispatch_status = await run_workflow(dispatch_id)
+    dispatch_status = await run_workflow(dispatch_id, wait)
 
     mock_unregister.assert_called_with(dispatch_id)
     assert dispatch_status == Result.COMPLETED
 
 
+@pytest.mark.parametrize("wait", [True, False])
 @pytest.mark.asyncio
-async def test_run_workflow_exception(mocker):
+async def test_run_workflow_exception(mocker, wait):
     import asyncio
 
     dispatch_id = "mock_dispatch"
@@ -176,7 +178,7 @@ async def test_run_workflow_exception(mocker):
         return_value={"status": Result.NEW_OBJ},
     )
 
-    status = await run_workflow(dispatch_id)
+    status = await run_workflow(dispatch_id, wait)
 
     assert status == Result.FAILED
     mock_unregister.assert_called_with(dispatch_id)
