@@ -219,7 +219,7 @@ async def _plan_workflow(dispatch_id: str) -> None:
     pass
 
 
-async def run_workflow(dispatch_id: str) -> RESULT_STATUS:
+async def run_workflow(dispatch_id: str, wait: bool = SYNC_DISPATCHES) -> RESULT_STATUS:
     """
     Plan and run the workflow by loading the result object corresponding to the
     dispatch id and retrieving essential information from it.
@@ -250,7 +250,7 @@ async def run_workflow(dispatch_id: str) -> RESULT_STATUS:
     try:
         await _plan_workflow(dispatch_id)
 
-        if SYNC_DISPATCHES:
+        if wait:
             fut = asyncio.Future()
             _futures[dispatch_id] = fut
 
