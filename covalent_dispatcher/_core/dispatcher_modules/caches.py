@@ -53,6 +53,10 @@ class _UnresolvedTasksCache:
         current = await self.get_unresolved(dispatch_id)
         await self.set_unresolved(dispatch_id, current - 1)
 
+    async def remove(self, dispatch_id: str):
+        key = _unresolved_tasks_key(dispatch_id)
+        await self._store.remove(key)
+
 
 class _PendingParentsCache:
     def __init__(self, store: _KeyValueBase = _DictStore()):
@@ -69,6 +73,10 @@ class _PendingParentsCache:
     async def decrement(self, dispatch_id: str, node_id: int):
         current = await self.get_pending(dispatch_id, node_id)
         await self.set_pending(dispatch_id, node_id, current - 1)
+
+    async def remove(self, dispatch_id: str, node_id: int):
+        key = _pending_parents_key(dispatch_id, node_id)
+        await self._store.remove(key)
 
 
 _pending_parents = _PendingParentsCache()

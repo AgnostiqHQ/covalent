@@ -281,6 +281,10 @@ async def test_handle_completed_node(mocker, test_db):
     assert await _pending_parents.get_pending(result_object.dispatch_id, 1) == 0
     assert await _pending_parents.get_pending(result_object.dispatch_id, 2) == 1
 
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher._pending_parents.remove",
+    )
+
     next_nodes = await _handle_completed_node(result_object.dispatch_id, 1)
     assert next_nodes == [0]
 

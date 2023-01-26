@@ -89,8 +89,10 @@ async def _handle_completed_node(dispatch_id: str, node_id: int):
 
     ready_nodes = []
     app_log.debug(f"Node {node_id} completed")
+
+    await _pending_parents.remove(dispatch_id, node_id)
+    app_log.debug(f"Removed pending counter for {dispatch_id}:{node_id}")
     for child in await datasvc.get_node_successors(dispatch_id, node_id):
-        now_pending = await _pending_parents.get_pending(dispatch_id, child)
         await _pending_parents.decrement(dispatch_id, child)
         now_pending = await _pending_parents.get_pending(dispatch_id, child)
         if now_pending < 1:
@@ -330,6 +332,9 @@ async def notify_node_status(
 
 
 async def _finalize_dispatch(dispatch_id: str):
+
+    await _unresolved_tasks.remove(dispatch_id)
+    app_log.debug(f"Removed unresolved counter for {dispatch_id}")
 
     incomplete_tasks = await datasvc.get_incomplete_tasks(dispatch_id)
     failed = incomplete_tasks["failed"]
