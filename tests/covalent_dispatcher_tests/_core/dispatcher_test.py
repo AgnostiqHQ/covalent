@@ -29,10 +29,13 @@ import covalent as ct
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.dispatcher import (
+    _finalize_dispatch,
     _handle_cancelled_node,
     _handle_event,
     _handle_failed_node,
     _handle_node_status_update,
+    _submit_initial_tasks,
+    _submit_task,
     cancel_workflow,
     run_dispatch,
     run_workflow,
@@ -356,6 +359,221 @@ async def test_handle_event_exception(mocker):
 
     mock_persist.assert_awaited()
     mock_finalize.assert_not_awaited
+
+
+@pytest.mark.asyncio
+async def test_handle_event_finalize_exception(mocker):
+    import asyncio
+
+    mock_handle_status_update = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._handle_node_status_update",
+    )
+    mock_handle_dispatch_exception = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._handle_dispatch_exception",
+        return_value=Result.FAILED,
+    )
+
+    mock_persist = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.persist_result",
+    )
+
+    mock_finalize = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._finalize_dispatch",
+        side_effect=RuntimeError(),
+    )
+
+    mock_get_unresolved = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._unresolved_tasks.get_unresolved",
+        return_value=0,
+    )
+
+    dispatch_id = "mock_dispatch"
+    node_id = 2
+    status = Result.COMPLETED
+    msg = {"dispatch_id": dispatch_id, "node_id": node_id, "status": status, "detail": {}}
+
+    _futures = {dispatch_id: asyncio.Future()}
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher._futures",
+        _futures,
+    )
+
+    assert await _handle_event(msg) == Result.FAILED
+
+    assert _futures[dispatch_id].result() == Result.FAILED
+
+    mock_persist.assert_awaited()
+
+
+@pytest.mark.parametrize(
+    "failed,cancelled,final_status",
+    [
+        (False, False, Result.COMPLETED),
+        (False, True, Result.CANCELLED),
+        (True, False, Result.FAILED),
+        (True, True, Result.FAILED),
+    ],
+)
+@pytest.mark.asyncio
+async def test_finalize_dispatch(mocker, failed, cancelled, final_status):
+    mock_remove = mocker.patch("covalent_dispatcher._core.dispatcher._unresolved_tasks.remove")
+
+    failed_tasks = [(0, "task_0")] if failed else []
+    cancelled_tasks = [(1, "task_1")] if cancelled else []
+
+    query_result = {"failed": failed_tasks, "cancelled": cancelled_tasks}
+    mock_incomplete = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_incomplete_tasks",
+        return_value=query_result,
+    )
+
+    mock_dispatch_info = {"status": Result.COMPLETED}
+
+    def mock_gen_dispatch_result(dispatch_id, **kwargs):
+        return {"status": kwargs["status"]}
+
+    async def mock_update_dispatch_result(dispatch_id, dispatch_result):
+        mock_dispatch_info["status"] = dispatch_result["status"]
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.generate_dispatch_result",
+        mock_gen_dispatch_result,
+    )
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.update_dispatch_result",
+        mock_update_dispatch_result,
+    )
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_dispatch_attributes",
+        return_value=mock_dispatch_info,
+    )
+
+    dispatch_id = "dispatch_1"
+
+    assert await _finalize_dispatch(dispatch_id) == final_status
+
+
+@pytest.mark.asyncio
+async def test_submit_initial_tasks(mocker):
+    dispatch_id = "dispatch_1"
+
+    initial_nodes = [1, 2]
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher._get_initial_tasks_and_deps",
+        return_value=(3, initial_nodes, {}),
+    )
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.generate_dispatch_result",
+    )
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher._initialize_caches",
+    )
+
+    mock_inc = mocker.patch("covalent_dispatcher._core.dispatcher._unresolved_tasks.increment")
+    mock_submit_task = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._submit_task",
+    )
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.update_dispatch_result",
+    )
+
+    assert await _submit_initial_tasks(dispatch_id) == Result.RUNNING
+
+    assert mock_submit_task.await_count == 2
+    assert mock_inc.await_count == 2
+
+
+@pytest.mark.parametrize("new_runner", [True, False])
+@pytest.mark.asyncio
+async def test_submit_task(mocker, new_runner):
+    dispatch_id = "dispatch_1"
+    node_id = 2
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher._get_abstract_task_inputs",
+        return_value={"args": [], "kwargs": {}},
+    )
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.NEW_RUNNER_ENABLED",
+        new_runner,
+    )
+
+    mock_attrs = {
+        "name": "task",
+        "value": 5,
+        "executor": "local",
+        "executor_data": {},
+    }
+
+    async def get_electron_attr(dispatch_id, node_id, key):
+        return mock_attrs[key]
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_electron_attribute",
+        get_electron_attr,
+    )
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.update_node_result",
+    )
+
+    mock_run_abs_task = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.runner_exp.run_abstract_task",
+    )
+    mock_run_abs_task_legacy = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.runner.run_abstract_task",
+    )
+
+    await _submit_task(dispatch_id, node_id)
+
+    if new_runner:
+        mock_run_abs_task.assert_called()
+    else:
+        mock_run_abs_task_legacy.assert_called()
+
+
+@pytest.mark.asyncio
+async def test_submit_parameter(mocker):
+    from covalent._shared_files.defaults import parameter_prefix
+
+    dispatch_id = "dispatch_1"
+    node_id = 2
+
+    mock_attrs = {
+        "name": parameter_prefix,
+        "value": 5,
+        "executor": "local",
+        "executor_data": {},
+    }
+
+    async def get_electron_attr(dispatch_id, node_id, key):
+        return mock_attrs[key]
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_electron_attribute",
+        get_electron_attr,
+    )
+
+    mock_update = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.update_node_result",
+    )
+
+    mock_run_abs_task = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.runner_exp.run_abstract_task",
+    )
+    mock_run_abs_task_legacy = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.runner.run_abstract_task",
+    )
+
+    await _submit_task(dispatch_id, node_id)
+
+    mock_run_abs_task.assert_not_called()
+    mock_run_abs_task_legacy.assert_not_called()
+    mock_update.assert_awaited()
 
 
 def test_cancelled_workflow():
