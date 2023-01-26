@@ -34,7 +34,6 @@ from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.data_manager import (
     _make_sublattice_dispatch,
     _register_result_object,
-    _registered_dispatches,
     _update_parent_electron,
     finalize_dispatch,
     get_result_object,
@@ -226,31 +225,67 @@ async def test_make_dispatch(mocker):
 
 
 def test_get_result_object(mocker):
-    result_object = get_mock_result()
+    result_object = MagicMock()
+    result_object.dispatch_id = "dispatch_1"
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_result_object_from_db",
+        return_value=result_object,
+    )
+
     dispatch_id = result_object.dispatch_id
+    _registered_dispatches = {}
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager._registered_dispatches",
+        _registered_dispatches,
+    )
     _registered_dispatches[dispatch_id] = result_object
     assert get_result_object(dispatch_id) is result_object
-    del _registered_dispatches[dispatch_id]
 
 
-def test_register_result_object(mocker):
+@pytest.mark.parametrize("stateless", [False, True])
+def test_register_result_object(mocker, stateless):
+
     result_object = get_mock_result()
     srvres_obj = MagicMock()
     dispatch_id = result_object.dispatch_id
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.STATELESS",
+        stateless,
+    )
     mock_get_res_from_db = mocker.patch(
         "covalent_dispatcher._core.data_manager.get_result_object_from_db", return_value=srvres_obj
     )
+    _registered_dispatches = {}
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager._registered_dispatches",
+        _registered_dispatches,
+    )
+
     _register_result_object(result_object)
-    assert _registered_dispatches[dispatch_id] is srvres_obj
-    del _registered_dispatches[dispatch_id]
+    if not stateless:
+        assert _registered_dispatches[dispatch_id] is srvres_obj
+        del _registered_dispatches[dispatch_id]
+    else:
+        assert dispatch_id not in _registered_dispatches
 
 
-def test_unregister_result_object(mocker):
+@pytest.mark.parametrize("stateless", [False, True])
+def test_unregister_result_object(mocker, stateless):
     result_object = get_mock_result()
     dispatch_id = result_object.dispatch_id
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.STATELESS",
+        stateless,
+    )
+    _registered_dispatches = {dispatch_id: result_object}
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager._registered_dispatches",
+        _registered_dispatches,
+    )
     _registered_dispatches[dispatch_id] = result_object
     finalize_dispatch(dispatch_id)
-    assert dispatch_id not in _registered_dispatches
+    if not stateless:
+        assert dispatch_id not in _registered_dispatches
 
 
 @pytest.mark.asyncio

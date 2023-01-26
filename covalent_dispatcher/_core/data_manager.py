@@ -34,6 +34,7 @@ import networkx as nx
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
+from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 
@@ -51,6 +52,8 @@ _registered_dispatches = {}
 
 # Thread pool for Datastore I/O
 dm_pool = ThreadPoolExecutor()
+
+STATELESS = get_config("dispatcher.use_stateless_datamgr") != "false"
 
 
 def generate_node_result(
@@ -86,9 +89,9 @@ def generate_node_result(
 
 # Domain: result
 async def update_node_result(dispatch_id, node_result):
-    app_log.warning("Updating node result (run_planned_workflow).")
+    app_log.debug("Updating node result (run_planned_workflow).")
     try:
-        result_object = get_result_object(dispatch_id)
+        result_object = await _run_in_executor(get_result_object, dispatch_id, True)
         node_id = node_result["node_id"]
         node_status = node_result["status"]
         node_info = await get_electron_attributes(
@@ -190,17 +193,24 @@ async def make_dispatch(
     return result_object.dispatch_id
 
 
-def get_result_object(dispatch_id: str) -> SRVResult:
-    return _registered_dispatches[dispatch_id]
+def get_result_object(dispatch_id: str, bare: bool = True) -> SRVResult:
+    if STATELESS:
+        app_log.debug(f"Getting result object from db, bare={bare}")
+        return get_result_object_from_db(dispatch_id, bare)
+    else:
+        app_log.debug("Getting cached result object")
+        return _registered_dispatches[dispatch_id]
 
 
 def _register_result_object(result_object: Result):
-    dispatch_id = result_object.dispatch_id
-    _registered_dispatches[dispatch_id] = get_result_object_from_db(dispatch_id)
+    if not STATELESS:
+        dispatch_id = result_object.dispatch_id
+        _registered_dispatches[dispatch_id] = get_result_object_from_db(dispatch_id)
 
 
 def finalize_dispatch(dispatch_id: str):
-    del _registered_dispatches[dispatch_id]
+    if not STATELESS:
+        del _registered_dispatches[dispatch_id]
 
 
 async def persist_result(dispatch_id: str):
@@ -228,29 +238,23 @@ async def _update_parent_electron(result_object: SRVResult):
         await update_node_result(parent_result_obj.dispatch_id, node_result)
 
 
-def _get_electron_attributes_sync(
-    dispatch_id: str, node_id: int, keys: str, refresh: bool = True
-) -> Any:
+def _get_electron_attributes_sync(dispatch_id: str, node_id: int, keys: str) -> Any:
     result_object = get_result_object(dispatch_id)
+    refresh = False if STATELESS else True
     return result_object.lattice.transport_graph.get_node_values(node_id, keys, refresh=refresh)
 
 
-async def get_electron_attribute(
-    dispatch_id: str, node_id: int, key: str, refresh: bool = True
-) -> Any:
-    query_res = await get_electron_attributes(dispatch_id, node_id, [key], refresh)
+async def get_electron_attribute(dispatch_id: str, node_id: int, key: str) -> Any:
+    query_res = await get_electron_attributes(dispatch_id, node_id, [key])
     return query_res[key]
 
 
-async def get_electron_attributes(
-    dispatch_id: str, node_id: int, keys: str, refresh: bool = True
-) -> Any:
+async def get_electron_attributes(dispatch_id: str, node_id: int, keys: str) -> Any:
     return await _run_in_executor(
         _get_electron_attributes_sync,
         dispatch_id,
         node_id,
         keys,
-        refresh,
     )
 
 
@@ -307,25 +311,27 @@ async def update_dispatch_result(dispatch_id, dispatch_result):
     await _run_in_executor(update_partial)
 
 
-def _get_dispatch_attributes_sync(dispatch_id: str, keys: List[str], refresh: bool = True) -> Any:
+def _get_dispatch_attributes_sync(dispatch_id: str, keys: List[str]) -> Any:
+    refresh = False if STATELESS else True
     result_object = get_result_object(dispatch_id)
     return result_object.get_values(keys, refresh=refresh)
 
 
-async def get_dispatch_attributes(dispatch_id: str, keys: List[str], refresh: bool = True) -> Dict:
+async def get_dispatch_attributes(dispatch_id: str, keys: List[str]) -> Dict:
     return await _run_in_executor(
         _get_dispatch_attributes_sync,
         dispatch_id,
         keys,
-        refresh,
     )
 
 
 # Graph queries
 
 
-async def get_incomplete_tasks(dispatch_id: str, refresh: bool = True):
-    result_object = get_result_object(dispatch_id)
+async def get_incomplete_tasks(dispatch_id: str):
+    # Need to filter all electrons in the latice
+    result_object = get_result_object(dispatch_id, False)
+    refresh = False if STATELESS else True
     return await _run_in_executor(
         result_object._get_incomplete_nodes,
         refresh,
@@ -344,7 +350,9 @@ async def get_node_successors(dispatch_id: str, node_id: int):
 
 async def get_graph_nodes_links(dispatch_id: str) -> dict:
     """Return the internal transport graph in NX node-link form"""
-    result_object = get_result_object(dispatch_id)
+
+    # Need the whole NX graph here
+    result_object = get_result_object(dispatch_id, False)
     g = result_object.lattice.transport_graph.get_internal_graph_copy()
     return nx.readwrite.node_link_data(g)
 

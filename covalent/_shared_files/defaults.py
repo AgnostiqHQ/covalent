@@ -84,6 +84,7 @@ def get_default_dispatcher_config():
         ),
         "force_legacy_runner": os.environ.get("COVALENT_DISABLE_NEW_RUNNER") or "false",
         "use_async_dispatcher": os.environ.get("COVALENT_USE_ASYNC_DISPATCHER") or "false",
+        "use_stateless_datamgr": os.environ.get("COVALENT_USE_STATELESS_DATAMGR") or "false",
     }
 
 
