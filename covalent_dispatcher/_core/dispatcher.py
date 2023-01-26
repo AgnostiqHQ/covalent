@@ -260,7 +260,7 @@ async def run_workflow(dispatch_id: str, wait: bool = SYNC_DISPATCHES) -> RESULT
             app_log.debug(f"Waiting for dispatch {dispatch_id}")
             dispatch_status = await fut
         else:
-            app_log.debug(f"Not waiting for dispatch {dispatch_id} to complete")
+            app_log.debug(f"Running dispatch {dispatch_id} asynchronously")
 
     except Exception as ex:
 
