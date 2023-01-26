@@ -203,30 +203,30 @@ async def _submit_task(dispatch_id: str, node_id: int):
         asyncio.create_task(coro)
 
 
-# Domain: dispatcher
-async def _run_planned_workflow(dispatch_id: str, status_queue: asyncio.Queue) -> RESULT_STATUS:
-    """
-    Run the workflow in the topological order of their position on the
-    transport graph. Does this in an asynchronous manner so that nodes
-    at the same level are executed in parallel. Also updates the status
-    of the whole workflow execution.
+# # Domain: dispatcher
+# async def _run_planned_workflow(dispatch_id: str, status_queue: asyncio.Queue) -> RESULT_STATUS:
+#     """
+#     Run the workflow in the topological order of their position on the
+#     transport graph. Does this in an asynchronous manner so that nodes
+#     at the same level are executed in parallel. Also updates the status
+#     of the whole workflow execution.
 
-    Args:
-        dispatch_id: id of the current dispatch
-        status_queue: message queue for notifying the main loop of status updates
+#     Args:
+#         dispatch_id: id of the current dispatch
+#         status_queue: message queue for notifying the main loop of status updates
 
-    Returns:
-        None
-    """
+#     Returns:
+#         None
+#     """
 
-    await _submit_initial_tasks(dispatch_id)
+#     await _submit_initial_tasks(dispatch_id)
 
-    while unresolved := await _unresolved_tasks.get_unresolved(dispatch_id) > 0:
-        app_log.debug(f"Waiting to hear from {unresolved} tasks")
-        node_id, node_status, detail = await status_queue.get()
-        await _handle_node_status_update(dispatch_id, node_id, node_status, detail)
+#     while unresolved := await _unresolved_tasks.get_unresolved(dispatch_id) > 0:
+#         app_log.debug(f"Waiting to hear from {unresolved} tasks")
+#         node_id, node_status, detail = await status_queue.get()
+#         await _handle_node_status_update(dispatch_id, node_id, node_status, detail)
 
-    return await _finalize_dispatch(dispatch_id)
+#     return await _finalize_dispatch(dispatch_id)
 
 
 async def _plan_workflow(dispatch_id: str) -> None:

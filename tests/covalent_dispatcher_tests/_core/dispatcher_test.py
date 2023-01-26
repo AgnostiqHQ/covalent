@@ -30,9 +30,9 @@ from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.dispatcher import (
     _handle_cancelled_node,
+    _handle_event,
     _handle_failed_node,
     _handle_node_status_update,
-    _run_planned_workflow,
     cancel_workflow,
     run_dispatch,
     run_workflow,
@@ -97,7 +97,6 @@ async def test_run_workflow_normal(mocker):
 
     dispatch_id = "mock_dispatch"
 
-    mock_persist = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.persist_result")
     mock_unregister = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
@@ -120,7 +119,6 @@ async def test_run_workflow_normal(mocker):
     dispatch_status = await run_workflow(dispatch_id)
     assert dispatch_status == Result.COMPLETED
 
-    mock_persist.assert_awaited_with(dispatch_id)
     mock_unregister.assert_called_with(dispatch_id)
 
 
@@ -162,7 +160,6 @@ async def test_run_workflow_exception(mocker):
         "covalent_dispatcher._core.dispatcher._submit_initial_tasks",
         side_effect=RuntimeError("Error"),
     )
-    mock_persist = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.persist_result")
 
     mock_update_dispatch_result = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.update_dispatch_result",
@@ -175,7 +172,6 @@ async def test_run_workflow_exception(mocker):
     status = await run_workflow(dispatch_id)
 
     assert status == Result.FAILED
-    mock_persist.assert_awaited_with(dispatch_id)
     mock_unregister.assert_called_with(dispatch_id)
 
 
@@ -186,6 +182,34 @@ async def test_run_dispatch(mocker):
     mock_run = mocker.patch("covalent_dispatcher._core.dispatcher.run_workflow")
     run_dispatch(dispatch_id)
     mock_run.assert_called_with(dispatch_id)
+
+
+@pytest.mark.asyncio
+async def test_handle_completed_node_update(mocker):
+    import asyncio
+
+    dispatch_id = "mock_dispatch"
+    node_id = 2
+    status = Result.COMPLETED
+    detail = {}
+    ready_nodes = [0, 1]
+
+    mock_handle_cancelled = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._handle_completed_node", return_value=ready_nodes
+    )
+    mock_decrement = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._unresolved_tasks.decrement"
+    )
+
+    mock_increment = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._unresolved_tasks.increment"
+    )
+    mock_submit_task = mocker.patch("covalent_dispatcher._core.dispatcher._submit_task")
+
+    await _handle_node_status_update(dispatch_id, node_id, status, detail)
+    mock_decrement.assert_awaited()
+    assert mock_increment.await_count == 2
+    assert mock_submit_task.await_count == 2
 
 
 @pytest.mark.asyncio
@@ -249,72 +273,89 @@ async def test_run_handle_sublattice_node_update(mocker):
     mock_decrement.assert_not_awaited()
 
 
-@pytest.mark.skip
+@pytest.mark.parametrize("unresolved_count", [1, 0])
 @pytest.mark.asyncio
-async def test_run_planned_workflow_cancelled_update(mocker):
+async def test_handle_event(mocker, unresolved_count):
+    mock_handle_status_update = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._handle_node_status_update",
+    )
+    mock_handle_dispatch_exception = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._handle_dispatch_exception",
+    )
+
+    mock_persist = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.persist_result",
+    )
+
+    mock_finalize = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._finalize_dispatch",
+        return_value=Result.COMPLETED,
+    )
+
+    mock_get_unresolved = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._unresolved_tasks.get_unresolved",
+        return_value=unresolved_count,
+    )
+
+    dispatch_id = "mock_dispatch"
+    node_id = 2
+    status = Result.COMPLETED
+    msg = {"dispatch_id": dispatch_id, "node_id": node_id, "status": status, "detail": {}}
+
+    await _handle_event(msg)
+
+    if unresolved_count < 1:
+        mock_finalize.assert_awaited()
+        mock_persist.assert_awaited()
+    else:
+        mock_finalize.assert_not_awaited
+
+
+@pytest.mark.asyncio
+async def test_handle_event_exception(mocker):
     import asyncio
 
-    result_object = get_mock_result()
-
-    mock_upsert_lattice = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
+    mock_handle_status_update = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._handle_node_status_update",
+        side_effect=RuntimeError(),
     )
-    tasks_left = 1
-    initial_nodes = [0]
-    pending_deps = {0: 0}
+    mock_handle_dispatch_exception = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._handle_dispatch_exception",
+        return_value=Result.FAILED,
+    )
+
+    mock_persist = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.persist_result",
+    )
+
+    mock_finalize = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._finalize_dispatch",
+        return_value=Result.COMPLETED,
+    )
+
+    mock_get_unresolved = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._unresolved_tasks.get_unresolved",
+        return_value=2,
+    )
+
+    dispatch_id = "mock_dispatch"
+    node_id = 2
+    status = Result.COMPLETED
+    msg = {"dispatch_id": dispatch_id, "node_id": node_id, "status": status, "detail": {}}
+
+    _futures = {dispatch_id: asyncio.Future()}
 
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher._get_initial_tasks_and_deps",
-        return_value=(tasks_left, initial_nodes, pending_deps),
+        "covalent_dispatcher._core.dispatcher._futures",
+        _futures,
     )
 
-    mock_submit_task = mocker.patch("covalent_dispatcher._core.dispatcher._submit_task")
+    assert await _handle_event(msg) == Result.FAILED
 
-    def side_effect(result_object, node_id):
-        result_object._task_cancelled = True
+    assert _futures[dispatch_id].result() == Result.FAILED
 
-    mock_handle_cancelled = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._handle_cancelled_node", side_effect=side_effect
-    )
-    status_queue = asyncio.Queue()
-    status_queue.put_nowait((0, Result.CANCELLED))
-    await _run_planned_workflow(result_object, status_queue)
-    assert mock_submit_task.await_count == 1
-    mock_handle_cancelled.assert_awaited_with(result_object, 0)
-
-
-@pytest.mark.skip
-@pytest.mark.asyncio
-async def test_run_planned_workflow_failed_update(mocker):
-    import asyncio
-
-    result_object = get_mock_result()
-
-    mock_upsert_lattice = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
-    )
-    tasks_left = 1
-    initial_nodes = [0]
-    pending_deps = {0: 0}
-
-    mocker.patch(
-        "covalent_dispatcher._core.dispatcher._get_initial_tasks_and_deps",
-        return_value=(tasks_left, initial_nodes, pending_deps),
-    )
-
-    mock_submit_task = mocker.patch("covalent_dispatcher._core.dispatcher._submit_task")
-
-    def side_effect(result_object, node_id):
-        result_object._task_failed = True
-
-    mock_handle_failed = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._handle_failed_node", side_effect=side_effect
-    )
-    status_queue = asyncio.Queue()
-    status_queue.put_nowait((0, Result.FAILED))
-    await _run_planned_workflow(result_object, status_queue)
-    assert mock_submit_task.await_count == 1
-    mock_handle_failed.assert_awaited_with(result_object, 0)
+    mock_persist.assert_awaited()
+    mock_finalize.assert_not_awaited
 
 
 def test_cancelled_workflow():

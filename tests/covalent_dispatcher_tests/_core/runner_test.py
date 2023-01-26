@@ -30,7 +30,7 @@ import pytest
 import covalent as ct
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
-from covalent_dispatcher._core.runner import _gather_deps, _run_abstract_task, _run_task
+from covalent_dispatcher._core.runner import _run_abstract_task, _run_task
 from covalent_dispatcher._db.datastore import DataStore
 
 TEST_RESULTS_DIR = "/tmp/results"
@@ -70,54 +70,21 @@ def get_mock_result() -> Result:
     return result_object
 
 
-@pytest.mark.skip
-def test_gather_deps():
-    """Test internal _gather_deps for assembling deps into call_before and
-    call_after"""
-
-    def square(x):
-        return x * x
-
-    @ct.electron(
-        deps_bash=ct.DepsBash("ls -l"),
-        deps_pip=ct.DepsPip(["pandas"]),
-        call_before=[ct.DepsCall(square, [5])],
-        call_after=[ct.DepsCall(square, [3])],
-    )
-    def task(x):
-        return x
-
-    @ct.lattice
-    def workflow(x):
-        return task(x)
-
-    workflow.build_graph(5)
-
-    received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
-    result_object = Result(received_workflow, "asdf")
-
-    before, after = _gather_deps(result_object, 0)
-    assert len(before) == 3
-    assert len(after) == 1
-
-
-@pytest.mark.skip
 @pytest.mark.asyncio
 async def test_run_abstract_task_exception_handling(mocker):
     """Test that exceptions from resolving abstract inputs are handled"""
 
-    result_object = get_mock_result()
+    dispatch_id = "mock_dispatch"
+
     inputs = {"args": [], "kwargs": {}}
-    mock_get_result = mocker.patch(
-        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
-    )
-    mock_get_task_input_values = mocker.patch(
-        "covalent_dispatcher._core.runner._get_task_input_values",
-        side_effect=RuntimeError(),
+
+    mocker.patch("covalent_dispatcher._core.runner._gather_deps", side_effect=RuntimeError())
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_electron_attribute", return_value="function"
     )
 
     node_result = await _run_abstract_task(
-        dispatch_id=result_object.dispatch_id,
+        dispatch_id=dispatch_id,
         node_id=0,
         node_name="test_node",
         abstract_inputs=inputs,
@@ -127,20 +94,93 @@ async def test_run_abstract_task_exception_handling(mocker):
     assert node_result["status"] == Result.FAILED
 
 
-@pytest.mark.skip
+@pytest.mark.asyncio
+async def test_run_task_runtime_exception_handling(mocker):
+
+    inputs = {"args": [], "kwargs": {}}
+    mock_executor = MagicMock()
+    mock_executor._execute = AsyncMock(return_value=("", "", "error", True))
+    mock_get_executor = mocker.patch(
+        "covalent_dispatcher._core.runner.get_executor",
+        return_value=mock_executor,
+    )
+
+    dispatch_id = "mock_dispatch"
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_dispatch_attributes",
+        return_value={"results_dir": "/tmp/result"},
+    )
+
+    node_result = await _run_task(
+        dispatch_id=dispatch_id,
+        node_id=1,
+        inputs=inputs,
+        serialized_callable=None,
+        selected_executor=["local", {}],
+        call_before=[],
+        call_after=[],
+        node_name="task",
+    )
+
+    mock_executor._execute.assert_awaited_once()
+
+    assert node_result["status"] == Result.FAILED
+    assert node_result["stderr"] == "error"
+
+
+@pytest.mark.asyncio
+async def test_run_task_exception_handling(mocker):
+
+    dispatch_id = "mock_dispatch"
+    inputs = {"args": [], "kwargs": {}}
+    mock_executor = MagicMock()
+    mock_executor._execute = AsyncMock(side_effect=RuntimeError("error"))
+
+    mock_get_executor = mocker.patch(
+        "covalent_dispatcher._core.runner.get_executor",
+        return_value=mock_executor,
+    )
+
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_dispatch_attributes",
+        return_value={"results_dir": "/tmp/result"},
+    )
+    mocker.patch("traceback.TracebackException.from_exception", return_value="error")
+    node_result = await _run_task(
+        dispatch_id=dispatch_id,
+        node_id=1,
+        inputs=inputs,
+        serialized_callable=None,
+        selected_executor=["local", {}],
+        call_before=[],
+        call_after=[],
+        node_name="task",
+    )
+
+    mock_executor._execute.assert_awaited_once()
+
+    assert node_result["status"] == Result.FAILED
+    assert node_result["error"] == "error"
+
+
 @pytest.mark.asyncio
 async def test_run_task_executor_exception_handling(mocker):
     """Test that exceptions from initializing executors are caught"""
 
-    result_object = get_mock_result()
+    dispatch_id = "mock_dispatch"
     inputs = {"args": [], "kwargs": {}}
     mock_get_executor = mocker.patch(
         "covalent_dispatcher._core.runner.get_executor",
         side_effect=Exception(),
     )
 
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_dispatch_attributes",
+        return_value={"results_dir": "/tmp/result"},
+    )
+
     node_result = await _run_task(
-        result_object=result_object,
+        dispatch_id=dispatch_id,
         node_id=1,
         inputs=inputs,
         serialized_callable=None,
@@ -151,65 +191,3 @@ async def test_run_task_executor_exception_handling(mocker):
     )
 
     assert node_result["status"] == Result.FAILED
-
-
-@pytest.mark.skip
-@pytest.mark.asyncio
-async def test_run_task_runtime_exception_handling(mocker):
-
-    result_object = get_mock_result()
-    inputs = {"args": [], "kwargs": {}}
-    mock_executor = MagicMock()
-    mock_executor._execute = AsyncMock(return_value=("", "", "error", True))
-    mock_get_executor = mocker.patch(
-        "covalent_dispatcher._core.runner.get_executor",
-        return_value=mock_executor,
-    )
-
-    node_result = await _run_task(
-        result_object=result_object,
-        node_id=1,
-        inputs=inputs,
-        serialized_callable=None,
-        selected_executor=["local", {}],
-        call_before=[],
-        call_after=[],
-        node_name="task",
-    )
-
-    mock_executor._execute.assert_awaited_once()
-
-    assert node_result["stderr"] == "error"
-
-
-@pytest.mark.skip
-@pytest.mark.asyncio
-async def test_run_task_exception_handling(mocker):
-
-    result_object = get_mock_result()
-    inputs = {"args": [], "kwargs": {}}
-    mock_executor = MagicMock()
-    mock_executor._execute = AsyncMock(side_effect=RuntimeError())
-    mock_get_executor = mocker.patch(
-        "covalent_dispatcher._core.runner.get_executor",
-        return_value=mock_executor,
-    )
-
-    mock_run_task = mocker.patch(
-        "covalent_dispatcher._core.runner.get_executor",
-        return_value=mock_executor,
-    )
-    node_result = await _run_task(
-        result_object=result_object,
-        node_id=1,
-        inputs=inputs,
-        serialized_callable=None,
-        selected_executor=["local", {}],
-        call_before=[],
-        call_after=[],
-        node_name="task",
-    )
-
-    mock_executor._execute.assert_awaited_once()
-    assert node_result["status"] == Result.FAILED
-    assert node_result["error"] == "error"
