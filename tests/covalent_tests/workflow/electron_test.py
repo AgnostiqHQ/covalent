@@ -22,7 +22,7 @@
 
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
-from covalent._workflow._electron import (
+from covalent._workflow.electron import (
     Electron,
     filter_null_metadata,
     get_serialized_function_str,

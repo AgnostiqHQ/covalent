@@ -29,10 +29,10 @@ from .._file_transfer.enums import Order
 from .._file_transfer.file_transfer import FileTransfer
 from .._shared_files import logger
 from .._shared_files.defaults import DefaultMetadataValues
-from ._electron import Electron
 from .depsbash import DepsBash
 from .depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from .depspip import DepsPip
+from .electron import Electron
 from .transport import encode_metadata
 
 if TYPE_CHECKING:  # pragma: no cover

@@ -30,7 +30,7 @@ import pytest
 import covalent as ct
 from covalent._results_manager import Result
 from covalent._shared_files.defaults import sublattice_prefix
-from covalent._workflow._lattice import Lattice
+from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.dispatcher import run_workflow
 from covalent_dispatcher._core.execution import _get_task_inputs
 from covalent_dispatcher._core.runner import _run_task
@@ -191,7 +191,7 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
         res2 = failing_task(res1)
         return res2
 
-    from covalent._workflow._lattice import Lattice
+    from covalent._workflow.lattice import Lattice
 
     workflow.build_graph(5)
 
@@ -251,7 +251,7 @@ async def test_run_workflow_with_failing_leaf(mocker):
         res1 = failing_task(x)
         return res1
 
-    from covalent._workflow._lattice import Lattice
+    from covalent._workflow.lattice import Lattice
 
     workflow.build_graph(5)
 
@@ -302,7 +302,7 @@ async def test_run_workflow_does_not_deserialize(mocker):
 
     from dask.distributed import LocalCluster
 
-    from covalent._workflow._lattice import Lattice
+    from covalent._workflow.lattice import Lattice
     from covalent.executor import DaskExecutor
 
     lc = LocalCluster()

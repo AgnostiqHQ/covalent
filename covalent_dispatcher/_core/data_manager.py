@@ -27,7 +27,7 @@ import uuid
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
-from covalent._workflow._lattice import Lattice
+from covalent._workflow.lattice import Lattice
 
 from .._db import update, upsert
 from .._db.write_result_to_db import resolve_electron_id

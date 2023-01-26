@@ -34,7 +34,7 @@ from covalent._shared_files.config import get_config
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import prefix_separator, sublattice_prefix
 from covalent._workflow import DepsBash, DepsCall, DepsPip
-from covalent._workflow._lattice import Lattice
+from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
 from covalent.executor.base import wrapper_fn

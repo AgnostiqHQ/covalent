@@ -27,7 +27,7 @@ from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import Status
-from covalent._workflow._lattice import Lattice
+from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import _TransportGraph
 
 from . import upsert

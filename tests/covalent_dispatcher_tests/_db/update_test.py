@@ -27,7 +27,7 @@ import pytest
 
 import covalent as ct
 from covalent._results_manager.result import Result
-from covalent._workflow._lattice import Lattice as LatticeClass
+from covalent._workflow.lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
 from covalent_dispatcher._db import update, upsert
 from covalent_dispatcher._db.datastore import DataStore

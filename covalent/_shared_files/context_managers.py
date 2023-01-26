@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING, Generator
 
 if TYPE_CHECKING:
     from .._shared_files.util_classes import DispatchInfo
-    from .._workflow._lattice import Lattice
+    from .._workflow.lattice import Lattice
 
 
 class ActiveLatticeManager(threading.local):

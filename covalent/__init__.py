@@ -40,7 +40,7 @@ from ._workflow import (  # nopycln: import
     electron,
     lattice,
 )
-from ._workflow._electron import wait  # nopycln: import
+from ._workflow.electron import wait  # nopycln: import
 
 __all__ = [s for s in dir() if not s.startswith("_")]
 
