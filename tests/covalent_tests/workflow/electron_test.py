@@ -256,3 +256,28 @@ def test_autogen_dict_electrons():
     assert g.nodes[2]["value"].get_deserialized() == 5
     assert g.nodes[3]["value"].get_deserialized() == 7
     assert set(g.edges) == set([(1, 0, 0), (2, 1, 0), (3, 1, 0)])
+
+
+def test_as_transportable_dict(mocker):
+    """Test the get transportable electron function."""
+    mocker.patch(
+        "covalent._workflow.electron.get_serialized_function_str",
+        return_value="mock-function-string",
+    )
+    mocker.patch(
+        "covalent._workflow.electron.filter_null_metadata",
+        return_value="mock-metadata",
+    )
+
+    @ct.electron
+    def test_func(a):
+        return a
+
+    # Construct bound electron, i.e. electron with non-null function and node_id
+    electron = Electron(function=test_func, node_id=1, metadata={"a": 1, "b": 2})
+    transportable_electron = electron.as_transportable_dict
+
+    assert transportable_electron["name"] == "test_func"
+    assert transportable_electron["metadata"] == "mock-metadata"
+    assert transportable_electron["function_string"] == "mock-function-string"
+    assert TransportableObject(test_func).to_dict() == transportable_electron["function"]
