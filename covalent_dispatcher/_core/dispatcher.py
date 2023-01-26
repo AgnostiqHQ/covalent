@@ -40,13 +40,14 @@ from .dispatcher_modules.caches import _pending_parents, _unresolved_tasks
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-_global_event_queue = asyncio.Queue()
+_global_status_queue = asyncio.Queue()
 _status_queues = {}
 _futures = {}
 
 _global_event_listener = None
 
 NEW_RUNNER_ENABLED = get_config("dispatcher.force_legacy_runner") == "false"
+SYNC_DISPATCHES = get_config("dispatcher.use_async_dispatcher") == "false"
 
 
 # Domain: dispatcher
@@ -274,23 +275,26 @@ async def run_workflow(dispatch_id: str) -> RESULT_STATUS:
 
     try:
         await _plan_workflow(dispatch_id)
-        _status_queues[dispatch_id] = asyncio.Queue()
         # dispatch_status = await _run_planned_workflow(dispatch_id, _status_queues[dispatch_id])
-        fut = asyncio.Future()
-        _futures[dispatch_id] = fut
+        if SYNC_DISPATCHES:
+            fut = asyncio.Future()
+            _futures[dispatch_id] = fut
 
-        await _submit_initial_tasks(dispatch_id)
+        dispatch_status = await _submit_initial_tasks(dispatch_id)
 
-        dispatch_status = await fut
+        if SYNC_DISPATCHES:
+            dispatch_status = await fut
+        else:
+            app_log.debug("Not waiting for dispatch to complete")
 
     except Exception as ex:
 
         dispatch_status = await _handle_dispatch_exception(dispatch_id, ex)
 
     finally:
-        await datasvc.persist_result(dispatch_id)
-        datasvc.finalize_dispatch(dispatch_id)
-        _status_queues.pop(dispatch_id)
+        if dispatch_status != RESULT_STATUS.RUNNING:
+            await datasvc.persist_result(dispatch_id)
+            datasvc.finalize_dispatch(dispatch_id)
 
     return dispatch_status
 
@@ -326,9 +330,8 @@ async def notify_node_status(
         "status": status,
         "detail": detail,
     }
-    # status_queue = _status_queues[dispatch_id]
-    # await status_queue.put((node_id, status, detail))
-    await _global_event_queue.put(msg)
+
+    await _global_status_queue.put(msg)
 
 
 async def _finalize_dispatch(dispatch_id: str):
@@ -388,6 +391,8 @@ async def _submit_initial_tasks(dispatch_id: str):
         await _unresolved_tasks.increment(dispatch_id)
         await _submit_task(dispatch_id, node_id)
 
+    return RESULT_STATUS.RUNNING
+
 
 async def _handle_node_status_update(dispatch_id, node_id, node_status, detail):
 
@@ -446,7 +451,7 @@ async def _handle_dispatch_exception(dispatch_id: str, ex: Exception) -> RESULT_
 async def _node_event_listener():
     app_log.debug("Starting event listener")
     while True:
-        msg = await _global_event_queue.get()
+        msg = await _global_status_queue.get()
 
         asyncio.create_task(_handle_event(msg))
 

@@ -83,6 +83,7 @@ def get_default_dispatcher_config():
             + "/covalent/dispatcher_db.sqlite"
         ),
         "force_legacy_runner": os.environ.get("COVALENT_DISABLE_NEW_RUNNER") or "false",
+        "use_async_dispatcher": os.environ.get("COVALENT_USE_ASYNC_DISPATCHER") or "false",
     }
 
 
