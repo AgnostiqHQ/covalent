@@ -22,7 +22,12 @@
 
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
-from covalent._workflow._electron import Electron, to_decoded_electron_collection
+from covalent._workflow._electron import (
+    Electron,
+    filter_null_metadata,
+    get_serialized_function_str,
+    to_decoded_electron_collection,
+)
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 from covalent.executor.executor_plugins.local import LocalExecutor
 
@@ -261,14 +266,6 @@ def test_autogen_dict_electrons():
 def test_as_transportable_dict(mocker):
     """Test the get transportable electron function."""
 
-    mocker.patch(
-        "covalent._workflow._electron.get_serialized_function_str",
-        return_value="mock-function-string",
-    )
-    mocker.patch(
-        "covalent._workflow._electron.filter_null_metadata", return_value="mock-filtered-metadata"
-    )
-
     @ct.electron
     def test_func(a):
         return a
@@ -279,6 +276,6 @@ def test_as_transportable_dict(mocker):
     transportable_electron = electron.as_transportable_dict
 
     assert transportable_electron["name"] == "test_func"
-    assert transportable_electron["metadata"] == "mock-filtered-metadata"
-    assert transportable_electron["function_string"] == "mock-function-string"
+    assert transportable_electron["metadata"] == filter_null_metadata(mock_metadata)
+    assert transportable_electron["function_string"] == get_serialized_function_str(test_func)
     assert TransportableObject(test_func).to_dict() == transportable_electron["function"]
