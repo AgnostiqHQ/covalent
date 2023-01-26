@@ -21,6 +21,8 @@
 
 """Unit tests for local module in dispatcher_plugins."""
 
+from unittest.mock import MagicMock
+
 import pytest
 
 import covalent as ct
@@ -49,8 +51,9 @@ def test_get_redispatch_request_body_null_arguments():
     }
 
 
-def test_get_request_body_args_kwargs(mocker):
+def test_get_redispatch_request_body_args_kwargs(mocker):
     """Test the get request body function when args/kwargs is not null."""
+    mock_electron = MagicMock()
     get_result_mock = mocker.patch("covalent._dispatcher_plugins.local.get_result")
     get_result_mock().lattice.serialize_to_json.return_value = "mock-json-lattice"
 
@@ -58,12 +61,12 @@ def test_get_request_body_args_kwargs(mocker):
         "mock-dispatch-id",
         new_args=[1, 2],
         new_kwargs={"a": 1, "b": 2},
-        replace_electrons={"mock-task-id": "mock-electron"},
+        replace_electrons={"mock-task-id": mock_electron},
     )
     assert response == {
         "json_lattice": "mock-json-lattice",
         "dispatch_id": "mock-dispatch-id",
-        "electron_updates": "mock-electron-updates",
+        "electron_updates": {"mock-task-id": mock_electron.electron_object.as_transportable_dict},
         "reuse_previous_results": False,
     }
     get_result_mock().lattice.build_graph.assert_called_once_with(*[1, 2], **{"a": 1, "b": 2})
