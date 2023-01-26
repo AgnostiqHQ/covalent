@@ -33,6 +33,9 @@ class _KeyValueBase:
     async def belongs(self, key):
         raise NotImplementedError
 
+    async def remove(self, key):
+        raise NotImplementedError
+
 
 class _DictStore(_KeyValueBase):
     def __init__(self):
@@ -46,3 +49,6 @@ class _DictStore(_KeyValueBase):
 
     async def belongs(self, key):
         return key in self._store
+
+    async def remove(self, key):
+        del self._store[key]
