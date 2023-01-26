@@ -37,6 +37,7 @@ generator_prefix = f"{prefix_separator}generated{prefix_separator}"
 sublattice_prefix = f"{prefix_separator}sublattice{prefix_separator}"
 attr_prefix = f"{prefix_separator}attribute{prefix_separator}"
 arg_prefix = f"{prefix_separator}arg{prefix_separator}"
+postprocess_prefix = f"{prefix_separator}postprocess{prefix_separator}"
 
 WAIT_EDGE_NAME = "!waiting_edge"
 
@@ -61,6 +62,8 @@ def get_default_sdk_config():
             + "/covalent/executor_plugins"
         ),
         "no_cluster": "false",
+        "full_postprocess": "false",
+        "eager_postprocess": "false",
     }
 
 
@@ -79,6 +82,9 @@ def get_default_dispatcher_config():
             (os.environ.get("XDG_DATA_HOME") or (os.environ["HOME"] + "/.local/share"))
             + "/covalent/dispatcher_db.sqlite"
         ),
+        "force_legacy_runner": os.environ.get("COVALENT_DISABLE_NEW_RUNNER") or "false",
+        "use_async_dispatcher": os.environ.get("COVALENT_USE_ASYNC_DISPATCHER") or "false",
+        "use_stateless_datamgr": os.environ.get("COVALENT_USE_STATELESS_DATAMGR") or "false",
     }
 
 

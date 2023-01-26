@@ -114,6 +114,8 @@ class _AbstractBaseExecutor(ABC):
 
     """
 
+    SUPPORTS_MANAGED_EXECUTION = False
+
     def __init__(
         self,
         log_stdout: str = "",
@@ -496,3 +498,40 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         """
 
         raise NotImplementedError
+
+    async def send(
+        self,
+        function_uri: str,
+        deps_uris: str,
+        call_before_uris: str,
+        call_after_uris: str,
+        args_uris: str,
+        kwargs_uris: str,
+        task_metadata: dict,
+    ):
+        # Assets are assumed to be accessible by the compute backend
+        # at the provided URIs
+
+        # The Asset Manager is responsible for uploading all assets
+        # Returns a job handle (should be JSONable)
+
+        raise NotImplementedError
+
+    async def poll(self, task_metadata: Dict, job_handle: Any):
+
+        # To be run as a background task.  A callback will be
+        # registered with the runner to invoke the receive()
+
+        raise -1
+
+    async def receive(self, task_metadata: Dict, job_handle: Any):
+
+        # Returns (output_uri, stdout_uri, stderr_uri,
+        # exception_raised)
+
+        # Job should have reached a terminal state by the time this is invoked.
+
+        raise NotImplementedError
+
+    def get_upload_uri(self, task_metadata: Dict, object_key: str):
+        return ""

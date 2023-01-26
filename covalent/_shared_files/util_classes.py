@@ -47,6 +47,7 @@ class RESULT_STATUS:
     FAILED = Status("FAILED")
     RUNNING = Status("RUNNING")
     CANCELLED = Status("CANCELLED")
+    DISPATCHING = Status("DISPATCHING")
 
 
 class DispatchInfo(NamedTuple):
