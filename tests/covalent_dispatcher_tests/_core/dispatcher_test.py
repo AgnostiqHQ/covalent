@@ -94,8 +94,11 @@ async def test_handle_cancelled_node(mocker, test_db):
     await _handle_cancelled_node(dispatch_id, 1)
 
 
+@pytest.mark.parametrize(
+    "wait,expected_status", [(True, Result.COMPLETED), (False, Result.RUNNING)]
+)
 @pytest.mark.asyncio
-async def test_run_workflow_normal(mocker):
+async def test_run_workflow_normal(mocker, wait, expected_status):
     import asyncio
 
     dispatch_id = "mock_dispatch"
@@ -107,11 +110,12 @@ async def test_run_workflow_normal(mocker):
         "covalent_dispatcher._core.dispatcher.datasvc.get_dispatch_attributes",
         return_value={"status": Result.NEW_OBJ},
     )
-    _futures = {}
+    _futures = {dispatch_id: asyncio.Future()}
     mocker.patch("covalent_dispatcher._core.dispatcher._futures", _futures)
 
     async def mark_future_done(dispatch_id):
         _futures[dispatch_id].set_result(Result.COMPLETED)
+        return Result.RUNNING
 
     mocker.patch(
         "covalent_dispatcher._core.dispatcher._submit_initial_tasks",
@@ -119,10 +123,10 @@ async def test_run_workflow_normal(mocker):
         side_effect=mark_future_done,
     )
 
-    dispatch_status = await run_workflow(dispatch_id)
-    assert dispatch_status == Result.COMPLETED
-
-    mock_unregister.assert_called_with(dispatch_id)
+    dispatch_status = await run_workflow(dispatch_id, wait)
+    assert dispatch_status == expected_status
+    if wait:
+        mock_unregister.assert_called_with(dispatch_id)
 
 
 @pytest.mark.asyncio

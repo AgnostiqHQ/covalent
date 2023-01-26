@@ -257,7 +257,7 @@ async def run_workflow(dispatch_id: str, wait: bool = SYNC_DISPATCHES) -> RESULT
 
         dispatch_status = await _submit_initial_tasks(dispatch_id)
 
-        if SYNC_DISPATCHES:
+        if wait:
             app_log.debug(f"Waiting for dispatch {dispatch_id}")
             dispatch_status = await fut
         else:
