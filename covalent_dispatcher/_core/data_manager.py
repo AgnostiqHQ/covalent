@@ -103,7 +103,7 @@ async def update_node_result(dispatch_id, node_result):
         )
         loop = asyncio.get_running_loop()
         update_partial = functools.partial(result_object._update_node, **node_result)
-        await loop.run_in_executor(dm_pool, update_partial)
+        await _run_in_executor(update_partial)
 
         if node_result["status"] == RESULT_STATUS.DISPATCHING:
             app_log.debug("Received sublattice dispatch")
@@ -114,7 +114,7 @@ async def update_node_result(dispatch_id, node_result):
                 node_result["status"] = RESULT_STATUS.FAILED
                 node_result["error"] = tb
                 update_partial = functools.partial(result_object._update_node, **node_result)
-                await loop.run_in_executor(dm_pool, update_partial)
+                await _run_in_executor(update_partial)
 
     except Exception as ex:
         app_log.exception(f"Error persisting node update: {ex}")
@@ -180,9 +180,7 @@ async def make_dispatch(
     json_lattice: str, parent_result_object: SRVResult = None, parent_electron_id: int = None
 ) -> Result:
 
-    loop = asyncio.get_running_loop()
-    result_object = await loop.run_in_executor(
-        dm_pool,
+    result_object = await _run_in_executor(
         initialize_result_object,
         json_lattice,
         parent_result_object,
@@ -252,9 +250,7 @@ async def get_electron_attribute(
 async def get_electron_attributes(
     dispatch_id: str, node_id: int, keys: str, refresh: bool = True
 ) -> Any:
-    loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(
-        dm_pool,
+    return await _run_in_executor(
         _get_electron_attributes_sync,
         dispatch_id,
         node_id,
@@ -277,11 +273,10 @@ async def _make_sublattice_dispatch(result_object: SRVResult, node_result: dict)
     node_id = node_result["node_id"]
     bg_output = await get_electron_attribute(result_object.dispatch_id, node_id, "output")
     json_lattice = json.loads(bg_output.json)
-    loop = asyncio.get_running_loop()
-    parent_node = await loop.run_in_executor(
-        dm_pool, result_object.lattice.transport_graph.get_node, node_id
+    parent_node = await _run_in_executor(
+        result_object.lattice.transport_graph.get_node,
+        node_id,
     )
-
     parent_electron_id = parent_node._electron_id
 
     return await make_dispatch(json_lattice, result_object, parent_electron_id)
@@ -314,11 +309,7 @@ async def update_dispatch_result(dispatch_id, dispatch_result):
 
     result_object = get_result_object(dispatch_id)
     update_partial = functools.partial(result_object._update_dispatch, **dispatch_result)
-    loop = asyncio.get_running_loop()
-    await loop.run_in_executor(
-        dm_pool,
-        update_partial,
-    )
+    await _run_in_executor(update_partial)
 
 
 def _get_dispatch_attributes_sync(dispatch_id: str, keys: List[str], refresh: bool = True) -> Any:
@@ -327,9 +318,7 @@ def _get_dispatch_attributes_sync(dispatch_id: str, keys: List[str], refresh: bo
 
 
 async def get_dispatch_attributes(dispatch_id: str, keys: List[str], refresh: bool = True) -> Dict:
-    loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(
-        dm_pool,
+    return await _run_in_executor(
         _get_dispatch_attributes_sync,
         dispatch_id,
         keys,
@@ -342,9 +331,7 @@ async def get_dispatch_attributes(dispatch_id: str, keys: List[str], refresh: bo
 
 async def get_incomplete_tasks(dispatch_id: str, refresh: bool = True):
     result_object = get_result_object(dispatch_id)
-    loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(
-        dm_pool,
+    return await _run_in_executor(
         result_object._get_incomplete_nodes,
         refresh,
     )
@@ -365,3 +352,8 @@ async def get_graph_nodes_links(dispatch_id: str) -> dict:
     result_object = get_result_object(dispatch_id)
     g = result_object.lattice.transport_graph.get_internal_graph_copy()
     return nx.readwrite.node_link_data(g)
+
+
+async def _run_in_executor(func, *args):
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(dm_pool, func, *args)
