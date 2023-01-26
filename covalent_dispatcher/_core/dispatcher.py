@@ -203,32 +203,6 @@ async def _submit_task(dispatch_id: str, node_id: int):
         asyncio.create_task(coro)
 
 
-# # Domain: dispatcher
-# async def _run_planned_workflow(dispatch_id: str, status_queue: asyncio.Queue) -> RESULT_STATUS:
-#     """
-#     Run the workflow in the topological order of their position on the
-#     transport graph. Does this in an asynchronous manner so that nodes
-#     at the same level are executed in parallel. Also updates the status
-#     of the whole workflow execution.
-
-#     Args:
-#         dispatch_id: id of the current dispatch
-#         status_queue: message queue for notifying the main loop of status updates
-
-#     Returns:
-#         None
-#     """
-
-#     await _submit_initial_tasks(dispatch_id)
-
-#     while unresolved := await _unresolved_tasks.get_unresolved(dispatch_id) > 0:
-#         app_log.debug(f"Waiting to hear from {unresolved} tasks")
-#         node_id, node_status, detail = await status_queue.get()
-#         await _handle_node_status_update(dispatch_id, node_id, node_status, detail)
-
-#     return await _finalize_dispatch(dispatch_id)
-
-
 async def _plan_workflow(dispatch_id: str) -> None:
     """
     Function to plan a workflow according to a schedule.
@@ -275,7 +249,7 @@ async def run_workflow(dispatch_id: str) -> RESULT_STATUS:
 
     try:
         await _plan_workflow(dispatch_id)
-        # dispatch_status = await _run_planned_workflow(dispatch_id, _status_queues[dispatch_id])
+
         if SYNC_DISPATCHES:
             fut = asyncio.Future()
             _futures[dispatch_id] = fut
@@ -464,6 +438,7 @@ async def _handle_event(msg: Dict):
 
     try:
         await _handle_node_status_update(dispatch_id, node_id, node_status, detail)
+
     except Exception as ex:
         dispatch_status = await _handle_dispatch_exception(dispatch_id, ex)
         await datasvc.persist_result(dispatch_id)
