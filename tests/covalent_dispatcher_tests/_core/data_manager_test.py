@@ -127,7 +127,7 @@ async def test_update_node_result(mocker, node_status, node_type, output_status,
     result_object = get_mock_result()
     node_result = {"node_id": 0, "status": node_status}
     mock_update_node = mocker.patch("covalent_dispatcher._dal.result.Result._update_node")
-    node_info = {"type": node_type, "sub_dispatch_id": sub_id}
+    node_info = {"type": node_type, "sub_dispatch_id": sub_id, "status": Result.NEW_OBJ}
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_electron_attributes", return_value=node_info
     )
@@ -155,6 +155,46 @@ async def test_update_node_result(mocker, node_status, node_type, output_status,
         mock_make_dispatch.assert_not_awaited()
 
 
+@pytest.mark.parametrize(
+    "node_status,old_status",
+    [
+        (Result.COMPLETED, Result.RUNNING),
+        (Result.COMPLETED, Result.COMPLETED),
+        (Result.FAILED, Result.COMPLETED),
+    ],
+)
+@pytest.mark.asyncio
+async def test_update_node_result_filters_illegal_updates(mocker, node_status, old_status):
+    """Check that update_node_result pushes the correct status updates"""
+
+    result_object = get_mock_result()
+    node_result = {"node_id": 0, "status": node_status}
+    mock_update_node = mocker.patch("covalent_dispatcher._dal.result.Result._update_node")
+    node_info = {"type": "function", "sub_dispatch_id": "", "status": old_status}
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_electron_attributes", return_value=node_info
+    )
+
+    mock_notify = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.notify_node_status",
+    )
+
+    mock_get_result = mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
+    )
+
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager._make_sublattice_dispatch",
+    )
+
+    await update_node_result(result_object.dispatch_id, node_result)
+
+    if old_status == node_status or RESULT_STATUS.is_terminal(old_status):
+        mock_notify.assert_not_awaited()
+    else:
+        mock_notify.assert_awaited()
+
+
 @pytest.mark.asyncio
 async def test_update_node_result_handles_subl_exceptions(mocker):
     """Check that update_node_result pushes the correct status updates"""
@@ -164,7 +204,7 @@ async def test_update_node_result_handles_subl_exceptions(mocker):
     sub_id = ""
     node_result = {"node_id": 0, "status": Result.COMPLETED}
     mock_update_node = mocker.patch("covalent_dispatcher._dal.result.Result._update_node")
-    node_info = {"type": node_type, "sub_dispatch_id": sub_id}
+    node_info = {"type": node_type, "sub_dispatch_id": sub_id, "status": Result.NEW_OBJ}
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_electron_attributes", return_value=node_info
     )

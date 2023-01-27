@@ -90,16 +90,19 @@ def generate_node_result(
 # Domain: result
 async def update_node_result(dispatch_id, node_result):
     app_log.debug("Updating node result (run_planned_workflow).")
+    old_status = RESULT_STATUS.NEW_OBJECT
     try:
         result_object = await _run_in_executor(get_result_object, dispatch_id, True)
         node_id = node_result["node_id"]
         node_status = node_result["status"]
         node_info = await get_electron_attributes(
-            dispatch_id, node_id, ["type", "sub_dispatch_id"]
+            dispatch_id, node_id, ["type", "sub_dispatch_id", "status"]
         )
+        old_status = node_info["status"]
         node_type = node_info["type"]
         sub_dispatch_id = node_info["sub_dispatch_id"]
 
+        app_log.debug(f"{dispatch_id}:{node_id}: previous status was {old_status}")
         # Handle returns from _build_sublattice_graph
         node_result = await _filter_sublattice_status(
             dispatch_id, node_id, node_status, node_type, sub_dispatch_id, node_result
@@ -123,6 +126,7 @@ async def update_node_result(dispatch_id, node_result):
         app_log.exception(f"Error persisting node update: {ex}")
         sub_dispatch_id = None
         node_result["status"] = Result.FAILED
+
     finally:
         node_id = node_result["node_id"]
         node_status = node_result["status"]
@@ -130,7 +134,12 @@ async def update_node_result(dispatch_id, node_result):
 
         detail = {"sub_dispatch_id": sub_dispatch_id} if sub_dispatch_id else {}
         if node_status:
-            await dispatcher.notify_node_status(dispatch_id, node_id, node_status, detail)
+            if not RESULT_STATUS.is_terminal(old_status) and old_status != node_status:
+                await dispatcher.notify_node_status(dispatch_id, node_id, node_status, detail)
+            else:
+                app_log.debug(
+                    f"{dispatch_id}:{node_id}: illegal status update {old_status} -> {node_status}"
+                )
 
 
 # Domain: result
