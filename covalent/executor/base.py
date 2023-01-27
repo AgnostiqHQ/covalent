@@ -502,9 +502,9 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
     async def send(
         self,
         function_uri: str,
-        deps_uris: str,
-        call_before_uris: str,
-        call_after_uris: str,
+        deps_uri: str,
+        call_before_uri: str,
+        call_after_uri: str,
         args_uris: str,
         kwargs_uris: str,
         task_metadata: dict,

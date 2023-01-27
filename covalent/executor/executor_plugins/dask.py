@@ -105,9 +105,9 @@ def _gather_deps(deps, call_before_objs_json, call_after_objs_json) -> Tuple[Lis
 # URIs are just file paths
 def run_task_from_uris(
     function_uri: str,
-    deps_uris: str,
-    call_before_uris: str,
-    call_after_uris: str,
+    deps_uri: str,
+    call_before_uri: str,
+    call_after_uri: str,
     args_uris: str,
     kwargs_uris: str,
     output_uri: str,
@@ -141,19 +141,19 @@ def run_task_from_uris(
                     with open(uri, "rb") as f:
                         ser_kwargs[key] = pickle.load(f)
 
-                if deps_uris.startswith(prefix):
-                    deps_uris = deps_uris[prefix_len:]
-                with open(deps_uris, "rb") as f:
+                if deps_uri.startswith(prefix):
+                    deps_uri = deps_uri[prefix_len:]
+                with open(deps_uri, "rb") as f:
                     deps_json = pickle.load(f)
 
-                if call_before_uris.startswith(prefix):
-                    call_before_uris = call_before_uris[prefix_len:]
-                with open(call_before_uris, "rb") as f:
+                if call_before_uri.startswith(prefix):
+                    call_before_uri = call_before_uri[prefix_len:]
+                with open(call_before_uri, "rb") as f:
                     call_before_json = pickle.load(f)
 
-                if call_after_uris.startswith(prefix):
-                    call_after_uris = call_after_uris[prefix_len:]
-                with open(call_after_uris, "rb") as f:
+                if call_after_uri.startswith(prefix):
+                    call_after_uri = call_after_uri[prefix_len:]
+                with open(call_after_uri, "rb") as f:
                     call_after_json = pickle.load(f)
 
                 call_before, call_after = _gather_deps(
@@ -244,9 +244,9 @@ class DaskExecutor(AsyncBaseExecutor):
     async def send(
         self,
         function_uri: str,
-        deps_uris: str,
-        call_before_uris: str,
-        call_after_uris: str,
+        deps_uri: str,
+        call_before_uri: str,
+        call_after_uri: str,
         args_uris: str,
         kwargs_uris: str,
         task_metadata: dict,
@@ -272,9 +272,9 @@ class DaskExecutor(AsyncBaseExecutor):
         future = dask_client.submit(
             run_task_from_uris,
             function_uri=function_uri,
-            deps_uris=deps_uris,
-            call_before_uris=call_before_uris,
-            call_after_uris=call_after_uris,
+            deps_uri=deps_uri,
+            call_before_uri=call_before_uri,
+            call_after_uri=call_after_uri,
             args_uris=args_uris,
             kwargs_uris=kwargs_uris,
             output_uri=output_uri,
