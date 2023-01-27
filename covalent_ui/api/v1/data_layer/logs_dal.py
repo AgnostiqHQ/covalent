@@ -36,7 +36,6 @@ class Logs:
 
     def get_logs(self, sort_by, direction, search, count, offset):
         with open(UI_LOGFILE, "r", encoding="utf-8") as logfile:
-            search.lower()
             unmatch_str = ""
             log = []
             reverse_list = direction.value == "DESC"
@@ -68,8 +67,8 @@ class Logs:
             log = [
                 i
                 for i in log
-                if (i["message"].lower().__contains__(search))
-                or (i["status"].lower().__contains__(search))
+                if (i["message"].lower().__contains__(search.lower()))
+                or (i["status"].lower().__contains__(search.lower()))
             ]
             result = sorted(
                 log,
