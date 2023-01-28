@@ -24,7 +24,7 @@ Beginner
    * - Machine learning
      - :doc:`Linear and convolutional autoencoders<./0_ClassicalMachineLearning/autoencoders/source>`
    * - IBM Quantum Cloud
-      - :doc:`Accessing IBM Quantum Cloud<./5_QPUAccessIBM/source>`
+     - :doc:`Accessing IBM Quantum Cloud<./5_QPUAccessIBM/source>`
 
 ~~~~~~~~~~~~
 Intermediate
