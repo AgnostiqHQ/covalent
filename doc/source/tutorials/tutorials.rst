@@ -23,6 +23,8 @@ Beginner
      - :doc:`Using Covalent with PennyLane for hybrid computation<./1_QuantumMachineLearning/pennylane_hybrid/source>`
    * - Machine learning
      - :doc:`Linear and convolutional autoencoders<./0_ClassicalMachineLearning/autoencoders/source>`
+   * - IBM Quantum Cloud
+      - :doc:`Accessing IBM Quantum Cloud<./5_QPUAccessIBM/source>`
 
 ~~~~~~~~~~~~
 Intermediate
@@ -40,8 +42,6 @@ Intermediate
      - :doc:`Variational parity classification<./1_QuantumMachineLearning/pennylane_parity_classifier/source>`
    * - Machine Learning
      - :doc:`Modeling time series for sales forecasting<./machine_learning/dnn_comparison>`
-   * - Accessing IBM Quantum
-     - :doc:`Accessing IBM Quantum<./5_QPUAccessIBM/source>`
 
 ~~~~~~~~
 Advanced
