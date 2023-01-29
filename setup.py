@@ -48,6 +48,13 @@ if sdk_only:
         "covalent_ui.*",
         "covalent_migrations",
     ]
+    entry_points = {}
+else:
+    entry_points = {
+        "console_scripts": [
+            "covalent = covalent_dispatcher._cli.cli:cli",
+        ],
+    }
 
 with open(requirements_file) as f:
     required = f.read().splitlines()
@@ -237,11 +244,7 @@ setup_info = {
         "docs": Docs,
         "webapp": BuildUI,
     },
-    "entry_points": {
-        "console_scripts": [
-            "covalent = covalent_dispatcher._cli.cli:cli",
-        ],
-    },
+    "entry_points": entry_points,
 }
 
 if __name__ == "__main__":
