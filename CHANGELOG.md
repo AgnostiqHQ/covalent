@@ -11,6 +11,49 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Enhanced the Dockerfile to include builds from various sources and a differentiation between SDK and Server builds
 
+### Docs
+
+- Added IBMQ tutorial
+
+### Added
+
+- Workflow re-dispatching functionality.
+
+## [0.214.0-rc.0] - 2023-01-25
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Operations
+
+- Fixed stable-changelog action removed `.catch` added `.on('error')`
+- Removed AWS base executor deployment from `release.yml`
+- Removed experimental tests from nightly test matrix (will be brought back but in different workflow)
+- Updated release workflow to continue if release tag already exists
+
+### Removed
+
+- Slurm executor reference from qaoa tutorial since it's not compatible with conda env at the moment.
+
+### Fixed
+
+- Braket pip installation instructions.
+
+## [0.213.2-rc.0] - 2023-01-21
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+
+
+### Fixed
+
+- Removing the entrypoint for SDK-only install
+- Updating client requirements to match server versions
+
 ## [0.213.1-rc.0] - 2023-01-20
 
 ### Authors
