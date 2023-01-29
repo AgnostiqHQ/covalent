@@ -10,10 +10,11 @@ For dispatching large compute-intensive workflows that require lots of CPU cores
     :width: 800
     :alt: Covalent self hosted deployment
 
+
+Deployment Instructions
+***********************
+
 Click an option below for instructions on deploying to that platform.
-
-.. note:: Whether you deploy on-prem or on a web service, there are some issues to be aware of that don't apply when you run Covalent locally. :doc:`This information<../developer/patterns/deployment>` will help you avoid some common remote deployment pitfalls.
-
 
 .. grid:: 1
 
@@ -63,3 +64,9 @@ Click an option below for instructions on deploying to that platform.
         :img-top: images/aws_deploy.jpg
 
         Deploy Covalent in an AWS account with any ``x86``-based EC2 instance.
+
+
+Best Practices
+**************
+
+Whether you deploy on-prem or on a web service, there are some issues to be aware of that don't apply when you run Covalent locally. :doc:`This information<../developer/patterns/deployment>` will help you avoid some common remote deployment pitfalls.
