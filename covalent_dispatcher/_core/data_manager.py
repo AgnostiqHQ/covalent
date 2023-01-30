@@ -145,7 +145,7 @@ def make_dispatch(
     return result_object.dispatch_id
 
 
-def make_derived_dispatch(
+def make_re_dispatch(
     parent_dispatch_id: str, json_lattice: str, electron_updates=None, reuse_previous_results=False
 ):
     if electron_updates is None:
@@ -153,28 +153,40 @@ def make_derived_dispatch(
     old_res = load.get_result_object_from_storage(parent_dispatch_id, wait=False)
 
     if json_lattice:
-        lat = Lattice.deserialize_from_json(json_lattice)
-        res = Result(lat, get_unique_id())
-        res._initialize_nodes()
-
-        tg = res.lattice.transport_graph
-        tg_old = old_res.lattice.transport_graph
-        if reuse_previous_results:
-            reusable_nodes = TransportGraphOps(tg_old).get_diff_nodes(tg)
-            tg_old.copy_nodes(tg, reusable_nodes)
-            print(f"Reused nodes {reusable_nodes} from {parent_dispatch_id}")
+        result_object = _init_result_from_prior_dispatch(
+            json_lattice, old_res, reuse_previous_results, parent_dispatch_id
+        )
     else:
-        res = Result(old_res.lattice, get_unique_id())
-        res._num_nodes = old_res._num_nodes
+        result_object = Result(old_res.lattice, get_unique_id())
+        result_object._num_nodes = old_res._num_nodes
         if not reuse_previous_results:
-            res._initialize_nodes()
+            result_object._initialize_nodes()
 
-    res.lattice.transport_graph.apply_electron_updates(electron_updates)
-    res.lattice.transport_graph.dirty_nodes = list(res.lattice.transport_graph._graph.nodes)
-    update.persist(res)
-    _register_result_object(res)
+    result_object.lattice.transport_graph.apply_electron_updates(electron_updates)
+    result_object.lattice.transport_graph.dirty_nodes = list(
+        result_object.lattice.transport_graph._graph.nodes
+    )
+    update.persist(result_object)
+    _register_result_object(result_object)
 
-    return res.dispatch_id
+    return result_object.dispatch_id
+
+
+def _init_result_from_prior_dispatch(
+    json_lattice, old_res, reuse_previous_results, parent_dispatch_id
+):
+    """Initialize result object from a prior dispatch."""
+    lat = Lattice.deserialize_from_json(json_lattice)
+    result = Result(lat, get_unique_id())
+    result._initialize_nodes()
+
+    tg = result.lattice.transport_graph
+    tg_old = old_res.lattice.transport_graph
+    if reuse_previous_results:
+        reusable_nodes = TransportGraphOps(tg_old).get_diff_nodes(tg)
+        tg_old.copy_nodes(tg, reusable_nodes)
+        print(f"Reused nodes {reusable_nodes} from {parent_dispatch_id}")
+    return result
 
 
 def get_result_object(dispatch_id: str) -> Result:
