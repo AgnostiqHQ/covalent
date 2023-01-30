@@ -359,62 +359,6 @@ class _TransportGraph:
 
         self._graph = nx.MultiDiGraph()
 
-    def reset_node(self, node_id: int):
-        """Reset node values to starting state."""
-        self.set_node_value(node_id, "start_time", None)
-        self.set_node_value(node_id, "end_time", None)
-        self.set_node_value(node_id, "status", RESULT_STATUS.NEW_OBJECT)
-        self.set_node_value(node_id, "output", None)
-        self.set_node_value(node_id, "error", None)
-        self.set_node_value(node_id, "sub_dispatch_id", None)
-        self.set_node_value(node_id, "sublattice_result", None)
-        self.set_node_value(node_id, "stdout", None)
-        self.set_node_value(node_id, "stderr", None)
-
-    def _replace_node(self, node_id: int, new_attrs):
-        metadata = self.get_node_value(node_id, "metadata")
-        new_metadata = new_attrs["metadata"]
-        metadata.update(new_metadata)
-        print(f"Replaced node {node_id} metadata")
-
-        serialized_callable = TransportableObject.from_dict(new_attrs["function"])
-        self.set_node_value(node_id, "function", serialized_callable)
-        print(f"Replaced node {node_id} function")
-
-        function_string = new_attrs["function_string"]
-        self.set_node_value(node_id, "function_string", function_string)
-        print(f"Replaced node {node_id} function string")
-
-        name = new_attrs["name"]
-        self.set_node_value(node_id, "name", name)
-        print(f"Replaced node {node_id} name")
-        self._reset_descendants(self, node_id)
-        print(f"Invalidated descendants of node {node_id}")
-
-    def copy_nodes(self, tg_new, nodes):
-        for n in nodes:
-            for k, v in self._graph.nodes[n].items():
-                tg_new.set_node_value(n, k, v)
-
-    def _reset_descendants(self, node_id):
-        try:
-            if self.get_node_value(node_id, "status") == RESULT_STATUS.NEW_OBJECT:
-                print("Encountered recursion base case")
-                return
-        except Exception:
-            return
-        self._reset_node(self, node_id)
-        for successor in self._graph.neighbors(node_id):
-            print("Resetting recursively")
-            self._reset_descendants(self, successor)
-
-    def apply_electron_updates(self, electron_updates: dict):
-        for n in self._graph.nodes:
-            name = self.get_node_value(n, "name")
-            if name in electron_updates:
-                self._replace_node(self, n, electron_updates[name])
-        return self
-
     def get_node_value(self, node_key: int, value_key: str) -> Any:
         """
         Get a specific value from a node depending upon the value key.
@@ -495,6 +439,53 @@ class _TransportGraph:
         """
 
         return self._graph.copy()
+
+    def reset_node(self, node_id: int) -> None:
+        """Reset node values to starting state."""
+        self.set_node_value(node_id, "start_time", None)
+        self.set_node_value(node_id, "end_time", None)
+        self.set_node_value(node_id, "status", RESULT_STATUS.NEW_OBJECT)
+        self.set_node_value(node_id, "output", None)
+        self.set_node_value(node_id, "error", None)
+        self.set_node_value(node_id, "sub_dispatch_id", None)
+        self.set_node_value(node_id, "sublattice_result", None)
+        self.set_node_value(node_id, "stdout", None)
+        self.set_node_value(node_id, "stderr", None)
+
+    def _replace_node(self, node_id: int, new_attrs: Dict[str, Any]) -> None:
+        """Replace node data with new attribute values and flag descendants."""
+        metadata = self.get_node_value(node_id, "metadata")
+        metadata.update(new_attrs["metadata"])
+
+        serialized_callable = TransportableObject.from_dict(new_attrs["function"])
+        self.set_node_value(node_id, "function", serialized_callable)
+        self.set_node_value(node_id, "function_string", new_attrs["function_string"])
+        self.set_node_value(node_id, "name", new_attrs["name"])
+        self._reset_descendants(self, node_id)
+
+    def copy_nodes(self, tg_new, nodes):
+        for n in nodes:
+            for k, v in self._graph.nodes[n].items():
+                tg_new.set_node_value(n, k, v)
+
+    def _reset_descendants(self, node_id):
+        try:
+            if self.get_node_value(node_id, "status") == RESULT_STATUS.NEW_OBJECT:
+                print("Encountered recursion base case")
+                return
+        except Exception:
+            return
+        self._reset_node(self, node_id)
+        for successor in self._graph.neighbors(node_id):
+            print("Resetting recursively")
+            self._reset_descendants(self, successor)
+
+    def apply_electron_updates(self, electron_updates: dict):
+        for n in self._graph.nodes:
+            name = self.get_node_value(n, "name")
+            if name in electron_updates:
+                self._replace_node(self, n, electron_updates[name])
+        return self
 
     def serialize(self, metadata_only: bool = False) -> bytes:
         """

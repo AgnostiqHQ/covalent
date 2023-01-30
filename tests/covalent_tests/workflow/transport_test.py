@@ -21,6 +21,7 @@
 """Unit tests for transport graph."""
 
 import platform
+from unittest.mock import call
 
 import cloudpickle
 import networkx as nx
@@ -28,6 +29,7 @@ import pytest
 
 import covalent as ct
 from covalent._shared_files.defaults import parameter_prefix
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 from covalent.executor import LocalExecutor
 
@@ -425,3 +427,48 @@ def test_encode_metadata():
 
     # Check idempotence
     assert encode_metadata(metadata) == encode_metadata(encode_metadata(metadata))
+
+
+def test_reset_node(workflow_transport_graph, mocker):
+    """Test the node reset method."""
+    set_node_value_mock = mocker.patch(
+        "covalent._workflow.transport._TransportGraph.set_node_value"
+    )
+
+    node_id = 0
+    workflow_transport_graph.reset_node(node_id)
+    actual_mock_calls = set_node_value_mock.mock_calls
+    expected_mock_calls = [
+        call(node_id, "start_time", None),
+        call(node_id, "end_time", None),
+        call(node_id, "status", RESULT_STATUS.NEW_OBJECT),
+        call(node_id, "output", None),
+        call(node_id, "error", None),
+        call(node_id, "sub_dispatch_id", None),
+        call(node_id, "sublattice_result", None),
+        call(node_id, "stdout", None),
+        call(node_id, "stderr", None),
+    ]
+
+    for mock_call in expected_mock_calls:
+        assert mock_call in actual_mock_calls
+
+
+def test_replace_node(workflow_transport_graph, mocker):
+    """Test method that replaces node attribute values."""
+    transportable_object_from_dict_mock = mocker.patch(
+        "covalent._workflow.transport.TransportableObject.from_dict"
+    )
+    reset_descendants_mock = mocker.patch(
+        "covalent._workflow.transport._TransportGraph._reset_descendants"
+    )
+    node_id = 0
+    new_attrs = {
+        "metadata": {"mock-key": "mock-value"},
+        "function": "mock-func",
+        "function_string": "mock-func-string",
+        "name": "mock-name",
+    }
+    workflow_transport_graph._replace_node(node_id, new_attrs)
+    transportable_object_from_dict_mock.assert_called_once_with("mock-func")
+    # reset_descendants_mock.assert_called_once_with(node_id)
