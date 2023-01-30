@@ -160,7 +160,6 @@ def make_derived_dispatch(
         tg = res.lattice.transport_graph
         tg_old = old_res.lattice.transport_graph
         if reuse_previous_results:
-            # reusable_nodes = TransportGraphDiffer.compare_transport_graphs(tg_old, tg)
             reusable_nodes = TransportGraphOps(tg_old).get_diff_nodes(tg)
             tg_old.copy_nodes(tg, reusable_nodes)
             print(f"Reused nodes {reusable_nodes} from {parent_dispatch_id}")
