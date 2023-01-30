@@ -34,7 +34,7 @@ from covalent._shared_files import logger
 from covalent._shared_files.util_classes import Status
 from covalent._workflow.transport import TransportableObject
 
-from .._dal.export import export_serialized_result, get_asset_uri
+from .._dal.export import export_serialized_result, get_dispatch_asset_uri, get_node_asset_uri
 from .._db.datastore import workflow_db
 from .._db.dispatchdb import DispatchDB
 from .._db.models import Lattice
@@ -274,7 +274,7 @@ def get_result_v2(
         return response
 
 
-@router.get("/resultv2/{dispatch_id}/{node_id}/{key}")
+@router.get("/resultv2/{dispatch_id}/assets/node/{node_id}/{key}")
 async def get_node_asset_exp(
     dispatch_id: str,
     node_id: int,
@@ -292,7 +292,34 @@ async def get_node_asset_exp(
             )
 
     try:
-        path = get_asset_uri(dispatch_id, node_id, key)
+        path = get_node_asset_uri(dispatch_id, node_id, key)
+    except:
+        return JSONResponse(
+            status_code=404,
+            content={"message": f"Error retrieving asset {key}."},
+        )
+    return FileResponse(path)
+
+
+@router.get("/resultv2/{dispatch_id}/assets/dispatch/{key}")
+async def get_dispatch_asset_exp(
+    dispatch_id: str,
+    key: str,
+):
+    app_log.debug(f"Requested asset {key} for dispatch {dispatch_id}")
+
+    with workflow_db.session() as session:
+        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+        status = lattice_record.status if lattice_record else None
+        if not lattice_record:
+            return JSONResponse(
+                status_code=404,
+                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+            )
+
+    try:
+        path = get_dispatch_asset_uri(dispatch_id, key)
+        app_log.debug(f"Dispatch result uri: {path}")
     except:
         return JSONResponse(
             status_code=404,

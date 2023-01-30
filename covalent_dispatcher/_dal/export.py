@@ -69,6 +69,7 @@ DEFERRED_KEYS = {
     "inputs",
     "output",
     "value",
+    "result",
 }
 
 # Functions to support get_result
@@ -132,9 +133,6 @@ def _to_serialized_client_result(result: SRVResult) -> Dict:
     if result_attrs["end_time"]:
         result_attrs["end_time"] = result_attrs["end_time"].isoformat()
 
-    if result_attrs["result"]:
-        result_attrs["result"] = result_attrs["result"].serialize_to_json()
-
     sdk_lat = _to_client_lattice(result.lattice)
 
     return {
@@ -148,9 +146,21 @@ def export_serialized_result(dispatch_id: str) -> Dict:
     return _to_serialized_client_result(srv_res)
 
 
-def get_asset_uri(dispatch_id: str, node_id: int, key: str) -> str:
+def get_node_asset_uri(dispatch_id: str, node_id: int, key: str) -> str:
     srv_res = get_result_object(dispatch_id, bare=True)
     node = srv_res.lattice.transport_graph.get_node(node_id)
     asset = node.get_asset(key)
 
+    return str(Path(asset.storage_path) / asset.object_key)
+
+
+def get_lattice_asset_uri(dispatch_id: str, key: str) -> str:
+    srv_res = get_result_object(dispatch_id, bare=True)
+    asset = srv_res.lattice.get_asset(key)
+    return str(Path(asset.storage_path) / asset.object_key)
+
+
+def get_dispatch_asset_uri(dispatch_id: str, key: str) -> str:
+    srv_res = get_result_object(dispatch_id, bare=True)
+    asset = srv_res.get_asset(key)
     return str(Path(asset.storage_path) / asset.object_key)

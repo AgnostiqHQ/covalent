@@ -216,6 +216,7 @@ def cancel(
 def get_result(
     dispatch_id: str,
     wait: bool = False,
+    workflow_output: bool = True,
     intermediate_outputs: bool = True,
     sublattice_results: bool = True,
     dispatcher_addr: str = None,
@@ -241,25 +242,28 @@ def get_result(
         result_export = result["result_export"]
         result_object = import_result_object(result_export)
 
+        if workflow_output:
+            _download_workflow_output(result_object, dispatcher_addr)
+
         if intermediate_outputs:
             _download_intermediate_outputs(result_object, dispatcher_addr)
 
         # Fetch sublattice result objects recursively
-        if sublattice_results:
-            tg = result_object.lattice.transport_graph
-            for node_id in tg._graph.nodes:
-                sub_dispatch_id = tg.get_node_value(node_id, "sub_dispatch_id")
-                if sub_dispatch_id:
-                    sub_result = get_result(
-                        sub_dispatch_id,
-                        wait,
-                        intermediate_outputs,
-                        sublattice_results,
-                        dispatcher_addr,
-                    )
-                    tg.set_node_value(node_id, "sublattice_result", sub_result)
-                else:
-                    tg.set_node_value(node_id, "sublattice_result", None)
+        tg = result_object.lattice.transport_graph
+        for node_id in tg._graph.nodes:
+            sub_dispatch_id = tg.get_node_value(node_id, "sub_dispatch_id")
+            if sublattice_results and sub_dispatch_id:
+                sub_result = get_result(
+                    sub_dispatch_id,
+                    wait,
+                    workflow_output,
+                    intermediate_outputs,
+                    sublattice_results,
+                    dispatcher_addr,
+                )
+                tg.set_node_value(node_id, "sublattice_result", sub_result)
+            else:
+                tg.set_node_value(node_id, "sublattice_result", None)
 
     except MissingLatticeRecordError as ex:
         app_log.warning(
@@ -316,6 +320,30 @@ def _get_result_v2_from_dispatcher(
     return result
 
 
+def get_node_output(
+    dispatch_id: str,
+    node_id: int,
+    dispatcher_addr: str = None,
+) -> Dict:
+
+    return _get_node_output_from_dispatcher(
+        dispatch_id,
+        node_id,
+        dispatcher_addr,
+    )
+
+
+def get_workflow_output(
+    dispatch_id: str,
+    dispatcher_addr: str = None,
+) -> Dict:
+
+    return _get_dispatch_result_from_dispatcher(
+        dispatch_id,
+        dispatcher_addr,
+    )
+
+
 def _get_node_output_from_dispatcher(
     dispatch_id: str,
     node_id: int,
@@ -343,7 +371,7 @@ def _get_node_output_from_dispatcher(
             get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
         )
 
-    url = f"http://{dispatcher_addr}/api/resultv2/{dispatch_id}/{node_id}/output"
+    url = f"http://{dispatcher_addr}/api/resultv2/{dispatch_id}/assets/node/{node_id}/output"
 
     response = requests.get(url, stream=True)
 
@@ -361,4 +389,33 @@ def _download_intermediate_outputs(result_object: Result, dispatcher_addr: str):
             result_object.dispatch_id, node_id, dispatcher_addr
         )
         tg.set_node_value(node_id, "output", output)
+    return result_object
+
+
+def _get_dispatch_result_from_dispatcher(
+    dispatch_id: str,
+    dispatcher_addr: str = None,
+) -> Dict:
+
+    if dispatcher_addr is None:
+        dispatcher_addr = (
+            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+        )
+
+    url = f"http://{dispatcher_addr}/api/resultv2/{dispatch_id}/assets/dispatch/result"
+
+    response = requests.get(url, stream=True)
+
+    if response.status_code == 404:
+        raise MissingLatticeRecordError
+    response.raise_for_status()
+
+    return pickle.loads(response.content)
+
+
+def _download_workflow_output(result_object: Result, dispatcher_addr: str):
+    result_object._result = _get_dispatch_result_from_dispatcher(
+        result_object.dispatch_id,
+        dispatcher_addr,
+    )
     return result_object
