@@ -363,7 +363,7 @@ class _TransportGraph:
         """Reset node values to starting state."""
         self.set_node_value(node_id, "start_time", None)
         self.set_node_value(node_id, "end_time", None)
-        self.set_node_value(node_id, "status", RESULT_STATUS.NEW_OBJ)
+        self.set_node_value(node_id, "status", RESULT_STATUS.NEW_OBJECT)
         self.set_node_value(node_id, "output", None)
         self.set_node_value(node_id, "error", None)
         self.set_node_value(node_id, "sub_dispatch_id", None)
@@ -398,7 +398,7 @@ class _TransportGraph:
 
     def _reset_descendants(self, node_id):
         try:
-            if self.get_node_value(node_id, "status") == RESULT_STATUS.NEW_OBJ:
+            if self.get_node_value(node_id, "status") == RESULT_STATUS.NEW_OBJECT:
                 print("Encountered recursion base case")
                 return
         except Exception:
