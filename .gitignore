@@ -83,3 +83,6 @@ covalent_ui/api/sonar.sh
 
 # Ignore node dependencies
 node_modules/
+
+# Allow built package
+!/dist/**
