@@ -29,8 +29,8 @@ from typing import Any, Callable, Dict
 import cloudpickle
 import networkx as nx
 
-from .._results_manager import Result
 from .._shared_files.defaults import parameter_prefix
+from .._shared_files.util_classes import RESULT_STATUS
 
 
 class TransportableObject:
@@ -363,7 +363,7 @@ class _TransportGraph:
         """Reset node values to starting state."""
         self.set_node_value(node_id, "start_time", None)
         self.set_node_value(node_id, "end_time", None)
-        self.set_node_value(node_id, "status", Result.NEW_OBJ)
+        self.set_node_value(node_id, "status", RESULT_STATUS.NEW_OBJ)
         self.set_node_value(node_id, "output", None)
         self.set_node_value(node_id, "error", None)
         self.set_node_value(node_id, "sub_dispatch_id", None)
@@ -398,7 +398,7 @@ class _TransportGraph:
 
     def _reset_descendants(self, node_id):
         try:
-            if self.get_node_value(node_id, "status") == Result.NEW_OBJ:
+            if self.get_node_value(node_id, "status") == RESULT_STATUS.NEW_OBJ:
                 print("Encountered recursion base case")
                 return
         except Exception:
