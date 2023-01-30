@@ -24,8 +24,8 @@ from typing import Callable, List
 
 import networkx as nx
 
-from covalent._shared_files import logger
-from covalent._workflow.transport import _TransportGraph
+from .._shared_files import logger
+from .transport import _TransportGraph
 
 app_log = logger.app_log
 
