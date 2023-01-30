@@ -533,7 +533,6 @@ def import_result_object(result_export: dict) -> Result:
       "result": {
                   "start_time": [isoformat],
                   "end_time": [isoformat],
-                  "result": [json-serialized TransportableObject],
                   "status": [result status string],
       },
       "lattice": [json-serialized lattice]
@@ -556,7 +555,6 @@ def import_result_object(result_export: dict) -> Result:
     end_time = None
     status = None
     inputs = {"args": [], "kwargs": {}}
-    result = None
     error = None
 
     if result_attrs["start_time"]:
@@ -566,7 +564,6 @@ def import_result_object(result_export: dict) -> Result:
         end_time = datetime.fromisoformat(result_attrs["end_time"])
 
     status = Status(result_attrs["status"])
-    result = TransportableObject.deserialize_from_json(result_attrs["result"])
     error = result_attrs["error"]
 
     inputs["args"] = [v for _, v in lat.named_args.items()]
@@ -578,7 +575,6 @@ def import_result_object(result_export: dict) -> Result:
     result_object._end_time = end_time
     result_object._status = status
     result_object._inputs = inputs
-    result_object._result = result
     result_object._error = error
 
     result_object._lattice = lat
