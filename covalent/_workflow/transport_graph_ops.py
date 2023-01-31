@@ -45,11 +45,13 @@ class TransportGraphOps:
         for node in nodes_to_invalidate:
             node_statuses[node] = -1
 
-    def is_same_node(self, B: nx.MultiDiGraph, node: int):
-        return self.tg.nodes[node] == B.nodes[node]
+    def is_same_node(self, B: nx.MultiDiGraph, node: int) -> bool:
+        """Check if the node attributes are the same in both graphs."""
+        return self.tg._graph.nodes[node] == B.nodes[node]
 
-    def is_same_edge_attributes(self, B: nx.MultiDiGraph, parent: int, node: int):
-        return self.tg.adj[parent][node] == B.adj[parent][node]
+    def is_same_edge_attributes(self, B: nx.MultiDiGraph, parent: int, node: int) -> bool:
+        """Check if the edge attributes are the same in both graphs."""
+        return self.tg._graph.adj[parent][node] == B.adj[parent][node]
 
     def copy_nodes(self, tg_new: _TransportGraph, nodes):
         for n in nodes:

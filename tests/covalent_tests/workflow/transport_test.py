@@ -502,7 +502,7 @@ def test_reset_descendants_exception(workflow_transport_graph, mocker):
     """Test method that resets descendants of a node (including the node itself) when there's an exception."""
     get_node_value_mock = mocker.patch(
         "covalent._workflow.transport._TransportGraph.get_node_value",
-        return_value=RESULT_STATUS.NEW_OBJECT,
+        side_effect=Exception(),
     )
     reset_node_mock = mocker.patch("covalent._workflow.transport._TransportGraph.reset_node")
     res = workflow_transport_graph._reset_descendants(12)

@@ -104,12 +104,36 @@ def test_flag_successors_with_successors_3(
     assert node_statuses == new_statuses
 
 
-def test_is_same_node():
-    pass
+def test_is_same_node_true(tg, tg_ops):
+    """Test the is same node method."""
+    assert tg_ops.is_same_node(tg._graph, 0) is True
+    assert tg_ops.is_same_node(tg._graph, 1) is True
 
 
-def test_is_same_edge_attributes():
-    pass
+def test_is_same_node_false(tg_ops):
+    """Test the is same node method."""
+    tg = _TransportGraph()
+    tg.add_node(name="multiply", function=add, metadata={"0- mock-key": "0-mock-value"})
+    assert tg_ops.is_same_node(tg._graph, 0) is False
+
+
+def test_is_same_edge_attributes_true(tg, tg_ops):
+    """Test the is same edge attributes method."""
+    tg.add_edge(0, 1, edge_name="01", kwargs={"x": 1, "y": 2})
+    assert tg_ops.is_same_edge_attributes(tg._graph, 0, 1) is True
+
+
+def test_is_same_edge_attributes_false(tg, tg_ops):
+    """Test the is same edge attributes method."""
+    tg.add_edge(0, 1, edge_name="01", kwargs={"x": 1, "y": 2})
+
+    tg_2 = _TransportGraph()
+    tg_2.add_node(name="add", function=add, metadata={"0- mock-key": "0-mock-value"})
+    tg_2.add_node(name="multiply", function=multiply, metadata={"1- mock-key": "1-mock-value"})
+    tg_2.add_node(name="identity", function=identity, metadata={"2- mock-key": "2-mock-value"})
+    tg_2.add_edge(0, 1, edge_name="01", kwargs={"x": 1})
+
+    assert tg_ops.is_same_edge_attributes(tg_2._graph, 0, 1) is False
 
 
 def test_copy_nodes():
