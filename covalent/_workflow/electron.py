@@ -25,7 +25,7 @@ import operator
 from builtins import list
 from dataclasses import asdict
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
 
 from .._file_transfer.enums import Order
 from .._file_transfer.file_transfer import FileTransfer
@@ -40,7 +40,11 @@ from .._shared_files.defaults import (
     prefix_separator,
     sublattice_prefix,
 )
-from .._shared_files.utils import get_named_params, get_serialized_function_str
+from .._shared_files.utils import (
+    filter_null_metadata,
+    get_named_params,
+    get_serialized_function_str,
+)
 from .depsbash import DepsBash
 from .depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from .depspip import DepsPip
@@ -524,6 +528,16 @@ class Electron:
             node_id=self.node_id,
         )
 
+    @property
+    def as_transportable_dict(self) -> Dict:
+        """Get transportable electron object and metadata."""
+        return {
+            "name": self.function.__name__,
+            "function": TransportableObject(self.function).to_dict(),
+            "function_string": get_serialized_function_str(self.function),
+            "metadata": filter_null_metadata(self.metadata),
+        }
+
 
 def electron(
     _func: Optional[Callable] = None,
@@ -615,13 +629,17 @@ def electron(
     constraints = encode_metadata(constraints)
 
     def decorator_electron(func=None):
+        """Electron decorator function"""
+        electron_object = Electron(func)
+        for k, v in constraints.items():
+            electron_object.set_metadata(k, v)
+        electron_object.__doc__ = func.__doc__
+
         @wraps(func)
         def wrapper(*args, **kwargs):
-            electron_object = Electron(func)
-            for k, v in constraints.items():
-                electron_object.set_metadata(k, v)
-            electron_object.__doc__ = func.__doc__
             return electron_object(*args, **kwargs)
+
+        wrapper.electron_object = electron_object
 
         return wrapper
 
