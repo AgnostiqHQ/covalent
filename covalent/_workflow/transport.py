@@ -514,6 +514,8 @@ class _TransportGraph:
             data["nodes"][idx]["function"] = data["nodes"][idx].pop("function").to_dict()
             if "value" in node:
                 node["value"] = node["value"].to_dict()
+            if "output" in node:
+                node["output"] = node["output"].to_dict()
             if "metadata" in node:
                 node["metadata"] = encode_metadata(node["metadata"])
             if "start_time" in node:
@@ -601,6 +603,8 @@ class _TransportGraph:
             node_link_data["nodes"][idx]["function"] = TransportableObject.from_dict(function_ser)
             if "value" in node:
                 node["value"] = TransportableObject.from_dict(node["value"])
+            if "output" in node:
+                node["output"] = TransportableObject.from_dict(node["output"])
             if "start_time" in node:
                 if node["start_time"]:
                     node["start_time"] = datetime.datetime.fromisoformat(node["start_time"])
