@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 """Module for transport graph operations."""
+
 from collections import deque
 from typing import Callable, List
 
@@ -37,10 +38,10 @@ class TransportGraphOps:
 
     @staticmethod
     def _flag_successors(A: nx.MultiDiGraph, node_statuses: dict, starting_node: int):
+        """Flag all successors of a node (including the node itself)."""
         nodes_to_invalidate = [starting_node]
         for node, successors in nx.bfs_successors(A, starting_node):
-            for child in successors:
-                nodes_to_invalidate.append(child)
+            nodes_to_invalidate.extend(iter(successors))
         for node in nodes_to_invalidate:
             node_statuses[node] = -1
 

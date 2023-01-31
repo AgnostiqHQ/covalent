@@ -475,6 +475,7 @@ class _TransportGraph:
             self._reset_descendants(successor)
 
     def apply_electron_updates(self, electron_updates: dict) -> None:
+        """Replace transport graph node data based on the electrons that need to be updated during re-dispatching."""
         for n in self._graph.nodes:
             name = self.get_node_value(n, "name")
             if name in electron_updates:
