@@ -33,14 +33,14 @@ Click an option below for instructions on deploying to that platform.
       .. grid-item-card:: Docker
         :link: deploy_with_docker
         :link-type: doc
-        :img-top: images/docker_deploy.jpg
+        :img-top: images/docker_deploy.svg
 
         Pull the pre-built container image from our public registries and run it in Docker.
 
       .. grid-item-card:: systemd
         :link: deploy_with_systemd
         :link-type: doc
-        :img-top: images/systemd_deploy.jpg
+        :img-top: images/systemd_deploy.svg
 
         Use ``systemd`` on a Linux host to manage a self-hosted Covalent server.
 
@@ -61,7 +61,7 @@ Click an option below for instructions on deploying to that platform.
       .. grid-item-card:: AWS
         :link: deploy_with_aws
         :link-type: doc
-        :img-top: images/aws_deploy.jpg
+        :img-top: images/aws_deploy.svg
 
         Deploy Covalent in an AWS account with any ``x86``-based EC2 instance.
 
