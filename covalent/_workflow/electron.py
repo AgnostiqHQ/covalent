@@ -485,6 +485,7 @@ class Electron:
                 function=None,
                 metadata=encode_metadata(DEFAULT_METADATA_VALUES.copy()),
                 value=encoded_param_value,
+                output=encoded_param_value,
             )
             transport_graph.add_edge(
                 parameter_node,

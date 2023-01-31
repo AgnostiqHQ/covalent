@@ -154,9 +154,7 @@ async def _submit_task(dispatch_id: str, node_id: int):
 
     # Handle parameter nodes
     if node_name.startswith(parameter_prefix):
-        app_log.debug("7C: Parameter if block (run_planned_workflow).")
-        output = await datasvc.get_electron_attribute(dispatch_id, node_id, "value")
-        app_log.debug(f"7C: Node output: {output} (run_planned_workflow).")
+        app_log.debug("7C: Encountered parameter node {node_id}.")
         app_log.debug("8: Starting update node (run_planned_workflow).")
 
         node_result = {
@@ -164,7 +162,6 @@ async def _submit_task(dispatch_id: str, node_id: int):
             "start_time": datetime.now(timezone.utc),
             "end_time": datetime.now(timezone.utc),
             "status": RESULT_STATUS.COMPLETED,
-            "output": output,
         }
         await datasvc.update_node_result(dispatch_id, node_result)
         app_log.debug("8A: Update node success (run_planned_workflow).")
