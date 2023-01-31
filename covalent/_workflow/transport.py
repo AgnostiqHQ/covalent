@@ -453,7 +453,7 @@ class _TransportGraph:
         self.set_node_value(node_id, "stderr", None)
 
     def _replace_node(self, node_id: int, new_attrs: Dict[str, Any]) -> None:
-        """Replace node data with new attribute values and flag descendants."""
+        """Replace node data with new attribute values and flag descendants (used in re-dispatching)."""
         metadata = self.get_node_value(node_id, "metadata")
         metadata.update(new_attrs["metadata"])
 
@@ -461,24 +461,18 @@ class _TransportGraph:
         self.set_node_value(node_id, "function", serialized_callable)
         self.set_node_value(node_id, "function_string", new_attrs["function_string"])
         self.set_node_value(node_id, "name", new_attrs["name"])
-        self._reset_descendants(self, node_id)
+        self._reset_descendants(node_id)
 
-    def copy_nodes(self, tg_new, nodes):
-        for n in nodes:
-            for k, v in self._graph.nodes[n].items():
-                tg_new.set_node_value(n, k, v)
-
-    def _reset_descendants(self, node_id):
+    def _reset_descendants(self, node_id: int) -> None:
+        """Reset node and all its descendants to starting state."""
         try:
             if self.get_node_value(node_id, "status") == RESULT_STATUS.NEW_OBJECT:
-                print("Encountered recursion base case")
                 return
         except Exception:
             return
-        self._reset_node(self, node_id)
+        self.reset_node(node_id)
         for successor in self._graph.neighbors(node_id):
-            print("Resetting recursively")
-            self._reset_descendants(self, successor)
+            self._reset_descendants(successor)
 
     def apply_electron_updates(self, electron_updates: dict):
         for n in self._graph.nodes:

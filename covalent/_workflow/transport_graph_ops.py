@@ -50,6 +50,11 @@ class TransportGraphOps:
     def is_same_edge_attributes(self, B: nx.MultiDiGraph, parent: int, node: int):
         return self.tg.adj[parent][node] == B.adj[parent][node]
 
+    def copy_nodes(self, tg_new: _TransportGraph, nodes):
+        for n in nodes:
+            for k, v in self._graph.nodes[n].items():
+                tg_new.set_node_value(n, k, v)
+
     def _cmp_name_and_pval(self, B: nx.MultiDiGraph, node: int):
         """Default node comparison function for diffing transport graphs."""
         name_A = self.tg.nodes[node]["name"]
