@@ -28,6 +28,7 @@ from .._results_manager import wait
 from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
 from .._shared_files.config import get_config
+from .._shared_files.utils import request_api_key
 from .._workflow.lattice import Lattice
 from .base import BaseDispatcher
 
@@ -85,8 +86,9 @@ class LocalDispatcher(BaseDispatcher):
             json_lattice = lattice.serialize_to_json()
 
             test_url = f"http://{dispatcher_addr}/api/submit"
+            headers = {"Authorization": request_api_key()}
 
-            r = requests.post(test_url, data=json_lattice)
+            r = requests.post(test_url, data=json_lattice, headers=headers)
             r.raise_for_status()
             return r.content.decode("utf-8").strip().replace('"', "")
 

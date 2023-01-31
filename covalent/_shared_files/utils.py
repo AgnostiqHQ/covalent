@@ -21,7 +21,9 @@
 """General utils for Covalent."""
 
 import inspect
+import os
 import socket
+import uuid
 from datetime import timedelta
 from typing import Callable, Dict, Set, Tuple
 
@@ -201,3 +203,61 @@ def get_named_params(func, args, kwargs):
 
 # Dictionary to map Dask clients to their scheduler addresses
 _address_client_mapper = {}
+
+
+def request_api_key(aws_region: str = "us-east-1") -> str:
+    try:
+        import boto3
+        import botocore
+    except ImportError:
+        print("boto3 is not installed!")
+        return None
+
+    sts = boto3.Session(region_name=aws_region).client("sts")
+
+    try:
+        account = sts.get_caller_identity()["Account"]
+    except botocore.exceptions.NoCredentialsError:
+        print("AWS credentials could not be located.")
+        return None
+
+    try:
+        role = os.environ["COVALENT_API_KEY_ACCESS_ROLE"]
+    except KeyError:
+        print(
+            "Before trying to retrieve the API key, define the environment variable COVALENT_API_KEY_ACCESS_ROLE."
+        )
+        return None
+
+    try:
+        session_name = f"covalent-sdk-{str(uuid.uuid4())[:8]}"
+        response = sts.assume_role(
+            RoleArn=f"arn:aws:iam::{account}:role/{role}", RoleSessionName=session_name
+        )
+        credentials = response["Credentials"]
+    except botocore.exceptions.ClientError:
+        print("Unable to assume the role. Check your session's IAM policies.")
+        return None
+
+    sm = boto3.Session(
+        region_name="us-east-1",
+        aws_access_key_id=credentials["AccessKeyId"],
+        aws_secret_access_key=credentials["SecretAccessKey"],
+        aws_session_token=credentials["SessionToken"],
+    ).client("secretsmanager")
+
+    try:
+        secret_name = os.environ["COVALENT_API_KEY_SECRET"]
+    except KeyError:
+        print(
+            "Before trying to retrieve the API key, define the environment variable COVALENT_API_KEY_SECRET."
+        )
+        return None
+
+    try:
+        api_key = sm.get_secret_value(SecretId=secret_name)["SecretString"]
+    except botocore.exceptions.ClientError:
+        print("Unable to retrieve the API key. Check the deployment.")
+        return None
+
+    return api_key

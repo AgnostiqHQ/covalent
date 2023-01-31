@@ -31,6 +31,7 @@ from urllib3.util import Retry
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.exceptions import MissingLatticeRecordError
+from .._shared_files.utils import request_api_key
 from .result import Result, import_result_object
 from .wait import EXTREME
 
@@ -208,7 +209,9 @@ def cancel(
 
     url = "http://" + dispatcher + "/api/cancel"
 
-    r = requests.post(url, data=dispatch_id.encode("utf-8"))
+    headers = {"Authorization": request_api_key()}
+
+    r = requests.post(url, data=dispatch_id.encode("utf-8"), headers=headers)
     r.raise_for_status()
     return r.content.decode("utf-8").strip().replace('"', "")
 
@@ -309,9 +312,11 @@ def _get_result_v2_from_dispatcher(
     http = requests.Session()
     http.mount("http://", adapter)
     url = "http://" + dispatcher_addr + "/api/resultv2/" + dispatch_id
+    headers = {"Authorization": request_api_key()}
     response = http.get(
         url,
         params={"wait": bool(int(wait)), "status_only": status_only},
+        headers=headers,
     )
     if response.status_code == 404:
         raise MissingLatticeRecordError
@@ -373,7 +378,9 @@ def _get_node_output_from_dispatcher(
 
     url = f"http://{dispatcher_addr}/api/resultv2/{dispatch_id}/assets/node/{node_id}/output"
 
-    response = requests.get(url, stream=True)
+    headers = {"Authorization": request_api_key()}
+
+    response = requests.get(url, stream=True, headers=headers)
 
     if response.status_code == 404:
         raise MissingLatticeRecordError
@@ -404,7 +411,9 @@ def _get_dispatch_result_from_dispatcher(
 
     url = f"http://{dispatcher_addr}/api/resultv2/{dispatch_id}/assets/dispatch/result"
 
-    response = requests.get(url, stream=True)
+    headers = {"Authorization": request_api_key()}
+
+    response = requests.get(url, stream=True, headers=headers)
 
     if response.status_code == 404:
         raise MissingLatticeRecordError
