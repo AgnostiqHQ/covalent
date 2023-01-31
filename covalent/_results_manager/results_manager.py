@@ -93,16 +93,14 @@ def _get_result_from_dispatcher(
     """
 
     if dispatcher_addr is None:
-        dispatcher_addr = (
-            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
-        )
+        dispatcher_addr = get_config("dispatcher.address")
 
     retries = int(EXTREME) if wait else 5
 
     adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
     http = requests.Session()
     http.mount("http://", adapter)
-    url = f"http://{dispatcher_addr}/api/result/{dispatch_id}"
+    url = f"http://{dispatcher_addr}/api/v1/result/{dispatch_id}"
     response = http.get(
         url,
         params={"wait": bool(int(wait)), "status_only": status_only},
@@ -192,10 +190,7 @@ def sync(
         )
 
 
-def cancel(
-    dispatch_id: str,
-    dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
-) -> str:
+def cancel(dispatch_id: str, dispatcher: str = get_config("dispatcher.address")) -> str:
     """
     Cancel a running dispatch.
 
@@ -207,9 +202,12 @@ def cancel(
         None
     """
 
-    url = "http://" + dispatcher + "/api/cancel"
+    url = "http://" + dispatcher + "/api/v1/cancel"
 
-    headers = {"Authorization": request_api_key()}
+    headers = {"x-api-key": request_api_key()}
+
+    if not headers["x-api-key"]:
+        return
 
     r = requests.post(url, data=dispatch_id.encode("utf-8"), headers=headers)
     r.raise_for_status()
@@ -302,16 +300,14 @@ def _get_result_v2_from_dispatcher(
     """
 
     if dispatcher_addr is None:
-        dispatcher_addr = (
-            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
-        )
+        dispatcher_addr = get_config("dispatcher.address")
 
     retries = int(EXTREME) if wait else 5
 
     adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
     http = requests.Session()
     http.mount("http://", adapter)
-    url = "http://" + dispatcher_addr + "/api/resultv2/" + dispatch_id
+    url = "http://" + dispatcher_addr + "/api/v1/resultv2/" + dispatch_id
     headers = {"Authorization": request_api_key()}
     response = http.get(
         url,
@@ -372,13 +368,14 @@ def _get_node_output_from_dispatcher(
     """
 
     if dispatcher_addr is None:
-        dispatcher_addr = (
-            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
-        )
+        dispatcher_addr = get_config("dispatcher.address")
 
-    url = f"http://{dispatcher_addr}/api/resultv2/{dispatch_id}/assets/node/{node_id}/output"
+    url = f"http://{dispatcher_addr}/api/v1/resultv2/{dispatch_id}/assets/node/{node_id}/output"
 
-    headers = {"Authorization": request_api_key()}
+    headers = {"x-api-key": request_api_key()}
+
+    if not headers["x-api-key"]:
+        return
 
     response = requests.get(url, stream=True, headers=headers)
 
@@ -405,13 +402,14 @@ def _get_dispatch_result_from_dispatcher(
 ) -> Dict:
 
     if dispatcher_addr is None:
-        dispatcher_addr = (
-            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
-        )
+        dispatcher_addr = get_config("dispatcher.address")
 
-    url = f"http://{dispatcher_addr}/api/resultv2/{dispatch_id}/assets/dispatch/result"
+    url = f"http://{dispatcher_addr}/api/v1/resultv2/{dispatch_id}/assets/dispatch/result"
 
-    headers = {"Authorization": request_api_key()}
+    headers = {"x-api-key": request_api_key()}
+
+    if not headers["x-api-key"]:
+        return
 
     response = requests.get(url, stream=True, headers=headers)
 

@@ -60,9 +60,7 @@ class LocalDispatcher(BaseDispatcher):
         """
 
         if dispatcher_addr is None:
-            dispatcher_addr = (
-                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
-            )
+            dispatcher_addr = get_config("dispatcher.address")
 
         @wraps(orig_lattice)
         def wrapper(*args, **kwargs) -> str:
@@ -85,9 +83,15 @@ class LocalDispatcher(BaseDispatcher):
             # Serialize the transport graph to JSON
             json_lattice = lattice.serialize_to_json()
 
-            test_url = f"http://{dispatcher_addr}/api/submit"
-            headers = {"Authorization": request_api_key()}
+            test_url = f"http://{dispatcher_addr}/api/v1/submit"
+            headers = {"x-api-key": request_api_key()}
 
+            if not headers["x-api-key"]:
+                return
+
+            print(test_url)
+            print(json_lattice)
+            print(headers)
             r = requests.post(test_url, data=json_lattice, headers=headers)
             r.raise_for_status()
             return r.content.decode("utf-8").strip().replace('"', "")

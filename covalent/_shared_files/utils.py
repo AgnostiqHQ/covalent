@@ -240,7 +240,7 @@ def request_api_key(aws_region: str = "us-east-1") -> str:
         return None
 
     sm = boto3.Session(
-        region_name="us-east-1",
+        region_name=aws_region,
         aws_access_key_id=credentials["AccessKeyId"],
         aws_secret_access_key=credentials["SecretAccessKey"],
         aws_session_token=credentials["SessionToken"],
