@@ -538,5 +538,12 @@ def test_reset_descendants_multiple(workflow_transport_graph, mocker):
     assert res is None
 
 
-def test_apply_electron_updates():
-    pass
+def test_apply_electron_updates(workflow_transport_graph, mocker):
+    """Test the method that applies electron updates to the graph."""
+    get_node_value_mock = mocker.patch(
+        "covalent._workflow.transport._TransportGraph.get_node_value", return_value="mock-name"
+    )
+    replace_node_mock = mocker.patch("covalent._workflow.transport._TransportGraph._replace_node")
+    workflow_transport_graph.apply_electron_updates({"mock-name": "mock-value"})
+    get_node_value_mock.mock_calls = [call(0, "name"), call(1, "name")]
+    replace_node_mock.mock_calls = [call(0, "mock-value"), call(1, "mock-value")]

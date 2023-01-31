@@ -474,12 +474,11 @@ class _TransportGraph:
         for successor in self._graph.neighbors(node_id):
             self._reset_descendants(successor)
 
-    def apply_electron_updates(self, electron_updates: dict):
+    def apply_electron_updates(self, electron_updates: dict) -> None:
         for n in self._graph.nodes:
             name = self.get_node_value(n, "name")
             if name in electron_updates:
-                self._replace_node(self, n, electron_updates[name])
-        return self
+                self._replace_node(n, electron_updates[name])
 
     def serialize(self, metadata_only: bool = False) -> bytes:
         """
