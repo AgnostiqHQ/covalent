@@ -505,9 +505,9 @@ def test_reset_descendants_exception(workflow_transport_graph, mocker):
         return_value=RESULT_STATUS.NEW_OBJECT,
     )
     reset_node_mock = mocker.patch("covalent._workflow.transport._TransportGraph.reset_node")
-    res = workflow_transport_graph._reset_descendants(0)
+    res = workflow_transport_graph._reset_descendants(12)
     reset_node_mock.assert_not_called()
-    get_node_value_mock.assert_called_once_with(0, "status")
+    get_node_value_mock.assert_called_once_with(12, "status")
     assert res is None
 
 
