@@ -28,11 +28,11 @@ Constructing Workflows
 
 :doc:`Looping <./coding/looping>`
 
-:doc:`Visualizing a Lattice <./coding/visualize_lattice>`
+:doc:`Visualizing a Lattice <./coding/visualize_lattice>` x Debug messages?
 
 :doc:`Adding Constraints to Tasks and Workflows <./coding/add_constraints_to_lattice>`
 
-:doc:`Waiting For Execution of Another Electron <./coding/wait_for_another_electron>`
+:doc:`Waiting For Execution of Another Electron <./coding/wait_for_another_electron>` x Postprocessing fails
 
 :doc:`Transferring Local Files During Workflows<./coding/file_transfers_for_workflows_local>`
 
