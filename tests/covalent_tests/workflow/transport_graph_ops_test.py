@@ -227,8 +227,18 @@ def test_max_cbms(tg_ops):
     assert D_node_status == {0: True, 1: True, 2: True, 3: True, 4: False}
 
 
-def test_cmp_name_and_pval():
-    pass
+def test_cmp_name_and_pval_true(tg, tg_ops):
+    """Test the name and parameter value comparison function."""
+    assert tg_ops._cmp_name_and_pval(tg, tg, 0) is True
+
+
+def test_cmp_name_and_pval_false(tg, tg_ops):
+    """Test the name and parameter value comparison function."""
+    tg_2 = _TransportGraph()
+    tg_2.add_node(name="not-add", function=add, metadata={"0- mock-key": "0-mock-value"})
+    tg_2.add_node(name="multiply", function=multiply, metadata={"1- mock-key": "1-mock-value"})
+    tg_2.add_node(name="identity", function=identity, metadata={"2- mock-key": "2-mock-value"})
+    assert tg_ops._cmp_name_and_pval(tg, tg_2, 0) is False
 
 
 def test_get_diff_nodes():

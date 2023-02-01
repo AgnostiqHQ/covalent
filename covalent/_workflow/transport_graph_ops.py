@@ -64,16 +64,16 @@ class TransportGraphOps:
                 self.tg.set_node_value(n, k, v)
 
     @staticmethod
-    def _cmp_name_and_pval(A: nx.MultiDiGraph, B: nx.MultiDiGraph, node: int):
+    def _cmp_name_and_pval(tg_A: _TransportGraph, tg_B: _TransportGraph, node: int) -> bool:
         """Default node comparison function for diffing transport graphs."""
-        name_A = A.nodes[node]["name"]
-        name_B = B.nodes[node]["name"]
+        name_A = tg_A._graph.nodes[node]["name"]
+        name_B = tg_B._graph.nodes[node]["name"]
 
         if name_A != name_B:
             return False
 
-        val_A = A.nodes[node].get("value", None)
-        val_B = B.nodes[node].get("value", None)
+        val_A = tg_A._graph.nodes[node].get("value", None)
+        val_B = tg_B._graph.nodes[node].get("value", None)
 
         return val_A == val_B
 
