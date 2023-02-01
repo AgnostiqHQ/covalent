@@ -28,11 +28,11 @@ import { isParameter } from '../../utils/misc'
 const nodeLabel = (type, name) => {
   switch (type) {
     case 'parameter':
-      return name.replace(':parameter:', '')
+      return name?.replace(':parameter:', '')
     case 'electron_list':
-      return name.replace(':electron_list:', 'electron list')
+      return name?.replace(':electron_list:', 'electron list')
     case 'sublattice':
-      return name.replace(':sublattice:', 'Sublattice:')
+      return name?.replace(':sublattice:', 'Sublattice:')
     default:
       return name
   }
@@ -65,15 +65,15 @@ const mapGraphToElements = (
   const nodes = _.map(graph.nodes, (node) => {
     const handlePositions = getHandlePositions(direction)
     const isParam = isParameter(node)
-    const name = isParam ? _.trim(node.name, ':parameter:') : nodeLabel(node.type, node.name)
+    const name = isParam ?  node?.name?.replace(':parameter:', '') : nodeLabel(node?.type, node.name)
     return {
       id: String(node.id),
       type: isParam ? 'parameter' : 'electron',
       data: {
-        fullName: name,
+        fullName: name||'parameter',
         label: hideLabels
-          ? _.truncate(name, { length: 0 })
-          : _.truncate(name, { length: 70 }),
+          ? _.truncate(name||'parameter', { length: 0 })
+          : _.truncate(name||'parameter', { length: 70 }),
         status: node.status,
         executor: preview ? node?.metadata.executor_name : node.executor_label,
         node_id: preview ? node.id : node.node_id,

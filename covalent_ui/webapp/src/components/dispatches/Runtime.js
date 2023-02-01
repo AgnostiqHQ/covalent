@@ -47,19 +47,25 @@ export const humanize = humanizeDuration.humanizer({
   },
 })
 
+// eslint-disable-next-line no-unused-vars
 const parseDate = (date) => (_.isString(date) ? parseISO(date) : date)
 
 const Runtime = ({ startTime, endTime, sx }) => {
-  startTime = parseDate(startTime)
-  endTime = parseDate(endTime)
-
-  if (!isValid(startTime)) {
+  let startTimeToLocal = new Date((startTime = startTime + 'Z'))
+  let endTimeToLocal = new Date((endTime = endTime + 'Z'))
+  if (!isValid(startTimeToLocal)) {
     return ''
   }
-  if (!isValid(endTime)) {
-    return <RuntimeTicker sx={sx} startTime={startTime} />
+  if (!isValid(endTimeToLocal)) {
+    return <RuntimeTicker sx={sx} startTime={startTimeToLocal} />
   }
-  return <RuntimeConst sx={sx} startTime={startTime} endTime={endTime} />
+  return (
+    <RuntimeConst
+      sx={sx}
+      startTime={startTimeToLocal}
+      endTime={endTimeToLocal}
+    />
+  )
 }
 
 const RuntimeConst = ({ startTime, endTime, sx }) => {

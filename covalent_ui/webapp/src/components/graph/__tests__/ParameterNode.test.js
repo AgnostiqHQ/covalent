@@ -20,7 +20,7 @@
 //  * Relief from the License may be granted by purchasing a commercial license.
 //  */
 
-import { fireEvent, screen, render } from '@testing-library/react'
+import { screen, render } from '@testing-library/react'
 // import {render} from '@testing-library/dom'
 import ParameterNode from '../ParameterNode'
 import { BrowserRouter } from 'react-router-dom'
@@ -30,7 +30,7 @@ import reducers from '../../../redux/reducers'
 import { configureStore } from '@reduxjs/toolkit'
 import theme from '../../../utils/theme'
 import ThemeProvider from '@mui/system/ThemeProvider'
-import { Helmet, HelmetProvider } from 'react-helmet-async'
+import { HelmetProvider } from 'react-helmet-async'
 import { ReactFlowProvider } from 'react-flow-renderer'
 
 function reduxRender(renderedComponent) {
@@ -52,13 +52,13 @@ function reduxRender(renderedComponent) {
 
 describe('parameter node', () => {
   const data = {
-    fullName: "identity", label: "identity", status: "COMPLETED"
+    fullName: 'identity',
+    label: 'identity',
+    status: 'COMPLETED',
   }
 
   test('render parameter nodes', async () => {
     reduxRender(<ParameterNode data={data} />)
-    const layoutOption = screen.getByTestId('para__typo')
     expect(screen.getByTestId('parameternode')).toBeDefined()
   })
-
 })
