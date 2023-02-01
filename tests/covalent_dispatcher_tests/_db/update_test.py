@@ -364,7 +364,7 @@ def test_result_persist_subworkflow_1(test_db, result_1, result_2, mocker):
         assert lattice_row.workflow_executor == "local"
 
         for job in job_records:
-            assert job.cancel_requested == True
+            assert job.cancel_requested is True
 
 
 def test_result_persist_rehydrate(test_db, result_1, mocker):
