@@ -4,9 +4,17 @@ Remedying Database Migration Errors
 
 When upgrading Covalent versions from 0.177.0 to a newer version, you may need to run database migrations.
 
-.. warning:: Ensure that you back up your database before attempting to alter it's data as follows :code:`cp ~/.local/share/covalent/dispatcher_db.sqlite /some/safe/location/dispatcher_db.sqlite` it may be worth opening an issue in the covalent repo to get additional guidance from maintainers about the specific migration issue in question.
+.. warning:: Back up your database before attempting to migrate its data.
 
-In a small number of cases, migrations can fail to run because existing data violates SQL database constraints, or for other reasons specific to the type of schema update.
+By default, the Covalent database is an SQLlite database that has this file path: :code:`~/.local/share/covalent/dispatcher_db.sqlite`.
+
+ .. code:: bash
+
+   cp ~/.local/share/covalent/dispatcher_db.sqlite /a/safe/backup/location/dispatcher_db.sqlite
+
+If you are unsure how to back up or migrate your database, open an issue in the covalent repo to get additional guidance from maintainers.
+
+In some cases, migrations can fail to run because existing data violates SQL database constraints, or for other reasons specific to the type of schema update.
 
 For example, the following migration fails due to existing data in the database.
 
@@ -23,21 +31,31 @@ For example, the following migration fails due to existing data in the database.
     There was an issue running migrations.
     Please read https://covalent.readthedocs.io/en/latest/how_to/db/migration_error.html for more information.
 
-In this above example, :code:`electron_id` is now prohibited from having NULL values, but there are NULL values in the existing database.
+The migration error above occurred because there are NULL values in the existing database, but :code:`electron_id` is now prohibited from having NULL values,
 
-To remedy the situation, data that violates this constraint is removed manually from the database. By default, the Covalent database is an SQLlite database has this file path: :code:`~/.local/share/covalent/dispatcher_db.sqlite`.
+To remedy this situation, removed data that violates the constraint.
 
-Making these changes requires advanced knowledge of Covalent. It is not recommended unless you are fully acquainted with how Covalent works, since it may cause unexpected behavior.
+.. warning::
 
-Lastly, if you are unable to solve the issue in this manner, you may need to delete the database and re-run the migrations as follows.
+    Making these changes requires detailed knowledge of Covalent. We do not recommend modifying the database by hand unless you are fully acquainted with how Covalent works. Doing so may cause unexpected behavior.
+
+If you are unable to solve the issue, you may need to delete the database and re-run the migrations as follows.
 
 .. warning:: This will cause all of your workflow data to be deleted unless a backup of the database was created.
 
+To delete the database:
+
+1. Stop Covalent.
 
 .. code:: bash
 
    $ covalent stop
     Covalent server has stopped.
+
+2. Delete the sqlite database file and migrate the database.
+
+.. code:: bash
+
    $ rm ~/.local/share/covalent/dispatcher_db.sqlite
    $ covalent db migrate
     INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
@@ -47,4 +65,9 @@ Lastly, if you are unable to solve the issue in this manner, you may need to del
     INFO  [alembic.runtime.migration] Running upgrade 9b9d58f02985 -> 9f1271ef662a, v11+ updates
     Migrations are up to date.
 
-At this point you may start Covalent as before with :code:`covalent start`
+3. Start Covalent.
+
+.. code:: bash
+
+    $ covalent start
+    Covalent server has started at http://localhost:48008

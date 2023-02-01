@@ -36,9 +36,9 @@ Constructing Workflows
 
 :doc:`Transferring Local Files During Workflows<./coding/file_transfers_for_workflows_local>`
 
-:doc:`Transferring Remote Files During Workflows<./coding/file_transfers_to_remote>`
+:doc:`Transferring Remote Files During Workflows<./coding/file_transfers_to_remote>` x Run on a LAN with a remote host
 
-:doc:`Transferring Files to and from an S3 Bucket<./coding/file_transfers_to_from_s3>`
+:doc:`Transferring Files to and from an S3 Bucket<./coding/file_transfers_to_from_s3>` x Run on a Linux host against a zipfile in an S3 bucket
 
 :doc:`Constructing a Lepton <./coding/construct_lepton>`
 
@@ -50,7 +50,7 @@ Constructing Workflows
 
 :doc:`Adding Callable Function Dependencies to an Electron <./coding/add_callable_dependencies_to_electron>`
 
-:doc:`Constructing Task from Bash Scripts <./coding/construct_bash_task>` x
+:doc:`Constructing Task from Bash Scripts <./coding/construct_bash_task>` x Run with a valid Slack token on a Linux system (then remove identifying information)
 
 Executing a Workflow
 ********************
@@ -63,24 +63,24 @@ Executing a Workflow
 
 :doc:`Executing a Lattice Multiple Times <./execution/execute_lattice_multiple_times>`
 
-:doc:`Executing Multiple Lattices <./execution/execute_multiple_lattices>` x
+:doc:`Executing Multiple Lattices <./execution/execute_multiple_lattices>`
 
 :doc:`Executing a Lattice as an Electron (Sublattice) <./execution/execute_sublattice>`
 
 :doc:`Choosing an Executor For a Task <./execution/choosing_executors>`
 
-:doc:`Creating a Custom Executor <./execution/creating_custom_executors>` x
+:doc:`Creating a Custom Executor <./execution/creating_custom_executors>` x Seems to work, but can't find the timing file?
 
 :doc:`Canceling a Running Workflow <./execution/cancel_dispatch>` x
 
-:doc:`Executing an Electron in a Conda Environment <./execution/choosing_conda_environments>` x
+:doc:`Executing an Electron in a Conda Environment <./execution/choosing_conda_environments>` x Workflow doesn't seem to be stopping. Does cancel not work?
 
 Querying and Viewing
 ********************
 
 :doc:`Querying the Status of a Lattice in a Notebook<./status/query_lattice_execution_status>`
 
-:doc:`Querying the Status of an Electron in a Notebook<./status/query_electron_execution_status>`
+:doc:`Querying the Status of an Electron<./status/query_electron_execution_status>`
 
 :doc:`Querying Lattice Execution Time <./status/query_lattice_execution_time>`
 
