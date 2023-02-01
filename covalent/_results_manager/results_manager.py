@@ -31,7 +31,7 @@ from urllib3.util import Retry
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.exceptions import MissingLatticeRecordError
-from .._shared_files.utils import request_api_key
+from .._shared_files.utils import format_server_url, request_api_key
 from .result import Result, import_result_object
 from .wait import EXTREME
 
@@ -93,14 +93,14 @@ def _get_result_from_dispatcher(
     """
 
     if dispatcher_addr is None:
-        dispatcher_addr = get_config("dispatcher.address")
+        dispatcher_addr = format_server_url()
 
     retries = int(EXTREME) if wait else 5
 
     adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
     http = requests.Session()
     http.mount("http://", adapter)
-    url = f"http://{dispatcher_addr}/api/v1/result/{dispatch_id}"
+    url = f"{dispatcher_addr}/api/v1/result/{dispatch_id}"
     response = http.get(
         url,
         params={"wait": bool(int(wait)), "status_only": status_only},
@@ -190,7 +190,7 @@ def sync(
         )
 
 
-def cancel(dispatch_id: str, dispatcher: str = get_config("dispatcher.address")) -> str:
+def cancel(dispatch_id: str, dispatcher_addr: str = None) -> str:
     """
     Cancel a running dispatch.
 
@@ -202,7 +202,9 @@ def cancel(dispatch_id: str, dispatcher: str = get_config("dispatcher.address"))
         None
     """
 
-    url = "http://" + dispatcher + "/api/v1/cancel"
+    if not dispatcher_addr:
+        dispatcher_addr = format_server_url()
+    url = f"{dispatcher_addr}/api/v1/cancel"
 
     headers = {"x-api-key": request_api_key()}
 
@@ -300,14 +302,14 @@ def _get_result_v2_from_dispatcher(
     """
 
     if dispatcher_addr is None:
-        dispatcher_addr = get_config("dispatcher.address")
+        dispatcher_addr = format_server_url()
 
     retries = int(EXTREME) if wait else 5
 
     adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
     http = requests.Session()
     http.mount("http://", adapter)
-    url = "http://" + dispatcher_addr + "/api/v1/resultv2/" + dispatch_id
+    url = "{dispatcher_addr}/api/v1/resultv2/{dispatch_id}"
     headers = {"Authorization": request_api_key()}
     response = http.get(
         url,
@@ -368,9 +370,9 @@ def _get_node_output_from_dispatcher(
     """
 
     if dispatcher_addr is None:
-        dispatcher_addr = get_config("dispatcher.address")
+        dispatcher_addr = format_server_url()
 
-    url = f"http://{dispatcher_addr}/api/v1/resultv2/{dispatch_id}/assets/node/{node_id}/output"
+    url = f"{dispatcher_addr}/api/v1/resultv2/{dispatch_id}/assets/node/{node_id}/output"
 
     headers = {"x-api-key": request_api_key()}
 
@@ -402,9 +404,9 @@ def _get_dispatch_result_from_dispatcher(
 ) -> Dict:
 
     if dispatcher_addr is None:
-        dispatcher_addr = get_config("dispatcher.address")
+        dispatcher_addr = format_server_url()
 
-    url = f"http://{dispatcher_addr}/api/v1/resultv2/{dispatch_id}/assets/dispatch/result"
+    url = f"{dispatcher_addr}/api/v1/resultv2/{dispatch_id}/assets/dispatch/result"
 
     headers = {"x-api-key": request_api_key()}
 

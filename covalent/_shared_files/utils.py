@@ -28,6 +28,7 @@ from datetime import timedelta
 from typing import Callable, Dict, Set, Tuple
 
 from . import logger
+from .config import get_config
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -203,6 +204,27 @@ def get_named_params(func, args, kwargs):
 
 # Dictionary to map Dask clients to their scheduler addresses
 _address_client_mapper = {}
+
+
+def format_server_url(hostname: str = None, port: int = None) -> str:
+    if hostname is None:
+        hostname = get_config("dispatcher.address")
+    if port is None:
+        port = int(get_config("dispatcher.port"))
+
+    url = hostname
+    if not url.startswith("http"):
+        if port == 443:
+            url = f"https://{url}"
+        else:
+            url = f"http://{url}"
+
+    # Inject port
+    if port not in [80, 443]:
+        parts = url.split("/")
+        url = "".join(["/".join(parts[:3])] + [f":{port}/"] + ["/".join(parts[3:])])
+
+    return url.strip("/")
 
 
 def request_api_key(aws_region: str = "us-east-1") -> str:
