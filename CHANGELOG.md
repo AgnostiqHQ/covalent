@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Helper routines to facilitate data access for cancelling dispatches
+- Adding `Job` table to DB to track job ids corresponding to electrons in a lattice
+
+### Changed
+
+- Removed redundant `session.commit()` calls when inside a session context manager
+- Added debug log statements
+
 ## [0.215.0-rc.0] - 2023-02-01
 
 ### Authors
