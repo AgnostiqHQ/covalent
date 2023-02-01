@@ -309,7 +309,7 @@ def _get_result_v2_from_dispatcher(
     adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
     http = requests.Session()
     http.mount("http://", adapter)
-    url = "{dispatcher_addr}/api/v1/resultv2/{dispatch_id}"
+    url = f"{dispatcher_addr}/api/v1/resultv2/{dispatch_id}"
     headers = {"Authorization": request_api_key()}
     response = http.get(
         url,
