@@ -162,6 +162,25 @@ def test_make_dispatch(mocker):
     mock_register.assert_called_with(res)
 
 
+def test_get_result_object_from_new_lattice(mocker):
+    pass
+
+
+def test_get_result_object_from_old_result(mocker):
+    pass
+
+
+def test_make_derived_dispatch(mocker):
+    """Test the make derived dispatch function."""
+    load_get_result_object_mock = mocker.patch("covalent_dispatcher._core.data_manager.load")
+    get_result_object_from_new_lattice_mock = mocker.patch(
+        "covalent_dispatcher._core.data_manager._get_result_object_from_new_lattice"
+    )
+    get_result_object_from_old_result_mock = mocker.patch(
+        "covalent_dispatcher._core.data_manager._get_result_object_from_old_result"
+    )
+
+
 def test_get_result_object(mocker):
     result_object = get_mock_result()
     dispatch_id = result_object.dispatch_id
