@@ -35,28 +35,9 @@ log_stack_info = logger.log_stack_info
 
 
 class MissingJobRecordError(Exception):
-    pass
-
-
-def _update_job_record(
-    session: Session,
-    job_id: int,
-    cancel_requested: bool = None,
-    cancel_successful: bool = None,
-    job_handle: str = None,
-):
-
-    job_record = session.query(Job).where(Job.id == job_id).first()
-
-    if not job_record:
-        raise MissingJobRecordError
-
-    if cancel_requested is not None:
-        job_record.cancel_requested = cancel_requested
-    if cancel_successful is not None:
-        job_record.cancel_successful = cancel_successful
-    if job_handle is not None:
-        job_record.job_handle = job_handle
+    def __init__(self, message: str = ""):
+        self.message = message
+        super().__init__(self.message)
 
 
 def txn_get_job_record(session: Session, job_id: int) -> Dict:
@@ -68,7 +49,26 @@ def txn_get_job_record(session: Session, job_id: int) -> Dict:
             "job_handle": job_record.job_handle,
         }
     else:
-        raise MissingJobRecordError
+        raise MissingJobRecordError(message=f"Job {job_id} not found")
+
+
+def _update_job_record(
+    session: Session,
+    job_id: int,
+    cancel_requested: bool = None,
+    cancel_successful: bool = None,
+    job_handle: str = None,
+):
+    job_record = session.query(Job).where(Job.id == job_id).first()
+    if not job_record:
+        raise MissingJobRecordError(message=f"Job {job_id} not found")
+
+    if cancel_requested is not None:
+        job_record.cancel_requested = cancel_requested
+    if cancel_successful is not None:
+        job_record.cancel_successful = cancel_successful
+    if job_handle is not None:
+        job_record.job_handle = job_handle
 
 
 def get_job_record(job_id: int) -> Dict:
