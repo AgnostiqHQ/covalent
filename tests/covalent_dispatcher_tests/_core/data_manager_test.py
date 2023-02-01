@@ -23,7 +23,7 @@ Tests for the core functionality of the dispatcher.
 """
 
 
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -39,6 +39,7 @@ from covalent_dispatcher._core.data_manager import (
     get_result_object,
     get_status_queue,
     initialize_result_object,
+    make_derived_dispatch,
     make_dispatch,
     persist_result,
     update_node_result,
@@ -170,15 +171,50 @@ def test_get_result_object_from_old_result(mocker):
     pass
 
 
-def test_make_derived_dispatch(mocker):
+@pytest.mark.parametrize("reuse", [True, False])
+def test_make_derived_dispatch_from_lattice(mocker, reuse):
     """Test the make derived dispatch function."""
-    load_get_result_object_mock = mocker.patch("covalent_dispatcher._core.data_manager.load")
+
+    def mock_func():
+        pass
+
+    mock_old_result = MagicMock()
+    mock_new_result = MagicMock()
+    mock_new_result.dispatch_id = "mock-redispatch-id"
+    mock_new_result.lattice.transport_graph._graph.nodes = ["mock-nodes"]
+    load_get_result_object_mock = mocker.patch(
+        "covalent_dispatcher._core.data_manager.load", return_value=mock_old_result
+    )
     get_result_object_from_new_lattice_mock = mocker.patch(
-        "covalent_dispatcher._core.data_manager._get_result_object_from_new_lattice"
+        "covalent_dispatcher._core.data_manager._get_result_object_from_new_lattice",
+        return_value=mock_new_result,
     )
     get_result_object_from_old_result_mock = mocker.patch(
         "covalent_dispatcher._core.data_manager._get_result_object_from_old_result"
     )
+    update_mock = mocker.patch("covalent_dispatcher._core.data_manager.update")
+    register_result_object_mock = mocker.patch(
+        "covalent_dispatcher._core.data_manager._register_result_object"
+    )
+    mock_electron_updates = {"mock-electron-id": mock_func}
+    redispatch_id = make_derived_dispatch(
+        parent_dispatch_id="mock-dispatch-id",
+        json_lattice="mock-json-lattice",
+        electron_updates=mock_electron_updates,
+        reuse_previous_results=reuse,
+    )
+    load_get_result_object_mock.called_once_with("mock-dispatch-id", wait=reuse)
+    get_result_object_from_new_lattice_mock.called_once_with(
+        "mock-json-lattice", mock_old_result, reuse
+    )
+    get_result_object_from_old_result_mock.assert_not_called()
+    mock_new_result.lattice.transport_graph.apply_electron_updates.assert_called_once_with(
+        mock_electron_updates
+    )
+    update_mock().persist.called_once_with(mock_new_result)
+    register_result_object_mock.assert_called_once_with(mock_new_result)
+    assert redispatch_id == "mock-redispatch-id"
+    assert mock_new_result.lattice.transport_graph.dirty_nodes == ["mock-nodes"]
 
 
 def test_get_result_object(mocker):

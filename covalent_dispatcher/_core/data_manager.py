@@ -179,7 +179,7 @@ def _get_result_object_from_old_result(
 
 def make_derived_dispatch(
     parent_dispatch_id: str,
-    json_lattice: str,
+    json_lattice: Optional[str] = None,
     electron_updates: Optional[Dict[str, Callable]] = None,
     reuse_previous_results: bool = False,
 ) -> str:
