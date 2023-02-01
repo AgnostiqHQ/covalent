@@ -71,7 +71,7 @@ def update_lattice_completed_electron_num(dispatch_id: str) -> None:
                 "updated_at": dt.now(timezone.utc),
             }
         )
-        session.commit()
+        # session.commit()
 
 
 def txn_insert_lattices_data(
@@ -157,6 +157,7 @@ def txn_insert_lattices_data(
 def insert_lattices_data(*args, **kwargs):
     with workflow_db.session() as session:
         txn_insert_lattices_data(session, *args, **kwargs)
+    app_log.debug(f"Added lattice record {locals()} to DB")
 
 
 def txn_insert_electrons_data(
@@ -189,7 +190,6 @@ def txn_insert_electrons_data(
     """This function writes the transport graph node data to the Electrons table in the DB."""
 
     # Check that the foreign key corresponding to this table exists
-    app_log.debug("insert_electrons_data")
 
     row = session.query(Lattice).where(Lattice.dispatch_id == parent_dispatch_id).all()
     if len(row) == 0:
@@ -230,7 +230,6 @@ def txn_insert_electrons_data(
     )
 
     session.add(electron_row)
-
     session.flush()
     electron_id = electron_row.id
 
@@ -239,6 +238,7 @@ def txn_insert_electrons_data(
 
 def insert_electrons_data(*args, **kwargs):
     with workflow_db.session() as session:
+        app_log.debug(f"Adding electron {locals()} to DB")
         return txn_insert_electrons_data(session, *args, **kwargs)
 
 
@@ -287,6 +287,7 @@ def txn_insert_electron_dependency_data(session: Session, dispatch_id: str, latt
 
 def insert_electron_dependency_data(*args, **kwargs):
     with workflow_db.session() as session:
+        app_log.debug(f"Adding electron dependency data {locals()} to DB")
         txn_insert_electron_dependency_data(session, *args, **kwargs)
 
 
@@ -375,7 +376,7 @@ def update_electrons_data(
                 completed_at=completed_at,
             )
         )
-        session.commit()
+        # session.commit()
 
 
 def get_electron_type(node_name: str) -> str:
