@@ -101,7 +101,7 @@ class Result:
         if lattice.kwargs:
             self._inputs["kwargs"] = lattice.kwargs
 
-        self._error = None
+        self._error = ""
 
     def __str__(self):
         """String representation of the result object"""
@@ -246,15 +246,15 @@ Node Outputs
             if not node_name.startswith(parameter_prefix):
                 self.lattice.transport_graph.set_node_value(node_id, "output", None)
 
-            self.lattice.transport_graph.set_node_value(node_id, "error", None)
+            self.lattice.transport_graph.set_node_value(node_id, "error", "")
 
             self.lattice.transport_graph.set_node_value(node_id, "sub_dispatch_id", None)
 
             self.lattice.transport_graph.set_node_value(node_id, "sublattice_result", None)
 
-            self.lattice.transport_graph.set_node_value(node_id, "stdout", None)
+            self.lattice.transport_graph.set_node_value(node_id, "stdout", "")
 
-            self.lattice.transport_graph.set_node_value(node_id, "stderr", None)
+            self.lattice.transport_graph.set_node_value(node_id, "stderr", "")
 
     def get_node_result(self, node_id: int) -> dict:
         """Return the result of a particular node.

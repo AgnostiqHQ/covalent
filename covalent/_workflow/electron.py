@@ -318,10 +318,8 @@ class Electron:
             output = active_lattice.electron_outputs[0]
 
             active_lattice.electron_outputs.pop(0)
-            if active_lattice.post_processing_ex:
-                return output
-            else:
-                return output.get_deserialized()
+
+            return output
 
         # Setting metadata for default values according to lattice's metadata.
         for k in self.metadata:
@@ -551,7 +549,6 @@ class Electron:
                 el.node_id,
                 self.node_id,
                 edge_name=WAIT_EDGE_NAME,
-                wait_for=True,
             )
 
         return Electron(
