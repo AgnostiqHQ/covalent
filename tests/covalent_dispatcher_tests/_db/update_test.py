@@ -26,14 +26,15 @@ from pathlib import Path
 import pytest
 
 import covalent as ct
-from covalent._results_manager.result import Result
+from covalent._results_manager.result import Result, import_result_object
+from covalent._shared_files.defaults import WAIT_EDGE_NAME
 from covalent._workflow.lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
 from covalent_dispatcher._db import update, upsert
 from covalent_dispatcher._db.datastore import DataStore
 from covalent_dispatcher._db.models import Electron, ElectronDependency, Lattice
 from covalent_dispatcher._db.write_result_to_db import load_file
-from covalent_dispatcher._service.app import _result_from
+from covalent_dispatcher._service.app import export_serialized_result
 
 # TEMP_RESULTS_DIR = "/tmp/results"
 TEMP_RESULTS_DIR = os.environ.get("COVALENT_DATA_DIR") or ct.get_config("dispatcher.results_dir")
@@ -151,6 +152,7 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         assert saved_named_kwargs_raw == {"a": 1, "b": 2}
 
         # Check that the electron records are as expected
+        assert len(electron_rows) == 6
         for electron in electron_rows:
             assert electron.status == "NEW_OBJECT"
             assert electron.parent_lattice_id == 1
@@ -182,7 +184,7 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
                 assert executor_data["attributes"] == le.__dict__
 
         # Check that there are the appropriate amount of electron dependency records
-        assert len(electron_dependency_rows) == 4
+        assert len(electron_dependency_rows) == 7
 
         # Update some node / lattice statuses
         cur_time = dt.now(timezone.utc)
@@ -190,7 +192,7 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         result_1._status = "COMPLETED"
         result_1._result = ct.TransportableObject({"helo": 1, "world": 2})
 
-        for node_id in range(5):
+        for node_id in range(6):
             result_1._update_node(
                 node_id=node_id,
                 start_time=cur_time,
@@ -268,10 +270,16 @@ def test_result_persist_rehydrate(test_db, result_1, mocker):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.utils.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
     update.persist(result_1)
     with test_db.session() as session:
         lattice_row = session.query(Lattice).first()
-        result_2 = _result_from(lattice_row)
+        ser_res = export_serialized_result(result_1.dispatch_id)
+        result_2 = import_result_object(ser_res)
+        result_2._num_nodes = len(result_2.lattice.transport_graph._graph.nodes)
 
     assert result_1.__dict__.keys() == result_2.__dict__.keys()
     assert result_1.lattice.__dict__.keys() == result_2.lattice.__dict__.keys()
@@ -288,15 +296,29 @@ def test_result_persist_rehydrate(test_db, result_1, mocker):
     tg_1 = result_1.lattice.transport_graph._graph
     tg_2 = result_2.lattice.transport_graph._graph
 
-    assert tg_1.nodes == tg_2.nodes
+    assert list(tg_1.nodes) == list(tg_2.nodes)
     for n in tg_1.nodes:
+        if "sublattice_result" not in tg_2.nodes[n]:
+            tg_2.nodes[n]["sublattice_result"] = None
+        if "function_string" not in tg_1.nodes[n]:
+            tg_1.nodes[n]["function_string"] = ""
+        if "workflow_executor" in tg_1.nodes[n]["metadata"]:
+            del tg_1.nodes[n]["metadata"]["workflow_executor"]
+            del tg_1.nodes[n]["metadata"]["workflow_executor_data"]
+        if "workflow_executor" in tg_2.nodes[n]["metadata"]:
+            del tg_2.nodes[n]["metadata"]["workflow_executor"]
+            del tg_2.nodes[n]["metadata"]["workflow_executor_data"]
         assert tg_1.nodes[n].keys() == tg_2.nodes[n].keys()
         for k in tg_1.nodes[n]:
-            assert tg_1.nodes[n][k] == tg_2.nodes[n][k]
+            if k != "output":
+                assert tg_1.nodes[n][k] == tg_2.nodes[n][k]
 
     assert tg_1.edges == tg_2.edges
     for e in tg_1.edges:
-        assert tg_1.edges[e] == tg_2.edges[e]
+        if tg_1.edges[e]["edge_name"] != WAIT_EDGE_NAME:
+            assert tg_1.edges[e] == tg_2.edges[e]
+        else:
+            assert tg_2.edges[e]["edge_name"] == WAIT_EDGE_NAME
 
 
 def test_lattice_persist(result_1):

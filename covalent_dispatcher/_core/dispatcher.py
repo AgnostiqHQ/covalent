@@ -31,7 +31,7 @@ import networkx as nx
 
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-from covalent._shared_files.defaults import parameter_prefix
+from covalent._shared_files.defaults import WAIT_EDGE_NAME, parameter_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS
 
 from . import data_manager as datasvc
@@ -72,7 +72,7 @@ async def _get_abstract_task_inputs(dispatch_id: str, node_id: int, node_name: s
 
         d = edge["attrs"]
 
-        if not d.get("wait_for"):
+        if d["edge_name"] != WAIT_EDGE_NAME:
             if d["param_type"] == "arg":
                 abstract_task_input["args"].append((parent, d["arg_index"]))
             elif d["param_type"] == "kwarg":

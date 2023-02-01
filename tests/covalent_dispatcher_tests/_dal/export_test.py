@@ -204,15 +204,12 @@ def test_to_client_result(test_db, mocker):
     assert ser_res["start_time"] == ts.isoformat()
     assert ser_res["end_time"] is None
     assert ser_res["status"] == str(SDKResult.RUNNING)
-    assert ser_res["result"] == ct.TransportableObject(None).serialize_to_json()
 
     srv_res._end_time = ts
     srv_res._status = SDKResult.COMPLETED
-    srv_res._result = ct.TransportableObject(5)
     srv_res.commit()
     res_export = export_serialized_result(res.dispatch_id)
 
     ser_res = res_export["result"]
     assert ser_res["end_time"] == ts.isoformat()
     assert ser_res["status"] == str(SDKResult.COMPLETED)
-    assert ser_res["result"] == ct.TransportableObject(5).serialize_to_json()

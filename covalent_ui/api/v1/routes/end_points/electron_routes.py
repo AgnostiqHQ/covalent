@@ -27,7 +27,11 @@ from sqlalchemy.orm import Session
 
 from covalent._results_manager import Result
 from covalent._results_manager.results_manager import get_result
-from covalent._shared_files.defaults import electron_dict_prefix, electron_list_prefix
+from covalent._shared_files.defaults import (
+    WAIT_EDGE_NAME,
+    electron_dict_prefix,
+    electron_list_prefix,
+)
 from covalent._workflow.transport import TransportableObject
 from covalent_ui.api.v1.data_layer.electron_dal import Electrons
 from covalent_ui.api.v1.database.config.db import engine
@@ -124,7 +128,7 @@ def get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dict
             value = result_object.lattice.transport_graph.get_node_value(parent, "output")
 
             for e_key, d in edge_data.items():
-                if not d.get("wait_for"):
+                if not d["edge_name"] != WAIT_EDGE_NAME:
                     if d["param_type"] == "arg":
                         task_input["args"].append((value, d["arg_index"]))
                     elif d["param_type"] == "kwarg":

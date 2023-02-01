@@ -82,7 +82,6 @@ class Lattice:
         self.__name__ = self.workflow_function.__name__
         self.__doc__ = self.workflow_function.__doc__
         self.post_processing = False
-        self.post_processing_ex = False
         self.args = []
         self.kwargs = {}
         self.named_args = {}
@@ -469,7 +468,6 @@ def _post_process(lattice: Lattice, *ordered_node_outputs) -> Any:
 
     with active_lattice_manager.claim(lattice):
         lattice.post_processing = True
-        lattice.post_processing_ex = True
         print("Post processing lattice with attrs", lattice.__dict__)
         lattice.electron_outputs = list(ordered_node_outputs)
         args = [arg.get_deserialized() for arg in lattice.args]
