@@ -136,8 +136,13 @@ def test_is_same_edge_attributes_false(tg, tg_ops):
     assert tg_ops.is_same_edge_attributes(tg_2._graph, 0, 1) is False
 
 
-def test_copy_nodes():
-    pass
+def test_copy_nodes(tg):
+    """Test the node copying method."""
+    tg_new = _TransportGraph()
+    tg_ops = TransportGraphOps(tg_new)
+    tg_ops.copy_nodes(tg, [0, 1])
+    print(tg._graph.nodes(data=True))
+    print(tg_new._graph.nodes(data=True))
 
 
 def test_cmp_name_and_pval():
