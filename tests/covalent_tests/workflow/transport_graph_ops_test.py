@@ -42,9 +42,9 @@ def identity(x):
 def tg():
     """Transport graph operations fixture."""
     tg = _TransportGraph()
-    tg.add_node(name="add", function=add, metadata={"0- mock-key": "0-mock-value"})
-    tg.add_node(name="multiply", function=multiply, metadata={"1- mock-key": "1-mock-value"})
-    tg.add_node(name="identity", function=identity, metadata={"2- mock-key": "2-mock-value"})
+    tg.add_node(name="add", function=add, metadata={"0-mock-key": "0-mock-value"})
+    tg.add_node(name="multiply", function=multiply, metadata={"1-mock-key": "1-mock-value"})
+    tg.add_node(name="identity", function=identity, metadata={"2-mock-key": "2-mock-value"})
     return tg
 
 
@@ -136,13 +136,26 @@ def test_is_same_edge_attributes_false(tg, tg_ops):
     assert tg_ops.is_same_edge_attributes(tg_2._graph, 0, 1) is False
 
 
-def test_copy_nodes(tg):
+def test_copy_nodes(tg, tg_ops):
     """Test the node copying method."""
+
+    def replacement(x):
+        return x + 1
+
     tg_new = _TransportGraph()
-    tg_ops = TransportGraphOps(tg_new)
-    tg_ops.copy_nodes(tg, [0, 1])
-    print(tg._graph.nodes(data=True))
-    print(tg_new._graph.nodes(data=True))
+    tg_new.add_node(
+        name="replacement", function=replacement, metadata={"0-mock-key": "0-mock-value"}
+    )
+    tg_new.add_node(name="multiply", function=multiply, metadata={"1-mock-key": "1-mock-value"})
+    tg_new.add_node(
+        name="replacement", function=replacement, metadata={"2-mock-key": "2-mock-value"}
+    )
+
+    tg_ops.copy_nodes_from(tg_new, [0, 2])
+    tg_ops.tg._graph.nodes(data=True)[0]["name"] == tg_ops.tg._graph.nodes(data=True)[2][
+        "name"
+    ] == "replacement"
+    tg_ops.tg._graph.nodes(data=True)[2]["name"] == "multiply"
 
 
 def test_cmp_name_and_pval():

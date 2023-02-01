@@ -53,10 +53,11 @@ class TransportGraphOps:
         """Check if the edge attributes are the same in both graphs."""
         return self.tg._graph.adj[parent][node] == B.adj[parent][node]
 
-    def copy_nodes(self, tg_new: _TransportGraph, nodes):
+    def copy_nodes_from(self, tg: _TransportGraph, nodes):
+        """Copy nodes from the transport graph in the argument."""
         for n in nodes:
-            for k, v in self._graph.nodes[n].items():
-                tg_new.set_node_value(n, k, v)
+            for k, v in tg._graph.nodes[n].items():
+                self.tg.set_node_value(n, k, v)
 
     def _cmp_name_and_pval(self, B: nx.MultiDiGraph, node: int):
         """Default node comparison function for diffing transport graphs."""

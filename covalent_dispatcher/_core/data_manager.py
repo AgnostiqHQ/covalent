@@ -184,7 +184,7 @@ def _init_result_from_prior_dispatch(
     tg_old = old_res.lattice.transport_graph
     if reuse_previous_results:
         reusable_nodes = TransportGraphOps(tg_old).get_diff_nodes(tg)
-        tg_old.copy_nodes(tg, reusable_nodes)
+        TransportGraphOps(tg).copy_nodes(tg_old, reusable_nodes)
         print(f"Reused nodes {reusable_nodes} from {parent_dispatch_id}")
     return result
 
@@ -215,9 +215,7 @@ async def persist_result(dispatch_id: str):
 
 
 async def _update_parent_electron(result_object: Result):
-    parent_eid = result_object._electron_id
-
-    if parent_eid:
+    if parent_eid := result_object._electron_id:
         dispatch_id, node_id = resolve_electron_id(parent_eid)
         status = result_object.status
         if status == Result.POSTPROCESSING_FAILED:
