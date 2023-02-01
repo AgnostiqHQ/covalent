@@ -33,6 +33,7 @@ from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.data_manager import (
     _dispatch_status_queues,
     _get_result_object_from_new_lattice,
+    _get_result_object_from_old_result,
     _register_result_object,
     _registered_dispatches,
     _update_parent_electron,
@@ -196,8 +197,23 @@ def test_get_result_object_from_new_lattice(mocker, reuse):
         transport_graph_ops_mock().copy_nodes.assert_not_called()
 
 
-def test_get_result_object_from_old_result(mocker):
-    pass
+@pytest.mark.parametrize("reuse", [True, False])
+def test_get_result_object_from_old_result(mocker, reuse):
+    """Test the get result object from old result function."""
+    result_object_mock = mocker.patch("covalent_dispatcher._core.data_manager.Result")
+    old_result_mock = MagicMock()
+    res = _get_result_object_from_old_result(
+        old_result_object=old_result_mock,
+        reuse_previous_results=reuse,
+    )
+    assert res == result_object_mock.return_value
+
+    if reuse:
+        result_object_mock()._initialize_nodes.assert_not_called()
+    else:
+        result_object_mock()._initialize_nodes.assert_called_with()
+
+    assert res._num_nodes == old_result_mock._num_nodes
 
 
 @pytest.mark.parametrize("reuse", [True, False])
