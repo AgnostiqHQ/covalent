@@ -32,6 +32,7 @@ from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.data_manager import (
     _dispatch_status_queues,
+    _get_result_object_from_new_lattice,
     _register_result_object,
     _registered_dispatches,
     _update_parent_electron,
@@ -163,8 +164,36 @@ def test_make_dispatch(mocker):
     mock_register.assert_called_with(res)
 
 
-def test_get_result_object_from_new_lattice(mocker):
-    pass
+@pytest.mark.parametrize("reuse", [True, False])
+def test_get_result_object_from_new_lattice(mocker, reuse):
+    """Test the get result object from new lattice json function."""
+    lattice_mock = mocker.patch("covalent_dispatcher._core.data_manager.Lattice")
+    result_object_mock = mocker.patch("covalent_dispatcher._core.data_manager.Result")
+    transport_graph_ops_mock = mocker.patch(
+        "covalent_dispatcher._core.data_manager.TransportGraphOps"
+    )
+    old_result_mock = MagicMock()
+    res = _get_result_object_from_new_lattice(
+        json_lattice="mock-lattice",
+        old_result_object=old_result_mock,
+        reuse_previous_results=reuse,
+    )
+    assert res == result_object_mock.return_value
+    lattice_mock.deserialize_from_json.assert_called_with("mock-lattice")
+    result_object_mock()._initialize_nodes.assert_called_with()
+
+    if reuse:
+        transport_graph_ops_mock().get_reusable_nodes.assert_called_with(
+            result_object_mock().lattice.transport_graph
+        )
+        transport_graph_ops_mock().copy_nodes.assert_called_once_with(
+            result_object_mock().lattice.transport_graph,
+            transport_graph_ops_mock().get_reusable_nodes.return_value,
+        )
+
+    else:
+        transport_graph_ops_mock().get_reusable_nodes.assert_not_called()
+        transport_graph_ops_mock().copy_nodes.assert_not_called()
 
 
 def test_get_result_object_from_old_result(mocker):

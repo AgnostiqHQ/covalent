@@ -154,11 +154,10 @@ def _get_result_object_from_new_lattice(
     result_object = Result(lat, get_unique_id())
     result_object._initialize_nodes()
 
-    tg = result_object.lattice.transport_graph
-    tg_old = old_result_object.lattice.transport_graph
-
     if reuse_previous_results:
-        reusable_nodes = TransportGraphOps(tg_old).compare_transport_graphs(tg)
+        tg = result_object.lattice.transport_graph
+        tg_old = old_result_object.lattice.transport_graph
+        reusable_nodes = TransportGraphOps(tg_old).get_reusable_nodes(tg)
         TransportGraphOps(tg_old).copy_nodes(tg, reusable_nodes)
 
     return result_object
