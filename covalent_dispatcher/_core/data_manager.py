@@ -183,7 +183,7 @@ def _init_result_from_prior_dispatch(
     tg = result.lattice.transport_graph
     tg_old = old_res.lattice.transport_graph
     if reuse_previous_results:
-        reusable_nodes = TransportGraphOps(tg_old).get_diff_nodes(tg)
+        reusable_nodes = TransportGraphOps(tg_old).get_reusable_nodes(tg)
         TransportGraphOps(tg).copy_nodes(tg_old, reusable_nodes)
         print(f"Reused nodes {reusable_nodes} from {parent_dispatch_id}")
     return result

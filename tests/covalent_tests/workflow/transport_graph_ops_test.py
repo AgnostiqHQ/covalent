@@ -49,6 +49,16 @@ def tg():
 
 
 @pytest.fixture
+def tg_2():
+    """Transport graph operations fixture - different from tg."""
+    tg_2 = _TransportGraph()
+    tg_2.add_node(name="not-add", function=add, metadata={"0- mock-key": "0-mock-value"})
+    tg_2.add_node(name="multiply", function=multiply, metadata={"1- mock-key": "1-mock-value"})
+    tg_2.add_node(name="identity", function=identity, metadata={"2- mock-key": "2-mock-value"})
+    return tg_2
+
+
+@pytest.fixture
 def tg_ops(tg):
     """Transport graph operations fixture."""
     return TransportGraphOps(tg)
@@ -64,7 +74,7 @@ def test_init(tg):
 def test_flag_successors_no_successors(tg, tg_ops):
     """Test flagging successors of a node."""
     node_statuses = {0: 1, 1: 1, 2: 1}
-    tg_ops._flag_successors(tg, node_statuses=node_statuses, starting_node=0)
+    tg_ops._flag_successors(tg._graph, node_statuses=node_statuses, starting_node=0)
     assert node_statuses == {0: -1, 1: 1, 2: 1}
 
 
@@ -81,7 +91,7 @@ def test_flag_successors_with_one_successors(tg, tg_ops, n_1, n_2, n_start, labe
     """Test flagging successors of a node."""
     tg.add_edge(n_1, n_2, label)
     node_statuses = {0: 1, 1: 1, 2: 1}
-    tg_ops._flag_successors(tg, node_statuses=node_statuses, starting_node=n_start)
+    tg_ops._flag_successors(tg._graph, node_statuses=node_statuses, starting_node=n_start)
     assert node_statuses == new_statuses
 
 
@@ -100,27 +110,27 @@ def test_flag_successors_with_successors_3(
     tg.add_edge(n_1, n_2, label_1)
     tg.add_edge(n_3, n_4, label_2)
     node_statuses = {0: 1, 1: 1, 2: 1}
-    tg_ops._flag_successors(tg, node_statuses=node_statuses, starting_node=n_start)
+    tg_ops._flag_successors(tg._graph, node_statuses=node_statuses, starting_node=n_start)
     assert node_statuses == new_statuses
 
 
 def test_is_same_node_true(tg, tg_ops):
     """Test the is same node method."""
-    assert tg_ops.is_same_node(tg, tg, 0) is True
-    assert tg_ops.is_same_node(tg, tg, 1) is True
+    assert tg_ops.is_same_node(tg._graph, tg._graph, 0) is True
+    assert tg_ops.is_same_node(tg._graph, tg._graph, 1) is True
 
 
 def test_is_same_node_false(tg, tg_ops):
     """Test the is same node method."""
     tg_2 = _TransportGraph()
     tg_2.add_node(name="multiply", function=add, metadata={"0- mock-key": "0-mock-value"})
-    assert tg_ops.is_same_node(tg, tg_2, 0) is False
+    assert tg_ops.is_same_node(tg._graph, tg_2._graph, 0) is False
 
 
 def test_is_same_edge_attributes_true(tg, tg_ops):
     """Test the is same edge attributes method."""
     tg.add_edge(0, 1, edge_name="01", kwargs={"x": 1, "y": 2})
-    assert tg_ops.is_same_edge_attributes(tg, tg, 0, 1) is True
+    assert tg_ops.is_same_edge_attributes(tg._graph, tg._graph, 0, 1) is True
 
 
 def test_is_same_edge_attributes_false(tg, tg_ops):
@@ -133,10 +143,10 @@ def test_is_same_edge_attributes_false(tg, tg_ops):
     tg_2.add_node(name="identity", function=identity, metadata={"2- mock-key": "2-mock-value"})
     tg_2.add_edge(0, 1, edge_name="01", kwargs={"x": 1})
 
-    assert tg_ops.is_same_edge_attributes(tg, tg_2, 0, 1) is False
+    assert tg_ops.is_same_edge_attributes(tg._graph, tg_2._graph, 0, 1) is False
 
 
-def test_copy_nodes(tg, tg_ops):
+def test_copy_nodes(tg_ops):
     """Test the node copying method."""
 
     def replacement(x):
@@ -159,7 +169,7 @@ def test_copy_nodes(tg, tg_ops):
 
 
 def test_max_cbms(tg_ops):
-    """Test function for determining a largest cbms"""
+    """Test method for determining a largest cbms"""
     import networkx as nx
 
     A = nx.MultiDiGraph()
@@ -202,44 +212,41 @@ def test_max_cbms(tg_ops):
     D.add_edge(3, 2)
     D.add_edge(2, 4)
 
-    tg_A = _TransportGraph()
-    tg_A._graph = A
-
-    tg_B = _TransportGraph()
-    tg_B._graph = B
-
-    tg_C = _TransportGraph()
-    tg_C._graph = C
-
-    tg_D = _TransportGraph()
-    tg_D._graph = D
-
-    A_node_status, B_node_status = tg_ops._max_cbms(tg_A, tg_B)
+    A_node_status, B_node_status = tg_ops._max_cbms(A, B)
     assert A_node_status == {0: True, 1: False, 2: False, 5: True, 6: False}
     assert B_node_status == {0: True, 1: False, 2: False, 5: True}
 
-    A_node_status, C_node_status = tg_ops._max_cbms(tg_A, tg_C)
+    A_node_status, C_node_status = tg_ops._max_cbms(A, C)
     assert A_node_status == {0: True, 1: False, 2: False, 5: False, 6: False}
     assert C_node_status == {0: True, 1: False, 2: False, 3: False}
 
-    C_node_status, D_node_status = tg_ops._max_cbms(tg_C, tg_D)
+    C_node_status, D_node_status = tg_ops._max_cbms(C, D)
     assert C_node_status == {0: True, 1: True, 2: True, 3: True}
     assert D_node_status == {0: True, 1: True, 2: True, 3: True, 4: False}
 
 
 def test_cmp_name_and_pval_true(tg, tg_ops):
-    """Test the name and parameter value comparison function."""
-    assert tg_ops._cmp_name_and_pval(tg, tg, 0) is True
+    """Test the name and parameter value comparison method."""
+    assert tg_ops._cmp_name_and_pval(tg._graph, tg._graph, 0) is True
 
 
-def test_cmp_name_and_pval_false(tg, tg_ops):
-    """Test the name and parameter value comparison function."""
-    tg_2 = _TransportGraph()
-    tg_2.add_node(name="not-add", function=add, metadata={"0- mock-key": "0-mock-value"})
-    tg_2.add_node(name="multiply", function=multiply, metadata={"1- mock-key": "1-mock-value"})
-    tg_2.add_node(name="identity", function=identity, metadata={"2- mock-key": "2-mock-value"})
-    assert tg_ops._cmp_name_and_pval(tg, tg_2, 0) is False
+def test_cmp_name_and_pval_false(tg, tg_2, tg_ops):
+    """Test the name and parameter value comparison method."""
+    assert tg_ops._cmp_name_and_pval(tg._graph, tg_2._graph, 0) is False
 
 
-def test_get_diff_nodes():
-    pass
+def test_get_reusable_nodes(mocker, tg, tg_2, tg_ops):
+    """Test the get reusable nodes method."""
+    max_cbms_mock = mocker.patch(
+        "covalent._workflow.transport_graph_ops.TransportGraphOps._max_cbms",
+        return_value=({"mock-key-A": "mock-value-A"}, {"mock-key-B": "mock-value-B"}),
+    )
+    reusable_nodes = tg_ops.get_reusable_nodes(tg_2)
+    assert reusable_nodes == ["mock-key-A"]
+    max_cbms_mock.assert_called_once()
+
+
+def test_get_diff_nodes_integration_test(tg_2, tg_ops):
+    """Test the get reusable nodes method."""
+    reusable_nodes = tg_ops.get_reusable_nodes(tg_2)
+    assert reusable_nodes == [1, 2]
