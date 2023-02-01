@@ -373,8 +373,12 @@ class _TransportGraph:
         Raises:
             KeyError: If the value key or node key is not found.
         """
-
-        return None if default_none else self._graph.nodes[node_key][value_key]
+        try:
+            return self._graph.nodes[node_key][value_key]
+        except KeyError:
+            if default_none:
+                return None
+            raise
 
     def set_node_value(self, node_key: int, value_key: int, value: Any) -> None:
         """

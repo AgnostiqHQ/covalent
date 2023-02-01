@@ -166,16 +166,13 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None):
 
 
 def _electron_data(session: Session, result: Result, cancel_requested: bool = False):
-
     """
     Update electron data
     """
-
     tg = result.lattice.transport_graph
     dirty_nodes = set(tg.dirty_nodes)
     tg.dirty_nodes.clear()  # Ensure that dirty nodes list is reset once the data is updated
     for node_id in dirty_nodes:
-
         results_dir = os.environ.get("COVALENT_DATA_DIR") or get_config("dispatcher.results_dir")
         node_path = Path(os.path.join(results_dir, result.dispatch_id, f"node_{node_id}"))
 
@@ -255,7 +252,6 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
                 "completed_at": completed_at,
             }
             txn_insert_electrons_data(session=session, **electron_record_kwarg)
-
         else:
             electron_record_kwarg = {
                 "parent_dispatch_id": result.dispatch_id,

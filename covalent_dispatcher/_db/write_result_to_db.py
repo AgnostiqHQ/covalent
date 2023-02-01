@@ -71,7 +71,7 @@ def update_lattice_completed_electron_num(dispatch_id: str) -> None:
                 "updated_at": dt.now(timezone.utc),
             }
         )
-        # session.commit()
+    # session.commit()
 
 
 def txn_insert_lattices_data(
