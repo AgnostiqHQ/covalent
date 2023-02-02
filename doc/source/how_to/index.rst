@@ -71,9 +71,9 @@ Executing a Workflow
 
 :doc:`Creating a Custom Executor <./execution/creating_custom_executors>` x Seems to work, but can't find the timing file?
 
-:doc:`Canceling a Running Workflow <./execution/cancel_dispatch>` x
+:doc:`Canceling a Running Workflow <./execution/cancel_dispatch>` x Workflow doesn't seem to be stopping. Does cancel not work?
 
-:doc:`Executing an Electron in a Conda Environment <./execution/choosing_conda_environments>` x Workflow doesn't seem to be stopping. Does cancel not work?
+:doc:`Executing an Electron in a Conda Environment <./execution/choosing_conda_environments>`
 
 Querying and Viewing
 ********************
@@ -93,12 +93,12 @@ Querying and Viewing
 Configuration
 *************
 
-:doc:`Customizing the Configuration <./config/customization>` x
+:doc:`Customizing the Configuration <./config/customization>`
 
 Database
 ********
 
-:doc:`What To Do When Encountering Database Migration Errors <./db/migration_error>` x
+:doc:`What To Do When Encountering Database Migration Errors <./db/migration_error>`
 
 ----------------------------------
 
