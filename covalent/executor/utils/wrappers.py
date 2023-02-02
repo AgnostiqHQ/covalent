@@ -23,11 +23,16 @@ Helper functions for the local executor
 """
 
 import io
+import sys
 import traceback
 from contextlib import redirect_stderr, redirect_stdout
 from typing import Any, Callable, Dict, List, Tuple
 
-from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
+import cloudpickle as pickle
+
+from covalent._workflow.depsbash import DepsBash
+from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
+from covalent._workflow.depspip import DepsPip
 from covalent._workflow.transport import TransportableObject
 
 
@@ -100,3 +105,110 @@ def io_wrapper(fn: Callable, args: List, kwargs: Dict) -> Tuple[Any, str, str, s
             output = None
             tb = "".join(traceback.TracebackException.from_exception(ex).format())
     return output, stdout.getvalue(), stderr.getvalue(), tb
+
+
+# Copied from runner.py
+def _gather_deps(deps, call_before_objs_json, call_after_objs_json) -> Tuple[List, List]:
+    """Assemble deps for a node into the final call_before and call_after"""
+
+    call_before = []
+    call_after = []
+
+    # Rehydrate deps from JSON
+    if "bash" in deps:
+        dep = DepsBash()
+        dep.from_dict(deps["bash"])
+        call_before.append(dep.apply())
+
+    if "pip" in deps:
+        dep = DepsPip()
+        dep.from_dict(deps["pip"])
+        call_before.append(dep.apply())
+
+    for dep_json in call_before_objs_json:
+        dep = DepsCall()
+        dep.from_dict(dep_json)
+        call_before.append(dep.apply())
+
+    for dep_json in call_after_objs_json:
+        dep = DepsCall()
+        dep.from_dict(dep_json)
+        call_after.append(dep.apply())
+
+    return call_before, call_after
+
+
+# URIs are just file paths
+def run_task_from_uris(
+    function_uri: str,
+    deps_uri: str,
+    call_before_uri: str,
+    call_after_uri: str,
+    args_uris: str,
+    kwargs_uris: str,
+    output_uri: str,
+    stdout_uri: str,
+    stderr_uri: str,
+):
+
+    prefix = "file://"
+    prefix_len = len(prefix)
+
+    with open(stdout_uri, "w") as stdout, open(stderr_uri, "w") as stderr:
+        with redirect_stdout(stdout), redirect_stderr(stderr):
+            try:
+                if function_uri.startswith(prefix):
+                    function_uri = function_uri[prefix_len:]
+
+                with open(function_uri, "rb") as f:
+                    serialized_fn = pickle.load(f)
+
+                ser_args = []
+                ser_kwargs = {}
+                for uri in args_uris:
+                    if uri.startswith(prefix):
+                        uri = uri[prefix_len:]
+                    with open(uri, "rb") as f:
+                        ser_args.append(pickle.load(f))
+
+                for key, uri in kwargs_uris.items():
+                    if uri.startswith(prefix):
+                        uri = uri[prefix_len:]
+                    with open(uri, "rb") as f:
+                        ser_kwargs[key] = pickle.load(f)
+
+                if deps_uri.startswith(prefix):
+                    deps_uri = deps_uri[prefix_len:]
+                with open(deps_uri, "rb") as f:
+                    deps_json = pickle.load(f)
+
+                if call_before_uri.startswith(prefix):
+                    call_before_uri = call_before_uri[prefix_len:]
+                with open(call_before_uri, "rb") as f:
+                    call_before_json = pickle.load(f)
+
+                if call_after_uri.startswith(prefix):
+                    call_after_uri = call_after_uri[prefix_len:]
+                with open(call_after_uri, "rb") as f:
+                    call_after_json = pickle.load(f)
+
+                call_before, call_after = _gather_deps(
+                    deps_json, call_before_json, call_after_json
+                )
+
+                exception_occurred = False
+
+                ser_output = wrapper_fn(
+                    serialized_fn, call_before, call_after, *ser_args, **ser_kwargs
+                )
+
+                with open(output_uri, "wb") as f:
+                    pickle.dump(ser_output, f)
+
+            except Exception as ex:
+                exception_occurred = True
+                tb = "".join(traceback.TracebackException.from_exception(ex).format())
+                print(tb, file=sys.stderr)
+                output_uri = None
+
+    return output_uri, stdout_uri, stderr_uri, exception_occurred
