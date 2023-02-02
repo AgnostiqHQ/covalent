@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added make derived dispatch method.
 - Apply electron updates method to _TransportGraph.
 
+### Operations
+
+- Added job in `nightly` to trigger base executor image builds after a Covalent `pre-release`
+
 ## [0.215.0-rc.0] - 2023-02-01
 
 ### Authors

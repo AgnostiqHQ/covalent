@@ -300,6 +300,18 @@ class _TransportGraph:
         # IDs of nodes modified during the workflow run
         self.dirty_nodes = []
 
+        self._default_node_attrs = {
+            "start_time": None,
+            "end_time": None,
+            "status": RESULT_STATUS.NEW_OBJECT,
+            "output": None,
+            "error": None,
+            "sub_dispatch_id": None,
+            "sublattice_result": None,
+            "stdout": None,
+            "stderr": None,
+        }
+
     def add_node(self, name: str, function: Callable, metadata: Dict, **attr) -> int:
         """
         Adds a node to the graph.
@@ -442,15 +454,8 @@ class _TransportGraph:
 
     def reset_node(self, node_id: int) -> None:
         """Reset node values to starting state."""
-        self.set_node_value(node_id, "start_time", None)
-        self.set_node_value(node_id, "end_time", None)
-        self.set_node_value(node_id, "status", RESULT_STATUS.NEW_OBJECT)
-        self.set_node_value(node_id, "output", None)
-        self.set_node_value(node_id, "error", None)
-        self.set_node_value(node_id, "sub_dispatch_id", None)
-        self.set_node_value(node_id, "sublattice_result", None)
-        self.set_node_value(node_id, "stdout", None)
-        self.set_node_value(node_id, "stderr", None)
+        for node_attr, default_val in self._default_node_attrs.items():
+            self.set_node_value(node_id, node_attr, default_val)
 
     def _replace_node(self, node_id: int, new_attrs: Dict[str, Any]) -> None:
         """Replace node data with new attribute values and flag descendants (used in re-dispatching)."""

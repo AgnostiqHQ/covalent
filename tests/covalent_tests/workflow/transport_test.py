@@ -439,15 +439,8 @@ def test_reset_node(workflow_transport_graph, mocker):
     workflow_transport_graph.reset_node(node_id)
     actual_mock_calls = set_node_value_mock.mock_calls
     expected_mock_calls = [
-        call(node_id, "start_time", None),
-        call(node_id, "end_time", None),
-        call(node_id, "status", RESULT_STATUS.NEW_OBJECT),
-        call(node_id, "output", None),
-        call(node_id, "error", None),
-        call(node_id, "sub_dispatch_id", None),
-        call(node_id, "sublattice_result", None),
-        call(node_id, "stdout", None),
-        call(node_id, "stderr", None),
+        call(node_id, node_attr, default_val)
+        for node_attr, default_val in workflow_transport_graph._default_node_attrs.items()
     ]
 
     for mock_call in expected_mock_calls:
