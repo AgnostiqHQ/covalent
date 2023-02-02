@@ -42,6 +42,7 @@ from .transport import TransportableObject, _TransportGraph, encode_metadata
 if TYPE_CHECKING:
     from .._results_manager.result import Result
     from ..executor import BaseExecutor
+    from ..triggers import BaseTrigger
 
 from .._shared_files.utils import get_imports, get_serialized_function_str
 
@@ -322,7 +323,7 @@ def lattice(
     deps_pip: Union[DepsPip, list] = None,
     call_before: Union[List[DepsCall], DepsCall] = [],
     call_after: Union[List[DepsCall], DepsCall] = [],
-    trigger: Any = None
+    triggers: Union[bool, "BaseTrigger", List["BaseTrigger"]] = False
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
     """
@@ -341,6 +342,8 @@ def lattice(
         deps_pip: An optional DepsPip object specifying a list of PyPI packages to install before running `_func`
         call_before: An optional list of DepsCall objects specifying python functions to invoke before the electron
         call_after: An optional list of DepsCall objects specifying python functions to invoke after the electron
+        triggers: Any triggers that need to be attached to this lattice, if `True` then they can be attached later,
+            until then this workflow won't start running; default is `False`.
 
     Returns:
         :obj:`Lattice <covalent._workflow.lattice.Lattice>` : Lattice object inside which the decorated function exists.
@@ -371,13 +374,16 @@ def lattice(
     if isinstance(call_after, DepsCall):
         call_after = [call_after]
 
+    if isinstance(triggers, BaseTrigger):
+        triggers = [triggers]
+
     constraints = {
         "executor": executor,
         "workflow_executor": workflow_executor,
         "deps": deps,
         "call_before": call_before,
         "call_after": call_after,
-        "trigger": trigger,
+        "triggers": triggers,
     }
 
     constraints = encode_metadata(constraints)

@@ -22,21 +22,44 @@
 import asyncio
 from abc import abstractmethod
 
+import requests
+
 from covalent._shared_files import logger
 
 from .._results_manager import Result
+from .._shared_files.config import get_config
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
 class BaseTrigger:
-    def __init__(self, lattice_dispatch_id: str = None, dispatcher_addr: str = None):
+    def __init__(
+        self,
+        lattice_dispatch_id: str = None,
+        dispatcher_addr: str = None,
+        triggers_server_addr: str = None,
+    ):
         self.lattice_dispatch_id = lattice_dispatch_id
         self.dispatcher_addr = dispatcher_addr
+        self.triggers_server_addr = triggers_server_addr
         self.new_dispatch_ids = []
         self.observe_blocks = True
         self._is_internal = False
+
+    def register(self):
+        self._register(self.to_dict(), self.triggers_server_addr)
+
+    @staticmethod
+    def _register(trigger_data, triggers_server_addr=None):
+        if triggers_server_addr is None:
+            triggers_server_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
+        register_trigger_url = f"http://{triggers_server_addr}/api/triggers/register"
+
+        r = requests.post(register_trigger_url, json=trigger_data)
+        r.raise_for_status()
 
     def _get_status(self):
         if self._is_internal:
@@ -68,6 +91,11 @@ class BaseTrigger:
 
     def trigger(self):
 
+        if not self.lattice_dispatch_id:
+            raise RuntimeError(
+                "`lattice_dispatch_id` is None. Please attach this trigger to a lattice before triggering."
+            )
+
         status = self._get_status()
 
         if status == str(Result.NEW_OBJ):
@@ -80,15 +108,10 @@ class BaseTrigger:
         app_log.warning(f"Redispatching, new dispatch_id: {new_dispatch_id}")
         self.new_dispatch_ids.append(new_dispatch_id)
 
-        # app_log.warning(f"File path that triggered this event: {event.src_path}")
-
     def to_dict(self):
-        # TODO: Update this
-        return {
-            "name": str(self.__class__.__name__),
-            "dir_path": self.dir_path,
-            "event_names": self.event_names,
-        }
+        tr_dict = self.__dict__.copy()
+        tr_dict["name"] = str(self.__class__.__name__)
+        return tr_dict
 
     @abstractmethod
     def observe(self):

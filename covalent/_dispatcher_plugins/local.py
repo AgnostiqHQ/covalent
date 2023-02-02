@@ -21,7 +21,7 @@
 import json
 from copy import deepcopy
 from functools import wraps
-from typing import Callable, List, Union
+from typing import Callable, Dict, List
 
 import requests
 
@@ -30,6 +30,7 @@ from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
 from .._shared_files.config import get_config
 from .._workflow.lattice import Lattice
+from ..triggers import BaseTrigger
 from .base import BaseDispatcher
 from .utils.redispatch_helpers import redispatch_real
 
@@ -88,10 +89,12 @@ class LocalDispatcher(BaseDispatcher):
 
             # Extract triggers here
             json_lattice = json.loads(json_lattice)
-            trigger_data = json_lattice["metadata"].pop("trigger")
+            triggers_data = json_lattice["metadata"].pop("triggers")
 
             # Determine whether to disable first run
-            disable_run = trigger_data is not None
+            disable_run = False
+            if isinstance(triggers_data, bool):
+                disable_run = not triggers_data
 
             json_lattice = json.dumps(json_lattice)
 
@@ -105,8 +108,7 @@ class LocalDispatcher(BaseDispatcher):
             if not disable_run:
                 return lattice_dispatch_id
 
-            trigger_data["lattice_dispatch_id"] = lattice_dispatch_id
-            LocalDispatcher.start_triggers(trigger_data)
+            LocalDispatcher.register_triggers(triggers_data, lattice_dispatch_id)
 
             return lattice_dispatch_id
 
@@ -184,35 +186,8 @@ class LocalDispatcher(BaseDispatcher):
         return func
 
     @staticmethod
-    def start_triggers(trigger_data, dispatcher_addr: str = None):
+    def register_triggers(triggers_data: List[Dict], dispatch_id: str):
 
-        if dispatcher_addr is None:
-            dispatcher_addr = (
-                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
-            )
-
-        start_trigger_url = f"http://{dispatcher_addr}/api/triggers/start"
-
-        r = requests.post(start_trigger_url, json=trigger_data)
-        r.raise_for_status()
-
-    @staticmethod
-    def stop_triggers(dispatch_ids: Union[str, List[str]], dispatcher_addr: str = None):
-
-        if dispatcher_addr is None:
-            dispatcher_addr = (
-                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
-            )
-
-        if isinstance(dispatch_ids, str):
-            dispatch_ids = [dispatch_ids]
-
-        start_trigger_url = f"http://{dispatcher_addr}/api/triggers/stop"
-
-        r = requests.post(start_trigger_url, json=dispatch_ids)
-        r.raise_for_status()
-
-        print("The following dispatch id's triggers should have stopped now:")
-
-        for did in dispatch_ids:
-            print(did)
+        for tr_dict in triggers_data:
+            tr_dict["lattice_dispatch_id"] = dispatch_id
+            BaseTrigger._register(tr_dict)

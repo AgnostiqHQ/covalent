@@ -38,9 +38,11 @@ active_triggers = {}
 
 thread_pool = ThreadPoolExecutor()
 
+# TODO: Verify this
 
-@router.post("/triggers/start")
-async def start(request: Request):
+
+@router.post("/triggers/register")
+async def register_and_observe(request: Request):
     trigger_data = await request.json()
     lattice_dispatch_id, name, dir_path, event_names = (
         trigger_data["lattice_dispatch_id"],
@@ -60,15 +62,15 @@ async def start(request: Request):
     app_log.warning(f"Started trigger with id: {lattice_dispatch_id}")
 
 
-@router.post("/triggers/stop")
-async def stop(request: Request):
+@router.post("/triggers/stop_observe")
+async def stop_observe(request: Request):
     dispatch_ids = await request.json()
 
     triggers = [(d_id, active_triggers[d_id]) for d_id in dispatch_ids]
 
     for d_id, trigger in triggers:
         trigger.stop()
-        app_log.warning(f"Stopped trigger with lattice dispatch id: {d_id}")
+        app_log.warning(f"Stopped observing on trigger(s) with lattice dispatch id: {d_id}")
 
 
 triggers_only_app.include_router(router, prefix="/api", tags=["Triggers"])
