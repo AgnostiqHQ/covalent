@@ -66,3 +66,17 @@ def cancel_running_dispatch(dispatch_id: str) -> None:
     from ._core import cancel_workflow
 
     cancel_workflow(dispatch_id)
+
+
+async def mark_task_ready(dispatch_id: str, node_id: int):
+    from ._core import runner_exp
+
+    task_metadata = {
+        "dispatch_id": dispatch_id,
+        "node_id": node_id,
+    }
+
+    await runner_exp._mark_ready(task_metadata)
+    app_log.debug("Marked task {dispatch_id}:{node_id} ready")
+
+    return task_metadata
