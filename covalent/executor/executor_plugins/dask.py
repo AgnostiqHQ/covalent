@@ -117,6 +117,7 @@ def run_task_from_uris(
     stderr_uri: str,
     results_dir: str,
     task_metadata: dict,
+    server_url: str,
 ):
 
     prefix = "file://"
@@ -195,7 +196,6 @@ def run_task_from_uris(
 
     import requests
 
-    server_url = format_server_url()
     url = f"{server_url}/api/v1/update/{dispatch_id}/{node_id}"
     requests.put(url)
 
@@ -306,6 +306,7 @@ class DaskExecutor(AsyncBaseExecutor):
             stderr_uri=stderr_uri,
             results_dir=self.cache_dir,
             task_metadata=task_metadata,
+            server_url=format_server_url(),
             key=key,
         )
 
