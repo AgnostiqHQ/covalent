@@ -183,5 +183,5 @@ def redispatch(dispatch_id: str, redispatch_body: RedispatchBody):
 
 @app.get("/_api/dispatches/{dispatch_id}/retrieve")
 def get_result(dispatch_id: str):
-    result = ct_get_result(dispatch_id, wait=True)
-    return ResultItem(dispatch_id=dispatch_id, result=str(result))
+    result = ct_get_result(dispatch_id, wait=True).result
+    return ResultItem(dispatch_id=dispatch_id, result=result)
