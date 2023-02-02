@@ -18,6 +18,5 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .base import BaseTrigger  # nopycln: import
-from .dir_trigger import DirTrigger  # nopycln: import
-from .trigger_loader import available_triggers  # nopycln: import
+from .app import router as triggers_router  # nopycln: import
+from .app import triggers_only_app  # nopycln: import

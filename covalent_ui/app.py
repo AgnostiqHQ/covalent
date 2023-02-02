@@ -20,7 +20,6 @@
 
 import argparse
 import os
-from copy import deepcopy
 
 import socketio
 import uvicorn
@@ -30,11 +29,10 @@ from fastapi.templating import Jinja2Templates
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent_dispatcher._service.app_dask import DaskCluster
+from covalent_dispatcher._triggers_app import triggers_only_app  # nopycln: import
 from covalent_ui.api.main import app as fastapi_app
 from covalent_ui.api.main import sio
 from covalent_ui.api.v1.utils.log_handler import log_config
-
-from ..triggers_app import triggers_only_app, triggers_router  # nopycln: import
 
 # read env vars configuring server
 COVALENT_SERVER_IFACE_ANY = os.getenv("COVALENT_SERVER_IFACE_ANY", "False").lower() in (
@@ -63,10 +61,6 @@ socketio_app = socketio.ASGIApp(
     static_files=STATIC_FILES,
 )
 fastapi_app.mount("/", socketio_app)
-
-no_triggers_app = deepcopy(fastapi_app)
-
-fastapi_app.include_router(triggers_router, prefix="/api", tags=["Triggers"])
 
 
 if __name__ == "__main__":
@@ -122,11 +116,11 @@ if __name__ == "__main__":
         dask_cluster = DaskCluster(name="LocalDaskCluster", logger=app_log)
         dask_cluster.start()
 
-    app_name = "app:fastapi_app"
+    app_name = "app_with_triggers:fastapi_app"
     if args.triggers_only:
         app_name = "app:triggers_only_app"
     elif args.no_triggers:
-        app_name = "app:no_triggers_app"
+        app_name = "app:fastapi_app"
 
     # Start covalent main app
     uvicorn.run(

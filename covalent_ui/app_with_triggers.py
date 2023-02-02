@@ -18,5 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .app import router as triggers_router
-from .app import triggers_only_app
+from covalent_dispatcher._triggers_app import triggers_router
+from covalent_ui.api.main import app as fastapi_app
+
+fastapi_app.include_router(triggers_router, prefix="/api", tags=["Triggers"])

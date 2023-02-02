@@ -27,14 +27,14 @@ from covalent._results_manager import Result
 from covalent._shared_files import logger
 
 # Importing all supported triggers here
-from covalent.triggers import *  # nopycln: import
+from covalent.triggers import available_triggers  # nopycln: import
 from covalent_dispatcher._service.app import get_result
 from covalent_dispatcher.entry_point import run_dispatcher, run_redispatch
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
-all_triggers = {}
+active_triggers = {}
 
 
 def triggered_dispatch(self, event: FileSystemEvent):
@@ -73,18 +73,18 @@ def start_triggers(trigger_dict):  # sourcery skip: use-assigned-variable
             trigger_dict["dir_path"],
             trigger_dict["event_names"],
         )
-        trigger = globals()[name](dir_path, event_names)
+        trigger = available_triggers[name](dir_path, event_names)
 
         trigger.start(lattice_dispatch_id, triggered_dispatch)
 
-        all_triggers[lattice_dispatch_id] = trigger
+        active_triggers[lattice_dispatch_id] = trigger
 
         app_log.warning(f"Started trigger with id: {lattice_dispatch_id}")
 
 
 def stop_triggers(dispatch_ids):
 
-    triggers = [(d_id, all_triggers[d_id]) for d_id in dispatch_ids]
+    triggers = [(d_id, active_triggers[d_id]) for d_id in dispatch_ids]
 
     for d_id, trigger in triggers:
         trigger.stop()

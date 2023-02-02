@@ -20,7 +20,7 @@
 
 from fastapi import APIRouter, FastAPI, Request
 
-from .triggers import start_triggers, stop_triggers
+from .trigger_handlers import start_triggers, stop_triggers
 
 router = APIRouter()
 triggers_only_app = FastAPI()
