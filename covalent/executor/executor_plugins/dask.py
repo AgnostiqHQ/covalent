@@ -33,7 +33,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from typing import Any, Callable, Dict, List, Tuple
 
 import cloudpickle as pickle
-from dask.distributed import Client, Future
+from dask.distributed import Client, fire_and_forget
 
 from covalent._shared_files import TaskRuntimeError, logger
 
@@ -193,6 +193,11 @@ def run_task_from_uris(
     with open(result_path, "w") as f:
         json.dump(result_summary, f)
 
+    import requests
+
+    url = f"http://localhost:48008/api/v1/update/{dispatch_id}/{node_id}"
+    requests.put(url)
+
     return output_uri, stdout_uri, stderr_uri, exception_occurred
 
 
@@ -303,35 +308,15 @@ class DaskExecutor(AsyncBaseExecutor):
             key=key,
         )
 
-        _clients[key] = dask_client
-        app_log.debug(f"Dask client {id(dask_client)}")
-        app_log.debug(f"Submitted task {dispatch_id}:{node_id}, key {future.key}")
+        fire_and_forget(future)
 
-        _futures[key] = future
-        app_log.debug(f"Retaining a reference to the future {dispatch_id}:{node_id}")
+        app_log.debug("Fire and forgetting task")
 
         return future.key
 
     async def poll(self, task_metadata: Dict, job_handle: Any):
-        dispatch_id = task_metadata["dispatch_id"]
-        node_id = task_metadata["node_id"]
 
-        app_log.debug(f"Waiting for task {dispatch_id}:{node_id}, key {job_handle}")
-
-        dask_client = _clients[job_handle]
-        app_log.debug(f"Dask client {id(dask_client)}")
-
-        fut = Future(key=job_handle, client=dask_client)
-        app_log.debug(f"Future {fut}")
-        try:
-            await fut.result(timeout=self.time_limit)
-
-            app_log.debug(f"ManagedDask: task {dispatch_id}:{node_id} finished")
-            app_log.debug(f"Future {fut}")
-        except Exception as ex:
-            app_log.debug(f"Exception while polling: {ex}")
-            app_log.debug(f"Future {fut}")
-        return 0
+        return -1
 
     async def receive(self, task_metadata: Dict, job_handle: Any):
 
@@ -341,14 +326,6 @@ class DaskExecutor(AsyncBaseExecutor):
         # Job should have reached a terminal state by the time this is invoked.
         dispatch_id = task_metadata["dispatch_id"]
         node_id = task_metadata["node_id"]
-        dask_client = _clients.pop(job_handle)
-
-        fut = Future(key=job_handle, client=dask_client)
-        fut = _futures.pop(job_handle)
-
-        # Result should be ready to read immediately
-
-        # output_uri, stdout_uri, stderr_uri, exception_raised = await fut.result(1)
 
         result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{node_id}.json")
         with open(result_path, "r") as f:
