@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-import asyncio
+from functools import partial
 from types import MethodType
 
 from watchdog.events import FileSystemEventHandler
@@ -34,9 +34,8 @@ log_stack_info = logger.log_stack_info
 
 
 class DirEventHandler(FileSystemEventHandler):
-    def __init__(self, lattice_dispatch_id, covalent_event_loop) -> None:
+    def __init__(self, lattice_dispatch_id) -> None:
         self.lattice_dispatch_id = lattice_dispatch_id
-        self.covalent_event_loop = covalent_event_loop
 
         self.supported_event_to_func_names = {
             "created": "on_created",
@@ -47,49 +46,41 @@ class DirEventHandler(FileSystemEventHandler):
         }
 
 
-# To dynamically attach and override "on_*" methods to the handler
-# depending on which ones are requested by the user
-def attach_methods_to_handler(
-    event_handler: DirEventHandler, event_names: list, triggered_dispatch
-):
-
-    for en in event_names:
-        func_name = event_handler.supported_event_to_func_names[en]
-        triggered_dispatch.__name__ = func_name
-        setattr(event_handler, func_name, MethodType(triggered_dispatch, event_handler))
-
-    return event_handler
-
-
 class DirTrigger(BaseTrigger):
-    def __init__(self, dir_path, event_names) -> None:
+    def __init__(self, dir_path, event_names, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
         self.dir_path = dir_path
 
         if isinstance(event_names, str):
             event_names = [event_names]
-
         self.event_names = event_names
 
-    def start(self, lattice_dispatch_id, triggered_dispatch):
+        self.observe_blocks = False
+        self.event_handler = DirEventHandler()
 
-        covalent_event_loop = asyncio.get_running_loop()
+    def proxy_trigger_method(self):
+        return self.trigger()
 
-        event_handler = DirEventHandler(lattice_dispatch_id, covalent_event_loop)
-        event_handler = attach_methods_to_handler(
-            event_handler, self.event_names, triggered_dispatch
-        )
+    # To dynamically attach and override "on_*" methods to the handler
+    # depending on which ones are requested by the user
+    def attach_methods_to_handler(self, event_names: list):
+        for en in event_names:
+            func_name = self.event_handler.supported_event_to_func_names[en]
+            proxy_trigger_method = partial(self.trigger)
+            proxy_trigger_method.__name__ = func_name
+            setattr(
+                self.event_handler, func_name, MethodType(proxy_trigger_method, self.event_handler)
+            )
+
+    def observe(self):
+        # Attach methods before scheduling the observer
+        self.attach_methods_to_handler(self.event_names)
 
         self.observer = Observer()
-        self.observer.schedule(event_handler, self.dir_path)
+        self.observer.schedule(self.event_handler, self.dir_path)
         self.observer.start()
 
     def stop(self):
         self.observer.stop()
         self.observer.join()
-
-    def to_dict(self):
-        return {
-            "name": str(self.__class__.__name__),
-            "dir_path": self.dir_path,
-            "event_names": self.event_names,
-        }

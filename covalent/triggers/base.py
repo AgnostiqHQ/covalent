@@ -20,6 +20,7 @@
 
 
 import asyncio
+from abc import abstractmethod
 
 from covalent._shared_files import logger
 
@@ -80,3 +81,19 @@ class BaseTrigger:
         self.new_dispatch_ids.append(new_dispatch_id)
 
         # app_log.warning(f"File path that triggered this event: {event.src_path}")
+
+    def to_dict(self):
+        # TODO: Update this
+        return {
+            "name": str(self.__class__.__name__),
+            "dir_path": self.dir_path,
+            "event_names": self.event_names,
+        }
+
+    @abstractmethod
+    def observe(self):
+        pass
+
+    @abstractmethod
+    def stop(self):
+        pass
