@@ -50,12 +50,14 @@ class BaseTrigger:
             ).result()["status"],
             event_loop,
         ).result()
+
         if status == str(Result.NEW_OBJ):
             # To continue pending dispatch
             same_dispatch_id = asyncio.run_coroutine_threadsafe(
                 run_dispatcher(None, pending_dispatch_id=self.lattice_dispatch_id), event_loop
             ).result()
             app_log.warning(f"Initiating run for same dispatch_id: {same_dispatch_id}")
+
         else:
             # To run new redispatch
             new_dispatch_id = asyncio.run_coroutine_threadsafe(
