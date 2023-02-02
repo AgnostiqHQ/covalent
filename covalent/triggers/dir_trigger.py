@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import asyncio
 from types import MethodType
 
 from watchdog.events import FileSystemEventHandler
@@ -44,8 +45,15 @@ class DirEventHandler(FileSystemEventHandler):
 
 
 class DirTrigger(BaseTrigger):
-    def __init__(self, dir_path, event_names, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(
+        self,
+        dir_path,
+        event_names,
+        lattice_dispatch_id: str = None,
+        dispatcher_addr: str = None,
+        triggers_server_addr: str = None,
+    ):
+        super().__init__(lattice_dispatch_id, dispatcher_addr, triggers_server_addr)
 
         self.dir_path = dir_path
 
@@ -55,10 +63,6 @@ class DirTrigger(BaseTrigger):
 
         self.observe_blocks = False
 
-        # This is false since watchdog starts
-        # its observer in a new thread
-        self._is_internal = False
-
     # To dynamically attach and override "on_*" methods to the handler
     # depending on which ones are requested by the user
     def attach_methods_to_handler(self, event_names: list):
@@ -67,13 +71,11 @@ class DirTrigger(BaseTrigger):
 
         for en in event_names:
             func_name = self.event_handler.supported_event_to_func_names[en]
-            proxy_trigger_method = proxy_trigger
-            proxy_trigger_method.__name__ = func_name
-            setattr(
-                self.event_handler, func_name, MethodType(proxy_trigger_method, self.event_handler)
-            )
+            proxy_trigger.__name__ = func_name
+            setattr(self.event_handler, func_name, MethodType(proxy_trigger, self.event_handler))
 
     def observe(self):
+        self.event_loop = asyncio.get_running_loop()
 
         self.event_handler = DirEventHandler()
 

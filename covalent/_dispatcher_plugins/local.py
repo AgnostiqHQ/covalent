@@ -92,7 +92,7 @@ class LocalDispatcher(BaseDispatcher):
             triggers_data = json_lattice["metadata"].pop("triggers")
 
             # Determine whether to disable first run
-            disable_run = not triggers_data if isinstance(triggers_data, bool) else True
+            disable_run = triggers_data if isinstance(triggers_data, bool) else True
 
             json_lattice = json.dumps(json_lattice)
 
@@ -103,7 +103,7 @@ class LocalDispatcher(BaseDispatcher):
 
             lattice_dispatch_id = r.content.decode("utf-8").strip().replace('"', "")
 
-            if not disable_run:
+            if not disable_run or isinstance(triggers_data, bool):
                 return lattice_dispatch_id
 
             LocalDispatcher.register_triggers(triggers_data, lattice_dispatch_id)

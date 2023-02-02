@@ -18,7 +18,17 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .base import BaseTrigger  # nopycln: import
-from .dir_trigger import DirTrigger  # nopycln: import
-from .time_trigger import TimeTrigger  # nopycln: import
-from .trigger_loader import available_triggers  # nopycln: import
+from .base import BaseTrigger
+
+
+class TimeTrigger(BaseTrigger):
+    def __init__(
+        self,
+        time_gap,
+        lattice_dispatch_id: str = None,
+        dispatcher_addr: str = None,
+        triggers_server_addr: str = None,
+    ):
+        super().__init__(lattice_dispatch_id, dispatcher_addr, triggers_server_addr)
+
+        self.time_gap = time_gap

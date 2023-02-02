@@ -60,6 +60,8 @@ async def submit(request: Request, disable_run: bool) -> UUID:
     data = await request.json()
     data = json.dumps(data).encode("utf-8")
 
+    print("Disable run?: ", disable_run)
+
     dispatch_id = await dispatcher.run_dispatcher(data, disable_run)
     return dispatch_id
 

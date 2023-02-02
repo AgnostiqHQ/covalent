@@ -22,6 +22,7 @@ from pathlib import Path
 
 from .base import BaseTrigger
 from .dir_trigger import DirTrigger
+from .time_trigger import TimeTrigger
 
 
 class TriggerLoader:
@@ -29,6 +30,7 @@ class TriggerLoader:
         self.available_triggers = {
             BaseTrigger.__name__: BaseTrigger,
             DirTrigger.__name__: DirTrigger,
+            TimeTrigger.__name__: TimeTrigger,
         }
 
         self.load_user_triggers()

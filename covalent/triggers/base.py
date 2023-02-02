@@ -44,7 +44,9 @@ class BaseTrigger:
         self.triggers_server_addr = triggers_server_addr
         self.new_dispatch_ids = []
         self.observe_blocks = True
-        self._is_internal = True
+        self.event_loop = None
+
+        self._is_internal = False
 
     def register(self):
         self._register(self.to_dict(), self.triggers_server_addr)
@@ -66,7 +68,7 @@ class BaseTrigger:
 
             return asyncio.run_coroutine_threadsafe(
                 get_result(self.lattice_dispatch_id, status_only=True),
-                asyncio.get_running_loop(),
+                self.event_loop,
             ).result()["status"]
 
         from .. import get_result
@@ -81,7 +83,7 @@ class BaseTrigger:
 
             return asyncio.run_coroutine_threadsafe(
                 run_redispatch(self.lattice_dispatch_id, None, None, False, is_pending),
-                asyncio.get_running_loop(),
+                self.event_loop,
             ).result()
 
         from .. import redispatch
