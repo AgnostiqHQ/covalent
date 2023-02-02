@@ -19,7 +19,6 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from functools import partial
 from types import MethodType
 
 from watchdog.events import FileSystemEventHandler
@@ -56,15 +55,19 @@ class DirTrigger(BaseTrigger):
 
         self.observe_blocks = False
 
-    def proxy_trigger_method(self):
-        return self.trigger()
+        # This is false since watchdog starts
+        # its observer in a new thread
+        self._is_internal = False
 
     # To dynamically attach and override "on_*" methods to the handler
     # depending on which ones are requested by the user
     def attach_methods_to_handler(self, event_names: list):
+        def proxy_trigger(*args, **kwargs):
+            return self.trigger()
+
         for en in event_names:
             func_name = self.event_handler.supported_event_to_func_names[en]
-            proxy_trigger_method = partial(self.trigger)
+            proxy_trigger_method = proxy_trigger
             proxy_trigger_method.__name__ = func_name
             setattr(
                 self.event_handler, func_name, MethodType(proxy_trigger_method, self.event_handler)

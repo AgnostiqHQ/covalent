@@ -60,6 +60,7 @@ def init_trigger(tr_dict: dict) -> BaseTrigger:
     # Setting all other values
     for k, v in tr_dict.items():
         setattr(trigger, k, v)
+        print(k, v)
 
     return trigger
 
@@ -71,13 +72,15 @@ async def register_and_observe(request: Request):
     trigger = init_trigger(trigger_dict)
 
     if trigger.observe_blocks:
+        print("Starting in new thread")
         thread_pool.submit(trigger.observe)
     else:
+        print("Starting normally")
         trigger.observe()
 
     lattice_did = trigger.lattice_dispatch_id
 
-    if active_triggers.get():
+    if active_triggers.get(lattice_did):
         active_triggers[lattice_did].append(trigger)
     else:
         active_triggers[lattice_did] = [trigger]

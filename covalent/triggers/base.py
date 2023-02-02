@@ -44,7 +44,7 @@ class BaseTrigger:
         self.triggers_server_addr = triggers_server_addr
         self.new_dispatch_ids = []
         self.observe_blocks = True
-        self._is_internal = False
+        self._is_internal = True
 
     def register(self):
         self._register(self.to_dict(), self.triggers_server_addr)
@@ -86,7 +86,7 @@ class BaseTrigger:
 
         from .. import redispatch
 
-        return redispatch(self.lattice_dispatch_id, self.dispatcher_addr)
+        return redispatch(self.lattice_dispatch_id, self.dispatcher_addr)()
 
     def trigger(self):
 

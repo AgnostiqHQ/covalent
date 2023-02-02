@@ -38,7 +38,9 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-def get_result(dispatch_id: str, wait: bool = False, dispatcher_addr: str = None) -> Result:
+def get_result(
+    dispatch_id: str, wait: bool = False, dispatcher_addr: str = None, status_only: bool = False
+) -> Result:
     """
     Get the results of a dispatch from a file.
 
@@ -57,8 +59,11 @@ def get_result(dispatch_id: str, wait: bool = False, dispatcher_addr: str = None
             dispatch_id,
             wait,
             dispatcher_addr,
+            status_only,
         )
-        result_object = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
+
+        if not status_only:
+            result = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
 
     except MissingLatticeRecordError as ex:
         app_log.warning(
@@ -67,7 +72,7 @@ def get_result(dispatch_id: str, wait: bool = False, dispatcher_addr: str = None
 
         raise ex
 
-    return result_object
+    return result
 
 
 def _get_result_from_dispatcher(

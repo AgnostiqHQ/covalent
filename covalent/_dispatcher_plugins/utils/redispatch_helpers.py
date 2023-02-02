@@ -49,11 +49,18 @@ def _generate_electron_updates(dispatch_id, replace_electrons):
 
 def redispatch_real(
     dispatch_id: str,
-    new_args=[],
-    new_kwargs={},
-    replace_electrons={},
+    new_args=None,
+    new_kwargs=None,
+    replace_electrons=None,
     reuse_previous_results=False,
+    is_pending=False,
 ):
+    if new_args is None:
+        new_args = []
+    if new_kwargs is None:
+        new_kwargs = {}
+    if replace_electrons is None:
+        replace_electrons = {}
     if new_args or new_kwargs:
         res = get_result(dispatch_id)
         lat = res.lattice
@@ -68,4 +75,5 @@ def redispatch_real(
         "dispatch_id": dispatch_id,
         "electron_updates": updates,
         "reuse_previous_results": reuse_previous_results,
+        "is_pending": is_pending,
     }

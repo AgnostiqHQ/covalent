@@ -164,6 +164,7 @@ class LocalDispatcher(BaseDispatcher):
         dispatcher_addr: str = None,
         replace_electrons={},
         reuse_previous_results=False,
+        is_pending=False,
     ):
 
         if dispatcher_addr is None:
@@ -173,7 +174,12 @@ class LocalDispatcher(BaseDispatcher):
 
         def func(*new_args, **new_kwargs):
             body = redispatch_real(
-                dispatch_id, new_args, new_kwargs, replace_electrons, reuse_previous_results
+                dispatch_id,
+                new_args,
+                new_kwargs,
+                replace_electrons,
+                reuse_previous_results,
+                is_pending,
             )
 
             test_url = f"http://{dispatcher_addr}/api/redispatch"
