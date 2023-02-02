@@ -20,7 +20,10 @@
 
 """Testing methods to retrieve workflow artifacts"""
 
+import pytest
+
 import covalent as ct
+from covalent._shared_files.exceptions import MissingLatticeRecordError
 
 
 def test_granular_get_result():
@@ -119,3 +122,8 @@ def test_get_node_output():
     )
 
     assert ct.get_node_output(dispatch_id, 0).get_deserialized() == 3
+
+
+def test_get_result_nonexistent():
+    with pytest.raises(MissingLatticeRecordError):
+        result_object = ct.get_result("nonexistent", wait=False)
