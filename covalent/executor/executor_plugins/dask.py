@@ -117,6 +117,7 @@ def run_task_from_uris(
     stderr_uri: str,
     results_dir: str,
     task_metadata: dict,
+    server_url: str,
 ):
 
     prefix = "file://"
@@ -195,7 +196,7 @@ def run_task_from_uris(
 
     import requests
 
-    url = f"http://localhost:48008/api/v1/update/{dispatch_id}/{node_id}"
+    url = f"{server_url}/api/v1/update/{dispatch_id}/{node_id}"
     requests.put(url)
 
     return output_uri, stdout_uri, stderr_uri, exception_occurred
@@ -291,6 +292,9 @@ class DaskExecutor(AsyncBaseExecutor):
         stderr_uri = os.path.join(self.cache_dir, f"stderr_{dispatch_id}-{node_id}.txt")
         # future = dask_client.submit(lambda x: x**3, 3)
 
+        dispatcher_addr = get_config("dispatcher.address")
+        dispatcher_port = get_config("dispatcher.port")
+        server_url = f"http://{dispatcher_addr}:{dispatcher_port}"
         key = f"dask_job_{dispatch_id}:{node_id}"
         future = dask_client.submit(
             run_task_from_uris,
@@ -305,6 +309,7 @@ class DaskExecutor(AsyncBaseExecutor):
             stderr_uri=stderr_uri,
             results_dir=self.cache_dir,
             task_metadata=task_metadata,
+            server_url=server_url,
             key=key,
         )
 
