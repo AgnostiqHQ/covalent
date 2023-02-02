@@ -374,6 +374,8 @@ def lattice(
     if isinstance(call_after, DepsCall):
         call_after = [call_after]
 
+    from ..triggers import BaseTrigger
+
     if isinstance(triggers, BaseTrigger):
         triggers = [triggers]
 

@@ -24,9 +24,8 @@ from abc import abstractmethod
 
 import requests
 
-from covalent._shared_files import logger
-
 from .._results_manager import Result
+from .._shared_files import logger
 from .._shared_files.config import get_config
 
 app_log = logger.app_log

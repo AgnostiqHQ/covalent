@@ -275,10 +275,15 @@ def encode_metadata(metadata: dict) -> dict:
 
     # triggers
     if "triggers" in metadata:
-        if isinstance(metadata["triggers"], (dict, bool)):
-            encoded_metadata["triggers"] = metadata["triggers"]
+        if isinstance(metadata["triggers"], list):
+            encoded_metadata["triggers"] = []
+            for tr in metadata["triggers"]:
+                if isinstance(tr, dict):
+                    encoded_metadata["triggers"].append(tr)
+                else:
+                    encoded_metadata["triggers"].append(tr.to_dict())
         else:
-            encoded_metadata["triggers"] = [tr.to_dict() for tr in metadata["triggers"]]
+            encoded_metadata["triggers"] = metadata["triggers"]
 
     return encoded_metadata
 

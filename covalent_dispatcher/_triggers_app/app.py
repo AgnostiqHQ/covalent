@@ -95,4 +95,4 @@ async def stop_observe(request: Request):
             app_log.warning(f"Stopped observing on trigger(s) with lattice dispatch id: {d_id}")
 
 
-triggers_only_app.include_router(router, prefix="/api", tags=["Triggers"])
+triggers_only_app.include_router(router, tags=["Triggers"])

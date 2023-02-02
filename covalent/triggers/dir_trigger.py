@@ -55,7 +55,6 @@ class DirTrigger(BaseTrigger):
         self.event_names = event_names
 
         self.observe_blocks = False
-        self.event_handler = DirEventHandler()
 
     def proxy_trigger_method(self):
         return self.trigger()
@@ -72,6 +71,9 @@ class DirTrigger(BaseTrigger):
             )
 
     def observe(self):
+
+        self.event_handler = DirEventHandler()
+
         # Attach methods before scheduling the observer
         self.attach_methods_to_handler(self.event_names)
 
