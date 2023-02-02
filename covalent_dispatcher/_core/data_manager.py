@@ -92,7 +92,6 @@ async def update_node_result(dispatch_id, node_result):
     app_log.debug("Updating node result (run_planned_workflow).")
     old_status = RESULT_STATUS.NEW_OBJECT
     try:
-        result_object = await _run_in_executor(get_result_object, dispatch_id, True)
         node_id = node_result["node_id"]
         node_status = node_result["status"]
         node_info = await get_electron_attributes(
@@ -103,11 +102,20 @@ async def update_node_result(dispatch_id, node_result):
         sub_dispatch_id = node_info["sub_dispatch_id"]
 
         app_log.debug(f"{dispatch_id}:{node_id}: previous status was {old_status}")
+
+        # Filter illegal status transitions
+        if node_status:
+            if RESULT_STATUS.is_terminal(old_status) or old_status == node_status:
+                app_log.debug(
+                    f"{dispatch_id}:{node_id}: illegal status update {old_status} -> {node_status}"
+                )
+                return
+
         # Handle returns from _build_sublattice_graph
         node_result = await _filter_sublattice_status(
             dispatch_id, node_id, node_status, node_type, sub_dispatch_id, node_result
         )
-        loop = asyncio.get_running_loop()
+        result_object = await _run_in_executor(get_result_object, dispatch_id, True)
         update_partial = functools.partial(result_object._update_node, **node_result)
         await _run_in_executor(update_partial)
 
