@@ -145,7 +145,7 @@ async def _get_task_result(task_metadata: Dict):
 
         executor = get_executor(task_id, [executor_name, executor_data])
 
-        job_handle = _job_handles.pop((dispatch_id, task_id))
+        job_handle = _job_handles.get((dispatch_id, task_id), None)
 
         output_uri, stdout_uri, stderr_uri, status = await executor.receive(
             task_metadata, job_handle
@@ -282,8 +282,6 @@ async def _poll_task_status(task_metadata: Dict, executor: AsyncBaseExecutor):
         app_log.debug(f"Polling task status for {dispatch_id}:{task_id}")
         if await executor.poll(task_metadata, job_handle) == 0:
             await _mark_ready(task_metadata)
-    except KeyError as ex:
-        app_log.debug(f"Task {dispatch_id}:{task_id} already completed")
     except Exception as ex:
 
         task_id = task_metadata["node_id"]
