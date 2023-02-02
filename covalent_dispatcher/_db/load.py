@@ -108,7 +108,6 @@ def _result_from(lattice_record: Lattice) -> Result:
             "deps": deps,
             "call_before": call_before,
             "call_after": call_after,
-            "results_dir": results_dir,
         },
         "args": inputs["args"],
         "kwargs": inputs["kwargs"],

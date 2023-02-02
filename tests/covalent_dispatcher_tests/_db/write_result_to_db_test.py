@@ -244,7 +244,7 @@ def get_electron_kwargs(
 
 
 def test_update_lattice_completed_electron_num(test_db, mocker):
-    """Test the funtion used to update the number of completed electrons for a lattice by 1."""
+    """Test the function used to update the number of completed electrons for a lattice by 1."""
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     cur_time = dt.now(timezone.utc)

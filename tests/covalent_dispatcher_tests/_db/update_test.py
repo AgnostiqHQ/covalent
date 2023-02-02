@@ -68,7 +68,6 @@ def result_1():
     workflow_1.build_graph(a=1, b=2)
     received_lattice = LatticeClass.deserialize_from_json(workflow_1.serialize_to_json())
     result = Result(lattice=received_lattice, dispatch_id="dispatch_1")
-    #    result.lattice.metadata["results_dir"] = TEMP_RESULTS_DIR
     result._initialize_nodes()
     return result
 
