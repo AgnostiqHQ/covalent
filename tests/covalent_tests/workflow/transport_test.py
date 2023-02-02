@@ -21,6 +21,7 @@
 """Unit tests for transport graph."""
 
 import platform
+from unittest.mock import call
 
 import cloudpickle
 import networkx as nx
@@ -28,6 +29,7 @@ import pytest
 
 import covalent as ct
 from covalent._shared_files.defaults import parameter_prefix
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 from covalent.executor import LocalExecutor
 
@@ -425,3 +427,116 @@ def test_encode_metadata():
 
     # Check idempotence
     assert encode_metadata(metadata) == encode_metadata(encode_metadata(metadata))
+
+
+def test_reset_node(workflow_transport_graph, mocker):
+    """Test the node reset method."""
+    set_node_value_mock = mocker.patch(
+        "covalent._workflow.transport._TransportGraph.set_node_value"
+    )
+
+    node_id = 0
+    workflow_transport_graph.reset_node(node_id)
+    actual_mock_calls = set_node_value_mock.mock_calls
+    expected_mock_calls = [
+        call(node_id, node_attr, default_val)
+        for node_attr, default_val in workflow_transport_graph._default_node_attrs.items()
+    ]
+
+    for mock_call in expected_mock_calls:
+        assert mock_call in actual_mock_calls
+
+
+def test_replace_node(workflow_transport_graph, mocker):
+    """Test method that replaces node attribute values."""
+    transportable_object_from_dict_mock = mocker.patch(
+        "covalent._workflow.transport.TransportableObject.from_dict", return_value="mock-func"
+    )
+    reset_descendants_mock = mocker.patch(
+        "covalent._workflow.transport._TransportGraph._reset_descendants"
+    )
+    set_node_value_mock = mocker.patch(
+        "covalent._workflow.transport._TransportGraph.set_node_value"
+    )
+    node_id = 0
+    new_attrs = {
+        "metadata": {"mock-key": "mock-value"},
+        "function": "mock-func",
+        "function_string": "mock-func-string",
+        "name": "mock-name",
+    }
+    workflow_transport_graph._replace_node(node_id, new_attrs)
+    transportable_object_from_dict_mock.assert_called_once_with("mock-func")
+    reset_descendants_mock.assert_called_once_with(node_id)
+    expected_set_node_value_mock_calls = [
+        call(0, "function", "mock-func"),
+        call(0, "function_string", "mock-func-string"),
+        call(0, "name", "mock-name"),
+    ]
+    actual_set_node_value_mock_calls = set_node_value_mock.mock_calls
+    for mock_call in expected_set_node_value_mock_calls:
+        assert mock_call in actual_set_node_value_mock_calls
+
+
+def test_reset_descendants_new_object(workflow_transport_graph, mocker):
+    """Test method that resets descendants of a node (including the node itself)."""
+    get_node_value_mock = mocker.patch(
+        "covalent._workflow.transport._TransportGraph.get_node_value",
+        return_value=RESULT_STATUS.NEW_OBJECT,
+    )
+    reset_node_mock = mocker.patch("covalent._workflow.transport._TransportGraph.reset_node")
+    res = workflow_transport_graph._reset_descendants(0)
+    reset_node_mock.assert_not_called()
+    get_node_value_mock.assert_called_once_with(0, "status")
+    assert res is None
+
+
+def test_reset_descendants_exception(workflow_transport_graph, mocker):
+    """Test method that resets descendants of a node (including the node itself) when there's an exception."""
+    get_node_value_mock = mocker.patch(
+        "covalent._workflow.transport._TransportGraph.get_node_value",
+        side_effect=Exception(),
+    )
+    reset_node_mock = mocker.patch("covalent._workflow.transport._TransportGraph.reset_node")
+    res = workflow_transport_graph._reset_descendants(12)
+    reset_node_mock.assert_not_called()
+    get_node_value_mock.assert_called_once_with(12, "status")
+    assert res is None
+
+
+def test_reset_descendants_resettable(workflow_transport_graph, mocker):
+    """Test method that resets descendants of a node (including the node itself)."""
+    get_node_value_mock = mocker.patch(
+        "covalent._workflow.transport._TransportGraph.get_node_value",
+        return_value=RESULT_STATUS.COMPLETED,
+    )
+    reset_node_mock = mocker.patch("covalent._workflow.transport._TransportGraph.reset_node")
+    res = workflow_transport_graph._reset_descendants(0)
+    reset_node_mock.assert_called_once_with(0)
+    get_node_value_mock.assert_called_once_with(0, "status")
+    assert res is None
+
+
+def test_reset_descendants_multiple(workflow_transport_graph, mocker):
+    """Test method that resets descendants of a node (including the node itself)."""
+    workflow_transport_graph._graph.add_edge(0, 1)
+    get_node_value_mock = mocker.patch(
+        "covalent._workflow.transport._TransportGraph.get_node_value",
+        return_value=RESULT_STATUS.COMPLETED,
+    )
+    reset_node_mock = mocker.patch("covalent._workflow.transport._TransportGraph.reset_node")
+    res = workflow_transport_graph._reset_descendants(0)
+    reset_node_mock.mock_calls = [call(0), call(1)]
+    get_node_value_mock.mock_calls = [(0, "status"), (1, "status")]
+    assert res is None
+
+
+def test_apply_electron_updates(workflow_transport_graph, mocker):
+    """Test the method that applies electron updates to the graph."""
+    get_node_value_mock = mocker.patch(
+        "covalent._workflow.transport._TransportGraph.get_node_value", return_value="mock-name"
+    )
+    replace_node_mock = mocker.patch("covalent._workflow.transport._TransportGraph._replace_node")
+    workflow_transport_graph.apply_electron_updates({"mock-name": "mock-value"})
+    get_node_value_mock.mock_calls = [call(0, "name"), call(1, "name")]
+    replace_node_mock.mock_calls = [call(0, "mock-value"), call(1, "mock-value")]
