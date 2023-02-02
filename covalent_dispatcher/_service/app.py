@@ -41,8 +41,6 @@ log_stack_info = logger.log_stack_info
 
 router: APIRouter = APIRouter()
 
-SLEEP = 5
-
 
 @router.post("/submit")
 async def submit(request: Request, disable_run: bool) -> UUID:
@@ -148,15 +146,3 @@ async def get_result(
             headers={"Retry-After": "2"},
         )
         return response
-
-
-@router.post("/triggers/start")
-async def start_triggers(request: Request):
-    trigger_data = await request.json()
-    dispatcher.start_triggers(trigger_data)
-
-
-@router.post("/triggers/stop")
-async def stop_triggers(request: Request):
-    dispatch_ids = await request.json()
-    dispatcher.stop_triggers(dispatch_ids)

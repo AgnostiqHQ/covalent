@@ -35,6 +35,7 @@
 !/doc/**
 /doc/build/**
 !/tests/**
+!triggers_app/**
 
 # Ignore dask-worker-spaces
 **/dask-worker-space

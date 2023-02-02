@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -18,5 +18,24 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .data_manager import make_derived_dispatch, make_dispatch
-from .dispatcher import cancel_workflow, run_dispatch
+from fastapi import APIRouter, FastAPI, Request
+
+from .triggers import start_triggers, stop_triggers
+
+router = APIRouter()
+triggers_only_app = FastAPI()
+
+
+@router.post("/triggers/start")
+async def start(request: Request):
+    trigger_data = await request.json()
+    start_triggers(trigger_data)
+
+
+@router.post("/triggers/stop")
+async def stop(request: Request):
+    dispatch_ids = await request.json()
+    stop_triggers(dispatch_ids)
+
+
+triggers_only_app.include_router(router, prefix="/api", tags=["Triggers"])

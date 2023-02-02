@@ -80,11 +80,10 @@ async def update_node_result(result_object, node_result):
         app_log.exception("Error persisting node update: {ex}")
         node_result["status"] = Result.FAILED
     finally:
-        node_id = node_result["node_id"]
-        node_status = node_result["status"]
-        dispatch_id = result_object.dispatch_id
-        if node_status:
+        if node_status := node_result["status"]:
+            dispatch_id = result_object.dispatch_id
             status_queue = get_status_queue(dispatch_id)
+            node_id = node_result["node_id"]
             await status_queue.put((node_id, node_status))
 
 
@@ -175,9 +174,7 @@ async def persist_result(dispatch_id: str):
 
 
 async def _update_parent_electron(result_object: Result):
-    parent_eid = result_object._electron_id
-
-    if parent_eid:
+    if parent_eid := result_object._electron_id:
         dispatch_id, node_id = resolve_electron_id(parent_eid)
         status = result_object.status
         if status == Result.POSTPROCESSING_FAILED:

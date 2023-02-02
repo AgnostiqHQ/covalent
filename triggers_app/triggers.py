@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -16,7 +16,7 @@
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
-# Relief from the License may be granted by purchasing a commercial license.
+# Relief from the License may be granted by purchasing a commercial license.nse.
 
 
 import asyncio
@@ -28,17 +28,16 @@ from covalent._shared_files import logger
 
 # Importing all supported triggers here
 from covalent.triggers import *  # nopycln: import
+from covalent_dispatcher._service.app import get_result
+from covalent_dispatcher.entry_point import run_dispatcher, run_redispatch
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
 
 all_triggers = {}
 
 
 def triggered_dispatch(self, event: FileSystemEvent):
-    from .._service.app import get_result
-    from ..entry_point import run_dispatcher, run_redispatch
 
     status = asyncio.run_coroutine_threadsafe(
         get_result(self.lattice_dispatch_id, status_only=True), self.covalent_event_loop

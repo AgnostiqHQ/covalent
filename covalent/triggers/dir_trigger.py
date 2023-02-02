@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -26,6 +26,8 @@ from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
 from covalent._shared_files import logger
+
+from .base import BaseTrigger
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -59,7 +61,7 @@ def attach_methods_to_handler(
     return event_handler
 
 
-class DirTrigger:
+class DirTrigger(BaseTrigger):
     def __init__(self, dir_path, event_names) -> None:
         self.dir_path = dir_path
 

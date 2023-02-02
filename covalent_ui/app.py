@@ -20,6 +20,7 @@
 
 import argparse
 import os
+from copy import deepcopy
 
 import socketio
 import uvicorn
@@ -32,6 +33,8 @@ from covalent_dispatcher._service.app_dask import DaskCluster
 from covalent_ui.api.main import app as fastapi_app
 from covalent_ui.api.main import sio
 from covalent_ui.api.v1.utils.log_handler import log_config
+
+from ..triggers_app import triggers_only_app, triggers_router  # nopycln: import
 
 # read env vars configuring server
 COVALENT_SERVER_IFACE_ANY = os.getenv("COVALENT_SERVER_IFACE_ANY", "False").lower() in (
@@ -61,6 +64,10 @@ socketio_app = socketio.ASGIApp(
 )
 fastapi_app.mount("/", socketio_app)
 
+no_triggers_app = deepcopy(fastapi_app)
+
+fastapi_app.include_router(triggers_router, prefix="/api", tags=["Triggers"])
+
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
@@ -80,19 +87,33 @@ if __name__ == "__main__":
         required=False,
         help="Start Covalent server without Dask",
     )
+
+    ap.add_argument(
+        "--no-triggers",
+        dest="no_triggers",
+        action="store_true",  # this means default is False
+        required=False,
+        help="Start Covalent server without the Triggers server",
+    )
+
+    ap.add_argument(
+        "--triggers-only",
+        dest="triggers_only",
+        action="store_true",  # this means default is False
+        required=False,
+        help="Start only the Triggers server",
+    )
+
     ap.set_defaults(cluster=True)
 
     args, unknown = ap.parse_known_args()
 
     # port to be specified by cli
-    if args.port:
-        port = int(args.port)
-    else:
-        port = int(get_config("dispatcher.port"))
+    port = int(args.port) if args.port else int(get_config("dispatcher.port"))
 
-    host = get_config("dispatcher.address") if not COVALENT_SERVER_IFACE_ANY else "0.0.0.0"
+    host = "0.0.0.0" if COVALENT_SERVER_IFACE_ANY else get_config("dispatcher.address")
 
-    DEBUG = True if args.develop is True else False
+    DEBUG = args.develop is True
     # reload = True if args.develop is True else False
     RELOAD = False
 
@@ -101,9 +122,15 @@ if __name__ == "__main__":
         dask_cluster = DaskCluster(name="LocalDaskCluster", logger=app_log)
         dask_cluster.start()
 
+    app_name = "app:fastapi_app"
+    if args.triggers_only:
+        app_name = "app:triggers_only_app"
+    elif args.no_triggers:
+        app_name = "app:no_triggers_app"
+
     # Start covalent main app
     uvicorn.run(
-        "app:fastapi_app",
+        app_name,
         host=host,
         port=port,
         debug=DEBUG,
