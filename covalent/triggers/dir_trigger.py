@@ -62,7 +62,6 @@ class DirTrigger(BaseTrigger):
         self.event_names = event_names
 
         self.observe_blocks = False
-        self._is_internal = True
 
     # To dynamically attach and override "on_*" methods to the handler
     # depending on which ones are requested by the user

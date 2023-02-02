@@ -46,7 +46,7 @@ class BaseTrigger:
         self.observe_blocks = True
         self.event_loop = None
 
-        self._is_internal = False
+        self._is_internal = True
 
     def register(self):
         self._register(self.to_dict(), self.triggers_server_addr)

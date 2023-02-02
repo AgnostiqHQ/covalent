@@ -18,6 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import time
+
 from .base import BaseTrigger
 
 
@@ -32,3 +34,8 @@ class TimeTrigger(BaseTrigger):
         super().__init__(lattice_dispatch_id, dispatcher_addr, triggers_server_addr)
 
         self.time_gap = time_gap
+
+    def observe(self):
+        while True:
+            self.trigger()
+            time.sleep(self.time_gap)
