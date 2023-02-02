@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Transport graph diff'ing for workflow re-dispatching.
+- TransportGraphOps class for diffing operations on transport graphs.
+- Added make derived dispatch method.
+- Apply electron updates method to _TransportGraph.
 
 ## [0.215.0-rc.0] - 2023-02-01
 
