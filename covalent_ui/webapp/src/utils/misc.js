@@ -78,17 +78,15 @@ export const formatDate = (date) => {
   return isValid(date) ? format(date, 'MMM dd, HH:mm:ss') : '-'
 }
 
-export const formatLogTime = (date) => {
+export const formatLogDateTime = (date,type) => {
   if (_.isString(date)) {
+    let localString = new Date(date+"Z")
+    let localDateString = localString.toLocaleString().split(' ')
+    let dateSplit =  localDateString[0].split('/')
+    date = dateSplit[2].slice(0,4)+"-"+dateSplit[1]+"-"+dateSplit[0]+"T"+localDateString[1] +"."+localString.getMilliseconds() 
     date = parseISO(date)
   }
-  return isValid(date) ? format(date, 'HH:mm:ss,SSS') : '-'
-}
-export const formatLogDate = (date) => {
-  if (_.isString(date)) {
-    date = parseISO(date)
-  }
-  return isValid(date) ? format(date, 'yyyy-MM-dd') : '-'
+  return (type==='date' ? (isValid(date) ? format(date, 'yyyy-MM-dd') : '-') : (isValid(date) ? format(date, 'HH:mm:ss,SSS') : '-'))
 }
 
 export const truncateMiddle = (s, start, end, omission = '…') => {

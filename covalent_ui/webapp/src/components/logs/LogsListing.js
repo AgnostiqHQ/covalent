@@ -62,8 +62,7 @@ import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import {
   logStatusIcon,
   logStatusLabel,
-  formatLogDate,
-  formatLogTime,
+  formatLogDateTime,
   statusColor,
 } from '../../utils/misc'
 import copy from 'copy-to-clipboard'
@@ -454,7 +453,7 @@ const LogsListing = () => {
                                 fontSize: '12px',
                               }}
                             >
-                              {formatLogTime(result.logDate)}
+                              {formatLogDateTime(result.logDate,"time")}
                             </Grid>
                             <Grid
                               sx={{
@@ -462,7 +461,7 @@ const LogsListing = () => {
                                 fontSize: '10px',
                               }}
                             >
-                              {formatLogDate(result.logDate)}
+                              {formatLogDateTime(result.logDate,"date")}
                             </Grid>
                           </TableCell>
                           <TableCell
