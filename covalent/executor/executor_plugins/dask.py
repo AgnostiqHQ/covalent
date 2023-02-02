@@ -25,6 +25,7 @@ and waits for execution to finish then returns the result.
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
+import json
 import os
 import sys
 import traceback
@@ -32,19 +33,20 @@ from contextlib import redirect_stderr, redirect_stdout
 from typing import Any, Callable, Dict, List, Tuple
 
 import cloudpickle as pickle
-from dask.distributed import Client, Future
+from dask.distributed import Client, fire_and_forget
 
 from covalent._shared_files import TaskRuntimeError, logger
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import RESULT_STATUS
-from covalent._shared_files.utils import _address_client_mapper
+from covalent._shared_files.utils import _address_client_mapper, format_server_url
 from covalent._workflow.depsbash import DepsBash
 from covalent._workflow.depscall import DepsCall
 from covalent._workflow.depspip import DepsPip
-from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
+from covalent.executor.base import AsyncBaseExecutor
 from covalent.executor.utils.wrappers import io_wrapper as dask_wrapper
+from covalent.executor.utils.wrappers import wrapper_fn
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "DaskExecutor"
@@ -105,14 +107,16 @@ def _gather_deps(deps, call_before_objs_json, call_after_objs_json) -> Tuple[Lis
 # URIs are just file paths
 def run_task_from_uris(
     function_uri: str,
-    deps_uris: str,
-    call_before_uris: str,
-    call_after_uris: str,
+    deps_uri: str,
+    call_before_uri: str,
+    call_after_uri: str,
     args_uris: str,
     kwargs_uris: str,
     output_uri: str,
     stdout_uri: str,
     stderr_uri: str,
+    results_dir: str,
+    task_metadata: dict,
 ):
 
     prefix = "file://"
@@ -141,19 +145,19 @@ def run_task_from_uris(
                     with open(uri, "rb") as f:
                         ser_kwargs[key] = pickle.load(f)
 
-                if deps_uris.startswith(prefix):
-                    deps_uris = deps_uris[prefix_len:]
-                with open(deps_uris, "rb") as f:
+                if deps_uri.startswith(prefix):
+                    deps_uri = deps_uri[prefix_len:]
+                with open(deps_uri, "rb") as f:
                     deps_json = pickle.load(f)
 
-                if call_before_uris.startswith(prefix):
-                    call_before_uris = call_before_uris[prefix_len:]
-                with open(call_before_uris, "rb") as f:
+                if call_before_uri.startswith(prefix):
+                    call_before_uri = call_before_uri[prefix_len:]
+                with open(call_before_uri, "rb") as f:
                     call_before_json = pickle.load(f)
 
-                if call_after_uris.startswith(prefix):
-                    call_after_uris = call_after_uris[prefix_len:]
-                with open(call_after_uris, "rb") as f:
+                if call_after_uri.startswith(prefix):
+                    call_after_uri = call_after_uri[prefix_len:]
+                with open(call_after_uri, "rb") as f:
                     call_after_json = pickle.load(f)
 
                 call_before, call_after = _gather_deps(
@@ -174,6 +178,26 @@ def run_task_from_uris(
                 tb = "".join(traceback.TracebackException.from_exception(ex).format())
                 print(tb, file=sys.stderr)
                 output_uri = None
+
+    result_summary = {
+        "output_uri": output_uri,
+        "stdout_uri": stdout_uri,
+        "stderr_uri": stderr_uri,
+        "exception_occurred": exception_occurred,
+    }
+
+    dispatch_id = task_metadata["dispatch_id"]
+    node_id = task_metadata["node_id"]
+    result_path = os.path.join(results_dir, f"result-{dispatch_id}:{node_id}.json")
+
+    with open(result_path, "w") as f:
+        json.dump(result_summary, f)
+
+    import requests
+
+    server_url = format_server_url()
+    url = f"{server_url}/api/v1/update/{dispatch_id}/{node_id}"
+    requests.put(url)
 
     return output_uri, stdout_uri, stderr_uri, exception_occurred
 
@@ -244,9 +268,9 @@ class DaskExecutor(AsyncBaseExecutor):
     async def send(
         self,
         function_uri: str,
-        deps_uris: str,
-        call_before_uris: str,
-        call_after_uris: str,
+        deps_uri: str,
+        call_before_uri: str,
+        call_after_uri: str,
         args_uris: str,
         kwargs_uris: str,
         task_metadata: dict,
@@ -272,46 +296,28 @@ class DaskExecutor(AsyncBaseExecutor):
         future = dask_client.submit(
             run_task_from_uris,
             function_uri=function_uri,
-            deps_uris=deps_uris,
-            call_before_uris=call_before_uris,
-            call_after_uris=call_after_uris,
+            deps_uri=deps_uri,
+            call_before_uri=call_before_uri,
+            call_after_uri=call_after_uri,
             args_uris=args_uris,
             kwargs_uris=kwargs_uris,
             output_uri=output_uri,
             stdout_uri=stdout_uri,
             stderr_uri=stderr_uri,
+            results_dir=self.cache_dir,
+            task_metadata=task_metadata,
             key=key,
         )
 
-        _clients[key] = dask_client
-        app_log.debug(f"Dask client {id(dask_client)}")
-        app_log.debug(f"Submitted task {dispatch_id}:{node_id}, key {future.key}")
+        fire_and_forget(future)
 
-        _futures[key] = future
-        app_log.debug(f"Retaining a reference to the future {dispatch_id}:{node_id}")
+        app_log.debug("Fire and forgetting task")
 
         return future.key
 
     async def poll(self, task_metadata: Dict, job_handle: Any):
-        dispatch_id = task_metadata["dispatch_id"]
-        node_id = task_metadata["node_id"]
 
-        app_log.debug(f"Waiting for task {dispatch_id}:{node_id}, key {job_handle}")
-
-        dask_client = _clients[job_handle]
-        app_log.debug(f"Dask client {id(dask_client)}")
-
-        fut = Future(key=job_handle, client=dask_client)
-        app_log.debug(f"Future {fut}")
-        try:
-            await fut.result(timeout=self.time_limit)
-
-            app_log.debug(f"ManagedDask: task {dispatch_id}:{node_id} finished")
-            app_log.debug(f"Future {fut}")
-        except Exception as ex:
-            app_log.debug(f"Exception while polling: {ex}")
-            app_log.debug(f"Future {fut}")
-        return 0
+        return -1
 
     async def receive(self, task_metadata: Dict, job_handle: Any):
 
@@ -321,14 +327,15 @@ class DaskExecutor(AsyncBaseExecutor):
         # Job should have reached a terminal state by the time this is invoked.
         dispatch_id = task_metadata["dispatch_id"]
         node_id = task_metadata["node_id"]
-        dask_client = _clients.pop(job_handle)
 
-        fut = Future(key=job_handle, client=dask_client)
-        fut = _futures.pop(job_handle)
+        result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{node_id}.json")
+        with open(result_path, "r") as f:
+            result_summary = json.load(f)
 
-        # Result should be ready to read immediately
-
-        output_uri, stdout_uri, stderr_uri, exception_raised = await fut.result(1)
+        output_uri = result_summary["output_uri"]
+        stdout_uri = result_summary["stdout_uri"]
+        stderr_uri = result_summary["stderr_uri"]
+        exception_raised = result_summary["exception_occurred"]
 
         terminal_status = RESULT_STATUS.FAILED if exception_raised else RESULT_STATUS.COMPLETED
 
