@@ -453,7 +453,7 @@ async def _postprocess_workflow(result_object: Result) -> Result:
     post_processor = [pp_executor, pp_executor_data]
 
     result_object._status = Result.POSTPROCESSING
-    upsert._lattice_data(result_object)
+    upsert.lattice_data(result_object)
 
     app_log.debug(f"Preparing to post-process workflow {result_object.dispatch_id}")
 
@@ -461,7 +461,7 @@ async def _postprocess_workflow(result_object: Result) -> Result:
         app_log.debug("Workflow to be postprocessed client side")
         result_object._status = Result.PENDING_POSTPROCESSING
         result_object._end_time = datetime.now(timezone.utc)
-        upsert._lattice_data(result_object)
+        upsert.lattice_data(result_object)
         return result_object
 
     post_processing_inputs = {}
@@ -493,7 +493,7 @@ async def _postprocess_workflow(result_object: Result) -> Result:
         result_object._status = Result.POSTPROCESSING_FAILED
         result_object._error = f"Post-processing failed: {error_msg}"
         result_object._end_time = datetime.now(timezone.utc)
-        upsert._lattice_data(result_object)
+        upsert.lattice_data(result_object)
 
         app_log.debug("Returning from _postprocess_workflow")
         return result_object
