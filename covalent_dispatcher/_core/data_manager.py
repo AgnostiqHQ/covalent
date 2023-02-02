@@ -235,6 +235,7 @@ def _register_result_object(result_object: Result):
 
 
 def finalize_dispatch(dispatch_id: str):
+    app_log.debug(f"Finalizing dispatch {dispatch_id}")
     if not STATELESS:
         del _registered_dispatches[dispatch_id]
 
