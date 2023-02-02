@@ -28,6 +28,7 @@ import signal
 import struct
 import subprocess
 import termios
+from typing import Any, Dict, List, Tuple, Union
 
 import socketio
 from fastapi import FastAPI, HTTPException, Request
@@ -35,10 +36,24 @@ from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
+from covalent._dispatcher_plugins import local_redispatch as ct_redispatch
+from covalent._results_manager.results_manager import get_result as ct_get_result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent_ui.api.v1.routes import routes
+
+
+class ResultItem(BaseModel):
+    dispatch_id: str
+    result: Any
+
+
+class RedispatchBody(BaseModel):
+    new_args: Union[Tuple[Any], List[Any]]
+    new_kwargs: Dict[str, Any]
+
 
 file_descriptor = None
 child_process_id = None
@@ -48,7 +63,7 @@ WEBHOOK_PATH = "/api/webhook"
 address = get_config("user_interface.address")
 port = str(get_config("user_interface.dev_port"))
 socket_port = str(get_config("user_interface.port"))
-origins = [f"http://{address}:{port}"]
+origins = ["*"]
 
 app_log = logger.app_log
 log_to_file = get_config("sdk.enable_logging").upper() == "TRUE"
@@ -156,3 +171,17 @@ async def handle_result_update(result_update: dict):
 async def handle_draw_request(draw_request: dict):
     await sio.emit("draw_request", draw_request)
     return {"ok": True}
+
+
+@app.post("/_api/dispatches/{dispatch_id}/redispatch")
+def redispatch(dispatch_id: str, redispatch_body: RedispatchBody):
+    new_dispatch_id = ct_redispatch(dispatch_id)(
+        *redispatch_body.new_args, **redispatch_body.new_kwargs
+    )
+    return {"new_dispatch_id": new_dispatch_id}
+
+
+@app.get("/_api/dispatches/{dispatch_id}/retrieve")
+def get_result(dispatch_id: str):
+    result = ct_get_result(dispatch_id, wait=True)
+    return ResultItem(dispatch_id=dispatch_id, result=str(result))
