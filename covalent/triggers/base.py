@@ -103,11 +103,11 @@ class BaseTrigger:
             # To continue the pending dispatch
             same_dispatch_id = self._do_redispatch(True)
             app_log.warning(f"Initiating run for pending dispatch_id: {same_dispatch_id}")
-
-        # To run new redispatch
-        new_dispatch_id = self._do_redispatch()
-        app_log.warning(f"Redispatching, new dispatch_id: {new_dispatch_id}")
-        self.new_dispatch_ids.append(new_dispatch_id)
+        else:
+            # To run new redispatch
+            new_dispatch_id = self._do_redispatch()
+            app_log.warning(f"Redispatching, new dispatch_id: {new_dispatch_id}")
+            self.new_dispatch_ids.append(new_dispatch_id)
 
     def to_dict(self):
         tr_dict = self.__dict__.copy()
