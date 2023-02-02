@@ -7,11 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Location of function to load result from the database.
+
 ### Added
 
 - TransportGraphOps class for diffing operations on transport graphs.
 - Added make derived dispatch method.
 - Apply electron updates method to _TransportGraph.
+- API method for redispatching.
+- Unit and functional tests for redispatching.
 
 ### Operations
 
