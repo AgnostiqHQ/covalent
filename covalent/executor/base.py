@@ -28,77 +28,17 @@ import io
 import os
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
+from typing import Any, Callable, ContextManager, Dict, Iterable, List
 
 import aiofiles
-
-from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
 
 from .._shared_files import TaskRuntimeError, logger
 from .._shared_files.context_managers import active_dispatch_info_manager
 from .._shared_files.util_classes import DispatchInfo
-from .._workflow.transport import TransportableObject
+from .utils.wrappers import wrapper_fn  # nopycln: import
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-
-def wrapper_fn(
-    function: TransportableObject,
-    call_before: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
-    call_after: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
-    *args,
-    **kwargs,
-):
-    """Wrapper for serialized callable.
-
-    Execute preparatory shell commands before deserializing and
-    running the callable. This is the actual function to be sent to
-    the various executors.
-
-    """
-
-    cb_retvals = {}
-    for tup in call_before:
-        serialized_fn, serialized_args, serialized_kwargs, retval_key = tup
-        cb_fn = serialized_fn.get_deserialized()
-        cb_args = serialized_args.get_deserialized()
-        cb_kwargs = serialized_kwargs.get_deserialized()
-        retval = cb_fn(*cb_args, **cb_kwargs)
-
-        # we always store cb_kwargs dict values as arrays to factor in non-unique values
-        if retval_key and retval_key in cb_retvals:
-            cb_retvals[retval_key].append(retval)
-        elif retval_key:
-            cb_retvals[retval_key] = [retval]
-
-    # if cb_retvals key only contains one item this means it is a unique (non-repeated) retval key
-    # so we only return the first element however if it is a 'files' kwarg we always return as a list
-    cb_retvals = {
-        key: value[0] if len(value) == 1 and key != RESERVED_RETVAL_KEY__FILES else value
-        for key, value in cb_retvals.items()
-    }
-
-    fn = function.get_deserialized()
-
-    new_args = [arg.get_deserialized() for arg in args]
-
-    new_kwargs = {k: v.get_deserialized() for k, v in kwargs.items()}
-
-    # Inject return values into kwargs
-    for key, val in cb_retvals.items():
-        new_kwargs[key] = val
-
-    output = fn(*new_args, **new_kwargs)
-
-    for tup in call_after:
-        serialized_fn, serialized_args, serialized_kwargs, retval_key = tup
-        ca_fn = serialized_fn.get_deserialized()
-        ca_args = serialized_args.get_deserialized()
-        ca_kwargs = serialized_kwargs.get_deserialized()
-        ca_fn(*ca_args, **ca_kwargs)
-
-    return TransportableObject(output)
 
 
 class _AbstractBaseExecutor(ABC):
@@ -349,6 +289,43 @@ class BaseExecutor(_AbstractBaseExecutor):
         """Placeholder to run nay executor specific cleanup/teardown actions"""
         pass
 
+    async def send(
+        self,
+        function_uri: str,
+        deps_uri: str,
+        call_before_uri: str,
+        call_after_uri: str,
+        args_uris: str,
+        kwargs_uris: str,
+        task_metadata: dict,
+    ):
+        # Assets are assumed to be accessible by the compute backend
+        # at the provided URIs
+
+        # The Asset Manager is responsible for uploading all assets
+        # Returns a job handle (should be JSONable)
+
+        raise NotImplementedError
+
+    async def poll(self, task_metadata: Dict, job_handle: Any):
+
+        # To be run as a background task.  A callback will be
+        # registered with the runner to invoke the receive()
+
+        return -1
+
+    async def receive(self, task_metadata: Dict, job_handle: Any):
+
+        # Returns (output_uri, stdout_uri, stderr_uri,
+        # exception_raised)
+
+        # Job should have reached a terminal state by the time this is invoked.
+
+        raise NotImplementedError
+
+    def get_upload_uri(self, task_metadata: Dict, object_key: str):
+        return ""
+
 
 class AsyncBaseExecutor(_AbstractBaseExecutor):
     """Async base executor class to be used for defining any executor
@@ -522,7 +499,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         # To be run as a background task.  A callback will be
         # registered with the runner to invoke the receive()
 
-        raise -1
+        return -1
 
     async def receive(self, task_metadata: Dict, job_handle: Any):
 

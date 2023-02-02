@@ -27,7 +27,7 @@ This is a plugin executor module; it is loaded if found and properly structured.
 
 import os
 from concurrent.futures import ProcessPoolExecutor
-from typing import Callable, Dict, List
+from typing import Any, Callable, Dict, List
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import TaskRuntimeError, logger
@@ -75,3 +75,40 @@ class LocalExecutor(BaseExecutor):
             raise TaskRuntimeError(tb)
 
         return output
+
+    async def send(
+        self,
+        function_uri: str,
+        deps_uri: str,
+        call_before_uri: str,
+        call_after_uri: str,
+        args_uris: str,
+        kwargs_uris: str,
+        task_metadata: dict,
+    ):
+        # Assets are assumed to be accessible by the compute backend
+        # at the provided URIs
+
+        # The Asset Manager is responsible for uploading all assets
+        # Returns a job handle (should be JSONable)
+
+        raise NotImplementedError
+
+    async def poll(self, task_metadata: Dict, job_handle: Any):
+
+        # To be run as a background task.  A callback will be
+        # registered with the runner to invoke the receive()
+
+        return -1
+
+    async def receive(self, task_metadata: Dict, job_handle: Any):
+
+        # Returns (output_uri, stdout_uri, stderr_uri,
+        # exception_raised)
+
+        # Job should have reached a terminal state by the time this is invoked.
+
+        raise NotImplementedError
+
+    def get_upload_uri(self, task_metadata: Dict, object_key: str):
+        return ""
