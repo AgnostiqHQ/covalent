@@ -20,7 +20,7 @@
 
 from copy import deepcopy
 from functools import wraps
-from typing import Callable
+from typing import Callable, Dict, List, Optional
 
 import requests
 
@@ -32,6 +32,37 @@ from .._workflow.lattice import Lattice
 from .base import BaseDispatcher
 
 
+def get_redispatch_request_body(
+    dispatch_id: str,
+    new_args: Optional[List] = None,
+    new_kwargs: Optional[Dict] = None,
+    replace_electrons: Optional[Dict[str, Callable]] = None,
+    reuse_previous_results: bool = False,
+) -> Dict:
+    """Get request body for re-dispatching a workflow."""
+    if new_args is None:
+        new_args = []
+    if new_kwargs is None:
+        new_kwargs = {}
+    if replace_electrons is None:
+        replace_electrons = {}
+    if new_args or new_kwargs:
+        res = get_result(dispatch_id)
+        lat = res.lattice
+        lat.build_graph(*new_args, **new_kwargs)
+        json_lattice = lat.serialize_to_json()
+    else:
+        json_lattice = None
+    updates = {k: v.electron_object.as_transportable_dict for k, v in replace_electrons.items()}
+
+    return {
+        "json_lattice": json_lattice,
+        "dispatch_id": dispatch_id,
+        "electron_updates": updates,
+        "reuse_previous_results": reuse_previous_results,
+    }
+
+
 class LocalDispatcher(BaseDispatcher):
     """
     Local dispatcher which sends the workflow to the locally running
@@ -41,9 +72,7 @@ class LocalDispatcher(BaseDispatcher):
     @staticmethod
     def dispatch(
         orig_lattice: Lattice,
-        dispatcher_addr: str = get_config("dispatcher.address")
-        + ":"
-        + str(get_config("dispatcher.port")),
+        dispatcher_addr: str = None,
     ) -> Callable:
         """
         Wrapping the dispatching functionality to allow input passing
@@ -54,11 +83,16 @@ class LocalDispatcher(BaseDispatcher):
 
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
-            dispatcher_addr: The address of the dispatcher server.
+            dispatcher_addr: The address of the dispatcher server.  If None then then defaults to the address set in Covalent's config.
 
         Returns:
             Wrapper function which takes the inputs of the workflow as arguments
         """
+
+        if dispatcher_addr is None:
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
 
         @wraps(orig_lattice)
         def wrapper(*args, **kwargs) -> str:
@@ -92,9 +126,7 @@ class LocalDispatcher(BaseDispatcher):
     @staticmethod
     def dispatch_sync(
         lattice: Lattice,
-        dispatcher_addr: str = get_config("dispatcher.address")
-        + ":"
-        + str(get_config("dispatcher.port")),
+        dispatcher_addr: str = None,
     ) -> Callable:
         """
         Wrapping the synchronous dispatching functionality to allow input
@@ -105,11 +137,16 @@ class LocalDispatcher(BaseDispatcher):
 
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
-            dispatcher_addr: The address of the dispatcher server.
+            dispatcher_addr: The address of the dispatcher server. If None then then defaults to the address set in Covalent's config.
 
         Returns:
             Wrapper function which takes the inputs of the workflow as arguments
         """
+
+        if dispatcher_addr is None:
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
 
         @wraps(lattice)
         def wrapper(*args, **kwargs) -> Result:
@@ -131,3 +168,30 @@ class LocalDispatcher(BaseDispatcher):
             )
 
         return wrapper
+
+    @staticmethod
+    def redispatch(
+        dispatch_id: str,
+        dispatcher_addr: str = None,
+        replace_electrons: Dict[str, Callable] = None,
+        reuse_previous_results: bool = False,
+    ) -> Callable:
+        if dispatcher_addr is None:
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
+
+        if replace_electrons is None:
+            replace_electrons = {}
+
+        def func(*new_args, **new_kwargs):
+            body = get_redispatch_request_body(
+                dispatch_id, new_args, new_kwargs, replace_electrons, reuse_previous_results
+            )
+
+            test_url = f"http://{dispatcher_addr}/api/redispatch"
+            r = requests.post(test_url, json=body)
+            r.raise_for_status()
+            return r.content.decode("utf-8").strip().replace('"', "")
+
+        return func

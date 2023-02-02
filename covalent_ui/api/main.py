@@ -48,7 +48,7 @@ WEBHOOK_PATH = "/api/webhook"
 address = get_config("user_interface.address")
 port = str(get_config("user_interface.dev_port"))
 socket_port = str(get_config("user_interface.port"))
-origins = [f"http://{address}:{port}"]
+origins = ["*"]
 
 app_log = logger.app_log
 log_to_file = get_config("sdk.enable_logging").upper() == "TRUE"
