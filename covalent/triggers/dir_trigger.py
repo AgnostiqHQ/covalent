@@ -49,6 +49,7 @@ class DirTrigger(BaseTrigger):
         self,
         dir_path,
         event_names,
+        batch_size=1,
         lattice_dispatch_id: str = None,
         dispatcher_addr: str = None,
         triggers_server_addr: str = None,
@@ -56,18 +57,23 @@ class DirTrigger(BaseTrigger):
         super().__init__(lattice_dispatch_id, dispatcher_addr, triggers_server_addr)
 
         self.dir_path = dir_path
+        self.batch_size = batch_size
 
         if isinstance(event_names, str):
             event_names = [event_names]
         self.event_names = event_names
 
         self.observe_blocks = False
+        self.batch_limit = 0
 
     # To dynamically attach and override "on_*" methods to the handler
     # depending on which ones are requested by the user
     def attach_methods_to_handler(self, event_names: list):
         def proxy_trigger(*args, **kwargs):
-            return self.trigger()
+            self.batch_limit += 1
+            if self.batch_limit == self.batch_size:
+                self.trigger()
+                self.batch_limit = 0
 
         for en in event_names:
             func_name = self.event_handler.supported_event_to_func_names[en]

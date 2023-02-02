@@ -46,7 +46,7 @@ class BaseTrigger:
         self.observe_blocks = True
         self.event_loop = None
 
-        self._is_internal = True
+        self.is_internal = True
 
     def register(self):
         self._register(self.to_dict(), self.triggers_server_addr)
@@ -63,7 +63,7 @@ class BaseTrigger:
         r.raise_for_status()
 
     def _get_status(self):
-        if self._is_internal:
+        if self.is_internal:
             from covalent_dispatcher._service.app import get_result
 
             return asyncio.run_coroutine_threadsafe(
@@ -78,7 +78,7 @@ class BaseTrigger:
         )["status"]
 
     def _do_redispatch(self, is_pending: bool = False):
-        if self._is_internal:
+        if self.is_internal:
             from covalent_dispatcher import run_redispatch
 
             return asyncio.run_coroutine_threadsafe(
