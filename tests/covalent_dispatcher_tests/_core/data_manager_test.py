@@ -196,6 +196,27 @@ async def test_update_node_result_filters_illegal_updates(mocker, node_status, o
 
 
 @pytest.mark.asyncio
+async def test_update_node_result_handles_keyerrors(mocker):
+    """Check that update_node_result handles invalid dispatch id or node id"""
+
+    result_object = get_mock_result()
+    node_result = {"node_id": -5, "status": RESULT_STATUS.COMPLETED}
+    mock_update_node = mocker.patch("covalent_dispatcher._dal.result.Result._update_node")
+    node_info = {"type": "function", "sub_dispatch_id": "", "status": RESULT_STATUS.RUNNING}
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_electron_attributes", side_effect=KeyError()
+    )
+
+    mock_notify = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.notify_node_status",
+    )
+
+    await update_node_result(result_object.dispatch_id, node_result)
+
+    mock_notify.assert_not_awaited()
+
+
+@pytest.mark.asyncio
 async def test_update_node_result_handles_subl_exceptions(mocker):
     """Check that update_node_result pushes the correct status updates"""
 

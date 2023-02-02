@@ -404,6 +404,9 @@ def test_get_result_object(test_db, mocker):
     res_obj = get_result_object("mock_dispatch", True)
     assert res_obj.lattice.transport_graph.bare
 
+    with pytest.raises(KeyError):
+        get_result_object("nonexistent_dispatch")
+
 
 def test_get_failed_nodes(test_db, mocker):
     from covalent._workflow.transport import TransportableObject

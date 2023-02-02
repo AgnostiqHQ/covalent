@@ -372,5 +372,5 @@ def get_result_object(dispatch_id: str, bare: bool = False) -> Result:
             session.query(models.Lattice).where(models.Lattice.dispatch_id == dispatch_id).first()
         )
         if not record:
-            raise RuntimeError(f"Dispatch {dispatch_id} not found")
+            raise KeyError(f"Dispatch {dispatch_id} not found")
         return Result(record, bare)

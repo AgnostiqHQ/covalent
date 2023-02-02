@@ -91,6 +91,7 @@ def generate_node_result(
 async def update_node_result(dispatch_id, node_result):
     app_log.debug("Updating node result (run_planned_workflow).")
     old_status = RESULT_STATUS.NEW_OBJECT
+    valid_update = True
     try:
         node_id = node_result["node_id"]
         node_status = node_result["status"]
@@ -130,12 +131,20 @@ async def update_node_result(dispatch_id, node_result):
                 update_partial = functools.partial(result_object._update_node, **node_result)
                 await _run_in_executor(update_partial)
 
+    except KeyError as ex:
+        valid_update = False
+        app_log.exception(f"Error persisting node update: {ex}")
+
     except Exception as ex:
         app_log.exception(f"Error persisting node update: {ex}")
         sub_dispatch_id = None
         node_result["status"] = Result.FAILED
 
     finally:
+        if not valid_update:
+            # Bail out if invalid dispatch id or node id
+            return
+
         node_id = node_result["node_id"]
         node_status = node_result["status"]
         dispatch_id = dispatch_id
