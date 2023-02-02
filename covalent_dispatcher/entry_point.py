@@ -29,12 +29,7 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-SLEEP = 5
-
-
-async def run_dispatcher(
-    json_lattice: str, disable_run: bool = False, pending_dispatch_id: str = None
-):
+async def run_dispatcher(json_lattice: str, disable_run: bool = False):
     """
     Run the dispatcher from the lattice asynchronously using Dask.
     Assign a new dispatch id to the result object and return it.
@@ -49,25 +44,28 @@ async def run_dispatcher(
 
     from ._core import make_dispatch, run_dispatch
 
-    if pending_dispatch_id:
-        run_dispatch(pending_dispatch_id)
-        app_log.warning("Submitted pending result object to run_workflow.")
-        return pending_dispatch_id
+    dispatch_id = make_dispatch(json_lattice)
 
-    else:
-        dispatch_id = make_dispatch(json_lattice)
+    if not disable_run:
+        run_dispatch(dispatch_id)
+        app_log.debug("Submitted result object to run_workflow.")
 
-        if not disable_run:
-            run_dispatch(dispatch_id)
-            app_log.debug("Submitted result object to run_workflow.")
-
-        return dispatch_id
+    return dispatch_id
 
 
 async def run_redispatch(
-    dispatch_id: str, json_lattice: str, electron_updates: dict, reuse_previous_results: bool
+    dispatch_id: str,
+    json_lattice: str,
+    electron_updates: dict,
+    reuse_previous_results: bool,
+    is_pending: bool,
 ):
     from ._core import make_derived_dispatch, run_dispatch
+
+    if is_pending:
+        run_dispatch(dispatch_id)
+        app_log.warning("Submitted pending result object to run_workflow.")
+        return dispatch_id
 
     redispatch_id = make_derived_dispatch(
         dispatch_id, json_lattice, electron_updates, reuse_previous_results

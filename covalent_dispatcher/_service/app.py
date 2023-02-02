@@ -72,12 +72,10 @@ async def redispatch(request: Request) -> str:
     json_lattice = data["json_lattice"]
     electron_updates = data["electron_updates"]
     reuse_previous_results = data["reuse_previous_results"]
+    is_pending = data["is_pending"]
 
     redispatch_id = await dispatcher.run_redispatch(
-        dispatch_id,
-        json_lattice,
-        electron_updates,
-        reuse_previous_results,
+        dispatch_id, json_lattice, electron_updates, reuse_previous_results, is_pending
     )
 
     return redispatch_id
