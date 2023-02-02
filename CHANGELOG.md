@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Location of function to load result from the database.
+### Removed
+
+- References to specific IBMQ hub/group/project in tutorial 5
 
 ### Added
 
