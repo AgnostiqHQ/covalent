@@ -189,3 +189,5 @@ class LocalDispatcher(BaseDispatcher):
         for tr_dict in triggers_data:
             tr_dict["lattice_dispatch_id"] = dispatch_id
             BaseTrigger._register(tr_dict)
+
+    # TODO: Implement stop triggers here

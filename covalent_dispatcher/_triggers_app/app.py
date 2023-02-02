@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import inspect
 from concurrent.futures import ThreadPoolExecutor
 
 from fastapi import APIRouter, FastAPI, Request
@@ -41,36 +42,57 @@ thread_pool = ThreadPoolExecutor()
 # TODO: Verify this
 
 
+def init_trigger(tr_dict: dict) -> BaseTrigger:
+    tr_name = tr_dict.pop("name")
+    tr_class = available_triggers[tr_name]
+
+    # Handling required constructor params
+    sig = inspect.signature(tr_class.__init__)
+
+    init_params = {}
+    for k, v in tr_dict.copy().items():
+        if sig.parameters.get(k):
+            init_params[k] = v
+            tr_dict.pop(k)
+
+    trigger = tr_class(**init_params)
+
+    # Setting all other values
+    for k, v in tr_dict.items():
+        setattr(trigger, k, v)
+
+    return trigger
+
+
 @router.post("/triggers/register")
 async def register_and_observe(request: Request):
-    trigger_data = await request.json()
-    lattice_dispatch_id, name, dir_path, event_names = (
-        trigger_data["lattice_dispatch_id"],
-        trigger_data["name"],
-        trigger_data["dir_path"],
-        trigger_data["event_names"],
-    )
-    trigger: BaseTrigger = available_triggers[name](dir_path, event_names)
+    trigger_dict = await request.json()
+
+    trigger = init_trigger(trigger_dict)
 
     if trigger.observe_blocks:
-        fut = thread_pool.submit(trigger.observe)
+        thread_pool.submit(trigger.observe)
     else:
         trigger.observe()
 
-    active_triggers[lattice_dispatch_id] = trigger
+    lattice_did = trigger.lattice_dispatch_id
 
-    app_log.warning(f"Started trigger with id: {lattice_dispatch_id}")
+    if active_triggers.get():
+        active_triggers[lattice_did].append(trigger)
+    else:
+        active_triggers[lattice_did] = [trigger]
+
+    app_log.warning(f"Started trigger with id: {lattice_did}")
 
 
 @router.post("/triggers/stop_observe")
 async def stop_observe(request: Request):
     dispatch_ids = await request.json()
 
-    triggers = [(d_id, active_triggers[d_id]) for d_id in dispatch_ids]
-
-    for d_id, trigger in triggers:
-        trigger.stop()
-        app_log.warning(f"Stopped observing on trigger(s) with lattice dispatch id: {d_id}")
+    for d_id in dispatch_ids:
+        for trigger in active_triggers[d_id]:
+            trigger.stop()
+            app_log.warning(f"Stopped observing on trigger(s) with lattice dispatch id: {d_id}")
 
 
 triggers_only_app.include_router(router, prefix="/api", tags=["Triggers"])

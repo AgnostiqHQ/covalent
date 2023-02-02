@@ -34,9 +34,7 @@ log_stack_info = logger.log_stack_info
 
 
 class DirEventHandler(FileSystemEventHandler):
-    def __init__(self, lattice_dispatch_id) -> None:
-        self.lattice_dispatch_id = lattice_dispatch_id
-
+    def __init__(self) -> None:
         self.supported_event_to_func_names = {
             "created": "on_created",
             "deleted": "on_deleted",
