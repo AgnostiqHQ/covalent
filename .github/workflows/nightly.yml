@@ -22,7 +22,7 @@ name: nightly
 
 on:
   schedule:
-    - cron: "0 * * * *"
+    - cron: "0 4 * * *"
 
 jobs:
   license:
@@ -122,3 +122,26 @@ jobs:
           SLACK_USERNAME: "CovalentOpsBot"
           SLACK_MESSAGE: ${{ env.SLACK_MSG }}
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+
+  executor_base_images:
+    name: Build Executor base images
+    runs-on: ubuntu-latest
+    needs: release
+    strategy:
+      matrix:
+        repo:
+          [
+            "AgnostiqHQ/covalent-aws-plugins",
+            "AgnostiqHQ/covalent-awslambda-plugin",
+            "AgnostiqHQ/covalent-braket-plugin",
+          ]
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Build executor_base_images
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+          repo: ${{ matrix.repo }}
+          event-type: "prerelease"

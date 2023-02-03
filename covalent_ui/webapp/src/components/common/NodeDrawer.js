@@ -41,6 +41,7 @@ import {
   statusColor,
   statusIcon,
   statusLabel,
+  getLocalStartTime,
 } from '../../utils/misc'
 import Runtime from '../dispatches/Runtime'
 import SyntaxHighlighter from './SyntaxHighlighter'
@@ -178,7 +179,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
               mb: 2,
             }}
           >
-            {electronDetailIsFetching ? (
+            {!electronDetail && electronDetailIsFetching ? (
               <Skeleton data-testid="node__box_skl" width={150} />
             ) : (
               <Typography sx={{ color: '#A5A6F6', overflowWrap: 'anywhere' }}>
@@ -197,7 +198,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
           {electronDetail.status && (
             <>
               <Heading>Status</Heading>
-              {electronDetailIsFetching ? (
+              {!electronDetail && electronDetailIsFetching ? (
                 <Skeleton data-testid="node__status_skl" width={150} />
               ) : (
                 <Box
@@ -221,7 +222,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
 
           {/* Description */}
           {electronDetail.description &&
-            (electronDetailIsFetching ? (
+            (!electronDetail && electronDetailIsFetching ? (
               <Skeleton data-testid="node__desc_skl" />
             ) : (
               <>
@@ -237,12 +238,15 @@ const NodeDrawer = ({ node, dispatchId }) => {
           {hasStarted && (
             <>
               <Heading>Started{hasEnded ? ' - Ended' : ''}</Heading>
-              {electronDetailIsFetching ? (
+              {!electronDetail && electronDetailIsFetching ? (
                 <Skeleton data-testid="node__start_time" />
               ) : (
                 <Typography fontSize="body2.fontSize" color="text.tertiary">
-                  {formatDate(electronDetail.started_at)}
-                  {hasEnded && ` - ${formatDate(electronDetail.ended_at)}`}
+                  {formatDate(getLocalStartTime(electronDetail.started_at))}
+                  {hasEnded &&
+                    ` - ${formatDate(
+                      getLocalStartTime(electronDetail.ended_at)
+                    )}`}
                 </Typography>
               )}
             </>
@@ -253,7 +257,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
           {electronDetail.status && electronDetail.status !== 'NEW_OBJECT' && (
             <>
               <Heading>Runtime</Heading>
-              {electronDetailIsFetching ? (
+              {!electronDetail && electronDetailIsFetching ? (
                 <Skeleton data-testid="node__run_skeleton" />
               ) : (
                 <Runtime
@@ -277,7 +281,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
                 bgcolor: theme.palette.background.outRunBg,
                 cursor: 'pointer',
               })}
-              isFetching={electronInputResultIsFetching}
+              isFetching={!electronInputResult && electronInputResultIsFetching}
             />
           )}
 
@@ -290,7 +294,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
                 bgcolor: theme.palette.background.outRunBg,
                 cursor: 'pointer',
               })}
-              isFetching={electronResultDataIsFetching}
+              isFetching={!electronResultData && electronResultDataIsFetching}
             />
           )}
 
@@ -301,7 +305,9 @@ const NodeDrawer = ({ node, dispatchId }) => {
               sx={(theme) => ({
                 bgcolor: theme.palette.background.outRunBg,
               })}
-              isFetching={electronExecutorResultIsFetching}
+              isFetching={
+                !electronExecutorResult && electronExecutorResultIsFetching
+              }
             />
           )}
 
@@ -309,7 +315,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
 
           {/* Source */}
 
-          {electronFunctionResultIsFetching ? (
+          {!electronFunctionResult && electronFunctionResultIsFetching ? (
             <Skeleton sx={{ height: '100px' }} />
           ) : (
             <>

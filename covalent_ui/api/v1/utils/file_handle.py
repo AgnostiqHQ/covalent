@@ -48,9 +48,7 @@ def validate_data(unpickled_object):
         if not (unpickled_object):
             return ""
         else:
-            list_str = ""
-            for obj in unpickled_object:
-                list_str += obj
+            list_str = "".join([obj for obj in unpickled_object])
             return list_str
     if isinstance(unpickled_object, dict):
         args_array = []

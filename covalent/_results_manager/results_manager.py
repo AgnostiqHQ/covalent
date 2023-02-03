@@ -20,6 +20,7 @@
 
 
 import codecs
+import contextlib
 import os
 from typing import Dict, List, Optional, Union
 
@@ -38,13 +39,14 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-def get_result(dispatch_id: str, wait: bool = False) -> Result:
+def get_result(dispatch_id: str, wait: bool = False, dispatcher_addr: str = None) -> Result:
     """
     Get the results of a dispatch from a file.
 
     Args:
         dispatch_id: The dispatch id of the result.
         wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
+        dispatcher_addr: Dispatcher server address, if None then defaults to the address set in Covalent's config.
 
     Returns:
         The result from the file.
@@ -55,6 +57,7 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
         result = _get_result_from_dispatcher(
             dispatch_id,
             wait,
+            dispatcher_addr,
         )
         result_object = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
 
@@ -71,7 +74,7 @@ def get_result(dispatch_id: str, wait: bool = False) -> Result:
 def _get_result_from_dispatcher(
     dispatch_id: str,
     wait: bool = False,
-    dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
+    dispatcher_addr: str = None,
     status_only: bool = False,
 ) -> Dict:
 
@@ -82,7 +85,7 @@ def _get_result_from_dispatcher(
         dispatch_id: The dispatch id of the result.
         wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
         status_only: If true, only returns result status, not the full result object, default is False.
-        dispatcher: Dispatcher server address, defaults to the address set in covalent.config.
+        dispatcher_addr: Dispatcher server address, if None then defaults to the address set in Covalent's config.
 
     Returns:
         The result object from the server.
@@ -91,12 +94,17 @@ def _get_result_from_dispatcher(
         MissingLatticeRecordError: If the result is not found.
     """
 
+    if dispatcher_addr is None:
+        dispatcher_addr = (
+            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+        )
+
     retries = int(EXTREME) if wait else 5
 
     adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
     http = requests.Session()
     http.mount("http://", adapter)
-    url = "http://" + dispatcher + "/api/result/" + dispatch_id
+    url = f"http://{dispatcher_addr}/api/result/{dispatch_id}"
     response = http.get(
         url,
         params={"wait": bool(int(wait)), "status_only": status_only},
@@ -104,13 +112,12 @@ def _get_result_from_dispatcher(
     if response.status_code == 404:
         raise MissingLatticeRecordError
     response.raise_for_status()
-    result = response.json()
-    return result
+    return response.json()
 
 
 def _delete_result(
     dispatch_id: str,
-    results_dir: str = get_config("dispatcher.results_dir"),
+    results_dir: str = None,
     remove_parent_directory: bool = False,
 ) -> None:
     """
@@ -128,6 +135,9 @@ def _delete_result(
         FileNotFoundError: If the result file is not found.
     """
 
+    if results_dir is None:
+        results_dir = os.environ.get("COVALENT_DATA_DIR") or get_config("dispatcher.results_dir")
+
     import shutil
 
     result_folder_path = os.path.join(results_dir, f"{dispatch_id}")
@@ -135,10 +145,8 @@ def _delete_result(
     if os.path.exists(result_folder_path):
         shutil.rmtree(result_folder_path, ignore_errors=True)
 
-    try:
+    with contextlib.suppress(OSError):
         os.rmdir(results_dir)
-    except OSError:
-        pass
 
     if remove_parent_directory:
         shutil.rmtree(results_dir, ignore_errors=True)

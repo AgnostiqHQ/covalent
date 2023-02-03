@@ -1,10 +1,4 @@
 autodocsumm==0.2.6
-covalent-awsbatch-plugin==0.9.0rc0
-covalent-awslambda-plugin==0.3.2rc0
-covalent-braket-plugin==0.3.0rc0
-covalent-ecs-plugin==0.7.0rc0
-covalent-slurm-plugin
-covalent-ssh-plugin
 docutils
 furo>=2022.6.21
 ipython>=8.4.0
@@ -20,6 +14,7 @@ sphinx-autodoc-typehints
 sphinx-automodapi==0.13
 sphinx-click
 sphinx-copybutton==0.3.3
+sphinx-design
 sphinx-gallery==0.9.0
 sphinx-inline-tabs==2021.3.28b7
 sphinx-panels==0.6.0

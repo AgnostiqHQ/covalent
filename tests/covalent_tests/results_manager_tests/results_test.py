@@ -20,6 +20,7 @@
 
 """Unit tests for the Result object."""
 
+import os
 from pathlib import Path
 
 import pytest
@@ -29,7 +30,10 @@ from covalent._results_manager.result import Result
 from covalent._workflow.lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
 
-TEMP_RESULTS_DIR = "/tmp/results"
+# TEMP_RESULTS_DIR = "/tmp/results"
+TEMP_RESULTS_DIR = os.environ.get("COVALENT_DATA_DIR") or os.path.join(
+    os.environ["HOME"], ".local/share/covalent/data"
+)
 
 
 def get_mock_result() -> Result:
@@ -43,7 +47,7 @@ def get_mock_result() -> Result:
         print("Error!", file=sys.stderr)
         return x
 
-    @ct.lattice(results_dir=TEMP_RESULTS_DIR)
+    @ct.lattice
     def pipeline(x):
         res1 = task(x)
         res2 = task(res1)
@@ -52,7 +56,8 @@ def get_mock_result() -> Result:
     pipeline.build_graph(x="absolute")
     received_workflow = LatticeClass.deserialize_from_json(pipeline.serialize_to_json())
     result_object = Result(
-        received_workflow, pipeline.metadata["results_dir"], "pipeline_workflow"
+        received_workflow,
+        "pipeline_workflow",  # pipeline.metadata["results_dir"], "pipeline_workflow"
     )
 
     return result_object
@@ -71,7 +76,7 @@ def result_1():
     def task_2(x, y):
         return x + y
 
-    @ct.lattice(executor=le, workflow_executor=le, results_dir=TEMP_RESULTS_DIR)
+    @ct.lattice(executor=le, workflow_executor=le)
     def workflow_1(a, b):
         """Docstring"""
         res_1 = task_1(a, b)
@@ -80,10 +85,29 @@ def result_1():
     Path(f"{TEMP_RESULTS_DIR}/dispatch_1").mkdir(parents=True, exist_ok=True)
     workflow_1.build_graph(a=1, b=2)
     received_lattice = LatticeClass.deserialize_from_json(workflow_1.serialize_to_json())
-    result = Result(
-        lattice=received_lattice, results_dir=TEMP_RESULTS_DIR, dispatch_id="dispatch_1"
-    )
-    result.lattice.metadata["results_dir"] = TEMP_RESULTS_DIR
+    result = Result(lattice=received_lattice, dispatch_id="dispatch_1")
+    #    result.lattice.metadata["results_dir"] = TEMP_RESULTS_DIR
+    result._initialize_nodes()
+    return result
+
+
+@pytest.fixture
+def result_2():
+    @ct.electron(executor=le)
+    def task_1(x, y):
+        raise RuntimeError("error")
+
+    @ct.lattice(executor=le, workflow_executor=le)
+    def workflow_1(a, b):
+        """Docstring"""
+        res_1 = task_1(a, b)
+        return res_1
+
+    Path(f"{TEMP_RESULTS_DIR}/dispatch_1").mkdir(parents=True, exist_ok=True)
+    workflow_1.build_graph(a=1, b=2)
+    received_lattice = LatticeClass.deserialize_from_json(workflow_1.serialize_to_json())
+    result = Result(lattice=received_lattice, dispatch_id="dispatch_1")
+    #    result.lattice.metadata["results_dir"] = TEMP_RESULTS_DIR
     result._initialize_nodes()
     return result
 
@@ -101,6 +125,20 @@ def test_get_all_node_results(result_1, mocker):
             assert data_row["node_name"] == "task_1"
         elif data_row["node_id"] == 1:
             assert data_row["node_name"] == ":parameter:1"
+
+
+def test_get_failed_nodes(result_1, mocker):
+    """Test result method to get all failed nodes"""
+    result_1.lattice.transport_graph.set_node_value(0, "status", Result.FAILED)
+    result_1.lattice.transport_graph.set_node_value(1, "status", Result.COMPLETED)
+    result_1.lattice.transport_graph.set_node_value(2, "status", Result.COMPLETED)
+    assert result_1._get_failed_nodes() == [(0, "task_1")]
+
+
+def test_str_result(result_2, mocker):
+    """Test result __str__ method"""
+    s = str(result_2)
+    assert "task_1" in s
 
 
 def test_result_root_dispatch_id(result_1):
@@ -133,7 +171,7 @@ def test_result_post_process(
         return x
 
     @ct.lattice
-    def compute_energy():
+    def compute_energy(n):
         N2 = construct_n_molecule(1)
         e_N2 = compute_system_energy(N2)
 
@@ -142,10 +180,12 @@ def test_result_post_process(
 
         relaxed_slab = get_relaxed_slab(3)
         e_relaxed_slab = compute_system_energy(relaxed_slab)
+        for i in range(n):
+            pass
 
         return (N2, e_N2, slab, e_slab, relaxed_slab, e_relaxed_slab)
 
-    compute_energy.build_graph()
+    compute_energy.build_graph(3)
 
     compute_energy = LatticeClass.deserialize_from_json(compute_energy.serialize_to_json())
 
@@ -165,7 +205,7 @@ def test_result_post_process(
         k: ct.TransportableObject.make_transportable(v) for k, v in node_outputs.items()
     }
 
-    res = Result(compute_energy, compute_energy.metadata["results_dir"])
+    res = Result(compute_energy)
     res._initialize_nodes()
 
     for i, v in enumerate(encoded_node_outputs.values()):
@@ -177,4 +217,12 @@ def test_result_post_process(
 
     execution_result = res.post_process()
 
-    assert execution_result == compute_energy()
+    assert execution_result == compute_energy(3)
+
+
+def test_update_node(result_1, mocker):
+    result_1._update_node(node_id=0, status=Result.COMPLETED, sub_dispatch_id="subdispatch")
+
+    tg = result_1.lattice.transport_graph
+    assert tg.get_node_value(0, "sub_dispatch_id") == "subdispatch"
+    assert tg.get_node_value(0, "status") == Result.COMPLETED

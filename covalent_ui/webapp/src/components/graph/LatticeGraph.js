@@ -19,7 +19,7 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
-import { useEffect, useRef, useState, createRef } from 'react'
+import { useEffect, useRef, useState, createRef, memo, useMemo } from 'react'
 import { useScreenshot, createFileName } from "use-react-screenshot"
 import ReactFlow, {
   MiniMap,
@@ -27,8 +27,7 @@ import ReactFlow, {
   getOutgoers,
   isEdge,
 } from 'react-flow-renderer'
-import ElectronNode from './ElectronNode'
-import { NODE_TEXT_COLOR } from './ElectronNode'
+import { NODE_TEXT_COLOR, ElectronNode } from './ElectronNode'
 import ParameterNode from './ParameterNode'
 import DirectedEdge from './DirectedEdge'
 import layout from './Layout'
@@ -151,55 +150,90 @@ const LatticeGraph = ({
 
   useEffect(() => {
     if (screen) {
-      var svgElements = ref_chart.current.querySelectorAll('svg');
+      var svgElements = ref_chart.current.querySelectorAll('svg')
       svgElements.forEach(function (item) {
-        item.style.marginBottom = '14px';
-      });
-      takeScreenShot(ref_chart.current).then(download);
+        item.style.marginBottom = '14px'
+      })
+      takeScreenShot(ref_chart.current).then(download)
       svgElements.forEach(function (item) {
-        item.style.marginBottom = '0px';
-      });
-      setScreen(false);
+        item.style.marginBottom = '0px'
+      })
+      setScreen(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen]);
+  }, [screen])
 
-
-  const ref_chart = createRef(null);
+  const ref_chart = createRef(null)
 
   // eslint-disable-next-line no-unused-vars
   const [image, takeScreenShot] = useScreenshot({
-    type: "image/jpeg",
+    type: 'image/jpeg',
     quality: 1.0,
-  });
+  })
 
-  const download = (image, { name = dispatchId, extension = "jpg" } = {}) => {
-    const a = document.createElement("a");
-    a.href = image;
-    a.download = createFileName(extension, name);
-    a.click();
-  };
-
-
-  // highlight links of selected nodes
-  const getAllIncomers = (node, elements) => {
-    return getIncomers(node, elements).reduce(
-      (memo, incomer) => [
-        ...memo,
-        incomer,
-        ...getAllIncomers(incomer, elements),
-      ],
-      []
-    )
+  const download = (image, { name = dispatchId, extension = 'jpg' } = {}) => {
+    const a = document.createElement('a')
+    a.href = image
+    a.download = createFileName(extension, name)
+    a.click()
   }
 
-  const getAllOutgoers = (node, elements) => {
-    return getOutgoers(node, elements).reduce(
-      (memo, outgoer) => [
-        ...memo,
-        outgoer,
-        ...getAllOutgoers(outgoer, elements),
-      ],
+  // highlight links of selected nodes
+  // const getAllIncomers = (node, elements) => {
+  //   return getIncomers(node, elements).reduce(
+  //     (memo, incomer) => [
+  //       ...memo,
+  //       incomer,
+  //       ...getAllIncomers(incomer, elements),
+  //     ],
+  //     []
+  //   )
+  // }
+
+  const getAllIncomers = (node, elements, prevIncomers = []) => {
+    const incomers = getIncomers(node, elements);
+    const result = incomers.reduce(
+      (memo, incomer) => {
+        memo.push(incomer);
+
+        if ((prevIncomers.findIndex(n => n.id === incomer.id) === -1)) {
+          prevIncomers.push(incomer);
+
+          getAllIncomers(incomer, elements, prevIncomers).forEach((foundNode) => {
+            memo.push(foundNode);
+
+            if ((prevIncomers.findIndex(n => n.id === foundNode.id) === -1)) {
+              prevIncomers.push(incomer);
+
+            }
+          });
+        }
+        return memo;
+      },
+      []
+    );
+    return result;
+  }
+
+  const getAllOutgoers = (node, elements, prevOutgoers = []) => {
+    const outgoers = getOutgoers(node, elements);
+    return outgoers.reduce(
+      (memo, outgoer) => {
+        memo.push(outgoer);
+
+        if ((prevOutgoers.findIndex(n => n.id === outgoer.id) === -1)) {
+          prevOutgoers.push(outgoer);
+
+          getAllOutgoers(outgoer, elements, prevOutgoers).forEach((foundNode) => {
+            memo.push(foundNode);
+
+            if ((prevOutgoers.findIndex(n => n.id === foundNode.id) === -1)) {
+              prevOutgoers.push(foundNode);
+            }
+          });
+        }
+        return memo;
+      },
       []
     )
   }
@@ -243,6 +277,7 @@ const LatticeGraph = ({
     }
   }
 
+
   useEffect(() => {
     if (!hasSelectedNode) resetNodeStyles()
   }, [hasSelectedNode])
@@ -263,6 +298,9 @@ const LatticeGraph = ({
     })
   }
 
+  const nodeTypes = useMemo(() => ({ electron: ElectronNode, parameter: ParameterNode }), []);
+  const edgeTypes = useMemo(() => ({ directed: DirectedEdge }), []);
+
   return (
     <>
       {elements?.length > 0 && (
@@ -270,8 +308,8 @@ const LatticeGraph = ({
           <ReactFlow
             ref={ref_chart}
             data-testid="lattice__graph"
-            nodeTypes={{ electron: ElectronNode, parameter: ParameterNode }}
-            edgeTypes={{ directed: DirectedEdge }}
+            nodeTypes={nodeTypes}
+            edgeTypes={edgeTypes}
             nodesDraggable={nodesDraggable}
             nodesConnectable={false}
             elements={elements}
@@ -350,4 +388,4 @@ const LatticeGraph = ({
   )
 }
 
-export default LatticeGraph
+export default memo(LatticeGraph)

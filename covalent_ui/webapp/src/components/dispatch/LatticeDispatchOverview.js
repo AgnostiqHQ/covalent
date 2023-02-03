@@ -29,7 +29,7 @@ import {
 } from '@mui/material'
 import { useSelector, useDispatch } from 'react-redux'
 import React, { useEffect } from 'react'
-import { formatDate, truncateMiddle } from '../../utils/misc'
+import { formatDate, truncateMiddle, getLocalStartTime } from '../../utils/misc'
 import CopyButton from '../common/CopyButton'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import Heading from '../common/Heading'
@@ -99,12 +99,13 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       {hasStarted && (
         <>
           <Heading>Started{hasEnded ? ' - Ended' : ''}</Heading>
-          {isFetching ? (
+          {!result && isFetching ? (
             <Skeleton />
           ) : (
             <Typography fontSize="body2.fontSize">
-              {formatDate(result?.started_at)}
-              {hasEnded && ` - ${formatDate(result?.ended_at)}`}
+              {formatDate(getLocalStartTime(result?.started_at))}
+              {hasEnded &&
+                ` - ${formatDate(getLocalStartTime(result?.ended_at))}`}
             </Typography>
           )}
         </>
@@ -112,7 +113,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
 
       {/* Runtime */}
       <Heading>Runtime</Heading>
-      {isFetching ? (
+      {!result && isFetching ? (
         <Skeleton />
       ) : (
         <Runtime startTime={result?.started_at} endTime={result?.ended_at} />
@@ -120,7 +121,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
 
       {/* Directory */}
       <Heading>Directory</Heading>
-      {isFetching ? (
+      {!result && isFetching ? (
         <Skeleton />
       ) : (
         <Typography
@@ -160,20 +161,22 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       )}
 
       {/* Result */}
-      {Object.keys(drawerResult).length !== 0 && result.status === 'COMPLETED' && (
-        <>
-          <ResultSection
-            isFetching={
-              drawerResultListFetching && Object.keys(drawerResult).length === 0
-            }
-            sx={(theme) => ({
-              bgcolor: theme.palette.background.outRunBg,
-              cursor: 'pointer',
-            })}
-            results={drawerResult}
-          />
-        </>
-      )}
+      {Object.keys(drawerResult).length !== 0 &&
+        result.status === 'COMPLETED' && (
+          <>
+            <ResultSection
+              isFetching={
+                drawerResultListFetching &&
+                Object.keys(drawerResult).length === 0
+              }
+              sx={(theme) => ({
+                bgcolor: theme.palette.background.outRunBg,
+                cursor: 'pointer',
+              })}
+              results={drawerResult}
+            />
+          </>
+        )}
 
       {/* Executor */}
       {Object.keys(drawerExecutorDetail).length !== 0 && (

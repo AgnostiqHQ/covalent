@@ -30,6 +30,7 @@ import cloudpickle
 import networkx as nx
 
 from .._shared_files.defaults import parameter_prefix
+from .._shared_files.util_classes import RESULT_STATUS
 
 
 class TransportableObject:
@@ -241,7 +242,7 @@ def encode_metadata(metadata: dict) -> dict:
     if "executor" in metadata:
         if "executor_data" not in metadata:
             encoded_metadata["executor_data"] = {}
-        if not isinstance(metadata["executor"], str):
+        if metadata["executor"] is not None and not isinstance(metadata["executor"], str):
             encoded_executor = metadata["executor"].to_dict()
             encoded_metadata["executor"] = encoded_executor["short_name"]
             encoded_metadata["executor_data"] = encoded_executor
@@ -249,27 +250,32 @@ def encode_metadata(metadata: dict) -> dict:
     if "workflow_executor" in metadata:
         if "workflow_executor_data" not in metadata:
             encoded_metadata["workflow_executor_data"] = {}
-        if not isinstance(metadata["workflow_executor"], str):
+        if metadata["workflow_executor"] is not None and not isinstance(
+            metadata["workflow_executor"], str
+        ):
             encoded_wf_executor = metadata["workflow_executor"].to_dict()
             encoded_metadata["workflow_executor"] = encoded_wf_executor["short_name"]
             encoded_metadata["workflow_executor_data"] = encoded_wf_executor
 
     # Bash Deps, Pip Deps, Env Deps, etc
     if "deps" in metadata:
-        for dep_type, dep_object in metadata["deps"].items():
-            if not isinstance(dep_object, dict):
-                encoded_metadata["deps"][dep_type] = dep_object.to_dict()
+        if metadata["deps"] is not None:
+            for dep_type, dep_object in metadata["deps"].items():
+                if dep_object and not isinstance(dep_object, dict):
+                    encoded_metadata["deps"][dep_type] = dep_object.to_dict()
 
     # call_before/after
     if "call_before" in metadata:
-        for i, dep in enumerate(metadata["call_before"]):
-            if not isinstance(dep, dict):
-                encoded_metadata["call_before"][i] = dep.to_dict()
+        if metadata["call_before"] is not None:
+            for i, dep in enumerate(metadata["call_before"]):
+                if not isinstance(dep, dict):
+                    encoded_metadata["call_before"][i] = dep.to_dict()
 
     if "call_after" in metadata:
-        for i, dep in enumerate(metadata["call_after"]):
-            if not isinstance(dep, dict):
-                encoded_metadata["call_after"][i] = dep.to_dict()
+        if metadata["call_after"] is not None:
+            for i, dep in enumerate(metadata["call_after"]):
+                if not isinstance(dep, dict):
+                    encoded_metadata["call_after"][i] = dep.to_dict()
 
     return encoded_metadata
 
@@ -293,6 +299,18 @@ class _TransportGraph:
 
         # IDs of nodes modified during the workflow run
         self.dirty_nodes = []
+
+        self._default_node_attrs = {
+            "start_time": None,
+            "end_time": None,
+            "status": RESULT_STATUS.NEW_OBJECT,
+            "output": None,
+            "error": None,
+            "sub_dispatch_id": None,
+            "sublattice_result": None,
+            "stdout": None,
+            "stderr": None,
+        }
 
     def add_node(self, name: str, function: Callable, metadata: Dict, **attr) -> int:
         """
@@ -434,6 +452,40 @@ class _TransportGraph:
 
         return self._graph.copy()
 
+    def reset_node(self, node_id: int) -> None:
+        """Reset node values to starting state."""
+        for node_attr, default_val in self._default_node_attrs.items():
+            self.set_node_value(node_id, node_attr, default_val)
+
+    def _replace_node(self, node_id: int, new_attrs: Dict[str, Any]) -> None:
+        """Replace node data with new attribute values and flag descendants (used in re-dispatching)."""
+        metadata = self.get_node_value(node_id, "metadata")
+        metadata.update(new_attrs["metadata"])
+
+        serialized_callable = TransportableObject.from_dict(new_attrs["function"])
+        self.set_node_value(node_id, "function", serialized_callable)
+        self.set_node_value(node_id, "function_string", new_attrs["function_string"])
+        self.set_node_value(node_id, "name", new_attrs["name"])
+        self._reset_descendants(node_id)
+
+    def _reset_descendants(self, node_id: int) -> None:
+        """Reset node and all its descendants to starting state."""
+        try:
+            if self.get_node_value(node_id, "status") == RESULT_STATUS.NEW_OBJECT:
+                return
+        except Exception:
+            return
+        self.reset_node(node_id)
+        for successor in self._graph.neighbors(node_id):
+            self._reset_descendants(successor)
+
+    def apply_electron_updates(self, electron_updates: Dict[str, Callable]) -> None:
+        """Replace transport graph node data based on the electrons that need to be updated during re-dispatching."""
+        for n in self._graph.nodes:
+            name = self.get_node_value(n, "name")
+            if name in electron_updates:
+                self._replace_node(n, electron_updates[name])
+
     def serialize(self, metadata_only: bool = False) -> bytes:
         """
         Convert transport graph object to JSON to be used in the workflow scheduler.
@@ -496,7 +548,7 @@ class _TransportGraph:
         Returns:
             str: json string representation of transport graph
 
-        Note: serialize_to_json converts metadata objects into dictionary represetations.
+        Note: serialize_to_json converts metadata objects into dictionary representations.
         """
 
         # Convert networkx.DiGraph to a format that can be converted to json .

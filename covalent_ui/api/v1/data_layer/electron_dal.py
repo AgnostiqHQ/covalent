@@ -61,11 +61,11 @@ class Electrons:
                 Electron.call_before_filename,
                 Electron.call_after_filename,
                 Electron.stderr_filename,
-                Electron.info_filename,
+                Electron.error_filename,
                 Electron.name,
                 Electron.status,
-                func.datetime(Electron.started_at, "localtime").label("started_at"),
-                func.datetime(Electron.completed_at, "localtime").label("completed_at"),
+                Electron.started_at.label("started_at"),
+                Electron.completed_at.label("completed_at"),
                 (
                     (
                         func.strftime(

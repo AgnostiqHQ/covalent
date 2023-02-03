@@ -126,6 +126,39 @@ def test_sublatticing():
     assert workflow_result.get_node_result(node_id=0)["sublattice_result"].result == 3
 
 
+def test_lattice_electron_metadata_propagation():
+    """
+    Check whether lattice metadata is propagated correctly to electrons
+    """
+
+    e_bash_dep = ct.DepsBash(["ls"])
+    l_bash_dep = ct.DepsBash(["ls -l"])
+
+    @ct.electron(deps_bash=e_bash_dep)
+    def task_1():
+        pass
+
+    @ct.electron
+    def task_2():
+        pass
+
+    @ct.lattice(deps_bash=l_bash_dep)
+    def workflow():
+        task_1()
+        task_2()
+
+    dispatch_id = ct.dispatch(workflow)()
+    res = ct.get_result(dispatch_id, wait=True)
+    tg = res.lattice.transport_graph
+
+    dep_0 = ct.DepsBash().from_dict(tg.get_node_value(0, "metadata")["deps"]["bash"])
+    dep_1 = ct.DepsBash().from_dict(tg.get_node_value(1, "metadata")["deps"]["bash"])
+
+    assert dep_0.commands == ["ls"]
+    assert dep_1.commands == ["ls -l"]
+    rm._delete_result(dispatch_id)
+
+
 def test_parallelization():
     """
     Test parallelization of multiple electrons and check if calling the lattice
@@ -752,4 +785,54 @@ def test_electron_getattr():
     dispatch_id = ct.dispatch(workflow)()
     workflow_result = rm.get_result(dispatch_id, wait=True)
     assert workflow_result.result == 25
+    rm._delete_result(dispatch_id)
+
+
+def test_workflows_with_list_nodes():
+    """Test workflows with auto generated list nodes"""
+
+    @ct.electron
+    def sum_array(arr):
+        return sum(arr)
+
+    @ct.electron
+    def square(x):
+        return x * x
+
+    @ct.lattice
+    def workflow(x):
+        res_1 = sum_array(x)
+        return square(res_1)
+
+    dispatch_id = ct.dispatch(workflow)([1, 2, 3])
+
+    res_obj = rm.get_result(dispatch_id, wait=True)
+
+    assert res_obj.result == 36
+
+    rm._delete_result(dispatch_id)
+
+
+def test_workflows_with_dict_nodes():
+    """Test workflows with auto generated dictionary nodes"""
+
+    @ct.electron
+    def sum_values(assoc_array):
+        return sum(assoc_array.values())
+
+    @ct.electron
+    def square(x):
+        return x * x
+
+    @ct.lattice
+    def workflow(x):
+        res_1 = sum_values(x)
+        return square(res_1)
+
+    dispatch_id = ct.dispatch(workflow)({"x": 1, "y": 2, "z": 3})
+
+    res_obj = rm.get_result(dispatch_id, wait=True)
+
+    assert res_obj.result == 36
+
     rm._delete_result(dispatch_id)
