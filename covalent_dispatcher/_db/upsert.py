@@ -182,7 +182,35 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
         node_name = tg.get_node_value(node_id, "name")
 
         value_keys = ["function_string", "value", "stdout", "stderr", "error", "output"]
-        tg_node_values_dict = {k: tg.get_node_value(node_id, k, True) for k in value_keys}
+        try:
+            function_string = tg.get_node_value(node_id, "function_string")
+        except KeyError:
+            function_string = None
+
+        try:
+            node_value = tg.get_node_value(node_id, "value")
+        except KeyError:
+            node_value = None
+
+        try:
+            node_stdout = tg.get_node_value(node_id, "stdout")
+        except KeyError:
+            node_stdout = None
+
+        try:
+            node_stderr = tg.get_node_value(node_id, "stderr")
+        except KeyError:
+            node_stderr = None
+
+        try:
+            node_error = tg.get_node_value(node_id, "error")
+        except KeyError:
+            node_error = None
+
+        try:
+            node_output = tg.get_node_value(node_id, "output")
+        except KeyError:
+            node_output = None
 
         executor = tg.get_node_value(node_id, "metadata")["executor"]
         started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
@@ -190,8 +218,8 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
 
         for filename, data in [
             (ELECTRON_FUNCTION_FILENAME, tg.get_node_value(node_id, "function")),
-            (ELECTRON_FUNCTION_STRING_FILENAME, tg_node_values_dict["function_string"]),
-            (ELECTRON_VALUE_FILENAME, tg_node_values_dict["value"]),
+            (ELECTRON_FUNCTION_STRING_FILENAME, function_string),
+            (ELECTRON_VALUE_FILENAME, node_value),
             (
                 ELECTRON_EXECUTOR_DATA_FILENAME,
                 tg.get_node_value(node_id, "metadata")["executor_data"],
@@ -205,10 +233,10 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
                 ELECTRON_CALL_AFTER_FILENAME,
                 tg.get_node_value(node_id, "metadata")["call_after"],
             ),
-            (ELECTRON_STDOUT_FILENAME, tg_node_values_dict["stdout"]),
-            (ELECTRON_STDERR_FILENAME, tg_node_values_dict["stderr"]),
-            (ELECTRON_ERROR_FILENAME, tg_node_values_dict["error"]),
-            (ELECTRON_RESULTS_FILENAME, tg_node_values_dict["output"]),
+            (ELECTRON_STDOUT_FILENAME, node_stdout),
+            (ELECTRON_STDERR_FILENAME, node_stderr),
+            (ELECTRON_ERROR_FILENAME, node_error),
+            (ELECTRON_RESULTS_FILENAME, node_output),
         ]:
             store_file(node_path, filename, data)
 

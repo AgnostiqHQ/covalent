@@ -371,14 +371,14 @@ class _TransportGraph:
 
         self._graph = nx.MultiDiGraph()
 
-    def get_node_value(self, node_key: int, value_key: str, default_none: bool = False) -> Any:
+    def get_node_value(self, node_key: int, value_key: str) -> Any:
         """
         Get a specific value from a node depending upon the value key.
 
         Args:
             node_key: The node id.
             value_key: The value key.
-            default_none: Whether to return None if any of the keys are not found.
+            default_none: Return None if KeyError if set to True
 
         Returns:
             value: The value from the node stored at the value key.
@@ -386,12 +386,7 @@ class _TransportGraph:
         Raises:
             KeyError: If the value key or node key is not found.
         """
-        try:
-            return self._graph.nodes[node_key][value_key]
-        except KeyError:
-            if default_none:
-                return None
-            raise
+        return self._graph.nodes[node_key][value_key]
 
     def set_node_value(self, node_key: int, value_key: int, value: Any) -> None:
         """

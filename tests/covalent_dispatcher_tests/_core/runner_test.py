@@ -40,6 +40,7 @@ from covalent_dispatcher._core.runner import (
     _run_abstract_task,
     _run_task,
 )
+from covalent_dispatcher._db import update
 from covalent_dispatcher._db.datastore import DataStore
 
 TEST_RESULTS_DIR = "/tmp/results"
@@ -75,6 +76,7 @@ def get_mock_result() -> Result:
     pipeline.build_graph(x="absolute")
     received_workflow = Lattice.deserialize_from_json(pipeline.serialize_to_json())
     result_object = Result(received_workflow, "pipeline_workflow")
+    result_object._initialize_nodes()
 
     return result_object
 
@@ -163,7 +165,6 @@ async def test_run_task_executor_exception_handling(mocker):
 
 @pytest.mark.asyncio
 async def test_run_task_runtime_exception_handling(mocker):
-
     result_object = get_mock_result()
     inputs = {"args": [], "kwargs": {}}
     mock_executor = MagicMock()
@@ -317,8 +318,9 @@ async def test_dispatch_sublattice(test_db, mocker):
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch")
-
+    mocker.patch("covalent_dispatcher._db.jobdb.workflow_db", test_db)
     result_object = get_mock_result()
+    update.persist(result_object)
 
     serialized_callable = ct.TransportableObject(sub_workflow)
     inputs = {"args": [ct.TransportableObject(2)], "kwargs": {}}

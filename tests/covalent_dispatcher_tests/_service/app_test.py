@@ -93,7 +93,9 @@ def test_submit(mocker, app, client):
 
 
 def test_cancel(app, client):
-    response = client.post("/api/cancel", data=DISPATCH_ID.encode("utf-8"))
+    response = client.post(
+        "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
+    )
     assert response.json() == f"Dispatch {DISPATCH_ID} cancelled."
 
 
