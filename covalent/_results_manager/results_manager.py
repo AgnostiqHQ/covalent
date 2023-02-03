@@ -100,7 +100,7 @@ def _get_result_from_dispatcher(
 
     if dispatcher_addr is None:
         dispatcher_addr = (
-            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            "http://" + get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
         )
 
     retries = int(EXTREME) if wait else 5
@@ -108,7 +108,7 @@ def _get_result_from_dispatcher(
     adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
     http = requests.Session()
     http.mount("http://", adapter)
-    url = f"http://{dispatcher_addr}/api/result/{dispatch_id}"
+    url = f"{dispatcher_addr}/api/result/{dispatch_id}"
     response = http.get(
         url,
         params={"wait": bool(int(wait)), "status_only": status_only},

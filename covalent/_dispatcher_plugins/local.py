@@ -55,7 +55,7 @@ class LocalDispatcher(BaseDispatcher):
 
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
-            dispatcher_addr: The address of the dispatcher server.  If None then then defaults to the address set in Covalent's config.
+            dispatcher_addr: The address of the dispatcher server.  If None then defaults to the address set in Covalent's config.
 
         Returns:
             Wrapper function which takes the inputs of the workflow as arguments
@@ -63,7 +63,10 @@ class LocalDispatcher(BaseDispatcher):
 
         if dispatcher_addr is None:
             dispatcher_addr = (
-                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+                "http://"
+                + get_config("dispatcher.address")
+                + ":"
+                + str(get_config("dispatcher.port"))
             )
 
         @wraps(orig_lattice)
@@ -96,7 +99,7 @@ class LocalDispatcher(BaseDispatcher):
 
             json_lattice = json.dumps(json_lattice)
 
-            test_url = f"http://{dispatcher_addr}/api/submit"
+            test_url = f"{dispatcher_addr}/api/submit"
 
             r = requests.post(test_url, data=json_lattice, params={"disable_run": disable_run})
             r.raise_for_status()
@@ -126,7 +129,7 @@ class LocalDispatcher(BaseDispatcher):
 
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
-            dispatcher_addr: The address of the dispatcher server. If None then then defaults to the address set in Covalent's config.
+            dispatcher_addr: The address of the dispatcher server. If None then defaults to the address set in Covalent's config.
 
         Returns:
             Wrapper function which takes the inputs of the workflow as arguments
@@ -134,7 +137,10 @@ class LocalDispatcher(BaseDispatcher):
 
         if dispatcher_addr is None:
             dispatcher_addr = (
-                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+                "http://"
+                + get_config("dispatcher.address")
+                + ":"
+                + str(get_config("dispatcher.port"))
             )
 
         @wraps(lattice)
@@ -169,7 +175,10 @@ class LocalDispatcher(BaseDispatcher):
 
         if dispatcher_addr is None:
             dispatcher_addr = (
-                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+                "http://"
+                + get_config("dispatcher.address")
+                + ":"
+                + str(get_config("dispatcher.port"))
             )
 
         def func(*new_args, **new_kwargs):
@@ -182,7 +191,7 @@ class LocalDispatcher(BaseDispatcher):
                 is_pending,
             )
 
-            test_url = f"http://{dispatcher_addr}/api/redispatch"
+            test_url = f"{dispatcher_addr}/api/redispatch"
             r = requests.post(test_url, json=body)
             r.raise_for_status()
             return r.content.decode("utf-8").strip().replace('"', "")
@@ -190,22 +199,51 @@ class LocalDispatcher(BaseDispatcher):
         return func
 
     @staticmethod
-    def register_triggers(triggers_data: List[Dict], dispatch_id: str):
+    def register_triggers(triggers_data: List[Dict], dispatch_id: str) -> None:
+        """
+        Register the given triggers to the Triggers server.
+        Register also starts the `observe()` method of said trigger.
+
+        This is done by calling `BaseTrigger._register` method
+        with the given trigger dictionary and is equivalent to
+        calling the trigger objects `register()` method.
+
+        Args:
+            triggers_data: List of trigger dictionaries to be registered
+            dispatch_id: Lattice's dispatch id to be linked with given triggers
+
+        Returns:
+            None
+        """
 
         for tr_dict in triggers_data:
             tr_dict["lattice_dispatch_id"] = dispatch_id
             BaseTrigger._register(tr_dict)
 
-    # TODO: Implement stop triggers here
     @staticmethod
-    def stop_triggers(dispatch_ids: Union[str, List[str]], triggers_server_addr: str = None):
+    def stop_triggers(
+        dispatch_ids: Union[str, List[str]], triggers_server_addr: str = None
+    ) -> None:
+        """
+        Stop observing on all triggers of all given dispatch ids registered on the Triggers server.
+
+        Args:
+            dispatch_ids: Dispatch ID(s) for whose triggers are to be stopped
+            triggers_server_addr: Address of the Triggers server; configured dispatcher's address is used as default
+
+        Returns:
+            None
+        """
 
         if triggers_server_addr is None:
             triggers_server_addr = (
-                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+                "http://"
+                + get_config("dispatcher.address")
+                + ":"
+                + str(get_config("dispatcher.port"))
             )
 
-        stop_triggers_url = f"http://{triggers_server_addr}/api/triggers/stop_observe"
+        stop_triggers_url = f"{triggers_server_addr}/api/triggers/stop_observe"
 
         if isinstance(dispatch_ids, str):
             dispatch_ids = [dispatch_ids]
