@@ -20,13 +20,15 @@
 
 
 import inspect
+from concurrent.futures import ThreadPoolExecutor
+from functools import lru_cache
 
-from fastapi import APIRouter, FastAPI, Request
+from fastapi import APIRouter, FastAPI, HTTPException, Request
 
 from covalent._shared_files import logger
 from covalent.triggers import BaseTrigger, available_triggers
 
-from ._threadpool import st_thread_pool as thread_pool
+disable_triggers = False
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -60,8 +62,19 @@ def init_trigger(tr_dict: dict) -> BaseTrigger:
     return trigger
 
 
+@lru_cache
+def get_threadpool():
+    return ThreadPoolExecutor()
+
+
 @router.post("/triggers/register")
 async def register_and_observe(request: Request):
+
+    if disable_triggers:
+        raise HTTPException(status_code=412, detail="Trigger endpoints are disabled as requested")
+
+    thread_pool = get_threadpool()
+
     trigger_dict = await request.json()
 
     trigger = init_trigger(trigger_dict)
@@ -83,6 +96,10 @@ async def register_and_observe(request: Request):
 
 @router.post("/triggers/stop_observe")
 async def stop_observe(request: Request):
+
+    if disable_triggers:
+        raise HTTPException(status_code=412, detail="Trigger endpoints are disabled as requested")
+
     dispatch_ids = await request.json()
 
     for d_id in dispatch_ids:

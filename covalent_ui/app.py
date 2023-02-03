@@ -116,12 +116,13 @@ if __name__ == "__main__":
         dask_cluster = DaskCluster(name="LocalDaskCluster", logger=app_log)
         dask_cluster.start()
 
-    # app_name = "app_with_triggers:fastapi_app"
     app_name = "app:fastapi_app"
     if args.triggers_only:
         app_name = "app:triggers_only_app"
-    # elif args.no_triggers:
-    #     app_name = "app:fastapi_app"
+    elif args.no_triggers:
+        import covalent_dispatcher._triggers_app.app as tr_app
+
+        tr_app.disable_triggers = True
 
     # Start covalent main app
     uvicorn.run(
