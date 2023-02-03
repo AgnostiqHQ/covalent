@@ -197,3 +197,19 @@ class LocalDispatcher(BaseDispatcher):
             BaseTrigger._register(tr_dict)
 
     # TODO: Implement stop triggers here
+    @staticmethod
+    def stop_triggers(list_dispatch_ids: List[str], triggers_server_addr: str = None):
+
+        if triggers_server_addr is None:
+            triggers_server_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
+
+        stop_triggers_url = f"http://{triggers_server_addr}/api/triggers/stop_observe"
+
+        r = requests.post(stop_triggers_url, json=list_dispatch_ids)
+        r.raise_for_status()
+
+        print("Triggers for following dispatch_ids have stopped observing:")
+        for d_id in list_dispatch_ids:
+            print(d_id)

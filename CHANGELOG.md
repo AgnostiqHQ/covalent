@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [UNRELEASED]
 
 ## Fixed 
--UI crashing if time values are null.
+- UI crashing if time values are null.
 
 ### Docs
 - Revised UI reference. Added Settings page documentation.

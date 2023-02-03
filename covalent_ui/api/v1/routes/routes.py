@@ -44,4 +44,4 @@ routes.include_router(electron_routes.routes, prefix=dispatch_prefix, tags=["Ele
 routes.include_router(settings_routes.routes, prefix="/api/v1", tags=["Settings"])
 routes.include_router(logs_route.routes, prefix="/api/v1/logs", tags=["Logs"])
 routes.include_router(app.router, prefix="/api", tags=["dispatcher"])
-routes.include_router(tr_router, prefix="/api", tags=["triggers"])
+routes.include_router(tr_router, prefix="/api", tags=["Triggers"])
