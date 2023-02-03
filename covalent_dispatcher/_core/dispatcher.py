@@ -181,13 +181,23 @@ async def _submit_task(dispatch_id: str, node_id: int):
 
         if NEW_RUNNER_ENABLED:
             app_log.debug(f"Using new runner for task {node_id}")
-            coro = runner_exp.run_abstract_task(
+            task_spec = {
+                "function_id": node_id,
+                "args_ids": abs_task_input["args"],
+                "kwargs_ids": abs_task_input["kwargs"],
+            }
+
+            known_nodes = abs_task_input["args"] + list(abs_task_input["kwargs"].values())
+            known_nodes = list(set(known_nodes))
+
+            coro = runner_exp.run_abstract_task_group(
                 dispatch_id=dispatch_id,
-                node_id=node_id,
+                task_group_id=node_id,
+                task_seq=[task_spec],
+                known_nodes=known_nodes,
                 selected_executor=[selected_executor, selected_executor_data],
-                node_name=node_name,
-                abstract_inputs=abs_task_input,
             )
+
         else:
             app_log.debug(f"Using legacy runner for task {node_id}")
             coro = runner.run_abstract_task(

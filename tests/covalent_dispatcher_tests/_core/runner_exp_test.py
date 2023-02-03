@@ -40,7 +40,7 @@ from covalent_dispatcher._core.runner_exp import (
     _mark_failed,
     _mark_ready,
     _poll_task_status,
-    _submit_abstract_task,
+    _submit_abstract_task_group,
     run_abstract_task,
 )
 from covalent_dispatcher._dal.result import Result as SRVResult
@@ -157,19 +157,19 @@ async def test_submit_abstract_task(mocker):
         "task_group_id": task_id,
     }
 
-    mock_function_uri = me.get_upload_uri(task_metadata, "function")
-    mock_deps_uri = me.get_upload_uri(task_metadata, "deps")
-    mock_cb_uri = me.get_upload_uri(task_metadata, "call_before")
-    mock_ca_uri = me.get_upload_uri(task_metadata, "call_after")
+    mock_function_uri = me.get_upload_uri(task_metadata, f"function-{task_id}")
+    mock_deps_uri = me.get_upload_uri(task_metadata, f"deps-{task_id}")
+    mock_cb_uri = me.get_upload_uri(task_metadata, f"call_before-{task_id}")
+    mock_ca_uri = me.get_upload_uri(task_metadata, f"call_after-{task_id}")
     mock_node_upload_uri_1 = me.get_upload_uri(task_metadata, "node_1")
     mock_node_upload_uri_2 = me.get_upload_uri(task_metadata, "node_2")
 
     mock_function_id = task_id
     mock_args_ids = abstract_inputs["args"]
     mock_kwargs_ids = abstract_inputs["kwargs"]
-    mock_deps_id = "deps"
-    mock_cb_id = "call_before"
-    mock_ca_id = "call_after"
+    mock_deps_id = "deps-0"
+    mock_cb_id = "call_before-0"
+    mock_ca_id = "call_after-0"
     resources = {
         task_id: mock_function_uri,
         1: mock_node_upload_uri_1,
@@ -188,7 +188,20 @@ async def test_submit_abstract_task(mocker):
         "call_after_id": mock_ca_id,
     }
 
-    await _submit_abstract_task(dispatch_id, task_id, name, abstract_inputs, me)
+    mock_task = {
+        "function_id": mock_function_id,
+        "args_ids": mock_args_ids,
+        "kwargs_ids": mock_kwargs_ids,
+    }
+    known_nodes = [1, 2]
+
+    await _submit_abstract_task_group(
+        dispatch_id=dispatch_id,
+        task_group_id=task_id,
+        task_seq=[mock_task],
+        known_nodes=known_nodes,
+        executor=me,
+    )
 
     mock_upload.assert_awaited()
 
@@ -236,9 +249,19 @@ async def test_submit_requires_opt_in(mocker):
         "covalent_dispatcher._core.runner_exp.datamgr.generate_node_result",
         return_value=node_result,
     )
+    mock_function_id = task_id
+    mock_args_ids = abstract_inputs["args"]
+    mock_kwargs_ids = abstract_inputs["kwargs"]
 
-    assert node_result == await _submit_abstract_task(
-        dispatch_id, task_id, name, abstract_inputs, me
+    mock_task = {
+        "function_id": mock_function_id,
+        "args_ids": mock_args_ids,
+        "kwargs_ids": mock_kwargs_ids,
+    }
+    known_nodes = [1, 2]
+
+    assert [node_result] == await _submit_abstract_task_group(
+        dispatch_id, task_id, [mock_task], known_nodes, me
     )
 
 

@@ -152,6 +152,111 @@ async def _submit_abstract_task(
     return node_result
 
 
+# Domain: runner
+async def _submit_abstract_task_group(
+    dispatch_id: str,
+    task_group_id: int,
+    task_seq: list,
+    known_nodes: list,
+    executor: AsyncBaseExecutor,
+) -> None:
+
+    # Task sequence of the form {"function_id": task_id, "args_ids":
+    # [node_ids], "kwargs_ids": {key: node_id}}
+    task_ids = [task["function_id"] for task in task_seq]
+    task_specs = []
+    task_group_metadata = {
+        "dispatch_id": dispatch_id,
+        "task_group_id": task_group_id,
+        "task_ids": task_ids,
+    }
+
+    try:
+
+        if not type(executor).SUPPORTS_MANAGED_EXECUTION:
+            raise NotImplementedError("Executor does not support managed execution")
+
+        resources = {}
+
+        # Get upload URIs
+        for task_spec in task_seq:
+            task_id = task_spec["function_id"]
+
+            function_uri = executor.get_upload_uri(task_group_metadata, f"function-{task_id}")
+            deps_uri = executor.get_upload_uri(task_group_metadata, f"deps-{task_id}")
+            call_before_uri = executor.get_upload_uri(
+                task_group_metadata, f"call_before-{task_id}"
+            )
+            call_after_uri = executor.get_upload_uri(task_group_metadata, f"call_after-{task_id}")
+
+            await am.upload_asset_for_nodes(dispatch_id, "function", {task_id: function_uri})
+            await am.upload_asset_for_nodes(dispatch_id, "deps", {task_id: deps_uri})
+            await am.upload_asset_for_nodes(dispatch_id, "call_before", {task_id: call_before_uri})
+            await am.upload_asset_for_nodes(dispatch_id, "call_after", {task_id: call_after_uri})
+
+            deps_id = f"deps-{task_id}"
+            call_before_id = f"call_before-{task_id}"
+            call_after_id = f"call_after-{task_id}"
+            task_spec["deps_id"] = deps_id
+            task_spec["call_before_id"] = call_before_id
+            task_spec["call_after_id"] = call_after_id
+
+            resources[task_id] = function_uri
+            resources[deps_id] = deps_uri
+            resources[call_before_id] = call_before_uri
+            resources[call_after_id] = call_after_uri
+
+            task_specs.append(task_spec)
+
+        node_upload_uris = {
+            node_id: executor.get_upload_uri(task_group_metadata, f"node_{node_id}")
+            for node_id in known_nodes
+        }
+
+        resources.update(node_upload_uris)
+
+        app_log.debug(f"Uploading initial nodes for task group {dispatch_id}:{task_group_id}")
+        await am.upload_asset_for_nodes(dispatch_id, "output", node_upload_uris)
+
+        job_handle = await executor.send(
+            task_specs,
+            resources,
+            task_group_metadata,
+        )
+        app_log.debug(f"Submitted task group {dispatch_id}:{task_group_id}")
+
+        _job_handles[(dispatch_id, task_group_id)] = job_handle
+
+        ts = datetime.now(timezone.utc)
+        node_results = [
+            datamgr.generate_node_result(
+                node_id=task_id,
+                start_time=ts,
+                status=RESULT_STATUS.RUNNING,
+            )
+            for task_id in task_ids
+        ]
+
+    except Exception as ex:
+        tb = "".join(traceback.TracebackException.from_exception(ex).format())
+        app_log.debug(f"Exception occurred when running task group {task_group_id}:")
+        app_log.debug(tb)
+        error_msg = tb if debug_mode else str(ex)
+        ts = datetime.now(timezone.utc)
+
+        node_results = [
+            datamgr.generate_node_result(
+                node_id=task_id,
+                end_time=datetime.now(timezone.utc),
+                status=RESULT_STATUS.FAILED,
+                error=error_msg,
+            )
+            for task_id in task_ids
+        ]
+
+    return node_results
+
+
 async def _get_task_result(task_metadata: Dict):
     try:
         dispatch_id = task_metadata["dispatch_id"]
@@ -250,6 +355,62 @@ async def run_abstract_task(
             "dispatch_id": dispatch_id,
             "task_ids": [node_id],
             "task_group_id": node_id,
+        }
+        await _poll_task_status(task_group_metadata, executor)
+
+
+async def run_abstract_task_group(
+    dispatch_id: str,
+    task_group_id: int,
+    task_seq: list,
+    known_nodes: list,
+    selected_executor: Any,
+) -> None:
+
+    global _job_event_listener
+    if not _job_event_listener:
+        _job_event_listener = asyncio.create_task(_listen_for_job_events())
+
+    try:
+        app_log.debug(f"Attempting to instantiate executor {selected_executor}")
+        task_ids = [task["function_id"] for task in task_seq]
+        app_log.debug(f"Running task group {dispatch_id}:{task_group_id}")
+        executor = get_executor(task_group_id, selected_executor)
+
+        node_results = await _submit_abstract_task_group(
+            dispatch_id,
+            task_group_id,
+            task_seq,
+            known_nodes,
+            executor,
+        )
+
+    except Exception as ex:
+        tb = "".join(traceback.TracebackException.from_exception(ex).format())
+        app_log.debug("Exception when trying to instantiate executor:")
+        app_log.debug(tb)
+        error_msg = tb if debug_mode else str(ex)
+        ts = datetime.now(timezone.utc)
+
+        node_results = [
+            datamgr.generate_node_result(
+                node_id=node_id,
+                start_time=ts,
+                end_time=ts,
+                status=RESULT_STATUS.FAILED,
+                error=error_msg,
+            )
+            for node_id in task_ids
+        ]
+
+    for node_result in node_results:
+        await datamgr.update_node_result(dispatch_id, node_result)
+
+    if node_results[0]["status"] == RESULT_STATUS.RUNNING:
+        task_group_metadata = {
+            "dispatch_id": dispatch_id,
+            "task_ids": task_ids,
+            "task_group_id": task_group_id,
         }
         await _poll_task_status(task_group_metadata, executor)
 

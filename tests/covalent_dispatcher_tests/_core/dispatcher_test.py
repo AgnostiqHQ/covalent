@@ -528,7 +528,7 @@ async def test_submit_task(mocker, new_runner):
     )
 
     mock_run_abs_task = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.runner_exp.run_abstract_task",
+        "covalent_dispatcher._core.dispatcher.runner_exp.run_abstract_task_group",
     )
     mock_run_abs_task_legacy = mocker.patch(
         "covalent_dispatcher._core.dispatcher.runner.run_abstract_task",
