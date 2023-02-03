@@ -21,7 +21,7 @@
 import json
 from copy import deepcopy
 from functools import wraps
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Union
 
 import requests
 
@@ -198,7 +198,7 @@ class LocalDispatcher(BaseDispatcher):
 
     # TODO: Implement stop triggers here
     @staticmethod
-    def stop_triggers(list_dispatch_ids: List[str], triggers_server_addr: str = None):
+    def stop_triggers(dispatch_ids: Union[str, List[str]], triggers_server_addr: str = None):
 
         if triggers_server_addr is None:
             triggers_server_addr = (
@@ -207,9 +207,12 @@ class LocalDispatcher(BaseDispatcher):
 
         stop_triggers_url = f"http://{triggers_server_addr}/api/triggers/stop_observe"
 
-        r = requests.post(stop_triggers_url, json=list_dispatch_ids)
+        if isinstance(dispatch_ids, str):
+            dispatch_ids = [dispatch_ids]
+
+        r = requests.post(stop_triggers_url, json=dispatch_ids)
         r.raise_for_status()
 
         print("Triggers for following dispatch_ids have stopped observing:")
-        for d_id in list_dispatch_ids:
+        for d_id in dispatch_ids:
             print(d_id)
