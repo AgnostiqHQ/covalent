@@ -44,9 +44,13 @@ class BaseTrigger:
         self.triggers_server_addr = triggers_server_addr
         self.new_dispatch_ids = []
         self.observe_blocks = True
-        self.event_loop = None
-
-        self.is_internal = True
+        self.event_loop = (
+            None  # to attach the event loop when directly using dispatcher's functions
+        )
+        self.use_internal_funcs = (
+            True  # whether to use dispatcher's functions directly instead of through API calls
+        )
+        self.stop_flag = None  # to handle stopping mechanism in a thread safe manner in case observe() is a blocking call (e.g. see TimeTrigger)
 
     def register(self):
         self._register(self.to_dict(), self.triggers_server_addr)
@@ -63,7 +67,7 @@ class BaseTrigger:
         r.raise_for_status()
 
     def _get_status(self):
-        if self.is_internal:
+        if self.use_internal_funcs:
             from covalent_dispatcher._service.app import get_result
 
             return asyncio.run_coroutine_threadsafe(
@@ -78,7 +82,7 @@ class BaseTrigger:
         )["status"]
 
     def _do_redispatch(self, is_pending: bool = False):
-        if self.is_internal:
+        if self.use_internal_funcs:
             from covalent_dispatcher import run_redispatch
 
             return asyncio.run_coroutine_threadsafe(
@@ -102,11 +106,11 @@ class BaseTrigger:
         if status == str(Result.NEW_OBJ):
             # To continue the pending dispatch
             same_dispatch_id = self._do_redispatch(True)
-            app_log.warning(f"Initiating run for pending dispatch_id: {same_dispatch_id}")
+            app_log.debug(f"Initiating run for pending dispatch_id: {same_dispatch_id}")
         else:
             # To run new redispatch
             new_dispatch_id = self._do_redispatch()
-            app_log.warning(f"Redispatching, new dispatch_id: {new_dispatch_id}")
+            app_log.debug(f"Redispatching, new dispatch_id: {new_dispatch_id}")
             self.new_dispatch_ids.append(new_dispatch_id)
 
     def to_dict(self):

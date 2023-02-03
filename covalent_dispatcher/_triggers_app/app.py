@@ -20,26 +20,21 @@
 
 
 import inspect
-from concurrent.futures import ThreadPoolExecutor
 
 from fastapi import APIRouter, FastAPI, Request
 
 from covalent._shared_files import logger
 from covalent.triggers import BaseTrigger, available_triggers
 
+from ._threadpool import st_thread_pool as thread_pool
+
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
 
 router = APIRouter()
 triggers_only_app = FastAPI()
 
 active_triggers = {}
-
-
-thread_pool = ThreadPoolExecutor()
-
-# TODO: Verify this
 
 
 def init_trigger(tr_dict: dict) -> BaseTrigger:
@@ -72,10 +67,8 @@ async def register_and_observe(request: Request):
     trigger = init_trigger(trigger_dict)
 
     if trigger.observe_blocks:
-        print("Starting in new thread")
         thread_pool.submit(trigger.observe)
     else:
-        print("Starting normally")
         trigger.observe()
 
     lattice_did = trigger.lattice_dispatch_id
@@ -85,7 +78,7 @@ async def register_and_observe(request: Request):
     else:
         active_triggers[lattice_did] = [trigger]
 
-    app_log.warning(f"Started trigger with id: {lattice_did}")
+    app_log.debug(f"Started trigger with id: {lattice_did}")
 
 
 @router.post("/triggers/stop_observe")
@@ -95,7 +88,7 @@ async def stop_observe(request: Request):
     for d_id in dispatch_ids:
         for trigger in active_triggers[d_id]:
             trigger.stop()
-            app_log.warning(f"Stopped observing on trigger(s) with lattice dispatch id: {d_id}")
+            app_log.debug(f"Stopped observing on trigger(s) with lattice dispatch id: {d_id}")
 
 
 triggers_only_app.include_router(router, tags=["Triggers"])

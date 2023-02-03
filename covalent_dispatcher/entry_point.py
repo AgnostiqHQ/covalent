@@ -64,7 +64,7 @@ async def run_redispatch(
 
     if is_pending:
         run_dispatch(dispatch_id)
-        app_log.warning("Submitted pending result object to run_workflow.")
+        app_log.debug("Submitted pending result object to run_workflow.")
         return dispatch_id
 
     redispatch_id = make_derived_dispatch(

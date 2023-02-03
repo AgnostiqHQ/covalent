@@ -18,29 +18,15 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import time
-from threading import Event
 
-from .base import BaseTrigger
+from concurrent.futures import ThreadPoolExecutor
 
 
-class TimeTrigger(BaseTrigger):
-    def __init__(
-        self,
-        time_gap,
-        lattice_dispatch_id: str = None,
-        dispatcher_addr: str = None,
-        triggers_server_addr: str = None,
-    ):
-        super().__init__(lattice_dispatch_id, dispatcher_addr, triggers_server_addr)
-        self.time_gap = time_gap
+class SingletonThreadPool(ThreadPoolExecutor):
+    def __new__(cls):
+        if not hasattr(cls, "instance"):
+            cls.instance = super(SingletonThreadPool, cls).__new__(cls)
+        return cls.instance
 
-    def observe(self):
-        # Stopping mechanism for a blocking observe()
-        self.stop_flag = Event()
-        while not self.stop_flag.is_set():
-            self.trigger()
-            time.sleep(self.time_gap)
 
-    def stop(self):
-        self.stop_flag.set()
+st_thread_pool = SingletonThreadPool()
