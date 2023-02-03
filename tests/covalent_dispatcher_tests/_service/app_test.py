@@ -92,11 +92,20 @@ def test_submit(mocker, app, client):
     assert response.json() == DISPATCH_ID
 
 
-def test_cancel(app, client):
+def test_cancel_dispatch(mocker, app, client):
+    mocker.patch("covalent_dispatcher.cancel_running_dispatch")
     response = client.post(
         "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
     )
     assert response.json() == f"Dispatch {DISPATCH_ID} cancelled."
+
+
+def test_cancel_tasks(mocker, app, client):
+    mocker.patch("covalent_dispatcher.cancel_running_dispatch")
+    response = client.post(
+        "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": [0, 1]})
+    )
+    assert response.json() == f"Cancelled tasks [0, 1] in dispatch {DISPATCH_ID}."
 
 
 def test_db_path(mocker, app, client):
