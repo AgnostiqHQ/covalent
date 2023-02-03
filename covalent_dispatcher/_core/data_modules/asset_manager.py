@@ -43,8 +43,9 @@ async def upload_asset_for_nodes(dispatch_id: str, key: str, dest_uris: dict):
 
     futs = []
     for node_id, dest_uri in dest_uris.items():
-        node = tg.get_node(node_id)
-        asset = node.get_asset(key)
-        futs.append(loop.run_in_executor(am_pool, asset.upload, dest_uri))
+        if dest_uri:
+            node = tg.get_node(node_id)
+            asset = node.get_asset(key)
+            futs.append(loop.run_in_executor(am_pool, asset.upload, dest_uri))
 
     await asyncio.gather(*futs)
