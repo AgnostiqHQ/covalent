@@ -41,6 +41,9 @@ active_triggers = {}
 
 def init_trigger(tr_dict: dict) -> BaseTrigger:
     tr_name = tr_dict.pop("name")
+
+    # Reloading triggers
+    available_triggers.load_user_triggers()
     tr_class = available_triggers[tr_name]
 
     # Handling required constructor params

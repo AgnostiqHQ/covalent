@@ -18,20 +18,18 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import sys
+from importlib import import_module
 from pathlib import Path
-
-from .base import BaseTrigger
-from .dir_trigger import DirTrigger
-from .time_trigger import TimeTrigger
 
 
 class TriggerLoader:
     def __init__(self):
+        tr_mod = import_module(".triggers", package="covalent")
         self.available_triggers = {
-            BaseTrigger.__name__: BaseTrigger,
-            DirTrigger.__name__: DirTrigger,
-            TimeTrigger.__name__: TimeTrigger,
+            k: tr for k, tr in tr_mod.__dict__.items() if k.endswith("Trigger")
         }
+        self.orig_sys_path = sys.path.copy()
 
         self.load_user_triggers()
 
@@ -47,10 +45,18 @@ class TriggerLoader:
         self.available_triggers[key] = value
 
     def load_user_triggers(self):
-        user_triggers_path = Path("~/.covalent/triggers/")
+
+        sys.path = self.orig_sys_path
+        user_triggers_path = Path("~/.covalent/triggers/").expanduser()
         if user_triggers_path.exists():
-            # TODO: Load user triggers to available triggers here
-            pass
+            sys.path.append(str(user_triggers_path))
+
+            # This is supposed to look un-importable
+            import user_triggers  # nopycln: import
+
+            for k, v in user_triggers.__dict__.items():
+                if k.endswith("Trigger"):
+                    self.available_triggers[k] = v
 
 
 available_triggers = TriggerLoader()
