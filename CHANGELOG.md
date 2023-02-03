@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Removed
+
+- References to specific IBMQ hub/group/project in tutorial 5
+
 ### Added
 
 - Helper routines to facilitate data access for cancelling dispatches
