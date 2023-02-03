@@ -106,17 +106,16 @@ def _gather_deps(deps, call_before_objs_json, call_after_objs_json) -> Tuple[Lis
 
 # URIs are just file paths
 def run_task_from_uris(
-    function_uri: str,
-    deps_uri: str,
-    call_before_uri: str,
-    call_after_uri: str,
-    args_uris: str,
-    kwargs_uris: str,
+    task_specs: List[Dict],
+    deps_ref: str,
+    call_before_ref: str,
+    call_after_ref: str,
+    resources: dict,
     output_uri: str,
     stdout_uri: str,
     stderr_uri: str,
     results_dir: str,
-    task_metadata: dict,
+    task_group_metadata: dict,
     server_url: str,
 ):
 
@@ -126,6 +125,12 @@ def run_task_from_uris(
     with open(stdout_uri, "w") as stdout, open(stderr_uri, "w") as stderr:
         with redirect_stdout(stdout), redirect_stderr(stderr):
             try:
+                task = task_specs[0]
+                function_ref = task["function_ref"]
+                args_refs = task["args_refs"]
+                kwargs_refs = task["kwargs_refs"]
+
+                function_uri = resources[function_ref]
                 if function_uri.startswith(prefix):
                     function_uri = function_uri[prefix_len:]
 
@@ -134,28 +139,33 @@ def run_task_from_uris(
 
                 ser_args = []
                 ser_kwargs = {}
+                args_uris = [resources[index] for index in args_refs]
                 for uri in args_uris:
                     if uri.startswith(prefix):
                         uri = uri[prefix_len:]
                     with open(uri, "rb") as f:
                         ser_args.append(pickle.load(f))
 
+                kwargs_uris = {k: resources[v] for k, v in kwargs_refs.items()}
                 for key, uri in kwargs_uris.items():
                     if uri.startswith(prefix):
                         uri = uri[prefix_len:]
                     with open(uri, "rb") as f:
                         ser_kwargs[key] = pickle.load(f)
 
+                deps_uri = resources[deps_ref]
                 if deps_uri.startswith(prefix):
                     deps_uri = deps_uri[prefix_len:]
                 with open(deps_uri, "rb") as f:
                     deps_json = pickle.load(f)
 
+                call_before_uri = resources[call_before_ref]
                 if call_before_uri.startswith(prefix):
                     call_before_uri = call_before_uri[prefix_len:]
                 with open(call_before_uri, "rb") as f:
                     call_before_json = pickle.load(f)
 
+                call_after_uri = resources[call_after_ref]
                 if call_after_uri.startswith(prefix):
                     call_after_uri = call_after_uri[prefix_len:]
                 with open(call_after_uri, "rb") as f:
@@ -187,8 +197,8 @@ def run_task_from_uris(
         "exception_occurred": exception_occurred,
     }
 
-    dispatch_id = task_metadata["dispatch_id"]
-    node_id = task_metadata["node_id"]
+    dispatch_id = task_group_metadata["dispatch_id"]
+    node_id = task_group_metadata["task_ids"][0]
     result_path = os.path.join(results_dir, f"result-{dispatch_id}:{node_id}.json")
 
     with open(result_path, "w") as f:
@@ -267,13 +277,12 @@ class DaskExecutor(AsyncBaseExecutor):
 
     async def send(
         self,
-        function_uri: str,
-        deps_uri: str,
-        call_before_uri: str,
-        call_after_uri: str,
-        args_uris: str,
-        kwargs_uris: str,
-        task_metadata: dict,
+        task_specs: List[Dict],
+        deps_ref: str,
+        call_before_ref: str,
+        call_after_ref: str,
+        resources: dict,
+        task_group_metadata: dict,
     ):
         # Assets are assumed to be accessible by the compute backend
         # at the provided URIs
@@ -284,8 +293,8 @@ class DaskExecutor(AsyncBaseExecutor):
         dask_client = Client(address=self.scheduler_address, asynchronous=True)
         await dask_client
 
-        node_id = task_metadata["node_id"]
-        dispatch_id = task_metadata["dispatch_id"]
+        node_id = task_group_metadata["task_ids"][0]
+        dispatch_id = task_group_metadata["dispatch_id"]
 
         output_uri = os.path.join(self.cache_dir, f"result_{dispatch_id}-{node_id}.pkl")
         stdout_uri = os.path.join(self.cache_dir, f"stdout_{dispatch_id}-{node_id}.txt")
@@ -298,18 +307,17 @@ class DaskExecutor(AsyncBaseExecutor):
         key = f"dask_job_{dispatch_id}:{node_id}"
         future = dask_client.submit(
             run_task_from_uris,
-            function_uri=function_uri,
-            deps_uri=deps_uri,
-            call_before_uri=call_before_uri,
-            call_after_uri=call_after_uri,
-            args_uris=args_uris,
-            kwargs_uris=kwargs_uris,
-            output_uri=output_uri,
-            stdout_uri=stdout_uri,
-            stderr_uri=stderr_uri,
-            results_dir=self.cache_dir,
-            task_metadata=task_metadata,
-            server_url=server_url,
+            task_specs,
+            deps_ref,
+            call_before_ref,
+            call_after_ref,
+            resources,
+            output_uri,
+            stdout_uri,
+            stderr_uri,
+            self.cache_dir,
+            task_group_metadata,
+            server_url,
             key=key,
         )
 
@@ -343,7 +351,15 @@ class DaskExecutor(AsyncBaseExecutor):
 
         terminal_status = RESULT_STATUS.FAILED if exception_raised else RESULT_STATUS.COMPLETED
 
-        return output_uri, stdout_uri, stderr_uri, terminal_status
+        task_result = {
+            "dispatch_id": dispatch_id,
+            "node_id": node_id,
+            "output_uri": output_uri,
+            "stdout_uri": stdout_uri,
+            "stderr_uri": stderr_uri,
+            "status": terminal_status,
+        }
+        return task_result
 
     def get_upload_uri(self, task_metadata: Dict, object_key: str):
         dispatch_id = task_metadata["dispatch_id"]

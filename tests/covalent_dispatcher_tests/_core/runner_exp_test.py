@@ -151,6 +151,11 @@ async def test_submit_abstract_task(mocker):
     name = "task"
     abstract_inputs = {"args": [1], "kwargs": {"key": 2}}
     task_metadata = {"dispatch_id": dispatch_id, "node_id": task_id}
+    task_group_metadata = {
+        "dispatch_id": dispatch_id,
+        "task_ids": [task_id],
+        "task_group_id": task_id,
+    }
 
     mock_function_uri = me.get_upload_uri(task_metadata, "function")
     mock_deps_uri = me.get_upload_uri(task_metadata, "deps")
@@ -159,18 +164,38 @@ async def test_submit_abstract_task(mocker):
     mock_node_upload_uri_1 = me.get_upload_uri(task_metadata, "node_1")
     mock_node_upload_uri_2 = me.get_upload_uri(task_metadata, "node_2")
 
+    mock_function_ref = task_id
+    mock_args_refs = abstract_inputs["args"]
+    mock_kwargs_refs = abstract_inputs["kwargs"]
+    mock_deps_ref = "deps"
+    mock_cb_ref = "call_before"
+    mock_ca_ref = "call_after"
+    resources = {
+        task_id: mock_function_uri,
+        1: mock_node_upload_uri_1,
+        2: mock_node_upload_uri_2,
+        mock_deps_ref: mock_deps_uri,
+        mock_cb_ref: mock_cb_uri,
+        mock_ca_ref: mock_ca_uri,
+    }
+
+    mock_task_spec = {
+        "function_ref": mock_function_ref,
+        "args_refs": mock_args_refs,
+        "kwargs_refs": mock_kwargs_refs,
+    }
+
     await _submit_abstract_task(dispatch_id, task_id, name, abstract_inputs, me)
 
     mock_upload.assert_awaited()
 
     me.send.assert_awaited_with(
-        mock_function_uri,
-        mock_deps_uri,
-        mock_cb_uri,
-        mock_ca_uri,
-        [mock_node_upload_uri_1],
-        {"key": mock_node_upload_uri_2},
-        task_metadata,
+        [mock_task_spec],
+        mock_deps_ref,
+        mock_cb_ref,
+        mock_ca_ref,
+        resources,
+        task_group_metadata,
     )
 
 
@@ -224,7 +249,15 @@ async def test_get_task_result(mocker):
 
     me = MockManagedExecutor()
     asset_uri = "file:///tmp/asset.pkl"
-    me.receive = AsyncMock(return_value=(asset_uri, asset_uri, asset_uri, False))
+    mock_task_result = {
+        "dispatch_id": "dispatch",
+        "node_id": 0,
+        "output_uri": asset_uri,
+        "stdout_uri": asset_uri,
+        "stderr_uri": asset_uri,
+        "status": False,
+    }
+    me.receive = AsyncMock(return_value=mock_task_result)
 
     mocker.patch(
         "covalent_dispatcher._core.runner_exp.datamgr.get_electron_attribute",

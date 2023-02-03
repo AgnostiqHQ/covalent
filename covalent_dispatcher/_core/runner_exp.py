@@ -107,14 +107,34 @@ async def _submit_abstract_task(
         args_uris = [node_upload_uris[node_id] for node_id in abstract_args]
         kwargs_uris = {k: node_upload_uris[v] for k, v in abstract_kwargs.items()}
 
+        resources = node_upload_uris
+        deps_ref = "deps"
+        call_before_ref = "call_before"
+        call_after_ref = "call_after"
+        resources[task_id] = function_uri
+        resources[deps_ref] = deps_uri
+        resources[call_before_ref] = call_before_uri
+        resources[call_after_ref] = call_after_uri
+
+        task_spec = {
+            "function_ref": task_id,
+            "args_refs": abstract_args,
+            "kwargs_refs": abstract_kwargs,
+        }
+
+        task_group_metadata = {
+            "dispatch_id": dispatch_id,
+            "task_ids": [task_id],
+            "task_group_id": task_id,
+        }
+
         job_handle = await executor.send(
-            function_uri,
-            deps_uri,
-            call_before_uri,
-            call_after_uri,
-            args_uris,
-            kwargs_uris,
-            task_metadata,
+            [task_spec],
+            deps_ref,
+            call_before_ref,
+            call_after_ref,
+            resources,
+            task_group_metadata,
         )
 
         _job_handles[(dispatch_id, task_id)] = job_handle
@@ -147,9 +167,12 @@ async def _get_task_result(task_metadata: Dict):
 
         job_handle = _job_handles.get((dispatch_id, task_id), None)
 
-        output_uri, stdout_uri, stderr_uri, status = await executor.receive(
-            task_metadata, job_handle
-        )
+        task_result = await executor.receive(task_metadata, job_handle)
+
+        output_uri = task_result["output_uri"]
+        stdout_uri = task_result["stdout_uri"]
+        stderr_uri = task_result["stderr_uri"]
+        status = task_result["status"]
 
         src_uris = {"output": output_uri, "stdout": stdout_uri, "stderr": stderr_uri}
         node_result = datamgr.generate_node_result(

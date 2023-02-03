@@ -291,14 +291,16 @@ class BaseExecutor(_AbstractBaseExecutor):
 
     async def send(
         self,
-        function_uri: str,
-        deps_uri: str,
-        call_before_uri: str,
-        call_after_uri: str,
-        args_uris: str,
-        kwargs_uris: str,
-        task_metadata: dict,
+        task_specs: List[Dict],
+        deps_ref: str,
+        call_before_ref: str,
+        call_after_ref: str,
+        resources: dict,
+        task_group_metadata: dict,
     ):
+        # Task specs are of the form
+        # {"function_ref": [node_id], "args_refs": [node_ids], "kwargs_refs": {key: node_id}}
+
         # Assets are assumed to be accessible by the compute backend
         # at the provided URIs
 
@@ -478,13 +480,12 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
     async def send(
         self,
-        function_uri: str,
-        deps_uri: str,
-        call_before_uri: str,
-        call_after_uri: str,
-        args_uris: str,
-        kwargs_uris: str,
-        task_metadata: dict,
+        task_specs: List[Dict],
+        deps_ref: str,
+        call_before_ref: str,
+        call_after_ref: str,
+        resources: dict,
+        task_group_metadata: dict,
     ):
         # Assets are assumed to be accessible by the compute backend
         # at the provided URIs
@@ -503,8 +504,15 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
     async def receive(self, task_metadata: Dict, job_handle: Any):
 
-        # Returns (output_uri, stdout_uri, stderr_uri,
-        # exception_raised)
+        # Returns a list of task results
+        # {
+        #   "dispatch_id": dispatch_id,
+        #   "node_id": node_id,
+        #   "output_uri": output_uri,
+        #   "stdout_uri": stdout_uri,
+        #   "stderr_uri": stderr_uri,
+        #   "status": status,
+        # }
 
         # Job should have reached a terminal state by the time this is invoked.
 
