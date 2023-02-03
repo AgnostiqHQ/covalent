@@ -123,11 +123,11 @@ def run_task_from_uris(
         with redirect_stdout(stdout), redirect_stderr(stderr):
             try:
                 task = task_specs[0]
-                function_key = task["function_key"]
-                args_keys = task["args_keys"]
-                kwargs_keys = task["kwargs_keys"]
+                task_id = task["function_id"]
+                args_ids = task["args_ids"]
+                kwargs_ids = task["kwargs_ids"]
 
-                function_uri = resources[function_key]
+                function_uri = resources[task_id]
                 if function_uri.startswith(prefix):
                     function_uri = function_uri[prefix_len:]
 
@@ -136,36 +136,36 @@ def run_task_from_uris(
 
                 ser_args = []
                 ser_kwargs = {}
-                args_uris = [resources[index] for index in args_keys]
+                args_uris = [resources[index] for index in args_ids]
                 for uri in args_uris:
                     if uri.startswith(prefix):
                         uri = uri[prefix_len:]
                     with open(uri, "rb") as f:
                         ser_args.append(pickle.load(f))
 
-                kwargs_uris = {k: resources[v] for k, v in kwargs_keys.items()}
+                kwargs_uris = {k: resources[v] for k, v in kwargs_ids.items()}
                 for key, uri in kwargs_uris.items():
                     if uri.startswith(prefix):
                         uri = uri[prefix_len:]
                     with open(uri, "rb") as f:
                         ser_kwargs[key] = pickle.load(f)
 
-                deps_key = task["deps_key"]
-                deps_uri = resources[deps_key]
+                deps_id = task["deps_id"]
+                deps_uri = resources[deps_id]
                 if deps_uri.startswith(prefix):
                     deps_uri = deps_uri[prefix_len:]
                 with open(deps_uri, "rb") as f:
                     deps_json = pickle.load(f)
 
-                call_before_key = task["call_before_key"]
-                call_before_uri = resources[call_before_key]
+                call_before_id = task["call_before_id"]
+                call_before_uri = resources[call_before_id]
                 if call_before_uri.startswith(prefix):
                     call_before_uri = call_before_uri[prefix_len:]
                 with open(call_before_uri, "rb") as f:
                     call_before_json = pickle.load(f)
 
-                call_after_key = task["call_after_key"]
-                call_after_uri = resources[call_after_key]
+                call_after_id = task["call_after_id"]
+                call_after_uri = resources[call_after_id]
                 if call_after_uri.startswith(prefix):
                     call_after_uri = call_after_uri[prefix_len:]
                 with open(call_after_uri, "rb") as f:

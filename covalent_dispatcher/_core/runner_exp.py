@@ -112,21 +112,21 @@ async def _submit_abstract_task(
         kwargs_uris = {k: node_upload_uris[v] for k, v in abstract_kwargs.items()}
 
         resources = node_upload_uris
-        deps_key = "deps"
-        call_before_key = "call_before"
-        call_after_key = "call_after"
+        deps_id = "deps"
+        call_before_id = "call_before"
+        call_after_id = "call_after"
         resources[task_id] = function_uri
-        resources[deps_key] = deps_uri
-        resources[call_before_key] = call_before_uri
-        resources[call_after_key] = call_after_uri
+        resources[deps_id] = deps_uri
+        resources[call_before_id] = call_before_uri
+        resources[call_after_id] = call_after_uri
 
         task_spec = {
-            "function_key": task_id,
-            "args_keys": abstract_args,
-            "kwargs_keys": abstract_kwargs,
-            "deps_key": deps_key,
-            "call_before_key": call_before_key,
-            "call_after_key": call_after_key,
+            "function_id": task_id,
+            "args_ids": abstract_args,
+            "kwargs_ids": abstract_kwargs,
+            "deps_id": deps_id,
+            "call_before_id": call_before_id,
+            "call_after_id": call_after_id,
         }
 
         job_handle = await executor.send(

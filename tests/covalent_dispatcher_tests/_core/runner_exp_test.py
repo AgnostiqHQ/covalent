@@ -164,28 +164,28 @@ async def test_submit_abstract_task(mocker):
     mock_node_upload_uri_1 = me.get_upload_uri(task_metadata, "node_1")
     mock_node_upload_uri_2 = me.get_upload_uri(task_metadata, "node_2")
 
-    mock_function_key = task_id
-    mock_args_keys = abstract_inputs["args"]
-    mock_kwargs_keys = abstract_inputs["kwargs"]
-    mock_deps_key = "deps"
-    mock_cb_key = "call_before"
-    mock_ca_key = "call_after"
+    mock_function_id = task_id
+    mock_args_ids = abstract_inputs["args"]
+    mock_kwargs_ids = abstract_inputs["kwargs"]
+    mock_deps_id = "deps"
+    mock_cb_id = "call_before"
+    mock_ca_id = "call_after"
     resources = {
         task_id: mock_function_uri,
         1: mock_node_upload_uri_1,
         2: mock_node_upload_uri_2,
-        mock_deps_key: mock_deps_uri,
-        mock_cb_key: mock_cb_uri,
-        mock_ca_key: mock_ca_uri,
+        mock_deps_id: mock_deps_uri,
+        mock_cb_id: mock_cb_uri,
+        mock_ca_id: mock_ca_uri,
     }
 
     mock_task_spec = {
-        "function_key": mock_function_key,
-        "args_keys": mock_args_keys,
-        "kwargs_keys": mock_kwargs_keys,
-        "deps_key": mock_deps_key,
-        "call_before_key": mock_cb_key,
-        "call_after_key": mock_ca_key,
+        "function_id": mock_function_id,
+        "args_ids": mock_args_ids,
+        "kwargs_ids": mock_kwargs_ids,
+        "deps_id": mock_deps_id,
+        "call_before_id": mock_cb_id,
+        "call_after_id": mock_ca_id,
     }
 
     await _submit_abstract_task(dispatch_id, task_id, name, abstract_inputs, me)
