@@ -339,20 +339,24 @@ async def test_poll_status(mocker):
 
     dispatch_id = "dispatch"
     task_id = 1
-    task_metadata = {"dispatch_id": dispatch_id, "node_id": task_id}
+    task_group_metadata = {
+        "dispatch_id": dispatch_id,
+        "task_ids": [task_id],
+        "task_group_id": task_id,
+    }
 
     mock_job_handles = {(dispatch_id, task_id): 42}
 
     mocker.patch("covalent_dispatcher._core.runner_exp._job_handles", mock_job_handles)
 
-    await _poll_task_status(task_metadata, me)
+    await _poll_task_status(task_group_metadata, me)
 
     mock_mark_ready.assert_awaited()
 
     me.poll = AsyncMock(return_value=-1)
     mock_mark_ready.reset_mock()
 
-    await _poll_task_status(task_metadata, me)
+    await _poll_task_status(task_group_metadata, me)
     mock_mark_ready.assert_not_awaited()
 
     me.poll = AsyncMock(side_effect=RuntimeError())
@@ -361,7 +365,7 @@ async def test_poll_status(mocker):
         "covalent_dispatcher._core.runner_exp._mark_failed",
     )
 
-    await _poll_task_status(task_metadata, me)
+    await _poll_task_status(task_group_metadata, me)
     mock_mark_ready.assert_not_awaited()
     mock_mark_failed.assert_awaited()
 

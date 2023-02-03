@@ -80,12 +80,16 @@ async def _submit_abstract_task(
             status=RESULT_STATUS.RUNNING,
         )
 
-        task_metadata = {"dispatch_id": dispatch_id, "node_id": task_id}
+        task_group_metadata = {
+            "dispatch_id": dispatch_id,
+            "task_ids": [task_id],
+            "task_group_id": task_id,
+        }
 
-        function_uri = executor.get_upload_uri(task_metadata, "function")
-        deps_uri = executor.get_upload_uri(task_metadata, "deps")
-        call_before_uri = executor.get_upload_uri(task_metadata, "call_before")
-        call_after_uri = executor.get_upload_uri(task_metadata, "call_after")
+        function_uri = executor.get_upload_uri(task_group_metadata, "function")
+        deps_uri = executor.get_upload_uri(task_group_metadata, "deps")
+        call_before_uri = executor.get_upload_uri(task_group_metadata, "call_before")
+        call_after_uri = executor.get_upload_uri(task_group_metadata, "call_after")
 
         abstract_args = abstract_inputs["args"]
         abstract_kwargs = abstract_inputs["kwargs"]
@@ -93,7 +97,7 @@ async def _submit_abstract_task(
         distinct_nodes = set(abstract_args + list(abstract_kwargs.values()))
 
         node_upload_uris = {
-            node_id: executor.get_upload_uri(task_metadata, f"node_{node_id}")
+            node_id: executor.get_upload_uri(task_group_metadata, f"node_{node_id}")
             for node_id in distinct_nodes
         }
 
@@ -120,12 +124,6 @@ async def _submit_abstract_task(
             "function_ref": task_id,
             "args_refs": abstract_args,
             "kwargs_refs": abstract_kwargs,
-        }
-
-        task_group_metadata = {
-            "dispatch_id": dispatch_id,
-            "task_ids": [task_id],
-            "task_group_id": task_id,
         }
 
         job_handle = await executor.send(
@@ -248,8 +246,12 @@ async def run_abstract_task(
 
     await datamgr.update_node_result(dispatch_id, node_result)
     if node_result["status"] == RESULT_STATUS.RUNNING:
-        task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id}
-        await _poll_task_status(task_metadata, executor)
+        task_group_metadata = {
+            "dispatch_id": dispatch_id,
+            "task_ids": [node_id],
+            "task_group_id": node_id,
+        }
+        await _poll_task_status(task_group_metadata, executor)
 
 
 async def _listen_for_job_events():
@@ -293,23 +295,28 @@ async def _mark_failed(task_metadata: dict, detail: str):
     await _job_events.put({"task_metadata": task_metadata, "event": "FAILED", "detail": detail})
 
 
-async def _poll_task_status(task_metadata: Dict, executor: AsyncBaseExecutor):
+async def _poll_task_status(task_group_metadata: Dict, executor: AsyncBaseExecutor):
     # Return immediately if no polling logic (default return value is -1)
 
-    dispatch_id = task_metadata["dispatch_id"]
-    task_id = task_metadata["node_id"]
+    dispatch_id = task_group_metadata["dispatch_id"]
+    task_group_id = task_group_metadata["task_group_id"]
+    task_ids = task_group_metadata["task_ids"]
 
     try:
-        job_handle = _job_handles[(dispatch_id, task_id)]
+        job_handle = _job_handles[(dispatch_id, task_group_id)]
 
-        app_log.debug(f"Polling task status for {dispatch_id}:{task_id}")
-        if await executor.poll(task_metadata, job_handle) == 0:
-            await _mark_ready(task_metadata)
+        app_log.debug(f"Polling status for task group {dispatch_id}:{task_group_id}")
+        if await executor.poll(task_group_metadata, job_handle) == 0:
+            for task_id in task_ids:
+                task_metadata = {"dispatch_id": dispatch_id, "node_id": task_id}
+                await _mark_ready(task_metadata)
     except Exception as ex:
 
-        task_id = task_metadata["node_id"]
+        task_group_id = task_group_metadata["task_group_id"]
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
-        app_log.debug(f"Exception occurred when polling task {task_id}:")
+        app_log.debug(f"Exception occurred when polling task {task_group_id}:")
         app_log.debug(tb)
         error_msg = tb if debug_mode else str(ex)
-        await _mark_failed(task_metadata, error_msg)
+        for task_id in task_ids:
+            task_metadata = {"dispatch_id": dispatch_id, "node_id": task_id}
+            await _mark_failed(task_metadata, error_msg)

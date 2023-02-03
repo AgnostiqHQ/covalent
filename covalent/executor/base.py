@@ -309,7 +309,7 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         raise NotImplementedError
 
-    async def poll(self, task_metadata: Dict, job_handle: Any):
+    async def poll(self, task_group_metadata: Dict, job_handle: Any):
 
         # To be run as a background task.  A callback will be
         # registered with the runner to invoke the receive()
@@ -518,5 +518,5 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
         raise NotImplementedError
 
-    def get_upload_uri(self, task_metadata: Dict, object_key: str):
+    def get_upload_uri(self, task_group_metadata: Dict, object_key: str):
         return ""

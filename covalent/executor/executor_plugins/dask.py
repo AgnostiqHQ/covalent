@@ -327,7 +327,7 @@ class DaskExecutor(AsyncBaseExecutor):
 
         return future.key
 
-    async def poll(self, task_metadata: Dict, job_handle: Any):
+    async def poll(self, task_group_metadata: Dict, job_handle: Any):
 
         return -1
 
@@ -361,9 +361,9 @@ class DaskExecutor(AsyncBaseExecutor):
         }
         return task_result
 
-    def get_upload_uri(self, task_metadata: Dict, object_key: str):
-        dispatch_id = task_metadata["dispatch_id"]
-        node_id = task_metadata["node_id"]
+    def get_upload_uri(self, task_group_metadata: Dict, object_key: str):
+        dispatch_id = task_group_metadata["dispatch_id"]
+        task_group_id = task_group_metadata["task_group_id"]
 
-        filename = f"asset_{dispatch_id}-{node_id}_{object_key}.pkl"
+        filename = f"asset_{dispatch_id}-{task_group_id}_{object_key}.pkl"
         return os.path.join("file://", self.cache_dir, filename)
