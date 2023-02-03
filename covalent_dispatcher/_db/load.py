@@ -38,7 +38,6 @@ log_stack_info = logger.log_stack_info
 
 def _result_from(lattice_record: Lattice) -> Result:
     """Re-hydrate result object from the lattice record."""
-
     function = load_file(
         storage_path=lattice_record.storage_path, filename=lattice_record.function_filename
     )
@@ -92,7 +91,6 @@ def _result_from(lattice_record: Lattice) -> Result:
     name = lattice_record.name
     executor = lattice_record.executor
     workflow_executor = lattice_record.workflow_executor
-    results_dir = lattice_record.results_dir
     num_nodes = lattice_record.electron_num
 
     attributes = {
