@@ -30,7 +30,6 @@ class TriggerLoader:
             k: tr for k, tr in tr_mod.__dict__.items() if k.endswith("Trigger")
         }
         self.orig_sys_path = sys.path.copy()
-
         self.load_user_triggers()
 
     def __new__(cls):
@@ -52,7 +51,7 @@ class TriggerLoader:
             sys.path.append(str(user_triggers_path))
 
             # This is supposed to look un-importable
-            import user_triggers  # nopycln: import
+            import user_triggers  # type: ignore # nopycln: import
 
             for k, v in user_triggers.__dict__.items():
                 if k.endswith("Trigger"):
