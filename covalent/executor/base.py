@@ -292,9 +292,6 @@ class BaseExecutor(_AbstractBaseExecutor):
     async def send(
         self,
         task_specs: List[Dict],
-        deps_ref: str,
-        call_before_ref: str,
-        call_after_ref: str,
         resources: dict,
         task_group_metadata: dict,
     ):
@@ -481,9 +478,6 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
     async def send(
         self,
         task_specs: List[Dict],
-        deps_ref: str,
-        call_before_ref: str,
-        call_after_ref: str,
         resources: dict,
         task_group_metadata: dict,
     ):

@@ -107,9 +107,6 @@ def _gather_deps(deps, call_before_objs_json, call_after_objs_json) -> Tuple[Lis
 # URIs are just file paths
 def run_task_from_uris(
     task_specs: List[Dict],
-    deps_ref: str,
-    call_before_ref: str,
-    call_after_ref: str,
     resources: dict,
     output_uri: str,
     stdout_uri: str,
@@ -126,11 +123,11 @@ def run_task_from_uris(
         with redirect_stdout(stdout), redirect_stderr(stderr):
             try:
                 task = task_specs[0]
-                function_ref = task["function_ref"]
-                args_refs = task["args_refs"]
-                kwargs_refs = task["kwargs_refs"]
+                function_key = task["function_key"]
+                args_keys = task["args_keys"]
+                kwargs_keys = task["kwargs_keys"]
 
-                function_uri = resources[function_ref]
+                function_uri = resources[function_key]
                 if function_uri.startswith(prefix):
                     function_uri = function_uri[prefix_len:]
 
@@ -139,33 +136,36 @@ def run_task_from_uris(
 
                 ser_args = []
                 ser_kwargs = {}
-                args_uris = [resources[index] for index in args_refs]
+                args_uris = [resources[index] for index in args_keys]
                 for uri in args_uris:
                     if uri.startswith(prefix):
                         uri = uri[prefix_len:]
                     with open(uri, "rb") as f:
                         ser_args.append(pickle.load(f))
 
-                kwargs_uris = {k: resources[v] for k, v in kwargs_refs.items()}
+                kwargs_uris = {k: resources[v] for k, v in kwargs_keys.items()}
                 for key, uri in kwargs_uris.items():
                     if uri.startswith(prefix):
                         uri = uri[prefix_len:]
                     with open(uri, "rb") as f:
                         ser_kwargs[key] = pickle.load(f)
 
-                deps_uri = resources[deps_ref]
+                deps_key = task["deps_key"]
+                deps_uri = resources[deps_key]
                 if deps_uri.startswith(prefix):
                     deps_uri = deps_uri[prefix_len:]
                 with open(deps_uri, "rb") as f:
                     deps_json = pickle.load(f)
 
-                call_before_uri = resources[call_before_ref]
+                call_before_key = task["call_before_key"]
+                call_before_uri = resources[call_before_key]
                 if call_before_uri.startswith(prefix):
                     call_before_uri = call_before_uri[prefix_len:]
                 with open(call_before_uri, "rb") as f:
                     call_before_json = pickle.load(f)
 
-                call_after_uri = resources[call_after_ref]
+                call_after_key = task["call_after_key"]
+                call_after_uri = resources[call_after_key]
                 if call_after_uri.startswith(prefix):
                     call_after_uri = call_after_uri[prefix_len:]
                 with open(call_after_uri, "rb") as f:
@@ -278,9 +278,6 @@ class DaskExecutor(AsyncBaseExecutor):
     async def send(
         self,
         task_specs: List[Dict],
-        deps_ref: str,
-        call_before_ref: str,
-        call_after_ref: str,
         resources: dict,
         task_group_metadata: dict,
     ):
@@ -308,9 +305,6 @@ class DaskExecutor(AsyncBaseExecutor):
         future = dask_client.submit(
             run_task_from_uris,
             task_specs,
-            deps_ref,
-            call_before_ref,
-            call_after_ref,
             resources,
             output_uri,
             stdout_uri,
