@@ -9,13 +9,14 @@ The following API documentation describes how to use Covalent.
 - :ref:`local_executor` is used to execute electrons locally
 - :ref:`file_transfer` is used to queue remote or local file transfer operations prior or post electron execution.
 - :ref:`file_transfer_strategies` are used to perform download/upload/copy operations over various protocols.
+- :ref:`triggers` are used to execute a saved workflow depending on occurrence of a desired event.
 - :ref:`dask_executor` is used to execute electrons in a Dask cluster
 - :ref:`deps` are used to specify any kind of electron dependency
 - :ref:`deps_pip` are used to specify PyPI packages that are required to run an electron
 - :ref:`deps_bash` are used to specify optional pre-execution shell commands for an electron
 - :ref:`deps_call` are used to specify functions or dependencies that are called in an electron's execution environment
 - :ref:`results_interface` is used for collecting and manipulating results
-- :ref:`dispatcher_interface` is used for dispatching workflows
+- :ref:`dispatcher_interface` is used for dispatching workflows and stopping triggered dispatches
 - The :ref:`dispatcher_server_api` is used for interfacing with the Covalent server
 
 .. _electrons_api:
@@ -99,6 +100,24 @@ A set of classes with a shared interface to perform copy, download, and upload o
     :members:
     :inherited-members:
 
+
+----------------------------------------------------------------
+
+.. _triggers:
+
+Triggers
+"""""""""
+
+Execute a saved workflow depending on occurrence of a desired event.
+
+.. automodule:: covalent.triggers
+   :imported-members:
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+----------------------------------------------------------------
+
 .. _dask_executor:
 
 Dask Executor
@@ -165,10 +184,11 @@ Functions, shell commands, PyPI packages, and other types of dependencies to be 
 Dispatcher
 """"""""""""""
 
-Dispatching jobs to the server
+Dispatching jobs to the server and stopping triggered dispatches
 
 .. autofunction:: dispatch
 .. autofunction:: dispatch_sync
+.. autofunction:: stop_triggers
 
 
 ----------------------------------------------------------------
