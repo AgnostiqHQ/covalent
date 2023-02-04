@@ -38,17 +38,20 @@ def mock_initialize_result_object(lattice):
     return result
 
 
+@pytest.mark.parametrize("disable_run", [True, False])
 @pytest.mark.asyncio
-async def test_run_dispatcher(mocker):
+async def test_run_dispatcher(mocker, disable_run):
     mock_run_dispatch = mocker.patch("covalent_dispatcher._core.run_dispatch")
     mock_make_dispatch = mocker.patch(
         "covalent_dispatcher._core.make_dispatch", return_value=DISPATCH_ID
     )
     json_lattice = '{"workflow_function": "asdf"}'
-    dispatch_id = await run_dispatcher(json_lattice)
+    dispatch_id = await run_dispatcher(json_lattice, disable_run)
     assert dispatch_id == DISPATCH_ID
+
     mock_make_dispatch.assert_called_with(json_lattice)
-    mock_run_dispatch.assert_called_with(dispatch_id)
+    if not disable_run:
+        mock_run_dispatch.assert_called_with(dispatch_id)
 
 
 def test_cancel_running_dispatch(mocker):

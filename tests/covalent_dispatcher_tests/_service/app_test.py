@@ -86,9 +86,10 @@ def test_db_file():
     return MockDataStore(db_URL="sqlite+pysqlite:////tmp/testdb.sqlite")
 
 
-def test_submit(mocker, app, client):
+@pytest.mark.parametrize("disable_run", [True, False])
+def test_submit(mocker, app, client, disable_run):
     mocker.patch("covalent_dispatcher.run_dispatcher", return_value=DISPATCH_ID)
-    response = client.post("/api/submit", data=json.dumps({}))
+    response = client.post("/api/submit", data=json.dumps({}), params={"disable_run": disable_run})
     assert response.json() == DISPATCH_ID
 
 

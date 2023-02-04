@@ -30,6 +30,7 @@ import covalent as ct
 from covalent._shared_files.defaults import parameter_prefix
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 from covalent.executor import LocalExecutor
+from covalent.triggers import BaseTrigger
 
 
 def subtask(x):
@@ -402,14 +403,14 @@ def test_encode_metadata():
     import json
 
     le = LocalExecutor()
-    metadata = {}
-    metadata["executor"] = le
-    metadata["workflow_executor"] = "local"
-    metadata["deps"] = {}
+    bt = BaseTrigger()
+
+    metadata = {"executor": le, "workflow_executor": "local", "deps": {}}
     metadata["deps"]["bash"] = ct.DepsBash("yum install gcc")
     metadata["deps"]["pip"] = ct.DepsPip(["sklearn"])
     metadata["call_before"] = []
     metadata["call_after"] = []
+    metadata["triggers"] = [bt]
 
     json_metadata = json.dumps(encode_metadata(metadata))
 
@@ -419,6 +420,8 @@ def test_encode_metadata():
     assert new_metadata["executor_data"] == le.to_dict()
     assert new_metadata["workflow_executor"] == "local"
     assert new_metadata["workflow_executor_data"] == {}
+
+    assert new_metadata["triggers"] == [bt.to_dict()]
 
     assert ct.DepsBash("yum install gcc").to_dict() == new_metadata["deps"]["bash"]
     assert ct.DepsPip(["sklearn"]).to_dict() == new_metadata["deps"]["pip"]
