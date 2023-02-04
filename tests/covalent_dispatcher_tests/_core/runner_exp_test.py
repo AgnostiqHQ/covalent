@@ -41,7 +41,7 @@ from covalent_dispatcher._core.runner_exp import (
     _mark_ready,
     _poll_task_status,
     _submit_abstract_task_group,
-    run_abstract_task,
+    run_abstract_task_group,
 )
 from covalent_dispatcher._dal.result import Result as SRVResult
 from covalent_dispatcher._dal.result import get_result_object
@@ -460,7 +460,7 @@ async def test_event_listener(mocker):
 
 
 @pytest.mark.asyncio
-async def test_run_abstract_task(mocker):
+async def test_run_abstract_task_group(mocker):
     mock_listen = AsyncMock()
     me = MockManagedExecutor()
     me.poll = AsyncMock(return_value=0)
@@ -476,7 +476,8 @@ async def test_run_abstract_task(mocker):
     node_result = {"node_id": 0, "status": RESULT_STATUS.RUNNING}
 
     mock_submit = mocker.patch(
-        "covalent_dispatcher._core.runner_exp._submit_abstract_task", return_value=node_result
+        "covalent_dispatcher._core.runner_exp._submit_abstract_task_group",
+        return_value=[node_result],
     )
 
     mock_update = mocker.patch(
@@ -488,11 +489,22 @@ async def test_run_abstract_task(mocker):
     node_name = "task"
     abstract_inputs = {"args": [], "kwargs": {}}
     selected_executor = ["local", {}]
-    await run_abstract_task(
+    mock_function_id = node_id
+    mock_args_ids = abstract_inputs["args"]
+    mock_kwargs_ids = abstract_inputs["kwargs"]
+
+    mock_task = {
+        "function_id": mock_function_id,
+        "args_ids": mock_args_ids,
+        "kwargs_ids": mock_kwargs_ids,
+    }
+    known_nodes = [1, 2]
+
+    await run_abstract_task_group(
         dispatch_id,
         node_id,
-        node_name,
-        abstract_inputs,
+        [mock_task],
+        known_nodes,
         selected_executor,
     )
 
@@ -502,7 +514,7 @@ async def test_run_abstract_task(mocker):
 
 
 @pytest.mark.asyncio
-async def test_run_abstract_task_handles_old_execs(mocker):
+async def test_run_abstract_task_group_handles_old_execs(mocker):
     mock_listen = AsyncMock()
     me = MockExecutor()
     mocker.patch(
@@ -512,19 +524,30 @@ async def test_run_abstract_task_handles_old_execs(mocker):
 
     mock_legacy_run = mocker.patch("covalent_dispatcher._core.runner.run_abstract_task")
 
-    mock_submit = mocker.patch("covalent_dispatcher._core.runner_exp._submit_abstract_task")
+    mock_submit = mocker.patch("covalent_dispatcher._core.runner_exp._submit_abstract_task_group")
 
     dispatch_id = "dispatch"
     node_id = 0
     node_name = "task"
     abstract_inputs = {"args": [], "kwargs": {}}
     selected_executor = ["local", {}]
+    mock_function_id = node_id
+    mock_args_ids = abstract_inputs["args"]
+    mock_kwargs_ids = abstract_inputs["kwargs"]
 
-    await run_abstract_task(
+    mock_task = {
+        "function_id": mock_function_id,
+        "name": node_name,
+        "args_ids": mock_args_ids,
+        "kwargs_ids": mock_kwargs_ids,
+    }
+    known_nodes = [1, 2]
+
+    await run_abstract_task_group(
         dispatch_id,
         node_id,
-        node_name,
-        abstract_inputs,
+        [mock_task],
+        known_nodes,
         selected_executor,
     )
 
@@ -533,41 +556,7 @@ async def test_run_abstract_task_handles_old_execs(mocker):
 
 
 @pytest.mark.asyncio
-async def test_run_abstract_task_handles_sublattices(mocker):
-    """Check that sublattices are redirected to old runner"""
-
-    from covalent._shared_files.defaults import sublattice_prefix
-
-    me = MockExecutor()
-    mocker.patch(
-        "covalent_dispatcher._core.runner_exp.get_executor",
-        return_value=me,
-    )
-
-    mock_legacy_run = mocker.patch("covalent_dispatcher._core.runner.run_abstract_task")
-
-    mock_submit = mocker.patch("covalent_dispatcher._core.runner_exp._submit_abstract_task")
-
-    dispatch_id = "dispatch"
-    node_id = 0
-    node_name = sublattice_prefix
-    abstract_inputs = {"args": [], "kwargs": {}}
-    selected_executor = ["local", {}]
-
-    await run_abstract_task(
-        dispatch_id,
-        node_id,
-        node_name,
-        abstract_inputs,
-        selected_executor,
-    )
-
-    mock_legacy_run.assert_called()
-    mock_submit.assert_not_awaited()
-
-
-@pytest.mark.asyncio
-async def test_run_abstract_task_handles_bad_executors(mocker):
+async def test_run_abstract_task_group_handles_bad_executors(mocker):
     """Check handling of executors during get_executor"""
 
     from covalent._shared_files.defaults import sublattice_prefix
@@ -582,12 +571,22 @@ async def test_run_abstract_task_handles_bad_executors(mocker):
     node_name = sublattice_prefix
     abstract_inputs = {"args": [], "kwargs": {}}
     selected_executor = ["local", {}]
+    mock_function_id = node_id
+    mock_args_ids = abstract_inputs["args"]
+    mock_kwargs_ids = abstract_inputs["kwargs"]
 
-    await run_abstract_task(
+    mock_task = {
+        "function_id": mock_function_id,
+        "args_ids": mock_args_ids,
+        "kwargs_ids": mock_kwargs_ids,
+    }
+    known_nodes = [1, 2]
+
+    await run_abstract_task_group(
         dispatch_id,
         node_id,
-        node_name,
-        abstract_inputs,
+        [mock_task],
+        known_nodes,
         selected_executor,
     )
 

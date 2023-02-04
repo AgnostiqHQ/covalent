@@ -58,98 +58,98 @@ _job_event_listener = None
 # {"task_metadata": dict, "event": "FAILED", "detail": str}
 
 
-# Domain: runner
-async def _submit_abstract_task(
-    dispatch_id: str,
-    task_id: int,
-    node_name: str,
-    abstract_inputs: Dict,
-    executor: AsyncBaseExecutor,
-) -> None:
+# # Domain: runner
+# async def _submit_abstract_task(
+#     dispatch_id: str,
+#     task_id: int,
+#     node_name: str,
+#     abstract_inputs: Dict,
+#     executor: AsyncBaseExecutor,
+# ) -> None:
 
-    try:
+#     try:
 
-        if not type(executor).SUPPORTS_MANAGED_EXECUTION:
-            raise NotImplementedError("Executor does not support managed execution")
+#         if not type(executor).SUPPORTS_MANAGED_EXECUTION:
+#             raise NotImplementedError("Executor does not support managed execution")
 
-        # Get upload URIs
+#         # Get upload URIs
 
-        node_result = datamgr.generate_node_result(
-            node_id=task_id,
-            start_time=datetime.now(timezone.utc),
-            status=RESULT_STATUS.RUNNING,
-        )
+#         node_result = datamgr.generate_node_result(
+#             node_id=task_id,
+#             start_time=datetime.now(timezone.utc),
+#             status=RESULT_STATUS.RUNNING,
+#         )
 
-        task_group_metadata = {
-            "dispatch_id": dispatch_id,
-            "task_ids": [task_id],
-            "task_group_id": task_id,
-        }
+#         task_group_metadata = {
+#             "dispatch_id": dispatch_id,
+#             "task_ids": [task_id],
+#             "task_group_id": task_id,
+#         }
 
-        function_uri = executor.get_upload_uri(task_group_metadata, "function")
-        deps_uri = executor.get_upload_uri(task_group_metadata, "deps")
-        call_before_uri = executor.get_upload_uri(task_group_metadata, "call_before")
-        call_after_uri = executor.get_upload_uri(task_group_metadata, "call_after")
+#         function_uri = executor.get_upload_uri(task_group_metadata, "function")
+#         deps_uri = executor.get_upload_uri(task_group_metadata, "deps")
+#         call_before_uri = executor.get_upload_uri(task_group_metadata, "call_before")
+#         call_after_uri = executor.get_upload_uri(task_group_metadata, "call_after")
 
-        abstract_args = abstract_inputs["args"]
-        abstract_kwargs = abstract_inputs["kwargs"]
+#         abstract_args = abstract_inputs["args"]
+#         abstract_kwargs = abstract_inputs["kwargs"]
 
-        distinct_nodes = set(abstract_args + list(abstract_kwargs.values()))
+#         distinct_nodes = set(abstract_args + list(abstract_kwargs.values()))
 
-        node_upload_uris = {
-            node_id: executor.get_upload_uri(task_group_metadata, f"node_{node_id}")
-            for node_id in distinct_nodes
-        }
+#         node_upload_uris = {
+#             node_id: executor.get_upload_uri(task_group_metadata, f"node_{node_id}")
+#             for node_id in distinct_nodes
+#         }
 
-        await am.upload_asset_for_nodes(dispatch_id, "function", {task_id: function_uri})
-        await am.upload_asset_for_nodes(dispatch_id, "deps", {task_id: deps_uri})
-        await am.upload_asset_for_nodes(dispatch_id, "call_before", {task_id: call_before_uri})
-        await am.upload_asset_for_nodes(dispatch_id, "call_after", {task_id: call_after_uri})
+#         await am.upload_asset_for_nodes(dispatch_id, "function", {task_id: function_uri})
+#         await am.upload_asset_for_nodes(dispatch_id, "deps", {task_id: deps_uri})
+#         await am.upload_asset_for_nodes(dispatch_id, "call_before", {task_id: call_before_uri})
+#         await am.upload_asset_for_nodes(dispatch_id, "call_after", {task_id: call_after_uri})
 
-        await am.upload_asset_for_nodes(dispatch_id, "output", node_upload_uris)
+#         await am.upload_asset_for_nodes(dispatch_id, "output", node_upload_uris)
 
-        args_uris = [node_upload_uris[node_id] for node_id in abstract_args]
-        kwargs_uris = {k: node_upload_uris[v] for k, v in abstract_kwargs.items()}
+#         args_uris = [node_upload_uris[node_id] for node_id in abstract_args]
+#         kwargs_uris = {k: node_upload_uris[v] for k, v in abstract_kwargs.items()}
 
-        resources = node_upload_uris
-        deps_id = "deps"
-        call_before_id = "call_before"
-        call_after_id = "call_after"
-        resources[task_id] = function_uri
-        resources[deps_id] = deps_uri
-        resources[call_before_id] = call_before_uri
-        resources[call_after_id] = call_after_uri
+#         resources = node_upload_uris
+#         deps_id = "deps"
+#         call_before_id = "call_before"
+#         call_after_id = "call_after"
+#         resources[task_id] = function_uri
+#         resources[deps_id] = deps_uri
+#         resources[call_before_id] = call_before_uri
+#         resources[call_after_id] = call_after_uri
 
-        task_spec = {
-            "function_id": task_id,
-            "args_ids": abstract_args,
-            "kwargs_ids": abstract_kwargs,
-            "deps_id": deps_id,
-            "call_before_id": call_before_id,
-            "call_after_id": call_after_id,
-        }
+#         task_spec = {
+#             "function_id": task_id,
+#             "args_ids": abstract_args,
+#             "kwargs_ids": abstract_kwargs,
+#             "deps_id": deps_id,
+#             "call_before_id": call_before_id,
+#             "call_after_id": call_after_id,
+#         }
 
-        job_handle = await executor.send(
-            [task_spec],
-            resources,
-            task_group_metadata,
-        )
+#         job_handle = await executor.send(
+#             [task_spec],
+#             resources,
+#             task_group_metadata,
+#         )
 
-        _job_handles[(dispatch_id, task_id)] = job_handle
+#         _job_handles[(dispatch_id, task_id)] = job_handle
 
-    except Exception as ex:
-        tb = "".join(traceback.TracebackException.from_exception(ex).format())
-        app_log.debug(f"Exception occurred when running task {task_id}:")
-        app_log.debug(tb)
-        error_msg = tb if debug_mode else str(ex)
-        node_result = datamgr.generate_node_result(
-            node_id=task_id,
-            end_time=datetime.now(timezone.utc),
-            status=RESULT_STATUS.FAILED,
-            error=error_msg,
-        )
+#     except Exception as ex:
+#         tb = "".join(traceback.TracebackException.from_exception(ex).format())
+#         app_log.debug(f"Exception occurred when running task {task_id}:")
+#         app_log.debug(tb)
+#         error_msg = tb if debug_mode else str(ex)
+#         node_result = datamgr.generate_node_result(
+#             node_id=task_id,
+#             end_time=datetime.now(timezone.utc),
+#             status=RESULT_STATUS.FAILED,
+#             error=error_msg,
+#         )
 
-    return node_result
+#     return node_result
 
 
 # Domain: runner
@@ -300,63 +300,63 @@ async def _get_task_result(task_metadata: Dict):
     await datamgr.update_node_result(dispatch_id, node_result)
 
 
-async def run_abstract_task(
-    dispatch_id: str,
-    node_id: int,
-    node_name: str,
-    abstract_inputs: Dict,
-    selected_executor: Any,
-) -> None:
+# async def run_abstract_task(
+#     dispatch_id: str,
+#     node_id: int,
+#     node_name: str,
+#     abstract_inputs: Dict,
+#     selected_executor: Any,
+# ) -> None:
 
-    global _job_event_listener
-    if not _job_event_listener:
-        _job_event_listener = asyncio.create_task(_listen_for_job_events())
+#     global _job_event_listener
+#     if not _job_event_listener:
+#         _job_event_listener = asyncio.create_task(_listen_for_job_events())
 
-    try:
-        app_log.debug(f"Attempting to instantiate executor {selected_executor}")
-        executor = get_executor(node_id, selected_executor)
-        if not type(executor).SUPPORTS_MANAGED_EXECUTION:
-            coro = runner_legacy.run_abstract_task(
-                dispatch_id,
-                node_id,
-                node_name,
-                abstract_inputs,
-                selected_executor,
-            )
-            app_log.debug(f"Using legacy runner for task {dispatch_id}:{node_id}")
-            asyncio.create_task(coro)
-            return
+#     try:
+#         app_log.debug(f"Attempting to instantiate executor {selected_executor}")
+#         executor = get_executor(node_id, selected_executor)
+#         if not type(executor).SUPPORTS_MANAGED_EXECUTION:
+#             coro = runner_legacy.run_abstract_task(
+#                 dispatch_id,
+#                 node_id,
+#                 node_name,
+#                 abstract_inputs,
+#                 selected_executor,
+#             )
+#             app_log.debug(f"Using legacy runner for task {dispatch_id}:{node_id}")
+#             asyncio.create_task(coro)
+#             return
 
-        node_result = await _submit_abstract_task(
-            dispatch_id,
-            node_id,
-            node_name,
-            abstract_inputs,
-            executor,
-        )
+#         node_result = await _submit_abstract_task(
+#             dispatch_id,
+#             node_id,
+#             node_name,
+#             abstract_inputs,
+#             executor,
+#         )
 
-    except Exception as ex:
-        tb = "".join(traceback.TracebackException.from_exception(ex).format())
-        app_log.debug("Exception when trying to instantiate executor:")
-        app_log.debug(tb)
-        error_msg = tb if debug_mode else str(ex)
-        ts = datetime.now(timezone.utc)
-        node_result = datamgr.generate_node_result(
-            node_id=node_id,
-            start_time=ts,
-            end_time=ts,
-            status=RESULT_STATUS.FAILED,
-            error=error_msg,
-        )
+#     except Exception as ex:
+#         tb = "".join(traceback.TracebackException.from_exception(ex).format())
+#         app_log.debug("Exception when trying to instantiate executor:")
+#         app_log.debug(tb)
+#         error_msg = tb if debug_mode else str(ex)
+#         ts = datetime.now(timezone.utc)
+#         node_result = datamgr.generate_node_result(
+#             node_id=node_id,
+#             start_time=ts,
+#             end_time=ts,
+#             status=RESULT_STATUS.FAILED,
+#             error=error_msg,
+#         )
 
-    await datamgr.update_node_result(dispatch_id, node_result)
-    if node_result["status"] == RESULT_STATUS.RUNNING:
-        task_group_metadata = {
-            "dispatch_id": dispatch_id,
-            "task_ids": [node_id],
-            "task_group_id": node_id,
-        }
-        await _poll_task_status(task_group_metadata, executor)
+#     await datamgr.update_node_result(dispatch_id, node_result)
+#     if node_result["status"] == RESULT_STATUS.RUNNING:
+#         task_group_metadata = {
+#             "dispatch_id": dispatch_id,
+#             "task_ids": [node_id],
+#             "task_group_id": node_id,
+#         }
+#         await _poll_task_status(task_group_metadata, executor)
 
 
 async def run_abstract_task_group(
@@ -377,6 +377,28 @@ async def run_abstract_task_group(
         app_log.debug(f"Running task group {dispatch_id}:{task_group_id}")
         executor = get_executor(task_group_id, selected_executor)
 
+        # Legacy runner doesn't yet support task packing
+        if not type(executor).SUPPORTS_MANAGED_EXECUTION:
+            if len(task_seq) == 1:
+                task_spec = task_seq[0]
+                node_id = task_spec["function_id"]
+                name = task_spec["name"]
+                abstract_inputs = {
+                    "args": task_spec["args_ids"],
+                    "kwargs": task_spec["kwargs_ids"],
+                }
+                coro = runner_legacy.run_abstract_task(
+                    dispatch_id,
+                    node_id,
+                    name,
+                    abstract_inputs,
+                    selected_executor,
+                )
+                asyncio.create_task(coro)
+                return
+
+            else:
+                raise RuntimeError("Task packing not supported by executor plugin")
         node_results = await _submit_abstract_task_group(
             dispatch_id,
             task_group_id,

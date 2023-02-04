@@ -183,6 +183,7 @@ async def _submit_task(dispatch_id: str, node_id: int):
             app_log.debug(f"Using new runner for task {node_id}")
             task_spec = {
                 "function_id": node_id,
+                "name": node_name,
                 "args_ids": abs_task_input["args"],
                 "kwargs_ids": abs_task_input["kwargs"],
             }
