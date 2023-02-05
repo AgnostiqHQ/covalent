@@ -20,7 +20,8 @@
 
 """Unit tests to test whether electrons inherit lattice metadata correctly"""
 
-import json
+
+from covalent._workflow.transport import _TransportGraph
 
 
 def test_electrons_get_lattice_metadata_1():
@@ -46,15 +47,15 @@ def test_electrons_get_lattice_metadata_1():
     hello_world.build_graph(1)
 
     data = hello_world.transport_graph.serialize_to_json()
-    data = json.loads(data)
+    # data = json.loads(data)
 
-    for i in data["nodes"]:
-        if "parameter" not in i["name"]:
-            print(i)
-            assert i["metadata"]["executor"] == "electron_executor"
-            assert i["metadata"]["deps"]["bash"] == electron_bash_dep.to_dict()
-            assert len(i["metadata"]["call_before"]) == 2
-            assert len(i["metadata"]["call_after"]) == 0
+    tg = _TransportGraph()
+    tg.deserialize_from_json(data)
+    metadata = tg.get_node_value(0, "metadata")
+    assert metadata["executor"] == "electron_executor"
+    assert metadata["deps"]["bash"] == electron_bash_dep.to_dict()
+    assert len(metadata["call_before"]) == 2
+    assert len(metadata["call_after"]) == 0
 
 
 def test_electrons_get_lattice_metadata_2():
@@ -82,14 +83,14 @@ def test_electrons_get_lattice_metadata_2():
     hello_world.build_graph(1)
 
     data = hello_world.transport_graph.serialize_to_json()
-    data = json.loads(data)
 
-    for i in data["nodes"]:
-        if "parameter" not in i["name"]:
-            assert i["metadata"]["executor"] == "lattice_executor"
-            assert i["metadata"]["deps"]["bash"] == lattice_bash_dep.to_dict()
-            assert len(i["metadata"]["call_before"]) == 1
-            assert len(i["metadata"]["call_after"]) == 1
+    tg = _TransportGraph()
+    tg.deserialize_from_json(data)
+    metadata = tg.get_node_value(0, "metadata")
+    assert metadata["executor"] == "lattice_executor"
+    assert metadata["deps"]["bash"] == lattice_bash_dep.to_dict()
+    assert len(metadata["call_before"]) == 1
+    assert len(metadata["call_after"]) == 1
 
 
 def test_electrons_get_lattice_metadata_3():

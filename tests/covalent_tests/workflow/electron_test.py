@@ -22,12 +22,8 @@
 
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
-from covalent._workflow.electron import (
-    Electron,
-    _build_sublattice_graph,
-    to_decoded_electron_collection,
-)
-from covalent._workflow.lattice import Lattice
+from covalent._shared_files.defaults import WAIT_EDGE_NAME
+from covalent._workflow.electron import Electron, to_decoded_electron_collection
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 from covalent.executor.executor_plugins.local import LocalExecutor
 
@@ -73,8 +69,7 @@ def test_wait_for_building():
     """Test to check whether the graph is built correctly with `wait_for`."""
 
     workflow.build_graph()
-    assert workflow.transport_graph.get_edge_data(0, 4)[0]["wait_for"]
-    assert workflow.transport_graph.get_edge_data(0, 4)[0]["edge_name"] == "!waiting_edge"
+    assert workflow.transport_graph.get_edge_data(0, 4)[0]["edge_name"] == WAIT_EDGE_NAME
 
 
 def test_wait_for_post_processing():
@@ -84,10 +79,10 @@ def test_wait_for_post_processing():
     with active_lattice_manager.claim(workflow):
         workflow.post_processing = True
         workflow.electron_outputs = [
-            (0, TransportableObject(4)),
-            (2, TransportableObject(12)),
-            (4, TransportableObject(125)),
-            (6, TransportableObject(1500)),
+            4,
+            12,
+            125,
+            1500,
         ]
         assert workflow.workflow_function.get_deserialized()() == 1500
 
@@ -100,9 +95,9 @@ def test_wait_for_post_processing_when_returning_waiting_electron():
     with active_lattice_manager.claim(workflow_2):
         workflow_2.post_processing = True
         workflow_2.electron_outputs = [
-            (0, TransportableObject(4)),
-            (2, TransportableObject(12)),
-            (4, TransportableObject(64)),
+            4,
+            12,
+            64,
         ]
         assert workflow_2.workflow_function.get_deserialized()() == 64
 
@@ -160,8 +155,9 @@ def test_injected_inputs_are_not_in_tg():
     workflow.build_graph(2)
     g = workflow.transport_graph._graph
 
-    assert list(g.nodes) == [0, 1]
-    assert list(g.edges) == [(1, 0, 0)]
+    # Account for postprocessing node
+    assert list(g.nodes) == [0, 1, 2]
+    assert set(g.edges) == set([(1, 0, 0), (0, 2, 0), (0, 2, 1)])
 
 
 def test_metadata_in_electron_list():
@@ -233,13 +229,14 @@ def test_autogen_list_electrons():
 
     g = workflow.transport_graph._graph
 
-    assert list(g.nodes) == [0, 1, 2, 3]
+    # Account for postprocessing node
+    assert list(g.nodes) == [0, 1, 2, 3, 4]
     fn = g.nodes[1]["function"].get_deserialized()
     assert fn(2, 5, 7) == [2, 5, 7]
 
     assert g.nodes[2]["value"].get_deserialized() == 5
     assert g.nodes[3]["value"].get_deserialized() == 7
-    assert set(g.edges) == set([(1, 0, 0), (2, 1, 0), (3, 1, 0)])
+    assert set(g.edges) == set([(1, 0, 0), (2, 1, 0), (3, 1, 0), (0, 4, 0), (0, 4, 1), (1, 4, 0)])
 
 
 def test_autogen_dict_electrons():
@@ -255,88 +252,10 @@ def test_autogen_dict_electrons():
 
     g = workflow.transport_graph._graph
 
-    assert list(g.nodes) == [0, 1, 2, 3]
+    # Account for postprocessing node
+    assert list(g.nodes) == [0, 1, 2, 3, 4]
     fn = g.nodes[1]["function"].get_deserialized()
     assert fn(x=2, y=5, z=7) == {"x": 2, "y": 5, "z": 7}
     assert g.nodes[2]["value"].get_deserialized() == 5
     assert g.nodes[3]["value"].get_deserialized() == 7
-    assert set(g.edges) == set([(1, 0, 0), (2, 1, 0), (3, 1, 0)])
-
-
-def test_build_sublattice_graph():
-    import json
-
-    @ct.electron
-    def task(x):
-        return x
-
-    @ct.lattice
-    def workflow(x):
-        return task(x)
-
-    parent_metadata = {
-        "executor": "parent_executor",
-        "executor_data": {},
-        "workflow_executor": "my_postprocessor",
-        "workflow_executor_data": {},
-        "deps": {"bash": None, "pip": None},
-        "call_before": [],
-        "call_after": [],
-        "results_dir": None,
-    }
-
-    json_lattice = _build_sublattice_graph(workflow, json.dumps(parent_metadata), 1)
-    lattice = Lattice.deserialize_from_json(json_lattice)
-
-    # Account for injected reconstruct electron
-    assert list(lattice.transport_graph._graph.nodes) == [0, 1, 2]
-    for k in lattice.metadata.keys():
-        # results_dir will be deprecated soon
-        if k != "results_dir":
-            assert parent_metadata[k] == lattice.metadata[k]
-
-
-def test_injected_sublattice_electrons():
-    import json
-
-    from covalent._shared_files.defaults import sublattice_prefix
-
-    @ct.electron
-    def task(x):
-        return x**2
-
-    @ct.lattice
-    def subworkflow(x):
-        return task(x)
-
-    @ct.lattice
-    def workflow(x):
-        return ct.electron(subworkflow)(x)
-
-    parent_metadata = {
-        "executor": "parent_executor",
-        "executor_data": {},
-        "workflow_executor": "my_postprocessor",
-        "workflow_executor_data": {},
-        "deps": {"bash": None, "pip": None},
-        "call_before": [],
-        "call_after": [],
-        "results_dir": None,
-    }
-
-    workflow.metadata = parent_metadata
-    workflow.build_graph(3)
-
-    tg = workflow.transport_graph
-    assert len(tg._graph.nodes) == 5
-
-    assert tg.get_node_value(0, "name").startswith(sublattice_prefix)
-
-    lat = tg.get_node_value(1, "value").get_deserialized()
-    assert lat.serialize_to_json() == subworkflow.serialize_to_json()
-
-    json_meta = tg.get_node_value(2, "value").get_deserialized()
-    assert json.dumps(parent_metadata) == json_meta
-
-    lat_arg = tg.get_node_value(3, "value").get_deserialized()
-    assert lat_arg == 3
+    assert set(g.edges) == set([(1, 0, 0), (2, 1, 0), (3, 1, 0), (0, 4, 0), (0, 4, 1), (1, 4, 0)])
