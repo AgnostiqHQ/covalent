@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.216.0-rc.0] - 2023-02-05
+
+### Authors
+
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+
+
 ### Removed
 
 - References to specific IBMQ hub/group/project in tutorial 5
