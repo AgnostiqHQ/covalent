@@ -559,21 +559,26 @@ def electron(
 
     Keyword Args:
         backend: DEPRECATED: Same as `executor`.
-        executor: Alternative executor object to be used by the electron execution. If not passed, the dask
-            executor is used by default.
-        deps_bash: An optional DepsBash object specifying a list of shell commands to run before `_func`
-        deps_pip: An optional DepsPip object specifying a list of PyPI packages to install before running `_func`
-        call_before: An optional list of DepsCall objects specifying python functions to invoke before the electron
-        call_after: An optional list of DepsCall objects specifying python functions to invoke after the electron
-        files: An optional list of FileTransfer objects which copy files to/from remote or local filesystems.
+        executor: Alternative executor object to be used by the electron execution.
+            If not passed, the dask executor is used by default.
+        files: An optional list of FileTransfer objects which copy files to/from
+            remote or local filesystems.
+        deps_bash: An optional (list of) shell command(s) to run before `_func`.
+        deps_pip: An optional (list of) PyPI package(s) to install before running `_func`.
+        call_before: An optional (list of) DepsCall object(s) specifying python
+            functions to invoke before the electron.
+        call_after: An optional (list of) DepsCall object(s) specifying python
+            functions to invoke after the electron.
 
     Returns:
-        :obj:`Electron <covalent._workflow.electron.Electron>` : Electron object inside which the decorated function exists.
+        :obj:`Electron <covalent._workflow.electron.Electron>` : Electron object
+            inside which the decorated function exists.
     """
 
     if backend:
         app_log.warning(
-            "backend is deprecated and will be removed in a future release. Please use executor keyword instead.",
+            "backend is deprecated and will be removed in a future release. "
+            "Please use executor keyword instead.",
             exc_info=DeprecationWarning,
         )
         executor = backend
