@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Interface to the Jobs table"""
+# """Interface to the Jobs table"""
 
 from typing import List
 

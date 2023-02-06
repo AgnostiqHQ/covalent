@@ -23,25 +23,19 @@ from functools import partial
 
 import pytest
 
+from covalent._workflow.transport import _TransportGraph
 from covalent_dispatcher._core.data_modules.job_manager import JobManager
+
+
+def get_mock_tg():
+    tg = _TransportGraph()
+    tg.add_node_by_id(0, job_id=1)
+    tg.add_node_by_id(1, job_id=2)
+    return tg
 
 
 def to_job_ids(dispatch_id, task_ids, task_job_map):
     return list(map(lambda x: task_job_map[x], task_ids))
-
-
-@pytest.mark.asyncio
-async def test_set_cancel_requested(mocker):
-    mocker.patch(
-        "covalent_dispatcher._core.data_modules.job_manager.to_job_ids", return_value=[0, 1]
-    )
-    mock_update = mocker.patch(
-        "covalent_dispatcher._core.data_modules.job_manager.update_job_records"
-    )
-
-    await JobManager.set_cancel_requested("dispatch", [0, 1])
-    expected_args = [{"job_id": job_id, "cancel_requested": True} for job_id in [0, 1]]
-    mock_update.assert_called_with(expected_args)
 
 
 @pytest.mark.asyncio
@@ -56,6 +50,36 @@ async def test_get_jobs_metadata(mocker):
     await JobManager.get_jobs_metadata("dispatch", task_ids)
 
     mock_get.assert_called_with(job_ids)
+
+
+@pytest.mark.asyncio
+async def test_set_cancel_requested_private(mocker):
+    mock_to_job_ids = mocker.patch(
+        "covalent_dispatcher._core.data_modules.job_manager.to_job_ids", return_value=[0, 1]
+    )
+
+    mock_set_cancel_request_private = mocker.patch(
+        "covalent_dispatcher._core.data_modules.job_manager.JobManager._set_cancel_requested"
+    )
+
+    await JobManager.set_cancel_requested("dispatch", [0, 1])
+
+    mock_to_job_ids.assert_called_once_with("dispatch", [0, 1])
+    mock_set_cancel_request_private.assert_called_once_with([0, 1])
+
+
+@pytest.mark.asyncio
+async def test_set_cancel_requested(mocker):
+    mocker.patch(
+        "covalent_dispatcher._core.data_modules.job_manager.to_job_ids", return_value=[0, 1]
+    )
+    mock_update = mocker.patch(
+        "covalent_dispatcher._core.data_modules.job_manager.update_job_records"
+    )
+
+    await JobManager.set_cancel_requested("dispatch", [0, 1])
+    expected_args = [{"job_id": job_id, "cancel_requested": True} for job_id in [0, 1]]
+    mock_update.assert_called_with(expected_args)
 
 
 @pytest.mark.asyncio
