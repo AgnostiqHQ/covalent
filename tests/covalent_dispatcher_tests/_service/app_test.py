@@ -179,8 +179,7 @@ def test_get_result_503(mocker, client, test_db_file):
 
 
 def test_get_result_dispatch_id_not_found(mocker, test_db_file, client):
-    """Test the get-result endpoint."""
-    """Test that a 404 is returned if the dispatch ID is not found in the database."""
+    """Test the get-result endpoint and that 404 is returned if the dispatch ID is not found in the database."""
     mocker.patch("covalent_dispatcher._service.app._result_from", return_value={})
     mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db_file)
     mocker.patch("covalent_dispatcher._service.app.Lattice", MockLattice)
