@@ -545,11 +545,11 @@ def electron(
     backend: Optional[str] = None,
     executor: Optional[Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]] = None,
     # Add custom metadata fields here
-    files: List[FileTransfer] = [],
+    files: List[FileTransfer] = None,
     deps_bash: Union[DepsBash, List, str] = None,
     deps_pip: Union[DepsPip, list] = None,
-    call_before: Union[List[DepsCall], DepsCall] = [],
-    call_after: Union[List[DepsCall], DepsCall] = [],
+    call_before: Union[List[DepsCall], DepsCall] = None,
+    call_after: Union[List[DepsCall], DepsCall] = None,
 ) -> Callable:
     """Electron decorator to be called upon a function. Returns the wrapper function with the same functionality as `_func`.
 
@@ -587,23 +587,22 @@ def electron(
     internal_call_before_deps = []
     internal_call_after_deps = []
 
-    if files:
-        for file_transfer in files:
-            _file_transfer_pre_hook_, _file_transfer_call_dep_ = file_transfer.cp()
+    for file_transfer in files or []:
+        _file_transfer_pre_hook_, _file_transfer_call_dep_ = file_transfer.cp()
 
-            # pre-file transfer hook to create any necessary temporary files
-            internal_call_before_deps.append(
-                DepsCall(
-                    _file_transfer_pre_hook_,
-                    retval_keyword=RESERVED_RETVAL_KEY__FILES,
-                    override_reserved_retval_keys=True,
-                )
+        # pre-file transfer hook to create any necessary temporary files
+        internal_call_before_deps.append(
+            DepsCall(
+                _file_transfer_pre_hook_,
+                retval_keyword=RESERVED_RETVAL_KEY__FILES,
+                override_reserved_retval_keys=True,
             )
+        )
 
-            if file_transfer.order == Order.AFTER:
-                internal_call_after_deps.append(DepsCall(_file_transfer_call_dep_))
-            else:
-                internal_call_before_deps.append(DepsCall(_file_transfer_call_dep_))
+        if file_transfer.order == Order.AFTER:
+            internal_call_after_deps.append(DepsCall(_file_transfer_call_dep_))
+        else:
+            internal_call_before_deps.append(DepsCall(_file_transfer_call_dep_))
 
     if isinstance(deps_pip, DepsPip):
         deps["pip"] = deps_pip
@@ -612,9 +611,13 @@ def electron(
 
     if isinstance(call_before, DepsCall):
         call_before = [call_before]
+    elif call_before is None:
+        call_before = []
 
     if isinstance(call_after, DepsCall):
         call_after = [call_after]
+    elif call_before is None:
+        call_before = []
 
     call_before = internal_call_before_deps + call_before
     call_after = internal_call_after_deps + call_after
