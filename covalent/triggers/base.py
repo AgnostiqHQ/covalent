@@ -46,9 +46,9 @@ class BaseTrigger:
                               uses the dispatcher's address by default
 
     Attributes:
-        lattice_dispatch_id: Dispatch ID of the worfklow which has to be redispatched in case this trigger gets triggered
-        dispatcher_addr: Address of dispatcher server used to retrieve info about or redispatch any dispatches
-        triggers_server_addr: Address of the Triggers server (if there is any) to register this trigger to,
+        self.lattice_dispatch_id: Dispatch ID of the worfklow which has to be redispatched in case this trigger gets triggered
+        self.dispatcher_addr: Address of dispatcher server used to retrieve info about or redispatch any dispatches
+        self.triggers_server_addr: Address of the Triggers server (if there is any) to register this trigger to,
                               uses the dispatcher's address by default
         self.new_dispatch_ids: List of all the newly created dispatch ids from performing redispatch
         self.observe_blocks: Boolean to indicate whether the `self.observe` method is a blocking call
@@ -174,7 +174,7 @@ class BaseTrigger:
             app_log.debug(f"Redispatching, new dispatch_id: {new_dispatch_id}")
             self.new_dispatch_ids.append(new_dispatch_id)
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """
         Return a dictionary representation of this trigger which can later be used to regenerate it.
 
@@ -188,8 +188,16 @@ class BaseTrigger:
 
     @abstractmethod
     def observe(self):
+        """
+        Start observing for any change which can be used to trigger this trigger.
+        To be implemented by the subclass.
+        """
         pass
 
     @abstractmethod
     def stop(self):
+        """
+        Stop observing for changes.
+        To be implemented by the subclass.
+        """
         pass

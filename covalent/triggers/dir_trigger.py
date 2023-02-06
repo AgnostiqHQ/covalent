@@ -45,11 +45,29 @@ class DirEventHandler(FileSystemEventHandler):
 
 
 class DirTrigger(BaseTrigger):
+    """
+    Directory or File based trigger which watches for events in said file/dir
+    and performs a trigger action whenever they happen.
+
+    Args:
+        dir_path: Path to the file/dir which is to be observed for events
+        event_names: List of event names on which to perform the trigger action.
+                     Possible options can be a subset of: `["created", "deleted", "modified", "moved", "closed"]`
+        batch_size: The number of changes to wait for before performing the trigger action, default is 1.
+
+    Attributes:
+        self.dir_path: Path to the file/dir which is to be observed for events
+        self.event_names: List of event names on which to perform the trigger action.
+                          Possible options can be a subset of: `["created", "deleted", "modified", "moved", "closed"]`
+        self.batch_size: The number of events to wait for before performing the trigger action, default is `1`.
+        self.n_changes: Number of events since last trigger action. Whenever `self.n_changes == self.batch_size` a trigger action happens.
+    """
+
     def __init__(
         self,
         dir_path,
         event_names,
-        batch_size=1,
+        batch_size: int = 1,
         lattice_dispatch_id: str = None,
         dispatcher_addr: str = None,
         triggers_server_addr: str = None,
@@ -64,23 +82,38 @@ class DirTrigger(BaseTrigger):
         self.event_names = event_names
 
         self.observe_blocks = False
-        self.batch_limit = 0
+        self.n_changes = 0
 
-    # To dynamically attach and override "on_*" methods to the handler
-    # depending on which ones are requested by the user
-    def attach_methods_to_handler(self, event_names: list):
+    def attach_methods_to_handler(self, event_names: list) -> None:
+        """
+        Dynamically attaches and overrides the "on_*" methods to the handler
+        depending on which ones are requested by the user.
+
+        Args:
+            event_names: List of event names upon which to perform a trigger action
+
+        Returns:
+            None
+        """
+
         def proxy_trigger(*args, **kwargs):
-            self.batch_limit += 1
-            if self.batch_limit == self.batch_size:
+            self.n_changes += 1
+            if self.n_changes == self.batch_size:
                 self.trigger()
-                self.batch_limit = 0
+                self.n_changes = 0
 
         for en in event_names:
             func_name = self.event_handler.supported_event_to_func_names[en]
             proxy_trigger.__name__ = func_name
             setattr(self.event_handler, func_name, MethodType(proxy_trigger, self.event_handler))
 
-    def observe(self):
+    def observe(self) -> None:
+        """
+        Start observing the file/dir for any possible events among the ones
+        mentioned in `self.event_names`.
+
+        Currently only supports running within the Covalent/Triggers server.
+        """
         self.event_loop = asyncio.get_running_loop()
 
         self.event_handler = DirEventHandler()
@@ -92,6 +125,9 @@ class DirTrigger(BaseTrigger):
         self.observer.schedule(self.event_handler, self.dir_path)
         self.observer.start()
 
-    def stop(self):
+    def stop(self) -> None:
+        """
+        Stop observing the file or directory for changes.
+        """
         self.observer.stop()
         self.observer.join()
