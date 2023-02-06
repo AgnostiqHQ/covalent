@@ -45,7 +45,7 @@ from .._db import upsert
 from .._db.write_result_to_db import get_sublattice_electron_id
 from . import data_manager as datasvc
 from . import dispatcher
-from .data_modules import JobManager
+from .data_modules.job_manager import get_jobs_metadata, set_cancel_result
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -537,12 +537,12 @@ async def _cancel_task(
         app_log.debug(f"Execption when cancel task {dispatch_id}:{task_id}: {ex}")
         cancel_job_result = False
 
-    await JobManager.set_cancel_result(dispatch_id, task_id, cancel_job_result)
+    await set_cancel_result(dispatch_id, task_id, cancel_job_result)
     return cancel_job_result
 
 
 async def cancel_tasks(dispatch_id: str, task_ids: List[int]):
-    job_metadata = await JobManager.get_jobs_metadata(dispatch_id, task_ids)
+    job_metadata = await get_jobs_metadata(dispatch_id, task_ids)
     node_metadata = _get_metadata_for_nodes(dispatch_id, task_ids)
 
     def to_cancel_kwargs(i, node_id):
@@ -566,5 +566,5 @@ def _get_metadata_for_nodes(dispatch_id: str, node_ids: list):
 
 
 async def _get_cancel_requested(dispatch_id: str, task_id: int):
-    records = await JobManager.get_jobs_metadata(dispatch_id, [task_id])
+    records = await get_jobs_metadata(dispatch_id, [task_id])
     return records[0]["cancel_requested"]
