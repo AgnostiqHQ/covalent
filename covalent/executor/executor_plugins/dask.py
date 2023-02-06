@@ -33,6 +33,7 @@ from contextlib import redirect_stderr, redirect_stdout
 from typing import Any, Callable, Dict, List, Tuple
 
 import cloudpickle as pickle
+import requests
 from dask.distributed import Client, fire_and_forget
 
 from covalent._shared_files import TaskRuntimeError, logger
@@ -108,9 +109,7 @@ def _gather_deps(deps, call_before_objs_json, call_after_objs_json) -> Tuple[Lis
 def run_task_from_uris(
     task_specs: List[Dict],
     resources: dict,
-    output_uri: str,
-    stdout_uri: str,
-    stderr_uri: str,
+    output_uris: List[Tuple[str, str, str]],
     results_dir: str,
     task_group_metadata: dict,
     server_url: str,
@@ -119,97 +118,126 @@ def run_task_from_uris(
     prefix = "file://"
     prefix_len = len(prefix)
 
-    with open(stdout_uri, "w") as stdout, open(stderr_uri, "w") as stderr:
-        with redirect_stdout(stdout), redirect_stderr(stderr):
-            try:
-                task = task_specs[0]
-                task_id = task["function_id"]
-                args_ids = task["args_ids"]
-                kwargs_ids = task["kwargs_ids"]
-
-                function_uri = resources[task_id]
-                if function_uri.startswith(prefix):
-                    function_uri = function_uri[prefix_len:]
-
-                with open(function_uri, "rb") as f:
-                    serialized_fn = pickle.load(f)
-
-                ser_args = []
-                ser_kwargs = {}
-                args_uris = [resources["outputs"][index] for index in args_ids]
-                for uri in args_uris:
-                    if uri.startswith(prefix):
-                        uri = uri[prefix_len:]
-                    with open(uri, "rb") as f:
-                        ser_args.append(pickle.load(f))
-
-                kwargs_uris = {k: resources["outputs"][v] for k, v in kwargs_ids.items()}
-                for key, uri in kwargs_uris.items():
-                    if uri.startswith(prefix):
-                        uri = uri[prefix_len:]
-                    with open(uri, "rb") as f:
-                        ser_kwargs[key] = pickle.load(f)
-
-                deps_id = task["deps_id"]
-                deps_uri = resources[deps_id]
-                if deps_uri.startswith(prefix):
-                    deps_uri = deps_uri[prefix_len:]
-                with open(deps_uri, "rb") as f:
-                    deps_json = pickle.load(f)
-
-                call_before_id = task["call_before_id"]
-                call_before_uri = resources[call_before_id]
-                if call_before_uri.startswith(prefix):
-                    call_before_uri = call_before_uri[prefix_len:]
-                with open(call_before_uri, "rb") as f:
-                    call_before_json = pickle.load(f)
-
-                call_after_id = task["call_after_id"]
-                call_after_uri = resources[call_after_id]
-                if call_after_uri.startswith(prefix):
-                    call_after_uri = call_after_uri[prefix_len:]
-                with open(call_after_uri, "rb") as f:
-                    call_after_json = pickle.load(f)
-
-                call_before, call_after = _gather_deps(
-                    deps_json, call_before_json, call_after_json
-                )
-
-                exception_occurred = False
-
-                ser_output = wrapper_fn(
-                    serialized_fn, call_before, call_after, *ser_args, **ser_kwargs
-                )
-
-                with open(output_uri, "wb") as f:
-                    pickle.dump(ser_output, f)
-
-            except Exception as ex:
-                exception_occurred = True
-                tb = "".join(traceback.TracebackException.from_exception(ex).format())
-                print(tb, file=sys.stderr)
-                output_uri = None
-
-    result_summary = {
-        "output_uri": output_uri,
-        "stdout_uri": stdout_uri,
-        "stderr_uri": stderr_uri,
-        "exception_occurred": exception_occurred,
-    }
-
+    outputs = resources["outputs"]
+    results = []
     dispatch_id = task_group_metadata["dispatch_id"]
-    node_id = task_group_metadata["task_ids"][0]
-    result_path = os.path.join(results_dir, f"result-{dispatch_id}:{node_id}.json")
+    task_ids = task_group_metadata["task_ids"]
+    gid = task_group_metadata["task_group_id"]
 
-    with open(result_path, "w") as f:
-        json.dump(result_summary, f)
+    for i, task in enumerate(task_specs):
+        result_uri, stdout_uri, stderr_uri = output_uris[i]
 
-    import requests
+        with open(stdout_uri, "w") as stdout, open(stderr_uri, "w") as stderr:
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                try:
+                    task_id = task["function_id"]
+                    args_ids = task["args_ids"]
+                    kwargs_ids = task["kwargs_ids"]
 
-    url = f"{server_url}/api/v1/update/task/{dispatch_id}/{node_id}"
-    requests.put(url)
+                    function_uri = resources[task_id]
+                    if function_uri.startswith(prefix):
+                        function_uri = function_uri[prefix_len:]
 
-    return output_uri, stdout_uri, stderr_uri, exception_occurred
+                    with open(function_uri, "rb") as f:
+                        serialized_fn = pickle.load(f)
+
+                    ser_args = []
+                    ser_kwargs = {}
+                    args_uris = [outputs[index] for index in args_ids]
+                    for uri in args_uris:
+                        if uri.startswith(prefix):
+                            uri = uri[prefix_len:]
+                        with open(uri, "rb") as f:
+                            ser_args.append(pickle.load(f))
+
+                    kwargs_uris = {k: outputs[v] for k, v in kwargs_ids.items()}
+                    for key, uri in kwargs_uris.items():
+                        if uri.startswith(prefix):
+                            uri = uri[prefix_len:]
+                        with open(uri, "rb") as f:
+                            ser_kwargs[key] = pickle.load(f)
+
+                    deps_id = task["deps_id"]
+                    deps_uri = resources[deps_id]
+                    if deps_uri.startswith(prefix):
+                        deps_uri = deps_uri[prefix_len:]
+                    with open(deps_uri, "rb") as f:
+                        deps_json = pickle.load(f)
+
+                    call_before_id = task["call_before_id"]
+                    call_before_uri = resources[call_before_id]
+                    if call_before_uri.startswith(prefix):
+                        call_before_uri = call_before_uri[prefix_len:]
+                    with open(call_before_uri, "rb") as f:
+                        call_before_json = pickle.load(f)
+
+                    call_after_id = task["call_after_id"]
+                    call_after_uri = resources[call_after_id]
+                    if call_after_uri.startswith(prefix):
+                        call_after_uri = call_after_uri[prefix_len:]
+                    with open(call_after_uri, "rb") as f:
+                        call_after_json = pickle.load(f)
+
+                    call_before, call_after = _gather_deps(
+                        deps_json, call_before_json, call_after_json
+                    )
+                    exception_occurred = False
+
+                    ser_output = wrapper_fn(
+                        serialized_fn, call_before, call_after, *ser_args, **ser_kwargs
+                    )
+
+                    with open(result_uri, "wb") as f:
+                        pickle.dump(ser_output, f)
+
+                    outputs[task_id] = result_uri
+
+                    result_summary = {
+                        "node_id": task_id,
+                        "output_uri": result_uri,
+                        "stdout_uri": stdout_uri,
+                        "stderr_uri": stderr_uri,
+                        "exception_occurred": exception_occurred,
+                    }
+                    results.append(result_summary)
+
+                except Exception as ex:
+                    exception_occurred = True
+                    tb = "".join(traceback.TracebackException.from_exception(ex).format())
+                    print(tb, file=sys.stderr)
+                    result_uri = None
+                    result_summary = {
+                        "node_id": task_id,
+                        "output_uri": result_uri,
+                        "stdout_uri": stdout_uri,
+                        "stderr_uri": stderr_uri,
+                        "exception_occurred": exception_occurred,
+                    }
+                    results.append(result_summary)
+
+                    break
+
+    n = len(results)
+    if n < len(task_ids):
+        for i in range(n, len(task_ids)):
+            results.append(
+                {
+                    "node_id": task_ids[i],
+                    "output_uri": "",
+                    "stdout_uri": "",
+                    "stderr_uri": "",
+                    "exception_occurred": True,
+                }
+            )
+
+    for i, task_id in enumerate(task_ids):
+        result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
+
+        with open(result_path, "w") as f:
+            json.dump(results[i], f)
+
+        url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}"
+        requests.put(url)
 
 
 class DaskExecutor(AsyncBaseExecutor):
@@ -290,25 +318,26 @@ class DaskExecutor(AsyncBaseExecutor):
         dask_client = Client(address=self.scheduler_address, asynchronous=True)
         await dask_client
 
-        node_id = task_group_metadata["task_ids"][0]
         dispatch_id = task_group_metadata["dispatch_id"]
-
-        output_uri = os.path.join(self.cache_dir, f"result_{dispatch_id}-{node_id}.pkl")
-        stdout_uri = os.path.join(self.cache_dir, f"stdout_{dispatch_id}-{node_id}.txt")
-        stderr_uri = os.path.join(self.cache_dir, f"stderr_{dispatch_id}-{node_id}.txt")
+        task_ids = task_group_metadata["task_ids"]
+        gid = task_group_metadata["task_group_id"]
+        output_uris = []
+        for node_id in task_ids:
+            result_uri = os.path.join(self.cache_dir, f"result_{dispatch_id}-{node_id}.pkl")
+            stdout_uri = os.path.join(self.cache_dir, f"stdout_{dispatch_id}-{node_id}.txt")
+            stderr_uri = os.path.join(self.cache_dir, f"stderr_{dispatch_id}-{node_id}.txt")
+            output_uris.append((result_uri, stdout_uri, stderr_uri))
         # future = dask_client.submit(lambda x: x**3, 3)
 
         dispatcher_addr = get_config("dispatcher.address")
         dispatcher_port = get_config("dispatcher.port")
         server_url = f"http://{dispatcher_addr}:{dispatcher_port}"
-        key = f"dask_job_{dispatch_id}:{node_id}"
+        key = f"dask_job_{dispatch_id}:{gid}"
         future = dask_client.submit(
             run_task_from_uris,
             task_specs,
             resources,
-            output_uri,
-            stdout_uri,
-            stderr_uri,
+            output_uris,
             self.cache_dir,
             task_group_metadata,
             server_url,
@@ -317,7 +346,7 @@ class DaskExecutor(AsyncBaseExecutor):
 
         fire_and_forget(future)
 
-        app_log.debug("Fire and forgetting task")
+        app_log.debug(f"Fire and forgetting task group {dispatch_id}:{gid}")
 
         return future.key
 
@@ -332,28 +361,36 @@ class DaskExecutor(AsyncBaseExecutor):
 
         # Job should have reached a terminal state by the time this is invoked.
         dispatch_id = task_group_metadata["dispatch_id"]
-        node_id = task_group_metadata["task_group_id"]
+        task_ids = task_group_metadata["task_ids"]
 
-        result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{node_id}.json")
-        with open(result_path, "r") as f:
-            result_summary = json.load(f)
+        task_results = []
 
-        output_uri = result_summary["output_uri"]
-        stdout_uri = result_summary["stdout_uri"]
-        stderr_uri = result_summary["stderr_uri"]
-        exception_raised = result_summary["exception_occurred"]
+        for task_id in task_ids:
+            result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
+            with open(result_path, "r") as f:
+                result_summary = json.load(f)
+                node_id = result_summary["node_id"]
+                output_uri = result_summary["output_uri"]
+                stdout_uri = result_summary["stdout_uri"]
+                stderr_uri = result_summary["stderr_uri"]
+                exception_raised = result_summary["exception_occurred"]
 
-        terminal_status = RESULT_STATUS.FAILED if exception_raised else RESULT_STATUS.COMPLETED
+                terminal_status = (
+                    RESULT_STATUS.FAILED if exception_raised else RESULT_STATUS.COMPLETED
+                )
 
-        task_result = {
-            "dispatch_id": dispatch_id,
-            "node_id": node_id,
-            "output_uri": output_uri,
-            "stdout_uri": stdout_uri,
-            "stderr_uri": stderr_uri,
-            "status": terminal_status,
-        }
-        return [task_result]
+                task_result = {
+                    "dispatch_id": dispatch_id,
+                    "node_id": node_id,
+                    "output_uri": output_uri,
+                    "stdout_uri": stdout_uri,
+                    "stderr_uri": stderr_uri,
+                    "status": terminal_status,
+                }
+                task_results.append(task_result)
+
+        app_log.debug(f"Returning results for tasks {dispatch_id}:{task_ids}")
+        return task_results
 
     def get_upload_uri(self, task_group_metadata: Dict, object_key: str):
         dispatch_id = task_group_metadata["dispatch_id"]
