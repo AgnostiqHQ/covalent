@@ -213,6 +213,24 @@ This is especially useful if Covalent is used in the middle of your already exis
 
 Let's see how this works:
 
+There are multiple ways you can start the covalent server in regards to how triggers are handled:
+
+```{code-block} bash
+
+# Starting the default way which starts with the triggers server endpoints as part of Covalent server
+covalent start
+
+# Starting the Covalent server without the trigger endpoints, thus in order to use triggers you will have
+# either have to start the triggers server independently or manage the observe() method of triggers manually
+covalent start --no-triggers
+
+# Starting the standalone triggers server without Covalent, this is useful if your Covalent server
+# is running on a different machine than the triggers server
+covalent start --triggers-only
+```
+
+Let's say for the sake of simplicity, for this example, you have started Covalent the default way. Utility of the other ways, can be found in the section after this.
+
 You can connect a `Trigger` object to a lattice as:
 
 ```{code-block} python
@@ -230,3 +248,50 @@ Now when you dispatch this lattice with `ct.dispatch` these are the key things t
 3. Upon registering, the `observe()` method of the trigger gets called which starts observing for any desired condition to be met which will in turn call the trigger's `trigger()` method. For example, in the above case, a `TimeTrigger` is used with a time gap of `5` seconds; so every 5 seconds the `trigger()` method will be called.
 4. The `trigger()` method performs an automatic dispatch of the connected lattice (connected through the `dispatch_id` obtained earlier) and stores the newly obtained `dispatch_id`s. This is to have a connection between the "parent" `dispatch_id` and its subsequent "child" `dispatch_id`s.
 5. If you want to stop this automatic dispatching from happening further, you can call the `ct.stop_triggers(d_id)` function with the parent dispatch id `d_id`.
+
+Another case which might be useful here is let's say you want to attach a trigger to a workflow which has already been dispatched, and you only have access to its `dispatch_id`, then in that case you can do the following:
+
+```{code-block} python
+tr_object = TimeTrigger(10)
+tr_object.lattice_dispatch_id = dispatch_id
+tr_object.register()
+```
+
+This way of attaching a trigger is equivalent to the one mentioned before that but gives more degrees of freedom than before, for example, you can register the same trigger to multiple workflows by just repeating the last two lines for each of them.
+
+### Possible custom scenarios
+
+Even though this method seems a bit more verbose than the one mentioned before, it is ideal for a more customized scenario which might be more in line with your needs. For example, let's say there are 3 machines:- 2 remote servers and 1 client machine. `ServerA` is the one where Covalent is running without triggers support, `ServerB` where only the triggers server is running, and `Client` is the one where you are working from.
+
+Let's say our workflow `my_workflow` has been dispatched to `ServerA` without any triggers. We can attach triggers to that workflow and register it with the triggers server quite easily as so:
+
+```{code-block} python
+trigger = TimeTrigger(30)
+
+# Attaching dispatch id of `my_workflow` to the trigger
+trigger.lattice_dispatch_id = dispatch_id
+
+# Specifying the address of the dispatcher server
+trigger.dispatcher_addr = "<ServerA_addr>"
+
+# Specifying the address of the triggers server
+trigger.triggers_server_addr = "<ServerB_addr>"
+
+# Registering it to the triggers server
+trigger.register()
+```
+
+And this will be sufficient for your workflow to get dispatched every 30 seconds due to this trigger.
+
+Registering the trigger is also not a necessary condition for this to work. For example, let's say you have a server of your own (or a long running process), and you'd like to run the observation component of the trigger as part of your server, then inside that you can call `trigger.observe()` function, and it will start observing. Something like this:
+
+```{code-block} python
+trigger = TimeTrigger(2)
+trigger.lattice_dispatch_id = dispatch_id
+trigger.dispatch_addr = `<ServerA_addr>`
+
+# And now start observing
+trigger.observe()
+```
+
+Although, in this case make sure blocking/non-blocking nature of `trigger.observe()` is handled correctly. Like, you'd probably want to offload `trigger.observe()` to a separate thread in case its a blocking call so as to not block execution of other components of your server. This can be checked through the boolean attribute: `trigger.observe_blocks` of any trigger.
