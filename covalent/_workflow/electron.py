@@ -47,6 +47,7 @@ from .._shared_files.utils import (
 )
 from .depsbash import DepsBash
 from .depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
+from .depslocal import DepsLocal
 from .depspip import DepsPip
 from .lattice import Lattice
 from .transport import TransportableObject, encode_metadata
@@ -546,6 +547,7 @@ def electron(
     executor: Optional[Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]] = None,
     # Add custom metadata fields here
     files: List[FileTransfer] = None,
+    deps_local: Union[DepsLocal, List[str], str] = None,
     deps_bash: Union[DepsBash, List[str], str] = None,
     deps_pip: Union[DepsPip, List[str], str] = None,
     call_before: Union[DepsCall, List[DepsCall]] = None,
@@ -563,6 +565,7 @@ def electron(
             If not passed, the dask executor is used by default.
         files: An optional list of FileTransfer objects which copy files to/from
             remote or local filesystems.
+        deps_local: An optional (list of) local module(s) required for task execution.
         deps_bash: An optional (list of) shell command(s) to run before `_func`.
         deps_pip: An optional (list of) PyPI package(s) to install before running `_func`.
         call_before: An optional (list of) DepsCall object(s) specifying python
@@ -586,6 +589,11 @@ def electron(
     deps = {}
 
     # type check and handle various arguments
+    if isinstance(deps_local, DepsLocal):
+        deps["local"] = deps_local
+    elif isinstance(deps_local, (list, str)):
+        deps["local"] = DepsLocal(modules=deps_local)
+
     if isinstance(deps_bash, DepsBash):
         deps["bash"] = deps_bash
     if isinstance(deps_bash, (list, str)):
@@ -603,8 +611,8 @@ def electron(
 
     if isinstance(call_after, DepsCall):
         call_after = [call_after]
-    elif call_before is None:
-        call_before = []
+    elif call_after is None:
+        call_after = []
 
     internal_call_before_deps = []
     internal_call_after_deps = []
@@ -657,8 +665,8 @@ def electron(
 
     if _func is None:  # decorator is called with arguments
         return decorator_electron
-    else:  # decorator is called without arguments
-        return decorator_electron(_func)
+    # decorator is called without arguments
+    return decorator_electron(_func)
 
 
 def wait(child, parents):
