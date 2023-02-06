@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import asyncio
 import inspect
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
@@ -81,6 +82,9 @@ async def register_and_observe(request: Request):
     trigger_dict = await request.json()
 
     trigger = init_trigger(trigger_dict)
+
+    if trigger.use_internal_funcs:
+        trigger.event_loop = asyncio.get_running_loop()
 
     if trigger.observe_blocks:
         thread_pool.submit(trigger.observe)
