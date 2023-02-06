@@ -18,7 +18,7 @@ Triggers are especially useful if you're using Covalent as part of a larger pipe
 Covalent offers multiple options to start the server with regards to triggers. The default way starts the Covalent server with the triggers server endpoints included.
 
 ```{note}
-It is also *possible* to start the Covalent server without the triggers endpoints and manage the `observe()` method manually, or start the standalone triggers server without Covalent. 
+It is also *possible* to start the Covalent server without the triggers endpoints and manage the `observe()` method manually, or start the standalone triggers server without Covalent.
 ```
 
 The following code block showcases the three different start options:
@@ -60,7 +60,7 @@ Under the hood, once this is done and When you dispatch the lattice using `ct.di
 Once a trigger is started, to stop the automatic dispatching when an event happens, you can call `ct.stop_triggers(dispatch_id)` with the parent dispatch id `dispatch_id`.
 
 
-# Attaching a Trigger to a Dispatched Workflow
+## Attaching a Trigger to a Dispatched Workflow
 
 Another case which might be useful here is let's say you want to attach a trigger to a workflow which has already been dispatched, and you only have access to its dispatch_id, then in that case you can do the following:
 
