@@ -112,7 +112,7 @@ class LocalDispatcher(BaseDispatcher):
 
             lattice_dispatch_id = r.content.decode("utf-8").strip().replace('"', "")
 
-            if not disable_run or isinstance(triggers_data, bool):
+            if not disable_run or triggers_data is None:
                 return lattice_dispatch_id
 
             LocalDispatcher.register_triggers(triggers_data, lattice_dispatch_id)
