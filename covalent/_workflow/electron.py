@@ -326,9 +326,9 @@ class Electron:
         # Setting metadata for default values according to lattice's metadata.
         for k in self.metadata:
             if (
-                k not in consumable_constraints
-                and k in DEFAULT_METADATA_VALUES
-                and not self.get_metadata(k)
+                k not in consumable_constraints and
+                k in DEFAULT_METADATA_VALUES and
+                not self.get_metadata(k)
             ):
                 meta = active_lattice.get_metadata(k)
                 if not meta:
@@ -546,12 +546,13 @@ def electron(
     executor: Optional[Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]] = None,
     # Add custom metadata fields here
     files: List[FileTransfer] = None,
-    deps_bash: Union[DepsBash, List, str] = None,
-    deps_pip: Union[DepsPip, list] = None,
-    call_before: Union[List[DepsCall], DepsCall] = None,
-    call_after: Union[List[DepsCall], DepsCall] = None,
+    deps_bash: Union[DepsBash, List[str], str] = None,
+    deps_pip: Union[DepsPip, List[str], str] = None,
+    call_before: Union[DepsCall, List[DepsCall]] = None,
+    call_after: Union[DepsCall, List[DepsCall]] = None,
 ) -> Callable:
-    """Electron decorator to be called upon a function. Returns the wrapper function with the same functionality as `_func`.
+    """Electron decorator to be called upon a function. Returns the wrapper
+    function with the same functionality as `_func`.
 
     Args:
         _func: function to be decorated
@@ -606,7 +607,7 @@ def electron(
 
     if isinstance(deps_pip, DepsPip):
         deps["pip"] = deps_pip
-    if isinstance(deps_pip, list):
+    if isinstance(deps_pip, (list, str)):
         deps["pip"] = DepsPip(packages=deps_pip)
 
     if isinstance(call_before, DepsCall):
