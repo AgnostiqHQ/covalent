@@ -112,7 +112,7 @@ def get_mock_srvresult(sdkres, test_db) -> SRVResult:
 
 
 @pytest.mark.asyncio
-async def test_submit_abstract_task(mocker):
+async def test_submit_abstract_task_group(mocker):
 
     import datetime
 
@@ -147,58 +147,88 @@ async def test_submit_abstract_task(mocker):
     )
 
     dispatch_id = "dispatch"
-    task_id = 0
     name = "task"
     abstract_inputs = {"args": [1], "kwargs": {"key": 2}}
-    task_metadata = {"dispatch_id": dispatch_id, "node_id": task_id}
     task_group_metadata = {
         "dispatch_id": dispatch_id,
-        "task_ids": [task_id],
-        "task_group_id": task_id,
+        "task_ids": [0, 3],
+        "task_group_id": 0,
     }
 
-    mock_function_uri = me.get_upload_uri(task_metadata, f"function-{task_id}")
-    mock_deps_uri = me.get_upload_uri(task_metadata, f"deps-{task_id}")
-    mock_cb_uri = me.get_upload_uri(task_metadata, f"call_before-{task_id}")
-    mock_ca_uri = me.get_upload_uri(task_metadata, f"call_after-{task_id}")
-    mock_node_upload_uri_1 = me.get_upload_uri(task_metadata, "node_1")
-    mock_node_upload_uri_2 = me.get_upload_uri(task_metadata, "node_2")
+    mock_function_uri_0 = me.get_upload_uri(task_group_metadata, "function-0")
+    mock_deps_uri_0 = me.get_upload_uri(task_group_metadata, "deps-0")
+    mock_cb_uri_0 = me.get_upload_uri(task_group_metadata, "call_before-0")
+    mock_ca_uri_0 = me.get_upload_uri(task_group_metadata, "call_after-0")
 
-    mock_function_id = task_id
+    mock_function_uri_3 = me.get_upload_uri(task_group_metadata, "function-3")
+    mock_deps_uri_3 = me.get_upload_uri(task_group_metadata, "deps-3")
+    mock_cb_uri_3 = me.get_upload_uri(task_group_metadata, "call_before-3")
+    mock_ca_uri_3 = me.get_upload_uri(task_group_metadata, "call_after-3")
+
+    mock_node_upload_uri_1 = me.get_upload_uri(task_group_metadata, "node_1")
+    mock_node_upload_uri_2 = me.get_upload_uri(task_group_metadata, "node_2")
+
+    mock_function_id_0 = 0
     mock_args_ids = abstract_inputs["args"]
     mock_kwargs_ids = abstract_inputs["kwargs"]
-    mock_deps_id = "deps-0"
-    mock_cb_id = "call_before-0"
-    mock_ca_id = "call_after-0"
+    mock_deps_id_0 = "deps-0"
+    mock_cb_id_0 = "call_before-0"
+    mock_ca_id_0 = "call_after-0"
+
+    mock_function_id_3 = 3
+    mock_deps_id_3 = "deps-3"
+    mock_cb_id_3 = "call_before-3"
+    mock_ca_id_3 = "call_after-3"
+
     resources = {
-        task_id: mock_function_uri,
+        0: mock_function_uri_0,
+        3: mock_function_uri_3,
         1: mock_node_upload_uri_1,
         2: mock_node_upload_uri_2,
-        mock_deps_id: mock_deps_uri,
-        mock_cb_id: mock_cb_uri,
-        mock_ca_id: mock_ca_uri,
+        mock_deps_id_0: mock_deps_uri_0,
+        mock_cb_id_0: mock_cb_uri_0,
+        mock_ca_id_0: mock_ca_uri_0,
+        mock_deps_id_3: mock_deps_uri_3,
+        mock_cb_id_3: mock_cb_uri_3,
+        mock_ca_id_3: mock_ca_uri_3,
     }
 
-    mock_task_spec = {
-        "function_id": mock_function_id,
+    mock_task_spec_0 = {
+        "function_id": mock_function_id_0,
         "args_ids": mock_args_ids,
         "kwargs_ids": mock_kwargs_ids,
-        "deps_id": mock_deps_id,
-        "call_before_id": mock_cb_id,
-        "call_after_id": mock_ca_id,
+        "deps_id": mock_deps_id_0,
+        "call_before_id": mock_cb_id_0,
+        "call_after_id": mock_ca_id_0,
     }
 
-    mock_task = {
-        "function_id": mock_function_id,
+    mock_task_spec_3 = {
+        "function_id": mock_function_id_3,
+        "args_ids": mock_args_ids,
+        "kwargs_ids": mock_kwargs_ids,
+        "deps_id": mock_deps_id_3,
+        "call_before_id": mock_cb_id_3,
+        "call_after_id": mock_ca_id_3,
+    }
+
+    mock_task_0 = {
+        "function_id": mock_function_id_0,
         "args_ids": mock_args_ids,
         "kwargs_ids": mock_kwargs_ids,
     }
+
+    mock_task_3 = {
+        "function_id": mock_function_id_3,
+        "args_ids": mock_args_ids,
+        "kwargs_ids": mock_kwargs_ids,
+    }
+
     known_nodes = [1, 2]
 
     await _submit_abstract_task_group(
         dispatch_id=dispatch_id,
-        task_group_id=task_id,
-        task_seq=[mock_task],
+        task_group_id=0,
+        task_seq=[mock_task_0, mock_task_3],
         known_nodes=known_nodes,
         executor=me,
     )
@@ -206,7 +236,7 @@ async def test_submit_abstract_task(mocker):
     mock_upload.assert_awaited()
 
     me.send.assert_awaited_with(
-        [mock_task_spec],
+        [mock_task_spec_0, mock_task_spec_3],
         resources,
         task_group_metadata,
     )

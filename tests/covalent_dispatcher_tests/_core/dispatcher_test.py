@@ -572,14 +572,9 @@ async def test_submit_parameter(mocker):
     mock_run_abs_task = mocker.patch(
         "covalent_dispatcher._core.dispatcher.runner_exp.run_abstract_task_group",
     )
-    mock_run_abs_task_legacy = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.runner.run_abstract_task",
-    )
-
     await _submit_task_group(dispatch_id, [node_id], node_id)
 
     mock_run_abs_task.assert_not_called()
-    mock_run_abs_task_legacy.assert_not_called()
     mock_update.assert_awaited()
 
 
