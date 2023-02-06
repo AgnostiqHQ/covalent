@@ -37,12 +37,14 @@ from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
 from .._shared_files import TaskRuntimeError, logger
 from .._shared_files.context_managers import active_dispatch_info_manager
 from .._shared_files.util_classes import DispatchInfo
+from .._workflow.depslocal import local_deps
 from .._workflow.transport import TransportableObject
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
+@local_deps
 def wrapper_fn(
     function: TransportableObject,
     call_before: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
@@ -73,7 +75,8 @@ def wrapper_fn(
             cb_retvals[retval_key] = [retval]
 
     # if cb_retvals key only contains one item this means it is a unique (non-repeated) retval key
-    # so we only return the first element however if it is a 'files' kwarg we always return as a list
+    # so we only return the first element however if it is a 'files' kwarg we
+    # always return as a list
     cb_retvals = {
         key: value[0] if len(value) == 1 and key != RESERVED_RETVAL_KEY__FILES else value
         for key, value in cb_retvals.items()
