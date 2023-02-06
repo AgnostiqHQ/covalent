@@ -590,6 +590,21 @@ def electron(
     if isinstance(deps_bash, (list, str)):
         deps["bash"] = DepsBash(commands=deps_bash)
 
+    if isinstance(deps_pip, DepsPip):
+        deps["pip"] = deps_pip
+    if isinstance(deps_pip, (list, str)):
+        deps["pip"] = DepsPip(packages=deps_pip)
+
+    if isinstance(call_before, DepsCall):
+        call_before = [call_before]
+    elif call_before is None:
+        call_before = []
+
+    if isinstance(call_after, DepsCall):
+        call_after = [call_after]
+    elif call_before is None:
+        call_before = []
+
     internal_call_before_deps = []
     internal_call_after_deps = []
 
@@ -610,32 +625,17 @@ def electron(
         else:
             internal_call_before_deps.append(DepsCall(_file_transfer_call_dep_))
 
-    if isinstance(deps_pip, DepsPip):
-        deps["pip"] = deps_pip
-    if isinstance(deps_pip, (list, str)):
-        deps["pip"] = DepsPip(packages=deps_pip)
-
-    if isinstance(call_before, DepsCall):
-        call_before = [call_before]
-    elif call_before is None:
-        call_before = []
-
-    if isinstance(call_after, DepsCall):
-        call_after = [call_after]
-    elif call_before is None:
-        call_before = []
-
     call_before = internal_call_before_deps + call_before
     call_after = internal_call_after_deps + call_after
 
-    constraints = {
-        "executor": executor,
-        "deps": deps,
-        "call_before": call_before,
-        "call_after": call_after,
-    }
-
-    constraints = encode_metadata(constraints)
+    constraints = encode_metadata(
+        {
+            "executor": executor,
+            "deps": deps,
+            "call_before": call_before,
+            "call_after": call_after,
+        }
+    )
 
     def decorator_electron(func=None):
         """Electron decorator function"""
