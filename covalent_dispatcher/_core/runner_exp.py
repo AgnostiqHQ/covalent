@@ -51,11 +51,11 @@ _job_event_listener = None
 
 # message format:
 # Ready for retrieve result
-# {"task_metadata": dict, "event": "READY"}
+# {"task_group_metadata": dict, "event": "READY"}
 #
 # Unable to retrieve result (e.g. credentials expired)
 #
-# {"task_metadata": dict, "event": "FAILED", "detail": str}
+# {"task_group_metadata": dict, "event": "FAILED", "detail": str}
 
 
 # # Domain: runner
@@ -257,47 +257,58 @@ async def _submit_abstract_task_group(
     return node_results
 
 
-async def _get_task_result(task_metadata: Dict):
+async def _get_task_result(task_group_metadata: Dict):
+
+    dispatch_id = task_group_metadata["dispatch_id"]
+    task_ids = task_group_metadata["task_ids"]
+    gid = task_group_metadata["task_group_id"]
+    app_log.debug(f"Pulling job artifacts for task group {dispatch_id}:{gid}")
     try:
-        dispatch_id = task_metadata["dispatch_id"]
-        task_id = task_metadata["node_id"]
-        app_log.debug(f"Pulling job artifacts for task {dispatch_id}:{task_id}")
+        executor_name = await datamgr.get_electron_attribute(dispatch_id, gid, "executor")
+        executor_data = await datamgr.get_electron_attribute(dispatch_id, gid, "executor_data")
 
-        executor_name = await datamgr.get_electron_attribute(dispatch_id, task_id, "executor")
-        executor_data = await datamgr.get_electron_attribute(dispatch_id, task_id, "executor_data")
+        executor = get_executor(gid, [executor_name, executor_data])
 
-        executor = get_executor(task_id, [executor_name, executor_data])
+        job_handle = _job_handles.get((dispatch_id, gid), None)
 
-        job_handle = _job_handles.get((dispatch_id, task_id), None)
+        task_group_results = await executor.receive(task_group_metadata, job_handle)
 
-        task_result = await executor.receive(task_metadata, job_handle)
+        node_results = []
+        for task_result in task_group_results:
+            task_id = task_result["node_id"]
+            output_uri = task_result["output_uri"]
+            stdout_uri = task_result["stdout_uri"]
+            stderr_uri = task_result["stderr_uri"]
+            status = task_result["status"]
 
-        output_uri = task_result["output_uri"]
-        stdout_uri = task_result["stdout_uri"]
-        stderr_uri = task_result["stderr_uri"]
-        status = task_result["status"]
-
-        src_uris = {"output": output_uri, "stdout": stdout_uri, "stderr": stderr_uri}
-        node_result = datamgr.generate_node_result(
-            node_id=task_id, end_time=datetime.now(timezone.utc), status=status
-        )
-        node_result["output_uri"] = output_uri
-        node_result["stdout_uri"] = stdout_uri
-        node_result["stderr_uri"] = stderr_uri
+            src_uris = {"output": output_uri, "stdout": stdout_uri, "stderr": stderr_uri}
+            node_result = datamgr.generate_node_result(
+                node_id=task_id, end_time=datetime.now(timezone.utc), status=status
+            )
+            node_result["output_uri"] = output_uri
+            node_result["stdout_uri"] = stdout_uri
+            node_result["stderr_uri"] = stderr_uri
+            node_results.append(node_result)
 
     except Exception as ex:
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
-        app_log.debug(f"Exception occurred when running task {task_id}:")
+        app_log.debug(f"Exception occurred when receiving task group {gid}:")
         app_log.debug(tb)
         error_msg = tb if debug_mode else str(ex)
-        node_result = datamgr.generate_node_result(
-            node_id=task_id,
-            end_time=datetime.now(timezone.utc),
-            status=RESULT_STATUS.FAILED,
-            error=error_msg,
-        )
+        ts = datetime.now(timezone.utc)
 
-    await datamgr.update_node_result(dispatch_id, node_result)
+        node_results = [
+            datamgr.generate_node_result(
+                node_id=node_id,
+                end_time=ts,
+                status=RESULT_STATUS.FAILED,
+                error=error_msg,
+            )
+            for node_id in task_ids
+        ]
+
+    for node_result in node_results:
+        await datamgr.update_node_result(dispatch_id, node_result)
 
 
 # async def run_abstract_task(
@@ -449,33 +460,38 @@ async def _listen_for_job_events():
 
             # job has reached a terminal state
             if event == "READY":
-                task_metadata = msg["task_metadata"]
-                asyncio.create_task(_get_task_result(task_metadata))
+                task_group_metadata = msg["task_group_metadata"]
+                asyncio.create_task(_get_task_result(task_group_metadata))
                 continue
 
             if event == "FAILED":
-                task_metadata = msg["task_metadata"]
-                dispatch_id = task_metadata["dispatch_id"]
-                node_id = task_metadata["node_id"]
+                task_group_metadata = msg["task_group_metadata"]
+                dispatch_id = task_group_metadata["dispatch_id"]
+                gid = task_group_metadata["task_group_id"]
+                task_ids = task_group_metadata["task_ids"]
                 detail = msg["detail"]
-                node_result = datamgr.generate_node_result(
-                    node_id=node_id,
-                    end_time=datetime.now(timezone.utc),
-                    status=RESULT_STATUS.FAILED,
-                    error=detail,
-                )
-                await datamgr.update_node_result(dispatch_id, node_result)
+                ts = datetime.now(timezone.utc)
+                for task_id in task_ids:
+                    node_result = datamgr.generate_node_result(
+                        node_id=task_id,
+                        end_time=ts,
+                        status=RESULT_STATUS.FAILED,
+                        error=detail,
+                    )
+                    await datamgr.update_node_result(dispatch_id, node_result)
 
         except Exception as ex:
             app_log.exception("Error reading message: {ex}")
 
 
-async def _mark_ready(task_metadata: dict):
-    await _job_events.put({"task_metadata": task_metadata, "event": "READY"})
+async def _mark_ready(task_group_metadata: dict):
+    await _job_events.put({"task_group_metadata": task_group_metadata, "event": "READY"})
 
 
-async def _mark_failed(task_metadata: dict, detail: str):
-    await _job_events.put({"task_metadata": task_metadata, "event": "FAILED", "detail": detail})
+async def _mark_failed(task_group_metadata: dict, detail: str):
+    await _job_events.put(
+        {"task_group_metadata": task_group_metadata, "event": "FAILED", "detail": detail}
+    )
 
 
 async def _poll_task_status(task_group_metadata: Dict, executor: AsyncBaseExecutor):
@@ -490,9 +506,7 @@ async def _poll_task_status(task_group_metadata: Dict, executor: AsyncBaseExecut
 
         app_log.debug(f"Polling status for task group {dispatch_id}:{task_group_id}")
         if await executor.poll(task_group_metadata, job_handle) == 0:
-            for task_id in task_ids:
-                task_metadata = {"dispatch_id": dispatch_id, "node_id": task_id}
-                await _mark_ready(task_metadata)
+            await _mark_ready(task_group_metadata)
     except Exception as ex:
 
         task_group_id = task_group_metadata["task_group_id"]
@@ -500,6 +514,17 @@ async def _poll_task_status(task_group_metadata: Dict, executor: AsyncBaseExecut
         app_log.debug(f"Exception occurred when polling task {task_group_id}:")
         app_log.debug(tb)
         error_msg = tb if debug_mode else str(ex)
-        for task_id in task_ids:
-            task_metadata = {"dispatch_id": dispatch_id, "node_id": task_id}
-            await _mark_failed(task_metadata, error_msg)
+        await _mark_failed(task_group_metadata, error_msg)
+
+
+async def mark_task_ready(task_metadata: dict):
+    dispatch_id = task_metadata["dispatch_id"]
+    node_id = task_metadata["node_id"]
+    gid = await datamgr.get_electron_attribute(dispatch_id, node_id, "task_group_id")
+    task_group_metadata = {
+        "dispatch_id": dispatch_id,
+        "task_ids": [node_id],
+        "task_group_id": gid,
+    }
+
+    await _mark_ready(task_group_metadata)

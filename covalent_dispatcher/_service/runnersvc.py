@@ -30,7 +30,7 @@ log_stack_info = logger.log_stack_info
 router: APIRouter = APIRouter()
 
 
-@router.put("/update/{dispatch_id}/{node_id}")
+@router.put("/update/task/{dispatch_id}/{node_id}")
 async def update_task_status(dispatch_id: str, node_id: int):
     # Dummy impl for now
 

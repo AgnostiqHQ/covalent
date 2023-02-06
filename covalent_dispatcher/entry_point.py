@@ -76,7 +76,7 @@ async def mark_task_ready(dispatch_id: str, node_id: int):
         "node_id": node_id,
     }
 
-    await runner_exp._mark_ready(task_metadata)
-    app_log.debug(f"Marked task {dispatch_id}:{node_id} ready")
+    await runner_exp.mark_task_ready(task_metadata)
+    app_log.debug(f"Marked task {dispatch_id}:{node_id} ready to read")
 
     return task_metadata

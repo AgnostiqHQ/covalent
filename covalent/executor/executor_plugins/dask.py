@@ -206,7 +206,7 @@ def run_task_from_uris(
 
     import requests
 
-    url = f"{server_url}/api/v1/update/{dispatch_id}/{node_id}"
+    url = f"{server_url}/api/v1/update/task/{dispatch_id}/{node_id}"
     requests.put(url)
 
     return output_uri, stdout_uri, stderr_uri, exception_occurred
@@ -325,14 +325,14 @@ class DaskExecutor(AsyncBaseExecutor):
 
         return -1
 
-    async def receive(self, task_metadata: Dict, job_handle: Any):
+    async def receive(self, task_group_metadata: Dict, job_handle: Any):
 
         # Returns (output_uri, stdout_uri, stderr_uri,
         # exception_raised)
 
         # Job should have reached a terminal state by the time this is invoked.
-        dispatch_id = task_metadata["dispatch_id"]
-        node_id = task_metadata["node_id"]
+        dispatch_id = task_group_metadata["dispatch_id"]
+        node_id = task_group_metadata["task_group_id"]
 
         result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{node_id}.json")
         with open(result_path, "r") as f:
@@ -353,7 +353,7 @@ class DaskExecutor(AsyncBaseExecutor):
             "stderr_uri": stderr_uri,
             "status": terminal_status,
         }
-        return task_result
+        return [task_result]
 
     def get_upload_uri(self, task_group_metadata: Dict, object_key: str):
         dispatch_id = task_group_metadata["dispatch_id"]

@@ -280,7 +280,7 @@ async def test_get_task_result(mocker):
         "stderr_uri": asset_uri,
         "status": False,
     }
-    me.receive = AsyncMock(return_value=mock_task_result)
+    me.receive = AsyncMock(return_value=[mock_task_result])
 
     mocker.patch(
         "covalent_dispatcher._core.runner_exp.datamgr.get_electron_attribute",
@@ -328,14 +328,18 @@ async def test_get_task_result(mocker):
     task_id = 0
     name = "task"
 
-    task_metadata = {"dispatch_id": dispatch_id, "node_id": task_id}
+    task_group_metadata = {
+        "dispatch_id": dispatch_id,
+        "task_ids": [task_id],
+        "task_group_id": task_id,
+    }
     mock_job_handles = {(dispatch_id, task_id): 42}
 
     mocker.patch("covalent_dispatcher._core.runner_exp._job_handles", mock_job_handles)
 
-    await _get_task_result(task_metadata)
+    await _get_task_result(task_group_metadata)
 
-    me.receive.assert_awaited_with(task_metadata, 42)
+    me.receive.assert_awaited_with(task_group_metadata, 42)
 
     mock_update.assert_awaited_with(dispatch_id, expected_node_result)
 
@@ -343,7 +347,7 @@ async def test_get_task_result(mocker):
     me.receive = AsyncMock(side_effect=RuntimeError())
     mock_update.reset_mock()
 
-    await _get_task_result(task_metadata)
+    await _get_task_result(task_group_metadata)
     mock_update.assert_awaited()
 
 
@@ -417,9 +421,9 @@ async def test_event_listener(mocker):
 
     mock_get = mocker.patch("covalent_dispatcher._core.runner_exp._get_task_result")
 
-    task_metadata = {"dispatch_id": "dispatch", "node_id": 1}
+    task_group_metadata = {"dispatch_id": "dispatch", "task_group_id": 1, "task_ids": [1]}
 
-    job_events = [{"event": "READY", "task_metadata": task_metadata}, {"event": "BYE"}]
+    job_events = [{"event": "READY", "task_group_metadata": task_group_metadata}, {"event": "BYE"}]
 
     mock_event_queue = asyncio.Queue()
 
@@ -428,8 +432,8 @@ async def test_event_listener(mocker):
         mock_event_queue,
     )
     fut = asyncio.create_task(_listen_for_job_events())
-    await _mark_ready(task_metadata)
-    await _mark_ready(task_metadata)
+    await _mark_ready(task_group_metadata)
+    await _mark_ready(task_group_metadata)
     await mock_event_queue.put({"event": "BYE"})
 
     await asyncio.wait_for(fut, 1)
@@ -440,12 +444,12 @@ async def test_event_listener(mocker):
 
     fut = asyncio.create_task(_listen_for_job_events())
 
-    await _mark_failed(task_metadata, "error")
+    await _mark_failed(task_group_metadata, "error")
     await mock_event_queue.put({"event": "BYE"})
 
     await asyncio.wait_for(fut, 1)
 
-    mock_update.assert_awaited_with(task_metadata["dispatch_id"], node_result)
+    mock_update.assert_awaited_with(task_group_metadata["dispatch_id"], node_result)
 
     await mock_event_queue.put({"BAD_EVENT": "asdf"})
     await mock_event_queue.put({"event": "BYE"})
@@ -453,7 +457,7 @@ async def test_event_listener(mocker):
 
     fut = asyncio.create_task(_listen_for_job_events())
 
-    await _mark_failed(task_metadata, "error")
+    await _mark_failed(task_group_metadata, "error")
     await mock_event_queue.put({"event": "BYE"})
 
     await asyncio.wait_for(fut, 1)
