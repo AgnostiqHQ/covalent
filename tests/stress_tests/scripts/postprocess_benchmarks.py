@@ -16,7 +16,6 @@ import yaml
 benchmarks = os.listdir("benchmark_results")
 
 for benchmark_name in benchmarks:
-
     benchmark_dir = Path("benchmark_results") / benchmark_name
     ct_results = []
     noct_results = []

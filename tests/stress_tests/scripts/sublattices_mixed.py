@@ -268,7 +268,6 @@ time.sleep(3)
 
 # With covalent
 for w in widths:
-
     tasks = [[sample_cpu_task for i in range(w)]]
     tasks[0][0] = nn_workflow
 

@@ -51,7 +51,6 @@ class TestBaseFileTransferStrategy:
         [(True, True), (True, False), (False, False), (False, True)],
     )
     def test_pre_transfer_hook_return_values(self, mocker, is_from_remote, is_to_remote):
-
         # we do not support remote -> remote operations as of yet
         if is_from_remote and is_to_remote:
             return

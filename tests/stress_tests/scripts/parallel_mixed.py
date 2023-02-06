@@ -114,7 +114,6 @@ time.sleep(3)
 
 # With covalent
 for w in widths:
-
     tasks = [[sample_task for i in range(w)]]
     tasks[0][0] = sample_cpu_task
 

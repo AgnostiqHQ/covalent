@@ -5,7 +5,6 @@ from covalent._file_transfer.strategies.http_strategy import HTTP
 
 
 class TestHTTPStrategy:
-
     MOCK_LOCAL_FILEPATH = "/Users/user/data.csv"
     MOCK_REMOTE_FILEPATH = "http://example.com/data.csv"
 

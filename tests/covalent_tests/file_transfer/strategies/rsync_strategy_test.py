@@ -8,7 +8,6 @@ from covalent._file_transfer.strategies.rsync_strategy import Rsync
 
 
 class TestRsyncStrategy:
-
     MOCK_HOST = "11.11.11.11"
     MOCK_USER = "admin"
     MOCK_LOCAL_FILEPATH = "/Users/user/data.csv"
@@ -24,7 +23,6 @@ class TestRsyncStrategy:
         ],
     )
     def test_upload_download_success(self, operation, mocker):
-
         # validate subprocess created by instantiating Popen
 
         MOCK_CMD = "rsync ..."
@@ -62,7 +60,6 @@ class TestRsyncStrategy:
         ],
     )
     def test_upload_download_cp_failure(self, operation, mocker):
-
         # if subprocess returns with return code 1 raise a CalledProcessError exception
 
         MOCK_CMD = "rsync ..."
@@ -99,7 +96,6 @@ class TestRsyncStrategy:
         assert cp_cmd == "rsync -a /home/ubuntu/from.csv /home/ubuntu/to.csv"
 
     def test_get_ssh_rsync_cmd_with_ssh_key(self, mocker):
-
         mocker.patch("os.path.exists", return_value=True)
 
         local_file = File(self.MOCK_LOCAL_FILEPATH)
