@@ -91,9 +91,6 @@ class DirTrigger(BaseTrigger):
 
         Args:
             event_names: List of event names upon which to perform a trigger action
-
-        Returns:
-            None
         """
 
         def proxy_trigger(*args, **kwargs):

@@ -25,9 +25,20 @@ from .base import BaseTrigger
 
 
 class TimeTrigger(BaseTrigger):
+    """
+    Performs a trigger action every `time_gap` seconds.
+
+    Args:
+        time_gap: Amount of seconds to wait before doing a trigger action
+
+    Attributes:
+        self.time_gap: Amount of seconds to wait before doing a trigger action
+        self.stop_flag: Thread safe flag used to check whether the stop condition has been met
+    """
+
     def __init__(
         self,
-        time_gap,
+        time_gap: int,
         lattice_dispatch_id: str = None,
         dispatcher_addr: str = None,
         triggers_server_addr: str = None,
@@ -35,12 +46,21 @@ class TimeTrigger(BaseTrigger):
         super().__init__(lattice_dispatch_id, dispatcher_addr, triggers_server_addr)
         self.time_gap = time_gap
 
-    def observe(self):
+    def observe(self) -> None:
+        """
+        Keep performing the trigger action every `self.time_gap` seconds
+        until stop condition has been met.
+        """
+
         # Stopping mechanism for a blocking observe()
         self.stop_flag = Event()
         while not self.stop_flag.is_set():
-            self.trigger()
             time.sleep(self.time_gap)
+            self.trigger()
 
-    def stop(self):
+    def stop(self) -> None:
+        """
+        Stop the running `self.observe()` method by setting the `self.stop_flag` flag.
+        """
+
         self.stop_flag.set()

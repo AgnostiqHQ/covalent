@@ -89,9 +89,6 @@ class BaseTrigger:
 
         Args:
         trigger_data: Dictionary representation of a trigger
-
-        Returns:
-            None
         """
         if triggers_server_addr is None:
             triggers_server_addr = (
