@@ -9,7 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Location of function to load result from the database.
+- Location of function to load result from the database now moved to load module in covalent_dispatcher/_db folder.
+
+### Added
+- API functions for redispatching.
+- Unit and functional tests for redispatching.
+
+## [0.216.0-rc.0] - 2023-02-05
+
+### Authors
+
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+
+
 ### Removed
 
 - References to specific IBMQ hub/group/project in tutorial 5
@@ -19,8 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - TransportGraphOps class for diffing operations on transport graphs.
 - Added make derived dispatch method.
 - Apply electron updates method to _TransportGraph.
-- API method for redispatching.
-- Unit and functional tests for redispatching.
 
 ### Operations
 
