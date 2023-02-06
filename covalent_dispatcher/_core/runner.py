@@ -33,7 +33,7 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import prefix_separator, sublattice_prefix
-from covalent._workflow import DepsBash, DepsCall, DepsPip
+from covalent._workflow import DepsBash, DepsCall, DepsLocal, DepsPip
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
@@ -346,6 +346,11 @@ def _gather_deps(result_object: Result, node_id: int) -> Tuple[List, List]:
     call_after = []
 
     # Rehydrate deps from JSON
+    if "local" in deps:
+        dep = DepsLocal()
+        dep.from_dict(deps["local"])
+        call_before.append(dep.apply())
+
     if "bash" in deps:
         dep = DepsBash()
         dep.from_dict(deps["bash"])
