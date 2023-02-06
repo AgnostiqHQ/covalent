@@ -27,6 +27,11 @@ from covalent._workflow.transport import _TransportGraph
 from covalent_dispatcher._core.data_modules.job_manager import JobManager
 
 
+@pytest.fixture
+def mock_job_manager():
+    return JobManager()
+
+
 def get_mock_tg():
     tg = _TransportGraph()
     tg.add_node_by_id(0, job_id=1)
@@ -53,7 +58,7 @@ async def test_get_jobs_metadata(mocker):
 
 
 @pytest.mark.asyncio
-async def test_set_cancel_requested_private(mocker):
+async def test_set_cancel_requested_private(mock_job_manager, mocker):
     mock_to_job_ids = mocker.patch(
         "covalent_dispatcher._core.data_modules.job_manager.to_job_ids", return_value=[0, 1]
     )
@@ -62,14 +67,14 @@ async def test_set_cancel_requested_private(mocker):
         "covalent_dispatcher._core.data_modules.job_manager.JobManager._set_cancel_requested"
     )
 
-    await JobManager.set_cancel_requested("dispatch", [0, 1])
+    await mock_job_manager.set_cancel_requested("dispatch", [0, 1])
 
     mock_to_job_ids.assert_called_once_with("dispatch", [0, 1])
     mock_set_cancel_request_private.assert_called_once_with([0, 1])
 
 
 @pytest.mark.asyncio
-async def test_set_cancel_requested(mocker):
+async def test_set_cancel_requested(mock_job_manager, mocker):
     mocker.patch(
         "covalent_dispatcher._core.data_modules.job_manager.to_job_ids", return_value=[0, 1]
     )
@@ -77,13 +82,13 @@ async def test_set_cancel_requested(mocker):
         "covalent_dispatcher._core.data_modules.job_manager.update_job_records"
     )
 
-    await JobManager.set_cancel_requested("dispatch", [0, 1])
+    await mock_job_manager.set_cancel_requested("dispatch", [0, 1])
     expected_args = [{"job_id": job_id, "cancel_requested": True} for job_id in [0, 1]]
     mock_update.assert_called_with(expected_args)
 
 
 @pytest.mark.asyncio
-async def test_set_job_handle(mocker):
+async def test_set_job_handle(mock_job_manager, mocker):
     task_job_map = {0: 1, 1: 2}
     mock_to_job_ids = partial(to_job_ids, task_job_map=task_job_map)
     mocker.patch("covalent_dispatcher._core.data_modules.job_manager.to_job_ids", mock_to_job_ids)
@@ -92,17 +97,17 @@ async def test_set_job_handle(mocker):
         "covalent_dispatcher._core.data_modules.job_manager.update_job_records"
     )
 
-    await JobManager.set_job_handle(dispatch_id="dispatch", task_id=0, job_handle="12356")
+    await mock_job_manager.set_job_handle(dispatch_id="dispatch", task_id=0, job_handle="12356")
     mock_update.assert_called_with([{"job_id": 1, "job_handle": "12356"}])
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize("cancel_requested", [True, False])
-async def test_set_cancel_result(cancel_requested, mocker):
+async def test_set_cancel_result(cancel_requested, mock_job_manager, mocker):
     mock_to_job_ids = partial(to_job_ids, task_job_map={0: 1, 1: 2})
     mocker.patch("covalent_dispatcher._core.data_modules.job_manager.to_job_ids", mock_to_job_ids)
     mock_update = mocker.patch(
         "covalent_dispatcher._core.data_modules.job_manager.update_job_records"
     )
-    await JobManager.set_cancel_result("dispatch", 0, cancel_status=cancel_requested)
+    await mock_job_manager.set_cancel_result("dispatch", 0, cancel_status=cancel_requested)
     mock_update.assert_called_with([{"job_id": 1, "cancel_successful": cancel_requested}])
