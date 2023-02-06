@@ -23,6 +23,8 @@
 
 from unittest.mock import MagicMock, call
 
+import pytest
+
 from covalent._shared_files.util_classes import Status
 from covalent_dispatcher._db.load import _result_from, get_result_object_from_storage
 
@@ -187,8 +189,36 @@ def test_result_from(mocker):
 
 def test_get_result_object_from_storage(mocker):
     """Test the get_result_object_from_storage method."""
+    from covalent_dispatcher._db.load import Lattice
+
     result_from_mock = mocker.patch("covalent_dispatcher._db.load._result_from")
 
     workflow_db_mock = mocker.patch("covalent_dispatcher._db.load.workflow_db")
+    session_mock = workflow_db_mock.session.return_value.__enter__.return_value
 
     result_object = get_result_object_from_storage("mock-dispatch-id")
+
+    assert call(Lattice) in session_mock.query.mock_calls
+    session_mock.query().where().first.assert_called_once()
+
+    assert result_object == result_from_mock.return_value
+    result_from_mock.assert_called_once_with(session_mock.query().where().first.return_value)
+
+
+def test_get_result_object_from_storage_exception(mocker):
+    """Test the get_result_object_from_storage method."""
+    from covalent_dispatcher._db.load import Lattice
+
+    result_from_mock = mocker.patch("covalent_dispatcher._db.load._result_from")
+
+    workflow_db_mock = mocker.patch("covalent_dispatcher._db.load.workflow_db")
+    session_mock = workflow_db_mock.session.return_value.__enter__.return_value
+    session_mock.query().where().first.return_value = None
+
+    with pytest.raises(RuntimeError):
+        get_result_object_from_storage("mock-dispatch-id")
+
+    assert call(Lattice) in session_mock.query.mock_calls
+    session_mock.query().where().first.assert_called_once()
+
+    result_from_mock.assert_not_called()
