@@ -212,8 +212,7 @@ async def _submit_abstract_task_group(
             node_id: executor.get_upload_uri(task_group_metadata, f"node_{node_id}")
             for node_id in known_nodes
         }
-
-        resources.update(node_upload_uris)
+        resources["outputs"] = node_upload_uris
 
         app_log.debug(f"Uploading initial nodes for task group {dispatch_id}:{task_group_id}")
         await am.upload_asset_for_nodes(dispatch_id, "output", node_upload_uris)

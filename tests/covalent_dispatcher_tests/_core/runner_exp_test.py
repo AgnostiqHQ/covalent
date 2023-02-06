@@ -183,8 +183,10 @@ async def test_submit_abstract_task_group(mocker):
     resources = {
         0: mock_function_uri_0,
         3: mock_function_uri_3,
-        1: mock_node_upload_uri_1,
-        2: mock_node_upload_uri_2,
+        "outputs": {
+            1: mock_node_upload_uri_1,
+            2: mock_node_upload_uri_2,
+        },
         mock_deps_id_0: mock_deps_uri_0,
         mock_cb_id_0: mock_cb_uri_0,
         mock_ca_id_0: mock_ca_uri_0,

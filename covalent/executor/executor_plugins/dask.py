@@ -136,14 +136,14 @@ def run_task_from_uris(
 
                 ser_args = []
                 ser_kwargs = {}
-                args_uris = [resources[index] for index in args_ids]
+                args_uris = [resources["outputs"][index] for index in args_ids]
                 for uri in args_uris:
                     if uri.startswith(prefix):
                         uri = uri[prefix_len:]
                     with open(uri, "rb") as f:
                         ser_args.append(pickle.load(f))
 
-                kwargs_uris = {k: resources[v] for k, v in kwargs_ids.items()}
+                kwargs_uris = {k: resources["outputs"][v] for k, v in kwargs_ids.items()}
                 for key, uri in kwargs_uris.items():
                     if uri.startswith(prefix):
                         uri = uri[prefix_len:]
