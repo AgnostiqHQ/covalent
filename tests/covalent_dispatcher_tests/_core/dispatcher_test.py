@@ -436,9 +436,7 @@ async def test_cancel_dispatch(mocker):
         objs = {res._dispatch_id: res, sub_res._dispatch_id: sub_res}
         return objs[dispatch_id]
 
-    mock_data_cancel = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.JobManager.set_cancel_requested"
-    )
+    mock_data_cancel = mocker.patch("covalent_dispatcher._core.dispatcher.set_cancel_requested")
 
     mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner")
     mock_runner.cancel_tasks = AsyncMock()
