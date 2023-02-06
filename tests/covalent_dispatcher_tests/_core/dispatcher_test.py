@@ -35,7 +35,7 @@ from covalent_dispatcher._core.dispatcher import (
     _handle_failed_node,
     _handle_node_status_update,
     _submit_initial_tasks,
-    _submit_task,
+    _submit_task_group,
     cancel_workflow,
     run_dispatch,
     run_workflow,
@@ -201,10 +201,10 @@ async def test_handle_completed_node_update(mocker):
     node_id = 2
     status = Result.COMPLETED
     detail = {}
-    ready_nodes = [0, 1]
+    next_groups = [0, 1]
 
     mock_handle_cancelled = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._handle_completed_node", return_value=ready_nodes
+        "covalent_dispatcher._core.dispatcher._handle_completed_node", return_value=next_groups
     )
     mock_decrement = mocker.patch(
         "covalent_dispatcher._core.dispatcher._unresolved_tasks.decrement"
@@ -213,12 +213,22 @@ async def test_handle_completed_node_update(mocker):
     mock_increment = mocker.patch(
         "covalent_dispatcher._core.dispatcher._unresolved_tasks.increment"
     )
-    mock_submit_task = mocker.patch("covalent_dispatcher._core.dispatcher._submit_task")
+
+    async def get_task_group(dispatch_id, gid):
+        return [gid]
+
+    mock_get_sorted_task_groups = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._sorted_task_groups.get_task_group",
+        get_task_group,
+    )
+    mock_submit_task_group = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._submit_task_group"
+    )
 
     await _handle_node_status_update(dispatch_id, node_id, status, detail)
     mock_decrement.assert_awaited()
     assert mock_increment.await_count == 2
-    assert mock_submit_task.await_count == 2
+    assert mock_submit_task_group.await_count == 2
 
 
 @pytest.mark.asyncio
@@ -466,10 +476,12 @@ async def test_finalize_dispatch(mocker, failed, cancelled, final_status):
 async def test_submit_initial_tasks(mocker):
     dispatch_id = "dispatch_1"
 
-    initial_nodes = [1, 2]
+    initial_groups = [1, 2]
+    sorted_groups = {1: [1], 2: [2]}
+
     mocker.patch(
         "covalent_dispatcher._core.dispatcher._get_initial_tasks_and_deps",
-        return_value=(initial_nodes, {1: 0, 2: 0}, {1: 0, 2: 0}),
+        return_value=(initial_groups, {1: 0, 2: 0}, sorted_groups),
     )
     mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.generate_dispatch_result",
@@ -479,8 +491,8 @@ async def test_submit_initial_tasks(mocker):
     )
 
     mock_inc = mocker.patch("covalent_dispatcher._core.dispatcher._unresolved_tasks.increment")
-    mock_submit_task = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._submit_task",
+    mock_submit_task_group = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._submit_task_group",
     )
     mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.update_dispatch_result",
@@ -488,24 +500,19 @@ async def test_submit_initial_tasks(mocker):
 
     assert await _submit_initial_tasks(dispatch_id) == Result.RUNNING
 
-    assert mock_submit_task.await_count == 2
+    assert mock_submit_task_group.await_count == 2
     assert mock_inc.await_count == 2
 
 
-@pytest.mark.parametrize("new_runner", [True, False])
 @pytest.mark.asyncio
-async def test_submit_task(mocker, new_runner):
+async def test_submit_task_group(mocker):
     dispatch_id = "dispatch_1"
-    node_id = 2
+    gid = 2
+    nodes = [4, 3, 2]
 
-    mocker.patch(
+    mock_get_abs_input = mocker.patch(
         "covalent_dispatcher._core.dispatcher._get_abstract_task_inputs",
         return_value={"args": [], "kwargs": {}},
-    )
-
-    mocker.patch(
-        "covalent_dispatcher._core.dispatcher.NEW_RUNNER_ENABLED",
-        new_runner,
     )
 
     mock_attrs = {
@@ -530,16 +537,10 @@ async def test_submit_task(mocker, new_runner):
     mock_run_abs_task = mocker.patch(
         "covalent_dispatcher._core.dispatcher.runner_exp.run_abstract_task_group",
     )
-    mock_run_abs_task_legacy = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.runner.run_abstract_task",
-    )
 
-    await _submit_task(dispatch_id, node_id)
-
-    if new_runner:
-        mock_run_abs_task.assert_called()
-    else:
-        mock_run_abs_task_legacy.assert_called()
+    await _submit_task_group(dispatch_id, nodes, gid)
+    mock_run_abs_task.assert_called()
+    assert mock_get_abs_input.await_count == len(nodes)
 
 
 @pytest.mark.asyncio
@@ -575,7 +576,7 @@ async def test_submit_parameter(mocker):
         "covalent_dispatcher._core.dispatcher.runner.run_abstract_task",
     )
 
-    await _submit_task(dispatch_id, node_id)
+    await _submit_task_group(dispatch_id, [node_id], node_id)
 
     mock_run_abs_task.assert_not_called()
     mock_run_abs_task_legacy.assert_not_called()

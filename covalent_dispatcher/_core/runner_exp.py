@@ -398,6 +398,7 @@ async def run_abstract_task_group(
                     "args": task_spec["args_ids"],
                     "kwargs": task_spec["kwargs_ids"],
                 }
+                app_log.debug(f"Reverting to legacy runner for task {task_group_id}")
                 coro = runner_legacy.run_abstract_task(
                     dispatch_id,
                     node_id,

@@ -251,12 +251,12 @@ async def test_handle_completed_node(mocker, test_db):
     mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
 
     pending_parents = {}
-
+    sorted_task_groups = {}
     sdkres = get_mock_result()
     result_object = get_mock_srvresult(sdkres, test_db)
 
     async def get_node_successors(dispatch_id: str, node_id: int):
-        return result_object.lattice.transport_graph.get_successors(node_id)
+        return result_object.lattice.transport_graph.get_successors(node_id, ["task_group_id"])
 
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_node_successors",
@@ -267,17 +267,16 @@ async def test_handle_completed_node(mocker, test_db):
     pending_parents[0] = 1
     pending_parents[1] = 0
     pending_parents[2] = 1
+    sorted_task_groups[0] = [0]
+    sorted_task_groups[1] = [1]
+    sorted_task_groups[2] = [2]
 
-    await _initialize_caches(result_object.dispatch_id, pending_parents)
+    await _initialize_caches(result_object.dispatch_id, pending_parents, sorted_task_groups)
 
     node_result = {"node_id": 1, "status": Result.COMPLETED}
     assert await _pending_parents.get_pending(result_object.dispatch_id, 0) == 1
     assert await _pending_parents.get_pending(result_object.dispatch_id, 1) == 0
     assert await _pending_parents.get_pending(result_object.dispatch_id, 2) == 1
-
-    mocker.patch(
-        "covalent_dispatcher._core.dispatcher._pending_parents.remove",
-    )
 
     next_nodes = await _handle_completed_node(result_object.dispatch_id, 1)
     assert next_nodes == [0]

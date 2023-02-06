@@ -49,9 +49,9 @@ class _UnresolvedTasksCache:
         key = _unresolved_tasks_key(dispatch_id)
         await self._store.insert(key, val)
 
-    async def increment(self, dispatch_id: str):
+    async def increment(self, dispatch_id: str, interval: int = 1):
         current = await self.get_unresolved(dispatch_id)
-        await self.set_unresolved(dispatch_id, current + 1)
+        await self.set_unresolved(dispatch_id, current + interval)
 
     async def decrement(self, dispatch_id: str):
         current = await self.get_unresolved(dispatch_id)
@@ -89,7 +89,7 @@ class _SortedTaskGroups:
 
     async def get_task_group(self, dispatch_id: str, task_group_id: int):
         key = _task_groups_key(dispatch_id, task_group_id)
-        await self._store.get(key)
+        return await self._store.get(key)
 
     async def set_task_group(self, dispatch_id: str, task_group_id: int, sorted_nodes: list):
         key = _task_groups_key(dispatch_id, task_group_id)

@@ -25,7 +25,7 @@ Defines the core functionality of the dispatcher
 import asyncio
 import traceback
 from datetime import datetime, timezone
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
 import networkx as nx
 
@@ -35,8 +35,8 @@ from covalent._shared_files.defaults import WAIT_EDGE_NAME, parameter_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS
 
 from . import data_manager as datasvc
-from . import runner, runner_exp
-from .dispatcher_modules.caches import _pending_parents, _unresolved_tasks
+from . import runner_exp
+from .dispatcher_modules.caches import _pending_parents, _sorted_task_groups, _unresolved_tasks
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -88,19 +88,19 @@ async def _get_abstract_task_inputs(dispatch_id: str, node_id: int, node_name: s
 # Domain: dispatcher
 async def _handle_completed_node(dispatch_id: str, node_id: int):
 
-    ready_nodes = []
+    next_task_groups = []
     app_log.debug(f"Node {node_id} completed")
-    app_log.debug(f"Removing pending counter for {dispatch_id}:{node_id}")
-    await _pending_parents.remove(dispatch_id, node_id)
-    app_log.debug(f"Removed pending counter for {dispatch_id}:{node_id}")
-    for child in await datasvc.get_node_successors(dispatch_id, node_id):
-        await _pending_parents.decrement(dispatch_id, child)
-        now_pending = await _pending_parents.get_pending(dispatch_id, child)
-        if now_pending < 1:
-            app_log.debug(f"Queuing node {child} for execution")
-            ready_nodes.append(child)
 
-    return ready_nodes
+    for child in await datasvc.get_node_successors(dispatch_id, node_id):
+        node_id = child["node_id"]
+        gid = child["task_group_id"]
+        await _pending_parents.decrement(dispatch_id, gid)
+        now_pending = await _pending_parents.get_pending(dispatch_id, gid)
+        if now_pending < 1:
+            app_log.debug(f"Queuing task group {gid} for execution")
+            next_task_groups.append(gid)
+
+    return next_task_groups
 
 
 # Domain: dispatcher
@@ -157,19 +157,24 @@ async def _get_initial_tasks_and_deps(dispatch_id: str) -> Tuple[int, int, Dict]
 
 
 # Domain: dispatcher
-async def _submit_task(dispatch_id: str, node_id: int):
+async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_group_id: int):
 
+    # Handle parameter nodes
     # Get name of the node for the current task
-    node_name = await datasvc.get_electron_attribute(dispatch_id, node_id, "name")
+    node_name = await datasvc.get_electron_attribute(dispatch_id, sorted_nodes[0], "name")
     app_log.debug(f"7A: Node name: {node_name} (run_planned_workflow).")
 
     # Handle parameter nodes
     if node_name.startswith(parameter_prefix):
+
+        if len(sorted_nodes) > 1:
+            raise RuntimeError("Parameter nodes cannot be packed")
+
         app_log.debug("7C: Encountered parameter node {node_id}.")
         app_log.debug("8: Starting update node (run_planned_workflow).")
 
         node_result = {
-            "node_id": node_id,
+            "node_id": sorted_nodes[0],
             "start_time": datetime.now(timezone.utc),
             "end_time": datetime.now(timezone.utc),
             "status": RESULT_STATUS.COMPLETED,
@@ -178,47 +183,42 @@ async def _submit_task(dispatch_id: str, node_id: int):
         app_log.debug("8A: Update node success (run_planned_workflow).")
 
     else:
-        # Gather inputs and dispatch task
-        app_log.debug(f"Gathering inputs for task {node_id} (run_planned_workflow).")
+        # Gather inputs for each task and send the task spec sequence to the runner
+        task_specs = []
+        known_nodes = []
+        for node_id in sorted_nodes:
+            app_log.debug(f"Gathering inputs for task {node_id} (run_planned_workflow).")
 
-        abs_task_input = await _get_abstract_task_inputs(dispatch_id, node_id, node_name)
+            abs_task_input = await _get_abstract_task_inputs(dispatch_id, node_id, node_name)
 
-        selected_executor = await datasvc.get_electron_attribute(dispatch_id, node_id, "executor")
-        selected_executor_data = await datasvc.get_electron_attribute(
-            dispatch_id, node_id, "executor_data"
-        )
-
-        app_log.debug(f"Submitting task {node_id} to executor")
-
-        if NEW_RUNNER_ENABLED:
-            app_log.debug(f"Using new runner for task {node_id}")
+            selected_executor = await datasvc.get_electron_attribute(
+                dispatch_id, node_id, "executor"
+            )
+            selected_executor_data = await datasvc.get_electron_attribute(
+                dispatch_id, node_id, "executor_data"
+            )
             task_spec = {
                 "function_id": node_id,
                 "name": node_name,
                 "args_ids": abs_task_input["args"],
                 "kwargs_ids": abs_task_input["kwargs"],
             }
+            known_nodes += abs_task_input["args"]
+            known_nodes += list(abs_task_input["kwargs"].values())
+            task_specs.append(task_spec)
 
-            known_nodes = abs_task_input["args"] + list(abs_task_input["kwargs"].values())
-            known_nodes = list(set(known_nodes))
+        app_log.debug(f"Submitting task group {dispatch_id}:{task_group_id} to executor")
+        app_log.debug(f"Using new runner for task group {task_group_id}")
 
-            coro = runner_exp.run_abstract_task_group(
-                dispatch_id=dispatch_id,
-                task_group_id=node_id,
-                task_seq=[task_spec],
-                known_nodes=known_nodes,
-                selected_executor=[selected_executor, selected_executor_data],
-            )
+        known_nodes = list(set(known_nodes))
+        coro = runner_exp.run_abstract_task_group(
+            dispatch_id=dispatch_id,
+            task_group_id=task_group_id,
+            task_seq=task_specs,
+            known_nodes=known_nodes,
+            selected_executor=[selected_executor, selected_executor_data],
+        )
 
-        else:
-            app_log.debug(f"Using legacy runner for task {node_id}")
-            coro = runner.run_abstract_task(
-                dispatch_id=dispatch_id,
-                node_id=node_id,
-                selected_executor=[selected_executor, selected_executor_data],
-                node_name=node_name,
-                abstract_inputs=abs_task_input,
-            )
         asyncio.create_task(coro)
 
 
@@ -360,9 +360,12 @@ async def _finalize_dispatch(dispatch_id: str):
     return result_info["status"]
 
 
-async def _initialize_caches(dispatch_id, pending_parents):
-    for node_id, indegree in pending_parents.items():
-        await _pending_parents.set_pending(dispatch_id, node_id, indegree)
+async def _initialize_caches(dispatch_id, pending_parents, sorted_task_groups):
+    for gid, indegree in pending_parents.items():
+        await _pending_parents.set_pending(dispatch_id, gid, indegree)
+
+    for gid, sorted_nodes in sorted_task_groups.items():
+        await _sorted_task_groups.set_task_group(dispatch_id, gid, sorted_nodes)
 
     await _unresolved_tasks.set_unresolved(dispatch_id, 0)
 
@@ -377,15 +380,17 @@ async def _submit_initial_tasks(dispatch_id: str):
     app_log.debug(f"4: Workflow status changed to running {dispatch_id} (run_planned_workflow).")
     app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
 
-    initial_nodes, pending_parents, sorted_task_groups = await _get_initial_tasks_and_deps(
+    initial_groups, pending_parents, sorted_task_groups = await _get_initial_tasks_and_deps(
         dispatch_id
     )
 
-    await _initialize_caches(dispatch_id, pending_parents)
+    await _initialize_caches(dispatch_id, pending_parents, sorted_task_groups)
 
-    for node_id in initial_nodes:
-        await _unresolved_tasks.increment(dispatch_id)
-        await _submit_task(dispatch_id, node_id)
+    for gid in initial_groups:
+        sorted_nodes = sorted_task_groups[gid]
+        app_log.debug(f"Sorted nodes group group {gid}: {sorted_nodes}")
+        await _unresolved_tasks.increment(dispatch_id, len(sorted_nodes))
+        await _submit_task_group(dispatch_id, sorted_nodes, gid)
 
     return RESULT_STATUS.RUNNING
 
@@ -408,10 +413,11 @@ async def _handle_node_status_update(dispatch_id, node_id, node_status, detail):
     await _unresolved_tasks.decrement(dispatch_id)
 
     if node_status == RESULT_STATUS.COMPLETED:
-        ready_nodes = await _handle_completed_node(dispatch_id, node_id)
-        for node_id in ready_nodes:
-            await _unresolved_tasks.increment(dispatch_id)
-            await _submit_task(dispatch_id, node_id)
+        next_task_groups = await _handle_completed_node(dispatch_id, node_id)
+        for gid in next_task_groups:
+            sorted_nodes = await _sorted_task_groups.get_task_group(dispatch_id, gid)
+            await _unresolved_tasks.increment(dispatch_id, len(sorted_nodes))
+            await _submit_task_group(dispatch_id, sorted_nodes, gid)
         return
 
     if node_status == RESULT_STATUS.FAILED:

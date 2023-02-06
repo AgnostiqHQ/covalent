@@ -370,9 +370,11 @@ async def get_incoming_edges(dispatch_id: str, node_id: int):
     return result_object.lattice.transport_graph.get_incoming_edges(node_id)
 
 
-async def get_node_successors(dispatch_id: str, node_id: int):
+async def get_node_successors(
+    dispatch_id: str, node_id: int, attrs: List[str] = ["task_group_id"]
+) -> List[Dict]:
     result_object = get_result_object(dispatch_id)
-    return result_object.lattice.transport_graph.get_successors(node_id)
+    return result_object.lattice.transport_graph.get_successors(node_id, attrs)
 
 
 async def get_graph_nodes_links(dispatch_id: str) -> dict:
