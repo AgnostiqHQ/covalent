@@ -34,7 +34,7 @@ from covalent_ui import result_webhook
 
 from . import data_manager as datasvc
 from . import runner
-from .data_modules import JobManager
+from .data_modules.job_manager import set_cancel_requested
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -354,7 +354,7 @@ async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = []):
         task_ids = list(tg._graph.nodes)
         app_log.debug(f"Cancelling dispatch {dispatch_id}")
 
-    await JobManager.set_cancel_requested(dispatch_id, task_ids)
+    await set_cancel_requested(dispatch_id, task_ids)
     await runner.cancel_tasks(dispatch_id, task_ids)
 
     # Recursively cancel running sublattice dispatches
