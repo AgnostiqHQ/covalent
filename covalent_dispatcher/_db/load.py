@@ -20,7 +20,6 @@
 
 """Functions to load results from the database."""
 
-from typing import Optional
 
 from covalent import lattice
 from covalent._results_manager.result import Result
@@ -139,12 +138,10 @@ def _result_from(lattice_record: Lattice) -> Result:
     return result
 
 
-def get_result_object_from_storage(
-    dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
-):
+def get_result_object_from_storage(dispatch_id: str):
+    """Get the result object from the database."""
     with workflow_db.session() as session:
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-        status = lattice_record.status if lattice_record else None
         if not lattice_record:
             app_log.debug(f"No result object found for dispatch {dispatch_id}")
             raise RuntimeError(f"No result object found for dispatch {dispatch_id}")

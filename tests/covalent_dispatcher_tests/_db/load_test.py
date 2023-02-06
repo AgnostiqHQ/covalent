@@ -24,7 +24,7 @@
 from unittest.mock import MagicMock, call
 
 from covalent._shared_files.util_classes import Status
-from covalent_dispatcher._db.load import _result_from
+from covalent_dispatcher._db.load import _result_from, get_result_object_from_storage
 
 
 def test_result_from(mocker):
@@ -180,3 +180,15 @@ def test_result_from(mocker):
     }
     assert lattice_mock_attrs["post_processing"] is False
     assert lattice_mock_attrs["electron_outputs"] == {}
+
+    _, args, _ = lattice_mock.mock_calls[0]
+    assert args[0].__name__ == "dummy_function"
+
+
+def test_get_result_object_from_storage(mocker):
+    """Test the get_result_object_from_storage method."""
+    result_from_mock = mocker.patch("covalent_dispatcher._db.load._result_from")
+
+    workflow_db_mock = mocker.patch("covalent_dispatcher._db.load.workflow_db")
+
+    result_object = get_result_object_from_storage("mock-dispatch-id")
