@@ -19,6 +19,8 @@ Orchestration
 - :doc:`How to add pip dependencies to an electron <./orchestration/add_pip_dependencies_to_electron>`
 - :doc:`How to add bash dependencies to an electron <./orchestration/add_bash_dependencies_to_electron>`
 - :doc:`How to add callable function dependencies to an electron <./orchestration/add_callable_dependencies_to_electron>`
+- :doc:`How to add directory trigger to a lattice <./orchestration/dir_trigger>`
+- :doc:`How to add a time trigger to a lattice <./orchestration/time_trigger>`
 ..
   - :doc:`How to construct a lepton <./orchestration/construct_lepton>`
   - :doc:`How to construct leptons using Bash code or commands <./orchestration/construct_bash_task>`
