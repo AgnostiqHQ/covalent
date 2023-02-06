@@ -113,18 +113,23 @@ class _TransportGraph:
                 )
             )
 
-    def get_successors(self, node_id: int):
+    def get_successors(self, node_id: int, attr_keys: List = []) -> List[Dict]:
         """Get child nodes with multiplicity"""
 
         # Read from internal NX graph
         if not self.bare:
-            return [child for child, edges in self._graph.adj[node_id].items() for edge in edges]
+            node_list = [
+                self.get_node(child)
+                for child, edges in self._graph.adj[node_id].items()
+                for edge in edges
+            ]
+            return _filter_node_list(node_list, None, attr_keys)
 
         # Query DB
         with workflow_db.session() as session:
             node = self.get_node(node_id, session)
             child_node_list = _get_child_nodes(session, node)
-            return [n.node_id for n in child_node_list]
+            return _filter_node_list(child_node_list, session, attr_keys)
 
     # Copied from _TransportGraph
     def get_edge_data(self, dep_key: int, node_key: int) -> Any:
@@ -234,3 +239,14 @@ def get_compute_graph(lattice_id: int, bare: bool = False) -> _TransportGraph:
     else:
         app_log.debug("Getting bare transport graph")
         return _TransportGraph(lattice_id, True)
+
+
+def _filter_node(node_obj: Node, session: Session, attr_keys: List[str]):
+    output = {"node_id": node_obj.node_id}
+    for key in attr_keys:
+        output[key] = node_obj.get_value(key, session, refresh=False)
+    return output
+
+
+def _filter_node_list(node_list: List[Node], session: Session, attr_keys: List[str]):
+    return list(map(lambda x: _filter_node(x, session, attr_keys), node_list))

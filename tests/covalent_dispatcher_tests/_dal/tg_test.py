@@ -323,4 +323,6 @@ def test_transport_graph_get_successors(bare_mode, test_db, mocker):
 
     tg = get_compute_graph(lat_id, bare=bare_mode)
 
-    assert tg.get_successors(0) == [4, 4, 6, 6, 6, 7, 7]
+    node_list = tg.get_successors(0, attr_keys=["status"])
+    assert [n["node_id"] for n in node_list] == [4, 4, 6, 6, 6, 7, 7]
+    assert node_list[0]["status"] == SDKResult.NEW_OBJ
