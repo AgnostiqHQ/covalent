@@ -27,12 +27,36 @@ import requests
 from .._results_manager import Result
 from .._shared_files import logger
 from .._shared_files.config import get_config
+from .._shared_files.util_classes import Status
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
 class BaseTrigger:
+    """
+    Base class to be subclassed by any custom defined trigger.
+    Implements all the necessary methods used for interacting with dispatches, including
+    getting their statuses and performing a redispatch of them whenever the trigger gets triggered.
+
+    Args:
+        lattice_dispatch_id: Dispatch ID of the worfklow which has to be redispatched in case this trigger gets triggered
+        dispatcher_addr: Address of dispatcher server used to retrieve info about or redispatch any dispatches
+        triggers_server_addr: Address of the Triggers server (if there is any) to register this trigger to,
+                              uses the dispatcher's address by default
+
+    Attributes:
+        lattice_dispatch_id: Dispatch ID of the worfklow which has to be redispatched in case this trigger gets triggered
+        dispatcher_addr: Address of dispatcher server used to retrieve info about or redispatch any dispatches
+        triggers_server_addr: Address of the Triggers server (if there is any) to register this trigger to,
+                              uses the dispatcher's address by default
+        self.new_dispatch_ids: List of all the newly created dispatch ids from performing redispatch
+        self.observe_blocks: Boolean to indicate whether the `self.observe` method is a blocking call
+        self.event_loop: Event loop to be used if directly calling dispatcher's functions instead of the REST APIs
+        self.use_internal_funcs: Boolean indicating whether to use dispatcher's functions directly instead of through API calls
+        self.stop_flag: To handle stopping mechanism in a thread safe manner in case `self.observe()` is a blocking call (e.g. see TimeTrigger)
+    """
+
     def __init__(
         self,
         lattice_dispatch_id: str = None,
@@ -52,11 +76,23 @@ class BaseTrigger:
         )
         self.stop_flag = None  # to handle stopping mechanism in a thread safe manner in case observe() is a blocking call (e.g. see TimeTrigger)
 
-    def register(self):
+    def register(self) -> None:
+        """
+        Register this trigger to the Triggers server and start observing.
+        """
         self._register(self.to_dict(), self.triggers_server_addr)
 
     @staticmethod
-    def _register(trigger_data, triggers_server_addr=None):
+    def _register(trigger_data, triggers_server_addr=None) -> None:
+        """
+        Register a trigger to the Triggers server given only its dictionary format and start observing.
+
+        Args:
+        trigger_data: Dictionary representation of a trigger
+
+        Returns:
+            None
+        """
         if triggers_server_addr is None:
             triggers_server_addr = (
                 get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
@@ -66,7 +102,15 @@ class BaseTrigger:
         r = requests.post(register_trigger_url, json=trigger_data)
         r.raise_for_status()
 
-    def _get_status(self):
+    def _get_status(self) -> Status:
+        """
+        Get status about the connected dispatch id to check whether its a pending
+        dispatch or new redispatch has to be made.
+
+        Returns:
+            status: Status
+        """
+
         if self.use_internal_funcs:
             from covalent_dispatcher._service.app import get_result
 
@@ -81,7 +125,17 @@ class BaseTrigger:
             self.lattice_dispatch_id, status_only=True, dispatcher_addr=self.dispatcher_addr
         )["status"]
 
-    def _do_redispatch(self, is_pending: bool = False):
+    def _do_redispatch(self, is_pending: bool = False) -> str:
+        """
+        Perform a redispatch of the connected dispatch id and return a new one.
+
+        Args:
+            is_pending: Whether the connected dispatch id is pending
+
+        Returns:
+            new_dispatch_id: Dispatch id of the newly dispatched workflow
+        """
+
         if self.use_internal_funcs:
             from covalent_dispatcher import run_redispatch
 
@@ -94,7 +148,14 @@ class BaseTrigger:
 
         return redispatch(self.lattice_dispatch_id, self.dispatcher_addr)()
 
-    def trigger(self):
+    def trigger(self) -> None:
+        """
+        Trigger this trigger and perform a redispatch of the connected dispatch id's workflow.
+        Should be called within `self.observe()` whenever a trigger action is desired.
+
+        Raises:
+            RuntimeError: In case no dispatch id is connected to this trigger
+        """
 
         if not self.lattice_dispatch_id:
             raise RuntimeError(
@@ -114,6 +175,13 @@ class BaseTrigger:
             self.new_dispatch_ids.append(new_dispatch_id)
 
     def to_dict(self):
+        """
+        Return a dictionary representation of this trigger which can later be used to regenerate it.
+
+        Returns:
+            tr_dict: Dictionary representation of this trigger
+        """
+
         tr_dict = self.__dict__.copy()
         tr_dict["name"] = str(self.__class__.__name__)
         return tr_dict
