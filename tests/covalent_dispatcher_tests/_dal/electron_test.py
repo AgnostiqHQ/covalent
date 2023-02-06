@@ -86,6 +86,8 @@ def test_electron_attributes(test_db, mocker):
     assert e.is_asset("output") is True
     assert e.is_asset("status") is False
 
+    assert e.get_value("task_group_id") == e.node_id
+
 
 def test_electron_get_set_value(test_db, mocker):
     res = get_mock_result()

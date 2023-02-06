@@ -469,7 +469,7 @@ async def test_submit_initial_tasks(mocker):
     initial_nodes = [1, 2]
     mocker.patch(
         "covalent_dispatcher._core.dispatcher._get_initial_tasks_and_deps",
-        return_value=(3, initial_nodes, {}),
+        return_value=(initial_nodes, {1: 0, 2: 0}, {1: 0, 2: 0}),
     )
     mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.generate_dispatch_result",

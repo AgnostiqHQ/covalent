@@ -127,22 +127,33 @@ async def _get_initial_tasks_and_deps(dispatch_id: str) -> Tuple[int, int, Dict]
 
     """
 
-    num_tasks = 0
-    ready_nodes = []
+    # Number of pending predecessor nodes for each task group
     pending_parents = {}
 
     g_node_link = await datasvc.get_graph_nodes_links(dispatch_id)
     g = nx.readwrite.node_link_graph(g_node_link)
 
-    for node_id, d in g.in_degree():
-        app_log.debug(f"Node {node_id} has {d} parents")
+    # Topologically sort each task group
+    sorted_task_groups = {}
+    for node_id in nx.topological_sort(g):
+        gid = g.nodes[node_id]["task_group_id"]
+        if gid not in sorted_task_groups:
+            sorted_task_groups[gid] = [node_id]
+            pending_parents[gid] = 0
+        else:
+            sorted_task_groups[gid].append(node_id)
 
-        pending_parents[node_id] = d
-        num_tasks += 1
-        if d == 0:
-            ready_nodes.append(node_id)
+    for node_id in g.nodes:
+        parent_gid = g.nodes[node_id]["task_group_id"]
+        for succ, datadict in g.adj[node_id].items():
+            child_gid = g.nodes[succ]["task_group_id"]
+            n_edges = len(datadict.keys())
+            if parent_gid != child_gid:
+                pending_parents[child_gid] += n_edges
 
-    return num_tasks, ready_nodes, pending_parents
+    initial_task_groups = [gid for gid, d in pending_parents.items() if d == 0]
+
+    return initial_task_groups, pending_parents, sorted_task_groups
 
 
 # Domain: dispatcher
@@ -366,7 +377,9 @@ async def _submit_initial_tasks(dispatch_id: str):
     app_log.debug(f"4: Workflow status changed to running {dispatch_id} (run_planned_workflow).")
     app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
 
-    tasks_left, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(dispatch_id)
+    initial_nodes, pending_parents, sorted_task_groups = await _get_initial_tasks_and_deps(
+        dispatch_id
+    )
 
     await _initialize_caches(dispatch_id, pending_parents)
 

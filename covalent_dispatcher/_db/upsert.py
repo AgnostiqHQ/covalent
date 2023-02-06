@@ -251,6 +251,7 @@ def _electron_data(result: Result):
                 electron_record_kwarg = {
                     "parent_dispatch_id": result.dispatch_id,
                     "transport_graph_node_id": node_id,
+                    "task_group_id": tg.get_node_value(node_id, "task_group_id"),
                     "type": get_electron_type(
                         tg.get_node_value(node_key=node_id, value_key="name")
                     ),

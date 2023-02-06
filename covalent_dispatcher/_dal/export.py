@@ -80,6 +80,9 @@ def _to_client_graph(srv_graph: SRVGraph) -> SDKGraph:
 
     sdk_graph._graph = srv_graph.get_internal_graph_copy()
     for node_id in srv_graph._graph.nodes:
+        attrs = list(sdk_graph._graph.nodes[node_id].keys())
+        for k in attrs:
+            del sdk_graph._graph.nodes[node_id][k]
         attributes = {}
         for k in NODE_ATTRIBUTES:
             if k not in DEFERRED_KEYS and k not in SDK_NODE_META_KEYS:
@@ -89,6 +92,7 @@ def _to_client_graph(srv_graph: SRVGraph) -> SDKGraph:
 
         node_meta = {k: srv_graph.get_node_value(node_id, k) for k in SDK_NODE_META_KEYS}
         attributes["metadata"] = node_meta
+
         for k, v in attributes.items():
             sdk_graph.set_node_value(node_id, k, v)
 

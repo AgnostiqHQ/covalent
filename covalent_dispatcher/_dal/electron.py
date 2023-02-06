@@ -81,7 +81,7 @@ class Electron(DispatchedObject):
             self._assets[name] = Asset(self._storage_path, asset_metadata[name])
 
     @property
-    def pure_metadata(self):
+    def pure_metadata(self) -> Dict:
         return self._pure_metadata
 
     @pure_metadata.setter

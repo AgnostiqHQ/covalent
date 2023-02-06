@@ -52,7 +52,7 @@ class _TransportGraph:
         self._graph = nx.MultiDiGraph()
 
     def add_node(self, node: Node):
-        self._graph.add_node(node.node_id)
+        self._graph.add_node(node.node_id, **node.pure_metadata)
         self._nodes[node.node_id] = node
 
     def add_edge(self, x: int, y: int, **attrs):

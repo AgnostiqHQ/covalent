@@ -33,6 +33,10 @@ def _unresolved_tasks_key(dispatch_id: str):
     return dispatch_id
 
 
+def _task_groups_key(dispatch_id: str, task_group_id: int):
+    return _pending_parents_key(dispatch_id, task_group_id)
+
+
 class _UnresolvedTasksCache:
     def __init__(self, store: _KeyValueBase = _DictStore()):
         self._store = store
@@ -62,22 +66,40 @@ class _PendingParentsCache:
     def __init__(self, store: _KeyValueBase = _DictStore()):
         self._store = store
 
-    async def get_pending(self, dispatch_id: str, node_id: int):
-        key = _pending_parents_key(dispatch_id, node_id)
+    async def get_pending(self, dispatch_id: str, task_group_id: int):
+        key = _pending_parents_key(dispatch_id, task_group_id)
         return await self._store.get(key)
 
-    async def set_pending(self, dispatch_id: str, node_id: int, val: int):
-        key = _pending_parents_key(dispatch_id, node_id)
+    async def set_pending(self, dispatch_id: str, task_group_id: int, val: int):
+        key = _pending_parents_key(dispatch_id, task_group_id)
         await self._store.insert(key, val)
 
-    async def decrement(self, dispatch_id: str, node_id: int):
-        current = await self.get_pending(dispatch_id, node_id)
-        await self.set_pending(dispatch_id, node_id, current - 1)
+    async def decrement(self, dispatch_id: str, task_group_id: int):
+        current = await self.get_pending(dispatch_id, task_group_id)
+        await self.set_pending(dispatch_id, task_group_id, current - 1)
 
-    async def remove(self, dispatch_id: str, node_id: int):
-        key = _pending_parents_key(dispatch_id, node_id)
+    async def remove(self, dispatch_id: str, task_group_id: int):
+        key = _pending_parents_key(dispatch_id, task_group_id)
+        await self._store.remove(key)
+
+
+class _SortedTaskGroups:
+    def __init__(self, store: _KeyValueBase = _DictStore()):
+        self._store = store
+
+    async def get_task_group(self, dispatch_id: str, task_group_id: int):
+        key = _task_groups_key(dispatch_id, task_group_id)
+        await self._store.get(key)
+
+    async def set_task_group(self, dispatch_id: str, task_group_id: int, sorted_nodes: list):
+        key = _task_groups_key(dispatch_id, task_group_id)
+        await self._store.insert(key, sorted_nodes)
+
+    async def remove(self, dispatch_id: str, task_group_id: int):
+        key = _task_groups_key(dispatch_id, task_group_id)
         await self._store.remove(key)
 
 
 _pending_parents = _PendingParentsCache()
 _unresolved_tasks = _UnresolvedTasksCache()
+_sorted_task_groups = _SortedTaskGroups()

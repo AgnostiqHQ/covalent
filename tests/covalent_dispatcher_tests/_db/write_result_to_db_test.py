@@ -192,6 +192,7 @@ def get_lattice_kwargs(
 def get_electron_kwargs(
     parent_dispatch_id="dispatch_1",
     transport_graph_node_id=0,
+    task_group_id=0,
     type=parameter_prefix.strip(prefix_separator),
     name=f"{parameter_prefix}0",
     status="NEW_OBJ",
@@ -219,6 +220,7 @@ def get_electron_kwargs(
     return {
         "parent_dispatch_id": parent_dispatch_id,
         "transport_graph_node_id": transport_graph_node_id,
+        "task_group_id": task_group_id,
         "type": type,
         "name": name,
         "status": status,
@@ -405,6 +407,7 @@ def test_insert_electron_dependency_data(test_db, workflow_lattice, mocker):
         electron_kwargs = get_electron_kwargs(
             name=name,
             transport_graph_node_id=node_id,
+            task_group_id=node_id,
             created_at=cur_time,
             updated_at=cur_time,
         )
@@ -480,6 +483,7 @@ def test_upsert_electron_dependency_data(test_db, workflow_lattice, mocker):
         electron_kwargs = get_electron_kwargs(
             name=name,
             transport_graph_node_id=node_id,
+            task_group_id=node_id,
             created_at=cur_time,
             updated_at=cur_time,
         )
@@ -518,6 +522,7 @@ def test_upsert_electron_dependency_data_idempotent(test_db, workflow_lattice, m
         electron_kwargs = get_electron_kwargs(
             name=name,
             transport_graph_node_id=node_id,
+            task_group_id=node_id,
             created_at=cur_time,
             updated_at=cur_time,
         )
@@ -663,6 +668,7 @@ def test_write_sublattice_electron_id(test_db, mocker):
         electron_kwargs = get_electron_kwargs(
             name=name,
             transport_graph_node_id=node_id,
+            task_group_id=node_id,
             created_at=cur_time,
             updated_at=cur_time,
         )
@@ -714,6 +720,7 @@ def test_resolve_electron_id(test_db, mocker):
         electron_kwargs = get_electron_kwargs(
             name=name,
             transport_graph_node_id=node_id,
+            task_group_id=node_id,
             created_at=cur_time,
             updated_at=cur_time,
         )
