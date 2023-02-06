@@ -3,6 +3,7 @@
 
 The Covalent SDK exists to enable compute-intensive workloads, such as ML training and testing, to run as server-managed workflows. To accomplish this, the workload is broken down into tasks that are arranged in a workflow. The tasks and the workflow are Python functions decorated with Covalent's *electron* and *lattice* interfaces, respectively.
 
+
 (electron)=
 
 ## Electron
@@ -44,6 +45,7 @@ An electron is a building block, from which you compose a {ref}`lattice<lattice>
 :align: center
 :width: 400
 ```
+
 
 (lattice)=
 
@@ -130,6 +132,7 @@ def run_experiment(C=1.0, gamma=0.7):
 
 Notice that all the data manipulation in the lattice is done by electrons. The {doc}`How-to Guide <../how-to/index>` contains articles on containing data manipulation within electrons.
 
+
 (sublattice)=
 
 ## Sublattice
@@ -180,6 +183,7 @@ Conceptually, as shown in the figure below, executing a sublattice adds the cons
 Don't confuse {code}`ct.electron(lattice)`, which creates a sublattice, with {code}`ct.lattice(electron)`, which is a workflow consisting of a single task.
 :::
 
+
 (dispatch)=
 
 ## Dispatch
@@ -191,3 +195,38 @@ You dispatch a workflow in your Python code using the Covalent {code}`dispatch()
 # Send the run_experiment() lattice to the dispatch server
 dispatch_id = ct.dispatch(run_experiment)(C=1.0, gamma=0.7)
 ```
+
+
+(trigger)=
+
+## Trigger
+
+It so happens that sometimes you might have a pre-defined workflow which you might want to run automatically, subject to a certain event occurring. This is enabled in Covalent using something called a `Trigger`.
+
+You can attach a `Trigger` object to a lattice and every time an event described in that `Trigger` occurs, it'll perform a `trigger` action which is to do a dispatch of the connected lattice.
+
+This is especially useful if Covalent is used in the middle of your already existing pipeline instead of a user facing tool. For example, if say in your pipeline, you want to plot a graph of a csv file anytime it gets modified, you will be able to do so using Covalent. In this case the following are the keywords:
+
+- “modified” → this is the event which should trigger the `Trigger` object and dispatch the workflow
+- “plot a graph” → this part is the definition of the workflow
+- “a csv file” → this is the part that the `Trigger` object will be watching for changes
+
+Let's see how this works:
+
+You can connect a `Trigger` object to a lattice as:
+
+```{code-block} python
+...
+tr_object = TimeTrigger(5)
+
+@ct.lattice(triggers=tr_object):
+def my_workflow():
+    ...
+```
+
+Now when you dispatch this lattice with `ct.dispatch` these are the key things that happen:
+1. First run of the lattice is disabled, so Covalent only saves the lattice and generates a `dispatch_id` so that it can be referenced at a later point if required.
+2. The `Trigger` object gets registered on the triggers server, which by default is the same as Covalent's server.
+3. Upon registering, the `observe()` method of the trigger gets called which starts observing for any desired condition to be met which will in turn call the trigger's `trigger()` method. For example, in the above case, a `TimeTrigger` is used with a time gap of `5` seconds; so every 5 seconds the `trigger()` method will be called.
+4. The `trigger()` method performs an automatic dispatch of the connected lattice (connected through the `dispatch_id` obtained earlier) and stores the newly obtained `dispatch_id`s. This is to have a connection between the "parent" `dispatch_id` and its subsequent "child" `dispatch_id`s.
+5. If you want to stop this automatic dispatching from happening further, you can call the `ct.stop_triggers(d_id)` function with the parent dispatch id `d_id`.
