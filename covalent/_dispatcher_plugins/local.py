@@ -45,6 +45,7 @@ class LocalDispatcher(BaseDispatcher):
     def dispatch(
         orig_lattice: Lattice,
         dispatcher_addr: str = None,
+        disable_run: bool = False,
     ) -> Callable:
         """
         Wrapping the dispatching functionality to allow input passing
@@ -56,6 +57,7 @@ class LocalDispatcher(BaseDispatcher):
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
             dispatcher_addr: The address of the dispatcher server.  If None then defaults to the address set in Covalent's config.
+            disable_run: Whether to disable running the worklow and rather just save it on covalent's server for later execution
 
         Returns:
             Wrapper function which takes the inputs of the workflow as arguments
@@ -83,6 +85,9 @@ class LocalDispatcher(BaseDispatcher):
                 The dispatch id of the workflow.
             """
 
+            # To access the disable_run passed to the dispatch function
+            nonlocal disable_run
+
             lattice = deepcopy(orig_lattice)
 
             lattice.build_graph(*args, **kwargs)
@@ -94,8 +99,9 @@ class LocalDispatcher(BaseDispatcher):
             json_lattice = json.loads(json_lattice)
             triggers_data = json_lattice["metadata"].pop("triggers")
 
-            # Determine whether to disable first run
-            disable_run = triggers_data if isinstance(triggers_data, bool) else True
+            if not disable_run:
+                # Determine whether to disable first run based on trigger_data
+                disable_run = triggers_data is not None
 
             json_lattice = json.dumps(json_lattice)
 
@@ -119,6 +125,7 @@ class LocalDispatcher(BaseDispatcher):
     def dispatch_sync(
         lattice: Lattice,
         dispatcher_addr: str = None,
+        disable_run: bool = False,
     ) -> Callable:
         """
         Wrapping the synchronous dispatching functionality to allow input
@@ -130,6 +137,7 @@ class LocalDispatcher(BaseDispatcher):
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
             dispatcher_addr: The address of the dispatcher server. If None then defaults to the address set in Covalent's config.
+            disable_run: Whether to disable running the worklow and rather just save it on covalent's server for later execution
 
         Returns:
             Wrapper function which takes the inputs of the workflow as arguments
@@ -158,7 +166,7 @@ class LocalDispatcher(BaseDispatcher):
             """
 
             return get_result(
-                LocalDispatcher.dispatch(lattice, dispatcher_addr)(*args, **kwargs),
+                LocalDispatcher.dispatch(lattice, dispatcher_addr, disable_run)(*args, **kwargs),
                 wait=wait.EXTREME,
             )
 
