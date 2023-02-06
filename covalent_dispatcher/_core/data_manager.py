@@ -186,7 +186,7 @@ def make_derived_dispatch(
     if electron_updates is None:
         electron_updates = {}
 
-    old_result_object = load.get_result_object_from_storage(parent_dispatch_id, wait=False)
+    old_result_object = load.get_result_object_from_storage(parent_dispatch_id)
 
     if json_lattice:
         result_object = _get_result_object_from_new_lattice(
