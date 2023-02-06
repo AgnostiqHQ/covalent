@@ -67,6 +67,6 @@ async def cancel_running_dispatch(dispatch_id: str, task_ids: List[int] = None) 
     if task_ids is None:
         task_ids = []
 
-    from ._core import cancel_workflow
+    from ._core import cancel_dispatch
 
-    cancel_workflow(dispatch_id)
+    await cancel_dispatch(dispatch_id)
