@@ -20,6 +20,7 @@
 
 
 import asyncio
+from pathlib import Path
 from types import MethodType
 
 from watchdog.events import FileSystemEventHandler
@@ -74,7 +75,7 @@ class DirTrigger(BaseTrigger):
     ):
         super().__init__(lattice_dispatch_id, dispatcher_addr, triggers_server_addr)
 
-        self.dir_path = dir_path
+        self.dir_path = str(Path(dir_path).expanduser().resolve())
         self.batch_size = batch_size
 
         if isinstance(event_names, str):
@@ -82,7 +83,6 @@ class DirTrigger(BaseTrigger):
         self.event_names = event_names
 
         self.observe_blocks = False
-        self.n_changes = 0
 
     def attach_methods_to_handler(self, event_names: list) -> None:
         """
@@ -92,6 +92,8 @@ class DirTrigger(BaseTrigger):
         Args:
             event_names: List of event names upon which to perform a trigger action
         """
+
+        self.n_changes = 0
 
         def proxy_trigger(*args, **kwargs):
             self.n_changes += 1
