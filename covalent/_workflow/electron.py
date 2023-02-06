@@ -585,6 +585,7 @@ def electron(
 
     deps = {}
 
+    # type check and handle various arguments
     if isinstance(deps_bash, DepsBash):
         deps["bash"] = deps_bash
     if isinstance(deps_bash, (list, str)):
@@ -608,6 +609,7 @@ def electron(
     internal_call_before_deps = []
     internal_call_after_deps = []
 
+    # create internal call dependencies that perform file transfer
     for file_transfer in files or []:
         _file_transfer_pre_hook_, _file_transfer_call_dep_ = file_transfer.cp()
 
@@ -625,6 +627,7 @@ def electron(
         else:
             internal_call_before_deps.append(DepsCall(_file_transfer_call_dep_))
 
+    # combine internal and user call_before/after dependencies
     call_before = internal_call_before_deps + call_before
     call_after = internal_call_after_deps + call_after
 
