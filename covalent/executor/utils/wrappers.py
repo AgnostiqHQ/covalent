@@ -191,6 +191,7 @@ def run_task_from_uris(
                     #         uri = uri[prefix_len:]
                     #     with open(uri, "rb") as f:
                     #         ser_args.append(pickle.load(f))
+
                     for node_id in args_ids:
                         url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{node_id}/output"
                         resp = requests.get(url, stream=True)
@@ -283,46 +284,54 @@ def run_task_from_uris(
 
                     break
 
+                finally:
+
+                    # POST task artifacts
+                    if result_uri:
+                        upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/output"
+                        with open(result_uri, "rb") as f:
+                            files = {"asset_file": f}
+                            requests.post(upload_url, files=files)
+
+                    if stdout_uri:
+                        upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/stdout"
+                        with open(stdout_uri, "rb") as f:
+                            files = {"asset_file": f}
+                            requests.post(upload_url, files=files)
+
+                    if stderr_uri:
+                        upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/stderr"
+                        with open(stderr_uri, "rb") as f:
+                            files = {"asset_file": f}
+                            requests.post(upload_url, files=files)
+
+                    result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
+
+                    with open(result_path, "w") as f:
+                        json.dump(result_summary, f)
+
+                    # Notify Covalent that the task has terminated
+                    url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}"
+                    requests.put(url)
+
+    # Deal with any tasks that did not run
     n = len(results)
     if n < len(task_ids):
         for i in range(n, len(task_ids)):
-            results.append(
-                {
-                    "node_id": task_ids[i],
-                    "output_uri": "",
-                    "stdout_uri": "",
-                    "stderr_uri": "",
-                    "exception_occurred": True,
-                }
-            )
+            result_summary = {
+                "node_id": task_ids[i],
+                "output_uri": "",
+                "stdout_uri": "",
+                "stderr_uri": "",
+                "exception_occurred": True,
+            }
 
-    for i, task_id in enumerate(task_ids):
-        result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
+            results.append(result_summary)
 
-        with open(result_path, "w") as f:
-            json.dump(results[i], f)
+            result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
 
-        # POST task artifacts
+            with open(result_path, "w") as f:
+                json.dump(result_summary, f)
 
-        output_uri = results[i]["output_uri"]
-        if output_uri:
-            upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/output"
-            with open(output_uri, "rb") as f:
-                files = {"asset_file": f}
-                requests.post(upload_url, files=files)
-
-        if stdout_uri:
-            upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/stdout"
-            with open(stdout_uri, "rb") as f:
-                files = {"asset_file": f}
-                requests.post(upload_url, files=files)
-
-        if stderr_uri:
-            upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/stderr"
-            with open(stderr_uri, "rb") as f:
-                files = {"asset_file": f}
-                requests.post(upload_url, files=files)
-
-        # Notify Covalent that the task has terminated
-        url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}"
-        requests.put(url)
+            url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}"
+            requests.put(url)

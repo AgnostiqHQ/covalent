@@ -102,6 +102,8 @@ class LocalExecutor(BaseExecutor):
         dispatcher_addr = get_config("dispatcher.address")
         dispatcher_port = get_config("dispatcher.port")
         server_url = f"http://{dispatcher_addr}:{dispatcher_port}"
+
+        app_log.debug(f"Running task group {dispatch_id}:{task_ids}")
         future = proc_pool.submit(
             run_task_from_uris,
             task_specs,
@@ -124,8 +126,8 @@ class LocalExecutor(BaseExecutor):
 
         task_results = []
 
-        if len(task_ids) > 1:
-            raise RuntimeError("Task packing is not yet supported")
+        # if len(task_ids) > 1:
+        #     raise RuntimeError("Task packing is not yet supported")
 
         for task_id in task_ids:
             result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
