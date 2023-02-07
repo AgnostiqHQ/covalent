@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Adding more tests to bring up code coverage
 
+
+### Changed
+
+- Updating executors and runner to support cancel dispatches and tasks
+
 ## [0.216.0-rc.0] - 2023-02-05
 
 ### Authors
