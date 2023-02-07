@@ -91,14 +91,17 @@ async def _handle_completed_node(dispatch_id: str, node_id: int):
     next_task_groups = []
     app_log.debug(f"Node {node_id} completed")
 
+    parent_gid = await datasvc.get_electron_attribute(dispatch_id, node_id, "task_group_id")
     for child in await datasvc.get_node_successors(dispatch_id, node_id):
         node_id = child["node_id"]
         gid = child["task_group_id"]
-        await _pending_parents.decrement(dispatch_id, gid)
-        now_pending = await _pending_parents.get_pending(dispatch_id, gid)
-        if now_pending < 1:
-            app_log.debug(f"Queuing task group {gid} for execution")
-            next_task_groups.append(gid)
+        app_log.debug(f"dispatch {dispatch_id}: parent gid {parent_gid}, child gid {gid}")
+        if parent_gid != gid:
+            await _pending_parents.decrement(dispatch_id, gid)
+            now_pending = await _pending_parents.get_pending(dispatch_id, gid)
+            if now_pending < 1:
+                app_log.debug(f"Queuing task group {gid} for execution")
+                next_task_groups.append(gid)
 
     return next_task_groups
 
@@ -152,7 +155,7 @@ async def _get_initial_tasks_and_deps(dispatch_id: str) -> Tuple[int, int, Dict]
                 pending_parents[child_gid] += n_edges
 
     initial_task_groups = [gid for gid, d in pending_parents.items() if d == 0]
-
+    app_log.debug(f"Sorted task groups: {sorted_task_groups}")
     return initial_task_groups, pending_parents, sorted_task_groups
 
 
@@ -207,7 +210,9 @@ async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_gro
             known_nodes += list(abs_task_input["kwargs"].values())
             task_specs.append(task_spec)
 
-        app_log.debug(f"Submitting task group {dispatch_id}:{task_group_id} to executor")
+        app_log.debug(
+            f"Submitting task group {dispatch_id}:{task_group_id} ({len(sorted_nodes)} tasks) to runner"
+        )
         app_log.debug(f"Using new runner for task group {task_group_id}")
 
         known_nodes = list(set(known_nodes))

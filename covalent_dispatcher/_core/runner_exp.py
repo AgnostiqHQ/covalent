@@ -214,7 +214,9 @@ async def _submit_abstract_task_group(
         }
         resources["inputs"] = node_upload_uris
 
-        app_log.debug(f"Uploading initial nodes for task group {dispatch_id}:{task_group_id}")
+        app_log.debug(
+            f"Uploading known nodes {known_nodes} for task group {dispatch_id}:{task_group_id}"
+        )
         await am.upload_asset_for_nodes(dispatch_id, "output", node_upload_uris)
 
         job_handle = await executor.send(

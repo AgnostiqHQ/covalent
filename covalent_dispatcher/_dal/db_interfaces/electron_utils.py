@@ -65,7 +65,7 @@ ASSET_KEYS = {
 }
 
 _meta_record_map = {
-    "task_group_id": "transport_graph_node_id",
+    "task_group_id": "task_group_id",
     "name": "name",
     "start_time": "started_at",
     "end_time": "completed_at",
