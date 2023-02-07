@@ -140,6 +140,10 @@ def _gather_deps(deps, call_before_objs_json, call_after_objs_json) -> Tuple[Lis
     return call_before, call_after
 
 
+# Basic wrapper for executing a topologically sorted sequence of
+# tasks. For the `task_specs` and `resources` schema see the comments
+# for `AsyncBaseExecutor.send()`.
+
 # URIs are just file paths
 def run_task_from_uris(
     task_specs: List[Dict],

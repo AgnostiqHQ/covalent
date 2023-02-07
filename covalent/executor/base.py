@@ -481,6 +481,32 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         resources: dict,
         task_group_metadata: dict,
     ):
+        # Schemas:
+        #
+        # Task spec:
+        # {
+        #     "function_id": int,
+        #     "args_ids": List[int],
+        #     "kwargs_ids": Dict[str, int],
+        #     "deps_id": str,
+        #     "call_before_id": str,
+        #     "call_after_id": str,
+        # }
+
+        # resources:
+        # {
+        #     "functions": Dict[int, str],
+        #     "inputs": Dict[int, str],
+        #     "deps": Dict[str, str]
+        # }
+
+        # task_group_metadata:
+        # {
+        #     "dispatch_id": str,
+        #     "task_ids": List[int],
+        #     "task_group_id": int,
+        # }
+
         # Assets are assumed to be accessible by the compute backend
         # at the provided URIs
 
@@ -508,7 +534,13 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         #   "status": status,
         # }
 
-        # Job should have reached a terminal state by the time this is invoked.
+        # corresponding to the node ids (task_ids) specified in the
+        # `task_group_metadata`.  This may be a subset of the node ids
+        # in the original task group as jobs may notify Covalent
+        # asynchronously of completed tasks before the entire task
+        # group finishes running.
+
+        # Each task must have reached a terminal state by the time this is invoked.
 
         raise NotImplementedError
 
