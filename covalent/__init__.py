@@ -34,6 +34,7 @@ from ._shared_files.util_classes import RESULT_STATUS as status  # nopycln: impo
 from ._workflow import (  # nopycln: import
     DepsBash,
     DepsCall,
+    DepsLocal,
     DepsPip,
     Lepton,
     TransportableObject,
