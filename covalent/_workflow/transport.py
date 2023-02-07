@@ -318,6 +318,7 @@ class _TransportGraph:
         node_id = len(self._graph.nodes)
         self._graph.add_node(
             node_id,
+            task_group_id=node_id,
             name=name,
             function=TransportableObject(function),
             metadata=metadata,

@@ -23,11 +23,18 @@ Helper functions for the local executor
 """
 
 import io
+import json
+import os
+import sys
 import traceback
 from contextlib import redirect_stderr, redirect_stdout
 from typing import Any, Callable, Dict, List, Tuple
 
-from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
+import cloudpickle as pickle
+
+from covalent._workflow.depsbash import DepsBash
+from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
+from covalent._workflow.depspip import DepsPip
 from covalent._workflow.transport import TransportableObject
 
 
@@ -100,3 +107,237 @@ def io_wrapper(fn: Callable, args: List, kwargs: Dict) -> Tuple[Any, str, str, s
             output = None
             tb = "".join(traceback.TracebackException.from_exception(ex).format())
     return output, stdout.getvalue(), stderr.getvalue(), tb
+
+
+# Copied from runner.py
+def _gather_deps(deps, call_before_objs_json, call_after_objs_json) -> Tuple[List, List]:
+    """Assemble deps for a node into the final call_before and call_after"""
+
+    call_before = []
+    call_after = []
+
+    # Rehydrate deps from JSON
+    if "bash" in deps:
+        dep = DepsBash()
+        dep.from_dict(deps["bash"])
+        call_before.append(dep.apply())
+
+    if "pip" in deps:
+        dep = DepsPip()
+        dep.from_dict(deps["pip"])
+        call_before.append(dep.apply())
+
+    for dep_json in call_before_objs_json:
+        dep = DepsCall()
+        dep.from_dict(dep_json)
+        call_before.append(dep.apply())
+
+    for dep_json in call_after_objs_json:
+        dep = DepsCall()
+        dep.from_dict(dep_json)
+        call_after.append(dep.apply())
+
+    return call_before, call_after
+
+
+# Basic wrapper for executing a topologically sorted sequence of
+# tasks. For the `task_specs` and `resources` schema see the comments
+# for `AsyncBaseExecutor.send()`.
+
+# URIs are just file paths
+def run_task_from_uris(
+    task_specs: List[Dict],
+    resources: dict,
+    output_uris: List[Tuple[str, str, str]],
+    results_dir: str,
+    task_group_metadata: dict,
+    server_url: str,
+):
+
+    prefix = "file://"
+    prefix_len = len(prefix)
+
+    outputs = {}
+    results = []
+    dispatch_id = task_group_metadata["dispatch_id"]
+    task_ids = task_group_metadata["task_ids"]
+    gid = task_group_metadata["task_group_id"]
+
+    for i, task in enumerate(task_specs):
+        result_uri, stdout_uri, stderr_uri = output_uris[i]
+
+        with open(stdout_uri, "w") as stdout, open(stderr_uri, "w") as stderr:
+            with redirect_stdout(stdout), redirect_stderr(stderr):
+                try:
+                    task_id = task["function_id"]
+                    args_ids = task["args_ids"]
+                    kwargs_ids = task["kwargs_ids"]
+
+                    function_uri = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/function"
+
+                    import requests
+
+                    resp = requests.get(function_uri, stream=True)
+                    resp.raise_for_status()
+                    serialized_fn = pickle.loads(resp.content)
+                    # function_uri = resources[task_id]
+                    # if function_uri.startswith(prefix):
+                    #     function_uri = function_uri[prefix_len:]
+
+                    # with open(function_uri, "rb") as f:
+                    #     serialized_fn = pickle.load(f)
+
+                    ser_args = []
+                    ser_kwargs = {}
+                    # args_uris = [outputs[index] for index in args_ids]
+                    # for uri in args_uris:
+                    #     if uri.startswith(prefix):
+                    #         uri = uri[prefix_len:]
+                    #     with open(uri, "rb") as f:
+                    #         ser_args.append(pickle.load(f))
+
+                    for node_id in args_ids:
+                        url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{node_id}/output"
+                        resp = requests.get(url, stream=True)
+                        resp.raise_for_status()
+                        ser_args.append(pickle.loads(resp.content))
+
+                    # kwargs_uris = {k: outputs[v] for k, v in kwargs_ids.items()}
+                    # for key, uri in kwargs_uris.items():
+                    #     if uri.startswith(prefix):
+                    #         uri = uri[prefix_len:]
+                    #     with open(uri, "rb") as f:
+                    #         ser_kwargs[key] = pickle.load(f)
+                    for k, node_id in kwargs_ids.items():
+                        url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{node_id}/output"
+                        resp = requests.get(url, stream=True)
+                        resp.raise_for_status()
+                        ser_kwargs[k] = pickle.loads(resp.content)
+
+                    # deps_id = task["deps_id"]
+                    # deps_uri = resources[deps_id]
+                    # if deps_uri.startswith(prefix):
+                    #     deps_uri = deps_uri[prefix_len:]
+                    # with open(deps_uri, "rb") as f:
+                    #     deps_json = pickle.load(f)
+                    deps_url = (
+                        f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/deps"
+                    )
+                    resp = requests.get(deps_url, stream=True)
+                    resp.raise_for_status()
+                    deps_json = pickle.loads(resp.content)
+
+                    # call_before_id = task["call_before_id"]
+                    # call_before_uri = resources[call_before_id]
+                    # if call_before_uri.startswith(prefix):
+                    #     call_before_uri = call_before_uri[prefix_len:]
+                    # with open(call_before_uri, "rb") as f:
+                    #     call_before_json = pickle.load(f)
+                    cb_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/call_before"
+                    resp = requests.get(cb_url, stream=True)
+                    resp.raise_for_status()
+                    call_before_json = pickle.loads(resp.content)
+
+                    # call_after_id = task["call_after_id"]
+                    # call_after_uri = resources[call_after_id]
+                    # if call_after_uri.startswith(prefix):
+                    #     call_after_uri = call_after_uri[prefix_len:]
+                    # with open(call_after_uri, "rb") as f:
+                    #     call_after_json = pickle.load(f)
+                    ca_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/call_after"
+                    resp = requests.get(ca_url, stream=True)
+                    resp.raise_for_status()
+                    call_after_json = pickle.loads(resp.content)
+
+                    call_before, call_after = _gather_deps(
+                        deps_json, call_before_json, call_after_json
+                    )
+                    exception_occurred = False
+
+                    ser_output = wrapper_fn(
+                        serialized_fn, call_before, call_after, *ser_args, **ser_kwargs
+                    )
+
+                    with open(result_uri, "wb") as f:
+                        pickle.dump(ser_output, f)
+
+                    outputs[task_id] = result_uri
+
+                    result_summary = {
+                        "node_id": task_id,
+                        "output_uri": result_uri,
+                        "stdout_uri": stdout_uri,
+                        "stderr_uri": stderr_uri,
+                        "exception_occurred": exception_occurred,
+                    }
+                    results.append(result_summary)
+
+                except Exception as ex:
+                    exception_occurred = True
+                    tb = "".join(traceback.TracebackException.from_exception(ex).format())
+                    print(tb, file=sys.stderr)
+                    result_uri = None
+                    result_summary = {
+                        "node_id": task_id,
+                        "output_uri": result_uri,
+                        "stdout_uri": stdout_uri,
+                        "stderr_uri": stderr_uri,
+                        "exception_occurred": exception_occurred,
+                    }
+                    results.append(result_summary)
+
+                    break
+
+                finally:
+
+                    # POST task artifacts
+                    if result_uri:
+                        upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/output"
+                        with open(result_uri, "rb") as f:
+                            files = {"asset_file": f}
+                            requests.post(upload_url, files=files)
+
+                    sys.stdout.flush()
+                    if stdout_uri:
+                        upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/stdout"
+                        with open(stdout_uri, "rb") as f:
+                            files = {"asset_file": f}
+                            requests.post(upload_url, files=files)
+
+                    sys.stderr.flush()
+                    if stderr_uri:
+                        upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/stderr"
+                        with open(stderr_uri, "rb") as f:
+                            files = {"asset_file": f}
+                            requests.post(upload_url, files=files)
+
+                    result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
+
+                    with open(result_path, "w") as f:
+                        json.dump(result_summary, f)
+
+                    # Notify Covalent that the task has terminated
+                    url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}"
+                    requests.put(url)
+
+    # Deal with any tasks that did not run
+    n = len(results)
+    if n < len(task_ids):
+        for i in range(n, len(task_ids)):
+            result_summary = {
+                "node_id": task_ids[i],
+                "output_uri": "",
+                "stdout_uri": "",
+                "stderr_uri": "",
+                "exception_occurred": True,
+            }
+
+            results.append(result_summary)
+
+            result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
+
+            with open(result_path, "w") as f:
+                json.dump(result_summary, f)
+
+            url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}"
+            requests.put(url)

@@ -252,7 +252,22 @@ class Electron:
                 iterable_metadata["call_before"] = filtered_call_before
 
                 get_item_electron = Electron(function=get_item, metadata=iterable_metadata)
-                yield get_item_electron(self, i)
+
+                name = active_lattice.transport_graph.get_node_value(self.node_id, "name")
+                bound_electron = get_item_electron(self, i)
+
+                # Pack with main electron except for sublattices
+                if not name.startswith(sublattice_prefix):
+                    gid = active_lattice.transport_graph.get_node_value(
+                        self.node_id, "task_group_id"
+                    )
+                    active_lattice.transport_graph.set_node_value(
+                        bound_electron.node_id,
+                        "task_group_id",
+                        gid,
+                    )
+
+                yield bound_electron
 
     def __getattr__(self, attr: str) -> "Electron":
         # This is to handle the cases where magic functions are attempted
@@ -275,7 +290,18 @@ class Electron:
 
             get_attr.__name__ = prefix_separator + self.function.__name__ + ".__getattr__"
             get_attr_electron = Electron(function=get_attr, metadata=self.metadata.copy())
-            return get_attr_electron(self, attr)
+            name = active_lattice.transport_graph.get_node_value(self.node_id, "name")
+            bound_electron = get_attr_electron(self, attr)
+
+            # Pack with main electron except for sublattices
+            if not name.startswith(sublattice_prefix):
+                gid = active_lattice.transport_graph.get_node_value(self.node_id, "task_group_id")
+                active_lattice.transport_graph.set_node_value(
+                    bound_electron.node_id,
+                    "task_group_id",
+                    gid,
+                )
+            return bound_electron
 
         return super().__getattr__(attr)
 
@@ -289,7 +315,18 @@ class Electron:
             get_item.__name__ = prefix_separator + self.function.__name__ + ".__getitem__"
 
             get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())
-            return get_item_electron(self, key)
+            name = active_lattice.transport_graph.get_node_value(self.node_id, "name")
+            bound_electron = get_item_electron(self, key)
+
+            # Pack with main electron except for sublattices
+            if not name.startswith(sublattice_prefix):
+                gid = active_lattice.transport_graph.get_node_value(self.node_id, "task_group_id")
+                active_lattice.transport_graph.set_node_value(
+                    bound_electron.node_id,
+                    "task_group_id",
+                    gid,
+                )
+            return bound_electron
 
         raise StopIteration
 
@@ -451,6 +488,11 @@ class Electron:
             list_electron = Electron(function=_auto_list_node, metadata=collection_metadata)
             bound_electron = list_electron(*param_value)
             transport_graph.set_node_value(bound_electron.node_id, "name", electron_list_prefix)
+
+            # Group the auto-generated node with the main node
+            gid = transport_graph.get_node_value(self.node_id, "task_group_id")
+            transport_graph.set_node_value(bound_electron.node_id, "task_group_id", gid)
+
             transport_graph.add_edge(
                 list_electron.node_id,
                 node_id,
@@ -467,6 +509,11 @@ class Electron:
             dict_electron = Electron(function=_auto_dict_node, metadata=collection_metadata)
             bound_electron = dict_electron(**param_value)
             transport_graph.set_node_value(bound_electron.node_id, "name", electron_dict_prefix)
+
+            # Group the auto-generated node with the main node
+            gid = transport_graph.get_node_value(self.node_id, "task_group_id")
+            transport_graph.set_node_value(bound_electron.node_id, "task_group_id", gid)
+
             transport_graph.add_edge(
                 dict_electron.node_id,
                 node_id,

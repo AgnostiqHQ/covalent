@@ -228,6 +228,8 @@ def format_server_url(hostname: str = None, port: int = None) -> str:
 
 
 def request_api_key(aws_region: str = "us-east-1") -> str:
+    if os.environ.get("COVALENT_DISABLE_AUTH"):
+        return "dummy_key"
     try:
         import boto3
         import botocore

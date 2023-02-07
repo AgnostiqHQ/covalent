@@ -291,14 +291,13 @@ class BaseExecutor(_AbstractBaseExecutor):
 
     async def send(
         self,
-        function_uri: str,
-        deps_uri: str,
-        call_before_uri: str,
-        call_after_uri: str,
-        args_uris: str,
-        kwargs_uris: str,
-        task_metadata: dict,
+        task_specs: List[Dict],
+        resources: dict,
+        task_group_metadata: dict,
     ):
+        # Task specs are of the form
+        # {"function_ref": [node_id], "args_refs": [node_ids], "kwargs_refs": {key: node_id}}
+
         # Assets are assumed to be accessible by the compute backend
         # at the provided URIs
 
@@ -307,14 +306,14 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         raise NotImplementedError
 
-    async def poll(self, task_metadata: Dict, job_handle: Any):
+    async def poll(self, task_group_metadata: Dict, job_handle: Any):
 
         # To be run as a background task.  A callback will be
         # registered with the runner to invoke the receive()
 
         return -1
 
-    async def receive(self, task_metadata: Dict, job_handle: Any):
+    async def receive(self, task_group_metadata: Dict, job_handle: Any) -> List[Dict]:
 
         # Returns (output_uri, stdout_uri, stderr_uri,
         # exception_raised)
@@ -478,14 +477,36 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
     async def send(
         self,
-        function_uri: str,
-        deps_uri: str,
-        call_before_uri: str,
-        call_after_uri: str,
-        args_uris: str,
-        kwargs_uris: str,
-        task_metadata: dict,
+        task_specs: List[Dict],
+        resources: dict,
+        task_group_metadata: dict,
     ):
+        # Schemas:
+        #
+        # Task spec:
+        # {
+        #     "function_id": int,
+        #     "args_ids": List[int],
+        #     "kwargs_ids": Dict[str, int],
+        #     "deps_id": str,
+        #     "call_before_id": str,
+        #     "call_after_id": str,
+        # }
+
+        # resources:
+        # {
+        #     "functions": Dict[int, str],
+        #     "inputs": Dict[int, str],
+        #     "deps": Dict[str, str]
+        # }
+
+        # task_group_metadata:
+        # {
+        #     "dispatch_id": str,
+        #     "task_ids": List[int],
+        #     "task_group_id": int,
+        # }
+
         # Assets are assumed to be accessible by the compute backend
         # at the provided URIs
 
@@ -494,21 +515,34 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
         raise NotImplementedError
 
-    async def poll(self, task_metadata: Dict, job_handle: Any):
+    async def poll(self, task_group_metadata: Dict, job_handle: Any):
 
         # To be run as a background task.  A callback will be
         # registered with the runner to invoke the receive()
 
         return -1
 
-    async def receive(self, task_metadata: Dict, job_handle: Any):
+    async def receive(self, task_group_metadata: Dict, job_handle: Any) -> List[Dict]:
 
-        # Returns (output_uri, stdout_uri, stderr_uri,
-        # exception_raised)
+        # Returns a list of task results
+        # {
+        #   "dispatch_id": dispatch_id,
+        #   "node_id": node_id,
+        #   "output_uri": output_uri,
+        #   "stdout_uri": stdout_uri,
+        #   "stderr_uri": stderr_uri,
+        #   "status": status,
+        # }
 
-        # Job should have reached a terminal state by the time this is invoked.
+        # corresponding to the node ids (task_ids) specified in the
+        # `task_group_metadata`.  This may be a subset of the node ids
+        # in the original task group as jobs may notify Covalent
+        # asynchronously of completed tasks before the entire task
+        # group finishes running.
+
+        # Each task must have reached a terminal state by the time this is invoked.
 
         raise NotImplementedError
 
-    def get_upload_uri(self, task_metadata: Dict, object_key: str):
+    def get_upload_uri(self, task_group_metadata: Dict, object_key: str):
         return ""
