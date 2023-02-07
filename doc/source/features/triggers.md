@@ -4,7 +4,7 @@
 
 Triggers are a powerful feature in Covalent that allow you to automate repetitive tasks and streamline your workflow. With these, you can define a pre-defined set of steps that will run automatically every time a specific event occurs.
 
-To use Triggers, you simply need to attach a {doc}`Trigger <../api/triggers#covalent.triggers.BaseTrigger>` object to a lattice. Then, every time the event described in the trigger occurs, the connected lattice will perform a trigger action and dispatch the connected workflow. This makes it easy to automate processes, reducing the risk of human error and ensuring that your pipeline runs smoothly and efficiently.
+To use Triggers, you simply need to attach a {doc}`Trigger <../api/triggers>` object to a lattice. Then, every time the event described in the trigger occurs, the connected lattice will perform a trigger action and dispatch the connected workflow. This makes it easy to automate processes, reducing the risk of human error and ensuring that your pipeline runs smoothly and efficiently.
 
 For example, if you want to plot a graph of a CSV file every time it gets modified, you can use these Triggers to automate this process. The trigger will be watching the CSV file for changes, and every time the file is modified, it will run the workflow to plot a graph of the data.
 
@@ -39,7 +39,7 @@ covalent start --triggers-only
 
 For the purpose of this example, let's assume you started Covalent the default way.
 
-You can attach a {doc}`Trigger <../api/triggers#covalent.triggers.BaseTrigger>` object to a lattice quite simply as shown below:
+You can attach a {doc}`Trigger <../api/triggers>` object to a lattice quite simply as shown below:
 
 ```{code-block} python
 ...
@@ -53,12 +53,12 @@ def my_workflow():
 Under the hood, once this is done and when you dispatch the lattice using `ct.dispatch`, the following events occur:
 
 - The first run of the lattice is disabled, and Covalent only saves the lattice and generates a `dispatch_id` for reference later.
-- The {doc}`Trigger <../api/triggers#covalent.triggers.BaseTrigger>` object is registered on the triggers server, which is the same as the Covalent server by default.
-- Upon registration, the `observe()` method of the trigger is called, which starts observing for the desired condition to be met in an unblocking manner. In the example above, the {doc}`TimeTrigger <../api/triggers#covalent.triggers.TimeTrigger>` with a time gap of 5 seconds will call the `trigger()` method every 5 seconds.
+- The {doc}`Trigger <../api/triggers>` object is registered on the triggers server, which is the same as the Covalent server by default.
+- Upon registration, the `observe()` method of the trigger is called, which starts observing for the desired condition to be met in an unblocking manner. In the example above, the {doc}`TimeTrigger <../api/triggers>` with a time gap of 5 seconds will call the `trigger()` method every 5 seconds.
 - At this point, `ct.dispatch` now returns with the earlier generate `dispatch_id`.
 - The `trigger()` method, whenever it's called, performs an automatic dispatch of the connected lattice using the `dispatch_id` obtained earlier, and stores the newly obtained `dispatch_id`s for connections between the "parent" and subsequent "child" `dispatch_id`s.
 
-Once a trigger is started, to stop the automatic dispatching when an event happens, you can call {doc}`ct.stop_triggers(dispatch_id) <../api/dispatcher#covalent.stop_triggers>` with the parent dispatch id `dispatch_id`.
+Once a trigger is started, to stop the automatic dispatching when an event happens, you can call {doc}`ct.stop_triggers(dispatch_id) <../api/dispatcher>` with the parent dispatch id `dispatch_id`.
 
 
 ## Attaching a Trigger to a Dispatched Workflow
