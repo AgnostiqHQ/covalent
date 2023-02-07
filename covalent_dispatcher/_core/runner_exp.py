@@ -219,15 +219,6 @@ async def _submit_abstract_task_group(
         )
         await am.upload_asset_for_nodes(dispatch_id, "output", node_upload_uris)
 
-        job_handle = await executor.send(
-            task_specs,
-            resources,
-            task_group_metadata,
-        )
-        app_log.debug(f"Submitted task group {dispatch_id}:{task_group_id}")
-
-        _job_handles[(dispatch_id, task_group_id)] = job_handle
-
         ts = datetime.now(timezone.utc)
         node_results = [
             datamgr.generate_node_result(
@@ -237,6 +228,15 @@ async def _submit_abstract_task_group(
             )
             for task_id in task_ids
         ]
+
+        job_handle = await executor.send(
+            task_specs,
+            resources,
+            task_group_metadata,
+        )
+        app_log.debug(f"Submitted task group {dispatch_id}:{task_group_id}")
+
+        _job_handles[(dispatch_id, task_group_id)] = job_handle
 
     except Exception as ex:
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
