@@ -297,12 +297,14 @@ def run_task_from_uris(
                             files = {"asset_file": f}
                             requests.post(upload_url, files=files)
 
+                    sys.stdout.flush()
                     if stdout_uri:
                         upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/stdout"
                         with open(stdout_uri, "rb") as f:
                             files = {"asset_file": f}
                             requests.post(upload_url, files=files)
 
+                    sys.stderr.flush()
                     if stderr_uri:
                         upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/stderr"
                         with open(stderr_uri, "rb") as f:
