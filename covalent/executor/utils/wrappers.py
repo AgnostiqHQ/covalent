@@ -153,7 +153,7 @@ def run_task_from_uris(
     prefix = "file://"
     prefix_len = len(prefix)
 
-    outputs = resources["inputs"]
+    outputs = {}
     results = []
     dispatch_id = task_group_metadata["dispatch_id"]
     task_ids = task_group_metadata["task_ids"]
@@ -302,5 +302,27 @@ def run_task_from_uris(
         with open(result_path, "w") as f:
             json.dump(results[i], f)
 
+        # POST task artifacts
+
+        output_uri = results[i]["output_uri"]
+        if output_uri:
+            upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/output"
+            with open(output_uri, "rb") as f:
+                files = {"asset_file": f}
+                requests.post(upload_url, files=files)
+
+        if stdout_uri:
+            upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/stdout"
+            with open(stdout_uri, "rb") as f:
+                files = {"asset_file": f}
+                requests.post(upload_url, files=files)
+
+        if stderr_uri:
+            upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/stderr"
+            with open(stderr_uri, "rb") as f:
+                files = {"asset_file": f}
+                requests.post(upload_url, files=files)
+
+        # Notify Covalent that the task has terminated
         url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}"
         requests.put(url)
