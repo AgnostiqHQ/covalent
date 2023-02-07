@@ -32,7 +32,6 @@ from covalent._results_manager.result import Result
 from covalent._shared_files import logger
 
 from .._db.datastore import workflow_db
-from .._db.dispatchdb import DispatchDB
 from .._db.load import _result_from
 from .._db.models import Lattice
 
@@ -114,18 +113,6 @@ async def cancel(request: Request) -> str:
         raise HTTPException(
             status_code=400,
             detail=f"Failed to cancel workflow: {e}",
-        ) from e
-
-
-@router.get("/db-path")
-def db_path() -> str:
-    try:
-        db_path = DispatchDB()._dbpath
-        return json.dumps(db_path)
-    except Exception as e:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Failed to get db path: {e}",
         ) from e
 
 

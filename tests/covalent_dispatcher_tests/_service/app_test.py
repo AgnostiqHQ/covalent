@@ -160,27 +160,6 @@ async def test_cancel_exception(mocker, client):
     cancel_running_dispatch_mock.assert_called_once_with(DISPATCH_ID)
 
 
-def test_db_path(mocker, client):
-    "Test the db-path endpoint."
-    dbpath = "/Users/root/covalent/results.db"
-
-    def __init__(self, dbpath=dbpath):
-        self._dbpath = dbpath
-
-    mocker.patch.object(DispatchDB, "__init__", __init__)
-    response = client.get("/api/db-path")
-    result = response.json().replace("\\", "").replace('"', "")
-    assert result == dbpath
-
-
-def test_db_path_exception(mocker, client):
-    "Test the db-path endpoint."
-    mocker.patch.object(DispatchDB, "__init__", side_effect=Exception("mock"))
-    response = client.get("/api/db-path")
-    assert response.status_code == 400
-    assert response.json()["detail"] == "Failed to get db path: mock"
-
-
 def test_get_result(mocker, client, test_db_file):
     """Test the get-result endpoint."""
     lattice = MockLattice(
