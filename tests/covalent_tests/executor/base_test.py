@@ -28,7 +28,8 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 from covalent import DepsCall, TransportableObject
-from covalent._shared_files.exceptions import TaskRuntimeError
+from covalent._results_manager import Result
+from covalent._shared_files.exceptions import TaskCancelledError
 from covalent.executor import BaseExecutor, wrapper_fn
 from covalent.executor.base import AsyncBaseExecutor
 
@@ -219,6 +220,7 @@ def test_base_executor_execute(mocker):
     node_id = -1
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+    mock_notify = mocker.patch("covalent.executor.BaseExecutor._notify")
 
     result, stdout, stderr, exception_raised = me.execute(
         function=assembled_callable,
@@ -230,6 +232,7 @@ def test_base_executor_execute(mocker):
     )
 
     assert result.get_deserialized() == 5
+    mock_notify.assert_called_with("bye")
 
 
 @pytest.mark.asyncio
@@ -343,6 +346,7 @@ def test_base_executor_passes_task_metadata(mocker):
     node_id = -1
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+    mock_notify = mocker.patch("covalent.executor.BaseExecutor._notify")
 
     metadata, stdout, stderr, exception_raised = me.execute(
         function=assembled_callable,
@@ -354,6 +358,7 @@ def test_base_executor_passes_task_metadata(mocker):
     )
     task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
     assert metadata == task_metadata
+    mock_notify.assert_called_with("bye")
 
 
 def test_base_async_executor_passes_task_metadata(mocker):
@@ -377,6 +382,7 @@ def test_base_async_executor_passes_task_metadata(mocker):
     node_id = -1
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+    mock_notify = mocker.patch("covalent.executor.base.AsyncBaseExecutor._notify")
 
     awaitable = me.execute(
         function=assembled_callable,
@@ -390,6 +396,7 @@ def test_base_async_executor_passes_task_metadata(mocker):
     metadata, stdout, stderr, exception_raised = asyncio.run(awaitable)
     task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
     assert metadata == task_metadata
+    mock_notify.assert_called_with("bye")
 
 
 def test_async_write_streams_to_file(mocker):
@@ -454,6 +461,7 @@ def test_executor_setup_teardown_method(mocker):
     }
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+    mock_notify = mocker.patch("covalent.executor.BaseExecutor._notify")
 
     result, stdout, stderr, exception_raised = me.execute(
         function=assembled_callable,
@@ -467,6 +475,7 @@ def test_executor_setup_teardown_method(mocker):
     assert result.get_deserialized() == 5
     me.setup.assert_called_once_with(task_metadata=task_metadata)
     me.teardown.assert_called_once_with(task_metadata=task_metadata)
+    mock_notify.assert_called_with("bye")
 
 
 def test_async_executor_setup_teardown(mocker):
@@ -489,6 +498,7 @@ def test_async_executor_setup_teardown(mocker):
     node_id = -1
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+    mock_notify = mocker.patch("covalent.executor.base.AsyncBaseExecutor._notify")
 
     awaitable = me.execute(
         function=assembled_callable,
@@ -504,6 +514,7 @@ def test_async_executor_setup_teardown(mocker):
     me.run.assert_called_once_with(assembled_callable, args, kwargs, task_metadata)
     me.setup.assert_called_once_with(task_metadata=task_metadata)
     me.teardown.assert_called_once_with(task_metadata=task_metadata)
+    mock_notify.assert_called_with("bye")
 
 
 def test_executor_from_dict_makes_deepcopy():
@@ -525,7 +536,7 @@ def test_executor_execute_runtime_error_handling(mocker):
         return x, y
 
     me = MockExecutor(log_stdout="/tmp/stdout.log")
-    me.run = MagicMock(side_effect=TaskRuntimeError("error"))
+    me.run = MagicMock(side_effect=TaskCancelledError("error"))
 
     function = TransportableObject(f)
     args = [TransportableObject(2)]
@@ -537,8 +548,8 @@ def test_executor_execute_runtime_error_handling(mocker):
     node_id = -1
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
-
-    output, stdout, stderr, exception_raised = me.execute(
+    mock_notify = mocker.patch("covalent.executor.BaseExecutor._notify")
+    output, stdout, stderr, job_status = me.execute(
         function=assembled_callable,
         args=args,
         kwargs=kwargs,
@@ -547,7 +558,8 @@ def test_executor_execute_runtime_error_handling(mocker):
         node_id=node_id,
     )
 
-    assert exception_raised is True
+    assert job_status is Result.CANCELLED
+    mock_notify.assert_called_with("bye")
 
 
 @pytest.mark.asyncio
@@ -558,7 +570,7 @@ async def test_async_base_executor_execute_runtime_error_handling(mocker):
         return x, y
 
     me = MockAsyncExecutor(log_stdout="/tmp/stdout.log")
-    me.run = AsyncMock(side_effect=TaskRuntimeError("error"))
+    me.run = AsyncMock(side_effect=TaskCancelledError("error"))
 
     function = TransportableObject(f)
     args = [TransportableObject(2)]
@@ -570,8 +582,9 @@ async def test_async_base_executor_execute_runtime_error_handling(mocker):
     node_id = -1
 
     assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+    mock_notify = mocker.patch("covalent.executor.base.AsyncBaseExecutor._notify")
 
-    output, stdout, stderr, exception_raised = await me.execute(
+    output, stdout, stderr, job_status = await me.execute(
         function=assembled_callable,
         args=args,
         kwargs=kwargs,
@@ -580,4 +593,5 @@ async def test_async_base_executor_execute_runtime_error_handling(mocker):
         node_id=node_id,
     )
 
-    assert exception_raised is True
+    assert job_status is Result.CANCELLED
+    mock_notify.assert_called_with("bye")
