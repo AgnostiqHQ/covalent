@@ -58,7 +58,7 @@ Get Started
 
     ------------------------------------------------
 
-    .. link-button:: getting_started/index
+    .. link-button:: getting_started/first_experiment/index
         :type: ref
         :text: First Experiment
         :classes: btn-outline-primary btn-block stretched-link
@@ -170,7 +170,7 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
 
    Executor plugins <plugins>
    Triggers <features/triggers>
-   
+
 
 .. toctree::
    :maxdepth: 1

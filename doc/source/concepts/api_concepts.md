@@ -3,7 +3,6 @@
 
 The Covalent SDK exists to enable compute-intensive workloads, such as ML training and testing, to run as server-managed workflows. To accomplish this, the workload is broken down into tasks that are arranged in a workflow. The tasks and the workflow are Python functions decorated with Covalent's *electron* and *lattice* interfaces, respectively.
 
-
 (electron)=
 
 ## Electron
@@ -45,7 +44,6 @@ An electron is a building block, from which you compose a {ref}`lattice<lattice>
 :align: center
 :width: 400
 ```
-
 
 (lattice)=
 
@@ -132,7 +130,6 @@ def run_experiment(C=1.0, gamma=0.7):
 
 Notice that all the data manipulation in the lattice is done by electrons. The {doc}`How-to Guide <../how-to/index>` contains articles on containing data manipulation within electrons.
 
-
 (sublattice)=
 
 ## Sublattice
@@ -183,7 +180,6 @@ Conceptually, as shown in the figure below, executing a sublattice adds the cons
 Don't confuse {code}`ct.electron(lattice)`, which creates a sublattice, with {code}`ct.lattice(electron)`, which is a workflow consisting of a single task.
 :::
 
-
 (dispatch)=
 
 ## Dispatch
@@ -195,5 +191,3 @@ You dispatch a workflow in your Python code using the Covalent {code}`dispatch()
 # Send the run_experiment() lattice to the dispatch server
 dispatch_id = ct.dispatch(run_experiment)(C=1.0, gamma=0.7)
 ```
-
-
