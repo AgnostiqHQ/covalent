@@ -181,18 +181,22 @@ async def test_submit_abstract_task_group(mocker):
     mock_ca_id_3 = "call_after-3"
 
     resources = {
-        0: mock_function_uri_0,
-        3: mock_function_uri_3,
-        "outputs": {
+        "functions": {
+            0: mock_function_uri_0,
+            3: mock_function_uri_3,
+        },
+        "inputs": {
             1: mock_node_upload_uri_1,
             2: mock_node_upload_uri_2,
         },
-        mock_deps_id_0: mock_deps_uri_0,
-        mock_cb_id_0: mock_cb_uri_0,
-        mock_ca_id_0: mock_ca_uri_0,
-        mock_deps_id_3: mock_deps_uri_3,
-        mock_cb_id_3: mock_cb_uri_3,
-        mock_ca_id_3: mock_ca_uri_3,
+        "deps": {
+            mock_deps_id_0: mock_deps_uri_0,
+            mock_cb_id_0: mock_cb_uri_0,
+            mock_ca_id_0: mock_ca_uri_0,
+            mock_deps_id_3: mock_deps_uri_3,
+            mock_cb_id_3: mock_cb_uri_3,
+            mock_ca_id_3: mock_ca_uri_3,
+        },
     }
 
     mock_task_spec_0 = {

@@ -153,7 +153,7 @@ def run_task_from_uris(
     prefix = "file://"
     prefix_len = len(prefix)
 
-    outputs = resources["outputs"]
+    outputs = resources["inputs"]
     results = []
     dispatch_id = task_group_metadata["dispatch_id"]
     task_ids = task_group_metadata["task_ids"]

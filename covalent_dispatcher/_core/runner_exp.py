@@ -176,7 +176,7 @@ async def _submit_abstract_task_group(
         if not type(executor).SUPPORTS_MANAGED_EXECUTION:
             raise NotImplementedError("Executor does not support managed execution")
 
-        resources = {}
+        resources = {"functions": {}, "inputs": {}, "deps": {}}
 
         # Get upload URIs
         for task_spec in task_seq:
@@ -201,10 +201,10 @@ async def _submit_abstract_task_group(
             task_spec["call_before_id"] = call_before_id
             task_spec["call_after_id"] = call_after_id
 
-            resources[task_id] = function_uri
-            resources[deps_id] = deps_uri
-            resources[call_before_id] = call_before_uri
-            resources[call_after_id] = call_after_uri
+            resources["functions"][task_id] = function_uri
+            resources["deps"][deps_id] = deps_uri
+            resources["deps"][call_before_id] = call_before_uri
+            resources["deps"][call_after_id] = call_after_uri
 
             task_specs.append(task_spec)
 
@@ -212,7 +212,7 @@ async def _submit_abstract_task_group(
             node_id: executor.get_upload_uri(task_group_metadata, f"node_{node_id}")
             for node_id in known_nodes
         }
-        resources["outputs"] = node_upload_uris
+        resources["inputs"] = node_upload_uris
 
         app_log.debug(f"Uploading initial nodes for task group {dispatch_id}:{task_group_id}")
         await am.upload_asset_for_nodes(dispatch_id, "output", node_upload_uris)
