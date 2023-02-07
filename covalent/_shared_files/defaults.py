@@ -82,9 +82,9 @@ def get_default_dispatcher_config():
             (os.environ.get("XDG_DATA_HOME") or (os.environ["HOME"] + "/.local/share"))
             + "/covalent/dispatcher_db.sqlite"
         ),
-        "force_legacy_runner": os.environ.get("COVALENT_DISABLE_NEW_RUNNER") or "false",
-        "use_async_dispatcher": os.environ.get("COVALENT_USE_ASYNC_DISPATCHER") or "false",
-        "use_stateless_datamgr": os.environ.get("COVALENT_USE_STATELESS_DATAMGR") or "false",
+        "use_async_dispatcher": os.environ.get("COVALENT_USE_ASYNC_DISPATCHER", "true") or "false",
+        "use_stateless_datamgr": os.environ.get("COVALENT_USE_STATELESS_DATAMGR", "true")
+        or "false",
     }
 
 

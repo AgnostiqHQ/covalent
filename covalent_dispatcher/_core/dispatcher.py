@@ -46,7 +46,6 @@ _futures = {}
 
 _global_event_listener = None
 
-NEW_RUNNER_ENABLED = get_config("dispatcher.force_legacy_runner") == "false"
 SYNC_DISPATCHES = get_config("dispatcher.use_async_dispatcher") == "false"
 
 
