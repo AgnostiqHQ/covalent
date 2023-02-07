@@ -27,6 +27,7 @@ import copy
 import io
 import json
 import os
+import queue
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -208,8 +209,8 @@ class BaseExecutor(_AbstractBaseExecutor):
 
     def _init_runtime(self, loop: asyncio.AbstractEventLoop = None, cancel_pool=None):
         self._send_queue = asyncio.Queue()
-        self._recv_queue = asyncio.Queue()
-        self._loop: asyncio.BaseEventLoop = loop
+        self._recv_queue = queue.Queue()
+        self._loop = loop
         self._cancel_pool = cancel_pool
 
     def _notify(self, action: str, body: Any = None):
