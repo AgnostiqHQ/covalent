@@ -92,6 +92,16 @@ async def test_submit(mocker, client):
 
 
 @pytest.mark.asyncio
+async def test_submit_exception(mocker, client):
+    """Test the submit endpoint."""
+    mock_data = json.dumps({}).encode("utf-8")
+    mocker.patch("covalent_dispatcher.run_dispatcher", side_effect=Exception("mock"))
+    response = client.post("/api/submit", data=mock_data)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Failed to submit workflow: mock"
+
+
+@pytest.mark.asyncio
 async def test_redispatch(mocker, client):
     """Test the redispatch endpoint."""
     json_lattice = None
@@ -119,18 +129,6 @@ async def test_redispatch(mocker, client):
 @pytest.mark.asyncio
 async def test_redispatch_exception(mocker, client):
     """Test the redispatch endpoint."""
-    json_lattice = None
-    electron_updates = None
-    reuse_previous_results = False
-    mock_data = json.dumps(
-        {
-            "dispatch_id": DISPATCH_ID,
-            "json_lattice": json_lattice,
-            "electron_updates": electron_updates,
-            "reuse_previous_results": reuse_previous_results,
-        }
-    ).encode("utf-8")
-
     response = client.post("/api/redispatch", data="bad data")
     assert response.status_code == 400
     assert (
@@ -150,6 +148,18 @@ async def test_cancel(mocker, client):
     cancel_running_dispatch_mock.assert_called_once_with(DISPATCH_ID)
 
 
+@pytest.mark.asyncio
+async def test_cancel_exception(mocker, client):
+    """Test the cancel endpoint."""
+    cancel_running_dispatch_mock = mocker.patch(
+        "covalent_dispatcher.cancel_running_dispatch", side_effect=Exception("mock")
+    )
+    response = client.post("/api/cancel", data=DISPATCH_ID.encode("utf-8"))
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Failed to cancel workflow: mock"
+    cancel_running_dispatch_mock.assert_called_once_with(DISPATCH_ID)
+
+
 def test_db_path(mocker, client):
     "Test the db-path endpoint."
     dbpath = "/Users/root/covalent/results.db"
@@ -161,6 +171,14 @@ def test_db_path(mocker, client):
     response = client.get("/api/db-path")
     result = response.json().replace("\\", "").replace('"', "")
     assert result == dbpath
+
+
+def test_db_path_exception(mocker, client):
+    "Test the db-path endpoint."
+    mocker.patch.object(DispatchDB, "__init__", side_effect=Exception("mock"))
+    response = client.get("/api/db-path")
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Failed to get db path: mock"
 
 
 def test_get_result(mocker, client, test_db_file):

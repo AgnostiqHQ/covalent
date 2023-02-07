@@ -56,10 +56,16 @@ async def submit(request: Request) -> UUID:
         dispatch_id: The dispatch id in a json format
                      returned as a Fast API Response object.
     """
-    data = await request.json()
-    data = json.dumps(data).encode("utf-8")
+    try:
+        data = await request.json()
+        data = json.dumps(data).encode("utf-8")
 
-    return await dispatcher.run_dispatcher(data)
+        return await dispatcher.run_dispatcher(data)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to submit workflow: {e}",
+        ) from e
 
 
 @router.post("/redispatch")
@@ -98,17 +104,29 @@ async def cancel(request: Request) -> str:
         Fast API Response object confirming that the dispatch
         has been cancelled.
     """
-    data = await request.body()
-    dispatch_id = data.decode("utf-8")
+    try:
+        data = await request.body()
+        dispatch_id = data.decode("utf-8")
 
-    dispatcher.cancel_running_dispatch(dispatch_id)
-    return f"Dispatch {dispatch_id} cancelled."
+        dispatcher.cancel_running_dispatch(dispatch_id)
+        return f"Dispatch {dispatch_id} cancelled."
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to cancel workflow: {e}",
+        ) from e
 
 
 @router.get("/db-path")
 def db_path() -> str:
-    db_path = DispatchDB()._dbpath
-    return json.dumps(db_path)
+    try:
+        db_path = DispatchDB()._dbpath
+        return json.dumps(db_path)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to get db path: {e}",
+        ) from e
 
 
 @router.get("/result/{dispatch_id}")
