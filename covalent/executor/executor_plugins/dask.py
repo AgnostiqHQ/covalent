@@ -134,49 +134,85 @@ def run_task_from_uris(
                     args_ids = task["args_ids"]
                     kwargs_ids = task["kwargs_ids"]
 
-                    function_uri = resources[task_id]
-                    if function_uri.startswith(prefix):
-                        function_uri = function_uri[prefix_len:]
+                    function_uri = (
+                        f"{server_url}/api/resultv2/{dispatch_id}/assets/node/{task_id}/function"
+                    )
+                    resp = requests.get(function_uri, stream=True)
+                    resp.raise_for_status()
+                    serialized_fn = pickle.loads(resp.content)
+                    # function_uri = resources[task_id]
+                    # if function_uri.startswith(prefix):
+                    #     function_uri = function_uri[prefix_len:]
 
-                    with open(function_uri, "rb") as f:
-                        serialized_fn = pickle.load(f)
+                    # with open(function_uri, "rb") as f:
+                    #     serialized_fn = pickle.load(f)
 
                     ser_args = []
                     ser_kwargs = {}
-                    args_uris = [outputs[index] for index in args_ids]
-                    for uri in args_uris:
-                        if uri.startswith(prefix):
-                            uri = uri[prefix_len:]
-                        with open(uri, "rb") as f:
-                            ser_args.append(pickle.load(f))
+                    # args_uris = [outputs[index] for index in args_ids]
+                    # for uri in args_uris:
+                    #     if uri.startswith(prefix):
+                    #         uri = uri[prefix_len:]
+                    #     with open(uri, "rb") as f:
+                    #         ser_args.append(pickle.load(f))
+                    for node_id in args_ids:
+                        url = (
+                            f"{server_url}/api/resultv2/{dispatch_id}/assets/node/{node_id}/output"
+                        )
+                        resp = requests.get(url, stream=True)
+                        resp.raise_for_status()
+                        ser_args.append(pickle.loads(resp.content))
 
-                    kwargs_uris = {k: outputs[v] for k, v in kwargs_ids.items()}
-                    for key, uri in kwargs_uris.items():
-                        if uri.startswith(prefix):
-                            uri = uri[prefix_len:]
-                        with open(uri, "rb") as f:
-                            ser_kwargs[key] = pickle.load(f)
+                    # kwargs_uris = {k: outputs[v] for k, v in kwargs_ids.items()}
+                    # for key, uri in kwargs_uris.items():
+                    #     if uri.startswith(prefix):
+                    #         uri = uri[prefix_len:]
+                    #     with open(uri, "rb") as f:
+                    #         ser_kwargs[key] = pickle.load(f)
+                    for k, node_id in kwargs_ids.items():
+                        url = (
+                            f"{server_url}/api/resultv2/{dispatch_id}/assets/node/{node_id}/output"
+                        )
+                        resp = requests.get(url, stream=True)
+                        resp.raise_for_status()
+                        ser_kwargs[k] = pickle.loads(resp.content)
 
-                    deps_id = task["deps_id"]
-                    deps_uri = resources[deps_id]
-                    if deps_uri.startswith(prefix):
-                        deps_uri = deps_uri[prefix_len:]
-                    with open(deps_uri, "rb") as f:
-                        deps_json = pickle.load(f)
+                    # deps_id = task["deps_id"]
+                    # deps_uri = resources[deps_id]
+                    # if deps_uri.startswith(prefix):
+                    #     deps_uri = deps_uri[prefix_len:]
+                    # with open(deps_uri, "rb") as f:
+                    #     deps_json = pickle.load(f)
+                    deps_url = (
+                        f"{server_url}/api/resultv2/{dispatch_id}/assets/node/{task_id}/deps"
+                    )
+                    resp = requests.get(deps_url, stream=True)
+                    resp.raise_for_status()
+                    deps_json = pickle.loads(resp.content)
 
-                    call_before_id = task["call_before_id"]
-                    call_before_uri = resources[call_before_id]
-                    if call_before_uri.startswith(prefix):
-                        call_before_uri = call_before_uri[prefix_len:]
-                    with open(call_before_uri, "rb") as f:
-                        call_before_json = pickle.load(f)
+                    # call_before_id = task["call_before_id"]
+                    # call_before_uri = resources[call_before_id]
+                    # if call_before_uri.startswith(prefix):
+                    #     call_before_uri = call_before_uri[prefix_len:]
+                    # with open(call_before_uri, "rb") as f:
+                    #     call_before_json = pickle.load(f)
+                    cb_url = f"{server_url}/api/resultv2/{dispatch_id}/assets/node/{task_id}/call_before"
+                    resp = requests.get(cb_url, stream=True)
+                    resp.raise_for_status()
+                    call_before_json = pickle.loads(resp.content)
 
-                    call_after_id = task["call_after_id"]
-                    call_after_uri = resources[call_after_id]
-                    if call_after_uri.startswith(prefix):
-                        call_after_uri = call_after_uri[prefix_len:]
-                    with open(call_after_uri, "rb") as f:
-                        call_after_json = pickle.load(f)
+                    # call_after_id = task["call_after_id"]
+                    # call_after_uri = resources[call_after_id]
+                    # if call_after_uri.startswith(prefix):
+                    #     call_after_uri = call_after_uri[prefix_len:]
+                    # with open(call_after_uri, "rb") as f:
+                    #     call_after_json = pickle.load(f)
+                    ca_url = (
+                        f"{server_url}/api/resultv2/{dispatch_id}/assets/node/{task_id}/call_after"
+                    )
+                    resp = requests.get(ca_url, stream=True)
+                    resp.raise_for_status()
+                    call_after_json = pickle.loads(resp.content)
 
                     call_before, call_after = _gather_deps(
                         deps_json, call_before_json, call_after_json
@@ -393,8 +429,9 @@ class DaskExecutor(AsyncBaseExecutor):
         return task_results
 
     def get_upload_uri(self, task_group_metadata: Dict, object_key: str):
-        dispatch_id = task_group_metadata["dispatch_id"]
-        task_group_id = task_group_metadata["task_group_id"]
+        # dispatch_id = task_group_metadata["dispatch_id"]
+        # task_group_id = task_group_metadata["task_group_id"]
 
-        filename = f"asset_{dispatch_id}-{task_group_id}_{object_key}.pkl"
-        return os.path.join("file://", self.cache_dir, filename)
+        # filename = f"asset_{dispatch_id}-{task_group_id}_{object_key}.pkl"
+        # return os.path.join("file://", self.cache_dir, filename)
+        return ""
