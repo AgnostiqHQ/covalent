@@ -25,18 +25,21 @@ Class that defines the base executor template.
 import asyncio
 import copy
 import io
+import json
 import os
 from abc import ABC, abstractmethod
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
 
 import aiofiles
 
+from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
 
 from .._shared_files import TaskRuntimeError, logger
 from .._shared_files.context_managers import active_dispatch_info_manager
-from .._shared_files.util_classes import DispatchInfo
+from .._shared_files.util_classes import RESULT_STATUS, DispatchInfo
 from .._workflow.transport import TransportableObject
 
 app_log = logger.app_log
@@ -203,6 +206,31 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         super().__init__(*args, **kwargs)
 
+    def _init_runtime(self, loop: asyncio.AbstractEventLoop = None, cancel_pool=None):
+        self._send_queue = asyncio.Queue()
+        self._recv_queue = asyncio.Queue()
+        self._loop: asyncio.BaseEventLoop = loop
+        self._cancel_pool = cancel_pool
+
+    def _notify(self, action: str, body: Any = None):
+        self._loop.call_soon_threadsafe(self._send_queue.put_nowait, (action, body))
+
+    def _notify_sync(self, action: str, body: Any = None):
+        self._notify(action, body)
+        return self._wait_for_response()
+
+    def _wait_for_response(self, timeout: int = 5):
+        status, body = self._recv_queue.get(timeout=timeout)
+        if status is None:
+            raise RuntimeError("Error waiting for response")
+        return body
+
+    def get_cancel_requested(self):
+        return self._notify_sync("get", "cancel_requested")
+
+    def set_job_handle(self, handle):
+        return self._notify_sync("put", ("job_handle", json.dumps(handle)))
+
     def write_streams_to_file(
         self,
         stream_strings: Iterable[str],
@@ -295,17 +323,18 @@ class BaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
 
-        self.setup(task_metadata=task_metadata)
-
         try:
+            self.setup(task_metadata=task_metadata)
             result = self.run(function, args, kwargs, task_metadata)
-            exception_raised = False
+            job_status = RESULT_STATUS.COMPLETED
         except TaskRuntimeError as err:
-            app_log.error(f"TaskRuntimeError: {err}")
-            exception_raised = True
+            job_status = RESULT_STATUS.FAILED
             result = None
-
+        except TaskCancelledError as err:
+            job_status = RESULT_STATUS.CANCELLED
+            result = None
         finally:
+            self._notify("bye")
             self.teardown(task_metadata=task_metadata)
 
         self.write_streams_to_file(
@@ -315,12 +344,7 @@ class BaseExecutor(_AbstractBaseExecutor):
             results_dir,
         )
 
-        return (
-            result,
-            self._task_stdout.getvalue(),
-            self._task_stderr.getvalue(),
-            exception_raised,
-        )
+        return (result, self._task_stdout.getvalue(), self._task_stderr.getvalue(), job_status)
 
     def setup(self, task_metadata: Dict) -> Any:
         """Placeholder to run any executor specific tasks"""
@@ -342,6 +366,17 @@ class BaseExecutor(_AbstractBaseExecutor):
         """
 
         raise NotImplementedError
+
+    def cancel(self, task_metadata: Dict, job_handle: Any):
+        app_log.debug(f"Cancel not implemented for executor {type(self)}")
+        return False
+
+    async def _cancel(self, task_metadata: Dict, job_handle: Any):
+        cancel_result = await self._loop.run_in_executor(
+            self._cancel_pool, self.cancel, task_metadata, job_handle
+        )
+        await self._loop.run_in_executor(self._cancel_pool, self.teardown, task_metadata)
+        return cancel_result
 
     def teardown(self, task_metadata: Dict) -> Any:
         """Placeholder to run nay executor specific cleanup/teardown actions"""
@@ -373,6 +408,32 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
     ) -> None:
 
         super().__init__(*args, **kwargs)
+
+    def _init_runtime(
+        self, loop: asyncio.AbstractEventLoop = None, cancel_pool: ThreadPoolExecutor = None
+    ):
+        self._send_queue = asyncio.Queue()
+        self._recv_queue = asyncio.Queue()
+
+    def _notify(self, action: str, body: Any = None):
+        self._send_queue.put_nowait((action, body))
+
+    async def _notify_sync(self, action: str, body: Any = None):
+        self._notify(action, body)
+        return await self._wait_for_response()
+
+    async def _wait_for_response(self, timeout: int = 5):
+        aw = self._recv_queue.get()
+        status, body = await asyncio.wait_for(aw, timeout=timeout)
+        if status is False:
+            raise RuntimeError("Error waiting for response")
+        return body
+
+    async def get_cancel_requested(self):
+        return await self._notify_sync("get", "cancel_requested")
+
+    async def set_job_handle(self, handle):
+        return await self._notify_sync("put", ("job_handle", json.dumps(handle)))
 
     async def write_streams_to_file(
         self,
@@ -446,16 +507,18 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
 
-        await self.setup(task_metadata=task_metadata)
-
         try:
+            await self.setup(task_metadata=task_metadata)
             result = await self.run(function, args, kwargs, task_metadata)
-            exception_raised = False
-        except TaskRuntimeError as err:
-            exception_raised = True
+            job_status = RESULT_STATUS.COMPLETED
+        except TaskCancelledError as err:
+            job_status = RESULT_STATUS.CANCELLED
             result = None
-
+        except TaskRuntimeError as err:
+            job_status = RESULT_STATUS.FAILED
+            result = None
         finally:
+            self._notify("bye")
             await self.teardown(task_metadata=task_metadata)
 
         await self.write_streams_to_file(
@@ -465,12 +528,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             results_dir,
         )
 
-        return (
-            result,
-            self._task_stdout.getvalue(),
-            self._task_stderr.getvalue(),
-            exception_raised,
-        )
+        return (result, self._task_stdout.getvalue(), self._task_stderr.getvalue(), job_status)
 
     async def setup(self, task_metadata: Dict):
         """Executor specific setup method"""
@@ -496,3 +554,12 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         """
 
         raise NotImplementedError
+
+    async def cancel(self, task_metadata: Dict, job_handle: Any):
+        app_log.debug(f"Cancel not implemented for executor {type(self)}")
+        return False
+
+    async def _cancel(self, task_metadata: Dict, job_handle: Any):
+        cancel_result = await self.cancel(task_metadata, job_handle)
+        await self.teardown(task_metadata)
+        return cancel_result

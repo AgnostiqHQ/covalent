@@ -46,6 +46,7 @@ from .._db.write_result_to_db import get_sublattice_electron_id
 from . import data_manager as datasvc
 from . import dispatcher
 from .data_modules.job_manager import get_jobs_metadata, set_cancel_result
+from .runner_modules import executor_proxy
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -156,6 +157,15 @@ async def _run_abstract_task(
     timestamp = datetime.now(timezone.utc)
 
     try:
+        cancel_req = await _get_cancel_requested(dispatch_id, node_id)
+        if cancel_req:
+            app_log.debug(f"Don't run cancelled task {dispatch_id}:{node_id}")
+            return datasvc.generate_node_result(
+                node_id=node_id,
+                start_time=timestamp,
+                end_time=timestamp,
+                status=Result.CANCELLED,
+            )
         serialized_callable = result_object.lattice.transport_graph.get_node_value(
             node_id, "function"
         )
@@ -245,6 +255,7 @@ async def _run_task(
         # the executor is determined during scheduling and provided in the execution metadata
         executor = _executor_manager.get_executor(short_name)
         executor.from_dict(object_dict)
+        executor._init_runtime(loop=asyncio.get_running_loop())
     except Exception as ex:
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
         app_log.debug("Exception when trying to instantiate executor:")
@@ -295,7 +306,10 @@ async def _run_task(
                 results_dir=results_dir,
                 node_id=node_id,
             )
-            output, stdout, stderr, exception_raised = await executor._execute(
+
+            asyncio.create_task(executor_proxy.watch(dispatch_id, node_id, executor))
+
+            output, stdout, stderr, status = await executor._execute(
                 function=assembled_callable,
                 args=inputs["args"],
                 kwargs=inputs["kwargs"],
@@ -303,10 +317,6 @@ async def _run_task(
                 results_dir=results_dir,
                 node_id=node_id,
             )
-            if exception_raised:
-                status = Result.FAILED
-            else:
-                status = Result.COMPLETED
 
             node_result = datasvc.generate_node_result(
                 node_id=node_id,
@@ -519,9 +529,7 @@ async def postprocess_workflow(dispatch_id: str) -> Result:
     return await _postprocess_workflow(result_object)
 
 
-async def _cancel_task(
-    dispatch_id, task_id: int, executor: str, executor_data: Dict, job_handle: str
-):
+async def _cancel_task(dispatch_id, task_id: int, executor, executor_data: Dict, job_handle: str):
     app_log.debug(f"Cancel task {task_id} using executor {executor}, {executor_data}")
     app_log.debug(f"job_handle: {job_handle}")
 

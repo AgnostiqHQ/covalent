@@ -69,4 +69,4 @@ async def cancel_running_dispatch(dispatch_id: str, task_ids: List[int] = None) 
 
     from ._core import cancel_dispatch
 
-    await cancel_dispatch(dispatch_id)
+    await cancel_dispatch(dispatch_id, task_ids)
