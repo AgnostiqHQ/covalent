@@ -65,14 +65,22 @@ class DepsLocal(Deps):
 
     """
 
-    def __init__(self, modules: Union[str, List[str]] = None):
+    def __init__(self,
+                 modules: Union[str, List[str]] = None,
+                 path: Union[str, Path] = None):
+
         if isinstance(modules, str):
             modules = [modules]
+
+        if isinstance(path, str):
+            path = Path(path).resolve()
+        elif path is None:
+            path = Path(".").resolve()
 
         self.module_content = {}
 
         for module_name in modules or []:
-            module_path = DepsLocal.absolute_path(module_name)
+            module_path = DepsLocal.check_module(path, module_name)
             with open(module_path, "r", encoding="utf8") as module_file:
                 self.module_content[module_path.name] = "".join(module_file.readlines())
 
@@ -118,11 +126,12 @@ class DepsLocal(Deps):
         return f"({', '.join(list(self.module_content))})"
 
     @staticmethod
-    def absolute_path(module_name: str) -> Path:
+    def check_module(location: Path, module_name: str) -> Path:
         """Get the absolute path to a local Python module specified as
         'module' or 'module.py'.
         """
-        module_path = Path(module_name).resolve()
+        module_path = location / module_name
+
         if not module_path.name.endswith(".py"):
             module_path = module_path.parent / f"{module_path.name}.py"
 
