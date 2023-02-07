@@ -65,30 +65,23 @@ async def submit(request: Request) -> UUID:
 @router.post("/redispatch")
 async def redispatch(request: Request) -> str:
     """Endpoint to redispatch a workflow."""
-    data = await request.json()
-
     try:
+        data = await request.json()
         dispatch_id = data["dispatch_id"]
         json_lattice = data["json_lattice"]
         electron_updates = data["electron_updates"]
         reuse_previous_results = data["reuse_previous_results"]
-    except KeyError as e:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid request body - must include dispatch_id, json_lattice, electron_updates, and reuse_previous_results.",
-        ) from e
-
-    try:
         return await dispatcher.run_redispatch(
             dispatch_id,
             json_lattice,
             electron_updates,
             reuse_previous_results,
         )
+
     except Exception as e:
         raise HTTPException(
             status_code=400,
-            detail="Failed to redispatch workflow.",
+            detail=f"Failed to redispatch workflow: {e}",
         ) from e
 
 

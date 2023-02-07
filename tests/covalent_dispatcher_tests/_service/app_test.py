@@ -117,6 +117,29 @@ async def test_redispatch(mocker, client):
 
 
 @pytest.mark.asyncio
+async def test_redispatch_exception(mocker, client):
+    """Test the redispatch endpoint."""
+    json_lattice = None
+    electron_updates = None
+    reuse_previous_results = False
+    mock_data = json.dumps(
+        {
+            "dispatch_id": DISPATCH_ID,
+            "json_lattice": json_lattice,
+            "electron_updates": electron_updates,
+            "reuse_previous_results": reuse_previous_results,
+        }
+    ).encode("utf-8")
+
+    response = client.post("/api/redispatch", data="bad data")
+    assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "Failed to redispatch workflow: Expecting value: line 1 column 1 (char 0)"
+    )
+
+
+@pytest.mark.asyncio
 async def test_cancel(mocker, client):
     """Test the cancel endpoint."""
     cancel_running_dispatch_mock = mocker.patch(
