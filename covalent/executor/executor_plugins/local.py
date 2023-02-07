@@ -124,6 +124,9 @@ class LocalExecutor(BaseExecutor):
 
         task_results = []
 
+        if len(task_ids) > 1:
+            raise RuntimeError("Task packing is not yet supported")
+
         for task_id in task_ids:
             result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
             with open(result_path, "r") as f:

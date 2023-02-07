@@ -134,9 +134,7 @@ def run_task_from_uris(
                     args_ids = task["args_ids"]
                     kwargs_ids = task["kwargs_ids"]
 
-                    function_uri = (
-                        f"{server_url}/api/resultv2/{dispatch_id}/assets/node/{task_id}/function"
-                    )
+                    function_uri = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/function"
                     resp = requests.get(function_uri, stream=True)
                     resp.raise_for_status()
                     serialized_fn = pickle.loads(resp.content)
@@ -156,9 +154,7 @@ def run_task_from_uris(
                     #     with open(uri, "rb") as f:
                     #         ser_args.append(pickle.load(f))
                     for node_id in args_ids:
-                        url = (
-                            f"{server_url}/api/resultv2/{dispatch_id}/assets/node/{node_id}/output"
-                        )
+                        url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{node_id}/output"
                         resp = requests.get(url, stream=True)
                         resp.raise_for_status()
                         ser_args.append(pickle.loads(resp.content))
@@ -170,9 +166,7 @@ def run_task_from_uris(
                     #     with open(uri, "rb") as f:
                     #         ser_kwargs[key] = pickle.load(f)
                     for k, node_id in kwargs_ids.items():
-                        url = (
-                            f"{server_url}/api/resultv2/{dispatch_id}/assets/node/{node_id}/output"
-                        )
+                        url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{node_id}/output"
                         resp = requests.get(url, stream=True)
                         resp.raise_for_status()
                         ser_kwargs[k] = pickle.loads(resp.content)
@@ -184,7 +178,7 @@ def run_task_from_uris(
                     # with open(deps_uri, "rb") as f:
                     #     deps_json = pickle.load(f)
                     deps_url = (
-                        f"{server_url}/api/resultv2/{dispatch_id}/assets/node/{task_id}/deps"
+                        f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/deps"
                     )
                     resp = requests.get(deps_url, stream=True)
                     resp.raise_for_status()
@@ -196,7 +190,7 @@ def run_task_from_uris(
                     #     call_before_uri = call_before_uri[prefix_len:]
                     # with open(call_before_uri, "rb") as f:
                     #     call_before_json = pickle.load(f)
-                    cb_url = f"{server_url}/api/resultv2/{dispatch_id}/assets/node/{task_id}/call_before"
+                    cb_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/call_before"
                     resp = requests.get(cb_url, stream=True)
                     resp.raise_for_status()
                     call_before_json = pickle.loads(resp.content)
@@ -207,9 +201,7 @@ def run_task_from_uris(
                     #     call_after_uri = call_after_uri[prefix_len:]
                     # with open(call_after_uri, "rb") as f:
                     #     call_after_json = pickle.load(f)
-                    ca_url = (
-                        f"{server_url}/api/resultv2/{dispatch_id}/assets/node/{task_id}/call_after"
-                    )
+                    ca_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/call_after"
                     resp = requests.get(ca_url, stream=True)
                     resp.raise_for_status()
                     call_after_json = pickle.loads(resp.content)

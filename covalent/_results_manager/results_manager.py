@@ -308,7 +308,7 @@ def _get_result_v2_from_dispatcher(
     adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
     http = requests.Session()
     http.mount("http://", adapter)
-    url = "http://" + dispatcher_addr + "/api/resultv2/" + dispatch_id
+    url = "http://" + dispatcher_addr + "/api/v1/resultv2/" + dispatch_id
     response = http.get(
         url,
         params={"wait": bool(int(wait)), "status_only": status_only},
@@ -371,7 +371,7 @@ def _get_node_output_from_dispatcher(
             get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
         )
 
-    url = f"http://{dispatcher_addr}/api/resultv2/{dispatch_id}/assets/node/{node_id}/output"
+    url = f"http://{dispatcher_addr}/api/v1/resultv2/{dispatch_id}/assets/node/{node_id}/output"
 
     response = requests.get(url, stream=True)
 
@@ -402,7 +402,7 @@ def _get_dispatch_result_from_dispatcher(
             get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
         )
 
-    url = f"http://{dispatcher_addr}/api/resultv2/{dispatch_id}/assets/dispatch/result"
+    url = f"http://{dispatcher_addr}/api/v1/resultv2/{dispatch_id}/assets/dispatch/result"
 
     response = requests.get(url, stream=True)
 

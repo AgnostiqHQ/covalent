@@ -19,20 +19,14 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import json
-from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Request
-from fastapi.responses import FileResponse, JSONResponse
 
 import covalent_dispatcher as dispatcher
-from covalent._results_manager.result import Result
 from covalent._shared_files import logger
 
-from .._dal.export import export_serialized_result, get_dispatch_asset_uri, get_node_asset_uri
-from .._db.datastore import workflow_db
 from .._db.dispatchdb import DispatchDB
-from .._db.models import Lattice
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -85,95 +79,3 @@ async def cancel(request: Request) -> str:
 def db_path() -> str:
     db_path = DispatchDB()._dbpath
     return json.dumps(db_path)
-
-
-@router.get("/resultv2/{dispatch_id}")
-def get_result_v2(
-    dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
-):
-    with workflow_db.session() as session:
-        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-        status = lattice_record.status if lattice_record else None
-        if not lattice_record:
-            return JSONResponse(
-                status_code=404,
-                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-            )
-        if not wait or status in [
-            str(Result.COMPLETED),
-            str(Result.FAILED),
-            str(Result.CANCELLED),
-            str(Result.POSTPROCESSING_FAILED),
-            str(Result.PENDING_POSTPROCESSING),
-        ]:
-            output = {
-                "id": dispatch_id,
-                "status": lattice_record.status,
-            }
-            if not status_only:
-                output["result_export"] = export_serialized_result(dispatch_id)
-
-            return output
-
-        response = JSONResponse(
-            status_code=503,
-            content={
-                "message": "Result not ready to read yet. Please wait for a couple of seconds."
-            },
-            headers={"Retry-After": "2"},
-        )
-        return response
-
-
-@router.get("/resultv2/{dispatch_id}/assets/node/{node_id}/{key}")
-async def get_node_asset_exp(
-    dispatch_id: str,
-    node_id: int,
-    key: str,
-):
-    app_log.debug(f"Requested asset {key} for node {dispatch_id}:{node_id}")
-
-    with workflow_db.session() as session:
-        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-        status = lattice_record.status if lattice_record else None
-        if not lattice_record:
-            return JSONResponse(
-                status_code=404,
-                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-            )
-
-    try:
-        path = get_node_asset_uri(dispatch_id, node_id, key)
-    except:
-        return JSONResponse(
-            status_code=404,
-            content={"message": f"Error retrieving asset {key}."},
-        )
-    return FileResponse(path)
-
-
-@router.get("/resultv2/{dispatch_id}/assets/dispatch/{key}")
-async def get_dispatch_asset_exp(
-    dispatch_id: str,
-    key: str,
-):
-    app_log.debug(f"Requested asset {key} for dispatch {dispatch_id}")
-
-    with workflow_db.session() as session:
-        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-        status = lattice_record.status if lattice_record else None
-        if not lattice_record:
-            return JSONResponse(
-                status_code=404,
-                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-            )
-
-    try:
-        path = get_dispatch_asset_uri(dispatch_id, key)
-        app_log.debug(f"Dispatch result uri: {path}")
-    except:
-        return JSONResponse(
-            status_code=404,
-            content={"message": f"Error retrieving asset {key}."},
-        )
-    return FileResponse(path)

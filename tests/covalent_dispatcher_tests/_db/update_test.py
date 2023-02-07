@@ -34,7 +34,7 @@ from covalent_dispatcher._db import update, upsert
 from covalent_dispatcher._db.datastore import DataStore
 from covalent_dispatcher._db.models import Electron, ElectronDependency, Lattice
 from covalent_dispatcher._db.write_result_to_db import load_file
-from covalent_dispatcher._service.app import export_serialized_result
+from covalent_dispatcher._service.app_exp import export_serialized_result
 
 # TEMP_RESULTS_DIR = "/tmp/results"
 TEMP_RESULTS_DIR = os.environ.get("COVALENT_DATA_DIR") or ct.get_config("dispatcher.results_dir")
