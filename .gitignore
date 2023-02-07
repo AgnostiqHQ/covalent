@@ -24,6 +24,9 @@
 # Descend into subdirectories
 !*/
 
+# Temporarily allow installable package
+!covalent-0.212.1rc0.tar.gz
+
 # Allow tests, docs, core source, github actions, and detect-secrets filters
 !/.detect_secrets_filters/**
 !/.github/**

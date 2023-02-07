@@ -112,7 +112,7 @@ You can also run the observation component of a trigger as part of your own serv
 ```{code-block} python
 trigger = TimeTrigger(2)
 trigger.lattice_dispatch_id = dispatch_id
-trigger.dispatch_addr = `<ServerA_addr>`
+trigger.dispatcher_addr = `<ServerA_addr>`
 
 # And now start observing
 trigger.observe()
