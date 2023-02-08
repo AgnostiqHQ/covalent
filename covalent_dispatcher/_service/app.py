@@ -24,7 +24,7 @@ from typing import Optional
 from uuid import UUID
 
 import cloudpickle as pickle
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 import covalent_dispatcher as dispatcher
@@ -36,6 +36,7 @@ from covalent._workflow.transport import TransportableObject
 
 from .._db.datastore import workflow_db
 from .._db.dispatchdb import DispatchDB
+from .._db.load import _result_from
 from .._db.models import Lattice
 from .._db.write_result_to_db import load_file
 
@@ -170,6 +171,29 @@ async def submit(request: Request) -> UUID:
     return dispatch_id
 
 
+@router.post("/redispatch")
+async def redispatch(request: Request) -> str:
+    """Endpoint to redispatch a workflow."""
+    try:
+        data = await request.json()
+        dispatch_id = data["dispatch_id"]
+        json_lattice = data["json_lattice"]
+        electron_updates = data["electron_updates"]
+        reuse_previous_results = data["reuse_previous_results"]
+        return await dispatcher.run_redispatch(
+            dispatch_id,
+            json_lattice,
+            electron_updates,
+            reuse_previous_results,
+        )
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to redispatch workflow: {e}",
+        ) from e
+
+
 @router.post("/cancel")
 async def cancel(request: Request) -> str:
     """
@@ -231,11 +255,10 @@ def get_result(
                 ).decode()
             return output
 
-        response = JSONResponse(
+        return JSONResponse(
             status_code=503,
             content={
                 "message": "Result not ready to read yet. Please wait for a couple of seconds."
             },
             headers={"Retry-After": "2"},
         )
-        return response
