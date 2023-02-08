@@ -273,7 +273,16 @@ jobs:
       id-token: write
       contents: read
     steps:
+      - name: Check out release tag
+        uses: actions/checkout@v2
+        if: inputs.stable_version
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+          ref: "v${{ github.event.inputs.stable_version }}"
+
       - name: Check out master
+        if: inputs.prerelease
         uses: actions/checkout@v2
         with:
           persist-credentials: false
@@ -309,7 +318,11 @@ jobs:
         run: |
           aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
 
-      - name: Build and push pre-release
+      - name: Build and push pre-releaseA
+        if: >
+          inputs.prerelease
+          && !inputs.stable_version
+          && github.event_name == 'schedule'
         uses: docker/build-push-action@v2
         with:
           builder: ${{ steps.buildx.outputs.name }}
@@ -321,10 +334,33 @@ jobs:
           build-args: |
             BUILD_DATE=${{ env.BUILD_DATE }}
             BUILD_VERSION=${{ env.BUILD_VERSION }}
-          push: false
+          push: true
           tags: |
             public.ecr.aws/covalent/covalent:latest
             public.ecr.aws/covalent/covalent:${{ env.TAG }}
+
+      - name: Build and push stable release
+        if: >
+          github.event_name == 'workflow_dispatch'
+          && inputs.stable_version
+          && !inputs.prerelease
+          && !github.events.inputs.test_release
+          && contains(env.PAUL_BLART, github.actor)
+        uses: docker/build-push-action@v2
+        with:
+          builder: ${{ steps.buildx.outputs.name }}
+          context: .
+          file: Dockerfile
+          platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILD_DATE=${{ env.BUILD_DATE }}
+            BUILD_VERSION=${{ env.BUILD_VERSION }}
+          push: true
+          tags: |
+            public.ecr.aws/covalent/covalent:${{ inputs.stable_version }}
+            public.ecr.aws/covalent/covalent:stable
 
   # docker_aws_plugins:
   #   name: Trigger AWS Plugins Base Executor Image Pre-Release
