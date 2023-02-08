@@ -1,6 +1,7 @@
-============================
+
+###########################
 Sublattices Transport Graph
-============================
+###########################
 
 A :ref:`sublattice <sublattice>` is a lattice wrapped with an electron decorator so that it behaves as a single task. For example:
 
