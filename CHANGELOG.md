@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Location of function to load result from the database now moved to load module in covalent_dispatcher/_db folde.
+
+### Added
+- API endpoint for redispatching.
+- Unit and functional tests for redispatching.
+
 ## [0.216.0-rc.0] - 2023-02-05
 
 ### Authors
