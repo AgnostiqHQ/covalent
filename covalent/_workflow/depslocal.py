@@ -27,7 +27,7 @@ from typing import Callable, Dict, List, Union
 from .deps import Deps
 from .transport import TransportableObject
 
-_MODULES_DIRNAME = "/tmp/covalent_depslocal"
+_MODULES_DIRNAME = "/tmp/covalent_depslocal"  # TODO: make parameter
 
 
 def local_deps(func) -> Callable:
