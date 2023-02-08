@@ -20,6 +20,7 @@
 
 
 import asyncio
+import json
 from abc import abstractmethod
 
 import requests
@@ -111,10 +112,12 @@ class BaseTrigger:
         if self.use_internal_funcs:
             from covalent_dispatcher._service.app import get_result
 
-            return asyncio.run_coroutine_threadsafe(
+            response = asyncio.run_coroutine_threadsafe(
                 get_result(self.lattice_dispatch_id, status_only=True),
                 self.event_loop,
-            ).result()["status"]
+            ).result()
+
+            return json.loads(response.body.decode()).get("status")
 
         from .. import get_result
 
@@ -161,7 +164,7 @@ class BaseTrigger:
 
         status = self._get_status()
 
-        if status == str(Result.NEW_OBJ):
+        if status == str(Result.NEW_OBJ) or status is None:
             # To continue the pending dispatch
             same_dispatch_id = self._do_redispatch(True)
             app_log.debug(f"Initiating run for pending dispatch_id: {same_dispatch_id}")
