@@ -282,8 +282,8 @@ jobs:
           ref: "v${{ github.event.inputs.stable_version }}"
 
       - name: Check out master
-        if: inputs.prerelease
         uses: actions/checkout@v2
+        if: inputs.prerelease
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -318,7 +318,7 @@ jobs:
         run: |
           aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
 
-      - name: Build and push pre-releaseA
+      - name: Build and push pre-release
         if: >
           inputs.prerelease
           && !inputs.stable_version
