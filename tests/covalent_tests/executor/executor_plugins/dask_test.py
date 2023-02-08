@@ -21,6 +21,7 @@
 """Tests for Covalent dask executor."""
 
 import asyncio
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -74,7 +75,7 @@ def test_dask_wrapper_fn_exception_handling(mocker):
     assert output is None
 
 
-def test_dask_executor_run():
+def test_dask_executor_run(mocker):
     """Test run method for Dask executor"""
 
     import io
@@ -87,6 +88,10 @@ def test_dask_executor_run():
     cluster = LocalCluster()
 
     dask_exec = DaskExecutor(cluster.scheduler_address)
+    mock_get_cancel_requested = mocker.patch.object(
+        dask_exec, "get_cancel_requested", AsyncMock(return_value=False)
+    )
+    mock_set_job_handle = mocker.patch.object(dask_exec, "set_job_handle", AsyncMock())
 
     def f(x, y):
         print("Hello", file=sys.stdout)
@@ -103,9 +108,11 @@ def test_dask_executor_run():
     assert result == (5, 7)
     assert dask_exec.task_stdout.getvalue() == "Hello\n"
     assert dask_exec.task_stderr.getvalue() == "Bye\n"
+    mock_get_cancel_requested.assert_awaited()
+    mock_set_job_handle.assert_awaited()
 
 
-def test_dask_executor_run_exception_handling():
+def test_dask_executor_run_exception_handling(mocker):
     """Test run method for Dask executor"""
 
     import io
@@ -118,6 +125,10 @@ def test_dask_executor_run_exception_handling():
     cluster = LocalCluster()
 
     dask_exec = DaskExecutor(cluster.scheduler_address)
+    mock_get_cancel_requested = mocker.patch.object(
+        dask_exec, "get_cancel_requested", AsyncMock(return_value=False)
+    )
+    mock_set_job_handle = mocker.patch.object(dask_exec, "set_job_handle", AsyncMock())
     dask_exec._task_stdout = io.StringIO()
     dask_exec._task_stderr = io.StringIO()
 
@@ -133,3 +144,5 @@ def test_dask_executor_run_exception_handling():
 
     dask_exec._task_stdout.getvalue() == "f output"
     assert "RuntimeError" in dask_exec._task_stderr.getvalue()
+    mock_get_cancel_requested.assert_awaited()
+    mock_set_job_handle.assert_awaited()
