@@ -271,7 +271,6 @@ async def _run_task(
 
     # run the task on the executor and register any failures
     try:
-
         if node_name.startswith(sublattice_prefix):
             sub_electron_id = get_sublattice_electron_id(
                 parent_dispatch_id=dispatch_id, sublattice_node_id=node_id

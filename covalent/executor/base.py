@@ -207,7 +207,7 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         super().__init__(*args, **kwargs)
 
-    def _init_runtime(self, loop: asyncio.AbstractEventLoop = None, cancel_pool=None):
+    def _init_runtime(self, loop=None, cancel_pool=None):
         self._send_queue = asyncio.Queue()
         self._recv_queue = queue.Queue()
         self._loop = loop
