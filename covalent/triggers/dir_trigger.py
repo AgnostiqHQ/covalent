@@ -53,14 +53,16 @@ class DirTrigger(BaseTrigger):
     Args:
         dir_path: Path to the file/dir which is to be observed for events
         event_names: List of event names on which to perform the trigger action.
-                     Possible options can be a subset of: `["created", "deleted", "modified", "moved", "closed"]`
+                     Possible options can be a subset of: `["created", "deleted", "modified", "moved", "closed"]`.
         batch_size: The number of changes to wait for before performing the trigger action, default is 1.
+        recursive: Whether to recursively watch the directory, default is False.
 
     Attributes:
         self.dir_path: Path to the file/dir which is to be observed for events
         self.event_names: List of event names on which to perform the trigger action.
                           Possible options can be a subset of: `["created", "deleted", "modified", "moved", "closed"]`
         self.batch_size: The number of events to wait for before performing the trigger action, default is `1`.
+        self.recursive: Whether to recursively watch the directory, default is False.
         self.n_changes: Number of events since last trigger action. Whenever `self.n_changes == self.batch_size` a trigger action happens.
     """
 
@@ -72,15 +74,18 @@ class DirTrigger(BaseTrigger):
         lattice_dispatch_id: str = None,
         dispatcher_addr: str = None,
         triggers_server_addr: str = None,
+        recursive: bool = False,
     ):
         super().__init__(lattice_dispatch_id, dispatcher_addr, triggers_server_addr)
 
-        self.dir_path = str(Path(dir_path).expanduser().resolve())
-        self.batch_size = batch_size
+        self.dir_path = dir_path
 
         if isinstance(event_names, str):
             event_names = [event_names]
         self.event_names = event_names
+
+        self.batch_size = batch_size
+        self.recursive = recursive
 
         self.observe_blocks = False
 
@@ -113,6 +118,10 @@ class DirTrigger(BaseTrigger):
 
         Currently only supports running within the Covalent/Triggers server.
         """
+
+        # Resolving the path at the place where observation will happen
+        self.dir_path = str(Path(self.dir_path).expanduser().resolve())
+
         self.event_loop = asyncio.get_running_loop()
 
         self.event_handler = DirEventHandler()
@@ -121,7 +130,7 @@ class DirTrigger(BaseTrigger):
         self.attach_methods_to_handler(self.event_names)
 
         self.observer = Observer()
-        self.observer.schedule(self.event_handler, self.dir_path)
+        self.observer.schedule(self.event_handler, self.dir_path, recursive=self.recursive)
         self.observer.start()
 
     def stop(self) -> None:
