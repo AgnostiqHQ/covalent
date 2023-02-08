@@ -1,11 +1,12 @@
-===========
+##########
 Server Log
-===========
+##########
 
 To view the Covalent server log, click the |logs| icon.
 
 .. image:: ../images/logs_list.gif
    :align: center
+
 
 Each log entry represents a single event; most are one line but some (such as tracebacks) are multi-line. An entry contains the following columns:
 
