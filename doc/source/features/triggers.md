@@ -86,8 +86,15 @@ For example, let's consider a scenario where there are 3 machines: 2 remote serv
 
 Let's say our workflow `my_workflow` has been dispatched to `ServerA` without any triggers. To attach triggers to that workflow and register it with the triggers server, you can follow the steps given below:
 
+```{note}
+When using triggers remotely, make sure to do `trigger.use_internal_funcs = False` this will ensure that the trigger interacts with the Covalent server through the API endpoints instead of directly accessing the required internal functions.
+```
+
 ```{code-block} python
 trigger = TimeTrigger(30)
+
+# Interacting with dispatcher server through API endpoints
+trigger.use_internal_funcs = False
 
 # Attaching dispatch id of `my_workflow` to the trigger
 trigger.lattice_dispatch_id = dispatch_id
@@ -111,6 +118,7 @@ You can also run the observation component of a trigger as part of your own serv
 
 ```{code-block} python
 trigger = TimeTrigger(2)
+trigger.use_internal_funcs = False
 trigger.lattice_dispatch_id = dispatch_id
 trigger.dispatcher_addr = `<ServerA_addr>`
 
