@@ -130,9 +130,8 @@ def get_default_executor() -> dict:
     Returns:
         "dask" as the executor if Dask is running and "local" if Dask is not running.
     """
-    from .config import get_config
 
-    return "local" if get_config("sdk.no_cluster") == "true" else "dask"
+    return "local"
 
 
 # Default configuration settings
