@@ -1,6 +1,6 @@
-===================
+###############
 Lattice Sidebar
-===================
+###############
 
 The Lattice sidebar shows details for the selected workflow dispatch. It displays the following:
 
