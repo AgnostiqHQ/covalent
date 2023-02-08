@@ -301,7 +301,9 @@ class _TransportGraph:
         # IDs of nodes modified during the workflow run
         self.dirty_nodes = []
 
-    def add_node(self, name: str, function: Callable, metadata: Dict, **attr) -> int:
+    def add_node(
+        self, name: str, function: Callable, metadata: Dict, task_group_id: int = None, **attr
+    ) -> int:
         """
         Adds a node to the graph.
 
@@ -316,14 +318,21 @@ class _TransportGraph:
         """
 
         node_id = len(self._graph.nodes)
+
+        if task_group_id is None:
+            task_group_id = node_id
+
+        # Default to gid=node_id
+
         self._graph.add_node(
             node_id,
-            task_group_id=node_id,
+            task_group_id=task_group_id,
             name=name,
             function=TransportableObject(function),
             metadata=metadata,
             **attr,
         )
+
         return node_id
 
     def add_edge(self, x: int, y: int, edge_name: Any, **attr) -> None:
