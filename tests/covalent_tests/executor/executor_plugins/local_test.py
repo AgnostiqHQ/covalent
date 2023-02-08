@@ -23,6 +23,7 @@
 import io
 import tempfile
 from functools import partial
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -35,7 +36,6 @@ from covalent.executor.executor_plugins.local import LocalExecutor
 
 def test_local_executor_passes_results_dir(mocker):
     """Test that the local executor calls the stream writing function with the results directory specified."""
-
     with tempfile.TemporaryDirectory() as tmp_dir:
 
         @ct.electron
@@ -47,6 +47,11 @@ def test_local_executor_passes_results_dir(mocker):
             "covalent.executor.executor_plugins.local.LocalExecutor.write_streams_to_file"
         )
         le = LocalExecutor()
+        mock_set_job_handle = mocker.patch.object(le, "set_job_handle", MagicMock(return_value=42))
+        mock_get_cancel_requested = mocker.patch.object(
+            le, "get_cancel_requested", MagicMock(return_value=False)
+        )
+        mock__notify = mocker.patch.object(le, "_notify", MagicMock())
 
         assembled_callable = partial(wrapper_fn, TransportableObject(simple_task), [], [])
 
@@ -54,11 +59,14 @@ def test_local_executor_passes_results_dir(mocker):
             function=assembled_callable,
             args=[],
             kwargs={"x": TransportableObject(1), "y": TransportableObject(2)},
-            dispatch_id=-1,
+            dispatch_id="-1",
             results_dir=tmp_dir,
             node_id=0,
         )
         mocked_function.assert_called_once()
+        mock_set_job_handle.assert_called_once()
+        mock_get_cancel_requested.assert_called_once()
+        mock__notify.assert_called_once()
 
 
 def test_local_executor_json_serialization():
@@ -115,12 +123,19 @@ def local_executor_run__mock_task(x):
     return x**2
 
 
-def test_local_executor_run():
+def test_local_executor_run(mocker):
     le = LocalExecutor()
+    mock_set_job_handle = mocker.patch.object(le, "set_job_handle", MagicMock(return_value=42))
+    mock_get_cancel_requested = mocker.patch.object(
+        le, "get_cancel_requested", MagicMock(return_value=False)
+    )
+
     args = [5]
     kwargs = {}
     task_metadata = {"dispatch_id": "asdf", "node_id": 1}
     assert le.run(local_executor_run__mock_task, args, kwargs, task_metadata) == 25
+    mock_set_job_handle.assert_called_once()
+    mock_get_cancel_requested.assert_called_once()
 
 
 def local_executor_run_exception_handling__mock_task(x):
@@ -129,8 +144,11 @@ def local_executor_run_exception_handling__mock_task(x):
 
 
 def test_local_executor_run_exception_handling(mocker):
-
     le = LocalExecutor()
+    mock_set_job_handle = mocker.patch.object(le, "set_job_handle", MagicMock(return_value=42))
+    mock_get_cancel_requested = mocker.patch.object(
+        le, "get_cancel_requested", MagicMock(return_value=False)
+    )
     le._task_stdout = io.StringIO()
     le._task_stderr = io.StringIO()
     args = [5]
