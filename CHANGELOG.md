@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+<<<<<<< HEAD
 ### Changed
 
 - Location of function to load result from the database now moved to load module in covalent_dispatcher/_db folde.
@@ -55,6 +56,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Workflow re-dispatching functionality.
 
+=======
+### Docs
+
+>>>>>>> bfe010a0 (Added new images on the deployment index page.)
 ## [0.214.0-rc.0] - 2023-01-25
 
 ### Authors

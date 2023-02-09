@@ -166,13 +166,27 @@ In this case, some parameter values are omitted from the executor's constructor.
 
     awsbatch = ct.executor.AWSBatchExecutor(vcpus=2)
 
+<<<<<<< HEAD
     @ct.electron(executor=awsbatch)
     def task(*args, **kwargs):
     ...
     return result
+=======
+      .. grid-item-card:: Docker
+        :link: deploy_with_docker
+        :link-type: doc
+        :img-top: images/docker_deploy.svg
+>>>>>>> bfe010a0 (Added new images on the deployment index page.)
 
 From the server's perspective, this case is the same as the client-side executor: the executor is serialized for transport, and the server receives a fully specified instance. This case is broken out to emphasize that the client configuration can be exploited to "fill in" some of the executor parameters if they don't change for the particular client.
 
+<<<<<<< HEAD
+=======
+      .. grid-item-card:: systemd
+        :link: deploy_with_systemd
+        :link-type: doc
+        :img-top: images/systemd_deploy.svg
+>>>>>>> bfe010a0 (Added new images on the deployment index page.)
 
 Environment Hygiene
 -------------------
@@ -191,6 +205,13 @@ When hosting Covalent on a server, we recommend that you start a separate Dask c
 
 .. note:: When running a separate Dask cluster on server-hosted Covalent, you must modify Covalent's server side configuration file to reflect the location of the Dask cluster.
 
+<<<<<<< HEAD
+=======
+      .. grid-item-card:: AWS
+        :link: deploy_with_aws
+        :link-type: doc
+        :img-top: images/aws_deploy.svg
+>>>>>>> bfe010a0 (Added new images on the deployment index page.)
 
 LocalExecutor
 -------------
