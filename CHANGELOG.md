@@ -7,7 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-<<<<<<< HEAD
 ### Changed
 
 - Location of function to load result from the database now moved to load module in covalent_dispatcher/_db folde.
@@ -15,6 +14,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - API endpoint for redispatching.
 - Unit and functional tests for redispatching.
+
+### Docs
+-Iimproved self-deployment (server deployment) section.
 
 ## [0.216.0-rc.0] - 2023-02-05
 
@@ -56,10 +58,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Workflow re-dispatching functionality.
 
-=======
-### Docs
-
->>>>>>> bfe010a0 (Added new images on the deployment index page.)
 ## [0.214.0-rc.0] - 2023-01-25
 
 ### Authors
@@ -146,7 +144,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 - Revised UI reference. Added Settings page documentation.
 - Added broken UI links in README
-- Published Self-Deployment Guide
 
 ## [0.212.1-rc.0] - 2023-01-14
 
@@ -155,11 +152,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Casey Jao <casey@agnostiq.ai>
 
 
-
 ### Fixed
 
 - Fixed naming of collection nodes (was breaking postprocessing)
 - Restored compatibility with stable release of AWS executors
+
 
 ## [0.212.0-rc.0] - 2023-01-13
 
@@ -200,9 +197,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Changed decode-uri-component package version on webapp yarn-lock file.
 - Changed json5 package version on webapp yarn-lock file.
-
-### Docs
-- Added a glossary to the RTD documentation.
 
 ## [0.210.0-rc.0] - 2023-01-05
 
