@@ -50,7 +50,6 @@ Once you have the AMI ID, you can launch an EC2 instance in your account as foll
 
 For more complicated deployments, infrastructure-as-code tools such as `AWS CloudFormation <https://aws.amazon.com/cloudformation/>`_ and `Terraform <https://www.terraform.io/>`_ are available.
 
-
 Server-Based Covalent Best Practices
 ####################################
 
