@@ -30,7 +30,7 @@ Input
 
 Result
     The :code:`Result` object returned by the lattice execution. Click the result string to :ref:`copy a serialized representation <pickle_copy>` of the input.
-
+    
 Executor
     The type of executor to which the lattice is assigned.
 

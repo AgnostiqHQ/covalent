@@ -4,7 +4,7 @@ Workflow Dispatch List
 
 A filterable, sortable list of all dispatches in the Covalent server database. A typical dispatch list is shown below.
 
-.. image:: ../../images/dispatches_with_appropriate_metadata.png
+.. image:: ../images/dispatches_with_appropriate_metadata.png
    :align: center
 
 Each line represents one dispatch, and contains the following information:

@@ -34,6 +34,7 @@ Parameters |param|
     Toggle parameter nodes. Parameter nodes show input parameters to the task nodes. With parameter nodes off (default), the graph displays only electron nodes.
 
     Clicking a parameter node also highlights the dependencies (graph edges) that contain the selected parameter.
+    
 Lock Nodes |lock|
     Toggle locking of draggable nodes. Toggle to "unlock" to enable dragging nodes to improve readability of the graph. Toggle to "lock" (default) to keep from accidentally dragging nodes.
 
