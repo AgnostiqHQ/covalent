@@ -30,6 +30,15 @@ A :ref:`sublattice <sublattice>` is a lattice wrapped with an electron decorator
     def sub_workflow():
         # Lattice code containing calls to other electrons ...
 
+A :ref:`sublattice <sublattice>` is a lattice wrapped with an electron decorator so that it behaves as a single task. For example:
+
+.. code:: python
+
+    @ct.electron
+    @ct.lattice
+    def sub_workflow():
+        # Lattice code containing calls to other electrons ...
+
 When you open the Graph View page for a lattice that contains sublattices, the sublattices are displayed as simple (unexpanded) nodes in the transport graph.
 
 Each sublattice in a dispatch has a unique lattice ID (separate from the integer node ID). Click |copy| on the sublattice node to copy the sublattice ID.
