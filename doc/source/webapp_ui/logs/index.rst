@@ -1,6 +1,6 @@
-===========
+##########
 Server Log
-===========
+##########
 
 To view the Covalent server log, click the |logs| icon.
 

@@ -1,6 +1,6 @@
-================
+################
 Dispatch Summary
-================
+################
 
 The Dispatch Summary is at the top of the Dashboard screen. It lists the following summary of all dispatches in the Covalent server database. The summary includes all dispatches regardless of the current filter on the dispatch list.
 
