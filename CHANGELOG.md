@@ -7,11 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Docs
-
-- Updated self-deployment guide.
-- Added best practices documentation (but incomplete).
-
 ### Changed
 
 - Location of function to load result from the database now moved to load module in covalent_dispatcher/_db folde.
@@ -21,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unit and functional tests for redispatching.
 
 ### Docs
--Iimproved self-deployment (server deployment) section.
+- Updated self-deployment (server deployment). 
 
 ## [0.216.0-rc.0] - 2023-02-05
 
@@ -202,9 +197,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Changed decode-uri-component package version on webapp yarn-lock file.
 - Changed json5 package version on webapp yarn-lock file.
-
-### Docs
-- Added a glossary to the RTD documentation.
 
 ## [0.210.0-rc.0] - 2023-01-05
 
