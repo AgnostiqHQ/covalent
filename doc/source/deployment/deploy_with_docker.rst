@@ -58,7 +58,6 @@ The following table lists the environment variables available to customize Coval
     * - COVALENT_THREADS_PER_WORKER
       - Number of threads with which to start each worker
 
-
 .. card:: 5. For example, to start Covalent with two workers on port 8000:
 
     .. code:: bash
