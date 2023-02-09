@@ -21,7 +21,6 @@ Deployment with Docker
 
 If the remote machine has `Docker <https://www.docker.com/>`_ enabled then the deployment amounts to simply pulling and running the Covalent container from our public registries. The deployment can be customized by following the steps outlined in :doc:`./deploy_with_docker`.
 
-
 Deployment with Systemd
 -----------------------
 
@@ -66,7 +65,6 @@ When Covalent is hosted remotely there is no need to run the Covalent server on 
 * In the client-side configuration file
 * Using ``set_config``
 * In the ``dispatch`` and ``get_result`` methods
-
 
 Configuration File
 ~~~~~~~~~~~~~~~~~~
