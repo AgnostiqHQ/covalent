@@ -81,6 +81,9 @@ Glossary
         :code:`@covalent.lattice`
             The decorator used to create a lattice by wrapping a function in the :code:`Lattice` class.
 
+    Local
+        The descriptor for a computer that you are working on directly – a laptop or desktop workstation. Also called a *client* when you're using it to connect to a :term:`remote` server.
+
     Management
         The Covalent server *manages* workflows in the sense that it analyzes and runs them using different :term:`executors<executor>` as specified in the code. This is in contrast to an *unmanaged* experiment or script, which is simply in a Python interpreter without specifying or saving the execution details or results.
 
@@ -96,6 +99,9 @@ Glossary
         * Compilers for improving the performance of Python code (Python is nominally an interpreted language).
         * Notebooks such as Jupyter for developing, running and documenting :term:`experiment`s.
 
+    Remote
+        The descriptor for a :term:`host`, or for a Covalent server running on a host, that you connect to via a network. A remote host can be on-premise or in the cloud, for example on an AWS instance.
+
     Result
         In Covalent, a Python object that represents the return value of an :term:`electron` or :term:`lattice`.
     S3
@@ -110,6 +116,9 @@ Glossary
         In general, the components of an :term:`API` that enable it to be incorporated into a larger software product.
 
         In Covalent, the module containing the :term:`lattice`, :term:`electron`, :term:`dispatcher<dispatch>` and other classes that enable the Covalent server to manage workflows.
+
+    Server
+        Refers to both a :term:`remote` :term:`host`, and to software (such as Covalent) running on that host.
 
     Sublattice
         In Covalent, a :term:`lattice` that has been encapsulated with an :term:`electron` decorator so that it can be included as a single task in a larger lattice.
