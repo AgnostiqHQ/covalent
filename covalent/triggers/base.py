@@ -117,6 +117,9 @@ class BaseTrigger:
                 self.event_loop,
             ).result()
 
+            if isinstance(response, dict):
+                return response["status"]
+
             return json.loads(response.body.decode()).get("status")
 
         from .. import get_result
