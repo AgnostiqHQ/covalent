@@ -5,6 +5,9 @@ Electron Sidebar
 The Electron sidebar shows information about a selected task node. Click an electron node in the transport graph to display the sidebar.
 
 
+The Electron sidebar shows information about a selected task node. Click an electron node in the transport graph to display the sidebar.
+
+
 .. image:: ../images/electron_sidebar.gif
    :align: center
    :width: 5000px
