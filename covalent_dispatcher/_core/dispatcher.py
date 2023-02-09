@@ -142,7 +142,6 @@ async def _get_initial_tasks_and_deps(result_object: Result) -> Tuple[int, int, 
 
 # Domain: dispatchhttps://github.com/AgnostiqHQ/covalent/pull/1495er
 async def _submit_task(result_object, node_id):
-
     # Get name of the node for the current task
     node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
     node_status = result_object.lattice.transport_graph.get_node_value(node_id, "status")
@@ -178,7 +177,6 @@ async def _submit_task(result_object, node_id):
         app_log.debug(f"Skipped completed node {node_id}.")
 
     else:
-
         # Executor for post_processing and dispatching sublattices
         pp_executor = result_object.lattice.get_metadata("workflow_executor")
         pp_executor_data = result_object.lattice.get_metadata("workflow_executor_data")
