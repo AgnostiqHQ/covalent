@@ -30,7 +30,6 @@ Input
    The input parameters passed to the selected node. Click the parameter string to :ref:`copy a serialized representation <pickle_copy>` of the input.
 Result
     The :code:`Result` returned by the electron function. Click the result string to :ref:`copy a serialized representation <pickle_copy>` of the result.
-
 Executor
     The executor's type and its relevant information for the selected node.
 
