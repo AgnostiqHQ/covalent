@@ -176,6 +176,7 @@ class LocalDispatcher(BaseDispatcher):
         replace_electrons: Dict[str, Callable] = None,
         reuse_previous_results: bool = False,
     ) -> Callable:
+        """Wrapping the dispatching functionality to allow input passing and server address specification."""
         if dispatcher_addr is None:
             dispatcher_addr = (
                 get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
