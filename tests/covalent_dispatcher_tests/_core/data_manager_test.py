@@ -187,14 +187,14 @@ def test_get_result_object_from_new_lattice(mocker, reuse):
         transport_graph_ops_mock().get_reusable_nodes.assert_called_with(
             result_object_mock().lattice.transport_graph
         )
-        transport_graph_ops_mock().copy_nodes.assert_called_once_with(
+        transport_graph_ops_mock().copy_nodes_from.assert_called_once_with(
             result_object_mock().lattice.transport_graph,
             transport_graph_ops_mock().get_reusable_nodes.return_value,
         )
 
     else:
         transport_graph_ops_mock().get_reusable_nodes.assert_not_called()
-        transport_graph_ops_mock().copy_nodes.assert_not_called()
+        transport_graph_ops_mock().copy_nodes_from.assert_not_called()
 
 
 @pytest.mark.parametrize("reuse", [True, False])
