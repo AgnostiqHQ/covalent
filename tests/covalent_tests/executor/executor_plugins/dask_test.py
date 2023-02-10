@@ -26,6 +26,8 @@ from unittest.mock import AsyncMock
 import pytest
 
 from covalent._shared_files import TaskRuntimeError
+from covalent._shared_files.exceptions import TaskCancelledError
+from covalent.executor.executor_plugins.dask import DaskExecutor
 
 
 def test_dask_executor_init(mocker):
@@ -112,6 +114,38 @@ def test_dask_executor_run(mocker):
     mock_set_job_handle.assert_awaited()
 
 
+def test_dask_executor_run_cancel_requested(mocker):
+    import io
+    import sys
+
+    from dask.distributed import LocalCluster
+
+    from covalent.executor import DaskExecutor
+
+    cluster = LocalCluster()
+
+    dask_exec = DaskExecutor(cluster.scheduler_address)
+    mock_get_cancel_requested = mocker.patch.object(
+        dask_exec, "get_cancel_requested", AsyncMock(side_effect=TaskCancelledError)
+    )
+    mock_set_job_handle = mocker.patch.object(dask_exec, "set_job_handle", AsyncMock())
+
+    def f(x, y):
+        print("Hello", file=sys.stdout)
+        print("Bye", file=sys.stderr)
+        return x, y
+
+    args = [5]
+    kwargs = {"y": 7}
+    task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+    dask_exec._task_stdout = io.StringIO()
+    dask_exec._task_stderr = io.StringIO()
+    with pytest.raises(TaskCancelledError):
+        asyncio.run(dask_exec.run(f, args, kwargs, task_metadata))
+        mock_get_cancel_requested.assert_awaited()
+        mock_set_job_handle.assert_awaited()
+
+
 def test_dask_executor_run_exception_handling(mocker):
     """Test run method for Dask executor"""
 
@@ -146,3 +180,36 @@ def test_dask_executor_run_exception_handling(mocker):
     assert "RuntimeError" in dask_exec._task_stderr.getvalue()
     mock_get_cancel_requested.assert_awaited()
     mock_set_job_handle.assert_awaited()
+
+
+def test_dask_app_log_debug_when_cancel_requested(mocker):
+    import io
+    import sys
+
+    from dask.distributed import LocalCluster
+
+    from covalent.executor import DaskExecutor
+
+    cluster = LocalCluster()
+
+    mock_app_log = mocker.patch("covalent.executor.executor_plugins.dask.app_log.debug")
+
+    dask_exec = DaskExecutor(cluster.scheduler_address)
+    mock_get_cancel_requested = mocker.patch.object(
+        dask_exec, "get_cancel_requested", AsyncMock(return_value=True)
+    )
+
+    def f(x, y):
+        print("f output")
+        raise RuntimeError("error")
+
+    args = [5]
+    kwargs = {"y": 7}
+    task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+    try:
+        asyncio.run(dask_exec.run(f, args, kwargs, task_metadata))
+    except TaskCancelledError:
+        pass
+    finally:
+        mock_get_cancel_requested.assert_awaited_once()
+        mock_app_log.assert_called_once()

@@ -595,3 +595,60 @@ async def test_async_base_executor_execute_runtime_error_handling(mocker):
 
     assert job_status is Result.CANCELLED
     mock_notify.assert_called_with("bye")
+
+
+def test_base_executor_get_cancel_requested(mocker):
+    me = MockExecutor()
+    me._init_runtime()
+    recv_queue = me._recv_queue
+    recv_queue.put_nowait((True, True))
+    mock_notify = mocker.patch("covalent.executor.base.BaseExecutor._notify")
+
+    assert me.get_cancel_requested() is True
+    mock_notify.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_async_base_executor_get_cancel_requested(mocker):
+    me = MockAsyncExecutor()
+    me._init_runtime()
+    send_queue = me._send_queue
+    recv_queue = me._recv_queue
+    recv_queue.put_nowait((True, True))
+    assert await me.get_cancel_requested() is True
+
+
+def test_base_executor_set_job_handle(mocker):
+    me = MockExecutor()
+    me._init_runtime()
+    send_queue = me._send_queue
+    recv_queue = me._recv_queue
+    recv_queue.put_nowait((True, None))
+
+    mock_notify = mocker.patch("covalent.executor.base.BaseExecutor._notify")
+    me.set_job_handle(42)
+
+    mock_notify.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_async_base_executor_set_job_handle(mocker):
+    me = MockAsyncExecutor()
+    me._init_runtime()
+    send_queue = me._send_queue
+    recv_queue = me._recv_queue
+
+    mock_notify = mocker.patch("covalent.executor.base.AsyncBaseExecutor._notify")
+    recv_queue.put_nowait((True, None))
+    await me.set_job_handle(42)
+
+    mock_notify.assert_called_once()
+
+
+def test_base_executor_notify(mocker):
+    me = MockExecutor()
+    me._init_runtime(loop=MagicMock())
+    me._loop.call_soon_threadsafe = MagicMock()
+
+    me._notify("get")
+    me._loop.call_soon_threadsafe.assert_called_with(me._send_queue.put_nowait, ("get", None))
