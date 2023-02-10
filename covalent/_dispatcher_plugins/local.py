@@ -176,7 +176,18 @@ class LocalDispatcher(BaseDispatcher):
         replace_electrons: Dict[str, Callable] = None,
         reuse_previous_results: bool = False,
     ) -> Callable:
-        """Wrapping the dispatching functionality to allow input passing and server address specification."""
+        """
+        Wrapping the dispatching functionality to allow input passing and server address specification.
+
+        Args:
+            dispatch_id: The dispatch id of the workflow to re-dispatch.
+            dispatcher_addr: The address of the dispatcher server. If None then then defaults to the address set in Covalent's config.
+            replace_electrons: A dictionary of electron names and the new electron to replace them with.
+            reuse_previous_results: Boolean value whether to reuse the results from the previous dispatch.
+
+        Returns:
+            Wrapper function which takes the inputs of the workflow as arguments
+        """
         if dispatcher_addr is None:
             dispatcher_addr = (
                 get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
@@ -190,8 +201,8 @@ class LocalDispatcher(BaseDispatcher):
                 dispatch_id, new_args, new_kwargs, replace_electrons, reuse_previous_results
             )
 
-            test_url = f"http://{dispatcher_addr}/api/redispatch"
-            r = requests.post(test_url, json=body)
+            url = f"http://{dispatcher_addr}/api/redispatch"
+            r = requests.post(url, json=body)
             r.raise_for_status()
             return r.content.decode("utf-8").strip().replace('"', "")
 
