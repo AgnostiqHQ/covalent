@@ -213,6 +213,12 @@ async def test_handle_completed_node_update(mocker):
     mock_increment = mocker.patch(
         "covalent_dispatcher._core.dispatcher._unresolved_tasks.increment"
     )
+    mock_pending_remove = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._pending_parents.remove"
+    )
+    mock_sorted_remove = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._sorted_task_groups.remove"
+    )
 
     async def get_task_group(dispatch_id, gid):
         return [gid]
@@ -229,6 +235,8 @@ async def test_handle_completed_node_update(mocker):
     mock_decrement.assert_awaited()
     assert mock_increment.await_count == 2
     assert mock_submit_task_group.await_count == 2
+    assert mock_pending_remove.await_count == 2
+    assert mock_sorted_remove.await_count == 2
 
 
 @pytest.mark.asyncio

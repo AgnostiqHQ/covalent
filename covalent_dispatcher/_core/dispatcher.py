@@ -414,7 +414,6 @@ async def _handle_node_status_update(dispatch_id, node_id, node_status, detail):
         return
 
     # Terminal node statuses
-    await _unresolved_tasks.decrement(dispatch_id)
 
     if node_status == RESULT_STATUS.COMPLETED:
         next_task_groups = await _handle_completed_node(dispatch_id, node_id)
@@ -422,15 +421,20 @@ async def _handle_node_status_update(dispatch_id, node_id, node_status, detail):
             sorted_nodes = await _sorted_task_groups.get_task_group(dispatch_id, gid)
             await _unresolved_tasks.increment(dispatch_id, len(sorted_nodes))
             await _submit_task_group(dispatch_id, sorted_nodes, gid)
-        return
+
+            # Clean up no longer referenced keys
+            await _pending_parents.remove(dispatch_id, gid)
+            await _sorted_task_groups.remove(dispatch_id, gid)
 
     if node_status == RESULT_STATUS.FAILED:
         await _handle_failed_node(dispatch_id, node_id)
-        return
 
     if node_status == RESULT_STATUS.CANCELLED:
         await _handle_cancelled_node(dispatch_id, node_id)
-        return
+
+    # Decrement after any increments to avoid race with
+    # finalize_dispatch()
+    await _unresolved_tasks.decrement(dispatch_id)
 
 
 async def _handle_dispatch_exception(dispatch_id: str, ex: Exception) -> RESULT_STATUS:
