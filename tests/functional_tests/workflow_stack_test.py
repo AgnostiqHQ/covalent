@@ -931,3 +931,30 @@ def test_redispatch_reusing_previous_results():
         assert (
             res_obj_3.get_node_result(i)["start_time"] == res_obj_3.get_node_result(i)["end_time"]
         )
+
+
+def test_redispatch_reusing_previous_results_and_new_args():
+    """Test reusing previous results for redispatching and using new args."""
+
+    @ct.electron
+    def task_1(x):
+        return x
+
+    @ct.electron
+    def failing_task(x, y):
+        return x / y
+
+    @ct.lattice
+    def failing_workflow(x, y):
+        res_1 = task_1(x)
+        return failing_task(res_1, y)
+
+    dispatch_id = ct.dispatch(failing_workflow)(1, 0)
+    result = ct.get_result(dispatch_id, wait=True)
+    assert result.result is None
+    assert str(result.status) == "FAILED"
+
+    redispatch_id = ct.redispatch(dispatch_id=dispatch_id, reuse_previous_results=True)(1, 1)
+    result = ct.get_result(redispatch_id, wait=True)
+    assert int(result.result) == 1
+    assert str(result.status) == "COMPLETED"

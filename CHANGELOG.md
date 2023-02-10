@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Redispatch bug.
+
 ### Changed
 
 - Location of function to load result from the database now moved to load module in covalent_dispatcher/_db folde.
