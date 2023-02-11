@@ -836,3 +836,125 @@ def test_workflows_with_dict_nodes():
     assert res_obj.result == 36
 
     rm._delete_result(dispatch_id)
+
+
+def test_redispatch():
+    """Test redispatching workflows"""
+
+    @ct.electron
+    def sum_task(x, y):
+        return x + y
+
+    @ct.electron
+    def mult_task(x, y):
+        return x * y
+
+    @ct.electron
+    def square_task(x):
+        return x * x
+
+    @ct.electron
+    def cube_task(x):
+        return x**3
+
+    @ct.lattice
+    def workflow(x, y):
+        res_1 = sum_task(x, y)
+        res_2 = square_task(res_1)
+        return res_2
+
+    dispatch_id = ct.dispatch(workflow)(2, 3)
+    res_obj = ct.get_result(dispatch_id, wait=True)
+    assert res_obj.result == 25
+
+    redispatch_id = ct.redispatch(dispatch_id, replace_electrons={"square_task": cube_task})()
+    res_obj_2 = ct.get_result(redispatch_id, wait=True)
+    assert res_obj_2.result == 125
+
+    redispatch_id = ct.redispatch(dispatch_id, replace_electrons={"sum_task": mult_task})()
+    res_obj_3 = ct.get_result(redispatch_id, wait=True)
+    assert res_obj_3.result == 36
+
+    redispatch_id = ct.redispatch(dispatch_id, replace_electrons={"sum_task": mult_task})(2, 5)
+    res_obj_4 = ct.get_result(redispatch_id, wait=True)
+    assert res_obj_4.result == 100
+
+    redispatch_id = ct.redispatch(dispatch_id)(2, 5)
+    res_obj_5 = ct.get_result(redispatch_id, wait=True)
+    assert res_obj_5.result == 49
+
+
+def test_redispatch_reusing_previous_results():
+    """Test reusing previous results for redispatching"""
+
+    @ct.electron
+    def sum_task(x, y):
+        return x + y
+
+    @ct.electron
+    def mult_task(x, y):
+        return x * y
+
+    @ct.electron
+    def square_task(x):
+        return x * x
+
+    @ct.electron
+    def cube_task(x):
+        return x**3
+
+    @ct.lattice
+    def workflow(x, y):
+        res_1 = sum_task(x, y)
+        res_2 = square_task(res_1)
+        return res_2
+
+    dispatch_id = ct.dispatch(workflow)(2, 3)
+    res_obj = ct.get_result(dispatch_id, wait=True)
+    assert res_obj.result == 25
+
+    redispatch_id = ct.redispatch(
+        dispatch_id, replace_electrons={"square_task": cube_task}, reuse_previous_results=True
+    )()
+    res_obj_2 = ct.get_result(redispatch_id, wait=True)
+    assert res_obj_2.result == 125
+
+    # Check that node 0 isn't re-run
+    assert res_obj_2.get_node_result(0)["start_time"] == res_obj_2.get_node_result(0)["end_time"]
+
+    # Check that nothing is re-run if no electron replacements and same workflow inputs
+    redispatch_id = ct.redispatch(dispatch_id, reuse_previous_results=True)()
+    res_obj_3 = ct.get_result(redispatch_id, wait=True)
+    assert res_obj_3.result == 25
+
+    for i in res_obj_3.lattice.transport_graph._graph.nodes:
+        assert (
+            res_obj_3.get_node_result(i)["start_time"] == res_obj_3.get_node_result(i)["end_time"]
+        )
+
+
+def test_redispatch_reusing_previous_results_and_new_args():
+    """Test reusing previous results for redispatching and using new args."""
+
+    @ct.electron
+    def task_1(x):
+        return x
+
+    @ct.electron
+    def failing_task(x, y):
+        return x / y
+
+    @ct.lattice
+    def failing_workflow(x, y):
+        res_1 = task_1(x)
+        return failing_task(res_1, y)
+
+    dispatch_id = ct.dispatch(failing_workflow)(1, 0)
+    result = ct.get_result(dispatch_id, wait=True)
+    assert result.result is None
+    assert str(result.status) == "FAILED"
+
+    redispatch_id = ct.redispatch(dispatch_id=dispatch_id, reuse_previous_results=True)(1, 1)
+    result = ct.get_result(redispatch_id, wait=True)
+    assert int(result.result) == 1
+    assert str(result.status) == "COMPLETED"
