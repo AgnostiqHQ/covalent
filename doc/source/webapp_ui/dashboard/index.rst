@@ -1,6 +1,6 @@
-=========
+#########
 Dashboard
-=========
+#########
 
 The Dashboard shows a list of workflows dispatched to the server, with summary of the dispatches at the top. The Dashboard is the default screen in the Covalent GUI.
 
