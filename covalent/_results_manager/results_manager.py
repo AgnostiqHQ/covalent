@@ -43,7 +43,7 @@ def get_result(
     dispatch_id: str, wait: bool = False, dispatcher_addr: str = None, status_only: bool = False
 ) -> Result:
     """
-    Get the results of a dispatch from a file.
+    Get the results of a dispatch from the Covalent server.
 
     Args:
         dispatch_id: The dispatch id of the result.
@@ -51,7 +51,7 @@ def get_result(
         dispatcher_addr: Dispatcher server address, if None then defaults to the address set in Covalent's config.
 
     Returns:
-        The result from the file.
+        The Result object from the Covalent server
 
     """
 

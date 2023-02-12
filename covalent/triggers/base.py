@@ -145,7 +145,7 @@ class BaseTrigger:
 
         from .. import redispatch
 
-        return redispatch(self.lattice_dispatch_id, self.dispatcher_addr)()
+        return redispatch(self.lattice_dispatch_id, self.dispatcher_addr, is_pending)()
 
     def trigger(self) -> None:
         """

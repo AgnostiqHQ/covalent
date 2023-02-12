@@ -42,24 +42,24 @@ router: APIRouter = APIRouter()
 
 
 @router.post("/submit")
-async def submit(request: Request) -> UUID:
+async def submit(request: Request, disable_run: bool = False) -> UUID:
     """
     Function to accept the submit request of
     new dispatch and return the dispatch id
     back to the client.
 
     Args:
-        None
+        disable_run: Whether to disable the execution of this lattice
 
     Returns:
         dispatch_id: The dispatch id in a json format
-                     returned as a Fast API Response object.
+                     returned as a Fast API Response object
     """
     try:
         data = await request.json()
         data = json.dumps(data).encode("utf-8")
 
-        return await dispatcher.run_dispatcher(data)
+        return await dispatcher.run_dispatcher(data, disable_run)
     except Exception as e:
         raise HTTPException(
             status_code=400,
@@ -68,7 +68,7 @@ async def submit(request: Request) -> UUID:
 
 
 @router.post("/redispatch")
-async def redispatch(request: Request) -> str:
+async def redispatch(request: Request, is_pending: bool = False) -> str:
     """Endpoint to redispatch a workflow."""
     try:
         data = await request.json()
@@ -77,10 +77,7 @@ async def redispatch(request: Request) -> str:
         electron_updates = data["electron_updates"]
         reuse_previous_results = data["reuse_previous_results"]
         return await dispatcher.run_redispatch(
-            dispatch_id,
-            json_lattice,
-            electron_updates,
-            reuse_previous_results,
+            dispatch_id, json_lattice, electron_updates, reuse_previous_results, is_pending
         )
 
     except Exception as e:
@@ -117,7 +114,7 @@ async def cancel(request: Request) -> str:
 
 
 @router.get("/result/{dispatch_id}")
-def get_result(
+async def get_result(
     dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
 ):
     with workflow_db.session() as session:

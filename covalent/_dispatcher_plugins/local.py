@@ -208,6 +208,7 @@ class LocalDispatcher(BaseDispatcher):
         dispatcher_addr: str = None,
         replace_electrons: Dict[str, Callable] = None,
         reuse_previous_results: bool = False,
+        is_pending: bool = False,
     ) -> Callable:
 
         if dispatcher_addr is None:
@@ -227,7 +228,7 @@ class LocalDispatcher(BaseDispatcher):
             )
 
             redispatch_url = f"{dispatcher_addr}/api/redispatch"
-            r = requests.post(redispatch_url, json=body)
+            r = requests.post(redispatch_url, json=body, params={"is_pending": is_pending})
             r.raise_for_status()
             return r.content.decode("utf-8").strip().replace('"', "")
 
