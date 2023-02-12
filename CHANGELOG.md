@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Enhanced the Dockerfile to include builds from various sources and a differentiation between SDK and Server builds
+
 ## [0.217.0-rc.0] - 2023-02-12
 
 ### Authors
@@ -25,7 +29,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Enhanced the Dockerfile to include builds from various sources and a differentiation between SDK and Server builds
 - Location of function to load result from the database now moved to load module in covalent_dispatcher/_db folde.
 
 ### Added
