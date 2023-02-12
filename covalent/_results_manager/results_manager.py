@@ -197,28 +197,31 @@ def sync(
         for d in dispatch_id:
             _get_result_from_dispatcher(d, wait=True, status_only=True)
     else:
-        raise Exception(
+        raise RuntimeError(
             f"dispatch_id must be a string or a list. You passed a {type(dispatch_id)}."
         )
 
 
 def cancel(
     dispatch_id: str,
-    dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
+    dispatcher_addr: str = None,
 ) -> str:
     """
     Cancel a running dispatch.
 
     Args:
         dispatch_id: The dispatch id of the dispatch to be cancelled.
-        dispatcher: The address to the dispatcher in the form of hostname:port, e.g. "localhost:8080".
+        dispatcher_addr: Dispatcher server address, if None then defaults to the address set in Covalent's config.
 
     Returns:
         None
     """
 
-    url = "http://" + dispatcher + "/api/cancel"
+    if dispatcher_addr is None:
+        dispatcher_addr = (
+            "http://" + get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+        )
 
-    r = requests.post(url, data=dispatch_id.encode("utf-8"))
+    r = requests.post(dispatcher_addr, data=dispatch_id.encode("utf-8"))
     r.raise_for_status()
     return r.content.decode("utf-8").strip().replace('"', "")

@@ -59,9 +59,7 @@ class TransportableObject:
         self.attrs = {"doc": getattr(obj, "__doc__", ""), "name": getattr(obj, "__name__", "")}
 
     def __eq__(self, obj) -> bool:
-        if not isinstance(obj, TransportableObject):
-            return False
-        return self.__dict__ == obj.__dict__
+        return self.__dict__ == obj.__dict__ if isinstance(obj, TransportableObject) else False
 
     def get_deserialized(self) -> Callable:
         """
@@ -236,7 +234,7 @@ class TransportableObject:
 
 def encode_metadata(metadata: dict) -> dict:
     # Idempotent
-    # Special handling required for: executor, workflow_executor, deps, call_before/after
+    # Special handling required for: executor, workflow_executor, deps, call_before/after, triggers
 
     encoded_metadata = deepcopy(metadata)
     if "executor" in metadata:
@@ -258,24 +256,33 @@ def encode_metadata(metadata: dict) -> dict:
             encoded_metadata["workflow_executor_data"] = encoded_wf_executor
 
     # Bash Deps, Pip Deps, Env Deps, etc
-    if "deps" in metadata:
-        if metadata["deps"] is not None:
-            for dep_type, dep_object in metadata["deps"].items():
-                if dep_object and not isinstance(dep_object, dict):
-                    encoded_metadata["deps"][dep_type] = dep_object.to_dict()
+    if "deps" in metadata and metadata["deps"] is not None:
+        for dep_type, dep_object in metadata["deps"].items():
+            if dep_object and not isinstance(dep_object, dict):
+                encoded_metadata["deps"][dep_type] = dep_object.to_dict()
 
     # call_before/after
-    if "call_before" in metadata:
-        if metadata["call_before"] is not None:
-            for i, dep in enumerate(metadata["call_before"]):
-                if not isinstance(dep, dict):
-                    encoded_metadata["call_before"][i] = dep.to_dict()
+    if "call_before" in metadata and metadata["call_before"] is not None:
+        for i, dep in enumerate(metadata["call_before"]):
+            if not isinstance(dep, dict):
+                encoded_metadata["call_before"][i] = dep.to_dict()
 
-    if "call_after" in metadata:
-        if metadata["call_after"] is not None:
-            for i, dep in enumerate(metadata["call_after"]):
-                if not isinstance(dep, dict):
-                    encoded_metadata["call_after"][i] = dep.to_dict()
+    if "call_after" in metadata and metadata["call_after"] is not None:
+        for i, dep in enumerate(metadata["call_after"]):
+            if not isinstance(dep, dict):
+                encoded_metadata["call_after"][i] = dep.to_dict()
+
+    # triggers
+    if "triggers" in metadata:
+        if isinstance(metadata["triggers"], list):
+            encoded_metadata["triggers"] = []
+            for tr in metadata["triggers"]:
+                if isinstance(tr, dict):
+                    encoded_metadata["triggers"].append(tr)
+                else:
+                    encoded_metadata["triggers"].append(tr.to_dict())
+        else:
+            encoded_metadata["triggers"] = metadata["triggers"]
 
     return encoded_metadata
 

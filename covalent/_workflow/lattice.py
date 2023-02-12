@@ -42,6 +42,7 @@ from .transport import TransportableObject, _TransportGraph, encode_metadata
 if TYPE_CHECKING:
     from .._results_manager.result import Result
     from ..executor import BaseExecutor
+    from ..triggers import BaseTrigger
 
 from .._shared_files.utils import get_imports, get_serialized_function_str
 
@@ -223,10 +224,11 @@ class Lattice:
 
         # Set any lattice metadata not explicitly set by the user
         constraint_names = {"executor", "workflow_executor", "deps", "call_before", "call_after"}
-        new_metadata = {}
-        for name in constraint_names:
-            if not self.metadata[name]:
-                new_metadata[name] = DEFAULT_METADATA_VALUES[name]
+        new_metadata = {
+            name: DEFAULT_METADATA_VALUES[name]
+            for name in constraint_names
+            if not self.metadata[name]
+        }
         new_metadata = encode_metadata(new_metadata)
 
         for k, v in new_metadata.items():
@@ -322,6 +324,7 @@ def lattice(
     deps_pip: Union[DepsPip, list] = None,
     call_before: Union[List[DepsCall], DepsCall] = [],
     call_after: Union[List[DepsCall], DepsCall] = [],
+    triggers: Union["BaseTrigger", List["BaseTrigger"]] = None,
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
     """
@@ -340,6 +343,7 @@ def lattice(
         deps_pip: An optional DepsPip object specifying a list of PyPI packages to install before running `_func`
         call_before: An optional list of DepsCall objects specifying python functions to invoke before the electron
         call_after: An optional list of DepsCall objects specifying python functions to invoke after the electron
+        triggers: Any triggers that need to be attached to this lattice, default is None
 
     Returns:
         :obj:`Lattice <covalent._workflow.lattice.Lattice>` : Lattice object inside which the decorated function exists.
@@ -370,12 +374,18 @@ def lattice(
     if isinstance(call_after, DepsCall):
         call_after = [call_after]
 
+    from ..triggers import BaseTrigger
+
+    if isinstance(triggers, BaseTrigger):
+        triggers = [triggers]
+
     constraints = {
         "executor": executor,
         "workflow_executor": workflow_executor,
         "deps": deps,
         "call_before": call_before,
         "call_after": call_after,
+        "triggers": triggers,
     }
 
     constraints = encode_metadata(constraints)
