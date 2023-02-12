@@ -39,7 +39,9 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-def get_result(dispatch_id: str, wait: bool = False, dispatcher_addr: str = None) -> Result:
+def get_result(
+    dispatch_id: str, wait: bool = False, dispatcher_addr: str = None, status_only: bool = False
+) -> Result:
     """
     Get the results of a dispatch from a file.
 
@@ -58,8 +60,11 @@ def get_result(dispatch_id: str, wait: bool = False, dispatcher_addr: str = None
             dispatch_id,
             wait,
             dispatcher_addr,
+            status_only,
         )
-        result_object = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
+
+        if not status_only:
+            result = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
 
     except MissingLatticeRecordError as ex:
         app_log.warning(
@@ -68,7 +73,7 @@ def get_result(dispatch_id: str, wait: bool = False, dispatcher_addr: str = None
 
         raise ex
 
-    return result_object
+    return result
 
 
 def _get_result_from_dispatcher(
@@ -96,7 +101,7 @@ def _get_result_from_dispatcher(
 
     if dispatcher_addr is None:
         dispatcher_addr = (
-            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            "http://" + get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
         )
 
     retries = int(EXTREME) if wait else 5
@@ -104,14 +109,17 @@ def _get_result_from_dispatcher(
     adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
     http = requests.Session()
     http.mount("http://", adapter)
-    url = f"http://{dispatcher_addr}/api/result/{dispatch_id}"
+
+    result_url = f"{dispatcher_addr}/api/result/{dispatch_id}"
     response = http.get(
-        url,
+        result_url,
         params={"wait": bool(int(wait)), "status_only": status_only},
     )
+
     if response.status_code == 404:
         raise MissingLatticeRecordError
     response.raise_for_status()
+
     return response.json()
 
 
