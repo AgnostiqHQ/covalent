@@ -907,7 +907,7 @@ const ResultListing = () => {
                             />
                           </TableCell>
                         ) : (
-                          <TableCell>{secondsToHms(result.runTime)}</TableCell>
+                          <TableCell>{result.runTime === null ? '-' : secondsToHms(result.runTime)}</TableCell>
                         )}
 
                         <TableCell>
@@ -915,10 +915,10 @@ const ResultListing = () => {
                         </TableCell>
 
                         <TableCell>
-                          {formatDate(
-                            result.endTime
-                              ? getLocalStartTime(result.endTime)
-                              : result.endTime
+                        {formatDate(
+                            result.startTime
+                              ? getLocalStartTime(result.startTime)
+                              : result.startTime
                           )}
                         </TableCell>
 
