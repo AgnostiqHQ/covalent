@@ -74,7 +74,7 @@ def generate_node_result(
 
 # Domain: result
 async def update_node_result(result_object, node_result):
-    app_log.warning("Updating node result (run_planned_workflow).")
+    app_log.debug("Updating node result (run_planned_workflow).")
     try:
         update._node(result_object, **node_result)
     except Exception as ex:

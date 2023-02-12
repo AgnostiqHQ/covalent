@@ -156,6 +156,8 @@ def _graceful_start(
     port: int,
     no_cluster: bool,
     develop: bool = False,
+    no_triggers: bool = False,
+    triggers_only: bool = False,
 ) -> int:
     """
     Gracefully start a Fast API app.
@@ -167,10 +169,13 @@ def _graceful_start(
         port: Port requested to be used by the server.
         no_cluster: Dask cluster is not used.
         develop: Start the server in developer mode.
+        no_triggers: Start the server without Triggers endpoints.
+        triggers_only: Start the server with only Triggers endpoints.
 
     Returns:
         port: Port assigned to the server.
     """
+
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
         port = get_config("user_interface.port")
@@ -179,13 +184,20 @@ def _graceful_start(
 
     _rm_pid_file(pidfile)
 
+    if no_triggers and triggers_only:
+        raise ValueError(
+            "Options '--no-triggers' and '--triggers-only' are mutually exclusive, please chose one at most."
+        )
+
+    no_triggers_flag = "--no-triggers" if no_triggers else ""
+    triggers_only_flag = "--triggers-only" if triggers_only else ""
+
     pypath = f"PYTHONPATH={UI_SRVDIR}/../tests:$PYTHONPATH" if develop else ""
     dev_mode_flag = "--develop" if develop else ""
     no_cluster_flag = "--no-cluster" if no_cluster else ""
+
     port = _next_available_port(port)
-    launch_str = (
-        f"{pypath} python app.py {dev_mode_flag} --port {port} {no_cluster_flag} >> {logfile} 2>&1"
-    )
+    launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} {no_cluster_flag} {no_triggers_flag} {triggers_only_flag}>> {logfile} 2>&1"
 
     proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
     pid = proc.pid
@@ -203,7 +215,10 @@ def _graceful_start(
         except requests.exceptions.ConnectionError as err:
             time.sleep(1)
 
-    click.echo(f"Covalent server has started at http://localhost:{port}")
+    if triggers_only:
+        click.echo(f"Covalent Triggers server has started at {dispatcher_addr}")
+    else:
+        click.echo(f"Covalent server has started at {dispatcher_addr}")
     return port
 
 
@@ -301,16 +316,34 @@ def _graceful_shutdown(pidfile: str) -> None:
     default=False,
     help="Start the server without Dask",
 )
+@click.option(
+    "--no-triggers",
+    is_flag=True,
+    required=False,
+    show_default=True,
+    default=False,
+    help="Start Covalent server without the Triggers server",
+)
+@click.option(
+    "--triggers-only",
+    is_flag=True,
+    required=False,
+    show_default=True,
+    default=False,
+    help="Start only the Triggers server",
+)
 @click.pass_context
 def start(
     ctx: click.Context,
     port: int,
     develop: bool,
-    no_cluster: str,
+    no_cluster: bool,
     mem_per_worker: str,
     threads_per_worker: int,
     workers: int,
     ignore_migrations: bool,
+    no_triggers: bool,
+    triggers_only: bool,
 ) -> None:
     """
     Start the Covalent server.
@@ -357,7 +390,9 @@ def start(
     else:
         set_config("sdk.no_cluster", "true")
 
-    port = _graceful_start(UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop)
+    port = _graceful_start(
+        UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop, no_triggers, triggers_only
+    )
     set_config("user_interface.port", port)
     set_config("dispatcher.port", port)
 
