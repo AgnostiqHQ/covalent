@@ -1,21 +1,21 @@
-==============================
-Dispatch summary
-==============================
-.. image:: ../images/dispatch_summary_banner.png
+#########
+Dashboard
+#########
+
+The Dashboard shows a list of workflows dispatched to the server, with summary of the dispatches at the top. The Dashboard is the default screen in the Covalent GUI.
+
+.. image:: ../images/dispatches_with_appropriate_metadata.png
    :align: center
 
-**Total jobs running**
+:doc:`Dispatch Summary <summary>`
+    Summarizes all the dispatches in the Covalent server database.
 
-Shows the total number of workflow dispatches that are currently running.
+:doc:`Dispatch List <dispatch_list>`
 
-**Total jobs done**
+The following navigation tools are available on the Dashboard:
 
-Shows the number of workflow dispatches that have completed.
-
-**Latest running task status**
-
-Shows the status of the most recent workflow dispatch, either Running, Completed, or Failed.
-
-**Total dispatcher duration**
-
-Shows total time consumed by all processed workflow dispatches.
+* :doc:`Pagination <navigation/pagination>`
+* :doc:`Search <navigation/search>`
+* :doc:`Sort <navigation/sort>`
+* :doc:`Filter <navigation/filter>`
+* :doc:`Workflow Dispatch Deletion <navigation/delete_dispatches>`

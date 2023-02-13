@@ -44,6 +44,7 @@ extensions = [
     "sphinx.ext.mathjax",
     "sphinx.ext.viewcode",
     "sphinx.ext.autosummary",
+    "sphinx_design",
     "autodocsumm",
     "nbsphinx",
     "sphinx_autodoc_typehints",
@@ -91,7 +92,7 @@ html_theme_options = {
         "color-brand-primary": "#5552FF",
         "color-brand-secondary": "#AEB6FF",
         "color-brand-ternary": "#6E33ED",
-        "color-brand-content": "#E5E7F3",
+        "color-brand-content": "#6D7CFF",
     },
 }
 

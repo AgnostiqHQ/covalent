@@ -18,7 +18,6 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import os
 import sys
 from unittest.mock import MagicMock
 
@@ -30,32 +29,32 @@ from covalent._file_transfer.strategies.s3_strategy import S3
 
 
 class TestS3Strategy:
-
     MOCK_LOCAL_FILEPATH = "/Users/user/data.csv"
     MOCK_REMOTE_FILEPATH = "s3://covalent-tmp/data.csv"
     MOCK_AWS_CREDENTIALS = "~/.aws/credentials"
-    MOCK_AWS_PROFILE = "default"
-    MOCK_AWS_REGION = "us-east-1"
+    MOCK_AWS_PROFILE = "my_profile"
+    MOCK_AWS_REGION = "some-region-1"
+
+    @property
+    def MOCK_STRATEGY_CONFIG(self):
+        return {
+            "profile": self.MOCK_AWS_PROFILE,
+            "region_name": self.MOCK_AWS_REGION,
+            "credentials": self.MOCK_AWS_CREDENTIALS,
+        }
 
     def test_init(self, mocker):
-        # test S3 init fails due to not having boto3
-        with pytest.raises(ImportError):
-            strategy = S3()
-
-        # test with boto3 module defined and failure resolving aws credentials
         boto3_mock = MagicMock()
         sys.modules["boto3"] = boto3_mock
         boto3_client_mock = mocker.patch("boto3.client")
-        boto3_client_mock().get_caller_identity().get.return_value = None
-        with pytest.raises(Exception):
-            strategy = S3()
 
         # test with boto3 module defined and successfully resolving aws credentials - success initating S3 strategy
         account_mock = MagicMock()
         boto3_client_mock().get_caller_identity().get.return_value = account_mock
         strategy = S3(self.MOCK_AWS_CREDENTIALS, self.MOCK_AWS_PROFILE, self.MOCK_AWS_REGION)
-        assert os.environ["AWS_SHARED_CREDENTIALS_FILE"] == self.MOCK_AWS_CREDENTIALS
-        assert os.environ["AWS_PROFILE"] == self.MOCK_AWS_PROFILE
+        assert strategy.credentials == self.MOCK_AWS_CREDENTIALS
+        assert strategy.profile == self.MOCK_AWS_PROFILE
+        assert strategy.region_name == self.MOCK_AWS_REGION
 
     def test_download(self, mocker):
         # validate boto3.client('s3').download_file is called with appropriate arguments
@@ -63,7 +62,7 @@ class TestS3Strategy:
         boto3_mock = MagicMock()
         sys.modules["boto3"] = boto3_mock
 
-        boto3_client_mock = mocker.patch("boto3.client")
+        boto3_client_mock = boto3_mock.Session().client
         boto3_client_mock.download_file.return_value = None
 
         from_file = File(self.MOCK_REMOTE_FILEPATH)
@@ -71,7 +70,7 @@ class TestS3Strategy:
 
         bucket_name = furl(from_file.uri).origin[5:]
 
-        S3().download(from_file, to_file)()
+        S3(**self.MOCK_STRATEGY_CONFIG).download(from_file, to_file)()
 
         boto3_client_mock().download_file.assert_called_with(
             bucket_name, from_file.filepath.strip("/"), to_file.filepath
@@ -83,7 +82,7 @@ class TestS3Strategy:
         boto3_mock = MagicMock()
         sys.modules["boto3"] = boto3_mock
 
-        boto3_client_mock = mocker.patch("boto3.client")
+        boto3_client_mock = boto3_mock.Session().client
         boto3_client_mock.download_file.return_value = None
 
         to_file = File(self.MOCK_REMOTE_FILEPATH)
@@ -91,7 +90,7 @@ class TestS3Strategy:
 
         bucket_name = furl(to_file.uri).origin[5:]
 
-        S3().upload(from_file, to_file)()
+        S3(**self.MOCK_STRATEGY_CONFIG).upload(from_file, to_file)()
 
         boto3_client_mock().upload_file.assert_called_with(
             from_file.filepath, bucket_name, to_file.filepath.strip("/")
@@ -105,60 +104,61 @@ class TestS3Strategy:
         with pytest.raises(NotImplementedError):
             S3().cp(File(self.MOCK_REMOTE_FILEPATH), File(self.MOCK_LOCAL_FILEPATH))()
 
+    def test_folder_download(self, mocker):
+        """Test the s3 file download when remote and local folders are provided."""
+        boto3_mock = MagicMock()
+        sys.modules["boto3"] = boto3_mock
 
-def test_folder_download(mocker):
-    """Test the s3 file download when remote and local folders are provided."""
-    boto3_mock = MagicMock()
-    sys.modules["boto3"] = boto3_mock
+        boto3_client_mock = boto3_mock.Session().client
 
-    boto3_client_mock = mocker.patch("boto3.client")
+        from_folder = Folder("s3://mock-bucket/")
+        to_folder = Folder("/tmp/")
 
-    from_folder = Folder("s3://mock-bucket/")
-    to_folder = Folder("/tmp/")
+        bucket_name = furl(from_folder.uri).origin[5:]
 
-    bucket_name = furl(from_folder.uri).origin[5:]
+        boto3_client_mock().list_objects.return_value = {
+            "Contents": [
+                {"Key": "test.csv"},
+            ]
+        }
+        callable_func = S3(**self.MOCK_STRATEGY_CONFIG).download(from_folder, to_folder)
+        callable_func()
+        boto3_client_mock().download_file.assert_called_once_with(
+            bucket_name, "test.csv", "/tmp/test.csv"
+        )
 
-    boto3_client_mock().list_objects.return_value = {
-        "Contents": [
-            {"Key": "test.csv"},
-        ]
-    }
+    def test_folder_upload(self, mocker):
+        """Test the s3 file upload method when remote and local folders are provided."""
+        boto3_mock = MagicMock()
+        sys.modules["boto3"] = boto3_mock
 
-    callable_func = S3().download(from_folder, to_folder)
-    callable_func()
-    boto3_client_mock().download_file.assert_called_once_with(
-        bucket_name, "test.csv", "/tmp/test.csv"
-    )
+        boto3_client_mock = boto3_mock.Session().client
 
+        mocker.patch(
+            "covalent._file_transfer.strategies.s3_strategy.os.walk",
+            return_value=[["", "", ["test.csv"]]],
+        )
+        mocker.patch(
+            "covalent._file_transfer.strategies.s3_strategy.os.path.relpath",
+            return_value="mock_path",
+        )
+        mocker.patch(
+            "covalent._file_transfer.strategies.s3_strategy.os.path.join", return_value="mock_join"
+        )
 
-def test_folder_upload(mocker):
-    """Test the s3 file upload method when remote and local folders are provided."""
-    boto3_mock = MagicMock()
-    sys.modules["boto3"] = boto3_mock
+        to_folder = Folder("s3://mock-bucket/")
+        from_folder = Folder("/tmp/")
 
-    boto3_client_mock = mocker.patch("boto3.client")
+        bucket_name = furl(to_folder.uri).origin[5:]
 
-    os_mock = MagicMock()
-    sys.modules["os"] = os_mock
+        boto3_client_mock().list_objects.return_value = {
+            "Contents": [
+                {"Key": "test.csv"},
+            ]
+        }
 
-    mocker.patch("os.walk", return_value=[["", "", ["test.csv"]]])
-
-    to_folder = Folder("s3://mock-bucket/")
-    from_folder = Folder("/tmp/")
-
-    bucket_name = furl(to_folder.uri).origin[5:]
-
-    boto3_client_mock().list_objects.return_value = {
-        "Contents": [
-            {"Key": "test.csv"},
-        ]
-    }
-
-    os_mock.path.relpath.return_value = "mock_path"
-    os_mock.path.join.return_value = "mock_join"
-
-    callable_func = S3().upload(from_folder, to_folder)
-    callable_func()
-    boto3_client_mock().upload_file.assert_called_once_with(
-        "/tmp/mock_join", bucket_name, "mock_join"
-    )
+        callable_func = S3(**self.MOCK_STRATEGY_CONFIG).upload(from_folder, to_folder)
+        callable_func()
+        boto3_client_mock().upload_file.assert_called_once_with(
+            "/tmp/mock_join", bucket_name, "mock_join"
+        )

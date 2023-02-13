@@ -26,6 +26,7 @@ from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import Session
 
 import covalent_ui.api.v1.database.config.db as db
+from covalent._results_manager.results_manager import get_result
 from covalent_ui.api.v1.data_layer.electron_dal import Electrons
 from covalent_ui.api.v1.models.electrons_model import (
     ElectronExecutorResponse,
@@ -33,7 +34,7 @@ from covalent_ui.api.v1.models.electrons_model import (
     ElectronFileResponse,
     ElectronResponse,
 )
-from covalent_ui.api.v1.utils.file_handle import FileHandler
+from covalent_ui.api.v1.utils.file_handle import FileHandler, validate_data
 
 routes: APIRouter = APIRouter()
 
@@ -85,6 +86,28 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
         )
 
 
+def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
+    """
+    Get Electron Inputs
+    Args:
+        dispatch_id: Dispatch id of lattice/sublattice
+        electron_id: Transport graph node id of a electron
+    Returns:
+        Returns the inputs data from Result object
+    """
+    from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
+
+    result_object = get_result(dispatch_id=str(dispatch_id), wait=False)
+
+    with Session(db.engine) as session:
+        electron = Electrons(session)
+        result = electron.get_electrons_id(dispatch_id, electron_id)
+        inputs = get_task_inputs(
+            node_id=electron_id, node_name=result.name, result_object=result_object
+        )
+        return validate_data(inputs)
+
+
 @routes.get("/{dispatch_id}/electron/{electron_id}/details/{name}")
 def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFileOutput):
     """
@@ -97,94 +120,64 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
     Returns:
         Returns electron details based on the given name
     """
-    try:
-        with Session(db.engine) as session:
-            electron = Electrons(session)
-            result = electron.get_electrons_id(dispatch_id, electron_id)
-            if result is None:
-                raise HTTPException(
-                    status_code=400,
-                    detail=[
-                        {
-                            "loc": ["path", "dispatch_id"],
-                            "msg": f"Dispatch ID {dispatch_id} or Electron ID does not exist",
-                            "type": None,
-                        }
-                    ],
+
+    with Session(db.engine) as session:
+        electron = Electrons(session)
+        result = electron.get_electrons_id(dispatch_id, electron_id)
+        if result is not None:
+            handler = FileHandler(result["storage_path"])
+            if name == "inputs":
+                response, python_object = get_electron_inputs(
+                    dispatch_id=dispatch_id, electron_id=electron_id
                 )
+                return ElectronFileResponse(data=str(response), python_object=str(python_object))
+            elif name == "function_string":
+                response = handler.read_from_text(result["function_string_filename"])
+                return ElectronFileResponse(data=response)
+            elif name == "function":
+                response, python_object = handler.read_from_pickle(result["function_filename"])
+                return ElectronFileResponse(data=response, python_object=python_object)
+            elif name == "executor":
+                executor_name = result["executor"]
+                executor_data = handler.read_from_pickle(result["executor_data_filename"])
+                return ElectronExecutorResponse(
+                    executor_name=executor_name, executor_details=executor_data
+                )
+            elif name == "result":
+                response, python_object = handler.read_from_pickle(result["results_filename"])
+                return ElectronFileResponse(data=str(response), python_object=python_object)
+            elif name == "value":
+                response = handler.read_from_pickle(result["value_filename"])
+                return ElectronFileResponse(data=str(response))
+            elif name == "stdout":
+                response = handler.read_from_text(result["stdout_filename"])
+                return ElectronFileResponse(data=response)
+            elif name == "deps":
+                response = handler.read_from_pickle(result["deps_filename"])
+                return ElectronFileResponse(data=response)
+            elif name == "call_before":
+                response = handler.read_from_pickle(result["call_before_filename"])
+                return ElectronFileResponse(data=response)
+            elif name == "call_after":
+                response = handler.read_from_pickle(result["call_after_filename"])
+                return ElectronFileResponse(data=response)
+            elif name == "error":
+                # Error and stderr won't be both populated if `error`
+                # is only used for fatal dispatcher-executor interaction errors
+                error_response = handler.read_from_text(result["error_filename"])
+                stderr_response = handler.read_from_text(result["stderr_filename"])
+                response = stderr_response + error_response
+                return ElectronFileResponse(data=response)
             else:
-                handler = FileHandler(result["storage_path"])
-                if name == "inputs":
-                    response, python_object = electron.get_electron_inputs(
-                        dispatch_id=dispatch_id, electron_id=electron_id
-                    )
-                    return ElectronFileResponse(
-                        data=str(response), python_object=str(python_object)
-                    )
-                types_switch = {
-                    "function_string": {
-                        "func": text_processor,
-                        "params": [handler, result["function_string_filename"]],
-                    },
-                    "function": {
-                        "func": pickle_processor,
-                        "params": [handler, result["function_filename"]],
-                    },
-                    "executor": {
-                        "func": pickle_processor,
-                        "params": [handler, result["executor_data_filename"]],
-                    },
-                    "result": {
-                        "func": pickle_processor,
-                        "params": [handler, result["results_filename"]],
-                    },
-                    "value": {
-                        "func": pickle_processor,
-                        "params": [handler, result["value_filename"]],
-                    },
-                    "stdout": {
-                        "func": text_processor,
-                        "params": [handler, result["stdout_filename"]],
-                    },
-                    "deps": {
-                        "func": pickle_processor,
-                        "params": [handler, result["deps_filename"]],
-                    },
-                    "call_before": {
-                        "func": pickle_processor,
-                        "params": [handler, result["call_before_filename"]],
-                    },
-                    "call_after": {
-                        "func": pickle_processor,
-                        "params": [handler, result["call_after_filename"]],
-                    },
-                    "error": {
-                        "func": text_processor,
-                        "params": [handler, result["stderr_filename"]],
-                    },
-                    "info": {"func": text_processor, "params": [handler, result["info_filename"]]},
-                }
-                switcher = types_switch.get(name)
-                if name in ["result", "function"]:
-                    response, python_object = switcher["func"](*switcher["params"])
-                    return ElectronFileResponse(data=response, python_object=python_object)
-                elif name == "executor":
-                    executor_name = result["executor"]
-                    executor_data = switcher["func"](*switcher["params"])
-                    return ElectronExecutorResponse(
-                        executor_name=executor_name, executor_details=executor_data
-                    )
-                else:
-                    response = switcher["func"](*switcher["params"])
-                    return ElectronFileResponse(data=response)
-    except Exception as exc:
-        raise HTTPException(
-            status_code=400,
-            detail=[
-                {
-                    "loc": ["path", "dispatch_id"],
-                    "msg": f"Dispatch ID {dispatch_id} or Electron ID does not exist",
-                    "type": None,
-                }
-            ],
-        ) from exc
+                return ElectronFileResponse(data=None)
+        else:
+            raise HTTPException(
+                status_code=400,
+                detail=[
+                    {
+                        "loc": ["path", "dispatch_id"],
+                        "msg": f"Dispatch ID {dispatch_id} or Electron ID does not exist",
+                        "type": None,
+                    }
+                ],
+            )

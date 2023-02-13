@@ -22,11 +22,11 @@
 Class that defines the base executor template.
 """
 
+import asyncio
 import copy
 import io
 import os
 from abc import ABC, abstractmethod
-from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
 from typing import Any, Callable, ContextManager, Dict, Iterable, List, Tuple
 
@@ -34,7 +34,7 @@ import aiofiles
 
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
 
-from .._shared_files import logger
+from .._shared_files import TaskRuntimeError, logger
 from .._shared_files.context_managers import active_dispatch_info_manager
 from .._shared_files.util_classes import DispatchInfo
 from .._workflow.transport import TransportableObject
@@ -171,6 +171,14 @@ class _AbstractBaseExecutor(ABC):
             self.__dict__ = copy.deepcopy(object_dict["attributes"])
         return self
 
+    @property
+    def task_stdout(self):
+        return self.__dict__.get("_task_stdout")
+
+    @property
+    def task_stderr(self):
+        return self.__dict__.get("_task_stderr")
+
 
 class BaseExecutor(_AbstractBaseExecutor):
     """
@@ -192,7 +200,6 @@ class BaseExecutor(_AbstractBaseExecutor):
         *args,
         **kwargs,
     ) -> None:
-
         super().__init__(*args, **kwargs)
 
     def write_streams_to_file(
@@ -226,6 +233,27 @@ class BaseExecutor(_AbstractBaseExecutor):
                 with open(filepath, "a") as f:
                     f.write(ss)
 
+    async def _execute(
+        self,
+        function: Callable,
+        args: List,
+        kwargs: Dict,
+        dispatch_id: str,
+        results_dir: str,
+        node_id: int = -1,
+    ) -> Any:
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(
+            None,
+            self.execute,
+            function,
+            args,
+            kwargs,
+            dispatch_id,
+            results_dir,
+            node_id,
+        )
+
     def execute(
         self,
         function: Callable,
@@ -256,6 +284,8 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         dispatch_info = DispatchInfo(dispatch_id)
         fn_version = function.args[0].python_version
+        self._task_stdout = io.StringIO()
+        self._task_stderr = io.StringIO()
 
         task_metadata = {
             "dispatch_id": dispatch_id,
@@ -263,22 +293,32 @@ class BaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
 
-        with self.get_dispatch_context(dispatch_info), redirect_stdout(
-            io.StringIO()
-        ) as stdout, redirect_stderr(io.StringIO()) as stderr:
+        self.setup(task_metadata=task_metadata)
 
-            self.setup(task_metadata=task_metadata)
+        try:
             result = self.run(function, args, kwargs, task_metadata)
+            exception_raised = False
+        except TaskRuntimeError as err:
+            app_log.error(f"TaskRuntimeError: {err}")
+            exception_raised = True
+            result = None
+
+        finally:
             self.teardown(task_metadata=task_metadata)
 
         self.write_streams_to_file(
-            (stdout.getvalue(), stderr.getvalue()),
+            (self._task_stdout.getvalue(), self._task_stderr.getvalue()),
             (self.log_stdout, self.log_stderr),
             dispatch_id,
             results_dir,
         )
 
-        return (result, stdout.getvalue(), stderr.getvalue())
+        return (
+            result,
+            self._task_stdout.getvalue(),
+            self._task_stderr.getvalue(),
+            exception_raised,
+        )
 
     def setup(self, task_metadata: Dict) -> Any:
         """Placeholder to run any executor specific tasks"""
@@ -329,7 +369,6 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         *args,
         **kwargs,
     ) -> None:
-
         super().__init__(*args, **kwargs)
 
     async def write_streams_to_file(
@@ -339,7 +378,6 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         dispatch_id: str,
         results_dir: str,
     ) -> None:
-
         """
         Write the contents of stdout and stderr to respective files.
 
@@ -366,6 +404,24 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
                 async with aiofiles.open(filepath, "a") as f:
                     await f.write(ss)
 
+    async def _execute(
+        self,
+        function: Callable,
+        args: List,
+        kwargs: Dict,
+        dispatch_id: str,
+        results_dir: str,
+        node_id: int = -1,
+    ) -> Any:
+        return await self.execute(
+            function,
+            args,
+            kwargs,
+            dispatch_id,
+            results_dir,
+            node_id,
+        )
+
     async def execute(
         self,
         function: Callable,
@@ -375,6 +431,8 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         results_dir: str,
         node_id: int = -1,
     ) -> Any:
+        self._task_stdout = io.StringIO()
+        self._task_stderr = io.StringIO()
 
         task_metadata = {
             "dispatch_id": dispatch_id,
@@ -382,19 +440,31 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             "results_dir": results_dir,
         }
 
-        with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
-            await self.setup(task_metadata=task_metadata)
+        await self.setup(task_metadata=task_metadata)
+
+        try:
             result = await self.run(function, args, kwargs, task_metadata)
+            exception_raised = False
+        except TaskRuntimeError as err:
+            exception_raised = True
+            result = None
+
+        finally:
             await self.teardown(task_metadata=task_metadata)
 
         await self.write_streams_to_file(
-            (stdout.getvalue(), stderr.getvalue()),
+            (self._task_stdout.getvalue(), self._task_stderr.getvalue()),
             (self.log_stdout, self.log_stderr),
             dispatch_id,
             results_dir,
         )
 
-        return (result, stdout.getvalue(), stderr.getvalue())
+        return (
+            result,
+            self._task_stdout.getvalue(),
+            self._task_stderr.getvalue(),
+            exception_raised,
+        )
 
     async def setup(self, task_metadata: Dict):
         """Executor specific setup method"""

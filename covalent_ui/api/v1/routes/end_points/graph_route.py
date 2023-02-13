@@ -44,7 +44,6 @@ def get_graph(dispatch_id: uuid.UUID):
     """
 
     with Session(db.engine) as session:
-
         graph = Graph(session)
         graph_data = graph.get_graph(dispatch_id)
         if graph_data is not None:

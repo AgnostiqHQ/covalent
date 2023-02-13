@@ -1,6 +1,6 @@
 .. _aws_plugins:
 
-🔌 AWS Plugins
+AWS Plugins
 """""""""""""""""""""""""""
 
 .. image:: AWS_Plugins.png

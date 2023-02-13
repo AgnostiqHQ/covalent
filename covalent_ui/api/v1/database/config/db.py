@@ -29,7 +29,6 @@ engine = DataStore().engine
 
 
 def init_db(db_path: str = ""):
-
     global engine
     engine = (
         DataStore(db_URL=db_path, initialize_db=True).engine

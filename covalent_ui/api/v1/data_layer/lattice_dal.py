@@ -56,10 +56,8 @@ class Lattices:
                 Lattice.error_filename,
                 Lattice.results_filename,
                 Lattice.docstring_filename,
-                func.datetime(Lattice.started_at, "localtime").label("start_time"),
-                func.IFNULL(func.datetime(Lattice.completed_at, "localtime"), None).label(
-                    "end_time"
-                ),
+                Lattice.started_at.label("start_time"),
+                func.IFNULL((Lattice.completed_at), None).label("end_time"),
                 Lattice.electron_num.label("total_electrons"),
                 Lattice.completed_electron_num.label("total_electrons_completed"),
                 (
@@ -72,9 +70,7 @@ class Lattices:
                     )
                     * 1000
                 ).label("runtime"),
-                func.IFNULL(func.datetime(Lattice.updated_at, "localtime"), None).label(
-                    "updated_at"
-                ),
+                func.IFNULL((Lattice.updated_at), None).label("updated_at"),
             )
             .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
             .first()
@@ -143,11 +139,11 @@ class Lattices:
                 Lattice.electron_num.label("total_electrons"),
                 Lattice.completed_electron_num.label("total_electrons_completed"),
                 Lattice.status.label("status"),
-                func.datetime(Lattice.started_at, "localtime").label("started_at"),
-                func.IFNULL(func.datetime(Lattice.completed_at, "localtime"), None).label(
-                    "ended_at"
-                ),
-                func.datetime(Lattice.updated_at, "localtime").label("updated_at"),
+                Lattice.started_at.label("started_at"),
+                func.IFNULL((Lattice.completed_at), None).label("ended_at"),
+                Lattice.updated_at.label("updated_at"),
+                Lattice.updated_at.label("updated_at"),
+                Lattice.updated_at.label("updated_at"),
             )
             .filter(
                 Lattice.is_active.is_not(False),

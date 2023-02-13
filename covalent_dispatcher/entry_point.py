@@ -22,7 +22,6 @@
 Self-contained entry point for the dispatcher
 """
 
-import asyncio
 
 from covalent._shared_files import logger
 
@@ -43,16 +42,29 @@ async def run_dispatcher(json_lattice: str):
         dispatch_id: A string containing the dispatch id of current dispatch.
     """
 
-    from ._core import initialize_result_object, run_workflow
+    from ._core import make_dispatch, run_dispatch
 
-    result_object = initialize_result_object(json_lattice)
-
-    dispatch_id = result_object.dispatch_id
-    asyncio.create_task(run_workflow(result_object))
+    dispatch_id = make_dispatch(json_lattice)
+    run_dispatch(dispatch_id)
 
     app_log.debug("Submitted result object to run_workflow.")
 
     return dispatch_id
+
+
+async def run_redispatch(
+    dispatch_id: str, json_lattice: str, electron_updates: dict, reuse_previous_results: bool
+):
+    from ._core import make_derived_dispatch, run_dispatch
+
+    redispatch_id = make_derived_dispatch(
+        dispatch_id, json_lattice, electron_updates, reuse_previous_results
+    )
+    run_dispatch(redispatch_id)
+
+    app_log.debug(f"Re-dispatching {dispatch_id} as {redispatch_id}")
+
+    return redispatch_id
 
 
 def cancel_running_dispatch(dispatch_id: str) -> None:

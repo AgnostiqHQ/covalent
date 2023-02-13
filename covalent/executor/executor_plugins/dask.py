@@ -25,20 +25,18 @@ and waits for execution to finish then returns the result.
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
-import io
 import os
-import sys
-from contextlib import redirect_stderr, redirect_stdout
 from typing import Callable, Dict, List
 
 from dask.distributed import Client
 
-from covalent._shared_files import logger
+from covalent._shared_files import TaskRuntimeError, logger
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files.config import get_config
 from covalent._shared_files.utils import _address_client_mapper
 from covalent.executor.base import AsyncBaseExecutor
+from covalent.executor.utils.wrappers import io_wrapper as dask_wrapper
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "DaskExecutor"
@@ -53,13 +51,6 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
         os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "covalent"
     ),
 }
-
-
-def dask_wrapper(fn, args, kwargs):
-    with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
-        output = fn(*args, **kwargs)
-
-    return output, stdout.getvalue(), stderr.getvalue()
 
 
 class DaskExecutor(AsyncBaseExecutor):
@@ -109,10 +100,15 @@ class DaskExecutor(AsyncBaseExecutor):
 
         future = dask_client.submit(dask_wrapper, function, args, kwargs)
         app_log.debug(f"Submitted task {node_id} to dask")
-        result, worker_stdout, worker_stderr = await dask_client.gather(future)
 
-        print(worker_stdout, end="", file=sys.stdout)
-        print(worker_stderr, end="", file=sys.stderr)
+        result, worker_stdout, worker_stderr, tb = await future
+
+        print(worker_stdout, end="", file=self.task_stdout)
+        print(worker_stderr, end="", file=self.task_stderr)
+
+        if tb:
+            print(tb, end="", file=self.task_stderr)
+            raise TaskRuntimeError(tb)
 
         # FIX: need to get stdout and stderr from dask worker and print them
         return result

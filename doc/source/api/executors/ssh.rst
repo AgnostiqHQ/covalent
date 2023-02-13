@@ -1,6 +1,6 @@
 .. _ssh_executor:
 
-🔌 SSH Executor
+SSH Executor
 """""""""""""""""""""""""""
 
 Executing tasks (electrons) via SSH in remote machine. This executor plugin interfaces Covalent with other machines accessible to the user over SSH. It is appropriate to use this plugin to distribute tasks to one or more compute backends which are not controlled by a cluster management system, such as computers on a LAN, or even a collection of small-form-factor Linux-based devices such as Raspberry Pis, NVIDIA Jetsons, or Xeon Phi co-processors.

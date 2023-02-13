@@ -21,8 +21,7 @@
  */
 
 import { screen, render } from '@testing-library/react'
-import { DispatchLayout } from '../DispatchLayout'
-import DispatchLayoutValidate from '../DispatchLayout'
+import { DispatchLayout, DispatchLayoutValidate } from '../DispatchLayout'
 import React from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'
@@ -155,12 +154,6 @@ describe('Dispatch layout contents', () => {
   test('dispatch layout copy dispatch button is rendered', () => {
     reduxRender(<DispatchLayout />)
     const linkElement = screen.getByTestId('copydispatchId')
-    expect(linkElement).toBeInTheDocument()
-  })
-
-  test('dispatch layout copy icon is rendered', () => {
-    reduxRender(<DispatchLayout />)
-    const linkElement = screen.getByTestId('copyIcon')
     expect(linkElement).toBeInTheDocument()
   })
 

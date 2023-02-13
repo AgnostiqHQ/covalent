@@ -86,15 +86,14 @@ class LatticeWorkflowExecutorResponse(BaseModel):
 
 
 class GraphNodes(BaseModel):
-
-    id: Union[int, None] = None
-    name: Union[None, str] = None
-    node_id: Union[None, int] = None
-    started_at: Union[None, datetime] = None
-    completed_at: Union[None, datetime] = None
-    status: Union[None, str] = None
-    type: Union[None, str] = None
-    executor: Union[None, str] = None
+    id: int = None
+    name: str = None
+    node_id: int = None
+    started_at: datetime = None
+    completed_at: datetime = None
+    status: str = None
+    type: str = None
+    executor: str = None
 
     # Immediate parent electron id
     parent_electron_id: Union[None, int] = None
@@ -110,9 +109,8 @@ class GraphNodes(BaseModel):
 
 
 class GraphResponseData(BaseModel):
-
-    nodes: Union[None, List[GraphNodes]] = None
-    links: Union[None, List[dict]] = None
+    nodes: List[GraphNodes] = None
+    links: List[dict] = None
 
 
 class GraphResponse(BaseModel):

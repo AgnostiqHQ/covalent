@@ -1,3 +1,23 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
 from subprocess import CalledProcessError
 from unittest.mock import Mock
 
@@ -8,7 +28,6 @@ from covalent._file_transfer.strategies.rsync_strategy import Rsync
 
 
 class TestRsyncStrategy:
-
     MOCK_HOST = "11.11.11.11"
     MOCK_USER = "admin"
     MOCK_LOCAL_FILEPATH = "/Users/user/data.csv"
@@ -24,7 +43,6 @@ class TestRsyncStrategy:
         ],
     )
     def test_upload_download_success(self, operation, mocker):
-
         # validate subprocess created by instantiating Popen
 
         MOCK_CMD = "rsync ..."
@@ -62,7 +80,6 @@ class TestRsyncStrategy:
         ],
     )
     def test_upload_download_cp_failure(self, operation, mocker):
-
         # if subprocess returns with return code 1 raise a CalledProcessError exception
 
         MOCK_CMD = "rsync ..."
@@ -99,7 +116,6 @@ class TestRsyncStrategy:
         assert cp_cmd == "rsync -a /home/ubuntu/from.csv /home/ubuntu/to.csv"
 
     def test_get_ssh_rsync_cmd_with_ssh_key(self, mocker):
-
         mocker.patch("os.path.exists", return_value=True)
 
         local_file = File(self.MOCK_LOCAL_FILEPATH)

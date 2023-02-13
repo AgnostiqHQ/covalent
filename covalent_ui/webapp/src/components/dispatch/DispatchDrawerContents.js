@@ -37,12 +37,16 @@ import { TabContext, TabList, TabPanel } from '@mui/lab'
 import LatticeDispatchOverview from './LatticeDispatchOverview'
 import SublatticesListing from '../dispatches/SublatticesListing'
 import ErrorCard from '../common/ErrorCard'
-import { latticeDetails, latticeError } from '../../redux/latticeSlice'
+import {
+  latticeDetails,
+  latticeError,
+  sublatticesListDetails,
+  resetSublatticesId,
+} from '../../redux/latticeSlice'
 import { ChevronLeft } from '@mui/icons-material'
 import CopyButton from '../common/CopyButton'
 import { truncateMiddle } from '../../utils/misc'
 import { ReactComponent as TreeSvg } from '../../assets/tree.svg'
-import { sublatticesListDetails, resetSublatticesId } from '../../redux/latticeSlice'
 
 const DispatchDrawerContents = () => {
   const { dispatchId } = useParams()
@@ -82,13 +86,13 @@ const DispatchDrawerContents = () => {
   }, [callSocketApi])
 
   useEffect(() => {
-    sublatticesListApi();
+    sublatticesListApi()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSocketApi])
 
   const handleTabChange = (value) => {
-    dispatch(resetSublatticesId());
-    setTab(value);
+    dispatch(resetSublatticesId())
+    setTab(value)
   }
 
   return (
@@ -116,7 +120,7 @@ const DispatchDrawerContents = () => {
           component={TreeSvg}
           sx={{ verticalAlign: 'middle', marginTop: 1 }}
         />
-        {drawerLatticeDetailsFetching ? (
+        {!dispatchId ? (
           <Skeleton width={200} />
         ) : (
           <Tooltip title={dispatchId} placement="top">
@@ -157,7 +161,9 @@ const DispatchDrawerContents = () => {
           onChange={(e, newTab) => handleTabChange(newTab)}
         >
           <Tab label="Overview" value="overview" />
-          {sublatticesListView.length > 0 && (<Tab label="Sublattices" value="sublattices" />)}
+          {sublatticesListView.length > 0 && (
+            <Tab label="Sublattices" value="sublattices" />
+          )}
         </CustomTabList>
 
         <TabPanel value="overview" sx={{ px: 0, py: 1 }}>
