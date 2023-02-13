@@ -21,9 +21,9 @@
 """Tests for Covalent command line interface (CLI) Tool."""
 
 import tempfile
+from unittest import mock
 from unittest.mock import MagicMock, Mock
 
-import mock
 import pytest
 import requests
 from click.testing import CliRunner
@@ -69,7 +69,7 @@ def test_read_valid_pid_file():
     assert res == 1984
 
 
-@pytest.mark.parametrize("file_exists,remove_call_status", [(False, False), (True, True)])
+@pytest.mark.parametrize("file_exists, remove_call_status", [(False, False), (True, True)])
 def test_rm_pid_file(mocker, file_exists, remove_call_status):
     """Test the process id file removal function."""
 
@@ -134,7 +134,9 @@ def test_graceful_start_when_pid_exists(mocker):
     port_from_pid_mock.assert_called_once()
 
 
-def test_graceful_start_when_pid_absent(mocker):
+@pytest.mark.parametrize("no_triggers_flag", [True, False])
+@pytest.mark.parametrize("triggers_only_flag", [True, False])
+def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_flag):
     """Test the graceful server start function."""
 
     read_pid_mock = mocker.patch("covalent_dispatcher._cli.service._read_pid")
@@ -149,15 +151,37 @@ def test_graceful_start_when_pid_absent(mocker):
         "covalent_dispatcher._cli.service.requests.get",
     )
 
+    no_triggers_str = "--no-triggers" if no_triggers_flag else ""
+    triggers_only_str = "--triggers-only" if triggers_only_flag else ""
+
+    launch_str = (
+        f" python app.py  --port 1984  {no_triggers_str} {triggers_only_str}>> output.log 2>&1"
+    )
+
     with mock.patch("covalent_dispatcher._cli.service.open", mock.mock_open()):
-        res = _graceful_start("", "", "output.log", 15, False)
-        assert res == 1984
+        if no_triggers_flag and triggers_only_flag:
+            with pytest.raises(ValueError) as ve:
+                res = _graceful_start(
+                    "", "", "output.log", 15, False, False, no_triggers_flag, triggers_only_flag
+                )
+
+            assert ve.match(
+                "Options '--no-triggers' and '--triggers-only' are mutually exclusive, please chose one at most."
+            )
+        else:
+            res = _graceful_start(
+                "", "", "output.log", 15, False, False, no_triggers_flag, triggers_only_flag
+            )
+            assert res == 1984
+
+            popen_mock.assert_called_once()
+            assert popen_mock.call_args[0][0] == launch_str
+
+            next_available_port_mock.assert_called_once()
+            click_echo_mock.assert_called_once()
 
     rm_pid_file_mock.assert_called_once()
-    next_available_port_mock.assert_called_once()
     pid_exists_mock.assert_called_once()
-    popen_mock.assert_called_once()
-    click_echo_mock.assert_called_once()
     read_pid_mock.assert_called_once()
 
 
@@ -184,8 +208,6 @@ def test_graceful_start_waits_to_return(mocker):
     with mock.patch("covalent_dispatcher._cli.service.open", mock.mock_open()):
         with pytest.raises(RuntimeError):
             res = _graceful_start("", "", "output.log", 15, False)
-
-        pass
 
     sleep_mock.assert_called_once()
 
@@ -223,19 +245,9 @@ def test_graceful_shutdown_stopped_server(mocker):
     assert not process_mock.called
 
 
-@pytest.mark.parametrize(
-    "is_migration_pending, ignore_migrations, current_revision",
-    [
-        (True, True, None),
-        (True, False, None),
-        (False, False, None),
-        (False, True, None),
-        (True, True, "112233"),
-        (True, False, "112233"),
-        (False, False, "112233"),
-        (False, True, "112233"),
-    ],
-)
+@pytest.mark.parametrize("is_migration_pending", [True, False])
+@pytest.mark.parametrize("ignore_migrations", [True, False])
+@pytest.mark.parametrize("current_revision", [None, "112233"])
 def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations, current_revision):
     """Test the start CLI command."""
 

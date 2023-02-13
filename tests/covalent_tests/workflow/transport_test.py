@@ -32,6 +32,7 @@ from covalent._shared_files.defaults import parameter_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 from covalent.executor import LocalExecutor
+from covalent.triggers import BaseTrigger
 
 
 def subtask(x):
@@ -250,8 +251,8 @@ def test_transport_graph_transport_graph_reset(workflow_transport_graph):
     assert list(wtg._graph.nodes) == [0, 1]
     assert list(wtg._graph.edges) == [(0, 1, 0)]
     wtg.reset()
-    assert list(wtg._graph.nodes) == []
-    assert list(wtg._graph.edges) == []
+    assert not list(wtg._graph.nodes)
+    assert not list(wtg._graph.edges)
 
 
 def test_transport_graph_get_and_set_node_values(workflow_transport_graph):
@@ -272,13 +273,13 @@ def test_transport_graph_get_dependencies(workflow_transport_graph):
     """Test the graph node retrieval method in the transport graph."""
 
     wtg = workflow_transport_graph
-    assert list(wtg.get_dependencies(node_key=0)) == []
-    assert list(wtg.get_dependencies(node_key=1)) == []
+    assert not list(wtg.get_dependencies(node_key=0))
+    assert not list(wtg.get_dependencies(node_key=1))
 
     # Add edge relation
     wtg.add_edge(x=0, y=1, edge_name="apples")
 
-    assert list(wtg.get_dependencies(node_key=0)) == []
+    assert not list(wtg.get_dependencies(node_key=0))
     assert list(wtg.get_dependencies(node_key=1)) == [0]
 
 
@@ -404,14 +405,14 @@ def test_encode_metadata():
     import json
 
     le = LocalExecutor()
-    metadata = {}
-    metadata["executor"] = le
-    metadata["workflow_executor"] = "local"
-    metadata["deps"] = {}
+    bt = BaseTrigger()
+
+    metadata = {"executor": le, "workflow_executor": "local", "deps": {}}
     metadata["deps"]["bash"] = ct.DepsBash("yum install gcc")
     metadata["deps"]["pip"] = ct.DepsPip(["sklearn"])
     metadata["call_before"] = []
     metadata["call_after"] = []
+    metadata["triggers"] = [bt]
 
     json_metadata = json.dumps(encode_metadata(metadata))
 
@@ -421,6 +422,7 @@ def test_encode_metadata():
     assert new_metadata["executor_data"] == le.to_dict()
     assert new_metadata["workflow_executor"] == "local"
     assert new_metadata["workflow_executor_data"] == {}
+    assert new_metadata["triggers"] == [bt.to_dict()]
 
     assert ct.DepsBash("yum install gcc").to_dict() == new_metadata["deps"]["bash"]
     assert ct.DepsPip(["sklearn"]).to_dict() == new_metadata["deps"]["pip"]

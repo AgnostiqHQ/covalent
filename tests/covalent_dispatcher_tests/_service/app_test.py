@@ -80,15 +80,16 @@ def test_db_file():
 
 
 @pytest.mark.asyncio
-async def test_submit(mocker, client):
+@pytest.mark.parametrize("disable_run", [True, False])
+async def test_submit(mocker, client, disable_run):
     """Test the submit endpoint."""
     mock_data = json.dumps({}).encode("utf-8")
     run_dispatcher_mock = mocker.patch(
         "covalent_dispatcher.run_dispatcher", return_value=DISPATCH_ID
     )
-    response = client.post("/api/submit", data=mock_data)
+    response = client.post("/api/submit", data=mock_data, params={"disable_run": disable_run})
     assert response.json() == DISPATCH_ID
-    run_dispatcher_mock.assert_called_once_with(mock_data)
+    run_dispatcher_mock.assert_called_once_with(mock_data, disable_run)
 
 
 @pytest.mark.asyncio
