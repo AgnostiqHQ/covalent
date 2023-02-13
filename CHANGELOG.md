@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Enhanced the Dockerfile to include builds from various sources and a differentiation between SDK and Server builds
 
+### Operations
+
+- Updated pre-commit hook versions
+
 ## [0.217.0-rc.0] - 2023-02-12
 
 ### Authors
