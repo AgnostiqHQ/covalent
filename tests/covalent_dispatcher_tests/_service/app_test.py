@@ -103,7 +103,8 @@ async def test_submit_exception(mocker, client):
 
 
 @pytest.mark.asyncio
-async def test_redispatch(mocker, client):
+@pytest.mark.parametrize("is_pending", [True, False])
+async def test_redispatch(mocker, client, is_pending):
     """Test the redispatch endpoint."""
     json_lattice = None
     electron_updates = None
@@ -120,10 +121,10 @@ async def test_redispatch(mocker, client):
         "covalent_dispatcher.run_redispatch", return_value=DISPATCH_ID
     )
 
-    response = client.post("/api/redispatch", data=mock_data)
+    response = client.post("/api/redispatch", data=mock_data, params={"is_pending": is_pending})
     assert response.json() == DISPATCH_ID
     run_redispatch_mock.assert_called_once_with(
-        DISPATCH_ID, json_lattice, electron_updates, reuse_previous_results
+        DISPATCH_ID, json_lattice, electron_updates, reuse_previous_results, is_pending
     )
 
 
