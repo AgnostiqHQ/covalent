@@ -29,7 +29,7 @@ import pytest
 
 from covalent import DepsCall, TransportableObject
 from covalent._results_manager import Result
-from covalent._shared_files.exceptions import TaskCancelledError
+from covalent._shared_files.exceptions import TaskCancelledError, TaskRuntimeError
 from covalent.executor import BaseExecutor, wrapper_fn
 from covalent.executor.base import AsyncBaseExecutor
 
@@ -652,3 +652,88 @@ def test_base_executor_notify(mocker):
 
     me._notify("get")
     me._loop.call_soon_threadsafe.assert_called_with(me._send_queue.put_nowait, ("get", None))
+
+
+def test_wait_for_response_runtimeerror(mocker):
+    me = MockExecutor()
+    me._init_runtime()
+    me._recv_queue.get = MagicMock(return_value=(None, None))
+
+    with pytest.raises(RuntimeError):
+        me._wait_for_response()
+
+    me._recv_queue.get.assert_called()
+
+
+def test_base_executor_executor_task_runtime_error(mocker):
+    """Check handling of `TaskRuntimeError` exceptions"""
+
+    def f(x, y):
+        return x, y
+
+    me = MockExecutor(log_stdout="/tmp/stdout.log")
+    me.run = MagicMock(side_effect=TaskRuntimeError("error"))
+
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+    mock_notify = mocker.patch("covalent.executor.BaseExecutor._notify")
+    output, stdout, stderr, job_status = me.execute(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+
+    assert job_status is Result.FAILED
+    mock_notify.assert_called_with("bye")
+
+
+def test_base_executor_cancel_app_log(mocker):
+    me = MockExecutor()
+    me._init_runtime()
+    mock_app_log = mocker.patch("covalent.executor.base.app_log.debug")
+    task_metadata = {}
+    job_handle = 42
+
+    result = me.cancel(task_metadata, job_handle)
+    mock_app_log.assert_called_once()
+    assert result is False
+
+
+@pytest.mark.asyncio
+async def test_base_executor_cancel(mocker):
+    me = MockExecutor()
+    me._init_runtime(loop=AsyncMock(), cancel_pool=MagicMock())
+    me._loop.run_in_executor = AsyncMock()
+    await me._cancel({}, 42)
+    me._loop.run_in_executor.assert_awaited()
+
+
+@pytest.mark.asyncio
+async def test_base_async_executor_wait_for_response_raises_runtimeerror(mocker):
+    me = MockAsyncExecutor()
+    me._init_runtime()
+    me._recv_queue = AsyncMock()
+
+    mock_async_wait_for = mocker.patch(
+        "covalent.executor.base.asyncio.wait_for",
+        return_value=(
+            False,
+            None,
+        ),
+    )
+
+    with pytest.raises(RuntimeError):
+        await me._wait_for_response()
+        me._recv_queue.get.assert_called()
+        mock_async_wait_for.assert_awaited()
