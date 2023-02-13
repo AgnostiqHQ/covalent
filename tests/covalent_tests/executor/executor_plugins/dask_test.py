@@ -213,3 +213,22 @@ def test_dask_app_log_debug_when_cancel_requested(mocker):
     finally:
         mock_get_cancel_requested.assert_awaited_once()
         mock_app_log.assert_called_once()
+
+
+def test_dask_task_cancel(mocker):
+    from dask.distributed import LocalCluster
+
+    from covalent.executor import DaskExecutor
+
+    cluster = LocalCluster()
+
+    mock_app_log = mocker.patch("covalent.executor.executor_plugins.dask.app_log.debug")
+
+    dask_exec = DaskExecutor(cluster.scheduler_address)
+
+    task_metadata = {}
+    job_handle = 42
+
+    result = asyncio.run(dask_exec.cancel(task_metadata, job_handle))
+    mock_app_log.assert_called_with(f"Cancelled future with key {job_handle}")
+    assert result is True

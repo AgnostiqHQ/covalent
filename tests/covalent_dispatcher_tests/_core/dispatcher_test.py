@@ -462,5 +462,41 @@ async def test_cancel_dispatch(mocker):
     mock_runner.cancel_tasks.assert_has_awaits(calls)
 
 
-# def test_cancelled_workflow():
-#    cancel_workflow("asdf")
+@pytest.mark.asyncio
+async def test_cancel_dispatch_with_task_ids(mocker):
+    """Test cancelling a dispatch, including sub-lattices and with task ids"""
+    res = get_mock_result()
+    sub_res = get_mock_result()
+
+    sub_dispatch_id = "sub_pipeline_workflow"
+    sub_res._dispatch_id = sub_dispatch_id
+
+    def mock_get_result_object(dispatch_id):
+        objs = {res._dispatch_id: res, sub_res._dispatch_id: sub_res}
+        return objs[dispatch_id]
+
+    mock_data_cancel = mocker.patch("covalent_dispatcher._core.dispatcher.set_cancel_requested")
+
+    mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner")
+    mock_runner.cancel_tasks = AsyncMock()
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_result_object", mock_get_result_object
+    )
+    mock_app_log = mocker.patch("covalent_dispatcher._core.dispatcher.app_log.debug")
+
+    res._initialize_nodes()
+    sub_res._initialize_nodes()
+
+    tg = res.lattice.transport_graph
+    tg.set_node_value(2, "sub_dispatch_id", sub_dispatch_id)
+    sub_tg = sub_res.lattice.transport_graph
+    task_ids = list(tg._graph.nodes)
+    sub_task_ids = list(sub_tg._graph.nodes)
+
+    await cancel_dispatch("pipeline_workflow", task_ids)
+
+    calls = [call("pipeline_workflow", task_ids), call(sub_dispatch_id, sub_task_ids)]
+    mock_data_cancel.assert_has_awaits(calls)
+    mock_runner.cancel_tasks.assert_has_awaits(calls)
+    assert mock_app_log.call_count == 2

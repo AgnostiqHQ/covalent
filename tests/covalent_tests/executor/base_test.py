@@ -737,3 +737,67 @@ async def test_base_async_executor_wait_for_response_raises_runtimeerror(mocker)
         await me._wait_for_response()
         me._recv_queue.get.assert_called()
         mock_async_wait_for.assert_awaited()
+
+
+@pytest.mark.asyncio
+async def test_base_async_executor_task_runtime_error(mocker):
+    me = MockAsyncExecutor()
+    me._init_runtime()
+
+    def f(x, y):
+        return x, y
+
+    me.setup = AsyncMock()
+    me.teardown = AsyncMock()
+    me._notify = MagicMock()
+    me.run = AsyncMock(side_effect=TaskRuntimeError("error"))
+    function = TransportableObject(f)
+    args = [TransportableObject(2)]
+    kwargs = {"y": TransportableObject(3)}
+    call_before = []
+    call_after = []
+    dispatch_id = "asdf"
+    results_dir = "/tmp"
+    node_id = -1
+    task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
+
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+    output, stdout, stderr, job_status = await me.execute(
+        function=assembled_callable,
+        args=args,
+        kwargs=kwargs,
+        dispatch_id=dispatch_id,
+        results_dir=results_dir,
+        node_id=node_id,
+    )
+
+    me.setup.assert_awaited()
+    me.run.assert_awaited_once_with(assembled_callable, args, kwargs, task_metadata)
+    assert job_status is Result.FAILED
+    me._notify.assert_called_with("bye")
+
+
+@pytest.mark.asyncio
+async def test_base_async_executor_task_cancel(mocker):
+    mock_app_log = mocker.patch("covalent.executor.base.app_log.debug")
+    me = MockAsyncExecutor()
+    task_metadata = {}
+    job_handle = 42
+    result = await me.cancel(task_metadata=task_metadata, job_handle=job_handle)
+    mock_app_log.assert_called_with(f"Cancel not implemented for executor {type(me)}")
+    assert result is False
+
+
+@pytest.mark.asyncio
+async def test_base_async_executor_private_cancel(mocker):
+    mock_app_log = mocker.patch("covalent.executor.base.app_log.debug")
+    me = MockAsyncExecutor()
+    me.teardown = AsyncMock()
+
+    task_metadata = {}
+    job_handle = 42
+
+    cancel_result = await me._cancel(task_metadata=task_metadata, job_handle=job_handle)
+    mock_app_log.assert_called_with(f"Cancel not implemented for executor {type(me)}")
+    me.teardown.assert_awaited_with(task_metadata)
+    assert cancel_result is False

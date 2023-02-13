@@ -29,6 +29,7 @@ import pytest
 
 import covalent as ct
 from covalent._shared_files import TaskRuntimeError
+from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._workflow.transport import TransportableObject
 from covalent.executor.base import wrapper_fn
 from covalent.executor.executor_plugins.local import LocalExecutor
@@ -158,3 +159,22 @@ def test_local_executor_run_exception_handling(mocker):
         le.run(local_executor_run_exception_handling__mock_task, args, kwargs, task_metadata)
     le._task_stdout.getvalue() == "f output"
     assert "RuntimeError" in le._task_stderr.getvalue()
+
+
+def test_local_executor_get_cancel_requested(mocker):
+    le = LocalExecutor()
+    args = [5]
+    kwargs = {}
+    task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+    le.set_job_handle = MagicMock()
+    le.get_cancel_requested = MagicMock(return_value=True)
+    mock_app_log = mocker.patch("covalent.executor.executor_plugins.local.app_log.debug")
+
+    args = [5]
+    kwargs = {}
+    task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+
+    with pytest.raises(TaskCancelledError):
+        le.run(local_executor_run__mock_task, args, kwargs, task_metadata)
+        le.get_cancel_requested.assert_called_once()
+        assert mock_app_log.call_count == 2
