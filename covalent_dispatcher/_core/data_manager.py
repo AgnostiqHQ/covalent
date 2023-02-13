@@ -57,7 +57,6 @@ def generate_node_result(
     sub_dispatch_id=None,
     sublattice_result=None,
 ):
-
     return {
         "node_id": node_id,
         "start_time": start_time,
@@ -138,7 +137,6 @@ def get_unique_id() -> str:
 def make_dispatch(
     json_lattice: str, parent_result_object: Result = None, parent_electron_id: int = None
 ) -> Result:
-
     result_object = initialize_result_object(
         json_lattice, parent_result_object, parent_electron_id
     )

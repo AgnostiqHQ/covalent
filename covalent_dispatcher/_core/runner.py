@@ -151,7 +151,6 @@ async def _run_abstract_task(
     selected_executor: Any,
     workflow_executor: Any,
 ) -> None:
-
     # Resolve abstract task and inputs to their concrete (serialized) values
     result_object = datasvc.get_result_object(dispatch_id)
     timestamp = datetime.now(timezone.utc)
@@ -392,7 +391,6 @@ async def run_abstract_task(
     selected_executor: Any,
     workflow_executor: Any,
 ) -> None:
-
     node_result = await _run_abstract_task(
         dispatch_id=dispatch_id,
         node_id=node_id,

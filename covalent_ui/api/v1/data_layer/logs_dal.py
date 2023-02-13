@@ -58,7 +58,6 @@ class Logs:
                     len_log = len(log)
                     unmatch_str += i
                     if len_log > 0 and ((unmatch_str != "")):
-
                         msg = log[len_log - 1]["message"] + "\n"
                         log[len_log - 1]["message"] = msg + unmatch_str
                         unmatch_str = ""

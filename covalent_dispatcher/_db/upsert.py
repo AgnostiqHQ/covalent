@@ -112,7 +112,6 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None):
         (LATTICE_COVA_IMPORTS_FILENAME, result.lattice.cova_imports),
         (LATTICE_LATTICE_IMPORTS_FILENAME, result.lattice.lattice_imports),
     ]:
-
         store_file(data_storage_path, filename, data)
 
     # Write lattice records to Database

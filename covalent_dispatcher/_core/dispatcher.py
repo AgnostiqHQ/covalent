@@ -58,7 +58,6 @@ def _get_abstract_task_inputs(node_id: int, node_name: str, result_object: Resul
     abstract_task_input = {"args": [], "kwargs": {}}
 
     for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
-
         edge_data = result_object.lattice.transport_graph.get_edge_data(parent, node_id)
         # value = result_object.lattice.transport_graph.get_node_value(parent, "output")
 

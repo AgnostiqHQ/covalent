@@ -204,7 +204,6 @@ class BaseExecutor(_AbstractBaseExecutor):
         *args,
         **kwargs,
     ) -> None:
-
         super().__init__(*args, **kwargs)
 
     def _init_runtime(self, loop=None, cancel_pool=None):
@@ -272,7 +271,6 @@ class BaseExecutor(_AbstractBaseExecutor):
         results_dir: str,
         node_id: int = -1,
     ) -> Any:
-
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(
             None,
@@ -407,7 +405,6 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         *args,
         **kwargs,
     ) -> None:
-
         super().__init__(*args, **kwargs)
 
     def _init_runtime(
@@ -443,7 +440,6 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         dispatch_id: str,
         results_dir: str,
     ) -> None:
-
         """
         Write the contents of stdout and stderr to respective files.
 
@@ -479,7 +475,6 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         results_dir: str,
         node_id: int = -1,
     ) -> Any:
-
         return await self.execute(
             function,
             args,
@@ -498,7 +493,6 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         results_dir: str,
         node_id: int = -1,
     ) -> Any:
-
         self._task_stdout = io.StringIO()
         self._task_stderr = io.StringIO()
 

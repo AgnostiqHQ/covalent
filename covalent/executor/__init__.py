@@ -47,7 +47,6 @@ class _ExecutorManager:
     """
 
     def __init__(self) -> None:
-
         # Dictionary mapping executor name to executor class
         self.executor_plugins_map: Dict[str, Any] = {}
         self.executor_plugins_exports_map: Dict[str, Any] = {}
@@ -217,7 +216,6 @@ class _ExecutorManager:
         """
 
         if os.path.exists(executor_dir):
-
             module_files = glob.glob(os.path.join(executor_dir, "*.py"))
 
             for module_file in module_files:

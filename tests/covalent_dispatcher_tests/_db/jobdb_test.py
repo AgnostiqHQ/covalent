@@ -84,7 +84,6 @@ def test_update_job_records(test_db, mocker):
 
 
 def test_to_job_ids(test_db, mocker):
-
     mocker.patch("covalent_dispatcher._db.jobdb.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     cur_time = dt.now(timezone.utc)
