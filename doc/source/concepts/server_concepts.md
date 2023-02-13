@@ -24,6 +24,17 @@ Recall that you dispatch a workflow in your Python code using the Covalent {code
 dispatch_id = ct.dispatch(run_experiment)(C=1.0, gamma=0.7)
 ```
 
+Often a workflow might need to be re-executed, with new parameters or updated task definitions. Furthermore, you might want to re-use as much of the previously executed results as possible. Given the {code}`dispatch_id`, the workflow can be redispatched using:
+
+```python
+
+# Redispatch the run_experiment lattice to the dispatch server with an updated svm training task definition.
+
+redispatch_id = ct.redispatch(dispatch_id, replace_electrons={'train_svm': train_svm_redefined}, reuse_previous_results=True)()
+```
+
+The {code}`redispatch` command prepares the lattice and runtime parameters and triggers the {code}`dispatch` command.
+
 The dispatcher ingests the workflow and generates a dispatch ID, then tags all information about the dispatched workflow with the dispatch ID. This information includes:
 * The lattice definition
 * Runtime parameters to the lattice
