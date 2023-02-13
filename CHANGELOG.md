@@ -9,7 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Adding more tests to bring up code coverage
+- Added feature to support cancelling workflow dispatches
+- Updating/adding new tests to improve code coverage
+
+### Docs
+
+- Update `AWS Lambda` executor RTD with steps to extend the base executor image for installing custom packages
+
+### Changed
+
+- Enhanced the Dockerfile to include builds from various sources and a differentiation between SDK and Server builds
 
 ### Operations
 
@@ -25,7 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
 - Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
-
 
 ### Fixed
 
