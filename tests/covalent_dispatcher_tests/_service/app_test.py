@@ -159,18 +159,6 @@ async def test_redispatch_exception(mocker, client):
     )
 
 
-def test_db_path(mocker, app, client):
-    dbpath = "/Users/root/covalent/results.db"
-
-    def __init__(self, dbpath=dbpath):
-        self._dbpath = dbpath
-
-    mocker.patch.object(DispatchDB, "__init__", __init__)
-    response = client.get("/api/db-path")
-    result = response.json().replace("\\", "").replace('"', "")
-    assert result == dbpath
-
-
 @pytest.mark.asyncio
 async def test_cancel(mocker, client):
     """Test the cancel endpoint."""
