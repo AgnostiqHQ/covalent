@@ -140,7 +140,7 @@ class LocalDispatcher(BaseDispatcher):
             dispatcher_addr: The address of the dispatcher server. If None then then defaults to the address set in Covalent's config.
 
         Returns:
-            Wrapper function which takes the inputs of the workflow as arguments
+            Wrapper function which takes the inputs of the workflow as arguments.
         """
 
         if dispatcher_addr is None:
@@ -186,8 +186,9 @@ class LocalDispatcher(BaseDispatcher):
             reuse_previous_results: Boolean value whether to reuse the results from the previous dispatch.
 
         Returns:
-            Wrapper function which takes the inputs of the workflow as arguments
+            Wrapper function which takes the inputs of the workflow as arguments.
         """
+
         if dispatcher_addr is None:
             dispatcher_addr = (
                 get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
@@ -197,6 +198,17 @@ class LocalDispatcher(BaseDispatcher):
             replace_electrons = {}
 
         def func(*new_args, **new_kwargs):
+            """
+            Prepare the redispatch request body and redispatch the workflow.
+
+            Args:
+                *args: The inputs of the workflow.
+                **kwargs: The keyword arguments of the workflow.
+
+            Returns:
+                The result of the executed workflow.
+            """
+
             body = get_redispatch_request_body(
                 dispatch_id, new_args, new_kwargs, replace_electrons, reuse_previous_results
             )
