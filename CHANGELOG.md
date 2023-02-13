@@ -20,7 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unit and functional tests for redispatching.
 
 ### Docs
-- Updated self-deployment (server deployment). 
+- Updated self-deployment (server deployment).
+- Update `AWS Lambda` executor RTD with steps to extend the base executor image for installing custom packages
+
 
 ## [0.216.0-rc.0] - 2023-02-05
 
@@ -144,10 +146,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Tests
 
 - Updated `_get_result_from_dispatcher` test to verify whether using a link directly works or not
-
-### Docs
-
-- Update `AWS Lambda` executor RTD with steps to extend the base executor image for installing custom packages
 
 ### Docs
 - Revised UI reference. Added Settings page documentation.
