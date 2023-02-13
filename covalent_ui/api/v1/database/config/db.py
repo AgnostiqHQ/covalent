@@ -24,5 +24,5 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from covalent_dispatcher._db.datastore import DataStore
 
-engine = DataStore().engine
+engine = DataStore.factory().engine
 Base = declarative_base()

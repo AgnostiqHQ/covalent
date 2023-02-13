@@ -9,7 +9,6 @@ X = 20
 
 @ct.electron
 def matrix_workload(mat_1, mat_2, stall=STALL, x=X):
-
     i = 0
     while i < stall:
         x * x
@@ -61,7 +60,6 @@ def deflate(mat_1, dim=3):
 @ct.electron
 @ct.lattice
 def idi(mat_1):
-
     mat_2 = inflate(mat_1)
     mat_3, mat_4 = deflate(mat_2)
     mat_5 = inflate(mat_3)
@@ -71,7 +69,6 @@ def idi(mat_1):
 
 @ct.lattice
 def workflow(dim=3):
-
     mat_1 = np.random.default_rng().integers(10, size=(dim, dim))
 
     mat_2, mat_3 = split_in_half(mat_1)

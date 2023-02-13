@@ -1,14 +1,31 @@
 ============================
 Sublattices Transport Graph
 ============================
+
+A :ref:`sublattice <sublattice>` is a lattice wrapped with an electron decorator so that it behaves as a single task. For example:
+
+.. code:: python
+
+    @ct.electron
+    @ct.lattice
+    def sub_workflow():
+        # Lattice code containing calls to other electrons ...
+
+When you open the Graph View page for a lattice that contains sublattices, the sublattices are displayed as simple (unexpanded) nodes in the transport graph.
+
+Each sublattice in a dispatch has a unique lattice ID (separate from the integer node ID). Click |copy| on the sublattice node to copy the sublattice ID.
+
+Click a sublattice node in the transport graph to view the :doc:`electron sidebar<../graph_view/electron>` of the sublattice. The Electron sidebar for a sublattice displays the dispatch information of the sublattice in its role as an electron: its overall start and end times, its final result, and so on.
+
+To see "inside" the sublattice – to view its component electrons – select the Sublattices tab in the :doc:`Sublattices sidebar<sublattices_sidebar>` to the left of the transport graph. Then click the line item of the sublattice you want to view.
+
+While viewing a sublattice in the Graph View area, the sublattice name is displayed in the upper left as "Viewing: <sublattice name>". Click |revert| to the right of the name to return to viewing the main lattice transport graph.
+
 .. image:: ../images/sublattices.gif
    :align: center
 
 .. |revert| image:: ../images/revert.png
     :width: 20px
 
-- For the workflows with sublattices, lattice sidebar will have a sublattices section as shown before.
-- By default, the transport graph shown will be of all electrons, where sublattices dispatches are not expanded. Users can copy the dispatch id of sublattices from the transport graph.
-- Users can click on any sublattice in graph to view the electron sidebar of that particular sublattice, which has details of Start time, End time, Input, Results and python function.
-- Users can click on any sublattice in the lattice sidebar **Sublattices section** to view that particular sublattices' transport graph.
-- When users click on any sublattice, at the top of transport graph it will show the viewing sublattice name. And there will be a revert icon |revert| beside it, which lets users go back to the main transport graph.
+.. |copy| image:: ../../_static/copy_icon.png
+    :width: 20px

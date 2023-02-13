@@ -1,3 +1,4 @@
 covalent
+matplotlib==3.5.1
 pennylane==0.23.1
 scikit-learn==1.1.1

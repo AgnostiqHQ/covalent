@@ -92,6 +92,11 @@ def get_time(time_delta: timedelta) -> str:
     return f"{days}-{hours}:{minutes}:{seconds}"
 
 
+def filter_null_metadata(meta_dict: dict) -> Dict:
+    """Filter out metadata that is None or empty."""
+    return {k: v for k, v in meta_dict.items() if v}
+
+
 def get_serialized_function_str(function):
     """
     Generates a string representation of a function definition
@@ -179,7 +184,6 @@ def get_named_params(func, args, kwargs):
     named_kwargs = {}
 
     for ind, parameter_dict in enumerate(ordered_params_dict.items()):
-
         param_name, param = parameter_dict
 
         if param.kind in [param.POSITIONAL_ONLY, param.POSITIONAL_OR_KEYWORD]:

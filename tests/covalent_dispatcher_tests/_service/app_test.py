@@ -146,8 +146,6 @@ def test_get_result_503(mocker, app, client, test_db_file, tmp_path):
 
 
 def test_get_result_dispatch_id_not_found(mocker, test_db_file, client, tmp_path):
-
-    mocker.patch.object(DispatchDB, "_get_data_store", test_db_file)
     mocker.patch("covalent_dispatcher._service.app._result_from", return_value={})
     mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db_file)
     mocker.patch("covalent_dispatcher._service.app.Lattice", MockLattice)

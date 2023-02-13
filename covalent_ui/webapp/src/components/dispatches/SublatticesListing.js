@@ -89,6 +89,7 @@ const ResultsTableHead = ({ order, orderBy, onSort }) => {
             >
               {header.sortable ? (
                 <TableSortLabel
+                  data-testid="tablesortlabel"
                   active={orderBy === header.id}
                   direction={orderBy === header.id ? order : 'asc'}
                   onClick={() => onSort(header.id)}
@@ -221,7 +222,7 @@ const SublatticesListing = () => {
 
   return (
     <>
-      <Box>
+      <Box data-testid="sublatticeTable">
         {sublatticesListView && (
           <>
             <TableContainer>
@@ -251,6 +252,7 @@ const SublatticesListing = () => {
                       >
                         <TableRow
                           hover
+                          data-testid="tableRowSublattice"
                           key={result.dispatchId}
                           onClick={() => sublatticesDispatch(result)}
                           sx={{
@@ -321,7 +323,7 @@ const SublatticesListing = () => {
           <TableContainer>
             <StyledTable>
               <TableBody>
-                {[...Array(7)].map((_) => (
+                {[...Array(7)].map(() => (
                   <TableRow key={Math.random()}>
                     <TableCell padding="checkbox">
                       <Skeleton sx={{ my: 2, mx: 1 }} />

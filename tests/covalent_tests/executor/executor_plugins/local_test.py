@@ -20,12 +20,17 @@
 
 """Tests for Covalent local executor."""
 
+import io
 import tempfile
 from functools import partial
 
+import pytest
+
 import covalent as ct
+from covalent._shared_files import TaskRuntimeError
 from covalent._workflow.transport import TransportableObject
-from covalent.executor.executor_plugins.local import LocalExecutor, wrapper_fn
+from covalent.executor.base import wrapper_fn
+from covalent.executor.executor_plugins.local import LocalExecutor
 
 
 def test_local_executor_passes_results_dir(mocker):
@@ -106,12 +111,31 @@ def test_wrapper_fn_calldep_non_unique_retval_keys_injection():
     assert output.get_deserialized() == 6
 
 
-def test_local_executor_run():
-    def f(x):
-        return x**2
+def local_executor_run__mock_task(x):
+    return x**2
 
+
+def test_local_executor_run():
     le = LocalExecutor()
     args = [5]
     kwargs = {}
     task_metadata = {"dispatch_id": "asdf", "node_id": 1}
-    assert le.run(f, args, kwargs, task_metadata) == 25
+    assert le.run(local_executor_run__mock_task, args, kwargs, task_metadata) == 25
+
+
+def local_executor_run_exception_handling__mock_task(x):
+    print("f output")
+    raise RuntimeError("error")
+
+
+def test_local_executor_run_exception_handling(mocker):
+    le = LocalExecutor()
+    le._task_stdout = io.StringIO()
+    le._task_stderr = io.StringIO()
+    args = [5]
+    kwargs = {}
+    task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+    with pytest.raises(TaskRuntimeError) as ex:
+        le.run(local_executor_run_exception_handling__mock_task, args, kwargs, task_metadata)
+    le._task_stdout.getvalue() == "f output"
+    assert "RuntimeError" in le._task_stderr.getvalue()

@@ -249,7 +249,6 @@ time.sleep(3)
 
 # With covalent
 for w in widths:
-
     tasks = [[nn_workflow for i in range(w)]]
 
     deps = []

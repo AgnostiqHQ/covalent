@@ -2,43 +2,38 @@
 Lattice Sidebar
 ===================
 
+The Lattice sidebar shows details for the selected workflow dispatch. It displays the following:
+
 .. image:: ../images/Lattice_sidebar.png
    :width: 350px
+   :align: left
 
-- The Lattice sidebar gives an overview of attributes and details for a particular workflow dispatch. Users can copy the dispatch id of the workflow dispatch from the copy icon at the top.
+Dispatch ID
+    The ID of the selected dispatch. Click |copy| to copy the ID.
 
-Overview
-############
-The overview details are as follows:
+Description
+    The description of the lattice, if provided as a docstring in the lattice definition.
 
-- **Description**
+Started - Ended
+    The local time at which the dispatch started and ended. If the dispatch has not finished, the "Ended" time is omitted.
 
-  Shows the description of the lattice if provided. If the user doesn't add any description in the python code, then the user can't see this section.
+Runtime
+    The run duration for the dispatch. Updated in real time if the dispatch is still running.
 
-- **Started - Ended**
+Directory
+    The folder path where the result objects are stored for the lattice. Click |copy| to copy the folder path.
 
-  Shows the local time when a dispatch started and when a dispatch ended.
+Input
+   The input parameters passed to the lattice function. Click the parameter string to :ref:`copy a serialized representation <pickle_copy>` of the input.
 
-- **Runtime**
+Result
+    The :code:`Result` object returned by the lattice execution. Click the result string to :ref:`copy a serialized representation <pickle_copy>` of the input.
 
-  Shows the live run time for the dispatch.
+Executor
+    The type of executor to which the lattice is assigned.
 
-- **Directory**
+Function String
+    The :code:`lattice`-decorated Python function.
 
-  Shows the folder path where all the result objects are stored for the lattice. Users can copy the directory path as they click on the copy icon in this section.
-
-- **Input**
-
-  Shows the input parameters for the lattice function. By clicking on the input section, Users can copy the encoded byte value (python object) corresponding to the input. Users can decode this, by running it in any python environment assuming it has the dependencies needed to unpickle the object.
-
-- **Result**
-
-  Shows the result object related to workflow execution outcomes. By clicking on the result section, Users can copy the encoded byte value (python object) corresponding to the result. Users can decode this, by running it in any python environment assuming it has the dependencies needed to unpickle the object.
-
-- **Executor**
-
-  Shows the executor's type and its relevant information for lattice function.
-
-- **Function String**
-
-  Shows the detailed string representation of a lattice function (python format).
+.. |copy| image:: ../../_static/copy_icon.png
+    :width: 20px

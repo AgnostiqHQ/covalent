@@ -24,12 +24,18 @@ Module for defining a local executor that directly invokes the input python func
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
+
 import os
+from concurrent.futures import ProcessPoolExecutor
 from typing import Callable, Dict, List
 
 # Relative imports are not allowed in executor plugins
-from covalent._shared_files import logger
-from covalent.executor import BaseExecutor, wrapper_fn  # nopycln: import
+from covalent._shared_files import TaskRuntimeError, logger
+from covalent.executor import BaseExecutor
+
+# Store the wrapper function in an external module to avoid module
+# import errors during pickling
+from covalent.executor.utils.wrappers import io_wrapper
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "LocalExecutor"
@@ -45,6 +51,8 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     ),
 }
 
+proc_pool = ProcessPoolExecutor()
+
 
 class LocalExecutor(BaseExecutor):
     """
@@ -53,4 +61,17 @@ class LocalExecutor(BaseExecutor):
 
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         app_log.debug(f"Running function {function} locally")
-        return function(*args, **kwargs)
+
+        # Run the target function in a separate process
+        fut = proc_pool.submit(io_wrapper, function, args, kwargs)
+
+        output, worker_stdout, worker_stderr, tb = fut.result()
+
+        print(worker_stdout, end="", file=self.task_stdout)
+        print(worker_stderr, end="", file=self.task_stderr)
+
+        if tb:
+            print(tb, end="", file=self.task_stderr)
+            raise TaskRuntimeError(tb)
+
+        return output
