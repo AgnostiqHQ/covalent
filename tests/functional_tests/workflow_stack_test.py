@@ -317,7 +317,6 @@ def test_electron_deps_inject_non_unique_calldep_retvals():
 
 
 def test_electron_deps_pip():
-
     import subprocess
 
     @ct.electron(deps_pip=ct.DepsPip(packages=["pydash==5.1.0"]))

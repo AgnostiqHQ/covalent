@@ -419,7 +419,6 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
 
 @pytest.mark.asyncio
 async def test_run_task_sublattice_handling(test_db, mocker):
-
     result_object = get_mock_result()
     sub_result_object = get_mock_result()
     sub_result_object._dispatch_id = "sublattice_workflow"
