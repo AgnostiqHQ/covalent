@@ -210,7 +210,6 @@ def test_process_transport_graph():
 
 
 def test_process_transport_graph_is_idempotent():
-
     ro = get_sample_result_object()
     tg = ro.lattice.transport_graph
     tg_new = process_transport_graph(tg)

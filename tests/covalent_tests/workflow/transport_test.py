@@ -180,7 +180,6 @@ def test_transportable_object_serialize_deserialize(transportable_object):
 
 
 def test_transportable_object_deserialize_list(transportable_object):
-
     deserialized = [1, 2, {"a": 3, "b": [4, 5]}]
     serialized_list = [
         TransportableObject.make_transportable(1),
@@ -198,7 +197,6 @@ def test_transportable_object_deserialize_list(transportable_object):
 
 
 def test_transportable_object_deserialize_dict(transportable_object):
-
     deserialized = {"a": 1, "b": [2, {"c": 3}]}
     serialized_dict = {
         "a": TransportableObject.make_transportable(1),

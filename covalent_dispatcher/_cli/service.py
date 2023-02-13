@@ -481,7 +481,6 @@ def purge(hard: bool, yes: bool, hell_yeah: bool) -> None:
         removal_list.add(get_config("dispatcher.db_path"))
 
     if not yes:
-
         click.secho(f"{''.join(['*'] * 21)} WARNING {''.join(['*'] * 21)}", fg="yellow")
 
         click.echo("Purging will perform the following operations: ")
