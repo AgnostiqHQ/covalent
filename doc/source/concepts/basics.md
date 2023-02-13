@@ -79,6 +79,29 @@ You dispatch a workflow in your Python code using the Covalent {code}`dispatch()
 
 The dispatch server sends individual tasks to {ref}`executors<basic_primitives_executor>`.
 
+A workflow that has been dispatched once can then be redispatched using the {code}`covalent.redispatch()` command which allows:
+
+1. Redefining particular tasks in the workflow.
+2. Reusing previously executed results as much as possible.
+3. Re-executing the workflow with different set of arguments.
+
+For example, you can redefine {code}`sum_xy` to {code}`weighted_sum_xy` and redispatch the workflow while reusing the previously computed results, with:
+
+```python
+@ct.electron
+def weighted_sum_xy(x, y):
+    return 0.5 * (x + y)
+
+
+redispatch_id = ct.redispatch(
+    dispatch_id,
+    replace_electrons={'sum_xy': weighted_sum_xy},
+    reuse_previous_results=True
+)()
+```
+
+.. note:: Redispatching does not allow altering function signatures.
+
 For more on how the Covalent dispatcher analyzes and runs lattices, see {ref}`Workflow Dispatch` in {doc}`server_concepts`.
 
 
