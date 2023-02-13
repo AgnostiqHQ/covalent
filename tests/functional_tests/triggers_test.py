@@ -30,12 +30,15 @@ from covalent.triggers import DirTrigger
 
 
 def test_dir_trigger():
-    read_file_path = str(Path("dir_tr_read.txt").resolve())
-    write_file_path = str(Path("dir_tr_write.txt").resolve())
+    Path("./tr_read").mkdir(exist_ok=True)
+    Path("./tr_write").mkdir(exist_ok=True)
+
+    read_file_path = str(Path("./tr_read/dir_tr_read.txt").resolve())
+    write_file_path = str(Path("./tr_write/dir_tr_write.txt").resolve())
 
     print(read_file_path)
 
-    dir_trigger = DirTrigger(read_file_path, event_names="modified")
+    dir_trigger = DirTrigger(str(Path("./tr_read").resolve()), event_names="modified")
 
     @ct.lattice(triggers=dir_trigger)
     @ct.electron
@@ -48,14 +51,16 @@ def test_dir_trigger():
         with open(write_file_path, "a") as f:
             f.write(f"{total_sum}\n")
 
-    with open(read_file_path, "a") as f:
+    with open(read_file_path, "w") as f:
         f.write("0\n")
 
-    ct.dispatch(dir_workflow)()
+    dispatch_id = ct.dispatch(dir_workflow)()
 
-    expected_sums = [0]
+    expected_sums = [1]
+    net_sum = 0
     for i in range(1, 5):
-        expected_sums.append(i + sum(expected_sums))
+        net_sum += i
+        expected_sums.append(net_sum)
 
         with open(read_file_path, "a") as f:
             f.write(f"{i}\n")
@@ -67,7 +72,14 @@ def test_dir_trigger():
 
         actual_sums = [int(n) for n in actual_sums]
 
+    ct.stop_triggers(dispatch_id)
+
+    Path(read_file_path).unlink()
+    Path(write_file_path).unlink()
+
     assert expected_sums == actual_sums
+
+    # assert False
 
 
 def test_time_trigger():
