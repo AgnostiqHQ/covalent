@@ -43,7 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unit and functional tests for redispatching.
 
 ### Docs
-- Updated self-deployment (server deployment).
+- Updated self-deployment (server deployment). 
 
 ## [0.216.0-rc.0] - 2023-02-05
 
