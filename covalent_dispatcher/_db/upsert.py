@@ -109,7 +109,6 @@ def _lattice_data(result: Result, electron_id: int = None):
         (LATTICE_COVA_IMPORTS_FILENAME, result.lattice.cova_imports),
         (LATTICE_LATTICE_IMPORTS_FILENAME, result.lattice.lattice_imports),
     ]:
-
         store_file(data_storage_path, filename, data)
 
     # Write lattice records to Database
@@ -171,7 +170,6 @@ def _electron_data(result: Result):
     with workflow_db.session() as session:
         app_log.debug("upsert_electron_data session success")
         for node_id in dirty_nodes:
-
             results_dir = os.environ.get("COVALENT_DATA_DIR") or get_config(
                 "dispatcher.results_dir"
             )

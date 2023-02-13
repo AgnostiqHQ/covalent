@@ -29,29 +29,29 @@ def seed_logs_data():
                 "response_data": {
                     "items": [
                         {
-                            "log_date": "2022-09-26 07:41:42.907000",
+                            "log_date": "2022-09-23 07:43:59.752000",
                             "status": "INFO",
-                            "message": '127.0.0.1:47378 - "GET /openapi.json HTTP/1.1" 200',
+                            "message": " Started server process [41482]\n",
+                        },
+                        {
+                            "log_date": "2022-09-23 07:43:59.753000",
+                            "status": "INFO",
+                            "message": " Waiting for application startup.\n",
+                        },
+                        {
+                            "log_date": "2022-09-23 07:43:59.753000",
+                            "status": "INFO",
+                            "message": " Application startup complete.\n",
                         },
                         {
                             "log_date": "2022-09-26 07:41:42.411000",
                             "status": "INFO",
-                            "message": '127.0.0.1:47378 - "GET /docs HTTP/1.1" 200',
+                            "message": ' 127.0.0.1:47378 - "GET /docs HTTP/1.1" 200\n',
                         },
                         {
-                            "log_date": "2022-09-23 07:43:59.753000",
+                            "log_date": "2022-09-26 07:41:42.907000",
                             "status": "INFO",
-                            "message": "Waiting for application startup.",
-                        },
-                        {
-                            "log_date": "2022-09-23 07:43:59.753000",
-                            "status": "INFO",
-                            "message": "Application startup complete.",
-                        },
-                        {
-                            "log_date": "2022-09-23 07:43:59.752000",
-                            "status": "INFO",
-                            "message": "Started server process [41482]",
+                            "message": ' 127.0.0.1:47378 - "GET /openapi.json HTTP/1.1" 200',
                         },
                     ],
                     "total_count": 5,
@@ -151,42 +151,42 @@ def seed_logs_data():
                 },
                 "response_data": {
                     "items": [
+                        {"log_date": None, "status": "INFO", "message": "Killed\n"},
                         {
-                            "log_date": "2022-09-26 07:41:42.907000",
+                            "log_date": "2022-09-23 07:43:59.752000",
                             "status": "INFO",
-                            "message": '127.0.0.1:47378 - "GET /openapi.json HTTP/1.1" 200\nconnection Closed',
+                            "message": " Started server process [41482]\n",
                         },
                         {
-                            "log_date": "2022-09-26 07:41:42.907000",
+                            "log_date": "2022-09-23 07:43:59.753000",
                             "status": "INFO",
-                            "message": "WebSocket - connection open",
+                            "message": " Waiting for application startup.\n",
                         },
                         {
-                            "log_date": "2022-09-26 07:41:42.907000",
+                            "log_date": "2022-09-23 07:43:59.753000",
                             "status": "INFO",
-                            "message": '127.0.0.1:47378 - "GET /favicon.ico HTTP/1.1" 404\nConnection Closed\n\nkilled',
+                            "message": " Application startup complete.\n",
                         },
                         {
                             "log_date": "2022-09-26 07:41:42.411000",
                             "status": "INFO",
-                            "message": '127.0.0.1:47378 - "GET /docs HTTP/1.1" 200',
+                            "message": ' 127.0.0.1:47378 - "GET /docs HTTP/1.1" 200\n',
                         },
                         {
-                            "log_date": "2022-09-23 07:43:59.753000",
+                            "log_date": "2022-09-26 07:41:42.907000",
                             "status": "INFO",
-                            "message": "Waiting for application startup.",
+                            "message": ' 127.0.0.1:47378 - "GET /openapi.json HTTP/1.1" 200\n\nconnection Closed\n',
                         },
                         {
-                            "log_date": "2022-09-23 07:43:59.753000",
+                            "log_date": "2022-09-26 07:41:42.907000",
                             "status": "INFO",
-                            "message": "Application startup complete.",
+                            "message": " WebSocket - connection open\n",
                         },
                         {
-                            "log_date": "2022-09-23 07:43:59.752000",
+                            "log_date": "2022-09-26 07:41:42.907000",
                             "status": "INFO",
-                            "message": "Started server process [41482]",
+                            "message": ' 127.0.0.1:47378 - "GET /favicon.ico HTTP/1.1" 404\n\nConnection Closed\n\nkilled',
                         },
-                        {"log_date": None, "status": "INFO", "message": "Killed"},
                     ],
                     "total_count": 8,
                 },

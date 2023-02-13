@@ -36,8 +36,8 @@ def seed_lattice_data():
                     "status": "COMPLETED",
                     "total_electrons": 6,
                     "total_electrons_completed": 6,
-                    "started_at": "2022-09-23T15:31:11",
-                    "ended_at": "2022-09-23T15:31:11",
+                    "started_at": "2022-09-23T10:01:11.155428",
+                    "ended_at": "2022-09-23T10:01:11.717064",
                     "directory": os.path.abspath(
                         os.path.join(os.path.dirname(__file__), os.pardir)
                     )

@@ -40,7 +40,6 @@ class ConfigManager:
     """
 
     def __init__(self) -> None:
-
         from .defaults import DefaultConfig
 
         DEFAULT_CONFIG = asdict(DefaultConfig())

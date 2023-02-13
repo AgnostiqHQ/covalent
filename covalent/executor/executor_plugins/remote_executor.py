@@ -64,7 +64,6 @@ class RemoteExecutor(AsyncBaseExecutor):
         credentials_file: str = "",
         **kwargs,
     ) -> None:
-
         super().__init__(**kwargs)
 
         self.poll_freq = poll_freq

@@ -244,7 +244,7 @@ def get_electron_kwargs(
 
 
 def test_update_lattice_completed_electron_num(test_db, mocker):
-    """Test the funtion used to update the number of completed electrons for a lattice by 1."""
+    """Test the function used to update the number of completed electrons for a lattice by 1."""
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     cur_time = dt.now(timezone.utc)
@@ -392,7 +392,7 @@ def test_insert_electron_dependency_data(test_db, workflow_lattice, mocker):
 
     electron_ids = []
     cur_time = dt.now(timezone.utc)
-    for (name, node_id) in [
+    for name, node_id in [
         ("task_1", 0),
         (":parameter:1", 1),
         (":parameter:2", 2),
@@ -460,7 +460,7 @@ def test_upsert_electron_dependency_data(test_db, workflow_lattice, mocker):
 
     electron_ids = []
     cur_time = dt.now(timezone.utc)
-    for (name, node_id) in [
+    for name, node_id in [
         ("task_1", 0),
         (":parameter:1", 1),
         (":parameter:2", 2),
@@ -495,7 +495,7 @@ def test_upsert_electron_dependency_data_idempotent(test_db, workflow_lattice, m
 
     electron_ids = []
     cur_time = dt.now(timezone.utc)
-    for (name, node_id) in [
+    for name, node_id in [
         ("task_1", 0),
         (":parameter:1", 1),
         (":parameter:2", 2),
@@ -640,7 +640,7 @@ def test_write_sublattice_electron_id(test_db, mocker):
     # Create electron records.
     electron_ids = []
     cur_time = dt.now(timezone.utc)
-    for (name, node_id) in [
+    for name, node_id in [
         ("task_1", 0),
         (":parameter:1", 1),
         (":parameter:2", 2),
@@ -691,7 +691,7 @@ def test_resolve_electron_id(test_db, mocker):
     # Create electron records.
     electron_ids = []
     cur_time = dt.now(timezone.utc)
-    for (name, node_id) in [
+    for name, node_id in [
         ("task_1", 0),
         (":parameter:1", 1),
         (":parameter:2", 2),

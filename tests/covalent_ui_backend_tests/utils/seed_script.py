@@ -107,7 +107,7 @@ def seed(engine):
                     call_before_filename=item["call_before_filename"],
                     call_after_filename=item["call_after_filename"],
                     stderr_filename=item["stderr_filename"],
-                    info_filename=item["info_filename"],
+                    error_filename=item["info_filename"],
                     is_active=item["is_active"],
                     created_at=convert_to_date(item["created_at"]),
                     updated_at=convert_to_date(item["updated_at"]),

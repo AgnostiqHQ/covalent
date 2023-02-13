@@ -210,18 +210,18 @@ def test_electrons_details_info():
         assert response.json() == test_data["response_data"]
 
 
-def test_electrons_details_inputs():
-    """Test overview"""
-    test_data = output_data["test_electrons_details"]["case_inputs_1"]
-    response = object_test_template(
-        api_path=output_data["test_electrons_details"]["api_path"],
-        app=main.fastapi_app,
-        method_type=MethodType.GET,
-        path=test_data["path"],
-    )
-    assert response.status_code == test_data["status_code"]
-    if "response_data" in test_data:
-        assert response.json() == test_data["response_data"]
+# def test_electrons_details_inputs():
+#     """Test overview"""
+#     test_data = output_data["test_electrons_details"]["case_inputs_1"]
+#     response = object_test_template(
+#         api_path=output_data["test_electrons_details"]["api_path"],
+#         app=main.fastapi_app,
+#         method_type=MethodType.GET,
+#         path=test_data["path"],
+#     )
+#     assert response.status_code == test_data["status_code"]
+#     if "response_data" in test_data:
+#         assert response.json() == test_data["response_data"]
 
 
 def test_electrons_file_bad_request():

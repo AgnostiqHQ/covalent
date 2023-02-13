@@ -539,6 +539,10 @@ connection Closed
 Connection Closed
 killed""",
                 },
+                {
+                    "file_name": "case_4.log",
+                    "data": "",
+                },
             ],
         },
     }
