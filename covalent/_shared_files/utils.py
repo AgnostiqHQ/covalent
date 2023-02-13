@@ -184,7 +184,6 @@ def get_named_params(func, args, kwargs):
     named_kwargs = {}
 
     for ind, parameter_dict in enumerate(ordered_params_dict.items()):
-
         param_name, param = parameter_dict
 
         if param.kind in [param.POSITIONAL_ONLY, param.POSITIONAL_OR_KEYWORD]:

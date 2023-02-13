@@ -182,7 +182,6 @@ async def test_cluster_scale_up_down(admin_worker_addr, event_loop):
     target_cluster_size = DEFAULT_N_WORKERS + 1
 
     with contextlib.suppress(TimeoutError):
-
         await _cluster_scale(admin_worker_addr, target_cluster_size)
 
         # Having to wait here for the time it takes to create a new dask worker
@@ -192,7 +191,6 @@ async def test_cluster_scale_up_down(admin_worker_addr, event_loop):
         assert cluster_size == target_cluster_size
 
     with contextlib.suppress(TimeoutError):
-
         # Scale cluster back down
         await _cluster_scale(admin_worker_addr, DEFAULT_N_WORKERS)
 

@@ -156,7 +156,6 @@ class Electron:
             """
 
             def decorator(f):
-
                 op1_name = op1
                 if hasattr(op1, "function") and op1.function:
                     op1_name = op1.function.__name__
@@ -221,7 +220,6 @@ class Electron:
         return complex()
 
     def __iter__(self):
-
         last_frame = inspect.currentframe().f_back
         bytecode = last_frame.f_code.co_code
         expected_unpack_values = bytecode[last_frame.f_lasti + 1]
@@ -283,7 +281,6 @@ class Electron:
         return super().__getattr__(attr)
 
     def __getitem__(self, key: Union[int, str]) -> "Electron":
-
         if active_lattice := active_lattice_manager.get_active_lattice():
 
             def get_item(e, key):
@@ -317,7 +314,6 @@ class Electron:
             return self.function(*args, **kwargs)
 
         if active_lattice.post_processing:
-
             id, output = active_lattice.electron_outputs[0]
 
             active_lattice.electron_outputs.pop(0)
@@ -447,7 +443,6 @@ class Electron:
             )
 
         else:
-
             encoded_param_value = TransportableObject.make_transportable(param_value)
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),

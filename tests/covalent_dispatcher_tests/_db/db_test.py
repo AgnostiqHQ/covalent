@@ -58,7 +58,6 @@ def test_db_path(db: DataStore, tmp_path: Path):
 
 
 def test_default_db_path(db: DataStore, tmp_path: Path, mocker):
-
     DB_PATH = "/tmp/my_db.sqlite"
 
     mocker.patch("sqlalchemy.create_engine")

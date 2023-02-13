@@ -73,7 +73,6 @@ class Result:
     CANCELLED = RESULT_STATUS.CANCELLED
 
     def __init__(self, lattice: Lattice, dispatch_id: str = "") -> None:
-
         self._start_time = None
         self._end_time = None
 
@@ -306,7 +305,6 @@ Node Outputs
         ]
 
     def post_process(self):
-
         # Copied from server-side _post_process()
         node_outputs = self.get_all_node_outputs()
         ordered_node_outputs = []

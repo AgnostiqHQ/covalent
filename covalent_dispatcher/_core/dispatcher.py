@@ -57,7 +57,6 @@ def _get_abstract_task_inputs(node_id: int, node_name: str, result_object: Resul
     abstract_task_input = {"args": [], "kwargs": {}}
 
     for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
-
         edge_data = result_object.lattice.transport_graph.get_edge_data(parent, node_id)
         # value = result_object.lattice.transport_graph.get_node_value(parent, "output")
 
@@ -141,7 +140,6 @@ async def _get_initial_tasks_and_deps(result_object: Result) -> Tuple[int, int, 
 
 # Domain: dispatcher
 async def _submit_task(result_object, node_id):
-
     # Get name of the node for the current task
     node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
     node_status = result_object.lattice.transport_graph.get_node_value(node_id, "status")
@@ -177,7 +175,6 @@ async def _submit_task(result_object, node_id):
         app_log.debug(f"Skipped completed node {node_id}.")
 
     else:
-
         # Executor for post_processing and dispatching sublattices
         pp_executor = result_object.lattice.get_metadata("workflow_executor")
         pp_executor_data = result_object.lattice.get_metadata("workflow_executor_data")
