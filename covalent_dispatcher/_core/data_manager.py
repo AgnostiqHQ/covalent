@@ -156,7 +156,7 @@ def _get_result_object_from_new_lattice(
         tg = result_object.lattice.transport_graph
         tg_old = old_result_object.lattice.transport_graph
         reusable_nodes = TransportGraphOps(tg_old).get_reusable_nodes(tg)
-        TransportGraphOps(tg_old).copy_nodes(tg, reusable_nodes)
+        TransportGraphOps(tg_old).copy_nodes_from(tg, reusable_nodes)
 
     return result_object
 
@@ -184,7 +184,7 @@ def make_derived_dispatch(
     if electron_updates is None:
         electron_updates = {}
 
-    old_result_object = load.get_result_object_from_storage(parent_dispatch_id, wait=False)
+    old_result_object = load.get_result_object_from_storage(parent_dispatch_id)
 
     if json_lattice:
         result_object = _get_result_object_from_new_lattice(

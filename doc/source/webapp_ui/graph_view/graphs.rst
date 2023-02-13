@@ -1,12 +1,15 @@
-=================
+###############
 Transport Graph
-=================
+###############
 
 The Transport Graph displays the :ref:`directed acyclic graph <Transport Graph>` representing the dispatch.
 
 .. image:: ../images/graph_main.png
    :align: center
    :width: 5000px
+
+
+.. _graph_controls:
 
 Controls
 ########
@@ -36,7 +39,6 @@ Parameters |param|
     Clicking a parameter node also highlights the dependencies (graph edges) that contain the selected parameter.
 Lock Nodes |lock|
     Toggle locking of draggable nodes. Toggle to "unlock" to enable dragging nodes to improve readability of the graph. Toggle to "lock" (default) to keep from accidentally dragging nodes.
-
 
 .. |plus| image:: ../../_static/tg_plus.png
     :width: 20px

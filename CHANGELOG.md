@@ -7,6 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Enhanced the Dockerfile to include builds from various sources and a differentiation between SDK and Server builds
+
+## [0.217.0-rc.0] - 2023-02-12
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- dwelsch-esi <116022979+dwelsch-esi@users.noreply.github.com>
+- Co-authored-by: dwelsch-memverge <david.welsch@memverge.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+
+
+### Fixed
+
+- Redispatch bug.
+
+### Changed
+
+- Location of function to load result from the database now moved to load module in covalent_dispatcher/_db folde.
+
+### Added
+- API endpoint for redispatching.
+- Unit and functional tests for redispatching.
+
+### Docs
+- Updated self-deployment (server deployment). 
+
 ## [0.216.0-rc.0] - 2023-02-05
 
 ### Authors
@@ -37,7 +68,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Alejandro Esquivel <ae@alejandro.ltd>
-
 
 ### Docs
 
