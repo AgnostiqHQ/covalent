@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Redispatch API section.
+- Add how to for redispatch.
+- Mention redispatch in the concepts section.
 
 ### Changed
 
