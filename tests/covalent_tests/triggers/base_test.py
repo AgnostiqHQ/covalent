@@ -112,3 +112,36 @@ def test_do_redispatch(mocker, use_internal_func, is_pending):
         mock_redispatch.assert_called_once()
 
     assert redispatch_id == mock_redispatch_id
+
+
+@pytest.mark.parametrize("lattice_dispatch_id", [None, "mock_id"])
+@pytest.mark.parametrize("mock_status", [None, "some_status"])
+def test_trigger(mocker, lattice_dispatch_id, mock_status):
+    base_trigger = BaseTrigger()
+    base_trigger.lattice_dispatch_id = lattice_dispatch_id
+
+    if not lattice_dispatch_id:
+        err_str = "`lattice_dispatch_id` is None. Please attach this trigger to a lattice before triggering."
+        with pytest.raises(RuntimeError) as re:
+            base_trigger.trigger()
+            assert re.match(err_str)
+
+    else:
+        mock_redispatch_id = "test_redispatch_id"
+
+        mock_get_status = mocker.patch(
+            "covalent.triggers.base.BaseTrigger._get_status", return_value=mock_status
+        )
+        mock_do_redispatch = mocker.patch(
+            "covalent.triggers.base.BaseTrigger._do_redispatch", return_value=mock_redispatch_id
+        )
+
+        base_trigger.trigger()
+
+        mock_get_status.assert_called_once()
+
+        if mock_status is None:
+            mock_do_redispatch.assert_called_with(True)
+        else:
+            mock_do_redispatch.assert_called_once()
+            assert mock_redispatch_id in base_trigger.new_dispatch_ids
