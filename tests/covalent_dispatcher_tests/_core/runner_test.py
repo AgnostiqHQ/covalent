@@ -290,6 +290,7 @@ def test_build_sublattice_graph():
         "deps": {"bash": None, "pip": None},
         "call_before": [],
         "call_after": [],
+        "triggers": None,
         "results_dir": None,
     }
 
