@@ -52,7 +52,7 @@ debug_mode = get_config("sdk.log_level") == "debug"
 # This is to be run out-of-process
 def _build_sublattice_graph(sub: Lattice, parent_metadata: Dict, *args, **kwargs):
     for k in sub.metadata.keys():
-        if not sub.metadata[k]:
+        if not sub.metadata[k] and k != "triggers":
             sub.metadata[k] = parent_metadata[k]
 
     sub.build_graph(*args, **kwargs)
@@ -116,7 +116,7 @@ async def _dispatch_sublattice(
     else:
         app_log.debug("Error building sublattice graph")
         stderr = res["stderr"]
-        raise RuntimeError("Error building sublattice graph: {stderr}")
+        raise RuntimeError(f"Error building sublattice graph: {stderr}")
 
 
 # Domain: runner
