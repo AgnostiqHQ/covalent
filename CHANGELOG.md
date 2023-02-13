@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Redispatch API section.
 - Add how to for redispatch.
 - Mention redispatch in the concepts section.
+- Update `AWS Lambda` executor RTD with steps to extend the base executor image for installing custom packages
 
 ### Changed
 
@@ -31,7 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
 - Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
-
 
 ### Fixed
 

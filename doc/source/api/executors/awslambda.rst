@@ -360,3 +360,97 @@ For more information on AWS S3, refer to `AWS S3 <https://aws.amazon.com/s3/>`_.
         aws ecr get-login-password --region <region> | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.<region>.amazonaws.com
         docker tag public.ecr.aws/covalent/covalent-lambda-executor:stable <aws_account_id>.dkr.ecr.<region>.amazonaws.com/<my-repository>:tag
         docker push <aws_account_id>.dkr.ecr.<region>.amazonaws.com/<my-repository>:tag
+
+
+5. Custom Docker images
+########################
+
+As mentioned earlier, the AWS Lambda executor uses a ``docker`` image to execute an electron from a workflow. We distribute AWS Lambda executor base docker images that contain just the essential dependencies such as ``covalent`` and ``covalent-aws-plugins``. However if the electron to be executed using the Lambda executor depends on Python packages that are not present in the base image by default, users will have to a build custom images prior to running their Covalent workflows using the AWS Lambda executor. In this section we cover the necessary steps required to extend the base executor image by installing additional Python packages and pushing the **derived** image to a private elastic container registry (ECR)
+
+.. note::
+
+   Using ``PipDeps`` as described in the :doc:`../deps` section with the AWS Lambda executor is currently not supported as it modifies the execution environment of the lambda function at runtime. As per AWS best practices for Lambda it is recommended to ship the lambda function as a self-contained object that has all of its dependencies in a ``deployment`` package/container image as described in detail `here <https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-package.html>`_
+
+All of our base AWS executor images are available in the AWS public registries and can be downloaded locally for consumption as described here `here <https://docs.aws.amazon.com/AmazonECR/latest/public/docker-pull-ecr-image.html>`_. For instance the ``stable`` AWS Lambda executor image can be downloaded from public ECR as follows
+
+
+.. code-block:: bash
+
+   aws ecr-public get-login-password --region <aws-region> | docker login --username AWS --password-stdin public.ecr.aws
+   docker pull public.ecr.aws/covalent/covalent-lambda-executor:stable
+
+
+.. note::
+
+   Executor images with the ``latest`` tag are also routinely pushed to the same registry. However, we strongly recommended using the **stable** tag when running executing workflows usin the AWS Lambda executor. The ``<aws-region>`` is a placeholder for the actual AWS region to be used by the user
+
+
+Once the lambda base executor image has been downloaded, users can build upon that image by installing all the Python packages required by their tasks. The base executor uses a build time argument named ``LAMBDA_TASK_ROOT`` to set the install path of all python packages to ``/var/task`` inside the image. When extending the base image by installing additional python packages, it is **recommended** to install them to the same location so that they get resolved properly during runtime. Following is a simple example of how users can extend the AWS lambda base image by creating their own ``Dockerfile`` and installting additional packages such as ``numpy``, ``pandas`` and ``scipy``.
+
+
+.. code-block:: docker
+
+   # Dockerfile
+
+   FROM public.ecr.aws/covalent/covalent-lambda-executor:stable as base
+
+   RUN pip install --target ${LAMBDA_TASK_ROOT} numpy pandas scipy
+
+
+.. warning::
+
+   Do **not** override the entrypoint of the base image in the derived image when installing new packages. The docker  ``ENTRYPOINT`` of the base image is what that gets trigged when AWS invokes your lambda function to execute the workflow electron
+
+
+Once the ``Dockerfile`` has been created the derived image can be built as follows
+
+.. code-block:: bash
+
+   docker build -f Dockerfile -t my-custom-lambda-executor:latest
+
+
+
+Pushing to ECR
+^^^^^^^^^^^^^^^^^^^^^
+
+After a successful build of the derived image, it needs to be uploaded to ECR so that it can be consumed by a lambda function when triggered by Covalent. As as first step, it is required to create an elastic container registry to hold the dervied executor images. This can be easily done by using the AWS CLI tool as follows
+
+.. code-block:: bash
+
+   aws ecr create-repository --region <aws-region> --repository-name covalent/my-custom-lambda-executor
+
+
+To upload the derived image to this registry, we would need to tag our local image as per the AWS guide and push the image to the registry as described `here <https://docs.aws.amazon.com/AmazonECR/latest/userguide/docker-push-ecr-image.html>`_. To push an image, first one needs to authenticate with AWS and login their docker client
+
+.. code-block:: bash
+
+   aws ecr get-login-password --region <aws-region> | docker login --username AWS --password-stdin <aws-account-id>.dkr.ecr.region.amazonaws.com
+
+Once the login is successful, the local image needs to be re-tagged with the ECR repository information. If the image tag is omitted, ``latest`` is applied by default. In the following code block we show how to tag the derived image ``my-custom-lambda-executor:latest`` with the ECR information so that it can be uploaded successfully
+
+.. code-block:: bash
+
+   docker tag my-custom-lambda-executor:latest <aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/my-custom-lambda-executor:latest
+
+
+.. note::
+
+   <aws-account-id> and <aws-region> are placeholders for the actual AWS account ID and region to be used by the users
+
+
+
+Deploying AWS Lambda function
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Once the derived image has been built and pushed to ECR, users need to create a Lambda function or update an existing one to use the new derived image instead of the base image executor image at runtime. A new AWS Lambda function can be quite easily created using the AWS Lambda CLI ``create-function`` command as follows
+
+.. code-block:: bash
+
+   aws lambda create-function --function-name "my-covalent-lambda-function" --region <aws-region> \
+        --package-type Image \
+        --code ImageUri=<aws-account-id>.dkr.ecr.<aws-region>.amazonaws.com/my-custom-lambda-executor:latest \
+        --role <Lambda executor role ARN> \
+        --memory-size 512 \
+        --timeout 900
+
+The above CLI command will register a new AWS lambda function that will use the user's custom derived image ``my-custom-lambda-executor:latest`` with a memory size of  ``512 MB`` and a timeout values of ``900`` seconds. The ``role`` argument is used to specify the ARN of the IAM role the AWS Lambda can assume during execution. The necessary permissions for the IAM role have been provided in ``Required AWS resources`` section. More details about creating and updating AWS lambda functions can be found `here <https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-images.html>`_.
