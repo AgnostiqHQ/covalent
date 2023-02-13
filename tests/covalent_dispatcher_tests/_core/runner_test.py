@@ -163,7 +163,6 @@ async def test_run_task_executor_exception_handling(mocker):
 
 @pytest.mark.asyncio
 async def test_run_task_runtime_exception_handling(mocker):
-
     result_object = get_mock_result()
     inputs = {"args": [], "kwargs": {}}
     mock_executor = MagicMock()

@@ -77,7 +77,6 @@ def _get_result_from_dispatcher(
     dispatcher_addr: str = None,
     status_only: bool = False,
 ) -> Dict:
-
     """
     Internal function to get the results of a dispatch from the server without checking if it is ready to read.
 

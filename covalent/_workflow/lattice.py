@@ -88,7 +88,6 @@ class Lattice:
 
     # To be called after build_graph
     def serialize_to_json(self) -> str:
-
         attributes = deepcopy(self.__dict__)
         attributes["workflow_function"] = self.workflow_function.to_dict()
 
