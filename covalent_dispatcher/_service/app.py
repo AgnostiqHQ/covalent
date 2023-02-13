@@ -35,7 +35,6 @@ from covalent._shared_files.util_classes import Status
 from covalent._workflow.transport import TransportableObject
 
 from .._db.datastore import workflow_db
-from .._db.dispatchdb import DispatchDB
 from .._db.load import _result_from
 from .._db.models import Lattice
 from .._db.write_result_to_db import load_file
@@ -218,12 +217,6 @@ async def cancel(request: Request) -> str:
         return f"Cancelled tasks {task_ids} in dispatch {dispatch_id}."
     else:
         return f"Dispatch {dispatch_id} cancelled."
-
-
-@router.get("/db-path")
-def db_path() -> str:
-    db_path = DispatchDB()._dbpath
-    return json.dumps(db_path)
 
 
 @router.get("/result/{dispatch_id}")
