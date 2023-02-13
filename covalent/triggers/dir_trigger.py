@@ -95,6 +95,8 @@ class DirTrigger(BaseTrigger):
             event_names: List of event names upon which to perform a trigger action
         """
 
+        app_log.warning("Attaching methods to dir handler")
+
         self.n_changes = 0
 
         def proxy_trigger(*args, **kwargs):
@@ -114,6 +116,8 @@ class DirTrigger(BaseTrigger):
         mentioned in `self.event_names`.
         Currently only supports running within the Covalent/Triggers server.
         """
+
+        app_log.warning(f"In DirTrigger's observe, dir path is: {self.dir_path}")
 
         # Resolving the path at the place where observation will happen
         self.dir_path = str(Path(self.dir_path).expanduser().resolve())

@@ -56,15 +56,21 @@ async def test_run_dispatcher(mocker, disable_run):
 
 
 @pytest.mark.asyncio
-async def test_run_redispatch(mocker):
+@pytest.mark.parametrize("is_pending", [True, False])
+async def test_run_redispatch(mocker, is_pending):
     """Test the run redispatch function."""
     make_derived_dispatch_mock = mocker.patch(
         "covalent_dispatcher._core.make_derived_dispatch", return_value="mock-redispatch-id"
     )
     run_dispatch_mock = mocker.patch("covalent_dispatcher._core.run_dispatch")
-    redispatch_id = await run_redispatch(DISPATCH_ID, "mock-json-lattice", {}, False)
+    redispatch_id = await run_redispatch(DISPATCH_ID, "mock-json-lattice", {}, False, is_pending)
+
+    if not is_pending:
+        make_derived_dispatch_mock.assert_called_once_with(
+            DISPATCH_ID, "mock-json-lattice", {}, False
+        )
+
     run_dispatch_mock.assert_called_once_with(redispatch_id)
-    make_derived_dispatch_mock.assert_called_once_with(DISPATCH_ID, "mock-json-lattice", {}, False)
 
 
 def test_cancel_running_dispatch(mocker):
