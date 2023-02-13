@@ -44,7 +44,6 @@ class TriggerLoader:
         self.available_triggers[key] = value
 
     def load_user_triggers(self):
-
         sys.path = self.orig_sys_path
         user_triggers_path = Path("~/.covalent/triggers/").expanduser()
         if user_triggers_path.exists():

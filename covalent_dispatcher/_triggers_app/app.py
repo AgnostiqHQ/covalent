@@ -73,7 +73,6 @@ def get_threadpool():
 
 @router.post("/triggers/register")
 async def register_and_observe(request: Request):
-
     if disable_triggers:
         raise HTTPException(status_code=412, detail="Trigger endpoints are disabled as requested")
 
@@ -103,7 +102,6 @@ async def register_and_observe(request: Request):
 
 @router.post("/triggers/stop_observe")
 async def stop_observe(request: Request):
-
     if disable_triggers:
         raise HTTPException(status_code=412, detail="Trigger endpoints are disabled as requested")
 

@@ -210,7 +210,6 @@ class LocalDispatcher(BaseDispatcher):
         reuse_previous_results: bool = False,
         is_pending: bool = False,
     ) -> Callable:
-
         if dispatcher_addr is None:
             dispatcher_addr = (
                 "http://"
