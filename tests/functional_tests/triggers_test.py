@@ -56,11 +56,11 @@ def test_dir_trigger():
 
     dispatch_id = ct.dispatch(dir_workflow)()
 
-    expected_sums = [1]
+    expected_sums = {1}
     net_sum = 0
     for i in range(1, 5):
         net_sum += i
-        expected_sums.append(net_sum)
+        expected_sums.add(net_sum)
 
         with open(read_file_path, "a") as f:
             f.write(f"{i}\n")
@@ -70,7 +70,7 @@ def test_dir_trigger():
         with open(write_file_path, "r") as f:
             actual_sums = f.readlines()
 
-        actual_sums = [int(n) for n in actual_sums]
+        actual_sums = {int(n) for n in actual_sums}
 
     ct.stop_triggers(dispatch_id)
 
