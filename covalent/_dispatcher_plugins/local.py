@@ -28,10 +28,14 @@ import requests
 from .._results_manager import wait
 from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
+from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._workflow.lattice import Lattice
 from ..triggers import BaseTrigger
 from .base import BaseDispatcher
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
 
 
 def get_redispatch_request_body(
@@ -283,6 +287,6 @@ class LocalDispatcher(BaseDispatcher):
         r = requests.post(stop_triggers_url, json=dispatch_ids)
         r.raise_for_status()
 
-        print("Triggers for following dispatch_ids have stopped observing:")
+        app_log.debug("Triggers for following dispatch_ids have stopped observing:")
         for d_id in dispatch_ids:
-            print(d_id)
+            app_log.debug(d_id)
