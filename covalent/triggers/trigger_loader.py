@@ -18,19 +18,17 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import sys
-from importlib import import_module
-from pathlib import Path
+
+from covalent.triggers import BaseTrigger, DirTrigger, TimeTrigger
 
 
 class TriggerLoader:
     def __init__(self):
-        tr_mod = import_module(".triggers", package="covalent")
         self.available_triggers = {
-            k: tr for k, tr in tr_mod.__dict__.items() if k.endswith("Trigger")
+            BaseTrigger.__name__: BaseTrigger,
+            DirTrigger.__name__: DirTrigger,
+            TimeTrigger.__name__: TimeTrigger,
         }
-        self.orig_sys_path = sys.path.copy()
-        self.load_user_triggers()
 
     def __new__(cls):
         if not hasattr(cls, "instance"):
@@ -42,19 +40,6 @@ class TriggerLoader:
 
     def __setitem__(self, key, value):
         self.available_triggers[key] = value
-
-    def load_user_triggers(self):
-        sys.path = self.orig_sys_path
-        user_triggers_path = Path("~/.covalent/triggers/").expanduser()
-        if user_triggers_path.exists():
-            sys.path.append(str(user_triggers_path))
-
-            # This is supposed to look un-importable
-            import user_triggers  # type: ignore # nopycln: import
-
-            for k, v in user_triggers.__dict__.items():
-                if k.endswith("Trigger"):
-                    self.available_triggers[k] = v
 
 
 available_triggers = TriggerLoader()
