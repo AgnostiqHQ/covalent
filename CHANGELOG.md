@@ -9,7 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed the failing test cases. 
+- Fixed ui-backend failing test cases.
+
+### Docs
+
+- Update `AWS Lambda` executor RTD with steps to extend the base executor image for installing custom packages
 
 ### Changed
 
