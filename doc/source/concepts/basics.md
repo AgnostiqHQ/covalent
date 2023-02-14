@@ -102,7 +102,9 @@ redispatch_id = ct.redispatch(
 )()
 ```
 
-One caveat is that redispatching does not allow altering function signatures when redefining tasks.
+```{note}
+Redispatching does not allow altering function signatures when redefining tasks.
+```
 
 For more on how the Covalent dispatcher analyzes and runs lattices, see {ref}`Workflow Dispatch` in {doc}`server_concepts`.
 
