@@ -32,6 +32,22 @@ The dispatcher ingests the workflow and generates a dispatch ID, then tags all i
 
 ... in short, everything about the instantiated workflow before, during, and after its execution. Every time you dispatch a workflow, all this information is saved and the process is executed on the server. This means that after the workflow is dispatched you can close the Jupyter notebook or console on which you ran the script. You can view information about the process in the {doc}`GUI <ui_concepts>`.
 
+Furthermore, when a workflow is redispatched:
+
+```python
+
+# Redispatch the run_experiment lattice to the dispatch server with an updated svm training task definition.
+
+redispatch_id = ct.redispatch(
+    dispatch_id,
+    replace_electrons={'train_svm': train_svm_redefined},
+    reuse_previous_results=True
+)(),
+```
+
+the Covalent {code}`redispatch` command prepares the lattice definition, runtime parameters etc. and triggers the {code}`dispatch` command.
+
+
 
 (executors)=
 ## Executors
