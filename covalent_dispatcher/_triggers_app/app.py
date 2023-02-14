@@ -43,13 +43,11 @@ active_triggers = {}
 def init_trigger(tr_dict: dict) -> BaseTrigger:
     tr_name = tr_dict.pop("name")
 
-    # Reloading triggers
-    available_triggers.load_user_triggers()
+    # Loading trigger's class
     tr_class = available_triggers[tr_name]
 
     # Handling required constructor params
     sig = inspect.signature(tr_class.__init__)
-
     init_params = {}
     for k, v in tr_dict.copy().items():
         if sig.parameters.get(k):
