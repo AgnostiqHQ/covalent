@@ -85,6 +85,8 @@ A workflow that has been dispatched once can then be redispatched using the {cod
 2. Reusing previously executed results as much as possible.
 3. Re-executing the workflow with different set of arguments.
 
+Furthermore, redispatching does not rely on having the lattice object and only having access to the previous dispatch id suffices. This is convenient since the script required to initially dispatch a workflow is not required to be able to re-execute the workflow.
+
 For example, you can redefine {code}`sum_xy` to {code}`weighted_sum_xy` and redispatch the workflow while reusing the previously computed results, with:
 
 ```python
@@ -100,7 +102,7 @@ redispatch_id = ct.redispatch(
 )()
 ```
 
-.. note:: Redispatching does not allow altering function signatures.
+One caveat is that redispatching does not allow altering function signatures when redefining tasks.
 
 For more on how the Covalent dispatcher analyzes and runs lattices, see {ref}`Workflow Dispatch` in {doc}`server_concepts`.
 
