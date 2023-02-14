@@ -156,7 +156,7 @@ def _get_result_object_from_new_lattice(
         tg = result_object.lattice.transport_graph
         tg_old = old_result_object.lattice.transport_graph
         reusable_nodes = TransportGraphOps(tg_old).get_reusable_nodes(tg)
-        TransportGraphOps(tg_old).copy_nodes_from(tg, reusable_nodes)
+        TransportGraphOps(tg).copy_nodes_from(tg_old, reusable_nodes)
 
     return result_object
 
