@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added feature to support cancelling workflow dispatches
 - Updating/adding new tests to improve code coverage
 
+### Fixed
+
+- Redispatch bug involving copying reusable nodes from old transport graph to new transport graph.
+
 ### Docs
 
 - Update `AWS Lambda` executor RTD with steps to extend the base executor image for installing custom packages

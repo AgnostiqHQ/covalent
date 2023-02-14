@@ -188,7 +188,7 @@ def test_get_result_object_from_new_lattice(mocker, reuse):
             result_object_mock().lattice.transport_graph
         )
         transport_graph_ops_mock().copy_nodes_from.assert_called_once_with(
-            result_object_mock().lattice.transport_graph,
+            old_result_mock.lattice.transport_graph,
             transport_graph_ops_mock().get_reusable_nodes.return_value,
         )
 
