@@ -31,6 +31,7 @@ Execution
 - :doc:`How to execute an individual electron <./execution/execute_individual_electron>`
 - :doc:`How to execute multiple lattices <./execution/execute_multiple_lattices>`
 - :doc:`How to execute a lattice as an electron inside another lattice <./execution/execute_sublattice>`
+- :doc:`How to redispatch a workflow <./execution/redispatch>`
 - :doc:`How to choose an executor for a subtask <./execution/choosing_executors>`
 - :doc:`How to customize the executor <./execution/creating_custom_executors>`
 ..
