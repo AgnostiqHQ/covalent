@@ -26,15 +26,15 @@ import time
 from pathlib import Path
 
 import covalent as ct
-from covalent.triggers import DirTrigger
+from covalent.triggers import DirTrigger, TimeTrigger
 
 
 def test_dir_trigger():
     Path("./tr_read").mkdir(exist_ok=True)
     Path("./tr_write").mkdir(exist_ok=True)
 
-    read_file_path = str(Path("./tr_read/dir_tr_read.txt").resolve())
-    write_file_path = str(Path("./tr_write/dir_tr_write.txt").resolve())
+    read_file_path = str(Path("./tr_read/trigger_read.txt").resolve())
+    write_file_path = str(Path("./tr_write/trigger_write.txt").resolve())
 
     print(read_file_path)
 
@@ -75,12 +75,40 @@ def test_dir_trigger():
     ct.stop_triggers(dispatch_id)
 
     Path(read_file_path).unlink()
+    Path("./tr_read").rmdir()
     Path(write_file_path).unlink()
+    Path("./tr_write").rmdir()
 
     assert expected_sums == actual_sums
 
-    # assert False
-
 
 def test_time_trigger():
-    pass
+    Path("./tr_write").mkdir(exist_ok=True)
+    write_file_path = str(Path("./tr_write/trigger_write.txt").resolve())
+
+    time_trigger = TimeTrigger(time_gap=2)
+
+    @ct.lattice(triggers=time_trigger)
+    @ct.electron
+    def time_workflow():
+        with open(write_file_path, "r+") as f:
+            last_val = int(f.readlines()[-1])
+            f.write(f"{last_val * 2}\n")
+
+    with open(write_file_path, "w") as f:
+        f.write("2\n")
+
+    dispatch_id = ct.dispatch(time_workflow)()
+
+    expected_val = 32
+    time.sleep(8)
+    ct.stop_triggers(dispatch_id)
+    time.sleep(2)
+
+    with open(write_file_path, "r") as f:
+        actual_val = int(f.readlines()[-1])
+
+    Path(write_file_path).unlink()
+    Path("./tr_write").rmdir()
+
+    assert expected_val == actual_val
