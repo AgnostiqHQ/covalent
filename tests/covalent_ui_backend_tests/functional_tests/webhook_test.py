@@ -50,12 +50,9 @@ def get_mock_result() -> Result:
     """Construct a mock result object corresponding to a lattice."""
 
     workflow = get_mock_simple_workflow()
-
     workflow.build_graph(x="absolute")
     received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
-    result_object = Result(
-        received_workflow, workflow.metadata["results_dir"], "pipeline_workflow"
-    )
+    result_object = Result(received_workflow, "pipeline_workflow")
 
     return result_object
 

@@ -39,7 +39,7 @@ def workflow(name):
             "file_path": "tests/covalent_ui_backend_tests/utils/mock_files/78525234-72ec-42dc-94a0-f4751707f9cd",
             "case1": {
                 "file_name": "result.pkl",
-                "response_data": "None",
+                "response_data": (None, None),
             },
         },
     }

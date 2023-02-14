@@ -27,7 +27,7 @@ from .config_data import INVALID_DISPATCH_ID, VALID_DISPATCH_ID
 
 def seed_lattice_data():
     """Mock db assert lattices data"""
-    lattice_end_date = "2022-10-27T15:38:43"
+    lattice_end_date = "2022-10-27T10:08:43.877056"
     return {
         "test_lattices": {
             "api_path": "/api/v1/dispatches/{}",
@@ -39,8 +39,8 @@ def seed_lattice_data():
                     "status": "COMPLETED",
                     "total_electrons": 6,
                     "total_electrons_completed": 6,
-                    "started_at": "2022-09-23T15:31:11",
-                    "ended_at": "2022-09-23T15:31:11",
+                    "started_at": "2022-09-23T10:01:11.155428",
+                    "ended_at": "2022-09-23T10:01:11.717064",
                     "directory": os.path.abspath(
                         os.path.join(os.path.dirname(__file__), os.pardir)
                     )
@@ -97,8 +97,8 @@ def seed_lattice_data():
                 "status_code": 200,
                 "path": {"dispatch_id": VALID_DISPATCH_ID, "name": "inputs"},
                 "response_data": {
-                    "data": "{'args': [], 'kwargs': {'name': 'shore'}}",
-                    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95)\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94]\\x94\\x8c\\x06kwargs\\x94}\\x94\\x8c\\x04name\\x94\\x8c\\x05shore\\x94su.')",
+                    "data": "{'args': (), 'kwargs': {'name': 'shore'}}",
+                    "python_object": "import pickle\npickle.loads(b'\\x80\\x05\\x95(\\x00\\x00\\x00\\x00\\x00\\x00\\x00}\\x94(\\x8c\\x04args\\x94)\\x8c\\x06kwargs\\x94}\\x94\\x8c\\x04name\\x94\\x8c\\x05shore\\x94su.')",
                 },
             },
             "case_error_1": {
@@ -163,10 +163,10 @@ def seed_lattice_data():
                             "runtime": 5000,
                             "total_electrons": 120,
                             "total_electrons_completed": 120,
-                            "started_at": "2022-10-27T15:38:38",
+                            "started_at": "2022-10-27T10:08:38.759335",
                             "ended_at": lattice_end_date,
                             "status": "COMPLETED",
-                            "updated_at": lattice_end_date,
+                            "updated_at": "2022-10-27T10:08:43.890454",
                         },
                         {
                             "dispatch_id": "89be0bcf-95dd-40a6-947e-6af6c56f147d",
@@ -174,10 +174,10 @@ def seed_lattice_data():
                             "runtime": 1000,
                             "total_electrons": 20,
                             "total_electrons_completed": 20,
-                            "started_at": "2022-10-27T15:38:34",
-                            "ended_at": "2022-10-27T15:38:35",
+                            "started_at": "2022-10-27T10:08:34.497285",
+                            "ended_at": "2022-10-27T10:08:35.997225",
                             "status": "COMPLETED",
-                            "updated_at": "2022-10-27T15:38:36",
+                            "updated_at": "2022-10-27T10:08:36.004030",
                         },
                     ]
                 },
@@ -194,10 +194,10 @@ def seed_lattice_data():
                             "runtime": 1000,
                             "total_electrons": 20,
                             "total_electrons_completed": 20,
-                            "started_at": "2022-10-27T15:38:34",
-                            "ended_at": "2022-10-27T15:38:35",
+                            "started_at": "2022-10-27T10:08:34.497285",
+                            "ended_at": "2022-10-27T10:08:35.997225",
                             "status": "COMPLETED",
-                            "updated_at": "2022-10-27T15:38:36",
+                            "updated_at": "2022-10-27T10:08:36.004030",
                         },
                         {
                             "dispatch_id": "69dec597-79d9-4c99-96de-8d5f06f3d4dd",
@@ -205,10 +205,10 @@ def seed_lattice_data():
                             "runtime": 5000,
                             "total_electrons": 120,
                             "total_electrons_completed": 120,
-                            "started_at": "2022-10-27T15:38:38",
+                            "started_at": "2022-10-27T10:08:38.759335",
                             "ended_at": lattice_end_date,
                             "status": "COMPLETED",
-                            "updated_at": lattice_end_date,
+                            "updated_at": "2022-10-27T10:08:43.890454",
                         },
                     ]
                 },

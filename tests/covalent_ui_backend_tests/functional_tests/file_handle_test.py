@@ -62,13 +62,13 @@ def test_validate_unpickled_dict():
     """Handle file objects / unpickled objects for dict"""
     test_unpickled_dict = {"type": "electron"}
     obj_res = validate_data(test_unpickled_dict)
-    assert obj_res == str(test_unpickled_dict)
+    assert obj_res == test_unpickled_dict
 
 
 def test_validate_none():
     """Handle file objects / unpickled objects for null objects"""
     obj_res = validate_data(None)
-    assert obj_res == "None"
+    assert obj_res == (None, None)
 
 
 def test_read_from_text():

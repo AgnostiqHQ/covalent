@@ -39,14 +39,6 @@ from covalent_ui.api.v1.utils.file_handle import FileHandler, validate_data
 routes: APIRouter = APIRouter()
 
 
-def text_processor(handler: FileHandler, file_name):
-    return handler.read_from_text(file_name)
-
-
-def pickle_processor(handler: FileHandler, file_name):
-    return handler.read_from_pickle(file_name)
-
-
 @routes.get("/{dispatch_id}/electron/{electron_id}", response_model=ElectronResponse)
 def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
     """Get Electron Details

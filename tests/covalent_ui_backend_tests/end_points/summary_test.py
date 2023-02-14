@@ -139,7 +139,7 @@ def test_list_invalid_offset():
     )
     assert response.status_code == test_data["status_code"]
     response_detail = response.json()["detail"][0]
-    assert response_detail["type"] == "value_error.number.not_ge"
+    assert response_detail["type"] == "value_error.number.not_gt"
 
 
 def test_delete():

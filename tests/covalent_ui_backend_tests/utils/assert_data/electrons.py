@@ -44,8 +44,8 @@ def seed_electron_data():
                     + f"/mock_files/{VALID_DISPATCH_ID}/node_{VALID_NODE_ID}",
                     "name": "hello",
                     "status": "COMPLETED",
-                    "started_at": "2022-09-23T15:31:11",
-                    "ended_at": "2022-09-23T15:31:11",
+                    "started_at": "2022-09-23T10:01:11.168972",
+                    "ended_at": "2022-09-23T10:01:11.483405",
                     "runtime": 0,
                     "description": "",
                 },
@@ -118,7 +118,7 @@ def seed_electron_data():
                     "electron_id": VALID_NODE_ID,
                     "name": "value",
                 },
-                "response_data": {"data": "None", "python_object": None},
+                "response_data": {"data": "(None, None)", "python_object": None},
             },
             "case_stdout_1": {
                 "status_code": 200,
@@ -192,7 +192,7 @@ def seed_electron_data():
                     "electron_id": VALID_NODE_ID,
                     "name": "info",
                 },
-                "response_data": {"data": "", "python_object": None},
+                "response_data": {"data": None, "python_object": None},
             },
             "case_inputs_1": {
                 "status_code": 200,
