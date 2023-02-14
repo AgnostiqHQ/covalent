@@ -957,3 +957,4 @@ def test_redispatch_reusing_previous_results_and_new_args():
     result = ct.get_result(redispatch_id, wait=True)
     assert int(result.result) == 1
     assert str(result.status) == "COMPLETED"
+    assert result.get_node_result(0)["start_time"] == result.get_node_result(0)["end_time"]
