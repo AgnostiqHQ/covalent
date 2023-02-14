@@ -22,20 +22,12 @@ from functools import partial
 
 import pytest
 
-from covalent._workflow.transport import _TransportGraph
 from covalent_dispatcher._core.data_modules.job_manager import (
     get_jobs_metadata,
     set_cancel_requested,
     set_cancel_result,
     set_job_handle,
 )
-
-
-def get_mock_tg():
-    tg = _TransportGraph()
-    tg.add_node_by_id(0, job_id=1)
-    tg.add_node_by_id(1, job_id=2)
-    return tg
 
 
 def to_job_ids(dispatch_id, task_ids, task_job_map):

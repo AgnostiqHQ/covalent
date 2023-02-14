@@ -312,10 +312,6 @@ class _TransportGraph:
             "stderr": None,
         }
 
-    def add_node_by_id(self, node_id: int, **attr):
-        self._graph.add_node(node_id, **attr)
-        return node_id
-
     def add_node(self, name: str, function: Callable, metadata: Dict, **attr) -> int:
         """
         Adds a node to the graph.
