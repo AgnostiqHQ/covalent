@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Redispatch bug involving copying reusable nodes from old transport graph to new transport graph.
+- Pennylane tutorial notebook.
 
 ### Docs
 
