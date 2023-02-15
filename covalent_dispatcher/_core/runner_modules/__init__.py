@@ -17,15 +17,3 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
-
-
-class MissingLatticeRecordError(Exception):
-    pass
-
-
-class TaskRuntimeError(Exception):
-    pass
-
-
-class TaskCancelledError(Exception):
-    pass
