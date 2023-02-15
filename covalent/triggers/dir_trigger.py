@@ -49,12 +49,14 @@ class DirTrigger(BaseTrigger):
     """
     Directory or File based trigger which watches for events in said file/dir
     and performs a trigger action whenever they happen.
+
     Args:
         dir_path: Path to the file/dir which is to be observed for events
         event_names: List of event names on which to perform the trigger action.
                      Possible options can be a subset of: `["created", "deleted", "modified", "moved", "closed"]`.
         batch_size: The number of changes to wait for before performing the trigger action, default is 1.
         recursive: Whether to recursively watch the directory, default is False.
+
     Attributes:
         self.dir_path: Path to the file/dir which is to be observed for events
         self.event_names: List of event names on which to perform the trigger action.
@@ -86,8 +88,9 @@ class DirTrigger(BaseTrigger):
         self.recursive = recursive
 
         self.observe_blocks = False
+        self.event_handler = None
 
-    def attach_methods_to_handler(self, event_names: list) -> None:
+    def attach_methods_to_handler(self) -> None:
         """
         Dynamically attaches and overrides the "on_*" methods to the handler
         depending on which ones are requested by the user.
@@ -99,13 +102,13 @@ class DirTrigger(BaseTrigger):
 
         self.n_changes = 0
 
-        def proxy_trigger(*args, **kwargs):
+        def proxy_trigger(_, event):
             self.n_changes += 1
             if self.n_changes == self.batch_size:
                 self.trigger()
                 self.n_changes = 0
 
-        for en in event_names:
+        for en in self.event_names:
             func_name = self.event_handler.supported_event_to_func_names[en]
             proxy_trigger.__name__ = func_name
             setattr(self.event_handler, func_name, MethodType(proxy_trigger, self.event_handler))
@@ -127,7 +130,7 @@ class DirTrigger(BaseTrigger):
         self.event_handler = DirEventHandler()
 
         # Attach methods before scheduling the observer
-        self.attach_methods_to_handler(self.event_names)
+        self.attach_methods_to_handler()
 
         self.observer = Observer()
         self.observer.schedule(self.event_handler, self.dir_path, recursive=self.recursive)
