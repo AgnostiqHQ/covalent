@@ -133,6 +133,7 @@ class DirTrigger(BaseTrigger):
         self.attach_methods_to_handler()
 
         self.observer = Observer()
+        print("Schedule is: ", type(self.observer.schedule))
         self.observer.schedule(self.event_handler, self.dir_path, recursive=self.recursive)
         self.observer.start()
 

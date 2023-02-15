@@ -36,24 +36,57 @@ def event_to_func_names():
     }
 
 
+@pytest.fixture
+def dir_trigger(event_to_func_names):
+    test_dir_path = "test_dir_path"
+    test_event_names = list(event_to_func_names.keys())[:4]
+    return DirTrigger(test_dir_path, test_event_names)
+
+
 def test_event_handler_init():
     dir_event_handler = DirEventHandler()
     for k, v in dir_event_handler.supported_event_to_func_names.items():
         assert v == f"on_{k}"
 
 
-def test_attach_methods_to_handler(mocker, event_to_func_names):
+def test_attach_methods_to_handler(mocker, event_to_func_names, dir_trigger):
     event_handler_mock = mock.Mock()
     event_handler_mock.supported_event_to_func_names = event_to_func_names
 
     mocker.patch("covalent.triggers.DirTrigger.trigger")
     setattr_mock = mocker.patch("covalent.triggers.dir_trigger.setattr")
 
-    test_dir_path = "test_dir_path"
-    test_event_names = list(event_to_func_names.keys())[:4]
-
-    dir_trigger = DirTrigger(test_dir_path, test_event_names)
     dir_trigger.event_handler = event_handler_mock
     dir_trigger.attach_methods_to_handler()
 
-    assert setattr_mock.call_count == len(test_event_names)
+    assert setattr_mock.call_count == len(dir_trigger.event_names)
+
+
+@pytest.mark.parametrize("test_recursive", [True, False])
+def test_observe(mocker, dir_trigger, test_recursive):
+    event_loop_mock = mocker.patch("covalent.triggers.dir_trigger.asyncio.get_running_loop")
+    event_handler_mock = mocker.patch("covalent.triggers.dir_trigger.DirEventHandler")
+    attach_mock = mocker.patch(
+        "covalent.triggers.dir_trigger.DirTrigger.attach_methods_to_handler"
+    )
+    observer_schedule_mock = mocker.patch("covalent.triggers.dir_trigger.Observer.schedule")
+    observer_start_mock = mocker.patch("covalent.triggers.dir_trigger.Observer.start")
+
+    dir_trigger.recursive = test_recursive
+    dir_trigger.observe()
+
+    event_loop_mock.assert_called_once()
+    event_handler_mock.assert_called_once()
+    attach_mock.assert_called_once()
+    observer_schedule_mock.assert_called_once()
+    observer_start_mock.assert_called_once()
+
+
+def test_stop(dir_trigger):
+    observer_mock = mock.Mock()
+
+    dir_trigger.observer = observer_mock
+    dir_trigger.stop()
+
+    observer_mock.stop.assert_called_once()
+    observer_mock.join.assert_called_once()
