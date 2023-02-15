@@ -39,7 +39,7 @@ from covalent._shared_files.defaults import (
     subscript_prefix,
 )
 from covalent_dispatcher._db.datastore import DataStore
-from covalent_dispatcher._db.models import Electron, ElectronDependency, Job, Lattice
+from covalent_dispatcher._db.models import Electron, ElectronDependency, Lattice
 from covalent_dispatcher._db.write_result_to_db import (
     InvalidFileExtension,
     MissingElectronRecordError,
@@ -52,10 +52,10 @@ from covalent_dispatcher._db.write_result_to_db import (
     load_file,
     resolve_electron_id,
     store_file,
-    txn_upsert_electron_dependency_data,
     update_electrons_data,
     update_lattice_completed_electron_num,
     update_lattices_data,
+    upsert_electron_dependency_data,
 )
 
 STORAGE_TYPE = "local"
@@ -209,7 +209,6 @@ def get_electron_kwargs(
     deps_filename=DEPS_FILENAME,
     call_before_filename=CALL_BEFORE_FILENAME,
     call_after_filename=CALL_AFTER_FILENAME,
-    cancel_requested=False,
     created_at=None,
     updated_at=None,
     started_at=None,
@@ -237,7 +236,6 @@ def get_electron_kwargs(
         "deps_filename": deps_filename,
         "call_before_filename": call_before_filename,
         "call_after_filename": call_after_filename,
-        "cancel_requested": cancel_requested,
         "created_at": created_at,
         "updated_at": updated_at,
         "started_at": started_at,
@@ -330,8 +328,7 @@ def test_insert_lattices_data(test_db, mocker):
         assert not rows
 
 
-@pytest.mark.parametrize("cancel_requested", [True, False])
-def test_insert_electrons_data(cancel_requested, test_db, mocker):
+def test_insert_electrons_data(test_db, mocker):
     """Test the function that inserts the electron data to the Electrons table."""
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
@@ -342,7 +339,6 @@ def test_insert_electrons_data(cancel_requested, test_db, mocker):
 
     electron_kwargs = {
         **get_electron_kwargs(
-            cancel_requested=cancel_requested,
             created_at=cur_time,
             updated_at=cur_time,
         )
@@ -362,15 +358,11 @@ def test_insert_electrons_data(cancel_requested, test_db, mocker):
                     assert getattr(electron, key).strftime("%m/%d/%Y, %H:%M:%S") == value.strftime(
                         "%m/%d/%Y, %H:%M:%S"
                     )
-                elif key == "cancel_requested":
-                    continue
                 else:
                     assert getattr(electron, key) == value
             assert electron.is_active
 
-        rows = session.query(Job).all()
-        assert len(rows) == 1
-        assert rows[0].cancel_requested == cancel_requested
+        insert_electrons_data(**electron_kwargs)
 
 
 def test_insert_electrons_data_missing_lattice_record(test_db, mocker):
@@ -484,17 +476,12 @@ def test_upsert_electron_dependency_data(test_db, workflow_lattice, mocker):
         electron_ids.append(insert_electrons_data(**electron_kwargs))
 
     mock_insert = mocker.patch(
-        "covalent_dispatcher._db.write_result_to_db.txn_insert_electron_dependency_data"
+        "covalent_dispatcher._db.write_result_to_db.insert_electron_dependency_data"
     )
 
-    with test_db.session() as session:
-        txn_upsert_electron_dependency_data(
-            session=session, dispatch_id="dispatch_1", lattice=workflow_lattice
-        )
+    upsert_electron_dependency_data(dispatch_id="dispatch_1", lattice=workflow_lattice)
 
-        mock_insert.assert_called_once_with(
-            session=session, dispatch_id="dispatch_1", lattice=workflow_lattice
-        )
+    mock_insert.assert_called_once_with(dispatch_id="dispatch_1", lattice=workflow_lattice)
 
 
 def test_upsert_electron_dependency_data_idempotent(test_db, workflow_lattice, mocker):
@@ -528,12 +515,7 @@ def test_upsert_electron_dependency_data_idempotent(test_db, workflow_lattice, m
     mock_insert = mocker.patch(
         "covalent_dispatcher._db.write_result_to_db.insert_electron_dependency_data"
     )
-
-    with test_db.session() as session:
-        txn_upsert_electron_dependency_data(
-            session=session, dispatch_id="dispatch_1", lattice=workflow_lattice
-        )
-
+    upsert_electron_dependency_data(dispatch_id="dispatch_1", lattice=workflow_lattice)
     mock_insert.assert_not_called()
 
 
@@ -601,10 +583,7 @@ def test_update_electrons_data(test_db, mocker):
         )
 
     insert_electrons_data(
-        **get_electron_kwargs(
-            created_at=dt.now(timezone.utc),
-            updated_at=dt.now(timezone.utc),
-        ),
+        **get_electron_kwargs(created_at=dt.now(timezone.utc), updated_at=dt.now(timezone.utc)),
     )
     cur_time = dt.now(timezone.utc)
     update_electrons_data(

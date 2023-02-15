@@ -7,11 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Added
-
-- Added feature to support cancelling workflow dispatches
-- Updating/adding new tests to improve code coverage
-
 ### Fixed
 
 - UI crashing if time values are null.

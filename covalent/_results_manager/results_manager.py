@@ -201,31 +201,23 @@ def sync(
         )
 
 
-def cancel(dispatch_id: str, task_ids: List[int] = None, dispatcher_addr: str = None) -> str:
+def cancel(
+    dispatch_id: str,
+    dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
+) -> str:
     """
     Cancel a running dispatch.
 
     Args:
         dispatch_id: The dispatch id of the dispatch to be cancelled.
-        dispatcher_addr: Dispatcher server address, if None then defaults to the address set in Covalent's config.
+        dispatcher: The address to the dispatcher in the form of hostname:port, e.g. "localhost:8080".
 
     Returns:
         None
     """
 
-    if dispatcher_addr is None:
-        dispatcher_addr = (
-            "http://" + get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
-        )
+    url = "http://" + dispatcher + "/api/cancel"
 
-    if task_ids is None:
-        task_ids = []
-
-    url = f"{dispatcher_addr}/api/cancel"
-
-    if isinstance(task_ids, int):
-        task_ids = [task_ids]
-
-    r = requests.post(url, json={"dispatch_id": dispatch_id, "task_ids": task_ids})
+    r = requests.post(url, data=dispatch_id.encode("utf-8"))
     r.raise_for_status()
     return r.content.decode("utf-8").strip().replace('"', "")

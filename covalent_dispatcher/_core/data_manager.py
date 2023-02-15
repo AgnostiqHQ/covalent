@@ -251,4 +251,4 @@ async def _update_parent_electron(result_object: Result):
 
 def upsert_lattice_data(dispatch_id: str):
     result_object = get_result_object(dispatch_id)
-    upsert.lattice_data(result_object)
+    upsert._lattice_data(result_object)

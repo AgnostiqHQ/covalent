@@ -21,4 +21,4 @@
 """Import shared utils."""
 
 from .defaults import DefaultMetadataValues
-from .exceptions import TaskCancelledError, TaskRuntimeError
+from .exceptions import TaskRuntimeError

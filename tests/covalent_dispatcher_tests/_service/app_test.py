@@ -62,11 +62,6 @@ class MockDataStore:
 
 
 @pytest.fixture
-def app():
-    yield fast_app
-
-
-@pytest.fixture
 def client():
     with TestClient(fast_app) as c:
         yield c
@@ -102,10 +97,9 @@ async def test_submit_exception(mocker, client):
     """Test the submit endpoint."""
     mock_data = json.dumps({}).encode("utf-8")
     mocker.patch("covalent_dispatcher.run_dispatcher", side_effect=Exception("mock"))
-    with pytest.raises(Exception):
-        response = client.post("/api/submit", data=mock_data)
-        assert response.status_code == 400
-        assert response.json()["detail"] == "Failed to submit workflow: mock"
+    response = client.post("/api/submit", data=mock_data)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Failed to submit workflow: mock"
 
 
 @pytest.mark.asyncio
@@ -134,22 +128,6 @@ async def test_redispatch(mocker, client, is_pending):
     )
 
 
-def test_cancel_dispatch(mocker, app, client):
-    mocker.patch("covalent_dispatcher.cancel_running_dispatch")
-    response = client.post(
-        "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
-    )
-    assert response.json() == f"Dispatch {DISPATCH_ID} cancelled."
-
-
-def test_cancel_tasks(mocker, app, client):
-    mocker.patch("covalent_dispatcher.cancel_running_dispatch")
-    response = client.post(
-        "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": [0, 1]})
-    )
-    assert response.json() == f"Cancelled tasks [0, 1] in dispatch {DISPATCH_ID}."
-
-
 @pytest.mark.asyncio
 async def test_redispatch_exception(mocker, client):
     """Test the redispatch endpoint."""
@@ -167,11 +145,9 @@ async def test_cancel(mocker, client):
     cancel_running_dispatch_mock = mocker.patch(
         "covalent_dispatcher.cancel_running_dispatch", return_value=DISPATCH_ID
     )
-    response = client.post(
-        "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
-    )
+    response = client.post("/api/cancel", data=DISPATCH_ID.encode("utf-8"))
     assert response.json() == f"Dispatch {DISPATCH_ID} cancelled."
-    cancel_running_dispatch_mock.assert_called_once_with(DISPATCH_ID, [])
+    cancel_running_dispatch_mock.assert_called_once_with(DISPATCH_ID)
 
 
 @pytest.mark.asyncio
@@ -180,14 +156,10 @@ async def test_cancel_exception(mocker, client):
     cancel_running_dispatch_mock = mocker.patch(
         "covalent_dispatcher.cancel_running_dispatch", side_effect=Exception("mock")
     )
-
-    with pytest.raises(Exception):
-        response = client.post(
-            "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
-        )
-        assert response.status_code == 400
-        assert response.json()["detail"] == "Failed to cancel workflow: mock"
-        cancel_running_dispatch_mock.assert_called_once_with(DISPATCH_ID, [])
+    response = client.post("/api/cancel", data=DISPATCH_ID.encode("utf-8"))
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Failed to cancel workflow: mock"
+    cancel_running_dispatch_mock.assert_called_once_with(DISPATCH_ID)
 
 
 def test_get_result(mocker, client, test_db_file):

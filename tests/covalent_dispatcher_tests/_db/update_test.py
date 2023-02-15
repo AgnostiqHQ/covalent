@@ -32,7 +32,7 @@ from covalent._workflow.lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
 from covalent_dispatcher._db import update, upsert
 from covalent_dispatcher._db.datastore import DataStore
-from covalent_dispatcher._db.models import Electron, ElectronDependency, Job, Lattice
+from covalent_dispatcher._db.models import Electron, ElectronDependency, Lattice
 from covalent_dispatcher._db.write_result_to_db import load_file
 from covalent_dispatcher._service.app import _result_from
 
@@ -78,25 +78,6 @@ def result_1():
 
 
 @pytest.fixture
-def result_2():
-    @ct.electron(executor="dask")
-    def task(x):
-        return x
-
-    @ct.lattice(executor="local", workflow_executor="local")
-    def workflow_2(x):
-        return x
-
-    Path(f"{TEMP_RESULTS_DIR}/dispatch_1").mkdir(parents=True, exist_ok=True)
-    workflow_2.build_graph(x=2)
-    received_lattice = LatticeClass.deserialize_from_json(workflow_2.serialize_to_json())
-    result = Result(received_lattice, dispatch_id="dispatch_2")
-
-    result._initialize_nodes()
-    return result
-
-
-@pytest.fixture
 def test_db():
     """Instantiate and return an in-memory database."""
 
@@ -108,6 +89,7 @@ def test_db():
 
 def test_update_node(test_db, result_1, mocker):
     """Test the node update method."""
+
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     update.persist(result_1)
@@ -334,42 +316,30 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
     teardown_temp_results_dir(dispatch_id="dispatch_1")
 
 
-def test_result_persist_subworkflow_1(test_db, result_1, result_2, mocker):
+def test_result_persist_subworkflow_1(test_db, result_1, mocker):
     """Test the persist method for the Result object when passed an electron_id"""
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    update.persist(result_1)
-    update.persist(result_2, electron_id=1)
-
-    with test_db.session() as session:
-        electron = session.query(Electron).where(Electron.id == 1).first()
-        job_record = session.query(Job).where(Job.id == Electron.job_id).first()
-        job_record.cancel_requested = True
+    update.persist(result_1, electron_id=2)
 
     # Query lattice / electron / electron dependency
     with test_db.session() as session:
-        lattice_row = session.query(Lattice).where(Lattice.dispatch_id == "dispatch_2").first()
-        job_records = (
-            session.query(Electron, Job)
-            .where(Job.id == Electron.job_id, Electron.parent_lattice_id == lattice_row.id)
-            .all()
-        )
+        lattice_row = session.query(Lattice).first()
+        electron_rows = session.query(Electron).all()
+        electron_dependency_rows = session.query(ElectronDependency).all()
 
         # Check that lattice record is as expected
-        assert lattice_row.dispatch_id == "dispatch_2"
+        assert lattice_row.dispatch_id == "dispatch_1"
         assert isinstance(lattice_row.created_at, dt)
         assert lattice_row.started_at is None
         assert isinstance(lattice_row.updated_at, dt) and isinstance(lattice_row.created_at, dt)
         assert lattice_row.completed_at is None
         assert lattice_row.status == "NEW_OBJECT"
-        assert lattice_row.name == "workflow_2"
-        assert lattice_row.electron_id == 1
+        assert lattice_row.name == "workflow_1"
+        assert lattice_row.electron_id == 2
         assert lattice_row.executor == "local"
         assert lattice_row.workflow_executor == "local"
-
-        for job in job_records:
-            assert job.cancel_requested is True
 
 
 def test_result_persist_rehydrate(test_db, result_1, mocker):
