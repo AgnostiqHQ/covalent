@@ -43,6 +43,7 @@ class TimeTrigger(BaseTrigger):
     ):
         super().__init__(lattice_dispatch_id, dispatcher_addr, triggers_server_addr)
         self.time_gap = time_gap
+        self.stop_flag = None
 
     def observe(self) -> None:
         """

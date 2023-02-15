@@ -17,3 +17,57 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+
+from functools import partial
+from unittest import mock
+
+import pytest
+
+from covalent.triggers import TimeTrigger
+
+# global counter
+counter = 0
+
+
+@pytest.fixture
+def time_trigger():
+    return TimeTrigger(None)
+
+
+def is_set_side_effect(set_stop):
+    global counter
+    if set_stop or counter == 1:
+        return True
+    counter += 1
+    return False
+
+
+@pytest.mark.parametrize("set_stop", [False, True])
+def test_observe(mocker, time_trigger, set_stop):
+    test_time_gap = 2
+
+    event_is_set_mock = mocker.patch(
+        "covalent.triggers.time_trigger.Event.is_set",
+        side_effect=partial(is_set_side_effect, set_stop),
+    )
+    sleep_mock = mocker.patch("time.sleep")
+    trigger_mock = mocker.patch("covalent.triggers.TimeTrigger.trigger")
+
+    time_trigger.time_gap = test_time_gap
+
+    time_trigger.observe()
+
+    if not set_stop:
+        event_is_set_mock.call_count == 2
+        sleep_mock.assert_called_with(test_time_gap)
+        trigger_mock.assert_called_once()
+    else:
+        event_is_set_mock.assert_called_once()
+
+
+def test_stop(time_trigger):
+    time_trigger.stop_flag = mock.Mock()
+
+    time_trigger.stop()
+
+    time_trigger.stop_flag.set.assert_called_once()
