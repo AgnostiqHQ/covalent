@@ -378,14 +378,14 @@ class _TransportGraph:
         Args:
             node_key: The node id.
             value_key: The value key.
-            default_none: Return None if KeyError if set to True
 
         Returns:
             value: The value from the node stored at the value key.
 
         Raises:
-            KeyError: If the value key or node key is not found.
+            KeyError: If the value key is not found.
         """
+
         return self._graph.nodes[node_key][value_key]
 
     def set_node_value(self, node_key: int, value_key: int, value: Any) -> None:

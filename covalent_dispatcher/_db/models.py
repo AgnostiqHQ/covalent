@@ -188,9 +188,6 @@ class Electron(Base):
     # Name of the column which signifies soft deletion of the electrons corresponding to a lattice
     is_active = Column(Boolean, nullable=False, default=True)
 
-    # Foreign key reference to Jobs table
-    job_id = Column(Integer, ForeignKey("jobs.id", name="job_id_link"), nullable=False)
-
     # Timestamps
     created_at = Column(DateTime, nullable=False, server_default=func.now())
     updated_at = Column(DateTime, nullable=False, onupdate=func.now(), server_default=func.now())
@@ -203,12 +200,10 @@ class ElectronDependency(Base):
     id = Column(Integer, primary_key=True)
 
     # Unique ID of electron
-    electron_id = Column(Integer, ForeignKey("electrons.id", name="electron_link"), nullable=False)
+    electron_id = Column(Integer, nullable=False)
 
     # Unique ID of the electron's parent
-    parent_electron_id = Column(
-        Integer, ForeignKey("electrons.id", name="electron_link"), nullable=False
-    )
+    parent_electron_id = Column(Integer, nullable=False)
 
     edge_name = Column(Text, nullable=False)
 
@@ -223,18 +218,3 @@ class ElectronDependency(Base):
 
     updated_at = Column(DateTime, nullable=True, onupdate=func.now(), server_default=func.now())
     created_at = Column(DateTime, nullable=False, server_default=func.now())
-
-
-class Job(Base):
-    __tablename__ = "jobs"
-    id = Column(Integer, primary_key=True)
-
-    # Indicates whether the job has been requested to be cancelled
-    cancel_requested = Column(Boolean, nullable=False, default=False)
-
-    # Indicates whether the task cancellation succeeded (return value
-    # of Executor.cancel())
-    cancel_successful = Column(Boolean, nullable=False, default=False)
-
-    # JSON-serialized identifier for job
-    job_handle = Column(Text, nullable=False, default="null")
