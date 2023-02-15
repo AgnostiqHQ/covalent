@@ -204,6 +204,9 @@ class ConfigManager:
             data[keys[-1]] = value
 
 
+_config_manager = ConfigManager()
+
+
 def set_config(new_config: Union[Dict, str], new_value: Any = None) -> None:
     """
     Update the configuration.
@@ -218,7 +221,7 @@ def set_config(new_config: Union[Dict, str], new_value: Any = None) -> None:
     Returns:
         None
     """
-    cm = ConfigManager()
+    cm = _config_manager
 
     if isinstance(new_config, str):
         cm.set(new_config, new_value)
@@ -245,7 +248,7 @@ def get_config(entries: Union[str, List] = None) -> Union[Dict, Union[str, int]]
     """
 
     entries = entries or []
-    cm = ConfigManager()
+    cm = _config_manager
 
     if isinstance(entries, List) and len(entries) == 0:
         # If no arguments are passed, return the full configuration as a dict
@@ -272,7 +275,7 @@ def reload_config() -> None:
     Returns:
         None
     """
-    cm = ConfigManager()
+    cm = _config_manager
     cm.read_config()
 
 
@@ -290,5 +293,5 @@ def update_config(new_entries: Optional[Dict] = None, override_existing: bool = 
     Returns:
         None
     """
-    cm = ConfigManager()
+    cm = _config_manager
     cm.update_config(new_entries, override_existing)
