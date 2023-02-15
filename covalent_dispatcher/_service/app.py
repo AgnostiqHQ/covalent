@@ -59,7 +59,7 @@ async def submit(request: Request, disable_run: bool = False) -> UUID:
         data = await request.json()
         data = json.dumps(data).encode("utf-8")
 
-        return await dispatcher.run_dispatcher(data)
+        return await dispatcher.run_dispatcher(data, disable_run)
     except Exception as e:
         raise HTTPException(
             status_code=400,
