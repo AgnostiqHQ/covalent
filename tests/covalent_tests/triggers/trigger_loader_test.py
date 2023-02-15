@@ -65,3 +65,25 @@ def test_trigger_loader_new(mocker, trigger_loader, attr_is_present):
         assert new_trigger_loader != trigger_loader
     else:
         assert new_trigger_loader == trigger_loader
+
+
+def test_trigger_loader_get_and_set(mocker, trigger_loader):
+    test_dict = {
+        "a": 0,
+        "b": 1,
+        "c": 2,
+    }
+
+    trigger_loader.available_triggers = test_dict.copy()
+
+    # Test get:
+    expected_val = test_dict["a"]
+    actual_val = trigger_loader["a"]
+
+    assert expected_val == actual_val
+
+    # Test set:
+    test_k, test_v = "b", 5
+    trigger_loader[test_k] = test_v
+
+    assert trigger_loader.available_triggers[test_k] == test_v
