@@ -27,6 +27,7 @@ This is a plugin executor module; it is loaded if found and properly structured.
 import asyncio
 import json
 import os
+from pathlib import Path
 from concurrent.futures import ProcessPoolExecutor
 from typing import Any, Callable, Dict, List
 
@@ -103,6 +104,8 @@ class LocalExecutor(BaseExecutor):
         dispatcher_addr = get_config("dispatcher.address")
         dispatcher_port = get_config("dispatcher.port")
         server_url = format_server_url()
+
+        Path(self.cache_dir).mkdir(parents=True, exist_ok=True)
 
         app_log.debug(f"Running task group {dispatch_id}:{task_ids}")
         future = proc_pool.submit(
