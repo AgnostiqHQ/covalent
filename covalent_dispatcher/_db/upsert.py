@@ -180,7 +180,6 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
 
         node_name = tg.get_node_value(node_id, "name")
 
-        value_keys = ["function_string", "value", "stdout", "stderr", "error", "output"]
         try:
             function_string = tg.get_node_value(node_id, "function_string")
         except KeyError:

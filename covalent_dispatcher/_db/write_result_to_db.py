@@ -376,7 +376,6 @@ def update_electrons_data(
                 completed_at=completed_at,
             )
         )
-        # session.commit()
 
 
 def get_electron_type(node_name: str) -> str:

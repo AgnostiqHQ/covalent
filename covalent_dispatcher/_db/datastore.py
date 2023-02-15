@@ -97,7 +97,6 @@ class DataStore:
 
     @contextmanager
     def session(self) -> Generator[Session, None, None]:
-        # Session.begin() yields a session object with autocommit=True (no explicit session.commit needed)
         with self.Session.begin() as session:
             yield session
 

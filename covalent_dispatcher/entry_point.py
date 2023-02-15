@@ -26,6 +26,8 @@ from typing import List
 
 from covalent._shared_files import logger
 
+from ._core import cancel_dispatch
+
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
@@ -81,7 +83,5 @@ async def cancel_running_dispatch(dispatch_id: str, task_ids: List[int] = None) 
 
     if task_ids is None:
         task_ids = []
-
-    from ._core import cancel_dispatch
 
     await cancel_dispatch(dispatch_id, task_ids)

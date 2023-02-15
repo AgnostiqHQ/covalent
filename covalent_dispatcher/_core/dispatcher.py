@@ -139,7 +139,7 @@ async def _get_initial_tasks_and_deps(result_object: Result) -> Tuple[int, int, 
     return num_tasks, ready_nodes, pending_parents
 
 
-# Domain: dispatchhttps://github.com/AgnostiqHQ/covalent/pull/1495er
+# Domain: dispatcher
 async def _submit_task(result_object, node_id):
     # Get name of the node for the current task
     node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")

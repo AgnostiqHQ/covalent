@@ -378,7 +378,6 @@ class _TransportGraph:
         Args:
             node_key: The node id.
             value_key: The value key.
-            default_none: Return None if KeyError if set to True
 
         Returns:
             value: The value from the node stored at the value key.
