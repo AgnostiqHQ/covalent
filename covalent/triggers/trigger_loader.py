@@ -32,7 +32,7 @@ class TriggerLoader:
 
     def __new__(cls):
         if not hasattr(cls, "instance"):
-            cls.instance = super(TriggerLoader, cls).__new__(cls)
+            cls.instance = super().__new__(cls)
         return cls.instance
 
     def __getitem__(self, key):

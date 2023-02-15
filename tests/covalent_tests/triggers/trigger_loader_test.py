@@ -19,6 +19,8 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+from unittest import mock
+
 import pytest
 
 from covalent.triggers import BaseTrigger, DirTrigger, TimeTrigger
@@ -30,7 +32,7 @@ def trigger_loader():
     return TriggerLoader()
 
 
-def test_trigger_loader_init(mocker, trigger_loader):
+def test_trigger_loader_init(trigger_loader):
     expected_keys = [BaseTrigger.__name__, DirTrigger.__name__, TimeTrigger.__name__]
 
     expected_values = [BaseTrigger, DirTrigger, TimeTrigger]
@@ -44,3 +46,22 @@ def test_trigger_loader_init(mocker, trigger_loader):
         expected_values[i] in trigger_loader.available_triggers.values()
         for i in range(len(expected_values))
     )
+
+
+@pytest.mark.parametrize("attr_is_present", [True, False])
+def test_trigger_loader_new(mocker, trigger_loader, attr_is_present):
+    super_mock = mock.MagicMock()
+    mock.patch("covalent.triggers.trigger_loader.super", super_mock)
+
+    mocker.patch("covalent.triggers.trigger_loader.hasattr", return_value=attr_is_present)
+    super_mock = mocker.patch(
+        "covalent.triggers.trigger_loader.super", return_value=super(TriggerLoader, trigger_loader)
+    )
+
+    new_trigger_loader = TriggerLoader()
+
+    if not attr_is_present:
+        super_mock.assert_called_once()
+        assert new_trigger_loader != trigger_loader
+    else:
+        assert new_trigger_loader == trigger_loader
