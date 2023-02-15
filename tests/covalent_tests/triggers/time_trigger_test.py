@@ -25,7 +25,6 @@ import pytest
 
 from covalent.triggers import TimeTrigger
 
-# global counter
 counter = 0
 
 
