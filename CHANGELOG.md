@@ -15,9 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Redispatch bug involving copying reusable nodes from old transport graph to new transport graph.
+- Pennylane tutorial notebook.
 
 ### Docs
 
+- Redispatch API section.
+- Add how to for redispatch.
+- Mention redispatch in the concepts section.
 - Update `AWS Lambda` executor RTD with steps to extend the base executor image for installing custom packages
 
 ### Changed
