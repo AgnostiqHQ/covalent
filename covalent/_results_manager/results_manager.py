@@ -201,10 +201,7 @@ def sync(
         )
 
 
-def cancel(
-    dispatch_id: str,
-    dispatcher_addr: str = None,
-) -> str:
+def cancel(dispatch_id: str, task_ids: List[int] = None, dispatcher_addr: str = None) -> str:
     """
     Cancel a running dispatch.
 
@@ -221,6 +218,14 @@ def cancel(
             "http://" + get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
         )
 
-    r = requests.post(dispatcher_addr, data=dispatch_id.encode("utf-8"))
+    if task_ids is None:
+        task_ids = []
+
+    url = f"{dispatcher_addr}/api/cancel"
+
+    if isinstance(task_ids, int):
+        task_ids = [task_ids]
+
+    r = requests.post(url, json={"dispatch_id": dispatch_id, "task_ids": task_ids})
     r.raise_for_status()
     return r.content.decode("utf-8").strip().replace('"', "")

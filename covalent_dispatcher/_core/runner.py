@@ -22,8 +22,10 @@
 Defines the core functionality of the runner
 """
 
+import asyncio
 import json
 import traceback
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from functools import partial
 from typing import Any, Dict, List, Tuple
@@ -43,10 +45,14 @@ from .._db import upsert
 from .._db.write_result_to_db import get_sublattice_electron_id
 from . import data_manager as datasvc
 from . import dispatcher
+from .data_modules.job_manager import get_jobs_metadata, set_cancel_result
+from .runner_modules import executor_proxy
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 debug_mode = get_config("sdk.log_level") == "debug"
+
+_cancel_threadpool = ThreadPoolExecutor()
 
 
 # This is to be run out-of-process
@@ -150,6 +156,15 @@ async def _run_abstract_task(
     timestamp = datetime.now(timezone.utc)
 
     try:
+        cancel_req = await _get_cancel_requested(dispatch_id, node_id)
+        if cancel_req:
+            app_log.debug(f"Don't run cancelled task {dispatch_id}:{node_id}")
+            return datasvc.generate_node_result(
+                node_id=node_id,
+                start_time=timestamp,
+                end_time=timestamp,
+                status=Result.CANCELLED,
+            )
         serialized_callable = result_object.lattice.transport_graph.get_node_value(
             node_id, "function"
         )
@@ -239,6 +254,7 @@ async def _run_task(
         # the executor is determined during scheduling and provided in the execution metadata
         executor = _executor_manager.get_executor(short_name)
         executor.from_dict(object_dict)
+        executor._init_runtime(loop=asyncio.get_running_loop())
     except Exception as ex:
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
         app_log.debug("Exception when trying to instantiate executor:")
@@ -280,7 +296,9 @@ async def _run_task(
             app_log.debug(f"Executing task {node_name}")
             assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
 
-            output, stdout, stderr, exception_raised = await executor._execute(
+            asyncio.create_task(executor_proxy.watch(dispatch_id, node_id, executor))
+
+            output, stdout, stderr, status = await executor._execute(
                 function=assembled_callable,
                 args=inputs["args"],
                 kwargs=inputs["kwargs"],
@@ -288,8 +306,6 @@ async def _run_task(
                 results_dir=results_dir,
                 node_id=node_id,
             )
-
-            status = Result.FAILED if exception_raised else Result.COMPLETED
 
             node_result = datasvc.generate_node_result(
                 node_id=node_id,
@@ -440,7 +456,7 @@ async def _postprocess_workflow(result_object: Result) -> Result:
     post_processor = [pp_executor, pp_executor_data]
 
     result_object._status = Result.POSTPROCESSING
-    upsert._lattice_data(result_object)
+    upsert.lattice_data(result_object)
 
     app_log.debug(f"Preparing to post-process workflow {result_object.dispatch_id}")
 
@@ -448,7 +464,7 @@ async def _postprocess_workflow(result_object: Result) -> Result:
         app_log.debug("Workflow to be postprocessed client side")
         result_object._status = Result.PENDING_POSTPROCESSING
         result_object._end_time = datetime.now(timezone.utc)
-        upsert._lattice_data(result_object)
+        upsert.lattice_data(result_object)
         return result_object
 
     post_processing_inputs = {
@@ -480,7 +496,7 @@ async def _postprocess_workflow(result_object: Result) -> Result:
         result_object._status = Result.POSTPROCESSING_FAILED
         result_object._error = f"Post-processing failed: {error_msg}"
         result_object._end_time = datetime.now(timezone.utc)
-        upsert._lattice_data(result_object)
+        upsert.lattice_data(result_object)
 
         app_log.debug("Returning from _postprocess_workflow")
         return result_object
@@ -499,3 +515,52 @@ async def _postprocess_workflow(result_object: Result) -> Result:
 async def postprocess_workflow(dispatch_id: str) -> Result:
     result_object = datasvc.get_result_object(dispatch_id)
     return await _postprocess_workflow(result_object)
+
+
+async def _cancel_task(dispatch_id, task_id: int, executor, executor_data: Dict, job_handle: str):
+    app_log.debug(f"Cancel task {task_id} using executor {executor}, {executor_data}")
+    app_log.debug(f"job_handle: {job_handle}")
+
+    try:
+        executor = _executor_manager.get_executor(executor)
+        executor.from_dict(executor_data)
+        executor._init_runtime(loop=asyncio.get_running_loop(), cancel_pool=_cancel_threadpool)
+
+        task_metadata = {"dispatch_id": dispatch_id, "node_id": task_id}
+
+        cancel_job_result = await executor._cancel(task_metadata, json.loads(job_handle))
+    except Exception as ex:
+        app_log.debug(f"Execption when cancel task {dispatch_id}:{task_id}: {ex}")
+        cancel_job_result = False
+
+    await set_cancel_result(dispatch_id, task_id, cancel_job_result)
+    return cancel_job_result
+
+
+async def cancel_tasks(dispatch_id: str, task_ids: List[int]):
+    job_metadata = await get_jobs_metadata(dispatch_id, task_ids)
+    node_metadata = _get_metadata_for_nodes(dispatch_id, task_ids)
+
+    def to_cancel_kwargs(i, node_id):
+        return {
+            "task_id": node_id,
+            "executor": node_metadata[i]["executor"],
+            "executor_data": node_metadata[i]["executor_data"],
+            "job_handle": job_metadata[i]["job_handle"],
+        }
+
+    cancel_task_kwargs = [to_cancel_kwargs(i, x) for i, x in enumerate(task_ids)]
+
+    for kwargs in cancel_task_kwargs:
+        asyncio.create_task(_cancel_task(dispatch_id, **kwargs))
+
+
+def _get_metadata_for_nodes(dispatch_id: str, node_ids: list):
+    res = datasvc.get_result_object(dispatch_id)
+    tg = res.lattice.transport_graph
+    return list(map(lambda x: tg.get_node_value(x, "metadata"), node_ids))
+
+
+async def _get_cancel_requested(dispatch_id: str, task_id: int):
+    records = await get_jobs_metadata(dispatch_id, [task_id])
+    return records[0]["cancel_requested"]

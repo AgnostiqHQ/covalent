@@ -73,7 +73,8 @@ async def test_run_redispatch(mocker, is_pending):
     run_dispatch_mock.assert_called_once_with(redispatch_id)
 
 
-def test_cancel_running_dispatch(mocker):
-    mock_cancel_workflow = mocker.patch("covalent_dispatcher._core.cancel_workflow")
-    cancel_running_dispatch(DISPATCH_ID)
-    mock_cancel_workflow.assert_called_once_with(DISPATCH_ID)
+@pytest.mark.asyncio
+async def test_cancel_running_dispatch(mocker):
+    mock_cancel_workflow = mocker.patch("covalent_dispatcher._core.cancel_dispatch")
+    await cancel_running_dispatch(DISPATCH_ID)
+    mock_cancel_workflow.assert_awaited_once_with(DISPATCH_ID, [])
