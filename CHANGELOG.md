@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated pre-commit hook versions
 - Updated codecov upload steps in tests workflow to fail if upload to codecov fails
+- Lowering number of jest workers as an attempt to fix flaky UI functional tests
 
 ## [0.217.0-rc.0] - 2023-02-12
 
