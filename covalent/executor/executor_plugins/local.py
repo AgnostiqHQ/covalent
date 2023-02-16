@@ -60,6 +60,18 @@ class LocalExecutor(BaseExecutor):
     """
 
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
+        """
+        Execute the function locally
+
+        Arg(s)
+            function: Function to be executed
+            args: Arguments passed to the function
+            kwargs: Keyword arguments passed to the function
+            task_metadata: Metadata of the task to be executed
+
+        Return(s)
+            Task output
+        """
         app_log.debug(f"Running function {function} locally")
 
         self.set_job_handle(42)

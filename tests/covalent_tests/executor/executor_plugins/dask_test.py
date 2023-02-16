@@ -115,6 +115,9 @@ def test_dask_executor_run(mocker):
 
 
 def test_dask_executor_run_cancel_requested(mocker):
+    """
+    Test dask executor cancel request
+    """
     import io
     import sys
 
@@ -183,9 +186,9 @@ def test_dask_executor_run_exception_handling(mocker):
 
 
 def test_dask_app_log_debug_when_cancel_requested(mocker):
-    import io
-    import sys
-
+    """
+    Test logging when task cancellation is requested
+    """
     from dask.distributed import LocalCluster
 
     from covalent.executor import DaskExecutor
@@ -216,6 +219,9 @@ def test_dask_app_log_debug_when_cancel_requested(mocker):
 
 
 def test_dask_task_cancel(mocker):
+    """
+    Test dask task cancellation method
+    """
     from dask.distributed import LocalCluster
 
     from covalent.executor import DaskExecutor

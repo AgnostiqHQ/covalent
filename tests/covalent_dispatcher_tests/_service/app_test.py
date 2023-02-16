@@ -101,10 +101,9 @@ async def test_submit_exception(mocker, client):
     """Test the submit endpoint."""
     mock_data = json.dumps({}).encode("utf-8")
     mocker.patch("covalent_dispatcher.run_dispatcher", side_effect=Exception("mock"))
-    with pytest.raises(Exception):
-        response = client.post("/api/submit", data=mock_data)
-        assert response.status_code == 400
-        assert response.json()["detail"] == "Failed to submit workflow: mock"
+    response = client.post("/api/submit", data=mock_data)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Failed to submit workflow: mock"
 
 
 @pytest.mark.asyncio
@@ -133,6 +132,9 @@ async def test_redispatch(mocker, client):
 
 
 def test_cancel_dispatch(mocker, app, client):
+    """
+    Test cancelling dispatch
+    """
     mocker.patch("covalent_dispatcher.cancel_running_dispatch")
     response = client.post(
         "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
@@ -141,6 +143,9 @@ def test_cancel_dispatch(mocker, app, client):
 
 
 def test_cancel_tasks(mocker, app, client):
+    """
+    Test cancelling tasks within a lattice after dispatch
+    """
     mocker.patch("covalent_dispatcher.cancel_running_dispatch")
     response = client.post(
         "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": [0, 1]})

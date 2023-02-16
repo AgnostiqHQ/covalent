@@ -30,14 +30,14 @@ from covalent._shared_files.config import get_config
 
 from . import models
 from .datastore import workflow_db
-from .jobdb import txn_get_job_record
+from .jobdb import transaction_get_job_record
 from .write_result_to_db import (
     get_electron_type,
     store_file,
-    txn_insert_electrons_data,
-    txn_insert_lattices_data,
-    txn_update_lattices_data,
-    txn_upsert_electron_dependency_data,
+    transaction_insert_electrons_data,
+    transaction_insert_lattices_data,
+    transaction_update_lattices_data,
+    transaction_upsert_electron_dependency_data,
     update_electrons_data,
     update_lattice_completed_electron_num,
 )
@@ -75,7 +75,18 @@ LATTICE_LATTICE_IMPORTS_FILENAME = "lattice_imports.pkl"
 LATTICE_STORAGE_TYPE = "local"
 
 
-def _lattice_data(session: Session, result: Result, electron_id: int = None):
+def _lattice_data(session: Session, result: Result, electron_id: int = None) -> None:
+    """
+    Private method to update lattice data in database
+
+    Arg(s)
+        session: SQLalchemy session object
+        result: Result object associated with the lattice
+        electron_id: electron id in the lattice
+
+    Return(s)
+        None
+    """
     lattice_exists = (
         session.query(models.Lattice)
         .where(models.Lattice.dispatch_id == result.dispatch_id)
@@ -150,7 +161,7 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None):
             "started_at": result.start_time,
             "completed_at": result.end_time,
         }
-        txn_insert_lattices_data(session=session, **lattice_record_kwarg)
+        transaction_insert_lattices_data(session=session, **lattice_record_kwarg)
 
     else:
         lattice_record_kwarg = {
@@ -161,12 +172,20 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None):
             "started_at": result.start_time,
             "completed_at": result.end_time,
         }
-        txn_update_lattices_data(session=session, **lattice_record_kwarg)
+        transaction_update_lattices_data(session=session, **lattice_record_kwarg)
 
 
 def _electron_data(session: Session, result: Result, cancel_requested: bool = False):
     """
-    Update electron data
+    Update electron data in database
+
+    Arg(s)
+        session: SQLalchemy session object
+        result: Result object associated with the lattice
+        cancel_requested: Boolean indicating whether electron was requested to be cancelled
+
+    Return(s)
+        None
     """
     tg = result.lattice.transport_graph
     dirty_nodes = set(tg.dirty_nodes)
@@ -277,7 +296,7 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
                 "started_at": started_at,
                 "completed_at": completed_at,
             }
-            txn_insert_electrons_data(session=session, **electron_record_kwarg)
+            transaction_insert_electrons_data(session=session, **electron_record_kwarg)
         else:
             electron_record_kwarg = {
                 "parent_dispatch_id": result.dispatch_id,
@@ -293,25 +312,57 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
                 update_lattice_completed_electron_num(result.dispatch_id)
 
 
-def lattice_data(result: Result, electron_id: int = None):
+def lattice_data(result: Result, electron_id: int = None) -> None:
+    """
+    Upsert the lattice data to database
+
+    Arg(s)
+        result: Result object associated with lattice
+        electron_id: ID of the electron within the lattice
+
+    Return(s)
+        None
+    """
     with workflow_db.session() as session:
         _lattice_data(session, result, electron_id)
 
 
-def electron_data(result: Result, cancel_requested: bool = False):
+def electron_data(result: Result, cancel_requested: bool = False) -> None:
+    """
+    Upsert electron data to the database
+
+    Arg(s)
+        result: Result object associated with the lattice
+        cancel_requested: Boolean indicating whether the electron was requested to be cancelled
+
+    Return(s)
+        None
+    """
     with workflow_db.session() as session:
         _electron_data(session, result, cancel_requested)
 
 
-def persist_result(result: Result, electron_id: int = None):
+def persist_result(result: Result, electron_id: int = None) -> None:
+    """
+    Persist the result object of the lattice recursively into the database
+
+    Arg(s)
+        result: Result object associated with the lattice
+        electron_id: ID of the electron within the lattice
+
+    Return(s)
+        None
+    """
     with workflow_db.session() as session:
         _lattice_data(session, result, electron_id)
         if electron_id:
             e_record = (
                 session.query(models.Electron).where(models.Electron.id == electron_id).first()
             )
-            cancel_requested = txn_get_job_record(session, e_record.job_id)["cancel_requested"]
+            cancel_requested = transaction_get_job_record(session, e_record.job_id)[
+                "cancel_requested"
+            ]
         else:
             cancel_requested = False
         _electron_data(session, result, cancel_requested)
-        txn_upsert_electron_dependency_data(session, result.dispatch_id, result.lattice)
+        transaction_upsert_electron_dependency_data(session, result.dispatch_id, result.lattice)

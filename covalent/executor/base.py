@@ -37,6 +37,7 @@ import aiofiles
 
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
+from covalent.executor.utils import Signals
 
 from .._shared_files import TaskRuntimeError, logger
 from .._shared_files.context_managers import active_dispatch_info_manager
@@ -207,29 +208,80 @@ class BaseExecutor(_AbstractBaseExecutor):
         super().__init__(*args, **kwargs)
 
     def _init_runtime(self, loop=None, cancel_pool=None):
+        """
+        Create the required queues for cancel task messages to be shared back and forth
+
+        Arg(s)
+            loop: Asyncio event loop to create tasks on
+            cancel_pool: A ThreadPoolExecutor object to submit tasks to
+
+        Return(s)
+            None
+        """
         self._send_queue = asyncio.Queue()
         self._recv_queue = queue.Queue()
         self._loop = loop
         self._cancel_pool = cancel_pool
 
-    def _notify(self, action: str, body: Any = None):
+    def _notify(self, action: Signals, body: Any = None):
+        """
+        Notifies a waiting thread with the necessary action to take along with the arguments passed in as body
+
+        Arg(s)
+            action: One of three possible actions that a waiting thread must take -> Signals.GET, Signals.PUT, Signals.EXIT
+            body: Respective arguments for each action
+        """
         self._loop.call_soon_threadsafe(self._send_queue.put_nowait, (action, body))
 
-    def _notify_sync(self, action: str, body: Any = None):
+    def _notify_sync(self, action: Signals, body: Any = None):
+        """
+        Blocking version of the _notify method
+
+        Arg(s)
+            action: One of three possible actions that a waiting thread must take -> Signals.GET, Signals.PUT, Signals.EXIT
+            body: Respective arguments for each action
+        """
         self._notify(action, body)
         return self._wait_for_response()
 
     def _wait_for_response(self, timeout: int = 5):
+        """
+        Wait for response from a thread depending on the action/body parameters sent
+
+        Arg(s):
+            timeout: Number of seconds to wait for the result to become available in the queue. Defaults to five seconds
+
+        Return(s)
+            body: Response to the corresponding action
+        """
         status, body = self._recv_queue.get(timeout=timeout)
         if status is None:
             raise RuntimeError("Error waiting for response")
         return body
 
     def get_cancel_requested(self):
-        return self._notify_sync("get", "cancel_requested")
+        """
+        Check if the task was requested to be cancelled by the user
+
+        Arg(s)
+            None
+
+        Return(s)
+            True/False whether task cancellation was requested
+        """
+        return self._notify_sync(Signals.GET, "cancel_requested")
 
     def set_job_handle(self, handle):
-        return self._notify_sync("put", ("job_handle", json.dumps(handle)))
+        """
+        Save the job_id/handle returned by the backend executing the task
+
+        Arg(s)
+            handle: job handle to save to the database
+
+        Return(s)
+            Response from saving the job handle to database
+        """
+        return self._notify_sync(Signals.PUT, ("job_handle", json.dumps(handle)))
 
     def write_streams_to_file(
         self,
@@ -333,7 +385,7 @@ class BaseExecutor(_AbstractBaseExecutor):
             job_status = RESULT_STATUS.CANCELLED
             result = None
         finally:
-            self._notify("bye")
+            self._notify(Signals.EXIT)
             self.teardown(task_metadata=task_metadata)
 
         self.write_streams_to_file(
@@ -367,10 +419,30 @@ class BaseExecutor(_AbstractBaseExecutor):
         raise NotImplementedError
 
     def cancel(self, task_metadata: Dict, job_handle: Any):
+        """
+        Method to cancel the job identified uniquely by the `job_handle` (base class)
+
+        Arg(s)
+            task_metadata: Metadata of the task to be cancelled
+            job_handle: Unique ID of the job assigned by the backend
+
+        Return(s)
+            False by default
+        """
         app_log.debug(f"Cancel not implemented for executor {type(self)}")
         return False
 
     async def _cancel(self, task_metadata: Dict, job_handle: Any):
+        """
+        Cancel the task in a non-blocking manner
+
+        Arg(s)
+            task_metadata: Metadata of the task to be cancelled
+            job_handle: Unique ID of the job assigned by the backend
+
+        Return(s)
+           Result of the task cancellation
+        """
         cancel_result = await self._loop.run_in_executor(
             self._cancel_pool, self.cancel, task_metadata, job_handle
         )
@@ -410,17 +482,56 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
     def _init_runtime(
         self, loop: asyncio.AbstractEventLoop = None, cancel_pool: ThreadPoolExecutor = None
     ):
+        """
+        Initialize the send and receive queues for communication between dispatcher and the executor
+
+        Arg(s)
+            loop: Asyncio event loop
+            cancel_pool: Instance of a threadpool executor class
+
+        Return(s)
+            None
+        """
         self._send_queue = asyncio.Queue()
         self._recv_queue = asyncio.Queue()
 
-    def _notify(self, action: str, body: Any = None):
+    def _notify(self, action: Signals, body: Any = None) -> None:
+        """
+        Notify the listener with the corresponding signal (async)
+
+        Arg(s)
+            action: Signal to the listener to trigger the corresponding action
+            body: Message to be sent to the listener
+
+        Return(s)
+            None
+        """
         self._send_queue.put_nowait((action, body))
 
-    async def _notify_sync(self, action: str, body: Any = None):
+    async def _notify_sync(self, action: Signals, body: Any = None):
+        """
+        Blocking call to the `_notify` method to wait for response
+
+        Arg(s)
+            action: Signal to the listener to trigger the corresponding action
+            body: Message to be sent to the listener
+
+        Return(s)
+            Response from the listener
+        """
         self._notify(action, body)
         return await self._wait_for_response()
 
     async def _wait_for_response(self, timeout: int = 5):
+        """
+        Block the thread until a response is recevied
+
+        Arg(s)
+            timeout: Number of seconds to wait until timing out
+
+        Return(s)
+            Response from the listener
+        """
         aw = self._recv_queue.get()
         status, body = await asyncio.wait_for(aw, timeout=timeout)
         if status is False:
@@ -428,10 +539,28 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         return body
 
     async def get_cancel_requested(self):
-        return await self._notify_sync("get", "cancel_requested")
+        """
+        Get if the task was requested to be canceled
+
+        Arg(s)
+            None
+
+        Return(s)
+            Whether the task has been requested to be cancelled
+        """
+        return await self._notify_sync(Signals.GET, "cancel_requested")
 
     async def set_job_handle(self, handle):
-        return await self._notify_sync("put", ("job_handle", json.dumps(handle)))
+        """
+        Save the job handle to database
+
+        Arg(s)
+            handle: Unique job handle
+
+        Return(s)
+            Response from the listener that handles inserting the job handle to database
+        """
+        return await self._notify_sync(Signals.PUT, ("job_handle", json.dumps(handle)))
 
     async def write_streams_to_file(
         self,
@@ -513,7 +642,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             job_status = RESULT_STATUS.FAILED
             result = None
         finally:
-            self._notify("bye")
+            self._notify(Signals.EXIT)
             await self.teardown(task_metadata=task_metadata)
 
         await self.write_streams_to_file(
@@ -551,10 +680,30 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         raise NotImplementedError
 
     async def cancel(self, task_metadata: Dict, job_handle: Any):
+        """
+        Executor specific task cancellation method
+
+        Arg(s)
+            task_metadata: Metadata associated with the task to be cancelled
+            job_handle: Unique ID assigned to the job by the backend
+
+        Return(s)
+            False by default
+        """
         app_log.debug(f"Cancel not implemented for executor {type(self)}")
         return False
 
     async def _cancel(self, task_metadata: Dict, job_handle: Any):
+        """
+        Cancel the task in a non-blocking manner and teardown the infrastructure
+
+        Arg(s)
+            task_metadata: Metadata associated with the task to be cancelled
+            job_handle: Unique ID assigned to the job by the backend
+
+        Return(s)
+            Result from cancelling the task
+        """
         cancel_result = await self.cancel(task_metadata, job_handle)
         await self.teardown(task_metadata)
         return cancel_result

@@ -57,6 +57,16 @@ _cancel_threadpool = ThreadPoolExecutor()
 
 # This is to be run out-of-process
 def _build_sublattice_graph(sub: Lattice, parent_metadata: Dict, *args, **kwargs):
+    """
+    Build the sublattice graph dynamically
+
+    Arg(s)
+        sub: Lattice associated with the sub-lattice
+        parent_metadata: Metadata of the parent lattice
+
+    Return(s)
+        JSON representation of the sublattice transport graph
+    """
     for k in sub.metadata.keys():
         if not sub.metadata[k]:
             sub.metadata[k] = parent_metadata[k]
@@ -122,12 +132,22 @@ async def _dispatch_sublattice(
     else:
         app_log.debug("Error building sublattice graph")
         stderr = res["stderr"]
-        raise RuntimeError("Error building sublattice graph: {stderr}")
+        raise RuntimeError(f"Error building sublattice graph: {stderr}")
 
 
 # Domain: runner
 # to be called by _run_abstract_task
 def _get_task_input_values(result_object: Result, abs_task_inputs: dict) -> dict:
+    """
+    Retrive the input values from the result_object for the task
+
+    Arg(s)
+        result_object: Result object of the workflow
+        abs_task_inputs: Task inputs dictionary
+
+    Return(s)
+        node_values: Dictionary of task inputs
+    """
     node_values = {}
     args = abs_task_inputs["args"]
     for node_id in args:
@@ -135,7 +155,7 @@ def _get_task_input_values(result_object: Result, abs_task_inputs: dict) -> dict
         node_values[node_id] = value
 
     kwargs = abs_task_inputs["kwargs"]
-    for key, node_id in kwargs.items():
+    for _, node_id in kwargs.items():
         value = result_object.lattice.transport_graph.get_node_value(node_id, "output")
         node_values[node_id] = value
 
@@ -522,11 +542,35 @@ async def _postprocess_workflow(result_object: Result) -> Result:
 
 
 async def postprocess_workflow(dispatch_id: str) -> Result:
+    """
+    Public facing `postprocess_workflow`
+
+    Arg(s)
+        dispatch_id: Unique identifier for dispatched workflow
+
+    Return(s)
+        result_object: Result object of the workflow
+    """
     result_object = datasvc.get_result_object(dispatch_id)
     return await _postprocess_workflow(result_object)
 
 
-async def _cancel_task(dispatch_id, task_id: int, executor, executor_data: Dict, job_handle: str):
+async def _cancel_task(
+    dispatch_id: str, task_id: int, executor, executor_data: Dict, job_handle: str
+):
+    """
+    Cancel the task currently being executed by the executor
+
+    Arg(s)
+        dispatch_id: Dispatch ID
+        task_id: Task ID of the electron in transport graph to be cancelled
+        executor: Covalent executor currently being used to execute the task
+        executor_data: Executor configuration arguments
+        job_handle: Unique identifier assigned to the task by the backend running the job
+
+    Return(s)
+        cancel_job_result: Status of the job cancellation action
+    """
     app_log.debug(f"Cancel task {task_id} using executor {executor}, {executor_data}")
     app_log.debug(f"job_handle: {job_handle}")
 
@@ -546,30 +590,77 @@ async def _cancel_task(dispatch_id, task_id: int, executor, executor_data: Dict,
     return cancel_job_result
 
 
-async def cancel_tasks(dispatch_id: str, task_ids: List[int]):
+def to_cancel_kwargs(
+    index: int, node_id: int, node_metadata: List[dict], job_metadata: List[dict]
+) -> dict:
+    """
+    Convert node_metadata for a given node `node_id` into a dictionary
+
+    Arg(s)
+        index: Index into the node_metadata list
+        node_id: Node ID
+        node_metadata: List of node metadata attributes
+        job_metadata: List of metadata for the current job
+
+    Return(s)
+        Node metadata dictionary
+    """
+    return {
+        "task_id": node_id,
+        "executor": node_metadata[index]["executor"],
+        "executor_data": node_metadata[index]["executor_data"],
+        "job_handle": job_metadata[index]["job_handle"],
+    }
+
+
+async def cancel_tasks(dispatch_id: str, task_ids: List[int]) -> None:
+    """
+    Request all tasks with `task_ids` to be cancelled in the workflow identified by `dispatch_id`
+
+    Arg(s)
+        dispatch_id: Dispatch ID of the workflow
+        task_ids: List of task ids to be cancelled
+
+    Return(s)
+        None
+    """
     job_metadata = await get_jobs_metadata(dispatch_id, task_ids)
     node_metadata = _get_metadata_for_nodes(dispatch_id, task_ids)
 
-    def to_cancel_kwargs(i, node_id):
-        return {
-            "task_id": node_id,
-            "executor": node_metadata[i]["executor"],
-            "executor_data": node_metadata[i]["executor_data"],
-            "job_handle": job_metadata[i]["job_handle"],
-        }
-
-    cancel_task_kwargs = [to_cancel_kwargs(i, x) for i, x in enumerate(task_ids)]
+    cancel_task_kwargs = [
+        to_cancel_kwargs(i, x, node_metadata, job_metadata) for i, x in enumerate(task_ids)
+    ]
 
     for kwargs in cancel_task_kwargs:
         asyncio.create_task(_cancel_task(dispatch_id, **kwargs))
 
 
 def _get_metadata_for_nodes(dispatch_id: str, node_ids: list):
+    """
+    Returns all the metadata associated with the node(s) for the workflow identified by `dispatch_id`
+
+    Arg(s)
+        dispatch_id: Dispatch ID of the workflow
+        node_ids: List of node ids from the workflow to retrive the metadata for
+
+    Return(s)
+        List of node metadata for the given `node_ids`
+    """
     res = datasvc.get_result_object(dispatch_id)
     tg = res.lattice.transport_graph
     return list(map(lambda x: tg.get_node_value(x, "metadata"), node_ids))
 
 
 async def _get_cancel_requested(dispatch_id: str, task_id: int):
+    """
+    Query if a specific task has been requested to be cancelled
+
+    Arg(s)
+        dispatch_id: Dispatch ID of the workflow
+        task_id: ID of the node to be cancelled
+
+    Return(s)
+        Whether the task has been requested to be cancelled or not
+    """
     records = await get_jobs_metadata(dispatch_id, [task_id])
     return records[0]["cancel_requested"]

@@ -77,12 +77,23 @@ def _get_abstract_task_inputs(node_id: int, node_name: str, result_object: Resul
 
 # Domain: dispatcher
 async def _handle_completed_node(result_object, node_id, pending_parents):
+    """
+    Process the completed node in the transport graph
+
+    Arg(s)
+        result_object: Result object associated with the workflow
+        node_id: ID of the node in the transport graph
+        pending_parents: Parents of this node yet to be executed
+
+    Return(s)
+        List of nodes ready to be executed
+    """
     g = result_object.lattice.transport_graph._graph
 
     ready_nodes = []
     app_log.debug(f"Node {node_id} completed")
     for child, edges in g.adj[node_id].items():
-        for edge in edges:
+        for _ in edges:
             pending_parents[child] -= 1
         if pending_parents[child] < 1:
             app_log.debug(f"Queuing node {child} for execution")
@@ -353,7 +364,17 @@ async def run_workflow(result_object: Result) -> Result:
 
 
 # Domain: dispatcher
-async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = []):
+async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = []) -> None:
+    """
+    Cancel an entire dispatch or a specific set of tasks within it
+
+    Arg(s)
+        dispatch_id: Dispatch ID of the lattice
+        task_ids: List of tasks from the lattice that are to be cancelled. Defaults to [] (entire lattice)
+
+    Return(s)
+        None
+    """
     if not dispatch_id:
         return
 
@@ -374,5 +395,14 @@ async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = []):
 
 
 def run_dispatch(dispatch_id: str) -> asyncio.Future:
+    """
+    Run the workflow and return immediately
+
+    Arg(s)
+        dispatch_id: Dispatch ID of the lattice
+
+    Return(s)
+        asyncio.Future
+    """
     result_object = datasvc.get_result_object(dispatch_id)
     return asyncio.create_task(run_workflow(result_object))

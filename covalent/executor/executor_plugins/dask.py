@@ -26,7 +26,7 @@ This is a plugin executor module; it is loaded if found and properly structured.
 """
 
 import os
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, Literal
 
 from dask.distributed import CancelledError, Client, Future
 
@@ -121,7 +121,17 @@ class DaskExecutor(AsyncBaseExecutor):
         # FIX: need to get stdout and stderr from dask worker and print them
         return result
 
-    async def cancel(self, task_metadata: Dict, job_handle):
+    async def cancel(self, task_metadata: Dict, job_handle) -> Literal[True]:
+        """
+        Cancel the task being executed by the dask executor currently
+
+        Arg(s)
+            task_metadata: Metadata associated with the task
+            job_handle: Key assigned to the job by Dask
+
+        Return(s)
+            True by default
+        """
         dask_client = _address_client_mapper.get(self.scheduler_address)
 
         if not dask_client:

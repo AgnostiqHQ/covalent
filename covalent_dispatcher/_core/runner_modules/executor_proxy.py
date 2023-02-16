@@ -25,6 +25,7 @@ from typing import Any
 
 from covalent._shared_files import logger
 from covalent.executor.base import _AbstractBaseExecutor as _ABE
+from covalent.executor.utils import Signals
 
 from ..data_modules import job_manager
 
@@ -36,6 +37,16 @@ _getters = {}
 
 
 async def _get_cancel_requested(dispatch_id: str, task_id: int):
+    """
+    Query the database for the task's cancellation status
+
+    Arg(s)
+        dispatch_id: Dispatch ID of the lattice
+        task_id: ID of the task within the lattice
+
+    Return(s)
+        Canellation status of the task
+    """
     # Don't hit the DB for post-processing task
     if task_id < 0:
         return False
@@ -46,7 +57,18 @@ async def _get_cancel_requested(dispatch_id: str, task_id: int):
     return job_records[0]["cancel_requested"]
 
 
-async def _put_job_handle(dispatch_id: str, task_id: int, job_handle: str):
+async def _put_job_handle(dispatch_id: str, task_id: int, job_handle: str) -> bool:
+    """
+    Store the job handle of the task returned by the backend in the database
+
+    Arg(s)
+        dispatch_id: Dispatch ID of the lattice
+        task_id: ID of the task within the lattice
+        job_handle: Unique identifier of the task returned by the execution backend
+
+    Return(s)
+        True
+    """
     # Don't hit the DB for post-processing task
     if task_id < 0:
         return False
@@ -60,12 +82,25 @@ _getters["cancel_requested"] = _get_cancel_requested
 
 
 async def _handle_message(
-    dispatch_id: str, task_id: int, executor: _ABE, action: str, body: Any = None
+    dispatch_id: str, task_id: int, executor: _ABE, action: Signals, body: Any = None
 ):
-    if action == "get":
+    """
+    Handle the action properly
+
+    Arg(s)
+        dispatch_id: Dispatch ID of the lattice
+        task_id: ID of the task in the lattice
+        executor: Instance of the abstract base executor
+        action: Action requested to be performed
+        body: Content of the action/request made
+
+    Return(s)
+        Response corresponding to the action requested
+    """
+    if action == Signals.GET:
         return await _getters[body](dispatch_id, task_id)
 
-    if action == "put":
+    if action == Signals.PUT:
         key, val = body
         await _putters[key](dispatch_id, task_id, val)
         return None
@@ -74,6 +109,17 @@ async def _handle_message(
 
 
 async def watch(dispatch_id: str, task_id: int, executor: _ABE):
+    """
+    Watch the send and receive queues of the executor
+
+    Arg(s)
+        dispatch_id: Dispatch ID of the lattice
+        task_id: ID of the task within the lattice
+        executor: Instance of the abstract base executor
+
+    Return(s)
+        None
+    """
     send_queue = executor._send_queue
     recv_queue = executor._recv_queue
 
@@ -81,7 +127,7 @@ async def watch(dispatch_id: str, task_id: int, executor: _ABE):
         action, body = await send_queue.get()
         app_log.debug(f"Received message {action} from executor {dispatch_id}:{task_id}")
 
-        if action == "bye":
+        if action == Signals.EXIT:
             app_log.debug(f"Stopping listener for executor {dispatch_id}:{task_id}")
             break
 

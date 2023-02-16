@@ -36,6 +36,9 @@ def to_job_ids(dispatch_id, task_ids, task_job_map):
 
 @pytest.mark.asyncio
 async def test_get_jobs_metadata(mocker):
+    """
+    Test retrieving jobs metadata
+    """
     task_ids = [0, 1]
     task_job_map = {0: 1, 1: 2}
     mock_to_job_ids = partial(to_job_ids, task_job_map=task_job_map)
@@ -50,6 +53,9 @@ async def test_get_jobs_metadata(mocker):
 
 @pytest.mark.asyncio
 async def test_set_cancel_requested_private(mocker):
+    """
+    Test the private get cancel requested module method
+    """
     mock_to_job_ids = mocker.patch(
         "covalent_dispatcher._core.data_modules.job_manager.to_job_ids", return_value=[0, 1]
     )
@@ -66,6 +72,9 @@ async def test_set_cancel_requested_private(mocker):
 
 @pytest.mark.asyncio
 async def test_set_cancel_requested(mocker):
+    """
+    Test set cancel requested
+    """
     mocker.patch(
         "covalent_dispatcher._core.data_modules.job_manager.to_job_ids", return_value=[0, 1]
     )
@@ -80,6 +89,9 @@ async def test_set_cancel_requested(mocker):
 
 @pytest.mark.asyncio
 async def test_set_job_handle(mocker):
+    """
+    Test set job handle method
+    """
     task_job_map = {0: 1, 1: 2}
     mock_to_job_ids = partial(to_job_ids, task_job_map=task_job_map)
     mocker.patch("covalent_dispatcher._core.data_modules.job_manager.to_job_ids", mock_to_job_ids)
@@ -95,6 +107,9 @@ async def test_set_job_handle(mocker):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("cancel_requested", [True, False])
 async def test_set_cancel_result(cancel_requested, mocker):
+    """
+    Test requesting a task to be cancelled
+    """
     mock_to_job_ids = partial(to_job_ids, task_job_map={0: 1, 1: 2})
     mocker.patch("covalent_dispatcher._core.data_modules.job_manager.to_job_ids", mock_to_job_ids)
     mock_update = mocker.patch(

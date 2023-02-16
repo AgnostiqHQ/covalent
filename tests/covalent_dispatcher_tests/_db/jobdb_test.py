@@ -46,6 +46,9 @@ def test_db():
 
 
 def test_get_job_record(test_db, mocker):
+    """
+    Test retrieving a job record from database
+    """
     mocker.patch("covalent_dispatcher._db.jobdb.workflow_db", test_db)
     with test_db.session() as session:
         job = Job(cancel_requested=True, job_handle="aws_job_id")
@@ -59,6 +62,9 @@ def test_get_job_record(test_db, mocker):
 
 
 def test_update_job_records(test_db, mocker):
+    """
+    Test updating job records
+    """
     mocker.patch("covalent_dispatcher._db.jobdb.workflow_db", test_db)
     with test_db.session() as session:
         job = Job(cancel_requested=False, job_handle="aws_job_id_1")
@@ -84,6 +90,9 @@ def test_update_job_records(test_db, mocker):
 
 
 def test_to_job_ids(test_db, mocker):
+    """
+    Test mapping task ids to job ids
+    """
     mocker.patch("covalent_dispatcher._db.jobdb.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     cur_time = dt.now(timezone.utc)

@@ -32,6 +32,7 @@ from covalent._results_manager import Result
 from covalent._shared_files.exceptions import TaskCancelledError, TaskRuntimeError
 from covalent.executor import BaseExecutor, wrapper_fn
 from covalent.executor.base import AsyncBaseExecutor
+from covalent.executor.utils.wrappers import Signals
 
 
 class MockExecutor(BaseExecutor):
@@ -232,7 +233,7 @@ def test_base_executor_execute(mocker):
     )
 
     assert result.get_deserialized() == 5
-    mock_notify.assert_called_with("bye")
+    mock_notify.assert_called_with(Signals.EXIT)
 
 
 @pytest.mark.asyncio
@@ -358,7 +359,7 @@ def test_base_executor_passes_task_metadata(mocker):
     )
     task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
     assert metadata == task_metadata
-    mock_notify.assert_called_with("bye")
+    mock_notify.assert_called_with(Signals.EXIT)
 
 
 def test_base_async_executor_passes_task_metadata(mocker):
@@ -396,7 +397,7 @@ def test_base_async_executor_passes_task_metadata(mocker):
     metadata, stdout, stderr, exception_raised = asyncio.run(awaitable)
     task_metadata = {"dispatch_id": dispatch_id, "node_id": node_id, "results_dir": results_dir}
     assert metadata == task_metadata
-    mock_notify.assert_called_with("bye")
+    mock_notify.assert_called_with(Signals.EXIT)
 
 
 def test_async_write_streams_to_file(mocker):
@@ -475,7 +476,7 @@ def test_executor_setup_teardown_method(mocker):
     assert result.get_deserialized() == 5
     me.setup.assert_called_once_with(task_metadata=task_metadata)
     me.teardown.assert_called_once_with(task_metadata=task_metadata)
-    mock_notify.assert_called_with("bye")
+    mock_notify.assert_called_with(Signals.EXIT)
 
 
 def test_async_executor_setup_teardown(mocker):
@@ -514,7 +515,7 @@ def test_async_executor_setup_teardown(mocker):
     me.run.assert_called_once_with(assembled_callable, args, kwargs, task_metadata)
     me.setup.assert_called_once_with(task_metadata=task_metadata)
     me.teardown.assert_called_once_with(task_metadata=task_metadata)
-    mock_notify.assert_called_with("bye")
+    mock_notify.assert_called_with(Signals.EXIT)
 
 
 def test_executor_from_dict_makes_deepcopy():
@@ -559,7 +560,7 @@ def test_executor_execute_runtime_error_handling(mocker):
     )
 
     assert job_status is Result.CANCELLED
-    mock_notify.assert_called_with("bye")
+    mock_notify.assert_called_with(Signals.EXIT)
 
 
 @pytest.mark.asyncio
@@ -594,10 +595,13 @@ async def test_async_base_executor_execute_runtime_error_handling(mocker):
     )
 
     assert job_status is Result.CANCELLED
-    mock_notify.assert_called_with("bye")
+    mock_notify.assert_called_with(Signals.EXIT)
 
 
 def test_base_executor_get_cancel_requested(mocker):
+    """
+    Test executor invoking get cancel requested
+    """
     me = MockExecutor()
     me._init_runtime()
     recv_queue = me._recv_queue
@@ -695,7 +699,7 @@ def test_base_executor_executor_task_runtime_error(mocker):
     )
 
     assert job_status is Result.FAILED
-    mock_notify.assert_called_with("bye")
+    mock_notify.assert_called_with(Signals.EXIT)
 
 
 def test_base_executor_cancel_app_log(mocker):
@@ -774,7 +778,7 @@ async def test_base_async_executor_task_runtime_error(mocker):
     me.setup.assert_awaited()
     me.run.assert_awaited_once_with(assembled_callable, args, kwargs, task_metadata)
     assert job_status is Result.FAILED
-    me._notify.assert_called_with("bye")
+    me._notify.assert_called_with(Signals.EXIT)
 
 
 @pytest.mark.asyncio

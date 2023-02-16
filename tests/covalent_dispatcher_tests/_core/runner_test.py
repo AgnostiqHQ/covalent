@@ -321,6 +321,10 @@ async def test_postprocess_workflow(mocker):
 
 
 def test_build_sublattice_graph():
+    """
+    Test building a sublattice graph
+    """
+
     @ct.electron
     def task(x):
         return x
@@ -352,6 +356,10 @@ def test_build_sublattice_graph():
 
 @pytest.mark.asyncio
 async def test_dispatch_sublattice(test_db, mocker):
+    """
+    Test dispatching a sublattice and assert any exceptions raised
+    """
+
     @ct.electron(executor="local")
     def task(x):
         return x
@@ -429,6 +437,9 @@ async def test_dispatch_sublattice(test_db, mocker):
 
 @pytest.mark.asyncio
 async def test__cancel_task(mocker):
+    """
+    Test module private _cancel_task method
+    """
     mock_executor = AsyncMock()
     mock_executor.from_dict = MagicMock()
     mock_executor._init_runtime = MagicMock()
@@ -461,6 +472,9 @@ async def test__cancel_task(mocker):
 
 @pytest.mark.asyncio
 async def test__cancel_task_exception(mocker):
+    """
+    Test exception raised in module private _cancel task exception
+    """
     mock_executor = AsyncMock()
     mock_executor.from_dict = MagicMock()
     mock_executor._init_runtime = MagicMock()
@@ -492,6 +506,9 @@ async def test__cancel_task_exception(mocker):
 
 @pytest.mark.asyncio
 async def test_cancel_tasks(mocker):
+    """
+    Test cancelling multiple tasks
+    """
     mock_get_jobs_metadata = mocker.patch(
         "covalent_dispatcher._core.runner.get_jobs_metadata", return_value=AsyncMock()
     )
@@ -509,6 +526,9 @@ async def test_cancel_tasks(mocker):
 
 
 def test__get_metadata_for_nodes(mocker):
+    """
+    Test module private method for getting nodes metadata
+    """
     dispatch_id = "abcd"
     node_ids = [0, 1]
 
@@ -521,6 +541,9 @@ def test__get_metadata_for_nodes(mocker):
 
 @pytest.mark.asyncio
 async def test__get_cancel_requested(mocker):
+    """
+    Test module private method for querying if a task was requested to be cancelled
+    """
     dispatch_id = "abcd"
     task_id = 0
     mock_get_jobs_metadata = mocker.patch(

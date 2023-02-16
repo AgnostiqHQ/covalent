@@ -162,6 +162,9 @@ def test_local_executor_run_exception_handling(mocker):
 
 
 def test_local_executor_get_cancel_requested(mocker):
+    """
+    Test task cancellation request using the local executor
+    """
     le = LocalExecutor()
     args = [5]
     kwargs = {}

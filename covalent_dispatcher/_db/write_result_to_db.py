@@ -54,15 +54,25 @@ log_stack_info = logger.log_stack_info
 
 
 class MissingElectronRecordError(Exception):
+    """
+    Exception to raise when an electron record is missing from the database
+    """
+
     pass
 
 
 class InvalidFileExtension(Exception):
+    """
+    Exception to raise when an invalid file extension is encountered
+    """
+
     pass
 
 
 def update_lattice_completed_electron_num(dispatch_id: str) -> None:
-    """Update the number of completed electrons by one corresponding to a lattice."""
+    """
+    Update the number of completed electrons by one corresponding to a lattice
+    """
 
     with workflow_db.session() as session:
         session.query(Lattice).filter_by(dispatch_id=dispatch_id).update(
@@ -71,10 +81,9 @@ def update_lattice_completed_electron_num(dispatch_id: str) -> None:
                 "updated_at": dt.now(timezone.utc),
             }
         )
-    # session.commit()
 
 
-def txn_insert_lattices_data(
+def transaction_insert_lattices_data(
     session: Session,
     dispatch_id: str,
     electron_id: int,
@@ -109,7 +118,12 @@ def txn_insert_lattices_data(
     started_at: dt,
     completed_at: dt,
 ) -> int:
-    """This function writes the lattice data / metadata to the Lattices table in the DB."""
+    """
+    This function writes the lattice data / metadata to the Lattices table in the DB
+
+    Return(s)
+        ID of the lattice updated
+    """
 
     lattice_row = Lattice(
         dispatch_id=dispatch_id,
@@ -155,12 +169,18 @@ def txn_insert_lattices_data(
 
 
 def insert_lattices_data(*args, **kwargs):
+    """
+    Execute the transaction to update lattice data in the database
+
+    Return(s)
+        None
+    """
     with workflow_db.session() as session:
-        txn_insert_lattices_data(session, *args, **kwargs)
+        transaction_insert_lattices_data(session, *args, **kwargs)
     app_log.debug(f"Added lattice record {locals()} to DB")
 
 
-def txn_insert_electrons_data(
+def transaction_insert_electrons_data(
     session: Session,
     parent_dispatch_id: str,
     transport_graph_node_id: int,
@@ -187,7 +207,12 @@ def txn_insert_electrons_data(
     started_at: dt,
     completed_at: dt,
 ) -> id:
-    """This function writes the transport graph node data to the Electrons table in the DB."""
+    """
+    This function writes the transport graph node data to the Electrons table in the DB
+
+    Return(s)
+        electron id
+    """
 
     # Check that the foreign key corresponding to this table exists
 
@@ -237,13 +262,26 @@ def txn_insert_electrons_data(
 
 
 def insert_electrons_data(*args, **kwargs):
+    """
+    Execute the electron update SQLalchemy transaction
+
+    Return(s)
+        electron_id
+    """
     with workflow_db.session() as session:
         app_log.debug(f"Adding electron {locals()} to DB")
-        return txn_insert_electrons_data(session, *args, **kwargs)
+        return transaction_insert_electrons_data(session, *args, **kwargs)
 
 
-def txn_insert_electron_dependency_data(session: Session, dispatch_id: str, lattice: LatticeClass):
-    """Extract electron dependencies from the lattice transport graph and add them to the DB."""
+def transaction_insert_electron_dependency_data(
+    session: Session, dispatch_id: str, lattice: LatticeClass
+):
+    """
+    Extract electron dependencies from the lattice transport graph and add them to the DB
+
+    Return(s)
+        dependency information of an electron
+    """
 
     # TODO - Update how we access the transport graph edges directly in favor of using some interface provied by the TransportGraph class.
     node_links = nx.readwrite.node_link_data(lattice.transport_graph._graph)["links"]
@@ -286,15 +324,23 @@ def txn_insert_electron_dependency_data(session: Session, dispatch_id: str, latt
 
 
 def insert_electron_dependency_data(*args, **kwargs):
+    """
+    persist the electron dependency information into the database
+
+    Return(s)
+        None
+    """
     with workflow_db.session() as session:
         app_log.debug(f"Adding electron dependency data {locals()} to DB")
-        txn_insert_electron_dependency_data(session, *args, **kwargs)
+        transaction_insert_electron_dependency_data(session, *args, **kwargs)
 
 
-def txn_upsert_electron_dependency_data(session: Session, dispatch_id: str, lattice: LatticeClass):
-    """Update electron dependency data"""
-
-    # Insert electron dependency records if they don't exist
+def transaction_upsert_electron_dependency_data(
+    session: Session, dispatch_id: str, lattice: LatticeClass
+):
+    """
+    Insert electron dependency records if they don't exist
+    """
 
     electron_dependencies_exist = (
         session.query(ElectronDependency, Electron, Lattice)
@@ -308,12 +354,12 @@ def txn_upsert_electron_dependency_data(session: Session, dispatch_id: str, latt
     )
     app_log.debug(f"electron_dependencies_exist is {electron_dependencies_exist}")
     if not electron_dependencies_exist:
-        txn_insert_electron_dependency_data(
+        transaction_insert_electron_dependency_data(
             session=session, dispatch_id=dispatch_id, lattice=lattice
         )
 
 
-def txn_update_lattices_data(session: Session, dispatch_id: str, **kwargs) -> None:
+def transaction_update_lattices_data(session: Session, dispatch_id: str, **kwargs) -> None:
     """This function updates the lattices record."""
 
     valid_update = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
@@ -332,7 +378,7 @@ def update_lattices_data(dispatch_id: str, **kwargs) -> None:
     """This function updates the lattices record."""
 
     with workflow_db.session() as session:
-        txn_update_lattices_data(session, dispatch_id, **kwargs)
+        transaction_update_lattices_data(session, dispatch_id, **kwargs)
 
 
 def update_electrons_data(
@@ -410,6 +456,12 @@ def get_electron_type(node_name: str) -> str:
 
 
 def get_sublattice_electron_id(parent_dispatch_id: str, sublattice_node_id: int):
+    """
+    Query the electron ID is a sublattice
+
+    Return(s)
+        sublattice electron id
+    """
     with workflow_db.session() as session:
         sublattice_electron_id = (
             session.query(Lattice, Electron)
@@ -426,8 +478,12 @@ def get_sublattice_electron_id(parent_dispatch_id: str, sublattice_node_id: int)
 
 
 def resolve_electron_id(eid: int):
-    """Given an electron's unique id, return the corresponding
-    dispatch_id and node_id
+    """
+    Given an electron's unique id, return the corresponding dispatch_id and node_id
+
+    Return(s)
+        dispatch_id of the lattice
+        ID of the node within the lattice
     """
     with workflow_db.session() as session:
         row = (
@@ -441,7 +497,17 @@ def resolve_electron_id(eid: int):
     return dispatch_id, node_id
 
 
-def write_lattice_error(dispatch_id: str, error: str):
+def write_lattice_error(dispatch_id: str, error: str) -> None:
+    """
+    Persist the lattice error into the database
+
+    Arg(s)
+        dispatch_id: Dispatch ID of the lattice
+        error: Lattice error to be persisted
+
+    Return(s)
+        None
+    """
     with workflow_db.session() as session:
         valid_update = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
 

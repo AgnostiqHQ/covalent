@@ -35,12 +35,27 @@ log_stack_info = logger.log_stack_info
 
 
 class MissingJobRecordError(Exception):
+    """
+    Exception to be raised when the job record associated with a particular task is not found in the database
+    """
+
     def __init__(self, message: str = ""):
         self.message = message
         super().__init__(self.message)
 
 
-def txn_get_job_record(session: Session, job_id: int) -> Dict:
+def transaction_get_job_record(session: Session, job_id: int) -> Dict:
+    """
+    Query the database for the job record associated with the given job id using the passed in session
+    Session object is passed to ensure that for all db related calls the same session is used
+
+    Arg(s)
+        session: SQLalchemy session object
+        job_id: ID of the job to query
+
+    Return(s)
+        Dictionary of the job record from the database
+    """
     if job_record := session.query(Job).where(Job.id == job_id).first():
         return {
             "job_id": job_record.id,
@@ -59,6 +74,19 @@ def _update_job_record(
     cancel_successful: bool = None,
     job_handle: str = None,
 ):
+    """
+    Update the job record in the database
+
+    Arg(s)
+        session: SQLalchemy session object
+        job_id: ID of the job to update
+        cancel_requested: Boolean flag indicating whether the job was requested to be cancelled
+        cancel_successful: Boolean indicating whether the job was cancelled successfully
+        job_handle: Unique job handle returned by the execution backend
+
+    Return(s)
+        None
+    """
     job_record = session.query(Job).where(Job.id == job_id).first()
     if not job_record:
         raise MissingJobRecordError(message=f"Job {job_id} not found")
@@ -72,22 +100,59 @@ def _update_job_record(
 
 
 def get_job_record(job_id: int) -> Dict:
+    """
+    Retrive the job record from database
+
+    Arg(s)
+        job_id: ID of the job to be returned
+
+    Return(s)
+        Job record of the job identified by `job_id`
+    """
     return get_job_records([job_id])[0]
 
 
 def update_job_records(record_kwargs_list: list):
+    """
+    Update job records in the database
+
+    Arg(s)
+        record_kwargs_list: List of keyword arguments of the fields that need to be updated in the job records
+
+    Return(s)
+        None
+    """
     with workflow_db.session() as session:
         for entry in record_kwargs_list:
             _update_job_record(session, **entry)
 
 
-def get_job_records(job_ids: List[int]) -> Dict:
+def get_job_records(job_ids: List[int]) -> List[Dict]:
+    """
+    Retrieve the job records of all jobs with `job_ids`
+
+    Arg(s)
+        job_ids: List of job ids to query the job records of
+
+    Return(s)
+        Job records of all tasks with `job_ids`
+    """
     with workflow_db.session() as session:
-        records = list(map(lambda x: txn_get_job_record(session, x), job_ids))
+        records = list(map(lambda x: transaction_get_job_record(session, x), job_ids))
     return records
 
 
 def to_job_ids(dispatch_id: str, task_ids: List[int]) -> List[int]:
+    """
+    Map all lattice task ids to their corresponding job ids
+
+    Arg(s)
+        dispatch_id: Dispatch ID of the lattice
+        task_ids: IDs of tasks in the lattice
+
+    Return(s)
+        Corresponding job ids assocated with the provided task ids
+    """
     with workflow_db.session() as session:
         stmt = select(Lattice).where(Lattice.dispatch_id == dispatch_id)
         lattice_rec = session.scalars(stmt).first()
