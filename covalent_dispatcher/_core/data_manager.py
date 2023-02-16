@@ -46,7 +46,7 @@ _dispatch_status_queues = {}
 
 
 def generate_node_result(
-    node_id,
+    node_id: int,
     start_time=None,
     end_time=None,
     status=None,
@@ -57,6 +57,24 @@ def generate_node_result(
     sub_dispatch_id=None,
     sublattice_result=None,
 ):
+    """
+    Helper routine to prepare the node result
+
+    Arg(s)
+        node_id: ID of the node in the trasport graph
+        start_time: Start time of the node
+        end_time: Time at which the node finished executing
+        status: Status of the node's execution
+        output: Output of the node
+        error: Error from the node
+        stdout: STDOUT of a node
+        stderr: STDERR generated during node execution
+        sub_dispatch_id: Dispatch ID of the sublattice
+        sublattice_result: Result of the sublattice
+
+    Return(s)
+        Dictionary of the inputs
+    """
     return {
         "node_id": node_id,
         "start_time": start_time,
@@ -72,12 +90,22 @@ def generate_node_result(
 
 
 # Domain: result
-async def update_node_result(result_object, node_result):
+async def update_node_result(result_object, node_result) -> None:
+    """
+    Updates the result object with the current node_result
+
+    Arg(s)
+        result_object: Result object the current dispatch
+        node_result: Result of the node to be updated in the result object
+
+    Return(s)
+        None
+    """
     app_log.warning("Updating node result (run_planned_workflow).")
     try:
         update._node(result_object, **node_result)
     except Exception as ex:
-        app_log.exception("Error persisting node update: {ex}")
+        app_log.exception(f"Error persisting node update: {ex}")
         node_result["status"] = Result.FAILED
     finally:
         node_id = node_result["node_id"]
@@ -251,4 +279,4 @@ async def _update_parent_electron(result_object: Result):
 
 def upsert_lattice_data(dispatch_id: str):
     result_object = get_result_object(dispatch_id)
-    upsert._lattice_data(result_object)
+    upsert.lattice_data(result_object)

@@ -58,7 +58,6 @@ async def submit(request: Request) -> UUID:
     try:
         data = await request.json()
         data = json.dumps(data).encode("utf-8")
-
         return await dispatcher.run_dispatcher(data)
     except Exception as e:
         raise HTTPException(
@@ -103,17 +102,17 @@ async def cancel(request: Request) -> str:
         Fast API Response object confirming that the dispatch
         has been cancelled.
     """
-    try:
-        data = await request.body()
-        dispatch_id = data.decode("utf-8")
 
-        dispatcher.cancel_running_dispatch(dispatch_id)
+    data = await request.json()
+
+    dispatch_id = data["dispatch_id"]
+    task_ids = data["task_ids"]
+
+    await dispatcher.cancel_running_dispatch(dispatch_id, task_ids)
+    if task_ids:
+        return f"Cancelled tasks {task_ids} in dispatch {dispatch_id}."
+    else:
         return f"Dispatch {dispatch_id} cancelled."
-    except Exception as e:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Failed to cancel workflow: {e}",
-        ) from e
 
 
 @router.get("/result/{dispatch_id}")

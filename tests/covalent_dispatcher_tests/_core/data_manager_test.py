@@ -298,6 +298,9 @@ def test_make_derived_dispatch_from_old_result(mocker, reuse):
 
 
 def test_get_result_object(mocker):
+    """
+    Test get result object
+    """
     result_object = get_mock_result()
     dispatch_id = result_object.dispatch_id
     _registered_dispatches[dispatch_id] = result_object
@@ -306,6 +309,9 @@ def test_get_result_object(mocker):
 
 
 def test_register_result_object(mocker):
+    """
+    Test registering a result object
+    """
     result_object = get_mock_result()
     dispatch_id = result_object.dispatch_id
     _register_result_object(result_object)
@@ -314,6 +320,9 @@ def test_register_result_object(mocker):
 
 
 def test_unregister_result_object(mocker):
+    """
+    Test unregistering a result object from lattice
+    """
     result_object = get_mock_result()
     dispatch_id = result_object.dispatch_id
     _registered_dispatches[dispatch_id] = result_object
@@ -322,6 +331,9 @@ def test_unregister_result_object(mocker):
 
 
 def test_get_status_queue():
+    """
+    Test querying the dispatch status from the queue
+    """
     import asyncio
 
     dispatch_id = "dispatch"
@@ -332,6 +344,9 @@ def test_get_status_queue():
 
 @pytest.mark.asyncio
 async def test_persist_result(mocker):
+    """
+    Test persisting the result object
+    """
     result_object = get_mock_result()
 
     mock_get_result = mocker.patch(
@@ -353,6 +368,9 @@ async def test_persist_result(mocker):
 )
 @pytest.mark.asyncio
 async def test_update_parent_electron(mocker, sub_status, mapped_status):
+    """
+    Test updating parent electron data
+    """
     parent_result_obj = get_mock_result()
     sub_result_obj = get_mock_result()
     eid = 5
@@ -370,13 +388,13 @@ async def test_update_parent_electron(mocker, sub_status, mapped_status):
         "error": sub_result_obj._error,
     }
 
-    mock_gen_node_result = mocker.patch(
+    mocker.patch(
         "covalent_dispatcher._core.data_manager.generate_node_result",
         return_value=mock_node_result,
     )
 
     mock_update_node = mocker.patch("covalent_dispatcher._core.data_manager.update_node_result")
-    mock_resolve_eid = mocker.patch(
+    mocker.patch(
         "covalent_dispatcher._core.data_manager.resolve_electron_id",
         return_value=(parent_dispatch_id, parent_node_id),
     )
@@ -391,10 +409,13 @@ async def test_update_parent_electron(mocker, sub_status, mapped_status):
 
 
 def test_upsert_lattice_data(mocker):
+    """
+    Test updating lattice data in database
+    """
     result_object = get_mock_result()
-    mock_get_result = mocker.patch(
+    mocker.patch(
         "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
     )
-    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
+    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert.lattice_data")
     upsert_lattice_data(result_object.dispatch_id)
     mock_upsert_lattice.assert_called_with(result_object)
