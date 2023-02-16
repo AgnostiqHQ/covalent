@@ -276,7 +276,7 @@ class BaseExecutor(_AbstractBaseExecutor):
         Save the job_id/handle returned by the backend executing the task
 
         Arg(s)
-            handle: job handle to save to the database
+            handle: Any JSONable type to identifying the task being executed by the backend
 
         Return(s)
             Response from saving the job handle to database
@@ -555,7 +555,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         Save the job handle to database
 
         Arg(s)
-            handle: Unique job handle
+            handle: JSONable type identifying the job being executed by the backend
 
         Return(s)
             Response from the listener that handles inserting the job handle to database

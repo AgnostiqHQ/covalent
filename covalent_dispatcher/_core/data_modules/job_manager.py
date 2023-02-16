@@ -94,7 +94,7 @@ async def set_job_handle(dispatch_id: str, task_id: int, job_handle: str) -> Non
     Arg(s)
         dispatch_id: Dispatch ID of the lattice
         task_id: ID of the task in the lattice
-        job_handle: Job handle returned by the backend corresponding to the task
+        job_handle: Job handle returned by the backend corresponding to the task (JSONable)
 
     Return(s)
         None
