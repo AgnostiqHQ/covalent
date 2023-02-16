@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Updated pre-commit hook versions
+- Updated codecov upload steps in tests workflow to fail if upload to codecov fails
 
 ## [0.217.0-rc.0] - 2023-02-12
 
