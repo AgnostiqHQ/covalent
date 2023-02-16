@@ -24,8 +24,15 @@
 from unittest import mock
 
 import pytest
+from fastapi import HTTPException
 
-from covalent_dispatcher._triggers_app.app import available_triggers, get_threadpool, init_trigger
+import covalent_dispatcher._triggers_app.app as app
+from covalent_dispatcher._triggers_app.app import (
+    available_triggers,
+    get_threadpool,
+    init_trigger,
+    register_and_observe,
+)
 
 
 class MockSigClass:
@@ -33,8 +40,13 @@ class MockSigClass:
         self.parameters = params
 
 
-def test_get_threadpool(mocker):
-    thread_pool_mocker = mocker.patch("covalent_dispatcher._triggers_app.app.ThreadPoolExecutor")
+@pytest.fixture
+def file_to_test():
+    return "covalent_dispatcher._triggers_app.app"
+
+
+def test_get_threadpool(mocker: mock, file_to_test: str):
+    thread_pool_mocker = mocker.patch(f"{file_to_test}.ThreadPoolExecutor")
 
     first_threadpool = get_threadpool()
     second_threadpool = get_threadpool()
@@ -44,7 +56,7 @@ def test_get_threadpool(mocker):
     assert first_threadpool == second_threadpool
 
 
-def test_init_trigger(mocker: mock):
+def test_init_trigger(mocker: mock, file_to_test: str):
     tr_class_mock = mock.Mock()
     test_available_triggers = {
         "test_tr_name": tr_class_mock,
@@ -59,11 +71,11 @@ def test_init_trigger(mocker: mock):
 
     mocker.patch.object(available_triggers, "available_triggers", test_available_triggers)
     init_signature_mock = mocker.patch(
-        "covalent_dispatcher._triggers_app.app.signature",
+        f"{file_to_test}.signature",
         return_value=MockSigClass({"constructor_param_1": "not_param"}),
     )
 
-    setattr_mock = mocker.patch("covalent_dispatcher._triggers_app.app.setattr")
+    setattr_mock = mocker.patch(f"{file_to_test}.setattr")
 
     init_trigger(trigger_dict)
 
@@ -73,11 +85,75 @@ def test_init_trigger(mocker: mock):
     assert len(trigger_dict) == 2
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize("disable_triggers", [True, False])
-def test_register_and_observe(mocker, disable_triggers):
-    pass
+@pytest.mark.parametrize("use_internal_funcs", [True, False])
+@pytest.mark.parametrize("observe_blocks", [True, False])
+@pytest.mark.parametrize("contains_triggers", [True, False])
+async def test_register_and_observe(
+    mocker: mock,
+    file_to_test: str,
+    disable_triggers: bool,
+    use_internal_funcs: bool,
+    observe_blocks: bool,
+    contains_triggers: bool,
+):
+    test_request = mock.Mock()
+    test_request.json = mock.AsyncMock()
+    mocker.patch(f"{file_to_test}.disable_triggers", disable_triggers)
+
+    if disable_triggers:
+        with pytest.raises(HTTPException) as http_exc:
+            await register_and_observe(test_request)
+
+        assert http_exc.value.status_code == 412
+        assert http_exc.value.detail == "Trigger endpoints are disabled as requested"
+
+    else:
+        test_dispatch_id = "test_dispatch_id"
+        test_active_triggers = {test_dispatch_id: [] if contains_triggers else None}
+
+        trigger_mock = mock.Mock()
+        trigger_mock.use_internal_funcs = use_internal_funcs
+        trigger_mock.observe_blocks = observe_blocks
+
+        get_threadpool_mock = mocker.patch(f"{file_to_test}.get_threadpool")
+        init_trigger_mock = mocker.patch(f"{file_to_test}.init_trigger", return_value=trigger_mock)
+        get_running_loop_mock = mocker.patch(f"{file_to_test}.asyncio.get_running_loop")
+        active_triggers_mock = mocker.patch.object(app, "active_triggers", test_active_triggers)
+
+        await register_and_observe(test_request)
+
+        get_threadpool_mock.assert_called_once()
+        test_request.json.assert_called_once()
+        init_trigger_mock.assert_called_once()
+        if use_internal_funcs:
+            get_running_loop_mock.assert_called_once()
+        if observe_blocks:
+            get_threadpool_mock.return_value.submit.assert_called_once()
+        else:
+            trigger_mock.observe.assert_called_once()
+
+        test_active_triggers[test_dispatch_id] = [trigger_mock]
+        assert test_active_triggers == active_triggers_mock
 
 
+@pytest.mark.asyncio
 @pytest.mark.parametrize("disable_triggers", [True, False])
-def test_stop_observe(mocker, disable_triggers):
-    pass
+async def test_stop_observe(
+    mocker: mock,
+    file_to_test: str,
+    disable_triggers: bool,
+):
+    test_request = mock.Mock()
+    test_request.json = mock.AsyncMock()
+    mocker.patch(f"{file_to_test}.disable_triggers", disable_triggers)
+
+    if disable_triggers:
+        with pytest.raises(HTTPException) as http_exc:
+            await register_and_observe(test_request)
+
+        assert http_exc.value.status_code == 412
+        assert http_exc.value.detail == "Trigger endpoints are disabled as requested"
+    else:
+        pass
