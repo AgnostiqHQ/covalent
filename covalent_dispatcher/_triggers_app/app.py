@@ -20,9 +20,9 @@
 
 
 import asyncio
-import inspect
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
+from inspect import signature
 
 from fastapi import APIRouter, FastAPI, HTTPException, Request
 
@@ -47,7 +47,7 @@ def init_trigger(tr_dict: dict) -> BaseTrigger:
     tr_class = available_triggers[tr_name]
 
     # Handling required constructor params
-    sig = inspect.signature(tr_class.__init__)
+    sig = signature(tr_class.__init__)
     init_params = {}
     for k, v in tr_dict.copy().items():
         if sig.parameters.get(k):
@@ -59,7 +59,6 @@ def init_trigger(tr_dict: dict) -> BaseTrigger:
     # Setting all other values
     for k, v in tr_dict.items():
         setattr(trigger, k, v)
-        print(k, v)
 
     return trigger
 
