@@ -32,6 +32,7 @@ from covalent_dispatcher._triggers_app.app import (
     get_threadpool,
     init_trigger,
     register_and_observe,
+    stop_observe,
 )
 
 
@@ -145,8 +146,9 @@ async def test_stop_observe(
     file_to_test: str,
     disable_triggers: bool,
 ):
+    test_dispatch_id = "test_dispatch_id"
     test_request = mock.Mock()
-    test_request.json = mock.AsyncMock()
+    test_request.json = mock.AsyncMock(return_value=[test_dispatch_id])
     mocker.patch(f"{file_to_test}.disable_triggers", disable_triggers)
 
     if disable_triggers:
@@ -155,5 +157,13 @@ async def test_stop_observe(
 
         assert http_exc.value.status_code == 412
         assert http_exc.value.detail == "Trigger endpoints are disabled as requested"
+
     else:
-        pass
+        trigger_mock = mock.Mock()
+        test_active_triggers = {test_dispatch_id: [trigger_mock]}
+        mocker.patch.object(app, "active_triggers", test_active_triggers)
+
+        await stop_observe(test_request)
+
+        test_request.json.assert_called_once()
+        trigger_mock.stop.assert_called_once()
