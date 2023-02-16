@@ -28,6 +28,11 @@ import pytest
 from covalent_dispatcher._triggers_app.app import available_triggers, get_threadpool, init_trigger
 
 
+class MockSigClass:
+    def __init__(self, params) -> None:
+        self.parameters = params
+
+
 def test_get_threadpool(mocker):
     thread_pool_mocker = mocker.patch("covalent_dispatcher._triggers_app.app.ThreadPoolExecutor")
 
@@ -40,8 +45,6 @@ def test_get_threadpool(mocker):
 
 
 def test_init_trigger(mocker: mock):
-    # TODO: Still fixing
-
     tr_class_mock = mock.Mock()
     test_available_triggers = {
         "test_tr_name": tr_class_mock,
@@ -55,18 +58,19 @@ def test_init_trigger(mocker: mock):
     }
 
     mocker.patch.object(available_triggers, "available_triggers", test_available_triggers)
-    init_signature_mock = mocker.patch("covalent_dispatcher._triggers_app.app.signature")
-    init_signature_mock.parameters.get.side_effect = {"constructor_param_1": None}.get
+    init_signature_mock = mocker.patch(
+        "covalent_dispatcher._triggers_app.app.signature",
+        return_value=MockSigClass({"constructor_param_1": "not_param"}),
+    )
 
     setattr_mock = mocker.patch("covalent_dispatcher._triggers_app.app.setattr")
 
     init_trigger(trigger_dict)
 
     init_signature_mock.assert_called_once()
-    # assert init_signature_mock.parameters.get.call_count == 3
-    # assert len(trigger_dict) == 2
-    # tr_class_mock.assert_called_with({"constructor_param_1": "param_1"})
-    # assert setattr_mock.call_count == 2
+    tr_class_mock.assert_called_with(**{"constructor_param_1": "param_1"})
+    assert setattr_mock.call_count == 2
+    assert len(trigger_dict) == 2
 
 
 @pytest.mark.parametrize("disable_triggers", [True, False])
