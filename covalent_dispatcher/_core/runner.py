@@ -28,7 +28,7 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from functools import partial
-from typing import Any, Dict, List, Literal, Tuple
+from typing import Any, Dict, List, Literal, Tuple, Union
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
@@ -557,7 +557,7 @@ async def postprocess_workflow(dispatch_id: str) -> Result:
 
 async def _cancel_task(
     dispatch_id: str, task_id: int, executor, executor_data: Dict, job_handle: str
-) -> (Any | Literal[False]):
+) -> Union[Any, Literal[False]]:
     """
     Cancel the task currently being executed by the executor
 

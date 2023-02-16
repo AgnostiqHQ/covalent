@@ -31,12 +31,22 @@ import queue
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import Any, Callable, ContextManager, Dict, Iterable, List, Literal, Optional, Tuple
+from typing import (
+    Any,
+    Callable,
+    ContextManager,
+    Dict,
+    Iterable,
+    List,
+    Literal,
+    Optional,
+    Tuple,
+    Union,
+)
 
 import aiofiles
 
 from covalent._shared_files.exceptions import TaskCancelledError
-from covalent._shared_files.utils import TypeJSON
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
 from covalent.executor.utils import Signals
 
@@ -47,6 +57,7 @@ from .._workflow.transport import TransportableObject
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+TypeJSON = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
 
 
 def wrapper_fn(
