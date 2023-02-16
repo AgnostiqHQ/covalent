@@ -20,7 +20,7 @@
 
 # """Interface to the Jobs table"""
 
-from typing import List
+from typing import Any, List
 
 from ..._db.jobdb import get_job_records, to_job_ids, update_job_records
 
