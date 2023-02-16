@@ -249,8 +249,8 @@ def test_transport_graph_transport_graph_reset(workflow_transport_graph):
     assert list(wtg._graph.nodes) == [0, 1]
     assert list(wtg._graph.edges) == [(0, 1, 0)]
     wtg.reset()
-    assert list(wtg._graph.nodes) == []
-    assert list(wtg._graph.edges) == []
+    assert not list(wtg._graph.nodes)
+    assert not list(wtg._graph.edges)
 
 
 def test_transport_graph_get_and_set_node_values(workflow_transport_graph):
@@ -271,13 +271,13 @@ def test_transport_graph_get_dependencies(workflow_transport_graph):
     """Test the graph node retrieval method in the transport graph."""
 
     wtg = workflow_transport_graph
-    assert list(wtg.get_dependencies(node_key=0)) == []
-    assert list(wtg.get_dependencies(node_key=1)) == []
+    assert not list(wtg.get_dependencies(node_key=0))
+    assert not list(wtg.get_dependencies(node_key=1))
 
     # Add edge relation
     wtg.add_edge(x=0, y=1, edge_name="apples")
 
-    assert list(wtg.get_dependencies(node_key=0)) == []
+    assert not list(wtg.get_dependencies(node_key=0))
     assert list(wtg.get_dependencies(node_key=1)) == [0]
 
 

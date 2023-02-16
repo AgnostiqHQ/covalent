@@ -24,6 +24,7 @@ Tests for the core functionality of the dispatcher.
 
 
 from typing import Dict, List
+from unittest.mock import AsyncMock, call
 
 import cloudpickle as pickle
 import pytest
@@ -39,7 +40,7 @@ from covalent_dispatcher._core.dispatcher import (
     _handle_failed_node,
     _plan_workflow,
     _run_planned_workflow,
-    cancel_workflow,
+    cancel_dispatch,
     run_dispatch,
     run_workflow,
 )
@@ -270,6 +271,9 @@ async def test_get_initial_tasks_and_deps(mocker):
 
 @pytest.mark.asyncio
 async def test_run_dispatch(mocker):
+    """
+    Test running a mock dispatch
+    """
     res = get_mock_result()
     mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.get_result_object", return_value=res
@@ -281,6 +285,9 @@ async def test_run_dispatch(mocker):
 
 @pytest.mark.asyncio
 async def test_run_workflow_normal(mocker):
+    """
+    Test a normal workflow execution
+    """
     import asyncio
 
     result_object = get_mock_result()
@@ -304,6 +311,9 @@ async def test_run_workflow_normal(mocker):
 
 @pytest.mark.asyncio
 async def test_run_completed_workflow(mocker):
+    """
+    Test run completed workflow
+    """
     import asyncio
 
     result_object = get_mock_result()
@@ -316,10 +326,10 @@ async def test_run_completed_workflow(mocker):
         "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
     mock_plan = mocker.patch("covalent_dispatcher._core.dispatcher._plan_workflow")
-    mock_run_planned_workflow = mocker.patch(
+    mocker.patch(
         "covalent_dispatcher._core.dispatcher._run_planned_workflow", return_value=result_object
     )
-    mock_persist = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.persist_result")
+    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.persist_result")
 
     await run_workflow(result_object)
 
@@ -330,6 +340,9 @@ async def test_run_completed_workflow(mocker):
 
 @pytest.mark.asyncio
 async def test_run_workflow_exception(mocker):
+    """
+    Test any exception raised when running workflow
+    """
     import asyncio
 
     result_object = get_mock_result()
@@ -358,13 +371,14 @@ async def test_run_workflow_exception(mocker):
 
 @pytest.mark.asyncio
 async def test_run_planned_workflow_cancelled_update(mocker):
+    """
+    Test run planned workflow with cancelled update
+    """
     import asyncio
 
     result_object = get_mock_result()
 
-    mock_upsert_lattice = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
-    )
+    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data")
     tasks_left = 1
     initial_nodes = [0]
     pending_deps = {0: 0}
@@ -391,13 +405,14 @@ async def test_run_planned_workflow_cancelled_update(mocker):
 
 @pytest.mark.asyncio
 async def test_run_planned_workflow_failed_update(mocker):
+    """
+    Test run planned workflow with mocking a failed job update
+    """
     import asyncio
 
     result_object = get_mock_result()
 
-    mock_upsert_lattice = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
-    )
+    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data")
     tasks_left = 1
     initial_nodes = [0]
     pending_deps = {0: 0}
@@ -422,5 +437,80 @@ async def test_run_planned_workflow_failed_update(mocker):
     mock_handle_failed.assert_awaited_with(result_object, 0)
 
 
-def test_cancelled_workflow():
-    cancel_workflow("asdf")
+@pytest.mark.asyncio
+async def test_cancel_dispatch(mocker):
+    """Test cancelling a dispatch, including sub-lattices"""
+    res = get_mock_result()
+    sub_res = get_mock_result()
+
+    sub_dispatch_id = "sub_pipeline_workflow"
+    sub_res._dispatch_id = sub_dispatch_id
+
+    def mock_get_result_object(dispatch_id):
+        objs = {res._dispatch_id: res, sub_res._dispatch_id: sub_res}
+        return objs[dispatch_id]
+
+    mock_data_cancel = mocker.patch("covalent_dispatcher._core.dispatcher.set_cancel_requested")
+
+    mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner")
+    mock_runner.cancel_tasks = AsyncMock()
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_result_object", mock_get_result_object
+    )
+
+    res._initialize_nodes()
+    sub_res._initialize_nodes()
+
+    tg = res.lattice.transport_graph
+    tg.set_node_value(2, "sub_dispatch_id", sub_dispatch_id)
+    sub_tg = sub_res.lattice.transport_graph
+
+    await cancel_dispatch("pipeline_workflow")
+
+    task_ids = list(tg._graph.nodes)
+    sub_task_ids = list(sub_tg._graph.nodes)
+
+    calls = [call("pipeline_workflow", task_ids), call(sub_dispatch_id, sub_task_ids)]
+    mock_data_cancel.assert_has_awaits(calls)
+    mock_runner.cancel_tasks.assert_has_awaits(calls)
+
+
+@pytest.mark.asyncio
+async def test_cancel_dispatch_with_task_ids(mocker):
+    """Test cancelling a dispatch, including sub-lattices and with task ids"""
+    res = get_mock_result()
+    sub_res = get_mock_result()
+
+    sub_dispatch_id = "sub_pipeline_workflow"
+    sub_res._dispatch_id = sub_dispatch_id
+
+    def mock_get_result_object(dispatch_id):
+        objs = {res._dispatch_id: res, sub_res._dispatch_id: sub_res}
+        return objs[dispatch_id]
+
+    mock_data_cancel = mocker.patch("covalent_dispatcher._core.dispatcher.set_cancel_requested")
+
+    mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner")
+    mock_runner.cancel_tasks = AsyncMock()
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_result_object", mock_get_result_object
+    )
+    mock_app_log = mocker.patch("covalent_dispatcher._core.dispatcher.app_log.debug")
+
+    res._initialize_nodes()
+    sub_res._initialize_nodes()
+
+    tg = res.lattice.transport_graph
+    tg.set_node_value(2, "sub_dispatch_id", sub_dispatch_id)
+    sub_tg = sub_res.lattice.transport_graph
+    task_ids = list(tg._graph.nodes)
+    sub_task_ids = list(sub_tg._graph.nodes)
+
+    await cancel_dispatch("pipeline_workflow", task_ids)
+
+    calls = [call("pipeline_workflow", task_ids), call(sub_dispatch_id, sub_task_ids)]
+    mock_data_cancel.assert_has_awaits(calls)
+    mock_runner.cancel_tasks.assert_has_awaits(calls)
+    assert mock_app_log.call_count == 2

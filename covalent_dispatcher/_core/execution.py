@@ -22,7 +22,6 @@
 Defines the core functionality of the dispatcher
 """
 
-
 from covalent._results_manager import Result
 
 from . import dispatcher, runner
