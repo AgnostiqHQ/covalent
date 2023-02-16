@@ -27,7 +27,7 @@ This is a plugin executor module; it is loaded if found and properly structured.
 
 import os
 from concurrent.futures import ProcessPoolExecutor
-from typing import Callable, Dict, List
+from typing import Any, Callable, Dict, List
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import TaskCancelledError, TaskRuntimeError, logger
@@ -59,7 +59,7 @@ class LocalExecutor(BaseExecutor):
     Local executor class that directly invokes the input function.
     """
 
-    def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
+    def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict) -> Any:
         """
         Execute the function locally
 

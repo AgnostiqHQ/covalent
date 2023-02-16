@@ -83,7 +83,7 @@ _getters["cancel_requested"] = _get_cancel_requested
 
 async def _handle_message(
     dispatch_id: str, task_id: int, executor: _ABE, action: Signals, body: Any = None
-):
+) -> Any:
     """
     Handle the action properly
 
@@ -108,7 +108,7 @@ async def _handle_message(
         raise KeyError(f"Unknown action {action}")
 
 
-async def watch(dispatch_id: str, task_id: int, executor: _ABE):
+async def watch(dispatch_id: str, task_id: int, executor: _ABE) -> None:
     """
     Watch the send and receive queues of the executor
 

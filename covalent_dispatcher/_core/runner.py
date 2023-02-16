@@ -28,7 +28,7 @@ import traceback
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from functools import partial
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Literal, Tuple
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
@@ -557,7 +557,7 @@ async def postprocess_workflow(dispatch_id: str) -> Result:
 
 async def _cancel_task(
     dispatch_id: str, task_id: int, executor, executor_data: Dict, job_handle: str
-):
+) -> (Any | Literal[False]):
     """
     Cancel the task currently being executed by the executor
 
@@ -635,7 +635,7 @@ async def cancel_tasks(dispatch_id: str, task_ids: List[int]) -> None:
         asyncio.create_task(_cancel_task(dispatch_id, **kwargs))
 
 
-def _get_metadata_for_nodes(dispatch_id: str, node_ids: list):
+def _get_metadata_for_nodes(dispatch_id: str, node_ids: list) -> List[Any]:
     """
     Returns all the metadata associated with the node(s) for the workflow identified by `dispatch_id`
 
@@ -651,7 +651,7 @@ def _get_metadata_for_nodes(dispatch_id: str, node_ids: list):
     return list(map(lambda x: tg.get_node_value(x, "metadata"), node_ids))
 
 
-async def _get_cancel_requested(dispatch_id: str, task_id: int):
+async def _get_cancel_requested(dispatch_id: str, task_id: int) -> Any:
     """
     Query if a specific task has been requested to be cancelled
 
