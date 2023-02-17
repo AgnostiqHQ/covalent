@@ -20,10 +20,12 @@
 
 import argparse
 import os
+import re
 
 import socketio
 import uvicorn
 from fastapi import Request
+from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 
 from covalent._shared_files import logger
@@ -53,6 +55,18 @@ templates = Jinja2Templates(directory=WEBAPP_PATH)
 @fastapi_app.get("/{rest_of_path}")
 def get_home(request: Request, rest_of_path: str):
     return templates.TemplateResponse("index.html", {"request": request})
+
+
+@fastapi_app.middleware("http")
+async def verify_token(request: Request, call_next):
+    token = request.query_params.get("token")
+    url_path = request.url.path
+    expected_token = os.getenv("COVALENT_AUTHKEY")
+    route_matches = re.match(r"(.)+api\/(submit|cancel|redispatch)", str(url_path), re.IGNORECASE)
+    if expected_token and route_matches and token != expected_token:
+        return JSONResponse(status_code=401, content={"message": "Not Authorized"})
+    response = await call_next(request)
+    return response
 
 
 socketio_app = socketio.ASGIApp(
