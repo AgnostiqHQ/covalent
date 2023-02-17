@@ -32,7 +32,7 @@ class Status:
         Return True if the status is not "NEW_OBJECT"
         """
 
-        return self.STATUS not in ["NEW_OBJECT", "FAILED", "POSTPROCESSING_FAILED"]
+        return self.STATUS != "NEW_OBJECT"
 
     def __str__(self) -> str:
         return self.STATUS
