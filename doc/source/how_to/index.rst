@@ -28,11 +28,11 @@ Constructing Workflows
 
 :doc:`Looping <./coding/looping>`
 
-:doc:`Visualizing a Lattice <./coding/visualize_lattice>` x Debug messages?
+:doc:`Visualizing a Lattice <./coding/visualize_lattice>`
 
 :doc:`Adding Constraints to Tasks and Workflows <./coding/add_constraints_to_lattice>`
 
-:doc:`Waiting For Execution of Another Electron <./coding/wait_for_another_electron>` x Postprocessing fails
+:doc:`Waiting For Execution of Another Electron <./coding/wait_for_another_electron>`
 
 :doc:`Transferring Local Files During Workflows<./coding/file_transfers_for_workflows_local>`
 
@@ -50,7 +50,7 @@ Constructing Workflows
 
 :doc:`Adding Callable Function Dependencies to an Electron <./coding/add_callable_dependencies_to_electron>`
 
-:doc:`Constructing Task from Bash Scripts <./coding/construct_bash_task>` x Run with a valid Slack token on a Linux system (then remove identifying information)
+:doc:`Constructing a Task from Bash Scripts <./coding/construct_bash_task>` x Run with a valid Slack token on a Linux system (then remove identifying information)
 
 Executing a Workflow
 ********************
@@ -69,9 +69,7 @@ Executing a Workflow
 
 :doc:`Choosing an Executor For a Task <./execution/choosing_executors>`
 
-:doc:`Creating a Custom Executor <./execution/creating_custom_executors>` x Seems to work, but can't find the timing file?
-
-:doc:`Canceling a Running Workflow <./execution/cancel_dispatch>` x Workflow doesn't seem to be stopping. Does cancel not work?
+:doc:`Creating a Custom Executor <./execution/creating_custom_executors>`
 
 :doc:`Executing an Electron in a Conda Environment <./execution/choosing_conda_environments>`
 
