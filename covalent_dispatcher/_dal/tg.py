@@ -173,7 +173,7 @@ class _TransportGraph:
 
 def _get_incoming_edges(session: Session, node: Node) -> List[Edge]:
     records = _incoming_edge_records(session, node._electron_id)
-    nodes = list(map(lambda r: _to_node(r[0]), records))
+    nodes = list(map(lambda r: _to_node(session, r[0]), records))
     uid_node_id_map = {n._electron_id: n.node_id for n in nodes}
     uid_node_id_map[node._electron_id] = node.node_id
     edge_list = list(map(lambda r: _to_edge(r[1], uid_node_id_map), records))
@@ -184,11 +184,11 @@ def _get_incoming_edges(session: Session, node: Node) -> List[Edge]:
 def _get_child_nodes(session: Session, node: Node) -> List[Node]:
     """Return successor nodes with multiplicity"""
     records = _child_records(session, node._electron_id)
-    return list(map(lambda r: _to_node(r), records))
+    return list(map(lambda r: _to_node(session, r), records))
 
 
-def _to_node(record: ElectronRecord) -> Node:
-    return Node(record)
+def _to_node(session: Session, record: ElectronRecord) -> Node:
+    return Node(session, record)
 
 
 def _to_edge(e_record: EdgeRecord, uid_node_id_map: Dict) -> Edge:
@@ -196,7 +196,7 @@ def _to_edge(e_record: EdgeRecord, uid_node_id_map: Dict) -> Edge:
 
 
 def _node(session: Session, lattice_id: int, node_id: int) -> Node:
-    return _to_node(_node_record(session, lattice_id, node_id))
+    return _to_node(session, _node_record(session, lattice_id, node_id))
 
 
 def _get_edge_data_for_nodes(session: Session, parent_node: Node, child_node: Node):
@@ -216,7 +216,7 @@ def _nodes_and_edges(session: Session, lattice_id: int) -> Tuple[List[Node], Lis
     db_nodes = _node_records(session, lattice_id)
     db_edges = _all_edge_records(session, lattice_id)
     uid_nodeid_map = {e.id: e.transport_graph_node_id for e in db_nodes}
-    nodes = list(map(_to_node, db_nodes))
+    nodes = list(map(lambda x: _to_node(session, x), db_nodes))
     edges = list(map(lambda x: _to_edge(x, uid_nodeid_map), db_edges))
 
     return nodes, edges

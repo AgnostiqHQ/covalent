@@ -76,7 +76,7 @@ def test_electron_attributes(test_db, mocker):
             .where(models.Electron.transport_graph_node_id == 0)
             .first()
         )
-        e = Electron(record)
+        e = Electron(session, record)
 
     meta = e.pure_metadata.keys()
     assets = e.assets.keys()
@@ -105,7 +105,7 @@ def test_electron_get_set_value(test_db, mocker):
             .where(models.Electron.transport_graph_node_id == 0)
             .first()
         )
-        e = Electron(record)
+        e = Electron(session, record)
 
     assert e.get_value("name") == res.lattice.transport_graph.get_node_value(0, "name")
     assert e.get_value("status") == SDKResult.NEW_OBJ
@@ -140,7 +140,7 @@ def test_electron_get_no_refresh(test_db, mocker):
             .where(models.Electron.transport_graph_node_id == 0)
             .first()
         )
-        e = Electron(record)
+        e = Electron(session, record)
 
     assert e.get_value("name", refresh=False) == res.lattice.transport_graph.get_node_value(
         0, "name"
@@ -168,6 +168,6 @@ def test_electron_sub_dispatch_id(test_db, mocker):
             .where(models.Electron.transport_graph_node_id == 0)
             .first()
         )
-        e = Electron(record)
+        e = Electron(session, record)
 
     assert e.get_value("sub_dispatch_id") == "parent_dispatch"

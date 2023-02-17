@@ -30,7 +30,6 @@ from .base import DispatchedObject
 from .db_interfaces.lattice_utils import (
     ASSET_KEYS,
     METADATA_KEYS,
-    _asset_record_map,
     _meta_record_map,
     _to_asset_meta,
     _to_db_meta,
@@ -40,10 +39,10 @@ from .tg import get_compute_graph
 
 
 class Lattice(DispatchedObject):
-    def __init__(self, record: models.Lattice, bare: bool = False):
-        pure_metadata = _to_pure_meta(record)
-        asset_metadata = _to_asset_meta(record)
-        db_metadata = _to_db_meta(record)
+    def __init__(self, session: Session, record: models.Lattice, bare: bool = False):
+        pure_metadata = _to_pure_meta(session, record)
+        asset_metadata = _to_asset_meta(session, record)
+        db_metadata = _to_db_meta(session, record)
 
         self._pure_metadata = pure_metadata
         self._db_metadata = db_metadata
@@ -85,11 +84,11 @@ class Lattice(DispatchedObject):
     def meta_record_map(self, key: str) -> str:
         return _meta_record_map[key]
 
-    def _to_pure_meta(self, record):
-        return _to_pure_meta(record)
+    def _to_pure_meta(self, session: Session, record):
+        return _to_pure_meta(session, record)
 
-    def _to_db_meta(self, record):
-        return _to_db_meta(record)
+    def _to_db_meta(self, session: Session, record):
+        return _to_db_meta(session, record)
 
     @property
     def __name__(self):

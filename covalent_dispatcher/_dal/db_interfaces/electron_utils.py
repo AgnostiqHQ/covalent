@@ -20,6 +20,8 @@
 
 """Mappings between electron attributes and DB records"""
 
+from sqlalchemy.orm import Session
+
 from ..._db import models
 
 ATTRIBUTES = {
@@ -88,18 +90,18 @@ _asset_record_map = {
 }
 
 
-def _to_pure_meta(record: models.Electron):
+def _to_pure_meta(session: Session, record: models.Electron):
     pure_metadata = {k: getattr(record, v) for k, v in _meta_record_map.items()}
 
     return pure_metadata
 
 
-def _to_asset_meta(record: models.Electron):
+def _to_asset_meta(session: Session, record: models.Electron):
     asset_metadata = {k: getattr(record, v) for k, v in _asset_record_map.items()}
     return asset_metadata
 
 
-def _to_db_meta(record: models.Electron):
+def _to_db_meta(session: Session, record: models.Electron):
     db_metadata = {
         "electron_id": record.id,
         "lattice_id": record.parent_lattice_id,

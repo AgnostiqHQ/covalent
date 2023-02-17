@@ -84,7 +84,7 @@ def test_result_attributes(test_db, mocker):
             .first()
         )
 
-        srvres = Result(record)
+        srvres = Result(session, record)
 
     meta = srvres.pure_metadata.keys()
     assets = srvres.assets.keys()
@@ -111,7 +111,7 @@ def test_result_get_set_value(test_db, mocker):
             .first()
         )
 
-        srvres = Result(record)
+        srvres = Result(session, record)
 
     assert srvres.status == SDKResult.NEW_OBJ
 
@@ -160,7 +160,7 @@ def test_result_update_node(test_db, mocker):
             .first()
         )
 
-        srvres = Result(record)
+        srvres = Result(session, record)
 
     timestamp = datetime.datetime.now()
 
@@ -213,7 +213,7 @@ def test_result_update_node_2(test_db, mocker):
             .first()
         )
 
-        srvres = Result(record)
+        srvres = Result(session, record)
 
     timestamp = datetime.datetime.now()
     srvres._update_node(
@@ -310,7 +310,7 @@ def test_result_update_node_3(test_db, mocker):
             .first()
         )
 
-        srvres = Result(record)
+        srvres = Result(session, record)
 
     timestamp = datetime.datetime.now()
 
@@ -429,7 +429,7 @@ def test_get_failed_nodes(test_db, mocker):
             .first()
         )
 
-        srvres = Result(record)
+        srvres = Result(session, record)
 
     srvres.lattice.transport_graph.set_node_value(0, "status", SDKResult.FAILED)
 
@@ -457,7 +457,7 @@ def test_get_all_node_outputs(test_db, mocker):
             .first()
         )
 
-        srvres = Result(record)
+        srvres = Result(session, record)
 
     srvres.lattice.transport_graph.set_node_value(0, "output", 25)
     srvres.lattice.transport_graph.set_node_value(1, "output", 5)

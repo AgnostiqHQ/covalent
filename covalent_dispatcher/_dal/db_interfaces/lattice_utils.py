@@ -22,6 +22,8 @@
 
 from typing import Dict
 
+from sqlalchemy.orm import Session
+
 from ..._db import models
 
 ATTRIBUTES = {
@@ -83,18 +85,18 @@ _asset_record_map = {
 }
 
 
-def _to_pure_meta(record: models.Lattice) -> Dict:
+def _to_pure_meta(session: Session, record: models.Lattice) -> Dict:
     pure_metadata = {k: getattr(record, v) for k, v in _meta_record_map.items()}
 
     return pure_metadata
 
 
-def _to_asset_meta(record: models.Lattice) -> Dict:
+def _to_asset_meta(session: Session, record: models.Lattice) -> Dict:
     asset_metadata = {k: getattr(record, v) for k, v in _asset_record_map.items()}
     return asset_metadata
 
 
-def _to_db_meta(record: models.Lattice) -> Dict:
+def _to_db_meta(session: Session, record: models.Lattice) -> Dict:
     db_metadata = {
         "electron_id": record.electron_id,
         "lattice_id": record.id,

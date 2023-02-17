@@ -68,10 +68,10 @@ set_filters.update(custom_set_filters)
 
 
 class Result(DispatchedObject):
-    def __init__(self, record: models.Lattice, bare: bool = False):
-        pure_metadata = _to_pure_meta(record)
-        asset_metadata = _to_asset_meta(record)
-        db_metadata = _to_db_meta(record)
+    def __init__(self, session: Session, record: models.Lattice, bare: bool = False):
+        pure_metadata = _to_pure_meta(session, record)
+        asset_metadata = _to_asset_meta(session, record)
+        db_metadata = _to_db_meta(session, record)
 
         self._pure_metadata = pure_metadata
         self._db_metadata = db_metadata
@@ -85,7 +85,7 @@ class Result(DispatchedObject):
         for name in asset_metadata:
             self._assets[name] = Asset(self._storage_path, asset_metadata[name])
 
-        self.lattice = Lattice(record, bare)
+        self.lattice = Lattice(session, record, bare)
 
         self._task_failed = False
         self._task_cancelled = False
@@ -124,11 +124,11 @@ class Result(DispatchedObject):
     def meta_record_map(self, key: str) -> str:
         return _meta_record_map[key]
 
-    def _to_pure_meta(self, record):
-        return _to_pure_meta(record)
+    def _to_pure_meta(self, session: Session, record):
+        return _to_pure_meta(session, record)
 
-    def _to_db_meta(self, record):
-        return _to_db_meta(record)
+    def _to_db_meta(self, session: Session, record):
+        return _to_db_meta(session, record)
 
     @property
     def start_time(self):
@@ -373,4 +373,4 @@ def get_result_object(dispatch_id: str, bare: bool = False) -> Result:
         )
         if not record:
             raise KeyError(f"Dispatch {dispatch_id} not found")
-        return Result(record, bare)
+        return Result(session, record, bare)

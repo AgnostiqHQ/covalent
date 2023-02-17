@@ -61,11 +61,11 @@ set_filters.update(custom_set_filters)
 
 
 class Electron(DispatchedObject):
-    def __init__(self, record: models.Electron):
+    def __init__(self, session: Session, record: models.Electron):
 
-        pure_metadata = _to_pure_meta(record)
-        asset_metadata = _to_asset_meta(record)
-        db_metadata = _to_db_meta(record)
+        pure_metadata = _to_pure_meta(session, record)
+        asset_metadata = _to_asset_meta(session, record)
+        db_metadata = _to_db_meta(session, record)
 
         self._pure_metadata = pure_metadata
         self._db_metadata = db_metadata
@@ -106,11 +106,11 @@ class Electron(DispatchedObject):
         )
         return record
 
-    def _to_pure_meta(self, record):
-        return _to_pure_meta(record)
+    def _to_pure_meta(self, session: Session, record):
+        return _to_pure_meta(session, record)
 
-    def _to_db_meta(self, record):
-        return _to_db_meta(record)
+    def _to_db_meta(self, session: Session, record):
+        return _to_db_meta(session, record)
 
     def meta_record_map(self, key: str) -> str:
         return _meta_record_map[key]

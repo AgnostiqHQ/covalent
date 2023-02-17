@@ -78,7 +78,7 @@ def test_lattice_attributes(test_db, mocker):
             .first()
         )
 
-        lat = Lattice(record)
+        lat = Lattice(session, record)
 
     meta = lat.pure_metadata.keys()
     assets = lat.assets.keys()
@@ -113,7 +113,7 @@ def test_lattice_get_set_value(test_db, mocker):
             .first()
         )
 
-        lat = Lattice(record)
+        lat = Lattice(session, record)
 
     assert lat.get_value("__name__") == "workflow"
     lat.set_value("executor", "awsbatch")
@@ -141,6 +141,6 @@ def test_lattice_get_metadata(test_db, mocker):
             .first()
         )
 
-        lat = Lattice(record)
+        lat = Lattice(session, record)
 
     assert lat.get_metadata("executor") == "awsbatch"

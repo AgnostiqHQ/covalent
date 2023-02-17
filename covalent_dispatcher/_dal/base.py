@@ -62,11 +62,11 @@ class DispatchedObject(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _to_pure_meta(self, record):
+    def _to_pure_meta(self, session: Session, record):
         raise NotImplementedError
 
     @abstractmethod
-    def _to_db_meta(self, record):
+    def _to_db_meta(self, session: Session, record):
         raise NotImplementedError
 
     @abstractmethod
@@ -75,8 +75,8 @@ class DispatchedObject(ABC):
 
     def _refresh_metadata(self, session: Session):
         record = self._get_db_record(session)
-        self.pure_metadata = self._to_pure_meta(record)
-        self.db_metadata = self._to_db_meta(record)
+        self.pure_metadata = self._to_pure_meta(session, record)
+        self.db_metadata = self._to_db_meta(session, record)
 
     def get_pure_metadata(self, key: str, session: Session = None, refresh: bool = True):
         if refresh:
