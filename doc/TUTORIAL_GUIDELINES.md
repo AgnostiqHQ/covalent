@@ -8,6 +8,7 @@ Every tutorial should be inside a folder corresponding to the _tutorial name_ an
 1. A subfolder named `assets`
 2. A Jupyter notebook called `source.ipynb`
 3. A requirements file, `requirements.txt`, listing the python packages and their version numbers required to execute the tutorial.
+4. Datasets should be stored in the `assets` folder.
 
 ```
 - tutorial_example
@@ -18,9 +19,9 @@ Every tutorial should be inside a folder corresponding to the _tutorial name_ an
     - source.ipynb
 ```
 
-**Note**: Covalent should be added as a requirement in `requirements.txt` but without a version number.
+**Note**: Covalent should be added in `requirements.txt` but without a version number.
 
-An example of `requirement.txt`:
+For example:
 
 ```
 covalent
@@ -41,7 +42,7 @@ with open("./requirements.txt", "r") as file:
 
 ```
 
-2. There should be a commented out line in the cell below that installs all the packages listed in `requirements.txt`:
+2. There should be a commented out line in the cell below that installs all the required packages:
 
 ```{code}
 # Install necessary packages
@@ -59,12 +60,9 @@ Here's an example:
 ## File paths and other configurable values
 
 1. File paths, provisioned cloud resource names such as AWS s3 buckets etc. need to be configurable.
-
 **Note**: It is imperative that there are no hard coded variables that need to be configured by the user.
 
-
 2. The environment variables should be read near the top of the tutorial using `os.getenv()`. For example,
-
 ```
 batch_s3_bucket_name = os.getenv("BATCH_S3_BUCKET_NAME")
 image_folder = os.getenv("IMAGE_FOLDER")
@@ -83,7 +81,7 @@ COVALENT_THREADS_PER_WORKER = os.getenv("COVALENT_THREADS_PER_WORKER", 1)
 
 ```
 
-While this format suffices when starting Covalent on the self-hosted instance where the tutorials will be run as functional tests, it might also be pertinent to mention that users can start Covalent with the command `covalent start -n 4 -m "2GB"` since they might be executing the workflows in their local machine.
+While this format suffices when starting Covalent on the self-hosted instance where the tutorials will be run as functional tests, it might also be pertinent to mention the bash command above since the user might be executing the workflows in their local machine.
 
 
 ## Assert statements checking that workflow executed successfully
@@ -99,7 +97,7 @@ assert res.status
 ```
 
 
-## Upload data if it's needed
+## Upload necessary datasets to s3 buckets
 
 Some Machine learning tutorials might be demonstrating how the training and test dataset can be read from an s3 bucket using the file transfer module. This assumes that there is a pre-existing s3 bucket with the requisite data. The tutorial should also have a cell where the data is uploaded into an s3 bucket before it is attempted to be read. The guiding principle here is that the tutorial should be as self-contained as possible both for functional testing and to be more accessible to users.
 
@@ -107,10 +105,12 @@ Some Machine learning tutorials might be demonstrating how the training and test
 ## Tutorial cleanup and formatting
 
 1. Check that there are no empty cells in the tutorial.
-2. Format the notebook cells using:
+2. Format the notebook cells. This is an example for VS Code:
 
 <div align="center">
 <img src="./source/_static/tutorial_guideline_notebook_formatting.png" style="width: 70%; height: 70%" />
 </div>
 
 3. The final version of the tutorial that goes into the RTD should have the cells go from `1, ..., n`.
+
+4. For MacOS, include additional information such as resetting the maximum number of open files via `ulimit -n 10240`. Since, this is a MacOS specific issue, it is more useful for the users than for functional testing.
