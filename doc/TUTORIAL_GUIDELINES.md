@@ -2,11 +2,73 @@
 
 The most important principles to follow when writing a tutorial is that:
 
-1. It should be as self contained as possible. (I don't mean the technical material but rather the Covalent/Executor/Python package resources).
+1. It should be as self contained as possible.
 2. It should be clear and easy to understand.
 3. It should execute without any errors.
 
 ## Guidelines
+
+### Folder structure and file naming
+
+Every tutorial should be inside a folder corresponding to the _tutorial name_ and contain:
+1. A subfolder named `assets`
+2. Jupyter notebook called `source.ipynb`
+3. A requirements file, `requirements.txt` will every required python package and version number to execute the tutorial.
+
+```
+- tutorial_example
+    - assets
+        - data.npy
+        - requirements.txt
+        - figures.png
+    - source.ipynb
+```
+
+```{note}
+Covalent should be added as a requirement in `requirements.txt` but without a version number.
+```
+
+For example, here's an example `requirement.txt`:
+
+```
+covalent
+matplotlib==3.6.3
+pennylane==0.25.1
+scikit-learn==1.0.2
+torch==1.13.1
+```
+
+### Tutorial requirements
+
+1. Include a print statement listing the packages in the requirements file before the import statements via:
+
+```{code}
+with open("./requirements.txt", "r") as file:
+    for line in file:
+        print(line.rstrip())
+
+```
+
+2. There should be a commented out line in the cell below that installs all the packages listed in `requirements.txt`:
+
+```{code}
+# Install necessary packages
+# !pip install -r ./requirements.txt
+
+```
+
+Here's an example from a tutorial:
+
+```{figure} ./_static/tutorial_guideline_requirements.png
+---
+height: 150px
+name: requirements-fig
+---
+Here is my figure caption!
+```
+
+
+
 
 1. `requirements.txt` files with all required packages and version numbers in the assets folder corresponding to the tutorial.
 2. The contents of `requirements.txt` file also need to be printed out in one of the tutorial cells at the top.
