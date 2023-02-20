@@ -1,17 +1,13 @@
 # Tutorial guidelines
 
-The most important principles to follow when writing a tutorial is that:
-
-1. It should be as self contained as possible.
-2. It should be clear and easy to understand.
-3. It should execute without any errors.
+Covalent tutorials are a useful guide for users looking to get hands on experience with the software. Additionally, they are important as functional tests since they cover most of the major features available. These guidelines are crucial to follow so that the tutorials are self-contained, easy to understand, and can be run as functional tests in a GitHub workflow.
 
 ## Folder structure and file naming
 
-Every tutorial should be inside a folder corresponding to the _tutorial name_ and contain:
+Every tutorial should be inside a folder corresponding to the _tutorial name_ and contain (see example below):
 1. A subfolder named `assets`
-2. Jupyter notebook called `source.ipynb`
-3. A requirements file, `requirements.txt` will every required python package and version number to execute the tutorial.
+2. A Jupyter notebook called `source.ipynb`
+3. A requirements file, `requirements.txt`, listing the python packages and their version numbers required to execute the tutorial.
 
 ```
 - tutorial_example
@@ -24,7 +20,7 @@ Every tutorial should be inside a folder corresponding to the _tutorial name_ an
 
 **Note**: Covalent should be added as a requirement in `requirements.txt` but without a version number.
 
-For example, here's an example `requirement.txt`:
+An example of `requirement.txt`:
 
 ```
 covalent
@@ -57,14 +53,14 @@ Here's an example:
 
 
 <div align="center">
-<img src="./source/_static/tutorial_guideline_requirements.png" style="width: 60%; height: 60%" />
+<img src="./source/_static/tutorial_guideline_requirements.png" style="width: 70%; height: 70%" />
 </div>
 
 ## File paths and other configurable values
 
-1. File paths, provisioned cloud resource names such as AWS s3 buckets need to be configurable.
+1. File paths, provisioned cloud resource names such as AWS s3 buckets etc. need to be configurable.
 
-**Note**: It is imperative that there are no hard coded variables that need to be configured on an individual user basis.
+**Note**: It is imperative that there are no hard coded variables that need to be configured by the user.
 
 
 2. The environment variables should be read near the top of the tutorial using `os.getenv()`. For example,
@@ -75,12 +71,10 @@ image_folder = os.getenv("IMAGE_FOLDER")
 
 ```
 
-Furthermore, include reasonable default values when reading in the environment variables.
-
 
 ## Memory and compute resource config values
 
-Specify the memory and compute resources required when starting Covalent using. It's important to set the correct defaults in this case, since these values will be required when starting Covalent on the self-hosted instance where the tutorials will be run as functional tests.
+Some tutorials have specific memory and compute resource requirements in order to execute successfully. For example, `covalent start` might not suffice and instead the dispatcher server might need to be started with `covalent start -n 4 -m "2GB"`. The author of the tutorial should specify the necessary default values in the section where the config values are read:
 
 ```{code}
 COVALENT_NUM_WORKER = os.getenv("COVALENT_NUM_WORKER", 4)
@@ -89,21 +83,34 @@ COVALENT_THREADS_PER_WORKER = os.getenv("COVALENT_THREADS_PER_WORKER", 1)
 
 ```
 
+While this format suffices when starting Covalent on the self-hosted instance where the tutorials will be run as functional tests, it might also be pertinent to mention that users can start Covalent with the command `covalent start -n 4 -m "2GB"` since they might be executing the workflows in their local machine.
+
+
 ## Assert statements checking that workflow executed successfully
+
+It is entirely possible for a tutorial to execute without raising an errors and yet be broken. In order to avoid this, after every `covalent.get_result()` include an assert statement checking that the workflow executed successfully.
+
+For example,
+
+```{code}
+res = covalent.get_result(dispatch_id, wait=True)
+assert res.status
+
+```
 
 
 ## Upload data if it's needed
 
+Some Machine learning tutorials might be demonstrating how the training and test dataset can be read from an s3 bucket using the file transfer module. This assumes that there is a pre-existing s3 bucket with the requisite data. The tutorial should also have a cell where the data is uploaded into an s3 bucket before it is attempted to be read. The guiding principle here is that the tutorial should be as self-contained as possible both for functional testing and to be more accessible to users.
+
 
 ## Tutorial cleanup and formatting
 
-1. `requirements.txt` files with all required packages and version numbers in the assets folder corresponding to the tutorial.
-2. The contents of `requirements.txt` file also need to be printed out in one of the tutorial cells at the top.
-3. There should be no hard coded file paths.
-4. Read in all required environment variables at one of the top cells using `os.getenv()`.
-5. Ensure that default values or placeholders are set for each of the environment variables that are being read in.
+1. Check that there are no empty cells in the tutorial.
+2. Format the notebook cells using:
 
-7. For every `covalent.get_result()` query, there should be a corresponding `assert result.status` statement to ensure that the workflow execution was successful.
-8. If AWS resources (for example s3 bucket with training and test dataset for a machine learning workflow) are required to run the tutorial, then there should be a step where the data is being uploaded before it is used.
-9. Check that the notebook is well formatted.
-10. Ensure that there are no empty cells lingering at the end of the tutorial.
+<div align="center">
+<img src="./source/_static/tutorial_guideline_notebook_formatting.png" style="width: 70%; height: 70%" />
+</div>
+
+3. The final version of the tutorial that goes into the RTD should have the cells go from `1, ..., n`.
