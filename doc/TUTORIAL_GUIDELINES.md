@@ -113,4 +113,4 @@ Some Machine learning tutorials might be demonstrating how the training and test
 
 3. The final version of the tutorial that goes into the RTD should have the cells go from `1, ..., n`.
 
-4. For MacOS, include additional information such as resetting the maximum number of open files via `ulimit -n 10240`. Since, this is a MacOS specific issue, it is more useful for the users than for functional testing.
+4. Include additional information such as resetting the maximum number of open files via `ulimit -n 10240`. Since, this is a MacOS specific issue, it is more useful for the users than for functional testing.
