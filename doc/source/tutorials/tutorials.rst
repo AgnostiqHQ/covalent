@@ -70,7 +70,7 @@ Advanced
 
 ---------------------------------
 
-Do you use Covalent in an interesting project? Contribute a tutorial on `GitHub <https://github.com/AgnostiqHQ/covalent/issues>`_.  To get started, check out the [Tutorial Guidelines](https://github.com/AgnostiqHQ/covalent/blob/develop/doc/TUTORIAL_GUIDELINES.md).
+Do you use Covalent in an interesting project? Contribute a tutorial on `GitHub <https://github.com/AgnostiqHQ/covalent/issues>`_.  To get started, check out the `Tutorial Guidelines <https://github.com/AgnostiqHQ/covalent/blob/develop/doc/TUTORIAL_GUIDELINES.md>`.
 
 .. Hidden tutorials:
    * - Machine Learning
