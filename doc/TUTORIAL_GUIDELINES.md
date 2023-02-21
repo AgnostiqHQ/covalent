@@ -3,9 +3,9 @@
 Covalent tutorials are a useful guide for users looking to get hands on experience with the software. Additionally, they are important as functional tests since they cover most of the major features available. These guidelines are crucial to follow so that the tutorials are self-contained, easy to understand, and can be run as functional tests in a GitHub workflow.
 
 
-## I. Content Guideline
+## I. Content Guidelines
 
-This guide covers best practices for Covalent tutorials. These principles are intended to guide but not constrain the author.
+This section covers best practices for the content of the Covalent tutorials. These principles are intended to guide but not constrain the author.
 
 ### Set the scope
 
@@ -35,6 +35,7 @@ Highlight how different components of Covalent are used to accomplish objectives
 
 ## II. Technical Guidelines
 
+This section points out the best practices from a technical standpoint.
 
 ### Folder structure and file naming
 
