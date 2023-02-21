@@ -1,4 +1,4 @@
-## Tutorial Guidelines
+# Tutorial Guidelines
 
 Covalent tutorials are a useful guide for users looking to get hands on experience with the software. Additionally, they are important as functional tests since they cover most of the major features available. These guidelines are crucial to follow so that the tutorials are self-contained, easy to understand, and can be run as functional tests in a GitHub workflow.
 
