@@ -47,11 +47,7 @@ def _node_record(session: Session, lattice_id: int, node_id: int) -> ElectronRec
 
 def _node_records(session: Session, lattice_id: int) -> List[ElectronRecord]:
 
-    stmt = (
-        select(ElectronRecord)
-        .join(LatticeRecord, LatticeRecord.id == ElectronRecord.parent_lattice_id)
-        .where(LatticeRecord.id == lattice_id)
-    )
+    stmt = select(ElectronRecord).where(ElectronRecord.parent_lattice_id == lattice_id)
     records = session.execute(stmt).all()
     return list(map(lambda r: r.Electron, records))
 
