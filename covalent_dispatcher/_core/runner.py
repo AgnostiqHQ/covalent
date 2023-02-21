@@ -68,6 +68,7 @@ def _build_sublattice_graph(sub: Lattice, parent_metadata: Dict, *args, **kwargs
         JSON representation of the sublattice transport graph
     """
     for k in sub.metadata.keys():
+        # Not inheriting triggers from the parent lattice
         if not sub.metadata[k] and k != "triggers":
             sub.metadata[k] = parent_metadata[k]
 

@@ -256,13 +256,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
         app_log.debug(f"{tasks_left} tasks left to complete")
         app_log.debug(f"Waiting to hear from {unresolved_tasks} tasks")
 
-        # with open("test_debug.txt", "a") as f:
-        #     f.write("Waiting for status queue\n")
-
         node_id, node_status = await status_queue.get()
-
-        # with open("test_debug.txt", "a") as f:
-        #     f.write("Done for status queue\n")
 
         app_log.debug(f"Received node status update {node_id}: {node_status}")
 
