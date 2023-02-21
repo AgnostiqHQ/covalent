@@ -45,10 +45,14 @@ def _node_record(session: Session, lattice_id: int, node_id: int) -> ElectronRec
     return record[0]
 
 
-def _node_records(session: Session, lattice_id: int) -> List[ElectronRecord]:
+def _node_records(session: Session, lattice_id: int, node_ids: List[int]) -> List[ElectronRecord]:
 
     stmt = select(ElectronRecord).where(ElectronRecord.parent_lattice_id == lattice_id)
+    if len(node_ids) > 0:
+        stmt = stmt.where(ElectronRecord.transport_graph_node_id.in_(node_ids))
     records = session.execute(stmt).all()
+    if len(records) < len(node_ids):
+        raise KeyError(f"Invalid Node ids {node_ids} for lattice record {lattice_id}")
     return list(map(lambda r: r.Electron, records))
 
 

@@ -35,7 +35,6 @@ from .db_interfaces.tg_utils import (
     _child_records,
     _edge_records_for_nodes,
     _incoming_edge_records,
-    _node_record,
     _node_records,
 )
 from .edge import Edge
@@ -59,16 +58,19 @@ class _TransportGraph:
         self._graph.add_edge(x, y, **attrs)
 
     def get_node(self, node_id: int, session: Session = None) -> Node:
+        return self.get_nodes(node_ids=[node_id], session=session)[0]
+
+    def get_nodes(self, node_ids: List[int], session: Session = None) -> List[Node]:
         if not self.bare:
-            return self._nodes[node_id]
+            return [self._nodes[node_id] for node_id in node_ids]
 
         # Construct node from db
         if session:
-            node = _node(session, self.lattice_id, node_id)
+            nodes = _nodes(session, self.lattice_id, node_ids)
         else:
             with workflow_db.session() as session:
-                node = _node(session, self.lattice_id, node_id)
-        return node
+                nodes = _nodes(session, self.lattice_id, node_ids)
+        return nodes
 
     def get_node_value(
         self, node_id: int, key: str, session: Session = None, refresh: bool = True
@@ -196,7 +198,12 @@ def _to_edge(e_record: EdgeRecord, uid_node_id_map: Dict) -> Edge:
 
 
 def _node(session: Session, lattice_id: int, node_id: int) -> Node:
-    return _to_node(session, _node_record(session, lattice_id, node_id))
+    return _nodes(session=session, lattice_id=lattice_id, node_ids=[node_id])[0]
+
+
+def _nodes(session: Session, lattice_id: int, node_ids: List[int]) -> List[Node]:
+    records = _node_records(session, lattice_id, node_ids)
+    return list(map(lambda x: _to_node(session, x), records))
 
 
 def _get_edge_data_for_nodes(session: Session, parent_node: Node, child_node: Node):
@@ -213,7 +220,7 @@ def _get_edge_data_for_nodes(session: Session, parent_node: Node, child_node: No
 
 def _nodes_and_edges(session: Session, lattice_id: int) -> Tuple[List[Node], List[Edge]]:
 
-    db_nodes = _node_records(session, lattice_id)
+    db_nodes = _node_records(session, lattice_id, [])
     db_edges = _all_edge_records(session, lattice_id)
     uid_nodeid_map = {e.id: e.transport_graph_node_id for e in db_nodes}
     nodes = list(map(lambda x: _to_node(session, x), db_nodes))
