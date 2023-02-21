@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Tutorial guidelines.
+
 ## [0.218.0-rc.0] - 2023-02-21
 
 ### Authors
@@ -37,7 +41,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add how to for redispatch.
 - Mention redispatch in the concepts section.
 - Update `AWS Lambda` executor RTD with steps to extend the base executor image for installing custom packages
-- Tutorial guidelines.
 
 ### Changed
 
