@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Lowering number of jest workers as an attempt to fix flaky UI functional tests
+
 ### Docs
 
 - Tutorial guidelines.
