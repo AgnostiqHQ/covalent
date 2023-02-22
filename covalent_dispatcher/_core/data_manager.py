@@ -265,10 +265,24 @@ async def _update_parent_electron(result_object: SRVResult):
         await update_node_result(parent_result_obj.dispatch_id, node_result)
 
 
-def _get_electron_attributes_sync(dispatch_id: str, node_id: int, keys: str) -> Any:
+def _get_attrs_for_electrons_sync(dispatch_id: str, node_ids: List[int], keys: str) -> Any:
     result_object = get_result_object(dispatch_id)
     refresh = False if STATELESS else True
-    return result_object.lattice.transport_graph.get_node_values(node_id, keys, refresh=refresh)
+    attrs = result_object.lattice.transport_graph.get_values_for_nodes(
+        node_ids=node_ids,
+        keys=keys,
+        refresh=refresh,
+    )
+    return attrs
+
+
+async def get_attrs_for_electrons(dispatch_id: str, node_ids: List[int], keys: str) -> Any:
+    return await _run_in_executor(
+        _get_attrs_for_electrons_sync,
+        dispatch_id,
+        node_ids,
+        keys,
+    )
 
 
 async def get_electron_attribute(dispatch_id: str, node_id: int, key: str) -> Any:
@@ -277,12 +291,8 @@ async def get_electron_attribute(dispatch_id: str, node_id: int, key: str) -> An
 
 
 async def get_electron_attributes(dispatch_id: str, node_id: int, keys: str) -> Any:
-    return await _run_in_executor(
-        _get_electron_attributes_sync,
-        dispatch_id,
-        node_id,
-        keys,
-    )
+    attrs = await get_attrs_for_electrons(dispatch_id, [node_id], keys)
+    return attrs[0]
 
 
 async def _filter_sublattice_status(
