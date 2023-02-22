@@ -36,9 +36,9 @@ Constructing Workflows
 
 :doc:`Transferring Local Files During Workflows<./coding/file_transfers_for_workflows_local>`
 
-:doc:`Transferring Remote Files During Workflows<./coding/file_transfers_to_remote>` x Run on a LAN with a remote host
+:doc:`Transferring Files To and From a Remote Host<./coding/file_transfers_to_from_remote>`
 
-:doc:`Transferring Files to and from an S3 Bucket<./coding/file_transfers_to_from_s3>` x Run on a Linux host against a zipfile in an S3 bucket
+:doc:`Transferring Files To and From an S3 Bucket<./coding/file_transfers_to_from_s3>`
 
 :doc:`Constructing a Lepton <./coding/construct_lepton>`
 
@@ -50,7 +50,7 @@ Constructing Workflows
 
 :doc:`Adding Callable Function Dependencies to an Electron <./coding/add_callable_dependencies_to_electron>`
 
-:doc:`Constructing a Task from Bash Scripts <./coding/construct_bash_task>` x Run with a valid Slack token on a Linux system (then remove identifying information)
+:doc:`Constructing a Task from Bash Scripts <./coding/construct_bash_task>`
 
 Executing a Workflow
 ********************
