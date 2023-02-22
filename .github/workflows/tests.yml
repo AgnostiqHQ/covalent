@@ -260,7 +260,7 @@ jobs:
           || env.BUILD_AND_RUN_ALL
         run: |
           cd covalent_ui/webapp
-          npm test -- --coverage --watchAll=false
+          npm test -- --coverage --watchAll=false --maxWorkers=50%
 
       - name: Dump Covalent logs
         if: >

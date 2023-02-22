@@ -32,10 +32,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Added documentation for "Triggers" and a separate section for similar "Features"
+- Tutorial guidelines
 
 ### Tests
 
 - Updated and added tests to account for all of the above triggers related changes
+
+### Operations
+
+- Lowering number of jest workers as an attempt to fix flaky UI functional tests
 
 ## [0.218.0-rc.0] - 2023-02-21
 
