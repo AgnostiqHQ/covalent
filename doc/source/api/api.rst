@@ -107,7 +107,7 @@ A set of classes with a shared interface to perform copy, download, and upload o
 Triggers
 """""""""
 
-Execute a saved workflow depending on occurrence of a desired event.
+Execute a workflow triggered by a specific type of event
 
 .. automodule:: covalent.triggers
    :imported-members:

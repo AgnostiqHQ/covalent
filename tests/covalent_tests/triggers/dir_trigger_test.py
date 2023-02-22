@@ -61,23 +61,6 @@ def test_event_handler_init():
         assert v == f"on_{k}"
 
 
-def test_proxy_trigger(mocker, dir_trigger):
-    """
-    Testing whether proxy trigger respects the batching
-    mechanism when calling DirTrigger's trigger() function
-    """
-
-    trigger_mock = mocker.patch("covalent.triggers.DirTrigger.trigger")
-
-    dir_trigger.n_changes = 0
-    for i in range(1, 3):
-        dir_trigger.batch_size = i
-        dir_trigger._proxy_trigger()
-
-    # trigger should only be called once: when batch_size is 1
-    trigger_mock.assert_called_once()
-
-
 def test_attach_methods_to_handler(mocker, event_to_func_names, dir_trigger):
     """
     Testing whether the correct `on_*` methods are attached to
@@ -87,7 +70,7 @@ def test_attach_methods_to_handler(mocker, event_to_func_names, dir_trigger):
     event_handler_mock = mock.Mock()
     event_handler_mock.supported_event_to_func_names = event_to_func_names
 
-    mocker.patch("covalent.triggers.DirTrigger._proxy_trigger")
+    mocker.patch("covalent.triggers.DirTrigger.trigger")
     setattr_mock = mocker.patch("covalent.triggers.dir_trigger.setattr")
 
     dir_trigger.event_handler = event_handler_mock
