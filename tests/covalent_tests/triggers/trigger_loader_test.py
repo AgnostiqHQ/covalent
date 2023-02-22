@@ -29,10 +29,19 @@ from covalent.triggers.trigger_loader import TriggerLoader
 
 @pytest.fixture
 def trigger_loader():
+    """
+    Fixture to return an instance of TriggerLoader for testing purposes
+    """
+
     return TriggerLoader()
 
 
 def test_trigger_loader_init(trigger_loader):
+    """
+    Testing whether TriggerLoader is initialized as expected
+    with the default available triggers loaded
+    """
+
     expected_keys = [BaseTrigger.__name__, DirTrigger.__name__, TimeTrigger.__name__]
 
     expected_values = [BaseTrigger, DirTrigger, TimeTrigger]
@@ -50,6 +59,12 @@ def test_trigger_loader_init(trigger_loader):
 
 @pytest.mark.parametrize("attr_is_present", [True, False])
 def test_trigger_loader_new(mocker, trigger_loader, attr_is_present):
+    """
+    Testing whether the same instance of TriggerLoader is returned
+    even when called multiple times, instead of creating a new instance
+    and reloading everything from scratch
+    """
+
     super_mock = mock.MagicMock()
     mock.patch("covalent.triggers.trigger_loader.super", super_mock)
 
@@ -67,7 +82,12 @@ def test_trigger_loader_new(mocker, trigger_loader, attr_is_present):
         assert new_trigger_loader == trigger_loader
 
 
-def test_trigger_loader_get_and_set(mocker, trigger_loader):
+def test_trigger_loader_get_and_set(trigger_loader):
+    """
+    Testing whether the TriggerLoader instance works equivalent
+    to a dictionary for setting and getting loaded triggers
+    """
+
     test_dict = {
         "a": 0,
         "b": 1,

@@ -30,10 +30,19 @@ counter = 0
 
 @pytest.fixture
 def time_trigger():
+    """
+    Fixture to get a sample TimeTrigger instance for testing purposes
+    """
+
     return TimeTrigger(None)
 
 
 def is_set_side_effect(set_stop):
+    """
+    Utility function to test Event object sets its
+    value in the expected manner
+    """
+
     global counter
     if set_stop or counter == 1:
         return True
@@ -43,6 +52,11 @@ def is_set_side_effect(set_stop):
 
 @pytest.mark.parametrize("set_stop", [False, True])
 def test_observe(mocker, time_trigger, set_stop):
+    """
+    Testing whether the observe method of TimeTrigger
+    starts with the right arguments with the right conditions
+    """
+
     test_time_gap = 2
 
     event_is_set_mock = mocker.patch(
@@ -65,6 +79,11 @@ def test_observe(mocker, time_trigger, set_stop):
 
 
 def test_stop(time_trigger):
+    """
+    Testing whether TimeTrigger's stop method
+    actually stops the trigger when called
+    """
+
     time_trigger.stop_flag = mock.Mock()
 
     time_trigger.stop()

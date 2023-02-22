@@ -30,6 +30,10 @@ from covalent.triggers import DirTrigger, TimeTrigger
 
 
 def test_dir_trigger():
+    """
+    Testing whether DirTrigger functionally works as expected
+    """
+
     Path("./tr_read").mkdir(exist_ok=True)
     Path("./tr_write").mkdir(exist_ok=True)
 
@@ -81,6 +85,10 @@ def test_dir_trigger():
 
 
 def test_time_trigger():
+    """
+    Testing whether TimeTrigger functionally works as expected
+    """
+
     Path("./tr_write").mkdir(exist_ok=True)
     write_file_path = str(Path("./tr_write/trigger_write.txt").resolve())
 
