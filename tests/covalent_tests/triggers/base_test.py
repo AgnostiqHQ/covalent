@@ -27,6 +27,11 @@ from covalent.triggers import BaseTrigger
 
 
 def test_register(mocker):
+    """
+    Testing whether the trigger is able
+    to register itself to the Triggers server
+    """
+
     mock_config = "mock-config"
     mock_json_data = "mock-json-data"
     mocker.patch("covalent.triggers.base.get_config", return_value=mock_config)
@@ -51,6 +56,11 @@ def test_register(mocker):
     ],
 )
 def test_get_status(mocker, use_internal_func, mock_status):
+    """
+    Testing whether get_status internally gets called with
+    the right arguments in different conditions
+    """
+
     base_trigger = BaseTrigger()
     base_trigger.use_internal_funcs = use_internal_func
 
@@ -87,6 +97,11 @@ def test_get_status(mocker, use_internal_func, mock_status):
 @pytest.mark.parametrize("use_internal_func", [True, False])
 @pytest.mark.parametrize("is_pending", [True, False])
 def test_do_redispatch(mocker, use_internal_func, is_pending):
+    """
+    Testing whether the trigger's internal do_redispatch function
+    with the right arguments in different conditions
+    """
+
     base_trigger = BaseTrigger()
     base_trigger.use_internal_funcs = use_internal_func
 
@@ -117,6 +132,11 @@ def test_do_redispatch(mocker, use_internal_func, is_pending):
 @pytest.mark.parametrize("lattice_dispatch_id", [None, "mock_id"])
 @pytest.mark.parametrize("mock_status", [None, "some_status"])
 def test_trigger(mocker, lattice_dispatch_id, mock_status):
+    """
+    Testing whether the trigger's internal trigger function
+    with the right arguments in different conditions
+    """
+
     base_trigger = BaseTrigger()
     base_trigger.lattice_dispatch_id = lattice_dispatch_id
 

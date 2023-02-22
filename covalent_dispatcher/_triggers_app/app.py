@@ -18,6 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""Triggers server API routes and standalone app definition"""
+
 
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
@@ -41,6 +43,16 @@ active_triggers = {}
 
 
 def init_trigger(tr_dict: dict) -> BaseTrigger:
+    """
+    Recreate the trigger from its dictionary representation
+
+    Args:
+        tr_dict: Dictionary containing a representation of a Trigger
+
+    Returns:
+        Trigger object, descendant of "BaseTrigger" class
+    """
+
     tr_name = tr_dict.pop("name")
 
     # Loading trigger's class
@@ -70,6 +82,10 @@ def get_threadpool():
 
 @router.post("/triggers/register")
 async def register_and_observe(request: Request):
+    """
+    Register and start the trigger's observe method
+    """
+
     if disable_triggers:
         raise HTTPException(status_code=412, detail="Trigger endpoints are disabled as requested")
 
@@ -99,6 +115,10 @@ async def register_and_observe(request: Request):
 
 @router.post("/triggers/stop_observe")
 async def stop_observe(request: Request):
+    """
+    Stop the triggers in a set of given dispatch ids
+    """
+
     if disable_triggers:
         raise HTTPException(status_code=412, detail="Trigger endpoints are disabled as requested")
 

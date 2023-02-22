@@ -3,7 +3,7 @@
 Triggers
 ==============
 
-Execute a saved workflow depending on occurrence of a desired event.
+Execute a workflow triggered by a specific type of event
 
 .. automodule:: covalent.triggers
    :imported-members:

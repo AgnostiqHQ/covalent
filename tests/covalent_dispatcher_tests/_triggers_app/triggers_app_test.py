@@ -43,10 +43,20 @@ class MockSigClass:
 
 @pytest.fixture
 def file_to_test():
+    """
+    Functions of which file will be mocked
+    """
+
     return "covalent_dispatcher._triggers_app.app"
 
 
 def test_get_threadpool(mocker: mock, file_to_test: str):
+    """
+    Testing whether the threadpool received from
+    get_threadpool is actually the same instance
+    even when called multiple times
+    """
+
     thread_pool_mocker = mocker.patch(f"{file_to_test}.ThreadPoolExecutor")
 
     first_threadpool = get_threadpool()
@@ -58,6 +68,11 @@ def test_get_threadpool(mocker: mock, file_to_test: str):
 
 
 def test_init_trigger(mocker: mock, file_to_test: str):
+    """
+    Testing whether a trigger can be obtained/recreated
+    from its dictionary representation on the Triggers server
+    """
+
     tr_class_mock = mock.Mock()
     test_available_triggers = {
         "test_tr_name": tr_class_mock,
@@ -99,6 +114,11 @@ async def test_register_and_observe(
     observe_blocks: bool,
     contains_triggers: bool,
 ):
+    """
+    Testing whether registration of the trigger as well as
+    starting of its observe method works as expected
+    """
+
     test_request = mock.Mock()
     test_request.json = mock.AsyncMock()
     mocker.patch(f"{file_to_test}.disable_triggers", disable_triggers)
@@ -146,6 +166,11 @@ async def test_stop_observe(
     file_to_test: str,
     disable_triggers: bool,
 ):
+    """
+    Testing whether stopping of the triggers' observe method
+    works as expected for all the triggers of all given dispatch ids
+    """
+
     test_dispatch_id = "test_dispatch_id"
     test_request = mock.Mock()
     test_request.json = mock.AsyncMock(return_value=[test_dispatch_id])
@@ -153,7 +178,7 @@ async def test_stop_observe(
 
     if disable_triggers:
         with pytest.raises(HTTPException) as http_exc:
-            await register_and_observe(test_request)
+            await stop_observe(test_request)
 
         assert http_exc.value.status_code == 412
         assert http_exc.value.detail == "Trigger endpoints are disabled as requested"

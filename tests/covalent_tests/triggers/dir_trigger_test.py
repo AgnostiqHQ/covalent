@@ -27,6 +27,10 @@ from covalent.triggers.dir_trigger import DirEventHandler, DirTrigger
 
 @pytest.fixture
 def event_to_func_names():
+    """
+    Event type to function name mappings
+    """
+
     return {
         "test_a": "test_func_a",
         "test_b": "test_func_b",
@@ -38,18 +42,31 @@ def event_to_func_names():
 
 @pytest.fixture
 def dir_trigger(event_to_func_names):
+    """
+    Fixture to obtain a sample DirTrigger instance for testing
+    """
+
     test_dir_path = "test_dir_path"
     test_event_names = list(event_to_func_names.keys())[:4]
     return DirTrigger(test_dir_path, test_event_names)
 
 
 def test_event_handler_init():
+    """
+    Testing whether DirEventHandler initializes as expected
+    """
+
     dir_event_handler = DirEventHandler()
     for k, v in dir_event_handler.supported_event_to_func_names.items():
         assert v == f"on_{k}"
 
 
 def test_attach_methods_to_handler(mocker, event_to_func_names, dir_trigger):
+    """
+    Testing whether the correct `on_*` methods are attached to
+    the event handler for each event type as given by the user
+    """
+
     event_handler_mock = mock.Mock()
     event_handler_mock.supported_event_to_func_names = event_to_func_names
 
@@ -64,6 +81,11 @@ def test_attach_methods_to_handler(mocker, event_to_func_names, dir_trigger):
 
 @pytest.mark.parametrize("test_recursive", [True, False])
 def test_observe(mocker, dir_trigger, test_recursive):
+    """
+    Testing the observe method of DirTrigger
+    calls all the necessary functions
+    """
+
     event_loop_mock = mocker.patch("covalent.triggers.dir_trigger.asyncio.get_running_loop")
     event_handler_mock = mocker.patch("covalent.triggers.dir_trigger.DirEventHandler")
     attach_mock = mocker.patch(
@@ -83,6 +105,11 @@ def test_observe(mocker, dir_trigger, test_recursive):
 
 
 def test_stop(dir_trigger):
+    """
+    Testing stop function of DirTrigger
+    stops the background running Observer
+    """
+
     observer_mock = mock.Mock()
 
     dir_trigger.observer = observer_mock

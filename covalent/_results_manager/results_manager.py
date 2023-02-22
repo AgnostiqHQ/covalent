@@ -49,6 +49,7 @@ def get_result(
         dispatch_id: The dispatch id of the result.
         wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
         dispatcher_addr: Dispatcher server address, if None then defaults to the address set in Covalent's config.
+        status_only: If true, only returns result status, not the full result object, default is False.
 
     Returns:
         The Result object from the Covalent server
@@ -88,8 +89,8 @@ def _get_result_from_dispatcher(
     Args:
         dispatch_id: The dispatch id of the result.
         wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
-        status_only: If true, only returns result status, not the full result object, default is False.
         dispatcher_addr: Dispatcher server address, if None then defaults to the address set in Covalent's config.
+        status_only: If true, only returns result status, not the full result object, default is False.
 
     Returns:
         The result object from the server.

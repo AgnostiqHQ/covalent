@@ -36,8 +36,6 @@ def test_dir_trigger():
     read_file_path = str(Path("./tr_read/trigger_read.txt").resolve())
     write_file_path = str(Path("./tr_write/trigger_write.txt").resolve())
 
-    print(read_file_path)
-
     dir_trigger = DirTrigger(str(Path("./tr_read").resolve()), event_names="modified")
 
     @ct.lattice(triggers=dir_trigger)

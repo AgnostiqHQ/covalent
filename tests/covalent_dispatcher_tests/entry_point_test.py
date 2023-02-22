@@ -41,6 +41,11 @@ def mock_initialize_result_object(lattice):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("disable_run", [True, False])
 async def test_run_dispatcher(mocker, disable_run):
+    """
+    Test run_dispatcher is called with the
+    right arguments in different conditions
+    """
+
     mock_run_dispatch = mocker.patch("covalent_dispatcher._core.run_dispatch")
     mock_make_dispatch = mocker.patch(
         "covalent_dispatcher._core.make_dispatch", return_value=DISPATCH_ID
@@ -58,7 +63,11 @@ async def test_run_dispatcher(mocker, disable_run):
 @pytest.mark.asyncio
 @pytest.mark.parametrize("is_pending", [True, False])
 async def test_run_redispatch(mocker, is_pending):
-    """Test the run redispatch function."""
+    """
+    Test the run_redispatch function is called
+    with the right arguments in differnet conditions
+    """
+
     make_derived_dispatch_mock = mocker.patch(
         "covalent_dispatcher._core.make_derived_dispatch", return_value="mock-redispatch-id"
     )
