@@ -188,9 +188,12 @@ class DaskExecutor(AsyncBaseExecutor):
             with open(result_path, "r") as f:
                 result_summary = json.load(f)
                 node_id = result_summary["node_id"]
-                output_uri = result_summary["output_uri"]
-                stdout_uri = result_summary["stdout_uri"]
-                stderr_uri = result_summary["stderr_uri"]
+                # output_uri = result_summary["output_uri"]
+                # stdout_uri = result_summary["stdout_uri"]
+                # stderr_uri = result_summary["stderr_uri"]
+                output_uri = ""
+                stdout_uri = ""
+                stderr_uri = ""
                 exception_raised = result_summary["exception_occurred"]
 
                 terminal_status = (
