@@ -87,8 +87,9 @@ class BaseTrigger:
     def _register(trigger_data, triggers_server_addr=None) -> None:
         """
         Register a trigger to the Triggers server given only its dictionary format and start observing.
+
         Args:
-        trigger_data: Dictionary representation of a trigger
+            trigger_data: Dictionary representation of a trigger
         """
         if triggers_server_addr is None:
             triggers_server_addr = (
@@ -103,6 +104,7 @@ class BaseTrigger:
         """
         Get status about the connected dispatch id to check whether its a pending
         dispatch or new redispatch has to be made.
+
         Returns:
             status: Status
         """
@@ -129,8 +131,10 @@ class BaseTrigger:
     def _do_redispatch(self, is_pending: bool = False) -> str:
         """
         Perform a redispatch of the connected dispatch id and return a new one.
+
         Args:
             is_pending: Whether the connected dispatch id is pending
+
         Returns:
             new_dispatch_id: Dispatch id of the newly dispatched workflow
         """
@@ -151,6 +155,7 @@ class BaseTrigger:
         """
         Trigger this trigger and perform a redispatch of the connected dispatch id's workflow.
         Should be called within `self.observe()` whenever a trigger action is desired.
+
         Raises:
             RuntimeError: In case no dispatch id is connected to this trigger
         """
@@ -175,6 +180,7 @@ class BaseTrigger:
     def to_dict(self) -> dict:
         """
         Return a dictionary representation of this trigger which can later be used to regenerate it.
+
         Returns:
             tr_dict: Dictionary representation of this trigger
         """

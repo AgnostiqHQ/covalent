@@ -94,6 +94,7 @@ class DirTrigger(BaseTrigger):
         """
         Dynamically attaches and overrides the "on_*" methods to the handler
         depending on which ones are requested by the user.
+
         Args:
             event_names: List of event names upon which to perform a trigger action
         """
