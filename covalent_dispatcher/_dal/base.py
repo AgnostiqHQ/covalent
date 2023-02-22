@@ -132,7 +132,7 @@ class DispatchedObject(ABC):
         else:
             self.get_asset(key).store_data(val)
 
-    def get_values(self, keys: List[str], session: Session = None, refresh: bool = True):
+    def get_values(self, keys: List[str], session: Session = None, refresh: bool = True) -> Dict:
         return {key: self.get_value(key, session, refresh) for key in keys}
 
     def set_values(self, keyvals: List[Tuple[str, Any]], session: Session = None):

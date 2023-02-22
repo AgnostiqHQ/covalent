@@ -75,14 +75,22 @@ class _TransportGraph:
     def get_node_value(
         self, node_id: int, key: str, session: Session = None, refresh: bool = True
     ):
-        node = self.get_node(node_id, session)
-        return node.get_value(key, session, refresh)
+        record = self.get_node_values(
+            node_id=node_id, keys=[key], session=session, refresh=refresh
+        )
+        return record[key]
 
     def get_node_values(
         self, node_id: int, keys: List[str], session: Session = None, refresh: bool = True
-    ):
+    ) -> Dict:
         node = self.get_node(node_id, session)
-        return node.get_values(keys, session, refresh)
+        return self.get_values_for_nodes([node_id], keys, session, refresh)[0]
+
+    def get_values_for_nodes(
+        self, node_ids: List[int], keys: List[str], session: Session = None, refresh: bool = True
+    ) -> List[Dict]:
+        nodes = self.get_nodes(node_ids=node_ids, session=session)
+        return list(map(lambda n: n.get_values(keys, session, refresh), nodes))
 
     def set_node_values(
         self, node_id: int, keyvals: List[Tuple[str, Any]], session: Session = None
