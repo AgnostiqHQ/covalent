@@ -90,6 +90,12 @@ class DirTrigger(BaseTrigger):
         self.observe_blocks = False
         self.event_handler = None
 
+    def _proxy_trigger(self, event_handler=None, event_object=None):
+        self.n_changes += 1
+        if self.n_changes == self.batch_size:
+            self.trigger()
+            self.n_changes = 0
+
     def attach_methods_to_handler(self) -> None:
         """
         Dynamically attaches and overrides the "on_*" methods to the handler
@@ -102,16 +108,12 @@ class DirTrigger(BaseTrigger):
 
         self.n_changes = 0
 
-        def proxy_trigger(_, event):
-            self.n_changes += 1
-            if self.n_changes == self.batch_size:
-                self.trigger()
-                self.n_changes = 0
-
         for en in self.event_names:
             func_name = self.event_handler.supported_event_to_func_names[en]
-            proxy_trigger.__name__ = func_name
-            setattr(self.event_handler, func_name, MethodType(proxy_trigger, self.event_handler))
+            self._proxy_trigger.__name__ = func_name
+            setattr(
+                self.event_handler, func_name, MethodType(self._proxy_trigger, self.event_handler)
+            )
 
     def observe(self) -> None:
         """

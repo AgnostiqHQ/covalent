@@ -27,8 +27,10 @@ from .base import BaseTrigger
 class TimeTrigger(BaseTrigger):
     """
     Performs a trigger action every `time_gap` seconds.
+
     Args:
         time_gap: Amount of seconds to wait before doing a trigger action
+
     Attributes:
         self.time_gap: Amount of seconds to wait before doing a trigger action
         self.stop_flag: Thread safe flag used to check whether the stop condition has been met
