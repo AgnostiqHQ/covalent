@@ -4,7 +4,15 @@ How-to Guide
 
 This guide is a collection of step-by-step instructions for tasks that are commonly (and in some cases not so commonly) encountered when using Covalent.
 
-It covers specific tasks at every phase of the workflow development process:
+.. note:: Most of the how-to instructions below are Jupyter notebook files (formerly IPython files; they have an `ipynb` file extension). You can open a file and run the example on your local machine. To run an example:
+
+    1. `Install Jupyter <https://jupyter.org/install>`_.
+    2. :doc:`Install Covalent<../getting_started/quick_start/index>`.
+    3. :doc:`Start the Covalent server<./execution/covalent_cli>`.
+    4. Download the IPython (`.ipynb`) file by replacing `html` with `ipynb` in the How-to document URL. For example, change "https://covalent.readthedocs.io/en/stable/how_to/orchestration/construct_electron.html" to "https://covalent.readthedocs.io/en/stable/how_to/orchestration/construct_electron.ipynb"\.
+    5. `Open the IPython (.ipynb) file in a Jupyter notebook <https://docs.jupyter.org/en/latest/running.html#how-do-i-open-a-specific-notebook>`_.
+
+The guide covers specific tasks at every phase of the workflow development process:
 
 1. Constructing workflows
 2. Executing workflows, including using and writing executors
