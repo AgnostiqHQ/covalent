@@ -69,8 +69,6 @@ Executing a Workflow
 
 :doc:`Choosing an Executor For a Task <./execution/choosing_executors>`
 
-:doc:`Creating a Custom Executor <./execution/creating_custom_executors>`
-
 :doc:`Executing an Electron in a Conda Environment <./execution/choosing_conda_environments>`
 
 Querying and Viewing
