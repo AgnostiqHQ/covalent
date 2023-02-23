@@ -311,6 +311,7 @@ def _get_result_v2_from_dispatcher(
     http.mount("http://", adapter)
     url = f"{dispatcher_addr}/api/v1/resultv2/{dispatch_id}"
     headers = {"x-api-key": request_api_key()}
+
     response = http.get(
         url,
         params={"wait": bool(int(wait)), "status_only": status_only},

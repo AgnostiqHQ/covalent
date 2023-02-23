@@ -23,6 +23,7 @@
 import inspect
 import os
 import socket
+import toml
 import uuid
 from datetime import timedelta
 from typing import Callable, Dict, Set, Tuple
@@ -227,61 +228,22 @@ def format_server_url(hostname: str = None, port: int = None) -> str:
     return url.strip("/")
 
 
-def request_api_key(aws_region: str = "us-east-1") -> str:
+def request_api_key() -> str:
+
+    # for local dev and automated functional tests
     if os.environ.get("COVALENT_DISABLE_AUTH"):
-        return "dummy_key"
-    try:
-        import boto3
-        import botocore
-    except ImportError:
-        print("boto3 is not installed!")
-        return None
+        api_key = "dummy_api_key"
+        return api_key
 
-    sts = boto3.Session(region_name=aws_region).client("sts")
+    api_key = os.environ.get("COVALENT_API_KEY", "")
 
-    try:
-        account = sts.get_caller_identity()["Account"]
-    except botocore.exceptions.NoCredentialsError:
-        print("AWS credentials could not be located.")
-        return None
-
-    try:
-        role = os.environ["COVALENT_API_KEY_ACCESS_ROLE"]
-    except KeyError:
-        print(
-            "Before trying to retrieve the API key, define the environment variable COVALENT_API_KEY_ACCESS_ROLE."
-        )
-        return None
-
-    try:
-        session_name = f"covalent-sdk-{str(uuid.uuid4())[:8]}"
-        response = sts.assume_role(
-            RoleArn=f"arn:aws:iam::{account}:role/{role}", RoleSessionName=session_name
-        )
-        credentials = response["Credentials"]
-    except botocore.exceptions.ClientError:
-        print("Unable to assume the role. Check your session's IAM policies.")
-        return None
-
-    sm = boto3.Session(
-        region_name=aws_region,
-        aws_access_key_id=credentials["AccessKeyId"],
-        aws_secret_access_key=credentials["SecretAccessKey"],
-        aws_session_token=credentials["SessionToken"],
-    ).client("secretsmanager")
-
-    try:
-        secret_name = os.environ["COVALENT_API_KEY_SECRET"]
-    except KeyError:
-        print(
-            "Before trying to retrieve the API key, define the environment variable COVALENT_API_KEY_SECRET."
-        )
-        return None
-
-    try:
-        api_key = sm.get_secret_value(SecretId=secret_name)["SecretString"]
-    except botocore.exceptions.ClientError:
-        print("Unable to retrieve the API key. Check the deployment.")
-        return None
+    if not api_key:
+        try:
+            auth_file = os.path.join(os.environ["HOME"] + "/.config", "covalent/auth.toml")
+            with open(auth_file, "r") as f:
+                auth_data = toml.load(f)
+                api_key = auth_data["api_key"]
+        except:
+            raise RuntimeError("api key not found")
 
     return api_key
