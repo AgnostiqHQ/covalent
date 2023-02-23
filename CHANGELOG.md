@@ -21,13 +21,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Modified `ct.get_result` to allow for status only requests
-- 
 
 ### Fixed
 
 - UI crashing if time values are null
 - No longer adding "http://" every time a dispatcher address is provided in local dispatcher class in order to use the provided address exactly
-- 
 
 ### Docs
 
@@ -41,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Lowering number of jest workers as an attempt to fix flaky UI functional tests
+- Added exception for nightly to pass if conda release fails
 
 ## [0.218.0-rc.0] - 2023-02-21
 
