@@ -75,41 +75,126 @@ def client():
 @pytest.fixture
 def test_db():
     """Instantiate and return an in-memory database."""
-
     return MockDataStore(db_URL="sqlite+pysqlite:///:memory:")
 
 
 @pytest.fixture
 def test_db_file():
     """Instantiate and return a database."""
-
     return MockDataStore(db_URL="sqlite+pysqlite:////tmp/testdb.sqlite")
 
 
-def test_submit(mocker, app, client):
-    mocker.patch("covalent_dispatcher.run_dispatcher", return_value=DISPATCH_ID)
-    response = client.post("/api/submit", data=json.dumps({}))
+@pytest.mark.asyncio
+async def test_submit(mocker, client):
+    """Test the submit endpoint."""
+    mock_data = json.dumps({}).encode("utf-8")
+    run_dispatcher_mock = mocker.patch(
+        "covalent_dispatcher.run_dispatcher", return_value=DISPATCH_ID
+    )
+    response = client.post("/api/submit", data=mock_data)
     assert response.json() == DISPATCH_ID
+    run_dispatcher_mock.assert_called_once_with(mock_data)
 
 
-def test_cancel(app, client):
-    response = client.post("/api/cancel", data=DISPATCH_ID.encode("utf-8"))
+@pytest.mark.asyncio
+async def test_submit_exception(mocker, client):
+    """Test the submit endpoint."""
+    mock_data = json.dumps({}).encode("utf-8")
+    mocker.patch("covalent_dispatcher.run_dispatcher", side_effect=Exception("mock"))
+    response = client.post("/api/submit", data=mock_data)
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Failed to submit workflow: mock"
+
+
+@pytest.mark.asyncio
+async def test_redispatch(mocker, client):
+    """Test the redispatch endpoint."""
+    json_lattice = None
+    electron_updates = None
+    reuse_previous_results = False
+    mock_data = json.dumps(
+        {
+            "dispatch_id": DISPATCH_ID,
+            "json_lattice": json_lattice,
+            "electron_updates": electron_updates,
+            "reuse_previous_results": reuse_previous_results,
+        }
+    ).encode("utf-8")
+    run_redispatch_mock = mocker.patch(
+        "covalent_dispatcher.run_redispatch", return_value=DISPATCH_ID
+    )
+
+    response = client.post("/api/redispatch", data=mock_data)
+    assert response.json() == DISPATCH_ID
+    run_redispatch_mock.assert_called_once_with(
+        DISPATCH_ID, json_lattice, electron_updates, reuse_previous_results
+    )
+
+
+def test_cancel_dispatch(mocker, app, client):
+    """
+    Test cancelling dispatch
+    """
+    mocker.patch("covalent_dispatcher.cancel_running_dispatch")
+    response = client.post(
+        "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
+    )
     assert response.json() == f"Dispatch {DISPATCH_ID} cancelled."
 
 
-def test_db_path(mocker, app, client):
-    dbpath = "/Users/root/covalent/results.db"
+def test_cancel_tasks(mocker, app, client):
+    """
+    Test cancelling tasks within a lattice after dispatch
+    """
+    mocker.patch("covalent_dispatcher.cancel_running_dispatch")
+    response = client.post(
+        "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": [0, 1]})
+    )
+    assert response.json() == f"Cancelled tasks [0, 1] in dispatch {DISPATCH_ID}."
 
-    def __init__(self, dbpath=dbpath):
-        self._dbpath = dbpath
 
-    mocker.patch.object(DispatchDB, "__init__", __init__)
-    response = client.get("/api/db-path")
-    result = response.json().replace("\\", "").replace('"', "")
-    assert result == dbpath
+@pytest.mark.asyncio
+async def test_redispatch_exception(mocker, client):
+    """Test the redispatch endpoint."""
+    response = client.post("/api/redispatch", data="bad data")
+    assert response.status_code == 400
+    assert (
+        response.json()["detail"]
+        == "Failed to redispatch workflow: Expecting value: line 1 column 1 (char 0)"
+    )
 
 
-def test_get_result(mocker, app, client, test_db_file, tmp_path):
+@pytest.mark.asyncio
+async def test_cancel(mocker, client):
+    """Test the cancel endpoint."""
+    cancel_running_dispatch_mock = mocker.patch(
+        "covalent_dispatcher.cancel_running_dispatch", return_value=DISPATCH_ID
+    )
+    response = client.post(
+        "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
+    )
+    assert response.json() == f"Dispatch {DISPATCH_ID} cancelled."
+    cancel_running_dispatch_mock.assert_called_once_with(DISPATCH_ID, [])
+
+
+@pytest.mark.asyncio
+async def test_cancel_exception(mocker, client):
+    """Test the cancel endpoint."""
+    cancel_running_dispatch_mock = mocker.patch(
+        "covalent_dispatcher.cancel_running_dispatch", side_effect=Exception("mock")
+    )
+
+    with pytest.raises(Exception):
+        response = client.post(
+            "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
+        )
+        assert response.status_code == 400
+        assert response.json()["detail"] == "Failed to cancel workflow: mock"
+        cancel_running_dispatch_mock.assert_called_once_with(DISPATCH_ID, [])
+
+
+def test_get_result(mocker, client, test_db_file):
+    """Test the get-result endpoint."""
     lattice = MockLattice(
         status=str(Result.COMPLETED),
         dispatch_id=DISPATCH_ID,
@@ -129,7 +214,8 @@ def test_get_result(mocker, app, client, test_db_file, tmp_path):
     os.remove("/tmp/testdb.sqlite")
 
 
-def test_get_result_503(mocker, app, client, test_db_file, tmp_path):
+def test_get_result_503(mocker, client, test_db_file):
+    """Test the get-result endpoint."""
     lattice = MockLattice(
         status=str(Result.NEW_OBJ),
         dispatch_id=DISPATCH_ID,
@@ -145,8 +231,8 @@ def test_get_result_503(mocker, app, client, test_db_file, tmp_path):
     os.remove("/tmp/testdb.sqlite")
 
 
-def test_get_result_dispatch_id_not_found(mocker, test_db_file, client, tmp_path):
-
+def test_get_result_dispatch_id_not_found(mocker, test_db_file, client):
+    """Test the get-result endpoint and that 404 is returned if the dispatch ID is not found in the database."""
     mocker.patch("covalent_dispatcher._service.app._result_from", return_value={})
     mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db_file)
     mocker.patch("covalent_dispatcher._service.app.Lattice", MockLattice)
@@ -155,10 +241,9 @@ def test_get_result_dispatch_id_not_found(mocker, test_db_file, client, tmp_path
 
 
 def test_db_path_get_config(mocker):
-    dbpath = "/Users/root/covalent/results.db"
-
+    """Test that the db path is retrieved from the config.""" ""
     get_config_mock = mocker.patch("covalent_dispatcher._db.dispatchdb.get_config")
 
-    dispatch_db = DispatchDB()
+    DispatchDB()
 
     get_config_mock.assert_called_once()

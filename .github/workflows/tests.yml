@@ -260,7 +260,7 @@ jobs:
           || env.BUILD_AND_RUN_ALL
         run: |
           cd covalent_ui/webapp
-          npm test -- --coverage --watchAll=false
+          npm test -- --coverage --watchAll=false --maxWorkers=50%
 
       - name: Dump Covalent logs
         if: >
@@ -284,6 +284,7 @@ jobs:
           files: ./sdk_coverage.xml
           flags: SDK
           name: "SDK Unit Tests"
+          fail_ci_if_error: true
 
       - name: Upload Dispatcher report to Codecov
         id: upload-dispatcher-report
@@ -297,6 +298,7 @@ jobs:
           files: ./dispatcher_coverage.xml
           flags: Dispatcher
           name: "Dispatcher Unit Tests"
+          fail_ci_if_error: true
 
       - name: Upload Functional report to Codecov
         id: upload-functional-report
@@ -309,6 +311,7 @@ jobs:
           files: ./functional_tests_coverage.xml
           flags: Functional_Tests
           name: "Functional Tests"
+          fail_ci_if_error: true
 
       - name: Upload UI backend report to Codecov
         id: upload-ui-backend-report
@@ -323,6 +326,7 @@ jobs:
           files: ./ui_backend_coverage.xml
           flags: UI_Backend
           name: "UI Backend Unit Tests"
+          fail_ci_if_error: true
 
       - name: Upload UI frontend report to Codecov
         id: upload-ui-frontend-report
@@ -336,6 +340,7 @@ jobs:
           files: ./covalent_ui/webapp/coverage/clover.xml
           flags: UI_Frontend
           name: "UI Frontend Unit Tests"
+          fail_ci_if_error: true
 
       - name: Local Codecov
         id: local-codecov

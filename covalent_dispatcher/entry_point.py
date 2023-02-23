@@ -22,8 +22,11 @@
 Self-contained entry point for the dispatcher
 """
 
+from typing import List
 
 from covalent._shared_files import logger
+
+from ._core import cancel_dispatch
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -52,7 +55,22 @@ async def run_dispatcher(json_lattice: str):
     return dispatch_id
 
 
-def cancel_running_dispatch(dispatch_id: str) -> None:
+async def run_redispatch(
+    dispatch_id: str, json_lattice: str, electron_updates: dict, reuse_previous_results: bool
+):
+    from ._core import make_derived_dispatch, run_dispatch
+
+    redispatch_id = make_derived_dispatch(
+        dispatch_id, json_lattice, electron_updates, reuse_previous_results
+    )
+    run_dispatch(redispatch_id)
+
+    app_log.debug(f"Re-dispatching {dispatch_id} as {redispatch_id}")
+
+    return redispatch_id
+
+
+async def cancel_running_dispatch(dispatch_id: str, task_ids: List[int] = None) -> None:
     """
     Cancels a running dispatch job.
 
@@ -63,6 +81,7 @@ def cancel_running_dispatch(dispatch_id: str) -> None:
         None
     """
 
-    from ._core import cancel_workflow
+    if task_ids is None:
+        task_ids = []
 
-    cancel_workflow(dispatch_id)
+    await cancel_dispatch(dispatch_id, task_ids)

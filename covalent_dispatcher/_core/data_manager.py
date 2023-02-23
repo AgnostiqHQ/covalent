@@ -24,12 +24,14 @@ Defines the core functionality of the result service
 
 import asyncio
 import uuid
+from typing import Callable, Dict, Optional
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._workflow.lattice import Lattice
+from covalent._workflow.transport_graph_ops import TransportGraphOps
 
-from .._db import update, upsert
+from .._db import load, update, upsert
 from .._db.write_result_to_db import resolve_electron_id
 
 app_log = logger.app_log
@@ -44,7 +46,7 @@ _dispatch_status_queues = {}
 
 
 def generate_node_result(
-    node_id,
+    node_id: int,
     start_time=None,
     end_time=None,
     status=None,
@@ -55,7 +57,24 @@ def generate_node_result(
     sub_dispatch_id=None,
     sublattice_result=None,
 ):
+    """
+    Helper routine to prepare the node result
 
+    Arg(s)
+        node_id: ID of the node in the trasport graph
+        start_time: Start time of the node
+        end_time: Time at which the node finished executing
+        status: Status of the node's execution
+        output: Output of the node
+        error: Error from the node
+        stdout: STDOUT of a node
+        stderr: STDERR generated during node execution
+        sub_dispatch_id: Dispatch ID of the sublattice
+        sublattice_result: Result of the sublattice
+
+    Return(s)
+        Dictionary of the inputs
+    """
     return {
         "node_id": node_id,
         "start_time": start_time,
@@ -71,12 +90,22 @@ def generate_node_result(
 
 
 # Domain: result
-async def update_node_result(result_object, node_result):
+async def update_node_result(result_object, node_result) -> None:
+    """
+    Updates the result object with the current node_result
+
+    Arg(s)
+        result_object: Result object the current dispatch
+        node_result: Result of the node to be updated in the result object
+
+    Return(s)
+        None
+    """
     app_log.warning("Updating node result (run_planned_workflow).")
     try:
         update._node(result_object, **node_result)
     except Exception as ex:
-        app_log.exception("Error persisting node update: {ex}")
+        app_log.exception(f"Error persisting node update: {ex}")
         node_result["status"] = Result.FAILED
     finally:
         node_id = node_result["node_id"]
@@ -136,11 +165,71 @@ def get_unique_id() -> str:
 def make_dispatch(
     json_lattice: str, parent_result_object: Result = None, parent_electron_id: int = None
 ) -> Result:
-
     result_object = initialize_result_object(
         json_lattice, parent_result_object, parent_electron_id
     )
     _register_result_object(result_object)
+    return result_object.dispatch_id
+
+
+def _get_result_object_from_new_lattice(
+    json_lattice: str, old_result_object: Result, reuse_previous_results: bool
+) -> Result:
+    """Get new result object for re-dispatching from new lattice json."""
+    lat = Lattice.deserialize_from_json(json_lattice)
+    result_object = Result(lat, get_unique_id())
+    result_object._initialize_nodes()
+
+    if reuse_previous_results:
+        tg = result_object.lattice.transport_graph
+        tg_old = old_result_object.lattice.transport_graph
+        reusable_nodes = TransportGraphOps(tg_old).get_reusable_nodes(tg)
+        TransportGraphOps(tg).copy_nodes_from(tg_old, reusable_nodes)
+
+    return result_object
+
+
+def _get_result_object_from_old_result(
+    old_result_object: Result, reuse_previous_results: bool
+) -> Result:
+    """Get new result object for re-dispatching from old result object."""
+    result_object = Result(old_result_object.lattice, get_unique_id())
+    result_object._num_nodes = old_result_object._num_nodes
+
+    if not reuse_previous_results:
+        result_object._initialize_nodes()
+
+    return result_object
+
+
+def make_derived_dispatch(
+    parent_dispatch_id: str,
+    json_lattice: Optional[str] = None,
+    electron_updates: Optional[Dict[str, Callable]] = None,
+    reuse_previous_results: bool = False,
+) -> str:
+    """Make a re-dispatch from a previous dispatch."""
+    if electron_updates is None:
+        electron_updates = {}
+
+    old_result_object = load.get_result_object_from_storage(parent_dispatch_id)
+
+    if json_lattice:
+        result_object = _get_result_object_from_new_lattice(
+            json_lattice, old_result_object, reuse_previous_results
+        )
+    else:
+        result_object = _get_result_object_from_old_result(
+            old_result_object, reuse_previous_results
+        )
+
+    result_object.lattice.transport_graph.apply_electron_updates(electron_updates)
+    result_object.lattice.transport_graph.dirty_nodes = list(
+        result_object.lattice.transport_graph._graph.nodes
+    )
+    update.persist(result_object)
+    _register_result_object(result_object)
+
     return result_object.dispatch_id
 
 
@@ -170,9 +259,7 @@ async def persist_result(dispatch_id: str):
 
 
 async def _update_parent_electron(result_object: Result):
-    parent_eid = result_object._electron_id
-
-    if parent_eid:
+    if parent_eid := result_object._electron_id:
         dispatch_id, node_id = resolve_electron_id(parent_eid)
         status = result_object.status
         if status == Result.POSTPROCESSING_FAILED:
@@ -192,4 +279,4 @@ async def _update_parent_electron(result_object: Result):
 
 def upsert_lattice_data(dispatch_id: str):
     result_object = get_result_object(dispatch_id)
-    upsert._lattice_data(result_object)
+    upsert.lattice_data(result_object)

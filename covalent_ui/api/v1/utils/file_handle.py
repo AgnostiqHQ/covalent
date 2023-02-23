@@ -43,7 +43,6 @@ def transportable_object(obj):
 
 
 def validate_data(unpickled_object):
-
     """Validate unpickled object"""
     if isinstance(unpickled_object, list):
         if not (unpickled_object):

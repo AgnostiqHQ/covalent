@@ -7,10 +7,105 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Lowering number of jest workers as an attempt to fix flaky UI functional tests
+- Added exception for nightly to pass if conda release fails
 
 ### Docs
 
+- Tutorial guidelines.
 - Updated How-to documents. 
+
+## [0.218.0-rc.0] - 2023-02-21
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Added
+
+- Added feature to support cancelling workflow dispatches
+- Updating/adding new tests to improve code coverage
+
+### Fixed
+
+- Redispatch bug involving copying reusable nodes from old transport graph to new transport graph.
+- Pennylane tutorial notebook.
+
+### Docs
+
+- Redispatch API section.
+- Add how to for redispatch.
+- Mention redispatch in the concepts section.
+- Update `AWS Lambda` executor RTD with steps to extend the base executor image for installing custom packages
+
+### Changed
+
+- Enhanced the Dockerfile to include builds from various sources and a differentiation between SDK and Server builds
+
+### Operations
+
+- Updated pre-commit hook versions
+- Updated codecov upload steps in tests workflow to fail if upload to codecov fails
+
+## [0.217.0-rc.0] - 2023-02-12
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- dwelsch-esi <116022979+dwelsch-esi@users.noreply.github.com>
+- Co-authored-by: dwelsch-memverge <david.welsch@memverge.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+
+### Fixed
+
+- Redispatch bug.
+
+### Changed
+
+- Location of function to load result from the database now moved to load module in covalent_dispatcher/_db folde.
+
+### Added
+- API endpoint for redispatching.
+- Unit and functional tests for redispatching.
+
+### Docs
+- Updated self-deployment (server deployment). 
+
+## [0.216.0-rc.0] - 2023-02-05
+
+### Authors
+
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+
+
+### Removed
+
+- References to specific IBMQ hub/group/project in tutorial 5
+
+### Added
+
+- TransportGraphOps class for diffing operations on transport graphs.
+- Added make derived dispatch method.
+- Apply electron updates method to _TransportGraph.
+
+### Operations
+
+- Added job in `nightly` to trigger base executor image builds after a Covalent `pre-release`
 
 ## [0.215.0-rc.0] - 2023-02-01
 
@@ -18,7 +113,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Alejandro Esquivel <ae@alejandro.ltd>
-
 
 ### Docs
 

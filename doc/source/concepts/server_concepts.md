@@ -2,7 +2,7 @@
 
 The Covalent server runs as a service on your local machine or on a server. The service contains a *dispatcher* that analyzes workflows (lattices) and hands its component functions (electrons) off to *executors*. Each executor is an adaptor to a backend hardware resource. Covalent has a growing list of turn-key executors for common compute backends. If no executor exists yet for your compute platform, Covalent provides base classes for writing your own.
 
-The examples that follow assume that the Covalent server is running locally. You start and manage the local server using the {ref}`Covalent command-line interface (CLI)<dispatcher_api>` tool. (See also {doc}`How-to Guide <../how_to/execution/covalent_cli>`.)
+The examples that follow assume that the Covalent server is running locally. You start and manage the local server using the {ref}`Covalent command-line interface (CLI)<dispatcher_api>` tool. (See also the {doc}`How-to Guide <../how_to/execution/covalent_cli>`.)
 
 
 (transport-graph)=
@@ -25,21 +25,37 @@ dispatch_id = ct.dispatch(run_experiment)(C=1.0, gamma=0.7)
 ```
 
 The dispatcher ingests the workflow and generates a dispatch ID, then tags all information about the dispatched workflow with the dispatch ID. This information includes:
-\* The lattice definition
-\* Runtime parameters to the lattice
-\* Execution status
-\* Result output
+* The lattice definition
+* Runtime parameters to the lattice
+* Execution status
+* Result output
 
 ... in short, everything about the instantiated workflow before, during, and after its execution. Every time you dispatch a workflow, all this information is saved and the process is executed on the server. This means that after the workflow is dispatched you can close the Jupyter notebook or console on which you ran the script. You can view information about the process in the {doc}`GUI <ui_concepts>`.
+
+Furthermore, when a workflow is redispatched:
+
+```python
+
+# Redispatch the run_experiment lattice to the dispatch server with an updated svm training task definition.
+
+redispatch_id = ct.redispatch(
+    dispatch_id,
+    replace_electrons={'train_svm': train_svm_redefined},
+    reuse_previous_results=True
+)(),
+```
+
+the Covalent {code}`redispatch` command prepares the lattice definition, runtime parameters etc. and triggers the {code}`dispatch` command.
+
 
 
 (executors)=
 ## Executors
 
-An executor is responsible for taking a task – an electron – and executing it on a particular platform in a certain way. For example, the *local* executor invokes the task on your local computer. You can specify an executor as a parameter when you define an electron, or omit the parameter to use the default executor.
+An executor is responsible for taking a task – an {term}`electron` – and executing it on a particular platform in a certain way. For example, the *local* executor invokes the task on your local computer. You can specify an executor as a parameter when you define an electron, or omit the parameter to use the default executor.
 
 :::{note}
-It would be reasonable to expect that the local executor is the default, but it is not. Instead, the local dispatch server starts a local Dask cluster and, for any task not explicitly assigned an executor, queues the task to the Dask cluster. This is usually more efficient than native local execution for parallel tasks.
+It would be reasonable to expect that the local executor is the default, but it is not. Instead, the local dispatch server starts a local {term}`Dask` cluster and, for any task not explicitly assigned an executor, queues the task to the Dask cluster. This is usually more efficient than native local execution for parallel tasks.
 :::
 
 For example, consider one of the electrons defined in the {ref}`ML example <ml example>`:
@@ -54,7 +70,7 @@ def score_svm(data, clf):
 The definition uses the electron decorator without an executor parameter. By default, the dispatcher uses the Dask executor for that electron.
 
 :::{note}
-Covalent has executors for many backend platforms, but if you need an executor that does not yet exist, you can define a custom executors for any remote backend system. See the {doc}`Executors <../api/executors/index>` in the {doc}`API Reference <../api/index>` for a list of executors.
+Covalent has executors for many backend platforms, but if you need an executor that does not yet exist, you can define a custom executors for any remote backend system. See {doc}`Executors <../api/executors/index>` in the {doc}`API Reference <../api/index>` for a list of executors.
 :::
 
 Covalent enables you to break down your workflow by compute requirements. You can:

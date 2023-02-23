@@ -37,7 +37,6 @@ class S3(FileTransferStrategy):
     """
 
     def __init__(self, credentials: str = None, profile: str = None, region_name: str = None):
-
         self.credentials = credentials
         self.profile = profile
         self.region_name = region_name
