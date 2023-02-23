@@ -151,7 +151,7 @@ class Lepton(Electron):
 
         if isinstance(deps_bash, DepsBash):
             deps["bash"] = deps_bash
-        if isinstance(deps_bash, (list, str)):
+        if isinstance(deps_bash, list) or isinstance(deps_bash, str):
             deps["bash"] = DepsBash(commands=deps_bash)
 
         if isinstance(deps_pip, DepsPip):
@@ -174,7 +174,7 @@ class Lepton(Electron):
             if return_value_keyword in [RESERVED_RETVAL_KEY__FILES]:
                 cd.retval_keyword = None
             elif return_value_keyword:
-                raise RuntimeError(
+                raise Exception(
                     "DepsCall retval_keyword(s) are not currently supported for Leptons, please remove the retval_keyword arg from DepsCall for the workflow to be constructed successfully."
                 )
 
@@ -322,12 +322,12 @@ class Lepton(Electron):
             num_outputs = attrs.count(Lepton.OUTPUT)
 
             if (num_input_outputs + num_outputs) != len(self.named_outputs):
-                raise RuntimeError(
+                raise Exception(
                     "Expecting {} named outputs.".format(num_input_outputs + num_outputs)
                 )
 
             if num_input_outputs != len(kwargs):
-                raise RuntimeError("Expecting {} keyword arguments.".format(num_input_outputs))
+                raise Exception("Expecting {} keyword arguments.".format(num_input_outputs))
 
             output_string = ""
             if self.named_outputs:
@@ -354,7 +354,7 @@ class Lepton(Electron):
                 )  # pragma: no cover
 
             if proc.returncode != 0:
-                raise RuntimeError(proc.stderr.decode("utf-8").strip())
+                raise Exception(proc.stderr.decode("utf-8").strip())
 
             return_vals = []
             if self.named_outputs:
@@ -425,7 +425,7 @@ def bash(
 
     if isinstance(deps_bash, DepsBash):
         deps["bash"] = deps_bash
-    if isinstance(deps_bash, (list, str)):
+    if isinstance(deps_bash, list) or isinstance(deps_bash, str):
         deps["bash"] = DepsBash(commands=deps_bash)
 
     if isinstance(deps_pip, DepsPip):
