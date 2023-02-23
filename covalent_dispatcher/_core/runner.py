@@ -33,7 +33,7 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import prefix_separator, sublattice_prefix
-from covalent._workflow import DepsBash, DepsCall, DepsLocal, DepsPip
+from covalent._workflow import DepsBash, DepsCall, DepsLocal, DepsPip, local_deps
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
@@ -398,6 +398,7 @@ async def run_abstract_task(
 
 # Domain: runner
 # This is to be run out-of-process
+@local_deps
 def _post_process(lattice: Lattice, node_outputs: Dict) -> Any:
     """
     Post processing function to be called after the lattice execution.
