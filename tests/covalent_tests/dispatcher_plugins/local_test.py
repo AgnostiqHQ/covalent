@@ -72,11 +72,12 @@ def test_get_redispatch_request_body_args_kwargs(mocker):
     get_result_mock().lattice.build_graph.assert_called_once_with(*[1, 2], **{"a": 1, "b": 2})
 
 
+@pytest.mark.parametrize("is_pending", [True, False])
 @pytest.mark.parametrize(
     "replace_electrons,expected_arg",
     [(None, {}), ({"mock-electron-1": "mock-electron-2"}, {"mock-electron-1": "mock-electron-2"})],
 )
-def test_redispatch(mocker, replace_electrons, expected_arg):
+def test_redispatch(mocker, replace_electrons, expected_arg, is_pending):
     """Test the local re-dispatch function."""
 
     mocker.patch("covalent._dispatcher_plugins.local.get_config", return_value="mock-config")
@@ -87,10 +88,14 @@ def test_redispatch(mocker, replace_electrons, expected_arg):
     )
 
     local_dispatcher = LocalDispatcher()
-    func = local_dispatcher.redispatch("mock-dispatch-id", replace_electrons=replace_electrons)
+    func = local_dispatcher.redispatch(
+        "mock-dispatch-id", replace_electrons=replace_electrons, is_pending=is_pending
+    )
     func()
     requests_mock.post.assert_called_once_with(
-        "http://mock-config:mock-config/api/redispatch", json={"mock-request-body"}
+        "http://mock-config:mock-config/api/redispatch",
+        json={"mock-request-body"},
+        params={"is_pending": is_pending},
     )
     requests_mock.post().raise_for_status.assert_called_once()
     requests_mock.post().content.decode().strip().replace.assert_called_once_with('"', "")

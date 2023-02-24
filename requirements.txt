@@ -16,4 +16,5 @@ sqlalchemy>=1.4.37,<=1.4.41
 sqlalchemy_utils==0.38.3
 toml==0.10.2
 uvicorn[standard]>=0.18.2,<=0.18.3
+watchdog==2.2.1
 werkzeug>=2.0.3,<=2.2.2

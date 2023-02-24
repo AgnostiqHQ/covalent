@@ -59,9 +59,8 @@ def _get_abstract_task_inputs(node_id: int, node_name: str, result_object: Resul
 
     for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
         edge_data = result_object.lattice.transport_graph.get_edge_data(parent, node_id)
-        # value = result_object.lattice.transport_graph.get_node_value(parent, "output")
 
-        for e_key, d in edge_data.items():
+        for _, d in edge_data.items():
             if not d.get("wait_for"):
                 if d["param_type"] == "arg":
                     abstract_task_input["args"].append((parent, d["arg_index"]))
@@ -248,7 +247,6 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
     tasks_left, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(result_object)
 
     unresolved_tasks = 0
-    resolved_tasks = 0
 
     for node_id in initial_nodes:
         unresolved_tasks += 1
@@ -257,6 +255,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
     while unresolved_tasks > 0:
         app_log.debug(f"{tasks_left} tasks left to complete")
         app_log.debug(f"Waiting to hear from {unresolved_tasks} tasks")
+
         node_id, node_status = await status_queue.get()
 
         app_log.debug(f"Received node status update {node_id}: {node_status}")
