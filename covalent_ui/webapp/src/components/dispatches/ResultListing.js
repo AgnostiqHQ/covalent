@@ -907,7 +907,7 @@ const ResultListing = () => {
                             />
                           </TableCell>
                         ) : (
-                          <TableCell>{result.runTime === null ? '-' : secondsToHms(result.runTime)}</TableCell>
+                          <TableCell>{!result.runTime ? '-' : secondsToHms(result.runTime)}</TableCell>
                         )}
 
                         <TableCell>
