@@ -32,10 +32,13 @@ from typing import Any, Callable, Dict, List, Tuple
 
 import cloudpickle as pickle
 
+from covalent._shared_files import logger
 from covalent._workflow.depsbash import DepsBash
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from covalent._workflow.depspip import DepsPip
 from covalent._workflow.transport import TransportableObject
+
+app_log = logger.app_log
 
 
 def wrapper_fn(
@@ -163,150 +166,165 @@ def run_task_from_uris(
     task_ids = task_group_metadata["task_ids"]
     gid = task_group_metadata["task_group_id"]
 
-    for i, task in enumerate(task_specs):
-        result_uri, stdout_uri, stderr_uri = output_uris[i]
+    # For dev only -- log each task group
+    app_log.debug(f"Running task group {dispatch_id}:{gid}")
 
-        with open(stdout_uri, "w") as stdout, open(stderr_uri, "w") as stderr:
-            with redirect_stdout(stdout), redirect_stderr(stderr):
-                try:
-                    task_id = task["function_id"]
-                    args_ids = task["args_ids"]
-                    kwargs_ids = task["kwargs_ids"]
+    try:
+        for i, task in enumerate(task_specs):
+            result_uri, stdout_uri, stderr_uri = output_uris[i]
 
-                    # Pull task inputs from the Covalent data service
-                    function_uri = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/function"
+            with open(stdout_uri, "w") as stdout, open(stderr_uri, "w") as stderr:
+                with redirect_stdout(stdout), redirect_stderr(stderr):
+                    try:
+                        task_id = task["function_id"]
+                        args_ids = task["args_ids"]
+                        kwargs_ids = task["kwargs_ids"]
 
-                    import requests
+                        # Pull task inputs from the Covalent data service
+                        function_uri = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/function"
 
-                    resp = requests.get(function_uri, stream=True)
-                    resp.raise_for_status()
-                    serialized_fn = pickle.loads(resp.content)
+                        import requests
 
-                    ser_args = []
-                    ser_kwargs = {}
-
-                    for node_id in args_ids:
-                        url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{node_id}/output"
-                        resp = requests.get(url, stream=True)
+                        resp = requests.get(function_uri, stream=True)
                         resp.raise_for_status()
-                        ser_args.append(pickle.loads(resp.content))
+                        serialized_fn = pickle.loads(resp.content)
 
-                    for k, node_id in kwargs_ids.items():
-                        url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{node_id}/output"
-                        resp = requests.get(url, stream=True)
+                        ser_args = []
+                        ser_kwargs = {}
+
+                        for node_id in args_ids:
+                            url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{node_id}/output"
+                            resp = requests.get(url, stream=True)
+                            resp.raise_for_status()
+                            ser_args.append(pickle.loads(resp.content))
+
+                        for k, node_id in kwargs_ids.items():
+                            url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{node_id}/output"
+                            resp = requests.get(url, stream=True)
+                            resp.raise_for_status()
+                            ser_kwargs[k] = pickle.loads(resp.content)
+
+                        deps_url = (
+                            f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/deps"
+                        )
+                        resp = requests.get(deps_url, stream=True)
                         resp.raise_for_status()
-                        ser_kwargs[k] = pickle.loads(resp.content)
+                        deps_json = pickle.loads(resp.content)
 
-                    deps_url = (
-                        f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/deps"
-                    )
-                    resp = requests.get(deps_url, stream=True)
-                    resp.raise_for_status()
-                    deps_json = pickle.loads(resp.content)
+                        cb_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/call_before"
+                        resp = requests.get(cb_url, stream=True)
+                        resp.raise_for_status()
+                        call_before_json = pickle.loads(resp.content)
 
-                    cb_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/call_before"
-                    resp = requests.get(cb_url, stream=True)
-                    resp.raise_for_status()
-                    call_before_json = pickle.loads(resp.content)
+                        ca_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/call_after"
+                        resp = requests.get(ca_url, stream=True)
+                        resp.raise_for_status()
+                        call_after_json = pickle.loads(resp.content)
 
-                    ca_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/call_after"
-                    resp = requests.get(ca_url, stream=True)
-                    resp.raise_for_status()
-                    call_after_json = pickle.loads(resp.content)
+                        call_before, call_after = _gather_deps(
+                            deps_json, call_before_json, call_after_json
+                        )
+                        exception_occurred = False
 
-                    call_before, call_after = _gather_deps(
-                        deps_json, call_before_json, call_after_json
-                    )
-                    exception_occurred = False
+                        ser_output = wrapper_fn(
+                            serialized_fn, call_before, call_after, *ser_args, **ser_kwargs
+                        )
 
-                    ser_output = wrapper_fn(
-                        serialized_fn, call_before, call_after, *ser_args, **ser_kwargs
-                    )
+                        with open(result_uri, "wb") as f:
+                            pickle.dump(ser_output, f)
 
-                    with open(result_uri, "wb") as f:
-                        pickle.dump(ser_output, f)
+                        outputs[task_id] = result_uri
 
-                    outputs[task_id] = result_uri
+                        result_summary = {
+                            "node_id": task_id,
+                            "output_uri": result_uri,
+                            "stdout_uri": stdout_uri,
+                            "stderr_uri": stderr_uri,
+                            "exception_occurred": exception_occurred,
+                        }
+                        results.append(result_summary)
 
-                    result_summary = {
-                        "node_id": task_id,
-                        "output_uri": result_uri,
-                        "stdout_uri": stdout_uri,
-                        "stderr_uri": stderr_uri,
-                        "exception_occurred": exception_occurred,
-                    }
-                    results.append(result_summary)
+                    except Exception as ex:
+                        exception_occurred = True
+                        tb = "".join(traceback.TracebackException.from_exception(ex).format())
+                        print(tb, file=sys.stderr)
+                        result_uri = None
+                        result_summary = {
+                            "node_id": task_id,
+                            "output_uri": result_uri,
+                            "stdout_uri": stdout_uri,
+                            "stderr_uri": stderr_uri,
+                            "exception_occurred": exception_occurred,
+                        }
+                        results.append(result_summary)
 
-                except Exception as ex:
-                    exception_occurred = True
-                    tb = "".join(traceback.TracebackException.from_exception(ex).format())
-                    print(tb, file=sys.stderr)
-                    result_uri = None
-                    result_summary = {
-                        "node_id": task_id,
-                        "output_uri": result_uri,
-                        "stdout_uri": stdout_uri,
-                        "stderr_uri": stderr_uri,
-                        "exception_occurred": exception_occurred,
-                    }
-                    results.append(result_summary)
+                        break
 
-                    break
+                    finally:
 
-                finally:
+                        # POST task artifacts and clean up temp files
+                        if result_uri:
+                            upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/output"
+                            with open(result_uri, "rb") as f:
+                                files = {"asset_file": f}
+                                requests.post(upload_url, files=files)
 
-                    # POST task artifacts and clean up temp files
-                    if result_uri:
-                        upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/output"
-                        with open(result_uri, "rb") as f:
-                            files = {"asset_file": f}
-                            requests.post(upload_url, files=files)
+                            os.unlink(result_uri)
 
-                        os.unlink(result_uri)
+                        sys.stdout.flush()
+                        if stdout_uri:
+                            upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/stdout"
+                            with open(stdout_uri, "rb") as f:
+                                files = {"asset_file": f}
+                                requests.post(upload_url, files=files)
+                            os.unlink(stdout_uri)
 
-                    sys.stdout.flush()
-                    if stdout_uri:
-                        upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/stdout"
-                        with open(stdout_uri, "rb") as f:
-                            files = {"asset_file": f}
-                            requests.post(upload_url, files=files)
-                        os.unlink(stdout_uri)
+                        sys.stderr.flush()
+                        if stderr_uri:
+                            upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/stderr"
+                            with open(stderr_uri, "rb") as f:
+                                files = {"asset_file": f}
+                                requests.post(upload_url, files=files)
+                            os.unlink(stderr_uri)
 
-                    sys.stderr.flush()
-                    if stderr_uri:
-                        upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/stderr"
-                        with open(stderr_uri, "rb") as f:
-                            files = {"asset_file": f}
-                            requests.post(upload_url, files=files)
-                        os.unlink(stderr_uri)
+                        result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
 
-                    result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
+                        with open(result_path, "w") as f:
+                            json.dump(result_summary, f)
 
-                    with open(result_path, "w") as f:
-                        json.dump(result_summary, f)
+                        # Notify Covalent that the task has terminated
+                        url = f"{server_url}/api/v1/update/{dispatch_id}/task/{task_id}"
+                        requests.put(url)
 
-                    # Notify Covalent that the task has terminated
-                    url = f"{server_url}/api/v1/update/{dispatch_id}/task/{task_id}"
-                    requests.put(url)
+        # Deal with any tasks that did not run
+        n = len(results)
+        if n < len(task_ids):
+            for i in range(n, len(task_ids)):
+                result_summary = {
+                    "node_id": task_ids[i],
+                    "output_uri": "",
+                    "stdout_uri": "",
+                    "stderr_uri": "",
+                    "exception_occurred": True,
+                }
 
-    # Deal with any tasks that did not run
-    n = len(results)
-    if n < len(task_ids):
-        for i in range(n, len(task_ids)):
-            result_summary = {
-                "node_id": task_ids[i],
-                "output_uri": "",
-                "stdout_uri": "",
-                "stderr_uri": "",
-                "exception_occurred": True,
-            }
+                results.append(result_summary)
 
-            results.append(result_summary)
+                result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
 
-            result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
+                with open(result_path, "w") as f:
+                    json.dump(result_summary, f)
 
-            with open(result_path, "w") as f:
-                json.dump(result_summary, f)
+                url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}"
+                requests.put(url)
 
-            url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}"
-            requests.put(url)
+        # For debugging
+        app_log.debug(f"Finished task group {dispatch_id}:{gid}")
+
+    except Exception as ex:
+
+        tb = "".join(traceback.TracebackException.from_exception(ex).format())
+        app_log.error(f"Exception when running task group {dispatch_id}:{gid}")
+        app_log.error(tb)
+
+        raise ex
