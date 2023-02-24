@@ -67,6 +67,10 @@ def result_1():
 
     Path(f"{TEMP_RESULTS_DIR}/dispatch_1").mkdir(parents=True, exist_ok=True)
     workflow_1.build_graph(a=1, b=2)
+
+    # Deleting triggers since they are not needed in the db
+    del workflow_1.metadata["triggers"]
+
     received_lattice = LatticeClass.deserialize_from_json(workflow_1.serialize_to_json())
     result = Result(lattice=received_lattice, dispatch_id="dispatch_1")
     result._initialize_nodes()

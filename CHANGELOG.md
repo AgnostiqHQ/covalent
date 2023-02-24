@@ -7,15 +7,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- `disable_run` option added to enable "saving-only" option on covalent server and not executing the workflow
+- `register_triggers`, `stop_triggers` functions added to `LocalDispatcher` class
+- `triggers` parameter to the lattice metadata
+- `BaseTrigger`, `DirTrigger`, `TimeTrigger` classes added available to be assigned to any lattice enabling the triggers feature
+- `TriggerLoader` class added enabling loading of any kind of triggers including user defined ones without requiring installation
+- CLI options to start covalent server in triggers only, and no triggers mode
+- `is_pending` option added during redispatch to resume execution of a previously "saved-only", i.e pending workflow
+- API routes added for Triggers server
+
+### Changed
+
+- Modified `ct.get_result` to allow for status only requests
+
+### Fixed
+
+- UI crashing if time values are null
+- No longer adding "http://" every time a dispatcher address is provided in local dispatcher class in order to use the provided address exactly
+
+### Docs
+
+- Added documentation for "Triggers" and a separate section for similar "Features"
+- Tutorial guidelines
+- Updated How-to documents.
+- Port of Pennylane's Univariate QVR tutorial using Covalent to this repo.
+
+### Tests
+
+- Updated and added tests to account for all of the above triggers related changes
+
 ### Operations
 
 - Lowering number of jest workers as an attempt to fix flaky UI functional tests
 - Added exception for nightly to pass if conda release fails
-
-### Docs
-
-- Tutorial guidelines.
-- Updated How-to documents. 
 
 ## [0.218.0-rc.0] - 2023-02-21
 
@@ -81,7 +107,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unit and functional tests for redispatching.
 
 ### Docs
-- Updated self-deployment (server deployment). 
+- Updated self-deployment (server deployment).
 
 ## [0.216.0-rc.0] - 2023-02-05
 

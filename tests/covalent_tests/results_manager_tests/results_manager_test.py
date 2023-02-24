@@ -35,8 +35,8 @@ DISPATCH_ID = "91c3ee18-5f2d-44ee-ac2a-39b79cf56646"
 @pytest.mark.parametrize(
     "dispatcher_addr",
     [
-        get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
-        "localhost:48008",
+        "http://" + get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
+        "http://localhost:48008",
     ],
 )
 def test_get_result_from_dispatcher(mocker, dispatcher_addr):

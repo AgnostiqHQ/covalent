@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -18,10 +18,5 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .base import BaseDispatcher
-from .local import LocalDispatcher
-
-local_dispatch = LocalDispatcher.dispatch
-local_dispatch_sync = LocalDispatcher.dispatch_sync
-local_redispatch = LocalDispatcher.redispatch
-stop_triggers = LocalDispatcher.stop_triggers
+from .app import router as triggers_router  # nopycln: import
+from .app import triggers_only_app  # nopycln: import

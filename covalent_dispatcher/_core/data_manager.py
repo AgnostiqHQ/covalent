@@ -108,11 +108,10 @@ async def update_node_result(result_object, node_result) -> None:
         app_log.exception(f"Error persisting node update: {ex}")
         node_result["status"] = Result.FAILED
     finally:
-        node_id = node_result["node_id"]
-        node_status = node_result["status"]
-        dispatch_id = result_object.dispatch_id
-        if node_status:
+        if node_status := node_result["status"]:
+            dispatch_id = result_object.dispatch_id
             status_queue = get_status_queue(dispatch_id)
+            node_id = node_result["node_id"]
             await status_queue.put((node_id, node_status))
 
 

@@ -71,7 +71,7 @@ torch==1.13.1
 1. Include a print statement listing the packages in the requirements file before the import statements via:
 
 ```{code}
-with open("./requirements.txt", "r") as file:
+with open("./assets/requirements.txt", "r") as file:
     for line in file:
         print(line.rstrip())
 

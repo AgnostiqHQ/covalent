@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -18,10 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .base import BaseDispatcher
-from .local import LocalDispatcher
-
-local_dispatch = LocalDispatcher.dispatch
-local_dispatch_sync = LocalDispatcher.dispatch_sync
-local_redispatch = LocalDispatcher.redispatch
-stop_triggers = LocalDispatcher.stop_triggers
+from .base import BaseTrigger  # nopycln: import
+from .dir_trigger import DirTrigger  # nopycln: import
+from .time_trigger import TimeTrigger  # nopycln: import
+from .trigger_loader import available_triggers  # nopycln: import

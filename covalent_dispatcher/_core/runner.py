@@ -68,7 +68,8 @@ def _build_sublattice_graph(sub: Lattice, parent_metadata: Dict, *args, **kwargs
         JSON representation of the sublattice transport graph
     """
     for k in sub.metadata.keys():
-        if not sub.metadata[k]:
+        # Not inheriting triggers from the parent lattice
+        if not sub.metadata[k] and k != "triggers":
             sub.metadata[k] = parent_metadata[k]
 
     sub.build_graph(*args, **kwargs)
@@ -315,15 +316,6 @@ async def _run_task(
         else:
             app_log.debug(f"Executing task {node_name}")
             assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
-            execute_callable = partial(
-                executor.execute,
-                function=assembled_callable,
-                args=inputs["args"],
-                kwargs=inputs["kwargs"],
-                dispatch_id=dispatch_id,
-                results_dir=results_dir,
-                node_id=node_id,
-            )
 
             asyncio.create_task(executor_proxy.watch(dispatch_id, node_id, executor))
 
@@ -496,13 +488,13 @@ async def _postprocess_workflow(result_object: Result) -> Result:
         upsert.lattice_data(result_object)
         return result_object
 
-    post_processing_inputs = {}
-    post_processing_inputs["args"] = [
-        TransportableObject.make_transportable(result_object.lattice),
-        TransportableObject.make_transportable(result_object.get_all_node_outputs()),
-    ]
-    post_processing_inputs["kwargs"] = {}
-
+    post_processing_inputs = {
+        "args": [
+            TransportableObject.make_transportable(result_object.lattice),
+            TransportableObject.make_transportable(result_object.get_all_node_outputs()),
+        ],
+        "kwargs": {},
+    }
     app_log.debug(f"Submitted post-processing job to executor {post_processor}")
     post_process_result = await _run_task(
         result_object=result_object,
@@ -517,8 +509,8 @@ async def _postprocess_workflow(result_object: Result) -> Result:
     )
 
     if post_process_result["status"] != Result.COMPLETED:
-        stderr = post_process_result["stderr"] if post_process_result["stderr"] else ""
-        err = post_process_result["error"] if post_process_result["error"] else ""
+        stderr = post_process_result["stderr"] or ""
+        err = post_process_result["error"] or ""
         error_msg = stderr + err
 
         app_log.debug(f"Post-processing failed: {err}")
