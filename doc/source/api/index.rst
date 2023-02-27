@@ -19,6 +19,7 @@ Covalent API
    deps
    data_transfers
    triggers
+   cancel
    config
 
 The following API documentation describes how to use Covalent.

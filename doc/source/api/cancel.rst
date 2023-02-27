@@ -16,7 +16,7 @@ Covalent users or admins may wish to cancel dispatches or individual tasks from 
 
 To cancel a dispatch, the UX is quite straightforward. To cancel an entire workflow, users only need to know the ``dispatch_id`` of their workflow and invoke the cancellation as follows
 
-.. python::
+.. code:: python
 
    import covalent as ct
 
