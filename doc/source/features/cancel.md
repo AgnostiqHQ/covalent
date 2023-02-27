@@ -98,3 +98,6 @@ def cancel(self, task_metadata: Dict, job_handle: str):
 ```
 
 From the above function signature it can be seen that the metadata associated with a task (`dispatch_id` and `node_id`) and its corresponding job handle are provided as inputs to the cancel method. The executor plugin developer can then make uses of these inputs to implement the necessary logic and backend specific API calls to properly cancel the running task.
+
+
+For a walk through guide on canceling workflows and individual tasks in a workflow, please refer to our how to guides {doc}`here <../how_to/execution/cancel_dispatch.ipynb>`
