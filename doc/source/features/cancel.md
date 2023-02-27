@@ -39,3 +39,24 @@ The effect of the above `cancel` command would be that it will interrupt or prev
 ```{note}
 It is to be noted that if a node in a lattice is a **sub-lattice** then cancelling that particular node will recursively cancel all the sub tasks within that sub-lattice. Cancelling individual nodes from within a sub-lattice is not supported in Covalent since the transport graphs associated with sub-lattices are dynamically built at runtime
 ```
+
+## Basic cancellation strategy
+
+Covalent follows a very simple strategy to implement task/dispatch cancellation. Given that Covalent tasks are executed by various {doc}`executors <../api/executors/index>` canceling a node implies stopping the executor from executing the task any further if already running. Moreover, for Covalent to cancel a task a unique **job handle** assigned to that task by the executor is needed.
+
+A **job handle** is typically assigned to the task when an executor beings processing it. Examples of unique **job handles** are as follows
+
+* A `SLURM JOB ID` when the task is executed using the {doc}`SlurmExecutor <../api/executors/slurm>`
+* A `AWS Batch` job id when the task is being executed by the {doc}`AWSBatchExecutor <../api/executors/awsbatch>`
+* Job ARN when the {doc}`AWS Braket <../api/executors/awsbraket>` is used
+* The Linux process ID when the task is executed using the {doc}`SSHExecutor <../api/executors/ssh>`
+
+There is a convenient one to one mapping between tasks and their job handles that get uniquely assigned by the corresponding backends.
+
+```{note}
+In case of task packing when multiple electrons that use the same executor are packed and executed as a single task, this analogy gets modified from one-to-one to one-to-many
+```
+
+Once a unique `job handle` gets assigned by the remote backend for the task at hand, Covalent stores it in its local database for later retrival and processing. Generally speaking the Covalent task ids i.e. electron id's in the transport graph map to a corresponding job handle that gets persisted in the database.
+
+It is this `job handle` that gets used by Covalent when cancelling individual tasks from a workflow. Executor plugins implement the necessary APIs to store the job handles and to cancel a task using it properly.
