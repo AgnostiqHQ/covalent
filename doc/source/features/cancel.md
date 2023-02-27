@@ -57,6 +57,23 @@ There is a convenient one to one mapping between tasks and their job handles tha
 In case of task packing when multiple electrons that use the same executor are packed and executed as a single task, this analogy gets modified from one-to-one to one-to-many
 ```
 
-Once a unique `job handle` gets assigned by the remote backend for the task at hand, Covalent stores it in its local database for later retrival and processing. Generally speaking the Covalent task ids i.e. electron id's in the transport graph map to a corresponding job handle that gets persisted in the database.
+Once a unique `job handle` gets assigned by the remote backend for the task at hand, Covalent stores it in its local database for later retrieval and processing. Generally speaking the Covalent task ids i.e. electron id's in the transport graph map to a corresponding job handle that gets persisted in the database.
 
-It is this `job handle` that gets used by Covalent when cancelling individual tasks from a workflow. Executor plugins implement the necessary APIs to store the job handles and to cancel a task using it properly.
+It is this `job handle` that gets used by Covalent when canceling individual tasks from a workflow. Executor plugins implement the necessary APIs to store the job handles and to cancel a task using it properly.
+
+
+## Implications of canceling a task
+
+Given that Covalent now supports cancellation of tasks at a node or at the lattice level, there are few caveats to be mindful off. A task decorated with a remote executor such as {doc}`AWSBatch <../api/executors/awsbatch>`, {doc}`Slurm <../api/executors/slurm>` etc carry out several steps prior to actually executing the electron code such as pickling the electron's `function`, `args` and `kwargs`, uploading the resulting pickle files to the remote destination be it an S3 bucket or the SLURM cluster's login node, provision compute resources, fetch the remote files etc. These are a few steps that generally speaking each remote executor in Covalent performs before successfully executing the dispatched task.
+
+Now once a workflow is dispatched, Covalent starts processing it immediately. If a user then requests a particular node to be canceled, Covalent might be performing any of the aforementioned actions at the time the cancellation requests came in. Thus canceling a particular task implies the following in Covalent
+
+* If the node has already started executing i.e the executor has already started running the electron's code, kill the job (SIGKILL/SIGTERM)
+* If Covalent is yet to start processing a node, abort and do not attempt to process it
+* If a node's function, args and kwargs are not pickled, do not pickle them and abort immediately
+* If the required compute resources for the node have not yet been provisioned, do not provision them and abort immediately
+* If Covalent has not instantiated the executor, do not instantiate an instance and abort immediately
+
+```{note}
+Cancelling a task in Covalent is treated as a hard **abort** and instructs Covalent to abandon processing the task any further
+```
