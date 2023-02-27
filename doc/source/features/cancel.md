@@ -77,3 +77,22 @@ Now once a workflow is dispatched, Covalent starts processing it immediately. If
 ```{note}
 Cancelling a task in Covalent is treated as a hard **abort** and instructs Covalent to abandon processing the task any further
 ```
+
+To support aborting a task prior to any of the above stages Covalent needs to check whether the task has been requested to be canceled. When a cancellation request arrives, Covalent asynchronously updates its database records corresponding to that particular task by labeling it with `cancel_requested=True`. This is a boolean flag tracked by Covalent for all tasks and it defaults to `False` for each node in the lattice.
+
+Covalent's logic for executing the task has now been updated to check this flag prior to proceeding with any of the aforementioned steps.
+
+Executor plugin developers can also make use of this flag prior to attempting to execute their various steps such as uploading pickled object to remote object stores, provisioning compute resources, executing the task etc. At any point in time when an executor finds that the `cancel_requested` flag has been set to `True` for the task at hand, it can raise a `TaskCancelledError` exception which Covalent then handles properly to abort processing the task any further.
+
+```{note}
+If an executor plugin needs to support task cancellation, it then must override the `cancel` method provided in the base executor class
+```
+
+The `cancel` method provided in the base executor class has the following function signature
+
+```{code-block} python
+def cancel(self, task_metadata: Dict, job_handle: str):
+	...
+```
+
+From the above function signature it can be seen that the metadata associated with a task (`dispatch_id` and `node_id`) and its corresponding job handle are provided as inputs to the cancel method. The executor plugin developer can then make uses of these inputs to implement the necessary logic and backend specific API calls to properly cancel the running task.
