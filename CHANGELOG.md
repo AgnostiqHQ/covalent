@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+* Adding `cancellation` RTD text files
+
 ### Added
 
 - `disable_run` option added to enable "saving-only" option on covalent server and not executing the workflow
