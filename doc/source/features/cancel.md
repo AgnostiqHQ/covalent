@@ -22,3 +22,16 @@ To cancel a dispatch, the UX is quite straightforward. To cancel an entire workf
    # cancel the workflow
    ct.cancel(dispatch_id)
 ```
+
+Similarly to cancel a specific set of tasks within a single dispatch, users can invoke the `cancel` command as follows
+
+```{code-block} python
+import covalent as ct
+
+# dispatch_id = ct.dispatch(workflow)(args, kwargs)
+
+# Cancel tasks 1, 3, 5 from the above dispatch
+ct.cancel(dispatch_id, task_ids=[1, 3, 5])
+```
+
+The effect of the above `cancel` command would be that it will interrupt or prevent tasks 1, 3 and 5 from running and all resources (local or remote) being consumed by these tasks will be released. Moreover, all subsequent electrons dependent on the outcomes of tasks 1, 3 and 5 will also not be executed.
