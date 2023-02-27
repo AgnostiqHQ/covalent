@@ -1,7 +1,6 @@
-.. _cancel:
+(cancel)=
 
-Overview
-==========
+# Canceling dispatches and tasks
 
 Covalent users or admins may wish to cancel dispatches or individual tasks from a dispatch as per their requirements. For instance, under a self-hosted scenario if a dispatch has consumed more than the allocated cloud resources budget it should be canceled. Given that Covalent supports multi-cloud execution with its executor plugins, canceling a task involves the following actions
 
@@ -13,14 +12,13 @@ Covalent users or admins may wish to cancel dispatches or individual tasks from 
     * When a dispatch is canceled, cancel all tasks that are part of the dispatch immediately. Any tasks currently being processed will be killed immediately and any unprocessed tasks will be abandoned.
     * Cancel all post-processing task
 
+To cancel a dispatch, the UX is quite straightforward. To cancel an entire workflow, users only need to know the ``dispatch_id``. The following code snippet well illustrates the Covalent cancel API
 
-To cancel a dispatch, the UX is quite straightforward. To cancel an entire workflow, users only need to know the ``dispatch_id`` of their workflow and invoke the cancellation as follows
-
-.. code:: python
-
+```{code-block} python
    import covalent as ct
 
    dispatch_id = ct.dispatch(workflow)(args, kwargs)
 
    # cancel the workflow
    ct.cancel(dispatch_id)
+```

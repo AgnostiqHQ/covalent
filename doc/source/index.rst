@@ -172,6 +172,7 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
 
    Executor plugins <plugins>
    Triggers <features/triggers>
+   Cancellation <features/cancel>
 
 
 .. toctree::

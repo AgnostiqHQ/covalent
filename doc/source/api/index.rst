@@ -19,7 +19,6 @@ Covalent API
    deps
    data_transfers
    triggers
-   cancel
    config
 
 The following API documentation describes how to use Covalent.
@@ -37,4 +36,3 @@ The following API documentation describes how to use Covalent.
 - :ref:`results_interface` is used for collecting and manipulating results
 - :ref:`dispatcher_interface` is used for dispatching workflows
 - The :ref:`dispatcher_server_api` is used for interfacing with the Covalent server
-- :ref: `cancel` interface allows users to cancel entire dispatches or individual tasks within it
