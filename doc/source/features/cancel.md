@@ -4,13 +4,13 @@
 
 Covalent users or admins may wish to cancel dispatches or individual tasks from a dispatch as per their requirements. For instance, under a self-hosted scenario if a dispatch has consumed more than the allocated cloud resources budget it should be canceled. Given that Covalent supports multi-cloud execution with its executor plugins, canceling a task involves the following actions
 
-* Canceling tasks
-  * Canceling a task may imply canceling the job being executed by a executor using remote cloud/on-prem resources
-  * Interrupt the executor processing the job immediately. For instance, if a job's dependencies such as pickle callable, arguments and keyword arguments are uploaded but the backend has not yet started executing it, abort right away and do not provision any compute resources
+- Canceling tasks
+  - Canceling a task may imply canceling the job being executed by a executor using remote cloud/on-prem resources
+  - Interrupt the executor processing the job immediately. For instance, if a job's dependencies such as pickle callable, arguments and keyword arguments are uploaded but the backend has not yet started executing it, abort right away and do not provision any compute resources
 
-* Canceling dispatches
-    * When a dispatch is canceled, cancel all tasks that are part of the dispatch immediately. Any tasks currently being processed will be killed immediately and any unprocessed tasks will be abandoned.
-    * Cancel all post-processing task
+- Canceling dispatches
+    - When a dispatch is canceled, cancel all tasks that are part of the dispatch immediately. Any tasks currently being processed will be killed immediately and any unprocessed tasks will be abandoned.
+    - Cancel all post-processing task
 
 To cancel a dispatch, the UX is quite straightforward. To cancel an entire workflow, users only need to know the ``dispatch_id``. The following code snippet well illustrates the Covalent cancel API
 
@@ -46,10 +46,10 @@ Covalent follows a very simple strategy to implement task/dispatch cancellation.
 
 A **job handle** is typically assigned to the task when an executor beings processing it. Examples of unique **job handles** are as follows
 
-* A `SLURM JOB ID` when the task is executed using the {doc}`SlurmExecutor <../api/executors/slurm>`
-* A `AWS Batch` job id when the task is being executed by the {doc}`AWSBatchExecutor <../api/executors/awsbatch>`
-* Job ARN when the {doc}`AWS Braket <../api/executors/awsbraket>` is used
-* The Linux process ID when the task is executed using the {doc}`SSHExecutor <../api/executors/ssh>`
+- A `SLURM JOB ID` when the task is executed using the {doc}`SlurmExecutor <../api/executors/slurm>`
+- A `AWS Batch` job id when the task is being executed by the {doc}`AWSBatchExecutor <../api/executors/awsbatch>`
+- Job ARN when the {doc}`AWS Braket <../api/executors/awsbraket>` is used
+- The Linux process ID when the task is executed using the {doc}`SSHExecutor <../api/executors/ssh>`
 
 There is a convenient one to one mapping between tasks and their job handles that get uniquely assigned by the corresponding backends.
 
@@ -68,11 +68,11 @@ Given that Covalent now supports cancellation of tasks at a node or at the latti
 
 Now once a workflow is dispatched, Covalent starts processing it immediately. If a user then requests a particular node to be canceled, Covalent might be performing any of the aforementioned actions at the time the cancellation requests came in. Thus canceling a particular task implies the following in Covalent
 
-* If the node has already started executing i.e the executor has already started running the electron's code, kill the job (SIGKILL/SIGTERM)
-* If Covalent is yet to start processing a node, abort and do not attempt to process it
-* If a node's function, args and kwargs are not pickled, do not pickle them and abort immediately
-* If the required compute resources for the node have not yet been provisioned, do not provision them and abort immediately
-* If Covalent has not instantiated the executor, do not instantiate an instance and abort immediately
+- If the node has already started executing i.e the executor has already started running the electron's code, kill the job (SIGKILL/SIGTERM)
+- If Covalent is yet to start processing a node, abort and do not attempt to process it
+- If a node's function, args and kwargs are not pickled, do not pickle them and abort immediately
+- If the required compute resources for the node have not yet been provisioned, do not provision them and abort immediately
+- If Covalent has not instantiated the executor, do not instantiate an instance and abort immediately
 
 ```{note}
 Cancelling a task in Covalent is treated as a hard **abort** and instructs Covalent to abandon processing the task any further
