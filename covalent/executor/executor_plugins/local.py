@@ -26,6 +26,7 @@ This is a plugin executor module; it is loaded if found and properly structured.
 
 import asyncio
 import json
+import traceback
 import os
 from pathlib import Path
 from concurrent.futures import ProcessPoolExecutor
@@ -117,6 +118,17 @@ class LocalExecutor(BaseExecutor):
             task_group_metadata,
             server_url,
         )
+        app_log.debug(f"Submitted task group {dispatch_id}:{task_ids} to process pool")
+
+        def error_callback(fut):
+            ex = fut.exception()
+            if ex:
+                tb = "".join(traceback.TracebackException.from_exception(ex).format())
+                app_log.error(f"Exception when running task group {dispatch_id}:{gid}")
+                app_log.error(tb)
+
+        future.add_done_callback(error_callback)
+
         return 42
 
     def _receive(self, task_group_metadata: Dict, job_handle: Any):
