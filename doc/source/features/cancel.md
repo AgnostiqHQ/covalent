@@ -82,6 +82,8 @@ To support aborting a task prior to any of the above stages Covalent needs to ch
 
 Covalent's logic for executing the task has now been updated to check this flag prior to proceeding with any of the aforementioned steps.
 
+### Executors
+
 Executor plugin developers can also make use of this flag prior to attempting to execute their various steps such as uploading pickled object to remote object stores, provisioning compute resources, executing the task etc. At any point in time when an executor finds that the `cancel_requested` flag has been set to `True` for the task at hand, it can raise a `TaskCancelledError` exception which Covalent then handles properly to abort processing the task any further.
 
 ```{note}
