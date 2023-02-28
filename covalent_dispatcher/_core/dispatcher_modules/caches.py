@@ -50,12 +50,12 @@ class _UnresolvedTasksCache:
         await self._store.insert(key, val)
 
     async def increment(self, dispatch_id: str, interval: int = 1):
-        current = await self.get_unresolved(dispatch_id)
-        await self.set_unresolved(dispatch_id, current + interval)
+        key = _unresolved_tasks_key(dispatch_id)
+        return await self._store.increment(key, interval)
 
     async def decrement(self, dispatch_id: str):
-        current = await self.get_unresolved(dispatch_id)
-        await self.set_unresolved(dispatch_id, current - 1)
+        key = _unresolved_tasks_key(dispatch_id)
+        return await self._store.increment(key, -1)
 
     async def remove(self, dispatch_id: str):
         key = _unresolved_tasks_key(dispatch_id)
@@ -75,8 +75,8 @@ class _PendingParentsCache:
         await self._store.insert(key, val)
 
     async def decrement(self, dispatch_id: str, task_group_id: int):
-        current = await self.get_pending(dispatch_id, task_group_id)
-        await self.set_pending(dispatch_id, task_group_id, current - 1)
+        key = _pending_parents_key(dispatch_id, task_group_id)
+        return await self._store.increment(key, -1)
 
     async def remove(self, dispatch_id: str, task_group_id: int):
         key = _pending_parents_key(dispatch_id, task_group_id)

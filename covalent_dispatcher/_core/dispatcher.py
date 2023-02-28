@@ -96,8 +96,7 @@ async def _handle_completed_node(dispatch_id: str, node_id: int):
         gid = child["task_group_id"]
         app_log.debug(f"dispatch {dispatch_id}: parent gid {parent_gid}, child gid {gid}")
         if parent_gid != gid:
-            await _pending_parents.decrement(dispatch_id, gid)
-            now_pending = await _pending_parents.get_pending(dispatch_id, gid)
+            now_pending = await _pending_parents.decrement(dispatch_id, gid)
             if now_pending < 1:
                 app_log.debug(f"Queuing task group {gid} for execution")
                 next_task_groups.append(gid)

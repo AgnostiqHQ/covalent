@@ -36,6 +36,18 @@ class _KeyValueBase:
     async def remove(self, key):
         raise NotImplementedError
 
+    async def increment(self, key: str, delta: int) -> int:
+        """Increments value for `key` by amount `delta`
+
+        Parameters:
+            key: the value to change
+            delta: the amount to change (can be negative)
+        Returns:
+            The new value
+        """
+
+        raise NotImplementedError
+
 
 class _DictStore(_KeyValueBase):
     def __init__(self):
@@ -52,3 +64,7 @@ class _DictStore(_KeyValueBase):
 
     async def remove(self, key):
         del self._store[key]
+
+    async def increment(self, key, delta: int):
+        self._store[key] += delta
+        return self._store[key]
