@@ -36,8 +36,7 @@ Execution
 - :doc:`How to redispatch a workflow <./execution/redispatch>`
 - :doc:`How to choose an executor for a subtask <./execution/choosing_executors>`
 - :doc:`How to customize the executor <./execution/creating_custom_executors>`
-..
-  - :doc:`How to cancel a running workflow <./execution/cancel_dispatch>`
+- :doc:`How to cancel a running workflow <./execution/cancel_dispatch>`
 ..
   - :doc:`How to execute an electron in a Conda environment <./execution/choosing_conda_environments>`
 
