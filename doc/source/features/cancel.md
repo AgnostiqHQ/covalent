@@ -1,8 +1,13 @@
 (cancel)=
 
-# Canceling dispatches and tasks
+# Cancel with Confidence: Efficiently Manage Workflows in Covalent
 
-Covalent users or admins may wish to cancel dispatches or individual tasks from a dispatch as per their requirements. For instance, under a self-hosted scenario if a dispatch has consumed more than the allocated cloud resources budget it should be canceled. Given that Covalent supports multi-cloud execution with its executor plugins, canceling a task involves the following actions
+Covalent's cancellation feature is an indispensable tool that empowers users to manage their workflows effectively, enabling them to stop any task or workflow from consuming excessive resources or taking too long to complete, thereby optimizing the use of their computing resources. While other tools focus solely on production workflows, Covalent supports research-based and production workflows, which require more flexibility and adaptability to accommodate modifications. The workflow cancellation feature is often missing in most ETL and workflow orchestrators due to their design focus on automating and managing business processes, ensuring the smooth and uninterrupted operation of predetermined workflows. However, research-based workflows require more adaptability and flexibility, making canceling workflows and tasks an essential feature. With Covalent's cancellation feature, users can take complete control of their workflows, maintain efficient workflow management, and avoid wasteful consumption of resources.
+
+Covalent enables users to execute computation tasks on cutting-edge hardware platforms such as quantum computers, HPC clusters, GPU arrays, and cloud services, which may be costly or have limited availability. Users may have a predefined budget or a specific timeframe to complete their experiments, making it crucial to have the ability to cancel a workflow or a task to prevent unnecessary resource utilization or exceeding the allocated budget. Without the cancellation feature, users would have to wait for the computation to finish or manually terminate it, resulting in wasteful consumption of resources and time. Moreover, the ability to cancel workflows or tasks empowers researchers and developers to modify their workflows to suit their changing needs, such as adjusting the computation pipeline or input data. By offering the cancellation feature, Covalent lets users control their workflows, optimizing the use of valuable resources.
+
+
+Given that Covalent supports multi-cloud execution with its executor plugins, canceling a task involves the following actions
 
 - Canceling tasks
   - Canceling a task may imply canceling the job being executed by a executor using remote cloud/on-prem resources
