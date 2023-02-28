@@ -42,7 +42,7 @@ log_stack_info = logger.log_stack_info
 debug_mode = get_config("sdk.log_level") == "debug"
 
 # Asyncio Queue
-_job_events = asyncio.Queue()
+_job_events = None
 
 # This should go in the Jobs table
 _job_handles = {}
@@ -378,6 +378,12 @@ async def run_abstract_task_group(
     known_nodes: list,
     selected_executor: Any,
 ) -> None:
+
+    global _job_events
+
+    # Bind the queue to the FastAPI event loop
+    if not _job_events:
+        _job_events = asyncio.Queue()
 
     global _job_event_listener
     if not _job_event_listener:

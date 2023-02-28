@@ -40,7 +40,7 @@ from .dispatcher_modules.caches import _pending_parents, _sorted_task_groups, _u
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-_global_status_queue = asyncio.Queue()
+_global_status_queue = None
 _status_queues = {}
 _futures = {}
 
@@ -258,7 +258,12 @@ async def run_workflow(dispatch_id: str, wait: bool = SYNC_DISPATCHES) -> RESULT
 
     app_log.debug("Inside run_workflow.")
 
+    global _global_status_queue
     global _global_event_listener
+
+    # Bind status queue to the FastAPI event loop
+    if not _global_status_queue:
+        _global_status_queue = asyncio.Queue()
 
     if not _global_event_listener:
         _global_event_listener = asyncio.create_task(_node_event_listener())
