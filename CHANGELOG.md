@@ -7,9 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Docs
-
-* Adding `cancellation` RTD text files
 
 ### Added
 
@@ -35,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added documentation for "Triggers" and a separate section for similar "Features"
 - Tutorial guidelines
+- Adding `cancellation` RTD text files
 - Adding troubleshooting guide to RTD's
 
 ### Tests
