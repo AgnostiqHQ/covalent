@@ -26,15 +26,15 @@ from .store import _DictStore, _KeyValueBase
 
 
 def _pending_parents_key(dispatch_id: str, node_id: int):
-    return f"{dispatch_id}:{node_id}"
+    return f"pending-parents-{dispatch_id}:{node_id}"
 
 
 def _unresolved_tasks_key(dispatch_id: str):
-    return dispatch_id
+    return f"unresolved-{dispatch_id}"
 
 
 def _task_groups_key(dispatch_id: str, task_group_id: int):
-    return _pending_parents_key(dispatch_id, task_group_id)
+    return f"task-groups-{dispatch_id}:{task_group_id}"
 
 
 class _UnresolvedTasksCache:
