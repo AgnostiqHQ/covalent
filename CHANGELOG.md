@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Updated How-to documents.
+- Port of Pennylane's Univariate QVR tutorial using Covalent to this repo.
+
 ## [0.219.0-rc.0] - 2023-03-01
 
 ### Authors
@@ -48,8 +53,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added documentation for "Triggers" and a separate section for similar "Features"
 - Tutorial guidelines
-- Updated How-to documents.
-- Port of Pennylane's Univariate QVR tutorial using Covalent to this repo.
 
 ### Tests
 
