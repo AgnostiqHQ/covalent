@@ -85,6 +85,7 @@ def get_default_dispatcher_config():
         "use_async_dispatcher": os.environ.get("COVALENT_USE_ASYNC_DISPATCHER", "true") or "false",
         "use_stateless_datamgr": os.environ.get("COVALENT_USE_STATELESS_DATAMGR", "true")
         or "false",
+        "redis": os.environ.get("COVALENT_REDIS_HOST", ""),
     }
 
 
