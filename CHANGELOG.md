@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Updated How-to documents.
+- Port of Pennylane's Univariate QVR tutorial using Covalent to this repo.
+- Adding troubleshooting guide to RTD's
+
+## [0.219.0-rc.0] - 2023-03-01
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+
+
+### Docs
+
+* Adding `cancellation` RTD text files
 
 ### Added
 
@@ -33,7 +55,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added documentation for "Triggers" and a separate section for similar "Features"
 - Tutorial guidelines
 - Adding `cancellation` RTD text files
-- Adding troubleshooting guide to RTD's
 
 ### Tests
 
@@ -43,8 +64,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Lowering number of jest workers as an attempt to fix flaky UI functional tests
 - Added exception for nightly to pass if conda release fails
-- Tutorial guidelines.
-- Port of Pennylane's Univariate QVR tutorial using Covalent to this repo.
 
 ## [0.218.0-rc.0] - 2023-02-21
 
