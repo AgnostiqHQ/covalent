@@ -14,12 +14,13 @@ This guide is a collection of step-by-step instructions for tasks that are commo
 
 The guide covers specific tasks at every phase of the workflow development process:
 
-1. Constructing workflows
-2. Executing workflows, including using and writing executors
-3. Querying Status and Collecting and Viewing Results
-4. Saving and Working with Result Files
+1. :ref:`Constructing workflows <howto_coding>`
+2. :ref:`Executing workflows <howto_executing>`, including using and writing executors
+3. :ref:`Querying Status <howto_querying>` and :ref:`Collecting and Viewing Results <howto_querying>`
 
-At the end are how-tos on miscellaneous topics including configuration and troubleshooting.
+At the end are how-tos on miscellaneous topics including :ref:`configuration <howto_config>` and :ref:`troubleshooting <howto_trouble>`.
+
+.. _howto_coding:
 
 Constructing Workflows
 **********************
@@ -60,12 +61,16 @@ Constructing Workflows
 
 :doc:`Constructing a Task from Bash Scripts <./coding/construct_bash_task>`
 
+.. _howto_executing:
+
 Executing a Workflow
 ********************
 
 :doc:`Managing the Covalent Server <./execution/covalent_cli>`
 
 :doc:`Running a Workflow (Lattice) <./execution/execute_lattice>`
+
+:doc:`Re-executing a Workflow <./execution/redispatch>`
 
 :doc:`Executing an Individual Electron <./execution/execute_individual_electron>`
 
@@ -78,6 +83,8 @@ Executing a Workflow
 :doc:`Choosing an Executor For a Task <./execution/choosing_executors>`
 
 :doc:`Executing an Electron in a Conda Environment <./execution/choosing_conda_environments>`
+
+.. _howto_querying:
 
 Querying and Viewing
 ********************
@@ -94,10 +101,14 @@ Querying and Viewing
 
 :doc:`Getting the Result of a Task (Electron) <./collection/query_electron_execution_result>`
 
+.. _howto_config:
+
 Configuration
 *************
 
 :doc:`Customizing the Configuration <./config/customization>`
+
+.. _howto_trouble:
 
 Database
 ********
