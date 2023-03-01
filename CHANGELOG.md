@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Updated How-to documents.
+- Port of Pennylane's Univariate QVR tutorial using Covalent to this repo.
+
 ## [0.219.0-rc.0] - 2023-03-01
 
 ### Authors
@@ -57,8 +62,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Lowering number of jest workers as an attempt to fix flaky UI functional tests
 - Added exception for nightly to pass if conda release fails
-- Tutorial guidelines.
-- Port of Pennylane's Univariate QVR tutorial using Covalent to this repo.
 
 ## [0.218.0-rc.0] - 2023-02-21
 

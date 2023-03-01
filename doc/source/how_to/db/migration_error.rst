@@ -1,13 +1,22 @@
-===============
-Database Migration Errors
-===============
+###################################
+Remedying Database Migration Errors
+###################################
 
-How to approach failed database schema migrations
-############
+When upgrading Covalent versions from 0.177.0 to a newer version, you may need to run database migrations.
 
-When upgrading Covalent versions from 0.177.0 to a newer version, users may need to run database migrations. In some edge cases, migrations may fail to run as a result of having existing data that violates SQL database constraints, or for other reasons specific to the type of schema updates that may occur.
+.. warning:: Back up your database before attempting to migrate its data.
 
-For example, the following migration causes an issue due to existing data in the database.
+By default, the Covalent database is an SQLlite database that has this file path: :code:`~/.local/share/covalent/dispatcher_db.sqlite`.
+
+ .. code:: bash
+
+   cp ~/.local/share/covalent/dispatcher_db.sqlite /a/safe/backup/location/dispatcher_db.sqlite
+
+If you are unsure how to back up or migrate your database, open an issue in the covalent repo to get additional guidance from maintainers.
+
+In some cases, migrations can fail to run because existing data violates SQL database constraints, or for other reasons specific to the type of schema update.
+
+For example, the following migration fails due to existing data in the database.
 
 .. code:: bash
 
@@ -22,21 +31,31 @@ For example, the following migration causes an issue due to existing data in the
     There was an issue running migrations.
     Please read https://covalent.readthedocs.io/en/latest/how_to/db/migration_error.html for more information.
 
-.. warning:: Ensure that you back up your database before attempting to alter it's data as follows :code:`cp ~/.local/share/covalent/dispatcher_db.sqlite /some/safe/location/dispatcher_db.sqlite` it may be worth opening an issue in the covalent repo to get additional guidance from maintainers about the specific migration issue in question.
+The migration error above occurred because there are NULL values in the existing database, but :code:`electron_id` is now prohibited from having NULL values,
 
-There may be table alterations that fail as a result of some existing data in the database violating SQL constraints. In the above example that shows the migration error, :code:`electron_id` is now intended to not have NULL values however NULL values may be present in our database.
-In order to avoid the migration issue we must remove any data that violates this constraint manually in the SQLlite database which resides in :code:`~/.local/share/covalent/dispatcher_db.sqlite`.
-Doing this requires advanced knowledge of Covalent. It is not recommended unless you are fully acquainted with how Covalent works, since it may cause unexpected behavior.
+To remedy this situation, removed data that violates the constraint.
 
-Lastly, if you are unable to solve the issue in this manner, you may need to delete the database and re-run the migrations as follows.
+.. warning::
+
+    Making these changes requires detailed knowledge of Covalent. We do not recommend modifying the database by hand unless you are fully acquainted with how Covalent works. Doing so may cause unexpected behavior.
+
+If you are unable to solve the issue, you may need to delete the database and re-run the migrations as follows.
 
 .. warning:: This will cause all of your workflow data to be deleted unless a backup of the database was created.
 
+To delete the database:
+
+1. Stop Covalent.
 
 .. code:: bash
 
    $ covalent stop
     Covalent server has stopped.
+
+2. Delete the sqlite database file and migrate the database.
+
+.. code:: bash
+
    $ rm ~/.local/share/covalent/dispatcher_db.sqlite
    $ covalent db migrate
     INFO  [alembic.runtime.migration] Context impl SQLiteImpl.
@@ -46,4 +65,9 @@ Lastly, if you are unable to solve the issue in this manner, you may need to del
     INFO  [alembic.runtime.migration] Running upgrade 9b9d58f02985 -> 9f1271ef662a, v11+ updates
     Migrations are up to date.
 
-At this point you may start Covalent as before with :code:`covalent start`
+3. Start Covalent.
+
+.. code:: bash
+
+    $ covalent start
+    Covalent server has started at http://localhost:48008
