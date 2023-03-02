@@ -19,7 +19,7 @@ If a workflow is hanging, it is likely due to a task that is not completing. To 
 
     In order to get more informative logs, users can start the Covalent server with ``covalent start -d``.
 
-This MAY happen for a Local Executor since a worker process in ``ProcessPoolExecutor`` can stall sporadically without failing. In this case, the user needs to restart the server and re-submit the workflow.
+This may happen for a Local Executor since a worker process in ``ProcessPoolExecutor`` can stall sporadically without failing. In this case, the user needs to restart the server and resubmit the workflow.
 
 
 -----------------
