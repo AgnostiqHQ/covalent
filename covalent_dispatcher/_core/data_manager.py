@@ -22,12 +22,10 @@
 Defines the core functionality of the result service
 """
 
-import asyncio
 import functools
 import json
 import traceback
 import uuid
-from concurrent.futures import ThreadPoolExecutor
 from typing import Any, Dict, List
 
 import networkx as nx
@@ -43,15 +41,13 @@ from .._dal.result import get_result_object as get_result_object_from_db
 from .._db import update
 from .._db.write_result_to_db import resolve_electron_id
 from . import dispatcher
+from .data_modules.utils import run_in_executor
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 # References to result objects of live dispatches
 _registered_dispatches = {}
-
-# Thread pool for Datastore I/O
-dm_pool = ThreadPoolExecutor()
 
 STATELESS = get_config("dispatcher.use_stateless_datamgr") != "false"
 
@@ -116,9 +112,9 @@ async def update_node_result(dispatch_id, node_result):
         node_result = await _filter_sublattice_status(
             dispatch_id, node_id, node_status, node_type, sub_dispatch_id, node_result
         )
-        result_object = await _run_in_executor(get_result_object, dispatch_id, True)
+        result_object = await run_in_executor(get_result_object, dispatch_id, True)
         update_partial = functools.partial(result_object._update_node, **node_result)
-        await _run_in_executor(update_partial)
+        await run_in_executor(update_partial)
 
         if node_result["status"] == RESULT_STATUS.DISPATCHING:
             app_log.debug("Received sublattice dispatch")
@@ -129,7 +125,7 @@ async def update_node_result(dispatch_id, node_result):
                 node_result["status"] = RESULT_STATUS.FAILED
                 node_result["error"] = tb
                 update_partial = functools.partial(result_object._update_node, **node_result)
-                await _run_in_executor(update_partial)
+                await run_in_executor(update_partial)
 
     except KeyError as ex:
         valid_update = False
@@ -209,7 +205,7 @@ async def make_dispatch(
     json_lattice: str, parent_result_object: SRVResult = None, parent_electron_id: int = None
 ) -> Result:
 
-    result_object = await _run_in_executor(
+    result_object = await run_in_executor(
         initialize_result_object,
         json_lattice,
         parent_result_object,
@@ -277,7 +273,7 @@ def _get_attrs_for_electrons_sync(dispatch_id: str, node_ids: List[int], keys: s
 
 
 async def get_attrs_for_electrons(dispatch_id: str, node_ids: List[int], keys: str) -> Any:
-    return await _run_in_executor(
+    return await run_in_executor(
         _get_attrs_for_electrons_sync,
         dispatch_id,
         node_ids,
@@ -309,7 +305,7 @@ async def _make_sublattice_dispatch(result_object: SRVResult, node_result: dict)
     node_id = node_result["node_id"]
     bg_output = await get_electron_attribute(result_object.dispatch_id, node_id, "output")
     json_lattice = json.loads(bg_output.json)
-    parent_node = await _run_in_executor(
+    parent_node = await run_in_executor(
         result_object.lattice.transport_graph.get_node,
         node_id,
     )
@@ -345,7 +341,7 @@ async def update_dispatch_result(dispatch_id, dispatch_result):
 
     result_object = get_result_object(dispatch_id)
     update_partial = functools.partial(result_object._update_dispatch, **dispatch_result)
-    await _run_in_executor(update_partial)
+    await run_in_executor(update_partial)
 
 
 def _get_dispatch_attributes_sync(dispatch_id: str, keys: List[str]) -> Any:
@@ -355,7 +351,7 @@ def _get_dispatch_attributes_sync(dispatch_id: str, keys: List[str]) -> Any:
 
 
 async def get_dispatch_attributes(dispatch_id: str, keys: List[str]) -> Dict:
-    return await _run_in_executor(
+    return await run_in_executor(
         _get_dispatch_attributes_sync,
         dispatch_id,
         keys,
@@ -369,7 +365,7 @@ async def get_incomplete_tasks(dispatch_id: str):
     # Need to filter all electrons in the latice
     result_object = get_result_object(dispatch_id, False)
     refresh = False if STATELESS else True
-    return await _run_in_executor(
+    return await run_in_executor(
         result_object._get_incomplete_nodes,
         refresh,
     )
@@ -394,8 +390,3 @@ async def get_graph_nodes_links(dispatch_id: str) -> dict:
     result_object = get_result_object(dispatch_id, False)
     g = result_object.lattice.transport_graph.get_internal_graph_copy()
     return nx.readwrite.node_link_data(g)
-
-
-async def _run_in_executor(func, *args):
-    loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(dm_pool, func, *args)
