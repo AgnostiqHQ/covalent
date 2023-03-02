@@ -81,3 +81,24 @@ Executor issues after installation
 ----------------------------------
 
 1. Users can get ``executor not found`` or ``Covalent config file missing default values`` for the executor if Covalent was not restarted after the executor was installed. This can be fixed by restarting the Covalent server.
+
+
+-------------------------------------------------------
+Lattice not found error when using Self-hosted Covalent
+-------------------------------------------------------
+
+1. Errors related to the lattice not being found arise from the user trying to retrieve / access data corresponding to a dispatch id that does not exist in the database. This can happen when the self-hosted and local Covalent servers get mixed up. This can be avoided by explicitly specifying the dispatcher address when dispatching and retrieving results.
+
+.. note::
+
+    In general, users should modify the ``dispatcher address`` in the ``ct.dispatch()/ct.get_result()`` functions rather than modifying the config file directly.
+
+
+2. The dispatch id is invalid.
+
+
+--------------------------------------------------------
+Connection timeout error when using Self-hosted Covalent
+--------------------------------------------------------
+
+If a user is getting a connection timeout error while using self-hosted Covalent, it is likely that the local and self-hosted servers. In this case, the user needs to ensure that the ``dispatcher address`` is explicitly set and that the corresponding Covalent server is actually running.
