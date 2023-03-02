@@ -27,7 +27,6 @@ import pytest
 import covalent as ct
 import covalent._results_manager.results_manager as rm
 from covalent._results_manager.result import Result
-from covalent_dispatcher._db import update
 
 
 def construct_temp_cache_dir():
@@ -690,7 +689,6 @@ def test_wait_for():
 
     dispatch_id = ct.dispatch(workflow)()
     result = ct.get_result(dispatch_id, wait=True)
-    update.persist(result)
 
     assert result.status == Result.COMPLETED
     assert (
