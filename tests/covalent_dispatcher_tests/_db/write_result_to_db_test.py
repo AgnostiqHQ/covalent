@@ -210,7 +210,7 @@ def get_electron_kwargs(
     deps_filename=DEPS_FILENAME,
     call_before_filename=CALL_BEFORE_FILENAME,
     call_after_filename=CALL_AFTER_FILENAME,
-    cancel_requested=False,
+    job_id=1,
     created_at=None,
     updated_at=None,
     started_at=None,
@@ -239,7 +239,7 @@ def get_electron_kwargs(
         "deps_filename": deps_filename,
         "call_before_filename": call_before_filename,
         "call_after_filename": call_after_filename,
-        "cancel_requested": cancel_requested,
+        "job_id": job_id,
         "created_at": created_at,
         "updated_at": updated_at,
         "started_at": started_at,
@@ -342,9 +342,15 @@ def test_insert_electrons_data(cancel_requested, test_db, mocker):
         **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
     )
 
+    with test_db.session() as session:
+        job_row = Job(cancel_requested=cancel_requested)
+        session.add(job_row)
+        session.flush()
+        job_id = job_row.id
+
     electron_kwargs = {
         **get_electron_kwargs(
-            cancel_requested=cancel_requested,
+            job_id=job_id,
             created_at=cur_time,
             updated_at=cur_time,
         )

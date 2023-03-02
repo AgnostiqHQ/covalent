@@ -353,6 +353,39 @@ def test_result_persist_rehydrate(test_db, result_1, mocker):
             assert tg_2.edges[e]["edge_name"] == WAIT_EDGE_NAME
 
 
+def test_task_packing_persist(test_db, mocker):
+    """Check that a job record is created per task group"""
+
+    @ct.electron
+    def task(arr):
+        return sum(arr)
+
+    @ct.lattice
+    def workflow(arr):
+        return task(arr)
+
+    workflow.build_graph([1, 2, 3])
+
+    received_lattice = LatticeClass.deserialize_from_json(workflow.serialize_to_json())
+    result = Result(lattice=received_lattice, dispatch_id="test_task_packing_persist")
+    result._initialize_nodes()
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.utils.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    update.persist(result)
+    tg = workflow.transport_graph
+    task_groups = set([tg.get_node_value(node_id, "task_group_id") for node_id in tg._graph.nodes])
+
+    with test_db.session() as session:
+        job_records = session.query(Job).all()
+        assert len(job_records) == len(task_groups)
+
+
 def test_lattice_persist(result_1):
     update.persist(result_1.lattice)
     assert result_1.lattice.transport_graph.dirty_nodes == []

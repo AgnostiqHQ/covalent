@@ -35,6 +35,7 @@ from .write_result_to_db import (
     get_electron_type,
     store_file,
     transaction_insert_electrons_data,
+    transaction_insert_job_record,
     transaction_insert_lattices_data,
     transaction_update_lattices_data,
     transaction_upsert_electron_dependency_data,
@@ -190,127 +191,147 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
     tg = result.lattice.transport_graph
     dirty_nodes = set(tg.dirty_nodes)
     tg.dirty_nodes.clear()  # Ensure that dirty nodes list is reset once the data is updated
+
+    # Collect task groups and create a job record for each group
+    task_groups = {}
     for node_id in dirty_nodes:
-        results_dir = os.environ.get("COVALENT_DATA_DIR") or get_config("dispatcher.results_dir")
-        node_path = Path(os.path.join(results_dir, result.dispatch_id, f"node_{node_id}"))
-
-        if not node_path.exists():
-            node_path.mkdir()
-
-        node_name = tg.get_node_value(node_id, "name")
-
-        try:
-            function_string = tg.get_node_value(node_id, "function_string")
-        except KeyError:
-            function_string = None
-
-        try:
-            node_value = tg.get_node_value(node_id, "value")
-        except KeyError:
-            node_value = None
-
-        try:
-            node_stdout = tg.get_node_value(node_id, "stdout")
-        except KeyError:
-            node_stdout = None
-
-        try:
-            node_stderr = tg.get_node_value(node_id, "stderr")
-        except KeyError:
-            node_stderr = None
-
-        try:
-            node_error = tg.get_node_value(node_id, "error")
-        except KeyError:
-            node_error = None
-
-        try:
-            node_output = tg.get_node_value(node_id, "output")
-        except KeyError:
-            node_output = None
-
-        executor = tg.get_node_value(node_id, "metadata")["executor"]
-        started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
-        completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
-
-        for filename, data in [
-            (ELECTRON_FUNCTION_FILENAME, tg.get_node_value(node_id, "function")),
-            (ELECTRON_FUNCTION_STRING_FILENAME, function_string),
-            (ELECTRON_VALUE_FILENAME, node_value),
-            (
-                ELECTRON_EXECUTOR_DATA_FILENAME,
-                tg.get_node_value(node_id, "metadata")["executor_data"],
-            ),
-            (ELECTRON_DEPS_FILENAME, tg.get_node_value(node_id, "metadata")["deps"]),
-            (
-                ELECTRON_CALL_BEFORE_FILENAME,
-                tg.get_node_value(node_id, "metadata")["call_before"],
-            ),
-            (
-                ELECTRON_CALL_AFTER_FILENAME,
-                tg.get_node_value(node_id, "metadata")["call_after"],
-            ),
-            (ELECTRON_STDOUT_FILENAME, node_stdout),
-            (ELECTRON_STDERR_FILENAME, node_stderr),
-            (ELECTRON_ERROR_FILENAME, node_error),
-            (ELECTRON_RESULTS_FILENAME, node_output),
-        ]:
-            store_file(node_path, filename, data)
-
-        electron_exists = (
-            session.query(models.Electron, models.Lattice)
-            .where(
-                models.Electron.parent_lattice_id == models.Lattice.id,
-                models.Lattice.dispatch_id == result.dispatch_id,
-                models.Electron.transport_graph_node_id == node_id,
-            )
-            .first()
-            is not None
-        )
-
-        status = tg.get_node_value(node_key=node_id, value_key="status")
-        if not electron_exists:
-            electron_record_kwarg = {
-                "parent_dispatch_id": result.dispatch_id,
-                "transport_graph_node_id": node_id,
-                "task_group_id": tg.get_node_value(node_id, "task_group_id"),
-                "type": get_electron_type(tg.get_node_value(node_key=node_id, value_key="name")),
-                "name": node_name,
-                "status": str(status),
-                "storage_type": ELECTRON_STORAGE_TYPE,
-                "storage_path": str(node_path),
-                "function_filename": ELECTRON_FUNCTION_FILENAME,
-                "function_string_filename": ELECTRON_FUNCTION_STRING_FILENAME,
-                "executor": executor,
-                "executor_data_filename": ELECTRON_EXECUTOR_DATA_FILENAME,
-                "results_filename": ELECTRON_RESULTS_FILENAME,
-                "value_filename": ELECTRON_VALUE_FILENAME,
-                "stdout_filename": ELECTRON_STDOUT_FILENAME,
-                "stderr_filename": ELECTRON_STDERR_FILENAME,
-                "error_filename": ELECTRON_ERROR_FILENAME,
-                "deps_filename": ELECTRON_DEPS_FILENAME,
-                "call_before_filename": ELECTRON_CALL_BEFORE_FILENAME,
-                "call_after_filename": ELECTRON_CALL_AFTER_FILENAME,
-                "cancel_requested": cancel_requested,
-                "created_at": datetime.now(timezone.utc),
-                "updated_at": datetime.now(timezone.utc),
-                "started_at": started_at,
-                "completed_at": completed_at,
-            }
-            transaction_insert_electrons_data(session=session, **electron_record_kwarg)
+        gid = tg.get_node_value(node_id, "task_group_id")
+        if gid not in task_groups:
+            task_groups[gid] = [node_id]
         else:
-            electron_record_kwarg = {
-                "parent_dispatch_id": result.dispatch_id,
-                "transport_graph_node_id": node_id,
-                "name": node_name,
-                "status": str(status),
-                "started_at": started_at,
-                "updated_at": datetime.now(timezone.utc),
-                "completed_at": completed_at,
-            }
-            update_electrons_data(**electron_record_kwarg)
-            if status == Result.COMPLETED:
-                update_lattice_completed_electron_num(result.dispatch_id)
+            task_groups[gid].append(node_id)
+
+    timestamp = datetime.now(timezone.utc)
+
+    for gid, nodes in task_groups.items():
+        job_row = transaction_insert_job_record(session, cancel_requested)
+        app_log.debug("Created job record for task group {result.dispatch_id}:{gid}")
+
+        for node_id in nodes:
+            results_dir = os.environ.get("COVALENT_DATA_DIR") or get_config(
+                "dispatcher.results_dir"
+            )
+            node_path = Path(os.path.join(results_dir, result.dispatch_id, f"node_{node_id}"))
+
+            if not node_path.exists():
+                node_path.mkdir()
+
+            node_name = tg.get_node_value(node_id, "name")
+
+            try:
+                function_string = tg.get_node_value(node_id, "function_string")
+            except KeyError:
+                function_string = None
+
+            try:
+                node_value = tg.get_node_value(node_id, "value")
+            except KeyError:
+                node_value = None
+
+            try:
+                node_stdout = tg.get_node_value(node_id, "stdout")
+            except KeyError:
+                node_stdout = None
+
+            try:
+                node_stderr = tg.get_node_value(node_id, "stderr")
+            except KeyError:
+                node_stderr = None
+
+            try:
+                node_error = tg.get_node_value(node_id, "error")
+            except KeyError:
+                node_error = None
+
+            try:
+                node_output = tg.get_node_value(node_id, "output")
+            except KeyError:
+                node_output = None
+
+            executor = tg.get_node_value(node_id, "metadata")["executor"]
+            started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
+            completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
+
+            for filename, data in [
+                (ELECTRON_FUNCTION_FILENAME, tg.get_node_value(node_id, "function")),
+                (ELECTRON_FUNCTION_STRING_FILENAME, function_string),
+                (ELECTRON_VALUE_FILENAME, node_value),
+                (
+                    ELECTRON_EXECUTOR_DATA_FILENAME,
+                    tg.get_node_value(node_id, "metadata")["executor_data"],
+                ),
+                (ELECTRON_DEPS_FILENAME, tg.get_node_value(node_id, "metadata")["deps"]),
+                (
+                    ELECTRON_CALL_BEFORE_FILENAME,
+                    tg.get_node_value(node_id, "metadata")["call_before"],
+                ),
+                (
+                    ELECTRON_CALL_AFTER_FILENAME,
+                    tg.get_node_value(node_id, "metadata")["call_after"],
+                ),
+                (ELECTRON_STDOUT_FILENAME, node_stdout),
+                (ELECTRON_STDERR_FILENAME, node_stderr),
+                (ELECTRON_ERROR_FILENAME, node_error),
+                (ELECTRON_RESULTS_FILENAME, node_output),
+            ]:
+                store_file(node_path, filename, data)
+
+            electron_exists = (
+                session.query(models.Electron, models.Lattice)
+                .where(
+                    models.Electron.parent_lattice_id == models.Lattice.id,
+                    models.Lattice.dispatch_id == result.dispatch_id,
+                    models.Electron.transport_graph_node_id == node_id,
+                )
+                .first()
+                is not None
+            )
+
+            status = tg.get_node_value(node_key=node_id, value_key="status")
+            if not electron_exists:
+                electron_record_kwarg = {
+                    "parent_dispatch_id": result.dispatch_id,
+                    "transport_graph_node_id": node_id,
+                    "task_group_id": gid,
+                    "type": get_electron_type(
+                        tg.get_node_value(node_key=node_id, value_key="name")
+                    ),
+                    "name": node_name,
+                    "status": str(status),
+                    "storage_type": ELECTRON_STORAGE_TYPE,
+                    "storage_path": str(node_path),
+                    "function_filename": ELECTRON_FUNCTION_FILENAME,
+                    "function_string_filename": ELECTRON_FUNCTION_STRING_FILENAME,
+                    "executor": executor,
+                    "executor_data_filename": ELECTRON_EXECUTOR_DATA_FILENAME,
+                    "results_filename": ELECTRON_RESULTS_FILENAME,
+                    "value_filename": ELECTRON_VALUE_FILENAME,
+                    "stdout_filename": ELECTRON_STDOUT_FILENAME,
+                    "stderr_filename": ELECTRON_STDERR_FILENAME,
+                    "error_filename": ELECTRON_ERROR_FILENAME,
+                    "deps_filename": ELECTRON_DEPS_FILENAME,
+                    "call_before_filename": ELECTRON_CALL_BEFORE_FILENAME,
+                    "call_after_filename": ELECTRON_CALL_AFTER_FILENAME,
+                    "job_id": job_row.id,
+                    "created_at": timestamp,
+                    "updated_at": timestamp,
+                    "started_at": started_at,
+                    "completed_at": completed_at,
+                }
+                transaction_insert_electrons_data(session=session, **electron_record_kwarg)
+            else:
+                electron_record_kwarg = {
+                    "parent_dispatch_id": result.dispatch_id,
+                    "transport_graph_node_id": node_id,
+                    "name": node_name,
+                    "status": str(status),
+                    "started_at": started_at,
+                    "updated_at": timestamp,
+                    "completed_at": completed_at,
+                }
+                update_electrons_data(**electron_record_kwarg)
+                if status == Result.COMPLETED:
+                    update_lattice_completed_electron_num(result.dispatch_id)
 
 
 def lattice_data(result: Result, electron_id: int = None) -> None:

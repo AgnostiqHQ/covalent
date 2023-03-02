@@ -31,7 +31,11 @@ from covalent_dispatcher._db.jobdb import (
     update_job_records,
 )
 from covalent_dispatcher._db.models import Job, Lattice
-from covalent_dispatcher._db.write_result_to_db import insert_electrons_data, insert_lattices_data
+from covalent_dispatcher._db.write_result_to_db import (
+    insert_electrons_data,
+    insert_lattices_data,
+    transaction_insert_job_record,
+)
 
 from .write_result_to_db_test import get_electron_kwargs, get_lattice_kwargs
 
@@ -103,13 +107,17 @@ def test_to_job_ids(test_db, mocker):
 
     with test_db.session() as session:
         rows = session.query(Lattice).all()
+        job_row = transaction_insert_job_record(session, False)
+        job_id_0 = job_row.id
+        job_row = transaction_insert_job_record(session, False)
+        job_id_1 = job_row.id
         assert len(rows) == 1
 
     electron_kwargs = {
         **get_electron_kwargs(
             parent_dispatch_id="test_dispatch",
             transport_graph_node_id=0,
-            cancel_requested=False,
+            job_id=job_id_0,
             created_at=cur_time,
             updated_at=cur_time,
         )
@@ -121,7 +129,7 @@ def test_to_job_ids(test_db, mocker):
         **get_electron_kwargs(
             parent_dispatch_id="test_dispatch",
             transport_graph_node_id=1,
-            cancel_requested=False,
+            job_id=job_id_1,
             created_at=cur_time,
             updated_at=cur_time,
         )

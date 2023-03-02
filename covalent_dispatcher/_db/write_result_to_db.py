@@ -180,6 +180,13 @@ def insert_lattices_data(*args, **kwargs):
     app_log.debug(f"Added lattice record {locals()} to DB")
 
 
+def transaction_insert_job_record(session: Session, cancel_requested: bool):
+    job_row = Job(cancel_requested=cancel_requested)
+    session.add(job_row)
+    session.flush()
+    return job_row
+
+
 def transaction_insert_electrons_data(
     session: Session,
     parent_dispatch_id: str,
@@ -202,7 +209,7 @@ def transaction_insert_electrons_data(
     deps_filename: str,
     call_before_filename: str,
     call_after_filename: str,
-    cancel_requested: bool,
+    job_id: int,
     created_at: dt,
     updated_at: dt,
     started_at: dt,
@@ -222,10 +229,6 @@ def transaction_insert_electrons_data(
         raise MissingLatticeRecordError
 
     parent_lattice_id = row[0].id
-
-    job_row = Job(cancel_requested=cancel_requested)
-    session.add(job_row)
-    session.flush()
 
     electron_row = Electron(
         parent_lattice_id=parent_lattice_id,
@@ -249,7 +252,7 @@ def transaction_insert_electrons_data(
         call_before_filename=call_before_filename,
         call_after_filename=call_after_filename,
         is_active=True,
-        job_id=job_row.id,
+        job_id=job_id,
         created_at=created_at,
         updated_at=updated_at,
         started_at=started_at,
