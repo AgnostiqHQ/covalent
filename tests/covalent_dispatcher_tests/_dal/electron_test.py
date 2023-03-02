@@ -155,12 +155,16 @@ def test_electron_sub_dispatch_id(test_db, mocker):
     res = get_mock_result()
     res._dispatch_id = "parent_dispatch"
     res._initialize_nodes()
+    subres = get_mock_result()
+    subres._dispatch_id = "sub_dispatch"
+    subres._initialize_nodes()
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.utils.workflow_db", test_db)
-    update.persist(res, 1)
+    update.persist(res)
+    update.persist(subres, 1)
 
     with test_db.session() as session:
         record = (
@@ -170,4 +174,4 @@ def test_electron_sub_dispatch_id(test_db, mocker):
         )
         e = Electron(session, record)
 
-    assert e.get_value("sub_dispatch_id") == "parent_dispatch"
+    assert e.get_value("sub_dispatch_id") == "sub_dispatch"

@@ -32,7 +32,7 @@ from alembic import op
 # pragma: allowlist nextline secret
 revision = "8c49adb1ac3d"
 # pragma: allowlist nextline secret
-down_revision = "97202f5f47cb"
+down_revision = "f64ecaa040d5"
 branch_labels = None
 depends_on = None
 
