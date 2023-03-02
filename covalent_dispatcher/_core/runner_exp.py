@@ -35,6 +35,7 @@ from covalent.executor.base import AsyncBaseExecutor
 from . import data_manager as datamgr
 from . import runner as runner_legacy
 from .data_modules import asset_manager as am
+from .data_modules import job_manager as jm
 from .runner_modules.utils import get_executor
 
 app_log = logger.app_log
@@ -43,9 +44,6 @@ debug_mode = get_config("sdk.log_level") == "debug"
 
 # Asyncio Queue
 _job_events = None
-
-# This should go in the Jobs table
-_job_handles = {}
 
 _job_event_listener = None
 
@@ -135,14 +133,13 @@ async def _submit_abstract_task_group(
             for task_id in task_ids
         ]
 
-        job_handle = await executor.send(
+        await executor.send(
             task_specs,
             resources,
             task_group_metadata,
         )
-        app_log.debug(f"Submitted task group {dispatch_id}:{task_group_id}")
 
-        _job_handles[(dispatch_id, task_group_id)] = job_handle
+        app_log.debug(f"Submitted task group {dispatch_id}:{task_group_id}")
 
     except Exception as ex:
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
@@ -176,7 +173,8 @@ async def _get_task_result(task_group_metadata: Dict):
 
         executor = get_executor(gid, [executor_name, executor_data])
 
-        job_handle = _job_handles.get((dispatch_id, gid), None)
+        job_meta = await jm.get_jobs_metadata(dispatch_id, [task_ids[0]])
+        job_handle = job_meta[0]["job_handle"]
 
         task_group_results = await executor.receive(task_group_metadata, job_handle)
 
@@ -357,7 +355,8 @@ async def _poll_task_status(task_group_metadata: Dict, executor: AsyncBaseExecut
     task_ids = task_group_metadata["task_ids"]
 
     try:
-        job_handle = _job_handles[(dispatch_id, task_group_id)]
+        job_meta = await jm.get_jobs_metadata(dispatch_id, [task_ids[0]])
+        job_handle = job_meta[0]["job_handle"]
 
         app_log.debug(f"Polling status for task group {dispatch_id}:{task_group_id}")
         if await executor.poll(task_group_metadata, job_handle) == 0:

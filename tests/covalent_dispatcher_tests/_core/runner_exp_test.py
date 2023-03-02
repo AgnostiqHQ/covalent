@@ -369,13 +369,16 @@ async def test_get_task_result(mocker):
         "task_ids": [task_id],
         "task_group_id": task_id,
     }
-    mock_job_handles = {(dispatch_id, task_id): 42}
+    job_meta = [{"job_handle": "42"}]
 
-    mocker.patch("covalent_dispatcher._core.runner_exp._job_handles", mock_job_handles)
+    mocker.patch(
+        "covalent_dispatcher._core.runner_exp.jm.get_jobs_metadata",
+        return_value=job_meta,
+    )
 
     await _get_task_result(task_group_metadata)
 
-    me.receive.assert_awaited_with(task_group_metadata, 42)
+    me.receive.assert_awaited_with(task_group_metadata, "42")
 
     mock_update.assert_awaited_with(dispatch_id, expected_node_result)
 
@@ -408,9 +411,12 @@ async def test_poll_status(mocker):
         "task_group_id": task_id,
     }
 
-    mock_job_handles = {(dispatch_id, task_id): 42}
+    job_meta = [{"job_handle": "42"}]
 
-    mocker.patch("covalent_dispatcher._core.runner_exp._job_handles", mock_job_handles)
+    mocker.patch(
+        "covalent_dispatcher._core.runner_exp.jm.get_jobs_metadata",
+        return_value=job_meta,
+    )
 
     await _poll_task_status(task_group_metadata, me)
 
