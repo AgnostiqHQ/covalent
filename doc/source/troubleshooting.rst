@@ -49,10 +49,11 @@ Check out this `discussion <https://github.com/AgnostiqHQ/covalent/discussions/1
 Covalent server not starting
 -----------------------------
 
-The Covalent server can fail to start when running ``covalent start`` when Covalent is being attempted to be run outside a virtual environment. In this case, even after covalent was started with ``covalent start``, ``covalent status`` will report that the server is not running.
+If dispatches are failing due to connection refused errors after running ``covalent start`` it is possible the covalent server was unable to start.
 
-This can be fixed by running ``covalent start`` inside a pyenv/conda virtual environment .
+1. Ensure that you are able to run the ``python`` command and that ``python --version`` is compatible with covalent refer to `compatibility <https://github.com/AgnostiqHQ/covalent/issues>`_ section. If your python version is not compatible or if you only have ``python3`` installed it is recommended that a virtual environment is used (several tools can also be leveraged for this: poetry, conda, pyenv, ect.)
 
+Users should ultimately check ``covalent logs`` for more information and submit a new issue on Github `discussion <https://github.com/AgnostiqHQ/covalent/issues>`_ with any relevant log information associated with the issue.
 
 ------------------------------------------
 Covalent CLI commands throws error/warning
@@ -68,10 +69,11 @@ Covalent CLI commands throws error/warning
 
 
 -----------------------------------------
-Get result throws error when wait is True
+Getting Result fails for long workflows
 -----------------------------------------
 
-# TODO: Get more info
+1. For long-running workflows if a user runs uses ``get_result`` synchronously (``ct.get_result("<dispatch id>", wait=True)``) and observes a ``RecursionError: maximum recursion depth exceeded`` error this means that the result may still be pending or complete but covalent failed during the polling process. Users should still be able to re-run the command to continue waiting for a workflow result.
+
 
 
 ----------------------------------
@@ -79,10 +81,3 @@ Executor issues after installation
 ----------------------------------
 
 1. Users can get ``executor not found`` or ``Covalent config file missing default values`` for the executor if Covalent was not restarted after the executor was installed. This can be fixed by restarting the Covalent server.
-
-
-------------------------------------------
-Long running workflow with max-depth issue
-------------------------------------------
-
-# TODO: Get more info
