@@ -338,7 +338,7 @@ async def notify_node_status(
 
 async def _finalize_dispatch(dispatch_id: str):
 
-    await _unresolved_tasks.remove(dispatch_id)
+    await _clear_caches(dispatch_id)
     app_log.debug(f"Removed unresolved counter for {dispatch_id}")
 
     incomplete_tasks = await datasvc.get_incomplete_tasks(dispatch_id)
@@ -426,10 +426,6 @@ async def _handle_node_status_update(dispatch_id, node_id, node_status, detail):
             await _unresolved_tasks.increment(dispatch_id, len(sorted_nodes))
             await _submit_task_group(dispatch_id, sorted_nodes, gid)
 
-            # Clean up no longer referenced keys
-            await _pending_parents.remove(dispatch_id, gid)
-            await _sorted_task_groups.remove(dispatch_id, gid)
-
     if node_status == RESULT_STATUS.FAILED:
         await _handle_failed_node(dispatch_id, node_id)
 
@@ -502,3 +498,16 @@ async def _handle_event(msg: Dict):
                 fut.set_result(dispatch_status)
 
         return dispatch_status
+
+
+async def _clear_caches(dispatch_id: str):
+    """Clean up all keys in caches."""
+    await _unresolved_tasks.remove(dispatch_id)
+
+    g_node_link = await datasvc.get_graph_nodes_links(dispatch_id)
+    g = nx.readwrite.node_link_graph(g_node_link)
+    task_groups = set([g.nodes[i]["task_group_id"] for i in g.nodes])
+    for gid in task_groups:
+        # Clean up no longer referenced keys
+        await _pending_parents.remove(dispatch_id, gid)
+        await _sorted_task_groups.remove(dispatch_id, gid)

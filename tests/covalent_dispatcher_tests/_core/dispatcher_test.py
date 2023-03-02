@@ -29,6 +29,7 @@ import covalent as ct
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.dispatcher import (
+    _clear_caches,
     _finalize_dispatch,
     _handle_cancelled_node,
     _handle_event,
@@ -213,12 +214,6 @@ async def test_handle_completed_node_update(mocker):
     mock_increment = mocker.patch(
         "covalent_dispatcher._core.dispatcher._unresolved_tasks.increment"
     )
-    mock_pending_remove = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._pending_parents.remove"
-    )
-    mock_sorted_remove = mocker.patch(
-        "covalent_dispatcher._core.dispatcher._sorted_task_groups.remove"
-    )
 
     async def get_task_group(dispatch_id, gid):
         return [gid]
@@ -235,8 +230,6 @@ async def test_handle_completed_node_update(mocker):
     mock_decrement.assert_awaited()
     assert mock_increment.await_count == 2
     assert mock_submit_task_group.await_count == 2
-    assert mock_pending_remove.await_count == 2
-    assert mock_sorted_remove.await_count == 2
 
 
 @pytest.mark.asyncio
@@ -441,8 +434,7 @@ async def test_handle_event_finalize_exception(mocker):
 )
 @pytest.mark.asyncio
 async def test_finalize_dispatch(mocker, failed, cancelled, final_status):
-    mock_remove = mocker.patch("covalent_dispatcher._core.dispatcher._unresolved_tasks.remove")
-
+    mock_clear = mocker.patch("covalent_dispatcher._core.dispatcher._clear_caches")
     failed_tasks = [(0, "task_0")] if failed else []
     cancelled_tasks = [(1, "task_1")] if cancelled else []
 
@@ -588,3 +580,33 @@ async def test_submit_parameter(mocker):
 
 def test_cancelled_workflow():
     cancel_workflow("asdf")
+
+
+@pytest.mark.asyncio
+async def test_clear_caches(mocker):
+    import networkx as nx
+
+    g = nx.MultiDiGraph()
+    g.add_node(0, task_group_id=0)
+    g.add_node(1, task_group_id=0)
+    g.add_node(2, task_group_id=0)
+    g.add_node(3, task_group_id=3)
+
+    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.get_graph_nodes_links")
+    mocker.patch("networkx.readwrite.node_link_graph", return_value=g)
+    mock_unresolved_remove = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._unresolved_tasks.remove"
+    )
+    mock_pending_remove = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._pending_parents.remove"
+    )
+
+    mock_groups_remove = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._sorted_task_groups.remove"
+    )
+
+    await _clear_caches("dispatch")
+
+    assert mock_unresolved_remove.await_count == 1
+    assert mock_pending_remove.await_count == 2
+    assert mock_groups_remove.await_count == 2
