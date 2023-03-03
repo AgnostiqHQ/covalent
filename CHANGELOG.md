@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated How-to documents.
 - Port of Pennylane's Univariate QVR tutorial using Covalent to this repo.
+- Added a note to First Experiment offering initial intro to executors.
 
 ## [0.219.0-rc.0] - 2023-03-01
 
@@ -163,7 +164,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Added IBMQ tutorial
-- Added a note to First Experiment offering initial intro to executors.
 
 ### Added
 
