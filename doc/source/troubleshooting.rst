@@ -72,7 +72,7 @@ Covalent CLI commands throws error/warning
 Getting Result fails for long workflows
 -----------------------------------------
 
-1. For long-running workflows if a user runs uses ``get_result`` synchronously (``ct.get_result("<dispatch id>", wait=True)``) and observes a ``RecursionError: maximum recursion depth exceeded`` error this means that the result may still be pending or complete but covalent failed during the polling process. Users should still be able to re-run the command to continue waiting for a workflow result.
+1. For long-running workflows if a user runs ``get_result`` synchronously with ``wait=True`` and observes a ``RecursionError: maximum recursion depth exceeded`` error this means that the result may still be pending or complete but covalent failed during the polling process. Users should still be able to re-run the command to continue waiting for a workflow result.
 
 
 
