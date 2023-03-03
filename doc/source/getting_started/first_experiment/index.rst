@@ -141,17 +141,19 @@ Follow the steps below to run an example workflow.
 
       import covalent as ct
 
+      local = ct.executor.LocalExecutor()
+
       # Construct manageable tasks out of functions
       # by adding the @covalent.electron decorator
-      @ct.electron
+      @ct.electron(executor=local)
       def add(x, y):
          return x + y
 
-      @ct.electron
+      @ct.electron(executor=local)
       def multiply(x, y):
          return x*y
 
-      @ct.electron
+      @ct.electron(executor=local)
       def divide(x, y):
          return x/y
 
@@ -170,8 +172,10 @@ Follow the steps below to run an example workflow.
       result = ct.get_result(dispatch_id)
       print(result)
 
-    See :doc:`../../api/results` for a description of the result object returned by Covalent.
 
+    See :doc:`../../api/executors/local` for a description of the executor object assigned to each of the electrons. For demonstration purposes, this example assigns the same simple executor to each electron (``LocalExecutor`` just runs the electron on the local host, relying on default process management). However, much of the power of Covalent comes from the ability to assign each electron a different executor, running different tasks on an arbitrary combination of different task managers on remote hosts, including AWS, Slurm, and many others. See :doc:`../../api/executors/index` for a list.
+
+    See :doc:`../../api/results` for a description of the result object returned by Covalent.
 
 Viewing the Workflow
 ####################
