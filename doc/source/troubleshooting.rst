@@ -33,9 +33,9 @@ A workflow can fail for a number of reasons. The most common reasons are:
 
 2. The executor memory and compute resources are insufficient. For a memory issues with the Dask executor, the allocated memory per worker needs to increased via (provided the user has enough memory available):
 
-    .. code-block::
+.. code-block::
 
-        covalent start -n 4 -m "2GB" -d
+    covalent start -n 4 -m "2GB" -d
 
 Check out this `discussion <https://github.com/AgnostiqHQ/covalent/discussions/1246>`_ for more details.
 
