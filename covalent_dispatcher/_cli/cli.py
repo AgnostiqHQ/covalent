@@ -30,6 +30,7 @@ from .groups import db
 from .service import (
     cluster,
     config,
+    deploy,
     logs,
     migrate_legacy_result_object,
     purge,
@@ -67,6 +68,7 @@ cli.add_command(status)
 cli.add_command(purge)
 cli.add_command(logs)
 cli.add_command(cluster)
+cli.add_command(deploy)
 cli.add_command(db)
 cli.add_command(config)
 cli.add_command(migrate_legacy_result_object)
