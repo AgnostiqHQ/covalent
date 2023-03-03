@@ -28,9 +28,7 @@ Workflow failing
 
 A workflow can fail for a number of reasons. The most common reasons are:
 
-1. A task is failing to execute due to a runtime error arising from the task definition.
-
-    - Check the logs of the Covalent server to see if there are any errors.
+1. A task is failing to execute due to a runtime error arising from the task definition. In this case, check the logs of the Covalent server to see if there are any errors and the task error cards in the Covalent UI.
 
 
 2. The executor memory and compute resources are insufficient. For a memory issues with the Dask executor, the allocated memory per worker needs to increased via (provided the user has enough memory available):
@@ -51,7 +49,7 @@ Covalent server not starting
 
 If dispatches are failing due to connection refused errors after running ``covalent start`` it is possible the covalent server was unable to start.
 
-1. Ensure that you are able to run the ``python`` command and that ``python --version`` is compatible with covalent refer to `compatibility <https://github.com/AgnostiqHQ/covalent/issues>`_ section. If your python version is not compatible or if you only have ``python3`` installed it is recommended that a virtual environment is used (several tools can also be leveraged for this: poetry, conda, pyenv, ect.)
+1. Ensure that you are able to run the ``python`` command and that ``python --version`` is compatible with covalent refer to `compatibility <https://covalent.readthedocs.io/en/latest/getting_started/compatibility.html>`_ section. If your python version is not compatible or if you only have ``python3`` installed it is recommended that a virtual environment is used (several tools can also be leveraged for this: poetry, conda, pyenv, ect.)
 
 Users should ultimately check ``covalent logs`` for more information and submit a new issue on Github `discussion <https://github.com/AgnostiqHQ/covalent/issues>`_ with any relevant log information associated with the issue.
 
@@ -91,7 +89,7 @@ Lattice not found error when using Self-hosted Covalent
 
 .. note::
 
-    In general, users should modify the ``dispatcher address`` in the ``ct.dispatch()/ct.get_result()`` functions rather than modifying the config file directly.
+    In general, users should set the ``dispatcher_addr`` in the ``ct.dispatch()/ct.get_result()`` functions rather than using ct.set_config if they'd like to only temporarily change the dispatcher address.
 
 
 2. The dispatch id is invalid.
@@ -101,4 +99,4 @@ Lattice not found error when using Self-hosted Covalent
 Connection timeout error when using Self-hosted Covalent
 --------------------------------------------------------
 
-If a user is getting a connection timeout error while using self-hosted Covalent, it is likely that the local and self-hosted servers. In this case, the user needs to ensure that the ``dispatcher address`` is explicitly set and that the corresponding Covalent server is actually running.
+If a user is getting a connection timeout error while using self-hosted Covalent, it is likely that the local and self-hosted servers are getting mixed up. In this case, the user needs to ensure that the dispatcher address is explicitly set and that the corresponding Covalent server is actually running.
