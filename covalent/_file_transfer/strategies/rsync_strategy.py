@@ -42,7 +42,6 @@ class Rsync(FileTransferStrategy):
         host: Optional[str] = "",
         private_key_path: Optional[str] = None,
     ):
-
         self.user = user
         self.private_key_path = private_key_path
         self.host = host

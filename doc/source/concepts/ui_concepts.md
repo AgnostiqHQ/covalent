@@ -34,17 +34,13 @@ Pending (orange)
 
 ## Transport Graph
 
-```{image} ../_static/tgraph_icons.png
-:align: left
-```
-
 Click on a dispatch ID to view the {ref}`transport graph <Transport Graph>`. The nodes in the graph shows the executor, name, and ID number of each task. The graph's edges are labeled with the data dependencies betwen nodes.
 
 :::{note}
-In some default display configurations, edges can run behind other nodes, labels can be obscured, and other display anomalies can occur. The icons on the left side of the transport graph (shown here on the left) contain a number of tools to manipulate the display for clarity.
+In some default display configurations, edges can run behind other nodes, labels can be obscured, and other display anomalies can occur. The graph view features {ref}`controls<graph_controls>` that you can use to adjust the graph display.
 :::
 
-Below is a transport graph for the {ref}`machine-learning workflow<ml example>` example.
+Below is a transport graph for the {ref}`machine-learning workflow<ml-example>` example.
 
 ```{image} ./images/transport_graph.png
 :align: center
@@ -52,7 +48,7 @@ Below is a transport graph for the {ref}`machine-learning workflow<ml example>` 
 ```
 
 :::{note}
-The node count includes parameters, which (except in rare cases) are counted as successful. To explicitly view parameters in the transport graph, click the *P* icon in the transport graph icon array.
+The node count includes parameters, which (except in rare cases) are counted as successful. To explicitly view parameters in the transport graph, click the *P* icon in the {ref}`transport graph icon array<graph_controls>`.
 :::
 
 ### Transport Graph Nodes

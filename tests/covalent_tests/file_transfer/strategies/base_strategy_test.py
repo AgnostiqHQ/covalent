@@ -1,3 +1,23 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
 from unittest.mock import Mock
 
 import pytest
@@ -51,7 +71,6 @@ class TestBaseFileTransferStrategy:
         [(True, True), (True, False), (False, False), (False, True)],
     )
     def test_pre_transfer_hook_return_values(self, mocker, is_from_remote, is_to_remote):
-
         # we do not support remote -> remote operations as of yet
         if is_from_remote and is_to_remote:
             return

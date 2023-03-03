@@ -60,7 +60,7 @@ def get_default_sdk_config():
             (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
             + "/covalent/executor_plugins"
         ),
-        "no_cluster": "false",
+        "no_cluster": "true" if os.environ.get("COVALENT_DISABLE_DASK") == "1" else "false",
     }
 
 
@@ -126,7 +126,11 @@ def get_default_executor() -> dict:
     """
     from .config import get_config
 
-    return "local" if get_config("sdk.no_cluster") == "true" else "dask"
+    return (
+        "local"
+        if os.environ.get("COVALENT_DISABLE_DASK") == "1" or get_config("sdk.no_cluster") == "true"
+        else "dask"
+    )
 
 
 # Default configuration settings

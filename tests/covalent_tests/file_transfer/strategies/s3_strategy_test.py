@@ -29,7 +29,6 @@ from covalent._file_transfer.strategies.s3_strategy import S3
 
 
 class TestS3Strategy:
-
     MOCK_LOCAL_FILEPATH = "/Users/user/data.csv"
     MOCK_REMOTE_FILEPATH = "s3://covalent-tmp/data.csv"
     MOCK_AWS_CREDENTIALS = "~/.aws/credentials"
@@ -45,7 +44,6 @@ class TestS3Strategy:
         }
 
     def test_init(self, mocker):
-
         boto3_mock = MagicMock()
         sys.modules["boto3"] = boto3_mock
         boto3_client_mock = mocker.patch("boto3.client")

@@ -39,17 +39,20 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-def get_result(dispatch_id: str, wait: bool = False, dispatcher_addr: str = None) -> Result:
+def get_result(
+    dispatch_id: str, wait: bool = False, dispatcher_addr: str = None, status_only: bool = False
+) -> Result:
     """
-    Get the results of a dispatch from a file.
+    Get the results of a dispatch from the Covalent server.
 
     Args:
         dispatch_id: The dispatch id of the result.
         wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
         dispatcher_addr: Dispatcher server address, if None then defaults to the address set in Covalent's config.
+        status_only: If true, only returns result status, not the full result object, default is False.
 
     Returns:
-        The result from the file.
+        The Result object from the Covalent server
 
     """
 
@@ -58,8 +61,11 @@ def get_result(dispatch_id: str, wait: bool = False, dispatcher_addr: str = None
             dispatch_id,
             wait,
             dispatcher_addr,
+            status_only,
         )
-        result_object = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
+
+        if not status_only:
+            result = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
 
     except MissingLatticeRecordError as ex:
         app_log.warning(
@@ -68,7 +74,7 @@ def get_result(dispatch_id: str, wait: bool = False, dispatcher_addr: str = None
 
         raise ex
 
-    return result_object
+    return result
 
 
 def _get_result_from_dispatcher(
@@ -77,15 +83,14 @@ def _get_result_from_dispatcher(
     dispatcher_addr: str = None,
     status_only: bool = False,
 ) -> Dict:
-
     """
     Internal function to get the results of a dispatch from the server without checking if it is ready to read.
 
     Args:
         dispatch_id: The dispatch id of the result.
         wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
-        status_only: If true, only returns result status, not the full result object, default is False.
         dispatcher_addr: Dispatcher server address, if None then defaults to the address set in Covalent's config.
+        status_only: If true, only returns result status, not the full result object, default is False.
 
     Returns:
         The result object from the server.
@@ -96,7 +101,7 @@ def _get_result_from_dispatcher(
 
     if dispatcher_addr is None:
         dispatcher_addr = (
-            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            "http://" + get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
         )
 
     retries = int(EXTREME) if wait else 5
@@ -104,14 +109,17 @@ def _get_result_from_dispatcher(
     adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
     http = requests.Session()
     http.mount("http://", adapter)
-    url = f"http://{dispatcher_addr}/api/result/{dispatch_id}"
+
+    result_url = f"{dispatcher_addr}/api/result/{dispatch_id}"
     response = http.get(
-        url,
+        result_url,
         params={"wait": bool(int(wait)), "status_only": status_only},
     )
+
     if response.status_code == 404:
         raise MissingLatticeRecordError
     response.raise_for_status()
+
     return response.json()
 
 
@@ -189,28 +197,37 @@ def sync(
         for d in dispatch_id:
             _get_result_from_dispatcher(d, wait=True, status_only=True)
     else:
-        raise Exception(
+        raise RuntimeError(
             f"dispatch_id must be a string or a list. You passed a {type(dispatch_id)}."
         )
 
 
-def cancel(
-    dispatch_id: str,
-    dispatcher: str = get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
-) -> str:
+def cancel(dispatch_id: str, task_ids: List[int] = None, dispatcher_addr: str = None) -> str:
     """
     Cancel a running dispatch.
 
     Args:
         dispatch_id: The dispatch id of the dispatch to be cancelled.
-        dispatcher: The address to the dispatcher in the form of hostname:port, e.g. "localhost:8080".
+        task_ids: Optional, list of task ids to cancel within the workflow
+        dispatcher_addr: Dispatcher server address, if None then defaults to the address set in Covalent's config.
 
     Returns:
-        None
+        Cancellation response
     """
 
-    url = "http://" + dispatcher + "/api/cancel"
+    if dispatcher_addr is None:
+        dispatcher_addr = (
+            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+        )
 
-    r = requests.post(url, data=dispatch_id.encode("utf-8"))
+    if task_ids is None:
+        task_ids = []
+
+    url = f"http://{dispatcher_addr}/api/cancel"
+
+    if isinstance(task_ids, int):
+        task_ids = [task_ids]
+
+    r = requests.post(url, json={"dispatch_id": dispatch_id, "task_ids": task_ids})
     r.raise_for_status()
     return r.content.decode("utf-8").strip().replace('"', "")
