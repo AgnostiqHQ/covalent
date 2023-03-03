@@ -49,7 +49,15 @@ def create_modules(modules: Dict[str, str]) -> None:
     modules_dir.mkdir(exist_ok=True)
 
     for name, text in modules.items():
-        with open(modules_dir / name, "w", encoding="utf8") as module_file:
+        module_path = modules_dir / name
+
+        if module_path.exists():
+            with open(module_path, "r", encoding="utf8") as existing_module_file:
+                existing_text = "".join(existing_module_file.readlines())
+            if text == existing_text:
+                continue
+
+        with open(module_path, "w", encoding="utf8") as module_file:
             module_file.write(text)
 
 
