@@ -26,11 +26,10 @@ from importlib import metadata
 
 import click
 
-from .groups import db
+from .groups import db, deploy
 from .service import (
     cluster,
     config,
-    deploy,
     logs,
     migrate_legacy_result_object,
     purge,
