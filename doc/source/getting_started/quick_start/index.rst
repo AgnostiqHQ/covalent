@@ -47,7 +47,9 @@ To quickly install Covalent and run a short demo, follow the four steps below.
       def multiply(x, y):
          return x*y
 
-      @ct.electron
+      # Note that electrons can be shipped to variety
+      # of executors, for example, "local" computer
+      @ct.electron(executor="local")
       def divide(x, y):
          return x/y
 
