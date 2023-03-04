@@ -398,6 +398,9 @@ async def _submit_initial_tasks(dispatch_id: str):
         sorted_nodes = sorted_task_groups[gid]
         app_log.debug(f"Sorted nodes group group {gid}: {sorted_nodes}")
         await _unresolved_tasks.increment(dispatch_id, len(sorted_nodes))
+
+    for gid in initial_groups:
+        sorted_nodes = sorted_task_groups[gid]
         await _submit_task_group(dispatch_id, sorted_nodes, gid)
 
     return RESULT_STATUS.RUNNING
