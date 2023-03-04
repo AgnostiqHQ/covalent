@@ -86,6 +86,12 @@ def get_default_dispatcher_config():
         "use_stateless_datamgr": os.environ.get("COVALENT_USE_STATELESS_DATAMGR", "true")
         or "false",
         "redis": os.environ.get("COVALENT_REDIS_HOST", ""),
+        "sns": {
+            "delete_lattice_arn": os.environ.get("COVALENT_SNS_DELETE_LATTICE_ARN", ""),
+            "new_lattice_arn": os.environ.get("COVALENT_SNS_NEW_LATTICE_ARN", ""),
+            "lattice_update_arn": os.environ.get("COVALENT_SNS_LATTICE_UPDATE_ARN", ""),
+            "electron_update_arn": os.environ.get("COVALENT_SNS_ELECTRON_UPDATE_ARN", ""),
+        }
     }
 
 
