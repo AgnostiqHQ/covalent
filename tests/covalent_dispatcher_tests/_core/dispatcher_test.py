@@ -328,7 +328,7 @@ async def test_handle_event(mocker, unresolved_count):
         mock_finalize.assert_awaited()
         mock_persist.assert_awaited()
     else:
-        mock_finalize.assert_not_awaited
+        mock_finalize.assert_not_awaited()
 
 
 @pytest.mark.asyncio
@@ -375,7 +375,7 @@ async def test_handle_event_exception(mocker):
     assert _futures[dispatch_id].result() == Result.FAILED
 
     mock_persist.assert_awaited()
-    mock_finalize.assert_not_awaited
+    mock_finalize.assert_not_awaited()
 
 
 @pytest.mark.asyncio
