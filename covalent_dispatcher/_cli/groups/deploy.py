@@ -43,13 +43,14 @@ def deploy(ctx: click.Context):
         ignore_unknown_options=True,
     )
 )
+@click.argument("executor_name")
 @click.pass_context
-def status(ctx: click.Context) -> None:
+def status(ctx: click.Context, executor_name: str) -> None:
     """
     Check executor resource status.
     """
-    rm = _get_resource_manager(executor_name="awsbatch")
-    click.echo(rm.get_status())
+    rm = _get_resource_manager(executor_name=executor_name)
+    click.echo(rm.status())
 
 
 @click.command(
@@ -57,12 +58,13 @@ def status(ctx: click.Context) -> None:
         ignore_unknown_options=True,
     )
 )
+@click.argument("executor_name")
 @click.pass_context
-def up(ctx: click.Context) -> None:
+def up(ctx: click.Context, executor_name: str) -> None:
     """
     Check executor resource status.
     """
-    rm = _get_resource_manager(executor_name="awsbatch")
+    rm = _get_resource_manager(executor_name=executor_name)
     click.echo(rm.up())
 
 
@@ -71,12 +73,13 @@ def up(ctx: click.Context) -> None:
         ignore_unknown_options=True,
     )
 )
+@click.argument("executor_name")
 @click.pass_context
-def down(ctx: click.Context) -> None:
+def down(ctx: click.Context, executor_name: str) -> None:
     """
     Check executor resource status.
     """
-    rm = _get_resource_manager(executor_name="awsbatch")
+    rm = _get_resource_manager(executor_name=executor_name)
     click.echo(rm.down())
 
 
