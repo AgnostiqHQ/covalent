@@ -28,61 +28,84 @@ def _get_resource_manager(executor_name: str = "awsbatch") -> None:
         return ResourceManager()
 
 
+"""
+Primary solution
+"""
+
+
 @click.group(invoke_without_command=True)
+@click.argument("executor_name", nargs=1)
+@click.argument("deploy_action", nargs=1)
 @click.pass_context
-def deploy(ctx: click.Context):
+def deploy(ctx: click.Context, executor_name, deploy_action):
     """
     Group of utility commands to deploy executor resources.
     """
-    if ctx.invoked_subcommand is None:
-        click.echo(ctx.get_help())
-
-
-@click.command(
-    context_settings=dict(
-        ignore_unknown_options=True,
-    )
-)
-@click.argument("executor_name")
-@click.pass_context
-def status(ctx: click.Context, executor_name: str) -> None:
-    """
-    Check executor resource status.
-    """
     rm = _get_resource_manager(executor_name=executor_name)
-    click.echo(rm.status())
+    click.echo(rm.__getattribute__(deploy_action)())
 
 
-@click.command(
-    context_settings=dict(
-        ignore_unknown_options=True,
-    )
-)
-@click.argument("executor_name")
-@click.pass_context
-def up(ctx: click.Context, executor_name: str) -> None:
-    """
-    Check executor resource status.
-    """
-    rm = _get_resource_manager(executor_name=executor_name)
-    click.echo(rm.up())
+# TODO - Still need to iron out how to include subcommand options and pass it to the terraform deployment functions.
+
+"""
+Backup solution
+"""
+
+# @click.group(invoke_without_command=True)
+# @click.pass_context
+# def deploy(ctx: click.Context):
+#     """
+#     Group of utility commands to deploy executor resources.
+#     """
+#     if ctx.invoked_subcommand is None:
+#         click.echo(ctx.get_help())
 
 
-@click.command(
-    context_settings=dict(
-        ignore_unknown_options=True,
-    )
-)
-@click.argument("executor_name")
-@click.pass_context
-def down(ctx: click.Context, executor_name: str) -> None:
-    """
-    Check executor resource status.
-    """
-    rm = _get_resource_manager(executor_name=executor_name)
-    click.echo(rm.down())
+# @click.command(
+#     context_settings=dict(
+#         ignore_unknown_options=True,
+#     )
+# )
+# @click.argument("executor_name")
+# @click.pass_context
+# def status(ctx: click.Context, executor_name: str) -> None:
+#     """
+#     Check executor resource status.
+#     """
+#     rm = _get_resource_manager(executor_name=executor_name)
+#     click.echo(rm.status())
 
 
-deploy.add_command(up)
-deploy.add_command(down)
-deploy.add_command(status)
+# @click.command(
+#     context_settings=dict(
+#         ignore_unknown_options=True,
+#     )
+# )
+# @click.argument("executor_name")
+# @click.pass_context
+# def up(ctx: click.Context, executor_name: str) -> None:
+#     """
+#     Check executor resource status.
+#     """
+#     rm = _get_resource_manager(executor_name=executor_name)
+#     click.echo(rm.up())
+
+
+# @click.command(
+#     context_settings=dict(
+#         ignore_unknown_options=True,
+#     )
+# )
+# @click.argument("executor_name")
+# @click.pass_context
+# def down(ctx: click.Context, executor_name: str) -> None:
+#     """
+#     Check executor resource status.
+#     """
+#     rm = _get_resource_manager(executor_name=executor_name)
+#     click.echo(rm.down())
+
+
+# deploy.add_command(up)
+# deploy.add_command(down)
+# deploy.add_command(status)
