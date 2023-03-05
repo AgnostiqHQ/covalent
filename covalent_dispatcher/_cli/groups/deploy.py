@@ -21,6 +21,13 @@
 import click
 
 
+def _get_resource_manager(executor_name: str = "awsbatch") -> None:
+    if executor_name == "awsbatch":
+        from covalent_awsbatch_plugin.resource_manager import ResourceManager
+
+        return ResourceManager()
+
+
 @click.group(invoke_without_command=True)
 @click.pass_context
 def deploy(ctx: click.Context):
@@ -41,7 +48,8 @@ def status(ctx: click.Context) -> None:
     """
     Check executor resource status.
     """
-    pass
+    rm = _get_resource_manager(executor_name="awsbatch")
+    click.echo(rm.get_status())
 
 
 @click.command(
@@ -54,7 +62,8 @@ def up(ctx: click.Context) -> None:
     """
     Check executor resource status.
     """
-    pass
+    rm = _get_resource_manager(executor_name="awsbatch")
+    click.echo(rm.up())
 
 
 @click.command(
@@ -67,7 +76,8 @@ def down(ctx: click.Context) -> None:
     """
     Check executor resource status.
     """
-    pass
+    rm = _get_resource_manager(executor_name="awsbatch")
+    click.echo(rm.down())
 
 
 deploy.add_command(up)

@@ -42,7 +42,7 @@ def db(ctx: click.Context):
 @click.pass_context
 def migrate(ctx: click.Context) -> None:
     """
-    Run DB Migrations programatically
+    Run DB Migrations programmatically
     """
     try:
         db = DataStore.factory()
