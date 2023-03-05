@@ -50,13 +50,6 @@ class TransportableObject:
         self.python_version = platform.python_version()
 
         self.object_string = str(obj)
-
-        try:
-            self._json = json.dumps(obj)
-
-        except TypeError as ex:
-            self._json = ""
-
         self.attrs = {"doc": getattr(obj, "__doc__", ""), "name": getattr(obj, "__name__", "")}
 
     def __eq__(self, obj) -> bool:
@@ -77,10 +70,6 @@ class TransportableObject:
         """
 
         return cloudpickle.loads(base64.b64decode(self._object.encode("utf-8")))
-
-    @property
-    def json(self):
-        return self._json
 
     def to_dict(self) -> dict:
         """Return a JSON-serializable dictionary representation of self"""
@@ -129,7 +118,6 @@ class TransportableObject:
             {
                 "object": self.get_serialized(),
                 "object_string": self.object_string,
-                "json": self._json,
                 "attrs": self.attrs,
                 "py_version": self.python_version,
             }
@@ -185,7 +173,6 @@ class TransportableObject:
         obj = cloudpickle.loads(data)
         sc = TransportableObject(None)
         sc._object = obj["object"]
-        sc._json = obj["json"]
         sc.attrs = obj["attrs"]
         sc.python_version = obj["py_version"]
         return sc

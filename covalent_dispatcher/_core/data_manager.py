@@ -23,7 +23,6 @@ Defines the core functionality of the result service
 """
 
 import functools
-import json
 import traceback
 import uuid
 from typing import Any, Dict, List
@@ -304,7 +303,7 @@ async def _make_sublattice_dispatch(result_object: SRVResult, node_result: dict)
 
     node_id = node_result["node_id"]
     bg_output = await get_electron_attribute(result_object.dispatch_id, node_id, "output")
-    json_lattice = json.loads(bg_output.json)
+    json_lattice = bg_output.object_string
     parent_node = await run_in_executor(
         result_object.lattice.transport_graph.get_node,
         node_id,

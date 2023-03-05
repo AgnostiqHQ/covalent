@@ -83,19 +83,6 @@ def test_transportable_object_python_version(transportable_object):
     assert to.python_version == platform.python_version()
 
 
-def test_transportable_object_json_property(transportable_object):
-    """Test that TO stores a json rep of json-serializable objects"""
-
-    import json
-
-    jsonable_obj = {"a": 1, "b": 2}
-    t = TransportableObject(jsonable_obj)
-    assert t.json == json.dumps(jsonable_obj)
-
-    new_t = TransportableObject(t)
-    assert new_t.json == ""
-
-
 def test_transportable_object_eq(transportable_object):
     """Test the __eq__ magic method of TransportableObject"""
 

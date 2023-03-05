@@ -418,17 +418,16 @@ async def test_update_parent_electron(mocker, sub_status, mapped_status):
 
 @pytest.mark.asyncio
 async def test_make_sublattice_dispatch(mocker):
-    import json
 
     node_result = {"node_id": 0, "status": Result.COMPLETED}
 
-    output_json = json.dumps("lattice_json")
+    output_json = "lattice_json"
     mock_node = MagicMock()
     mock_node._electron_id = 5
     print("DEBUG:", mock_node)
 
     mock_bg_output = MagicMock()
-    mock_bg_output.json = output_json
+    mock_bg_output.object_string = output_json
 
     result_object = MagicMock()
     result_object.dispatch_id = "dispatch"
