@@ -163,6 +163,7 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    Server Deployment <deployment/index>
    Credentials <credentials>
    Glossary <glossary/index>
+   Troubleshooting <troubleshooting>
 
 .. toctree::
    :maxdepth: 3

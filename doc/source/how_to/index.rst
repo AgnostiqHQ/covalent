@@ -18,7 +18,7 @@ The guide covers specific tasks at every phase of the workflow development proce
 2. :ref:`Executing workflows <howto_executing>`, including using and writing executors
 3. :ref:`Querying Status <howto_querying>` and :ref:`Collecting and Viewing Results <howto_querying>`
 
-At the end are how-tos on miscellaneous topics including :ref:`configuration <howto_config>` and :ref:`troubleshooting <howto_trouble>`.
+At the end are how-tos on miscellaneous topics including :ref:`configuration <howto_config>`.
 
 .. _howto_coding:
 
@@ -107,13 +107,6 @@ Configuration
 *************
 
 :doc:`Customizing the Configuration <./config/customization>`
-
-.. _howto_trouble:
-
-Database
-********
-
-:doc:`What To Do When Encountering Database Migration Errors <./db/migration_error>`
 
 ----------------------------------
 

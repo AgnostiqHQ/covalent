@@ -119,6 +119,10 @@ The Covalent user interface runs as a web server on the machine where the Covale
 
 The official documentation includes tips on getting started, high-level concepts, tutorials, and the API documentation, and more. To learn more, see the [Covalent documentation](https://covalent.readthedocs.io/en/latest/).
 
+## Troubleshooting
+
+Solutions to common issues can be found in the [Troubleshooting Guide](https://covalent.readthedocs.io/en/latest/).
+
 ## ✔️  Contributing
 
 To contribute to Covalent, refer to the [Contribution Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/CONTRIBUTING.md). We use GitHub's [issue tracking](https://github.com/AgnostiqHQ/covalent/issues) to manage known issues, bugs, and pull requests. Get started by forking the develop branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. For more more information on adding tutorials, check the [Tutorial Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/doc/TUTORIAL_GUIDELINES.md) Participation in the Covalent community is governed by the [Code of Conduct](https://github.com/AgnostiqHQ/covalent/blob/master/CODE_OF_CONDUCT.md).
