@@ -205,7 +205,7 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
 
     for gid, nodes in task_groups.items():
         job_row = transaction_insert_job_record(session, cancel_requested)
-        app_log.debug("Created job record for task group {result.dispatch_id}:{gid}")
+        app_log.debug(f"Created job record for task group {result.dispatch_id}:{gid}")
 
         for node_id in nodes:
             results_dir = os.environ.get("COVALENT_DATA_DIR") or get_config(
