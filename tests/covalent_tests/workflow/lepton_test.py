@@ -479,7 +479,6 @@ def test_shell_wrapper(
     kwargs,
     valid,
 ):
-
     if library_name:
         with open(library_name, "w") as f:
             f.write(library_body)
@@ -511,7 +510,6 @@ def test_shell_wrapper(
 
 
 def test_lepton_constructor_serializes_metadata():
-
     le = LocalExecutor()
     bashdep = DepsBash(["yum install gcc"])
     lep = Lepton(

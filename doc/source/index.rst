@@ -104,7 +104,7 @@ Build Workflows
 
     ^^^
 
-    Build your own workflows with this cookbook-style collection of instructions for every stage of a project, from orchestration to execution to results.
+    Build your own workflows with this cookbook-style collection of instructions for every stage of a project, from coding to execution to results.
 
     ------------------------------------------------
 
@@ -150,7 +150,6 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    getting_started/quick_start/index
    First Experiment <getting_started/first_experiment/index>
 
-
 .. toctree::
    :maxdepth: 3
    :caption:  User Documentation
@@ -163,13 +162,16 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    API Reference <api/index>
    Server Deployment <deployment/index>
    Credentials <credentials>
+   Glossary <glossary/index>
 
 .. toctree::
-   :maxdepth: 2
-   :caption:  Extensions
+   :maxdepth: 3
+   :caption:  Features
    :hidden:
 
-   plugins
+   Executor plugins <plugins>
+   Triggers <features/triggers>
+   Cancellation <features/cancel>
 
 .. toctree::
    :maxdepth: 1

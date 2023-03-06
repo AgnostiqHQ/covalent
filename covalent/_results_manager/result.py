@@ -73,7 +73,6 @@ class Result:
     CANCELLED = RESULT_STATUS.CANCELLED
 
     def __init__(self, lattice: Lattice, dispatch_id: str = "") -> None:
-
         self._start_time = None
         self._end_time = None
 
@@ -235,24 +234,7 @@ Node Outputs
 
         self._num_nodes = self.lattice.transport_graph.get_internal_graph_copy().number_of_nodes()
         for node_id in range(self._num_nodes):
-
-            self.lattice.transport_graph.set_node_value(node_id, "start_time", None)
-
-            self.lattice.transport_graph.set_node_value(node_id, "end_time", None)
-
-            self.lattice.transport_graph.set_node_value(node_id, "status", Result.NEW_OBJ)
-
-            self.lattice.transport_graph.set_node_value(node_id, "output", None)
-
-            self.lattice.transport_graph.set_node_value(node_id, "error", None)
-
-            self.lattice.transport_graph.set_node_value(node_id, "sub_dispatch_id", None)
-
-            self.lattice.transport_graph.set_node_value(node_id, "sublattice_result", None)
-
-            self.lattice.transport_graph.set_node_value(node_id, "stdout", None)
-
-            self.lattice.transport_graph.set_node_value(node_id, "stderr", None)
+            self.lattice.transport_graph.reset_node(node_id)
 
     def get_node_result(self, node_id: int) -> dict:
         """Return the result of a particular node.
@@ -323,7 +305,6 @@ Node Outputs
         ]
 
     def post_process(self):
-
         # Copied from server-side _post_process()
         node_outputs = self.get_all_node_outputs()
         ordered_node_outputs = []

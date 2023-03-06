@@ -1,6 +1,6 @@
-==========
+########
 Terminal
-==========
+########
 
 .. image:: ../images/terminal.gif
    :align: center

@@ -1,6 +1,6 @@
-===========
+##########
 Pagination
-===========
+##########
 
 The Covalent GUI presents the server log in pages of up to 70 records per page.
 

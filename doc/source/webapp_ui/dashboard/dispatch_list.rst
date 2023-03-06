@@ -1,6 +1,6 @@
-=======================
+######################
 Workflow Dispatch List
-=======================
+######################
 
 A filterable, sortable list of all dispatches in the Covalent server database. A typical dispatch list is shown below.
 
@@ -21,7 +21,6 @@ Ended
     The local time when a dispatch ended (completed or failed). A dash is displayed while the dispatch is Running.
 Status
    The status of a dispatch. The possible statuses are:
-
    Pending
         Not yet running due to scheduling or resource availability.
    Running

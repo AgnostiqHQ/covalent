@@ -1,10 +1,10 @@
 (concept_sdk)=
 # The Covalent SDK
 
-The Covalent SDK exists to enable compute-intensive workloads, such as ML training and testing, to run as server-managed workflows. To accomplish this, the workload is broken down into tasks that are arranged in a workflow. The tasks and the workflow are Python functions decorated with Covalent's *electron* and *lattice* interfaces, respectively.
+The Covalent SDK exists to enable compute-intensive workloads, such as ML training and testing, to run as {term}`server-managed<management>` workflows. To accomplish this, the workload is broken down into tasks that are arranged in a workflow. The tasks and the workflow are Python functions decorated with Covalent's *electron* and *lattice* interfaces, respectively.
+
 
 (electron)=
-
 ## Electron
 
 The simplest unit of computational work in Covalent is a task, called an *electron*, created in the Covalent API by using the `@covalent.electron` decorator on a function.
@@ -57,7 +57,7 @@ A runnable workflow in Covalent is called a *lattice*, created with the {code}`@
 
 {code}`lattice` (lower-case "l")
 
-: An obect that is an instantiation of the {code}`Lattice` class.
+: An object that is an instantiation of the {code}`Lattice` class.
 
 {code}`@covalent.lattice`
 
@@ -81,7 +81,7 @@ Parallelization
 ```
 
 :::{note}
-A function decorated as an electron behaves as a regular function unless called from within a lattice. Only when an electron is invoked from within a lattice is the electron code invoked to run the function in an executor.
+A function decorated as an electron behaves as a regular function unless called from within a lattice. Only when an electron is invoked from within a lattice is the Electron code invoked to run the function in an executor.
 :::
 
 :::{admonition} Also note

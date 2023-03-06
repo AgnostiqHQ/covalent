@@ -7,3 +7,4 @@ networkx==2.8.6
 requests>=2.24.0,<=2.28.1
 simplejson==3.17.6
 toml==0.10.2
+watchdog==2.2.1

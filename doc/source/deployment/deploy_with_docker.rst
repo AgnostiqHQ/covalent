@@ -1,7 +1,15 @@
-Deployment with Docker
-######################
+#####################
+Deploying with Docker
+#####################
 
 To run Covalent as a Docker container using public images, do the following.
+
+Prerequisites
+-------------
+`Install and run Docker <https://docs.docker.com/engine/install/>`_ on your remote host.
+
+Procedure
+---------
 
 .. card:: 1. Get the latest Docker image for Covalent:
 
@@ -57,7 +65,6 @@ The following table lists the environment variables available to customize Coval
       - Memory limit for each Dask worker
     * - COVALENT_THREADS_PER_WORKER
       - Number of threads with which to start each worker
-
 
 .. card:: 5. For example, to start Covalent with two workers on port 8000:
 
