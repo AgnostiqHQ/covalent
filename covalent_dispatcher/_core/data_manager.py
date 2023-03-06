@@ -271,7 +271,7 @@ def _get_attrs_for_electrons_sync(dispatch_id: str, node_ids: List[int], keys: s
     return attrs
 
 
-async def get_attrs_for_electrons(dispatch_id: str, node_ids: List[int], keys: str) -> Any:
+async def get_attrs_for_electrons(dispatch_id: str, node_ids: List[int], keys: str) -> List[Dict]:
     return await run_in_executor(
         _get_attrs_for_electrons_sync,
         dispatch_id,

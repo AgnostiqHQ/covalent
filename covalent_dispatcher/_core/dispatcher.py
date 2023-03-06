@@ -187,42 +187,62 @@ async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_gro
         # Gather inputs for each task and send the task spec sequence to the runner
         task_specs = []
         known_nodes = []
-        for node_id in sorted_nodes:
-            app_log.debug(f"Gathering inputs for task {node_id} (run_planned_workflow).")
 
-            abs_task_input = await _get_abstract_task_inputs(dispatch_id, node_id, node_name)
-
-            selected_executor = await datasvc.get_electron_attribute(
-                dispatch_id, node_id, "executor"
-            )
-            selected_executor_data = await datasvc.get_electron_attribute(
-                dispatch_id, node_id, "executor_data"
-            )
-            task_spec = {
-                "function_id": node_id,
-                "name": node_name,
-                "args_ids": abs_task_input["args"],
-                "kwargs_ids": abs_task_input["kwargs"],
-            }
-            known_nodes += abs_task_input["args"]
-            known_nodes += list(abs_task_input["kwargs"].values())
-            task_specs.append(task_spec)
-
-        app_log.debug(
-            f"Submitting task group {dispatch_id}:{task_group_id} ({len(sorted_nodes)} tasks) to runner"
-        )
-        app_log.debug(f"Using new runner for task group {task_group_id}")
-
-        known_nodes = list(set(known_nodes))
-        coro = runner_exp.run_abstract_task_group(
-            dispatch_id=dispatch_id,
-            task_group_id=task_group_id,
-            task_seq=task_specs,
-            known_nodes=known_nodes,
-            selected_executor=[selected_executor, selected_executor_data],
+        # Skip the group if all tasks have already completed (in a redispatch or retry scenario)
+        statuses = await datasvc.get_attrs_for_electrons(dispatch_id, sorted_nodes, ["status"])
+        incomplete = list(
+            filter(lambda record: record["status"] != RESULT_STATUS.COMPLETED, statuses)
         )
 
-        asyncio.create_task(coro)
+        if len(incomplete) > 0:
+            for node_id in sorted_nodes:
+                app_log.debug(f"Gathering inputs for task {node_id} (run_planned_workflow).")
+
+                abs_task_input = await _get_abstract_task_inputs(dispatch_id, node_id, node_name)
+
+                selected_executor = await datasvc.get_electron_attribute(
+                    dispatch_id, node_id, "executor"
+                )
+                selected_executor_data = await datasvc.get_electron_attribute(
+                    dispatch_id, node_id, "executor_data"
+                )
+                task_spec = {
+                    "function_id": node_id,
+                    "name": node_name,
+                    "args_ids": abs_task_input["args"],
+                    "kwargs_ids": abs_task_input["kwargs"],
+                }
+                known_nodes += abs_task_input["args"]
+                known_nodes += list(abs_task_input["kwargs"].values())
+                task_specs.append(task_spec)
+
+            app_log.debug(
+                f"Submitting task group {dispatch_id}:{task_group_id} ({len(sorted_nodes)} tasks) to runner"
+            )
+            app_log.debug(f"Using new runner for task group {task_group_id}")
+
+            known_nodes = list(set(known_nodes))
+            coro = runner_exp.run_abstract_task_group(
+                dispatch_id=dispatch_id,
+                task_group_id=task_group_id,
+                task_seq=task_specs,
+                known_nodes=known_nodes,
+                selected_executor=[selected_executor, selected_executor_data],
+            )
+
+            asyncio.create_task(coro)
+        else:
+            ts = datetime.now(timezone.utc)
+            for node_id in sorted_nodes:
+                app_log.debug(f"Skipping already completed node {dispatch_id}:{node_id}")
+                node_result = {
+                    "node_id": node_id,
+                    "start_time": ts,
+                    "end_time": ts,
+                    "status": RESULT_STATUS.COMPLETED,
+                }
+                await datasvc.update_node_result(dispatch_id, node_result)
+                app_log.debug("8A: Update node success (run_planned_workflow).")
 
 
 async def _plan_workflow(dispatch_id: str) -> None:

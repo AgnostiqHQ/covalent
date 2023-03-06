@@ -522,12 +522,23 @@ async def test_submit_task_group(mocker):
         "executor_data": {},
     }
 
+    mock_statuses = [
+        {"status": Result.NEW_OBJ},
+        {"status": Result.NEW_OBJ},
+        {"status": Result.NEW_OBJ},
+    ]
+
     async def get_electron_attr(dispatch_id, node_id, key):
         return mock_attrs[key]
 
     mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.get_electron_attribute",
         get_electron_attr,
+    )
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_attrs_for_electrons",
+        return_value=mock_statuses,
     )
 
     mocker.patch(
@@ -541,6 +552,58 @@ async def test_submit_task_group(mocker):
     await _submit_task_group(dispatch_id, nodes, gid)
     mock_run_abs_task.assert_called()
     assert mock_get_abs_input.await_count == len(nodes)
+
+
+@pytest.mark.asyncio
+async def test_submit_task_group_skips_completed(mocker):
+    """Check that submit_task_group skips completed groups"""
+    dispatch_id = "dispatch_1"
+    gid = 2
+    nodes = [4, 3, 2]
+
+    mock_get_abs_input = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._get_abstract_task_inputs",
+        return_value={"args": [], "kwargs": {}},
+    )
+
+    mock_attrs = {
+        "name": "task",
+        "value": 5,
+        "executor": "local",
+        "executor_data": {},
+    }
+
+    mock_statuses = [
+        {"status": Result.COMPLETED},
+        {"status": Result.COMPLETED},
+        {"status": Result.COMPLETED},
+    ]
+
+    async def get_electron_attr(dispatch_id, node_id, key):
+        return mock_attrs[key]
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_electron_attribute",
+        get_electron_attr,
+    )
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_attrs_for_electrons",
+        return_value=mock_statuses,
+    )
+
+    mock_update = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.update_node_result",
+    )
+
+    mock_run_abs_task = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.runner_exp.run_abstract_task_group",
+    )
+
+    await _submit_task_group(dispatch_id, nodes, gid)
+    mock_run_abs_task.assert_not_called()
+    mock_get_abs_input.assert_not_awaited()
+    assert mock_update.await_count == len(nodes)
 
 
 @pytest.mark.asyncio
