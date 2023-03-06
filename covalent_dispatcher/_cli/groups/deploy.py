@@ -20,13 +20,7 @@
 
 import click
 
-
-def _get_resource_manager(executor_name: str = "awsbatch") -> None:
-    if executor_name == "awsbatch":
-        from covalent_awsbatch_plugin.resource_manager import ResourceManager
-
-        return ResourceManager()
-
+from covalent.cloud_resource_manager.cloud_resource_manager import CloudResourceManager as CRM
 
 """
 Primary solution
@@ -41,8 +35,8 @@ def deploy(ctx: click.Context, executor_name, deploy_action):
     """
     Group of utility commands to deploy executor resources.
     """
-    rm = _get_resource_manager(executor_name=executor_name)
-    click.echo(rm.__getattribute__(deploy_action)())
+    crm = CRM(executor_name)
+    click.echo(crm.__getattribute__(deploy_action)())
 
 
 # TODO - Still need to iron out how to include subcommand options and pass it to the terraform deployment functions.
