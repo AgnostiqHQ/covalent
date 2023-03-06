@@ -63,7 +63,7 @@ Covalent CLI commands throws error/warning
 
     The user also has the option of running ``covalent purge`` which will delete the config file. A new config file will be created when the user runs ``covalent start`` again. This option must be used with caution.
 
-2. If DB migration error is thrown, that implies that the database schema is not up to date with the latest version of Covalent. This can be fixed by running ``covalent db migrate``.
+2. If DB migration error is thrown, that implies that the database schema is not up to date with the latest version of Covalent. This can be fixed by running ``covalent db migrate``. For more information, check out :doc:`What To Do When Encountering Database Migration Errors <./how_to/db/migration_error>`.
 
 
 -----------------------------------------
