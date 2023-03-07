@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Post-processing electron.
+
+### Changed
+
+- Post-processing logic.
+
 ### Docs
 
 - Updated How-to documents.
