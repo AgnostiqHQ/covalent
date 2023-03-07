@@ -26,7 +26,7 @@ import operator
 from builtins import list
 from dataclasses import asdict
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
 
 from .._file_transfer.enums import Order
 from .._file_transfer.file_transfer import FileTransfer
@@ -41,7 +41,11 @@ from .._shared_files.defaults import (
     prefix_separator,
     sublattice_prefix,
 )
-from .._shared_files.utils import get_named_params, get_serialized_function_str
+from .._shared_files.utils import (
+    filter_null_metadata,
+    get_named_params,
+    get_serialized_function_str,
+)
 from .depsbash import DepsBash
 from .depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from .depspip import DepsPip
@@ -82,6 +86,7 @@ class Electron:
         node_id: int = None,
         metadata: dict = None,
         task_group_id: int = None,
+        packing_tasks: bool = False,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -89,6 +94,7 @@ class Electron:
         self.node_id = node_id
         self.metadata = metadata
         self.task_group_id = task_group_id
+        self.packing_tasks = packing_tasks
 
     def set_metadata(self, name: str, value: Any) -> None:
         """
@@ -307,6 +313,7 @@ class Electron:
                     function=get_attr,
                     metadata=self.metadata.copy(),
                     task_group_id=self.task_group_id,
+                    packing_tasks=True,
                 )
             else:
                 get_attr_electron = Electron(function=get_attr, metadata=self.metadata.copy())
@@ -331,6 +338,7 @@ class Electron:
                     function=get_item,
                     metadata=self.metadata.copy(),
                     task_group_id=self.task_group_id,
+                    packing_tasks=True,
                 )
             else:
                 get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())
@@ -408,9 +416,10 @@ class Electron:
 
             return bound_electron
 
-        # Add a node to the transport graph of the active lattice
-
-        if self.task_group_id is not None:
+        # Add a node to the transport graph of the active lattice.
+        # Electrons bound to nodes will never be packed with the
+        # "master" Electron.
+        if self.packing_tasks:
             self.node_id = active_lattice.transport_graph.add_node(
                 name=sublattice_prefix + self.function.__name__
                 if isinstance(self.function, Lattice)
@@ -464,6 +473,7 @@ class Electron:
             metadata=self.metadata,
             node_id=self.node_id,
             task_group_id=self.task_group_id,
+            packing_tasks=self.packing_tasks,
         )
         active_lattice._bound_electrons[self.node_id] = bound_electron
 
@@ -517,6 +527,7 @@ class Electron:
                 function=_auto_list_node,
                 metadata=collection_metadata,
                 task_group_id=self.task_group_id,
+                packing_tasks=True,
             )
             bound_electron = list_electron(*param_value)
             transport_graph.set_node_value(bound_electron.node_id, "name", electron_list_prefix)
@@ -540,6 +551,7 @@ class Electron:
                 function=_auto_dict_node,
                 metadata=collection_metadata,
                 task_group_id=self.task_group_id,
+                packing_tasks=True,
             )
             bound_electron = dict_electron(**param_value)
             transport_graph.set_node_value(bound_electron.node_id, "name", electron_dict_prefix)
@@ -634,6 +646,16 @@ class Electron:
             node_id=self.node_id,
         )
 
+    @property
+    def as_transportable_dict(self) -> Dict:
+        """Get transportable electron object and metadata."""
+        return {
+            "name": self.function.__name__,
+            "function": TransportableObject(self.function).to_dict(),
+            "function_string": get_serialized_function_str(self.function),
+            "metadata": filter_null_metadata(self.metadata),
+        }
+
 
 def electron(
     _func: Optional[Callable] = None,
@@ -725,13 +747,17 @@ def electron(
     constraints = encode_metadata(constraints)
 
     def decorator_electron(func=None):
+        """Electron decorator function"""
+        electron_object = Electron(func)
+        for k, v in constraints.items():
+            electron_object.set_metadata(k, v)
+        electron_object.__doc__ = func.__doc__
+
         @wraps(func)
         def wrapper(*args, **kwargs):
-            electron_object = Electron(func)
-            for k, v in constraints.items():
-                electron_object.set_metadata(k, v)
-            electron_object.__doc__ = func.__doc__
             return electron_object(*args, **kwargs)
+
+        wrapper.electron_object = electron_object
 
         return wrapper
 

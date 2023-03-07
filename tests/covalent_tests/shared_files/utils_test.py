@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -18,9 +18,23 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .base import BaseDispatcher
-from .local import LocalDispatcher
 
-local_dispatch = LocalDispatcher.dispatch
-local_dispatch_sync = LocalDispatcher.dispatch_sync
-local_redispatch = LocalDispatcher.redispatch
+"""Unit tests for Covalent shared util functions."""
+
+import pytest
+
+from covalent._shared_files.utils import filter_null_metadata
+
+
+@pytest.mark.parametrize(
+    "meta_dict,expected",
+    [
+        ({}, {}),
+        ({"a": 1}, {"a": 1}),
+        ({"a": 1, "b": None}, {"a": 1}),
+    ],
+)
+def test_filter_null_metadata(meta_dict, expected):
+    """Test the filter null metadata function."""
+    filtered = filter_null_metadata(meta_dict)
+    assert filtered == expected

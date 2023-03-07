@@ -23,7 +23,12 @@
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import WAIT_EDGE_NAME
-from covalent._workflow.electron import Electron, to_decoded_electron_collection
+from covalent._workflow.electron import (
+    Electron,
+    filter_null_metadata,
+    get_serialized_function_str,
+    to_decoded_electron_collection,
+)
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 from covalent.executor.executor_plugins.local import LocalExecutor
 
@@ -277,3 +282,21 @@ def test_electron_auto_task_groups():
     assert tg.get_node_value(2, "task_group_id") == 0
     for i in range(3, 7):
         assert tg.get_node_value(i, "task_group_id") == i
+
+
+def test_as_transportable_dict(mocker):
+    """Test the get transportable electron function."""
+
+    @ct.electron
+    def test_func(a):
+        return a
+
+    mock_metadata = {"a": 1, "b": 2, "c": None}
+    # Construct bound electron, i.e. electron with non-null function and node_id
+    electron = Electron(function=test_func, node_id=1, metadata=mock_metadata)
+    transportable_electron = electron.as_transportable_dict
+
+    assert transportable_electron["name"] == "test_func"
+    assert transportable_electron["metadata"] == filter_null_metadata(mock_metadata)
+    assert transportable_electron["function_string"] == get_serialized_function_str(test_func)
+    assert TransportableObject(test_func).to_dict() == transportable_electron["function"]
