@@ -304,8 +304,12 @@ Node Outputs
             for node_id in self._lattice.transport_graph._graph.nodes
         ]
 
-    def post_process(self):
-        # Copied from server-side _post_process()
+    def post_process(self) -> Any:
+        """Post-processing method. This method was introduced to enable manual client-side postprocessing in case automatic post-processing by the server fails (e.g. insufficient dask worker memory)
+
+        Returns:
+            Any: Post-processed result output
+        """
         node_outputs = self.get_all_node_outputs()
         ordered_node_outputs = []
         for i, item in enumerate(node_outputs.items()):
