@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 import os
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -79,9 +80,14 @@ def test_db():
 def test_upsert_electron_data_handles_missing_keys(test_db, result_1, mocker):
     """Test the _electron_data method handles missing node attributes"""
 
+    mock_digest = MagicMock()
+    mock_digest.algorithm = "md5"
+    mock_digest.hexdigest = "123"
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    mock_store_file = mocker.patch("covalent_dispatcher._db.upsert.store_file")
+    mock_store_file = mocker.patch(
+        "covalent_dispatcher._db.upsert.store_file", return_value=mock_digest
+    )
     mocker.patch("covalent_dispatcher._db.upsert.transaction_insert_electrons_data")
     mocker.patch("covalent_dispatcher._db.write_result_to_db.update_electrons_data")
     mocker.patch(

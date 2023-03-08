@@ -25,7 +25,7 @@ Defines the core functionality of the result service
 import functools
 import traceback
 import uuid
-from typing import Any, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
 import networkx as nx
 
@@ -34,6 +34,7 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
+from covalent_dispatcher._dal.tg_ops import TransportGraphOps
 
 from .._dal.result import Result as SRVResult
 from .._dal.result import get_result_object as get_result_object_from_db
@@ -212,6 +213,95 @@ async def make_dispatch(
     )
     _register_result_object(result_object)
     return result_object.dispatch_id
+
+
+def _get_result_object_from_new_lattice(
+    json_lattice: str, old_result_object: SRVResult, reuse_previous_results: bool
+) -> SRVResult:
+    """Get new SRVResult for re-dispatching from new lattice json."""
+    lat = Lattice.deserialize_from_json(json_lattice)
+    sdk_result = Result(lat, get_unique_id())
+    sdk_result._initialize_nodes()
+
+    # Record the new result in the DB so that we can perform graph
+    # diffs using db queries.
+
+    update.persist(sdk_result)
+    result_object = get_result_object_from_db(sdk_result.dispatch_id, False)
+
+    if reuse_previous_results:
+        tg = result_object.lattice.transport_graph
+        tg_old = old_result_object.lattice.transport_graph
+        reusable_nodes = TransportGraphOps(tg_old).get_reusable_nodes(tg)
+        TransportGraphOps(tg).copy_nodes_from(tg_old, reusable_nodes)
+
+    return result_object
+
+
+def _get_result_object_from_old_result(
+    old_result_object: SRVResult, reuse_previous_results: bool
+) -> SRVResult:
+    """Get new result object for re-dispatching from old result object."""
+    sdk_result = Result(old_result_object.lattice, get_unique_id())
+    sdk_result._num_nodes = old_result_object.get_value("num_nodes")
+
+    if not reuse_previous_results:
+        sdk_result._initialize_nodes()
+
+    update.persist(sdk_result)
+    result_object = get_result_object_from_db(sdk_result.dispatch_id, False)
+
+    return result_object
+
+
+def _make_derived_dispatch_sync(
+    parent_dispatch_id: str,
+    json_lattice: Optional[str] = None,
+    electron_updates: Optional[Dict[str, Callable]] = None,
+    reuse_previous_results: bool = False,
+) -> str:
+    """Make a re-dispatch from a previous dispatch."""
+    if electron_updates is None:
+        electron_updates = {}
+
+    # includes parameter value hashes
+    old_result_object = get_result_object_from_db(
+        dispatch_id=parent_dispatch_id,
+        bare=False,
+    )
+
+    if json_lattice:
+        result_object = _get_result_object_from_new_lattice(
+            json_lattice, old_result_object, reuse_previous_results
+        )
+    else:
+        result_object = _get_result_object_from_old_result(
+            old_result_object, reuse_previous_results
+        )
+
+    ops = TransportGraphOps(result_object.lattice.transport_graph)
+    ops.apply_electron_updates(electron_updates)
+
+    _register_result_object(result_object)
+
+    return result_object.dispatch_id
+
+
+async def make_derived_dispatch(
+    parent_dispatch_id: str,
+    json_lattice: Optional[str] = None,
+    electron_updates: Optional[Dict[str, Callable]] = None,
+    reuse_previous_results: bool = False,
+) -> str:
+    """Make a re-dispatch from a previous dispatch."""
+
+    return await run_in_executor(
+        _make_derived_dispatch_sync,
+        parent_dispatch_id,
+        json_lattice,
+        electron_updates,
+        reuse_previous_results,
+    )
 
 
 def get_result_object(dispatch_id: str, bare: bool = True) -> SRVResult:

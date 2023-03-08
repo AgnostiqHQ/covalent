@@ -21,6 +21,7 @@
 """Unit tests for transport graph."""
 
 import platform
+from unittest.mock import call
 
 import cloudpickle
 import networkx as nx
@@ -425,3 +426,21 @@ def test_encode_metadata():
 
     # Check idempotence
     assert encode_metadata(metadata) == encode_metadata(encode_metadata(metadata))
+
+
+def test_reset_node(workflow_transport_graph, mocker):
+    """Test the node reset method."""
+    set_node_value_mock = mocker.patch(
+        "covalent._workflow.transport._TransportGraph.set_node_value"
+    )
+
+    node_id = 0
+    workflow_transport_graph.reset_node(node_id)
+    actual_mock_calls = set_node_value_mock.mock_calls
+    expected_mock_calls = [
+        call(node_id, node_attr, default_val)
+        for node_attr, default_val in workflow_transport_graph._default_node_attrs.items()
+    ]
+
+    for mock_call in expected_mock_calls:
+        assert mock_call in actual_mock_calls

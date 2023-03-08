@@ -31,7 +31,7 @@ import cloudpickle
 import networkx as nx
 
 from .._shared_files.defaults import parameter_prefix
-from .._shared_files.util_classes import Status
+from .._shared_files.util_classes import RESULT_STATUS, Status
 
 
 class TransportableObject:
@@ -288,6 +288,18 @@ class _TransportGraph:
         # IDs of nodes modified during the workflow run
         self.dirty_nodes = []
 
+        self._default_node_attrs = {
+            "start_time": None,
+            "end_time": None,
+            "status": RESULT_STATUS.NEW_OBJECT,
+            "output": None,
+            "error": "",
+            "sub_dispatch_id": None,
+            "sublattice_result": None,
+            "stdout": "",
+            "stderr": "",
+        }
+
     def add_node(
         self, name: str, function: Callable, metadata: Dict, task_group_id: int = None, **attr
     ) -> int:
@@ -438,6 +450,11 @@ class _TransportGraph:
 
         return self._graph.copy()
 
+    def reset_node(self, node_id: int) -> None:
+        """Reset node values to starting state."""
+        for node_attr, default_val in self._default_node_attrs.items():
+            self.set_node_value(node_id, node_attr, default_val)
+
     def serialize(self, metadata_only: bool = False) -> bytes:
         """
         Convert transport graph object to JSON to be used in the workflow scheduler.
@@ -500,7 +517,7 @@ class _TransportGraph:
         Returns:
             str: json string representation of transport graph
 
-        Note: serialize_to_json converts metadata objects into dictionary represetations.
+        Note: serialize_to_json converts metadata objects into dictionary representations.
         """
 
         # Convert networkx.DiGraph to a format that can be converted to json .
