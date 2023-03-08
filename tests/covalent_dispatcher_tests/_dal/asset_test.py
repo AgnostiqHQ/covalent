@@ -23,7 +23,21 @@
 import os
 import tempfile
 
+import pytest
+
 from covalent_dispatcher._dal.asset import Asset
+from covalent_dispatcher._db import models
+from covalent_dispatcher._db.datastore import DataStore
+
+
+@pytest.fixture
+def test_db():
+    """Instantiate and return an in-memory database."""
+
+    return DataStore(
+        db_URL="sqlite+pysqlite:///:memory:",
+        initialize_db=True,
+    )
 
 
 def test_asset_load_data():
@@ -93,3 +107,38 @@ def test_download_asset():
     assert a.load_data() == "Hello\n"
 
     os.unlink(dest_path)
+
+
+def test_asset_meta(test_db, mocker):
+
+    dispatch_id = "test_asset_meta"
+    with test_db.session() as session:
+        lattice_row = models.Lattice(
+            dispatch_id="test_asset_meta",
+            name="workflow",
+            status="NEW_OBJ",
+            electron_num=2,
+            completed_electron_num=0,
+        )
+        session.add(lattice_row)
+
+    storage_path = "/tmp"
+    object_key = "value.pkl"
+    asset_id = storage_path + "/" + object_key
+    with test_db.session() as session:
+        meta = models.AssetMeta(
+            dispatch_id=dispatch_id,
+            asset_id=asset_id,
+            digest_alg="sha1",
+            digest_hex="a234f",
+        )
+        session.add(meta)
+
+    with test_db.session() as session:
+        asset = Asset(storage_path, object_key, session)
+    assert asset.meta["dispatch_id"] == dispatch_id
+    assert asset.meta["digest_hex"] == "a234f"
+
+    with test_db.session() as session:
+        asset = Asset(storage_path, "nonexistent.pkl", session)
+        assert asset.meta == {}

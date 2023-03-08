@@ -252,6 +252,8 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
             started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
             completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
 
+            asset_digests = {}
+
             for filename, data in [
                 (ELECTRON_FUNCTION_FILENAME, tg.get_node_value(node_id, "function")),
                 (ELECTRON_FUNCTION_STRING_FILENAME, function_string),
@@ -274,7 +276,12 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
                 (ELECTRON_ERROR_FILENAME, node_error),
                 (ELECTRON_RESULTS_FILENAME, node_output),
             ]:
-                store_file(node_path, filename, data)
+                digest = store_file(node_path, filename, data)
+
+                # Store hashes of parameter values for graph comparisons
+                if filename == ELECTRON_VALUE_FILENAME:
+                    asset_id = str(node_path) + "/" + filename
+                    asset_digests[asset_id] = digest
 
             electron_exists = (
                 session.query(models.Electron, models.Lattice)
@@ -332,6 +339,16 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
                 update_electrons_data(**electron_record_kwarg)
                 if status == Result.COMPLETED:
                     update_lattice_completed_electron_num(result.dispatch_id)
+
+            # write asset digests
+            for asset_id, digest in asset_digests.items():
+                asset_meta = models.AssetMeta(
+                    dispatch_id=result.dispatch_id,
+                    asset_id=asset_id,
+                    digest_alg=digest.algorithm,
+                    digest_hex=digest.hexdigest,
+                )
+                session.add(asset_meta)
 
 
 def lattice_data(result: Result, electron_id: int = None) -> None:

@@ -24,8 +24,12 @@ import os
 from enum import Enum
 from typing import Any
 
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+
 from covalent._shared_files import logger
 
+from .._db.models import AssetMeta
 from .._db.write_result_to_db import load_file, store_file
 from .utils.file_transfer import cp
 
@@ -41,12 +45,17 @@ class Asset:
 
     """Metadata for an object in blob storage"""
 
-    def __init__(self, storage_path: str, object_key: str):
+    def __init__(self, storage_path: str, object_key: str, session: Session = None):
         self.storage_type = StorageType.LOCAL
         self.storage_path = storage_path
         self.object_key = object_key
-
         self.remote_uri = ""
+
+        self.meta = {}
+
+        if session:
+            meta_record = _get_meta(self, session)
+            self.meta = meta_record.__dict__.copy() if meta_record else {}
 
     def set_remote(self, uri: str) -> "Asset":
         self.remote_uri = uri
@@ -71,3 +80,12 @@ class Asset:
         src_uri = scheme + "://" + os.path.join(self.storage_path, self.object_key)
         app_log.debug(f"Uploading asset from {src_uri} to {dest_uri}")
         cp(src_uri, dest_uri)
+
+    def _asset_id(self) -> str:
+        return self.storage_path + "/" + self.object_key
+
+
+def _get_meta(asset: Asset, session: Session) -> AssetMeta:
+    stmt = select(AssetMeta).where(AssetMeta.asset_id == asset._asset_id())
+    record = session.scalars(stmt).first()
+    return record

@@ -39,3 +39,6 @@ class LocalProvider(BaseProvider):
                 buf = f.read(BLOCK_SIZE)
 
         return Digest(algorithm=ALGORITHM, hexdigest=h.hexdigest())
+
+
+local_store = LocalProvider()

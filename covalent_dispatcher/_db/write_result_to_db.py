@@ -46,6 +46,7 @@ from covalent._shared_files.defaults import (
 from covalent._shared_files.exceptions import MissingLatticeRecordError
 from covalent._workflow.lattice import Lattice as LatticeClass
 
+from .._object_store.local import Digest, local_store
 from .datastore import workflow_db
 from .models import Electron, ElectronDependency, Job, Lattice
 
@@ -523,7 +524,7 @@ def write_lattice_error(dispatch_id: str, error: str) -> None:
             f.write(error)
 
 
-def store_file(storage_path: str, filename: str, data: Any = None) -> None:
+def store_file(storage_path: str, filename: str, data: Any = None) -> Digest:
     """This function writes data corresponding to the filepaths in the DB."""
 
     if filename.endswith(".pkl"):
@@ -542,6 +543,9 @@ def store_file(storage_path: str, filename: str, data: Any = None) -> None:
 
     else:
         raise InvalidFileExtension("The file extension is not supported.")
+
+    digest = local_store.digest(bucket_name=storage_path, object_key=filename)
+    return digest
 
 
 def load_file(storage_path: str, filename: str) -> Any:
