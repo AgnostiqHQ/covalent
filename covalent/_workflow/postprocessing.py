@@ -24,13 +24,18 @@
 
 from builtins import list
 from dataclasses import asdict
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
-from .._shared_files.defaults import DefaultMetadataValues, postprocess_prefix
-from .transport import encode_metadata
+from .._shared_files.defaults import (
+    DefaultMetadataValues,
+    postprocess_prefix,
+    prefix_separator,
+    sublattice_prefix,
+)
+from .transport import _TransportGraph, encode_metadata
 
 DEFAULT_METADATA_VALUES = asdict(DefaultMetadataValues())
 
@@ -41,6 +46,29 @@ log_stack_info = logger.log_stack_info
 class Postprocessor:
     def __init__(self, lattice) -> None:
         self.lattice = lattice
+
+    def _is_postprocessable_node(self, tg: _TransportGraph, node_id: int) -> bool:
+        """Filter nodes that should be included in postprocessing."""
+        node_name = tg.get_node_value(node_id, "name")
+        return bool(
+            not node_name.startswith(prefix_separator) or node_name.startswith(sublattice_prefix)
+        )
+
+    def _filter_electrons(self, tg: _TransportGraph, bound_electrons: List) -> List:
+        """Filter bound electrons for ones that should not be included in postprocessing.
+
+        Args:
+            tg: Transport graph of the lattice.
+            bound_electrons: List of bound electrons.
+
+        Returns:
+            List of bound electrons that should be included in postprocessing.
+
+        """
+        filtered_node_ids = [
+            node_id for node_id in tg._graph.nodes if self._is_postprocessable_node(tg, node_id)
+        ]
+        return [bound_electrons[node_id] for node_id in filtered_node_ids]
 
     def _postprocess(self, *ordered_node_outputs) -> Any:
         """
@@ -176,7 +204,7 @@ class Postprocessor:
 
         with active_lattice_manager.claim(self.lattice):
             tg = self.lattice.transport_graph
-            filtered_ordered_electrons = tg.filter_electrons(bound_electrons)
+            filtered_ordered_electrons = self.filter_electrons(tg, bound_electrons)
             executor = self.lattice.get_metadata("workflow_executor")
             executor_data = self.lattice.get_metadata("workflow_executor_data")
             pp_metadata = encode_metadata(DEFAULT_METADATA_VALUES.copy())
