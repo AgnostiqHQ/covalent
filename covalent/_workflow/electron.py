@@ -624,7 +624,7 @@ def electron(
     constraints = encode_metadata(constraints)
 
     def decorator_electron(func=None):
-        """Electron decorator function"""
+        """Electron decorator function. Note that the electron_object defined below is an example of an unbound electron, i.e. electron without a node id."""
         electron_object = Electron(func)
         for k, v in constraints.items():
             electron_object.set_metadata(k, v)
