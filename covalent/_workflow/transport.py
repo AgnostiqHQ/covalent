@@ -29,7 +29,7 @@ from typing import Any, Callable, Dict
 import cloudpickle
 import networkx as nx
 
-from .._shared_files.defaults import parameter_prefix
+from .._shared_files.defaults import parameter_prefix, prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS
 
 
@@ -462,6 +462,18 @@ class _TransportGraph:
         """Reset node values to starting state."""
         for node_attr, default_val in self._default_node_attrs.items():
             self.set_node_value(node_id, node_attr, default_val)
+
+    def filter_node(self, node_id):
+        # TODO - Improve / generalize this method
+        node_name = self.get_node_value(node_id, "name")
+        return bool(
+            not node_name.startswith(prefix_separator) or node_name.startswith(sublattice_prefix)
+        )
+
+    def filter_electrons(self, bound_electrons):
+        # TODO - Improve / generalize this method
+        filtered_node_ids = [node_id for node_id in self._graph.nodes if self.filter_node(node_id)]
+        return [bound_electrons[node_id] for node_id in filtered_node_ids]
 
     def _replace_node(self, node_id: int, new_attrs: Dict[str, Any]) -> None:
         """Replace node data with new attribute values and flag descendants (used in re-dispatching)."""
