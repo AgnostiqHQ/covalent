@@ -175,3 +175,26 @@ def test_electron_sub_dispatch_id(test_db, mocker):
         e = Electron(session, record)
 
     assert e.get_value("sub_dispatch_id") == "sub_dispatch"
+
+
+def test_electron_asset_digest(test_db, mocker):
+    res = get_mock_result()
+    res._initialize_nodes()
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+
+    update.persist(res)
+
+    with test_db.session() as session:
+        record = (
+            session.query(models.Electron)
+            .where(models.Electron.transport_graph_node_id == 1)
+            .first()
+        )
+        e = Electron(session, record)
+
+        meta = e.get_asset("value").meta
+        assert meta["dispatch_id"] == res.dispatch_id
+        assert "digest_hex" in meta
