@@ -452,7 +452,13 @@ class _TransportGraph:
 
     def reset_node(self, node_id: int) -> None:
         """Reset node values to starting state."""
+        node_name = self.get_node_value(node_id, "name")
+
         for node_attr, default_val in self._default_node_attrs.items():
+            # Don't clear precomputed parameter outputs.
+            if node_attr == "output" and node_name.startswith(parameter_prefix):
+                continue
+
             self.set_node_value(node_id, node_attr, default_val)
 
     def serialize(self, metadata_only: bool = False) -> bytes:
