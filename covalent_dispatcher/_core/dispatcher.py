@@ -289,7 +289,6 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
         result_object._status = Result.FAILED if result_object._task_failed else Result.CANCELLED
         return result_object
 
-    result_object._status = Result.COMPLETED
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
     await result_webhook.send_update(result_object)
 

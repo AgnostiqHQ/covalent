@@ -26,6 +26,7 @@ from typing import Any, Union
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
+from covalent._shared_files.defaults import postprocess_prefix
 from covalent._shared_files.util_classes import Status
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import _TransportGraph
@@ -104,6 +105,11 @@ def _node(
     )
 
     upsert.electron_data(result)
+
+    if node_name.startswith(postprocess_prefix):
+        result._result = output
+        result._status = status
+        upsert.lattice_data(result)
 
 
 def _initialize_results_dir(result):
