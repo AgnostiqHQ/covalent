@@ -89,8 +89,7 @@ def test_wait_for_post_processing():
             (4, TransportableObject(125)),
             (6, TransportableObject(1500)),
         ]
-        print(f"WORKFLOW FUNCTION: {workflow.workflow_function.get_deserialized()}")
-        assert workflow.workflow_function.get_deserialized()() == 1500
+        assert workflow.workflow_function.get_deserialized()()[1].get_deserialized() == 1500
 
 
 def test_wait_for_post_processing_when_returning_waiting_electron():
@@ -105,7 +104,7 @@ def test_wait_for_post_processing_when_returning_waiting_electron():
             (2, TransportableObject(12)),
             (4, TransportableObject(64)),
         ]
-        assert workflow_2.workflow_function.get_deserialized()() == 64
+        assert workflow_2.workflow_function.get_deserialized()()[1].get_deserialized() == 64
 
 
 def test_collection_node_helper_electron():
