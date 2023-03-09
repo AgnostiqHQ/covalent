@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
-from .._shared_files.defaults import prefix_separator, sublattice_prefix
+from .._shared_files.defaults import postprocess_prefix, prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.lattice import Lattice
 from .._workflow.transport import TransportableObject
@@ -309,13 +309,19 @@ Node Outputs
 
         Returns:
             Any: Post-processed result output
+
         """
         node_outputs = self.get_all_node_outputs()
-        ordered_node_outputs = []
-        for i, item in enumerate(node_outputs.items()):
-            key, val = item
-            if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix):
-                ordered_node_outputs.append((i, val))
+        ordered_node_outputs = [
+            val.get_deserialized()
+            for key, val in node_outputs.items()
+            if (
+                not key.startswith(prefix_separator)
+                or key.startswith(sublattice_prefix)
+                or key.startswith(postprocess_prefix)
+            )
+            and isinstance(val, TransportableObject)
+        ]
 
         lattice = self._lattice
 
