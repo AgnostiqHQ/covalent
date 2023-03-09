@@ -174,10 +174,11 @@ async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_gro
         app_log.debug("7C: Encountered parameter node {node_id}.")
         app_log.debug("8: Starting update node (run_planned_workflow).")
 
+        ts = datetime.now(timezone.utc)
         node_result = {
             "node_id": sorted_nodes[0],
-            "start_time": datetime.now(timezone.utc),
-            "end_time": datetime.now(timezone.utc),
+            "start_time": ts,
+            "end_time": ts,
             "status": RESULT_STATUS.COMPLETED,
         }
         await datasvc.update_node_result(dispatch_id, node_result)
@@ -188,10 +189,11 @@ async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_gro
         task_specs = []
         known_nodes = []
 
-        # Skip the group if all tasks have already completed (in a redispatch or retry scenario)
+        # Skip the group if all task outputs can be reused from a
+        # previous dispatch (for redispatch).
         statuses = await datasvc.get_attrs_for_electrons(dispatch_id, sorted_nodes, ["status"])
         incomplete = list(
-            filter(lambda record: record["status"] != RESULT_STATUS.COMPLETED, statuses)
+            filter(lambda record: record["status"] != RESULT_STATUS.PENDING_REUSE, statuses)
         )
 
         if len(incomplete) > 0:

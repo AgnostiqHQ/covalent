@@ -555,8 +555,8 @@ async def test_submit_task_group(mocker):
 
 
 @pytest.mark.asyncio
-async def test_submit_task_group_skips_completed(mocker):
-    """Check that submit_task_group skips completed groups"""
+async def test_submit_task_group_skips_reusable(mocker):
+    """Check that submit_task_group skips reusable groups"""
     dispatch_id = "dispatch_1"
     gid = 2
     nodes = [4, 3, 2]
@@ -574,9 +574,9 @@ async def test_submit_task_group_skips_completed(mocker):
     }
 
     mock_statuses = [
-        {"status": Result.COMPLETED},
-        {"status": Result.COMPLETED},
-        {"status": Result.COMPLETED},
+        {"status": Result.PENDING_REUSE},
+        {"status": Result.PENDING_REUSE},
+        {"status": Result.PENDING_REUSE},
     ]
 
     async def get_electron_attr(dispatch_id, node_id, key):

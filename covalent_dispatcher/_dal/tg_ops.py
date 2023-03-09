@@ -48,8 +48,6 @@ class TransportGraphOps:
             "status": RESULT_STATUS.NEW_OBJECT,
             "output": None,
             "error": "",
-            "sub_dispatch_id": None,
-            "sublattice_result": None,
             "stdout": "",
             "stderr": "",
         }
@@ -78,15 +76,21 @@ class TransportGraphOps:
     def copy_nodes_from(self, tg: _TransportGraph, nodes):
         """Copy nodes from the transport graph in the argument."""
         for n in nodes:
+            old_status = tg.get_node_value(n, "status")
+            if old_status != RESULT_STATUS.COMPLETED:
+                continue
+
             for k in METADATA_KEYS:
                 app_log.debug(f"Copying metadata {k} for node {n}")
                 v = tg.get_node_value(n, k)
+                if k == "status":
+                    v = RESULT_STATUS.PENDING_REUSE
                 self.tg.set_node_value(n, k, v)
             for k in ASSET_KEYS:
                 app_log.debug(f"Copying asset {k} for node {n}")
                 old = tg.get_node(n).get_asset(k)
                 new = self.tg.get_node(n).get_asset(k)
-                src_scheme = old.storage_type
+                src_scheme = old.storage_type.value
                 src_uri = src_scheme + "://" + os.path.join(old.storage_path, old.object_key)
                 new.set_remote(src_uri)
                 new.download()
@@ -249,14 +253,14 @@ class TransportGraphOps:
 
     def _reset_node(self, node_id: int) -> None:
         """Reset node values to starting state."""
-        node_name = self.get_node_value(node_id, "name")
+        node_name = self.tg.get_node_value(node_id, "name")
 
         for node_attr, default_val in self._default_node_attrs.items():
             # Don't clear precomputed parameter outputs.
             if node_attr == "output" and node_name.startswith(parameter_prefix):
                 continue
 
-            self.set_node_value(node_id, node_attr, default_val)
+            self.tg.set_node_value(node_id, node_attr, default_val)
 
     def _reset_descendants(self, node_id: int) -> None:
         """Reset node and all its descendants to starting state."""
@@ -267,7 +271,7 @@ class TransportGraphOps:
         except Exception:
             return
         self._reset_node(node_id)
-        for successor in self._graph.neighbors(node_id):
+        for successor in self.tg._graph.neighbors(node_id):
             self._reset_descendants(successor)
 
     def _replace_node(self, node_id: int, new_attrs: Dict[str, Any]) -> None:
