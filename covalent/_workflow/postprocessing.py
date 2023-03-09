@@ -92,8 +92,9 @@ class Postprocessor:
         """
         with active_lattice_manager.claim(self.lattice):
             self.lattice.post_processing = True
-            app_log.debug("Post processing lattice with attrs", self.lattice.__dict__)
+            app_log.debug(f"Post processing lattice with attrs: {self.lattice.__dict__}")
             self.lattice.electron_outputs = list(ordered_node_outputs)
+            app_log.debug(f"Postprocessing: Electron outputs {self.lattice.electron_outputs}")
             args = [arg.get_deserialized() for arg in self.lattice.args]
             kwargs = {k: v.get_deserialized() for k, v in self.lattice.kwargs.items()}
             workflow_function = self.lattice.workflow_function.get_deserialized()
@@ -180,10 +181,9 @@ class Postprocessor:
             pp_metadata = encode_metadata(pp_metadata)
             pp_electron = Electron(function=self._recursive_postprocess, metadata=pp_metadata)
 
-            num_nodes = len(self.lattice.transport_graph._graph.nodes)
             # Add pp_electron to the graph -- this will also add a
             # parameter node in case retval is not a single electron
-            app_log.debug("lattice return value:", retval)
+            app_log.debug(f"lattice return value: {retval}")
             bound_pp = pp_electron(retval, **referenced_electrons)
 
             # Edit pp electron name
@@ -193,11 +193,11 @@ class Postprocessor:
             if get_config("sdk.eager_postprocess") == "true":
                 app_log.debug("Workflow will be post-processed eagerly")
             else:
-                app_log.debug("Referenced nodes:", list(referenced_electrons.keys()))
+                app_log.debug(f"Referenced nodes: {list(referenced_electrons.keys())}")
                 wait_parents = [v for k, v in bound_electrons.items() if k not in node_id_refs]
                 wait(child=bound_pp, parents=wait_parents)
 
-                app_log.debug("Waiting for electrons", [p.node_id for p in wait_parents])
+                app_log.debug(f"Waiting for electrons: {[p.node_id for p in wait_parents]}")
 
     def add_exhaustive_postprocess_node(self, bound_electrons: Dict):
         from .electron import Electron
@@ -213,9 +213,8 @@ class Postprocessor:
             pp_metadata = encode_metadata(pp_metadata)
             pp_electron = Electron(function=self._postprocess, metadata=pp_metadata)
 
-            num_nodes = len(self.lattice.transport_graph._graph.nodes)
             # Add pp_electron to the graph -- this will also add a parameter node and list node
-            bound_pp = pp_electron(self.lattice, *filtered_ordered_electrons)
+            bound_pp = pp_electron(*filtered_ordered_electrons)
 
             # Edit pp electron name
             tg.set_node_value(bound_pp.node_id, "name", postprocess_prefix)
