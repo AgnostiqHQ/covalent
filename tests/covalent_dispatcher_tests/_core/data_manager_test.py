@@ -446,7 +446,6 @@ def test_get_result_object(mocker):
 
 @pytest.mark.parametrize("stateless", [False, True])
 def test_register_result_object(mocker, stateless):
-
     result_object = get_mock_result()
     srvres_obj = MagicMock()
     dispatch_id = result_object.dispatch_id
@@ -559,7 +558,6 @@ async def test_update_parent_electron(mocker, sub_status, mapped_status):
 
 @pytest.mark.asyncio
 async def test_make_sublattice_dispatch(mocker):
-
     node_result = {"node_id": 0, "status": Result.COMPLETED}
 
     output_json = "lattice_json"

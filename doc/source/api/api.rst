@@ -15,7 +15,7 @@ The following API documentation describes how to use Covalent.
 - :ref:`deps_bash` are used to specify optional pre-execution shell commands for an electron
 - :ref:`deps_call` are used to specify functions or dependencies that are called in an electron's execution environment
 - :ref:`results_interface` is used for collecting and manipulating results
-- :ref:`dispatcher_interface` is used for dispatching workflows
+- :ref:`dispatcher_interface` is used for dispatching or redispatching workflows
 - The :ref:`dispatcher_server_api` is used for interfacing with the Covalent server
 
 .. _electrons_api:

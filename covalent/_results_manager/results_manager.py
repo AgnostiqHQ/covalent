@@ -74,7 +74,6 @@ def _get_result_from_dispatcher(
     dispatcher_addr: str = None,
     status_only: bool = False,
 ) -> Dict:
-
     """
     Internal function to get the results of a dispatch from the server without checking if it is ready to read.
 
@@ -281,7 +280,6 @@ def _get_result_v2_from_dispatcher(
     status_only: bool = False,
     dispatcher_addr: str = None,
 ) -> Dict:
-
     """
     Internal function to get the results of a dispatch from the server without checking if it is ready to read.
 
@@ -325,7 +323,6 @@ def get_node_output(
     node_id: int,
     dispatcher_addr: str = None,
 ) -> Dict:
-
     return _get_node_output_from_dispatcher(
         dispatch_id,
         node_id,
@@ -337,7 +334,6 @@ def get_workflow_output(
     dispatch_id: str,
     dispatcher_addr: str = None,
 ) -> Dict:
-
     return _get_dispatch_result_from_dispatcher(
         dispatch_id,
         dispatcher_addr,
@@ -349,7 +345,6 @@ def _get_node_output_from_dispatcher(
     node_id: int,
     dispatcher_addr: str = None,
 ) -> Dict:
-
     """
     Internal function to get the results of a dispatch from the server without checking if it is ready to read.
 
@@ -396,7 +391,6 @@ def _get_dispatch_result_from_dispatcher(
     dispatch_id: str,
     dispatcher_addr: str = None,
 ) -> Dict:
-
     if dispatcher_addr is None:
         dispatcher_addr = (
             get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))

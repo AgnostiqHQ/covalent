@@ -26,7 +26,6 @@ from covalent._results_manager import Result
 
 
 def start_dask_cluster():
-
     from dask.distributed import LocalCluster
 
     cluster = LocalCluster()

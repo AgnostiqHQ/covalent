@@ -129,7 +129,6 @@ def local_executor_run_exception_handling__mock_task(x):
 
 
 def test_local_executor_run_exception_handling(mocker):
-
     le = LocalExecutor()
     le._task_stdout = io.StringIO()
     le._task_stderr = io.StringIO()

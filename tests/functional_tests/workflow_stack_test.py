@@ -318,7 +318,6 @@ def test_electron_deps_inject_non_unique_calldep_retvals():
 
 
 def test_electron_deps_pip():
-
     import subprocess
 
     @ct.electron(deps_pip=ct.DepsPip(packages=["pydash==5.1.0"]))
@@ -939,3 +938,4 @@ def test_redispatch_reusing_previous_results_and_new_args():
     result = ct.get_result(redispatch_id, wait=True)
     assert int(result.result) == 1
     assert str(result.status) == "COMPLETED"
+    assert result.get_node_result(0)["start_time"] == result.get_node_result(0)["end_time"]

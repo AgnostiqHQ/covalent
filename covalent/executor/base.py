@@ -142,7 +142,6 @@ class BaseExecutor(_AbstractBaseExecutor):
         *args,
         **kwargs,
     ) -> None:
-
         super().__init__(*args, **kwargs)
 
     def write_streams_to_file(
@@ -185,7 +184,6 @@ class BaseExecutor(_AbstractBaseExecutor):
         results_dir: str,
         node_id: int = -1,
     ) -> Any:
-
         loop = asyncio.get_running_loop()
         return await loop.run_in_executor(
             None,
@@ -307,14 +305,12 @@ class BaseExecutor(_AbstractBaseExecutor):
         raise NotImplementedError
 
     async def poll(self, task_group_metadata: Dict, job_handle: Any):
-
         # To be run as a background task.  A callback will be
         # registered with the runner to invoke the receive()
 
         return -1
 
     async def receive(self, task_group_metadata: Dict, job_handle: Any) -> List[Dict]:
-
         # Returns (output_uri, stdout_uri, stderr_uri,
         # exception_raised)
 
@@ -349,7 +345,6 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         *args,
         **kwargs,
     ) -> None:
-
         super().__init__(*args, **kwargs)
 
     async def write_streams_to_file(
@@ -359,7 +354,6 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         dispatch_id: str,
         results_dir: str,
     ) -> None:
-
         """
         Write the contents of stdout and stderr to respective files.
 
@@ -395,7 +389,6 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         results_dir: str,
         node_id: int = -1,
     ) -> Any:
-
         return await self.execute(
             function,
             args,
@@ -414,7 +407,6 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         results_dir: str,
         node_id: int = -1,
     ) -> Any:
-
         self._task_stdout = io.StringIO()
         self._task_stderr = io.StringIO()
 
@@ -516,14 +508,12 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         raise NotImplementedError
 
     async def poll(self, task_group_metadata: Dict, job_handle: Any):
-
         # To be run as a background task.  A callback will be
         # registered with the runner to invoke the receive()
 
         return -1
 
     async def receive(self, task_group_metadata: Dict, job_handle: Any) -> List[Dict]:
-
         # Returns a list of task results
         # {
         #   "dispatch_id": dispatch_id,

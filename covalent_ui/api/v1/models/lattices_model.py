@@ -86,7 +86,6 @@ class LatticeWorkflowExecutorResponse(BaseModel):
 
 
 class GraphNodes(BaseModel):
-
     id: int = None
     name: str = None
     node_id: int = None
@@ -110,7 +109,6 @@ class GraphNodes(BaseModel):
 
 
 class GraphResponseData(BaseModel):
-
     nodes: List[GraphNodes] = None
     links: List[dict] = None
 

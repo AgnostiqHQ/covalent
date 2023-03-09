@@ -67,7 +67,6 @@ def generate_node_result(
     stdout_uri=None,
     stderr_uri=None,
 ):
-
     return {
         "node_id": node_id,
         "node_name": node_name,
@@ -205,7 +204,6 @@ def get_unique_id() -> str:
 async def make_dispatch(
     json_lattice: str, parent_result_object: SRVResult = None, parent_electron_id: int = None
 ) -> Result:
-
     result_object = await run_in_executor(
         initialize_result_object,
         json_lattice,
@@ -375,7 +373,6 @@ async def _filter_sublattice_status(
 
 # NB: this loads the JSON sublattice in memory
 async def _make_sublattice_dispatch(result_object: SRVResult, node_result: dict):
-
     node_id = node_result["node_id"]
     bg_output = await get_electron_attribute(result_object.dispatch_id, node_id, "output")
     json_lattice = bg_output.object_string
@@ -401,7 +398,6 @@ def generate_dispatch_result(
     error=None,
     result=None,
 ):
-
     return {
         "start_time": start_time,
         "end_time": end_time,
@@ -412,7 +408,6 @@ def generate_dispatch_result(
 
 
 async def update_dispatch_result(dispatch_id, dispatch_result):
-
     result_object = get_result_object(dispatch_id)
     update_partial = functools.partial(result_object._update_dispatch, **dispatch_result)
     await run_in_executor(update_partial)

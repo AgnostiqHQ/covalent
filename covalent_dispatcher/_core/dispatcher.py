@@ -66,7 +66,6 @@ async def _get_abstract_task_inputs(dispatch_id: str, node_id: int, node_name: s
     abstract_task_input = {"args": [], "kwargs": {}}
 
     for edge in await datasvc.get_incoming_edges(dispatch_id, node_id):
-
         parent = edge["source"]
 
         d = edge["attrs"]
@@ -86,7 +85,6 @@ async def _get_abstract_task_inputs(dispatch_id: str, node_id: int, node_name: s
 
 # Domain: dispatcher
 async def _handle_completed_node(dispatch_id: str, node_id: int):
-
     next_task_groups = []
     app_log.debug(f"Node {node_id} completed")
 
@@ -159,7 +157,6 @@ async def _get_initial_tasks_and_deps(dispatch_id: str) -> Tuple[int, int, Dict]
 
 # Domain: dispatcher
 async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_group_id: int):
-
     # Handle parameter nodes
     # Get name of the node for the current task
     node_name = await datasvc.get_electron_attribute(dispatch_id, sorted_nodes[0], "name")
@@ -167,7 +164,6 @@ async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_gro
 
     # Handle parameter nodes
     if node_name.startswith(parameter_prefix):
-
         if len(sorted_nodes) > 1:
             raise RuntimeError("Parameter nodes cannot be packed")
 
@@ -313,7 +309,6 @@ async def run_workflow(dispatch_id: str, wait: bool = SYNC_DISPATCHES) -> RESULT
             app_log.debug(f"Running dispatch {dispatch_id} asynchronously")
 
     except Exception as ex:
-
         dispatch_status = await _handle_dispatch_exception(dispatch_id, ex)
 
     finally:
@@ -359,7 +354,6 @@ async def notify_node_status(
 
 
 async def _finalize_dispatch(dispatch_id: str):
-
     await _clear_caches(dispatch_id)
     app_log.debug(f"Removed unresolved counter for {dispatch_id}")
 
@@ -429,7 +423,6 @@ async def _submit_initial_tasks(dispatch_id: str):
 
 
 async def _handle_node_status_update(dispatch_id, node_id, node_status, detail):
-
     app_log.debug(f"Received node status update {node_id}: {node_status}")
 
     if node_status == RESULT_STATUS.RUNNING:

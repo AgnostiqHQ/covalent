@@ -96,7 +96,6 @@ async def test_run_abstract_task_exception_handling(mocker):
 
 @pytest.mark.asyncio
 async def test_run_task_runtime_exception_handling(mocker):
-
     inputs = {"args": [], "kwargs": {}}
     mock_executor = MagicMock()
     mock_executor._execute = AsyncMock(return_value=("", "", "error", True))
@@ -130,7 +129,6 @@ async def test_run_task_runtime_exception_handling(mocker):
 
 @pytest.mark.asyncio
 async def test_run_task_exception_handling(mocker):
-
     dispatch_id = "mock_dispatch"
     inputs = {"args": [], "kwargs": {}}
     mock_executor = MagicMock()

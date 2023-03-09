@@ -408,7 +408,7 @@ def test_insert_electron_dependency_data(test_db, workflow_lattice, mocker):
 
     electron_ids = []
     cur_time = dt.now(timezone.utc)
-    for (name, node_id) in [
+    for name, node_id in [
         ("task_1", 0),
         (":parameter:1", 1),
         (":parameter:2", 2),
@@ -484,7 +484,7 @@ def test_upsert_electron_dependency_data(test_db, workflow_lattice, mocker):
 
     electron_ids = []
     cur_time = dt.now(timezone.utc)
-    for (name, node_id) in [
+    for name, node_id in [
         ("task_1", 0),
         (":parameter:1", 1),
         (":parameter:2", 2),
@@ -528,7 +528,7 @@ def test_upsert_electron_dependency_data_idempotent(test_db, workflow_lattice, m
 
     electron_ids = []
     cur_time = dt.now(timezone.utc)
-    for (name, node_id) in [
+    for name, node_id in [
         ("task_1", 0),
         (":parameter:1", 1),
         (":parameter:2", 2),

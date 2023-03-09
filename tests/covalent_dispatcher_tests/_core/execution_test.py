@@ -87,7 +87,6 @@ def get_mock_result() -> Result:
 
 
 def get_mock_srvresult(sdkres, test_db) -> SRVResult:
-
     sdkres._initialize_nodes()
 
     with test_db.session() as session:

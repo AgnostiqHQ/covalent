@@ -66,7 +66,6 @@ async def _run_abstract_task(
     abstract_inputs: Dict,
     selected_executor: Any,
 ) -> None:
-
     # Resolve abstract task and inputs to their concrete (serialized) values
     timestamp = datetime.now(timezone.utc)
 
@@ -264,7 +263,6 @@ async def run_abstract_task(
     abstract_inputs: Dict,
     selected_executor: Any,
 ) -> None:
-
     node_result = await _run_abstract_task(
         dispatch_id=dispatch_id,
         node_id=node_id,
