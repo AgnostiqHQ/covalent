@@ -28,9 +28,15 @@ from fastapi.responses import FileResponse, JSONResponse
 from covalent._results_manager.result import Result
 from covalent._shared_files import logger
 
-from .._dal.export import export_serialized_result, get_dispatch_asset_uri, get_node_asset_uri
+from .._dal.export import (
+    export_serialized_result,
+    get_dispatch_asset_uri,
+    get_lattice_asset_uri,
+    get_node_asset_uri,
+)
 from .._db.datastore import workflow_db
 from .._db.models import Lattice
+from .models import DispatchAssetKey, ElectronAssetKey, LatticeAssetKey
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -80,9 +86,9 @@ def get_result_v2(
 async def get_node_asset_exp(
     dispatch_id: str,
     node_id: int,
-    key: str,
+    key: ElectronAssetKey,
 ):
-    app_log.debug(f"Requested asset {key} for node {dispatch_id}:{node_id}")
+    app_log.debug(f"Requested asset {key.value} for node {dispatch_id}:{node_id}")
 
     with workflow_db.session() as session:
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
@@ -94,11 +100,11 @@ async def get_node_asset_exp(
             )
 
     try:
-        path = get_node_asset_uri(dispatch_id, node_id, key)
+        path = get_node_asset_uri(dispatch_id, node_id, key.value)
     except:
         return JSONResponse(
             status_code=404,
-            content={"message": f"Error retrieving asset {key}."},
+            content={"message": f"Error retrieving asset {key.value}."},
         )
     return FileResponse(path)
 
@@ -106,9 +112,9 @@ async def get_node_asset_exp(
 @router.get("/resultv2/{dispatch_id}/assets/dispatch/{key}")
 async def get_dispatch_asset_exp(
     dispatch_id: str,
-    key: str,
+    key: DispatchAssetKey,
 ):
-    app_log.debug(f"Requested asset {key} for dispatch {dispatch_id}")
+    app_log.debug(f"Requested asset {key.value} for dispatch {dispatch_id}")
 
     with workflow_db.session() as session:
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
@@ -120,12 +126,39 @@ async def get_dispatch_asset_exp(
             )
 
     try:
-        path = get_dispatch_asset_uri(dispatch_id, key)
+        path = get_dispatch_asset_uri(dispatch_id, key.value)
         app_log.debug(f"Dispatch result uri: {path}")
     except:
         return JSONResponse(
             status_code=404,
-            content={"message": f"Error retrieving asset {key}."},
+            content={"message": f"Error retrieving asset {key.value}."},
+        )
+    return FileResponse(path)
+
+
+@router.get("/resultv2/{dispatch_id}/assets/lattice/{key}")
+async def get_lattice_asset_exp(
+    dispatch_id: str,
+    key: LatticeAssetKey,
+):
+    app_log.debug(f"Requested lattice asset {key.value} for dispatch {dispatch_id}")
+
+    with workflow_db.session() as session:
+        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+        status = lattice_record.status if lattice_record else None
+        if not lattice_record:
+            return JSONResponse(
+                status_code=404,
+                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+            )
+
+    try:
+        path = get_lattice_asset_uri(dispatch_id, key.value)
+        app_log.debug(f"Lattice asset uri: {path}")
+    except:
+        return JSONResponse(
+            status_code=404,
+            content={"message": f"Error retrieving asset {key.value}."},
         )
     return FileResponse(path)
 
