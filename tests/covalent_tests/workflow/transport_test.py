@@ -87,12 +87,14 @@ def test_transportable_object_python_version(transportable_object):
 def test_transportable_object_eq(transportable_object):
     """Test the __eq__ magic method of TransportableObject"""
 
+    import copy
+
     to = transportable_object
     to_new = TransportableObject(None)
-    to_new.__dict__ = to.__dict__.copy()
+    to_new.__dict__ = copy.deepcopy(to.__dict__)
     assert to.__eq__(to_new)
 
-    to_new.python_version = "3.5.1"
+    to_new._header["py_version"] = "3.5.1"
     assert not to.__eq__(to_new)
 
     assert not to.__eq__({})
@@ -126,8 +128,8 @@ def test_transportable_object_to_dict_attributes(transportable_object):
 
     tr_dict = transportable_object.to_dict()
 
-    assert tr_dict["attributes"]["attrs"]["doc"] == subtask.__doc__
-    assert tr_dict["attributes"]["attrs"]["name"] == subtask.__name__
+    assert tr_dict["attributes"]["_header"]["attrs"]["doc"] == subtask.__doc__
+    assert tr_dict["attributes"]["_header"]["attrs"]["name"] == subtask.__name__
 
 
 def test_transportable_object_serialize_to_json(transportable_object):
@@ -162,6 +164,29 @@ def test_transportable_object_serialize_deserialize(transportable_object):
 
     assert new_to.get_deserialized()(x=3) == subtask(x=3)
     assert new_to.python_version == to.python_version
+
+
+def test_transportable_object_sedeser_string_only():
+    """Test extracting string only from serialized to"""
+    x = 123
+    to = TransportableObject(x)
+
+    ser = to.serialize()
+    new_to = TransportableObject.deserialize(ser, string_only=True)
+    assert new_to.object_string == to.object_string
+    assert new_to._object == ""
+
+
+def test_transportable_object_sedeser_header_only():
+    """Test extracting header only from serialized to"""
+    x = 123
+    to = TransportableObject(x)
+
+    ser = to.serialize()
+    new_to = TransportableObject.deserialize(ser, header_only=True)
+
+    assert new_to.object_string == ""
+    assert new_to._header
 
 
 def test_transportable_object_deserialize_list(transportable_object):

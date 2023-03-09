@@ -27,6 +27,66 @@ from typing import Any, Callable
 
 import cloudpickle
 
+#  [header size (8 bytes), big][string size (8 bytes), big][header][string][data]
+
+HEADER_SIZE_BYTES = 8
+STRING_SIZE_BYTES = 8
+HEADER_OFFSET = HEADER_SIZE_BYTES + STRING_SIZE_BYTES
+BYTE_ORDER = "big"
+
+
+class _TOArchive:
+    def __init__(self, header: bytes, object_string: bytes, data: bytes):
+        self.header = header
+        self.object_string = object_string
+        self.data = data
+
+    def cat(self) -> bytes:
+        header_size = len(self.header).to_bytes(HEADER_SIZE_BYTES, BYTE_ORDER, signed=False)
+        string_size = len(self.object_string).to_bytes(STRING_SIZE_BYTES, BYTE_ORDER, signed=False)
+        return header_size + string_size + self.header + self.object_string + self.data
+
+    def load(serialized: bytes, header_only: bool, string_only: bool) -> "_TOArchive":
+        header_size = _TOArchiveUtils.header_size(serialized)
+        header = _TOArchiveUtils.parse_header(serialized, header_size)
+        object_string = b""
+        data = b""
+
+        if not header_only:
+            string_size = _TOArchiveUtils.string_size(serialized)
+            object_string = _TOArchiveUtils.parse_string(serialized, header_size, string_size)
+
+            if not string_only:
+                data = _TOArchiveUtils.parse_data(serialized, header_size, string_size)
+        return _TOArchive(header, object_string, data)
+
+
+class _TOArchiveUtils:
+    @staticmethod
+    def header_size(serialized: bytes) -> int:
+        size64 = serialized[:HEADER_SIZE_BYTES]
+        return int.from_bytes(size64, BYTE_ORDER, signed=False)
+
+    @staticmethod
+    def string_size(serialized: bytes) -> int:
+        size64 = serialized[HEADER_SIZE_BYTES:HEADER_OFFSET]
+        return int.from_bytes(size64, BYTE_ORDER, signed=False)
+
+    @staticmethod
+    def parse_header(serialized: bytes, header_size: int) -> bytes:
+        header = serialized[HEADER_OFFSET : HEADER_OFFSET + header_size]
+        return header
+
+    @staticmethod
+    def parse_string(serialized: bytes, header_size: int, string_size: int) -> bytes:
+        string_offset = HEADER_OFFSET + header_size
+        return serialized[string_offset : string_offset + string_size]
+
+    @staticmethod
+    def parse_data(serialized: bytes, header_size: int, string_size: int) -> bytes:
+        data_offset = HEADER_OFFSET + header_size + string_size
+        return serialized[data_offset:]
+
 
 class TransportableObject:
     """
@@ -40,11 +100,31 @@ class TransportableObject:
     """
 
     def __init__(self, obj: Any) -> None:
-        self._object = base64.b64encode(cloudpickle.dumps(obj)).decode("utf-8")
-        self.python_version = platform.python_version()
+        b64object = base64.b64encode(cloudpickle.dumps(obj))
+        object_string_u8 = str(obj).encode("utf-8")
 
-        self.object_string = str(obj)
-        self.attrs = {"doc": getattr(obj, "__doc__", ""), "name": getattr(obj, "__name__", "")}
+        self._object = b64object.decode("utf-8")
+        self._object_string = object_string_u8.decode("utf-8")
+
+        self._header = {
+            "py_version": platform.python_version(),
+            "attrs": {
+                "doc": getattr(obj, "__doc__", ""),
+                "name": getattr(obj, "__name__", ""),
+            },
+        }
+
+    @property
+    def python_version(self):
+        return self._header["py_version"]
+
+    @property
+    def attrs(self):
+        return self._header["attrs"]
+
+    @property
+    def object_string(self):
+        return self._object_string
 
     def __eq__(self, obj) -> bool:
         if not isinstance(obj, TransportableObject):
@@ -108,14 +188,7 @@ class TransportableObject:
             pickled_object: The serialized object alongwith the python version.
         """
 
-        return cloudpickle.dumps(
-            {
-                "object": self.get_serialized(),
-                "object_string": self.object_string,
-                "attrs": self.attrs,
-                "py_version": self.python_version,
-            }
-        )
+        return _to_archive(self).cat()
 
     def serialize_to_json(self) -> str:
         """
@@ -153,23 +226,21 @@ class TransportableObject:
             return TransportableObject(obj)
 
     @staticmethod
-    def deserialize(data: bytes) -> "TransportableObject":
+    def deserialize(
+        serialized: bytes, *, header_only: bool = False, string_only: bool = False
+    ) -> "TransportableObject":
         """
         Deserialize the transportable object.
 
         Args:
-            data: Cloudpickled function.
+            data: serialized transportable object
 
         Returns:
             object: The deserialized transportable object.
         """
 
-        obj = cloudpickle.loads(data)
-        sc = TransportableObject(None)
-        sc._object = obj["object"]
-        sc.attrs = obj["attrs"]
-        sc.python_version = obj["py_version"]
-        return sc
+        ar = _TOArchive.load(serialized, header_only, string_only)
+        return _from_archive(ar)
 
     @staticmethod
     def deserialize_list(collection: list) -> list:
@@ -211,3 +282,22 @@ class TransportableObject:
             else:
                 raise TypeError("Couldn't deserialize collection")
         return new_dict
+
+
+def _to_archive(to: TransportableObject) -> _TOArchive:
+    header = json.dumps(to._header).encode("utf-8")
+    object_string = to._object_string.encode("utf-8")
+    data = to._object.encode("utf-8")
+    return _TOArchive(header=header, object_string=object_string, data=data)
+
+
+def _from_archive(ar: _TOArchive) -> TransportableObject:
+    decoded_object_str = ar.object_string.decode("utf-8")
+    decoded_data = ar.data.decode("utf-8")
+    decoded_header = json.loads(ar.header.decode("utf-8"))
+    to = TransportableObject(None)
+    to._header = decoded_header
+    to._object_string = decoded_object_str if decoded_object_str else ""
+    to._object = decoded_data if decoded_data else ""
+
+    return to
