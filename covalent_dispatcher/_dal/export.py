@@ -89,6 +89,7 @@ def _to_client_graph(srv_graph: SRVGraph) -> SDKGraph:
                 attributes[k] = srv_graph.get_node_value(node_id, k)
         if srv_graph.get_node_value(node_id, "type") == "parameter":
             attributes["value"] = srv_graph.get_node_value(node_id, "value")
+            attributes["output"] = srv_graph.get_node_value(node_id, "output")
 
         node_meta = {k: srv_graph.get_node_value(node_id, k) for k in SDK_NODE_META_KEYS}
         attributes["metadata"] = node_meta

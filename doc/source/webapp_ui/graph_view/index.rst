@@ -1,6 +1,6 @@
-===========
+##########
 Graph View
-===========
+##########
 
 The Graph View screen shows detailed information about a single dispatch.
 

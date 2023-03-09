@@ -36,6 +36,7 @@ from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._dal.tg_ops import TransportGraphOps
 
+from .._dal.export import export_serialized_result
 from .._dal.result import Result as SRVResult
 from .._dal.result import get_result_object as get_result_object_from_db
 from .._db import update
@@ -238,22 +239,6 @@ def _get_result_object_from_new_lattice(
     return result_object
 
 
-def _get_result_object_from_old_result(
-    old_result_object: SRVResult, reuse_previous_results: bool
-) -> SRVResult:
-    """Get new result object for re-dispatching from old result object."""
-    sdk_result = Result(old_result_object.lattice, get_unique_id())
-    sdk_result._num_nodes = old_result_object.get_value("num_nodes")
-
-    if not reuse_previous_results:
-        sdk_result._initialize_nodes()
-
-    update.persist(sdk_result)
-    result_object = get_result_object_from_db(sdk_result.dispatch_id, False)
-
-    return result_object
-
-
 def _make_derived_dispatch_sync(
     parent_dispatch_id: str,
     json_lattice: Optional[str] = None,
@@ -270,14 +255,14 @@ def _make_derived_dispatch_sync(
         bare=False,
     )
 
-    if json_lattice:
-        result_object = _get_result_object_from_new_lattice(
-            json_lattice, old_result_object, reuse_previous_results
-        )
-    else:
-        result_object = _get_result_object_from_old_result(
-            old_result_object, reuse_previous_results
-        )
+    # reuse the previously submitted lattice if no new json_lattice
+    serialized_old_res = export_serialized_result(old_result_object.dispatch_id)
+    if not json_lattice:
+        json_lattice = serialized_old_res["lattice"]
+
+    result_object = _get_result_object_from_new_lattice(
+        json_lattice, old_result_object, reuse_previous_results
+    )
 
     ops = TransportGraphOps(result_object.lattice.transport_graph)
     ops.apply_electron_updates(electron_updates)

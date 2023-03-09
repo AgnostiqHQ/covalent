@@ -24,10 +24,10 @@ import os
 from collections import deque
 from typing import Any, Callable, Dict, List
 
-import cloudpickle
 import networkx as nx
 
 from covalent._shared_files import logger
+from covalent._shared_files.defaults import parameter_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.transport import TransportableObject
 
@@ -47,11 +47,11 @@ class TransportGraphOps:
             "end_time": None,
             "status": RESULT_STATUS.NEW_OBJECT,
             "output": None,
-            "error": None,
+            "error": "",
             "sub_dispatch_id": None,
             "sublattice_result": None,
-            "stdout": None,
-            "stderr": None,
+            "stdout": "",
+            "stderr": "",
         }
 
     @staticmethod
@@ -249,7 +249,13 @@ class TransportGraphOps:
 
     def _reset_node(self, node_id: int) -> None:
         """Reset node values to starting state."""
+        node_name = self.get_node_value(node_id, "name")
+
         for node_attr, default_val in self._default_node_attrs.items():
+            # Don't clear precomputed parameter outputs.
+            if node_attr == "output" and node_name.startswith(parameter_prefix):
+                continue
+
             self.set_node_value(node_id, node_attr, default_val)
 
     def _reset_descendants(self, node_id: int) -> None:
@@ -276,9 +282,9 @@ class TransportGraphOps:
         serialized_callable = TransportableObject.from_dict(new_attrs["function"])
 
         # TODO: fix this hack when we stop double-pickling to object store
-        tg.set_node_value(node_id, "function", cloudpickle.dumps(serialized_callable))
+        tg.set_node_value(node_id, "function", serialized_callable)
 
-        tg.set_node_value(node_id, "function_string", new_attrs["function_lf"])
+        tg.set_node_value(node_id, "function_string", new_attrs["function_string"])
         tg.set_node_value(node_id, "name", new_attrs["name"])
         self._reset_descendants(node_id)
 
@@ -289,4 +295,5 @@ class TransportGraphOps:
         for n in tg._graph.nodes:
             name = tg.get_node_value(n, "name")
             if name in electron_updates:
+                app_log.debug(f"replacing electron {name}")
                 self._replace_node(n, electron_updates[name])

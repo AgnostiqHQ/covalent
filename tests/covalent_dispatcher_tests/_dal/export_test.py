@@ -104,7 +104,7 @@ def test_to_client_graph(test_db, mocker):
     assert sdk_graph.get_node_value(0, "sub_dispatch_id") is None
 
     assert "output" not in sdk_graph._graph.nodes[0]
-    assert "output" not in sdk_graph._graph.nodes[1]
+    assert "output" in sdk_graph._graph.nodes[1]
     assert "value" not in sdk_graph._graph.nodes[0]
     assert "value" in sdk_graph._graph.nodes[1]
 

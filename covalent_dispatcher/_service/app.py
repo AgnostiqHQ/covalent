@@ -21,7 +21,7 @@
 import json
 from uuid import UUID
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, HTTPException, Request
 
 import covalent_dispatcher as dispatcher
 from covalent._shared_files import logger
@@ -48,11 +48,40 @@ async def submit(request: Request) -> UUID:
         dispatch_id: The dispatch id in a json format
                      returned as a Fast API Response object.
     """
-    data = await request.json()
-    data = json.dumps(data).encode("utf-8")
+    try:
+        data = await request.json()
+        data = json.dumps(data).encode("utf-8")
 
-    dispatch_id = await dispatcher.run_dispatcher(data)
-    return dispatch_id
+        return await dispatcher.run_dispatcher(data)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to submit workflow: {e}",
+        ) from e
+
+
+@router.post("/redispatch")
+async def redispatch(request: Request) -> str:
+    """Endpoint to redispatch a workflow."""
+    try:
+        data = await request.json()
+        dispatch_id = data["dispatch_id"]
+        json_lattice = data["json_lattice"]
+        electron_updates = data["electron_updates"]
+        reuse_previous_results = data["reuse_previous_results"]
+        return await dispatcher.run_redispatch(
+            dispatch_id,
+            json_lattice,
+            electron_updates,
+            reuse_previous_results,
+        )
+
+    except Exception as e:
+        app_log.exception(f"Exception in redispatch handler: {e}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to redispatch workflow: {e}",
+        ) from e
 
 
 @router.post("/cancel")
@@ -68,11 +97,17 @@ async def cancel(request: Request) -> str:
         Fast API Response object confirming that the dispatch
         has been cancelled.
     """
-    data = await request.body()
-    dispatch_id = data.decode("utf-8")
+    try:
+        data = await request.body()
+        dispatch_id = data.decode("utf-8")
 
-    dispatcher.cancel_running_dispatch(dispatch_id)
-    return f"Dispatch {dispatch_id} cancelled."
+        dispatcher.cancel_running_dispatch(dispatch_id)
+        return f"Dispatch {dispatch_id} cancelled."
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to cancel workflow: {e}",
+        ) from e
 
 
 @router.get("/db-path")

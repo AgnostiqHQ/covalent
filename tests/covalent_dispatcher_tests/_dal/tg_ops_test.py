@@ -178,7 +178,7 @@ def test_is_same_edge_attributes_false(tg, tg_ops):
     assert tg_ops.is_same_edge_attributes(tg._graph, tg_2._graph, 0, 1) is False
 
 
-def test_copy_nodes(tg, mocker):
+def test_copy_nodes_from(tg, mocker):
     """Test the node copying method."""
 
     def replacement(x):
