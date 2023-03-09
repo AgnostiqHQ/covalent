@@ -28,6 +28,7 @@ import pytest
 
 import covalent as ct
 from covalent._results_manager.result import Result
+from covalent._shared_files.defaults import postprocess_prefix
 from covalent._workflow.lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
 from covalent_dispatcher._db import update, upsert
@@ -149,7 +150,7 @@ def test_update_node(test_db, result_1, mocker):
             == "test_sublattice"
         )
 
-        assert lattice_record.electron_num == 5
+        assert lattice_record.electron_num == 11
         assert lattice_record.completed_electron_num == 0
         assert lattice_record.updated_at is not None
     update._node(
@@ -175,7 +176,7 @@ def test_update_node(test_db, result_1, mocker):
         )
         assert result == 5
 
-        assert lattice_record.electron_num == 5
+        assert lattice_record.electron_num == 11
         assert lattice_record.completed_electron_num == 1
         assert lattice_record.updated_at is not None
 
@@ -279,7 +280,7 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
                 assert executor_data["attributes"] == le.__dict__
 
         # Check that there are the appropriate amount of electron dependency records
-        assert len(electron_dependency_rows) == 4
+        assert len(electron_dependency_rows) == 12
 
         # Update some node / lattice statuses
         cur_time = dt.now(timezone.utc)
@@ -287,7 +288,7 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         result_1._status = "COMPLETED"
         result_1._result = ct.TransportableObject({"helo": 1, "world": 2})
 
-        for node_id in range(5):
+        for node_id in range(10):
             update._node(
                 result_1,
                 node_id=node_id,
@@ -318,17 +319,20 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         assert result_1.result == result.get_deserialized()
 
         # Check that the electron records are as expected
-        for electron in electron_rows:
-            assert electron.status == "COMPLETED"
-            assert electron.parent_lattice_id == 1
-            assert (
-                electron.started_at.strftime("%Y-%m-%d %H:%M")
-                == electron.completed_at.strftime("%Y-%m-%d %H:%M")
-                == cur_time.strftime("%Y-%m-%d %H:%M")
-            )
-            assert Path(electron.storage_path) == Path(
-                f"{TEMP_RESULTS_DIR}/dispatch_1/node_{electron.transport_graph_node_id}"
-            )
+        for i, electron in enumerate(electron_rows):
+            if electron.name.startswith(postprocess_prefix):
+                assert electron.status == "NEW_OBJECT"
+            else:
+                assert electron.status == "COMPLETED"
+                assert electron.parent_lattice_id == 1
+                assert (
+                    electron.started_at.strftime("%Y-%m-%d %H:%M")
+                    == electron.completed_at.strftime("%Y-%m-%d %H:%M")
+                    == cur_time.strftime("%Y-%m-%d %H:%M")
+                )
+                assert Path(electron.storage_path) == Path(
+                    f"{TEMP_RESULTS_DIR}/dispatch_1/node_{electron.transport_graph_node_id}"
+                )
 
     # Tear down temporary results directory
     teardown_temp_results_dir(dispatch_id="dispatch_1")
