@@ -25,6 +25,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent_dispatcher._dal.asset import StorageType
 from covalent_dispatcher._dal.tg_ops import TransportGraphOps, _TransportGraph
 
@@ -215,13 +216,25 @@ def test_copy_nodes_from(tg, mocker):
     tg_new.set_node_value = types.MethodType(set_node_value, tg_new)
 
     tg_new._graph.add_node(
-        0, name="replacement", function=replacement, metadata={"0-mock-key": "0-mock-value"}
+        0,
+        name="replacement",
+        function=replacement,
+        status=RESULT_STATUS.COMPLETED,
+        metadata={"0-mock-key": "0-mock-value"},
     )
     tg_new._graph.add_node(
-        1, name="multiply", function=multiply, metadata={"1-mock-key": "1-mock-value"}
+        1,
+        name="multiply",
+        function=multiply,
+        status=RESULT_STATUS.NEW_OBJECT,
+        metadata={"1-mock-key": "1-mock-value"},
     )
     tg_new._graph.add_node(
-        2, name="replacement", function=replacement, metadata={"2-mock-key": "2-mock-value"}
+        2,
+        name="replacement",
+        function=replacement,
+        status=RESULT_STATUS.COMPLETED,
+        metadata={"2-mock-key": "2-mock-value"},
     )
 
     tg_ops = TransportGraphOps(tg)
