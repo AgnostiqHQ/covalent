@@ -22,8 +22,9 @@ import asyncio
 import shutil
 from typing import Optional
 
-from fastapi import APIRouter, UploadFile
-from fastapi.responses import FileResponse, JSONResponse
+import anyio
+from fastapi import APIRouter, HTTPException, UploadFile
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from covalent._results_manager.result import Result
 from covalent._shared_files import logger
@@ -87,8 +88,16 @@ async def get_node_asset_exp(
     dispatch_id: str,
     node_id: int,
     key: ElectronAssetKey,
+    start_byte: int = 0,
+    end_byte: int = -1,
 ):
     app_log.debug(f"Requested asset {key.value} for node {dispatch_id}:{node_id}")
+
+    if end_byte >= 0 and end_byte < start_byte:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid byte range",
+        )
 
     with workflow_db.session() as session:
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
@@ -106,15 +115,24 @@ async def get_node_asset_exp(
             status_code=404,
             content={"message": f"Error retrieving asset {key.value}."},
         )
-    return FileResponse(path)
+    generator = _generate_file_slice(path, start_byte, end_byte)
+    return StreamingResponse(generator)
 
 
 @router.get("/resultv2/{dispatch_id}/assets/dispatch/{key}")
 async def get_dispatch_asset_exp(
     dispatch_id: str,
     key: DispatchAssetKey,
+    start_byte: int = 0,
+    end_byte: int = -1,
 ):
     app_log.debug(f"Requested asset {key.value} for dispatch {dispatch_id}")
+
+    if end_byte >= 0 and end_byte < start_byte:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid byte range",
+        )
 
     with workflow_db.session() as session:
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
@@ -133,15 +151,25 @@ async def get_dispatch_asset_exp(
             status_code=404,
             content={"message": f"Error retrieving asset {key.value}."},
         )
-    return FileResponse(path)
+
+    generator = _generate_file_slice(path, start_byte, end_byte)
+    return StreamingResponse(generator)
 
 
 @router.get("/resultv2/{dispatch_id}/assets/lattice/{key}")
 async def get_lattice_asset_exp(
     dispatch_id: str,
     key: LatticeAssetKey,
+    start_byte: int = 0,
+    end_byte: int = -1,
 ):
     app_log.debug(f"Requested lattice asset {key.value} for dispatch {dispatch_id}")
+
+    if end_byte >= 0 and end_byte < start_byte:
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid byte range",
+        )
 
     with workflow_db.session() as session:
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
@@ -160,7 +188,8 @@ async def get_lattice_asset_exp(
             status_code=404,
             content={"message": f"Error retrieving asset {key.value}."},
         )
-    return FileResponse(path)
+    generator = _generate_file_slice(path, start_byte, end_byte)
+    return StreamingResponse(generator)
 
 
 # Demo only!!!
@@ -194,3 +223,21 @@ async def upload_node_asset_exp(dispatch_id: str, node_id: int, key: str, asset_
 def _copy_file_obj(src_fileobj, dest_path):
     with open(dest_path, "wb") as dest_fileobj:
         shutil.copyfileobj(src_fileobj, dest_fileobj)
+
+
+async def _generate_file_slice(
+    file_path: str, start_byte: int, end_byte: int, chunk_size: int = 65536
+):
+    """Generator of a byte slice from a file"""
+    byte_pos = start_byte
+
+    async with await anyio.open_file(file_path, "rb") as f:
+        await f.seek(start_byte)
+        if end_byte < 0:
+            async for chunk in f:
+                yield chunk
+        else:
+            while byte_pos + chunk_size < end_byte:
+                byte_pos += chunk_size
+                yield await f.read(chunk_size)
+            yield await f.read(end_byte - byte_pos)
