@@ -136,7 +136,7 @@ During the execution of the workflow one can navigate to the UI to see the statu
      - Description
    * - project_id
      - yes
-     - ''
+     - None
      - Google cloud project ID
    * - region
      - No
@@ -144,15 +144,15 @@ During the execution of the workflow one can navigate to the UI to see the statu
      - Google cloud region to use to for submitting batch jobs
    * - bucket_name
      - Yes
-     - ''
+     - None
      - Name of the Google storage bucket to use for storing temporary objects
    * - container_image_uri
      - Yes
-     - ''
+     - None
      - GCP Batch executor base docker image uri
    * - service_account_email
      - Yes
-     - ''
+     - None
      - Google service account email address that is to be used by the batch job when interacting with the resources
    * - vcpus
      - No
@@ -181,6 +181,29 @@ During the execution of the workflow one can navigate to the UI to see the statu
 
 This plugin can be configured in one of two ways:
 
-#. Configuration options can be passed in as constructor keys to the executor class :code:`ct.executor.AWSBatchExecutor`
+#. Configuration options can be passed in as constructor keys to the executor class :code:`ct.executor.GCPBatchExecutor`
 
-#. By modifying the `covalent configuration file <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_ under the section :code:`[executors.awsbatch]`
+#. By modifying the `covalent configuration file <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_ under the section :code:`[executors.gcpbatch]`
+
+
+.. code:: shell
+
+    [executors.gcpbatch]
+    bucket_name = <my-gcp-bucket-name>
+    project_id = <my-gcp-project-id>
+    container_image_uri = <my-base-executor-image-uri>
+    service_account_email = <my-service-account-email>
+    region = <google region for batch>
+    vcpus = 2 # number of vcpus needed by the job
+    memory = 256 # memory in MB required by the job
+    retries = 3 # number of times to retry the job if it fails
+    time_limit = 300 # time limit in seconds after which the job is to be considered failed
+    poll_freq = 3 # Frequency in seconds with which to poll the job for the result
+    cache_dir = "/tmp" # Path on file system to store temporary objects
+
+
+===========================================
+4. Required Cloud Resources
+===========================================
+
+In order to successfully execute tasks using the Google Batch executor, some cloud resources need to be provisioned apriori.The executor uses a storage bucket to store/cache exception/result objects that get generated during execution. The executor submits a container job whose image is pulled from the provided ``container_image_uri`` argument of the executor. Lastly, keeping good security practices in mind, the jobs are executed using a service account that only has the necessary permissions attached to it that are required for the job to finish.
