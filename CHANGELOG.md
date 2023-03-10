@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
+- Adding Google Batch executor plugin RTD
+
+### Docs
+
 - Updated How-to documents.
 - Port of Pennylane's Univariate QVR tutorial using Covalent to this repo.
 - Adding troubleshooting guide to RTD's
