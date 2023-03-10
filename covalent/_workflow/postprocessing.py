@@ -68,7 +68,7 @@ class Postprocessor:
         ]
         return [bound_electrons[node_id] for node_id in filtered_node_ids]
 
-    def _postprocess(self, *ordered_node_outputs) -> Any:
+    def _postprocess(self, *ordered_node_outputs: List[Any]) -> Any:
         """
         Post processing function to be called after the lattice execution.
         This takes care of executing statements that were not an electron
@@ -79,10 +79,9 @@ class Postprocessor:
         since an electron can be called multiple times with possibly different
         arguments, but every time it's called, it will be executed as a separate node.
         Thus, output of every node is used.
+
         Args:
-            lattice: Lattice object that was dispatched.
-            node_outputs: Dictionary containing the output of all the nodes.
-            execution_order: List of lists containing the order of execution of the nodes.
+            ordered_node_outputs: List of outputs of every node in the lattice.
 
         Returns:
             result: The result of the lattice function.
@@ -123,7 +122,7 @@ class Postprocessor:
                 node_ids.extend(self._get_node_ids_from_retval(e))
         elif isinstance(retval, dict):
             app_log.debug("Recursively preprocessing dictionary")
-            for k, v in retval.items():
+            for _, v in retval.items():
                 node_ids.extend(self._get_node_ids_from_retval(v))
         else:
             app_log.debug("Encountered primitive or unsupported type:", retval)

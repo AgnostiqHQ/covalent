@@ -23,6 +23,7 @@
 import pytest
 
 import covalent as ct
+from covalent._workflow.electron import Electron
 from covalent._workflow.postprocessing import Postprocessor
 
 
@@ -62,7 +63,7 @@ def test_postprocessor_init(postprocessor):
     ],
 )
 def test_is_postprocessable_node(mocker, postprocessor, node_id, node_name, postprocessable):
-    """Test is_processable_node method."""
+    """Test is_postprocessable_node method."""
     postprocessor.lattice.build_graph(1)
     tg = postprocessor.lattice.transport_graph
 
@@ -70,3 +71,45 @@ def test_is_postprocessable_node(mocker, postprocessor, node_id, node_name, post
         "covalent._workflow.postprocessing._TransportGraph.get_node_value", return_value=node_name
     )
     assert postprocessor._is_postprocessable_node(tg, node_id) == postprocessable
+
+
+def test_filter_electrons(mocker, postprocessor):
+    """Test filter_electrons method."""
+    postprocessor.lattice.build_graph(1)
+    tg = postprocessor.lattice.transport_graph
+    mock_bound_electrons = {i: f"mock_electron_{i}" for i in range(12)}
+    assert postprocessor._filter_electrons(tg, mock_bound_electrons) == [
+        f"mock_electron_{i}" for i in [0, 2, 4, 6, 8, 10]
+    ]
+
+
+def test_postprocess(mocker, postprocessor):
+    """Test the postprocess method."""
+    pass
+
+
+@pytest.mark.parametrize(
+    "retval, node_ids",
+    [
+        (Electron(function=lambda x: x, node_id=1), [1]),
+        (
+            [Electron(function=lambda x: x, node_id=1), Electron(function=lambda x: x, node_id=2)],
+            [1, 2],
+        ),
+        (
+            {
+                "a": Electron(function=lambda x: x, node_id=1),
+                "b": Electron(function=lambda x: x, node_id=2),
+            },
+            [1, 2],
+        ),
+        ("unsupported", []),
+    ],
+)
+def test_get_node_ids_from_retval(postprocessor, retval, node_ids):
+    """Test get_node_ids_from_retval method."""
+
+    def mock_task():
+        pass
+
+    assert postprocessor._get_node_ids_from_retval(retval) == node_ids
