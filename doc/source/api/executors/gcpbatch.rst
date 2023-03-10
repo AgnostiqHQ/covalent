@@ -1,6 +1,6 @@
 .. _gcpbatch_executor:
 
-🔌 Google Batch Executor
+Google Batch Executor
 """"""""""""""""""""""""
 
 .. image:: Azure_Batch.png
