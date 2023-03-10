@@ -114,3 +114,73 @@ Here we present an example on how a user can use the GCP Batch executor plugin i
     result = ct.get_result(dispatch_id=dispatch_id, wait=True).result
 
     print(result)
+
+During the execution of the workflow one can navigate to the UI to see the status of the workflow, once completed however the above script should also output a value with the score of our model.
+
+.. code-block:: python
+
+    0.8666666666666667
+
+
+===========================================
+3. Overview of Configuration
+===========================================
+
+.. list-table::
+   :widths: 2 1 2 3
+   :header-rows: 1
+
+   * - Config Key
+     - Is Required
+     - Default
+     - Description
+   * - project_id
+     - yes
+     - ''
+     - Google cloud project ID
+   * - region
+     - No
+     - us-east1
+     - Google cloud region to use to for submitting batch jobs
+   * - bucket_name
+     - Yes
+     - ''
+     - Name of the Google storage bucket to use for storing temporary objects
+   * - container_image_uri
+     - Yes
+     - ''
+     - GCP Batch executor base docker image uri
+   * - service_account_email
+     - Yes
+     - ''
+     - Google service account email address that is to be used by the batch job when interacting with the resources
+   * - vcpus
+     - No
+     - 2
+     - Number of vCPUs needed for the task.
+   * - memory
+     - No
+     - 256
+     - Memory (in MB) needed by the task.
+   * - retries
+     - No
+     - 3
+     - Number of times a job is retried if it fails.
+   * - time_limit
+     - No
+     - 300
+     - Time limit (in seconds) after which jobs are killed.
+   * - poll_freq
+     - No
+     - 5
+     - Frequency (in seconds) with which to poll a submitted task.
+   * - cache_dir
+     - No
+     - /tmp/covalent
+     - Cache directory used by this executor for temporary files.
+
+This plugin can be configured in one of two ways:
+
+#. Configuration options can be passed in as constructor keys to the executor class :code:`ct.executor.AWSBatchExecutor`
+
+#. By modifying the `covalent configuration file <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_ under the section :code:`[executors.awsbatch]`
