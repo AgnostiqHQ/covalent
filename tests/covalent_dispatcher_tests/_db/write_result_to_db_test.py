@@ -406,6 +406,12 @@ def test_insert_electron_dependency_data(test_db, workflow_lattice, mocker):
         (":parameter:2", 2),
         (":sublattice:task_2", 3),
         (":parameter:2", 4),
+        ("task_1", 5),
+        (":parameter:1", 6),
+        (":parameter:2", 7),
+        (":sublattice:task_2", 8),
+        (":parameter:2", 9),
+        (":postprocess:", 10),
     ]:
         electron_kwargs = get_electron_kwargs(
             name=name,

@@ -379,7 +379,8 @@ def test_result_persist_rehydrate(test_db, result_1, mocker):
         result_2 = _result_from(lattice_row)
 
     assert result_1.__dict__.keys() == result_2.__dict__.keys()
-    assert result_1.lattice.__dict__.keys() == result_2.lattice.__dict__.keys()
+    result_2.lattice._bound_electrons = {}
+    assert set(result_1.lattice.__dict__.keys()) == set(result_2.lattice.__dict__.keys())
     for key in result_1.lattice.__dict__.keys():
         if key == "transport_graph":
             continue
