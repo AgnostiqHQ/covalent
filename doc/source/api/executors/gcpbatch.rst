@@ -30,13 +30,13 @@ Here we present an example on how a user can use the GCP Batch executor plugin i
 * A Google storage bucket
 * Cloud artifact registry for Docker images
 * A service account with the following permissions
-  * ``roles/batch.agentReporter``
-  * ``roles/logging.logWriter``
-  * ``roles/logging.viewer``
-  * ``roles/artifactregistry.reader``
-  * ``roles/storage.objectCreator``
-  * ``roles/storage.objectViewer``
+   * ``roles/batch.agentReporter``
+   * ``roles/logging.logWriter``
+   * ``roles/logging.viewer``
+   * ``roles/artifactregistry.reader``
+   * ``roles/storage.objectCreator``
+   * ``roles/storage.objectViewer``
 
 .. note::
 
-   Details about Google services accounts and how to use them properly can be found `here <https://cloud.google.com/iam/docs/service-account-overview>`
+   Details about Google services accounts and how to use them properly can be found `here <https://cloud.google.com/iam/docs/service-account-overview>`_
