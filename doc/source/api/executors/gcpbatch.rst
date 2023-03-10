@@ -206,7 +206,19 @@ This plugin can be configured in one of two ways:
 4. Required Cloud Resources
 ===========================================
 
-In order to successfully execute tasks using the Google Batch executor, some cloud resources need to be provisioned apriori.The executor uses a storage bucket to store/cache exception/result objects that get generated during execution. The executor submits a container job whose image is pulled from the provided ``container_image_uri`` argument of the executor. Lastly, keeping good security practices in mind, the jobs are executed using a service account that only has the necessary permissions attached to it that are required for the job to finish.
+In order to successfully execute tasks using the Google Batch executor, some cloud resources need to be provisioned apriori.
+
+* Google storage bucket
+
+   The executor uses a storage bucket to store/cache exception/result objects that get generated during execution
+
+* Google Docker artifact registry
+
+  The executor submits a container job whose image is pulled from the provided ``container_image_uri`` argument of the executor
+
+* Service account
+
+  Keeping good security practices in mind, the jobs are executed using a service account that only has the necessary permissions attached to it that are required for the job to finish.
 
 
 
