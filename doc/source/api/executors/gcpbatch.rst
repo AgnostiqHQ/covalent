@@ -19,3 +19,18 @@ To use this plugin with Covalent, simply install it using :code:`pip`:
 .. code:: bash
 
     pip install covalent-gpcbatch-plugin
+
+
+===========================================
+2. Usage Example
+===========================================
+
+Here we present an example on how a user can use the GCP Batch executor plugin in their Covalent workflows. In this example we train a simple SVM (support vector machine) model using the Google Batch executor. This executor is quite minimal in terms of the required cloud resoures that need to be provisioned prior to first use. The Google Batch executor needs the following cloud resources pre-configured 
+
+* A Google storage bucket
+* Cloud artifact registry for Docker images
+* A service account with the following permissions
+  * 
+
+This is an example of how a workflow can be adapted to utilize the AWS Batch Executor. Here we train a simple Support Vector Machine (SVM) model and use an existing AWS Batch Compute environment to run the :code:`train_svm` electron as a batch job. We also note we require :doc:`DepsPip <../../concepts/concepts>` to install the dependencies when creating the batch job.
+
