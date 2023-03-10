@@ -40,3 +40,77 @@ Here we present an example on how a user can use the GCP Batch executor plugin i
 .. note::
 
    Details about Google services accounts and how to use them properly can be found `here <https://cloud.google.com/iam/docs/service-account-overview>`_
+
+
+.. code-block:: python
+
+    from numpy.random import permutation
+    from sklearn import svm, datasets
+    import covalent as ct
+
+    deps_pip = ct.DepsPip(
+      packages=["numpy==1.23.2", "scikit-learn==1.1.2"]
+    )
+
+    executor = ct.executor.GCPBatchExecutor(
+        bucket_name = "my-gcp-bucket",
+        project_id = "my-gcp-project-id",
+        container_image_uri = "my-executor-container-image-uri",
+        service_account_email = "my-service-account-email",
+        vcpu = 2, # Number of vCPUs to allocate
+        memory = 512, # Memory in MB to allocate
+        time_limit = 300, # Time limit of job in seconds
+        poll_freq = 3 # Number of seconds to pause before polling for the job's status
+    )
+
+    # Use executor plugin to train our SVM model.
+    @ct.electron(
+        executor=executor,
+        deps_pip=deps_pip
+    )
+    def train_svm(data, C, gamma):
+        X, y = data
+        clf = svm.SVC(C=C, gamma=gamma)
+        clf.fit(X[90:], y[90:])
+        return clf
+
+    @ct.electron
+    def load_data():
+        iris = datasets.load_iris()
+        perm = permutation(iris.target.size)
+        iris.data = iris.data[perm]
+        iris.target = iris.target[perm]
+        return iris.data, iris.target
+
+    @ct.electron
+    def score_svm(data, clf):
+        X_test, y_test = data
+        return clf.score(
+          X_test[:90],
+        y_test[:90]
+        )
+
+    @ct.lattice
+    def run_experiment(C=1.0, gamma=0.7):
+        data = load_data()
+        clf = train_svm(
+          data=data,
+          C=C,
+          gamma=gamma
+        )
+        score = score_svm(
+          data=data,
+        clf=clf
+        )
+        return score
+
+    # Dispatch the workflow
+    dispatch_id = ct.dispatch(run_experiment)(
+      C=1.0,
+      gamma=0.7
+    )
+
+    # Wait for our result and get result value
+    result = ct.get_result(dispatch_id=dispatch_id, wait=True).result
+
+    print(result)
