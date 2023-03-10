@@ -108,8 +108,19 @@ def test_postprocess(mocker, postprocessor):
 )
 def test_get_node_ids_from_retval(postprocessor, retval, node_ids):
     """Test get_node_ids_from_retval method."""
-
-    def mock_task():
-        pass
-
     assert postprocessor._get_node_ids_from_retval(retval) == node_ids
+
+
+def test_recursive_postprocess(mocker, postprocessor):
+    """Test the recursive_postprocess method."""
+    pass
+
+
+def test_add_eager_postprocess_node(mocker, postprocessor):
+    """Test method that adds eager postprocess node."""
+    pass
+
+
+def test_add_exhaustive_postprocess_node(mocker, postprocessor):
+    """Test method that adds exhaustive postprocess node."""
+    pass

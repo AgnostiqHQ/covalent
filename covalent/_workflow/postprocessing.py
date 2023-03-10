@@ -22,7 +22,7 @@
 
 from builtins import list
 from dataclasses import asdict
-from typing import Any, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List, Union
 
 from .._shared_files import logger
 from .._shared_files.config import get_config
@@ -34,6 +34,9 @@ from .._shared_files.defaults import (
     sublattice_prefix,
 )
 from .transport import _TransportGraph, encode_metadata
+
+if TYPE_CHECKING:
+    from .electron import Electron
 
 DEFAULT_METADATA_VALUES = asdict(DefaultMetadataValues())
 
@@ -99,8 +102,8 @@ class Postprocessor:
             self.lattice.post_processing = False
             return result
 
-    def _get_node_ids_from_retval(self, retval):
-        """_summary_
+    def _get_node_ids_from_retval(self, retval: Union["Electron", List, Dict]) -> List[int]:
+        """Get the list of electron node ids from the return value of a lattice function.
 
         Note: 'retval' here corresponds to the return value of a lattice function.
 
@@ -108,7 +111,8 @@ class Postprocessor:
             retval (_type_): _description_
 
         Returns:
-            _type_: _description_
+            List of electron node ids.
+
         """
         from .electron import Electron
 
@@ -131,6 +135,14 @@ class Postprocessor:
         return node_ids
 
     def _recursive_postprocess(self, retval, **referenced_outputs):
+        """_summary_
+
+        Args:
+            retval (_type_): _description_
+
+        Returns:
+            _type_: _description_
+        """
         from .electron import Electron
 
         if isinstance(retval, Electron):
@@ -159,7 +171,17 @@ class Postprocessor:
         else:
             return retval
 
-    def add_eager_postprocess_node(self, retval: Any, bound_electrons: Dict):
+    def add_eager_postprocess_node(self, retval: Any, bound_electrons: Dict) -> None:
+        """This function adds a postprocess node to the transport graph that will be executed eagerly.
+
+        Args:
+            retval (Any): Return value of the lattice function.
+            bound_electrons: Dictionary of bound electrons with node_id as key and the electron object as the value. A bound is an electron that has been assigned a node_id and is part of a transport graph.
+
+        Returns:
+            None
+
+        """
         from .electron import Electron, wait
 
         node_id_refs = set(self._get_node_ids_from_retval(retval))
@@ -196,7 +218,16 @@ class Postprocessor:
 
                 app_log.debug(f"Waiting for electrons: {[p.node_id for p in wait_parents]}")
 
-    def add_exhaustive_postprocess_node(self, bound_electrons: Dict):
+    def add_exhaustive_postprocess_node(self, bound_electrons: Dict) -> None:
+        """This function adds a postprocess node to the transport graph. The postprocess node will be executed after all other nodes have been executed.
+
+        Args:
+            bound_electrons: Dictionary of bound electrons with node_id as key and the electron object as the value. A bound is an electron that has been assigned a node_id and is part of a transport graph.
+
+        Returns:
+            None
+
+        """
         from .electron import Electron
 
         with active_lattice_manager.claim(self.lattice):
