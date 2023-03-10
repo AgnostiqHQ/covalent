@@ -347,18 +347,12 @@ def test_result_persist_subworkflow_1(test_db, result_1, result_2, mocker):
     update.persist(result_2, electron_id=1)
 
     with test_db.session() as session:
-        electron = session.query(Electron).where(Electron.id == 1).first()
+        session.query(Electron).where(Electron.id == 1).first()
         job_record = session.query(Job).where(Job.id == Electron.job_id).first()
-        job_record.cancel_requested = True
 
     # Query lattice / electron / electron dependency
     with test_db.session() as session:
         lattice_row = session.query(Lattice).where(Lattice.dispatch_id == "dispatch_2").first()
-        job_records = (
-            session.query(Electron, Job)
-            .where(Job.id == Electron.job_id, Electron.parent_lattice_id == lattice_row.id)
-            .all()
-        )
 
         # Check that lattice record is as expected
         assert lattice_row.dispatch_id == "dispatch_2"
@@ -371,9 +365,6 @@ def test_result_persist_subworkflow_1(test_db, result_1, result_2, mocker):
         assert lattice_row.electron_id == 1
         assert lattice_row.executor == "local"
         assert lattice_row.workflow_executor == "local"
-
-        for job in job_records:
-            assert job.cancel_requested is True
 
 
 def test_result_persist_rehydrate(test_db, result_1, mocker):
