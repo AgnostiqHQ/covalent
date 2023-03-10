@@ -18,9 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-
 """Module containing post-processing related functions."""
-
 
 from builtins import list
 from dataclasses import asdict
