@@ -184,7 +184,7 @@ async def _run_task(
         # Start listening for messages from the plugin
         asyncio.create_task(executor_proxy.watch(dispatch_id, node_id, executor))
 
-        output, stdout, stderr, exception_raised = await executor._execute(
+        output, stdout, stderr, status = await executor._execute(
             function=assembled_callable,
             args=inputs["args"],
             kwargs=inputs["kwargs"],
@@ -192,10 +192,6 @@ async def _run_task(
             results_dir=results_dir,
             node_id=node_id,
         )
-        if exception_raised:
-            status = RESULT_STATUS.FAILED
-        else:
-            status = RESULT_STATUS.COMPLETED
 
         node_result = datasvc.generate_node_result(
             node_id=node_id,

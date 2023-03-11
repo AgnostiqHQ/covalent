@@ -223,6 +223,7 @@ class LocalExecutor(BaseExecutor):
             self._receive,
             task_group_metadata,
             job_handle,
+            job_status,
         )
 
     def get_upload_uri(self, task_group_metadata: Dict, object_key: str):
