@@ -75,7 +75,7 @@ async def _cancel_task(
         cancel_job_result = False
 
     if cancel_job_result is True:
-        await job_manager.set_job_status(dispatch_id, task_id, RESULT_STATUS.CANCELLED)
+        await job_manager.set_job_status(dispatch_id, task_id, str(RESULT_STATUS.CANCELLED))
         app_log.debug(f"Cancelled task {dispatch_id}:{task_id}")
 
 
@@ -115,7 +115,8 @@ async def cancel_tasks(dispatch_id: str, task_ids: List[int]) -> None:
     """
     job_metadata = await job_manager.get_jobs_metadata(dispatch_id, task_ids)
     node_metadata = await _get_metadata_for_nodes(dispatch_id, task_ids)
-
+    app_log.debug(f"node metadata: {node_metadata}")
+    app_log.debug(f"job metadata: {job_metadata}")
     cancel_task_kwargs = [
         _to_cancel_kwargs(i, x, node_metadata, job_metadata) for i, x in enumerate(task_ids)
     ]
@@ -141,6 +142,7 @@ async def _get_metadata_for_nodes(dispatch_id: str, node_ids: list) -> List[Any]
         node_ids,
         ["executor", "executor_data"],
     )
+    return attrs
 
 
 async def _get_cancel_requested(dispatch_id: str, task_id: int) -> Any:

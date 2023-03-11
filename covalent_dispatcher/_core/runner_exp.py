@@ -261,7 +261,7 @@ async def run_abstract_task_group(
             await jobs.put_job_status(dispatch_id, task_ids[0], RESULT_STATUS.CANCELLED)
 
             for task_id in task_ids:
-                task_metadata = {"dispatch_id": dispatch_id, "task_id": task_id}
+                task_metadata = {"dispatch_id": dispatch_id, "node_id": task_id}
                 app_log.debug(f"Refusing to execute cancelled task {dispatch_id}:{task_id}")
                 await mark_task_ready(task_metadata)
 
