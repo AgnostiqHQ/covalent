@@ -31,9 +31,9 @@ from concurrent.futures import ProcessPoolExecutor
 from typing import Any, Callable, Dict, List
 
 # Relative imports are not allowed in executor plugins
-from covalent._shared_files import TaskRuntimeError, logger
+from covalent._shared_files import TaskCancelledError, TaskRuntimeError, logger
 from covalent._shared_files.config import get_config
-from covalent._shared_files.util_classes import RESULT_STATUS
+from covalent._shared_files.util_classes import RESULT_STATUS, Status
 from covalent.executor import BaseExecutor
 
 # Store the wrapper function in an external module to avoid module
@@ -64,8 +64,26 @@ class LocalExecutor(BaseExecutor):
 
     SUPPORTS_MANAGED_EXECUTION = True
 
-    def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
+    def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict) -> Any:
+        """
+        Execute the function locally
+
+        Arg(s)
+            function: Function to be executed
+            args: Arguments passed to the function
+            kwargs: Keyword arguments passed to the function
+            task_metadata: Metadata of the task to be executed
+
+        Return(s)
+            Task output
+        """
         app_log.debug(f"Running function {function} locally")
+
+        self.set_job_handle(42)
+
+        if self.get_cancel_requested():
+            app_log.debug("Task has been cancelled don't proceed")
+            raise TaskCancelledError
 
         # Run the target function in a separate process
         fut = proc_pool.submit(io_wrapper, function, args, kwargs)
@@ -87,7 +105,6 @@ class LocalExecutor(BaseExecutor):
         resources: dict,
         task_group_metadata: dict,
     ):
-
         dispatch_id = task_group_metadata["dispatch_id"]
         task_ids = task_group_metadata["task_ids"]
         gid = task_group_metadata["task_group_id"]
@@ -115,8 +132,7 @@ class LocalExecutor(BaseExecutor):
         )
         return 42
 
-    def _receive(self, task_group_metadata: Dict, job_handle: Any):
-
+    def _receive(self, task_group_metadata: Dict, job_handle: Any, job_status: Status):
         # Returns (output_uri, stdout_uri, stderr_uri,
         # exception_raised)
 
@@ -130,31 +146,40 @@ class LocalExecutor(BaseExecutor):
         #     raise RuntimeError("Task packing is not yet supported")
 
         for task_id in task_ids:
-            result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
-            with open(result_path, "r") as f:
-                result_summary = json.load(f)
-                node_id = result_summary["node_id"]
-                # output_uri = result_summary["output_uri"]
-                # stdout_uri = result_summary["stdout_uri"]
-                # stderr_uri = result_summary["stderr_uri"]
-                output_uri = ""
-                stdout_uri = ""
-                stderr_uri = ""
-                exception_raised = result_summary["exception_occurred"]
-
-                terminal_status = (
-                    RESULT_STATUS.FAILED if exception_raised else RESULT_STATUS.COMPLETED
-                )
-
+            # Handle the case where the job was cancelled before the task started running
+            if job_status == RESULT_STATUS.CANCELLED:
                 task_result = {
                     "dispatch_id": dispatch_id,
-                    "node_id": node_id,
-                    "output_uri": output_uri,
-                    "stdout_uri": stdout_uri,
-                    "stderr_uri": stderr_uri,
-                    "status": terminal_status,
+                    "node_id": task_id,
+                    "output_uri": "",
+                    "stdout_uri": "",
+                    "stderr_uri": "",
+                    "status": job_status,
                 }
-                task_results.append(task_result)
+
+            else:
+                result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
+                with open(result_path, "r") as f:
+                    result_summary = json.load(f)
+                    node_id = result_summary["node_id"]
+                    output_uri = ""
+                    stdout_uri = ""
+                    stderr_uri = ""
+                    exception_raised = result_summary["exception_occurred"]
+
+                    terminal_status = (
+                        RESULT_STATUS.FAILED if exception_raised else RESULT_STATUS.COMPLETED
+                    )
+
+                    task_result = {
+                        "dispatch_id": dispatch_id,
+                        "node_id": node_id,
+                        "output_uri": output_uri,
+                        "stdout_uri": stdout_uri,
+                        "stderr_uri": stderr_uri,
+                        "status": terminal_status,
+                    }
+            task_results.append(task_result)
 
         app_log.debug(f"Returning results for tasks {dispatch_id}:{task_ids}")
         return task_results
@@ -181,14 +206,12 @@ class LocalExecutor(BaseExecutor):
         )
 
     async def poll(self, task_group_metadata: Dict, job_handle: Any):
-
         # To be run as a background task.  A callback will be
         # registered with the runner to invoke the receive()
 
         return -1
 
-    async def receive(self, task_group_metadata: Dict, job_handle: Any):
-
+    async def receive(self, task_group_metadata: Dict, job_handle: Any, job_status: Status):
         # Returns (output_uri, stdout_uri, stderr_uri,
         # exception_raised)
 

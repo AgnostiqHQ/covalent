@@ -333,7 +333,9 @@ async def _update_parent_electron(result_object: SRVResult):
         await update_node_result(parent_result_obj.dispatch_id, node_result)
 
 
-def _get_attrs_for_electrons_sync(dispatch_id: str, node_ids: List[int], keys: str) -> Any:
+def _get_attrs_for_electrons_sync(
+    dispatch_id: str, node_ids: List[int], keys: List[str]
+) -> List[Dict]:
     result_object = get_result_object(dispatch_id)
     refresh = False if STATELESS else True
     attrs = result_object.lattice.transport_graph.get_values_for_nodes(
@@ -344,7 +346,9 @@ def _get_attrs_for_electrons_sync(dispatch_id: str, node_ids: List[int], keys: s
     return attrs
 
 
-async def get_attrs_for_electrons(dispatch_id: str, node_ids: List[int], keys: str) -> List[Dict]:
+async def get_attrs_for_electrons(
+    dispatch_id: str, node_ids: List[int], keys: List[str]
+) -> List[Dict]:
     return await run_in_executor(
         _get_attrs_for_electrons_sync,
         dispatch_id,
@@ -459,3 +463,10 @@ async def get_graph_nodes_links(dispatch_id: str) -> dict:
     result_object = get_result_object(dispatch_id, False)
     g = result_object.lattice.transport_graph.get_internal_graph_copy()
     return nx.readwrite.node_link_data(g)
+
+
+async def get_nodes(dispatch_id: str) -> List[int]:
+    # Read the whole NX graph
+    result_object = get_result_object(dispatch_id, False)
+    g = result_object.lattice.transport_graph.get_internal_graph_copy()
+    return list(g.nodes)

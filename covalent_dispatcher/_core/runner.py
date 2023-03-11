@@ -22,6 +22,7 @@
 Defines the core functionality of the runner
 """
 
+import asyncio
 import traceback
 from datetime import datetime, timezone
 from functools import partial
@@ -31,9 +32,11 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow import DepsBash, DepsCall, DepsPip
-from covalent.executor.base import wrapper_fn
+from covalent.executor.utils.wrappers import wrapper_fn
 
 from . import data_manager as datasvc
+from .runner_modules import executor_proxy
+from .runner_modules.cancel import cancel_tasks  # nopycln: import
 from .runner_modules.utils import get_executor
 
 app_log = logger.app_log
@@ -177,6 +180,10 @@ async def _run_task(
             results_dir=results_dir,
             node_id=node_id,
         )
+
+        # Start listening for messages from the plugin
+        asyncio.create_task(executor_proxy.watch(dispatch_id, node_id, executor))
+
         output, stdout, stderr, exception_raised = await executor._execute(
             function=assembled_callable,
             args=inputs["args"],

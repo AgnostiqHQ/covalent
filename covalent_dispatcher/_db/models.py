@@ -25,6 +25,8 @@ Models for the workflows db. Based on schema v9
 from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import declarative_base
 
+from covalent._shared_files.util_classes import RESULT_STATUS
+
 Base = declarative_base()
 
 
@@ -239,12 +241,14 @@ class Job(Base):
     # of Executor.cancel())
     cancel_successful = Column(Boolean, nullable=False, default=False)
 
+    # Job state -- to be filtered/interpreted by each plugin
+    status = Column(String(24), nullable=False, default=str(RESULT_STATUS.NEW_OBJECT))
+
     # JSON-serialized identifier for job
     job_handle = Column(Text, nullable=False, default="null")
 
 
 class AssetMeta(Base):
-
     __tablename__ = "asset_meta"
 
     id = Column(Integer, primary_key=True)

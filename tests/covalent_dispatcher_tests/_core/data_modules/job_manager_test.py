@@ -25,8 +25,8 @@ import pytest
 from covalent_dispatcher._core.data_modules.job_manager import (
     get_jobs_metadata,
     set_cancel_requested,
-    set_cancel_result,
     set_job_handle,
+    set_job_status,
 )
 
 
@@ -104,9 +104,7 @@ async def test_set_job_handle(mocker):
     mock_update.assert_called_with([{"job_id": 1, "job_handle": "12356"}])
 
 
-@pytest.mark.asyncio
-@pytest.mark.parametrize("cancel_requested", [True, False])
-async def test_set_cancel_result(cancel_requested, mocker):
+async def test_set_job_status(mocker):
     """
     Test requesting a task to be cancelled
     """
@@ -115,5 +113,5 @@ async def test_set_cancel_result(cancel_requested, mocker):
     mock_update = mocker.patch(
         "covalent_dispatcher._core.data_modules.job_manager.update_job_records"
     )
-    await set_cancel_result("dispatch", 0, cancel_status=cancel_requested)
-    mock_update.assert_called_with([{"job_id": 1, "cancel_successful": cancel_requested}])
+    await set_job_status("dispatch", 0, status="COMPLETED")
+    mock_update.assert_called_with([{"job_id": 1, "status": "COMPLEtED"}])

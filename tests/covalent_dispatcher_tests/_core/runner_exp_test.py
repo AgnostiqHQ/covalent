@@ -103,7 +103,6 @@ def get_mock_result() -> Result:
 
 
 def get_mock_srvresult(sdkres, test_db) -> SRVResult:
-
     sdkres._initialize_nodes()
 
     update.persist(sdkres)
@@ -113,7 +112,6 @@ def get_mock_srvresult(sdkres, test_db) -> SRVResult:
 
 @pytest.mark.asyncio
 async def test_submit_abstract_task_group(mocker):
-
     import datetime
 
     me = MockManagedExecutor()
@@ -303,7 +301,6 @@ async def test_submit_requires_opt_in(mocker):
 
 @pytest.mark.asyncio
 async def test_get_task_result(mocker):
-
     import datetime
 
     me = MockManagedExecutor()
@@ -369,7 +366,7 @@ async def test_get_task_result(mocker):
         "task_ids": [task_id],
         "task_group_id": task_id,
     }
-    job_meta = [{"job_handle": "42"}]
+    job_meta = [{"job_handle": "42", "status": "COMPLETED"}]
 
     mocker.patch(
         "covalent_dispatcher._core.runner_exp.jm.get_jobs_metadata",
@@ -378,7 +375,7 @@ async def test_get_task_result(mocker):
 
     await _get_task_result(task_group_metadata)
 
-    me.receive.assert_awaited_with(task_group_metadata, "42")
+    me.receive.assert_awaited_with(task_group_metadata, 42, RESULT_STATUS.COMPLETED)
 
     mock_update.assert_awaited_with(dispatch_id, expected_node_result)
 
@@ -392,7 +389,6 @@ async def test_get_task_result(mocker):
 
 @pytest.mark.asyncio
 async def test_poll_status(mocker):
-
     me = MockManagedExecutor()
     me.poll = AsyncMock(return_value=0)
     mocker.patch(
@@ -509,10 +505,16 @@ async def test_event_listener(mocker):
 async def test_run_abstract_task_group(mocker):
     mock_listen = AsyncMock()
     me = MockManagedExecutor()
+    me._init_runtime()
+
     me.poll = AsyncMock(return_value=0)
     mocker.patch(
         "covalent_dispatcher._core.runner_exp.get_executor",
         return_value=me,
+    )
+
+    mocker.patch(
+        "covalent_dispatcher._core.runner_modules.jobs.get_cancel_requested", return_value=False
     )
 
     mock_poll = mocker.patch(
@@ -563,9 +565,14 @@ async def test_run_abstract_task_group(mocker):
 async def test_run_abstract_task_group_handles_old_execs(mocker):
     mock_listen = AsyncMock()
     me = MockExecutor()
+    me._init_runtime()
+
     mocker.patch(
         "covalent_dispatcher._core.runner_exp.get_executor",
         return_value=me,
+    )
+    mocker.patch(
+        "covalent_dispatcher._core.runner_modules.jobs.get_cancel_requested", return_value=False
     )
 
     mock_legacy_run = mocker.patch("covalent_dispatcher._core.runner.run_abstract_task")
@@ -637,3 +644,61 @@ async def test_run_abstract_task_group_handles_bad_executors(mocker):
     )
 
     mock_update.assert_awaited()
+
+
+@pytest.mark.asyncio
+async def test_run_abstract_task_group_handles_cancelled_tasks(mocker):
+    """Check handling of cancelled tasks"""
+
+    mock_listen = AsyncMock()
+    me = MockManagedExecutor()
+    me._init_runtime()
+
+    me.poll = AsyncMock(return_value=0)
+
+    mocker.patch(
+        "covalent_dispatcher._core.runner_modules.jobs.get_cancel_requested", return_value=True
+    )
+
+    mock_jobs_put = mocker.patch(
+        "covalent_dispatcher._core.runner_modules.jobs.put_job_status", return_value=True
+    )
+
+    mock_submit = mocker.patch(
+        "covalent_dispatcher._core.runner_exp._submit_abstract_task_group",
+    )
+
+    mock_update = mocker.patch(
+        "covalent_dispatcher._core.runner_exp.datamgr.update_node_result",
+    )
+    mock_mark_ready = mocker.patch(
+        "covalent_dispatcher._core.runner_exp.mark_task_ready",
+    )
+
+    dispatch_id = "dispatch"
+    node_id = 0
+    node_name = "task"
+    abstract_inputs = {"args": [], "kwargs": {}}
+    selected_executor = ["local", {}]
+    mock_function_id = node_id
+    mock_args_ids = abstract_inputs["args"]
+    mock_kwargs_ids = abstract_inputs["kwargs"]
+
+    mock_task = {
+        "function_id": mock_function_id,
+        "args_ids": mock_args_ids,
+        "kwargs_ids": mock_kwargs_ids,
+    }
+    known_nodes = [1, 2]
+
+    await run_abstract_task_group(
+        dispatch_id,
+        node_id,
+        [mock_task],
+        known_nodes,
+        selected_executor,
+    )
+
+    mock_submit.assert_not_awaited()
+    mock_update.assert_not_awaited()
+    mock_mark_ready.assert_awaited()

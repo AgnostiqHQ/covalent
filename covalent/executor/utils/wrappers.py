@@ -144,6 +144,7 @@ def _gather_deps(deps, call_before_objs_json, call_after_objs_json) -> Tuple[Lis
 # tasks. For the `task_specs` and `resources` schema see the comments
 # for `AsyncBaseExecutor.send()`.
 
+
 # URIs are just file paths
 def run_task_from_uris(
     task_specs: List[Dict],
@@ -153,7 +154,6 @@ def run_task_from_uris(
     task_group_metadata: dict,
     server_url: str,
 ):
-
     prefix = "file://"
     prefix_len = len(prefix)
 
@@ -289,7 +289,6 @@ def run_task_from_uris(
                     break
 
                 finally:
-
                     # POST task artifacts
                     if result_uri:
                         upload_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/output"

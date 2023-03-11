@@ -77,7 +77,7 @@ def test_update_job_records(test_db, mocker):
         job = Job(cancel_requested=False, job_handle="aws_job_id_2")
         session.add(job)
 
-    job_1_kwargs = {"job_id": 1, "cancel_requested": True, "cancel_successful": True}
+    job_1_kwargs = {"job_id": 1, "cancel_requested": True, "job_status": "CANCELLED"}
     job_2_kwargs = {"job_id": 2, "cancel_requested": True, "job_handle": "42"}
 
     update_job_records([job_1_kwargs, job_2_kwargs])
@@ -85,9 +85,9 @@ def test_update_job_records(test_db, mocker):
     record_1 = get_job_record(1)
     record_2 = get_job_record(2)
     assert record_1["cancel_requested"] is True
-    assert record_1["cancel_successful"] is True
+    assert record_1["status"] == "CANCELLED"
     assert record_2["cancel_requested"] is True
-    assert record_2["cancel_successful"] is False
+    assert record_2["status"] == "NEW_OBJECT"
 
     with pytest.raises(MissingJobRecordError):
         update_job_records([{"job_id": 5, "cancel_requested": True}])

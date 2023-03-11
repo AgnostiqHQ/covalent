@@ -102,16 +102,16 @@ async def set_job_handle(dispatch_id: str, task_id: int, job_handle: str) -> Non
     await _set_job_metadata(dispatch_id, task_id, job_handle=job_handle)
 
 
-async def set_cancel_result(dispatch_id: str, task_id: int, cancel_status: bool) -> None:
+async def set_job_status(dispatch_id: str, task_id: int, status: str) -> None:
     """
-    Update the cancel status of the job in the database if task cancellation is requested
+    Update the status of the job in the database
 
     Arg(s)
         dispatch_id: Dispatch ID of the lattice
         task_id: ID of the task in the lattice
-        cancel_status: True/False indicating whether the task is to be cancelled
+        status: status
 
     Return(s)
         None
     """
-    await _set_job_metadata(dispatch_id, task_id, cancel_successful=cancel_status)
+    await _set_job_metadata(dispatch_id, task_id, job_status=status)

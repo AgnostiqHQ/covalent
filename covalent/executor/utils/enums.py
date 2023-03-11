@@ -18,14 +18,18 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""
+Helper functions for the local executor
+"""
 
-class MissingLatticeRecordError(Exception):
-    pass
-
-
-class TaskRuntimeError(Exception):
-    pass
+from enum import Enum
 
 
-class TaskCancelledError(Exception):
-    pass
+class Signals(Enum):
+    """
+    Signals to enable communication between the executors and Covalent dispatcher
+    """
+
+    GET = 0
+    PUT = 1
+    EXIT = 2

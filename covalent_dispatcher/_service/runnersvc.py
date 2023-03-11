@@ -21,8 +21,8 @@
 
 from fastapi import APIRouter
 
-import covalent_dispatcher.entry_point as entry_point
 from covalent._shared_files import logger
+from covalent._shared_files.util_classes import Status
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -34,5 +34,26 @@ router: APIRouter = APIRouter()
 async def update_task_status(dispatch_id: str, node_id: int):
     # Dummy impl for now
 
-    task_metadata = await entry_point.mark_task_ready(dispatch_id, node_id)
+    from .._core import runner_exp
+
+    task_metadata = {
+        "dispatch_id": dispatch_id,
+        "node_id": node_id,
+    }
+
+    await runner_exp.mark_task_ready(task_metadata)
+    app_log.debug(f"Marked task {dispatch_id}:{node_id} ready to read")
     return f"Task {task_metadata} marked ready"
+
+
+@router.put("/update/job/{dispatch_id}/{node_id}/status")
+async def update_task_status(dispatch_id: str, node_id: int, status: str):
+    from .._core.runner_modules import jobs
+
+    task_metadata = {
+        "dispatch_id": dispatch_id,
+        "node_id": node_id,
+    }
+
+    await jobs.put_job_status(dispatch_id, node_id, Status(status))
+    app_log.debug(f"Set job status {status}for task {dispatch_id}:{node_id}")

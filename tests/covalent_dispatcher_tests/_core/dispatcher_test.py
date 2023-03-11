@@ -23,6 +23,8 @@ Tests for the core functionality of the dispatcher.
 """
 
 
+from unittest.mock import AsyncMock, call
+
 import pytest
 
 import covalent as ct
@@ -37,7 +39,7 @@ from covalent_dispatcher._core.dispatcher import (
     _handle_node_status_update,
     _submit_initial_tasks,
     _submit_task_group,
-    cancel_workflow,
+    cancel_dispatch,
     run_dispatch,
     run_workflow,
 )
@@ -187,7 +189,6 @@ async def test_run_workflow_exception(mocker, wait):
 
 @pytest.mark.asyncio
 async def test_run_dispatch(mocker):
-
     dispatch_id = "test_dispatch"
     mock_run = mocker.patch("covalent_dispatcher._core.dispatcher.run_workflow")
     run_dispatch(dispatch_id)
@@ -641,10 +642,6 @@ async def test_submit_parameter(mocker):
     mock_update.assert_awaited()
 
 
-def test_cancelled_workflow():
-    cancel_workflow("asdf")
-
-
 @pytest.mark.asyncio
 async def test_clear_caches(mocker):
     import networkx as nx
@@ -673,3 +670,124 @@ async def test_clear_caches(mocker):
     assert mock_unresolved_remove.await_count == 1
     assert mock_pending_remove.await_count == 2
     assert mock_groups_remove.await_count == 2
+
+
+@pytest.mark.asyncio
+async def test_cancel_dispatch(mocker):
+    """Test cancelling a dispatch, including sub-lattices"""
+    res = get_mock_result()
+    sub_res = get_mock_result()
+
+    sub_dispatch_id = "sub_pipeline_workflow"
+    sub_res._dispatch_id = sub_dispatch_id
+
+    mock_data_cancel = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.jbmgr.set_cancel_requested"
+    )
+
+    mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner_exp")
+    mock_runner.cancel_tasks = AsyncMock()
+
+    res._initialize_nodes()
+    sub_res._initialize_nodes()
+
+    tg = res.lattice.transport_graph
+    tg.set_node_value(2, "sub_dispatch_id", sub_dispatch_id)
+    sub_tg = sub_res.lattice.transport_graph
+
+    async def mock_get_nodes(dispatch_id):
+        if dispatch_id == res.dispatch_id:
+            return list(tg._graph.nodes)
+        else:
+            return list(sub_tg._graph.nodes)
+
+    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.get_nodes", mock_get_nodes)
+
+    node_attrs = [
+        {"sub_dispatch_id": tg.get_node_value(i, "sub_dispatch_id")} for i in tg._graph.nodes
+    ]
+    sub_node_attrs = [
+        {"sub_dispatch_id": sub_tg.get_node_value(i, "sub_dispatch_id")}
+        for i in sub_tg._graph.nodes
+    ]
+
+    async def mock_get_attrs(dispatch_id, task_ids, keys):
+        if dispatch_id == res.dispatch_id:
+            return node_attrs
+        else:
+            return sub_node_attrs
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_attrs_for_electrons",
+        mock_get_attrs,
+    )
+
+    await cancel_dispatch("pipeline_workflow")
+
+    task_ids = list(tg._graph.nodes)
+    sub_task_ids = list(sub_tg._graph.nodes)
+
+    calls = [call("pipeline_workflow", task_ids), call(sub_dispatch_id, sub_task_ids)]
+    mock_data_cancel.assert_has_awaits(calls)
+    mock_runner.cancel_tasks.assert_has_awaits(calls)
+
+
+@pytest.mark.asyncio
+async def test_cancel_dispatch_with_task_ids(mocker):
+    """Test cancelling a dispatch, including sub-lattices and with task ids"""
+    res = get_mock_result()
+    sub_res = get_mock_result()
+
+    res._initialize_nodes()
+    sub_res._initialize_nodes()
+
+    sub_dispatch_id = "sub_pipeline_workflow"
+    sub_res._dispatch_id = sub_dispatch_id
+    tg = res.lattice.transport_graph
+    tg.set_node_value(2, "sub_dispatch_id", sub_dispatch_id)
+    sub_tg = sub_res.lattice.transport_graph
+
+    mock_data_cancel = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.jbmgr.set_cancel_requested"
+    )
+
+    mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner_exp")
+    mock_runner.cancel_tasks = AsyncMock()
+
+    async def mock_get_nodes(dispatch_id):
+        if dispatch_id == res.dispatch_id:
+            return list(tg._graph.nodes)
+        else:
+            return list(sub_tg._graph.nodes)
+
+    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.get_nodes", mock_get_nodes)
+
+    node_attrs = [
+        {"sub_dispatch_id": tg.get_node_value(i, "sub_dispatch_id")} for i in tg._graph.nodes
+    ]
+    sub_node_attrs = [
+        {"sub_dispatch_id": sub_tg.get_node_value(i, "sub_dispatch_id")}
+        for i in sub_tg._graph.nodes
+    ]
+
+    async def mock_get_attrs(dispatch_id, task_ids, keys):
+        if dispatch_id == res.dispatch_id:
+            return node_attrs
+        else:
+            return sub_node_attrs
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.get_attrs_for_electrons",
+        mock_get_attrs,
+    )
+
+    mock_app_log = mocker.patch("covalent_dispatcher._core.dispatcher.app_log.debug")
+    task_ids = [2]
+    sub_task_ids = list(sub_tg._graph.nodes)
+
+    await cancel_dispatch("pipeline_workflow", task_ids)
+
+    calls = [call("pipeline_workflow", task_ids), call(sub_dispatch_id, sub_task_ids)]
+    mock_data_cancel.assert_has_awaits(calls)
+    mock_runner.cancel_tasks.assert_has_awaits(calls)
+    assert mock_app_log.call_count == 2

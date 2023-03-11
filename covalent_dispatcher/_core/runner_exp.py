@@ -23,24 +23,32 @@ Defines the core functionality of the runner
 """
 
 import asyncio
+import json
 import traceback
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from typing import Any, Dict
 
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-from covalent._shared_files.util_classes import RESULT_STATUS
+from covalent._shared_files.util_classes import RESULT_STATUS, Status
 from covalent.executor.base import AsyncBaseExecutor
+from covalent.executor.utils import Signals
 
 from . import data_manager as datamgr
 from . import runner as runner_legacy
 from .data_modules import asset_manager as am
 from .data_modules import job_manager as jm
+from .runner_modules import executor_proxy, jobs
+from .runner_modules.cancel import cancel_tasks  # nopycln: import
 from .runner_modules.utils import get_executor
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 debug_mode = get_config("sdk.log_level") == "debug"
+
+# Dedicated thread pool for invoking non-async Executor.cancel()
+_cancel_threadpool = ThreadPoolExecutor()
 
 # Asyncio Queue
 _job_events = None
@@ -64,7 +72,6 @@ async def _submit_abstract_task_group(
     known_nodes: list,
     executor: AsyncBaseExecutor,
 ) -> None:
-
     # Task sequence of the form {"function_id": task_id, "args_ids":
     # [node_ids], "kwargs_ids": {key: node_id}}
     task_ids = [task["function_id"] for task in task_seq]
@@ -76,7 +83,6 @@ async def _submit_abstract_task_group(
     }
 
     try:
-
         if not type(executor).SUPPORTS_MANAGED_EXECUTION:
             raise NotImplementedError("Executor does not support managed execution")
 
@@ -133,6 +139,12 @@ async def _submit_abstract_task_group(
             for task_id in task_ids
         ]
 
+        # Use one proxy for the task group; handles the following requests:
+        # - check if the job has a pending cancel request
+        # - set the job handle
+
+        asyncio.create_task(executor_proxy.watch(dispatch_id, task_ids[0], executor))
+
         await executor.send(
             task_specs,
             resources,
@@ -162,7 +174,6 @@ async def _submit_abstract_task_group(
 
 
 async def _get_task_result(task_group_metadata: Dict):
-
     dispatch_id = task_group_metadata["dispatch_id"]
     task_ids = task_group_metadata["task_ids"]
     gid = task_group_metadata["task_group_id"]
@@ -175,8 +186,11 @@ async def _get_task_result(task_group_metadata: Dict):
 
         job_meta = await jm.get_jobs_metadata(dispatch_id, [task_ids[0]])
         job_handle = job_meta[0]["job_handle"]
+        job_status = job_meta[0]["status"]
 
-        task_group_results = await executor.receive(task_group_metadata, job_handle)
+        task_group_results = await executor.receive(
+            task_group_metadata, json.loads(job_handle), Status(job_status)
+        )
 
         node_results = []
         for task_result in task_group_results:
@@ -199,6 +213,7 @@ async def _get_task_result(task_group_metadata: Dict):
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
         app_log.debug(f"Exception occurred when receiving task group {gid}:")
         app_log.debug(tb)
+        print("DEBUG: ", tb)
         error_msg = tb if debug_mode else str(ex)
         ts = datetime.now(timezone.utc)
 
@@ -223,7 +238,6 @@ async def run_abstract_task_group(
     known_nodes: list,
     selected_executor: Any,
 ) -> None:
-
     global _job_events
 
     # Bind the queue to the FastAPI event loop
@@ -234,11 +248,24 @@ async def run_abstract_task_group(
     if not _job_event_listener:
         _job_event_listener = asyncio.create_task(_listen_for_job_events())
 
+    executor = None
+
     try:
         app_log.debug(f"Attempting to instantiate executor {selected_executor}")
         task_ids = [task["function_id"] for task in task_seq]
         app_log.debug(f"Running task group {dispatch_id}:{task_group_id}")
         executor = get_executor(task_group_id, selected_executor)
+
+        # Check if the job should be cancelled
+        if await jobs.get_cancel_requested(dispatch_id, task_ids[0]):
+            await jobs.put_job_status(dispatch_id, task_ids[0], RESULT_STATUS.CANCELLED)
+
+            for task_id in task_ids:
+                task_metadata = {"dispatch_id": dispatch_id, "task_id": task_id}
+                app_log.debug(f"Refusing to execute cancelled task {dispatch_id}:{task_id}")
+                await mark_task_ready(task_metadata)
+
+            return
 
         # Legacy runner doesn't yet support task packing
         if not type(executor).SUPPORTS_MANAGED_EXECUTION:
@@ -300,6 +327,11 @@ async def run_abstract_task_group(
         }
         await _poll_task_status(task_group_metadata, executor)
 
+    # Terminate proxy
+    if executor:
+        executor._notify(Signals.EXIT)
+        app_log.debug(f"Stopping proxy for task group {dispatch_id}:{task_group_id}")
+
 
 async def _listen_for_job_events():
     while True:
@@ -359,10 +391,9 @@ async def _poll_task_status(task_group_metadata: Dict, executor: AsyncBaseExecut
         job_handle = job_meta[0]["job_handle"]
 
         app_log.debug(f"Polling status for task group {dispatch_id}:{task_group_id}")
-        if await executor.poll(task_group_metadata, job_handle) == 0:
+        if await executor.poll(task_group_metadata, json.loads(job_handle)) == 0:
             await _mark_ready(task_group_metadata)
     except Exception as ex:
-
         task_group_id = task_group_metadata["task_group_id"]
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
         app_log.debug(f"Exception occurred when polling task {task_group_id}:")

@@ -42,8 +42,9 @@ from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.depsbash import DepsBash
 from covalent._workflow.depscall import DepsCall
 from covalent._workflow.depspip import DepsPip
-from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
+from covalent.executor.base import AsyncBaseExecutor
 from covalent.executor.utils.wrappers import io_wrapper as dask_wrapper
+from covalent.executor.utils.wrappers import wrapper_fn
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "ManagedDaskExecutor"
@@ -113,7 +114,6 @@ def run_task_from_uris(
     stdout_uri: str,
     stderr_uri: str,
 ):
-
     prefix = "file://"
     prefix_len = len(prefix)
 
@@ -314,7 +314,6 @@ class ManagedDaskExecutor(AsyncBaseExecutor):
         return 0
 
     async def receive(self, task_metadata: Dict, job_handle: Any):
-
         # Returns (output_uri, stdout_uri, stderr_uri,
         # exception_raised)
 

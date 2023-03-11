@@ -36,6 +36,7 @@ from covalent._shared_files.util_classes import RESULT_STATUS
 
 from . import data_manager as datasvc
 from . import runner_exp
+from .data_modules import job_manager as jbmgr
 from .dispatcher_modules.caches import _pending_parents, _sorted_task_groups, _unresolved_tasks
 
 app_log = logger.app_log
@@ -319,21 +320,35 @@ async def run_workflow(dispatch_id: str, wait: bool = SYNC_DISPATCHES) -> RESULT
 
 
 # Domain: dispatcher
-def cancel_workflow(dispatch_id: str) -> None:
+async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = []) -> None:
     """
-    Cancels a dispatched workflow using publish subscribe mechanism
-    provided by Dask.
+    Cancel an entire dispatch or a specific set of tasks within it
 
-    Args:
-        dispatch_id: Dispatch id of the workflow to be cancelled
+    Arg(s)
+        dispatch_id: Dispatch ID of the lattice
+        task_ids: List of tasks from the lattice that are to be cancelled. Defaults to [] (entire lattice)
 
-    Returns:
+    Return(s)
         None
     """
+    if not dispatch_id:
+        return
 
-    # shared_var = Variable(dispatch_id)
-    # shared_var.set(str(RESULT_STATUS.CANCELLED))
-    pass
+    if task_ids:
+        app_log.debug(f"Cancelling tasks {task_ids} in dispatch {dispatch_id}")
+    else:
+        task_ids = await datasvc.get_nodes(dispatch_id)
+
+        app_log.debug(f"Cancelling dispatch {dispatch_id}")
+
+    await jbmgr.set_cancel_requested(dispatch_id, task_ids)
+    await runner_exp.cancel_tasks(dispatch_id, task_ids)
+
+    # Recursively cancel running sublattice dispatches
+    attrs = await datasvc.get_attrs_for_electrons(dispatch_id, task_ids, ["sub_dispatch_id"])
+    sub_ids = list(map(lambda x: x["sub_dispatch_id"], attrs))
+    for sub_dispatch_id in sub_ids:
+        await cancel_dispatch(sub_dispatch_id)
 
 
 def run_dispatch(dispatch_id: str) -> asyncio.Future:

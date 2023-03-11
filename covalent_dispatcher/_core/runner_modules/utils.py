@@ -22,7 +22,6 @@
 Defines the core functionality of the runner
 """
 
-
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent.executor import _executor_manager
@@ -33,7 +32,7 @@ log_stack_info = logger.log_stack_info
 debug_mode = get_config("sdk.log_level") == "debug"
 
 
-def get_executor(node_id, selected_executor) -> AsyncBaseExecutor:
+def get_executor(node_id, selected_executor, loop=None, pool=None) -> AsyncBaseExecutor:
     # Instantiate the executor from JSON
 
     short_name, object_dict = selected_executor
@@ -43,5 +42,6 @@ def get_executor(node_id, selected_executor) -> AsyncBaseExecutor:
     # the executor is determined during scheduling and provided in the execution metadata
     executor = _executor_manager.get_executor(short_name)
     executor.from_dict(object_dict)
+    executor._init_runtime(loop=loop, cancel_pool=pool)
 
     return executor

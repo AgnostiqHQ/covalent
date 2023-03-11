@@ -61,6 +61,7 @@ def transaction_get_job_record(session: Session, job_id: int) -> Dict:
             "job_id": job_record.id,
             "cancel_requested": job_record.cancel_requested,
             "cancel_successful": job_record.cancel_successful,
+            "status": job_record.status,
             "job_handle": job_record.job_handle,
         }
     else:
@@ -71,8 +72,8 @@ def _update_job_record(
     session: Session,
     job_id: int,
     cancel_requested: bool = None,
-    cancel_successful: bool = None,
     job_handle: str = None,
+    job_status: str = None,
 ):
     """
     Update the job record in the database
@@ -93,10 +94,10 @@ def _update_job_record(
 
     if cancel_requested is not None:
         job_record.cancel_requested = cancel_requested
-    if cancel_successful is not None:
-        job_record.cancel_successful = cancel_successful
     if job_handle is not None:
         job_record.job_handle = job_handle
+    if job_status is not None:
+        job_record.status = job_status
 
 
 def get_job_record(job_id: int) -> Dict:
