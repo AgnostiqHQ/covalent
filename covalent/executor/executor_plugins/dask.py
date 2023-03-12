@@ -200,9 +200,6 @@ class DaskExecutor(AsyncBaseExecutor):
         return future.key
 
     async def receive(self, task_group_metadata: Dict, data: Any):
-        # Returns (output_uri, stdout_uri, stderr_uri,
-        # exception_raised)
-
         # Job should have reached a terminal state by the time this is invoked.
         dispatch_id = task_group_metadata["dispatch_id"]
         task_ids = task_group_metadata["task_ids"]
@@ -211,6 +208,7 @@ class DaskExecutor(AsyncBaseExecutor):
 
         for task_id in task_ids:
             # TODO: Handle the case where the job was cancelled before the task started running
+            app_log.debug(f"Receive called for task {dispatch_id}:{task_id} with status {data}")
 
             result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
             with open(result_path, "r") as f:
@@ -235,6 +233,7 @@ class DaskExecutor(AsyncBaseExecutor):
                         "stderr": stderr_uri,
                     },
                 }
+
             task_results.append(task_result)
 
         app_log.debug(f"Returning results for tasks {dispatch_id}:{task_ids}")

@@ -316,7 +316,7 @@ def run_task_from_uris(
                         json.dump(result_summary, f)
 
                     # Notify Covalent that the task has terminated
-                    url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}"
+                    url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}/completed"
                     requests.put(url)
 
     # Deal with any tasks that did not run

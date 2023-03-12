@@ -19,9 +19,12 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+from enum import Enum
+
 from fastapi import APIRouter
 
 from covalent._shared_files import logger
+from covalent._shared_files.util_classes import Status
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -29,8 +32,14 @@ log_stack_info = logger.log_stack_info
 router: APIRouter = APIRouter()
 
 
-@router.put("/update/task/{dispatch_id}/{node_id}")
-async def update_task_status(dispatch_id: str, node_id: int):
+class ResultStatus(str, Enum):
+    cancelled = "cancelled"
+    completed = "completed"
+    failed = "failed"
+
+
+@router.put("/update/task/{dispatch_id}/{node_id}/{status}")
+async def update_task_status(dispatch_id: str, node_id: int, status: ResultStatus):
     # Dummy impl for now
 
     from .._core import runner_exp
@@ -39,7 +48,7 @@ async def update_task_status(dispatch_id: str, node_id: int):
         "dispatch_id": dispatch_id,
         "node_id": node_id,
     }
-    detail = None
+    detail = {"status": Status(status.value.upper())}
     await runner_exp.mark_task_ready(task_metadata, detail)
-    app_log.debug(f"Marked task {dispatch_id}:{node_id} ready to read")
+    app_log.debug(f"Marked task {dispatch_id}:{node_id} ready to read with status {status}")
     return f"Task {task_metadata} marked ready"
