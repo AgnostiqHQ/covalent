@@ -68,7 +68,6 @@ def get_mock_result() -> SDKResult:
 
 
 def get_mock_srvresult(sdkres, test_db) -> Result:
-
     sdkres._initialize_nodes()
 
     update.persist(sdkres)
@@ -111,3 +110,35 @@ async def test_upload_asset_for_nodes(test_db, mocker):
 
     os.unlink(dest_path_0)
     os.unlink(dest_path_2)
+
+
+@pytest.mark.asyncio
+async def test_download_assets_for_node(test_db, mocker):
+    sdkres = get_mock_result()
+    sdkres._initialize_nodes()
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
+
+    srvres = get_mock_srvresult(sdkres, test_db)
+
+    with tempfile.NamedTemporaryFile("w", delete=False, suffix=".txt") as temp:
+        src_path_stdout = temp.name
+        temp.write("Hello!\n")
+
+    with tempfile.NamedTemporaryFile("w", delete=False, suffix=".txt") as temp:
+        src_path_stderr = temp.name
+        temp.write("Bye!\n")
+
+    src_uri_stdout = os.path.join("file://", src_path_stdout)
+    src_uri_stderr = os.path.join("file://", src_path_stderr)
+
+    await am.download_assets_for_node(
+        srvres.dispatch_id, 0, {"stdout": src_uri_stdout, "stderr": src_uri_stderr}
+    )
+
+    assert srvres.lattice.transport_graph.get_node_value(0, "stdout") == "Hello!\n"
+    assert srvres.lattice.transport_graph.get_node_value(0, "stderr") == "Bye!\n"

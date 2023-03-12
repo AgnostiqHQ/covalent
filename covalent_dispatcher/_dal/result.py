@@ -279,16 +279,6 @@ class Result(DispatchedObject):
             if stderr is not None:
                 self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr, session)
 
-        # Perform file transfers
-        if output_uri:
-            _download_assets_for_node(self, node_id, {"output": output_uri})
-
-        if stdout_uri:
-            _download_assets_for_node(self, node_id, {"stdout": stdout_uri})
-
-        if stderr_uri:
-            _download_assets_for_node(self, node_id, {"stderr": stderr_uri})
-
         # Handle postprocessing node
         tg = self.lattice.transport_graph
         if name.startswith(postprocess_prefix) and end_time is not None:
@@ -342,22 +332,6 @@ class Result(DispatchedObject):
             node_output = tg.get_node_value(node_id, "output")
             all_node_outputs[f"{node_name}({node_id})"] = node_output
         return all_node_outputs
-
-
-def _download_assets_for_node(result_object: Result, node_id: int, src_uris: dict):
-
-    # Keys for src_uris: "output", "stdout", "stderr"
-
-    tg = result_object.lattice.transport_graph
-
-    node = tg.get_node(node_id)
-
-    assets_to_download = [
-        node.get_asset(key).set_remote(src) for key, src in src_uris.items() if src
-    ]
-
-    for asset in assets_to_download:
-        asset.download()
 
 
 def _copy_asset(src: Asset, dest: Asset):

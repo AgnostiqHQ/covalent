@@ -49,3 +49,21 @@ async def upload_asset_for_nodes(dispatch_id: str, key: str, dest_uris: dict):
             futs.append(loop.run_in_executor(am_pool, asset.upload, dest_uri))
 
     await asyncio.gather(*futs)
+
+
+async def download_assets_for_node(dispatch_id: str, node_id: int, src_uris: dict):
+    # Keys for src_uris: "output", "stdout", "stderr"
+
+    result_object = get_result_object(dispatch_id, bare=True)
+    tg = result_object.lattice.transport_graph
+    node = tg.get_node(node_id)
+    loop = asyncio.get_running_loop()
+
+    futs = []
+    assets_to_download = [
+        node.get_asset(key).set_remote(src) for key, src in src_uris.items() if src
+    ]
+
+    for asset in assets_to_download:
+        futs.append(loop.run_in_executor(am_pool, asset.download))
+    await asyncio.gather(*futs)

@@ -308,10 +308,12 @@ async def test_get_task_result(mocker):
     mock_task_result = {
         "dispatch_id": "dispatch",
         "node_id": 0,
-        "output_uri": asset_uri,
-        "stdout_uri": asset_uri,
-        "stderr_uri": asset_uri,
-        "status": False,
+        "uris": {
+            "output": asset_uri,
+            "stdout": asset_uri,
+            "stderr": asset_uri,
+        },
+        "status": RESULT_STATUS.COMPLETED,
     }
     me.receive = AsyncMock(return_value=[mock_task_result])
 
@@ -339,9 +341,6 @@ async def test_get_task_result(mocker):
         "start_time": ts,
         "end_time": ts,
         "status": RESULT_STATUS.COMPLETED,
-        "output_uri": asset_uri,
-        "stdout_uri": asset_uri,
-        "stderr_uri": asset_uri,
     }
 
     mocker.patch(
@@ -352,9 +351,8 @@ async def test_get_task_result(mocker):
     mock_update = mocker.patch(
         "covalent_dispatcher._core.runner_exp.datamgr.update_node_result",
     )
-
-    mock_upload = mocker.patch(
-        "covalent_dispatcher._core.data_modules.asset_manager.upload_asset_for_nodes",
+    mock_download = mocker.patch(
+        "covalent_dispatcher._core.data_modules.asset_manager.download_assets_for_node",
     )
 
     dispatch_id = "dispatch"
@@ -378,7 +376,7 @@ async def test_get_task_result(mocker):
     me.receive.assert_awaited_with(task_group_metadata, 42, RESULT_STATUS.COMPLETED)
 
     mock_update.assert_awaited_with(dispatch_id, expected_node_result)
-
+    mock_download.assert_awaited()
     # Test exception during get
     me.receive = AsyncMock(side_effect=RuntimeError())
     mock_update.reset_mock()

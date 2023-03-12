@@ -218,12 +218,13 @@ class DaskExecutor(AsyncBaseExecutor):
                 task_result = {
                     "dispatch_id": dispatch_id,
                     "node_id": task_id,
-                    "output_uri": "",
-                    "stdout_uri": "",
-                    "stderr_uri": "",
-                    "status": job_status,
+                    "status": RESULT_STATUS.CANCELLED,
+                    "uris": {
+                        "output": "",
+                        "stdout": "",
+                        "stderr": "",
+                    },
                 }
-
             else:
                 result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
                 with open(result_path, "r") as f:
@@ -241,10 +242,12 @@ class DaskExecutor(AsyncBaseExecutor):
                     task_result = {
                         "dispatch_id": dispatch_id,
                         "node_id": node_id,
-                        "output_uri": output_uri,
-                        "stdout_uri": stdout_uri,
-                        "stderr_uri": stderr_uri,
                         "status": terminal_status,
+                        "uris": {
+                            "output": output_uri,
+                            "stdout": stdout_uri,
+                            "stderr": stderr_uri,
+                        },
                     }
             task_results.append(task_result)
 
