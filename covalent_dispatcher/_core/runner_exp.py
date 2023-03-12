@@ -23,7 +23,6 @@ Defines the core functionality of the runner
 """
 
 import asyncio
-import json
 import traceback
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
@@ -31,14 +30,13 @@ from typing import Any, Dict
 
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-from covalent._shared_files.util_classes import RESULT_STATUS, Status
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent.executor.base import AsyncBaseExecutor
 from covalent.executor.utils import Signals
 
 from . import data_manager as datamgr
 from . import runner as runner_legacy
 from .data_modules import asset_manager as am
-from .data_modules import job_manager as jm
 from .runner_modules import executor_proxy, jobs
 from .runner_modules.cancel import cancel_tasks  # nopycln: import
 from .runner_modules.utils import get_executor
@@ -145,7 +143,7 @@ async def _submit_abstract_task_group(
 
         asyncio.create_task(executor_proxy.watch(dispatch_id, task_ids[0], executor))
 
-        await executor.send(
+        send_retval = await executor.send(
             task_specs,
             resources,
             task_group_metadata,
@@ -160,6 +158,8 @@ async def _submit_abstract_task_group(
         error_msg = tb if debug_mode else str(ex)
         ts = datetime.now(timezone.utc)
 
+        send_retval = None
+
         node_results = [
             datamgr.generate_node_result(
                 node_id=task_id,
@@ -170,10 +170,10 @@ async def _submit_abstract_task_group(
             for task_id in task_ids
         ]
 
-    return node_results
+    return node_results, send_retval
 
 
-async def _get_task_result(task_group_metadata: Dict):
+async def _get_task_result(task_group_metadata: Dict, data: Any):
     dispatch_id = task_group_metadata["dispatch_id"]
     task_ids = task_group_metadata["task_ids"]
     gid = task_group_metadata["task_group_id"]
@@ -184,13 +184,7 @@ async def _get_task_result(task_group_metadata: Dict):
 
         executor = get_executor(gid, [executor_name, executor_data])
 
-        job_meta = await jm.get_jobs_metadata(dispatch_id, [task_ids[0]])
-        job_handle = job_meta[0]["job_handle"]
-        job_status = job_meta[0]["status"]
-
-        task_group_results = await executor.receive(
-            task_group_metadata, json.loads(job_handle), Status(job_status)
-        )
+        task_group_results = await executor.receive(task_group_metadata, data)
 
         node_results = []
         for task_result in task_group_results:
@@ -262,7 +256,7 @@ async def run_abstract_task_group(
             for task_id in task_ids:
                 task_metadata = {"dispatch_id": dispatch_id, "node_id": task_id}
                 app_log.debug(f"Refusing to execute cancelled task {dispatch_id}:{task_id}")
-                await mark_task_ready(task_metadata)
+                await mark_task_ready(task_metadata, None)
 
             return
 
@@ -289,7 +283,7 @@ async def run_abstract_task_group(
 
             else:
                 raise RuntimeError("Task packing not supported by executor plugin")
-        node_results = await _submit_abstract_task_group(
+        node_results, send_retval = await _submit_abstract_task_group(
             dispatch_id,
             task_group_id,
             task_seq,
@@ -304,6 +298,7 @@ async def run_abstract_task_group(
         error_msg = tb if debug_mode else str(ex)
         ts = datetime.now(timezone.utc)
 
+        send_retval = None
         node_results = [
             datamgr.generate_node_result(
                 node_id=node_id,
@@ -324,7 +319,7 @@ async def run_abstract_task_group(
             "task_ids": task_ids,
             "task_group_id": task_group_id,
         }
-        await _poll_task_status(task_group_metadata, executor)
+        await _poll_task_status(task_group_metadata, executor, send_retval)
 
     # Terminate proxy
     if executor:
@@ -345,7 +340,8 @@ async def _listen_for_job_events():
             # job has reached a terminal state
             if event == "READY":
                 task_group_metadata = msg["task_group_metadata"]
-                asyncio.create_task(_get_task_result(task_group_metadata))
+                detail = msg["detail"]
+                asyncio.create_task(_get_task_result(task_group_metadata, detail))
                 continue
 
             if event == "FAILED":
@@ -368,8 +364,10 @@ async def _listen_for_job_events():
             app_log.exception("Error reading message: {ex}")
 
 
-async def _mark_ready(task_group_metadata: dict):
-    await _job_events.put({"task_group_metadata": task_group_metadata, "event": "READY"})
+async def _mark_ready(task_group_metadata: dict, detail: Any):
+    await _job_events.put(
+        {"task_group_metadata": task_group_metadata, "event": "READY", "detail": detail}
+    )
 
 
 async def _mark_failed(task_group_metadata: dict, detail: str):
@@ -378,7 +376,9 @@ async def _mark_failed(task_group_metadata: dict, detail: str):
     )
 
 
-async def _poll_task_status(task_group_metadata: Dict, executor: AsyncBaseExecutor):
+async def _poll_task_status(
+    task_group_metadata: Dict, executor: AsyncBaseExecutor, poll_data: Any
+):
     # Return immediately if no polling logic (default return value is -1)
 
     dispatch_id = task_group_metadata["dispatch_id"]
@@ -386,12 +386,13 @@ async def _poll_task_status(task_group_metadata: Dict, executor: AsyncBaseExecut
     task_ids = task_group_metadata["task_ids"]
 
     try:
-        job_meta = await jm.get_jobs_metadata(dispatch_id, [task_ids[0]])
-        job_handle = job_meta[0]["job_handle"]
-
         app_log.debug(f"Polling status for task group {dispatch_id}:{task_group_id}")
-        if await executor.poll(task_group_metadata, json.loads(job_handle)) == 0:
-            await _mark_ready(task_group_metadata)
+        receive_data = await executor.poll(task_group_metadata, poll_data)
+        await _mark_ready(task_group_metadata, receive_data)
+
+    except NotImplementedError:
+        app_log.debug(f"Executor {executor.short_name()} is async.")
+
     except Exception as ex:
         task_group_id = task_group_metadata["task_group_id"]
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
@@ -401,7 +402,7 @@ async def _poll_task_status(task_group_metadata: Dict, executor: AsyncBaseExecut
         await _mark_failed(task_group_metadata, error_msg)
 
 
-async def mark_task_ready(task_metadata: dict):
+async def mark_task_ready(task_metadata: dict, detail: Any):
     dispatch_id = task_metadata["dispatch_id"]
     node_id = task_metadata["node_id"]
     gid = await datamgr.get_electron_attribute(dispatch_id, node_id, "task_group_id")
@@ -411,4 +412,4 @@ async def mark_task_ready(task_metadata: dict):
         "task_group_id": gid,
     }
 
-    await _mark_ready(task_group_metadata)
+    await _mark_ready(task_group_metadata, detail)

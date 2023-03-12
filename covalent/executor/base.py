@@ -446,14 +446,16 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         raise NotImplementedError
 
-    async def poll(self, task_group_metadata: Dict, job_handle: Any):
+    async def poll(self, task_group_metadata: Dict, data: Any):
         # To be run as a background task.  A callback will be
         # registered with the runner to invoke the receive()
 
-        return -1
+        raise NotImplementedError
 
     async def receive(
-        self, task_group_metadata: Dict, job_handle: Any, job_status: Status
+        self,
+        task_group_metadata: Dict,
+        data: Any,
     ) -> List[Dict]:
         # Returns (output_uri, stdout_uri, stderr_uri,
         # exception_raised)
@@ -778,14 +780,16 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
         raise NotImplementedError
 
-    async def poll(self, task_group_metadata: Dict, job_handle: Any):
+    async def poll(self, task_group_metadata: Dict, data: Any):
         # To be run as a background task.  A callback will be
         # registered with the runner to invoke the receive()
 
-        return -1
+        raise NotImplementedError
 
     async def receive(
-        self, task_group_metadata: Dict, job_handle: Any, job_status: Status
+        self,
+        task_group_metadata: Dict,
+        data: Any,
     ) -> List[Dict]:
         # Returns a list of task results
         # {

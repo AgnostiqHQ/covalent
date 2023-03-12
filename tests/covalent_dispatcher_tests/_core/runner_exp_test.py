@@ -229,7 +229,7 @@ async def test_submit_abstract_task_group(mocker):
 
     known_nodes = [1, 2]
 
-    await _submit_abstract_task_group(
+    node_result, send_retval = await _submit_abstract_task_group(
         dispatch_id=dispatch_id,
         task_group_id=0,
         task_seq=[mock_task_0, mock_task_3],
@@ -244,6 +244,7 @@ async def test_submit_abstract_task_group(mocker):
         resources,
         task_group_metadata,
     )
+    assert send_retval == "42"
 
 
 @pytest.mark.asyncio
@@ -294,7 +295,7 @@ async def test_submit_requires_opt_in(mocker):
     }
     known_nodes = [1, 2]
 
-    assert [node_result] == await _submit_abstract_task_group(
+    assert ([node_result], None) == await _submit_abstract_task_group(
         dispatch_id, task_id, [mock_task], known_nodes, me
     )
 
@@ -371,9 +372,9 @@ async def test_get_task_result(mocker):
         return_value=job_meta,
     )
 
-    await _get_task_result(task_group_metadata)
+    await _get_task_result(task_group_metadata, job_meta)
 
-    me.receive.assert_awaited_with(task_group_metadata, 42, RESULT_STATUS.COMPLETED)
+    me.receive.assert_awaited_with(task_group_metadata, job_meta)
 
     mock_update.assert_awaited_with(dispatch_id, expected_node_result)
     mock_download.assert_awaited()
@@ -381,7 +382,7 @@ async def test_get_task_result(mocker):
     me.receive = AsyncMock(side_effect=RuntimeError())
     mock_update.reset_mock()
 
-    await _get_task_result(task_group_metadata)
+    await _get_task_result(task_group_metadata, job_meta)
     mock_update.assert_awaited()
 
 
@@ -405,21 +406,14 @@ async def test_poll_status(mocker):
         "task_group_id": task_id,
     }
 
-    job_meta = [{"job_handle": "42"}]
+    await _poll_task_status(task_group_metadata, me, "42")
 
-    mocker.patch(
-        "covalent_dispatcher._core.runner_exp.jm.get_jobs_metadata",
-        return_value=job_meta,
-    )
+    mock_mark_ready.assert_awaited_with(task_group_metadata, 0)
 
-    await _poll_task_status(task_group_metadata, me)
-
-    mock_mark_ready.assert_awaited()
-
-    me.poll = AsyncMock(return_value=-1)
+    me.poll = AsyncMock(side_effect=NotImplementedError())
     mock_mark_ready.reset_mock()
 
-    await _poll_task_status(task_group_metadata, me)
+    await _poll_task_status(task_group_metadata, me, "42")
     mock_mark_ready.assert_not_awaited()
 
     me.poll = AsyncMock(side_effect=RuntimeError())
@@ -428,7 +422,7 @@ async def test_poll_status(mocker):
         "covalent_dispatcher._core.runner_exp._mark_failed",
     )
 
-    await _poll_task_status(task_group_metadata, me)
+    await _poll_task_status(task_group_metadata, me, "42")
     mock_mark_ready.assert_not_awaited()
     mock_mark_failed.assert_awaited()
 
@@ -468,8 +462,8 @@ async def test_event_listener(mocker):
         mock_event_queue,
     )
     fut = asyncio.create_task(_listen_for_job_events())
-    await _mark_ready(task_group_metadata)
-    await _mark_ready(task_group_metadata)
+    await _mark_ready(task_group_metadata, "RUNNING")
+    await _mark_ready(task_group_metadata, "COMPLETED")
     await mock_event_queue.put({"event": "BYE"})
 
     await asyncio.wait_for(fut, 1)
@@ -523,7 +517,7 @@ async def test_run_abstract_task_group(mocker):
 
     mock_submit = mocker.patch(
         "covalent_dispatcher._core.runner_exp._submit_abstract_task_group",
-        return_value=[node_result],
+        return_value=([node_result], 42),
     )
 
     mock_update = mocker.patch(
@@ -545,6 +539,11 @@ async def test_run_abstract_task_group(mocker):
         "kwargs_ids": mock_kwargs_ids,
     }
     known_nodes = [1, 2]
+    task_group_metadata = {
+        "dispatch_id": dispatch_id,
+        "task_ids": [node_id],
+        "task_group_id": node_id,
+    }
 
     await run_abstract_task_group(
         dispatch_id,
@@ -556,7 +555,7 @@ async def test_run_abstract_task_group(mocker):
 
     mock_submit.assert_awaited()
     mock_update.assert_awaited()
-    mock_poll.assert_awaited()
+    mock_poll.assert_awaited_with(task_group_metadata, me, 42)
 
 
 @pytest.mark.asyncio

@@ -33,7 +33,7 @@ from typing import Any, Callable, Dict, List
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import TaskCancelledError, TaskRuntimeError, logger
 from covalent._shared_files.config import get_config
-from covalent._shared_files.util_classes import RESULT_STATUS, Status
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent.executor import BaseExecutor
 
 # Store the wrapper function in an external module to avoid module
@@ -132,7 +132,7 @@ class LocalExecutor(BaseExecutor):
         )
         return 42
 
-    def _receive(self, task_group_metadata: Dict, job_handle: Any, job_status: Status):
+    def _receive(self, task_group_metadata: Dict, data: Any):
         # Returns (output_uri, stdout_uri, stderr_uri,
         # exception_raised)
 
@@ -147,40 +147,29 @@ class LocalExecutor(BaseExecutor):
 
         for task_id in task_ids:
             # Handle the case where the job was cancelled before the task started running
-            if job_status == RESULT_STATUS.CANCELLED:
+            result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
+            with open(result_path, "r") as f:
+                result_summary = json.load(f)
+                node_id = result_summary["node_id"]
+                output_uri = ""
+                stdout_uri = ""
+                stderr_uri = ""
+                exception_raised = result_summary["exception_occurred"]
+
+                terminal_status = (
+                    RESULT_STATUS.FAILED if exception_raised else RESULT_STATUS.COMPLETED
+                )
+
                 task_result = {
                     "dispatch_id": dispatch_id,
-                    "node_id": task_id,
-                    "output_uri": "",
-                    "stdout_uri": "",
-                    "stderr_uri": "",
-                    "status": job_status,
+                    "node_id": node_id,
+                    "status": terminal_status,
+                    "uris": {
+                        "output": output_uri,
+                        "stdout": stdout_uri,
+                        "stderr": stderr_uri,
+                    },
                 }
-
-            else:
-                result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
-                with open(result_path, "r") as f:
-                    result_summary = json.load(f)
-                    node_id = result_summary["node_id"]
-                    output_uri = ""
-                    stdout_uri = ""
-                    stderr_uri = ""
-                    exception_raised = result_summary["exception_occurred"]
-
-                    terminal_status = (
-                        RESULT_STATUS.FAILED if exception_raised else RESULT_STATUS.COMPLETED
-                    )
-
-                    task_result = {
-                        "dispatch_id": dispatch_id,
-                        "node_id": node_id,
-                        "status": terminal_status,
-                        "uris": {
-                            "output": output_uri,
-                            "stdout": stdout_uri,
-                            "stderr": stderr_uri,
-                        },
-                    }
             task_results.append(task_result)
 
         app_log.debug(f"Returning results for tasks {dispatch_id}:{task_ids}")
@@ -207,13 +196,7 @@ class LocalExecutor(BaseExecutor):
             task_group_metadata,
         )
 
-    async def poll(self, task_group_metadata: Dict, job_handle: Any):
-        # To be run as a background task.  A callback will be
-        # registered with the runner to invoke the receive()
-
-        return -1
-
-    async def receive(self, task_group_metadata: Dict, job_handle: Any, job_status: Status):
+    async def receive(self, task_group_metadata: Dict, data: Any):
         # Returns (output_uri, stdout_uri, stderr_uri,
         # exception_raised)
 
@@ -224,8 +207,7 @@ class LocalExecutor(BaseExecutor):
             None,
             self._receive,
             task_group_metadata,
-            job_handle,
-            job_status,
+            data,
         )
 
     def get_upload_uri(self, task_group_metadata: Dict, object_key: str):

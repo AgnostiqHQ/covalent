@@ -36,7 +36,7 @@ from covalent._shared_files import TaskRuntimeError, logger
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files.config import get_config
 from covalent._shared_files.exceptions import TaskCancelledError
-from covalent._shared_files.util_classes import RESULT_STATUS, Status
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._shared_files.utils import _address_client_mapper
 from covalent.executor.base import AsyncBaseExecutor
 from covalent.executor.utils.wrappers import io_wrapper as dask_wrapper
@@ -199,10 +199,7 @@ class DaskExecutor(AsyncBaseExecutor):
 
         return future.key
 
-    async def poll(self, task_group_metadata: Dict, job_handle: Any):
-        return -1
-
-    async def receive(self, task_group_metadata: Dict, job_handle: Any, job_status: Status):
+    async def receive(self, task_group_metadata: Dict, data: Any):
         # Returns (output_uri, stdout_uri, stderr_uri,
         # exception_raised)
 
@@ -213,42 +210,31 @@ class DaskExecutor(AsyncBaseExecutor):
         task_results = []
 
         for task_id in task_ids:
-            # Handle the case where the job was cancelled before the task started running
-            if job_status == RESULT_STATUS.CANCELLED:
+            # TODO: Handle the case where the job was cancelled before the task started running
+
+            result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
+            with open(result_path, "r") as f:
+                result_summary = json.load(f)
+                node_id = result_summary["node_id"]
+                output_uri = ""
+                stdout_uri = ""
+                stderr_uri = ""
+                exception_raised = result_summary["exception_occurred"]
+
+                terminal_status = (
+                    RESULT_STATUS.FAILED if exception_raised else RESULT_STATUS.COMPLETED
+                )
+
                 task_result = {
                     "dispatch_id": dispatch_id,
-                    "node_id": task_id,
-                    "status": RESULT_STATUS.CANCELLED,
+                    "node_id": node_id,
+                    "status": terminal_status,
                     "uris": {
-                        "output": "",
-                        "stdout": "",
-                        "stderr": "",
+                        "output": output_uri,
+                        "stdout": stdout_uri,
+                        "stderr": stderr_uri,
                     },
                 }
-            else:
-                result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
-                with open(result_path, "r") as f:
-                    result_summary = json.load(f)
-                    node_id = result_summary["node_id"]
-                    output_uri = ""
-                    stdout_uri = ""
-                    stderr_uri = ""
-                    exception_raised = result_summary["exception_occurred"]
-
-                    terminal_status = (
-                        RESULT_STATUS.FAILED if exception_raised else RESULT_STATUS.COMPLETED
-                    )
-
-                    task_result = {
-                        "dispatch_id": dispatch_id,
-                        "node_id": node_id,
-                        "status": terminal_status,
-                        "uris": {
-                            "output": output_uri,
-                            "stdout": stdout_uri,
-                            "stderr": stderr_uri,
-                        },
-                    }
             task_results.append(task_result)
 
         app_log.debug(f"Returning results for tasks {dispatch_id}:{task_ids}")
