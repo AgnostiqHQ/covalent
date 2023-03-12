@@ -98,7 +98,7 @@ async def test_run_abstract_task_exception_handling(mocker):
 async def test_run_task_runtime_exception_handling(mocker):
     inputs = {"args": [], "kwargs": {}}
     mock_executor = MagicMock()
-    mock_executor._execute = AsyncMock(return_value=("", "", "error", True))
+    mock_executor._execute = AsyncMock(return_value=("", "", "error", Result.FAILED))
     mock_get_executor = mocker.patch(
         "covalent_dispatcher._core.runner.get_executor",
         return_value=mock_executor,

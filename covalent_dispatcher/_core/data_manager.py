@@ -63,9 +63,6 @@ def generate_node_result(
     error=None,
     stdout=None,
     stderr=None,
-    output_uri=None,
-    stdout_uri=None,
-    stderr_uri=None,
 ):
     return {
         "node_id": node_id,
@@ -77,9 +74,6 @@ def generate_node_result(
         "error": error,
         "stdout": stdout,
         "stderr": stderr,
-        "output_uri": output_uri,
-        "stdout_uri": stdout_uri,
-        "stderr_uri": stderr_uri,
     }
 
 
