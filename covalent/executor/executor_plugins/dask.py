@@ -25,7 +25,6 @@ and waits for execution to finish then returns the result.
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
-import json
 import os
 from typing import Any, Callable, Dict, List, Literal
 
@@ -203,36 +202,36 @@ class DaskExecutor(AsyncBaseExecutor):
         # Job should have reached a terminal state by the time this is invoked.
         dispatch_id = task_group_metadata["dispatch_id"]
         task_ids = task_group_metadata["task_ids"]
-
+        job_status: RESULT_STATUS = data["status"]
         task_results = []
 
         for task_id in task_ids:
             # TODO: Handle the case where the job was cancelled before the task started running
             app_log.debug(f"Receive called for task {dispatch_id}:{task_id} with status {data}")
+            terminal_status = job_status
+            # result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
+            # with open(result_path, "r") as f:
+            #     result_summary = json.load(f)
+            #     node_id = result_summary["node_id"]
+            #     output_uri = ""
+            #     stdout_uri = ""
+            #     stderr_uri = ""
+            #     exception_raised = result_summary["exception_occurred"]
 
-            result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
-            with open(result_path, "r") as f:
-                result_summary = json.load(f)
-                node_id = result_summary["node_id"]
-                output_uri = ""
-                stdout_uri = ""
-                stderr_uri = ""
-                exception_raised = result_summary["exception_occurred"]
+            # terminal_status = (
+            #     RESULT_STATUS.FAILED if exception_raised else RESULT_STATUS.COMPLETED
+            # )
 
-                terminal_status = (
-                    RESULT_STATUS.FAILED if exception_raised else RESULT_STATUS.COMPLETED
-                )
-
-                task_result = {
-                    "dispatch_id": dispatch_id,
-                    "node_id": node_id,
-                    "status": terminal_status,
-                    "uris": {
-                        "output": output_uri,
-                        "stdout": stdout_uri,
-                        "stderr": stderr_uri,
-                    },
-                }
+            task_result = {
+                "dispatch_id": dispatch_id,
+                "node_id": task_id,
+                "status": terminal_status,
+                "uris": {
+                    "output": "",
+                    "stdout": "",
+                    "stderr": "",
+                },
+            }
 
             task_results.append(task_result)
 

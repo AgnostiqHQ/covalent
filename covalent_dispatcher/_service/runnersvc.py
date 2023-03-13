@@ -50,5 +50,5 @@ async def update_task_status(dispatch_id: str, node_id: int, status: ResultStatu
     }
     detail = {"status": Status(status.value.upper())}
     await runner_exp.mark_task_ready(task_metadata, detail)
-    app_log.debug(f"Marked task {dispatch_id}:{node_id} ready to read with status {status}")
+    app_log.debug(f"Marked task {dispatch_id}:{node_id} with status {status}")
     return f"Task {task_metadata} marked ready"
