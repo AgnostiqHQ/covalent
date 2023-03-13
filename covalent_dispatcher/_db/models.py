@@ -237,10 +237,6 @@ class Job(Base):
     # Indicates whether the job has been requested to be cancelled
     cancel_requested = Column(Boolean, nullable=False, default=False)
 
-    # Indicates whether the task cancellation succeeded (return value
-    # of Executor.cancel())
-    cancel_successful = Column(Boolean, nullable=False, default=False)
-
     # Job state -- to be filtered/interpreted by each plugin
     status = Column(String(24), nullable=False, default=str(RESULT_STATUS.NEW_OBJECT))
 

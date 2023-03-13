@@ -60,7 +60,6 @@ def transaction_get_job_record(session: Session, job_id: int) -> Dict:
         return {
             "job_id": job_record.id,
             "cancel_requested": job_record.cancel_requested,
-            "cancel_successful": job_record.cancel_successful,
             "status": job_record.status,
             "job_handle": job_record.job_handle,
         }
