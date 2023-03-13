@@ -47,7 +47,7 @@ def test_asset_load_data():
         key = os.path.basename(temppath)
 
     storage_path = "/tmp"
-    a = Asset(storage_path, key)
+    a = Asset("load_test", storage_path, key)
     assert a.load_data() == "Hello\n"
     os.unlink(temppath)
 
@@ -57,7 +57,7 @@ def test_asset_store_data():
         temppath = temp.name
         key = os.path.basename(temppath)
     storage_path = "/tmp"
-    a = Asset(storage_path, key)
+    a = Asset("store_test", storage_path, key)
     a.store_data("Hello\n")
 
     with open(temppath, "r") as f:
@@ -67,12 +67,11 @@ def test_asset_store_data():
 
 
 def test_upload_asset():
-
     with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
         src_path = temp.name
         src_key = os.path.basename(src_path)
     storage_path = "/tmp"
-    a = Asset(storage_path, src_key)
+    a = Asset("upload_test", storage_path, src_key)
     a.store_data("Hello\n")
 
     with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
@@ -87,7 +86,6 @@ def test_upload_asset():
 
 
 def test_download_asset():
-
     with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
         src_path = temp.name
         src_key = os.path.basename(src_path)
@@ -99,7 +97,7 @@ def test_download_asset():
         dest_path = temp.name
         dest_key = os.path.basename(dest_path)
 
-    a = Asset(storage_path, dest_key)
+    a = Asset("download_test", storage_path, dest_key)
     a.set_remote(src_path)
 
     a.download()
@@ -110,7 +108,6 @@ def test_download_asset():
 
 
 def test_asset_meta(test_db, mocker):
-
     dispatch_id = "test_asset_meta"
     with test_db.session() as session:
         lattice_row = models.Lattice(
@@ -135,10 +132,10 @@ def test_asset_meta(test_db, mocker):
         session.add(meta)
 
     with test_db.session() as session:
-        asset = Asset(storage_path, object_key, session)
+        asset = Asset("asset_meta_1", storage_path, object_key, session)
     assert asset.meta["dispatch_id"] == dispatch_id
     assert asset.meta["digest_hex"] == "a234f"
 
     with test_db.session() as session:
-        asset = Asset(storage_path, "nonexistent.pkl", session)
+        asset = Asset("asset_meta_2", storage_path, "nonexistent.pkl", session)
         assert asset.meta == {}

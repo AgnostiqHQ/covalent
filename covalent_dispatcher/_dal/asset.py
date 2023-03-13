@@ -45,7 +45,8 @@ class Asset:
 
     """Metadata for an object in blob storage"""
 
-    def __init__(self, storage_path: str, object_key: str, session: Session = None):
+    def __init__(self, name: str, storage_path: str, object_key: str, session: Session = None):
+        self.name = name
         self.storage_type = StorageType.LOCAL
         self.storage_path = storage_path
         self.object_key = object_key

@@ -53,7 +53,7 @@ class Lattice(DispatchedObject):
         self._storage_type = db_metadata["storage_type"]
 
         for name in asset_metadata:
-            self._assets[name] = Asset(self._storage_path, asset_metadata[name])
+            self._assets[name] = Asset(name, self._storage_path, asset_metadata[name])
 
         self.transport_graph = get_compute_graph(self._lattice_id, bare)
 
