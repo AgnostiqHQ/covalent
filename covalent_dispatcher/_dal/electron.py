@@ -62,6 +62,7 @@ set_filters.update(custom_set_filters)
 
 class Electron(DispatchedObject):
     def __init__(self, session: Session, record: models.Electron):
+
         pure_metadata = _to_pure_meta(session, record)
         asset_metadata = _to_asset_meta(session, record)
         db_metadata = _to_db_meta(session, record)
@@ -77,7 +78,7 @@ class Electron(DispatchedObject):
         self._storage_type = db_metadata["storage_type"]
 
         for name in asset_metadata:
-            self._assets[name] = Asset(name, self._storage_path, asset_metadata[name], session)
+            self._assets[name] = Asset(self._storage_path, asset_metadata[name], session)
 
     @property
     def pure_metadata(self) -> Dict:
