@@ -76,8 +76,8 @@ class Electron(DispatchedObject):
         self._storage_path = db_metadata["storage_path"]
         self._storage_type = db_metadata["storage_type"]
 
-        for key in asset_metadata:
-            self._assets[key] = Asset(key, self._storage_path, asset_metadata[key], session)
+        for name in asset_metadata:
+            self._assets[name] = Asset(name, self._storage_path, asset_metadata[name], session)
 
     @property
     def pure_metadata(self) -> Dict:

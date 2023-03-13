@@ -82,8 +82,8 @@ class Result(DispatchedObject):
         self._storage_path = db_metadata["storage_path"]
         self._storage_type = db_metadata["storage_type"]
 
-        for key in asset_metadata:
-            self._assets[key] = Asset(key, self._storage_path, asset_metadata[key])
+        for name in asset_metadata:
+            self._assets[name] = Asset(name, self._storage_path, asset_metadata[name])
 
         self.lattice = Lattice(session, record, bare)
 
