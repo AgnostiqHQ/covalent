@@ -163,6 +163,7 @@ def transaction_insert_lattices_data(
     )
 
     session.add(lattice_row)
+    session.flush()
     lattice_id = lattice_row.id
 
     app_log.debug(f"returning lattice id {lattice_id}")
