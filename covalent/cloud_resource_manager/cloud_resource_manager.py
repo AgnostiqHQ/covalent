@@ -19,21 +19,86 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import asyncio
+import os
+import shutil
+from typing import Dict, Optional
+
+from covalent._shared_files.exceptions import CommandNotFoundError
+from covalent._shared_files.logger import app_log
+
+
+class ChangeDir(object):
+    """
+    Change directory context manager
+    """
+
+    def __init__(self, dir_to_change: str):
+        self._pwd = os.getcwd()
+        self._dir = dir_to_change
+
+    def __enter__(self):
+        os.chdir(self._dir)
+
+    def __exit__(self, type, value, traceback):
+        os.chdir(self._pwd)
+
+
 class CloudResourceManager:
     """
     Base cloud resource manager class
     """
 
-    def __init__(self, executor_name: str, *args, **kwargs):
+    def __init__(
+        self,
+        executor_name: str,
+        executor_module_path: str,
+        options: Optional[Dict[str, str]] = None,
+    ):
         self.executor_name = executor_name
-        self._args = args
-        self._kwargs = kwargs
+        self.executor_module_path = executor_module_path
+        self.executor_options = options
 
     async def up(self):
         """
         Setup executor resources
         """
-        pass
+        terraform = shutil.which("terraform")
+        if not terraform:
+            raise CommandNotFoundError("Terraform not found on system")
+
+        executor_infra_assets_path = os.path.join(self.executor_module_path, "assets/infra")
+        with ChangeDir(executor_infra_assets_path):
+            proc = await asyncio.create_subprocess_exec(
+                " ".join([terraform, "init"]),
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+            )
+
+            stdout, stderr = await proc.communicate()
+            if stdout:
+                app_log.debug(f"{self.executor_name} stdout: {stdout}")
+            if stderr:
+                app_log.debug(f"{self.executor_name} stderr: {stdout}")
+
+            # Setup TF_VAR environment variables by appending new variables to existing os.environ
+            tf_var_env_dict = os.environ.copy()
+            if self.executor_options:
+                for key, value in self.executor_options.items():
+                    tf_var_env_dict[f"TF_VAR_{key}"] = value
+
+            proc = await asyncio.create_subprocess_shell(
+                " ".join([terraform, "apply", "--auto-approve"]),
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE,
+                env=tf_var_env_dict,
+            )
+
+            stdout, stderr = await proc.communicate()
+            if stdout:
+                app_log.debug(f"{self.executor_name} stdout: {stdout}")
+            if stderr:
+                app_log.debug(f"{self.executor_name} stderr: {stdout}")
 
     async def down(self):
         """
