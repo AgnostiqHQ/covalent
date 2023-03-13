@@ -67,7 +67,6 @@ def test_asset_store_data():
 
 
 def test_upload_asset():
-
     with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
         src_path = temp.name
         src_key = os.path.basename(src_path)
@@ -87,7 +86,6 @@ def test_upload_asset():
 
 
 def test_download_asset():
-
     with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
         src_path = temp.name
         src_key = os.path.basename(src_path)
@@ -100,9 +98,8 @@ def test_download_asset():
         dest_key = os.path.basename(dest_path)
 
     a = Asset(storage_path, dest_key)
-    a.set_remote(src_path)
 
-    a.download()
+    a.download(src_path)
 
     assert a.load_data() == "Hello\n"
 
@@ -110,7 +107,6 @@ def test_download_asset():
 
 
 def test_asset_meta(test_db, mocker):
-
     dispatch_id = "test_asset_meta"
     with test_db.session() as session:
         lattice_row = models.Lattice(

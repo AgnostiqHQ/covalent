@@ -92,8 +92,7 @@ class TransportGraphOps:
                 new = self.tg.get_node(n).get_asset(k)
                 src_scheme = old.storage_type.value
                 src_uri = src_scheme + "://" + os.path.join(old.storage_path, old.object_key)
-                new.set_remote(src_uri)
-                new.download()
+                new.download(src_uri)
 
     @staticmethod
     def _cmp_name_and_pval(A: nx.MultiDiGraph, B: nx.MultiDiGraph, node: int) -> bool:

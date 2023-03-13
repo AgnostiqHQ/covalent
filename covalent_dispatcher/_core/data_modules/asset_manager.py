@@ -60,10 +60,12 @@ async def download_assets_for_node(dispatch_id: str, node_id: int, src_uris: dic
     loop = asyncio.get_running_loop()
 
     futs = []
-    assets_to_download = [
-        node.get_asset(key).set_remote(src) for key, src in src_uris.items() if src
-    ]
 
-    for asset in assets_to_download:
-        futs.append(loop.run_in_executor(am_pool, asset.download))
+    # Filter empty URIs
+    filtered_src_uris = {key: src for key, src in src_uris.items() if src}
+
+    assets_to_download = {key: node.get_asset(key) for key in filtered_src_uris}
+
+    for key, asset in assets_to_download.items():
+        futs.append(loop.run_in_executor(am_pool, asset.download, filtered_src_uris[key]))
     await asyncio.gather(*futs)

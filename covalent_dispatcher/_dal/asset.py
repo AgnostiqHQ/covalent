@@ -49,7 +49,6 @@ class Asset:
         self.storage_type = StorageType.LOCAL
         self.storage_path = storage_path
         self.object_key = object_key
-        self.remote_uri = ""
 
         self.meta = {}
 
@@ -57,20 +56,15 @@ class Asset:
             meta_record = _get_meta(self, session)
             self.meta = meta_record.__dict__.copy() if meta_record else {}
 
-    def set_remote(self, uri: str) -> "Asset":
-        self.remote_uri = uri
-        return self
-
     def store_data(self, data: Any) -> None:
         store_file(self.storage_path, self.object_key, data)
 
     def load_data(self) -> Any:
         return load_file(self.storage_path, self.object_key)
 
-    def download(self):
+    def download(self, src_uri: str):
         scheme = self.storage_type.value
         dest_uri = scheme + "://" + os.path.join(self.storage_path, self.object_key)
-        src_uri = self.remote_uri
         app_log.debug(f"Downloading asset from {src_uri} to {dest_uri}")
 
         cp(src_uri, dest_uri)
