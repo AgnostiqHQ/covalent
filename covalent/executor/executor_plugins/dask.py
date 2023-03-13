@@ -25,6 +25,7 @@ and waits for execution to finish then returns the result.
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
+import asyncio
 import os
 from typing import Any, Callable, Dict, List, Literal
 
@@ -36,7 +37,6 @@ from covalent._shared_files import TaskRuntimeError, logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._shared_files.util_classes import RESULT_STATUS
-from covalent._shared_files.utils import _address_client_mapper
 from covalent.executor.base import AsyncBaseExecutor
 from covalent.executor.utils.wrappers import io_wrapper as dask_wrapper
 from covalent.executor.utils.wrappers import run_task_from_uris
@@ -56,6 +56,10 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
 }
 
 MANAGED_EXECUTION = os.environ.get("COVALENT_USE_MANAGED_DASK") == "1"
+
+# Dictionary to map Dask clients to their scheduler addresses
+_address_client_map = {}
+_lock = asyncio.Lock()
 
 
 class DaskExecutor(AsyncBaseExecutor):
@@ -102,11 +106,11 @@ class DaskExecutor(AsyncBaseExecutor):
 
         node_id = task_metadata["node_id"]
 
-        dask_client = _address_client_mapper.get(self.scheduler_address)
+        dask_client = _address_client_map.get(self.scheduler_address)
 
         if not dask_client:
             dask_client = Client(address=self.scheduler_address, asynchronous=True)
-            _address_client_mapper[self.scheduler_address] = dask_client
+            _address_client_map[self.scheduler_address] = dask_client
             await dask_client
 
         future = dask_client.submit(dask_wrapper, function, args, kwargs)
@@ -139,15 +143,16 @@ class DaskExecutor(AsyncBaseExecutor):
         Return(s)
             True by default
         """
-        dask_client = _address_client_mapper.get(self.scheduler_address)
+        dask_client = _address_client_map.get(self.scheduler_address)
 
         if not dask_client:
             dask_client = Client(address=self.scheduler_address, asynchronous=True)
-            _address_client_mapper[self.scheduler_address] = dask_client
-            await dask_client
+            await asyncio.wait_for(dask_client, timeout=5)
 
         fut: Future = Future(key=job_handle, client=dask_client)
-        await fut.cancel()
+
+        # https://stackoverflow.com/questions/46278692/dask-distributed-how-to-cancel-tasks-submitted-with-fire-and-forget
+        await dask_client.cancel([fut], asynchronous=True, force=True)
         app_log.debug(f"Cancelled future with key {job_handle}")
         return True
 
@@ -164,7 +169,7 @@ class DaskExecutor(AsyncBaseExecutor):
         # Returns a job handle (should be JSONable)
 
         dask_client = Client(address=self.scheduler_address, asynchronous=True)
-        await dask_client
+        await asyncio.wait_for(dask_client, timeout=5)
 
         dispatch_id = task_group_metadata["dispatch_id"]
         task_ids = task_group_metadata["task_ids"]
@@ -181,6 +186,9 @@ class DaskExecutor(AsyncBaseExecutor):
         dispatcher_port = get_config("dispatcher.port")
         server_url = f"http://{dispatcher_addr}:{dispatcher_port}"
         key = f"dask_job_{dispatch_id}:{gid}"
+
+        await self.set_job_handle(key)
+
         future = dask_client.submit(
             run_task_from_uris,
             task_specs,
@@ -192,6 +200,17 @@ class DaskExecutor(AsyncBaseExecutor):
             key=key,
         )
 
+        def handle_cancelled(fut):
+            import requests
+
+            app_log.debug(f"In done callback for {dispatch_id}:{gid}, future {fut}")
+            if fut.cancelled():
+                for task_id in task_ids:
+                    url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}/cancelled"
+                    requests.put(url)
+
+        future.add_done_callback(handle_cancelled)
+
         fire_and_forget(future)
 
         app_log.debug(f"Fire and forgetting task group {dispatch_id}:{gid}")
@@ -202,13 +221,14 @@ class DaskExecutor(AsyncBaseExecutor):
         # Job should have reached a terminal state by the time this is invoked.
         dispatch_id = task_group_metadata["dispatch_id"]
         task_ids = task_group_metadata["task_ids"]
-        job_status: RESULT_STATUS = data["status"]
+
         task_results = []
 
         for task_id in task_ids:
             # TODO: Handle the case where the job was cancelled before the task started running
             app_log.debug(f"Receive called for task {dispatch_id}:{task_id} with status {data}")
-            terminal_status = job_status
+
+            terminal_status = data["status"] if data else RESULT_STATUS.CANCELLED
             # result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
             # with open(result_path, "r") as f:
             #     result_summary = json.load(f)
