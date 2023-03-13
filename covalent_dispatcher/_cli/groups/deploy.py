@@ -33,7 +33,8 @@ from covalent.executor import _executor_manager
 @click.pass_context
 def deploy(ctx: click.Context, executor_name: str):
     """
-    Load the executor plugin installation path based on the executor name provided
+    Load the executor plugin installation path based on the executor name provided.
+    Will raise KeyError if the `executor_name` plugin is not installed
     """
     executor_module_path = Path(
         __import__(_executor_manager.executor_plugins_map[executor_name].__module__).__path__[0]
@@ -69,7 +70,9 @@ def down(executor_metadata: dict, options):
 
 @click.command
 @click.pass_obj
-def status(executor_module_path: str):
+def status(executor_metadata: dict):
+    executor_name = executor_metadata["executor_name"]
+    executor_module_path = executor_metadata["executor_module_path"]
     click.echo(executor_module_path)
 
 
