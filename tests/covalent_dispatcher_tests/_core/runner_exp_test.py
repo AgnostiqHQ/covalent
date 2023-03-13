@@ -367,11 +367,6 @@ async def test_get_task_result(mocker):
     }
     job_meta = [{"job_handle": "42", "status": "COMPLETED"}]
 
-    mocker.patch(
-        "covalent_dispatcher._core.runner_exp.jm.get_jobs_metadata",
-        return_value=job_meta,
-    )
-
     await _get_task_result(task_group_metadata, job_meta)
 
     me.receive.assert_awaited_with(task_group_metadata, job_meta)
