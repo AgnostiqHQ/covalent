@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Updated How-to documents. 
+- Added Best Practices page with example notebooks.
 
 ## [0.215.0-rc.0] - 2023-02-01
 
