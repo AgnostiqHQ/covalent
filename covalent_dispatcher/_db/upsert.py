@@ -34,8 +34,11 @@ from .jobdb import transaction_get_job_record
 from .write_result_to_db import (
     get_electron_type,
     store_file,
+    transaction_insert_asset_record,
+    transaction_insert_electron_asset_record,
     transaction_insert_electrons_data,
     transaction_insert_job_record,
+    transaction_insert_lattice_asset_record,
     transaction_insert_lattices_data,
     transaction_update_lattices_data,
     transaction_upsert_electron_dependency_data,
@@ -103,28 +106,45 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
     # Store all lattice info that belongs in filenames in the results directory
     results_dir = os.environ.get("COVALENT_DATA_DIR") or get_config("dispatcher.results_dir")
     data_storage_path = os.path.join(results_dir, result.dispatch_id)
-    for filename, data in [
-        (LATTICE_FUNCTION_FILENAME, result.lattice.workflow_function),
-        (LATTICE_FUNCTION_STRING_FILENAME, workflow_func_string),
-        (LATTICE_DOCSTRING_FILENAME, result.lattice.__doc__),
-        (LATTICE_EXECUTOR_DATA_FILENAME, result.lattice.metadata["executor_data"]),
+
+    assets = {}
+
+    for key, filename, data in [
+        ("workflow_function", LATTICE_FUNCTION_FILENAME, result.lattice.workflow_function),
+        ("workflow_function_string", LATTICE_FUNCTION_STRING_FILENAME, workflow_func_string),
+        ("docstring", LATTICE_DOCSTRING_FILENAME, result.lattice.__doc__),
         (
+            "executor_data",
+            LATTICE_EXECUTOR_DATA_FILENAME,
+            result.lattice.metadata["executor_data"],
+        ),
+        (
+            "workflow_executor_data",
             LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME,
             result.lattice.metadata["workflow_executor_data"],
         ),
-        (LATTICE_ERROR_FILENAME, result.error),
-        (LATTICE_INPUTS_FILENAME, result.inputs),
-        (LATTICE_NAMED_ARGS_FILENAME, result.lattice.named_args),
-        (LATTICE_NAMED_KWARGS_FILENAME, result.lattice.named_kwargs),
-        (LATTICE_RESULTS_FILENAME, result._result),
-        (LATTICE_TRANSPORT_GRAPH_FILENAME, result._lattice.transport_graph),
-        (LATTICE_DEPS_FILENAME, result.lattice.metadata["deps"]),
-        (LATTICE_CALL_BEFORE_FILENAME, result.lattice.metadata["call_before"]),
-        (LATTICE_CALL_AFTER_FILENAME, result.lattice.metadata["call_after"]),
-        (LATTICE_COVA_IMPORTS_FILENAME, result.lattice.cova_imports),
-        (LATTICE_LATTICE_IMPORTS_FILENAME, result.lattice.lattice_imports),
+        ("error", LATTICE_ERROR_FILENAME, result.error),
+        ("inputs", LATTICE_INPUTS_FILENAME, result.inputs),
+        ("named_args", LATTICE_NAMED_ARGS_FILENAME, result.lattice.named_args),
+        ("named_kwargs", LATTICE_NAMED_KWARGS_FILENAME, result.lattice.named_kwargs),
+        ("result", LATTICE_RESULTS_FILENAME, result._result),
+        ("transport_graph", LATTICE_TRANSPORT_GRAPH_FILENAME, result._lattice.transport_graph),
+        ("deps", LATTICE_DEPS_FILENAME, result.lattice.metadata["deps"]),
+        ("call_before", LATTICE_CALL_BEFORE_FILENAME, result.lattice.metadata["call_before"]),
+        ("call_after", LATTICE_CALL_AFTER_FILENAME, result.lattice.metadata["call_after"]),
+        ("cova_imports", LATTICE_COVA_IMPORTS_FILENAME, result.lattice.cova_imports),
+        ("lattice_imports", LATTICE_LATTICE_IMPORTS_FILENAME, result.lattice.lattice_imports),
     ]:
-        store_file(data_storage_path, filename, data)
+        digest = store_file(data_storage_path, filename, data)
+        asset_record_kwargs = {
+            "storage_type": LATTICE_STORAGE_TYPE,
+            "storage_path": str(data_storage_path),
+            "object_key": filename,
+            "digest_alg": digest.algorithm,
+            "digest_hex": digest.hexdigest,
+        }
+
+        assets[key] = transaction_insert_asset_record(session=session, **asset_record_kwargs)
 
     # Write lattice records to Database
     if not lattice_exists:
@@ -162,7 +182,10 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
             "started_at": result.start_time,
             "completed_at": result.end_time,
         }
-        transaction_insert_lattices_data(session=session, **lattice_record_kwarg)
+        lattice_id = transaction_insert_lattices_data(session=session, **lattice_record_kwarg)
+        for key, asset in assets.items():
+            lattice_asset_kwarg = {"lattice_id": lattice_id, "asset_id": asset.id, "key": key}
+            transaction_insert_lattice_asset_record(session=session, **lattice_asset_kwarg)
 
     else:
         lattice_record_kwarg = {
@@ -254,29 +277,45 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
 
             asset_digests = {}
 
-            for filename, data in [
-                (ELECTRON_FUNCTION_FILENAME, tg.get_node_value(node_id, "function")),
-                (ELECTRON_FUNCTION_STRING_FILENAME, function_string),
-                (ELECTRON_VALUE_FILENAME, node_value),
+            assets = {}
+
+            for key, filename, data in [
+                ("function", ELECTRON_FUNCTION_FILENAME, tg.get_node_value(node_id, "function")),
+                ("function_string", ELECTRON_FUNCTION_STRING_FILENAME, function_string),
+                ("value", ELECTRON_VALUE_FILENAME, node_value),
                 (
+                    "executor_data",
                     ELECTRON_EXECUTOR_DATA_FILENAME,
                     tg.get_node_value(node_id, "metadata")["executor_data"],
                 ),
-                (ELECTRON_DEPS_FILENAME, tg.get_node_value(node_id, "metadata")["deps"]),
+                ("deps", ELECTRON_DEPS_FILENAME, tg.get_node_value(node_id, "metadata")["deps"]),
                 (
+                    "call_before",
                     ELECTRON_CALL_BEFORE_FILENAME,
                     tg.get_node_value(node_id, "metadata")["call_before"],
                 ),
                 (
+                    "call_after",
                     ELECTRON_CALL_AFTER_FILENAME,
                     tg.get_node_value(node_id, "metadata")["call_after"],
                 ),
-                (ELECTRON_STDOUT_FILENAME, node_stdout),
-                (ELECTRON_STDERR_FILENAME, node_stderr),
-                (ELECTRON_ERROR_FILENAME, node_error),
-                (ELECTRON_RESULTS_FILENAME, node_output),
+                ("stdout", ELECTRON_STDOUT_FILENAME, node_stdout),
+                ("stderr", ELECTRON_STDERR_FILENAME, node_stderr),
+                ("error", ELECTRON_ERROR_FILENAME, node_error),
+                ("output", ELECTRON_RESULTS_FILENAME, node_output),
             ]:
                 digest = store_file(node_path, filename, data)
+                asset_record_kwargs = {
+                    "storage_type": ELECTRON_STORAGE_TYPE,
+                    "storage_path": str(node_path),
+                    "object_key": filename,
+                    "digest_alg": digest.algorithm,
+                    "digest_hex": digest.hexdigest,
+                }
+
+                assets[key] = transaction_insert_asset_record(
+                    session=session, **asset_record_kwargs
+                )
 
                 # Store hashes of parameter values for graph comparisons
                 if filename == ELECTRON_VALUE_FILENAME:
@@ -325,7 +364,19 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
                     "started_at": started_at,
                     "completed_at": completed_at,
                 }
-                transaction_insert_electrons_data(session=session, **electron_record_kwarg)
+                electron_id = transaction_insert_electrons_data(
+                    session=session, **electron_record_kwarg
+                )
+
+                for key, asset in assets.items():
+                    electron_asset_kwarg = {
+                        "electron_id": electron_id,
+                        "asset_id": asset.id,
+                        "key": key,
+                    }
+                    transaction_insert_electron_asset_record(
+                        session=session, **electron_asset_kwarg
+                    )
             else:
                 electron_record_kwarg = {
                     "parent_dispatch_id": result.dispatch_id,

@@ -48,7 +48,7 @@ from covalent._workflow.lattice import Lattice as LatticeClass
 
 from .._object_store.local import Digest, local_store
 from .datastore import workflow_db
-from .models import Electron, ElectronDependency, Job, Lattice
+from .models import Asset, Electron, ElectronAsset, ElectronDependency, Job, Lattice, LatticeAsset
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -187,6 +187,56 @@ def transaction_insert_job_record(session: Session, cancel_requested: bool):
     session.add(job_row)
     session.flush()
     return job_row
+
+
+def transaction_insert_electron_asset_record(
+    session: Session,
+    electron_id: int,
+    asset_id: int,
+    key: str,
+) -> ElectronAsset:
+    electron_asset = ElectronAsset(
+        electron_id=electron_id,
+        asset_id=asset_id,
+        key=key,
+    )
+    session.add(electron_asset)
+    return electron_asset
+
+
+def transaction_insert_lattice_asset_record(
+    session: Session,
+    lattice_id: int,
+    asset_id: int,
+    key: str,
+) -> LatticeAsset:
+    lattice_asset = LatticeAsset(
+        lattice_id=lattice_id,
+        asset_id=asset_id,
+        key=key,
+    )
+    session.add(lattice_asset)
+    return lattice_asset
+
+
+def transaction_insert_asset_record(
+    session: Session,
+    storage_type: str,
+    storage_path: str,
+    object_key: str,
+    digest_alg: str,
+    digest_hex: str,
+) -> Asset:
+    asset_row = Asset(
+        storage_type=storage_type,
+        storage_path=storage_path,
+        object_key=object_key,
+        digest_alg=digest_alg,
+        digest_hex=digest_hex,
+    )
+    session.add(asset_row)
+    session.flush()
+    return asset_row
 
 
 def transaction_insert_electrons_data(

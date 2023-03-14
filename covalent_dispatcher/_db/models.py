@@ -260,3 +260,55 @@ class AssetMeta(Base):
 
     # Hex repr of digest
     digest_hex = Column(Text, nullable=True)
+
+
+# Core Lattice assets
+class LatticeAsset(Base):
+    __tablename__ = "lattice_assets"
+
+    id = Column(Integer, primary_key=True)
+
+    # Lattice record id
+    lattice_id = Column(Integer, ForeignKey("lattices.id"), nullable=False)
+
+    # Asset record id
+    asset_id = Column(Integer, ForeignKey("assets.id"), nullable=False)
+
+    # Asset key
+    key = Column(String(24), nullable=False)
+
+
+# Core Electron assets
+class ElectronAsset(Base):
+    __tablename__ = "electron_assets"
+
+    id = Column(Integer, primary_key=True)
+
+    # Electron record id
+    electron_id = Column(Integer, ForeignKey("electrons.id"), nullable=False)
+
+    # Asset record id
+    asset_id = Column(Integer, ForeignKey("assets.id"), nullable=False)
+
+    # Asset key
+    key = Column(String(24), nullable=False)
+
+
+class Asset(Base):
+    __tablename__ = "assets"
+    id = Column(Integer, primary_key=True)
+
+    # Storage backend type for data files ("local", "s3")
+    storage_type = Column(Text, nullable=False)
+
+    # Bucket name (dispatch_id)
+    storage_path = Column(Text, nullable=False)
+
+    # Name of the file containing the serialized function
+    object_key = Column(Text, nullable=False)
+
+    # Digest algorithm ("md5", "sha1")
+    digest_alg = Column(Text, nullable=True)
+
+    # Hex repr of digest
+    digest_hex = Column(Text, nullable=True)
