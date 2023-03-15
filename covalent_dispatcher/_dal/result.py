@@ -68,13 +68,25 @@ set_filters.update(custom_set_filters)
 
 
 class Result(DispatchedObject):
-    def __init__(self, session: Session, record: models.Lattice, bare: bool = False):
+    def __init__(
+        self,
+        session: Session,
+        record: models.Lattice,
+        bare: bool = False,
+        *,
+        lazy_load_assets: bool = True,
+    ):
+        self.lazy_load_assets = lazy_load_assets
+
         pure_metadata = _to_pure_meta(session, record)
-        asset_ids = _to_asset_meta(session, record)
+        asset_keys = _to_asset_meta(session, record)
         db_metadata = _to_db_meta(session, record)
 
         self._pure_metadata = pure_metadata
         self._db_metadata = db_metadata
+
+        # Result-Asset links
+        self._asset_keys = asset_keys
         self._assets = {}
 
         self._lattice_id = db_metadata["lattice_id"]
@@ -82,8 +94,9 @@ class Result(DispatchedObject):
         self._storage_path = db_metadata["storage_path"]
         self._storage_type = db_metadata["storage_type"]
 
-        for name, asset_id in asset_ids.items():
-            self._assets[name] = Asset.from_asset_id(asset_id, session)
+        if not lazy_load_assets:
+            for name, asset_id in self._asset_keys.items():
+                self._assets[name] = Asset.from_asset_id(asset_id, session)
 
         self.lattice = Lattice(session, record, bare)
 
@@ -112,6 +125,10 @@ class Result(DispatchedObject):
     @db_metadata.setter
     def db_metadata(self, meta: Dict):
         self._db_metadata = meta
+
+    @property
+    def asset_keys(self):
+        return self._asset_keys
 
     @property
     def assets(self):

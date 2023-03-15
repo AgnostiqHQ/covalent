@@ -87,7 +87,7 @@ def test_result_attributes(test_db, mocker):
         srvres = Result(session, record)
 
     meta = srvres.pure_metadata.keys()
-    assets = srvres.assets.keys()
+    assets = srvres.asset_keys.keys()
     assert meta == METADATA_KEYS
     assert assets == ASSET_KEYS.union(LATTICE_ASSET_KEYS)
 

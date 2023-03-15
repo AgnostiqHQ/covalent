@@ -61,13 +61,17 @@ set_filters.update(custom_set_filters)
 
 
 class Electron(DispatchedObject):
-    def __init__(self, session: Session, record: models.Electron):
+    def __init__(
+        self, session: Session, record: models.Electron, *, lazy_load_assets: bool = True
+    ):
         pure_metadata = _to_pure_meta(session, record)
-        asset_ids = _to_asset_meta(session, record)
+        asset_keys = _to_asset_meta(session, record)
         db_metadata = _to_db_meta(session, record)
 
         self._pure_metadata = pure_metadata
         self._db_metadata = db_metadata
+
+        self._asset_keys = asset_keys
         self._assets = {}
 
         self.node_id = record.transport_graph_node_id
@@ -76,8 +80,9 @@ class Electron(DispatchedObject):
         self._storage_path = db_metadata["storage_path"]
         self._storage_type = db_metadata["storage_type"]
 
-        for name, asset_id in asset_ids.items():
-            self._assets[name] = Asset.from_asset_id(asset_id, session)
+        if not lazy_load_assets:
+            for name, asset_id in self._asset_keys.items():
+                self._assets[name] = Asset.from_asset_id(asset_id, session)
 
     @property
     def pure_metadata(self) -> Dict:
@@ -94,6 +99,10 @@ class Electron(DispatchedObject):
     @db_metadata.setter
     def db_metadata(self, meta: Dict):
         self._db_metadata = meta
+
+    @property
+    def asset_keys(self):
+        return self._asset_keys
 
     @property
     def assets(self):

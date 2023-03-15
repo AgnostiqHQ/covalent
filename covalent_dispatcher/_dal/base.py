@@ -54,6 +54,11 @@ class DispatchedObject(ABC):
 
     @property
     @abstractmethod
+    def asset_keys(self) -> Dict:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
     def assets(self) -> Dict:
         raise NotImplementedError
 
@@ -110,11 +115,13 @@ class DispatchedObject(ABC):
     def set_db_metadata(self, key: str, val: Union[str, int], session: Session = None):
         self.set_pure_metadata(key, val, session)
 
-    def get_asset(self, key) -> Asset:
-        return self.assets[key]
+    def get_asset(self, key: str) -> Asset:
+        if key not in self.assets:
+            asset_id = self.asset_keys[key]
+            with workflow_db.session() as session:
+                self.assets[key] = Asset.from_asset_id(asset_id, session)
 
-    def is_asset(self, key: str) -> bool:
-        return key in self.assets
+        return self.assets[key]
 
     def get_value(self, key: str, session: Session = None, refresh: bool = True) -> Any:
         if key in self.pure_metadata:
