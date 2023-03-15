@@ -20,6 +20,7 @@
 
 """Mappings between electron attributes and DB records"""
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..._db import models
@@ -75,6 +76,7 @@ _meta_record_map = {
     "executor": "executor",
 }
 
+# Obsoleted by ElectronAsset table
 _asset_record_map = {
     "function": "function_filename",
     "function_string": "function_string_filename",
@@ -97,8 +99,10 @@ def _to_pure_meta(session: Session, record: models.Electron):
 
 
 def _to_asset_meta(session: Session, record: models.Electron):
-    asset_metadata = {k: getattr(record, v) for k, v in _asset_record_map.items()}
-    return asset_metadata
+    # get asset ids
+    stmt = select(models.ElectronAsset).where(models.ElectronAsset.electron_id == record.id)
+    electron_asset_links = session.scalars(stmt).all()
+    return {x.key: x.asset_id for x in electron_asset_links}
 
 
 def _to_db_meta(session: Session, record: models.Electron):

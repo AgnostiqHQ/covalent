@@ -70,7 +70,7 @@ set_filters.update(custom_set_filters)
 class Result(DispatchedObject):
     def __init__(self, session: Session, record: models.Lattice, bare: bool = False):
         pure_metadata = _to_pure_meta(session, record)
-        asset_metadata = _to_asset_meta(session, record)
+        asset_ids = _to_asset_meta(session, record)
         db_metadata = _to_db_meta(session, record)
 
         self._pure_metadata = pure_metadata
@@ -82,8 +82,8 @@ class Result(DispatchedObject):
         self._storage_path = db_metadata["storage_path"]
         self._storage_type = db_metadata["storage_type"]
 
-        for name in asset_metadata:
-            self._assets[name] = Asset(self._storage_path, asset_metadata[name])
+        for name, asset_id in asset_ids.items():
+            self._assets[name] = Asset.from_asset_id(asset_id, session)
 
         self.lattice = Lattice(session, record, bare)
 

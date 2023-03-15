@@ -58,7 +58,7 @@ from covalent_dispatcher._db.write_result_to_db import (
     update_lattices_data,
 )
 
-STORAGE_TYPE = "local"
+STORAGE_TYPE = "file"
 FUNCTION_FILENAME = "dispatch_source.pkl"
 FUNCTION_STRING_FILENAME = "dispatch_source.py"
 DOCSTRING_FILENAME = "dispatch_source_docstring.txt"
@@ -138,7 +138,6 @@ def get_lattice_kwargs(
     named_args_filename=NAMED_ARGS_FILENAME,
     named_kwargs_filename=NAMED_KWARGS_FILENAME,
     results_filename=RESULTS_FILENAME,
-    transport_graph_filename=TRANSPORT_GRAPH_FILENAME,
     deps_filename=DEPS_FILENAME,
     call_before_filename=CALL_BEFORE_FILENAME,
     call_after_filename=CALL_AFTER_FILENAME,
@@ -174,7 +173,6 @@ def get_lattice_kwargs(
         "named_args_filename": named_args_filename,
         "named_kwargs_filename": named_kwargs_filename,
         "results_filename": results_filename,
-        "transport_graph_filename": transport_graph_filename,
         "deps_filename": deps_filename,
         "call_before_filename": call_before_filename,
         "call_after_filename": call_after_filename,

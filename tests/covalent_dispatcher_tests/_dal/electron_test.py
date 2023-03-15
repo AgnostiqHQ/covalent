@@ -195,6 +195,5 @@ def test_electron_asset_digest(test_db, mocker):
         )
         e = Electron(session, record)
 
-        meta = e.get_asset("value").meta
-        assert meta["dispatch_id"] == res.dispatch_id
-        assert "digest_hex" in meta
+        value = e.get_asset("value")
+        assert "digest_hex" in value.__dict__

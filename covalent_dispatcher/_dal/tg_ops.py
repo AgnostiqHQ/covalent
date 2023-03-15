@@ -238,13 +238,13 @@ class TransportGraphOps:
         for node_id in A.nodes:
             node = self.tg.get_node(node_id)
             value_asset = node.get_asset("value")
-            value_hash = value_asset.meta["digest_hex"]
+            value_hash = value_asset.digest_hex
             A.nodes[node_id]["value"] = value_hash
 
         for node_id in B.nodes:
             node = tg_new.get_node(node_id)
             value_asset = node.get_asset("value")
-            value_hash = value_asset.meta["digest_hex"]
+            value_hash = value_asset.digest_hex
             B.nodes[node_id]["value"] = value_hash
 
         status_A, _ = self._max_cbms(A, B, node_cmp=self._cmp_name_and_pval)

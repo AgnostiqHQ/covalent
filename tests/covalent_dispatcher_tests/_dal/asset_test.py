@@ -25,7 +25,7 @@ import tempfile
 
 import pytest
 
-from covalent_dispatcher._dal.asset import Asset
+from covalent_dispatcher._dal.asset import Asset, StorageType
 from covalent_dispatcher._db import models
 from covalent_dispatcher._db.datastore import DataStore
 
@@ -40,6 +40,16 @@ def test_db():
     )
 
 
+def get_asset_record(storage_path, object_key, digest_alg="", digest_hex=""):
+    return models.Asset(
+        storage_type=StorageType.LOCAL,
+        storage_path=storage_path,
+        object_key=object_key,
+        digest_alg=digest_alg,
+        digest_hex=digest_hex,
+    )
+
+
 def test_asset_load_data():
     with tempfile.NamedTemporaryFile("w", delete=False, suffix=".txt") as temp:
         temp.write("Hello\n")
@@ -47,7 +57,9 @@ def test_asset_load_data():
         key = os.path.basename(temppath)
 
     storage_path = "/tmp"
-    a = Asset(storage_path, key)
+
+    rec = get_asset_record(storage_path, key)
+    a = Asset(rec)
     assert a.load_data() == "Hello\n"
     os.unlink(temppath)
 
@@ -57,7 +69,8 @@ def test_asset_store_data():
         temppath = temp.name
         key = os.path.basename(temppath)
     storage_path = "/tmp"
-    a = Asset(storage_path, key)
+    rec = get_asset_record(storage_path, key)
+    a = Asset(rec)
     a.store_data("Hello\n")
 
     with open(temppath, "r") as f:
@@ -71,7 +84,9 @@ def test_upload_asset():
         src_path = temp.name
         src_key = os.path.basename(src_path)
     storage_path = "/tmp"
-    a = Asset(storage_path, src_key)
+
+    rec = get_asset_record(storage_path, src_key)
+    a = Asset(rec)
     a.store_data("Hello\n")
 
     with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
@@ -97,44 +112,11 @@ def test_download_asset():
         dest_path = temp.name
         dest_key = os.path.basename(dest_path)
 
-    a = Asset(storage_path, dest_key)
+    rec = get_asset_record(storage_path, dest_key)
+    a = Asset(rec)
 
     a.download(src_path)
 
     assert a.load_data() == "Hello\n"
 
     os.unlink(dest_path)
-
-
-def test_asset_meta(test_db, mocker):
-    dispatch_id = "test_asset_meta"
-    with test_db.session() as session:
-        lattice_row = models.Lattice(
-            dispatch_id="test_asset_meta",
-            name="workflow",
-            status="NEW_OBJ",
-            electron_num=2,
-            completed_electron_num=0,
-        )
-        session.add(lattice_row)
-
-    storage_path = "/tmp"
-    object_key = "value.pkl"
-    asset_id = storage_path + "/" + object_key
-    with test_db.session() as session:
-        meta = models.AssetMeta(
-            dispatch_id=dispatch_id,
-            asset_id=asset_id,
-            digest_alg="sha1",
-            digest_hex="a234f",
-        )
-        session.add(meta)
-
-    with test_db.session() as session:
-        asset = Asset(storage_path, object_key, session)
-    assert asset.meta["dispatch_id"] == dispatch_id
-    assert asset.meta["digest_hex"] == "a234f"
-
-    with test_db.session() as session:
-        asset = Asset(storage_path, "nonexistent.pkl", session)
-        assert asset.meta == {}

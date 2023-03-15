@@ -22,6 +22,7 @@
 
 from typing import Dict
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..._db import models
@@ -69,6 +70,7 @@ _meta_record_map = {
     "workflow_executor": "workflow_executor",
 }
 
+# Obsoleted by LatticeAsset table
 _asset_record_map = {
     "workflow_function": "function_filename",
     "workflow_function_string": "function_string_filename",
@@ -91,9 +93,11 @@ def _to_pure_meta(session: Session, record: models.Lattice) -> Dict:
     return pure_metadata
 
 
-def _to_asset_meta(session: Session, record: models.Lattice) -> Dict:
-    asset_metadata = {k: getattr(record, v) for k, v in _asset_record_map.items()}
-    return asset_metadata
+def _to_asset_meta(session: Session, record: models.Lattice):
+    # get asset ids
+    stmt = select(models.LatticeAsset).where(models.LatticeAsset.lattice_id == record.id)
+    lattice_asset_links = session.scalars(stmt).all()
+    return {x.key: x.asset_id for x in lattice_asset_links}
 
 
 def _to_db_meta(session: Session, record: models.Lattice) -> Dict:

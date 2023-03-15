@@ -29,6 +29,7 @@ import pytest
 import covalent as ct
 from covalent._results_manager import Result as SDKResult
 from covalent._workflow.lattice import Lattice as SDKLattice
+from covalent_dispatcher._dal.lattice import ASSET_KEYS as LATTICE_ASSET_KEYS
 from covalent_dispatcher._dal.result import ASSET_KEYS, METADATA_KEYS, Result, get_result_object
 from covalent_dispatcher._db import models, update
 from covalent_dispatcher._db.datastore import DataStore
@@ -88,7 +89,7 @@ def test_result_attributes(test_db, mocker):
     meta = srvres.pure_metadata.keys()
     assets = srvres.assets.keys()
     assert meta == METADATA_KEYS
-    assert assets == ASSET_KEYS
+    assert assets == ASSET_KEYS.union(LATTICE_ASSET_KEYS)
 
 
 def test_result_get_set_value(test_db, mocker):

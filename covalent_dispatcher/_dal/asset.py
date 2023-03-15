@@ -29,7 +29,7 @@ from sqlalchemy.orm import Session
 
 from covalent._shared_files import logger
 
-from .._db.models import AssetMeta
+from .._db.models import Asset as AssetRecord
 from .._db.write_result_to_db import load_file, store_file
 from .utils.file_transfer import cp
 
@@ -45,16 +45,14 @@ class Asset:
 
     """Metadata for an object in blob storage"""
 
-    def __init__(self, storage_path: str, object_key: str, session: Session = None):
-        self.storage_type = StorageType.LOCAL
-        self.storage_path = storage_path
-        self.object_key = object_key
+    def __init__(self, record: AssetRecord, session: Session = None):
+        self.id = record.id
+        self.storage_type = StorageType(record.storage_type)
+        self.storage_path = record.storage_path
+        self.object_key = record.object_key
 
-        self.meta = {}
-
-        if session:
-            meta_record = _get_meta(self, session)
-            self.meta = meta_record.__dict__.copy() if meta_record else {}
+        self.digest_alg = record.digest_alg
+        self.digest_hex = record.digest_hex
 
     def store_data(self, data: Any) -> None:
         store_file(self.storage_path, self.object_key, data)
@@ -78,8 +76,8 @@ class Asset:
     def _asset_id(self) -> str:
         return self.storage_path + "/" + self.object_key
 
-
-def _get_meta(asset: Asset, session: Session) -> AssetMeta:
-    stmt = select(AssetMeta).where(AssetMeta.asset_id == asset._asset_id())
-    record = session.scalars(stmt).first()
-    return record
+    @classmethod
+    def from_asset_id(cls, asset_id: int, session: Session) -> "Asset":
+        stmt = select(AssetRecord).where(AssetRecord.id == asset_id)
+        record = session.scalars(stmt).first()
+        return Asset(record, session)

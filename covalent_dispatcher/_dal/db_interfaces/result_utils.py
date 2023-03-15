@@ -20,6 +20,7 @@
 
 """Mappings between result attributes and DB records"""
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..._db import models
@@ -71,6 +72,7 @@ _meta_record_map = {
     "completed_electron_num": "completed_electron_num",
 }
 
+# Obsoleted by LatticeAsset table
 _asset_record_map = {
     "inputs": "inputs_filename",
     "result": "results_filename",
@@ -86,8 +88,10 @@ def _to_pure_meta(session: Session, record: models.Lattice):
 
 
 def _to_asset_meta(session: Session, record: models.Lattice):
-    asset_metadata = {k: getattr(record, v) for k, v in _asset_record_map.items()}
-    return asset_metadata
+    # get asset ids
+    stmt = select(models.LatticeAsset).where(models.LatticeAsset.lattice_id == record.id)
+    lattice_asset_links = session.scalars(stmt).all()
+    return {x.key: x.asset_id for x in lattice_asset_links}
 
 
 def _to_db_meta(session: Session, record: models.Lattice):

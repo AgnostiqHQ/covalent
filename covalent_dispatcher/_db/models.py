@@ -92,9 +92,6 @@ class Lattice(Base):
     # name of the file containing the serialized output
     results_filename = Column(Text)
 
-    # Name of the file containing the transport graph
-    transport_graph_filename = Column(Text)
-
     # Name of the file containing the default electron dependencies
     deps_filename = Column(Text)
 
@@ -242,24 +239,6 @@ class Job(Base):
 
     # JSON-serialized identifier for job
     job_handle = Column(Text, nullable=False, default="null")
-
-
-class AssetMeta(Base):
-    __tablename__ = "asset_meta"
-
-    id = Column(Integer, primary_key=True)
-
-    # Unique ID of lattice
-    dispatch_id = Column(Integer, ForeignKey("lattices.dispatch_id"), nullable=False)
-
-    # Asset ID -- unique within a dispatch
-    asset_id = Column(Text, nullable=False)
-
-    # Digest algorithm ("md5", "sha1")
-    digest_alg = Column(Text, nullable=True)
-
-    # Hex repr of digest
-    digest_hex = Column(Text, nullable=True)
 
 
 # Core Lattice assets

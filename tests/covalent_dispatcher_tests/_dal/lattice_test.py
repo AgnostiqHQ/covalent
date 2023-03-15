@@ -27,6 +27,7 @@ import covalent as ct
 from covalent._results_manager import Result as SDKResult
 from covalent._workflow.lattice import Lattice as SDKLattice
 from covalent_dispatcher._dal.lattice import ASSET_KEYS, METADATA_KEYS, Lattice
+from covalent_dispatcher._dal.result import ASSET_KEYS as DISPATCH_ASSET_KEYS
 from covalent_dispatcher._db import models, update
 from covalent_dispatcher._db.datastore import DataStore
 
@@ -83,7 +84,7 @@ def test_lattice_attributes(test_db, mocker):
     meta = lat.pure_metadata.keys()
     assets = lat.assets.keys()
     assert meta == METADATA_KEYS
-    assert assets == ASSET_KEYS
+    assert assets == ASSET_KEYS.union(DISPATCH_ASSET_KEYS)
 
     workflow_function = lat.get_value("workflow_function").get_deserialized()
     assert workflow_function(42) == 42

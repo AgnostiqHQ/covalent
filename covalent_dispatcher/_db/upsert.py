@@ -59,7 +59,7 @@ ELECTRON_RESULTS_FILENAME = "results.pkl"
 ELECTRON_DEPS_FILENAME = "deps.pkl"
 ELECTRON_CALL_BEFORE_FILENAME = "call_before.pkl"
 ELECTRON_CALL_AFTER_FILENAME = "call_after.pkl"
-ELECTRON_STORAGE_TYPE = "local"
+ELECTRON_STORAGE_TYPE = "file"
 LATTICE_FUNCTION_FILENAME = "function.pkl"
 LATTICE_FUNCTION_STRING_FILENAME = "function_string.txt"
 LATTICE_DOCSTRING_FILENAME = "function_docstring.txt"
@@ -76,7 +76,7 @@ LATTICE_CALL_BEFORE_FILENAME = "call_before.pkl"
 LATTICE_CALL_AFTER_FILENAME = "call_after.pkl"
 LATTICE_COVA_IMPORTS_FILENAME = "cova_imports.pkl"
 LATTICE_LATTICE_IMPORTS_FILENAME = "lattice_imports.pkl"
-LATTICE_STORAGE_TYPE = "local"
+LATTICE_STORAGE_TYPE = "file"
 
 
 def _lattice_data(session: Session, result: Result, electron_id: int = None) -> None:
@@ -112,7 +112,7 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
     for key, filename, data in [
         ("workflow_function", LATTICE_FUNCTION_FILENAME, result.lattice.workflow_function),
         ("workflow_function_string", LATTICE_FUNCTION_STRING_FILENAME, workflow_func_string),
-        ("docstring", LATTICE_DOCSTRING_FILENAME, result.lattice.__doc__),
+        ("__doc__", LATTICE_DOCSTRING_FILENAME, result.lattice.__doc__),
         (
             "executor_data",
             LATTICE_EXECUTOR_DATA_FILENAME,
@@ -128,7 +128,6 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         ("named_args", LATTICE_NAMED_ARGS_FILENAME, result.lattice.named_args),
         ("named_kwargs", LATTICE_NAMED_KWARGS_FILENAME, result.lattice.named_kwargs),
         ("result", LATTICE_RESULTS_FILENAME, result._result),
-        ("transport_graph", LATTICE_TRANSPORT_GRAPH_FILENAME, result._lattice.transport_graph),
         ("deps", LATTICE_DEPS_FILENAME, result.lattice.metadata["deps"]),
         ("call_before", LATTICE_CALL_BEFORE_FILENAME, result.lattice.metadata["call_before"]),
         ("call_after", LATTICE_CALL_AFTER_FILENAME, result.lattice.metadata["call_after"]),
@@ -169,7 +168,6 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
             "named_args_filename": LATTICE_NAMED_ARGS_FILENAME,
             "named_kwargs_filename": LATTICE_NAMED_KWARGS_FILENAME,
             "results_filename": LATTICE_RESULTS_FILENAME,
-            "transport_graph_filename": LATTICE_TRANSPORT_GRAPH_FILENAME,
             "deps_filename": LATTICE_DEPS_FILENAME,
             "call_before_filename": LATTICE_CALL_BEFORE_FILENAME,
             "call_after_filename": LATTICE_CALL_AFTER_FILENAME,
@@ -275,8 +273,6 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
             started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
             completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
 
-            asset_digests = {}
-
             assets = {}
 
             for key, filename, data in [
@@ -316,11 +312,6 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
                 assets[key] = transaction_insert_asset_record(
                     session=session, **asset_record_kwargs
                 )
-
-                # Store hashes of parameter values for graph comparisons
-                if filename == ELECTRON_VALUE_FILENAME:
-                    asset_id = str(node_path) + "/" + filename
-                    asset_digests[asset_id] = digest
 
             electron_exists = (
                 session.query(models.Electron, models.Lattice)
@@ -390,16 +381,6 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
                 update_electrons_data(**electron_record_kwarg)
                 if status == Result.COMPLETED:
                     update_lattice_completed_electron_num(result.dispatch_id)
-
-            # write asset digests
-            for asset_id, digest in asset_digests.items():
-                asset_meta = models.AssetMeta(
-                    dispatch_id=result.dispatch_id,
-                    asset_id=asset_id,
-                    digest_alg=digest.algorithm,
-                    digest_hex=digest.hexdigest,
-                )
-                session.add(asset_meta)
 
 
 def lattice_data(result: Result, electron_id: int = None) -> None:
