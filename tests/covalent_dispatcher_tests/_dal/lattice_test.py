@@ -80,11 +80,12 @@ def test_lattice_attributes(test_db, mocker):
         )
 
         lat = Lattice(session, record)
+        asset_ids = lat.get_asset_ids(session, [])
 
     meta = lat.pure_metadata.keys()
-    assets = lat.asset_keys.keys()
+
     assert meta == METADATA_KEYS
-    assert assets == ASSET_KEYS.union(DISPATCH_ASSET_KEYS)
+    assert asset_ids.keys() == ASSET_KEYS.union(DISPATCH_ASSET_KEYS)
 
     workflow_function = lat.get_value("workflow_function").get_deserialized()
     assert workflow_function(42) == 42

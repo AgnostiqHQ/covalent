@@ -20,7 +20,7 @@
 
 """Mappings between lattice attributes and DB records"""
 
-from typing import Dict
+from typing import Dict, List
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -93,11 +93,14 @@ def _to_pure_meta(session: Session, record: models.Lattice) -> Dict:
     return pure_metadata
 
 
-def _to_asset_meta(session: Session, record: models.Lattice):
-    # get asset ids
-    stmt = select(models.LatticeAsset).where(models.LatticeAsset.lattice_id == record.id)
-    lattice_asset_links = session.scalars(stmt).all()
-    return {x.key: x.asset_id for x in lattice_asset_links}
+def _get_asset_ids(session: Session, lattice_id: int, keys: List[str]) -> Dict[str, int]:
+    stmt = select(models.LatticeAsset).where(models.LatticeAsset.lattice_id == lattice_id)
+
+    if len(keys) > 0:
+        stmt = stmt.where(models.LatticeAsset.key.in_(keys))
+
+    records = session.scalars(stmt).all()
+    return {x.key: x.asset_id for x in records}
 
 
 def _to_db_meta(session: Session, record: models.Lattice) -> Dict:

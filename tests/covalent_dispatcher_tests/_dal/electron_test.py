@@ -77,11 +77,11 @@ def test_electron_attributes(test_db, mocker):
             .first()
         )
         e = Electron(session, record)
+        asset_ids = e.get_asset_ids(session, [])
 
     meta = e.pure_metadata.keys()
-    assets = e.asset_keys.keys()
     assert meta == METADATA_KEYS
-    assert assets == ASSET_KEYS
+    assert asset_ids.keys() == ASSET_KEYS
 
     assert e.get_value("task_group_id") == e.node_id
 

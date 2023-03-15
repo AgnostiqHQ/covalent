@@ -52,9 +52,8 @@ class DispatchedObject(ABC):
     def db_metadata(self, meta: Dict):
         raise NotImplementedError
 
-    @property
     @abstractmethod
-    def asset_keys(self) -> Dict:
+    def get_asset_ids(self, session: Session, keys: List[str]) -> Dict[str, int]:
         raise NotImplementedError
 
     @property
@@ -117,8 +116,8 @@ class DispatchedObject(ABC):
 
     def get_asset(self, key: str) -> Asset:
         if key not in self.assets:
-            asset_id = self.asset_keys[key]
             with workflow_db.session() as session:
+                asset_id = self.get_asset_ids(session, [key])[key]
                 self.assets[key] = Asset.from_asset_id(asset_id, session)
 
         return self.assets[key]
