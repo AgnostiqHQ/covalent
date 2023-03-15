@@ -41,30 +41,12 @@ from .db_interfaces.result_utils import (
     _meta_record_map,
     _to_db_meta,
     _to_pure_meta,
+    get_filters,
+    set_filters,
 )
 from .lattice import Lattice
 
 app_log = logger.app_log
-
-
-def get_status_filter(raw: str):
-    return Status(raw)
-
-
-def set_status_filter(stat: Status):
-    return str(stat)
-
-
-get_filters = {key: lambda x: x for key in METADATA_KEYS.union(ASSET_KEYS)}
-
-set_filters = {key: lambda x: x for key in METADATA_KEYS.union(ASSET_KEYS)}
-
-custom_get_filters = {"status": get_status_filter, "completed_electron_num": lambda x: x}
-
-custom_set_filters = {"status": set_status_filter, "completed_electron_num": lambda x: x}
-
-get_filters.update(custom_get_filters)
-set_filters.update(custom_set_filters)
 
 
 class Result(DispatchedObject):

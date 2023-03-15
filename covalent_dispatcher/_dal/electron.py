@@ -24,39 +24,18 @@ from typing import Any, Dict, List
 
 from sqlalchemy.orm import Session
 
-from covalent._shared_files.util_classes import Status
-
 from .._db import models
-from .._db.utils import resolve_sub_dispatch_id
 from .base import DispatchedObject
+from .db_interfaces.electron_utils import ASSET_KEYS  # nopycln: import
+from .db_interfaces.electron_utils import METADATA_KEYS  # nopycln: import
 from .db_interfaces.electron_utils import (
-    ASSET_KEYS,
-    METADATA_KEYS,
     _get_asset_ids,
     _meta_record_map,
     _to_db_meta,
     _to_pure_meta,
+    get_filters,
+    set_filters,
 )
-
-
-def get_status_filter(raw: str):
-    return Status(raw)
-
-
-def set_status_filter(stat: Status):
-    return str(stat)
-
-
-get_filters = {key: lambda x: x for key in METADATA_KEYS.union(ASSET_KEYS)}
-
-set_filters = {key: lambda x: x for key in METADATA_KEYS.union(ASSET_KEYS)}
-
-custom_get_filters = {"status": get_status_filter, "type": lambda x: x}
-
-custom_set_filters = {"status": set_status_filter}
-
-get_filters.update(custom_get_filters)
-set_filters.update(custom_set_filters)
 
 
 class Electron(DispatchedObject):
@@ -95,6 +74,10 @@ class Electron(DispatchedObject):
         return _get_asset_ids(session, self._electron_id, keys)
 
     @property
+    def computed_fields(self) -> Dict:
+        return {"sub_dispatch_id": resolve_sub_dispatch_id}
+
+    @property
     def assets(self):
         return self._assets
 
@@ -114,10 +97,15 @@ class Electron(DispatchedObject):
         return _meta_record_map[key]
 
     def get_value(self, key: str, session: Session = None, refresh: bool = True):
-        if key == "sub_dispatch_id":
-            return resolve_sub_dispatch_id(self._electron_id)
-        else:
-            return get_filters[key](super().get_value(key, session, refresh))
+        return get_filters[key](super().get_value(key, session, refresh))
 
     def set_value(self, key: str, val: Any, session: Session = None) -> None:
         super().set_value(key, set_filters[key](val), session)
+
+
+def resolve_sub_dispatch_id(obj: Electron, session: Session) -> str:
+    record = (
+        session.query(models.Lattice).where(models.Lattice.electron_id == obj._electron_id).first()
+    )
+    if record:
+        return record.dispatch_id

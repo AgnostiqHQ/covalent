@@ -52,6 +52,10 @@ class DispatchedObject(ABC):
     def db_metadata(self, meta: Dict):
         raise NotImplementedError
 
+    @property
+    def computed_fields(self) -> Dict:
+        return {}
+
     @abstractmethod
     def get_asset_ids(self, session: Session, keys: List[str]) -> Dict[str, int]:
         raise NotImplementedError
@@ -122,21 +126,38 @@ class DispatchedObject(ABC):
 
         return self.assets[key]
 
-    def get_value(self, key: str, session: Session = None, refresh: bool = True) -> Any:
+    def _get_value(self, key: str, session: Session, refresh: bool = True) -> Any:
         if key in self.pure_metadata:
             return self.get_pure_metadata(key, session, refresh)
         elif key in self.db_metadata:
             return self.get_db_metadata(key, session, refresh)
+        elif key in self.computed_fields:
+            handler = self.computed_fields[key]
+            return handler(self, session)
         else:
             return self.get_asset(key).load_data()
 
-    def set_value(self, key: str, val: Any, session: Session = None) -> None:
+    def get_value(self, key: str, session: Session = None, refresh: bool = True) -> Any:
+        if session is not None:
+            return self._get_value(key, session, refresh)
+        else:
+            with workflow_db.session() as session:
+                return self._get_value(key, session, refresh)
+
+    def _set_value(self, key: str, val: Any, session: Session) -> None:
         if key in self.pure_metadata:
             self.set_pure_metadata(key, val, session)
         elif key in self.db_metadata:
             self.set_db_metadata(key, val, session)
         else:
             self.get_asset(key).store_data(val)
+
+    def set_value(self, key: str, val: Any, session: Session = None) -> None:
+        if session is not None:
+            self._set_value(key, val, session)
+        else:
+            with workflow_db.session() as session:
+                self._set_value(key, val, session)
 
     def get_values(self, keys: List[str], session: Session = None, refresh: bool = True) -> Dict:
         return {key: self.get_value(key, session, refresh) for key in keys}

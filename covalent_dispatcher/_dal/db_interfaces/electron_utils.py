@@ -25,6 +25,8 @@ from typing import Dict, List
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from covalent._shared_files.util_classes import Status
+
 from ..._db import models
 
 ATTRIBUTES = {
@@ -69,6 +71,8 @@ ASSET_KEYS = {
     "call_after",
 }
 
+COMPUTED_FIELDS = {"sub_dispatch_id"}
+
 _meta_record_map = {
     "task_group_id": "task_group_id",
     "name": "name",
@@ -92,6 +96,31 @@ _asset_record_map = {
     "call_before": "call_before_filename",
     "call_after": "call_after_filename",
 }
+
+
+def identity(x):
+    return x
+
+
+def get_status_filter(raw: str):
+    return Status(raw)
+
+
+def set_status_filter(stat: Status):
+    return str(stat)
+
+
+custom_get_filters = {"status": get_status_filter, "type": identity, "sub_dispatch_id": identity}
+
+custom_set_filters = {"status": set_status_filter}
+
+
+get_filters = {key: identity for key in METADATA_KEYS.union(ASSET_KEYS)}
+
+set_filters = {key: identity for key in METADATA_KEYS.union(ASSET_KEYS)}
+
+get_filters.update(custom_get_filters)
+set_filters.update(custom_set_filters)
 
 
 def _to_pure_meta(session: Session, record: models.Electron):

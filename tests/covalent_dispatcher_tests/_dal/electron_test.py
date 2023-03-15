@@ -159,7 +159,6 @@ def test_electron_sub_dispatch_id(test_db, mocker):
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._db.utils.workflow_db", test_db)
     update.persist(res)
     update.persist(subres, 1)
 

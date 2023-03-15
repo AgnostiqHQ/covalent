@@ -25,6 +25,8 @@ from typing import Dict, List
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from covalent._shared_files.util_classes import Status
+
 from ..._db import models
 
 ATTRIBUTES = {
@@ -80,6 +82,26 @@ _asset_record_map = {
     "result": "results_filename",
     "error": "error_filename",
 }
+
+
+def get_status_filter(raw: str):
+    return Status(raw)
+
+
+def set_status_filter(stat: Status):
+    return str(stat)
+
+
+get_filters = {key: lambda x: x for key in METADATA_KEYS.union(ASSET_KEYS)}
+
+set_filters = {key: lambda x: x for key in METADATA_KEYS.union(ASSET_KEYS)}
+
+custom_get_filters = {"status": get_status_filter, "completed_electron_num": lambda x: x}
+
+custom_set_filters = {"status": set_status_filter, "completed_electron_num": lambda x: x}
+
+get_filters.update(custom_get_filters)
+set_filters.update(custom_set_filters)
 
 
 def _to_pure_meta(session: Session, record: models.Lattice):
