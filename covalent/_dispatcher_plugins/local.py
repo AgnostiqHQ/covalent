@@ -47,7 +47,12 @@ def get_redispatch_request_body(
     if replace_electrons is None:
         replace_electrons = {}
     if new_args or new_kwargs:
-        res = get_result(dispatch_id)
+        res = get_result(
+            dispatch_id,
+            workflow_output=False,
+            intermediate_outputs=False,
+            sublattice_results=False,
+        )
         lat = res.lattice
         lat.build_graph(*new_args, **new_kwargs)
         json_lattice = lat.serialize_to_json()
