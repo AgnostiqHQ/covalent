@@ -70,6 +70,15 @@ _meta_record_map = {
     "workflow_executor": "workflow_executor",
 }
 
+_db_meta_record_map = {
+    "electron_id": "electron_id",
+    "id": "id",
+    "storage_path": "storage_path",
+    "storage_type": "storage_type",
+}
+
+_meta_record_map.update(_db_meta_record_map)
+
 # Obsoleted by LatticeAsset table
 _asset_record_map = {
     "workflow_function": "function_filename",
@@ -87,10 +96,9 @@ _asset_record_map = {
 }
 
 
-def _to_pure_meta(session: Session, record: models.Lattice) -> Dict:
-    pure_metadata = {k: getattr(record, v) for k, v in _meta_record_map.items()}
-
-    return pure_metadata
+def _to_meta(session: Session, record: models.Lattice) -> Dict:
+    metadata = {k: getattr(record, v) for k, v in _meta_record_map.items()}
+    return metadata
 
 
 def _get_asset_ids(session: Session, lattice_id: int, keys: List[str]) -> Dict[str, int]:
@@ -101,13 +109,3 @@ def _get_asset_ids(session: Session, lattice_id: int, keys: List[str]) -> Dict[s
 
     records = session.scalars(stmt).all()
     return {x.key: x.asset_id for x in records}
-
-
-def _to_db_meta(session: Session, record: models.Lattice) -> Dict:
-    db_metadata = {
-        "electron_id": record.electron_id,
-        "lattice_id": record.id,
-        "storage_path": record.storage_path,
-        "storage_type": record.storage_type,
-    }
-    return db_metadata

@@ -51,7 +51,7 @@ class _TransportGraph:
         self._graph = nx.MultiDiGraph()
 
     def add_node(self, node: Node):
-        self._graph.add_node(node.node_id, **node.pure_metadata)
+        self._graph.add_node(node.node_id, **node.metadata)
         self._nodes[node.node_id] = node
 
     def add_edge(self, x: int, y: int, **attrs):
@@ -227,7 +227,6 @@ def _get_edge_data_for_nodes(session: Session, parent_node: Node, child_node: No
 
 
 def _nodes_and_edges(session: Session, lattice_id: int) -> Tuple[List[Node], List[Edge]]:
-
     db_nodes = _node_records(session, lattice_id, [])
     db_edges = _all_edge_records(session, lattice_id)
     uid_nodeid_map = {e.id: e.transport_graph_node_id for e in db_nodes}

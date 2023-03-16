@@ -74,6 +74,7 @@ ASSET_KEYS = {
 COMPUTED_FIELDS = {"sub_dispatch_id"}
 
 _meta_record_map = {
+    "node_id": "transport_graph_node_id",
     "task_group_id": "task_group_id",
     "name": "name",
     "start_time": "started_at",
@@ -81,6 +82,16 @@ _meta_record_map = {
     "status": "status",
     "executor": "executor",
 }
+
+_db_meta_record_map = {
+    "id": "id",
+    "parent_lattice_id": "parent_lattice_id",
+    "type": "type",
+    "storage_path": "storage_path",
+    "storage_type": "storage_type",
+}
+
+_meta_record_map.update(_db_meta_record_map)
 
 # Obsoleted by ElectronAsset table
 _asset_record_map = {
@@ -123,10 +134,10 @@ get_filters.update(custom_get_filters)
 set_filters.update(custom_set_filters)
 
 
-def _to_pure_meta(session: Session, record: models.Electron):
-    pure_metadata = {k: getattr(record, v) for k, v in _meta_record_map.items()}
+def _to_meta(session: Session, record: models.Electron):
+    metadata = {k: getattr(record, v) for k, v in _meta_record_map.items()}
 
-    return pure_metadata
+    return metadata
 
 
 def _to_asset_meta(session: Session, record: models.Electron):
@@ -144,14 +155,3 @@ def _get_asset_ids(session: Session, electron_id: int, keys: List[str]) -> Dict[
 
     records = session.scalars(stmt).all()
     return {x.key: x.asset_id for x in records}
-
-
-def _to_db_meta(session: Session, record: models.Electron):
-    db_metadata = {
-        "electron_id": record.id,
-        "lattice_id": record.parent_lattice_id,
-        "type": record.type,
-        "storage_path": record.storage_path,
-        "storage_type": record.storage_type,
-    }
-    return db_metadata

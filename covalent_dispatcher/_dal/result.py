@@ -39,8 +39,7 @@ from .db_interfaces.result_utils import METADATA_KEYS  # nopycln: import
 from .db_interfaces.result_utils import (
     _get_asset_ids,
     _meta_record_map,
-    _to_db_meta,
-    _to_pure_meta,
+    _to_meta,
     get_filters,
     set_filters,
 )
@@ -56,18 +55,16 @@ class Result(DispatchedObject):
         record: models.Lattice,
         bare: bool = False,
     ):
-        pure_metadata = _to_pure_meta(session, record)
-        db_metadata = _to_db_meta(session, record)
+        metadata = _to_meta(session, record)
 
-        self._pure_metadata = pure_metadata
-        self._db_metadata = db_metadata
-
+        self._metadata = metadata
         self._assets = {}
+        self._record = record
 
-        self._lattice_id = db_metadata["lattice_id"]
-        self._electron_id = db_metadata["electron_id"]
-        self._storage_path = db_metadata["storage_path"]
-        self._storage_type = db_metadata["storage_type"]
+        self._lattice_id = metadata["id"]
+        self._electron_id = metadata["electron_id"]
+        self._storage_path = metadata["storage_path"]
+        self._storage_type = metadata["storage_type"]
 
         self.lattice = Lattice(session, record, bare)
 
@@ -82,12 +79,12 @@ class Result(DispatchedObject):
         self._result = None
 
     @property
-    def pure_metadata(self):
-        return self._pure_metadata
+    def metadata(self):
+        return self._metadata
 
-    @pure_metadata.setter
-    def pure_metadata(self, meta: Dict):
-        self._pure_metadata = meta
+    @metadata.setter
+    def metadata(self, meta: Dict):
+        self._metadata = meta
 
     @property
     def db_metadata(self):
@@ -111,31 +108,28 @@ class Result(DispatchedObject):
     def meta_record_map(self, key: str) -> str:
         return _meta_record_map[key]
 
-    def _to_pure_meta(self, session: Session, record):
-        return _to_pure_meta(session, record)
-
-    def _to_db_meta(self, session: Session, record):
-        return _to_db_meta(session, record)
+    def _to_meta(self, session: Session, record):
+        return _to_meta(session, record)
 
     @property
     def start_time(self):
-        return self.get_pure_metadata("start_time")
+        return self.get_metadata("start_time")
 
     @property
     def end_time(self):
-        return self.get_pure_metadata("end_time")
+        return self.get_metadata("end_time")
 
     @property
     def dispatch_id(self):
-        return self.get_pure_metadata("dispatch_id")
+        return self.get_metadata("dispatch_id")
 
     @property
     def root_dispatch_id(self):
-        return self.get_pure_metadata("root_dispatch_id")
+        return self.get_metadata("root_dispatch_id")
 
     @property
     def status(self) -> Status:
-        return Status(self.get_pure_metadata("status"))
+        return Status(self.get_metadata("status"))
 
     @property
     def result(self):
@@ -147,7 +141,7 @@ class Result(DispatchedObject):
 
     @property
     def results_dir(self):
-        return self.get_pure_metadata("results_dir")
+        return self.get_metadata("results_dir")
 
     def commit(self):
         with workflow_db.session() as session:
@@ -285,7 +279,7 @@ class Result(DispatchedObject):
 
     def _get_incomplete_nodes(self, refresh: bool = True):
         nodes = []
-        num_nodes = self.pure_metadata["num_nodes"]
+        num_nodes = self.metadata["num_nodes"]
         tg = self.lattice.transport_graph
 
         with workflow_db.session() as session:

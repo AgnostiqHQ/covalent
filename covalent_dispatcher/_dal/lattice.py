@@ -26,14 +26,9 @@ from sqlalchemy.orm import Session
 
 from .._db import models
 from .base import DispatchedObject
-from .db_interfaces.lattice_utils import (
-    ASSET_KEYS,
-    METADATA_KEYS,
-    _get_asset_ids,
-    _meta_record_map,
-    _to_db_meta,
-    _to_pure_meta,
-)
+from .db_interfaces.lattice_utils import ASSET_KEYS  # nopycln: import
+from .db_interfaces.lattice_utils import METADATA_KEYS  # nopycln: import
+from .db_interfaces.lattice_utils import _get_asset_ids, _meta_record_map, _to_meta
 from .tg import get_compute_graph
 
 
@@ -44,35 +39,25 @@ class Lattice(DispatchedObject):
         record: models.Lattice,
         bare: bool = False,
     ):
-        pure_metadata = _to_pure_meta(session, record)
-        db_metadata = _to_db_meta(session, record)
+        metadata = _to_meta(session, record)
 
-        self._pure_metadata = pure_metadata
-        self._db_metadata = db_metadata
-
+        self._metadata = metadata
         self._assets = {}
+        self._record = record
 
-        self._lattice_id = db_metadata["lattice_id"]
-        self._storage_path = db_metadata["storage_path"]
-        self._storage_type = db_metadata["storage_type"]
+        self._lattice_id = metadata["id"]
+        self._storage_path = metadata["storage_path"]
+        self._storage_type = metadata["storage_type"]
 
         self.transport_graph = get_compute_graph(self._lattice_id, bare)
 
     @property
-    def pure_metadata(self):
-        return self._pure_metadata
+    def metadata(self):
+        return self._metadata
 
-    @pure_metadata.setter
-    def pure_metadata(self, meta: Dict):
-        self._pure_metadata = meta
-
-    @property
-    def db_metadata(self):
-        return self._db_metadata
-
-    @db_metadata.setter
-    def db_metadata(self, meta: Dict):
-        self._db_metadata = meta
+    @metadata.setter
+    def metadata(self, meta: Dict):
+        self._metadata = meta
 
     def get_asset_ids(self, session: Session, keys: List[str]) -> Dict[str, int]:
         return _get_asset_ids(session, self._lattice_id, keys)
@@ -88,21 +73,12 @@ class Lattice(DispatchedObject):
     def meta_record_map(self, key: str) -> str:
         return _meta_record_map[key]
 
-    def _to_pure_meta(self, session: Session, record):
-        return _to_pure_meta(session, record)
-
-    def _to_db_meta(self, session: Session, record):
-        return _to_db_meta(session, record)
+    def _to_meta(self, session: Session, record):
+        return _to_meta(session, record)
 
     @property
     def __name__(self):
         return self.get_value("__name__")
-
-    def get_metadata(self, key: str):
-        if key in METADATA_KEYS or key in ASSET_KEYS:
-            return self.get_value(key)
-        else:
-            return None
 
     @property
     def workflow_function(self):

@@ -31,8 +31,7 @@ from .db_interfaces.electron_utils import METADATA_KEYS  # nopycln: import
 from .db_interfaces.electron_utils import (
     _get_asset_ids,
     _meta_record_map,
-    _to_db_meta,
-    _to_pure_meta,
+    _to_meta,
     get_filters,
     set_filters,
 )
@@ -40,35 +39,26 @@ from .db_interfaces.electron_utils import (
 
 class Electron(DispatchedObject):
     def __init__(self, session: Session, record: models.Electron):
-        pure_metadata = _to_pure_meta(session, record)
-        db_metadata = _to_db_meta(session, record)
+        metadata = _to_meta(session, record)
 
-        self._pure_metadata = pure_metadata
-        self._db_metadata = db_metadata
-
+        self._metadata = metadata
         self._assets = {}
 
+        self._record = record
+
         self.node_id = record.transport_graph_node_id
-        self._electron_id = db_metadata["electron_id"]
-        self._lattice_id = db_metadata["lattice_id"]
-        self._storage_path = db_metadata["storage_path"]
-        self._storage_type = db_metadata["storage_type"]
+        self._electron_id = metadata["id"]
+        self._lattice_id = metadata["parent_lattice_id"]
+        self._storage_path = metadata["storage_path"]
+        self._storage_type = metadata["storage_type"]
 
     @property
-    def pure_metadata(self) -> Dict:
-        return self._pure_metadata
+    def metadata(self) -> Dict:
+        return self._metadata
 
-    @pure_metadata.setter
-    def pure_metadata(self, meta: Dict):
-        self._pure_metadata = meta
-
-    @property
-    def db_metadata(self):
-        return self._db_metadata
-
-    @db_metadata.setter
-    def db_metadata(self, meta: Dict):
-        self._db_metadata = meta
+    @metadata.setter
+    def metadata(self, meta: Dict):
+        self._metadata = meta
 
     def get_asset_ids(self, session: Session, keys: List[str]) -> Dict[str, int]:
         return _get_asset_ids(session, self._electron_id, keys)
@@ -87,11 +77,8 @@ class Electron(DispatchedObject):
         )
         return record
 
-    def _to_pure_meta(self, session: Session, record):
-        return _to_pure_meta(session, record)
-
-    def _to_db_meta(self, session: Session, record):
-        return _to_db_meta(session, record)
+    def _to_meta(self, session: Session, record):
+        return _to_meta(session, record)
 
     def meta_record_map(self, key: str) -> str:
         return _meta_record_map[key]

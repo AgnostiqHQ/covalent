@@ -82,9 +82,9 @@ def test_lattice_attributes(test_db, mocker):
         lat = Lattice(session, record)
         asset_ids = lat.get_asset_ids(session, [])
 
-    meta = lat.pure_metadata.keys()
+    meta = lat.metadata.keys()
 
-    assert meta == METADATA_KEYS
+    assert METADATA_KEYS.issubset(meta)
     assert asset_ids.keys() == ASSET_KEYS.union(DISPATCH_ASSET_KEYS)
 
     workflow_function = lat.get_value("workflow_function").get_deserialized()
@@ -120,8 +120,6 @@ def test_lattice_get_set_value(test_db, mocker):
     assert lat.get_value("__name__") == "workflow"
     lat.set_value("executor", "awsbatch")
     assert lat.get_value("executor") == "awsbatch"
-
-    assert lat.get_metadata("schedule") is None
 
 
 def test_lattice_get_metadata(test_db, mocker):

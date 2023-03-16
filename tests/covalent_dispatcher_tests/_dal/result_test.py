@@ -87,8 +87,8 @@ def test_result_attributes(test_db, mocker):
         srvres = Result(session, record)
         asset_ids = srvres.get_asset_ids(session, [])
 
-    meta = srvres.pure_metadata.keys()
-    assert meta == METADATA_KEYS
+    meta = srvres.metadata.keys()
+    assert METADATA_KEYS.issubset(meta)
     assert asset_ids.keys() == ASSET_KEYS.union(LATTICE_ASSET_KEYS)
 
 

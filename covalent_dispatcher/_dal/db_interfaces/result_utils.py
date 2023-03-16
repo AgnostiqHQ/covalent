@@ -76,6 +76,16 @@ _meta_record_map = {
     "completed_electron_num": "completed_electron_num",
 }
 
+_db_meta_record_map = {
+    "id": "id",
+    "electron_id": "electron_id",
+    "storage_path": "storage_path",
+    "storage_type": "storage_type",
+    "completed_electron_num": "completed_electron_num",
+}
+
+_meta_record_map.update(_db_meta_record_map)
+
 # Obsoleted by LatticeAsset table
 _asset_record_map = {
     "inputs": "inputs_filename",
@@ -104,11 +114,10 @@ get_filters.update(custom_get_filters)
 set_filters.update(custom_set_filters)
 
 
-def _to_pure_meta(session: Session, record: models.Lattice):
-    pure_metadata = {k: getattr(record, v) for k, v in _meta_record_map.items()}
-    del pure_metadata["completed_electron_num"]
+def _to_meta(session: Session, record: models.Lattice):
+    metadata = {k: getattr(record, v) for k, v in _meta_record_map.items()}
 
-    return pure_metadata
+    return metadata
 
 
 def _to_asset_meta(session: Session, record: models.Lattice):
@@ -126,14 +135,3 @@ def _get_asset_ids(session: Session, lattice_id: int, keys: List[str]) -> Dict[s
 
     records = session.scalars(stmt).all()
     return {x.key: x.asset_id for x in records}
-
-
-def _to_db_meta(session: Session, record: models.Lattice):
-    db_metadata = {
-        "lattice_id": record.id,
-        "electron_id": record.electron_id,
-        "storage_path": record.storage_path,
-        "storage_type": record.storage_type,
-        "completed_electron_num": record.completed_electron_num,
-    }
-    return db_metadata

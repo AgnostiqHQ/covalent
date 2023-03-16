@@ -32,24 +32,12 @@ from .asset import Asset
 class DispatchedObject(ABC):
     @property
     @abstractmethod
-    def pure_metadata(self) -> Dict:
+    def metadata(self) -> Dict:
         raise NotImplementedError
 
     @property
-    @pure_metadata.setter
-    @abstractmethod
-    def pure_metadata(self, meta: Dict):
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def db_metadata(self) -> Dict:
-        raise NotImplementedError
-
-    @property
-    @db_metadata.setter
-    @abstractmethod
-    def db_metadata(self, meta: Dict):
+    @metadata.setter
+    def metadata(self, meta: Dict):
         raise NotImplementedError
 
     @property
@@ -70,11 +58,7 @@ class DispatchedObject(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _to_pure_meta(self, session: Session, record):
-        raise NotImplementedError
-
-    @abstractmethod
-    def _to_db_meta(self, session: Session, record):
+    def _to_meta(self, session: Session, record):
         raise NotImplementedError
 
     @abstractmethod
@@ -83,19 +67,18 @@ class DispatchedObject(ABC):
 
     def _refresh_metadata(self, session: Session):
         record = self._get_db_record(session)
-        self.pure_metadata = self._to_pure_meta(session, record)
-        self.db_metadata = self._to_db_meta(session, record)
+        self.metadata = self._to_meta(session, record)
 
-    def get_pure_metadata(self, key: str, session: Session = None, refresh: bool = True):
+    def get_metadata(self, key: str, session: Session = None, refresh: bool = True):
         if refresh:
             if session:
                 self._refresh_metadata(session)
             else:
                 with workflow_db.session() as session:
                     self._refresh_metadata(session)
-        return self.pure_metadata[key]
+        return self.metadata[key]
 
-    def set_pure_metadata(self, key: str, val: Union[str, int], session: Session = None):
+    def set_metadata(self, key: str, val: Union[str, int], session: Session = None):
         if session:
             record = self._get_db_record(session)
             record_attr = self.meta_record_map(key)
@@ -106,18 +89,6 @@ class DispatchedObject(ABC):
                 record_attr = self.meta_record_map(key)
                 setattr(record, record_attr, val)
 
-    def get_db_metadata(self, key: str, session: Session = None, refresh: bool = True):
-        if refresh:
-            if session:
-                self._refresh_metadata(session)
-            else:
-                with workflow_db.session() as session:
-                    self._refresh_metadata(session)
-        return self.db_metadata[key]
-
-    def set_db_metadata(self, key: str, val: Union[str, int], session: Session = None):
-        self.set_pure_metadata(key, val, session)
-
     def get_asset(self, key: str) -> Asset:
         if key not in self.assets:
             with workflow_db.session() as session:
@@ -127,10 +98,8 @@ class DispatchedObject(ABC):
         return self.assets[key]
 
     def _get_value(self, key: str, session: Session, refresh: bool = True) -> Any:
-        if key in self.pure_metadata:
-            return self.get_pure_metadata(key, session, refresh)
-        elif key in self.db_metadata:
-            return self.get_db_metadata(key, session, refresh)
+        if key in self.metadata:
+            return self.get_metadata(key, session, refresh)
         elif key in self.computed_fields:
             handler = self.computed_fields[key]
             return handler(self, session)
@@ -145,10 +114,8 @@ class DispatchedObject(ABC):
                 return self._get_value(key, session, refresh)
 
     def _set_value(self, key: str, val: Any, session: Session) -> None:
-        if key in self.pure_metadata:
-            self.set_pure_metadata(key, val, session)
-        elif key in self.db_metadata:
-            self.set_db_metadata(key, val, session)
+        if key in self.metadata:
+            self.set_metadata(key, val, session)
         else:
             self.get_asset(key).store_data(val)
 
