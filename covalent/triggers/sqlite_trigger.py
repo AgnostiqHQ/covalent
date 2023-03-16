@@ -48,6 +48,7 @@ class SQLiteTrigger(BaseTrigger):
 
         self.stop_flag = None
         self.last_id = 1
+        self.initial_status = "pending"
 
         self.db_path = db_path
         self.table_name = table_name
@@ -65,24 +66,31 @@ class SQLiteTrigger(BaseTrigger):
 
         self.stop_flag = Event()
         while not self.stop_flag.is_set():
-            app_log.warning("Going to read the last entry in DB")
-
             # Check if there are any new rows in the database
-            cursor.execute(f"SELECT COUNT(*) FROM {self.table_name} WHERE id > {self.last_id}")
+            cursor.execute(
+                f"SELECT COUNT(*) FROM {self.table_name} WHERE id > ? AND status = ?",
+                (self.last_id, self.initial_status),
+            )
             count = cursor.fetchone()[0]
-            app_log.warning(f"first row is: {count}")
+            app_log.warning(f"Count: {count}, last id: {self.last_id}")
 
             if count > 0:
                 # Get the newest row in the database
-                cursor.execute(f"SELECT * FROM {self.table_name} ORDER BY id DESC LIMIT 1")
-                row = cursor.fetchone()
+                cursor.execute(
+                    f"SELECT id FROM {self.table_name} WHERE id > ? AND status = ?",
+                    (self.last_id, self.initial_status),
+                )
 
-                app_log.warning(f"Row is: {row}")
+                ids = cursor.fetchall()
+
+                app_log.warning(f"IDs which are triggering: {ids}")
+
+                # Trigger the workflow for all the pending ids
+                for _ in ids:
+                    self.trigger()
+
                 # Update the last_id to the newest row id
-                self.last_id = row[0]
-
-                # Trigger the workflow
-                self.trigger()
+                self.last_id = ids[-1][0]
 
             time.sleep(1)
 

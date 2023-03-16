@@ -101,7 +101,7 @@ async def update_node_result(result_object, node_result) -> None:
     Return(s)
         None
     """
-    app_log.warning("Updating node result (run_planned_workflow).")
+    app_log.debug("Updating node result (run_planned_workflow).")
     try:
         update._node(result_object, **node_result)
     except Exception as ex:
