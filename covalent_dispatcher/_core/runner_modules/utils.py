@@ -40,8 +40,7 @@ def get_executor(node_id, selected_executor, loop=None, pool=None) -> AsyncBaseE
     app_log.debug(f"Running task {node_id} using executor {short_name}, {object_dict}")
 
     # the executor is determined during scheduling and provided in the execution metadata
-    executor = _executor_manager.get_executor(short_name)
-    executor.from_dict(object_dict)
+    executor = _executor_manager.get_executor(short_name, object_dict)
     executor._init_runtime(loop=loop, cancel_pool=pool)
 
     return executor
