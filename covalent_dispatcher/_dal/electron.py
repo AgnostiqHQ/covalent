@@ -73,13 +73,15 @@ class Electron(DispatchedObject):
         record = (
             session.query(models.Electron).where(models.Electron.id == self._electron_id).first()
         )
+        self._record = record
         return record
 
     def _to_meta(self, session: Session, record):
         return _to_meta(session, record)
 
-    def meta_record_map(self, key: str) -> str:
-        return _meta_record_map[key]
+    @property
+    def meta_record_map(self) -> Dict:
+        return _meta_record_map
 
     def get_value(self, key: str, session: Session = None, refresh: bool = True):
         return get_filters[key](super().get_value(key, session, refresh))

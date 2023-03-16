@@ -61,8 +61,9 @@ class DispatchedObject(ABC):
     def _to_meta(self, session: Session, record):
         raise NotImplementedError
 
+    @property
     @abstractmethod
-    def meta_record_map(self, key: str) -> str:
+    def meta_record_map(self) -> Dict:
         raise NotImplementedError
 
     def _refresh_metadata(self, session: Session):
@@ -81,12 +82,12 @@ class DispatchedObject(ABC):
     def set_metadata(self, key: str, val: Union[str, int], session: Session = None):
         if session:
             record = self._get_db_record(session)
-            record_attr = self.meta_record_map(key)
+            record_attr = self.meta_record_map[key]
             setattr(record, record_attr, val)
         else:
             with workflow_db.session() as session:
                 record = self._get_db_record(session)
-                record_attr = self.meta_record_map(key)
+                record_attr = self.meta_record_map[key]
                 setattr(record, record_attr, val)
 
     def get_asset(self, key: str) -> Asset:

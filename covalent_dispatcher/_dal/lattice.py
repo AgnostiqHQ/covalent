@@ -68,8 +68,9 @@ class Lattice(DispatchedObject):
         record = session.query(models.Lattice).where(models.Lattice.id == self._lattice_id).first()
         return record
 
-    def meta_record_map(self, key: str) -> str:
-        return _meta_record_map[key]
+    @property
+    def meta_record_map(self) -> Dict:
+        return _meta_record_map
 
     def _to_meta(self, session: Session, record):
         return _to_meta(session, record)
