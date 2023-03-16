@@ -46,8 +46,6 @@ class Lattice(DispatchedObject):
         self._record = record
 
         self._lattice_id = metadata["id"]
-        self._storage_path = metadata["storage_path"]
-        self._storage_type = metadata["storage_type"]
 
         self.transport_graph = get_compute_graph(self._lattice_id, bare)
 

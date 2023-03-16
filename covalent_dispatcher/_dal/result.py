@@ -63,8 +63,6 @@ class Result(DispatchedObject):
 
         self._lattice_id = metadata["id"]
         self._electron_id = metadata["electron_id"]
-        self._storage_path = metadata["storage_path"]
-        self._storage_type = metadata["storage_type"]
 
         self.lattice = Lattice(session, record, bare)
 

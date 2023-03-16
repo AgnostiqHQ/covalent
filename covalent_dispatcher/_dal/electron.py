@@ -22,6 +22,7 @@
 
 from typing import Any, Dict, List
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from .._db import models
@@ -48,9 +49,6 @@ class Electron(DispatchedObject):
 
         self.node_id = record.transport_graph_node_id
         self._electron_id = metadata["id"]
-        self._lattice_id = metadata["parent_lattice_id"]
-        self._storage_path = metadata["storage_path"]
-        self._storage_type = metadata["storage_type"]
 
     @property
     def metadata(self) -> Dict:
@@ -91,8 +89,6 @@ class Electron(DispatchedObject):
 
 
 def resolve_sub_dispatch_id(obj: Electron, session: Session) -> str:
-    record = (
-        session.query(models.Lattice).where(models.Lattice.electron_id == obj._electron_id).first()
-    )
-    if record:
-        return record.dispatch_id
+    stmt = select(models.Lattice.dispatch_id).where(models.Lattice.electron_id == obj._electron_id)
+    record = session.scalars(stmt).first()
+    return record
