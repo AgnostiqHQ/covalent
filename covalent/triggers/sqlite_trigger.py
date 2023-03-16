@@ -20,7 +20,9 @@
 
 import sqlite3
 import time
+from functools import partial
 from threading import Event
+from typing import Any, List, Tuple
 
 from covalent._shared_files import logger
 
@@ -32,7 +34,27 @@ log_stack_info = logger.log_stack_info
 
 class SQLiteTrigger(BaseTrigger):
     """
-    SQLite Trigger which can read for new row additions
+    SQLite based Trigger which can read for changes in a SQLite database
+    and trigger workflows based on that.
+
+    Args:
+        db_path: Absolute path to the database file
+        table_name: Name of the table to observe
+        poll_interval: Time in seconds to wait for before reading the database again
+        where_clauses: List of "WHERE" conditions, e.g. ["id > 2", "status = pending"], to check when
+                       polling the database
+        trigger_after_n: Number of times the event must happen after which the workflow will be triggered.
+                         e.g value of 2 means workflow will be triggered once the event has occurred twice.
+
+    Attributes:
+        self.db_path: Absolute path to the database file
+        self.table_name: Name of the table to observe
+        self.poll_interval: Time in seconds to wait for before reading the database again
+        self.where_clauses: List of "WHERE" conditions, e.g. ["id > 2", "status = pending"], to check when
+                            polling the database
+        self.trigger_after_n: Number of times the event must happen after which the workflow will be triggered.
+                              e.g value of 2 means workflow will be triggered once the event has occurred twice.
+        self.stop_flag: Thread safe flag used to check whether the stop condition has been met
 
     """
 
@@ -40,59 +62,62 @@ class SQLiteTrigger(BaseTrigger):
         self,
         db_path: str,
         table_name: str,
+        poll_interval: int = 1,
+        where_clauses: List[Tuple[str, Any]] = None,
+        trigger_after_n: int = 1,
         lattice_dispatch_id: str = None,
         dispatcher_addr: str = None,
         triggers_server_addr: str = None,
     ):
         super().__init__(lattice_dispatch_id, dispatcher_addr, triggers_server_addr)
 
-        self.stop_flag = None
-        self.last_id = 1
-        self.initial_status = "pending"
-
         self.db_path = db_path
         self.table_name = table_name
+        self.poll_interval = poll_interval
+        self.where_clauses = where_clauses
+        self.trigger_after_n = trigger_after_n
+
+        self.stop_flag = None
 
     def observe(self) -> None:
         """
-        Keep performing the trigger action whenever ...
-        until stop condition has been met.
+        Keep performing the trigger action as long as
+        where conditions are met or until stop has being called
         """
 
         app_log.warning("Inside SQLiteTrigger's observe")
+        event_count = 0
 
         connection = sqlite3.connect(self.db_path)
+        connection.row_factory = sqlite3.Row
+
         cursor = connection.cursor()
+
+        sql_poll_cmd = f"SELECT * FROM {self.table_name}"
+
+        if self.where_clauses:
+            sql_poll_cmd += " WHERE "
+            sql_poll_cmd += " AND ".join([conds[0] for conds in self.where_clauses])
+
+            execute_cmd = partial(
+                cursor.execute, sql_poll_cmd, [conds[1] for conds in self.where_clauses]
+            )
+        else:
+            execute_cmd = partial(cursor.execute, sql_poll_cmd)
 
         self.stop_flag = Event()
         while not self.stop_flag.is_set():
-            # Check if there are any new rows in the database
-            cursor.execute(
-                f"SELECT COUNT(*) FROM {self.table_name} WHERE id > ? AND status = ?",
-                (self.last_id, self.initial_status),
-            )
-            count = cursor.fetchone()[0]
-            app_log.warning(f"Count: {count}, last id: {self.last_id}")
+            # Read the DB with specified command
+            execute_cmd()
 
-            if count > 0:
-                # Get the newest row in the database
-                cursor.execute(
-                    f"SELECT id FROM {self.table_name} WHERE id > ? AND status = ?",
-                    (self.last_id, self.initial_status),
-                )
-
-                ids = cursor.fetchall()
-
-                app_log.warning(f"IDs which are triggering: {ids}")
-
-                # Trigger the workflow for all the pending ids
-                for _ in ids:
+            # If command ran successfuly, trigger the workflow
+            if selected_rows := cursor.fetchall():
+                event_count += 1
+                if event_count == self.trigger_after_n:
                     self.trigger()
+                    event_count = 0
 
-                # Update the last_id to the newest row id
-                self.last_id = ids[-1][0]
-
-            time.sleep(1)
+            time.sleep(self.poll_interval)
 
         cursor.close()
         connection.close()
