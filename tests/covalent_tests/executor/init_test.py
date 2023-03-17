@@ -83,9 +83,8 @@ def test_get_executor(mocker):
         def run(self):
             pass
 
-    me = MockExecutor()
-    plugin_mock = MagicMock(return_value=me)
-    object_dict = {"attributes": {"kwarg_1": "a", "kwarg_2": "b"}}
+    def plugin_mock(**kwargs):
+        return "plugin map func called"
 
     mocker.patch("covalent.executor._ExecutorManager.__init__", return_value=None)
 
@@ -99,11 +98,10 @@ def test_get_executor(mocker):
     update_config_mock = mocker.patch("covalent.executor.update_config")
 
     em.executor_plugins_map = {"mock_name": plugin_mock}
-    resp = em.get_executor(name="mock_name", object_dict=object_dict)
+    resp = em.get_executor(name="mock_name")
     update_config_mock.assert_called_once_with()
     get_config_mock.assert_called_once_with("executors.mock_name")
-    assert resp is me
-    assert plugin_mock.called_with(**object_dict["attributes"])
+    assert resp == "plugin map func called"
 
     # Case 3 - name is str and not in executor_plugin_map
     with pytest.raises(ValueError):

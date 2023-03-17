@@ -22,7 +22,6 @@
 Defines executors and provides a "manager" to get all available executors
 """
 
-import copy
 import glob
 import importlib
 import inspect
@@ -88,11 +87,7 @@ class _ExecutorManager:
         # Look for pip-installed plugins:
         self._load_installed_plugins()
 
-    @staticmethod
-    def _get_client_options(object_dict: dict):
-        return copy.deepcopy(object_dict["attributes"]) if object_dict else {}
-
-    def get_executor(self, name: Union[str, BaseExecutor], object_dict: dict = {}) -> BaseExecutor:
+    def get_executor(self, name: Union[str, BaseExecutor]) -> BaseExecutor:
         """
         Get an executor by name.
         This accepts a string like "local" or a BaseExecutor instance.
@@ -114,10 +109,8 @@ class _ExecutorManager:
         elif isinstance(name, str):
             if name in self.executor_plugins_map:
                 update_config()
-                client_options = _ExecutorManager._get_client_options(object_dict)
                 default_options = get_config(f"executors.{name}")
-                options = client_options if client_options else default_options
-                return self.executor_plugins_map[name](**options)
+                return self.executor_plugins_map[name](**default_options)
             else:
                 message = f"No executor found by name: {name}."
                 app_log.error(message)
