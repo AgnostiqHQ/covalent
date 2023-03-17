@@ -112,7 +112,11 @@ class SQLiteTrigger(BaseTrigger):
         self.stop_flag = Event()
         while not self.stop_flag.is_set():
             # Read the DB with specified command
-            execute_cmd()
+            try:
+                execute_cmd()
+            except sqlite3.OperationalError:
+                time.sleep(self.poll_interval)
+                continue
 
             # If command ran successfuly, trigger the workflow
             if selected_rows := cursor.fetchall():

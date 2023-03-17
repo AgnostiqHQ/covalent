@@ -25,7 +25,7 @@
 !*/
 
 # Temporarily allowing installable tarball
-!/dist/covalent-0.218.0rc0.tar.gz
+!/dist/*.tar.gz
 
 # Allow tests, docs, core source, github actions, and detect-secrets filters
 !/.detect_secrets_filters/**
