@@ -41,7 +41,10 @@ ELECTRON_KEYS = list(_meta_record_map.keys())
 
 
 class Electron(DispatchedObject):
+    model = models.Electron
+
     def __init__(self, session: Session, record: models.Electron, *, keys: List = ELECTRON_KEYS):
+        self._id = record.id
         self._keys = keys
         self._metadata = _to_meta(session, record, self._keys)
         self._assets = {}
@@ -73,13 +76,6 @@ class Electron(DispatchedObject):
     @property
     def assets(self):
         return self._assets
-
-    def _get_db_record(self, session) -> models.Electron:
-        record = (
-            session.query(models.Electron).where(models.Electron.id == self._electron_id).first()
-        )
-        self._record = record
-        return record
 
     def _to_meta(self, session: Session, record: models.Electron, keys: List):
         return _to_meta(session, record, self.keys)

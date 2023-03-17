@@ -35,6 +35,8 @@ LATTICE_KEYS = list(_meta_record_map.keys())
 
 
 class Lattice(DispatchedObject):
+    model = models.Lattice
+
     def __init__(
         self,
         session: Session,
@@ -44,6 +46,7 @@ class Lattice(DispatchedObject):
         keys: List = LATTICE_KEYS,
         electron_keys: List = ELECTRON_KEYS,
     ):
+        self._id = record.id
         self._keys = keys
         self._metadata = _to_meta(session, record, keys)
         self._assets = {}
@@ -71,10 +74,6 @@ class Lattice(DispatchedObject):
     @property
     def assets(self):
         return self._assets
-
-    def _get_db_record(self, session: Session) -> models.Lattice:
-        record = session.query(models.Lattice).where(models.Lattice.id == self._lattice_id).first()
-        return record
 
     @property
     def meta_record_map(self) -> Dict:

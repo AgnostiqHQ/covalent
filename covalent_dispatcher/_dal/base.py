@@ -23,8 +23,10 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Tuple, Union
 
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from .._db import models
 from .._db.datastore import workflow_db
 from .asset import Asset
 
@@ -58,9 +60,10 @@ class DispatchedObject(ABC):
     def assets(self) -> Dict:
         raise NotImplementedError
 
-    @abstractmethod
-    def _get_db_record(self, session: Session):
-        raise NotImplementedError
+    def _get_db_record(self, session) -> models.Base:
+        record = type(self).record(session, self._id)
+        self._record = record
+        return record
 
     @abstractmethod
     def _to_meta(self, session: Session, record, keys: set):
@@ -139,3 +142,10 @@ class DispatchedObject(ABC):
         for item in keyvals:
             k, v = item
             self.set_value(k, v, session)
+
+    @classmethod
+    def record(cls, session: Session, record_id: int):
+        model = cls.model
+        stmt = select(model).where(model.id == record_id)
+        record = session.scalars(stmt).first()
+        return record
