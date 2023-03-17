@@ -79,6 +79,8 @@ You dispatch a workflow in your Python code using the Covalent {code}`dispatch()
 
 The dispatch server sends individual tasks to {ref}`executors<basic_primitives_executor>`.
 
+## Re-dispatch
+
 A workflow that has been dispatched once can then be redispatched using the {code}`covalent.redispatch()` command which allows:
 
 1. Redefining particular tasks in the workflow.
@@ -87,7 +89,7 @@ A workflow that has been dispatched once can then be redispatched using the {cod
 
 Furthermore, redispatching does not rely on having the lattice object and only having access to the previous dispatch id suffices. This is convenient since the script required to initially dispatch a workflow is not required to be able to re-execute the workflow.
 
-For example, you can redefine {code}`sum_xy` to {code}`weighted_sum_xy` and redispatch the workflow while reusing the previously computed results, with:
+For example, you can redefine {code}`add` to {code}`weighted_sum_xy` and redispatch the workflow while reusing the previously computed results, with:
 
 ```python
 @ct.electron
@@ -97,7 +99,7 @@ def weighted_sum_xy(x, y):
 
 redispatch_id = ct.redispatch(
     dispatch_id,
-    replace_electrons={'sum_xy': weighted_sum_xy},
+    replace_electrons={'add': weighted_sum_xy},
     reuse_previous_results=True
 )()
 ```
@@ -107,6 +109,37 @@ Redispatching does not allow altering function signatures when redefining tasks.
 ```
 
 For more on how the Covalent dispatcher analyzes and runs lattices, see {ref}`Workflow Dispatch` in {doc}`server_concepts`.
+
+
+## Cancellation
+
+A workflow can be canceled in Covalent using the {code}`covalent.cancel()` function as follows:
+
+```python
+@ct.lattice
+def my_workflow(x):
+	r1 = task1(x)
+	...
+	return result
+
+dispatch_id = ct.dispatch(my_workflow)(10)
+
+# Cancel the workflow using its dispatch id
+ct.cancel(dispatch_id)
+```
+
+Individual tasks/electrons from within workflows can also be canceled by providing the task ids as follows
+
+```python
+ct.cancel(dispatch_id, task_ids=[0, 2, 5])
+```
+
+This will cancel processing of tasks `0, 2, 5` as soon as the cancellation request is received.
+
+```{note}
+If a node in a workflow represents a sub-lattice then cancelling that node would result in cancelling all the tasks within that sub-lattice recursively since sub-lattices in Covalent are dynamically constructed at runtime
+```
+
 
 
 (basic_primitives_result)=
