@@ -37,18 +37,23 @@ from .db_interfaces.electron_utils import (
     set_filters,
 )
 
+ELECTRON_KEYS = list(_meta_record_map.keys())
+
 
 class Electron(DispatchedObject):
-    def __init__(self, session: Session, record: models.Electron):
-        metadata = _to_meta(session, record)
-
-        self._metadata = metadata
+    def __init__(self, session: Session, record: models.Electron, *, keys: List = ELECTRON_KEYS):
+        self._keys = keys
+        self._metadata = _to_meta(session, record, self._keys)
         self._assets = {}
 
         self._record = record
 
         self.node_id = record.transport_graph_node_id
-        self._electron_id = metadata["id"]
+        self._electron_id = record.id
+
+    @property
+    def keys(self) -> list:
+        return self._keys
 
     @property
     def metadata(self) -> Dict:
@@ -76,8 +81,8 @@ class Electron(DispatchedObject):
         self._record = record
         return record
 
-    def _to_meta(self, session: Session, record):
-        return _to_meta(session, record)
+    def _to_meta(self, session: Session, record: models.Electron, keys: List):
+        return _to_meta(session, record, self.keys)
 
     @property
     def meta_record_map(self) -> Dict:

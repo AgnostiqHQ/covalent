@@ -97,6 +97,31 @@ def test_lattice_attributes(test_db, mocker):
     res.lattice.cova_imports == lat.get_value("cova_imports")
 
 
+def test_lattice_restricted_attributes(test_db, mocker):
+    res = get_mock_result()
+    res._initialize_nodes()
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+
+    update.persist(res)
+
+    with test_db.session() as session:
+        record = (
+            session.query(models.Lattice)
+            .where(models.Lattice.dispatch_id == "mock_dispatch")
+            .first()
+        )
+
+        lat = Lattice(session, record, keys=["id"])
+
+    meta = lat.metadata.keys()
+    assert "id" in meta
+    assert "storage_path" not in meta
+
+
 def test_lattice_get_set_value(test_db, mocker):
     res = get_mock_result()
     res._initialize_nodes()

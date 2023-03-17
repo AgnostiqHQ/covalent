@@ -29,7 +29,9 @@ from .base import DispatchedObject
 from .db_interfaces.lattice_utils import ASSET_KEYS  # nopycln: import
 from .db_interfaces.lattice_utils import METADATA_KEYS  # nopycln: import
 from .db_interfaces.lattice_utils import _get_asset_ids, _meta_record_map, _to_meta
-from .tg import get_compute_graph
+from .tg import ELECTRON_KEYS, get_compute_graph
+
+LATTICE_KEYS = list(_meta_record_map.keys())
 
 
 class Lattice(DispatchedObject):
@@ -38,16 +40,22 @@ class Lattice(DispatchedObject):
         session: Session,
         record: models.Lattice,
         bare: bool = False,
+        *,
+        keys: List = LATTICE_KEYS,
+        electron_keys: List = ELECTRON_KEYS,
     ):
-        metadata = _to_meta(session, record)
-
-        self._metadata = metadata
+        self._keys = keys
+        self._metadata = _to_meta(session, record, keys)
         self._assets = {}
         self._record = record
 
-        self._lattice_id = metadata["id"]
+        self._lattice_id = self._record.id
 
-        self.transport_graph = get_compute_graph(self._lattice_id, bare)
+        self.transport_graph = get_compute_graph(self._lattice_id, bare, keys=electron_keys)
+
+    @property
+    def keys(self) -> List:
+        return self._keys
 
     @property
     def metadata(self):
@@ -72,8 +80,8 @@ class Lattice(DispatchedObject):
     def meta_record_map(self) -> Dict:
         return _meta_record_map
 
-    def _to_meta(self, session: Session, record):
-        return _to_meta(session, record)
+    def _to_meta(self, session: Session, record: models.Lattice, keys: List):
+        return _to_meta(session, record, keys)
 
     @property
     def __name__(self):

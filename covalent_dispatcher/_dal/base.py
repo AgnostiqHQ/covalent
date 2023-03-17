@@ -32,6 +32,11 @@ from .asset import Asset
 class DispatchedObject(ABC):
     @property
     @abstractmethod
+    def keys(self) -> set:
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
     def metadata(self) -> Dict:
         raise NotImplementedError
 
@@ -58,7 +63,7 @@ class DispatchedObject(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def _to_meta(self, session: Session, record):
+    def _to_meta(self, session: Session, record, keys: set):
         raise NotImplementedError
 
     @property
@@ -68,7 +73,7 @@ class DispatchedObject(ABC):
 
     def _refresh_metadata(self, session: Session):
         record = self._get_db_record(session)
-        self.metadata = self._to_meta(session, record)
+        self.metadata = self._to_meta(session, record, self.keys)
 
     def get_metadata(self, key: str, session: Session = None, refresh: bool = True):
         if refresh:

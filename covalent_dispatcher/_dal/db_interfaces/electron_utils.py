@@ -134,8 +134,8 @@ get_filters.update(custom_get_filters)
 set_filters.update(custom_set_filters)
 
 
-def _to_meta(session: Session, record: models.Electron):
-    metadata = {k: getattr(record, v) for k, v in _meta_record_map.items()}
+def _to_meta(session: Session, record: models.Electron, keys: List):
+    metadata = {k: getattr(record, _meta_record_map[k]) for k in keys}
 
     return metadata
 

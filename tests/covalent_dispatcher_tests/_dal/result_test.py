@@ -92,6 +92,32 @@ def test_result_attributes(test_db, mocker):
     assert asset_ids.keys() == ASSET_KEYS.union(LATTICE_ASSET_KEYS)
 
 
+def test_result_restricted_attributes(test_db, mocker):
+    res = get_mock_result()
+    res._initialize_nodes()
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+
+    update.persist(res)
+
+    with test_db.session() as session:
+        record = (
+            session.query(models.Lattice)
+            .where(models.Lattice.dispatch_id == "mock_dispatch")
+            .first()
+        )
+
+        srvres = Result(session, record, bare=True, keys=["status", "dispatch_id"])
+
+    meta = srvres.metadata.keys()
+    assert "status" in meta
+    assert "dispatch_id" in meta
+    assert "root_dispatch_id" not in meta
+
+
 def test_result_get_set_value(test_db, mocker):
     res = get_mock_result()
     res._initialize_nodes()

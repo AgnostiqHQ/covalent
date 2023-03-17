@@ -43,9 +43,12 @@ from .db_interfaces.result_utils import (
     get_filters,
     set_filters,
 )
-from .lattice import Lattice
+from .electron import ELECTRON_KEYS
+from .lattice import LATTICE_KEYS, Lattice
 
 app_log = logger.app_log
+
+RESULT_KEYS = list(_meta_record_map.keys())
 
 
 class Result(DispatchedObject):
@@ -54,17 +57,20 @@ class Result(DispatchedObject):
         session: Session,
         record: models.Lattice,
         bare: bool = False,
+        *,
+        keys: list = RESULT_KEYS,
+        lattice_keys: list = LATTICE_KEYS,
+        electron_keys: list = ELECTRON_KEYS,
     ):
-        metadata = _to_meta(session, record)
-
-        self._metadata = metadata
+        self._keys = keys
+        self._metadata = _to_meta(session, record, keys)
         self._assets = {}
         self._record = record
 
-        self._lattice_id = metadata["id"]
-        self._electron_id = metadata["electron_id"]
+        self._lattice_id = record.id
+        self._electron_id = record.electron_id
 
-        self.lattice = Lattice(session, record, bare)
+        self.lattice = Lattice(session, record, bare, keys=lattice_keys)
 
         self._task_failed = False
         self._task_cancelled = False
@@ -77,20 +83,16 @@ class Result(DispatchedObject):
         self._result = None
 
     @property
+    def keys(self) -> List:
+        return self._keys
+
+    @property
     def metadata(self):
         return self._metadata
 
     @metadata.setter
     def metadata(self, meta: Dict):
         self._metadata = meta
-
-    @property
-    def db_metadata(self):
-        return self._db_metadata
-
-    @db_metadata.setter
-    def db_metadata(self, meta: Dict):
-        self._db_metadata = meta
 
     def get_asset_ids(self, session: Session, keys: List[str]) -> Dict[str, int]:
         return _get_asset_ids(session, self._lattice_id, keys)
@@ -107,8 +109,8 @@ class Result(DispatchedObject):
     def meta_record_map(self) -> Dict:
         return _meta_record_map
 
-    def _to_meta(self, session: Session, record):
-        return _to_meta(session, record)
+    def _to_meta(self, session: Session, record: models.Lattice, keys: List):
+        return _to_meta(session, record, keys)
 
     @property
     def start_time(self):

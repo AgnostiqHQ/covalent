@@ -38,17 +38,19 @@ from .db_interfaces.tg_utils import (
     _node_records,
 )
 from .edge import Edge
+from .electron import ELECTRON_KEYS
 from .electron import Electron as Node
 
 app_log = logger.app_log
 
 
 class _TransportGraph:
-    def __init__(self, lattice_id: int, bare: bool = False):
+    def __init__(self, lattice_id: int, bare: bool = False, *, keys: List = ELECTRON_KEYS):
         self.lattice_id = lattice_id
         self.bare = bare
         self._nodes = {}
         self._graph = nx.MultiDiGraph()
+        self._keys = keys
 
     def add_node(self, node: Node):
         self._graph.add_node(node.node_id, **node.metadata)
@@ -66,10 +68,10 @@ class _TransportGraph:
 
         # Construct node from db
         if session:
-            nodes = _nodes(session, self.lattice_id, node_ids)
+            nodes = _nodes(session, self.lattice_id, node_ids, keys=self._keys)
         else:
             with workflow_db.session() as session:
-                nodes = _nodes(session, self.lattice_id, node_ids)
+                nodes = _nodes(session, self.lattice_id, node_ids, keys=self._keys)
         return nodes
 
     def get_node_value(
@@ -116,7 +118,7 @@ class _TransportGraph:
         # Read from DB
         with workflow_db.session() as session:
             node = self.get_node(node_id, session)
-            edge_list = _get_incoming_edges(session, node)
+            edge_list = _get_incoming_edges(session, node, keys=self._keys)
             return list(
                 map(
                     lambda e: {"source": e.source, "target": e.target, "attrs": e.attrs}, edge_list
@@ -138,7 +140,7 @@ class _TransportGraph:
         # Query DB
         with workflow_db.session() as session:
             node = self.get_node(node_id, session)
-            child_node_list = _get_child_nodes(session, node)
+            child_node_list = _get_child_nodes(session, node, keys=attr_keys)
             return _filter_node_list(child_node_list, session, attr_keys)
 
     # Copied from _TransportGraph
@@ -181,9 +183,9 @@ class _TransportGraph:
         return [e["source"] for e in self.get_incoming_edges(node_key)]
 
 
-def _get_incoming_edges(session: Session, node: Node) -> List[Edge]:
+def _get_incoming_edges(session: Session, node: Node, *, keys: List) -> List[Edge]:
     records = _incoming_edge_records(session, node._electron_id)
-    nodes = list(map(lambda r: _to_node(session, r[0]), records))
+    nodes = list(map(lambda r: _to_node(session, r[0], keys=keys), records))
     uid_node_id_map = {n._electron_id: n.node_id for n in nodes}
     uid_node_id_map[node._electron_id] = node.node_id
     edge_list = list(map(lambda r: _to_edge(r[1], uid_node_id_map), records))
@@ -191,14 +193,14 @@ def _get_incoming_edges(session: Session, node: Node) -> List[Edge]:
     return edge_list
 
 
-def _get_child_nodes(session: Session, node: Node) -> List[Node]:
+def _get_child_nodes(session: Session, node: Node, *, keys: List) -> List[Node]:
     """Return successor nodes with multiplicity"""
     records = _child_records(session, node._electron_id)
-    return list(map(lambda r: _to_node(session, r), records))
+    return list(map(lambda r: _to_node(session, r, keys=keys), records))
 
 
-def _to_node(session: Session, record: ElectronRecord) -> Node:
-    return Node(session, record)
+def _to_node(session: Session, record: ElectronRecord, *, keys: List) -> Node:
+    return Node(session, record, keys=keys)
 
 
 def _to_edge(e_record: EdgeRecord, uid_node_id_map: Dict) -> Edge:
@@ -209,9 +211,9 @@ def _node(session: Session, lattice_id: int, node_id: int) -> Node:
     return _nodes(session=session, lattice_id=lattice_id, node_ids=[node_id])[0]
 
 
-def _nodes(session: Session, lattice_id: int, node_ids: List[int]) -> List[Node]:
+def _nodes(session: Session, lattice_id: int, node_ids: List[int], *, keys: List) -> List[Node]:
     records = _node_records(session, lattice_id, node_ids)
-    return list(map(lambda x: _to_node(session, x), records))
+    return list(map(lambda x: _to_node(session, x, keys=keys), records))
 
 
 def _get_edge_data_for_nodes(session: Session, parent_node: Node, child_node: Node):
@@ -226,18 +228,22 @@ def _get_edge_data_for_nodes(session: Session, parent_node: Node, child_node: No
     return {i: e.attrs for i, e in enumerate(edge_list)}
 
 
-def _nodes_and_edges(session: Session, lattice_id: int) -> Tuple[List[Node], List[Edge]]:
+def _nodes_and_edges(
+    session: Session, lattice_id: int, *, keys: List
+) -> Tuple[List[Node], List[Edge]]:
     db_nodes = _node_records(session, lattice_id, [])
     db_edges = _all_edge_records(session, lattice_id)
     uid_nodeid_map = {e.id: e.transport_graph_node_id for e in db_nodes}
-    nodes = list(map(lambda x: _to_node(session, x), db_nodes))
+    nodes = list(map(lambda x: _to_node(session, x, keys=keys), db_nodes))
     edges = list(map(lambda x: _to_edge(x, uid_nodeid_map), db_edges))
 
     return nodes, edges
 
 
-def _make_compute_graph(lattice_id: int, nodes: List, edges: List) -> _TransportGraph:
-    tg = _TransportGraph(lattice_id)
+def _make_compute_graph(
+    lattice_id: int, nodes: List, edges: List, *, keys: List
+) -> _TransportGraph:
+    tg = _TransportGraph(lattice_id, keys=keys)
     for node in nodes:
         tg.add_node(node)
     for edge in edges:
@@ -245,14 +251,16 @@ def _make_compute_graph(lattice_id: int, nodes: List, edges: List) -> _Transport
     return tg
 
 
-def get_compute_graph(lattice_id: int, bare: bool = False) -> _TransportGraph:
+def get_compute_graph(
+    lattice_id: int, bare: bool = False, *, keys: List = ELECTRON_KEYS
+) -> _TransportGraph:
     if not bare:
         with workflow_db.Session() as session:
-            nodes, edges = _nodes_and_edges(session, lattice_id)
-        return _make_compute_graph(lattice_id, nodes, edges)
+            nodes, edges = _nodes_and_edges(session, lattice_id, keys=keys)
+        return _make_compute_graph(lattice_id, nodes, edges, keys=keys)
     else:
         app_log.debug("Getting bare transport graph")
-        return _TransportGraph(lattice_id, True)
+        return _TransportGraph(lattice_id, True, keys=keys)
 
 
 def _filter_node(node_obj: Node, session: Session, attr_keys: List[str]):
