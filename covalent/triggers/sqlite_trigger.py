@@ -74,7 +74,11 @@ class SQLiteTrigger(BaseTrigger):
         self.db_path = db_path
         self.table_name = table_name
         self.poll_interval = poll_interval
+
+        if isinstance(where_clauses, tuple):
+            where_clauses = [where_clauses]
         self.where_clauses = where_clauses
+
         self.trigger_after_n = trigger_after_n
 
         self.stop_flag = None

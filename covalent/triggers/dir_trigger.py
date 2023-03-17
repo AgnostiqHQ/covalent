@@ -20,6 +20,7 @@
 
 
 import asyncio
+import os
 from pathlib import Path
 from types import MethodType
 
@@ -71,10 +72,11 @@ class DirTrigger(BaseTrigger):
         dir_path,
         event_names,
         batch_size: int = 1,
+        compare_last_change: bool = False,
+        recursive: bool = False,
         lattice_dispatch_id: str = None,
         dispatcher_addr: str = None,
         triggers_server_addr: str = None,
-        recursive: bool = False,
     ):
         super().__init__(lattice_dispatch_id, dispatcher_addr, triggers_server_addr)
 
@@ -89,6 +91,7 @@ class DirTrigger(BaseTrigger):
 
         self.observe_blocks = False
         self.event_handler = None
+        self.compare_last_change = compare_last_change
 
     def attach_methods_to_handler(self) -> None:
         """
@@ -102,6 +105,8 @@ class DirTrigger(BaseTrigger):
         app_log.warning("Attaching methods to dir handler")
 
         self.n_changes = 0
+        self.last_ctime = 0
+        self.last_mtime = 0
 
         def proxy_trigger(_, event_object):
             self.n_changes += 1
@@ -109,8 +114,42 @@ class DirTrigger(BaseTrigger):
                 self.trigger()
                 self.n_changes = 0
 
+        def proxy_trigger_ctime(_, event_object):
+            self.n_changes += 1
+            if self.n_changes == self.batch_size:
+                if self.compare_last_change:
+                    this_ctime = os.path.getctime(event_object.src_path)
+                    if this_ctime > self.last_ctime:
+                        self.trigger()
+                        self.n_changes = 0
+                    self.last_ctime = this_ctime
+                else:
+                    self.trigger()
+                    self.n_changes = 0
+
+        def proxy_trigger_mtime(_, event_object):
+            self.n_changes += 1
+            if self.n_changes == self.batch_size:
+                if self.compare_last_change:
+                    this_mtime = os.path.getmtime(event_object.src_path)
+                    if this_mtime > self.last_mtime:
+                        self.trigger()
+                        self.n_changes = 0
+                    self.last_mtime = this_mtime
+                else:
+                    self.trigger()
+                    self.n_changes = 0
+
         for en in self.event_names:
             func_name = self.event_handler.supported_event_to_func_names[en]
+            # TODO: Enable the following when it works as expected
+            # if en == "created" and self.compare_last_change:
+            #     proxy_trigger_ctime.__name__ = func_name
+            #     setattr(self.event_handler, func_name, MethodType(proxy_trigger_ctime, self.event_handler))
+            # elif en == "modified" and self.compare_last_change:
+            #     proxy_trigger_mtime.__name__ = func_name
+            #     setattr(self.event_handler, func_name, MethodType(proxy_trigger_mtime, self.event_handler))
+            # else:
             proxy_trigger.__name__ = func_name
             setattr(self.event_handler, func_name, MethodType(proxy_trigger, self.event_handler))
 
