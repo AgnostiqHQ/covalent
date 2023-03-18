@@ -96,9 +96,9 @@ class Result(DispatchedObject):
     def assets(self):
         return self._assets
 
-    @property
-    def meta_record_map(self) -> Dict:
-        return _meta_record_map
+    @classmethod
+    def meta_record_map(cls: DispatchedObject, key: str) -> str:
+        return _meta_record_map[key]
 
     def _to_meta(self, session: Session, record: models.Lattice, keys: List):
         return _to_meta(session, record, keys)

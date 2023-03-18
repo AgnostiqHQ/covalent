@@ -72,9 +72,9 @@ class Electron(DispatchedObject):
     def _to_meta(self, session: Session, record: models.Electron, keys: List):
         return _to_meta(session, record, self.keys)
 
-    @property
-    def meta_record_map(self) -> Dict:
-        return _meta_record_map
+    @classmethod
+    def meta_record_map(cls: DispatchedObject, key: str) -> str:
+        return _meta_record_map[key]
 
     def get_value(self, key: str, session: Session = None, refresh: bool = True):
         return get_filters[key](super().get_value(key, session, refresh))

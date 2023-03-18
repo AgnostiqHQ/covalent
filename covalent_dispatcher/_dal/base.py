@@ -66,18 +66,19 @@ class DispatchedObject(ABC):
         raise NotImplementedError
 
     def _get_db_record(self, session) -> models.Base:
-        record = type(self).get_record(session, self._id)
-        self._record = record
-        return record
+        records = type(self).get_records(
+            session, fields=[], equality_filters={"id": self._id}, membership_filters={}
+        )
+        self._record = records[0]
+        return self._record
 
     @abstractmethod
     def _to_meta(self, session: Session, record, keys: set):
         raise NotImplementedError
 
-    @property
-    @abstractmethod
-    def meta_record_map(self) -> Dict:
-        raise NotImplementedError
+    @classmethod
+    def meta_record_map(cls, key: str) -> str:
+        return key
 
     def _refresh_metadata(self, session: Session):
         record = self._get_db_record(session)
@@ -95,12 +96,12 @@ class DispatchedObject(ABC):
     def set_metadata(self, key: str, val: Union[str, int], session: Session = None):
         if session:
             record = self._get_db_record(session)
-            record_attr = self.meta_record_map[key]
+            record_attr = type(self).meta_record_map(key)
             setattr(record, record_attr, val)
         else:
             with workflow_db.session() as session:
                 record = self._get_db_record(session)
-                record_attr = self.meta_record_map[key]
+                record_attr = type(self).meta_record_map(key)
                 setattr(record, record_attr, val)
 
     def get_asset(self, key: str) -> Asset:
@@ -149,8 +150,16 @@ class DispatchedObject(ABC):
             self.set_value(k, v, session)
 
     @classmethod
-    def get_record(cls, session: Session, record_id: int):
+    def get_records(
+        cls, session: Session, *, fields: list, equality_filters: dict, membership_filters: dict
+    ):
         model = cls.model
-        stmt = select(model).where(model.id == record_id)
-        record = session.scalars(stmt).first()
-        return record
+        stmt = select(model)
+        for attr, val in equality_filters.items():
+            stmt = stmt.where(getattr(model, attr) == val)
+        for attr, vals in membership_filters.items():
+            stmt = stmt.where(getattr(model, attr).in_(vals))
+        if len(fields) > 0:
+            stmt = stmt.load_only(fields)
+        records = session.scalars(stmt).all()
+        return records
