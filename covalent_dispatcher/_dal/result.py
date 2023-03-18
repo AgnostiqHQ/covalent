@@ -36,13 +36,7 @@ from .asset import Asset
 from .base import DispatchedObject
 from .db_interfaces.result_utils import ASSET_KEYS  # nopycln: import
 from .db_interfaces.result_utils import METADATA_KEYS  # nopycln: import
-from .db_interfaces.result_utils import (
-    _get_asset_ids,
-    _meta_record_map,
-    _to_meta,
-    get_filters,
-    set_filters,
-)
+from .db_interfaces.result_utils import _meta_record_map, _to_meta, get_filters, set_filters
 from .electron import ELECTRON_KEYS
 from .lattice import LATTICE_KEYS, Lattice
 
@@ -53,6 +47,7 @@ RESULT_KEYS = list(_meta_record_map.keys())
 
 class Result(DispatchedObject):
     model = models.Lattice
+    asset_link_model = models.LatticeAsset
 
     def __init__(
         self,
@@ -96,9 +91,6 @@ class Result(DispatchedObject):
     @metadata.setter
     def metadata(self, meta: Dict):
         self._metadata = meta
-
-    def get_asset_ids(self, session: Session, keys: List[str]) -> Dict[str, int]:
-        return _get_asset_ids(session, self._lattice_id, keys)
 
     @property
     def assets(self):

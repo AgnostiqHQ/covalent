@@ -28,7 +28,7 @@ from .._db import models
 from .base import DispatchedObject
 from .db_interfaces.lattice_utils import ASSET_KEYS  # nopycln: import
 from .db_interfaces.lattice_utils import METADATA_KEYS  # nopycln: import
-from .db_interfaces.lattice_utils import _get_asset_ids, _meta_record_map, _to_meta
+from .db_interfaces.lattice_utils import _meta_record_map, _to_meta
 from .tg import ELECTRON_KEYS, get_compute_graph
 
 LATTICE_KEYS = list(_meta_record_map.keys())
@@ -36,6 +36,7 @@ LATTICE_KEYS = list(_meta_record_map.keys())
 
 class Lattice(DispatchedObject):
     model = models.Lattice
+    asset_link_model = models.LatticeAsset
 
     def __init__(
         self,
@@ -67,9 +68,6 @@ class Lattice(DispatchedObject):
     @metadata.setter
     def metadata(self, meta: Dict):
         self._metadata = meta
-
-    def get_asset_ids(self, session: Session, keys: List[str]) -> Dict[str, int]:
-        return _get_asset_ids(session, self._lattice_id, keys)
 
     @property
     def assets(self):

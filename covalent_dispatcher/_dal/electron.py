@@ -29,19 +29,14 @@ from .._db import models
 from .base import DispatchedObject
 from .db_interfaces.electron_utils import ASSET_KEYS  # nopycln: import
 from .db_interfaces.electron_utils import METADATA_KEYS  # nopycln: import
-from .db_interfaces.electron_utils import (
-    _get_asset_ids,
-    _meta_record_map,
-    _to_meta,
-    get_filters,
-    set_filters,
-)
+from .db_interfaces.electron_utils import _meta_record_map, _to_meta, get_filters, set_filters
 
 ELECTRON_KEYS = list(_meta_record_map.keys())
 
 
 class Electron(DispatchedObject):
     model = models.Electron
+    asset_link_model = models.ElectronAsset
 
     def __init__(self, session: Session, record: models.Electron, *, keys: List = ELECTRON_KEYS):
         self._id = record.id
@@ -65,9 +60,6 @@ class Electron(DispatchedObject):
     @metadata.setter
     def metadata(self, meta: Dict):
         self._metadata = meta
-
-    def get_asset_ids(self, session: Session, keys: List[str]) -> Dict[str, int]:
-        return _get_asset_ids(session, self._electron_id, keys)
 
     @property
     def computed_fields(self) -> Dict:

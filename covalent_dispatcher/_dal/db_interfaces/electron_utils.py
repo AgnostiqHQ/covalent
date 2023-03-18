@@ -20,9 +20,8 @@
 
 """Mappings between electron attributes and DB records"""
 
-from typing import Dict, List
+from typing import List
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from covalent._shared_files.util_classes import Status
@@ -138,20 +137,3 @@ def _to_meta(session: Session, record: models.Electron, keys: List):
     metadata = {k: getattr(record, _meta_record_map[k]) for k in keys}
 
     return metadata
-
-
-def _to_asset_meta(session: Session, record: models.Electron):
-    # get asset ids
-    stmt = select(models.ElectronAsset).where(models.ElectronAsset.electron_id == record.id)
-    electron_asset_links = session.scalars(stmt).all()
-    return {x.key: x.asset_id for x in electron_asset_links}
-
-
-def _get_asset_ids(session: Session, electron_id: int, keys: List[str]) -> Dict[str, int]:
-    stmt = select(models.ElectronAsset).where(models.ElectronAsset.electron_id == electron_id)
-
-    if len(keys) > 0:
-        stmt = stmt.where(models.ElectronAsset.key.in_(keys))
-
-    records = session.scalars(stmt).all()
-    return {x.key: x.asset_id for x in records}

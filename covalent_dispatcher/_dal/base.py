@@ -51,9 +51,14 @@ class DispatchedObject(ABC):
     def computed_fields(self) -> Dict:
         return {}
 
-    @abstractmethod
     def get_asset_ids(self, session: Session, keys: List[str]) -> Dict[str, int]:
-        raise NotImplementedError
+        asset_link_model = type(self).asset_link_model
+        stmt = select(asset_link_model).where(asset_link_model.meta_record_id == self._id)
+        if len(keys) > 0:
+            stmt = stmt.where(asset_link_model.key.in_(keys))
+
+        records = session.scalars(stmt).all()
+        return {x.key: x.asset_id for x in records}
 
     @property
     @abstractmethod
@@ -61,7 +66,7 @@ class DispatchedObject(ABC):
         raise NotImplementedError
 
     def _get_db_record(self, session) -> models.Base:
-        record = type(self).record(session, self._id)
+        record = type(self).get_record(session, self._id)
         self._record = record
         return record
 
@@ -144,7 +149,7 @@ class DispatchedObject(ABC):
             self.set_value(k, v, session)
 
     @classmethod
-    def record(cls, session: Session, record_id: int):
+    def get_record(cls, session: Session, record_id: int):
         model = cls.model
         stmt = select(model).where(model.id == record_id)
         record = session.scalars(stmt).first()

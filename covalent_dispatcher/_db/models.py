@@ -248,7 +248,7 @@ class LatticeAsset(Base):
     id = Column(Integer, primary_key=True)
 
     # Lattice record id
-    lattice_id = Column(Integer, ForeignKey("lattices.id"), nullable=False)
+    meta_record_id = Column(Integer, ForeignKey("lattices.id"), nullable=False)
 
     # Asset record id
     asset_id = Column(Integer, ForeignKey("assets.id"), nullable=False)
@@ -264,7 +264,7 @@ class ElectronAsset(Base):
     id = Column(Integer, primary_key=True)
 
     # Electron record id
-    electron_id = Column(Integer, ForeignKey("electrons.id"), nullable=False)
+    meta_record_id = Column(Integer, ForeignKey("electrons.id"), nullable=False)
 
     # Asset record id
     asset_id = Column(Integer, ForeignKey("assets.id"), nullable=False)

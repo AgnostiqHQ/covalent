@@ -22,7 +22,6 @@
 
 from typing import Dict, List
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..._db import models
@@ -99,13 +98,3 @@ _asset_record_map = {
 def _to_meta(session: Session, record: models.Lattice, keys: List) -> Dict:
     metadata = {k: getattr(record, _meta_record_map[k]) for k in keys}
     return metadata
-
-
-def _get_asset_ids(session: Session, lattice_id: int, keys: List[str]) -> Dict[str, int]:
-    stmt = select(models.LatticeAsset).where(models.LatticeAsset.lattice_id == lattice_id)
-
-    if len(keys) > 0:
-        stmt = stmt.where(models.LatticeAsset.key.in_(keys))
-
-    records = session.scalars(stmt).all()
-    return {x.key: x.asset_id for x in records}

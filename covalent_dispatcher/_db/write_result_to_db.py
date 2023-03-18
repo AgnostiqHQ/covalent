@@ -194,7 +194,7 @@ def transaction_insert_electron_asset_record(
     key: str,
 ) -> ElectronAsset:
     electron_asset = ElectronAsset(
-        electron_id=electron_id,
+        meta_record_id=electron_id,
         asset_id=asset_id,
         key=key,
     )
@@ -209,7 +209,7 @@ def transaction_insert_lattice_asset_record(
     key: str,
 ) -> LatticeAsset:
     lattice_asset = LatticeAsset(
-        lattice_id=lattice_id,
+        meta_record_id=lattice_id,
         asset_id=asset_id,
         key=key,
     )
