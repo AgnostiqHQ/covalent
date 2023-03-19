@@ -28,14 +28,12 @@ from sqlalchemy.orm import Session
 from covalent._shared_files import logger
 
 from .._db.datastore import workflow_db
-from .._db.models import Electron as ElectronRecord
 from .._db.models import ElectronDependency as EdgeRecord
 from .db_interfaces.tg_utils import (
     _all_edge_records,
     _child_records,
     _edge_records_for_nodes,
     _incoming_edge_records,
-    _node_records,
 )
 from .edge import Edge
 from .electron import ELECTRON_KEYS
@@ -184,8 +182,8 @@ class _TransportGraph:
 
 
 def _get_incoming_edges(session: Session, node: Node, *, keys: List) -> List[Edge]:
-    records = _incoming_edge_records(session, node._electron_id)
-    nodes = list(map(lambda r: _to_node(session, r[0], keys=keys), records))
+    records = _incoming_edge_records(session, node._electron_id, keys=keys)
+    nodes = list(map(lambda r: Node(session, r[0], keys=keys), records))
     uid_node_id_map = {n._electron_id: n.node_id for n in nodes}
     uid_node_id_map[node._electron_id] = node.node_id
     edge_list = list(map(lambda r: _to_edge(r[1], uid_node_id_map), records))
@@ -195,25 +193,25 @@ def _get_incoming_edges(session: Session, node: Node, *, keys: List) -> List[Edg
 
 def _get_child_nodes(session: Session, node: Node, *, keys: List) -> List[Node]:
     """Return successor nodes with multiplicity"""
-    records = _child_records(session, node._electron_id)
-    return list(map(lambda r: _to_node(session, r, keys=keys), records))
-
-
-def _to_node(session: Session, record: ElectronRecord, *, keys: List) -> Node:
-    return Node(session, record, keys=keys)
+    records = _child_records(session, node._electron_id, keys=keys)
+    return list(map(lambda r: Node(session, r, keys=keys), records))
 
 
 def _to_edge(e_record: EdgeRecord, uid_node_id_map: Dict) -> Edge:
     return Edge(e_record, uid_node_id_map)
 
 
-def _node(session: Session, lattice_id: int, node_id: int) -> Node:
-    return _nodes(session=session, lattice_id=lattice_id, node_ids=[node_id])[0]
-
-
 def _nodes(session: Session, lattice_id: int, node_ids: List[int], *, keys: List) -> List[Node]:
-    records = _node_records(session, lattice_id, node_ids)
-    return list(map(lambda x: _to_node(session, x, keys=keys), records))
+    # records = _node_records(session, lattice_id, node_ids)
+    records = Node.get_records(
+        session,
+        keys=keys,
+        equality_filters={"parent_lattice_id": lattice_id},
+        membership_filters={"node_id": node_ids},
+    )
+    if len(records) < len(node_ids):
+        raise KeyError(f"Invalid Node ids {node_ids} for lattice record {lattice_id}")
+    return list(map(lambda x: Node(session, x, keys=keys), records))
 
 
 def _get_edge_data_for_nodes(session: Session, parent_node: Node, child_node: Node):
@@ -231,10 +229,15 @@ def _get_edge_data_for_nodes(session: Session, parent_node: Node, child_node: No
 def _nodes_and_edges(
     session: Session, lattice_id: int, *, keys: List
 ) -> Tuple[List[Node], List[Edge]]:
-    db_nodes = _node_records(session, lattice_id, [])
+    db_nodes = Node.get_records(
+        session,
+        keys=keys,
+        equality_filters={"parent_lattice_id": lattice_id},
+        membership_filters={},
+    )
     db_edges = _all_edge_records(session, lattice_id)
     uid_nodeid_map = {e.id: e.transport_graph_node_id for e in db_nodes}
-    nodes = list(map(lambda x: _to_node(session, x, keys=keys), db_nodes))
+    nodes = list(map(lambda x: Node(session, x, keys=keys), db_nodes))
     edges = list(map(lambda x: _to_edge(x, uid_nodeid_map), db_edges))
 
     return nodes, edges

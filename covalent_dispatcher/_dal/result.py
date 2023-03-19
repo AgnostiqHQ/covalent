@@ -68,7 +68,9 @@ class Result(DispatchedObject):
         self._lattice_id = record.id
         self._electron_id = record.electron_id
 
-        self.lattice = Lattice(session, record, bare, keys=lattice_keys)
+        self.lattice = Lattice(
+            session, record, bare, keys=lattice_keys, electron_keys=electron_keys
+        )
 
         self._task_failed = False
         self._task_cancelled = False
@@ -310,11 +312,31 @@ def _copy_asset(src: Asset, dest: Asset):
     src.upload(dest_uri)
 
 
-def get_result_object(dispatch_id: str, bare: bool = False) -> Result:
+def get_result_object(
+    dispatch_id: str,
+    bare: bool = False,
+    *,
+    keys: list = RESULT_KEYS,
+    lattice_keys: list = LATTICE_KEYS,
+    electron_keys: list = ELECTRON_KEYS,
+) -> Result:
     with workflow_db.session() as session:
-        record = (
-            session.query(models.Lattice).where(models.Lattice.dispatch_id == dispatch_id).first()
+        records = Result.get_records(
+            session,
+            keys=keys + lattice_keys,
+            equality_filters={"dispatch_id": dispatch_id},
+            membership_filters={},
         )
-        if not record:
+        if not records:
             raise KeyError(f"Dispatch {dispatch_id} not found")
-        return Result(session, record, bare)
+
+        record = records[0]
+
+        return Result(
+            session,
+            record,
+            bare,
+            keys=keys,
+            lattice_keys=lattice_keys,
+            electron_keys=electron_keys,
+        )

@@ -27,6 +27,7 @@ from sqlalchemy.orm import Session
 from covalent._shared_files.util_classes import Status
 
 from ..._db import models
+from . import lattice_utils
 
 ATTRIBUTES = {
     "start_time",
@@ -84,6 +85,8 @@ _db_meta_record_map = {
 }
 
 _meta_record_map.update(_db_meta_record_map)
+_meta_record_map.update(lattice_utils._meta_record_map)
+
 
 # Obsoleted by LatticeAsset table
 _asset_record_map = {

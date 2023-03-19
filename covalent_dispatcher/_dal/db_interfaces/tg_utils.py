@@ -24,36 +24,12 @@
 from typing import List
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Load, Session
 
 from ..._db.models import Electron as ElectronRecord
 from ..._db.models import ElectronDependency as EdgeRecord
 from ..._db.models import Lattice as LatticeRecord
-
-
-def _node_record(session: Session, lattice_id: int, node_id: int) -> ElectronRecord:
-
-    stmt = (
-        select(ElectronRecord)
-        .where(ElectronRecord.parent_lattice_id == lattice_id)
-        .where(ElectronRecord.transport_graph_node_id == node_id)
-    )
-    record = session.execute(stmt).first()
-    if not record:
-        raise KeyError(f"Invalid Node id {node_id} for lattice record {lattice_id}")
-
-    return record[0]
-
-
-def _node_records(session: Session, lattice_id: int, node_ids: List[int]) -> List[ElectronRecord]:
-
-    stmt = select(ElectronRecord).where(ElectronRecord.parent_lattice_id == lattice_id)
-    if len(node_ids) > 0:
-        stmt = stmt.where(ElectronRecord.transport_graph_node_id.in_(node_ids))
-    records = session.execute(stmt).all()
-    if len(records) < len(node_ids):
-        raise KeyError(f"Invalid Node ids {node_ids} for lattice record {lattice_id}")
-    return list(map(lambda r: r.Electron, records))
+from .. import electron
 
 
 def _edge_records_for_nodes(
@@ -70,22 +46,34 @@ def _edge_records_for_nodes(
     return list(records)
 
 
-def _incoming_edge_records(session: Session, electron_id: int) -> List[ElectronRecord]:
+def _incoming_edge_records(
+    session: Session, electron_id: int, *, keys: List
+) -> List[ElectronRecord]:
     stmt = (
         select(ElectronRecord, EdgeRecord)
         .join(EdgeRecord, EdgeRecord.parent_electron_id == ElectronRecord.id)
         .where(EdgeRecord.electron_id == electron_id)
     )
+    if len(keys) > 0:
+        fields = list(map(electron.Electron.meta_record_map, keys))
+        stmt = stmt.options(Load(ElectronRecord).load_only(*fields))
+        print("DEBUG: fields", fields)
+
     records = session.execute(stmt).all()
     return list(map(lambda r: (r.Electron, r.ElectronDependency), records))
 
 
-def _child_records(session: Session, electron_id: int) -> List[ElectronRecord]:
+def _child_records(session: Session, electron_id: int, *, keys: List) -> List[ElectronRecord]:
     stmt = (
         select(ElectronRecord)
         .join(EdgeRecord, EdgeRecord.electron_id == ElectronRecord.id)
         .where(EdgeRecord.parent_electron_id == electron_id)
     )
+    if len(keys) > 0:
+        fields = list(map(electron.Electron.meta_record_map, keys))
+        stmt = stmt.options(Load(ElectronRecord).load_only(*fields))
+        print("DEBUG: fields", fields)
+
     records = session.execute(stmt).all()
     return list(map(lambda r: r.Electron, records))
 

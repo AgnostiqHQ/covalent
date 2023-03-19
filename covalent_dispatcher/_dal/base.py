@@ -152,9 +152,11 @@ class DispatchedObject(ABC):
     ):
         model = cls.model
         stmt = select(model)
-        for attr, val in equality_filters.items():
-            stmt = stmt.where(getattr(model, attr) == val)
-        for attr, vals in membership_filters.items():
+        for key, val in equality_filters.items():
+            attr = cls.meta_record_map(key)
+            stmt = stmt.where(getattr(model, key) == val)
+        for key, vals in membership_filters.items():
+            attr = cls.meta_record_map(key)
             stmt = stmt.where(getattr(model, attr).in_(vals))
         if len(keys) > 0:
             fields = list(map(cls.meta_record_map, keys))
