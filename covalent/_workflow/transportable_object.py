@@ -27,11 +27,11 @@ from typing import Any, Callable
 
 import cloudpickle
 
-#  [header size (8 bytes), big][string size (8 bytes), big][header][string][data]
+#  [string offset (8 bytes), big][data offset (8 bytes), big][header][string][data]
 
-HEADER_SIZE_BYTES = 8
-STRING_SIZE_BYTES = 8
-HEADER_OFFSET = HEADER_SIZE_BYTES + STRING_SIZE_BYTES
+STRING_OFFSET_BYTES = 8
+DATA_OFFSET_BYTES = 8
+HEADER_OFFSET = STRING_OFFSET_BYTES + DATA_OFFSET_BYTES
 BYTE_ORDER = "big"
 
 
@@ -42,49 +42,53 @@ class _TOArchive:
         self.data = data
 
     def cat(self) -> bytes:
-        header_size = len(self.header).to_bytes(HEADER_SIZE_BYTES, BYTE_ORDER, signed=False)
-        string_size = len(self.object_string).to_bytes(STRING_SIZE_BYTES, BYTE_ORDER, signed=False)
-        return header_size + string_size + self.header + self.object_string + self.data
+        header_size = len(self.header)
+        string_size = len(self.object_string)
+        data_offset = STRING_OFFSET_BYTES + DATA_OFFSET_BYTES + header_size + string_size
+        string_offset = STRING_OFFSET_BYTES + DATA_OFFSET_BYTES + header_size
+
+        data_offset = data_offset.to_bytes(DATA_OFFSET_BYTES, BYTE_ORDER, signed=False)
+        string_offset = string_offset.to_bytes(STRING_OFFSET_BYTES, BYTE_ORDER, signed=False)
+
+        return string_offset + data_offset + self.header + self.object_string + self.data
 
     def load(serialized: bytes, header_only: bool, string_only: bool) -> "_TOArchive":
-        header_size = _TOArchiveUtils.header_size(serialized)
-        header = _TOArchiveUtils.parse_header(serialized, header_size)
+        string_offset = _TOArchiveUtils.string_offset(serialized)
+        header = _TOArchiveUtils.parse_header(serialized, string_offset)
         object_string = b""
         data = b""
 
         if not header_only:
-            string_size = _TOArchiveUtils.string_size(serialized)
-            object_string = _TOArchiveUtils.parse_string(serialized, header_size, string_size)
+            data_offset = _TOArchiveUtils.data_offset(serialized)
+            object_string = _TOArchiveUtils.parse_string(serialized, string_offset, data_offset)
 
             if not string_only:
-                data = _TOArchiveUtils.parse_data(serialized, header_size, string_size)
+                data = _TOArchiveUtils.parse_data(serialized, data_offset)
         return _TOArchive(header, object_string, data)
 
 
 class _TOArchiveUtils:
     @staticmethod
-    def header_size(serialized: bytes) -> int:
-        size64 = serialized[:HEADER_SIZE_BYTES]
+    def data_offset(serialized: bytes) -> int:
+        size64 = serialized[STRING_OFFSET_BYTES : STRING_OFFSET_BYTES + DATA_OFFSET_BYTES]
         return int.from_bytes(size64, BYTE_ORDER, signed=False)
 
     @staticmethod
-    def string_size(serialized: bytes) -> int:
-        size64 = serialized[HEADER_SIZE_BYTES:HEADER_OFFSET]
+    def string_offset(serialized: bytes) -> int:
+        size64 = serialized[:STRING_OFFSET_BYTES]
         return int.from_bytes(size64, BYTE_ORDER, signed=False)
 
     @staticmethod
-    def parse_header(serialized: bytes, header_size: int) -> bytes:
-        header = serialized[HEADER_OFFSET : HEADER_OFFSET + header_size]
+    def parse_header(serialized: bytes, string_offset: int) -> bytes:
+        header = serialized[HEADER_OFFSET:string_offset]
         return header
 
     @staticmethod
-    def parse_string(serialized: bytes, header_size: int, string_size: int) -> bytes:
-        string_offset = HEADER_OFFSET + header_size
-        return serialized[string_offset : string_offset + string_size]
+    def parse_string(serialized: bytes, string_offset: int, data_offset: int) -> bytes:
+        return serialized[string_offset:data_offset]
 
     @staticmethod
-    def parse_data(serialized: bytes, header_size: int, string_size: int) -> bytes:
-        data_offset = HEADER_OFFSET + header_size + string_size
+    def parse_data(serialized: bytes, data_offset: int) -> bytes:
         return serialized[data_offset:]
 
 
