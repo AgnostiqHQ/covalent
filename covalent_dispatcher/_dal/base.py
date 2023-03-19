@@ -24,7 +24,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, List, Tuple, Union
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, load_only
 
 from .._db import models
 from .._db.datastore import workflow_db
@@ -67,14 +67,10 @@ class DispatchedObject(ABC):
 
     def _get_db_record(self, session) -> models.Base:
         records = type(self).get_records(
-            session, fields=[], equality_filters={"id": self._id}, membership_filters={}
+            session, keys=self.keys, equality_filters={"id": self._id}, membership_filters={}
         )
         self._record = records[0]
         return self._record
-
-    @abstractmethod
-    def _to_meta(self, session: Session, record, keys: set):
-        raise NotImplementedError
 
     @classmethod
     def meta_record_map(cls, key: str) -> str:
@@ -82,7 +78,8 @@ class DispatchedObject(ABC):
 
     def _refresh_metadata(self, session: Session):
         record = self._get_db_record(session)
-        self.metadata = self._to_meta(session, record, self.keys)
+        metadata = {k: getattr(record, type(self).meta_record_map(k)) for k in self.keys}
+        self.metadata = metadata
 
     def get_metadata(self, key: str, session: Session = None, refresh: bool = True):
         if refresh:
@@ -151,7 +148,7 @@ class DispatchedObject(ABC):
 
     @classmethod
     def get_records(
-        cls, session: Session, *, fields: list, equality_filters: dict, membership_filters: dict
+        cls, session: Session, *, keys: list, equality_filters: dict, membership_filters: dict
     ):
         model = cls.model
         stmt = select(model)
@@ -159,7 +156,7 @@ class DispatchedObject(ABC):
             stmt = stmt.where(getattr(model, attr) == val)
         for attr, vals in membership_filters.items():
             stmt = stmt.where(getattr(model, attr).in_(vals))
-        if len(fields) > 0:
-            stmt = stmt.load_only(fields)
-        records = session.scalars(stmt).all()
-        return records
+        if len(keys) > 0:
+            fields = list(map(cls.meta_record_map, keys))
+            stmt.options(load_only(*fields))
+        return session.scalars(stmt).all()

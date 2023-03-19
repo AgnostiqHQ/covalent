@@ -69,9 +69,6 @@ class Electron(DispatchedObject):
     def assets(self):
         return self._assets
 
-    def _to_meta(self, session: Session, record: models.Electron, keys: List):
-        return _to_meta(session, record, self.keys)
-
     @classmethod
     def meta_record_map(cls: DispatchedObject, key: str) -> str:
         return _meta_record_map[key]

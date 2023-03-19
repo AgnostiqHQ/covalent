@@ -77,9 +77,6 @@ class Lattice(DispatchedObject):
     def meta_record_map(cls: DispatchedObject, key: str) -> str:
         return _meta_record_map[key]
 
-    def _to_meta(self, session: Session, record: models.Lattice, keys: List):
-        return _to_meta(session, record, keys)
-
     @property
     def __name__(self):
         return self.get_value("__name__")
