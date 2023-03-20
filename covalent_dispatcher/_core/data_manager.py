@@ -181,6 +181,39 @@ def initialize_result_object(
 
 
 # Domain: result
+def import_json_lattice(
+    json_lattice: str, parent_result_object: SRVResult = None, parent_electron_id: int = None
+) -> Result:
+    """Convenience function for constructing a result object from a json-serialized lattice.
+
+    Args:
+        json_lattice: a JSON-serialized lattice
+        parent_result_object: the parent result object if json_lattice is a sublattice
+        parent_electron_id: the DB id of the parent electron (for sublattices)
+
+    Returns:
+        Result: result object
+    """
+
+    dispatch_id = get_unique_id()
+    lattice = Lattice.deserialize_from_json(json_lattice)
+    result_object = Result(lattice, dispatch_id)
+    if parent_result_object:
+        result_object._root_dispatch_id = parent_result_object.root_dispatch_id
+
+    result_object._electron_id = parent_electron_id
+    result_object._status = RESULT_STATUS.COMPLETED
+    # result_object._initialize_nodes()
+
+    tg = result_object.lattice.transport_graph
+    tg.dirty_nodes = list(tg._graph.nodes)
+    update.persist(result_object, electron_id=parent_electron_id)
+    app_log.debug("Result object persisted.")
+
+    return result_object
+
+
+# Domain: result
 def get_unique_id() -> str:
     """
     Get a unique ID.
@@ -193,6 +226,19 @@ def get_unique_id() -> str:
     """
 
     return str(uuid.uuid4())
+
+
+async def import_dispatch(
+    json_lattice: str, parent_result_object: SRVResult = None, parent_electron_id: int = None
+) -> Result:
+    result_object = await run_in_executor(
+        import_json_lattice,
+        json_lattice,
+        parent_result_object,
+        parent_electron_id,
+    )
+    _register_result_object(result_object)
+    return result_object.dispatch_id
 
 
 async def make_dispatch(

@@ -21,6 +21,7 @@
 import asyncio
 import json
 import shutil
+import traceback
 from typing import Optional
 from uuid import UUID
 
@@ -31,6 +32,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 import covalent_dispatcher.entry_point as dispatcher
 from covalent._results_manager.result import Result
 from covalent._shared_files import logger
+from covalent_dispatcher._core import data_manager as datamgr
 
 from .._dal.export import (
     export_serialized_result,
@@ -54,7 +56,7 @@ router: APIRouter = APIRouter()
 
 
 @router.post("/dispatchv2/submit")
-async def submitv(request: Request) -> UUID:
+async def submit(request: Request) -> UUID:
     """
     Function to accept the submit request of
     new dispatch and return the dispatch id
@@ -75,6 +77,32 @@ async def submitv(request: Request) -> UUID:
         raise HTTPException(
             status_code=400,
             detail=f"Failed to submit workflow: {e}",
+        ) from e
+
+
+@router.post("/dispatchv2/import")
+async def import_dispatch(request: Request) -> UUID:
+    """
+    Function to accept the submit request of
+    new dispatch and return the dispatch id
+    back to the client.
+
+    Args:
+        None
+
+    Returns:
+        dispatch_id: The dispatch id in a json format
+                     returned as a Fast API Response object.
+    """
+    try:
+        data = await request.json()
+        data = json.dumps(data).encode("utf-8")
+        return await datamgr.import_dispatch(data)
+    except Exception as e:
+        tb = "".join(traceback.TracebackException.from_exception(e).format())
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to import workflow: {tb}",
         ) from e
 
 
