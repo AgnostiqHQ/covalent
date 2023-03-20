@@ -36,6 +36,8 @@ from covalent._shared_files.config import get_config
 
 from . import models
 
+DEBUG_DB = environ.get("COVALENT_DEBUG_DB") == "1"
+
 
 class DataStore:
     def __init__(
@@ -60,7 +62,7 @@ class DataStore:
 
     @staticmethod
     def factory():
-        return DataStore(db_URL=environ.get("COVALENT_DATABASE_URL"), echo=False)
+        return DataStore(db_URL=environ.get("COVALENT_DATABASE_URL"), echo=DEBUG_DB)
 
     def get_alembic_config(self, logging_enabled: bool = True):
         alembic_ini_path = Path(path.join(__file__, "./../../../covalent_migrations/alembic.ini"))

@@ -19,13 +19,16 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import asyncio
+import json
 import shutil
 from typing import Optional
+from uuid import UUID
 
 import anyio
-from fastapi import APIRouter, HTTPException, UploadFile
+from fastapi import APIRouter, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 
+import covalent_dispatcher.entry_point as dispatcher
 from covalent._results_manager.result import Result
 from covalent._shared_files import logger
 
@@ -43,6 +46,48 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 router: APIRouter = APIRouter()
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
+
+router: APIRouter = APIRouter()
+
+
+@router.post("/dispatchv2/submit")
+async def submitv2(request: Request) -> UUID:
+    """
+    Function to accept the submit request of
+    new dispatch and return the dispatch id
+    back to the client.
+
+    Args:
+        None
+
+    Returns:
+        dispatch_id: The dispatch id in a json format
+                     returned as a Fast API Response object.
+    """
+    try:
+        data = await request.json()
+        data = json.dumps(data).encode("utf-8")
+        return await dispatcher.make_dispatch(data)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to submit workflow: {e}",
+        ) from e
+
+
+@router.put("/dispatchv2/start/{dispatch_id}")
+async def startv2(dispatch_id: str):
+    try:
+        await dispatcher.start_dispatch(dispatch_id)
+        return dispatch_id
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to start workflow: {e}",
+        ) from e
 
 
 @router.get("/resultv2/{dispatch_id}")

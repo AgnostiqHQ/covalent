@@ -109,6 +109,8 @@ async def test_run_workflow_normal(mocker, wait, expected_status):
     mock_unregister = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
+    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.ensure_dispatch", return_value=True)
+
     mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.get_dispatch_attributes",
         return_value={"status": Result.NEW_OBJ},
@@ -138,6 +140,10 @@ async def test_run_completed_workflow(mocker, wait):
     import asyncio
 
     dispatch_id = "completed_dispatch"
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.ensure_dispatch", return_value=False
+    )
+
     mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.get_dispatch_attributes",
         return_value={"status": Result.COMPLETED},
@@ -176,6 +182,8 @@ async def test_run_workflow_exception(mocker, wait):
     mock_update_dispatch_result = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.update_dispatch_result",
     )
+    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.ensure_dispatch", return_value=True)
+
     mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.get_dispatch_attributes",
         return_value={"status": Result.NEW_OBJ},
