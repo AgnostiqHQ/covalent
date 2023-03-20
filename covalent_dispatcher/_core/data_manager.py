@@ -405,10 +405,13 @@ def generate_dispatch_result(
     }
 
 
-async def update_dispatch_result(dispatch_id, dispatch_result):
+def _update_dispatch_result_sync(dispatch_id, dispatch_result):
     result_object = get_result_object(dispatch_id)
-    update_partial = functools.partial(result_object._update_dispatch, **dispatch_result)
-    await run_in_executor(update_partial)
+    result_object._update_dispatch(**dispatch_result)
+
+
+async def update_dispatch_result(dispatch_id, dispatch_result):
+    await run_in_executor(_update_dispatch_result_sync, dispatch_id, dispatch_result)
 
 
 def _get_dispatch_attributes_sync(dispatch_id: str, keys: List[str]) -> Any:
@@ -422,6 +425,34 @@ async def get_dispatch_attributes(dispatch_id: str, keys: List[str]) -> Dict:
         _get_dispatch_attributes_sync,
         dispatch_id,
         keys,
+    )
+
+
+# Ensure that a dispatch is only run once; in the future, also check
+# if all assets have been uploaded
+def _ensure_dispatch_sync(dispatch_id: str) -> bool:
+    result_object = get_result_object(dispatch_id, bare=True)
+
+    # Atomically increment the dispatch status from NEW_OBJ/PENDING to STARTING
+    with result_object.session() as session:
+        old_status = result_object.get_value("status", session, False)
+        if old_status == RESULT_STATUS.NEW_OBJECT:
+            result_object.set_value("status", RESULT_STATUS.STARTING, session)
+            return True
+        else:
+            return False
+
+
+async def ensure_dispatch(dispatch_id: str) -> bool:
+    """Check if a dispatch can be run.
+
+    The following criteria must be met:
+    * The dispatch has not been run before.
+    * (later) all assets have been uploaded
+    """
+    return await run_in_executor(
+        _ensure_dispatch_sync,
+        dispatch_id,
     )
 
 

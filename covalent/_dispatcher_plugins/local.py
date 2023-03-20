@@ -129,6 +129,89 @@ class LocalDispatcher(BaseDispatcher):
         return wrapper
 
     @staticmethod
+    def submit(
+        orig_lattice: Lattice,
+        dispatcher_addr: str = None,
+    ) -> Callable:
+        """
+        Wrapping the dispatching functionality to allow input passing
+        and server address specification.
+
+        Afterwards, send the lattice to the dispatcher server and return
+        the assigned dispatch id.
+
+        Args:
+            orig_lattice: The lattice/workflow to send to the dispatcher server.
+            dispatcher_addr: The address of the dispatcher server.  If None then then defaults to the address set in Covalent's config.
+
+        Returns:
+            Wrapper function which takes the inputs of the workflow as arguments
+        """
+
+        if dispatcher_addr is None:
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
+
+        @wraps(orig_lattice)
+        def wrapper(*args, **kwargs) -> str:
+            """
+            Send the lattice to the dispatcher server and return
+            the assigned dispatch id.
+
+            Args:
+                *args: The inputs of the workflow.
+                **kwargs: The keyword arguments of the workflow.
+
+            Returns:
+                The dispatch id of the workflow.
+            """
+
+            lattice = deepcopy(orig_lattice)
+
+            lattice.build_graph(*args, **kwargs)
+
+            # Serialize the transport graph to JSON
+            json_lattice = lattice.serialize_to_json()
+
+            test_url = f"http://{dispatcher_addr}/api/v1/dispatchv2/submit"
+
+            r = requests.post(test_url, data=json_lattice)
+            r.raise_for_status()
+            return r.content.decode("utf-8").strip().replace('"', "")
+
+        return wrapper
+
+    @staticmethod
+    def start(
+        dispatch_id: str,
+        dispatcher_addr: str = None,
+    ) -> Callable:
+        """
+        Wrapping the dispatching functionality to allow input passing
+        and server address specification.
+
+        Afterwards, send the lattice to the dispatcher server and return
+        the assigned dispatch id.
+
+        Args:
+            orig_lattice: The lattice/workflow to send to the dispatcher server.
+            dispatcher_addr: The address of the dispatcher server.  If None then then defaults to the address set in Covalent's config.
+
+        Returns:
+            Wrapper function which takes the inputs of the workflow as arguments
+        """
+
+        if dispatcher_addr is None:
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
+        test_url = f"http://{dispatcher_addr}/api/v1/dispatchv2/start/{dispatch_id}"
+        r = requests.put(test_url)
+        r.raise_for_status()
+        return r.content.decode("utf-8").strip().replace('"', "")
+
+    @staticmethod
     def dispatch_sync(
         lattice: Lattice,
         dispatcher_addr: str = None,

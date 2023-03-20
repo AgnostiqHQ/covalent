@@ -287,12 +287,15 @@ async def run_workflow(dispatch_id: str, wait: bool = SYNC_DISPATCHES) -> RESULT
     if not _global_event_listener:
         _global_event_listener = asyncio.create_task(_node_event_listener())
 
-    result_info = await datasvc.get_dispatch_attributes(dispatch_id, ["status"])
-    dispatch_status = result_info["status"]
+    # Ensure that the dispatch is run at most once
+    can_run = await datasvc.ensure_dispatch(dispatch_id)
 
-    if dispatch_status == RESULT_STATUS.COMPLETED:
+    if not can_run:
+        result_info = await datasvc.get_dispatch_attributes(dispatch_id, ["status"])
+        dispatch_status = result_info["status"]
+        app_log.debug(f"Cannot start dispatch {dispatch_id}: current status {dispatch_status}")
         datasvc.finalize_dispatch(dispatch_id)
-        return RESULT_STATUS.COMPLETED
+        return dispatch_status
 
     try:
         await _plan_workflow(dispatch_id)
