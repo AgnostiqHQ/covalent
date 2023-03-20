@@ -76,7 +76,6 @@ def get_mock_result() -> Result:
 
 
 def get_mock_srvresult(sdkres, test_db) -> SRVResult:
-
     sdkres._initialize_nodes()
 
     with test_db.session() as session:
@@ -133,9 +132,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
 
     # list-type inputs
 
@@ -246,9 +243,7 @@ async def test_handle_completed_node(mocker, test_db):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
 
     pending_parents = {}
     sorted_task_groups = {}
@@ -300,9 +295,7 @@ async def test_get_initial_tasks_and_deps(mocker, test_db):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
 
     pending_parents = {}
 

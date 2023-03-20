@@ -75,7 +75,6 @@ def get_mock_result() -> Result:
 
 
 def get_mock_srvresult(sdkres, test_db) -> SRVResult:
-
     sdkres._initialize_nodes()
 
     update.persist(sdkres)
@@ -106,9 +105,7 @@ async def test_gather_deps(mocker, test_db):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
     workflow.build_graph(5)
 
     received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())

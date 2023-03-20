@@ -27,7 +27,6 @@ from sqlalchemy.orm import Session
 
 from covalent._shared_files import logger
 
-from .._db.datastore import workflow_db
 from .._db.models import ElectronDependency as EdgeRecord
 from .db_interfaces.tg_utils import (
     _all_edge_records,
@@ -68,7 +67,7 @@ class _TransportGraph:
         if session:
             nodes = _nodes(session, self.lattice_id, node_ids, keys=self._keys)
         else:
-            with workflow_db.session() as session:
+            with Node.session() as session:
                 nodes = _nodes(session, self.lattice_id, node_ids, keys=self._keys)
         return nodes
 
@@ -114,7 +113,7 @@ class _TransportGraph:
             return edge_list
 
         # Read from DB
-        with workflow_db.session() as session:
+        with Node.session() as session:
             node = self.get_node(node_id, session)
             edge_list = _get_incoming_edges(session, node, keys=self._keys)
             return list(
@@ -136,7 +135,7 @@ class _TransportGraph:
             return _filter_node_list(node_list, None, attr_keys)
 
         # Query DB
-        with workflow_db.session() as session:
+        with Node.session() as session:
             node = self.get_node(node_id, session)
             child_node_list = _get_child_nodes(session, node, keys=attr_keys)
             return _filter_node_list(child_node_list, session, attr_keys)
@@ -160,7 +159,7 @@ class _TransportGraph:
         if not self.bare:
             return self._graph.get_edge_data(dep_key, node_key)
 
-        with workflow_db.session() as session:
+        with Node.session() as session:
             source = self.get_node(dep_key, session)
             target = self.get_node(node_key, session)
             return _get_edge_data_for_nodes(session, source, target)
@@ -258,7 +257,7 @@ def get_compute_graph(
     lattice_id: int, bare: bool = False, *, keys: List = ELECTRON_KEYS
 ) -> _TransportGraph:
     if not bare:
-        with workflow_db.Session() as session:
+        with Node.session() as session:
             nodes, edges = _nodes_and_edges(session, lattice_id, keys=keys)
         return _make_compute_graph(lattice_id, nodes, edges, keys=keys)
     else:

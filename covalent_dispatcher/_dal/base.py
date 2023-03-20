@@ -21,7 +21,8 @@
 """Base classe for server-side analogues of workflow data types"""
 
 from abc import ABC, abstractmethod
-from typing import Any, Dict, List, Tuple, Union
+from contextlib import contextmanager
+from typing import Any, Dict, Generator, List, Tuple, Union
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session, load_only
@@ -50,6 +51,12 @@ class DispatchedObject(ABC):
     @property
     def computed_fields(self) -> Dict:
         return {}
+
+    @classmethod
+    @contextmanager
+    def session(cls) -> Generator[Session, None, None]:
+        with workflow_db.session() as session:
+            yield session
 
     def get_asset_ids(self, session: Session, keys: List[str]) -> Dict[str, int]:
         asset_link_model = type(self).asset_link_model
@@ -86,7 +93,7 @@ class DispatchedObject(ABC):
             if session:
                 self._refresh_metadata(session)
             else:
-                with workflow_db.session() as session:
+                with self.session() as session:
                     self._refresh_metadata(session)
         return self.metadata[key]
 
@@ -96,14 +103,14 @@ class DispatchedObject(ABC):
             record_attr = type(self).meta_record_map(key)
             setattr(record, record_attr, val)
         else:
-            with workflow_db.session() as session:
+            with self.session() as session:
                 record = self._get_db_record(session)
                 record_attr = type(self).meta_record_map(key)
                 setattr(record, record_attr, val)
 
     def get_asset(self, key: str) -> Asset:
         if key not in self.assets:
-            with workflow_db.session() as session:
+            with self.session() as session:
                 asset_id = self.get_asset_ids(session, [key])[key]
                 self.assets[key] = Asset.from_asset_id(asset_id, session)
 
@@ -122,7 +129,7 @@ class DispatchedObject(ABC):
         if session is not None:
             return self._get_value(key, session, refresh)
         else:
-            with workflow_db.session() as session:
+            with self.session() as session:
                 return self._get_value(key, session, refresh)
 
     def _set_value(self, key: str, val: Any, session: Session) -> None:
@@ -135,7 +142,7 @@ class DispatchedObject(ABC):
         if session is not None:
             self._set_value(key, val, session)
         else:
-            with workflow_db.session() as session:
+            with self.session() as session:
                 self._set_value(key, val, session)
 
     def get_values(self, keys: List[str], session: Session = None, refresh: bool = True) -> Dict:
@@ -160,5 +167,5 @@ class DispatchedObject(ABC):
             stmt = stmt.where(getattr(model, attr).in_(vals))
         if len(keys) > 0:
             fields = list(map(cls.meta_record_map, keys))
-            stmt.options(load_only(*fields))
+            stmt = stmt.options(load_only(*fields))
         return session.scalars(stmt).all()

@@ -31,7 +31,6 @@ from covalent._shared_files.defaults import postprocess_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS, Status
 
 from .._db import models
-from .._db.datastore import workflow_db
 from .asset import Asset
 from .base import DispatchedObject
 from .db_interfaces.result_utils import ASSET_KEYS  # nopycln: import
@@ -130,12 +129,8 @@ class Result(DispatchedObject):
     def error(self):
         return self.get_asset("error").load_data()
 
-    @property
-    def results_dir(self):
-        return self.get_metadata("results_dir")
-
     def commit(self):
-        with workflow_db.session() as session:
+        with self.session() as session:
             if self._start_time is not None:
                 self.set_value("start_time", self._start_time, session)
                 self._start_time = None
@@ -170,7 +165,7 @@ class Result(DispatchedObject):
         error: str = None,
         result: Any = None,
     ):
-        with workflow_db.session() as session:
+        with self.session() as session:
             if start_time is not None:
                 self.set_value("start_time", start_time, session)
             if end_time is not None:
@@ -218,7 +213,7 @@ class Result(DispatchedObject):
 
         app_log.debug("Inside update node")
 
-        with workflow_db.session() as session:
+        with self.session() as session:
             # Current node name
             name = self.lattice.transport_graph.get_node_value(node_id, "name", session)
 
@@ -273,7 +268,7 @@ class Result(DispatchedObject):
         num_nodes = self.metadata["num_nodes"]
         tg = self.lattice.transport_graph
 
-        with workflow_db.session() as session:
+        with self.session() as session:
             failed_nodes = [
                 (i, tg.get_node_value(i, "name", session, refresh))
                 for i in range(num_nodes)
@@ -320,7 +315,7 @@ def get_result_object(
     lattice_keys: list = LATTICE_KEYS,
     electron_keys: list = ELECTRON_KEYS,
 ) -> Result:
-    with workflow_db.session() as session:
+    with Result.session() as session:
         records = Result.get_records(
             session,
             keys=keys + lattice_keys,

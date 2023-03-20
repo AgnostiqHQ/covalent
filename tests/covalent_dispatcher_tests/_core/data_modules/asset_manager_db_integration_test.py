@@ -82,9 +82,7 @@ async def test_upload_asset_for_nodes(test_db, mocker):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
 
     srvres = get_mock_srvresult(sdkres, test_db)
 
@@ -119,9 +117,7 @@ async def test_download_assets_for_node(test_db, mocker):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
 
     srvres = get_mock_srvresult(sdkres, test_db)
 

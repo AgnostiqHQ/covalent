@@ -75,9 +75,7 @@ def test_to_client_graph(test_db, mocker):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
 
     update.persist(res)
 
@@ -118,9 +116,7 @@ def test_to_client_lattice(test_db, mocker):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
 
     update.persist(res)
 
@@ -167,9 +163,7 @@ def test_to_client_result(test_db, mocker):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
 
     update.persist(res)
 

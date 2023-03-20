@@ -150,9 +150,7 @@ async def test_get_task_inputs(mocker, test_db):
     sdkres = Result(lattice=list_workflow, dispatch_id="asdf")
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
 
     result_object = get_mock_srvresult(sdkres, test_db)
     tg = result_object.lattice.transport_graph
@@ -265,9 +263,7 @@ async def test_run_workflow_with_failing_nonleaf(mocker, test_db):
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.utils.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
 
     result_object = get_mock_srvresult(sdkres, test_db)
 
@@ -324,9 +320,7 @@ async def test_run_workflow_with_failing_leaf(mocker, test_db):
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.utils.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
 
     result_object = get_mock_srvresult(sdkres, test_db)
 
@@ -380,9 +374,7 @@ async def test_run_workflow_normal(mocker, test_db):
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.utils.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.tg.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._dal.result.workflow_db", test_db)
 
     result_object = get_mock_srvresult(sdkres, test_db)
 
