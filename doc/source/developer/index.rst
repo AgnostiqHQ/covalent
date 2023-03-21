@@ -25,22 +25,22 @@ Coding Best Practices
 
 :doc:`Creating One Executor per Resource <./patterns/executor_assignment>`
     Create one executor object per compute resource and assign the executor to electrons as needed.
-    
+
 :doc:`Transferring Large Data Objects <./patterns/large_object_transfer>`
     Save large data objects to a data store and read the object to electrons as needed.
-    
+
 :doc:`Containing Computations in Tasks <./patterns/post_process>`
     Use an electron to generate the return value of a workflow.
-    
+
 :doc:`Writing Result-Dependent Branch Decisions <./patterns/result_dependent_if_else>`
     Encapsulate result-dependent if/else statements in an electron.
-    
+
 :doc:`Writing Result-Dependent Loops <./patterns/result_dependent_loop>`
     Encapsulate result-dependent loops in an electron.
 
 :doc:`Returning Multiple Values from a Function <./patterns/return_multiple_values_from_task>`
     To avoid needlessly proliferating functions, return multiple values from a task in an array.
-    
+
 :doc:`Deploying a Covalent Server <./patterns/deployment>`
     Follow these guidelines when running Covalent on a server.
 
