@@ -131,9 +131,9 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
                     lattice_data["function_filename"]
                 )
                 return LatticeFileResponse(data=response, python_object=python_object)
-            elif name == "transport_graph":
-                response = handler.read_from_pickle(lattice_data["transport_graph_filename"])
-                return LatticeFileResponse(data=response)
+            # elif name == "transport_graph":
+            #     response = handler.read_from_pickle(lattice_data["transport_graph_filename"])
+            #     return LatticeFileResponse(data=response)
             else:
                 return LatticeFileResponse(data=None)
         else:
