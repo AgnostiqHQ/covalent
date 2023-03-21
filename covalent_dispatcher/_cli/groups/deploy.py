@@ -19,124 +19,80 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import sys
 from pathlib import Path
 
 import click
-from click import Context, HelpFormatter
-from pydantic.error_wrappers import ValidationError
 
 from covalent.cloud_resource_manager.cloud_resource_manager import CloudResourceManager
 from covalent.executor import _executor_manager
 
+CURRENT_MODULE = sys.modules[__name__]
 
-class CustomCommand(click.Command):
-    def _get_cmd_options(self, executor_module):
-        """
-        Return a sequence of cmd args based on the executor module
-        """
-        cmd_opts = [
-            (
-                key,
-                str(value.required),
-            )
-            for key, value in executor_module.ExecutorInfraDefaults.__fields__.items()
-        ]
-        cmd_opts.insert(
-            0,
-            (
-                "NAME",
-                "REQUIRED",
-            ),
+INSTALLED_CLOUD_EXECUTORS = [
+    key
+    for key, _ in _executor_manager.executor_plugins_map.items()
+    if key not in ["dask", "local", "remote_executor"]
+]
+
+CLOUD_EXECUTOR_MODULES = {
+    f"{name}": __import__(_executor_manager.executor_plugins_map[name].__module__)
+    for name in INSTALLED_CLOUD_EXECUTORS
+}
+
+CLOUD_EXECUTOR_OPTIONS = {
+    f"{name}": [
+        (
+            key,
+            str(value.required),
         )
-        return cmd_opts
-
-    def format_help_text(self, ctx: Context, formatter: HelpFormatter) -> None:
-        executor_module = ctx.obj["executor_module"]
-        cmd_options = self._get_cmd_options(executor_module)
-        formatter.write_heading("Command options")
-        formatter.write_dl(cmd_options)
+        for key, value in CLOUD_EXECUTOR_MODULES[name].ExecutorInfraDefaults.__fields__.items()
+    ]
+    for name in INSTALLED_CLOUD_EXECUTORS
+}
 
 
 @click.group()
 @click.argument(
-    "executor_name",
-    nargs=1,
-    required=True,
-    type=click.Choice(["awsbatch", "gcpbatch", "awslambda"], case_sensitive=True),
+    "executor", nargs=1, type=click.Choice(INSTALLED_CLOUD_EXECUTORS, case_sensitive=True)
 )
 @click.pass_context
-def deploy(ctx: click.Context, executor_name: str):
+def deploy(ctx: click.Context, executor: str):
+    for key, value in CLOUD_EXECUTOR_OPTIONS[executor]:
+        click.option("--" + key, required=False)(CURRENT_MODULE.deploy.commands["up"])
+    ctx.obj = {"executor_name": executor}
+
+
+@deploy.command
+@click.option("--dry-run", is_flag=True)
+@click.pass_context
+def up(ctx, dry_run, *args, **kwargs):
     """
     Load the executor plugin installation path based on the executor name provided.
     """
-    executor_module = __import__(_executor_manager.executor_plugins_map[executor_name].__module__)
+    executor_name = ctx.obj["executor_name"]
+    executor_module = CLOUD_EXECUTOR_MODULES[executor_name]
     executor_module_path = Path(executor_module.__path__[0])
 
-    ctx.obj = {
-        "executor_name": executor_name,
-        "executor_module": executor_module,
-        "executor_module_path": executor_module_path,
-    }
-
-
-@deploy.command(cls=CustomCommand)
-@click.argument(
-    "action",
-    nargs=1,
-    required=True,
-    type=click.Choice(["up", "down", "status"], case_sensitive=True),
-)
-def awsbatch():
-    pass
-
-
-@deploy.command(cls=CustomCommand)
-@click.argument("options", nargs=-1)
-@click.option(
-    "--dry-run",
-    is_flag=True,
-    help="Do a dry run but do not deploy the infrastructure",
-)
-@click.pass_obj
-def up(executor_metadata: dict, options, dry_run: bool):
-    executor_name = executor_metadata["executor_name"]
-    executor_module = executor_metadata["executor_module"]
-    executor_module_path = executor_metadata["executor_module_path"]
-
-    if not hasattr(executor_module, "ExecutorInfraDefaults"):
-        raise ValueError(f"ExecutorInfraDefaults not provided for {executor_name} module")
-
-    cmd_options = dict(opt.split("=") for opt in options)
-
-    try:
-        executor_infra_defaults = executor_module.ExecutorInfraDefaults(**cmd_options)
-        for key, value in dict(executor_infra_defaults).items():
-            cmd_options[key] = str(value)
-    except ValidationError as err:
-        click.echo(str(err))
-        return
-
-    # Create the cloud resource manager and deploy the resources
-    crm = CloudResourceManager(executor_name, executor_module_path, cmd_options)
+    click.echo(kwargs)
+    crm = CloudResourceManager(executor_name, str(executor_module_path), kwargs)
     click.echo(crm.up(dry_run))
 
 
-@deploy.command(cls=CustomCommand)
-@click.argument("options", nargs=-1)
+@deploy.command
 @click.option("--dry-run", is_flag=True, help="Do a dry run")
-@click.pass_obj
-def down(executor_metadata: dict, options, dry_run: bool):
-    executor_name = executor_metadata["executor_name"]
-    executor_module_path = executor_metadata["executor_module_path"]
-
-    cmd_options = dict(opt.split("=") for opt in options)
+@click.pass_context
+def down(ctx, dry_run: bool, *args, **kwargs):
+    executor_name = ctx.obj["executor_name"]
+    executor_module = CLOUD_EXECUTOR_MODULES[executor_name]
+    executor_module_path = Path(executor_module.__path__[0])
 
     # Create the cloud resource manager and teardown the resources
-    crm = CloudResourceManager(executor_name, executor_module_path, cmd_options)
+    crm = CloudResourceManager(executor_name, str(executor_module_path), kwargs)
     click.echo(crm.down(dry_run))
 
 
-@deploy.command(cls=CustomCommand)
+@deploy.command
 @click.pass_obj
 def status(executor_metadata: dict):
     executor_module_path = executor_metadata["executor_module_path"]
