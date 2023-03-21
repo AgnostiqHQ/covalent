@@ -19,7 +19,6 @@ Log Standard Error
 Cache Directory
     The directory path to which all intermediate data and results are logged.
 
-
 Dask
 ----
 
@@ -29,7 +28,6 @@ Log Standard Error
     The name of the file to which the local executor logs :code:`stderr`. The file is located in dispatch- and node-specific subdirectories of the results directory.
 Cache Directory
     The directory path to which all intermediate data and results are logged.
-
 
 Remote
 ------

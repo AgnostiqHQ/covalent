@@ -22,38 +22,6 @@
 Defines the core functionality of the dispatcher
 """
 
-# Legacy imports
-# from .dispatcher import (
-#     _build_sublattice_graph,
-#     _dispatch_sync_sublattice,
-#     _get_abstract_task_inputs,
-#     _handle_cancelled_node,
-#     _handle_completed_node,
-#     _handle_failed_node,
-#     _initialize_deps_and_queue,
-#     _plan_workflow,
-#     _post_process,
-#     _postprocess_workflow,
-#     _run_planned_workflow,
-#     _submit_task,
-#     cancel_workflow,
-#     run_workflow,
-# )
-# from .result import (
-#     _update_node_result,
-#     generate_node_result,
-#     get_unique_id,
-#     initialize_result_object,
-# )
-# from .runner import (
-#     _gather_deps,
-#     _get_task_input_values,
-#     _get_task_inputs,
-#     _run_abstract_task,
-#     _run_task,
-#     _run_task_and_update,
-# )
-
 from covalent._results_manager import Result
 
 from . import dispatcher, runner

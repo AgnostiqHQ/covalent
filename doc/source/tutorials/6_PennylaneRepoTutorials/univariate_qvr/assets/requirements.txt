@@ -1,0 +1,4 @@
+covalent
+matplotlib==3.7.0
+pennylane  # No version is specified since we want to use the latest stable version
+torch==1.13.1

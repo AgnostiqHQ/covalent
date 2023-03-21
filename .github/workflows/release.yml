@@ -234,6 +234,7 @@ jobs:
   conda:
     needs: pypi
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:
@@ -302,13 +303,17 @@ jobs:
           role-to-assume: ${{ secrets.ECR_PUBLIC_UPLOAD_ROLE }}
           aws-region: us-east-1
 
-      - name: Generate tag
+      - name: Generate metadata
         run: |
           aws --version
           docker info
           TAG="$(cat ./VERSION)"
           echo "TAG: $TAG"
           echo "TAG=$TAG" >> $GITHUB_ENV
+          BUILD_DATE=`date -u +%Y-%m-%d`
+          echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
+          BUILD_VERSION=${{ github.sha }}
+          echo "BUILD_VERSION=$BUILD_VERSION" >> $GITHUB_ENV
 
       - name: Login to Public Registry
         run: |
@@ -323,8 +328,13 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          file: ./Dockerfile.dev
+          file: Dockerfile
           platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILD_DATE=${{ env.BUILD_DATE }}
+            BUILD_VERSION=${{ env.BUILD_VERSION }}
           push: true
           tags: |
             public.ecr.aws/covalent/covalent:latest
@@ -341,8 +351,13 @@ jobs:
         with:
           builder: ${{ steps.buildx.outputs.name }}
           context: .
-          file: ./Dockerfile.dev
+          file: Dockerfile
           platforms: linux/amd64
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            BUILD_DATE=${{ env.BUILD_DATE }}
+            BUILD_VERSION=${{ env.BUILD_VERSION }}
           push: true
           tags: |
             public.ecr.aws/covalent/covalent:${{ inputs.stable_version }}

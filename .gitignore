@@ -55,7 +55,7 @@
 !.secrets.baseline
 !alembic.ini
 !codecov.yml
-!Dockerfile*
+!Dockerfile
 !MANIFEST.in
 !Makefile
 !README.md

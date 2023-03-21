@@ -150,7 +150,6 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    getting_started/quick_start/index
    First Experiment <getting_started/first_experiment/index>
 
-
 .. toctree::
    :maxdepth: 3
    :caption:  User Documentation
@@ -164,13 +163,17 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    Server Deployment <deployment/index>
    Best Practices <developer/index>
    Credentials <credentials>
+   Glossary <glossary/index>
+   Troubleshooting <troubleshooting>
 
 .. toctree::
-   :maxdepth: 2
-   :caption:  Extensions
+   :maxdepth: 3
+   :caption:  Features
    :hidden:
 
-   plugins
+   Executor plugins <plugins>
+   Triggers <features/triggers>
+   Cancellation <features/cancel>
 
 .. toctree::
    :maxdepth: 1

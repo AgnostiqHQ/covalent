@@ -25,7 +25,18 @@ Helper functions for the local executor
 import io
 import traceback
 from contextlib import redirect_stderr, redirect_stdout
+from enum import Enum
 from typing import Any, Callable, Dict, List, Tuple
+
+
+class Signals(Enum):
+    """
+    Signals to enable communication between the executors and Covalent dispatcher
+    """
+
+    GET = 0
+    PUT = 1
+    EXIT = 2
 
 
 def io_wrapper(fn: Callable, args: List, kwargs: Dict) -> Tuple[Any, str, str, str]:
