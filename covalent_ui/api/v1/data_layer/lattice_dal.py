@@ -102,7 +102,7 @@ class Lattices:
                 Lattice.results_filename,
                 Lattice.storage_type,
                 Lattice.function_filename,
-                Lattice.transport_graph_filename,
+                #  Lattice.transport_graph_filename,
                 Lattice.started_at.label("started_at"),
                 Lattice.completed_at.label("ended_at"),
                 Lattice.electron_num.label("total_electrons"),
