@@ -76,7 +76,7 @@ class LocalDispatcher(BaseDispatcher):
 
     @staticmethod
     def dispatch(
-        orig_lattice: Lattice, dispatcher_addr: str = None, *, start: bool = True
+        orig_lattice: Lattice, dispatcher_addr: str = None, *, disable_run: bool = False
     ) -> Callable:
         """
         Wrapping the dispatching functionality to allow input passing
@@ -108,7 +108,7 @@ class LocalDispatcher(BaseDispatcher):
             """
 
             dispatch_id = LocalDispatcher.submit(orig_lattice, dispatcher_addr)(*args, **kwargs)
-            if start:
+            if not disable_run:
                 return LocalDispatcher.start(dispatch_id, dispatcher_addr)
             else:
                 return dispatch_id
