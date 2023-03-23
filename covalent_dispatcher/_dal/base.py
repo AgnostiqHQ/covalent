@@ -25,10 +25,11 @@ from contextlib import contextmanager
 from typing import Any, Dict, Generator, List, Tuple, Union
 
 from sqlalchemy import select
-from sqlalchemy.orm import Session, load_only
+from sqlalchemy.orm import Session
 
 from .._db import models
 from .._db.datastore import workflow_db
+from . import controller
 from .asset import Asset
 
 
@@ -158,14 +159,23 @@ class DispatchedObject(ABC):
         cls, session: Session, *, keys: list, equality_filters: dict, membership_filters: dict
     ):
         model = cls.model
-        stmt = select(model)
+
+        # transform keys to db field names
+        fields = list(map(cls.meta_record_map, keys))
+
+        eq_filters_transformed = {}
+        member_filters_transformed = {}
         for key, val in equality_filters.items():
             attr = cls.meta_record_map(key)
-            stmt = stmt.where(getattr(model, key) == val)
+            eq_filters_transformed[attr] = val
         for key, vals in membership_filters.items():
             attr = cls.meta_record_map(key)
-            stmt = stmt.where(getattr(model, attr).in_(vals))
-        if len(keys) > 0:
-            fields = list(map(cls.meta_record_map, keys))
-            stmt = stmt.options(load_only(*fields))
-        return session.scalars(stmt).all()
+            member_filters_transformed[attr] = vals
+
+        return controller.get(
+            model,
+            session,
+            fields=fields,
+            equality_filters=eq_filters_transformed,
+            membership_filters=member_filters_transformed,
+        )

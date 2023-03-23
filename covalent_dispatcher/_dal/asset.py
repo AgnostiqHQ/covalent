@@ -73,9 +73,6 @@ class Asset:
         app_log.debug(f"Uploading asset from {src_uri} to {dest_uri}")
         cp(src_uri, dest_uri)
 
-    def _asset_id(self) -> str:
-        return self.storage_path + "/" + self.object_key
-
     @classmethod
     def from_asset_id(cls, asset_id: int, session: Session) -> "Asset":
         stmt = select(AssetRecord).where(AssetRecord.id == asset_id)
