@@ -81,6 +81,7 @@ def test_redispatch(mocker, replace_electrons, expected_arg):
 
     mocker.patch("covalent._dispatcher_plugins.local.get_config", return_value="mock-config")
     requests_mock = mocker.patch("covalent._dispatcher_plugins.local.requests")
+    start_mock = mocker.patch("covalent._dispatcher_plugins.local.LocalDispatcher.start")
     get_request_body_mock = mocker.patch(
         "covalent._dispatcher_plugins.local.get_redispatch_request_body",
         return_value={"mock-request-body"},
@@ -90,9 +91,11 @@ def test_redispatch(mocker, replace_electrons, expected_arg):
     func = local_dispatcher.redispatch("mock-dispatch-id", replace_electrons=replace_electrons)
     func()
     requests_mock.post.assert_called_once_with(
-        "http://mock-config:mock-config/api/redispatch", json={"mock-request-body"}
+        "http://mock-config:mock-config/api/v1/dispatchv2/resubmit", json={"mock-request-body"}
     )
     requests_mock.post().raise_for_status.assert_called_once()
     requests_mock.post().content.decode().strip().replace.assert_called_once_with('"', "")
 
     get_request_body_mock.assert_called_once_with("mock-dispatch-id", (), {}, expected_arg, False)
+
+    start_mock.assert_called_once()

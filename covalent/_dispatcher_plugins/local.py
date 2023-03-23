@@ -76,8 +76,7 @@ class LocalDispatcher(BaseDispatcher):
 
     @staticmethod
     def dispatch(
-        orig_lattice: Lattice,
-        dispatcher_addr: str = None,
+        orig_lattice: Lattice, dispatcher_addr: str = None, *, start: bool = True
     ) -> Callable:
         """
         Wrapping the dispatching functionality to allow input passing
@@ -94,11 +93,6 @@ class LocalDispatcher(BaseDispatcher):
             Wrapper function which takes the inputs of the workflow as arguments
         """
 
-        if dispatcher_addr is None:
-            dispatcher_addr = (
-                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
-            )
-
         @wraps(orig_lattice)
         def wrapper(*args, **kwargs) -> str:
             """
@@ -113,18 +107,11 @@ class LocalDispatcher(BaseDispatcher):
                 The dispatch id of the workflow.
             """
 
-            lattice = deepcopy(orig_lattice)
-
-            lattice.build_graph(*args, **kwargs)
-
-            # Serialize the transport graph to JSON
-            json_lattice = lattice.serialize_to_json()
-
-            test_url = f"http://{dispatcher_addr}/api/submit"
-
-            r = requests.post(test_url, data=json_lattice)
-            r.raise_for_status()
-            return r.content.decode("utf-8").strip().replace('"', "")
+            dispatch_id = LocalDispatcher.submit(orig_lattice, dispatcher_addr)(*args, **kwargs)
+            if start:
+                return LocalDispatcher.start(dispatch_id, dispatcher_addr)
+            else:
+                return dispatch_id
 
         return wrapper
 
@@ -206,6 +193,7 @@ class LocalDispatcher(BaseDispatcher):
             dispatcher_addr = (
                 get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
             )
+
         test_url = f"http://{dispatcher_addr}/api/v1/dispatchv2/start/{dispatch_id}"
         r = requests.put(test_url)
         r.raise_for_status()
@@ -297,11 +285,62 @@ class LocalDispatcher(BaseDispatcher):
                 The result of the executed workflow.
             """
 
+            redispatch_id = LocalDispatcher.resubmit(
+                dispatch_id,
+                dispatcher_addr,
+                replace_electrons,
+                reuse_previous_results,
+            )(*new_args, **new_kwargs)
+
+            return LocalDispatcher.start(redispatch_id, dispatcher_addr)
+
+        return func
+
+    @staticmethod
+    def resubmit(
+        dispatch_id: str,
+        dispatcher_addr: str = None,
+        replace_electrons: Dict[str, Callable] = None,
+        reuse_previous_results: bool = False,
+    ) -> Callable:
+        """
+        Wrapping the dispatching functionality to allow input passing and server address specification.
+
+        Args:
+            dispatch_id: The dispatch id of the workflow to re-dispatch.
+            dispatcher_addr: The address of the dispatcher server. If None then then defaults to the address set in Covalent's config.
+            replace_electrons: A dictionary of electron names and the new electron to replace them with.
+            reuse_previous_results: Boolean value whether to reuse the results from the previous dispatch.
+
+        Returns:
+            Wrapper function which takes the inputs of the workflow as arguments.
+        """
+
+        if dispatcher_addr is None:
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
+
+        if replace_electrons is None:
+            replace_electrons = {}
+
+        def func(*new_args, **new_kwargs):
+            """
+            Prepare the redispatch request body and redispatch the workflow.
+
+            Args:
+                *args: The inputs of the workflow.
+                **kwargs: The keyword arguments of the workflow.
+
+            Returns:
+                The result of the executed workflow.
+            """
+
             body = get_redispatch_request_body(
                 dispatch_id, new_args, new_kwargs, replace_electrons, reuse_previous_results
             )
 
-            url = f"http://{dispatcher_addr}/api/redispatch"
+            url = f"http://{dispatcher_addr}/api/v1/dispatchv2/resubmit"
             r = requests.post(url, json=body)
             r.raise_for_status()
             return r.content.decode("utf-8").strip().replace('"', "")
