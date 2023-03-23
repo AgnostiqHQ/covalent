@@ -20,10 +20,11 @@
 
 """Base storage backend provider"""
 
-from pydantic import BaseModel
+from dataclasses import dataclass
 
 
-class Digest(BaseModel):
+@dataclass
+class Digest:
     algorithm: str
     hexdigest: str
 
