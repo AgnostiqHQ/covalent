@@ -91,7 +91,7 @@ class Postprocessor:
         """
         with active_lattice_manager.claim(self.lattice):
             self.lattice.post_processing = True
-            app_log.debug(f"Post processing lattice with attrs: {self.lattice.__dict__}")
+            app_log.debug(f"Postprocessing lattice with attrs: {self.lattice.__dict__}")
             self.lattice.electron_outputs = list(ordered_node_outputs)
             app_log.debug(f"Postprocessing: Electron outputs {self.lattice.electron_outputs}")
             args = [arg.get_deserialized() for arg in self.lattice.args]
@@ -128,7 +128,7 @@ class Postprocessor:
             for _, v in retval.items():
                 node_ids.extend(self._get_node_ids_from_retval(v))
         else:
-            app_log.debug("Encountered primitive or unsupported type:", retval)
+            app_log.debug(f"Encountered primitive or unsupported type: {retval}")
             return []
 
         return node_ids

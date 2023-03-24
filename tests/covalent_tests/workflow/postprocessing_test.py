@@ -20,6 +20,8 @@
 
 """Unit tests for the preprocessing module."""
 
+from unittest.mock import MagicMock, Mock
+
 import pytest
 
 import covalent as ct
@@ -73,7 +75,7 @@ def test_is_postprocessable_node(mocker, postprocessor, node_id, node_name, post
     assert postprocessor._is_postprocessable_node(tg, node_id) == postprocessable
 
 
-def test_filter_electrons(mocker, postprocessor):
+def test_filter_electrons(postprocessor):
     """Test filter_electrons method."""
     postprocessor.lattice.build_graph(1)
     tg = postprocessor.lattice.transport_graph
@@ -83,9 +85,29 @@ def test_filter_electrons(mocker, postprocessor):
     ]
 
 
-def test_postprocess(mocker, postprocessor):
+def test_postprocess():
     """Test the postprocess method."""
-    pass
+    mock_lattice = MagicMock()
+    mock_arg = Mock()
+    mock_kwarg = Mock()
+    mock_workflow = Mock()
+    mock_workflow.get_deserialized.__call__().return_value = "mock_result"
+    mock_lattice.args.__iter__.return_value = [mock_arg]
+    mock_lattice.kwargs = {"mock_key": mock_kwarg}
+    mock_lattice.workflow_function = mock_workflow
+
+    pp = Postprocessor(mock_lattice)
+    res = pp._postprocess(["mock_output_1", "mock_output_2"])
+
+    assert mock_lattice.electron_outputs == [["mock_output_1", "mock_output_2"]]
+
+    mock_arg.get_deserialized.assert_called_once_with()
+    mock_kwarg.get_deserialized.assert_called_once_with()
+    mock_workflow.get_deserialized().assert_called_once_with(
+        mock_arg.get_deserialized(), mock_key=mock_kwarg.get_deserialized()
+    )
+
+    assert res == "mock_result"
 
 
 @pytest.mark.parametrize(
