@@ -111,8 +111,6 @@ def _node(
 
     if node_name.startswith(postprocess_prefix):
         result._result = output
-
-        # TODO - Double check if I should be transferring the preprocessing status to the result
         result._status = status
         upsert.lattice_data(result)
 

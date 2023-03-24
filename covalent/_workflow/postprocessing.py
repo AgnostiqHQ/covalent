@@ -133,6 +133,21 @@ class Postprocessor:
 
         return node_ids
 
+    def _get_electron_metadata(self) -> Dict:
+        """Get the metadata for the postprocess electron.
+
+        Returns:
+            Dictionary of metadata for the postprocess electron.
+
+        """
+        executor = self.lattice.get_metadata("workflow_executor")
+        executor_data = self.lattice.get_metadata("workflow_executor_data")
+        pp_metadata = encode_metadata(DEFAULT_METADATA_VALUES.copy())
+        pp_metadata["executor"] = executor
+        pp_metadata["executor_data"] = executor_data
+        pp_metadata = encode_metadata(pp_metadata)
+        return pp_metadata
+
     def add_exhaustive_postprocess_node(self, bound_electrons: Dict) -> None:
         """This function adds a postprocess node to the transport graph. The postprocess node will be executed after all other nodes have been executed.
 
@@ -148,16 +163,8 @@ class Postprocessor:
         with active_lattice_manager.claim(self.lattice):
             tg = self.lattice.transport_graph
             filtered_ordered_electrons = self._filter_electrons(tg, bound_electrons)
-            executor = self.lattice.get_metadata("workflow_executor")
-            executor_data = self.lattice.get_metadata("workflow_executor_data")
-            pp_metadata = encode_metadata(DEFAULT_METADATA_VALUES.copy())
-            pp_metadata["executor"] = executor
-            pp_metadata["executor_data"] = executor_data
-            pp_metadata = encode_metadata(pp_metadata)
-            pp_electron = Electron(function=self._postprocess, metadata=pp_metadata)
-
-            # Add pp_electron to the graph -- this will also add a parameter node and list node
+            pp_electron = Electron(
+                function=self._postprocess, metadata=self._get_electron_metadata()
+            )
             bound_pp = pp_electron(*filtered_ordered_electrons)
-
-            # Edit pp electron name
             tg.set_node_value(bound_pp.node_id, "name", postprocess_prefix)

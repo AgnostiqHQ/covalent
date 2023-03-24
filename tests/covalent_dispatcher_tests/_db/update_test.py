@@ -23,6 +23,7 @@ import shutil
 from datetime import datetime as dt
 from datetime import timezone
 from pathlib import Path
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -413,3 +414,41 @@ def test_lattice_persist(result_1):
 def test_transport_graph_persist(result_1):
     update.persist(result_1.lattice.transport_graph)
     assert result_1.lattice.transport_graph.dirty_nodes == []
+
+
+@pytest.mark.parametrize("node_name", [None, "mock_node_name", postprocess_prefix])
+def test_node(mocker, node_name):
+    """Test the _node method."""
+    electron_data_mock = mocker.patch("covalent_dispatcher._db.upsert.electron_data")
+    lattice_data_mock = mocker.patch("covalent_dispatcher._db.upsert.lattice_data")
+    mock_result = MagicMock()
+    update._node(
+        mock_result,
+        node_id=0,
+        node_name=node_name,
+        start_time="mock_time",
+        end_time="mock_time",
+        status="COMPLETED",
+        output="mock_output",
+    )
+    if node_name is None:
+        node_name = mock_result.lattice.transport_graph.get_node_value()
+    mock_result._update_node.assert_called_once_with(
+        node_id=0,
+        node_name=node_name,
+        start_time="mock_time",
+        end_time="mock_time",
+        status="COMPLETED",
+        output="mock_output",
+        error=None,
+        sub_dispatch_id=None,
+        sublattice_result=None,
+        stdout=None,
+        stderr=None,
+    )
+    if node_name.startswith(postprocess_prefix):
+        assert mock_result._result == "mock_output"
+        assert mock_result._status == "COMPLETED"
+    else:
+        assert mock_result._result != "mock_output"
+        assert mock_result._status != "COMPLETED"

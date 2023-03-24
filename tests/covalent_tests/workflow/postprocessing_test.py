@@ -25,6 +25,7 @@ from unittest.mock import MagicMock, Mock
 import pytest
 
 import covalent as ct
+from covalent._shared_files.defaults import postprocess_prefix
 from covalent._workflow.electron import Electron
 from covalent._workflow.postprocessing import Postprocessor
 
@@ -133,6 +134,25 @@ def test_get_node_ids_from_retval(postprocessor, retval, node_ids):
     assert postprocessor._get_node_ids_from_retval(retval) == node_ids
 
 
-def test_add_exhaustive_postprocess_node(mocker, postprocessor):
+def test_get_electron_metadata(postprocessor):
+    """Test method that retrieves the postprocessing electron metadata."""
+    assert postprocessor._get_electron_metadata() == {
+        "executor": None,
+        "deps": {},
+        "call_before": [],
+        "call_after": [],
+        "workflow_executor": "dask",
+        "executor_data": {},
+        "workflow_executor_data": {},
+    }
+
+
+def test_add_exhaustive_postprocess_node(postprocessor):
     """Test method that adds exhaustive postprocess node."""
-    pass
+    node_num = len(postprocessor.lattice.transport_graph._graph.nodes)
+    postprocessor.add_exhaustive_postprocess_node({})
+    assert len(postprocessor.lattice.transport_graph._graph.nodes) == node_num + 1
+    assert (
+        postprocessor.lattice.transport_graph._graph.nodes(data=True)[0]["name"]
+        == postprocess_prefix
+    )
