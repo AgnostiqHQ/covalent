@@ -52,6 +52,7 @@ jobs:
           --ignore-module=urllib3.*
           --ignore-module=pkg_resources
           --ignore-file=covalent/executor/**
+          --ignore-file=covalent/triggers/**
           covalent
 
       - name: Check missing dispatcher requirements

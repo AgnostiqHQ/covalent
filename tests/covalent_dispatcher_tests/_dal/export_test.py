@@ -134,6 +134,10 @@ def test_to_client_lattice(test_db, mocker):
         == res.lattice.workflow_function.get_serialized()
     )
     assert sdk_lattice.workflow_function_string == res.lattice.workflow_function_string
+
+    # Triggers aren't saved server-side
+    del res.lattice.metadata["triggers"]
+
     assert sdk_lattice.metadata == res.lattice.metadata
     assert sdk_lattice.named_args == res.lattice.named_args
     assert sdk_lattice.named_kwargs == res.lattice.named_kwargs
@@ -186,6 +190,10 @@ def test_to_client_result(test_db, mocker):
         == res.lattice.workflow_function.get_serialized()
     )
     assert sdk_lat.workflow_function_string == res.lattice.workflow_function_string
+
+    # Triggers are not saved in the db
+    del res.lattice.metadata["triggers"]
+
     assert sdk_lat.metadata == res.lattice.metadata
     assert sdk_lat.named_args == res.lattice.named_args
     assert sdk_lat.named_kwargs == res.lattice.named_kwargs

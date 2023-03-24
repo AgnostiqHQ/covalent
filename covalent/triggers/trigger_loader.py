@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -18,10 +18,28 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .base import BaseDispatcher
-from .local import LocalDispatcher
 
-local_dispatch = LocalDispatcher.dispatch
-local_dispatch_sync = LocalDispatcher.dispatch_sync
-local_redispatch = LocalDispatcher.redispatch
-stop_triggers = LocalDispatcher.stop_triggers
+from covalent.triggers import BaseTrigger, DirTrigger, TimeTrigger
+
+
+class TriggerLoader:
+    def __init__(self):
+        self.available_triggers = {
+            BaseTrigger.__name__: BaseTrigger,
+            DirTrigger.__name__: DirTrigger,
+            TimeTrigger.__name__: TimeTrigger,
+        }
+
+    def __new__(cls):
+        if not hasattr(cls, "instance"):
+            cls.instance = super().__new__(cls)
+        return cls.instance
+
+    def __getitem__(self, key):
+        return self.available_triggers.get(key)
+
+    def __setitem__(self, key, value):
+        self.available_triggers[key] = value
+
+
+available_triggers = TriggerLoader()

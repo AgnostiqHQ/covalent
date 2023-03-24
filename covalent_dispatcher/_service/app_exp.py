@@ -115,7 +115,20 @@ async def startv2(dispatch_id: str):
 
 
 @router.get("/resultv2/{dispatch_id}")
-def get_result_v2(
+async def get_result_v2(
+    dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
+):
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(
+        None,
+        _get_result_v2_sync,
+        dispatch_id,
+        wait,
+        status_only,
+    )
+
+
+def _get_result_v2_sync(
     dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
 ):
     with workflow_db.session() as session:

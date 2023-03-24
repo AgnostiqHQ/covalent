@@ -68,47 +68,47 @@ log_stack_info = logger.log_stack_info
 #     return result_object
 
 
-def _get_result_from_dispatcher(
-    dispatch_id: str,
-    wait: bool = False,
-    dispatcher_addr: str = None,
-    status_only: bool = False,
-) -> Dict:
-    """
-    Internal function to get the results of a dispatch from the server without checking if it is ready to read.
+# def _get_result_from_dispatcher(
+#     dispatch_id: str,
+#     wait: bool = False,
+#     dispatcher_addr: str = None,
+#     status_only: bool = False,
+# ) -> Dict:
+#     """
+#     Internal function to get the results of a dispatch from the server without checking if it is ready to read.
 
-    Args:
-        dispatch_id: The dispatch id of the result.
-        wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
-        status_only: If true, only returns result status, not the full result object, default is False.
-        dispatcher_addr: Dispatcher server address, if None then defaults to the address set in Covalent's config.
+#     Args:
+#         dispatch_id: The dispatch id of the result.
+#         wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
+#         status_only: If true, only returns result status, not the full result object, default is False.
+#         dispatcher_addr: Dispatcher server address, if None then defaults to the address set in Covalent's config.
 
-    Returns:
-        The result object from the server.
+#     Returns:
+#         The result object from the server.
 
-    Raises:
-        MissingLatticeRecordError: If the result is not found.
-    """
+#     Raises:
+#         MissingLatticeRecordError: If the result is not found.
+#     """
 
-    if dispatcher_addr is None:
-        dispatcher_addr = (
-            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
-        )
+#     if dispatcher_addr is None:
+#         dispatcher_addr = (
+#             get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+#         )
 
-    retries = int(EXTREME) if wait else 5
+#     retries = int(EXTREME) if wait else 5
 
-    adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
-    http = requests.Session()
-    http.mount("http://", adapter)
-    url = f"http://{dispatcher_addr}/api/result/{dispatch_id}"
-    response = http.get(
-        url,
-        params={"wait": bool(int(wait)), "status_only": status_only},
-    )
-    if response.status_code == 404:
-        raise MissingLatticeRecordError
-    response.raise_for_status()
-    return response.json()
+#     adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
+#     http = requests.Session()
+#     http.mount("http://", adapter)
+#     url = f"http://{dispatcher_addr}/api/result/{dispatch_id}"
+#     response = http.get(
+#         url,
+#         params={"wait": bool(int(wait)), "status_only": status_only},
+#     )
+#     if response.status_code == 404:
+#         raise MissingLatticeRecordError
+#     response.raise_for_status()
+#     return response.json()
 
 
 def _delete_result(
@@ -179,15 +179,17 @@ def sync(
         None
     """
 
-    if isinstance(dispatch_id, str):
-        _get_result_from_dispatcher(dispatch_id, wait=True, status_only=True)
-    elif isinstance(dispatch_id, list):
-        for d in dispatch_id:
-            _get_result_from_dispatcher(d, wait=True, status_only=True)
-    else:
-        raise Exception(
-            f"dispatch_id must be a string or a list. You passed a {type(dispatch_id)}."
-        )
+    # if isinstance(dispatch_id, str):
+    #     _get_result_from_dispatcher(dispatch_id, wait=True, status_only=True)
+    # elif isinstance(dispatch_id, list):
+    #     for d in dispatch_id:
+    #         _get_result_from_dispatcher(d, wait=True, status_only=True)
+    # else:
+    #     raise Exception(
+    #         f"dispatch_id must be a string or a list. You passed a {type(dispatch_id)}."
+    #     )
+
+    pass
 
 
 def cancel(dispatch_id: str, task_ids: List[int] = None, dispatcher_addr: str = None) -> str:

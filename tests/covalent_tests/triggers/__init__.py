@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -17,11 +17,3 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
-
-from .base import BaseDispatcher
-from .local import LocalDispatcher
-
-local_dispatch = LocalDispatcher.dispatch
-local_dispatch_sync = LocalDispatcher.dispatch_sync
-local_redispatch = LocalDispatcher.redispatch
-stop_triggers = LocalDispatcher.stop_triggers

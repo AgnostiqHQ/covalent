@@ -20,16 +20,21 @@
 
 from copy import deepcopy
 from functools import wraps
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Union
 
 import requests
 
 from .._results_manager import wait
 from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
+from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._workflow.lattice import Lattice
+from ..triggers import BaseTrigger
 from .base import BaseDispatcher
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
 
 
 def get_redispatch_request_body(
@@ -93,6 +98,13 @@ class LocalDispatcher(BaseDispatcher):
             Wrapper function which takes the inputs of the workflow as arguments
         """
 
+        # Extract triggers here
+        triggers_data = orig_lattice.metadata.pop("triggers")
+
+        if not disable_run:
+            # Determine whether to disable first run based on trigger_data
+            disable_run = triggers_data is not None
+
         @wraps(orig_lattice)
         def wrapper(*args, **kwargs) -> str:
             """
@@ -108,6 +120,10 @@ class LocalDispatcher(BaseDispatcher):
             """
 
             dispatch_id = LocalDispatcher.submit(orig_lattice, dispatcher_addr)(*args, **kwargs)
+
+            if triggers_data:
+                LocalDispatcher.register_triggers(triggers_data, dispatch_id)
+
             if not disable_run:
                 return LocalDispatcher.start(dispatch_id, dispatcher_addr)
             else:
@@ -346,3 +362,57 @@ class LocalDispatcher(BaseDispatcher):
             return r.content.decode("utf-8").strip().replace('"', "")
 
         return func
+
+    @staticmethod
+    def register_triggers(triggers_data: List[Dict], dispatch_id: str) -> None:
+        """
+        Register the given triggers to the Triggers server.
+        Register also starts the `observe()` method of said trigger.
+        This is done by calling `BaseTrigger._register` method
+        with the given trigger dictionary and is equivalent to
+        calling the trigger objects `register()` method.
+
+        Args:
+            triggers_data: List of trigger dictionaries to be registered
+            dispatch_id: Lattice's dispatch id to be linked with given triggers
+
+        Returns:
+            None
+        """
+
+        for tr_dict in triggers_data:
+            tr_dict["lattice_dispatch_id"] = dispatch_id
+            BaseTrigger._register(tr_dict)
+
+    @staticmethod
+    def stop_triggers(
+        dispatch_ids: Union[str, List[str]], triggers_server_addr: str = None
+    ) -> None:
+        """
+        Stop observing on all triggers of all given dispatch ids registered on the Triggers server.
+        Args:
+            dispatch_ids: Dispatch ID(s) for whose triggers are to be stopped
+            triggers_server_addr: Address of the Triggers server; configured dispatcher's address is used as default
+        Returns:
+            None
+        """
+
+        if triggers_server_addr is None:
+            triggers_server_addr = (
+                "http://"
+                + get_config("dispatcher.address")
+                + ":"
+                + str(get_config("dispatcher.port"))
+            )
+
+        stop_triggers_url = f"{triggers_server_addr}/api/triggers/stop_observe"
+
+        if isinstance(dispatch_ids, str):
+            dispatch_ids = [dispatch_ids]
+
+        r = requests.post(stop_triggers_url, json=dispatch_ids)
+        r.raise_for_status()
+
+        app_log.debug("Triggers for following dispatch_ids have stopped observing:")
+        for d_id in dispatch_ids:
+            app_log.debug(d_id)

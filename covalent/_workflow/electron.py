@@ -799,7 +799,7 @@ def to_decoded_electron_collection(**x):
 def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kwargs):
     parent_metadata = json.loads(json_parent_metadata)
     for k in sub.metadata.keys():
-        if not sub.metadata[k]:
+        if not sub.metadata[k] and k != "triggers":
             sub.metadata[k] = parent_metadata[k]
 
     sub.build_graph(*args, **kwargs)

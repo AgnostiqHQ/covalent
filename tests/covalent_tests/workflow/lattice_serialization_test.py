@@ -22,6 +22,7 @@ import covalent as ct
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import encode_metadata
 from covalent.executor import LocalExecutor
+from covalent.triggers import BaseTrigger
 
 le = LocalExecutor(log_stdout="/tmp/stdout.log")
 
@@ -39,6 +40,7 @@ def test_lattice_metadata_is_serialized_early():
         workflow_executor=LocalExecutor(),
         call_before=[calldep],
         call_after=[calldep],
+        triggers=BaseTrigger(),
     )
     def workflow(x):
         return 1
@@ -57,7 +59,7 @@ def test_lattice_json_serialization():
         return f(x)
 
     workflow.build_graph(5)
-    workflow.cova_imports = set({"dummy_module"})
+    workflow.cova_imports = {"dummy_module"}
 
     json_workflow = workflow.serialize_to_json()
 
