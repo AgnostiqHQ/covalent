@@ -55,9 +55,11 @@ class Record:
         return session.scalars(stmt).all()
 
     @classmethod
-    def insert(cls, session: Session, *, insert_kwargs: dict) -> models.Base:
+    def insert(cls, session: Session, *, insert_kwargs: dict, flush: bool = True) -> models.Base:
         new_record = cls.model(**insert_kwargs)
         session.add(new_record)
+        if flush:
+            session.flush()
         return new_record
 
     def update(self, session: Session, *, values: dict):
