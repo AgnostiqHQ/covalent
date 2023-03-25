@@ -19,18 +19,65 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from sqlalchemy import select
+from __future__ import annotations
+
+from sqlalchemy import select, update
 from sqlalchemy.orm import Session, load_only
 
+from .._db import models
 
-def get(
-    model, session: Session, *, fields: list, equality_filters: dict, membership_filters: dict
-):
-    stmt = select(model)
-    for attr, val in equality_filters.items():
-        stmt = stmt.where(getattr(model, attr) == val)
-    for attr, vals in membership_filters.items():
-        stmt = stmt.where(getattr(model, attr).in_(vals))
-    if len(fields) > 0:
-        stmt = stmt.options(load_only(*fields))
-    return session.scalars(stmt).all()
+
+class Record:
+    @classmethod
+    @property
+    def model(cls) -> type(models.Base):
+        raise NotImplementedError
+
+    def __init__(self, session: Session, record: models.Base, *, fields: set):
+        self._id = record.id
+        self._attrs = {k: getattr(record, k) for k in fields}
+
+    @property
+    def primary_key(self):
+        return self._id
+
+    @classmethod
+    def get(
+        cls, session: Session, *, fields: list, equality_filters: dict, membership_filters: dict
+    ):
+        stmt = select(cls.model)
+        for attr, val in equality_filters.items():
+            stmt = stmt.where(getattr(cls.model, attr) == val)
+        for attr, vals in membership_filters.items():
+            stmt = stmt.where(getattr(cls.model, attr).in_(vals))
+        if len(fields) > 0:
+            stmt = stmt.options(load_only(*fields))
+        return session.scalars(stmt).all()
+
+    @classmethod
+    def insert(cls, session: Session, *, insert_kwargs: dict) -> models.Base:
+        new_record = cls.model(**insert_kwargs)
+        session.add(new_record)
+        return new_record
+
+    def update(self, session: Session, *, values: dict):
+        cls = type(self)
+        stmt = update(cls.model).where(cls.model.id == self.primary_key).values(**values)
+        session.execute(stmt)
+
+    def refresh(self, session: Session, *, fields: set):
+        records = type(self).get(
+            session,
+            fields=fields,
+            equality_filters={"id": self._id},
+            membership_filters={},
+        )
+        record = records[0]
+        self._attrs = {k: getattr(record, k) for k in fields}
+
+    @property
+    def attrs(self) -> dict:
+        return self._attrs
+
+    def __contains__(self, item: str):
+        return item in self._attrs

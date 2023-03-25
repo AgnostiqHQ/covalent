@@ -79,8 +79,7 @@ def test_electron_attributes(test_db, mocker):
         e = Electron(session, record)
         asset_ids = e.get_asset_ids(session, [])
 
-    meta = e.metadata.keys()
-    assert METADATA_KEYS.issubset(meta)
+    assert METADATA_KEYS.issubset(e.metadata_keys)
     assert asset_ids.keys() == ASSET_KEYS
 
     assert e.get_value("task_group_id") == e.node_id
@@ -105,9 +104,9 @@ def test_electron_restricted_attributes(test_db, mocker):
         )
         e = Electron(session, record, keys=["start_time"])
 
-    meta = e.metadata.keys()
-    assert "start_time" in meta
-    assert "status" not in meta
+    meta = e.metadata.attrs.keys()
+    assert Electron.meta_record_map("start_time") in meta
+    assert Electron.meta_record_map("status") not in meta
 
 
 def test_electron_get_set_value(test_db, mocker):
@@ -216,4 +215,4 @@ def test_electron_asset_digest(test_db, mocker):
         e = Electron(session, record)
 
         value = e.get_asset("value")
-        assert "digest_hex" in value.__dict__
+        assert "digest_hex" in value._metadata

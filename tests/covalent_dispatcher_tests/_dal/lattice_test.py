@@ -81,9 +81,7 @@ def test_lattice_attributes(test_db, mocker):
         lat = Lattice(session, record)
         asset_ids = lat.get_asset_ids(session, [])
 
-    meta = lat.metadata.keys()
-
-    assert METADATA_KEYS.issubset(meta)
+    assert METADATA_KEYS.issubset(lat.metadata_keys)
     assert asset_ids.keys() == ASSET_KEYS.union(DISPATCH_ASSET_KEYS)
 
     workflow_function = lat.get_value("workflow_function").get_deserialized()
@@ -115,9 +113,9 @@ def test_lattice_restricted_attributes(test_db, mocker):
 
         lat = Lattice(session, record, keys=["id"])
 
-    meta = lat.metadata.keys()
-    assert "id" in meta
-    assert "storage_path" not in meta
+    meta = lat.metadata.attrs.keys()
+    assert Lattice.meta_record_map("id") in meta
+    assert Lattice.meta_record_map("storage_path") not in meta
 
 
 def test_lattice_get_set_value(test_db, mocker):

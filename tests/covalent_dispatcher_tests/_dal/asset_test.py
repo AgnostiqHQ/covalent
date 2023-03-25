@@ -59,7 +59,7 @@ def test_asset_load_data():
     storage_path = "/tmp"
 
     rec = get_asset_record(storage_path, key)
-    a = Asset(rec)
+    a = Asset(None, rec)
     assert a.load_data() == "Hello\n"
     os.unlink(temppath)
 
@@ -70,7 +70,7 @@ def test_asset_store_data():
         key = os.path.basename(temppath)
     storage_path = "/tmp"
     rec = get_asset_record(storage_path, key)
-    a = Asset(rec)
+    a = Asset(None, rec)
     a.store_data("Hello\n")
 
     with open(temppath, "r") as f:
@@ -86,7 +86,7 @@ def test_upload_asset():
     storage_path = "/tmp"
 
     rec = get_asset_record(storage_path, src_key)
-    a = Asset(rec)
+    a = Asset(None, rec)
     a.store_data("Hello\n")
 
     with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
@@ -113,7 +113,7 @@ def test_download_asset():
         dest_key = os.path.basename(dest_path)
 
     rec = get_asset_record(storage_path, dest_key)
-    a = Asset(rec)
+    a = Asset(None, rec)
 
     a.download(src_path)
 

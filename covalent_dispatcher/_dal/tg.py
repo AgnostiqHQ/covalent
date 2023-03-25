@@ -50,7 +50,7 @@ class _TransportGraph:
         self._keys = keys
 
     def add_node(self, node: Node):
-        self._graph.add_node(node.node_id, **node.metadata)
+        self._graph.add_node(node.node_id, **node.metadata.attrs)
         self._nodes[node.node_id] = node
 
     def add_edge(self, x: int, y: int, **attrs):
@@ -202,7 +202,7 @@ def _to_edge(e_record: EdgeRecord, uid_node_id_map: Dict) -> Edge:
 
 def _nodes(session: Session, lattice_id: int, node_ids: List[int], *, keys: List) -> List[Node]:
     # records = _node_records(session, lattice_id, node_ids)
-    records = Node.get_records(
+    records = Node.get_db_records(
         session,
         keys=keys,
         equality_filters={"parent_lattice_id": lattice_id},
@@ -228,7 +228,7 @@ def _get_edge_data_for_nodes(session: Session, parent_node: Node, child_node: No
 def _nodes_and_edges(
     session: Session, lattice_id: int, *, keys: List
 ) -> Tuple[List[Node], List[Edge]]:
-    db_nodes = Node.get_records(
+    db_nodes = Node.get_db_records(
         session,
         keys=keys,
         equality_filters={"parent_lattice_id": lattice_id},

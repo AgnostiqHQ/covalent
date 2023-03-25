@@ -24,13 +24,13 @@ import os
 from enum import Enum
 from typing import Any
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from covalent._shared_files import logger
 
 from .._db.models import Asset as AssetRecord
 from .._db.write_result_to_db import load_file, store_file
+from .controller import Record
 from .utils.file_transfer import cp
 
 app_log = logger.app_log
@@ -41,18 +41,45 @@ class StorageType(Enum):
     S3 = "s3"
 
 
-class Asset:
+FIELDS = {
+    "id",
+    "storage_type",
+    "storage_path",
+    "object_key",
+    "digest_alg",
+    "digest_hex",
+}
+
+
+class Asset(Record):
 
     """Metadata for an object in blob storage"""
 
-    def __init__(self, record: AssetRecord, session: Session = None):
-        self.id = record.id
-        self.storage_type = StorageType(record.storage_type)
-        self.storage_path = record.storage_path
-        self.object_key = record.object_key
+    model = AssetRecord
 
-        self.digest_alg = record.digest_alg
-        self.digest_hex = record.digest_hex
+    def __init__(self, session: Session, record: AssetRecord, *, keys: set = FIELDS):
+        self._id = record.id
+        self._metadata = {k: getattr(record, k) for k in keys}
+
+    @property
+    def primary_key(self):
+        return self._id
+
+    @property
+    def storage_type(self) -> StorageType:
+        return StorageType(self._metadata["storage_type"])
+
+    @property
+    def storage_path(self) -> str:
+        return self._metadata["storage_path"]
+
+    @property
+    def object_key(self) -> str:
+        return self._metadata["object_key"]
+
+    @property
+    def digest_hex(self) -> str:
+        return self._metadata["digest_hex"]
 
     def store_data(self, data: Any) -> None:
         store_file(self.storage_path, self.object_key, data)
@@ -74,7 +101,9 @@ class Asset:
         cp(src_uri, dest_uri)
 
     @classmethod
-    def from_asset_id(cls, asset_id: int, session: Session) -> "Asset":
-        stmt = select(AssetRecord).where(AssetRecord.id == asset_id)
-        record = session.scalars(stmt).first()
-        return Asset(record, session)
+    def from_id(cls, asset_id: int, session: Session, *, keys=FIELDS) -> "Asset":
+        records = cls.get(
+            session, fields=keys, equality_filters={"id": asset_id}, membership_filters={}
+        )
+        record = records[0]
+        return Asset(session, record, keys=keys)

@@ -22,7 +22,7 @@
 
 import os
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, List
 
 from sqlalchemy.orm import Session
 
@@ -33,9 +33,10 @@ from covalent._shared_files.util_classes import RESULT_STATUS, Status
 from .._db import models
 from .asset import Asset
 from .base import DispatchedObject
+from .controller import Record
 from .db_interfaces.result_utils import ASSET_KEYS  # nopycln: import
 from .db_interfaces.result_utils import METADATA_KEYS  # nopycln: import
-from .db_interfaces.result_utils import _meta_record_map, _to_meta, get_filters, set_filters
+from .db_interfaces.result_utils import _meta_record_map, get_filters, set_filters
 from .electron import ELECTRON_KEYS
 from .lattice import LATTICE_KEYS, Lattice
 
@@ -44,9 +45,18 @@ app_log = logger.app_log
 RESULT_KEYS = list(_meta_record_map.keys())
 
 
-class Result(DispatchedObject):
+class ResultMeta(Record):
     model = models.Lattice
-    asset_link_model = models.LatticeAsset
+
+
+class ResultAsset(Record):
+    model = models.LatticeAsset
+
+
+class Result(DispatchedObject):
+    meta_type = ResultMeta
+    asset_link_type = ResultAsset
+    metadata_keys = RESULT_KEYS
 
     def __init__(
         self,
@@ -60,9 +70,9 @@ class Result(DispatchedObject):
     ):
         self._id = record.id
         self._keys = keys
-        self._metadata = _to_meta(session, record, keys)
+        fields = set(map(Result.meta_record_map, keys))
+        self._metadata = ResultMeta(session, record, fields=fields)
         self._assets = {}
-        self._record = record
 
         self._lattice_id = record.id
         self._electron_id = record.electron_id
@@ -82,16 +92,12 @@ class Result(DispatchedObject):
         self._result = None
 
     @property
-    def keys(self) -> List:
+    def query_keys(self) -> List:
         return self._keys
 
     @property
-    def metadata(self):
+    def metadata(self) -> ResultMeta:
         return self._metadata
-
-    @metadata.setter
-    def metadata(self, meta: Dict):
-        self._metadata = meta
 
     @property
     def assets(self):
@@ -265,7 +271,7 @@ class Result(DispatchedObject):
 
     def _get_incomplete_nodes(self, refresh: bool = True):
         nodes = []
-        num_nodes = self.metadata["num_nodes"]
+        num_nodes = self.get_metadata("num_nodes")
         tg = self.lattice.transport_graph
 
         with self.session() as session:
@@ -316,7 +322,7 @@ def get_result_object(
     electron_keys: list = ELECTRON_KEYS,
 ) -> Result:
     with Result.session() as session:
-        records = Result.get_records(
+        records = Result.get_db_records(
             session,
             keys=keys + lattice_keys,
             equality_filters={"dispatch_id": dispatch_id},

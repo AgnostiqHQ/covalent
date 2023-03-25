@@ -20,23 +20,34 @@
 
 """DB-backed lattice"""
 
-from typing import Dict, List
+from typing import List
 
 from sqlalchemy.orm import Session
 
 from .._db import models
 from .base import DispatchedObject
+from .controller import Record
 from .db_interfaces.lattice_utils import ASSET_KEYS  # nopycln: import
 from .db_interfaces.lattice_utils import METADATA_KEYS  # nopycln: import
-from .db_interfaces.lattice_utils import _meta_record_map, _to_meta
+from .db_interfaces.lattice_utils import _meta_record_map
 from .tg import ELECTRON_KEYS, get_compute_graph
 
 LATTICE_KEYS = list(_meta_record_map.keys())
 
 
-class Lattice(DispatchedObject):
+class LatticeMeta(Record):
     model = models.Lattice
-    asset_link_model = models.LatticeAsset
+
+
+class LatticeAsset(Record):
+    model = models.LatticeAsset
+
+
+class Lattice(DispatchedObject):
+    meta_type = LatticeMeta
+    asset_link_type = LatticeAsset
+
+    metadata_keys = LATTICE_KEYS
 
     def __init__(
         self,
@@ -49,25 +60,21 @@ class Lattice(DispatchedObject):
     ):
         self._id = record.id
         self._keys = keys
-        self._metadata = _to_meta(session, record, keys)
-        self._assets = {}
-        self._record = record
+        fields = set(map(Lattice.meta_record_map, keys))
 
-        self._lattice_id = self._record.id
+        self._metadata = LatticeMeta(session, record, fields=fields)
+        self._assets = {}
+        self._lattice_id = record.id
 
         self.transport_graph = get_compute_graph(self._lattice_id, bare, keys=electron_keys)
 
     @property
-    def keys(self) -> List:
+    def query_keys(self) -> List:
         return self._keys
 
     @property
-    def metadata(self):
+    def metadata(self) -> LatticeMeta:
         return self._metadata
-
-    @metadata.setter
-    def metadata(self, meta: Dict):
-        self._metadata = meta
 
     @property
     def assets(self):

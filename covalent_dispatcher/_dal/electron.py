@@ -27,39 +27,47 @@ from sqlalchemy.orm import Session
 
 from .._db import models
 from .base import DispatchedObject
+from .controller import Record
 from .db_interfaces.electron_utils import ASSET_KEYS  # nopycln: import
 from .db_interfaces.electron_utils import METADATA_KEYS  # nopycln: import
-from .db_interfaces.electron_utils import _meta_record_map, _to_meta, get_filters, set_filters
+from .db_interfaces.electron_utils import _meta_record_map, get_filters, set_filters
 
 ELECTRON_KEYS = list(_meta_record_map.keys())
 
 
-class Electron(DispatchedObject):
+class ElectronMeta(Record):
     model = models.Electron
-    asset_link_model = models.ElectronAsset
+
+
+class ElectronAsset(Record):
+    model = models.ElectronAsset
+
+
+class Electron(DispatchedObject):
+    meta_type = ElectronMeta
+    asset_link_type = ElectronAsset
+
+    metadata_keys = ELECTRON_KEYS
 
     def __init__(self, session: Session, record: models.Electron, *, keys: List = ELECTRON_KEYS):
         self._id = record.id
         self._keys = keys
-        self._metadata = _to_meta(session, record, self._keys)
+
+        fields = set(map(Electron.meta_record_map, keys))
+
+        self._metadata = ElectronMeta(session, record, fields=fields)
         self._assets = {}
-
-        self._record = record
-
-        self.node_id = record.transport_graph_node_id
         self._electron_id = record.id
 
+        self.node_id = record.transport_graph_node_id
+
     @property
-    def keys(self) -> list:
+    def query_keys(self) -> list:
         return self._keys
 
     @property
-    def metadata(self) -> Dict:
+    def metadata(self) -> ElectronMeta:
         return self._metadata
-
-    @metadata.setter
-    def metadata(self, meta: Dict):
-        self._metadata = meta
 
     @property
     def computed_fields(self) -> Dict:

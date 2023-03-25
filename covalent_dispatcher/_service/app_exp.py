@@ -54,7 +54,7 @@ router: APIRouter = APIRouter()
 
 
 @router.post("/dispatchv2/submit")
-async def submitv2(request: Request) -> UUID:
+async def submitv0(request: Request) -> UUID:
     """
     Function to accept the submit request of
     new dispatch and return the dispatch id
@@ -103,7 +103,7 @@ async def resubmit(request: Request) -> str:
 
 
 @router.put("/dispatchv2/start/{dispatch_id}")
-async def startv2(dispatch_id: str):
+async def start(dispatch_id: str):
     try:
         await dispatcher.start_dispatch(dispatch_id)
         return dispatch_id

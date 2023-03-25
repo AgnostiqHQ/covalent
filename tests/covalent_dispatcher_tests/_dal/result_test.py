@@ -86,7 +86,7 @@ def test_result_attributes(test_db, mocker):
         srvres = Result(session, record)
         asset_ids = srvres.get_asset_ids(session, [])
 
-    meta = srvres.metadata.keys()
+    meta = srvres.metadata_keys
     assert METADATA_KEYS.issubset(meta)
     assert asset_ids.keys() == ASSET_KEYS.union(LATTICE_ASSET_KEYS)
 
@@ -110,7 +110,7 @@ def test_result_restricted_attributes(test_db, mocker):
 
         srvres = Result(session, record, bare=True, keys=["status", "dispatch_id"])
 
-    meta = srvres.metadata.keys()
+    meta = srvres.query_keys
     assert "status" in meta
     assert "dispatch_id" in meta
     assert "root_dispatch_id" not in meta

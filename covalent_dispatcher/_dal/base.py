@@ -24,29 +24,37 @@ from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from typing import Any, Dict, Generator, List, Tuple, Union
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from .._db import models
 from .._db.datastore import workflow_db
 from . import controller
 from .asset import Asset
 
 
 class DispatchedObject(ABC):
+    @classmethod
     @property
-    @abstractmethod
-    def keys(self) -> set:
+    def meta_type(cls) -> type(controller.Record):
+        raise NotImplementedError
+
+    @classmethod
+    @property
+    def asset_link_type(cls) -> type(controller.Record):
+        raise NotImplementedError
+
+    @classmethod
+    @property
+    def metadata_keys(cls) -> set:
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def metadata(self) -> Dict:
+    def query_keys(self) -> set:
         raise NotImplementedError
 
     @property
-    @metadata.setter
-    def metadata(self, meta: Dict):
+    @abstractmethod
+    def metadata(self) -> controller.Record:
         raise NotImplementedError
 
     @property
@@ -60,12 +68,13 @@ class DispatchedObject(ABC):
             yield session
 
     def get_asset_ids(self, session: Session, keys: List[str]) -> Dict[str, int]:
-        asset_link_model = type(self).asset_link_model
-        stmt = select(asset_link_model).where(asset_link_model.meta_record_id == self._id)
-        if len(keys) > 0:
-            stmt = stmt.where(asset_link_model.key.in_(keys))
-
-        records = session.scalars(stmt).all()
+        membership_filters = {"key": keys} if len(keys) > 0 else {}
+        records = type(self).asset_link_type.get(
+            session,
+            fields=[],
+            equality_filters={"meta_record_id": self._id},
+            membership_filters=membership_filters,
+        )
         return {x.key: x.asset_id for x in records}
 
     @property
@@ -73,56 +82,47 @@ class DispatchedObject(ABC):
     def assets(self) -> Dict:
         raise NotImplementedError
 
-    def _get_db_record(self, session) -> models.Base:
-        records = type(self).get_records(
-            session, keys=self.keys, equality_filters={"id": self._id}, membership_filters={}
-        )
-        self._record = records[0]
-        return self._record
-
     @classmethod
     def meta_record_map(cls, key: str) -> str:
         return key
 
     def _refresh_metadata(self, session: Session):
-        record = self._get_db_record(session)
-        metadata = {k: getattr(record, type(self).meta_record_map(k)) for k in self.keys}
-        self.metadata = metadata
+        fields = {type(self).meta_record_map(k) for k in self.query_keys}
+        self.metadata.refresh(session, fields=fields)
 
     def get_metadata(self, key: str, session: Session = None, refresh: bool = True):
+        attr = type(self).meta_record_map(key)
         if refresh:
             if session:
                 self._refresh_metadata(session)
             else:
                 with self.session() as session:
                     self._refresh_metadata(session)
-        return self.metadata[key]
+        return self.metadata.attrs[attr]
 
     def set_metadata(self, key: str, val: Union[str, int], session: Session = None):
         if session:
-            record = self._get_db_record(session)
             record_attr = type(self).meta_record_map(key)
-            setattr(record, record_attr, val)
+            self.metadata.update(session, values={record_attr: val})
         else:
             with self.session() as session:
-                record = self._get_db_record(session)
                 record_attr = type(self).meta_record_map(key)
-                setattr(record, record_attr, val)
+                self.metadata.update(session, values={record_attr: val})
 
     def get_asset(self, key: str) -> Asset:
         if key not in self.assets:
             with self.session() as session:
                 asset_id = self.get_asset_ids(session, [key])[key]
-                self.assets[key] = Asset.from_asset_id(asset_id, session)
+                self.assets[key] = Asset.from_id(asset_id, session)
 
         return self.assets[key]
 
     def _get_value(self, key: str, session: Session, refresh: bool = True) -> Any:
-        if key in self.metadata:
-            return self.get_metadata(key, session, refresh)
-        elif key in self.computed_fields:
+        if key in self.computed_fields:
             handler = self.computed_fields[key]
             return handler(self, session)
+        elif key in self.metadata_keys:
+            return self.get_metadata(key, session, refresh)
         else:
             return self.get_asset(key).load_data()
 
@@ -134,7 +134,7 @@ class DispatchedObject(ABC):
                 return self._get_value(key, session, refresh)
 
     def _set_value(self, key: str, val: Any, session: Session) -> None:
-        if key in self.metadata:
+        if key in type(self).metadata_keys:
             self.set_metadata(key, val, session)
         else:
             self.get_asset(key).store_data(val)
@@ -155,11 +155,9 @@ class DispatchedObject(ABC):
             self.set_value(k, v, session)
 
     @classmethod
-    def get_records(
+    def get_db_records(
         cls, session: Session, *, keys: list, equality_filters: dict, membership_filters: dict
     ):
-        model = cls.model
-
         # transform keys to db field names
         fields = list(map(cls.meta_record_map, keys))
 
@@ -172,8 +170,7 @@ class DispatchedObject(ABC):
             attr = cls.meta_record_map(key)
             member_filters_transformed[attr] = vals
 
-        return controller.get(
-            model,
+        return cls.meta_type.get(
             session,
             fields=fields,
             equality_filters=eq_filters_transformed,
