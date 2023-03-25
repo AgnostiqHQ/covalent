@@ -37,7 +37,7 @@ from .controller import Record
 from .db_interfaces.result_utils import ASSET_KEYS  # nopycln: import
 from .db_interfaces.result_utils import METADATA_KEYS  # nopycln: import
 from .db_interfaces.result_utils import _meta_record_map, get_filters, set_filters
-from .electron import ELECTRON_KEYS
+from .electron import ELECTRON_KEYS, Electron
 from .lattice import LATTICE_KEYS, Lattice
 
 app_log = logger.app_log
@@ -270,21 +270,27 @@ class Result(DispatchedObject):
         return self._get_incomplete_nodes()["failed"]
 
     def _get_incomplete_nodes(self, refresh: bool = True):
-        nodes = []
-        num_nodes = self.get_metadata("num_nodes")
-        tg = self.lattice.transport_graph
-
         with self.session() as session:
-            failed_nodes = [
-                (i, tg.get_node_value(i, "name", session, refresh))
-                for i in range(num_nodes)
-                if tg.get_node_value(i, "status", session, refresh) == RESULT_STATUS.FAILED
-            ]
-            cancelled_nodes = [
-                (i, tg.get_node_value(i, "name", session, refresh))
-                for i in range(num_nodes)
-                if tg.get_node_value(i, "status", session, refresh) == RESULT_STATUS.CANCELLED
-            ]
+            query_keys = {"parent_lattice_id", "node_id", "name", "status"}
+            records = Electron.get_db_records(
+                session,
+                keys=query_keys,
+                equality_filters={"parent_lattice_id": self._id},
+                membership_filters={
+                    "status": [str(RESULT_STATUS.FAILED), str(RESULT_STATUS.CANCELLED)]
+                },
+            )
+
+            nodes = list(map(lambda rec: Electron(session, rec, keys=query_keys), records))
+
+            failed = list(filter(lambda e: e.get_value("status") == RESULT_STATUS.FAILED, nodes))
+            cancelled = list(
+                filter(lambda e: e.get_value("status") == RESULT_STATUS.CANCELLED, nodes)
+            )
+
+            failed_nodes = list(map(lambda x: (x.node_id, x.get_metadata("name")), failed))
+            cancelled_nodes = list(map(lambda x: (x.node_id, x.get_metadata("name")), cancelled))
+
         return {"failed": failed_nodes, "cancelled": cancelled_nodes}
 
     def get_all_node_outputs(self) -> dict:
