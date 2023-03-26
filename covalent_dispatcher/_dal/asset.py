@@ -22,14 +22,16 @@
 
 import os
 from enum import Enum
+from pathlib import Path
 from typing import Any
 
+import cloudpickle
 from sqlalchemy.orm import Session
 
 from covalent._shared_files import logger
 
 from .._db.models import Asset as AssetRecord
-from .._db.write_result_to_db import load_file, store_file
+from .._object_store.local import Digest, local_store
 from .controller import Record
 from .utils.file_transfer import cp
 
@@ -107,3 +109,52 @@ class Asset(Record):
         )
         record = records[0]
         return Asset(session, record, keys=keys)
+
+
+# Moved from write_result_to_db.py
+
+
+class InvalidFileExtension(Exception):
+    """
+    Exception to raise when an invalid file extension is encountered
+    """
+
+    pass
+
+
+def store_file(storage_path: str, filename: str, data: Any = None) -> Digest:
+    """This function writes data corresponding to the filepaths in the DB."""
+
+    if filename.endswith(".pkl"):
+        with open(Path(storage_path) / filename, "wb") as f:
+            cloudpickle.dump(data, f)
+
+    elif filename.endswith(".log") or filename.endswith(".txt"):
+        if data is None:
+            data = ""
+
+        if not isinstance(data, str):
+            raise InvalidFileExtension("Data must be string type.")
+
+        with open(Path(storage_path) / filename, "w+") as f:
+            f.write(data)
+
+    else:
+        raise InvalidFileExtension("The file extension is not supported.")
+
+    digest = local_store.digest(bucket_name=storage_path, object_key=filename)
+    return digest
+
+
+def load_file(storage_path: str, filename: str) -> Any:
+    """This function loads data for the filenames in the DB."""
+
+    if filename.endswith(".pkl"):
+        with open(Path(storage_path) / filename, "rb") as f:
+            data = cloudpickle.load(f)
+
+    elif filename.endswith(".log") or filename.endswith(".txt"):
+        with open(Path(storage_path) / filename, "r") as f:
+            data = f.read()
+
+    return data

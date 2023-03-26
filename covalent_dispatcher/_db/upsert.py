@@ -28,17 +28,13 @@ from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 
-from .._dal.asset import Asset
+from .._dal.asset import Asset, store_file
 from .._dal.electron import Electron
 from .._dal.job import Job
 from .._dal.lattice import Lattice
 from . import models
 from .datastore import workflow_db
-from .write_result_to_db import (
-    get_electron_type,
-    store_file,
-    transaction_upsert_electron_dependency_data,
-)
+from .write_result_to_db import get_electron_type, transaction_upsert_electron_dependency_data
 
 app_log = logger.app_log
 
@@ -370,5 +366,5 @@ def persist_result(result: Result, electron_id: int = None) -> None:
             cancel_requested = job_record.cancel_requested
         else:
             cancel_requested = False
-        _electron_data(session, parent_lattice_id, result, cancel_requested)
+        node_id_eid_map = _electron_data(session, parent_lattice_id, result, cancel_requested)
         transaction_upsert_electron_dependency_data(session, result.dispatch_id, result.lattice)

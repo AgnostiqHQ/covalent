@@ -20,7 +20,6 @@
 
 """Unit tests for the module used to write the decomposed result object to the database."""
 
-import tempfile
 from datetime import datetime as dt
 from datetime import timezone
 
@@ -41,7 +40,6 @@ from covalent._shared_files.defaults import (
 from covalent_dispatcher._db.datastore import DataStore
 from covalent_dispatcher._db.models import Electron, ElectronDependency, Job, Lattice
 from covalent_dispatcher._db.write_result_to_db import (
-    InvalidFileExtension,
     MissingElectronRecordError,
     MissingLatticeRecordError,
     get_electron_type,
@@ -49,9 +47,7 @@ from covalent_dispatcher._db.write_result_to_db import (
     insert_electron_dependency_data,
     insert_electrons_data,
     insert_lattices_data,
-    load_file,
     resolve_electron_id,
-    store_file,
     transaction_upsert_electron_dependency_data,
     update_electrons_data,
     update_lattice_completed_electron_num,
@@ -755,44 +751,3 @@ def test_resolve_electron_id(test_db, mocker):
     dispatch_id, node_id = resolve_electron_id(electron_ids[3])
     assert dispatch_id == "dispatch_1"
     assert node_id == 3
-
-
-def test_store_file_invalid_extension():
-    """Test the function used to write data corresponding to the filenames in the DB."""
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        with pytest.raises(InvalidFileExtension):
-            store_file(storage_path=temp_dir, filename="test.invalid", data="")
-
-        with pytest.raises(InvalidFileExtension):
-            store_file(storage_path=temp_dir, filename="test.txt", data={4})
-
-        with pytest.raises(InvalidFileExtension):
-            store_file(storage_path=temp_dir, filename="test.log", data={4})
-
-
-def test_store_file_valid_extension():
-    """Test the function used to write data corresponding to the filenames in the DB."""
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        with pytest.raises(InvalidFileExtension):
-            store_file(storage_path=temp_dir, filename="test.invalid", data="")
-
-        with pytest.raises(InvalidFileExtension):
-            store_file(storage_path=temp_dir, filename="test.txt", data={4})
-
-        with pytest.raises(InvalidFileExtension):
-            store_file(storage_path=temp_dir, filename="test.log", data={4})
-
-
-def test_store_and_load_file():
-    """Test the data storage and loading methods simultaneously."""
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        data = [1, 2, 3]
-        store_file(storage_path=temp_dir, filename="pickle.pkl", data=data)
-        assert load_file(storage_path=temp_dir, filename="pickle.pkl") == data
-
-        data = None
-        store_file(storage_path=temp_dir, filename="pickle.txt", data=data)
-        assert load_file(storage_path=temp_dir, filename="pickle.txt") == ""
