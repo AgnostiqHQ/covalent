@@ -88,6 +88,7 @@ _db_meta_record_map = {
     "type": "type",
     "storage_path": "storage_path",
     "storage_type": "storage_type",
+    "job_id": "job_id",
 }
 
 _meta_record_map.update(_db_meta_record_map)

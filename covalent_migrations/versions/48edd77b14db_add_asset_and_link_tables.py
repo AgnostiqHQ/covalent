@@ -52,21 +52,21 @@ def upgrade() -> None:
     op.create_table(
         "lattice_assets",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("meta_record_id", sa.Integer(), nullable=False),
+        sa.Column("meta_id", sa.Integer(), nullable=False),
         sa.Column("asset_id", sa.Integer(), nullable=False),
         sa.Column("key", sa.String(length=24), nullable=False),
         sa.ForeignKeyConstraint(["asset_id"], ["assets.id"], name="asset_link"),
-        sa.ForeignKeyConstraint(["meta_record_id"], ["lattices.id"], name="lattice_link"),
+        sa.ForeignKeyConstraint(["meta_id"], ["lattices.id"], name="lattice_link"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
         "electron_assets",
         sa.Column("id", sa.Integer(), nullable=False),
-        sa.Column("meta_record_id", sa.Integer(), nullable=False),
+        sa.Column("meta_id", sa.Integer(), nullable=False),
         sa.Column("asset_id", sa.Integer(), nullable=False),
         sa.Column("key", sa.String(length=24), nullable=False),
         sa.ForeignKeyConstraint(["asset_id"], ["assets.id"], name="asset_link"),
-        sa.ForeignKeyConstraint(["meta_record_id"], ["electrons.id"], name="electron_link"),
+        sa.ForeignKeyConstraint(["meta_id"], ["electrons.id"], name="electron_link"),
         sa.PrimaryKeyConstraint("id"),
     )
     with op.batch_alter_table("electron_dependency", schema=None) as batch_op:

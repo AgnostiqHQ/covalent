@@ -42,15 +42,11 @@ def persist(record: Union[Result, Lattice, _TransportGraph], electron_id: int = 
         electron_id: (hack) DB-generated id for the parent electron
             if the workflow is actually a subworkflow
     """
-    if isinstance(record, Result):
-        _initialize_results_dir(record)
-        app_log.debug(f"Persisting {record}")
-        upsert.persist_result(record, electron_id)
-        app_log.debug("persist complete")
-    if isinstance(record, Lattice):
-        persist(record.transport_graph)
-    if isinstance(record, _TransportGraph):
-        record.dirty_nodes.clear()
+
+    _initialize_results_dir(record)
+    app_log.debug(f"Persisting {record}")
+    upsert.persist_result(record, electron_id)
+    app_log.debug("persist complete")
 
 
 def _initialize_results_dir(result):

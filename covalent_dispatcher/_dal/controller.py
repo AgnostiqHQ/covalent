@@ -55,6 +55,10 @@ class Record:
         return session.scalars(stmt).all()
 
     @classmethod
+    def get_by_primary_key(cls, session: Session, primary_key: int) -> models.Base:
+        return session.get(cls.model, primary_key)
+
+    @classmethod
     def insert(cls, session: Session, *, insert_kwargs: dict, flush: bool = True) -> models.Base:
         new_record = cls.model(**insert_kwargs)
         session.add(new_record)

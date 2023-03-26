@@ -33,9 +33,7 @@ from covalent_dispatcher._db.upsert import (
     ELECTRON_RESULTS_FILENAME,
     ELECTRON_STDERR_FILENAME,
     ELECTRON_STDOUT_FILENAME,
-    LATTICE_FUNCTION_STRING_FILENAME,
-    electron_data,
-    lattice_data,
+    _electron_data,
 )
 
 TEMP_RESULTS_DIR = os.environ.get("COVALENT_DATA_DIR") or ct.get_config("dispatcher.results_dir")
@@ -83,13 +81,16 @@ def test_upsert_electron_data_handles_missing_keys(test_db, result_1, mocker):
     mock_digest = MagicMock()
     mock_digest.algorithm = "md5"
     mock_digest.hexdigest = "123"
+    mock_electron_row = MagicMock()
+    mock_electron_row.id = 1
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     mock_store_file = mocker.patch(
         "covalent_dispatcher._db.upsert.store_file", return_value=mock_digest
     )
     mocker.patch(
-        "covalent_dispatcher._db.upsert.transaction_insert_electrons_data", return_value=1
+        "covalent_dispatcher._db.upsert.Electron.meta_type.insert",
+        return_value=mock_electron_row,
     )
     mocker.patch("covalent_dispatcher._db.write_result_to_db.update_electrons_data")
     mocker.patch(
@@ -102,40 +103,11 @@ def test_upsert_electron_data_handles_missing_keys(test_db, result_1, mocker):
     del tg._graph.nodes[0]["stdout"]
     del tg._graph.nodes[0]["output"]
 
-    electron_data(result_1)
+    with test_db.session() as session:
+        _electron_data(session, 1, result_1)
 
     node_path = Path(TEMP_RESULTS_DIR) / result_1.dispatch_id / "node_0"
     mock_store_file.assert_any_call(node_path, ELECTRON_ERROR_FILENAME, None)
     mock_store_file.assert_any_call(node_path, ELECTRON_STDOUT_FILENAME, None)
     mock_store_file.assert_any_call(node_path, ELECTRON_STDERR_FILENAME, None)
     mock_store_file.assert_any_call(node_path, ELECTRON_RESULTS_FILENAME, None)
-
-
-def test_public_lattice_data(test_db, result_1, mocker):
-    """Test the lattice data public method"""
-
-    mock_digest = MagicMock()
-    mock_digest.algorithm = "md5"
-    mock_digest.hexdigest = "123"
-
-    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-
-    mock_store_file = mocker.patch(
-        "covalent_dispatcher._db.upsert.store_file", return_value=mock_digest
-    )
-    mock_insert = mocker.patch(
-        "covalent_dispatcher._db.upsert.transaction_insert_lattices_data", return_value=1
-    )
-    mocker.patch("covalent_dispatcher._db.upsert.transaction_update_lattices_data")
-
-    lattice_path = str(Path(TEMP_RESULTS_DIR) / result_1.dispatch_id)
-
-    lattice_data(result_1)
-    mock_store_file.assert_any_call(
-        lattice_path, LATTICE_FUNCTION_STRING_FILENAME, result_1.lattice.workflow_function_string
-    )
-
-    del result_1.lattice.__dict__["workflow_function_string"]
-    mock_store_file.reset_mock()
-    lattice_data(result_1)
-    mock_store_file.assert_any_call(lattice_path, LATTICE_FUNCTION_STRING_FILENAME, None)

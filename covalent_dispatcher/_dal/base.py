@@ -72,10 +72,18 @@ class DispatchedObject(ABC):
         records = type(self).asset_link_type.get(
             session,
             fields=[],
-            equality_filters={"meta_record_id": self._id},
+            equality_filters={"meta_id": self._id},
             membership_filters=membership_filters,
         )
         return {x.key: x.asset_id for x in records}
+
+    def associate_asset(self, session: Session, key: str, asset_id: int):
+        asset_link_kwargs = {
+            "meta_id": self._id,
+            "asset_id": asset_id,
+            "key": key,
+        }
+        type(self).asset_link_type.insert(session, insert_kwargs=asset_link_kwargs, flush=False)
 
     @property
     @abstractmethod

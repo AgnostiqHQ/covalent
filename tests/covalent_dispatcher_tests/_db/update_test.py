@@ -20,7 +20,6 @@
 import os
 import shutil
 from datetime import datetime as dt
-from datetime import timezone
 from pathlib import Path
 
 import pytest
@@ -208,53 +207,53 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         # Check that there are the appropriate amount of electron dependency records
         assert len(electron_dependency_rows) == 7
 
-        # Update some node / lattice statuses
-        cur_time = dt.now(timezone.utc)
-        result_1._end_time = cur_time
-        result_1._status = "COMPLETED"
-        result_1._result = ct.TransportableObject({"helo": 1, "world": 2})
+        # # Update some node / lattice statuses
+        # cur_time = dt.now(timezone.utc)
+        # result_1._end_time = cur_time
+        # result_1._status = "COMPLETED"
+        # result_1._result = ct.TransportableObject({"helo": 1, "world": 2})
 
-        for node_id in range(6):
-            result_1._update_node(
-                node_id=node_id,
-                start_time=cur_time,
-                end_time=cur_time,
-                status="COMPLETED",
-                # output={"test_data": "test_data"},  # TODO - Put back in later
-                # sublattice_result=None,  # TODO - Add a test where this is not None
-            )
+        # for node_id in range(6):
+        #     result_1._update_node(
+        #         node_id=node_id,
+        #         start_time=cur_time,
+        #         end_time=cur_time,
+        #         status="COMPLETED",
+        #         # output={"test_data": "test_data"},  # TODO - Put back in later
+        #         # sublattice_result=None,  # TODO - Add a test where this is not None
+        #     )
 
         # Call Result.persist
-        update.persist(result_1)
+    #        update.persist(result_1)
 
     # Query lattice / electron / electron dependency
-    with test_db.session() as session:
-        lattice_row = session.query(Lattice).first()
-        electron_rows = session.query(Electron).all()
-        electron_dependency_rows = session.query(ElectronDependency).all()
+    # with test_db.session() as session:
+    #     lattice_row = session.query(Lattice).first()
+    #     electron_rows = session.query(Electron).all()
+    #     electron_dependency_rows = session.query(ElectronDependency).all()
 
-        # Check that the lattice records are as expected
-        assert lattice_row.completed_at.strftime("%Y-%m-%d %H:%M") == cur_time.strftime(
-            "%Y-%m-%d %H:%M"
-        )
-        assert lattice_row.status == "COMPLETED"
-        result = load_file(
-            storage_path=lattice_storage_path, filename=lattice_row.results_filename
-        )
-        assert result_1.result == result.get_deserialized()
+    #     # Check that the lattice records are as expected
+    #     assert lattice_row.completed_at.strftime("%Y-%m-%d %H:%M") == cur_time.strftime(
+    #         "%Y-%m-%d %H:%M"
+    #     )
+    #     assert lattice_row.status == "COMPLETED"
+    #     result = load_file(
+    #         storage_path=lattice_storage_path, filename=lattice_row.results_filename
+    #     )
+    #     assert result_1.result == result.get_deserialized()
 
-        # Check that the electron records are as expected
-        for electron in electron_rows:
-            assert electron.status == "COMPLETED"
-            assert electron.parent_lattice_id == 1
-            assert (
-                electron.started_at.strftime("%Y-%m-%d %H:%M")
-                == electron.completed_at.strftime("%Y-%m-%d %H:%M")
-                == cur_time.strftime("%Y-%m-%d %H:%M")
-            )
-            assert Path(electron.storage_path) == Path(
-                f"{TEMP_RESULTS_DIR}/dispatch_1/node_{electron.transport_graph_node_id}"
-            )
+    #     # Check that the electron records are as expected
+    #     for electron in electron_rows:
+    #         assert electron.status == "COMPLETED"
+    #         assert electron.parent_lattice_id == 1
+    #         assert (
+    #             electron.started_at.strftime("%Y-%m-%d %H:%M")
+    #             == electron.completed_at.strftime("%Y-%m-%d %H:%M")
+    #             == cur_time.strftime("%Y-%m-%d %H:%M")
+    #         )
+    #         assert Path(electron.storage_path) == Path(
+    #             f"{TEMP_RESULTS_DIR}/dispatch_1/node_{electron.transport_graph_node_id}"
+    #         )
 
     # Tear down temporary results directory
     teardown_temp_results_dir(dispatch_id="dispatch_1")
@@ -384,11 +383,28 @@ def test_task_packing_persist(test_db, mocker):
         assert len(job_records) == len(task_groups)
 
 
-def test_lattice_persist(result_1):
-    update.persist(result_1.lattice)
-    assert result_1.lattice.transport_graph.dirty_nodes == []
+def test_cannot_persist_twice(test_db, mocker):
+    """Check that an incoming dispatch can only be persisted once"""
 
+    @ct.electron
+    def task(arr):
+        return sum(arr)
 
-def test_transport_graph_persist(result_1):
-    update.persist(result_1.lattice.transport_graph)
-    assert result_1.lattice.transport_graph.dirty_nodes == []
+    @ct.lattice
+    def workflow(arr):
+        return task(arr)
+
+    workflow.build_graph([1, 2, 3])
+
+    received_lattice = LatticeClass.deserialize_from_json(workflow.serialize_to_json())
+    result = Result(lattice=received_lattice, dispatch_id="test_task_packing_persist")
+    result._initialize_nodes()
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+
+    update.persist(result)
+
+    with pytest.raises(RuntimeError):
+        update.persist(result)
