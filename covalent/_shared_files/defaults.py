@@ -138,7 +138,7 @@ def get_default_executor() -> dict:
         "dask" as the executor if Dask is running and "local" if Dask is not running.
     """
 
-    return "local"
+    return "local" if os.environ.get("COVALENT_USE_LOCAL_EXECUTOR") == "1" else "cloud"
 
 
 # Default configuration settings
