@@ -20,6 +20,7 @@
 
 """Mappings between lattice attributes and DB records"""
 
+import json
 from typing import Dict, List
 
 from sqlalchemy.orm import Session
@@ -45,6 +46,8 @@ METADATA_KEYS = {
     # metadata
     "executor",
     "workflow_executor",
+    "executor_data",
+    "workflow_executor_data",
 }
 
 ASSET_KEYS = {
@@ -56,8 +59,6 @@ ASSET_KEYS = {
     "cova_imports",
     "lattice_imports",
     # metadata
-    "executor_data",
-    "workflow_executor_data",
     "deps",
     "call_before",
     "call_after",
@@ -66,7 +67,9 @@ ASSET_KEYS = {
 _meta_record_map = {
     "__name__": "name",
     "executor": "executor",
+    "executor_data": "executor_data",
     "workflow_executor": "workflow_executor",
+    "workflow_executor_data": "workflow_executor_data",
 }
 
 _db_meta_record_map = {
@@ -93,6 +96,37 @@ _asset_record_map = {
     "call_before": "call_before_filename",
     "call_after": "call_after_filename",
 }
+
+
+def get_executor_data_filter(raw: str):
+    print("DEBUG get_executor_data_filter: ", type(raw), raw)
+    return json.loads(raw)
+
+
+def set_executor_data_filter(object_dict: dict):
+    return json.dumps(object_dict)
+
+
+def identity(x):
+    return x
+
+
+custom_get_filters = {
+    "executor_data": get_executor_data_filter,
+    "workflow_executor_data": get_executor_data_filter,
+}
+custom_set_filters = {
+    "executor_data": set_executor_data_filter,
+    "workflow_executor_data": set_executor_data_filter,
+}
+
+
+get_filters = {key: identity for key in METADATA_KEYS.union(ASSET_KEYS)}
+
+set_filters = {key: identity for key in METADATA_KEYS.union(ASSET_KEYS)}
+
+get_filters.update(custom_get_filters)
+set_filters.update(custom_set_filters)
 
 
 def _to_meta(session: Session, record: models.Lattice, keys: List) -> Dict:

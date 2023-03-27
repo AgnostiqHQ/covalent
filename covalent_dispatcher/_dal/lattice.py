@@ -20,7 +20,7 @@
 
 """DB-backed lattice"""
 
-from typing import List
+from typing import Any, List
 
 from sqlalchemy.orm import Session
 
@@ -29,7 +29,7 @@ from .base import DispatchedObject
 from .controller import Record
 from .db_interfaces.lattice_utils import ASSET_KEYS  # nopycln: import
 from .db_interfaces.lattice_utils import METADATA_KEYS  # nopycln: import
-from .db_interfaces.lattice_utils import _meta_record_map
+from .db_interfaces.lattice_utils import _meta_record_map, get_filters, set_filters
 from .tg import ELECTRON_KEYS, get_compute_graph
 
 LATTICE_KEYS = list(_meta_record_map.keys())
@@ -91,3 +91,9 @@ class Lattice(DispatchedObject):
     @property
     def workflow_function(self):
         return self.get_value("workflow_function")
+
+    def get_value(self, key: str, session: Session = None, refresh: bool = True):
+        return get_filters[key](super().get_value(key, session, refresh))
+
+    def set_value(self, key: str, val: Any, session: Session = None) -> None:
+        super().set_value(key, set_filters[key](val), session)

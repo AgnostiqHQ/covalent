@@ -17,6 +17,8 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+
+import json
 import os
 import shutil
 from datetime import datetime as dt
@@ -152,9 +154,10 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
             is None
         )
 
-        executor_data = load_file(
-            storage_path=lattice_storage_path, filename=lattice_row.executor_data_filename
-        )
+        executor_data = json.loads(lattice_row.executor_data)
+        # executor_data = load_file(
+        #     storage_path=lattice_storage_path, filename=lattice_row.executor_data_filename
+        # )
 
         assert executor_data["short_name"] == le.short_name()
         assert executor_data["attributes"] == le.__dict__
@@ -197,9 +200,10 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
                     == []
                 )
             if electron.transport_graph_node_id == 3:
-                executor_data = load_file(
-                    storage_path=electron.storage_path, filename=electron.executor_data_filename
-                )
+                executor_data = json.loads(electron.executor_data)
+                # executor_data = load_file(
+                #     storage_path=electron.storage_path, filename=electron.executor_data_filename
+                # )
 
                 assert executor_data["short_name"] == le.short_name()
                 assert executor_data["attributes"] == le.__dict__

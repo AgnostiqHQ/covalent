@@ -20,6 +20,7 @@
 
 """Mappings between electron attributes and DB records"""
 
+import json
 from typing import List
 
 from sqlalchemy.orm import Session
@@ -53,6 +54,7 @@ METADATA_KEYS = {
     "status",
     # electron metadata
     "executor",
+    "executor_data",
 }
 
 ASSET_KEYS = {
@@ -64,7 +66,6 @@ ASSET_KEYS = {
     "stdout",
     "stderr",
     # electron metadata
-    "executor_data",
     "deps",
     "call_before",
     "call_after",
@@ -80,6 +81,7 @@ _meta_record_map = {
     "end_time": "completed_at",
     "status": "status",
     "executor": "executor",
+    "executor_data": "executor_data",
 }
 
 _db_meta_record_map = {
@@ -121,9 +123,22 @@ def set_status_filter(stat: Status):
     return str(stat)
 
 
-custom_get_filters = {"status": get_status_filter, "type": identity, "sub_dispatch_id": identity}
+def get_executor_data_filter(raw: str):
+    return json.loads(raw)
 
-custom_set_filters = {"status": set_status_filter}
+
+def set_executor_data_filter(object_dict: dict):
+    return json.dumps(object_dict)
+
+
+custom_get_filters = {
+    "status": get_status_filter,
+    "executor_data": get_executor_data_filter,
+    "type": identity,
+    "sub_dispatch_id": identity,
+}
+
+custom_set_filters = {"status": set_status_filter, "executor_data": set_executor_data_filter}
 
 
 get_filters = {key: identity for key in METADATA_KEYS.union(ASSET_KEYS)}

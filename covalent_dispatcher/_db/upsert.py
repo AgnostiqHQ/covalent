@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import json
 import os
 from datetime import datetime, timezone
 from pathlib import Path
@@ -107,16 +108,16 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         ("workflow_function", LATTICE_FUNCTION_FILENAME, result.lattice.workflow_function),
         ("workflow_function_string", LATTICE_FUNCTION_STRING_FILENAME, workflow_func_string),
         ("__doc__", LATTICE_DOCSTRING_FILENAME, result.lattice.__doc__),
-        (
-            "executor_data",
-            LATTICE_EXECUTOR_DATA_FILENAME,
-            result.lattice.metadata["executor_data"],
-        ),
-        (
-            "workflow_executor_data",
-            LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME,
-            result.lattice.metadata["workflow_executor_data"],
-        ),
+        # (
+        #     "executor_data",
+        #     LATTICE_EXECUTOR_DATA_FILENAME,
+        #     result.lattice.metadata["executor_data"],
+        # ),
+        # (
+        #     "workflow_executor_data",
+        #     LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME,
+        #     result.lattice.metadata["workflow_executor_data"],
+        # ),
         ("error", LATTICE_ERROR_FILENAME, result.error),
         ("inputs", LATTICE_INPUTS_FILENAME, result.inputs),
         ("named_args", LATTICE_NAMED_ARGS_FILENAME, result.lattice.named_args),
@@ -140,6 +141,7 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         assets[key] = Asset.insert(session, insert_kwargs=asset_record_kwargs, flush=True)
 
     # Write lattice records to Database
+
     lattice_record_kwarg = {
         "dispatch_id": result.dispatch_id,
         "electron_id": electron_id,
@@ -153,9 +155,11 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         "function_filename": LATTICE_FUNCTION_FILENAME,
         "function_string_filename": LATTICE_FUNCTION_STRING_FILENAME,
         "executor": result.lattice.metadata["executor"],
-        "executor_data_filename": LATTICE_EXECUTOR_DATA_FILENAME,
+        "executor_data": json.dumps(result.lattice.metadata["executor_data"]),
+        # "executor_data_filename": LATTICE_EXECUTOR_DATA_FILENAME,
         "workflow_executor": result.lattice.metadata["workflow_executor"],
-        "workflow_executor_data_filename": LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME,
+        "workflow_executor_data": json.dumps(result.lattice.metadata["workflow_executor_data"]),
+        # "workflow_executor_data_filename": LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME,
         "error_filename": LATTICE_ERROR_FILENAME,
         "inputs_filename": LATTICE_INPUTS_FILENAME,
         "named_args_filename": LATTICE_NAMED_ARGS_FILENAME,
@@ -270,11 +274,11 @@ def _electron_data(
                 ("function", ELECTRON_FUNCTION_FILENAME, tg.get_node_value(node_id, "function")),
                 ("function_string", ELECTRON_FUNCTION_STRING_FILENAME, function_string),
                 ("value", ELECTRON_VALUE_FILENAME, node_value),
-                (
-                    "executor_data",
-                    ELECTRON_EXECUTOR_DATA_FILENAME,
-                    tg.get_node_value(node_id, "metadata")["executor_data"],
-                ),
+                # (
+                #     "executor_data",
+                #     ELECTRON_EXECUTOR_DATA_FILENAME,
+                #     tg.get_node_value(node_id, "metadata")["executor_data"],
+                # ),
                 ("deps", ELECTRON_DEPS_FILENAME, tg.get_node_value(node_id, "metadata")["deps"]),
                 (
                     "call_before",
@@ -303,6 +307,8 @@ def _electron_data(
                 assets[key] = Asset.insert(session, insert_kwargs=asset_record_kwargs, flush=True)
 
             status = tg.get_node_value(node_key=node_id, value_key="status")
+            executor_data = tg.get_node_value(node_id, "metadata")["executor_data"]
+
             electron_record_kwarg = {
                 "parent_lattice_id": lattice_id,
                 "transport_graph_node_id": node_id,
@@ -315,7 +321,8 @@ def _electron_data(
                 "function_filename": ELECTRON_FUNCTION_FILENAME,
                 "function_string_filename": ELECTRON_FUNCTION_STRING_FILENAME,
                 "executor": executor,
-                "executor_data_filename": ELECTRON_EXECUTOR_DATA_FILENAME,
+                "executor_data": json.dumps(executor_data),
+                # "executor_data_filename": ELECTRON_EXECUTOR_DATA_FILENAME,
                 "results_filename": ELECTRON_RESULTS_FILENAME,
                 "value_filename": ELECTRON_VALUE_FILENAME,
                 "stdout_filename": ELECTRON_STDOUT_FILENAME,

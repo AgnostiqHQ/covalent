@@ -20,6 +20,7 @@
 
 """Electrons Route"""
 
+import json
 import uuid
 
 from fastapi import APIRouter, HTTPException
@@ -110,7 +111,6 @@ def get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dict
     elif node_name.startswith(electron_dict_prefix):
         values = {}
         for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
-
             edge_data = result_object.lattice.transport_graph.get_edge_data(parent, node_id)
 
             value = result_object.lattice.transport_graph.get_node_value(parent, "output")
@@ -123,7 +123,6 @@ def get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dict
         task_input = {"args": [], "kwargs": {}}
 
         for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
-
             edge_data = result_object.lattice.transport_graph.get_edge_data(parent, node_id)
             value = result_object.lattice.transport_graph.get_node_value(parent, "output")
 
@@ -193,7 +192,8 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
                 return ElectronFileResponse(data=response, python_object=python_object)
             elif name == "executor":
                 executor_name = result["executor"]
-                executor_data = handler.read_from_pickle(result["executor_data_filename"])
+                executor_data = json.loads(result["executor_data"])
+                # executor_data = handler.read_from_pickle(result["executor_data_filename"])
                 return ElectronExecutorResponse(
                     executor_name=executor_name, executor_details=executor_data
                 )
