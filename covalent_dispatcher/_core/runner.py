@@ -33,16 +33,12 @@ from typing import Any, Dict, List, Literal, Tuple, Union
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-from covalent._shared_files.defaults import sublattice_prefix
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow import DepsBash, DepsCall, DepsPip
-from covalent._workflow.lattice import Lattice
-from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
 from covalent.executor.base import wrapper_fn
 
-from .._db.write_result_to_db import get_sublattice_electron_id
 from . import data_manager as datasvc
-from . import dispatcher
 from .data_modules.job_manager import get_jobs_metadata, set_cancel_result
 from .runner_modules import executor_proxy
 
@@ -53,92 +49,15 @@ debug_mode = get_config("sdk.log_level") == "debug"
 _cancel_threadpool = ThreadPoolExecutor()
 
 
-# This is to be run out-of-process
-def _build_sublattice_graph(sub: Lattice, parent_metadata: Dict, *args, **kwargs):
-    """
-    Build the sublattice graph dynamically
-
-    Arg(s)
-        sub: Lattice associated with the sub-lattice
-        parent_metadata: Metadata of the parent lattice
-
-    Return(s)
-        JSON representation of the sublattice transport graph
-    """
-    for k in sub.metadata.keys():
-        # Not inheriting triggers from the parent lattice
-        if not sub.metadata[k] and k != "triggers":
-            sub.metadata[k] = parent_metadata[k]
-
-    sub.build_graph(*args, **kwargs)
-    return sub.serialize_to_json()
-
-
-async def _dispatch_sublattice(
-    parent_result_object: Result,
-    parent_node_id: int,
-    parent_electron_id: int,
-    inputs: Dict,
-    serialized_callable: Any,
-    workflow_executor: Any,
-) -> str:
-    """Dispatch a sublattice using the workflow_executor."""
-
-    app_log.debug("Inside _dispatch_sublattice")
-
-    try:
-        short_name, object_dict = workflow_executor
-
-        if short_name == "client":
-            app_log.error("No executor selected for dispatching sublattices")
-            raise RuntimeError("No executor selected for dispatching sublattices")
-
-    except Exception as ex:
-        app_log.debug(f"Exception when trying to determine sublattice executor: {ex}")
-        raise ex
-
-    parent_metadata = TransportableObject.make_transportable(parent_result_object.lattice.metadata)
-    sub_dispatch_inputs = {
-        "args": [serialized_callable, parent_metadata],
-        "kwargs": inputs["kwargs"],
-    }
-    for arg in inputs["args"]:
-        sub_dispatch_inputs["args"].append(arg)
-
-    # Build the sublattice graph. This must be run
-    # externally since it involves deserializing the
-    # sublattice workflow function.
-    res = await _run_task(
-        result_object=parent_result_object,
-        node_id=parent_node_id,
-        serialized_callable=TransportableObject.make_transportable(_build_sublattice_graph),
-        selected_executor=workflow_executor,
-        node_name="build_sublattice_graph",
-        call_before=[],
-        call_after=[],
-        inputs=sub_dispatch_inputs,
-        workflow_executor=workflow_executor,
-    )
-
-    if res["status"] == Result.COMPLETED:
-        json_sublattice = json.loads(res["output"].json)
-
-        sub_dispatch_id = datasvc.make_dispatch(
-            json_sublattice, parent_result_object, parent_electron_id
-        )
-        app_log.debug(f"Sublattice dispatch id: {sub_dispatch_id}")
-        return sub_dispatch_id
-    else:
-        app_log.debug("Error building sublattice graph")
-        stderr = res["stderr"]
-        raise RuntimeError(f"Error building sublattice graph: {stderr}")
+def get_executor(node_id, selected_executor):
+    pass
 
 
 # Domain: runner
 # to be called by _run_abstract_task
 def _get_task_input_values(result_object: Result, abs_task_inputs: dict) -> dict:
     """
-    Retrive the input values from the result_object for the task
+    Retrieve the input values from the result_object for the task
 
     Arg(s)
         result_object: Result object of the workflow
@@ -168,7 +87,6 @@ async def _run_abstract_task(
     node_name: str,
     abstract_inputs: Dict,
     selected_executor: Any,
-    workflow_executor: Any,
 ) -> None:
     # Resolve abstract task and inputs to their concrete (serialized) values
     result_object = datasvc.get_result_object(dispatch_id)
@@ -182,7 +100,7 @@ async def _run_abstract_task(
                 node_id=node_id,
                 start_time=timestamp,
                 end_time=timestamp,
-                status=Result.CANCELLED,
+                status=RESULT_STATUS.CANCELLED,
             )
         serialized_callable = result_object.lattice.transport_graph.get_node_value(
             node_id, "function"
@@ -205,7 +123,7 @@ async def _run_abstract_task(
             node_id=node_id,
             start_time=timestamp,
             end_time=timestamp,
-            status=Result.FAILED,
+            status=RESULT_STATUS.FAILED,
             error=str(ex),
         )
         return node_result
@@ -213,7 +131,7 @@ async def _run_abstract_task(
     node_result = datasvc.generate_node_result(
         node_id=node_id,
         start_time=timestamp,
-        status=Result.RUNNING,
+        status=RESULT_STATUS.RUNNING,
     )
     app_log.debug(f"7: Marking node {node_id} as running (_run_abstract_task)")
 
@@ -228,7 +146,6 @@ async def _run_abstract_task(
         call_before=call_before,
         call_after=call_after,
         inputs=task_input,
-        workflow_executor=workflow_executor,
     )
 
 
@@ -242,7 +159,6 @@ async def _run_task(
     call_before: List,
     call_after: List,
     node_name: str,
-    workflow_executor: Any,
 ) -> None:
     """
     Run a task with given inputs on the selected executor.
@@ -259,21 +175,15 @@ async def _run_task(
 
     Returns:
         None
-    """
 
+    """
     dispatch_id = result_object.dispatch_id
     results_dir = result_object.results_dir
 
     # Instantiate the executor from JSON
     try:
-        short_name, object_dict = selected_executor
-
-        app_log.debug(f"Running task {node_name} using executor {short_name}, {object_dict}")
-
-        # the executor is determined during scheduling and provided in the execution metadata
-        executor = _executor_manager.get_executor(short_name)
-        executor.from_dict(object_dict)
-        executor._init_runtime(loop=asyncio.get_running_loop())
+        app_log.debug(f"Instantiating executor for {dispatch_id}:{node_id}")
+        executor = get_executor(node_id, selected_executor)
     except Exception as ex:
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
         app_log.debug("Exception when trying to instantiate executor:")
@@ -282,58 +192,45 @@ async def _run_task(
         node_result = datasvc.generate_node_result(
             node_id=node_id,
             end_time=datetime.now(timezone.utc),
-            status=Result.FAILED,
+            status=RESULT_STATUS.FAILED,
             error=error_msg,
         )
         return node_result
 
     # run the task on the executor and register any failures
     try:
-        if node_name.startswith(sublattice_prefix):
-            sub_electron_id = get_sublattice_electron_id(
-                parent_dispatch_id=dispatch_id, sublattice_node_id=node_id
-            )
+        app_log.debug(f"Executing task {node_name}")
+        assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
+        execute_callable = partial(
+            executor.execute,
+            function=assembled_callable,
+            args=inputs["args"],
+            kwargs=inputs["kwargs"],
+            dispatch_id=dispatch_id,
+            results_dir=results_dir,
+            node_id=node_id,
+        )
 
-            sub_dispatch_id = await _dispatch_sublattice(
-                parent_result_object=result_object,
-                parent_node_id=node_id,
-                parent_electron_id=sub_electron_id,
-                inputs=inputs,
-                serialized_callable=serialized_callable,
-                workflow_executor=workflow_executor,
-            )
+        # Start listening for messages from the plugin
+        asyncio.create_task(executor_proxy.watch(dispatch_id, node_id, executor))
 
-            node_result = datasvc.generate_node_result(
-                node_id=node_id,
-                sub_dispatch_id=sub_dispatch_id,
-            )
+        output, stdout, stderr, status = await executor._execute(
+            function=assembled_callable,
+            args=inputs["args"],
+            kwargs=inputs["kwargs"],
+            dispatch_id=dispatch_id,
+            results_dir=results_dir,
+            node_id=node_id,
+        )
 
-            dispatcher.run_dispatch(sub_dispatch_id)
-            app_log.debug(f"Running sublattice dispatch {sub_dispatch_id}")
-
-        else:
-            app_log.debug(f"Executing task {node_name}")
-            assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
-
-            asyncio.create_task(executor_proxy.watch(dispatch_id, node_id, executor))
-
-            output, stdout, stderr, status = await executor._execute(
-                function=assembled_callable,
-                args=inputs["args"],
-                kwargs=inputs["kwargs"],
-                dispatch_id=dispatch_id,
-                results_dir=results_dir,
-                node_id=node_id,
-            )
-
-            node_result = datasvc.generate_node_result(
-                node_id=node_id,
-                end_time=datetime.now(timezone.utc),
-                status=status,
-                output=output,
-                stdout=stdout,
-                stderr=stderr,
-            )
+        node_result = datasvc.generate_node_result(
+            node_id=node_id,
+            end_time=datetime.now(timezone.utc),
+            status=status,
+            output=output,
+            stdout=stdout,
+            stderr=stderr,
+        )
 
     except Exception as ex:
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
@@ -343,7 +240,7 @@ async def _run_task(
         node_result = datasvc.generate_node_result(
             node_id=node_id,
             end_time=datetime.now(timezone.utc),
-            status=Result.FAILED,
+            status=RESULT_STATUS.FAILED,
             error=error_msg,
         )
     app_log.debug(f"Node result: {node_result}")
@@ -399,7 +296,6 @@ async def run_abstract_task(
     node_name: str,
     abstract_inputs: Dict,
     selected_executor: Any,
-    workflow_executor: Any,
 ) -> None:
     node_result = await _run_abstract_task(
         dispatch_id=dispatch_id,
@@ -407,7 +303,6 @@ async def run_abstract_task(
         node_name=node_name,
         abstract_inputs=abstract_inputs,
         selected_executor=selected_executor,
-        workflow_executor=workflow_executor,
     )
     result_object = datasvc.get_result_object(dispatch_id)
     await datasvc.update_node_result(result_object, node_result)
