@@ -264,21 +264,7 @@ class Electron:
                 iterable_metadata["call_before"] = filtered_call_before
 
                 get_item_electron = Electron(function=get_item, metadata=iterable_metadata)
-
-                # Pack with main electron except for sublattices
-                name = active_lattice.transport_graph.get_node_value(self.node_id, "name")
-                if not name.startswith(sublattice_prefix):
-                    get_item_electron = Electron(
-                        function=get_item,
-                        metadata=iterable_metadata,
-                        task_group_id=self.task_group_id,
-                    )
-                else:
-                    get_item_electron = Electron(function=get_item, metadata=iterable_metadata)
-
-                bound_electron = get_item_electron(self, i)
-
-                yield bound_electron
+                yield get_item_electron(self, i)
 
     def __getattr__(self, attr: str) -> "Electron":
         # This is to handle the cases where magic functions are attempted
@@ -300,20 +286,8 @@ class Electron:
                 return getattr(e, attr)
 
             get_attr.__name__ = prefix_separator + self.function.__name__ + ".__getattr__"
-
-            # Pack with main electron except for sublattices
-            name = active_lattice.transport_graph.get_node_value(self.node_id, "name")
-            if not name.startswith(sublattice_prefix):
-                get_attr_electron = Electron(
-                    function=get_attr,
-                    metadata=self.metadata.copy(),
-                    task_group_id=self.task_group_id,
-                    packing_tasks=True,
-                )
-            else:
-                get_attr_electron = Electron(function=get_attr, metadata=self.metadata.copy())
-            bound_electron = get_attr_electron(self, attr)
-            return bound_electron
+            get_attr_electron = Electron(function=get_attr, metadata=self.metadata.copy())
+            return get_attr_electron(self, attr)
 
         return super().__getattr__(attr)
 
@@ -325,21 +299,8 @@ class Electron:
 
             get_item.__name__ = prefix_separator + self.function.__name__ + ".__getitem__"
 
-            name = active_lattice.transport_graph.get_node_value(self.node_id, "name")
-
-            # Pack with main electron except for sublattices
-            if not name.startswith(sublattice_prefix):
-                get_item_electron = Electron(
-                    function=get_item,
-                    metadata=self.metadata.copy(),
-                    task_group_id=self.task_group_id,
-                    packing_tasks=True,
-                )
-            else:
-                get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())
-
-            bound_electron = get_item_electron(self, key)
-            return bound_electron
+            get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())
+            return get_item_electron(self, key)
 
         raise StopIteration
 
@@ -408,32 +369,6 @@ class Electron:
 
             return bound_electron
 
-        # Add a node to the transport graph of the active lattice.
-        # Electrons bound to nodes will never be packed with the
-        # "master" Electron.
-        if self.packing_tasks:
-            self.node_id = active_lattice.transport_graph.add_node(
-                name=sublattice_prefix + self.function.__name__
-                if isinstance(self.function, Lattice)
-                else self.function.__name__,
-                function=self.function,
-                metadata=self.metadata.copy(),
-                function_string=get_serialized_function_str(self.function),
-                task_group_id=self.task_group_id,
-            )
-
-        else:
-            # default to task_group_id=node_id
-            self.node_id = active_lattice.transport_graph.add_node(
-                name=sublattice_prefix + self.function.__name__
-                if isinstance(self.function, Lattice)
-                else self.function.__name__,
-                function=self.function,
-                metadata=self.metadata.copy(),
-                function_string=get_serialized_function_str(self.function),
-            )
-            self.task_group_id = self.node_id
-
         if self.function:
             named_args, named_kwargs = get_named_params(self.function, args, kwargs)
 
@@ -446,7 +381,7 @@ class Electron:
                 )
 
             # For keyword arguments
-            # Filter out kwargs to be injected by call_before calldeps at execution
+            # Filter out kwargs to be injected by call_before call deps at execution
             call_before = self.metadata["call_before"]
             retval_keywords = {item["attributes"]["retval_keyword"]: None for item in call_before}
             for key, value in named_kwargs.items():
