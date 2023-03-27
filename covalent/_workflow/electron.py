@@ -21,6 +21,7 @@
 """Class corresponding to computation nodes."""
 
 import inspect
+import json
 import operator
 from builtins import list
 from dataclasses import asdict
@@ -61,6 +62,16 @@ if TYPE_CHECKING:
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+
+def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kwargs):
+    parent_metadata = json.loads(json_parent_metadata)
+    for k in sub.metadata.keys():
+        if not sub.metadata[k] and k != "triggers":
+            sub.metadata[k] = parent_metadata[k]
+
+    sub.build_graph(*args, **kwargs)
+    return sub.serialize_to_json()
 
 
 class Electron:
@@ -253,7 +264,21 @@ class Electron:
                 iterable_metadata["call_before"] = filtered_call_before
 
                 get_item_electron = Electron(function=get_item, metadata=iterable_metadata)
-                yield get_item_electron(self, i)
+
+                # Pack with main electron except for sublattices
+                name = active_lattice.transport_graph.get_node_value(self.node_id, "name")
+                if not name.startswith(sublattice_prefix):
+                    get_item_electron = Electron(
+                        function=get_item,
+                        metadata=iterable_metadata,
+                        task_group_id=self.task_group_id,
+                    )
+                else:
+                    get_item_electron = Electron(function=get_item, metadata=iterable_metadata)
+
+                bound_electron = get_item_electron(self, i)
+
+                yield bound_electron
 
     def __getattr__(self, attr: str) -> "Electron":
         # This is to handle the cases where magic functions are attempted
@@ -275,8 +300,20 @@ class Electron:
                 return getattr(e, attr)
 
             get_attr.__name__ = prefix_separator + self.function.__name__ + ".__getattr__"
-            get_attr_electron = Electron(function=get_attr, metadata=self.metadata.copy())
-            return get_attr_electron(self, attr)
+
+            # Pack with main electron except for sublattices
+            name = active_lattice.transport_graph.get_node_value(self.node_id, "name")
+            if not name.startswith(sublattice_prefix):
+                get_attr_electron = Electron(
+                    function=get_attr,
+                    metadata=self.metadata.copy(),
+                    task_group_id=self.task_group_id,
+                    packing_tasks=True,
+                )
+            else:
+                get_attr_electron = Electron(function=get_attr, metadata=self.metadata.copy())
+            bound_electron = get_attr_electron(self, attr)
+            return bound_electron
 
         return super().__getattr__(attr)
 
@@ -288,8 +325,21 @@ class Electron:
 
             get_item.__name__ = prefix_separator + self.function.__name__ + ".__getitem__"
 
-            get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())
-            return get_item_electron(self, key)
+            name = active_lattice.transport_graph.get_node_value(self.node_id, "name")
+
+            # Pack with main electron except for sublattices
+            if not name.startswith(sublattice_prefix):
+                get_item_electron = Electron(
+                    function=get_item,
+                    metadata=self.metadata.copy(),
+                    task_group_id=self.task_group_id,
+                    packing_tasks=True,
+                )
+            else:
+                get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())
+
+            bound_electron = get_item_electron(self, key)
+            return bound_electron
 
         raise StopIteration
 
@@ -330,15 +380,59 @@ class Electron:
                     meta = DEFAULT_METADATA_VALUES[k]
                 self.set_metadata(k, meta)
 
-        # Add a node to the transport graph of the active lattice
-        self.node_id = active_lattice.transport_graph.add_node(
-            name=sublattice_prefix + self.function.__name__
-            if isinstance(self.function, Lattice)
-            else self.function.__name__,
-            function=self.function,
-            metadata=self.metadata.copy(),
-            function_string=get_serialized_function_str(self.function),
-        )
+        # Handle sublattices by injecting _build_sublattice_graph:
+        if isinstance(self.function, Lattice):
+            parent_metadata = active_lattice.metadata.copy()
+            print("DEBUG: parent lattice metadata", parent_metadata)
+            e_meta = parent_metadata.copy()
+            e_meta.pop("workflow_executor")
+            e_meta.pop("workflow_executor_data")
+
+            sub_electron = Electron(
+                function=_build_sublattice_graph,
+                metadata=e_meta,
+            )
+
+            name = sublattice_prefix + self.function.__name__
+            function_string = get_serialized_function_str(self.function)
+            bound_electron = sub_electron(
+                self.function, json.dumps(parent_metadata), *args, **kwargs
+            )
+
+            active_lattice.transport_graph.set_node_value(bound_electron.node_id, "name", name)
+            active_lattice.transport_graph.set_node_value(
+                bound_electron.node_id,
+                "function_string",
+                function_string,
+            )
+
+            return bound_electron
+
+        # Add a node to the transport graph of the active lattice.
+        # Electrons bound to nodes will never be packed with the
+        # "master" Electron.
+        if self.packing_tasks:
+            self.node_id = active_lattice.transport_graph.add_node(
+                name=sublattice_prefix + self.function.__name__
+                if isinstance(self.function, Lattice)
+                else self.function.__name__,
+                function=self.function,
+                metadata=self.metadata.copy(),
+                function_string=get_serialized_function_str(self.function),
+                task_group_id=self.task_group_id,
+            )
+
+        else:
+            # default to task_group_id=node_id
+            self.node_id = active_lattice.transport_graph.add_node(
+                name=sublattice_prefix + self.function.__name__
+                if isinstance(self.function, Lattice)
+                else self.function.__name__,
+                function=self.function,
+                metadata=self.metadata.copy(),
+                function_string=get_serialized_function_str(self.function),
+            )
+            self.task_group_id = self.node_id
 
         if self.function:
             named_args, named_kwargs = get_named_params(self.function, args, kwargs)
