@@ -280,10 +280,10 @@ class Asset(Base):
     # Storage backend type for data files ("local", "s3")
     storage_type = Column(Text, nullable=False)
 
-    # Bucket name (dispatch_id)
+    # Bucket name
     storage_path = Column(Text, nullable=False)
 
-    # Name of the file containing the serialized function
+    # Object key
     object_key = Column(Text, nullable=False)
 
     # Digest algorithm ("md5", "sha1")
@@ -291,3 +291,6 @@ class Asset(Base):
 
     # Hex repr of digest
     digest_hex = Column(Text, nullable=True)
+
+    # Remote location of asset
+    remote_uri = Column(Text, nullable=True)
