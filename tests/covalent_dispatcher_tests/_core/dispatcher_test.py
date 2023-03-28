@@ -181,7 +181,7 @@ def test_get_abstract_task_inputs():
     result_object = Result(lattice=received_lattice, dispatch_id="asdf")
     tg = received_lattice.transport_graph
 
-    assert list(tg._graph.nodes) == [0, 1, 2, 3, 4, 5, 6, 7]
+    assert list(tg._graph.nodes) == list(range(17))
     tg.set_node_value(0, "output", ct.TransportableObject(1))
     tg.set_node_value(2, "output", ct.TransportableObject(2))
 
@@ -264,8 +264,8 @@ async def test_get_initial_tasks_and_deps(mocker):
     result_object = get_mock_result()
     num_tasks, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(result_object)
 
-    assert initial_nodes == [1]
-    assert pending_parents == {0: 1, 1: 0, 2: 1}
+    assert initial_nodes == [1, 4]
+    assert pending_parents == {0: 1, 1: 0, 2: 1, 3: 1, 4: 0, 5: 1, 6: 4}
     assert num_tasks == len(result_object.lattice.transport_graph._graph.nodes)
 
 

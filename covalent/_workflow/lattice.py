@@ -31,12 +31,14 @@ from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 from .._shared_files import logger
+from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import DefaultMetadataValues
 from .._shared_files.utils import get_named_params, get_serialized_function_str
 from .depsbash import DepsBash
 from .depscall import DepsCall
 from .depspip import DepsPip
+from .postprocessing import Postprocessor
 from .transport import TransportableObject, _TransportGraph, encode_metadata
 
 if TYPE_CHECKING:
@@ -87,6 +89,9 @@ class Lattice:
 
         self.workflow_function = TransportableObject.make_transportable(self.workflow_function)
 
+        # Bound electrons are defined as electrons with a valid node_id, since it means they are bound to a TransportGraph.
+        self._bound_electrons = {}  # Clear before serializing
+
     # To be called after build_graph
     def serialize_to_json(self) -> str:
         attributes = deepcopy(self.__dict__)
@@ -115,8 +120,6 @@ class Lattice:
             attributes["electron_outputs"][node_name] = output.to_dict()
 
         attributes["cova_imports"] = list(self.cova_imports)
-        # for k, v in attributes.items():
-        #     print(k, type(v))
 
         return json.dumps(attributes)
 
@@ -237,11 +240,18 @@ class Lattice:
             with active_lattice_manager.claim(self):
                 try:
                     workflow_function(*new_args, **new_kwargs)
+                    retval = workflow_function(*new_args, **new_kwargs)
                 except Exception:
                     warnings.warn(
                         "Please make sure you are not manipulating an object inside the lattice."
                     )
                     raise
+
+        if get_config("sdk.exhaustive_postprocess") == "true":
+            pp = Postprocessor(lattice=self)
+            pp.add_exhaustive_postprocess_node(self._bound_electrons.copy())
+
+        self._bound_electrons = {}  # Reset bound electrons
 
     def draw(self, *args, **kwargs) -> None:
         """
@@ -400,6 +410,7 @@ def lattice(
 
         return wrapper_lattice()
 
+    # Don't change the snippet below. This a subtle piece of logic that's best understood as is written.
     if _func is None:  # decorator is called with arguments
         return decorator_lattice
     else:  # decorator is called without arguments

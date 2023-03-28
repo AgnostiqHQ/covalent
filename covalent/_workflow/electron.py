@@ -306,6 +306,8 @@ class Electron:
         Also contains a postprocessing part where the lattice's function is executed
         after all the nodes in the lattice's transport graph are executed. Then the
         execution call to the electron is replaced by its corresponding result.
+
+        Note: Bound electrons are defined as electrons with a valid node_id, since it means they are bound to a TransportGraph.
         """
 
         # Check if inside a lattice and if not, perform a direct invocation of the function
@@ -314,10 +316,9 @@ class Electron:
             return self.function(*args, **kwargs)
 
         if active_lattice.post_processing:
-            id, output = active_lattice.electron_outputs[0]
-
+            output = active_lattice.electron_outputs[0]
             active_lattice.electron_outputs.pop(0)
-            return output.get_deserialized()
+            return output
 
         # Setting metadata for default values according to lattice's metadata.
         for k in self.metadata:
@@ -367,11 +368,13 @@ class Electron:
                     self.node_id, key, value, "kwarg", None, active_lattice.transport_graph
                 )
 
-        return Electron(
+        bound_electron = Electron(
             self.function,
             metadata=self.metadata,
             node_id=self.node_id,
         )
+        active_lattice._bound_electrons[self.node_id] = bound_electron
+        return bound_electron
 
     def connect_node_with_others(
         self,
@@ -624,7 +627,7 @@ def electron(
     constraints = encode_metadata(constraints)
 
     def decorator_electron(func=None):
-        """Electron decorator function"""
+        """Electron decorator function. Note that the electron_object defined below is an example of an unbound electron, i.e. electron without a node id."""
         electron_object = Electron(func)
         for k, v in constraints.items():
             electron_object.set_metadata(k, v)

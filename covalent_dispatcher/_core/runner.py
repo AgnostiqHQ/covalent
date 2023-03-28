@@ -33,15 +33,13 @@ from typing import Any, Dict, List, Literal, Tuple, Union
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-from covalent._shared_files.context_managers import active_lattice_manager
-from covalent._shared_files.defaults import prefix_separator, sublattice_prefix
+from covalent._shared_files.defaults import sublattice_prefix
 from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
 from covalent.executor.base import wrapper_fn
 
-from .._db import upsert
 from .._db.write_result_to_db import get_sublattice_electron_id
 from . import data_manager as datasvc
 from . import dispatcher
@@ -413,138 +411,6 @@ async def run_abstract_task(
     )
     result_object = datasvc.get_result_object(dispatch_id)
     await datasvc.update_node_result(result_object, node_result)
-
-
-# Domain: runner
-# This is to be run out-of-process
-def _post_process(lattice: Lattice, node_outputs: Dict) -> Any:
-    """
-    Post processing function to be called after the lattice execution.
-    This takes care of executing statements that were not an electron
-    but were inside the lattice's function. It also replaces any calls
-    to an electron with the result of that electron execution, hence
-    preventing a local execution of electron's function.
-
-    Note: Here `node_outputs` is used instead of `electron_outputs`
-    since an electron can be called multiple times with possibly different
-    arguments, but every time it's called, it will be executed as a separate node.
-    Thus, output of every node is used.
-
-    Args:
-        lattice: Lattice object that was dispatched.
-        node_outputs: Dictionary containing the output of all the nodes.
-        execution_order: List of lists containing the order of execution of the nodes.
-
-    Reurns:
-        result: The result of the lattice function.
-    """
-
-    ordered_node_outputs = []
-    app_log.debug(f"node_outputs: {node_outputs}")
-    app_log.debug(f"node_outputs: {node_outputs.items()}")
-    for i, item in enumerate(node_outputs.items()):
-        key, val = item
-        app_log.debug(f"Here's the key: {key}")
-        if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix):
-            ordered_node_outputs.append((i, val))
-
-    with active_lattice_manager.claim(lattice):
-        lattice.post_processing = True
-        lattice.electron_outputs = ordered_node_outputs
-        args = [arg.get_deserialized() for arg in lattice.args]
-        kwargs = {k: v.get_deserialized() for k, v in lattice.kwargs.items()}
-        workflow_function = lattice.workflow_function.get_deserialized()
-        result = workflow_function(*args, **kwargs)
-        lattice.post_processing = False
-        return result
-
-
-# Domain: runner
-async def _postprocess_workflow(result_object: Result) -> Result:
-    """
-    Postprocesses a workflow with a completed computational graph
-
-    Args:
-        result_object: Result object being used for current dispatch
-
-    Returns:
-        The postprocessed result object
-    """
-
-    # Executor for post_processing
-    pp_executor = result_object.lattice.get_metadata("workflow_executor")
-    pp_executor_data = result_object.lattice.get_metadata("workflow_executor_data")
-    post_processor = [pp_executor, pp_executor_data]
-
-    result_object._status = Result.POSTPROCESSING
-    upsert.lattice_data(result_object)
-
-    app_log.debug(f"Preparing to post-process workflow {result_object.dispatch_id}")
-
-    if pp_executor == "client":
-        app_log.debug("Workflow to be postprocessed client side")
-        result_object._status = Result.PENDING_POSTPROCESSING
-        result_object._end_time = datetime.now(timezone.utc)
-        upsert.lattice_data(result_object)
-        return result_object
-
-    post_processing_inputs = {
-        "args": [
-            TransportableObject.make_transportable(result_object.lattice),
-            TransportableObject.make_transportable(result_object.get_all_node_outputs()),
-        ],
-        "kwargs": {},
-    }
-    app_log.debug(f"Submitted post-processing job to executor {post_processor}")
-    post_process_result = await _run_task(
-        result_object=result_object,
-        node_id=-1,
-        serialized_callable=TransportableObject(_post_process),
-        selected_executor=post_processor,
-        node_name="post_process",
-        call_before=[],
-        call_after=[],
-        inputs=post_processing_inputs,
-        workflow_executor=post_processor,
-    )
-
-    if post_process_result["status"] != Result.COMPLETED:
-        stderr = post_process_result["stderr"] or ""
-        err = post_process_result["error"] or ""
-        error_msg = stderr + err
-
-        app_log.debug(f"Post-processing failed: {err}")
-        result_object._status = Result.POSTPROCESSING_FAILED
-        result_object._error = f"Post-processing failed: {error_msg}"
-        result_object._end_time = datetime.now(timezone.utc)
-        upsert.lattice_data(result_object)
-
-        app_log.debug("Returning from _postprocess_workflow")
-        return result_object
-
-    result_object._result = post_process_result["output"]
-    result_object._status = Result.COMPLETED
-    result_object._end_time = datetime.now(timezone.utc)
-
-    app_log.debug(
-        f"10: Successfully post-processed result {result_object.dispatch_id} (run_planned_workflow)"
-    )
-
-    return result_object
-
-
-async def postprocess_workflow(dispatch_id: str) -> Result:
-    """
-    Public facing `postprocess_workflow`
-
-    Arg(s)
-        dispatch_id: Unique identifier for dispatched workflow
-
-    Return(s)
-        result_object: Result object of the workflow
-    """
-    result_object = datasvc.get_result_object(dispatch_id)
-    return await _postprocess_workflow(result_object)
 
 
 async def _cancel_task(

@@ -7,6 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Postprocessing as electrons.
+- Postprocessing class in `postprocessing.py` module for all the different postprocessing helper methods and algorithms.
+
+### Changed
+
+- Postprocessing logic.
+
+### Removed
+
+- Postprocessing from runners.
+
 ### Docs
 
 - Adding Google Batch executor plugin RTD
