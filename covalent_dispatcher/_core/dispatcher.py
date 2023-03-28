@@ -203,15 +203,12 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
         None
     """
 
-    app_log.debug("3: Inside run_planned_workflow (run_planned_workflow).")
     result_object._status = RESULT_STATUS.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
 
-    app_log.debug(
-        f"4: Workflow status changed to running {result_object.dispatch_id} (run_planned_workflow)."
-    )
+    app_log.debug(f"Workflow status changed to running {result_object.dispatch_id}.")
     datasvc.upsert_lattice_data(result_object.dispatch_id)
-    app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
+    app_log.debug("Wrote lattice status to DB.")
 
     tasks_left, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(result_object)
 
@@ -225,7 +222,10 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
         app_log.debug(f"{tasks_left} tasks left to complete")
         app_log.debug(f"Waiting to hear from {unresolved_tasks} tasks")
 
-        node_id, node_status = await status_queue.get()
+        msg = await status_queue.get()
+        node_id = msg["node_id"]
+        node_status = msg["status"]
+        detail = msg["detail"]
 
         app_log.debug(f"Received node status update {node_id}: {node_status}")
 
@@ -233,6 +233,13 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
             continue
 
         unresolved_tasks -= 1
+
+        if node_status == RESULT_STATUS.DISPATCHING:
+            sub_dispatch_id = detail["sub_dispatch_id"]
+            run_dispatch(sub_dispatch_id)
+            app_log.debug(f"Running sublattice dispatch {sub_dispatch_id}")
+
+            return
 
         if node_status == RESULT_STATUS.COMPLETED:
             tasks_left -= 1
@@ -260,7 +267,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
         )
         return result_object
 
-    app_log.debug("8: All tasks finished running (run_planned_workflow)")
+    app_log.debug("All tasks finished running")
     await result_webhook.send_update(result_object)
 
     return result_object

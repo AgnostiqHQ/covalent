@@ -47,6 +47,7 @@ _dispatch_status_queues = {}
 
 def generate_node_result(
     node_id: int,
+    node_name: str = None,
     start_time=None,
     end_time=None,
     status=None,
@@ -54,14 +55,13 @@ def generate_node_result(
     error=None,
     stdout=None,
     stderr=None,
-    sub_dispatch_id=None,
-    sublattice_result=None,
 ):
     """
     Helper routine to prepare the node result
 
     Arg(s)
-        node_id: ID of the node in the trasport graph
+        node_id: ID of the node in the transport graph
+        node_name: Name of the node
         start_time: Start time of the node
         end_time: Time at which the node finished executing
         status: Status of the node's execution
@@ -69,14 +69,14 @@ def generate_node_result(
         error: Error from the node
         stdout: STDOUT of a node
         stderr: STDERR generated during node execution
-        sub_dispatch_id: Dispatch ID of the sublattice
-        sublattice_result: Result of the sublattice
 
     Return(s)
         Dictionary of the inputs
+
     """
     return {
         "node_id": node_id,
+        "node_name": node_name,
         "start_time": start_time,
         "end_time": end_time,
         "status": status,
@@ -84,8 +84,6 @@ def generate_node_result(
         "error": error,
         "stdout": stdout,
         "stderr": stderr,
-        "sub_dispatch_id": sub_dispatch_id,
-        "sublattice_result": sublattice_result,
     }
 
 
@@ -104,6 +102,7 @@ async def update_node_result(result_object, node_result) -> None:
     app_log.warning("Updating node result (run_planned_workflow).")
     try:
         update._node(result_object, **node_result)
+
     except Exception as ex:
         app_log.exception(f"Error persisting node update: {ex}")
         node_result["status"] = Result.FAILED
