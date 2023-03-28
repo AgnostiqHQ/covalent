@@ -28,3 +28,4 @@ from pydantic import BaseModel
 class AssetSchema(BaseModel):
     digest: str
     uri: Optional[str]
+    remote_uri: Optional[str]
