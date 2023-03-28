@@ -181,7 +181,7 @@ def test_get_abstract_task_inputs():
     result_object = Result(lattice=received_lattice, dispatch_id="asdf")
     tg = received_lattice.transport_graph
 
-    assert list(tg._graph.nodes) == [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]
+    assert list(tg._graph.nodes) == list(range(17))
     tg.set_node_value(0, "output", ct.TransportableObject(1))
     tg.set_node_value(2, "output", ct.TransportableObject(2))
 
