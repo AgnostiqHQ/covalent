@@ -160,7 +160,7 @@ def test_injected_inputs_are_not_in_tg():
     workflow.build_graph(2)
     g = workflow.transport_graph._graph
 
-    assert list(g.nodes) == [0, 1, 2, 3, 4]
+    assert list(g.nodes) == list(range(5))
     assert list(g.edges) == [(0, 4, 0), (1, 0, 0), (2, 4, 0), (3, 2, 0)]
 
 
@@ -233,7 +233,7 @@ def test_autogen_list_electrons():
 
     g = workflow.transport_graph._graph
 
-    assert list(g.nodes) == [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    assert list(g.nodes) == list(range(9))
     fn = g.nodes[1]["function"].get_deserialized()
     assert fn(2, 5, 7) == [2, 5, 7]
 
