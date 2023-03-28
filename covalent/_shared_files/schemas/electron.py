@@ -20,10 +20,12 @@
 
 """FastAPI models for /api/v1/resultv2 endpoints"""
 
+from datetime import datetime
 from typing import Optional
 
 from pydantic import BaseModel
 
+from ..util_classes import Status
 from .asset import AssetSchema
 
 ELECTRON_METADATA_KEYS = {
@@ -72,9 +74,9 @@ class ElectronMetadata(BaseModel):
     name: str
     executor: str
     executor_data: dict
-    status: Optional[str]
-    start_time: Optional[str]
-    end_time: Optional[str]
+    status: Optional[Status]
+    start_time: Optional[datetime]
+    end_time: Optional[datetime]
 
 
 class ElectronSchema(BaseModel):

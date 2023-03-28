@@ -22,6 +22,7 @@
 
 
 from .._shared_files.schemas.electron import ElectronAssets, ElectronMetadata, ElectronSchema
+from .._shared_files.util_classes import RESULT_STATUS
 from .serializers import AssetType, save_asset
 
 ELECTRON_FUNCTION_FILENAME = "function.pkl"
@@ -43,11 +44,25 @@ def _serialize_node_metadata(node_attrs: dict, node_storage_path: str) -> Electr
     executor = node_attrs["metadata"]["executor"]
     executor_data = node_attrs["metadata"]["executor_data"]
 
+    # Optional
+    status = node_attrs.get("status", RESULT_STATUS.NEW_OBJECT)
+
+    start_time = node_attrs.get("start_time", None)
+    if start_time:
+        start_time = start_time.isoformat()
+
+    end_time = node_attrs.get("end_time", None)
+    if end_time:
+        end_time = end_time.isoformat()
+
     return ElectronMetadata(
         task_group_id=task_group_id,
         name=name,
         executor=executor,
         executor_data=executor_data,
+        status=status,
+        start_time=start_time,
+        end_time=end_time,
     )
 
 
@@ -57,28 +72,33 @@ def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> Electron
         function, AssetType.TRANSPORTABLE, node_storage_path, ELECTRON_FUNCTION_FILENAME
     )
 
-    try:
-        function_string = node_attrs["function_string"]
-    except KeyError:
-        function_string = ""
+    function_string = node_attrs.get("function_string", "")
     function_string_asset = save_asset(
         function_string, AssetType.TEXT, node_storage_path, ELECTRON_FUNCTION_STRING_FILENAME
     )
 
-    try:
-        node_value = node_attrs["value"]
-    except KeyError:
-        node_value = None
+    node_value = node_attrs.get("value", None)
     value_asset = save_asset(
         node_value, AssetType.TRANSPORTABLE, node_storage_path, ELECTRON_VALUE_FILENAME
     )
 
-    try:
-        node_output = node_attrs["output"]
-    except KeyError:
-        node_output = None
+    node_output = node_attrs.get("output", None)
     output_asset = save_asset(
         node_output, AssetType.TRANSPORTABLE, node_storage_path, ELECTRON_RESULTS_FILENAME
+    )
+
+    node_error = node_attrs.get("error", "")
+    error_asset = save_asset(
+        node_error, AssetType.TEXT, node_storage_path, ELECTRON_ERROR_FILENAME
+    )
+
+    node_stdout = node_attrs.get("stdout", "")
+    stdout_asset = save_asset(
+        node_stdout, AssetType.TEXT, node_storage_path, ELECTRON_STDOUT_FILENAME
+    )
+    node_stderr = node_attrs.get("stderr", "")
+    stderr_asset = save_asset(
+        node_error, AssetType.TEXT, node_storage_path, ELECTRON_STDERR_FILENAME
     )
 
     deps = node_attrs["metadata"]["deps"]
@@ -102,6 +122,9 @@ def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> Electron
         deps=deps_asset,
         call_before=call_before_asset,
         call_after=call_after_asset,
+        stdout=stdout_asset,
+        stderr=stderr_asset,
+        error=error_asset,
     )
 
 
