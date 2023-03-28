@@ -133,7 +133,7 @@ async def test_run_abstract_task_exception_handling(mocker):
         node_id=0,
         node_name="test_node",
         abstract_inputs=inputs,
-        selected_executor=["local", {}],
+        executor=["local", {}],
         workflow_executor=["local", {}],
     )
 
@@ -169,7 +169,7 @@ async def test_run_abstract_task_get_cancel_requested(mocker):
         node_id=0,
         node_name="test_node",
         abstract_inputs=inputs,
-        selected_executor=["local", {}],
+        executor=["local", {}],
         workflow_executor=["local", {}],
     )
 
@@ -196,7 +196,7 @@ async def test_run_task_executor_exception_handling(mocker):
         node_id=1,
         inputs=inputs,
         serialized_callable=None,
-        selected_executor=["nonexistent", {}],
+        executor=["nonexistent", {}],
         call_before=[],
         call_after=[],
         node_name="test_node",
@@ -222,7 +222,7 @@ async def test_run_task_runtime_exception_handling(mocker):
         node_id=1,
         inputs=inputs,
         serialized_callable=None,
-        selected_executor=["local", {}],
+        executor=["local", {}],
         call_before=[],
         call_after=[],
         node_name="task",

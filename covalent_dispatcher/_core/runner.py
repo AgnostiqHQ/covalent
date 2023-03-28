@@ -108,8 +108,7 @@ async def _run_abstract_task(
     node_id: int,
     node_name: str,
     abstract_inputs: Dict,
-    selected_executor: Any,
-    workflow_executor: Any,
+    executor: Any,
 ) -> None:
     # Resolve abstract task and inputs to their concrete (serialized) values
     result_object = datasvc.get_result_object(dispatch_id)
@@ -164,12 +163,11 @@ async def _run_abstract_task(
         result_object=result_object,
         node_id=node_id,
         serialized_callable=serialized_callable,
-        selected_executor=selected_executor,
+        executor=executor,
         node_name=node_name,
         call_before=call_before,
         call_after=call_after,
         inputs=task_input,
-        workflow_executor=workflow_executor,
     )
 
 
@@ -179,11 +177,10 @@ async def _run_task(
     node_id: int,
     inputs: Dict,
     serialized_callable: Any,
-    selected_executor: Any,
+    executor: Any,
     call_before: List,
     call_after: List,
     node_name: str,
-    workflow_executor: Any,
 ) -> None:
     """
     Run a task with given inputs on the selected executor.
@@ -207,7 +204,7 @@ async def _run_task(
 
     # Instantiate the executor from JSON
     try:
-        short_name, object_dict = selected_executor
+        short_name, object_dict = executor
 
         app_log.debug(f"Running task {node_name} using executor {short_name}, {object_dict}")
 
@@ -316,16 +313,14 @@ async def run_abstract_task(
     node_id: int,
     node_name: str,
     abstract_inputs: Dict,
-    selected_executor: Any,
-    workflow_executor: Any,
+    executor: Any,
 ) -> None:
     node_result = await _run_abstract_task(
         dispatch_id=dispatch_id,
         node_id=node_id,
         node_name=node_name,
         abstract_inputs=abstract_inputs,
-        selected_executor=selected_executor,
-        workflow_executor=workflow_executor,
+        executor=executor,
     )
     result_object = datasvc.get_result_object(dispatch_id)
     await datasvc.update_node_result(result_object, node_result)

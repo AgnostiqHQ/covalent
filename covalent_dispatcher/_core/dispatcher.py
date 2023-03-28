@@ -186,33 +186,27 @@ async def _submit_task(result_object, node_id):
         app_log.debug(f"Skipped completed node {node_id}.")
 
     else:
-        # Executor for post_processing and dispatching sublattices
-        pp_executor = result_object.lattice.get_metadata("workflow_executor")
-        pp_executor_data = result_object.lattice.get_metadata("workflow_executor_data")
-        post_processor = [pp_executor, pp_executor_data]
-
         # Gather inputs and dispatch task
-        app_log.debug(f"Gathering inputs for task {node_id} (run_planned_workflow).")
+        app_log.debug(f"Gathering inputs for task {node_id}.")
 
         abs_task_input = _get_abstract_task_inputs(node_id, node_name, result_object)
 
-        selected_executor = result_object.lattice.transport_graph.get_node_value(
-            node_id, "metadata"
-        )["executor"]
+        executor = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
+            "executor"
+        ]
 
-        selected_executor_data = result_object.lattice.transport_graph.get_node_value(
-            node_id, "metadata"
-        )["executor_data"]
+        executor_data = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
+            "executor_data"
+        ]
 
         app_log.debug(f"Submitting task {node_id} to executor")
 
         coro = runner.run_abstract_task(
             dispatch_id=result_object.dispatch_id,
             node_id=node_id,
-            selected_executor=[selected_executor, selected_executor_data],
+            executor=[executor, executor_data],
             node_name=node_name,
             abstract_inputs=abs_task_input,
-            workflow_executor=post_processor,
         )
 
         asyncio.create_task(coro)
