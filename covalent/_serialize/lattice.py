@@ -21,8 +21,9 @@
 """Functions to convert lattice -> LatticeSchema"""
 
 from .._shared_files.schemas.lattice import LatticeAssets, LatticeMetadata, LatticeSchema
-from .serializers import AssetType, save_asset
-from .transport_graph import serialize_transport_graph
+from .._workflow.lattice import Lattice
+from .common import AssetType, load_asset, save_asset
+from .transport_graph import deserialize_transport_graph, serialize_transport_graph
 
 LATTICE_FUNCTION_FILENAME = "function.pkl"
 LATTICE_FUNCTION_STRING_FILENAME = "function_string.txt"
@@ -41,6 +42,20 @@ LATTICE_COVA_IMPORTS_FILENAME = "cova_imports.pkl"
 LATTICE_LATTICE_IMPORTS_FILENAME = "lattice_imports.pkl"
 LATTICE_STORAGE_TYPE = "file"
 
+ASSET_TYPES = {
+    "workflow_function": AssetType.TRANSPORTABLE,
+    "workflow_function_string": AssetType.TEXT,
+    "doc": AssetType.TEXT,
+    "inputs": AssetType.OBJECT,
+    "named_args": AssetType.OBJECT,
+    "named_kwargs": AssetType.OBJECT,
+    "cova_imports": AssetType.OBJECT,
+    "lattice_imports": AssetType.OBJECT,
+    "deps": AssetType.OBJECT,
+    "call_before": AssetType.OBJECT,
+    "call_after": AssetType.OBJECT,
+}
+
 
 def _serialize_lattice_metadata(lat) -> LatticeMetadata:
     name = lat.__name__
@@ -57,7 +72,19 @@ def _serialize_lattice_metadata(lat) -> LatticeMetadata:
     )
 
 
-def _serialize_lattice_assets(lat, storage_path) -> LatticeAssets:
+def _deserialize_lattice_metadata(meta: LatticeMetadata) -> dict:
+    return {
+        "__name__": meta.name,
+        "metadata": {
+            "executor": meta.executor,
+            "executor_data": meta.executor_data,
+            "workflow_executor": meta.workflow_executor,
+            "workflow_executor_data": meta.workflow_executor_data,
+        },
+    }
+
+
+def _serialize_lattice_assets(lat, storage_path: str) -> LatticeAssets:
     workflow_func_asset = save_asset(
         lat.workflow_function, AssetType.TRANSPORTABLE, storage_path, LATTICE_FUNCTION_FILENAME
     )
@@ -122,10 +149,62 @@ def _serialize_lattice_assets(lat, storage_path) -> LatticeAssets:
     )
 
 
-def serialize_lattice(lat, storage_path) -> LatticeSchema:
+def _deserialize_lattice_assets(assets: LatticeAssets) -> dict:
+    workflow_function = load_asset(assets.workflow_function, AssetType.TRANSPORTABLE)
+    workflow_function_string = load_asset(assets.workflow_function_string, AssetType.TEXT)
+    doc = load_asset(assets.doc, AssetType.TEXT)
+    named_args = load_asset(assets.named_args, AssetType.OBJECT)
+    named_kwargs = load_asset(assets.named_kwargs, AssetType.OBJECT)
+    cova_imports = load_asset(assets.cova_imports, AssetType.OBJECT)
+    lattice_imports = load_asset(assets.lattice_imports, AssetType.OBJECT)
+    deps = load_asset(assets.deps, AssetType.OBJECT)
+    call_before = load_asset(assets.call_before, AssetType.OBJECT)
+    call_after = load_asset(assets.call_after, AssetType.OBJECT)
+    return {
+        "workflow_function": workflow_function,
+        "workflow_function_string": workflow_function_string,
+        "__doc__": doc,
+        "named_args": named_args,
+        "named_kwargs": named_kwargs,
+        "cova_imports": cova_imports,
+        "lattice_imports": lattice_imports,
+        "metadata": {
+            "deps": deps,
+            "call_before": call_before,
+            "call_after": call_after,
+        },
+    }
+
+
+def serialize_lattice(lat, storage_path: str) -> LatticeSchema:
     meta = _serialize_lattice_metadata(lat)
     assets = _serialize_lattice_assets(lat, storage_path)
 
     tg = serialize_transport_graph(lat.transport_graph, storage_path)
 
     return LatticeSchema(metadata=meta, assets=assets, transport_graph=tg)
+
+
+def deserialize_lattice(model: LatticeSchema) -> Lattice:
+    def dummy_function(x):
+        return x
+
+    lat = Lattice(dummy_function)
+
+    attrs = _deserialize_lattice_metadata(model.metadata)
+    assets = _deserialize_lattice_assets(model.assets)
+
+    metadata = assets.pop("metadata")
+    attrs.update(assets)
+    attrs["metadata"].update(metadata)
+
+    tg = deserialize_transport_graph(model.transport_graph)
+
+    attrs["transport_graph"] = tg
+
+    lat.__dict__.update(attrs)
+
+    lat.args = [v for _, v in lat.named_args.items()]
+    lat.kwargs = lat.named_kwargs
+
+    return lat

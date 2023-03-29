@@ -63,6 +63,9 @@ def load_asset(asset_meta: AssetSchema, data_type: AssetType) -> Any:
     scheme_prefix = "file://"
     uri = asset_meta.uri
 
+    if not uri:
+        return None
+
     if uri.startswith(scheme_prefix):
         path = uri[len(scheme_prefix) :]
     else:

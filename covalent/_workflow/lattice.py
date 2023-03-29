@@ -30,7 +30,6 @@ from dataclasses import asdict
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
-from .._serialize import lattice as lattice_serializer
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
@@ -40,7 +39,6 @@ from .._shared_files.defaults import (
     prefix_separator,
     sublattice_prefix,
 )
-from .._shared_files.schemas.lattice import LatticeSchema
 from .._shared_files.utils import get_named_params, get_serialized_function_str
 from .depsbash import DepsBash
 from .depscall import DepsCall
@@ -97,9 +95,6 @@ class Lattice:
 
         # Clear before serializing
         self._bound_electrons = {}
-
-    def serialize(self, storage_path: str) -> LatticeSchema:
-        return lattice_serializer.serialize_lattice(self, storage_path)
 
     # To be called after build_graph
     def serialize_to_json(self) -> str:

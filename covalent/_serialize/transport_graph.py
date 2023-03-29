@@ -29,7 +29,8 @@ import networkx as nx
 from .._shared_files.schemas.edge import EdgeMetadata, EdgeSchema
 from .._shared_files.schemas.electron import ElectronSchema
 from .._shared_files.schemas.transport_graph import TransportGraphSchema
-from .electron import serialize_node
+from .._workflow.transport import _TransportGraph
+from .electron import deserialize_node, serialize_node
 
 
 def serialize_edge(source: int, target: int, attrs: dict) -> EdgeSchema:
@@ -39,6 +40,14 @@ def serialize_edge(source: int, target: int, attrs: dict) -> EdgeSchema:
         arg_index=attrs["arg_index"],
     )
     return EdgeSchema(source=source, target=target, metadata=meta)
+
+
+def deserialize_edge(e: EdgeSchema) -> dict:
+    return {
+        "source": e.source,
+        "target": e.target,
+        "attrs": e.metadata.dict(),
+    }
 
 
 def _serialize_nodes(g: nx.MultiDiGraph, storage_path: str) -> List[ElectronSchema]:
@@ -65,3 +74,20 @@ def serialize_transport_graph(tg, storage_path: str) -> TransportGraphSchema:
         nodes=_serialize_nodes(g, storage_path),
         links=_serialize_edges(g),
     )
+
+
+def deserialize_transport_graph(t: TransportGraphSchema) -> _TransportGraph:
+    tg = _TransportGraph()
+    g = tg._graph
+    nodes = [deserialize_node(n) for n in t.nodes]
+    edges = [deserialize_edge(e) for e in t.links]
+    for node in nodes:
+        node_id = node["id"]
+        attrs = node["attrs"]
+        g.add_node(node_id, **attrs)
+    for edge in edges:
+        x = edge["source"]
+        y = edge["target"]
+        g.add_edge(x, y, **edge["attrs"])
+
+    return tg

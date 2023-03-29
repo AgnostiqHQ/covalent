@@ -23,7 +23,7 @@
 
 from .._shared_files.schemas.electron import ElectronAssets, ElectronMetadata, ElectronSchema
 from .._shared_files.util_classes import RESULT_STATUS
-from .serializers import AssetType, save_asset
+from .common import AssetType, load_asset, save_asset
 
 ELECTRON_FUNCTION_FILENAME = "function.pkl"
 ELECTRON_FUNCTION_STRING_FILENAME = "function_string.txt"
@@ -36,6 +36,20 @@ ELECTRON_DEPS_FILENAME = "deps.pkl"
 ELECTRON_CALL_BEFORE_FILENAME = "call_before.pkl"
 ELECTRON_CALL_AFTER_FILENAME = "call_after.pkl"
 ELECTRON_STORAGE_TYPE = "file"
+
+
+ASSET_TYPES = {
+    "function": AssetType.TRANSPORTABLE,
+    "function_string": AssetType.TEXT,
+    "value": AssetType.TRANSPORTABLE,
+    "output": AssetType.TRANSPORTABLE,
+    "deps": AssetType.OBJECT,
+    "call_before": AssetType.OBJECT,
+    "call_after": AssetType.OBJECT,
+    "stdout": AssetType.TEXT,
+    "stderr": AssetType.TEXT,
+    "error": AssetType.TEXT,
+}
 
 
 def _serialize_node_metadata(node_attrs: dict, node_storage_path: str) -> ElectronMetadata:
@@ -64,6 +78,20 @@ def _serialize_node_metadata(node_attrs: dict, node_storage_path: str) -> Electr
         start_time=start_time,
         end_time=end_time,
     )
+
+
+def _deserialize_node_metadata(meta: ElectronMetadata) -> dict:
+    return {
+        "task_group_id": meta.task_group_id,
+        "name": meta.name,
+        "status": meta.status,
+        "start_time": meta.start_time,
+        "end_time": meta.end_time,
+        "metadata": {
+            "executor": meta.executor,
+            "executor_data": meta.executor_data,
+        },
+    }
 
 
 def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> ElectronAssets:
@@ -128,7 +156,49 @@ def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> Electron
     )
 
 
+def _deserialize_node_assets(ea: ElectronAssets) -> dict:
+    function = load_asset(ea.function, AssetType.TRANSPORTABLE)
+    function_string = load_asset(ea.function_string, AssetType.TEXT)
+    value = load_asset(ea.value, AssetType.TRANSPORTABLE)
+    output = load_asset(ea.output, AssetType.TRANSPORTABLE)
+    deps = load_asset(ea.deps, AssetType.OBJECT)
+    call_before = load_asset(ea.call_before, AssetType.OBJECT)
+    call_after = load_asset(ea.call_after, AssetType.OBJECT)
+
+    stdout = load_asset(ea.stdout, AssetType.TEXT)
+    stderr = load_asset(ea.stderr, AssetType.TEXT)
+    error = load_asset(ea.error, AssetType.TEXT)
+
+    return {
+        "function": function,
+        "function_string": function_string,
+        "value": value,
+        "output": output,
+        "stdout": stdout,
+        "stderr": stderr,
+        "error": error,
+        "metadata": {
+            "deps": deps,
+            "call_before": call_before,
+            "call_after": call_after,
+        },
+    }
+
+
 def serialize_node(node_id: int, node_attrs: dict, node_storage_path) -> ElectronSchema:
     meta = _serialize_node_metadata(node_attrs, node_storage_path)
     assets = _serialize_node_assets(node_attrs, node_storage_path)
     return ElectronSchema(id=node_id, metadata=meta, assets=assets)
+
+
+def deserialize_node(e: ElectronSchema, metadata_only: bool = False) -> dict:
+    node_attrs = _deserialize_node_metadata(e.metadata)
+    node_assets = _deserialize_node_assets(e.assets)
+
+    asset_metadata = node_assets.pop("metadata")
+
+    # merge "metadata" attrs
+    node_attrs.update(node_assets)
+    node_attrs["metadata"].update(asset_metadata)
+
+    return {"id": e.id, "attrs": node_attrs}
