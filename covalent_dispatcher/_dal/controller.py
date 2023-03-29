@@ -34,7 +34,7 @@ T = TypeVar("T", bound=models.Base)
 class Record(Generic[T]):
     @classmethod
     @property
-    def model(cls) -> type(models.Base):
+    def model(cls) -> type(T):
         raise NotImplementedError
 
     def __init__(self, session: Session, record: models.Base, *, fields: set):

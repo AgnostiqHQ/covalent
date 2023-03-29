@@ -24,6 +24,7 @@
 from typing import Dict
 
 from .._db import models
+from .controller import Record
 from .db_interfaces.edge_utils import _to_edge_attrs, _to_endpoints
 
 
@@ -31,3 +32,7 @@ class Edge:
     def __init__(self, record: models.ElectronDependency, uid_node_id_map: Dict):
         self.source, self.target = _to_endpoints(record, uid_node_id_map)
         self.attrs = _to_edge_attrs(record)
+
+
+class ElectronDependency(Record[models.ElectronDependency]):
+    model = models.ElectronDependency
