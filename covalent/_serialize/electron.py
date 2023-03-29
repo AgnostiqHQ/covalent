@@ -87,6 +87,7 @@ def _deserialize_node_metadata(meta: ElectronMetadata) -> dict:
         "status": meta.status,
         "start_time": meta.start_time,
         "end_time": meta.end_time,
+        "sub_dispatch_id": meta.sub_dispatch_id,
         "metadata": {
             "executor": meta.executor,
             "executor_data": meta.executor_data,

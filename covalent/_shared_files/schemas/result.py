@@ -27,60 +27,39 @@ from pydantic import BaseModel
 
 from ..util_classes import Status
 from .asset import AssetSchema
+from .lattice import LatticeSchema
 
-ELECTRON_METADATA_KEYS = {
-    "task_group_id",
-    "name",
+METADATA_KEYS = {
     "start_time",
     "end_time",
+    "dispatch_id",
+    "root_dispatch_id",
     "status",
-    # electron metadata
-    "executor",
-    "executor_data",
+    "num_nodes",
 }
 
-ELECTRON_ASSET_KEYS = {
-    "function",
-    "function_string",
-    "output",
-    "value",
+
+ASSET_KEYS = {
+    "inputs",
+    "result",
     "error",
-    "stdout",
-    "stderr",
-    # electron metadata
-    "deps",
-    "call_before",
-    "call_after",
 }
 
 
-class ElectronAssets(BaseModel):
-    function: AssetSchema
-    function_string: AssetSchema
-    value: AssetSchema
-    output: AssetSchema
-    error: Optional[AssetSchema]
-    stdout: Optional[AssetSchema]
-    stderr: Optional[AssetSchema]
-
-    # electron_metadata
-    deps: AssetSchema
-    call_before: AssetSchema
-    call_after: AssetSchema
-
-
-class ElectronMetadata(BaseModel):
-    task_group_id: int
-    name: str
-    executor: str
-    executor_data: dict
-    sub_dispatch_id: Optional[str]
-    status: Optional[Status]
+class ResultMetadata(BaseModel):
+    dispatch_id: str
+    root_dispatch_id: str
+    status: Status
     start_time: Optional[datetime]
     end_time: Optional[datetime]
 
 
-class ElectronSchema(BaseModel):
-    id: int
-    metadata: ElectronMetadata
-    assets: ElectronAssets
+class ResultAssets(BaseModel):
+    result: AssetSchema
+    error: AssetSchema
+
+
+class ResultSchema(BaseModel):
+    metadata: ResultMetadata
+    assets: ResultAssets
+    lattice: LatticeSchema
