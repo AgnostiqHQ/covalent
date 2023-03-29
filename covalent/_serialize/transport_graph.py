@@ -36,8 +36,8 @@ from .electron import deserialize_node, serialize_node
 def serialize_edge(source: int, target: int, attrs: dict) -> EdgeSchema:
     meta = EdgeMetadata(
         edge_name=attrs["edge_name"],
-        param_type=attrs["param_type"],
-        arg_index=attrs["arg_index"],
+        param_type=attrs.get("param_type"),
+        arg_index=attrs.get("arg_index"),
     )
     return EdgeSchema(source=source, target=target, metadata=meta)
 
