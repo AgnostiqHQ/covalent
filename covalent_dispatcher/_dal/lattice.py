@@ -30,7 +30,7 @@ from .controller import Record
 from .db_interfaces.lattice_utils import ASSET_KEYS  # nopycln: import
 from .db_interfaces.lattice_utils import METADATA_KEYS  # nopycln: import
 from .db_interfaces.lattice_utils import _meta_record_map, get_filters, set_filters
-from .tg import ELECTRON_KEYS, get_compute_graph
+from .tg import ELECTRON_KEYS, _TransportGraph
 
 LATTICE_KEYS = list(_meta_record_map.keys())
 
@@ -66,7 +66,9 @@ class Lattice(DispatchedObject):
         self._assets = {}
         self._lattice_id = record.id
 
-        self.transport_graph = get_compute_graph(self._lattice_id, bare, keys=electron_keys)
+        self.transport_graph = _TransportGraph.get_compute_graph(
+            self._lattice_id, bare, keys=electron_keys
+        )
 
     @property
     def query_keys(self) -> List:

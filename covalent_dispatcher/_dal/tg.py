@@ -20,6 +20,8 @@
 
 """DB-backed electron"""
 
+from __future__ import annotations
+
 from typing import Any, Dict, List, Tuple
 
 import networkx as nx
@@ -179,6 +181,18 @@ class _TransportGraph:
         """
         return [e["source"] for e in self.get_incoming_edges(node_key)]
 
+    @staticmethod
+    def get_compute_graph(
+        lattice_id: int, bare: bool = False, *, keys: List = ELECTRON_KEYS
+    ) -> _TransportGraph:
+        if not bare:
+            with Node.session() as session:
+                nodes, edges = _nodes_and_edges(session, lattice_id, keys=keys)
+            return _make_compute_graph(lattice_id, nodes, edges, keys=keys)
+        else:
+            app_log.debug("Getting bare transport graph")
+            return _TransportGraph(lattice_id, True, keys=keys)
+
 
 def _get_incoming_edges(session: Session, node: Node, *, keys: List) -> List[Edge]:
     records = _incoming_edge_records(session, node._electron_id, keys=keys)
@@ -251,18 +265,6 @@ def _make_compute_graph(
     for edge in edges:
         tg.add_edge(edge.source, edge.target, **edge.attrs)
     return tg
-
-
-def get_compute_graph(
-    lattice_id: int, bare: bool = False, *, keys: List = ELECTRON_KEYS
-) -> _TransportGraph:
-    if not bare:
-        with Node.session() as session:
-            nodes, edges = _nodes_and_edges(session, lattice_id, keys=keys)
-        return _make_compute_graph(lattice_id, nodes, edges, keys=keys)
-    else:
-        app_log.debug("Getting bare transport graph")
-        return _TransportGraph(lattice_id, True, keys=keys)
 
 
 def _filter_node(node_obj: Node, session: Session, attr_keys: List[str]):

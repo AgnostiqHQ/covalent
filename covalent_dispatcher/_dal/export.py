@@ -37,7 +37,6 @@ from .result import METADATA_KEYS as RESULT_META
 from .result import Result as SRVResult
 from .result import get_result_object
 from .tg import _TransportGraph as SRVGraph
-from .tg import get_compute_graph
 
 NODE_ATTRIBUTES = ELECTRON_META.union(ELECTRON_ASSETS)
 NODE_ATTRIBUTES.add("sub_dispatch_id")
@@ -114,7 +113,7 @@ def _to_client_lattice(srv_lat: SRVLattice) -> SDKLattice:
     sdk_lat.metadata = lat_meta
 
     # Load transport graph
-    srv_graph = get_compute_graph(srv_lat._lattice_id)
+    srv_graph = SRVGraph.get_compute_graph(srv_lat._lattice_id)
 
     sdk_lat.transport_graph = _to_client_graph(srv_graph)
 
