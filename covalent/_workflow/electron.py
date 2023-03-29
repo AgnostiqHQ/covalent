@@ -346,7 +346,7 @@ class Electron:
         # Handle sublattices by injecting _build_sublattice_graph:
         if isinstance(self.function, Lattice):
             parent_metadata = active_lattice.metadata.copy()
-            print("DEBUG: parent lattice metadata", parent_metadata)
+            app_log.debug(f"Parent lattice metadata: {parent_metadata}")
             e_meta = parent_metadata.copy()
             e_meta.pop("workflow_executor")
             e_meta.pop("workflow_executor_data")
