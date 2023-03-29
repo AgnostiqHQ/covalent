@@ -21,6 +21,7 @@
 """Class corresponding to computation nodes."""
 
 import inspect
+import json
 import operator
 from builtins import list
 from dataclasses import asdict
@@ -61,6 +62,16 @@ if TYPE_CHECKING:
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+
+def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kwargs):
+    parent_metadata = json.loads(json_parent_metadata)
+    for k in sub.metadata.keys():
+        if not sub.metadata[k] and k != "triggers":
+            sub.metadata[k] = parent_metadata[k]
+
+    sub.build_graph(*args, **kwargs)
+    return sub.serialize_to_json()
 
 
 class Electron:
@@ -332,11 +343,37 @@ class Electron:
                     meta = DEFAULT_METADATA_VALUES[k]
                 self.set_metadata(k, meta)
 
+        # Handle sublattices by injecting _build_sublattice_graph:
+        if isinstance(self.function, Lattice):
+            parent_metadata = active_lattice.metadata.copy()
+            print("DEBUG: parent lattice metadata", parent_metadata)
+            e_meta = parent_metadata.copy()
+            e_meta.pop("workflow_executor")
+            e_meta.pop("workflow_executor_data")
+
+            sub_electron = Electron(
+                function=_build_sublattice_graph,
+                metadata=e_meta,
+            )
+
+            name = sublattice_prefix + self.function.__name__
+            function_string = get_serialized_function_str(self.function)
+            bound_electron = sub_electron(
+                self.function, json.dumps(parent_metadata), *args, **kwargs
+            )
+
+            active_lattice.transport_graph.set_node_value(bound_electron.node_id, "name", name)
+            active_lattice.transport_graph.set_node_value(
+                bound_electron.node_id,
+                "function_string",
+                function_string,
+            )
+
+            return bound_electron
+
         # Add a node to the transport graph of the active lattice
         self.node_id = active_lattice.transport_graph.add_node(
-            name=sublattice_prefix + self.function.__name__
-            if isinstance(self.function, Lattice)
-            else self.function.__name__,
+            name=self.function.__name__,
             function=self.function,
             metadata=self.metadata.copy(),
             function_string=get_serialized_function_str(self.function),
