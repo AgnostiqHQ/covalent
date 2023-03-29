@@ -21,22 +21,23 @@
 """Functions to convert node -> ElectronSchema"""
 
 
-from .._shared_files.schemas.electron import ElectronAssets, ElectronMetadata, ElectronSchema
+from .._shared_files.schemas.electron import (
+    ELECTRON_CALL_AFTER_FILENAME,
+    ELECTRON_CALL_BEFORE_FILENAME,
+    ELECTRON_DEPS_FILENAME,
+    ELECTRON_ERROR_FILENAME,
+    ELECTRON_FUNCTION_FILENAME,
+    ELECTRON_FUNCTION_STRING_FILENAME,
+    ELECTRON_RESULTS_FILENAME,
+    ELECTRON_STDERR_FILENAME,
+    ELECTRON_STDOUT_FILENAME,
+    ELECTRON_VALUE_FILENAME,
+    ElectronAssets,
+    ElectronMetadata,
+    ElectronSchema,
+)
 from .._shared_files.util_classes import RESULT_STATUS
 from .common import AssetType, load_asset, save_asset
-
-ELECTRON_FUNCTION_FILENAME = "function.pkl"
-ELECTRON_FUNCTION_STRING_FILENAME = "function_string.txt"
-ELECTRON_VALUE_FILENAME = "value.pkl"
-ELECTRON_STDOUT_FILENAME = "stdout.log"
-ELECTRON_STDERR_FILENAME = "stderr.log"
-ELECTRON_ERROR_FILENAME = "error.log"
-ELECTRON_RESULTS_FILENAME = "results.pkl"
-ELECTRON_DEPS_FILENAME = "deps.pkl"
-ELECTRON_CALL_BEFORE_FILENAME = "call_before.pkl"
-ELECTRON_CALL_AFTER_FILENAME = "call_after.pkl"
-ELECTRON_STORAGE_TYPE = "file"
-
 
 ASSET_TYPES = {
     "function": AssetType.TRANSPORTABLE,
