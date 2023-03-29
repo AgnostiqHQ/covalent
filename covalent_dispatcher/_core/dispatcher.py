@@ -30,6 +30,7 @@ from typing import Dict, List, Tuple
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.defaults import parameter_prefix
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent_ui import result_webhook
 
 from . import data_manager as datasvc
@@ -168,19 +169,19 @@ async def _submit_task(result_object, node_id):
             "node_id": node_id,
             "start_time": timestamp,
             "end_time": timestamp,
-            "status": Result.COMPLETED,
+            "status": RESULT_STATUS.COMPLETED,
             "output": output,
         }
         await datasvc.update_node_result(result_object, node_result)
         app_log.debug("8A: Update node success (run_planned_workflow).")
 
-    elif node_status == Result.COMPLETED:
+    elif node_status == RESULT_STATUS.COMPLETED:
         timestamp = datetime.now(timezone.utc)
         node_result = {
             "node_id": node_id,
             "start_time": timestamp,
             "end_time": timestamp,
-            "status": Result.COMPLETED,
+            "status": RESULT_STATUS.COMPLETED,
         }
         await datasvc.update_node_result(result_object, node_result)
         app_log.debug(f"Skipped completed node {node_id}.")
@@ -229,7 +230,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
     """
 
     app_log.debug("3: Inside run_planned_workflow (run_planned_workflow).")
-    result_object._status = Result.RUNNING
+    result_object._status = RESULT_STATUS.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
 
     app_log.debug(
@@ -254,23 +255,33 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
 
         app_log.debug(f"Received node status update {node_id}: {node_status}")
 
-        if node_status == Result.RUNNING:
+        if node_status == RESULT_STATUS.RUNNING:
             continue
 
         unresolved_tasks -= 1
 
-        if node_status == Result.COMPLETED:
+        # Note: A node status can only be 'DISPATCHING' if it is a sublattice
+        if node_status == RESULT_STATUS.DISPATCHING:
+            # TODO - Retrieve detail
+            detail = {"sub_dispatch_id": "mock-sub-dispatch-id"}
+            sub_dispatch_id = detail["sub_dispatch_id"]
+            run_dispatch(sub_dispatch_id)
+            app_log.debug(f"Running sublattice dispatch {sub_dispatch_id}")
+
+            return
+
+        if node_status == RESULT_STATUS.COMPLETED:
             tasks_left -= 1
             ready_nodes = await _handle_completed_node(result_object, node_id, pending_parents)
             for node_id in ready_nodes:
                 unresolved_tasks += 1
                 await _submit_task(result_object, node_id)
 
-        if node_status == Result.FAILED:
+        if node_status == RESULT_STATUS.FAILED:
             await _handle_failed_node(result_object, node_id)
             continue
 
-        if node_status == Result.CANCELLED:
+        if node_status == RESULT_STATUS.CANCELLED:
             await _handle_cancelled_node(result_object, node_id)
             continue
 
@@ -280,7 +291,9 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
         failed_nodes = map(lambda x: f"{x[0]}: {x[1]}", failed_nodes)
         failed_nodes_msg = "\n".join(failed_nodes)
         result_object._error = "The following tasks failed:\n" + failed_nodes_msg
-        result_object._status = Result.FAILED if result_object._task_failed else Result.CANCELLED
+        result_object._status = (
+            RESULT_STATUS.FAILED if result_object._task_failed else RESULT_STATUS.CANCELLED
+        )
         return result_object
 
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
@@ -328,7 +341,7 @@ async def run_workflow(result_object: Result) -> Result:
 
     app_log.debug("Inside run_workflow.")
 
-    if result_object.status == Result.COMPLETED:
+    if result_object.status == RESULT_STATUS.COMPLETED:
         datasvc.finalize_dispatch(result_object.dispatch_id)
         return result_object
 
@@ -341,7 +354,7 @@ async def run_workflow(result_object: Result) -> Result:
         app_log.error(f"Exception during _run_planned_workflow: {ex}")
 
         error_msg = "".join(traceback.TracebackException.from_exception(ex).format())
-        result_object._status = Result.FAILED
+        result_object._status = RESULT_STATUS.FAILED
         result_object._error = error_msg
         result_object._end_time = datetime.now(timezone.utc)
 
@@ -353,7 +366,7 @@ async def run_workflow(result_object: Result) -> Result:
 
 
 # Domain: dispatcher
-async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = []) -> None:
+async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = None) -> None:
     """
     Cancel an entire dispatch or a specific set of tasks within it
 
@@ -364,6 +377,8 @@ async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = []) -> None:
     Return(s)
         None
     """
+    if task_ids is None:
+        task_ids = []
     if not dispatch_id:
         return
 
