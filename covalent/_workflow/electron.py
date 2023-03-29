@@ -373,7 +373,9 @@ class Electron:
 
         # Add a node to the transport graph of the active lattice
         self.node_id = active_lattice.transport_graph.add_node(
-            name=self.function.__name__,
+            name=sublattice_prefix + self.function.__name__
+            if isinstance(self.function, Lattice)
+            else self.function.__name__,
             function=self.function,
             metadata=self.metadata.copy(),
             function_string=get_serialized_function_str(self.function),
