@@ -38,6 +38,7 @@ from .._shared_files.utils import get_named_params, get_serialized_function_str
 from .depsbash import DepsBash
 from .depscall import DepsCall
 from .depspip import DepsPip
+from .postprocessing import Postprocessor
 from .transport import TransportableObject, _TransportGraph, encode_metadata
 
 if TYPE_CHECKING:
@@ -246,11 +247,8 @@ class Lattice:
                     )
                     raise
 
-        from .postprocessing import Postprocessor
-
-        pp = Postprocessor(lattice=self)
-
         if get_config("sdk.exhaustive_postprocess") == "true":
+            pp = Postprocessor(lattice=self)
             pp.add_exhaustive_postprocess_node(self._bound_electrons.copy())
 
         self._bound_electrons = {}  # Reset bound electrons

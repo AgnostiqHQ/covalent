@@ -306,6 +306,8 @@ class Electron:
         Also contains a postprocessing part where the lattice's function is executed
         after all the nodes in the lattice's transport graph are executed. Then the
         execution call to the electron is replaced by its corresponding result.
+
+        Note: Bound electrons are defined as electrons with a valid node_id, since it means they are bound to a TransportGraph.
         """
 
         # Check if inside a lattice and if not, perform a direct invocation of the function

@@ -48,7 +48,16 @@ class Postprocessor:
         self.lattice = lattice
 
     def _is_postprocessable_node(self, tg: _TransportGraph, node_id: int) -> bool:
-        """Filter nodes that should be included in postprocessing."""
+        """Filter nodes that should be included in postprocessing.
+
+        Args:
+            tg: Transport graph of the lattice.
+            node_id: Node id of the node to be checked.
+
+        Returns:
+            True if the node should be included in postprocessing, False otherwise.
+
+        """
         node_name = tg.get_node_value(node_id, "name")
         return bool(
             not node_name.startswith(prefix_separator) or node_name.startswith(sublattice_prefix)
@@ -104,10 +113,8 @@ class Postprocessor:
     def _get_node_ids_from_retval(self, retval: Union["Electron", List, Dict]) -> List[int]:
         """Get the list of electron node ids from the return value of a lattice function.
 
-        Note: 'retval' here corresponds to the return value of a lattice function.
-
         Args:
-            retval (_type_): _description_
+            retval: Return value of a lattice function.
 
         Returns:
             List of electron node ids.
