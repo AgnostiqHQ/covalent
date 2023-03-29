@@ -45,11 +45,11 @@ app_log = logger.app_log
 RESULT_KEYS = list(_meta_record_map.keys())
 
 
-class ResultMeta(Record):
+class ResultMeta(Record[models.Lattice]):
     model = models.Lattice
 
 
-class ResultAsset(Record):
+class ResultAsset(Record[models.LatticeAsset]):
     model = models.LatticeAsset
 
 

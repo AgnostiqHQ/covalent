@@ -21,13 +21,17 @@
 
 from __future__ import annotations
 
+from typing import Generic, TypeVar
+
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session, load_only
 
 from .._db import models
 
+T = TypeVar("T", bound=models.Base)
 
-class Record:
+
+class Record(Generic[T]):
     @classmethod
     @property
     def model(cls) -> type(models.Base):
@@ -55,11 +59,11 @@ class Record:
         return session.scalars(stmt).all()
 
     @classmethod
-    def get_by_primary_key(cls, session: Session, primary_key: int) -> models.Base:
+    def get_by_primary_key(cls, session: Session, primary_key: int) -> T:
         return session.get(cls.model, primary_key)
 
     @classmethod
-    def insert(cls, session: Session, *, insert_kwargs: dict, flush: bool = True) -> models.Base:
+    def insert(cls, session: Session, *, insert_kwargs: dict, flush: bool = True) -> T:
         new_record = cls.model(**insert_kwargs)
         session.add(new_record)
         if flush:

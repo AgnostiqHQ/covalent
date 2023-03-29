@@ -35,11 +35,11 @@ from .db_interfaces.electron_utils import _meta_record_map, get_filters, set_fil
 ELECTRON_KEYS = list(_meta_record_map.keys())
 
 
-class ElectronMeta(Record):
+class ElectronMeta(Record[models.Electron]):
     model = models.Electron
 
 
-class ElectronAsset(Record):
+class ElectronAsset(Record[models.ElectronAsset]):
     model = models.ElectronAsset
 
 

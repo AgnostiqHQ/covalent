@@ -25,5 +25,5 @@ from .._db import models
 from .controller import Record
 
 
-class Job(Record):
+class Job(Record[models.Job]):
     model = models.Job

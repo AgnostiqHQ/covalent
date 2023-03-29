@@ -35,11 +35,11 @@ from .tg import ELECTRON_KEYS, get_compute_graph
 LATTICE_KEYS = list(_meta_record_map.keys())
 
 
-class LatticeMeta(Record):
+class LatticeMeta(Record[models.Lattice]):
     model = models.Lattice
 
 
-class LatticeAsset(Record):
+class LatticeAsset(Record[models.LatticeAsset]):
     model = models.LatticeAsset
 
 
