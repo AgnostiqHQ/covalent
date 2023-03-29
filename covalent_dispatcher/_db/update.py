@@ -90,7 +90,7 @@ def _node(
         None
 
     """
-    if not node_name:
+    if node_name is None:
         node_name = result.lattice.transport_graph.get_node_value(node_id, "name")
 
     result._update_node(
