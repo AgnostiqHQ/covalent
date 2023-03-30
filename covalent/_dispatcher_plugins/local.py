@@ -425,3 +425,17 @@ class LocalDispatcher(BaseDispatcher):
 
         result_object = Result(lattice)
         return serialize_result(result_object, storage_path)
+
+    @staticmethod
+    def register(manifest: ResultSchema, dispatcher_addr: Optional[str] = None) -> ResultSchema:
+        if dispatcher_addr is None:
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
+
+        test_url = f"http://{dispatcher_addr}/api/v1/dispatchv2/register"
+
+        r = requests.post(test_url, data=manifest.json())
+        r.raise_for_status()
+
+        return ResultSchema.parse_obj(r.json())
