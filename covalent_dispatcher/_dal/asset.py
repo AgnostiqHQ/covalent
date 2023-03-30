@@ -54,7 +54,7 @@ FIELDS = {
 }
 
 
-class Asset(Record):
+class Asset(Record[AssetRecord]):
 
     """Metadata for an object in blob storage"""
 
