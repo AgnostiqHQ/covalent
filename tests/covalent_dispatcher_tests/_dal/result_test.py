@@ -29,6 +29,7 @@ import pytest
 import covalent as ct
 from covalent._results_manager import Result as SDKResult
 from covalent._workflow.lattice import Lattice as SDKLattice
+from covalent_dispatcher._dal.electron import ASSET_KEYS as ELECTRON_ASSET_KEYS
 from covalent_dispatcher._dal.lattice import ASSET_KEYS as LATTICE_ASSET_KEYS
 from covalent_dispatcher._dal.result import ASSET_KEYS, METADATA_KEYS, Result, get_result_object
 from covalent_dispatcher._db import models, update
@@ -399,8 +400,8 @@ def test_get_linked_assets(test_db, mocker):
 
         srvres = Result(session, record)
 
-        assets = srvres.get_linked_assets(
-            session, fields=[], equality_filters={"id": srvres._id}, membership_filters={}
-        )
+        assets = srvres.get_all_assets()
 
-    assert len(assets) == len(ASSET_KEYS) + len(LATTICE_ASSET_KEYS)
+    num_nodes = len(res.lattice.transport_graph._graph.nodes)
+    assert len(assets["lattice"]) == len(ASSET_KEYS) + len(LATTICE_ASSET_KEYS)
+    assert len(assets["nodes"]) == num_nodes * len(ELECTRON_ASSET_KEYS)

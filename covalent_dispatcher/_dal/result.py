@@ -24,7 +24,7 @@ from __future__ import annotations
 
 import os
 from datetime import datetime
-from typing import Any, List
+from typing import Any, Dict, List
 
 from sqlalchemy.orm import Session
 
@@ -313,6 +313,25 @@ class Result(DispatchedObject):
             node_output = tg.get_node_value(node_id, "output")
             all_node_outputs[f"{node_name}({node_id})"] = node_output
         return all_node_outputs
+
+    def get_all_assets(self, include_nodes: bool = True) -> Dict[str, List[Asset]]:
+        assets = {}
+
+        with self.session() as session:
+            assets["lattice"] = type(self).get_linked_assets(
+                session,
+                fields=[],
+                equality_filters={"id": self._id},
+                membership_filters={},
+            )
+            if include_nodes:
+                assets["nodes"] = Electron.get_linked_assets(
+                    session,
+                    fields=[],
+                    equality_filters={"parent_lattice_id": self._lattice_id},
+                    membership_filters={},
+                )
+        return assets
 
     @classmethod
     def from_dispatch_id(
