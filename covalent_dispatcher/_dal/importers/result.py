@@ -29,6 +29,7 @@ from sqlalchemy.orm import Session
 from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas.lattice import (
     LATTICE_ERROR_FILENAME,
+    LATTICE_INPUTS_FILENAME,
     LATTICE_RESULTS_FILENAME,
     LatticeSchema,
 )
@@ -107,6 +108,7 @@ def import_result_assets(
     asset_ids = {}
 
     for asset_key, asset, object_key in [
+        ("inputs", res.assets.inputs, LATTICE_INPUTS_FILENAME),
         ("result", res.assets.result, LATTICE_RESULTS_FILENAME),
         ("error", res.assets.error, LATTICE_ERROR_FILENAME),
     ]:

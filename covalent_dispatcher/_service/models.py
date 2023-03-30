@@ -77,6 +77,8 @@ class LatticeAssetKey(str, Enum):
     deps = "deps"
     call_before = "call_before"
     call_after = "call_after"
+    cova_imports = "cova_imports"
+    lattice_imports = "lattice_imports"
 
 
 class ElectronAssetKey(str, Enum):

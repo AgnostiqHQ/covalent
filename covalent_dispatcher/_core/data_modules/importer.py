@@ -1,0 +1,76 @@
+# Copyright 2021 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
+"""
+Functionality for importing dispatch submissions
+"""
+
+import uuid
+from typing import Optional
+
+from covalent._shared_files.config import get_config
+from covalent._shared_files.schemas.result import ResultSchema
+from covalent_dispatcher._dal.importers.result import import_result
+from covalent_dispatcher._dal.result import Result as SRVResult
+
+from .utils import run_in_executor
+
+BASE_PATH = get_config("dispatcher.results_dir")
+
+
+# Domain: result
+def get_unique_id() -> str:
+    """
+    Get a unique ID.
+
+    Args:
+        None
+
+    Returns:
+        str: Unique ID
+    """
+
+    return str(uuid.uuid4())
+
+
+def _import_manifest(
+    res: ResultSchema,
+    parent_result_object: Optional[SRVResult] = None,
+    parent_electron_id: Optional[int] = None,
+) -> ResultSchema:
+    dispatch_id = get_unique_id()
+    res.metadata.dispatch_id = dispatch_id
+
+    if parent_result_object:
+        res.metadata.root_dispatch_id = parent_result_object.root_dispatch_id
+    else:
+        res.metadata.root_dispatch_id = dispatch_id
+
+    return import_result(res, BASE_PATH, parent_electron_id)
+
+
+async def import_manifest(
+    manifest: ResultSchema,
+    parent_result_object: Optional[SRVResult] = None,
+    parent_electron_id: Optional[int] = None,
+) -> ResultSchema:
+    return await run_in_executor(
+        _import_manifest, manifest, parent_result_object, parent_electron_id
+    )

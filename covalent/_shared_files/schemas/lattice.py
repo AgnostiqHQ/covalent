@@ -76,8 +76,6 @@ class LatticeAssets(BaseModel):
     cova_imports: AssetSchema
     lattice_imports: AssetSchema
 
-    inputs: AssetSchema
-
     # lattice.metadata
     deps: AssetSchema
     call_before: AssetSchema

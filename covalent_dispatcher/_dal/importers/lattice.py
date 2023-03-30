@@ -102,7 +102,6 @@ def import_lattice_assets(
         ("named_kwargs", lat.assets.named_kwargs, LATTICE_NAMED_KWARGS_FILENAME),
         ("cova_imports", lat.assets.cova_imports, LATTICE_COVA_IMPORTS_FILENAME),
         ("lattice_imports", lat.assets.lattice_imports, LATTICE_LATTICE_IMPORTS_FILENAME),
-        ("inputs", lat.assets.inputs, LATTICE_INPUTS_FILENAME),
         ("deps", lat.assets.deps, LATTICE_DEPS_FILENAME),
         ("call_before", lat.assets.call_before, LATTICE_CALL_BEFORE_FILENAME),
         ("call_after", lat.assets.call_after, LATTICE_CALL_AFTER_FILENAME),

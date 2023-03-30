@@ -55,6 +55,7 @@ class ResultMetadata(BaseModel):
 
 
 class ResultAssets(BaseModel):
+    inputs: AssetSchema
     result: AssetSchema
     error: AssetSchema
 

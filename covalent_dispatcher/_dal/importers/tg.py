@@ -102,8 +102,8 @@ def _import_edge(
     param_type = edge.metadata.param_type
     arg_index = edge.metadata.arg_index
     insert_kwargs = {
-        "electron_id": source_electron.id,
-        "parent_electron_id": target_electron.id,
+        "electron_id": target_electron.id,
+        "parent_electron_id": source_electron.id,
         "edge_name": edge_name,
         "parameter_type": param_type,
         "arg_index": arg_index,

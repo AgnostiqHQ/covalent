@@ -28,7 +28,6 @@ from .._shared_files.schemas.lattice import (
     LATTICE_DOCSTRING_FILENAME,
     LATTICE_FUNCTION_FILENAME,
     LATTICE_FUNCTION_STRING_FILENAME,
-    LATTICE_INPUTS_FILENAME,
     LATTICE_LATTICE_IMPORTS_FILENAME,
     LATTICE_NAMED_ARGS_FILENAME,
     LATTICE_NAMED_KWARGS_FILENAME,
@@ -125,13 +124,6 @@ def _serialize_lattice_assets(lat, storage_path: str) -> LatticeAssets:
         lat.metadata["call_after"], AssetType.OBJECT, storage_path, LATTICE_CALL_AFTER_FILENAME
     )
 
-    # NOTE: We can avoid pickling here since the UI actually consumes only the string representation
-    inputs = {}
-    inputs["args"] = lat.args if lat.args else []
-    inputs["kwargs"] = lat.kwargs if lat.kwargs else {}
-
-    inputs_asset = save_asset(inputs, AssetType.OBJECT, storage_path, LATTICE_INPUTS_FILENAME)
-
     return LatticeAssets(
         workflow_function=workflow_func_asset,
         workflow_function_string=workflow_func_str_asset,
@@ -140,7 +132,6 @@ def _serialize_lattice_assets(lat, storage_path: str) -> LatticeAssets:
         named_kwargs=named_kwargs_asset,
         cova_imports=cova_imports_asset,
         lattice_imports=lattice_imports_asset,
-        inputs=inputs_asset,
         deps=deps_asset,
         call_before=call_before_asset,
         call_after=call_after_asset,

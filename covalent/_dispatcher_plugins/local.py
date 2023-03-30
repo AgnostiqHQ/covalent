@@ -427,7 +427,7 @@ class LocalDispatcher(BaseDispatcher):
         return serialize_result(result_object, storage_path)
 
     @staticmethod
-    def register(manifest: ResultSchema, dispatcher_addr: Optional[str] = None) -> ResultSchema:
+    def register(manifest: ResultSchema, dispatcher_addr: Optional[str] = None) -> dict:
         if dispatcher_addr is None:
             dispatcher_addr = (
                 get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
@@ -438,4 +438,51 @@ class LocalDispatcher(BaseDispatcher):
         r = requests.post(test_url, data=manifest.json())
         r.raise_for_status()
 
-        return ResultSchema.parse_obj(r.json())
+        return r.json()
+
+    @staticmethod
+    def extract_assets(manifest: dict):
+        assets = []
+
+        # workflow-level assets
+        dispatch_assets = manifest["assets"]
+        for key, asset in dispatch_assets.items():
+            assets.append(asset)
+
+        lattice = manifest["lattice"]
+        lattice_assets = lattice["assets"]
+        for key, asset in lattice_assets.items():
+            assets.append(asset)
+
+        # Node assets
+        tg = lattice["transport_graph"]
+
+        nodes = tg["nodes"]
+        for node in nodes:
+            node_assets = node["assets"]
+            for key, asset in node_assets.items():
+                assets.append(asset)
+        return assets
+
+    @staticmethod
+    def upload(assets: list):
+        total = len(assets)
+        for i, asset in enumerate(assets):
+            local_uri = asset["uri"]
+            remote_uri = asset["remote_uri"]
+            _upload_asset(local_uri, remote_uri)
+            print(f"Uploaded {i+1} out of {total} assets")
+
+
+def _upload_asset(local_uri, remote_uri):
+    scheme_prefix = "file://"
+    if local_uri.startswith(scheme_prefix):
+        local_path = local_uri[len(scheme_prefix) :]
+    else:
+        local_path = local_uri
+
+    with open(local_path, "rb") as f:
+        files = {"asset_file": f}
+        print("Uploading to ", remote_uri)
+        r = requests.post(remote_uri, files=files)
+        r.raise_for_status()
