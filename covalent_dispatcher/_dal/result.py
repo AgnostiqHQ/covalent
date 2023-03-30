@@ -20,6 +20,8 @@
 
 """DB-backed lattice"""
 
+from __future__ import annotations
+
 import os
 from datetime import datetime
 from typing import Any, List
@@ -312,6 +314,37 @@ class Result(DispatchedObject):
             all_node_outputs[f"{node_name}({node_id})"] = node_output
         return all_node_outputs
 
+    @classmethod
+    def from_dispatch_id(
+        cls,
+        dispatch_id: str,
+        bare: bool,
+        *,
+        keys: list = RESULT_KEYS,
+        lattice_keys: list = LATTICE_KEYS,
+        electron_keys: list = ELECTRON_KEYS,
+    ) -> Result:
+        with Result.session() as session:
+            records = Result.get_db_records(
+                session,
+                keys=keys + lattice_keys,
+                equality_filters={"dispatch_id": dispatch_id},
+                membership_filters={},
+            )
+            if not records:
+                raise KeyError(f"Dispatch {dispatch_id} not found")
+
+            record = records[0]
+
+            return Result(
+                session,
+                record,
+                bare,
+                keys=keys,
+                lattice_keys=lattice_keys,
+                electron_keys=electron_keys,
+            )
+
 
 def _copy_asset(src: Asset, dest: Asset):
     scheme = dest.storage_type.value
@@ -327,23 +360,10 @@ def get_result_object(
     lattice_keys: list = LATTICE_KEYS,
     electron_keys: list = ELECTRON_KEYS,
 ) -> Result:
-    with Result.session() as session:
-        records = Result.get_db_records(
-            session,
-            keys=keys + lattice_keys,
-            equality_filters={"dispatch_id": dispatch_id},
-            membership_filters={},
-        )
-        if not records:
-            raise KeyError(f"Dispatch {dispatch_id} not found")
-
-        record = records[0]
-
-        return Result(
-            session,
-            record,
-            bare,
-            keys=keys,
-            lattice_keys=lattice_keys,
-            electron_keys=electron_keys,
-        )
+    return Result.from_dispatch_id(
+        dispatch_id,
+        bare,
+        keys=keys,
+        lattice_keys=lattice_keys,
+        electron_keys=electron_keys,
+    )
