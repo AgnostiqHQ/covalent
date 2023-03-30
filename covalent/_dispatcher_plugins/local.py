@@ -93,7 +93,6 @@ class LocalDispatcher(BaseDispatcher):
         dispatcher_addr: str = None,
         *,
         disable_run: bool = False,
-        multistage: bool = False,
     ) -> Callable:
         """
         Wrapping the dispatching functionality to allow input passing
@@ -109,6 +108,8 @@ class LocalDispatcher(BaseDispatcher):
         Returns:
             Wrapper function which takes the inputs of the workflow as arguments
         """
+
+        multistage = get_config("sdk.multistage_dispatch") == "true"
 
         # Extract triggers here
         triggers_data = orig_lattice.metadata.pop("triggers")

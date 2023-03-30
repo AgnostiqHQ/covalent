@@ -69,6 +69,7 @@ def get_default_sdk_config():
             (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
             + "/covalent/dispatches"
         ),
+        "multistage_dispatch": "false",
     }
 
 
