@@ -22,6 +22,7 @@
 Functionality for importing dispatch submissions
 """
 
+import asyncio
 import uuid
 from typing import Optional
 
@@ -66,11 +67,30 @@ def _import_manifest(
     return import_result(res, BASE_PATH, parent_electron_id)
 
 
+async def _pull_assets(manifest: ResultSchema) -> None:
+    dispatch_id = manifest.metadata.dispatch_id
+    result_object = SRVResult.from_dispatch_id(dispatch_id, bare=True)
+    assets = result_object.get_all_assets()
+    futs = []
+    for asset in assets["lattice"]:
+        if asset.remote_uri:
+            futs.append(run_in_executor(asset.download, asset.remote_uri))
+
+    for asset in assets["nodes"]:
+        if asset.remote_uri:
+            futs.append(run_in_executor(asset.download, asset.remote_uri))
+
+    await asyncio.gather(*futs)
+
+
 async def import_manifest(
     manifest: ResultSchema,
     parent_result_object: Optional[SRVResult] = None,
     parent_electron_id: Optional[int] = None,
 ) -> ResultSchema:
-    return await run_in_executor(
+    filtered_manifest = await run_in_executor(
         _import_manifest, manifest, parent_result_object, parent_electron_id
     )
+    await _pull_assets(filtered_manifest)
+
+    return filtered_manifest

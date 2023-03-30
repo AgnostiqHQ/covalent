@@ -87,3 +87,89 @@ def deserialize_result(res: ResultSchema) -> Result:
     attrs.update(assets)
     result_object.__dict__.update(attrs)
     return result_object
+
+
+# Functions to preprocess manifest for submission
+
+
+def strip_local_uris(res: ResultSchema) -> ResultSchema:
+    # Create a copy with the local uris removed for submission
+    manifest = res.copy(deep=True).dict()
+
+    # Strip workflow asset uris:
+    dispatch_assets = manifest["assets"]
+    for _, asset in dispatch_assets.items():
+        asset["uri"] = ""
+
+    lattice = manifest["lattice"]
+    lattice_assets = lattice["assets"]
+    for _, asset in lattice_assets.items():
+        asset["uri"] = ""
+
+    # Node assets
+    tg = lattice["transport_graph"]
+
+    nodes = tg["nodes"]
+    for node in nodes:
+        node_assets = node["assets"]
+        for _, asset in node_assets.items():
+            asset["uri"] = ""
+
+    return ResultSchema.parse_obj(manifest)
+
+
+# Functions to postprocess response
+
+
+def merge_response_manifest(res: ResultSchema, response: ResultSchema) -> ResultSchema:
+    res.metadata.dispatch_id = response.metadata.dispatch_id
+    res.metadata.root_dispatch_id = response.metadata.root_dispatch_id
+
+    # Strip workflow asset uris:
+    dispatch_assets = response.assets
+    for key, asset in res.assets:
+        remote_asset = getattr(dispatch_assets, key)
+        asset.remote_uri = remote_asset.remote_uri
+
+    lattice = response.lattice
+    lattice_assets = lattice.assets
+    for key, asset in res.lattice.assets:
+        remote_asset = getattr(lattice_assets, key)
+        asset.remote_uri = remote_asset.remote_uri
+
+    # Node assets
+    tg = lattice.transport_graph
+
+    nodes = res.lattice.transport_graph.nodes
+
+    for i, node in enumerate(nodes):
+        returned_node = tg.nodes[i]
+        returned_node_assets = returned_node.assets
+        for key, asset in node.assets:
+            remote_asset = getattr(returned_node_assets, key)
+            asset.remote_uri = remote_asset.remote_uri
+    return res
+
+
+def extract_assets(manifest: dict) -> list:
+    assets = []
+
+    # workflow-level assets
+    dispatch_assets = manifest["assets"]
+    for key, asset in dispatch_assets.items():
+        assets.append(asset)
+
+    lattice = manifest["lattice"]
+    lattice_assets = lattice["assets"]
+    for key, asset in lattice_assets.items():
+        assets.append(asset)
+
+    # Node assets
+    tg = lattice["transport_graph"]
+
+    nodes = tg["nodes"]
+    for node in nodes:
+        node_assets = node["assets"]
+        for key, asset in node_assets.items():
+            assets.append(asset)
+    return assets

@@ -115,6 +115,7 @@ def import_result_assets(
         local_uri = os.path.join(storage_path, object_key)
 
         # Send this back to the client
+        asset.digest = ""
         asset.remote_uri = local_uri
 
         asset_kwargs = {

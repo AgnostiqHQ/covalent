@@ -18,8 +18,10 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import tempfile
 from copy import deepcopy
 from functools import wraps
+from pathlib import Path
 from typing import Callable, Dict, List, Optional, Union
 
 import requests
@@ -27,9 +29,10 @@ import requests
 from .._results_manager import wait
 from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
-from .._serialize.result import serialize_result
+from .._serialize.result import merge_response_manifest, serialize_result, strip_local_uris
 from .._shared_files import logger
 from .._shared_files.config import get_config
+from .._shared_files.schemas.asset import AssetSchema
 from .._shared_files.schemas.result import ResultSchema
 from .._workflow.lattice import Lattice
 from ..triggers import BaseTrigger
@@ -37,6 +40,9 @@ from .base import BaseDispatcher
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+dispatch_cache_dir = Path(get_config("sdk.dispatch_cache_dir"))
+dispatch_cache_dir.mkdir(parents=True, exist_ok=True)
 
 
 def get_redispatch_request_body(
@@ -83,7 +89,11 @@ class LocalDispatcher(BaseDispatcher):
 
     @staticmethod
     def dispatch(
-        orig_lattice: Lattice, dispatcher_addr: str = None, *, disable_run: bool = False
+        orig_lattice: Lattice,
+        dispatcher_addr: str = None,
+        *,
+        disable_run: bool = False,
+        multistage: bool = False,
     ) -> Callable:
         """
         Wrapping the dispatching functionality to allow input passing
@@ -121,7 +131,14 @@ class LocalDispatcher(BaseDispatcher):
                 The dispatch id of the workflow.
             """
 
-            dispatch_id = LocalDispatcher.submit(orig_lattice, dispatcher_addr)(*args, **kwargs)
+            if multistage:
+                dispatch_id = LocalDispatcher.register(orig_lattice, dispatcher_addr)(
+                    *args, **kwargs
+                )
+            else:
+                dispatch_id = LocalDispatcher.submit(orig_lattice, dispatcher_addr)(
+                    *args, **kwargs
+                )
 
             if triggers_data:
                 LocalDispatcher.register_triggers(triggers_data, dispatch_id)
@@ -420,58 +437,139 @@ class LocalDispatcher(BaseDispatcher):
             app_log.debug(d_id)
 
     @staticmethod
-    def prepare(lattice, storage_path) -> ResultSchema:
+    def register(
+        orig_lattice: Lattice,
+        dispatcher_addr: str = None,
+    ) -> Callable:
+        """
+        Wrapping the dispatching functionality to allow input passing
+        and server address specification.
+
+        Afterwards, send the lattice to the dispatcher server and return
+        the assigned dispatch id.
+
+        Args:
+            orig_lattice: The lattice/workflow to send to the dispatcher server.
+            dispatcher_addr: The address of the dispatcher server.  If None then then defaults to the address set in Covalent's config.
+
+        Returns:
+            Wrapper function which takes the inputs of the workflow as arguments
+        """
+
+        if dispatcher_addr is None:
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
+
+        @wraps(orig_lattice)
+        def wrapper(*args, **kwargs) -> str:
+            """
+            Send the lattice to the dispatcher server and return
+            the assigned dispatch id.
+
+            Args:
+                *args: The inputs of the workflow.
+                **kwargs: The keyword arguments of the workflow.
+
+            Returns:
+                The dispatch id of the workflow.
+            """
+
+            lattice = deepcopy(orig_lattice)
+
+            lattice.build_graph(*args, **kwargs)
+
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                manifest = LocalDispatcher.prepare_manifest(lattice, tmp_dir)
+                LocalDispatcher.register_manifest(manifest, dispatcher_addr)
+
+                dispatch_id = manifest.metadata.dispatch_id
+
+                path = dispatch_cache_dir / f"{dispatch_id}"
+
+                with open(path, "w") as f:
+                    f.write(manifest.json())
+
+                LocalDispatcher.upload_assets(manifest)
+
+                return dispatch_id
+
+        return wrapper
+
+    @staticmethod
+    def prepare_manifest(lattice, storage_path) -> ResultSchema:
         """Prepare a built-out lattice for submission"""
 
         result_object = Result(lattice)
         return serialize_result(result_object, storage_path)
 
     @staticmethod
-    def register(manifest: ResultSchema, dispatcher_addr: Optional[str] = None) -> dict:
+    def register_manifest(
+        manifest: ResultSchema, dispatcher_addr: Optional[str] = None, push_assets: bool = True
+    ) -> ResultSchema:
+        """Submits a manifest for registration.
+
+        Returns:
+            Dictionary representation of manifest with asset remote_uris filled in
+
+        Side effect:
+            If push_assets is False, the server will
+            automatically pull the task assets from the submitted asset URIs.
+        """
+
         if dispatcher_addr is None:
             dispatcher_addr = (
                 get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
             )
 
+        if push_assets:
+            stripped = strip_local_uris(manifest)
+        else:
+            stripped = manifest
+
         test_url = f"http://{dispatcher_addr}/api/v1/dispatchv2/register"
 
-        r = requests.post(test_url, data=manifest.json())
+        r = requests.post(test_url, data=stripped.json())
         r.raise_for_status()
 
-        return r.json()
+        parsed_resp = ResultSchema.parse_obj(r.json())
+
+        return merge_response_manifest(manifest, parsed_resp)
 
     @staticmethod
-    def extract_assets(manifest: dict):
+    def upload_assets(manifest: ResultSchema):
+        assets = LocalDispatcher._extract_assets(manifest)
+        LocalDispatcher._upload(assets)
+
+    @staticmethod
+    def _extract_assets(manifest: ResultSchema) -> List[AssetSchema]:
         assets = []
 
         # workflow-level assets
-        dispatch_assets = manifest["assets"]
-        for key, asset in dispatch_assets.items():
+        dispatch_assets = manifest.assets
+        for key, asset in dispatch_assets:
             assets.append(asset)
 
-        lattice = manifest["lattice"]
-        lattice_assets = lattice["assets"]
-        for key, asset in lattice_assets.items():
+        lattice = manifest.lattice
+        lattice_assets = lattice.assets
+        for key, asset in lattice_assets:
             assets.append(asset)
 
         # Node assets
-        tg = lattice["transport_graph"]
-
-        nodes = tg["nodes"]
+        tg = lattice.transport_graph
+        nodes = tg.nodes
         for node in nodes:
-            node_assets = node["assets"]
-            for key, asset in node_assets.items():
+            node_assets = node.assets
+            for key, asset in node_assets:
                 assets.append(asset)
         return assets
 
     @staticmethod
-    def upload(assets: list):
+    def _upload(assets: List[AssetSchema]):
         total = len(assets)
         for i, asset in enumerate(assets):
-            local_uri = asset["uri"]
-            remote_uri = asset["remote_uri"]
-            _upload_asset(local_uri, remote_uri)
-            print(f"Uploaded {i+1} out of {total} assets")
+            _upload_asset(asset.uri, asset.remote_uri)
+            app_log.debug(f"uploaded {i+1} out of {total} assets.")
 
 
 def _upload_asset(local_uri, remote_uri):
@@ -483,6 +581,6 @@ def _upload_asset(local_uri, remote_uri):
 
     with open(local_path, "rb") as f:
         files = {"asset_file": f}
-        print("Uploading to ", remote_uri)
+        app_log.debug(f"uploading to {remote_uri}")
         r = requests.post(remote_uri, files=files)
         r.raise_for_status()
