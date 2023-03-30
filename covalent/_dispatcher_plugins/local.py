@@ -27,8 +27,10 @@ import requests
 from .._results_manager import wait
 from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
+from .._serialize.result import serialize_result
 from .._shared_files import logger
 from .._shared_files.config import get_config
+from .._shared_files.schemas.result import ResultSchema
 from .._workflow.lattice import Lattice
 from ..triggers import BaseTrigger
 from .base import BaseDispatcher
@@ -416,3 +418,10 @@ class LocalDispatcher(BaseDispatcher):
         app_log.debug("Triggers for following dispatch_ids have stopped observing:")
         for d_id in dispatch_ids:
             app_log.debug(d_id)
+
+    @staticmethod
+    def prepare(lattice, storage_path) -> ResultSchema:
+        """Prepare a built-out lattice for submission"""
+
+        result_object = Result(lattice)
+        return serialize_result(result_object, storage_path)
