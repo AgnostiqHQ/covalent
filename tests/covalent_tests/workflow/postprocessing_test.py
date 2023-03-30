@@ -82,7 +82,7 @@ def test_filter_electrons(postprocessor):
     tg = postprocessor.lattice.transport_graph
     mock_bound_electrons = {i: f"mock_electron_{i}" for i in range(12)}
     assert postprocessor._filter_electrons(tg, mock_bound_electrons) == [
-        f"mock_electron_{i}" for i in [0, 2, 4, 6, 8, 10]
+        f"mock_electron_{i}" for i in [0, 2, 4]
     ]
 
 
