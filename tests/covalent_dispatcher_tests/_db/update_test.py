@@ -151,7 +151,7 @@ def test_update_node(test_db, result_1, mocker):
             == "test_sublattice"
         )
 
-        assert lattice_record.electron_num == 11
+        assert lattice_record.electron_num == 6
         assert lattice_record.completed_electron_num == 0
         assert lattice_record.updated_at is not None
     update._node(
@@ -177,7 +177,7 @@ def test_update_node(test_db, result_1, mocker):
         )
         assert result == 5
 
-        assert lattice_record.electron_num == 11
+        assert lattice_record.electron_num == 6
         assert lattice_record.completed_electron_num == 1
         assert lattice_record.updated_at is not None
 
@@ -281,7 +281,7 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
                 assert executor_data["attributes"] == le.__dict__
 
         # Check that there are the appropriate amount of electron dependency records
-        assert len(electron_dependency_rows) == 12
+        assert len(electron_dependency_rows) == 6
 
         # Update some node / lattice statuses
         cur_time = dt.now(timezone.utc)
@@ -289,7 +289,7 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         result_1._status = "COMPLETED"
         result_1._result = ct.TransportableObject({"helo": 1, "world": 2})
 
-        for node_id in range(10):
+        for node_id in range(5):
             update._node(
                 result_1,
                 node_id=node_id,

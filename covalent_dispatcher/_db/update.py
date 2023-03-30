@@ -112,6 +112,7 @@ def _node(
     if node_name.startswith(postprocess_prefix):
         result._result = output
         result._status = status
+        result._end_time = end_time
         upsert.lattice_data(result)
 
 
