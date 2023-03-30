@@ -152,6 +152,7 @@ async def _get_initial_tasks_and_deps(result_object: Result) -> Tuple[int, int, 
 
 # Domain: dispatcher
 async def _submit_task(result_object, node_id):
+    app_log.info(f"SUBLATTICE: Submitted node {node_id}")
     # Get name of the node for the current task
     node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
     node_status = result_object.lattice.transport_graph.get_node_value(node_id, "status")
@@ -228,7 +229,9 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
     Returns:
         None
     """
-
+    app_log.info(
+        f"SUBLATTICE: Inside run planned workflow with dispatch id {result_object.dispatch_id}"
+    )
     app_log.debug("3: Inside run_planned_workflow (run_planned_workflow).")
     result_object._status = RESULT_STATUS.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
@@ -258,8 +261,6 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
         if node_status == RESULT_STATUS.RUNNING:
             continue
 
-        unresolved_tasks -= 1
-
         # Note: A node status can only be 'DISPATCHING' if it is a sublattice
         if node_status == RESULT_STATUS.DISPATCHING:
             # TODO - Retrieve detail
@@ -269,6 +270,8 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
             app_log.debug(f"Running sublattice dispatch {sub_dispatch_id}")
 
             return
+
+        unresolved_tasks -= 1
 
         if node_status == RESULT_STATUS.COMPLETED:
             tasks_left -= 1
@@ -409,4 +412,5 @@ def run_dispatch(dispatch_id: str) -> asyncio.Future:
         asyncio.Future
     """
     result_object = datasvc.get_result_object(dispatch_id)
+    app_log.info(f"SUBLATTICE: Running dispatch id: {dispatch_id}")
     return asyncio.create_task(run_workflow(result_object))
