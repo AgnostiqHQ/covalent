@@ -29,6 +29,6 @@ from concurrent.futures import ThreadPoolExecutor
 dm_pool = ThreadPoolExecutor()
 
 
-async def run_in_executor(func, *args):
+def run_in_executor(func, *args) -> asyncio.Future:
     loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(dm_pool, func, *args)
+    return loop.run_in_executor(dm_pool, func, *args)
