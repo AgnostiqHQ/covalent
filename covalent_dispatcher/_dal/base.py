@@ -24,7 +24,8 @@ from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from typing import Any, Dict, Generator, List, Tuple, Union
 
-from sqlalchemy.orm import Session
+from sqlalchemy import select
+from sqlalchemy.orm import Session, load_only
 
 from .._db.datastore import workflow_db
 from . import controller
@@ -184,3 +185,20 @@ class DispatchedObject(ABC):
             equality_filters=eq_filters_transformed,
             membership_filters=member_filters_transformed,
         )
+
+    @classmethod
+    def get_linked_assets(
+        cls, session, *, fields: list, equality_filters: dict, membership_filters: dict
+    ) -> List[Asset]:
+        stmt = select(Asset.model).join(cls.asset_link_type.model).join(cls.meta_type.model)
+
+        for attr, val in equality_filters.items():
+            stmt = stmt.where(getattr(cls.meta_type.model, attr) == val)
+        for attr, vals in membership_filters.items():
+            stmt = stmt.where(getattr(cls.meta_type.model, attr).in_(vals))
+        if len(fields) > 0:
+            stmt = stmt.options(load_only(*fields))
+
+        asset_rows = session.scalars(stmt)
+
+        return [Asset(session, row) for row in asset_rows]

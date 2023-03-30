@@ -378,3 +378,29 @@ def test_get_all_node_outputs(test_db, mocker):
     for i, item in enumerate(node_outputs.items()):
         key, val = item
         assert expected_outputs[i] == val
+
+
+def test_get_linked_assets(test_db, mocker):
+    res = get_mock_result()
+    res._initialize_nodes()
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+
+    update.persist(res)
+
+    with test_db.session() as session:
+        record = (
+            session.query(models.Lattice)
+            .where(models.Lattice.dispatch_id == "mock_dispatch")
+            .first()
+        )
+
+        srvres = Result(session, record)
+
+        assets = srvres.get_linked_assets(
+            session, fields=[], equality_filters={"id": srvres._id}, membership_filters={}
+        )
+
+    assert len(assets) == len(ASSET_KEYS) + len(LATTICE_ASSET_KEYS)
