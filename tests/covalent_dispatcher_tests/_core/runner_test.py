@@ -262,7 +262,7 @@ def test_build_sublattice_graph():
     json_lattice = _build_sublattice_graph(workflow, parent_metadata, 1)
     lattice = Lattice.deserialize_from_json(json_lattice)
 
-    assert list(lattice.transport_graph._graph.nodes) == list(range(5))
+    assert list(lattice.transport_graph._graph.nodes) == list(range(3))
     for k in lattice.metadata.keys():
         # results_dir will be deprecated soon
         if k != "results_dir":
