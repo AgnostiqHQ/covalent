@@ -161,7 +161,7 @@ def test_injected_inputs_are_not_in_tg():
     g = workflow.transport_graph._graph
 
     assert list(g.nodes) == list(range(3))
-    assert list(g.edges) == [(0, 4, 0), (1, 0, 0), (2, 4, 0), (3, 2, 0)]
+    assert list(g.edges) == [(0, 2, 0), (1, 0, 0)]
 
 
 def test_metadata_in_electron_list():
@@ -239,16 +239,7 @@ def test_autogen_list_electrons():
 
     assert g.nodes[2]["value"].get_deserialized() == 5
     assert g.nodes[3]["value"].get_deserialized() == 7
-    assert set(g.edges) == {
-        (0, 8, 0),
-        (1, 0, 0),
-        (2, 1, 0),
-        (3, 1, 0),
-        (4, 8, 0),
-        (5, 4, 0),
-        (6, 5, 0),
-        (7, 5, 0),
-    }
+    assert set(g.edges) == {(1, 0, 0), (3, 1, 0), (2, 1, 0), (0, 4, 0)}
 
 
 def test_autogen_dict_electrons():
@@ -269,16 +260,7 @@ def test_autogen_dict_electrons():
     assert fn(x=2, y=5, z=7) == {"x": 2, "y": 5, "z": 7}
     assert g.nodes[2]["value"].get_deserialized() == 5
     assert g.nodes[3]["value"].get_deserialized() == 7
-    assert set(g.edges) == {
-        (0, 8, 0),
-        (1, 0, 0),
-        (2, 1, 0),
-        (3, 1, 0),
-        (4, 8, 0),
-        (5, 4, 0),
-        (6, 5, 0),
-        (7, 5, 0),
-    }
+    assert set(g.edges) == {(1, 0, 0), (3, 1, 0), (2, 1, 0), (0, 4, 0)}
 
 
 def test_as_transportable_dict(mocker):
