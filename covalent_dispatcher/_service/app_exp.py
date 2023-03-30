@@ -308,6 +308,58 @@ async def upload_node_asset_exp(dispatch_id: str, node_id: int, key: str, asset_
     return f"Uploaded file to {path}"
 
 
+@router.post("/resultv2/{dispatch_id}/assets/dispatch/{key}")
+async def upload_dispatch_asset_exp(
+    dispatch_id: str, key: DispatchAssetKey, asset_file: UploadFile
+):
+    with workflow_db.session() as session:
+        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+        status = lattice_record.status if lattice_record else None
+        if not lattice_record:
+            return JSONResponse(
+                status_code=404,
+                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+            )
+
+    try:
+        path = get_dispatch_asset_uri(dispatch_id, key.value)
+    except:
+        return JSONResponse(
+            status_code=404,
+            content={"message": f"Error retrieving metadata for asset {key}."},
+        )
+
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(None, _copy_file_obj, asset_file.file, path)
+
+    return f"Uploaded file to {path}"
+
+
+@router.post("/resultv2/{dispatch_id}/assets/lattice/{key}")
+async def upload_lattice_asset_exp(dispatch_id: str, key: LatticeAssetKey, asset_file: UploadFile):
+    with workflow_db.session() as session:
+        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+        status = lattice_record.status if lattice_record else None
+        if not lattice_record:
+            return JSONResponse(
+                status_code=404,
+                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+            )
+
+    try:
+        path = get_lattice_asset_uri(dispatch_id, key.value)
+    except:
+        return JSONResponse(
+            status_code=404,
+            content={"message": f"Error retrieving metadata for asset {key}."},
+        )
+
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(None, _copy_file_obj, asset_file.file, path)
+
+    return f"Uploaded file to {path}"
+
+
 def _copy_file_obj(src_fileobj, dest_path):
     with open(dest_path, "wb") as dest_fileobj:
         shutil.copyfileobj(src_fileobj, dest_fileobj)

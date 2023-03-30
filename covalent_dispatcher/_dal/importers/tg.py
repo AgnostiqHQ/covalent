@@ -76,7 +76,7 @@ def import_transport_graph(
         for node in node_group:
             node_storage_path = os.path.join(storage_path, f"node_{node.id}")
             os.makedirs(node_storage_path)
-            node_data_uri_prefix = data_uri_prefix + f"{node.id}"
+            node_data_uri_prefix = data_uri_prefix + f"/{node.id}"
             e_record, node = import_electron(
                 session,
                 node,
