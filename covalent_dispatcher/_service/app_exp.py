@@ -31,6 +31,7 @@ from fastapi.responses import JSONResponse, StreamingResponse
 import covalent_dispatcher.entry_point as dispatcher
 from covalent._results_manager.result import Result
 from covalent._shared_files import logger
+from covalent._shared_files.schemas.result import ResultSchema
 
 from .._dal.export import (
     export_serialized_result,
@@ -76,6 +77,11 @@ async def submitv0(request: Request) -> UUID:
             status_code=400,
             detail=f"Failed to submit workflow: {e}",
         ) from e
+
+
+@router.post("/dispatchv2/register")
+async def register(manifest: ResultSchema) -> ResultSchema:
+    return await dispatcher.register_dispatch(manifest)
 
 
 @router.post("/dispatchv2/resubmit")

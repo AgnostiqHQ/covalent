@@ -133,7 +133,7 @@ def import_electron_assets(
         local_uri = os.path.join(node_storage_path, object_key)
 
         # Send this back to the client
-        asset.remote_uri = data_uri_prefix + f"/{object_key}"
+        asset.remote_uri = data_uri_prefix + f"/{asset_key}"
 
         asset_kwargs = {
             "storage_type": StorageType.LOCAL.value,

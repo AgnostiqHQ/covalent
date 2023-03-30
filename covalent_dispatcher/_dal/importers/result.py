@@ -124,7 +124,7 @@ def import_result_assets(
             "remote_uri": asset.uri,
         }
         asset_ids[asset_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
-        asset.remote_uri = data_uri_prefix + f"/{object_key}"
+        asset.remote_uri = data_uri_prefix + f"/{asset_key}"
 
     session.flush()
 
