@@ -24,8 +24,9 @@ from __future__ import annotations
 import contextlib
 import os
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Dict, List, Optional, Union
 
+import cloudpickle as pickle
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
@@ -43,7 +44,7 @@ from .._shared_files.config import get_config
 from .._shared_files.exceptions import MissingLatticeRecordError
 from .._shared_files.schemas.asset import AssetSchema
 from .._shared_files.schemas.result import ResultSchema
-from .result import Result
+from .result import Result, import_result_object
 from .wait import EXTREME
 
 app_log = logger.app_log
@@ -189,14 +190,11 @@ def cancel(dispatch_id: str, task_ids: List[int] = None, dispatcher_addr: str = 
 def get_result(
     dispatch_id: str,
     wait: bool = False,
-    status_only: bool = False,
-    dispatcher_addr: str = None,
-    *,
     workflow_output: bool = True,
     intermediate_outputs: bool = True,
     sublattice_results: bool = True,
-    results_dir: Optional[str] = None,
-    save_manifest: bool = True,
+    dispatcher_addr: str = None,
+    status_only: bool = False,
 ) -> Result:
     """
     Get the results of a dispatch from a file.
@@ -211,76 +209,194 @@ def get_result(
     """
 
     try:
+        result = _get_result_v2_from_dispatcher(
+            dispatch_id=dispatch_id,
+            wait=wait,
+            status_only=status_only,
+            dispatcher_addr=dispatcher_addr,
+        )
+
         if status_only:
-            result = _get_result_export_from_dispatcher(
-                dispatch_id,
-                wait=wait,
-                status_only=status_only,
-                dispatcher_addr=dispatcher_addr,
-            )
             return result
 
-        else:
-            if results_dir is None:
-                result_dir = str(Path(get_config("sdk.results_dir")) / f"{dispatch_id}")
-            else:
-                result_dir = results_dir
-
-            rm = ResultManager.from_dispatch_id(
-                dispatch_id,
-                result_dir,
-                wait=wait,
-                dispatcher_addr=dispatcher_addr,
-            )
-            # Save manifest to result_dir
-            if save_manifest:
-                rm.save()
-
-            _get_default_assets(rm)
-
-            # Hack
-            result_object = rm.result_object
-            result_object.lattice.__doc__ = result_object.lattice.doc
-            del rm.result_object.lattice.__dict__["doc"]
-            tg = result_object.lattice.transport_graph
-            tg.lattice_metadata = result_object.lattice.metadata
+        result_export = result["result_export"]
+        result_object = import_result_object(result_export)
 
         if workflow_output:
-            rm.download_result_asset("result")
-            rm.load_result_asset("result")
-
-        tg = rm.result_object.lattice.transport_graph
+            _download_workflow_output(result_object, dispatcher_addr)
 
         if intermediate_outputs:
-            for node_id in tg._graph.nodes:
-                rm.download_node_asset(node_id, "output")
-                rm.load_node_asset(node_id, "output")
+            _download_intermediate_outputs(result_object, dispatcher_addr)
 
         # Fetch sublattice result objects recursively
+        tg = result_object.lattice.transport_graph
         for node_id in tg._graph.nodes:
             sub_dispatch_id = tg.get_node_value(node_id, "sub_dispatch_id")
             if sublattice_results and sub_dispatch_id:
                 sub_result = get_result(
                     sub_dispatch_id,
                     wait,
-                    status_only,
-                    workflow_output=workflow_output,
-                    intermediate_outputs=intermediate_outputs,
-                    sublattice_results=sublattice_results,
-                    dispatcher_addr=dispatcher_addr,
-                    save_manifest=save_manifest,
+                    workflow_output,
+                    intermediate_outputs,
+                    sublattice_results,
+                    dispatcher_addr,
                 )
                 tg.set_node_value(node_id, "sublattice_result", sub_result)
             else:
                 tg.set_node_value(node_id, "sublattice_result", None)
 
-        return rm.result_object
-
     except MissingLatticeRecordError as ex:
         app_log.warning(
             f"Dispatch ID {dispatch_id} was not found in the database. Incorrect dispatch id."
         )
+
         raise ex
+
+    return result_object
+
+
+def _get_result_v2_from_dispatcher(
+    dispatch_id: str,
+    wait: bool = False,
+    status_only: bool = False,
+    dispatcher_addr: str = None,
+) -> Dict:
+    """
+    Internal function to get the results of a dispatch from the server without checking if it is ready to read.
+
+    Args:
+        dispatch_id: The dispatch id of the result.
+        wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
+        status_only: If true, only returns result status, not the full result object, default is False.
+        dispatcher_addr: Dispatcher server address, defaults to the address set in covalent.config.
+
+    Returns:
+        The result object from the server.
+
+    Raises:
+        MissingLatticeRecordError: If the result is not found.
+    """
+
+    if dispatcher_addr is None:
+        dispatcher_addr = (
+            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+        )
+
+    retries = int(EXTREME) if wait else 5
+
+    adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
+    http = requests.Session()
+    http.mount("http://", adapter)
+    url = "http://" + dispatcher_addr + "/api/v1/resultv2/" + dispatch_id
+    response = http.get(
+        url,
+        params={"wait": bool(int(wait)), "status_only": status_only},
+    )
+    if response.status_code == 404:
+        raise MissingLatticeRecordError
+    response.raise_for_status()
+    result = response.json()
+    return result
+
+
+def get_node_output(
+    dispatch_id: str,
+    node_id: int,
+    dispatcher_addr: str = None,
+) -> Dict:
+    return _get_node_output_from_dispatcher(
+        dispatch_id,
+        node_id,
+        dispatcher_addr,
+    )
+
+
+def get_workflow_output(
+    dispatch_id: str,
+    dispatcher_addr: str = None,
+) -> Dict:
+    return _get_dispatch_result_from_dispatcher(
+        dispatch_id,
+        dispatcher_addr,
+    )
+
+
+def _get_node_output_from_dispatcher(
+    dispatch_id: str,
+    node_id: int,
+    dispatcher_addr: str = None,
+) -> Dict:
+    """
+    Internal function to get the results of a dispatch from the server without checking if it is ready to read.
+
+    Args:
+        dispatch_id: The dispatch id of the result.
+        wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
+        status_only: If true, only returns result status, not the full result object, default is False.
+        dispatcher: Dispatcher server address, defaults to the address set in covalent.config.
+
+    Returns:
+        The result object from the server.
+
+    Raises:
+        MissingLatticeRecordError: If the result is not found.
+    """
+
+    if dispatcher_addr is None:
+        dispatcher_addr = (
+            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+        )
+
+    url = f"http://{dispatcher_addr}/api/v1/resultv2/{dispatch_id}/assets/node/{node_id}/output"
+
+    response = requests.get(url, stream=True)
+
+    if response.status_code == 404:
+        raise MissingLatticeRecordError
+    response.raise_for_status()
+
+    return pickle.loads(response.content)
+
+
+def _download_intermediate_outputs(result_object: Result, dispatcher_addr: str):
+    tg = result_object.lattice.transport_graph
+    for node_id in tg._graph.nodes:
+        output = _get_node_output_from_dispatcher(
+            result_object.dispatch_id, node_id, dispatcher_addr
+        )
+        tg.set_node_value(node_id, "output", output)
+    return result_object
+
+
+def _get_dispatch_result_from_dispatcher(
+    dispatch_id: str,
+    dispatcher_addr: str = None,
+) -> Dict:
+    if dispatcher_addr is None:
+        dispatcher_addr = (
+            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+        )
+
+    url = f"http://{dispatcher_addr}/api/v1/resultv2/{dispatch_id}/assets/dispatch/result"
+
+    response = requests.get(url, stream=True)
+
+    if response.status_code == 404:
+        raise MissingLatticeRecordError
+    response.raise_for_status()
+
+    return pickle.loads(response.content)
+
+
+def _download_workflow_output(result_object: Result, dispatcher_addr: str):
+    result_object._result = _get_dispatch_result_from_dispatcher(
+        result_object.dispatch_id,
+        dispatcher_addr,
+    )
+    return result_object
+
+
+# Multi-part
 
 
 def _get_result_export_from_dispatcher(
