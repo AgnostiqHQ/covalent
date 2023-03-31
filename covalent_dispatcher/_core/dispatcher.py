@@ -41,6 +41,16 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
+"""
+Dispatcher module is responsible for planning and dispatching workflows. The dispatcher
+
+1. Submits tasks to the Runner module.
+2. Retrieves information using the Data Manager module.
+3. Handles the tasks in terminal (COMPLETED, FAILED, CANCELLED) states.
+4. Handles sublattice dispatches once the corresponding graph has been built in the Runner module.
+"""
+
+
 # Domain: dispatcher
 def _get_abstract_task_inputs(node_id: int, node_name: str, result_object: Result) -> dict:
     """Return placeholders for the required inputs for a task execution.

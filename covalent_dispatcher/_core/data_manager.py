@@ -156,8 +156,8 @@ def get_unique_id() -> str:
 
     Returns:
         str: Unique ID
-    """
 
+    """
     return str(uuid.uuid4())
 
 
@@ -169,6 +169,11 @@ def make_dispatch(
     )
     _register_result_object(result_object)
     return result_object.dispatch_id
+
+
+def make_sublattice_dispatch(result_object, node_result):
+    """Dummy function for now."""
+    return "mock_sublattice_dispatch_id"
 
 
 def _get_result_object_from_new_lattice(

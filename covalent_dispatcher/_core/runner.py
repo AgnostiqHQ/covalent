@@ -33,6 +33,7 @@ from typing import Any, Dict, List, Literal, Tuple, Union
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
+from covalent._shared_files.defaults import sublattice_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent.executor import _executor_manager
@@ -102,6 +103,18 @@ def _get_task_input_values(result_object: Result, abs_task_inputs: dict) -> dict
     return node_values
 
 
+async def _prepare_sublattice_dispatch(dispatch_id, node_result) -> None:
+    node_result["status"] = RESULT_STATUS.DISPATCHING
+    result_object = datasvc.get_result_object(dispatch_id)
+    sub_dispatch_id = datasvc.make_sublattice_dispatch(result_object, node_result)
+    node_result["sub_dispatch_id"] = sub_dispatch_id
+
+    app_log.debug(f"Node result for sublattice after build graph: {node_result}")
+
+    # TODO - Ensure that sublattice dispatch id is stored accordingly
+    # Work in sublattice dispatch id into node_result
+
+
 # Domain: runner
 async def run_abstract_task(
     dispatch_id: str,
@@ -118,24 +131,13 @@ async def run_abstract_task(
         executor=executor,
     )
 
-    app_log.warning(f"SUBLATTICE - Node name: {node_name}")
-
-    # # TODO - Get node_type
-    # # TODO - Check if the node is a sublattice build graph and if it is completed, change the status of the node to dispatching.
-    # if (
-    #     node_result["status"] == Result.COMPLETED
-    #     and node_result["type"] == "sublattice"
-    #     and not node_result["sub_dispatch_id"]
-    # ):
-    #     node_result["status"] = RESULT_STATUS.DISPATCHING
-
-    # # TODO - We also need to make a result object and sublattice dispatch id. These need to be registered with the data service.
-    # if node_result["status"] == RESULT_STATUS.DISPATCHING:
-    #     result_object = datasvc.get_result_object(node_result["dispatch_id"])
-    #     sub_dispatch_id = await datasvc._make_sublattice_dispatch(result_object, node_result)
-
-    # # TODO - Ensure that sublattice dispatch id is stored accordingly
-    # # Work in sublattice dispatch id into node_result
+    if (
+        node_result["status"] == Result.COMPLETED
+        and node_name.startswith(sublattice_prefix)
+        and not node_result["sub_dispatch_id"]
+    ):
+        app_log.debug(f"Sublattice {node_name} build graph completed, dispatching...")
+        await _prepare_sublattice_dispatch(dispatch_id, node_result)
 
     result_object = datasvc.get_result_object(dispatch_id)
     await datasvc.update_node_result(result_object, node_result)
