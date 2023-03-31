@@ -43,7 +43,6 @@ ASSET_TYPES = {
     "workflow_function": AssetType.TRANSPORTABLE,
     "workflow_function_string": AssetType.TEXT,
     "doc": AssetType.TEXT,
-    "inputs": AssetType.OBJECT,
     "named_args": AssetType.OBJECT,
     "named_kwargs": AssetType.OBJECT,
     "cova_imports": AssetType.OBJECT,
@@ -237,7 +236,9 @@ def deserialize_lattice(model: LatticeSchema) -> Lattice:
 
     lat.__dict__.update(attrs)
 
-    lat.args = [v for _, v in lat.named_args.items()]
-    lat.kwargs = lat.named_kwargs
+    if lat.named_args:
+        lat.args = [v for _, v in lat.named_args.items()]
+    if lat.named_kwargs:
+        lat.kwargs = lat.named_kwargs
 
     return lat

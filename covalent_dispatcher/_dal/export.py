@@ -24,11 +24,13 @@
 from pathlib import Path
 from typing import Dict
 
+from covalent._shared_files.schemas.result import ResultSchema
 from covalent._workflow.lattice import Lattice as SDKLattice
 from covalent._workflow.transport import _TransportGraph as SDKGraph
 
 from .electron import ASSET_KEYS as ELECTRON_ASSETS
 from .electron import METADATA_KEYS as ELECTRON_META
+from .exporters.result import export_result
 from .lattice import ASSET_KEYS as LATTICE_ASSETS
 from .lattice import METADATA_KEYS as LATTICE_META
 from .lattice import Lattice as SRVLattice
@@ -148,6 +150,11 @@ def _to_serialized_client_result(result: SRVResult) -> Dict:
 def export_serialized_result(dispatch_id: str) -> Dict:
     srv_res = get_result_object(dispatch_id)
     return _to_serialized_client_result(srv_res)
+
+
+def export_result_manifest(dispatch_id: str) -> ResultSchema:
+    srv_res = get_result_object(dispatch_id, bare=False)
+    return export_result(srv_res)
 
 
 def get_node_asset_uri(dispatch_id: str, node_id: int, key: str) -> str:

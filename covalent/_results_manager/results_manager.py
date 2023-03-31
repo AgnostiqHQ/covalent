@@ -19,8 +19,11 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+from __future__ import annotations
+
 import contextlib
 import os
+from pathlib import Path
 from typing import Dict, List, Optional, Union
 
 import cloudpickle as pickle
@@ -28,14 +31,31 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
+from .._serialize.common import load_asset
+from .._serialize.electron import ASSET_FILENAME_MAP as ELECTRON_ASSET_FILENAMES
+from .._serialize.electron import ASSET_TYPES as ELECTRON_ASSET_TYPES
+from .._serialize.lattice import ASSET_FILENAME_MAP as LATTICE_ASSET_FILENAMES
+from .._serialize.lattice import ASSET_TYPES as LATTICE_ASSET_TYPES
+from .._serialize.result import ASSET_FILENAME_MAP as RESULT_ASSET_FILENAMES
+from .._serialize.result import ASSET_TYPES as RESULT_ASSET_TYPES
+from .._serialize.result import deserialize_result
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.exceptions import MissingLatticeRecordError
-from .result import Result, import_result_object
+from .._shared_files.schemas.asset import AssetSchema
+from .._shared_files.schemas.result import ResultSchema
+from .result import Result
 from .wait import EXTREME
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+
+DEFERRED_KEYS = {
+    "output",
+    "value",
+    "result",
+}
 
 
 # def get_result(dispatch_id: str, wait: bool = False) -> Result:
@@ -225,10 +245,13 @@ def cancel(dispatch_id: str, task_ids: List[int] = None, dispatcher_addr: str = 
 def get_result(
     dispatch_id: str,
     wait: bool = False,
+    status_only: bool = False,
+    dispatcher_addr: str = None,
+    *,
     workflow_output: bool = True,
     intermediate_outputs: bool = True,
     sublattice_results: bool = True,
-    dispatcher_addr: str = None,
+    results_dir: Optional[str] = None,
 ) -> Result:
     """
     Get the results of a dispatch from a file.
@@ -243,45 +266,65 @@ def get_result(
     """
 
     try:
-        result = _get_result_v2_from_dispatcher(
-            dispatch_id,
-            wait,
-            dispatcher_addr,
-        )
-        result_export = result["result_export"]
-        result_object = import_result_object(result_export)
+        if status_only:
+            result = _get_result_export_from_dispatcher(
+                dispatch_id,
+                wait=wait,
+                status_only=status_only,
+                dispatcher_addr=dispatcher_addr,
+            )
+            return result
+
+        else:
+            if results_dir is None:
+                result_dir = str(Path(get_config("sdk.results_dir")) / f"{dispatch_id}")
+            else:
+                result_dir = results_dir
+
+            rm = ResultManager.from_dispatch_id(
+                dispatch_id,
+                result_dir,
+                wait=wait,
+                dispatcher_addr=dispatcher_addr,
+            )
+
+            _get_default_assets(rm)
 
         if workflow_output:
-            _download_workflow_output(result_object, dispatcher_addr)
+            rm.download_result_asset("result")
+            rm.load_result_asset("result")
+
+        tg = rm.result_object.lattice.transport_graph
 
         if intermediate_outputs:
-            _download_intermediate_outputs(result_object, dispatcher_addr)
+            for node_id in tg._graph.nodes:
+                rm.download_node_asset(node_id, "output")
+                rm.load_node_asset(node_id, "output")
 
         # Fetch sublattice result objects recursively
-        tg = result_object.lattice.transport_graph
         for node_id in tg._graph.nodes:
             sub_dispatch_id = tg.get_node_value(node_id, "sub_dispatch_id")
             if sublattice_results and sub_dispatch_id:
                 sub_result = get_result(
                     sub_dispatch_id,
                     wait,
-                    workflow_output,
-                    intermediate_outputs,
-                    sublattice_results,
-                    dispatcher_addr,
+                    status_only,
+                    workflow_output=workflow_output,
+                    intermediate_outputs=intermediate_outputs,
+                    sublattice_results=sublattice_results,
+                    dispatcher_addr=dispatcher_addr,
                 )
                 tg.set_node_value(node_id, "sublattice_result", sub_result)
             else:
                 tg.set_node_value(node_id, "sublattice_result", None)
 
+        return rm.result_object
+
     except MissingLatticeRecordError as ex:
         app_log.warning(
             f"Dispatch ID {dispatch_id} was not found in the database. Incorrect dispatch id."
         )
-
         raise ex
-
-    return result_object
 
 
 def _get_result_v2_from_dispatcher(
@@ -423,3 +466,207 @@ def _download_workflow_output(result_object: Result, dispatcher_addr: str):
         dispatcher_addr,
     )
     return result_object
+
+
+def _get_result_export_from_dispatcher(
+    dispatch_id: str,
+    wait: bool = False,
+    status_only: bool = False,
+    dispatcher_addr: str = None,
+) -> ResultSchema:
+    """
+    Internal function to get the results of a dispatch from the server without checking if it is ready to read.
+
+    Args:
+        dispatch_id: The dispatch id of the result.
+        wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
+        status_only: If true, only returns result status, not the full result object, default is False.
+        dispatcher_addr: Dispatcher server address, defaults to the address set in covalent.config.
+
+    Returns:
+        The result object from the server.
+
+    Raises:
+        MissingLatticeRecordError: If the result is not found.
+    """
+
+    if dispatcher_addr is None:
+        dispatcher_addr = (
+            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+        )
+
+    retries = int(EXTREME) if wait else 5
+
+    adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
+    http = requests.Session()
+    http.mount("http://", adapter)
+    url = "http://" + dispatcher_addr + "/api/v1/export/" + dispatch_id
+    response = http.get(
+        url,
+        params={"wait": bool(int(wait)), "status_only": status_only},
+    )
+    if response.status_code == 404:
+        raise MissingLatticeRecordError
+    response.raise_for_status()
+    export = response.json()
+    return export
+
+
+# Function to download default assets
+def _get_default_assets(rm: ResultManager):
+    for key in RESULT_ASSET_TYPES.keys():
+        if key not in DEFERRED_KEYS:
+            rm.download_result_asset(key)
+            rm.load_result_asset(key)
+
+    for key in LATTICE_ASSET_TYPES.keys():
+        if key not in DEFERRED_KEYS:
+            rm.download_lattice_asset(key)
+            rm.load_lattice_asset(key)
+
+    tg = rm.result_object.lattice.transport_graph
+    for key in ELECTRON_ASSET_TYPES.keys():
+        if key not in DEFERRED_KEYS:
+            for node_id in tg._graph.nodes:
+                rm.download_node_asset(node_id, key)
+                rm.load_node_asset(node_id, key)
+
+
+# Functions for computing local URIs
+def get_node_asset_path(results_dir: str, node_id: int, key: str):
+    filename = ELECTRON_ASSET_FILENAMES[key]
+    return results_dir + f"/node_{node_id}/{filename}"
+
+
+def get_lattice_asset_path(results_dir: str, key: str):
+    filename = LATTICE_ASSET_FILENAMES[key]
+    return results_dir + f"/{filename}"
+
+
+def get_result_asset_path(results_dir: str, key: str):
+    filename = RESULT_ASSET_FILENAMES[key]
+    return results_dir + f"/{filename}"
+
+
+# Asset transfers
+
+
+def download_asset(remote_uri: str, local_path: str, chunk_size: int = 1024 * 1024):
+    r = requests.get(remote_uri, stream=True)
+    r.raise_for_status()
+    with open(local_path, "wb") as f:
+        for chunk in r.iter_content(chunk_size=chunk_size):
+            f.write(chunk)
+
+
+def _download_result_asset(manifest: dict, results_dir: str, key: str):
+    remote_uri = manifest["assets"][key]["remote_uri"]
+    local_path = get_result_asset_path(results_dir, key)
+    download_asset(remote_uri, local_path)
+    manifest["assets"][key]["uri"] = "file://" + local_path
+
+
+def _download_lattice_asset(manifest: dict, results_dir: str, key: str):
+    lattice_assets = manifest["lattice"]["assets"]
+    remote_uri = lattice_assets[key]["remote_uri"]
+    local_path = get_lattice_asset_path(results_dir, key)
+    download_asset(remote_uri, local_path)
+    lattice_assets[key]["uri"] = "file://" + local_path
+
+
+def _download_node_asset(manifest: dict, results_dir: str, node_id: int, key: str):
+    node = manifest["lattice"]["transport_graph"]["nodes"][node_id]
+    node_assets = node["assets"]
+    remote_uri = node_assets[key]["remote_uri"]
+    local_path = get_node_asset_path(results_dir, node_id, key)
+    download_asset(remote_uri, local_path)
+    node_assets[key]["uri"] = "file://" + local_path
+
+
+def _load_result_asset(manifest: dict, key: str):
+    asset_meta = AssetSchema(**manifest["assets"][key])
+    return load_asset(asset_meta, RESULT_ASSET_TYPES[key])
+
+
+def _load_lattice_asset(manifest: dict, key: str):
+    asset_meta = AssetSchema(**manifest["lattice"]["assets"][key])
+    return load_asset(asset_meta, LATTICE_ASSET_TYPES[key])
+
+
+def _load_node_asset(manifest: dict, node_id: int, key: str):
+    node = manifest["lattice"]["transport_graph"]["nodes"][node_id]
+    asset_meta = AssetSchema(**node["assets"][key])
+    return load_asset(asset_meta, ELECTRON_ASSET_TYPES[key])
+
+
+class ResultManager:
+    def __init__(self, manifest: ResultSchema, results_dir: str):
+        self.result_object = deserialize_result(manifest)
+        self._manifest = manifest.dict()
+        self._results_dir = results_dir
+
+    def save(self, path: Optional[str] = None):
+        if not path:
+            path = os.path.join(self._results_dir, "manifest.json")
+        with open(path, "w") as f:
+            f.write(ResultSchema.parse_obj(self._manifest).json())
+
+    @staticmethod
+    def load(path: str) -> "ResultManager":
+        with open(path, "r") as f:
+            manifest_json = f.read()
+        return ResultManager(ResultSchema.parse_raw(manifest_json))
+
+    def download_result_asset(self, key: str):
+        _download_result_asset(self._manifest, self._results_dir, key)
+
+    def download_lattice_asset(self, key: str):
+        _download_lattice_asset(self._manifest, self._results_dir, key)
+
+    def download_node_asset(self, node_id: int, key: str):
+        _download_node_asset(self._manifest, self._results_dir, node_id, key)
+
+    def load_result_asset(self, key: str):
+        data = _load_result_asset(self._manifest, key)
+        self.result_object.__dict__[f"_{key}"] = data
+
+    def load_lattice_asset(self, key: str):
+        data = _load_lattice_asset(self._manifest, key)
+        self.result_object.lattice.__dict__[f"_{key}"] = data
+
+    def load_node_asset(self, node_id: int, key: str):
+        data = _load_node_asset(self._manifest, node_id, key)
+        tg = self.result_object.lattice.transport_graph
+        tg.set_node_value(node_id, key, data)
+
+    @staticmethod
+    def from_dispatch_id(
+        dispatch_id: str,
+        results_dir: str,
+        wait: bool = False,
+        dispatcher_addr: str = None,
+    ) -> "ResultManager":
+        export = _get_result_export_from_dispatcher(
+            dispatch_id, wait, status_only=False, dispatcher_addr=dispatcher_addr
+        )
+
+        manifest = ResultSchema.parse_obj(export["result_export"])
+
+        # sort the nodes
+        manifest.lattice.transport_graph.nodes.sort(key=lambda x: x.id)
+
+        rm = ResultManager(manifest, results_dir)
+        result_object = rm.result_object
+        result_object._results_dir = results_dir
+        Path(results_dir).mkdir(parents=True, exist_ok=True)
+
+        # Create node subdirectories
+        for node_id in result_object.lattice.transport_graph._graph.nodes:
+            node_dir = results_dir + f"/node_{node_id}"
+            Path(node_dir).mkdir(exist_ok=True)
+
+        return rm
+
+
+def get_result_manager(dispatch_id, results_dir, wait=False, dispatcher_addr=None):
+    return ResultManager.from_dispatch_id(dispatch_id, results_dir, wait, dispatcher_addr)

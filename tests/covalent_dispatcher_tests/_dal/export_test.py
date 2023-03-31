@@ -27,12 +27,15 @@ import pytest
 
 import covalent as ct
 from covalent._results_manager import Result as SDKResult
+from covalent._serialize.result import serialize_result
 from covalent._workflow.lattice import Lattice as SDKLattice
 from covalent_dispatcher._dal.export import (
     _to_client_graph,
     _to_client_lattice,
+    export_result_manifest,
     export_serialized_result,
 )
+from covalent_dispatcher._dal.importers.result import import_result
 from covalent_dispatcher._dal.result import get_result_object
 from covalent_dispatcher._db import update
 from covalent_dispatcher._db.datastore import DataStore
@@ -212,3 +215,30 @@ def test_to_client_result(test_db, mocker):
     ser_res = res_export["result"]
     assert ser_res["end_time"] == ts.isoformat()
     assert ser_res["status"] == str(SDKResult.COMPLETED)
+
+
+def test_export_result_manifest(test_db, mocker):
+    import tempfile
+    from datetime import datetime
+
+    res = get_mock_result()
+    dispatch_id = "test_export_result_manifest"
+    res._dispatch_id = dispatch_id
+    res._root_dispatch_id = dispatch_id
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+
+    with tempfile.TemporaryDirectory() as sdk_tmp_dir, tempfile.TemporaryDirectory() as srv_tmp_dir:
+        manifest = serialize_result(res, sdk_tmp_dir)
+        received_manifest = manifest.copy(deep=True)
+
+        import_result(received_manifest, srv_tmp_dir)
+        srv_res = get_result_object(dispatch_id)
+        ts = datetime.now()
+        srv_res._start_time = ts
+        srv_res._status = SDKResult.RUNNING
+        srv_res.commit()
+
+        export_manifest = export_result_manifest(dispatch_id)
+
+        assert export_manifest.metadata.start_time == ts
+        assert export_manifest.metadata.status == SDKResult.RUNNING

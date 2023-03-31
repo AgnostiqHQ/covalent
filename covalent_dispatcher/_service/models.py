@@ -21,6 +21,11 @@
 """FastAPI models for /api/v1/resultv2 endpoints"""
 
 from enum import Enum
+from typing import Optional
+
+from pydantic import BaseModel
+
+from covalent._shared_files.schemas.result import ResultSchema
 
 # # Copied from _dal
 # RESULT_ASSET_KEYS = {
@@ -92,3 +97,9 @@ class ElectronAssetKey(str, Enum):
     stderr = "stderr"
     call_before = "call_before"
     call_after = "call_after"
+
+
+class ExportResponseSchema(BaseModel):
+    id: str
+    status: str
+    result_export: Optional[ResultSchema]

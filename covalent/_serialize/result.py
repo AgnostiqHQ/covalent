@@ -94,8 +94,9 @@ def serialize_result(res: Result, storage_path: str) -> ResultSchema:
 
 
 def deserialize_result(res: ResultSchema) -> Result:
+    dispatch_id = res.metadata.dispatch_id
     lat = deserialize_lattice(res.lattice)
-    result_object = Result(lat)
+    result_object = Result(lat, dispatch_id)
     attrs = _deserialize_result_metadata(res.metadata)
     assets = _deserialize_result_assets(res.assets)
 

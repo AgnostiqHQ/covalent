@@ -34,6 +34,7 @@ from covalent._shared_files import logger
 from covalent._shared_files.schemas.result import ResultSchema
 
 from .._dal.export import (
+    export_result_manifest,
     export_serialized_result,
     get_dispatch_asset_uri,
     get_lattice_asset_uri,
@@ -41,7 +42,7 @@ from .._dal.export import (
 )
 from .._db.datastore import workflow_db
 from .._db.models import Lattice
-from .models import DispatchAssetKey, ElectronAssetKey, LatticeAssetKey
+from .models import DispatchAssetKey, ElectronAssetKey, ExportResponseSchema, LatticeAssetKey
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -158,6 +159,57 @@ def _get_result_v2_sync(
             }
             if not status_only:
                 output["result_export"] = export_serialized_result(dispatch_id)
+
+            return output
+
+        response = JSONResponse(
+            status_code=503,
+            content={
+                "message": "Result not ready to read yet. Please wait for a couple of seconds."
+            },
+            headers={"Retry-After": "2"},
+        )
+        return response
+
+
+@router.get("/export/{dispatch_id}")
+async def export_result(
+    dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
+) -> ExportResponseSchema:
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(
+        None,
+        _export_result_sync,
+        dispatch_id,
+        wait,
+        status_only,
+    )
+
+
+def _export_result_sync(
+    dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
+) -> ExportResponseSchema:
+    with workflow_db.session() as session:
+        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+        status = lattice_record.status if lattice_record else None
+        if not lattice_record:
+            return JSONResponse(
+                status_code=404,
+                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+            )
+        if not wait or status in [
+            str(Result.COMPLETED),
+            str(Result.FAILED),
+            str(Result.CANCELLED),
+            str(Result.POSTPROCESSING_FAILED),
+            str(Result.PENDING_POSTPROCESSING),
+        ]:
+            output = {
+                "id": dispatch_id,
+                "status": lattice_record.status,
+            }
+            if not status_only:
+                output["result_export"] = export_result_manifest(dispatch_id)
 
             return output
 
