@@ -103,6 +103,43 @@ def _get_task_input_values(result_object: Result, abs_task_inputs: dict) -> dict
 
 
 # Domain: runner
+async def run_abstract_task(
+    dispatch_id: str,
+    node_id: int,
+    node_name: str,
+    abstract_inputs: Dict,
+    executor: Any,
+) -> None:
+    node_result = await _run_abstract_task(
+        dispatch_id=dispatch_id,
+        node_id=node_id,
+        node_name=node_name,
+        abstract_inputs=abstract_inputs,
+        executor=executor,
+    )
+
+    # TODO - Get node_type
+    # TODO - Check if the node is a sublattice build graph and if it is completed, change the status of the node to dispatching.
+    if (
+        node_result["status"] == Result.COMPLETED
+        and node_result["type"] == "sublattice"
+        and not node_result["sub_dispatch_id"]
+    ):
+        node_result["status"] = RESULT_STATUS.DISPATCHING
+
+    # TODO - We also need to make a result object and sublattice dispatch id. These need to be registered with the data service.
+    if node_result["status"] == RESULT_STATUS.DISPATCHING:
+        result_object = datasvc.get_result_object(node_result["dispatch_id"])
+        sub_dispatch_id = await datasvc._make_sublattice_dispatch(result_object, node_result)
+
+    # TODO - Ensure that sublattice dispatch id is stored accordingly
+    # Work in sublattice dispatch id into node_result
+
+    result_object = datasvc.get_result_object(dispatch_id)
+    await datasvc.update_node_result(result_object, node_result)
+
+
+# Domain: runner
 async def _run_abstract_task(
     dispatch_id: str,
     node_id: int,
@@ -141,15 +178,13 @@ async def _run_abstract_task(
 
     except Exception as ex:
         app_log.error(f"Exception when trying to resolve inputs or deps: {ex}")
-        node_result = datasvc.generate_node_result(
+        return datasvc.generate_node_result(
             node_id=node_id,
             start_time=timestamp,
             end_time=timestamp,
             status=RESULT_STATUS.FAILED,
             error=str(ex),
         )
-        return node_result
-
     node_result = datasvc.generate_node_result(
         node_id=node_id,
         start_time=timestamp,
@@ -217,14 +252,12 @@ async def _run_task(
         app_log.debug("Exception when trying to instantiate executor:")
         app_log.debug(tb)
         error_msg = tb if debug_mode else str(ex)
-        node_result = datasvc.generate_node_result(
+        return datasvc.generate_node_result(
             node_id=node_id,
             end_time=datetime.now(timezone.utc),
             status=RESULT_STATUS.FAILED,
             error=error_msg,
         )
-        return node_result
-
     # run the task on the executor and register any failures
     try:
         app_log.debug(f"Executing task {node_name}")
@@ -305,25 +338,6 @@ def _gather_deps(result_object: Result, node_id: int) -> Tuple[List, List]:
         call_after.append(dep.apply())
 
     return call_before, call_after
-
-
-# Domain: runner
-async def run_abstract_task(
-    dispatch_id: str,
-    node_id: int,
-    node_name: str,
-    abstract_inputs: Dict,
-    executor: Any,
-) -> None:
-    node_result = await _run_abstract_task(
-        dispatch_id=dispatch_id,
-        node_id=node_id,
-        node_name=node_name,
-        abstract_inputs=abstract_inputs,
-        executor=executor,
-    )
-    result_object = datasvc.get_result_object(dispatch_id)
-    await datasvc.update_node_result(result_object, node_result)
 
 
 async def _cancel_task(
