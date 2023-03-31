@@ -155,7 +155,7 @@ def test_get_task_inputs():
     result_object = Result(lattice=received_lattice, dispatch_id="asdf")
     tg = received_lattice.transport_graph
 
-    assert list(tg._graph.nodes) == list(range(17))
+    assert list(tg._graph.nodes) == list(range(9))
     tg.set_node_value(0, "output", ct.TransportableObject(1))
     tg.set_node_value(2, "output", ct.TransportableObject(2))
 
@@ -375,7 +375,7 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
     result_object = await run_workflow(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
     assert result_object.status == Result.RUNNING
-    assert mock_run_abstract_task.call_count == 2
+    assert mock_run_abstract_task.call_count == 1
 
 
 @pytest.mark.asyncio
@@ -421,7 +421,7 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     mock_unregister.assert_called_with(result_object.dispatch_id)
 
     assert result_object.status == Result.RUNNING
-    assert mock_run_abstract_task.call_count == 4
+    assert mock_run_abstract_task.call_count == 2
 
 
 @pytest.mark.asyncio

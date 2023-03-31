@@ -239,7 +239,6 @@ class Lattice:
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
                 try:
-                    workflow_function(*new_args, **new_kwargs)
                     retval = workflow_function(*new_args, **new_kwargs)
                 except Exception:
                     warnings.warn(
