@@ -343,6 +343,10 @@ class Electron:
                     meta = DEFAULT_METADATA_VALUES[k]
                 self.set_metadata(k, meta)
 
+        app_log.info(
+            f"SUBLATTICE - Setting node name to {sublattice_prefix + self.function.__name__}"
+        )
+        app_log.info(f"SUBLATTICE - Sublattice status {isinstance(self.function, Lattice)}")
         # Handle sublattices by injecting _build_sublattice_graph:
         if isinstance(self.function, Lattice):
             parent_metadata = active_lattice.metadata.copy()
@@ -357,6 +361,7 @@ class Electron:
             )
 
             name = sublattice_prefix + self.function.__name__
+            app_log.info(f"SUBLATTICE - Setting node name to {name}")
             function_string = get_serialized_function_str(self.function)
             bound_electron = sub_electron(
                 self.function, json.dumps(parent_metadata), *args, **kwargs

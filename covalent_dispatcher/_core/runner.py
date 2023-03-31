@@ -118,22 +118,24 @@ async def run_abstract_task(
         executor=executor,
     )
 
-    # TODO - Get node_type
-    # TODO - Check if the node is a sublattice build graph and if it is completed, change the status of the node to dispatching.
-    if (
-        node_result["status"] == Result.COMPLETED
-        and node_result["type"] == "sublattice"
-        and not node_result["sub_dispatch_id"]
-    ):
-        node_result["status"] = RESULT_STATUS.DISPATCHING
+    app_log.warning(f"SUBLATTICE - Node name: {node_name}")
 
-    # TODO - We also need to make a result object and sublattice dispatch id. These need to be registered with the data service.
-    if node_result["status"] == RESULT_STATUS.DISPATCHING:
-        result_object = datasvc.get_result_object(node_result["dispatch_id"])
-        sub_dispatch_id = await datasvc._make_sublattice_dispatch(result_object, node_result)
+    # # TODO - Get node_type
+    # # TODO - Check if the node is a sublattice build graph and if it is completed, change the status of the node to dispatching.
+    # if (
+    #     node_result["status"] == Result.COMPLETED
+    #     and node_result["type"] == "sublattice"
+    #     and not node_result["sub_dispatch_id"]
+    # ):
+    #     node_result["status"] = RESULT_STATUS.DISPATCHING
 
-    # TODO - Ensure that sublattice dispatch id is stored accordingly
-    # Work in sublattice dispatch id into node_result
+    # # TODO - We also need to make a result object and sublattice dispatch id. These need to be registered with the data service.
+    # if node_result["status"] == RESULT_STATUS.DISPATCHING:
+    #     result_object = datasvc.get_result_object(node_result["dispatch_id"])
+    #     sub_dispatch_id = await datasvc._make_sublattice_dispatch(result_object, node_result)
+
+    # # TODO - Ensure that sublattice dispatch id is stored accordingly
+    # # Work in sublattice dispatch id into node_result
 
     result_object = datasvc.get_result_object(dispatch_id)
     await datasvc.update_node_result(result_object, node_result)
