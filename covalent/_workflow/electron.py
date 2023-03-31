@@ -343,7 +343,7 @@ class Electron:
                     meta = DEFAULT_METADATA_VALUES[k]
                 self.set_metadata(k, meta)
 
-        # Handle sublattices by injecting _build_sublattice_graph:
+        # Handle sublattices by injecting _build_sublattice_graph node
         if isinstance(self.function, Lattice):
             parent_metadata = active_lattice.metadata.copy()
             app_log.debug(f"Parent lattice metadata: {parent_metadata}")
@@ -371,12 +371,9 @@ class Electron:
 
             return bound_electron
 
-        # Add a node to the transport graph of the active lattice
-        app_log.info(f"SUBLATTICE - This flow happened {isinstance(self.function, Lattice)}")
+        # Add a node (other than sublattices) to the transport graph of the active lattice
         self.node_id = active_lattice.transport_graph.add_node(
-            name=sublattice_prefix + self.function.__name__
-            if isinstance(self.function, Lattice)
-            else self.function.__name__,
+            name=self.function.__name__,
             function=self.function,
             metadata=self.metadata.copy(),
             function_string=get_serialized_function_str(self.function),
