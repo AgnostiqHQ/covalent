@@ -26,6 +26,7 @@ from typing import Dict, Optional
 
 from sqlalchemy.orm import Session
 
+from covalent._shared_files import logger
 from covalent._shared_files.schemas.edge import EdgeSchema
 from covalent._shared_files.schemas.transport_graph import TransportGraphSchema
 from covalent_dispatcher._dal.edge import ElectronDependency
@@ -35,6 +36,8 @@ from covalent_dispatcher._dal.lattice import Lattice
 from covalent_dispatcher._db import models
 
 from .electron import import_electron
+
+app_log = logger.app_log
 
 
 def import_transport_graph(
@@ -63,7 +66,6 @@ def import_transport_graph(
         task_groups[gid].append(node)
 
     gids = {k: list(map(lambda n: n.id, v)) for k, v in task_groups.items()}
-    print("DEBUG: task_groups", gids)
 
     for gid, node_group in task_groups.items():
         # Create a job record for each task group

@@ -102,21 +102,17 @@ def _get_result_meta(res: ResultSchema, storage_path: str, electron_id: Optional
 
 
 def import_result_assets(
-    session: Session, res: ResultSchema, record: Result, storage_path: str, data_uri_prefix
+    session: Session, manifest: ResultSchema, record: Result, storage_path: str, data_uri_prefix
 ) -> ResultAssets:
     """Insert asset records and populate the asset link table"""
     asset_ids = {}
 
     for asset_key, asset, object_key in [
-        ("inputs", res.assets.inputs, LATTICE_INPUTS_FILENAME),
-        ("result", res.assets.result, LATTICE_RESULTS_FILENAME),
-        ("error", res.assets.error, LATTICE_ERROR_FILENAME),
+        ("inputs", manifest.assets.inputs, LATTICE_INPUTS_FILENAME),
+        ("result", manifest.assets.result, LATTICE_RESULTS_FILENAME),
+        ("error", manifest.assets.error, LATTICE_ERROR_FILENAME),
     ]:
         local_uri = os.path.join(storage_path, object_key)
-
-        # Send this back to the client
-        asset.digest = ""
-        asset.remote_uri = local_uri
 
         asset_kwargs = {
             "storage_type": StorageType.LOCAL.value,
@@ -127,6 +123,9 @@ def import_result_assets(
             "remote_uri": asset.uri,
         }
         asset_ids[asset_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
+
+        # Send this back to the client
+        asset.digest = ""
         asset.remote_uri = data_uri_prefix + f"/{asset_key}"
 
     session.flush()
@@ -134,4 +133,4 @@ def import_result_assets(
     for key, asset_rec in asset_ids.items():
         record.associate_asset(session, key, asset_rec.id)
 
-    return res.assets
+    return manifest.assets

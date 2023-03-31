@@ -88,7 +88,7 @@ class DispatchedObject(ABC):
 
     @property
     @abstractmethod
-    def assets(self) -> Dict:
+    def assets(self) -> Dict[str, Asset]:
         raise NotImplementedError
 
     @classmethod
@@ -190,7 +190,12 @@ class DispatchedObject(ABC):
     def get_linked_assets(
         cls, session, *, fields: list, equality_filters: dict, membership_filters: dict
     ) -> List[Asset]:
-        stmt = select(Asset.model).join(cls.asset_link_type.model).join(cls.meta_type.model)
+        link_model = cls.asset_link_type.model
+        stmt = (
+            select(link_model.meta_id, link_model.key, Asset.model)
+            .join(link_model)
+            .join(cls.meta_type.model)
+        )
 
         for attr, val in equality_filters.items():
             stmt = stmt.where(getattr(cls.meta_type.model, attr) == val)
@@ -199,6 +204,9 @@ class DispatchedObject(ABC):
         if len(fields) > 0:
             stmt = stmt.options(load_only(*fields))
 
-        asset_rows = session.scalars(stmt)
+        records = session.execute(stmt)
 
-        return [Asset(session, row) for row in asset_rows]
+        return [
+            {"meta_id": row.meta_id, "key": row.key, "asset": Asset(session, row[2])}
+            for row in records
+        ]

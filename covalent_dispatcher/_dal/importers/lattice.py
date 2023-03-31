@@ -108,10 +108,6 @@ def import_lattice_assets(
     ]:
         local_uri = os.path.join(storage_path, object_key)
 
-        # Send this back to the client
-        asset.digest = ""
-        asset.remote_uri = data_uri_prefix + f"/{asset_key}"
-
         asset_kwargs = {
             "storage_type": StorageType.LOCAL.value,
             "storage_path": storage_path,
@@ -121,6 +117,10 @@ def import_lattice_assets(
             "remote_uri": asset.uri,
         }
         asset_ids[asset_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
+
+        # Send this back to the client
+        asset.digest = ""
+        asset.remote_uri = data_uri_prefix + f"/{asset_key}"
 
     session.flush()
 

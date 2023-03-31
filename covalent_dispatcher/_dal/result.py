@@ -318,19 +318,21 @@ class Result(DispatchedObject):
         assets = {}
 
         with self.session() as session:
-            assets["lattice"] = type(self).get_linked_assets(
+            lattice_records = type(self).get_linked_assets(
                 session,
                 fields=[],
                 equality_filters={"id": self._id},
                 membership_filters={},
             )
+            assets["lattice"] = list(map(lambda r: r["asset"], lattice_records))
             if include_nodes:
-                assets["nodes"] = Electron.get_linked_assets(
+                node_records = Electron.get_linked_assets(
                     session,
                     fields=[],
                     equality_filters={"parent_lattice_id": self._lattice_id},
                     membership_filters={},
                 )
+                assets["nodes"] = list(map(lambda r: r["asset"], node_records))
         return assets
 
     @classmethod

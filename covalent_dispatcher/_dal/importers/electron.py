@@ -27,6 +27,7 @@ from typing import Tuple
 
 from sqlalchemy.orm import Session
 
+from covalent._shared_files import logger
 from covalent._shared_files.schemas.electron import (
     ELECTRON_CALL_AFTER_FILENAME,
     ELECTRON_CALL_BEFORE_FILENAME,
@@ -47,6 +48,8 @@ from covalent_dispatcher._dal.electron import Electron, ElectronMeta
 from covalent_dispatcher._dal.lattice import Lattice
 from covalent_dispatcher._db import models
 from covalent_dispatcher._db.write_result_to_db import get_electron_type
+
+app_log = logger.app_log
 
 
 def import_electron(
@@ -132,10 +135,6 @@ def import_electron_assets(
     ]:
         local_uri = os.path.join(node_storage_path, object_key)
 
-        # Send this back to the client
-        asset.digest = ""
-        asset.remote_uri = data_uri_prefix + f"/{asset_key}"
-
         asset_kwargs = {
             "storage_type": StorageType.LOCAL.value,
             "storage_path": node_storage_path,
@@ -145,6 +144,10 @@ def import_electron_assets(
             "remote_uri": asset.uri,
         }
         asset_ids[asset_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
+
+        # Send this back to the client
+        asset.digest = ""
+        asset.remote_uri = data_uri_prefix + f"/{asset_key}"
 
     session.flush()
 
