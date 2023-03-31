@@ -46,7 +46,7 @@ def _export_lattice_assets(lat: Lattice, data_uri_prefix: str) -> LatticeAssets:
         param = KEY_SUBSTITUTIONS.get(asset_key, asset_key)
         asset = lat.assets[asset_key]
         remote_uri = data_uri_prefix + f"/{asset_key}"
-        manifests[param] = AssetSchema(digest=asset.digest_hex, remote_uri=remote_uri)
+        manifests[param] = AssetSchema(digest="", remote_uri=remote_uri)
     return LatticeAssets(**manifests)
 
 

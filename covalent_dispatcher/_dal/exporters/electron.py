@@ -62,7 +62,7 @@ def _export_electron_assets(e: Electron, data_uri_prefix: str) -> ElectronAssets
     for asset_key in ASSET_KEYS:
         asset = e.assets[asset_key]
         remote_uri = data_uri_prefix + f"/{asset_key}"
-        manifests[asset_key] = AssetSchema(digest=asset.digest_hex, remote_uri=remote_uri)
+        manifests[asset_key] = AssetSchema(digest="", remote_uri=remote_uri)
 
     return ElectronAssets(**manifests)
 

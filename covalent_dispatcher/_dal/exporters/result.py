@@ -99,7 +99,7 @@ def _export_result_assets(res: Result, data_uri_prefix: str) -> ResultAssets:
     for asset_key in ASSET_KEYS:
         remote_uri = data_uri_prefix + f"/{asset_key}"
         asset = res.assets[asset_key]
-        manifests[asset_key] = AssetSchema(digest=asset.digest_hex, remote_uri=remote_uri)
+        manifests[asset_key] = AssetSchema(digest="", remote_uri=remote_uri)
 
     return ResultAssets(**manifests)
 
