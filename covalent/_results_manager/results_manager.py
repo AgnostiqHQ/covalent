@@ -190,11 +190,12 @@ def cancel(dispatch_id: str, task_ids: List[int] = None, dispatcher_addr: str = 
 def get_result(
     dispatch_id: str,
     wait: bool = False,
+    dispatcher_addr: str = None,
+    status_only: bool = False,
+    *,
     workflow_output: bool = True,
     intermediate_outputs: bool = True,
     sublattice_results: bool = True,
-    dispatcher_addr: str = None,
-    status_only: bool = False,
 ) -> Result:
     """
     Get the results of a dispatch from a file.
@@ -236,10 +237,11 @@ def get_result(
                 sub_result = get_result(
                     sub_dispatch_id,
                     wait,
-                    workflow_output,
-                    intermediate_outputs,
-                    sublattice_results,
                     dispatcher_addr,
+                    status_only,
+                    workflow_output=workflow_output,
+                    intermediate_outputs=intermediate_outputs,
+                    sublattice_results=sublattice_results,
                 )
                 tg.set_node_value(node_id, "sublattice_result", sub_result)
             else:
@@ -606,5 +608,7 @@ class ResultManager:
         return rm
 
 
-def get_result_manager(dispatch_id, results_dir, wait=False, dispatcher_addr=None):
+def get_result_manager(dispatch_id, results_dir=None, wait=False, dispatcher_addr=None):
+    if not results_dir:
+        results_dir = get_config("sdk.results_dir") + f"/{dispatch_id}"
     return ResultManager.from_dispatch_id(dispatch_id, results_dir, wait, dispatcher_addr)
