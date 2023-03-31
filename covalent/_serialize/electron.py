@@ -52,6 +52,19 @@ ASSET_TYPES = {
     "error": AssetType.TEXT,
 }
 
+ASSET_FILENAME_MAP = {
+    "function": ELECTRON_FUNCTION_FILENAME,
+    "function_string": ELECTRON_FUNCTION_STRING_FILENAME,
+    "value": ELECTRON_VALUE_FILENAME,
+    "output": ELECTRON_RESULTS_FILENAME,
+    "deps": ELECTRON_DEPS_FILENAME,
+    "call_before": ELECTRON_CALL_BEFORE_FILENAME,
+    "call_after": ELECTRON_CALL_AFTER_FILENAME,
+    "stdout": ELECTRON_STDOUT_FILENAME,
+    "stderr": ELECTRON_STDERR_FILENAME,
+    "error": ELECTRON_ERROR_FILENAME,
+}
+
 
 def _serialize_node_metadata(node_attrs: dict, node_storage_path: str) -> ElectronMetadata:
     task_group_id = node_attrs["task_group_id"]
@@ -99,49 +112,78 @@ def _deserialize_node_metadata(meta: ElectronMetadata) -> dict:
 def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> ElectronAssets:
     function = node_attrs["function"]
     function_asset = save_asset(
-        function, AssetType.TRANSPORTABLE, node_storage_path, ELECTRON_FUNCTION_FILENAME
+        function,
+        ASSET_TYPES["function"],
+        node_storage_path,
+        ASSET_FILENAME_MAP["function"],
     )
 
     function_string = node_attrs.get("function_string", "")
     function_string_asset = save_asset(
-        function_string, AssetType.TEXT, node_storage_path, ELECTRON_FUNCTION_STRING_FILENAME
+        function_string,
+        ASSET_TYPES["function_string"],
+        node_storage_path,
+        ASSET_FILENAME_MAP["function_string"],
     )
 
     node_value = node_attrs.get("value", None)
     value_asset = save_asset(
-        node_value, AssetType.TRANSPORTABLE, node_storage_path, ELECTRON_VALUE_FILENAME
+        node_value,
+        ASSET_TYPES["value"],
+        node_storage_path,
+        ASSET_FILENAME_MAP["value"],
     )
 
     node_output = node_attrs.get("output", None)
     output_asset = save_asset(
-        node_output, AssetType.TRANSPORTABLE, node_storage_path, ELECTRON_RESULTS_FILENAME
+        node_output,
+        ASSET_TYPES["output"],
+        node_storage_path,
+        ASSET_FILENAME_MAP["output"],
     )
 
     node_error = node_attrs.get("error", "")
     error_asset = save_asset(
-        node_error, AssetType.TEXT, node_storage_path, ELECTRON_ERROR_FILENAME
+        node_error,
+        ASSET_TYPES["error"],
+        node_storage_path,
+        ASSET_FILENAME_MAP["error"],
     )
 
     node_stdout = node_attrs.get("stdout", "")
     stdout_asset = save_asset(
-        node_stdout, AssetType.TEXT, node_storage_path, ELECTRON_STDOUT_FILENAME
+        node_stdout,
+        ASSET_TYPES["stdout"],
+        node_storage_path,
+        ASSET_FILENAME_MAP["stdout"],
     )
     node_stderr = node_attrs.get("stderr", "")
     stderr_asset = save_asset(
-        node_error, AssetType.TEXT, node_storage_path, ELECTRON_STDERR_FILENAME
+        node_error,
+        ASSET_TYPES["stderr"],
+        node_storage_path,
+        ASSET_FILENAME_MAP["stderr"],
     )
 
     deps = node_attrs["metadata"]["deps"]
-    deps_asset = save_asset(deps, AssetType.OBJECT, node_storage_path, ELECTRON_DEPS_FILENAME)
+    deps_asset = save_asset(
+        deps, ASSET_TYPES["deps"], node_storage_path, ASSET_FILENAME_MAP["deps"]
+    )
 
     call_before = node_attrs["metadata"]["call_before"]
     call_before_asset = save_asset(
-        call_before, AssetType.OBJECT, node_storage_path, ELECTRON_CALL_BEFORE_FILENAME
+        call_before,
+        ASSET_TYPES["call_before"],
+        node_storage_path,
+        ASSET_FILENAME_MAP["call_before"],
     )
 
     call_after = node_attrs["metadata"]["call_after"]
     call_after_asset = save_asset(
-        call_after, AssetType.OBJECT, node_storage_path, ELECTRON_CALL_AFTER_FILENAME
+        call_after,
+        ASSET_TYPES["call_after"],
+        node_storage_path,
+        ASSET_FILENAME_MAP["call_after"],
     )
 
     return ElectronAssets(

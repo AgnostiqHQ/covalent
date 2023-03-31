@@ -32,8 +32,16 @@ from .common import AssetType, load_asset, save_asset
 from .lattice import deserialize_lattice, serialize_lattice
 
 ASSET_TYPES = {
+    "inputs": AssetType.OBJECT,
     "error": AssetType.TEXT,
     "result": AssetType.TRANSPORTABLE,
+}
+
+
+ASSET_FILENAME_MAP = {
+    "inputs": LATTICE_INPUTS_FILENAME,
+    "result": LATTICE_RESULTS_FILENAME,
+    "error": LATTICE_ERROR_FILENAME,
 }
 
 
@@ -55,11 +63,18 @@ def _deserialize_result_metadata(meta: ResultMetadata) -> dict:
 
 def _serialize_result_assets(res: Result, storage_path: str) -> ResultAssets:
     # NOTE: We can avoid pickling here since the UI actually consumes only the string representation
-    inputs_asset = save_asset(res._inputs, AssetType.OBJECT, storage_path, LATTICE_INPUTS_FILENAME)
+    inputs_asset = save_asset(
+        res._inputs, ASSET_TYPES["inputs"], storage_path, ASSET_FILENAME_MAP["inputs"]
+    )
 
-    error_asset = save_asset(res._error, AssetType.TEXT, storage_path, LATTICE_ERROR_FILENAME)
+    error_asset = save_asset(
+        res._error, ASSET_TYPES["error"], storage_path, ASSET_FILENAME_MAP["error"]
+    )
     result_asset = save_asset(
-        res._result, AssetType.TRANSPORTABLE, storage_path, LATTICE_RESULTS_FILENAME
+        res._result,
+        ASSET_TYPES["result"],
+        storage_path,
+        ASSET_FILENAME_MAP["result"],
     )
     return ResultAssets(inputs=inputs_asset, result=result_asset, error=error_asset)
 

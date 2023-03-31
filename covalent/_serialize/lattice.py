@@ -54,6 +54,20 @@ ASSET_TYPES = {
 }
 
 
+ASSET_FILENAME_MAP = {
+    "workflow_function": LATTICE_FUNCTION_FILENAME,
+    "workflow_function_string": LATTICE_FUNCTION_STRING_FILENAME,
+    "doc": LATTICE_DOCSTRING_FILENAME,
+    "named_args": LATTICE_NAMED_ARGS_FILENAME,
+    "named_kwargs": LATTICE_NAMED_KWARGS_FILENAME,
+    "cova_imports": LATTICE_COVA_IMPORTS_FILENAME,
+    "lattice_imports": LATTICE_LATTICE_IMPORTS_FILENAME,
+    "deps": LATTICE_DEPS_FILENAME,
+    "call_before": LATTICE_CALL_BEFORE_FILENAME,
+    "call_after": LATTICE_CALL_AFTER_FILENAME,
+}
+
+
 def _serialize_lattice_metadata(lat) -> LatticeMetadata:
     name = lat.__name__
     executor = lat.metadata["executor"]
@@ -83,7 +97,10 @@ def _deserialize_lattice_metadata(meta: LatticeMetadata) -> dict:
 
 def _serialize_lattice_assets(lat, storage_path: str) -> LatticeAssets:
     workflow_func_asset = save_asset(
-        lat.workflow_function, AssetType.TRANSPORTABLE, storage_path, LATTICE_FUNCTION_FILENAME
+        lat.workflow_function,
+        ASSET_TYPES["workflow_function"],
+        storage_path,
+        ASSET_FILENAME_MAP["workflow_function"],
     )
 
     try:
@@ -91,37 +108,64 @@ def _serialize_lattice_assets(lat, storage_path: str) -> LatticeAssets:
     except AttributeError:
         workflow_func_string = ""
     workflow_func_str_asset = save_asset(
-        workflow_func_string, AssetType.TEXT, storage_path, LATTICE_FUNCTION_STRING_FILENAME
+        workflow_func_string,
+        ASSET_TYPES["workflow_function_string"],
+        storage_path,
+        ASSET_FILENAME_MAP["workflow_function_string"],
     )
 
     docstring = "" if lat.__doc__ is None else lat.__doc__
     docstring_asset = save_asset(
-        docstring, AssetType.TEXT, storage_path, LATTICE_DOCSTRING_FILENAME
+        docstring,
+        ASSET_TYPES["doc"],
+        storage_path,
+        ASSET_FILENAME_MAP["doc"],
     )
 
     # Deprecate
     named_args_asset = save_asset(
-        lat.named_args, AssetType.OBJECT, storage_path, LATTICE_NAMED_ARGS_FILENAME
+        lat.named_args,
+        ASSET_TYPES["named_args"],
+        storage_path,
+        ASSET_FILENAME_MAP["named_args"],
     )
     named_kwargs_asset = save_asset(
-        lat.named_kwargs, AssetType.OBJECT, storage_path, LATTICE_NAMED_KWARGS_FILENAME
+        lat.named_kwargs,
+        ASSET_TYPES["named_kwargs"],
+        storage_path,
+        ASSET_FILENAME_MAP["named_kwargs"],
     )
     cova_imports_asset = save_asset(
-        lat.cova_imports, AssetType.OBJECT, storage_path, LATTICE_COVA_IMPORTS_FILENAME
+        lat.cova_imports,
+        ASSET_TYPES["cova_imports"],
+        storage_path,
+        ASSET_FILENAME_MAP["cova_imports"],
     )
     lattice_imports_asset = save_asset(
-        lat.lattice_imports, AssetType.OBJECT, storage_path, LATTICE_LATTICE_IMPORTS_FILENAME
+        lat.lattice_imports,
+        ASSET_TYPES["lattice_imports"],
+        storage_path,
+        ASSET_FILENAME_MAP["lattice_imports"],
     )
 
     # NOTE: these are actually JSONable
     deps_asset = save_asset(
-        lat.metadata["deps"], AssetType.OBJECT, storage_path, LATTICE_DEPS_FILENAME
+        lat.metadata["deps"],
+        ASSET_TYPES["deps"],
+        storage_path,
+        ASSET_FILENAME_MAP["deps"],
     )
     call_before_asset = save_asset(
-        lat.metadata["call_before"], AssetType.OBJECT, storage_path, LATTICE_CALL_BEFORE_FILENAME
+        lat.metadata["call_before"],
+        ASSET_TYPES["call_before"],
+        storage_path,
+        ASSET_FILENAME_MAP["call_before"],
     )
     call_after_asset = save_asset(
-        lat.metadata["call_after"], AssetType.OBJECT, storage_path, LATTICE_CALL_AFTER_FILENAME
+        lat.metadata["call_after"],
+        ASSET_TYPES["call_after"],
+        storage_path,
+        ASSET_FILENAME_MAP["call_after"],
     )
 
     return LatticeAssets(
