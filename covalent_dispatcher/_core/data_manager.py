@@ -101,18 +101,20 @@ async def update_node_result(result_object, node_result) -> None:
     Return(s)
         None
     """
-    app_log.warning("Updating node result (run_planned_workflow).")
+    app_log.debug(f"Updating node result for {node_result['node_id']}.")
     try:
         update._node(result_object, **node_result)
     except Exception as ex:
         app_log.exception(f"Error persisting node update: {ex}")
         node_result["status"] = Result.FAILED
     finally:
+        sub_dispatch_id = node_result["sub_dispatch_id"]
+        detail = {"sub_dispatch_id": sub_dispatch_id} if sub_dispatch_id is not None else {}
         if node_status := node_result["status"]:
             dispatch_id = result_object.dispatch_id
             status_queue = get_status_queue(dispatch_id)
             node_id = node_result["node_id"]
-            await status_queue.put((node_id, node_status))
+            await status_queue.put((node_id, node_status, detail))
 
 
 # Domain: result
@@ -161,7 +163,7 @@ def get_unique_id() -> str:
     return str(uuid.uuid4())
 
 
-def make_dispatch(
+async def make_dispatch(
     json_lattice: str, parent_result_object: Result = None, parent_electron_id: int = None
 ) -> Result:
     result_object = initialize_result_object(
@@ -171,9 +173,22 @@ def make_dispatch(
     return result_object.dispatch_id
 
 
-def make_sublattice_dispatch(result_object, node_result):
+async def make_sublattice_dispatch(result_object, node_result):
     """Dummy function for now."""
-    return "mock_sublattice_dispatch_id"
+    pass
+
+
+# async def _make_sublattice_dispatch(result_object: SRVResult, node_result: dict):
+#     node_id = node_result["node_id"]
+#     bg_output = await get_electron_attribute(result_object.dispatch_id, node_id, "output")
+#     json_lattice = bg_output.object_string
+#     parent_node = await run_in_executor(
+#         result_object.lattice.transport_graph.get_node,
+#         node_id,
+#     )
+#     parent_electron_id = parent_node._electron_id
+
+#     return await make_dispatch(json_lattice, result_object, parent_electron_id)
 
 
 def _get_result_object_from_new_lattice(

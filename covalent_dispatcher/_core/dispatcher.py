@@ -162,40 +162,34 @@ async def _get_initial_tasks_and_deps(result_object: Result) -> Tuple[int, int, 
 
 # Domain: dispatcher
 async def _submit_task(result_object, node_id):
-    app_log.info(f"SUBLATTICE: Submitted node {node_id}")
     # Get name of the node for the current task
     node_name = result_object.lattice.transport_graph.get_node_value(node_id, "name")
     node_status = result_object.lattice.transport_graph.get_node_value(node_id, "status")
-    app_log.debug(f"7A: Node name: {node_name} (run_planned_workflow).")
 
     # Handle parameter nodes
     if node_name.startswith(parameter_prefix):
-        app_log.debug("7C: Parameter if block (run_planned_workflow).")
         output = result_object.lattice.transport_graph.get_node_value(node_id, "value")
-        app_log.debug(f"7C: Node output: {output} (run_planned_workflow).")
-        app_log.debug("8: Starting update node (run_planned_workflow).")
-
         timestamp = datetime.now(timezone.utc)
-        node_result = {
-            "node_id": node_id,
-            "start_time": timestamp,
-            "end_time": timestamp,
-            "status": RESULT_STATUS.COMPLETED,
-            "output": output,
-        }
+        node_result = datasvc.generate_node_result(
+            node_id=node_id,
+            start_time=timestamp,
+            end_time=timestamp,
+            status=RESULT_STATUS.COMPLETED,
+            output=output,
+        )
         await datasvc.update_node_result(result_object, node_result)
-        app_log.debug("8A: Update node success (run_planned_workflow).")
+        app_log.debug(f"Updated parameter node {node_id}.")
 
     elif node_status == RESULT_STATUS.COMPLETED:
         timestamp = datetime.now(timezone.utc)
-        node_result = {
-            "node_id": node_id,
-            "start_time": timestamp,
-            "end_time": timestamp,
-            "status": RESULT_STATUS.COMPLETED,
-        }
+        node_result = datasvc.generate_node_result(
+            node_id=node_id,
+            start_time=timestamp,
+            end_time=timestamp,
+            status=RESULT_STATUS.COMPLETED,
+        )
         await datasvc.update_node_result(result_object, node_result)
-        app_log.debug(f"Skipped completed node {node_id}.")
+        app_log.debug(f"Skipped completed node execution {node_id}.")
 
     else:
         # Gather inputs and dispatch task
@@ -211,8 +205,6 @@ async def _submit_task(result_object, node_id):
             "executor_data"
         ]
 
-        app_log.debug(f"Submitting task {node_id} to executor")
-
         coro = runner.run_abstract_task(
             dispatch_id=result_object.dispatch_id,
             node_id=node_id,
@@ -220,7 +212,7 @@ async def _submit_task(result_object, node_id):
             node_name=node_name,
             abstract_inputs=abs_task_input,
         )
-
+        app_log.debug(f"Creating task {node_id}.")
         asyncio.create_task(coro)
 
 
@@ -239,18 +231,11 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
     Returns:
         None
     """
-    app_log.info(
-        f"SUBLATTICE: Inside run planned workflow with dispatch id {result_object.dispatch_id}"
-    )
-    app_log.debug("3: Inside run_planned_workflow (run_planned_workflow).")
+    app_log.debug("Starting _run_planned_workflow ...")
     result_object._status = RESULT_STATUS.RUNNING
     result_object._start_time = datetime.now(timezone.utc)
-
-    app_log.debug(
-        f"4: Workflow status changed to running {result_object.dispatch_id} (run_planned_workflow)."
-    )
     datasvc.upsert_lattice_data(result_object.dispatch_id)
-    app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
+    app_log.debug(f"Wrote lattice status {result_object._status} to DB.")
 
     tasks_left, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(result_object)
 
@@ -264,21 +249,20 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
         app_log.debug(f"{tasks_left} tasks left to complete")
         app_log.debug(f"Waiting to hear from {unresolved_tasks} tasks")
 
-        node_id, node_status = await status_queue.get()
+        node_id, node_status, detail = await status_queue.get()
 
-        app_log.debug(f"Received node status update {node_id}: {node_status}")
+        app_log.debug(f"Status queue msg {node_id}: {node_status} with detail {detail}.")
 
         if node_status == RESULT_STATUS.RUNNING:
             continue
 
-        # Note: A node status can only be 'DISPATCHING' if it is a sublattice
+        # Note: A node status can only be 'DISPATCHING' if it is a sublattice and the corresponding graph has been built.
         if node_status == RESULT_STATUS.DISPATCHING:
-            # TODO - Retrieve detail
-            detail = {"sub_dispatch_id": "mock-sub-dispatch-id"}
             sub_dispatch_id = detail["sub_dispatch_id"]
             run_dispatch(sub_dispatch_id)
-            app_log.debug(f"Running sublattice dispatch {sub_dispatch_id}")
-
+            app_log.debug(
+                f"Submitted sublattice (dispatch id: {sub_dispatch_id}) to run_dispatch."
+            )
             return
 
         unresolved_tasks -= 1
@@ -309,9 +293,10 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
         )
         return result_object
 
-    app_log.debug("8: All tasks finished running (run_planned_workflow)")
+    app_log.debug(
+        f"Tasks for {result_object.dispatch_id} finished running. Updating result webhook ..."
+    )
     await result_webhook.send_update(result_object)
-
     return result_object
 
 

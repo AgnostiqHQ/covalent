@@ -88,6 +88,7 @@ def _get_task_input_values(result_object: Result, abs_task_inputs: dict) -> dict
 
     Return(s)
         node_values: Dictionary of task inputs
+
     """
     node_values = {}
     args = abs_task_inputs["args"]
@@ -104,15 +105,11 @@ def _get_task_input_values(result_object: Result, abs_task_inputs: dict) -> dict
 
 
 async def _prepare_sublattice_dispatch(dispatch_id, node_result) -> None:
+    # TODO - Add try/except block
     node_result["status"] = RESULT_STATUS.DISPATCHING
     result_object = datasvc.get_result_object(dispatch_id)
-    sub_dispatch_id = datasvc.make_sublattice_dispatch(result_object, node_result)
+    sub_dispatch_id = await datasvc.make_sublattice_dispatch(result_object, node_result)
     node_result["sub_dispatch_id"] = sub_dispatch_id
-
-    app_log.debug(f"Node result for sublattice after build graph: {node_result}")
-
-    # TODO - Ensure that sublattice dispatch id is stored accordingly
-    # Work in sublattice dispatch id into node_result
 
 
 # Domain: runner
@@ -298,7 +295,6 @@ async def _run_task(
             status=RESULT_STATUS.FAILED,
             error=error_msg,
         )
-    app_log.debug(f"Node result: {node_result}")
     return node_result
 
 

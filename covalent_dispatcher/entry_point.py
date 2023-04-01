@@ -48,7 +48,7 @@ async def run_dispatcher(json_lattice: str, disable_run: bool = False):
 
     from ._core import make_dispatch, run_dispatch
 
-    dispatch_id = make_dispatch(json_lattice)
+    dispatch_id = await make_dispatch(json_lattice)
 
     if not disable_run:
         run_dispatch(dispatch_id)

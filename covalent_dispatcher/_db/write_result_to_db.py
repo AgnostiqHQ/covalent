@@ -350,7 +350,6 @@ def transaction_upsert_electron_dependency_data(
         .first()
         is not None
     )
-    app_log.debug(f"electron_dependencies_exist is {electron_dependencies_exist}")
     if not electron_dependencies_exist:
         transaction_insert_electron_dependency_data(
             session=session, dispatch_id=dispatch_id, lattice=lattice
