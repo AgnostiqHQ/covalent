@@ -73,6 +73,10 @@ DEFERRED_KEYS = {
     "result",
 }
 
+# Temporary hack for API
+KEY_SUBSTITUTIONS = {"doc": "__doc__"}
+
+
 # Functions to support get_result
 
 
@@ -167,7 +171,7 @@ def get_node_asset_uri(dispatch_id: str, node_id: int, key: str) -> str:
 
 def get_lattice_asset_uri(dispatch_id: str, key: str) -> str:
     srv_res = get_result_object(dispatch_id, bare=True)
-    asset = srv_res.lattice.get_asset(key)
+    asset = srv_res.lattice.get_asset(KEY_SUBSTITUTIONS.get(key, key))
     return str(Path(asset.storage_path) / asset.object_key)
 
 

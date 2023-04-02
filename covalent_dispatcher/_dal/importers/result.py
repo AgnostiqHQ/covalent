@@ -38,6 +38,7 @@ from covalent._shared_files.utils import format_server_url
 from covalent_dispatcher._dal.asset import Asset, StorageType
 from covalent_dispatcher._dal.result import Result, ResultMeta
 
+from ..utils.uri_filters import AssetScope, filter_asset_uri
 from .lattice import _get_lattice_meta, import_lattice_assets
 from .tg import import_transport_graph
 
@@ -82,7 +83,36 @@ def import_result(
 
     lat = LatticeSchema(metadata=res.lattice.metadata, assets=lat_assets, transport_graph=tg)
 
-    return ResultSchema(metadata=res.metadata, assets=res_assets, lattice=lat)
+    output = ResultSchema(metadata=res.metadata, assets=res_assets, lattice=lat)
+    return _filter_remote_uris(output)
+
+
+def _filter_remote_uris(manifest: ResultSchema) -> ResultSchema:
+    dispatch_id = manifest.metadata.dispatch_id
+
+    # Workflow-level
+    for key, asset in manifest.assets:
+        filtered_uri = filter_asset_uri(
+            asset.remote_uri, {}, AssetScope.DISPATCH, dispatch_id, None, key
+        )
+        asset.remote_uri = filtered_uri
+
+    for key, asset in manifest.lattice.assets:
+        filtered_uri = filter_asset_uri(
+            asset.remote_uri, {}, AssetScope.LATTICE, dispatch_id, None, key
+        )
+        asset.remote_uri = filtered_uri
+
+    # Now filter each node
+    tg = manifest.lattice.transport_graph
+    for node in tg.nodes:
+        for key, asset in node.assets:
+            filtered_uri = filter_asset_uri(
+                asset.remote_uri, {}, AssetScope.NODE, dispatch_id, node.id, key
+            )
+            asset.remote_uri = filtered_uri
+
+    return manifest
 
 
 def _get_result_meta(res: ResultSchema, storage_path: str, electron_id: Optional[int]) -> dict:
@@ -125,8 +155,8 @@ def import_result_assets(
         asset_ids[asset_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
 
         # Send this back to the client
-        asset.digest = ""
-        asset.remote_uri = data_uri_prefix + f"/{asset_key}"
+        asset.digest = None
+        asset.remote_uri = local_uri
 
     session.flush()
 

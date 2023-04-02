@@ -146,8 +146,8 @@ def import_electron_assets(
         asset_ids[asset_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
 
         # Send this back to the client
-        asset.digest = ""
-        asset.remote_uri = data_uri_prefix + f"/{asset_key}"
+        asset.digest = None
+        asset.remote_uri = local_uri
 
     session.flush()
 

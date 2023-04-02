@@ -156,6 +156,8 @@ def merge_response_manifest(res: ResultSchema, response: ResultSchema) -> Result
     # Node assets
     tg = lattice.transport_graph
 
+    # Sort returned nodes b/c task packing may reorder nodes
+    tg.nodes.sort(key=lambda x: x.id)
     nodes = res.lattice.transport_graph.nodes
 
     for i, node in enumerate(nodes):

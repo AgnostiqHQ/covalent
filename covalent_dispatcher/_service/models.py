@@ -76,7 +76,8 @@ class DispatchAssetKey(str, Enum):
 class LatticeAssetKey(str, Enum):
     workflow_function = "workflow_function"
     workflow_function_string = "workflow_function_string"
-    doc = "__doc__"
+    doc = "doc"
+    doc_legacy = "__doc__"
     named_args = "named_args"
     named_kwargs = "named_kwargs"
     deps = "deps"

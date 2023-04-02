@@ -69,7 +69,9 @@ def get_default_sdk_config():
             (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
             + "/covalent/dispatches"
         ),
-        "multistage_dispatch": "false",
+        "multistage_dispatch": "true"
+        if os.environ.get("COVALENT_USE_MULTISTAGE_DISPATCH") == "1"
+        else "false",
         "results_dir": os.environ.get("COVALENT_RESULTS_DIR")
         or (
             (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
