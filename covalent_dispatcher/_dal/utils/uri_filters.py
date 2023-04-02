@@ -38,12 +38,14 @@ class AssetScope(enum.Enum):
     NODE = "node"
 
 
-class AccessType(enum.Enum):
-    READ = "READ"
-    WRITE = "WRITE"
+class URIFilterPolicy(enum.Enum):
+    raw = "raw"  # expose raw URIs
+    http = "http"  # return data endpoints
 
 
-def _srv_asset_uri(scope: AssetScope, dispatch_id: str, node_id: Optional[int], key: str) -> str:
+def _srv_asset_uri(
+    uri: str, attrs: dict, scope: AssetScope, dispatch_id: str, node_id: Optional[int], key: str
+) -> str:
     base_uri = SERVER_URL + f"/api/v1/resultv2/{dispatch_id}/assets/{scope.value}"
 
     if scope == AssetScope.DISPATCH or scope == AssetScope.LATTICE:
@@ -53,8 +55,26 @@ def _srv_asset_uri(scope: AssetScope, dispatch_id: str, node_id: Optional[int], 
     return uri
 
 
-def filter_asset_uri(
+def _raw(
     uri: str, attrs: dict, scope: AssetScope, dispatch_id: str, node_id: Optional[int], key: str
+):
+    return uri
+
+
+_filter_map = {
+    URIFilterPolicy.raw: _raw,
+    URIFilterPolicy.http: _srv_asset_uri,
+}
+
+
+def filter_asset_uri(
+    filter_policy: URIFilterPolicy,
+    uri: str,
+    attrs: dict,
+    scope: AssetScope,
+    dispatch_id: str,
+    node_id: Optional[int],
+    key: str,
 ) -> str:
     """Transform an internal URI for an asset to an external URI.
 
@@ -68,6 +88,13 @@ def filter_asset_uri(
         The external URI for the asset
 
     """
-    output_uri = _srv_asset_uri(scope, dispatch_id, node_id, key)
-    app_log.debug(f"transformed {uri} -> {output_uri}")
-    return output_uri
+
+    selected_filter = _filter_map[filter_policy]
+    return selected_filter(
+        uri=uri,
+        attrs=attrs,
+        scope=scope,
+        dispatch_id=dispatch_id,
+        node_id=node_id,
+        key=key,
+    )

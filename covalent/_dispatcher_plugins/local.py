@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import shutil
 import tempfile
 from copy import deepcopy
 from functools import wraps
@@ -567,9 +568,13 @@ class LocalDispatcher(BaseDispatcher):
 
     @staticmethod
     def _upload(assets: List[AssetSchema]):
+        local_scheme_prefix = "file://"
         total = len(assets)
         for i, asset in enumerate(assets):
-            _upload_asset(asset.uri, asset.remote_uri)
+            if asset.remote_uri.startswith(local_scheme_prefix):
+                _copy_asset(asset.uri, asset.remote_uri)
+            else:
+                _upload_asset(asset.uri, asset.remote_uri)
             app_log.debug(f"uploaded {i+1} out of {total} assets.")
 
 
@@ -585,3 +590,19 @@ def _upload_asset(local_uri, remote_uri):
         app_log.debug(f"uploading to {remote_uri}")
         r = requests.post(remote_uri, files=files)
         r.raise_for_status()
+
+
+# Copy asset locally between staging directory and object store
+def _copy_asset(local_uri, remote_uri):
+    scheme_prefix = "file://"
+    if local_uri.startswith(scheme_prefix):
+        local_path = local_uri[len(scheme_prefix) :]
+    else:
+        raise TypeError(f"{local_uri} is not a valid URI")
+        # local_path = local_uri
+    if remote_uri.startswith(scheme_prefix):
+        remote_path = remote_uri[len(scheme_prefix) :]
+    else:
+        raise TypeError(f"{remote_uri} is not a valid URI")
+
+    shutil.copyfile(local_path, remote_path)

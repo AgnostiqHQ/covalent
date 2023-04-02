@@ -120,7 +120,7 @@ def import_lattice_assets(
 
         # Send this back to the client
         asset.digest = None
-        asset.remote_uri = local_uri
+        asset.remote_uri = f"file://{local_uri}"
 
     session.flush()
 
