@@ -335,8 +335,8 @@ async def run_workflow(result_object: Result) -> Result:
 
     Returns:
         The result object from the workflow execution
-    """
 
+    """
     app_log.debug("Inside run_workflow.")
 
     if result_object.status == RESULT_STATUS.COMPLETED:

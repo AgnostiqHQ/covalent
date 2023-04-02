@@ -233,8 +233,8 @@ async def _run_task(
 
     Returns:
         None
-    """
 
+    """
     dispatch_id = result_object.dispatch_id
     results_dir = result_object.results_dir
 

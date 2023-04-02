@@ -165,7 +165,7 @@ def get_unique_id() -> str:
 
 async def make_dispatch(
     json_lattice: str, parent_result_object: Result = None, parent_electron_id: int = None
-) -> Result:
+) -> str:
     result_object = initialize_result_object(
         json_lattice, parent_result_object, parent_electron_id
     )
@@ -173,22 +173,15 @@ async def make_dispatch(
     return result_object.dispatch_id
 
 
-async def make_sublattice_dispatch(result_object, node_result):
-    """Dummy function for now."""
-    pass
+async def _make_sublattice_dispatch(result_object: Result, node_result: dict) -> str:
+    """Get sublattice json lattice (once the transport graph has been built) and invoke make_dispatch."""
+    node_id = node_result["node_id"]
+    built_graph_output = result_object.lattice.transport_graph.get_node_value(node_id, "output")
+    json_lattice = built_graph_output.object_string
+    parent_node = result_object.lattice.transport_graph.get_node(node_id)
+    parent_electron_id = parent_node._electron_id
 
-
-# async def _make_sublattice_dispatch(result_object: SRVResult, node_result: dict):
-#     node_id = node_result["node_id"]
-#     bg_output = await get_electron_attribute(result_object.dispatch_id, node_id, "output")
-#     json_lattice = bg_output.object_string
-#     parent_node = await run_in_executor(
-#         result_object.lattice.transport_graph.get_node,
-#         node_id,
-#     )
-#     parent_electron_id = parent_node._electron_id
-
-#     return await make_dispatch(json_lattice, result_object, parent_electron_id)
+    return await make_dispatch(json_lattice, result_object, parent_electron_id)
 
 
 def _get_result_object_from_new_lattice(
