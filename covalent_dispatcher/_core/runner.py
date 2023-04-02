@@ -104,12 +104,27 @@ def _get_task_input_values(result_object: Result, abs_task_inputs: dict) -> dict
     return node_values
 
 
-async def _prepare_sublattice_dispatch(dispatch_id, node_result) -> None:
-    # TODO - Add try/except block
-    node_result["status"] = RESULT_STATUS.DISPATCHING
-    result_object = datasvc.get_result_object(dispatch_id)
-    sub_dispatch_id = await datasvc.make_sublattice_dispatch(result_object, node_result)
-    node_result["sub_dispatch_id"] = sub_dispatch_id
+async def _handle_built_sublattice(dispatch_id: str, node_result: Dict) -> None:
+    """Make dispatch for sublattice node.
+
+    Note: The status COMPLETED which invokes this function refers to the graph being built. Once this step is completed, the sublattice is ready to be dispatched. Hence, the status is changed to DISPATCHING.
+
+    Args:
+        dispatch_id: Dispatch ID
+        node_result: Node result dictionary
+
+    """
+    try:
+        node_result["status"] = RESULT_STATUS.DISPATCHING
+        result_object = datasvc.get_result_object(dispatch_id)
+        sub_dispatch_id = await datasvc.make_sublattice_dispatch(result_object, node_result)
+        node_result["sub_dispatch_id"] = sub_dispatch_id
+    except Exception as ex:
+        tb = "".join(traceback.TracebackException.from_exception(ex).format())
+        node_result["status"] = RESULT_STATUS.FAILED
+        node_result["error"] = tb
+        result_object._update_node(**node_result)
+        app_log.debug(f"Failed to make sublattice dispatch: {tb}")
 
 
 # Domain: runner
@@ -133,8 +148,10 @@ async def run_abstract_task(
         and node_name.startswith(sublattice_prefix)
         and not node_result["sub_dispatch_id"]
     ):
-        app_log.debug(f"Sublattice {node_name} build graph completed, dispatching...")
-        await _prepare_sublattice_dispatch(dispatch_id, node_result)
+        app_log.debug(
+            f"Sublattice {node_name} build graph completed, invoking make sublattice dispatch..."
+        )
+        await _handle_built_sublattice(dispatch_id, node_result)
 
     result_object = datasvc.get_result_object(dispatch_id)
     await datasvc.update_node_result(result_object, node_result)

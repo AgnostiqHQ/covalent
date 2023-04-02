@@ -196,15 +196,12 @@ async def _submit_task(result_object, node_id):
         app_log.debug(f"Gathering inputs for task {node_id}.")
 
         abs_task_input = _get_abstract_task_inputs(node_id, node_name, result_object)
-
         executor = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
             "executor"
         ]
-
         executor_data = result_object.lattice.transport_graph.get_node_value(node_id, "metadata")[
             "executor_data"
         ]
-
         coro = runner.run_abstract_task(
             dispatch_id=result_object.dispatch_id,
             node_id=node_id,
@@ -246,8 +243,8 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
         await _submit_task(result_object, node_id)
 
     while unresolved_tasks > 0:
-        app_log.debug(f"{tasks_left} tasks left to complete")
-        app_log.debug(f"Waiting to hear from {unresolved_tasks} tasks")
+        app_log.debug(f"{tasks_left} tasks left to complete.")
+        app_log.debug(f"Waiting to hear from {unresolved_tasks} tasks.")
 
         node_id, node_status, detail = await status_queue.get()
 
