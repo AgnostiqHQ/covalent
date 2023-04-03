@@ -123,7 +123,6 @@ async def _handle_built_sublattice(dispatch_id: str, node_result: Dict) -> None:
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
         node_result["status"] = RESULT_STATUS.FAILED
         node_result["error"] = tb
-        result_object._update_node(**node_result)
         app_log.debug(f"Failed to make sublattice dispatch: {tb}")
 
     result_object = datasvc.get_result_object(dispatch_id)
