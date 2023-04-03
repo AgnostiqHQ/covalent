@@ -71,8 +71,22 @@ class Record(Generic[T]):
         return new_record
 
     def update(self, session: Session, *, values: dict):
-        cls = type(self)
-        stmt = update(cls.model).where(cls.model.id == self.primary_key).values(**values)
+        type(self).update_bulk(
+            session,
+            values=values,
+            equality_filters={"id": self.primary_key},
+            membership_filters={},
+        )
+
+    @classmethod
+    def update_bulk(
+        cls, session: Session, *, values: dict, equality_filters: dict, membership_filters: dict
+    ):
+        stmt = update(cls.model).values(**values)
+        for attr, val in equality_filters.items():
+            stmt = stmt.where(getattr(cls.model, attr) == val)
+        for attr, vals in membership_filters.items():
+            stmt = stmt.where(getattr(cls.model, attr).in_(vals))
         session.execute(stmt)
 
     def refresh(self, session: Session, *, fields: set):
