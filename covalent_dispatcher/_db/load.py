@@ -28,7 +28,7 @@ from covalent._shared_files.util_classes import Status
 from covalent._workflow.transport import TransportableObject
 
 from .datastore import workflow_db
-from .models import Lattice
+from .models import Electron, Lattice
 from .write_result_to_db import load_file
 
 app_log = logger.app_log
@@ -36,7 +36,15 @@ log_stack_info = logger.log_stack_info
 
 
 def _result_from(lattice_record: Lattice) -> Result:
-    """Re-hydrate result object from the lattice record."""
+    """Re-hydrate result object from the lattice record.
+
+    Args:
+        lattice_record: Lattice record to re-hydrate from.
+
+    Returns:
+        Result object.
+
+    """
     function = load_file(
         storage_path=lattice_record.storage_path, filename=lattice_record.function_filename
     )
@@ -138,8 +146,16 @@ def _result_from(lattice_record: Lattice) -> Result:
     return result
 
 
-def get_result_object_from_storage(dispatch_id: str):
-    """Get the result object from the database."""
+def get_result_object_from_storage(dispatch_id: str) -> Result:
+    """Get the result object from the database.
+
+    Args:
+        dispatch_id: The dispatch id of the result object to load.
+
+    Returns:
+        The result object.
+
+    """
     with workflow_db.session() as session:
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
         if not lattice_record:
@@ -147,3 +163,25 @@ def get_result_object_from_storage(dispatch_id: str):
             raise RuntimeError(f"No result object found for dispatch {dispatch_id}")
 
         return _result_from(lattice_record)
+
+
+def electron_record(dispatch_id: str, node_id: str) -> dict:
+    """Get electron record for a given dispatch if and transport graph node id.
+
+    Args:
+        dispatch_id: Dispatch id for lattice.
+        node_id: Transport graph node id of
+
+    Returns:
+        Electron record.
+
+    """
+    with workflow_db.session() as session:
+        return (
+            session.query(Lattice, Electron)
+            .filter(Lattice.id == Electron.parent_lattice_id)
+            .filter(Lattice.dispatch_id == dispatch_id)
+            .filter(Electron.transport_graph_node_id == node_id)
+            .first()
+            .Electron.__dict__
+        )

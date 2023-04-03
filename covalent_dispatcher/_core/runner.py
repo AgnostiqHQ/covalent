@@ -126,6 +126,9 @@ async def _handle_built_sublattice(dispatch_id: str, node_result: Dict) -> None:
         result_object._update_node(**node_result)
         app_log.debug(f"Failed to make sublattice dispatch: {tb}")
 
+    result_object = datasvc.get_result_object(dispatch_id)
+    await datasvc.update_node_result(result_object, node_result)
+
 
 # Domain: runner
 async def run_abstract_task(
@@ -143,6 +146,9 @@ async def run_abstract_task(
         executor=executor,
     )
 
+    result_object = datasvc.get_result_object(dispatch_id)
+    await datasvc.update_node_result(result_object, node_result)
+
     if (
         node_result["status"] == Result.COMPLETED
         and node_name.startswith(sublattice_prefix)
@@ -152,9 +158,6 @@ async def run_abstract_task(
             f"Sublattice {node_name} build graph completed, invoking make sublattice dispatch..."
         )
         await _handle_built_sublattice(dispatch_id, node_result)
-
-    result_object = datasvc.get_result_object(dispatch_id)
-    await datasvc.update_node_result(result_object, node_result)
 
 
 # Domain: runner

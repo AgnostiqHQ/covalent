@@ -174,16 +174,20 @@ async def make_dispatch(
 
 
 async def make_sublattice_dispatch(result_object: Result, node_result: dict) -> str:
-    """Get sublattice json lattice (once the transport graph has been built) and invoke make_dispatch."""
-    node_id = node_result["node_id"]
-    built_graph_output = result_object.lattice.transport_graph.get_node_value(node_id, "output")
-    app_log.debug("MAKE SUBLATTICE DISPATCH...")
-    app_log.debug(f"built_graph_output: {built_graph_output}")
-    app_log.debug(f"Entire node: {result_object.lattice.transport_graph.get_node(node_id)}")
-    json_lattice = built_graph_output.object_string
-    parent_node = result_object.lattice.transport_graph.get_node(node_id)
-    parent_electron_id = parent_node._electron_id
+    """Get sublattice json lattice (once the transport graph has been built) and invoke make_dispatch.
 
+    TODO - Add doc strings
+
+    """
+    node_id = node_result["node_id"]
+    json_lattice = node_result["output"].object_string
+    parent_electron_id = load.electron_record(result_object.dispatch_id, node_id)["id"]
+
+    app_log.debug(
+        f"Making sublattice dispatch node_id: {node_id}, parent_electron_id: {parent_electron_id}."
+    )
+
+    # Note: Here parent_electron_id is the electron id of the sublattice node since the tasks that will be dispatched will be the children of this sublattice workflow.
     return await make_dispatch(json_lattice, result_object, parent_electron_id)
 
 
