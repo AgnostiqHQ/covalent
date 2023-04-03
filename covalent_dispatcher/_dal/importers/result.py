@@ -116,6 +116,7 @@ def _connect_result_to_electron(res: ResultSchema, parent_electron_id: int) -> R
     sub_result = Result.from_dispatch_id(res.metadata.dispatch_id, bare=True)
     with Result.session() as session:
         sub_result.set_value("electron_id", parent_electron_id, session)
+        sub_result.set_value("root_dispatch_id", res.metadata.root_dispatch_id, session)
 
         parent_electron_record = ElectronMeta.get(
             session,
