@@ -23,10 +23,16 @@
 import inspect
 import json
 import operator
+
+# imports for multistage sublattices
+import os
+import tempfile
 from builtins import list
 from dataclasses import asdict
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
+
+from covalent._dispatcher_plugins.local import LocalDispatcher
 
 from .._file_transfer.enums import Order
 from .._file_transfer.file_transfer import FileTransfer
@@ -803,4 +809,14 @@ def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kw
             sub.metadata[k] = parent_metadata[k]
 
     sub.build_graph(*args, **kwargs)
-    return sub.serialize_to_json()
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        staging_path = tmp_dir
+
+    os.mkdir(staging_path)
+
+    # Prepare manifest and staging directory but don't strip --
+    # request Covalent to pull the assets
+    manifest = LocalDispatcher.prepare_manifest(sub, staging_path)
+
+    return manifest.json()

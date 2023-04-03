@@ -26,6 +26,7 @@ import asyncio
 import uuid
 from typing import Optional
 
+from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas.result import ResultSchema
 from covalent_dispatcher._dal.importers.result import import_result
@@ -34,6 +35,8 @@ from covalent_dispatcher._dal.result import Result as SRVResult
 from .utils import run_in_executor
 
 BASE_PATH = get_config("dispatcher.results_dir")
+
+app_log = logger.app_log
 
 
 # Domain: result
@@ -81,6 +84,8 @@ async def _pull_assets(manifest: ResultSchema) -> None:
             futs.append(run_in_executor(asset.download, asset.remote_uri))
 
     await asyncio.gather(*futs)
+
+    app_log.debug(f"imported {len(futs)} assets for dispatch {dispatch_id}")
 
 
 async def import_manifest(

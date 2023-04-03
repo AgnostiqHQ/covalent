@@ -32,6 +32,7 @@ import networkx as nx
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
+from covalent._shared_files.schemas.result import ResultSchema
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._dal.tg_ops import TransportGraphOps
@@ -42,6 +43,7 @@ from .._dal.result import get_result_object as get_result_object_from_db
 from .._db import update
 from .._db.write_result_to_db import resolve_electron_id
 from . import dispatcher
+from .data_modules import importer as manifest_importer
 from .data_modules.utils import run_in_executor
 
 app_log = logger.app_log
@@ -373,14 +375,22 @@ async def _filter_sublattice_status(
 async def _make_sublattice_dispatch(result_object: SRVResult, node_result: dict):
     node_id = node_result["node_id"]
     bg_output = await get_electron_attribute(result_object.dispatch_id, node_id, "output")
-    json_lattice = bg_output.object_string
+    # json_lattice = bg_output.object_string
+    manifest = ResultSchema.parse_raw(bg_output.object_string)
     parent_node = await run_in_executor(
         result_object.lattice.transport_graph.get_node,
         node_id,
     )
     parent_electron_id = parent_node._electron_id
 
-    return await make_dispatch(json_lattice, result_object, parent_electron_id)
+    imported_manifest = await manifest_importer.import_manifest(
+        manifest=manifest,
+        parent_result_object=result_object,
+        parent_electron_id=parent_electron_id,
+    )
+
+    return imported_manifest.metadata.dispatch_id
+    # return await make_dispatch(json_lattice, result_object, parent_electron_id)
 
 
 # Common Result object queries
