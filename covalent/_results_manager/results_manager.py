@@ -44,11 +44,14 @@ from .._shared_files.config import get_config
 from .._shared_files.exceptions import MissingLatticeRecordError
 from .._shared_files.schemas.asset import AssetSchema
 from .._shared_files.schemas.result import ResultSchema
+from .._shared_files.utils import copy_file_locally
 from .result import Result, import_result_object
 from .wait import EXTREME
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+multistage_get_result = get_config("sdk.multistage_get_result") == "true"
 
 
 SDK_NODE_META_KEYS = {
@@ -187,7 +190,7 @@ def cancel(dispatch_id: str, task_ids: List[int] = None, dispatcher_addr: str = 
     return r.content.decode("utf-8").strip().replace('"', "")
 
 
-def get_result(
+def _get_result_single(
     dispatch_id: str,
     wait: bool = False,
     dispatcher_addr: str = None,
@@ -458,6 +461,10 @@ def _get_default_assets(rm: ResultManager):
             rm.load_lattice_asset(key)
 
     tg = rm.result_object.lattice.transport_graph
+
+    tg.lattice_metadata = rm.result_object.lattice.metadata
+    rm.result_object.lattice.__doc__ = rm.result_object.lattice.__dict__.pop("doc")
+
     for key in ELECTRON_ASSET_TYPES.keys():
         if key not in DEFERRED_KEYS:
             for node_id in tg._graph.nodes:
@@ -485,11 +492,15 @@ def get_result_asset_path(results_dir: str, key: str):
 
 
 def download_asset(remote_uri: str, local_path: str, chunk_size: int = 1024 * 1024):
-    r = requests.get(remote_uri, stream=True)
-    r.raise_for_status()
-    with open(local_path, "wb") as f:
-        for chunk in r.iter_content(chunk_size=chunk_size):
-            f.write(chunk)
+    local_scheme = "file"
+    if remote_uri.startswith(local_scheme):
+        copy_file_locally(remote_uri, f"file://{local_path}")
+    else:
+        r = requests.get(remote_uri, stream=True)
+        r.raise_for_status()
+        with open(local_path, "wb") as f:
+            for chunk in r.iter_content(chunk_size=chunk_size):
+                f.write(chunk)
 
 
 def _download_result_asset(manifest: dict, results_dir: str, key: str):
@@ -612,3 +623,107 @@ def get_result_manager(dispatch_id, results_dir=None, wait=False, dispatcher_add
     if not results_dir:
         results_dir = get_config("sdk.results_dir") + f"/{dispatch_id}"
     return ResultManager.from_dispatch_id(dispatch_id, results_dir, wait, dispatcher_addr)
+
+
+def _get_result_multistage(
+    dispatch_id: str,
+    wait: bool = False,
+    dispatcher_addr: str = None,
+    status_only: bool = False,
+    *,
+    workflow_output: bool = True,
+    intermediate_outputs: bool = True,
+    sublattice_results: bool = True,
+) -> Result:
+    """
+    Get the results of a dispatch from a file.
+
+    Args:
+        dispatch_id: The dispatch id of the result.
+        wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
+
+    Returns:
+        The result from the file.
+
+    """
+
+    try:
+        if status_only:
+            return _get_result_export_from_dispatcher(
+                dispatch_id=dispatch_id,
+                wait=wait,
+                status_only=status_only,
+                dispatcher_addr=dispatcher_addr,
+            )
+        else:
+            rm = get_result_manager(dispatch_id, None, wait, dispatcher_addr)
+            _get_default_assets(rm)
+
+        if workflow_output:
+            rm.download_result_asset("result")
+            rm.load_result_asset("result")
+
+        if intermediate_outputs:
+            tg = rm.result_object.lattice.transport_graph
+            for node_id in tg._graph.nodes:
+                rm.load_node_asset(node_id, "output")
+
+        # Fetch sublattice result objects recursively
+        tg = rm.result_object.lattice.transport_graph
+        for node_id in tg._graph.nodes:
+            sub_dispatch_id = tg.get_node_value(node_id, "sub_dispatch_id")
+            if sublattice_results and sub_dispatch_id:
+                sub_result = _get_result_multistage(
+                    sub_dispatch_id,
+                    wait,
+                    dispatcher_addr,
+                    status_only,
+                    workflow_output=workflow_output,
+                    intermediate_outputs=intermediate_outputs,
+                    sublattice_results=sublattice_results,
+                )
+                tg.set_node_value(node_id, "sublattice_result", sub_result)
+            else:
+                tg.set_node_value(node_id, "sublattice_result", None)
+
+    except MissingLatticeRecordError as ex:
+        app_log.warning(
+            f"Dispatch ID {dispatch_id} was not found in the database. Incorrect dispatch id."
+        )
+
+        raise ex
+
+    return rm.result_object
+
+
+def get_result(
+    dispatch_id: str,
+    wait: bool = False,
+    dispatcher_addr: str = None,
+    status_only: bool = False,
+    *,
+    workflow_output: bool = True,
+    intermediate_outputs: bool = True,
+    sublattice_results: bool = True,
+    multistage: bool = multistage_get_result,
+) -> Result:
+    if multistage:
+        return _get_result_multistage(
+            dispatch_id=dispatch_id,
+            wait=wait,
+            dispatcher_addr=dispatcher_addr,
+            status_only=status_only,
+            workflow_output=workflow_output,
+            intermediate_outputs=intermediate_outputs,
+            sublattice_results=sublattice_results,
+        )
+    else:
+        return _get_result_single(
+            dispatch_id=dispatch_id,
+            wait=wait,
+            dispatcher_addr=dispatcher_addr,
+            status_only=status_only,
+            workflow_output=workflow_output,
+            intermediate_outputs=intermediate_outputs,
+            sublattice_results=sublattice_results,
+        )
