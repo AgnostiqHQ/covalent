@@ -191,6 +191,9 @@ async def _submit_task(result_object, node_id):
         await datasvc.update_node_result(result_object, node_result)
         app_log.debug(f"Skipped completed node execution {node_id}.")
 
+    elif node_status == RESULT_STATUS.DISPATCHING:
+        app_log.debug(f"ALERT!!! Node {node_id} is already being dispatched.")
+
     else:
         # Gather inputs and dispatch task
         app_log.debug(f"Gathering inputs for task {node_id}.")
@@ -248,7 +251,9 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
 
         node_id, node_status, detail = await status_queue.get()
 
-        app_log.debug(f"Status queue msg {node_id}: {node_status} with detail {detail}.")
+        app_log.debug(
+            f"Status queue msg for node id {node_id}: {node_status} with detail {detail}."
+        )
 
         if node_status == RESULT_STATUS.RUNNING:
             continue
@@ -334,8 +339,6 @@ async def run_workflow(result_object: Result) -> Result:
         The result object from the workflow execution
 
     """
-    app_log.debug("Inside run_workflow.")
-
     if result_object.status == RESULT_STATUS.COMPLETED:
         datasvc.finalize_dispatch(result_object.dispatch_id)
         return result_object
@@ -404,5 +407,4 @@ def run_dispatch(dispatch_id: str) -> asyncio.Future:
         asyncio.Future
     """
     result_object = datasvc.get_result_object(dispatch_id)
-    app_log.info(f"SUBLATTICE: Running dispatch id: {dispatch_id}")
     return asyncio.create_task(run_workflow(result_object))
