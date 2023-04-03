@@ -20,7 +20,6 @@
 
 """Tests for importing ResultSchema into the DB"""
 
-
 import tempfile
 
 import pytest
@@ -30,6 +29,7 @@ from covalent._results_manager.result import Result as SDKResult
 from covalent._serialize.result import serialize_result
 from covalent._shared_files.schemas.result import ResultSchema
 from covalent_dispatcher._dal.importers.result import SERVER_URL, import_result
+from covalent_dispatcher._dal.result import get_result_object
 from covalent_dispatcher._db.datastore import DataStore
 
 TEMP_RESULTS_DIR = "/tmp/covalent_result_import_test"
@@ -120,3 +120,25 @@ def test_import_result(mocker, test_db):
 
     for i, edge in enumerate(tg.links):
         assert edge == filtered_tg.links[i]
+
+
+def test_import_previously_imported_result(mocker, test_db):
+    dispatch_id = "test_import_previous_result"
+
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+
+    mock_filter_uris = mocker.patch(
+        "covalent_dispatcher._dal.importers.result._filter_remote_uris"
+    )
+
+    with tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir, tempfile.TemporaryDirectory(
+        prefix="covalent-"
+    ) as srv_dir:
+        res = get_mock_result(dispatch_id, sdk_dir)
+        import_result(res, srv_dir, None)
+        import_result(res, srv_dir, 1)
+
+    mock_filter_uris.assert_called_once()
+
+    srv_res = get_result_object(dispatch_id, bare=True)
+    assert srv_res._electron_id == 1

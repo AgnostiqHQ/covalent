@@ -59,13 +59,13 @@ def _import_manifest(
     parent_result_object: Optional[SRVResult] = None,
     parent_electron_id: Optional[int] = None,
 ) -> ResultSchema:
-    dispatch_id = get_unique_id()
-    res.metadata.dispatch_id = dispatch_id
+    if not res.metadata.dispatch_id:
+        res.metadata.dispatch_id = get_unique_id()
 
     if parent_result_object:
         res.metadata.root_dispatch_id = parent_result_object.root_dispatch_id
     else:
-        res.metadata.root_dispatch_id = dispatch_id
+        res.metadata.root_dispatch_id = res.metadata.dispatch_id
 
     return import_result(res, BASE_PATH, parent_electron_id)
 

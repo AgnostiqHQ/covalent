@@ -26,6 +26,7 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
+from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas.lattice import (
     LATTICE_ERROR_FILENAME,
@@ -36,6 +37,8 @@ from covalent._shared_files.schemas.lattice import (
 from covalent._shared_files.schemas.result import ResultAssets, ResultSchema
 from covalent._shared_files.utils import format_server_url
 from covalent_dispatcher._dal.asset import Asset, StorageType
+from covalent_dispatcher._dal.electron import ElectronMeta
+from covalent_dispatcher._dal.job import Job
 from covalent_dispatcher._dal.result import Result, ResultMeta
 
 from ..utils.uri_filters import AssetScope, URIFilterPolicy, filter_asset_uri
@@ -46,6 +49,8 @@ SERVER_URL = format_server_url(get_config("dispatcher.address"), get_config("dis
 
 URI_FILTER_POLICY = URIFilterPolicy[get_config("dispatcher.data_uri_filter_policy")]
 
+app_log = logger.app_log
+
 
 def import_result(
     res: ResultSchema, base_path: str, electron_id: Optional[int] = None
@@ -53,6 +58,22 @@ def import_result(
     """Imports a ResultSchema into the DB"""
 
     dispatch_id = res.metadata.dispatch_id
+
+    # If result already exists in the DB, it was previously registered
+    # as a sublattice dispatch; in that case, just connect it to its
+    # parent electron.
+    with Result.session() as session:
+        records = ResultMeta.get(
+            session,
+            fields={"id", "dispatch_id"},
+            equality_filters={"dispatch_id": dispatch_id},
+            membership_filters={},
+        )
+        if len(records) > 0:
+            return _connect_result_to_electron(res, electron_id)
+
+    # Main case: insert new lattice, electron, edge, and job records
+
     storage_path = os.path.join(base_path, dispatch_id)
     os.makedirs(storage_path)
 
@@ -83,6 +104,50 @@ def import_result(
 
     output = ResultSchema(metadata=res.metadata, assets=res_assets, lattice=lat)
     return _filter_remote_uris(output)
+
+
+def _connect_result_to_electron(res: ResultSchema, parent_electron_id: int) -> ResultSchema:
+    """Link a sublattice dispatch to its parent electron"""
+
+    # Update the `electron_id` lattice field and propagate the
+    # `Job.cancel_requested` to the sublattice dispatch's jobs.
+
+    app_log.debug("connecting previously submitted subdispatch to parent electron")
+    sub_result = Result.from_dispatch_id(res.metadata.dispatch_id, bare=True)
+    with Result.session() as session:
+        sub_result.set_value("electron_id", parent_electron_id, session)
+
+        parent_electron_record = ElectronMeta.get(
+            session,
+            fields={"id", "parent_lattice_id", "job_id"},
+            equality_filters={"id": parent_electron_id},
+            membership_filters={},
+        )[0]
+        parent_job_record = Job.get(
+            session,
+            fields={"id", "cancel_requested"},
+            equality_filters={"id": parent_electron_record.job_id},
+            membership_filters={},
+        )[0]
+        cancel_requested = parent_job_record.cancel_requested
+
+        sub_electron_records = ElectronMeta.get(
+            session,
+            fields={"id", "parent_lattice_id", "job_id"},
+            equality_filters={"parent_lattice_id": sub_result._lattice_id},
+            membership_filters={},
+        )
+
+        job_ids = [rec.job_id for rec in sub_electron_records]
+
+        Job.update_bulk(
+            session,
+            values={"cancel_requested": cancel_requested},
+            equality_filters={},
+            membership_filters={"id": job_ids},
+        )
+
+    return res
 
 
 def _filter_remote_uris(manifest: ResultSchema) -> ResultSchema:
