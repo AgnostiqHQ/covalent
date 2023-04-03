@@ -35,13 +35,12 @@ app_log = logger.app_log
 
 
 # Transport Graphs are assumed to be full, with a complete internal NX graph
-def _export_nodes(tg: _TransportGraph, data_uri_prefix: str) -> List[ElectronSchema]:
+def _export_nodes(tg: _TransportGraph) -> List[ElectronSchema]:
     g = tg.get_internal_graph_copy()
     internal_nodes = tg.get_nodes(list(g.nodes), None)
     export_nodes = []
     for e in internal_nodes:
-        node_data_uri_prefix = data_uri_prefix + f"/{e.node_id}"
-        export_nodes.append(export_electron(e, node_data_uri_prefix))
+        export_nodes.append(export_electron(e))
 
     return export_nodes
 
@@ -57,8 +56,8 @@ def _export_edges(tg: _TransportGraph) -> List[EdgeSchema]:
     return edge_list
 
 
-def export_transport_graph(tg: _TransportGraph, data_uri_prefix: str) -> TransportGraphSchema:
-    node_list = _export_nodes(tg, data_uri_prefix)
+def export_transport_graph(tg: _TransportGraph) -> TransportGraphSchema:
+    node_list = _export_nodes(tg)
     edge_list = _export_edges(tg)
     app_log.debug(f"Exporting {len(node_list)} nodes and {len(edge_list)} edges")
     return TransportGraphSchema(nodes=node_list, links=edge_list)

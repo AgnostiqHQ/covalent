@@ -58,7 +58,6 @@ def import_electron(
     lat: Lattice,
     node_storage_path: str,
     job_id: int,
-    data_uri_prefix: str,
 ) -> Tuple[models.Electron, ElectronSchema]:
     """Returns (electron_id, ElectronSchema)"""
 
@@ -68,7 +67,10 @@ def import_electron(
     electron_record = Electron(session, electron_row)
 
     electron_assets = import_electron_assets(
-        session, e, electron_record, node_storage_path, data_uri_prefix=data_uri_prefix
+        session,
+        e,
+        electron_record,
+        node_storage_path,
     )
     return electron_row, ElectronSchema(id=e.id, metadata=e.metadata, assets=electron_assets)
 
@@ -116,7 +118,6 @@ def import_electron_assets(
     e: ElectronSchema,
     record: Electron,
     node_storage_path: str,
-    data_uri_prefix: str,
 ) -> ElectronAssets:
     """Insert asset records and populate the asset link table"""
     asset_ids = {}

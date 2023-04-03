@@ -96,7 +96,7 @@ def _populate_assets(res: Result):
         node.assets[rec["key"]] = rec["asset"]
 
 
-def _export_result_assets(res: Result, data_uri_prefix: str) -> ResultAssets:
+def _export_result_assets(res: Result) -> ResultAssets:
     manifests = {}
     for asset_key in ASSET_KEYS:
         asset = res.assets[asset_key]
@@ -113,12 +113,8 @@ def export_result(res: Result) -> ResultSchema:
 
     _populate_assets(res)
 
-    data_uri_prefix = SERVER_URL + f"/api/v1/resultv2/{dispatch_id}/assets/dispatch"
-    assets = _export_result_assets(res, data_uri_prefix)
-
-    lat_data_uri_prefix = SERVER_URL + f"/api/v1/resultv2/{dispatch_id}/assets/lattice"
-    node_data_uri_prefix = SERVER_URL + f"/api/v1/resultv2/{dispatch_id}/assets/node"
-    lattice = export_lattice(res.lattice, lat_data_uri_prefix, node_data_uri_prefix)
+    assets = _export_result_assets(res)
+    lattice = export_lattice(res.lattice)
 
     # Filter asset URIs
 

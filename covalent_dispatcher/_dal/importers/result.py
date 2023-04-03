@@ -62,25 +62,21 @@ def import_result(
     with Result.session() as session:
         lattice_row = ResultMeta.insert(session, insert_kwargs=lattice_record_kwargs, flush=True)
         res_record = Result(session, lattice_row, True)
-
-        data_uri_prefix = SERVER_URL + f"/api/v1/resultv2/{dispatch_id}/assets/dispatch"
-
-        res_assets = import_result_assets(session, res, res_record, storage_path, data_uri_prefix)
-
-        data_uri_prefix = SERVER_URL + f"/api/v1/resultv2/{dispatch_id}/assets/lattice"
+        res_assets = import_result_assets(session, res, res_record, storage_path)
 
         lat_assets = import_lattice_assets(
-            session, res.lattice, res_record.lattice, storage_path, data_uri_prefix
+            session,
+            res.lattice,
+            res_record.lattice,
+            storage_path,
         )
 
-        data_uri_prefix = SERVER_URL + f"/api/v1/resultv2/{dispatch_id}/assets/node"
         tg = import_transport_graph(
             session,
             res.lattice.transport_graph,
             res_record.lattice,
             storage_path,
             electron_id,
-            data_uri_prefix,
         )
 
     lat = LatticeSchema(metadata=res.lattice.metadata, assets=lat_assets, transport_graph=tg)
@@ -134,7 +130,10 @@ def _get_result_meta(res: ResultSchema, storage_path: str, electron_id: Optional
 
 
 def import_result_assets(
-    session: Session, manifest: ResultSchema, record: Result, storage_path: str, data_uri_prefix
+    session: Session,
+    manifest: ResultSchema,
+    record: Result,
+    storage_path: str,
 ) -> ResultAssets:
     """Insert asset records and populate the asset link table"""
     asset_ids = {}

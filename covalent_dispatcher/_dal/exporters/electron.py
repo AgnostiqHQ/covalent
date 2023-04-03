@@ -57,7 +57,7 @@ def _export_electron_meta(e: Electron) -> ElectronMetadata:
     )
 
 
-def _export_electron_assets(e: Electron, data_uri_prefix: str) -> ElectronAssets:
+def _export_electron_assets(e: Electron) -> ElectronAssets:
     manifests = {}
     for asset_key in ASSET_KEYS:
         asset = e.assets[asset_key]
@@ -68,7 +68,7 @@ def _export_electron_assets(e: Electron, data_uri_prefix: str) -> ElectronAssets
     return ElectronAssets(**manifests)
 
 
-def export_electron(e: Electron, data_uri_prefix: str) -> ElectronSchema:
+def export_electron(e: Electron) -> ElectronSchema:
     metadata = _export_electron_meta(e)
-    assets = _export_electron_assets(e, data_uri_prefix)
+    assets = _export_electron_assets(e)
     return ElectronSchema(id=e.node_id, metadata=metadata, assets=assets)

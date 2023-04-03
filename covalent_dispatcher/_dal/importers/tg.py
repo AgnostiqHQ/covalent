@@ -46,7 +46,6 @@ def import_transport_graph(
     lat: Lattice,
     storage_path: str,
     electron_id: Optional[int],
-    data_uri_prefix: str,
 ) -> TransportGraphSchema:
     electron_map = {}
     output_nodes = []
@@ -78,14 +77,12 @@ def import_transport_graph(
         for node in node_group:
             node_storage_path = os.path.join(storage_path, f"node_{node.id}")
             os.makedirs(node_storage_path)
-            node_data_uri_prefix = data_uri_prefix + f"/{node.id}"
             e_record, node = import_electron(
                 session,
                 node,
                 lat,
                 node_storage_path,
                 job_id=job_record.id,
-                data_uri_prefix=node_data_uri_prefix,
             )
             output_nodes.append(node)
             electron_map[node.id] = e_record

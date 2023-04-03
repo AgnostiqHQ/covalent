@@ -85,7 +85,10 @@ def _get_lattice_meta(lat: LatticeSchema, storage_path) -> dict:
 
 
 def import_lattice_assets(
-    session: Session, lat: LatticeSchema, record: Lattice, storage_path: str, data_uri_prefix: str
+    session: Session,
+    lat: LatticeSchema,
+    record: Lattice,
+    storage_path: str,
 ) -> LatticeAssets:
     """Insert asset records and populate the asset link table"""
     asset_ids = {}

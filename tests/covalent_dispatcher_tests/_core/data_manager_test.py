@@ -568,15 +568,25 @@ async def test_make_sublattice_dispatch(mocker):
     mock_bg_output = MagicMock()
     mock_bg_output.object_string = output_json
 
+    mock_manifest = MagicMock()
+    mock_manifest.metadata.dispatch_id = "mock_sublattice_dispatch"
+
     result_object = MagicMock()
     result_object.dispatch_id = "dispatch"
     result_object.lattice.transport_graph.get_node = MagicMock(return_value=mock_node)
+    mocker.patch("covalent._shared_files.schemas.result.ResultSchema.parse_raw")
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.manifest_importer.import_manifest",
+        return_value=mock_manifest,
+    )
+
     print("DEBUG:", result_object.lattice.transport_graph.get_node())
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_electron_attribute",
         return_value=mock_bg_output,
     )
     mock_make_dispatch = mocker.patch("covalent_dispatcher._core.data_manager.make_dispatch")
-    await _make_sublattice_dispatch(result_object, node_result)
+    sub_dispatch_id = await _make_sublattice_dispatch(result_object, node_result)
 
-    mock_make_dispatch.assert_awaited_with("lattice_json", result_object, mock_node._electron_id)
+    # mock_make_dispatch.assert_awaited_with("lattice_json", result_object, mock_node._electron_id)
+    assert sub_dispatch_id == mock_manifest.metadata.dispatch_id

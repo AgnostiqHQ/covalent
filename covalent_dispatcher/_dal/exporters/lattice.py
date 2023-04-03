@@ -40,7 +40,7 @@ def _export_lattice_meta(lat: Lattice) -> LatticeMetadata:
     return LatticeMetadata(**metadata_kwargs)
 
 
-def _export_lattice_assets(lat: Lattice, data_uri_prefix: str) -> LatticeAssets:
+def _export_lattice_assets(lat: Lattice) -> LatticeAssets:
     manifests = {}
     for asset_key in ASSET_KEYS:
         param = KEY_SUBSTITUTIONS.get(asset_key, asset_key)
@@ -51,8 +51,8 @@ def _export_lattice_assets(lat: Lattice, data_uri_prefix: str) -> LatticeAssets:
     return LatticeAssets(**manifests)
 
 
-def export_lattice(lat: Lattice, data_uri_prefix: str, node_data_uri_prefix: str) -> LatticeSchema:
+def export_lattice(lat: Lattice) -> LatticeSchema:
     metadata = _export_lattice_meta(lat)
-    assets = _export_lattice_assets(lat, data_uri_prefix)
-    transport_graph = export_transport_graph(lat.transport_graph, node_data_uri_prefix)
+    assets = _export_lattice_assets(lat)
+    transport_graph = export_transport_graph(lat.transport_graph)
     return LatticeSchema(metadata=metadata, assets=assets, transport_graph=transport_graph)
