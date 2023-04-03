@@ -25,7 +25,6 @@ import json
 import operator
 
 # imports for multistage sublattices
-import os
 import tempfile
 from builtins import list
 from dataclasses import asdict
@@ -810,13 +809,12 @@ def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kw
 
     sub.build_graph(*args, **kwargs)
 
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        staging_path = tmp_dir
+    with tempfile.TemporaryDirectory(prefix="covalent-") as staging_path:
+        manifest = LocalDispatcher.prepare_manifest(sub, staging_path)
 
-    os.mkdir(staging_path)
+        # Omit these two steps to return the manifest to Covalent and
+        # request the assets be pulled
+        recv_manifest = LocalDispatcher.register_manifest(manifest, push_assets=True)
+        LocalDispatcher.upload_assets(recv_manifest)
 
-    # Prepare manifest and staging directory but don't strip --
-    # request Covalent to pull the assets
-    manifest = LocalDispatcher.prepare_manifest(sub, staging_path)
-
-    return manifest.json()
+    return recv_manifest.json()
