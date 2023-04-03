@@ -119,7 +119,8 @@ async def _handle_built_sublattice(dispatch_id: str, node_result: Dict) -> None:
         result_object = datasvc.get_result_object(dispatch_id)
         sub_dispatch_id = await datasvc.make_sublattice_dispatch(result_object, node_result)
         node_result["sub_dispatch_id"] = sub_dispatch_id
-        node_result["start_time"] = datetime.now(timezone.utc).isoformat()
+        node_result["start_time"] = datetime.now(timezone.utc)
+        node_result["end_time"] = None
     except Exception as ex:
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
         node_result["status"] = RESULT_STATUS.FAILED

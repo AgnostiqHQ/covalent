@@ -47,7 +47,7 @@ def persist(record: Union[Result, Lattice, _TransportGraph], electron_id: int = 
     """
     if isinstance(record, Result):
         _initialize_results_dir(record)
-        app_log.debug(f"Persisting {record}")
+        app_log.debug("Persisting record...")
         upsert.persist_result(record, electron_id)
         app_log.debug("persist complete")
     if isinstance(record, Lattice):
