@@ -21,6 +21,8 @@
 """Functions to load results from the database."""
 
 
+from typing import Dict
+
 from covalent import lattice
 from covalent._results_manager.result import Result
 from covalent._shared_files import logger
@@ -165,7 +167,7 @@ def get_result_object_from_storage(dispatch_id: str) -> Result:
         return _result_from(lattice_record)
 
 
-def electron_record(dispatch_id: str, node_id: str) -> dict:
+def electron_record(dispatch_id: str, node_id: str) -> Dict:
     """Get electron record for a given dispatch if and transport graph node id.
 
     Args:

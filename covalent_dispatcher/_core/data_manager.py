@@ -130,8 +130,8 @@ def initialize_result_object(
 
     Returns:
         Result: result object
-    """
 
+    """
     dispatch_id = get_unique_id()
     lattice = Lattice.deserialize_from_json(json_lattice)
     result_object = Result(lattice, dispatch_id)
@@ -166,6 +166,17 @@ def get_unique_id() -> str:
 async def make_dispatch(
     json_lattice: str, parent_result_object: Result = None, parent_electron_id: int = None
 ) -> str:
+    """Make a dispatch from a json-serialized lattice.
+
+    Args:
+        json_lattice: a JSON-serialized lattice.
+        parent_result_object: the parent result object if json_lattice is a sublattice.
+        parent_electron_id: the DB id of the parent electron (for sublattices).
+
+    Returns:
+        Dispatch ID of the lattice.
+
+    """
     result_object = initialize_result_object(
         json_lattice, parent_result_object, parent_electron_id
     )
@@ -176,25 +187,36 @@ async def make_dispatch(
 async def make_sublattice_dispatch(result_object: Result, node_result: dict) -> str:
     """Get sublattice json lattice (once the transport graph has been built) and invoke make_dispatch.
 
-    TODO - Add doc strings
+    Args:
+        result_object: Result object for parent dispatch of the node.
+        node_result: Result of the node.
+
+    Returns:
+        str: Dispatch ID of the sublattice.
 
     """
     node_id = node_result["node_id"]
     json_lattice = node_result["output"].object_string
     parent_electron_id = load.electron_record(result_object.dispatch_id, node_id)["id"]
-
     app_log.debug(
-        f"Making sublattice dispatch node_id: {node_id}, parent_electron_id: {parent_electron_id}."
+        f"Making sublattice dispatch for node_id {node_id} and electron_id {parent_electron_id}."
     )
-
-    # Note: Here parent_electron_id is the electron id of the sublattice node since the tasks that will be dispatched will be the children of this sublattice workflow.
     return await make_dispatch(json_lattice, result_object, parent_electron_id)
 
 
 def _get_result_object_from_new_lattice(
     json_lattice: str, old_result_object: Result, reuse_previous_results: bool
 ) -> Result:
-    """Get new result object for re-dispatching from new lattice json."""
+    """Get new result object for re-dispatching from new lattice json.
+
+    Args:
+        json_lattice: JSON-serialized lattice.
+        old_result_object: Result object of the previous dispatch.
+
+    Returns:
+        Result object.
+
+    """
     lat = Lattice.deserialize_from_json(json_lattice)
     result_object = Result(lat, get_unique_id())
     result_object._initialize_nodes()
@@ -211,7 +233,16 @@ def _get_result_object_from_new_lattice(
 def _get_result_object_from_old_result(
     old_result_object: Result, reuse_previous_results: bool
 ) -> Result:
-    """Get new result object for re-dispatching from old result object."""
+    """Get new result object for re-dispatching from old result object.
+
+    Args:
+        old_result_object: Result object of the previous dispatch.
+        reuse_previous_results: Whether to reuse previous results.
+
+    Returns:
+        Result: Result object for the new dispatch.
+
+    """
     result_object = Result(old_result_object.lattice, get_unique_id())
     result_object._num_nodes = old_result_object._num_nodes
 
@@ -227,7 +258,18 @@ def make_derived_dispatch(
     electron_updates: Optional[Dict[str, Callable]] = None,
     reuse_previous_results: bool = False,
 ) -> str:
-    """Make a re-dispatch from a previous dispatch."""
+    """Make a re-dispatch from a previous dispatch.
+
+    Args:
+        parent_dispatch_id: Dispatch ID of the parent dispatch.
+        json_lattice: JSON-serialized lattice of the new dispatch.
+        electron_updates: Dictionary of electron updates.
+        reuse_previous_results: Whether to reuse previous results.
+
+    Returns:
+        str: Dispatch ID of the new dispatch.
+
+    """
     if electron_updates is None:
         electron_updates = {}
 
