@@ -29,6 +29,7 @@ import pytest
 
 import covalent as ct
 from covalent._results_manager import Result
+from covalent._shared_files.defaults import sublattice_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.data_manager import (
@@ -115,6 +116,31 @@ async def test_handle_built_sublattice(mocker):
     assert mock_node_result["sub_dispatch_id"] == "mock-sub-dispatch-id"
 
 
+@pytest.mark.asyncio
+async def test_handle_built_sublattice_exception(mocker):
+    """Test the handle_built_sublattice function exception case."""
+
+    get_result_object_mock = mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_result_object", side_effect=Exception
+    )
+    make_sublattice_dispatch_mock = mocker.patch(
+        "covalent_dispatcher._core.data_manager.make_sublattice_dispatch",
+        return_value="mock-sub-dispatch-id",
+    )
+    mock_node_result = generate_node_result(
+        node_id=0,
+        node_name="mock_node_name",
+        status=RESULT_STATUS.COMPLETED,
+    )
+
+    await _handle_built_sublattice("mock-dispatch-id", mock_node_result)
+    mock_node_result["error"]
+    get_result_object_mock.assert_called_with("mock-dispatch-id")
+    make_sublattice_dispatch_mock.assert_not_called()
+    assert mock_node_result["status"] == RESULT_STATUS.FAILED
+    assert "exception" in mock_node_result["error"].lower()
+
+
 def test_initialize_result_object(mocker, test_db):
     """Test the `initialize_result_object` function"""
 
@@ -143,10 +169,22 @@ def test_initialize_result_object(mocker, test_db):
 
 
 @pytest.mark.parametrize(
-    "node_status", [RESULT_STATUS.COMPLETED, RESULT_STATUS.FAILED, RESULT_STATUS.CANCELLED]
+    "node_name, node_status, sub_dispatch_id, detail",
+    [
+        (
+            f"{sublattice_prefix}workflow",
+            RESULT_STATUS.COMPLETED,
+            "mock-sub-dispatch-id",
+            {"sub_dispatch_id": "mock-sub-dispatch-id"},
+        ),
+        (f"{sublattice_prefix}workflow", RESULT_STATUS.COMPLETED, None, {}),
+        ("mock-node-name", RESULT_STATUS.COMPLETED, None, {}),
+        ("mock-node-name", RESULT_STATUS.FAILED, None, {}),
+        ("mock-node-name", RESULT_STATUS.CANCELLED, None, {}),
+    ],
 )
 @pytest.mark.asyncio
-async def test_update_node_result(mocker, node_status):
+async def test_update_node_result(mocker, node_name, node_status, sub_dispatch_id, detail):
     """Check that update_node_result pushes the correct status updates"""
 
     status_queue = AsyncMock()
@@ -156,15 +194,29 @@ async def test_update_node_result(mocker, node_status):
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
+    handle_built_sublattice_mock = mocker.patch(
+        "covalent_dispatcher._core.data_manager._handle_built_sublattice"
+    )
 
     node_result = {
         "node_id": 0,
-        "node_name": "mock_node_name",
+        "node_name": node_name,
         "status": node_status,
-        "sub_dispatch_id": None,
+        "sub_dispatch_id": sub_dispatch_id,
     }
     await update_node_result(result_object, node_result)
-    status_queue.put.assert_awaited_with((0, node_status, {}))
+
+    status_queue.put.assert_awaited_with((0, node_status, detail))
+    mock_update_node.assert_called_with(result_object, **node_result)
+
+    if (
+        node_status == RESULT_STATUS.COMPLETED
+        and sub_dispatch_id is None
+        and node_name.startswith(sublattice_prefix)
+    ):
+        handle_built_sublattice_mock.assert_called_with(result_object.dispatch_id, node_result)
+    else:
+        handle_built_sublattice_mock.assert_not_called()
 
 
 @pytest.mark.asyncio
