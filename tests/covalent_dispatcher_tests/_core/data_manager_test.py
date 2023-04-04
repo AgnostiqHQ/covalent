@@ -126,9 +126,14 @@ async def test_update_node_result(mocker, node_status):
         "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
 
-    node_result = {"node_id": 0, "status": node_status}
+    node_result = {
+        "node_id": 0,
+        "node_name": "mock_node_name",
+        "status": node_status,
+        "sub_dispatch_id": None,
+    }
     await update_node_result(result_object, node_result)
-    status_queue.put.assert_awaited_with((0, node_status))
+    status_queue.put.assert_awaited_with((0, node_status, {}))
 
 
 @pytest.mark.asyncio
@@ -144,13 +149,19 @@ async def test_update_node_result_handles_db_exceptions(mocker):
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
-    node_result = {"node_id": 0, "status": Result.COMPLETED}
+    node_result = {
+        "node_id": 0,
+        "node_name": "mock_node_name",
+        "status": Result.COMPLETED,
+        "sub_dispatch_id": None,
+    }
     await update_node_result(result_object, node_result)
 
-    status_queue.put.assert_awaited_with((0, Result.FAILED))
+    status_queue.put.assert_awaited_with((0, Result.FAILED, {}))
 
 
-def test_make_dispatch(mocker):
+@pytest.mark.asyncio
+async def test_make_dispatch(mocker):
     res = get_mock_result()
     mock_init_result = mocker.patch(
         "covalent_dispatcher._core.data_manager.initialize_result_object", return_value=res
@@ -159,8 +170,7 @@ def test_make_dispatch(mocker):
         "covalent_dispatcher._core.data_manager._register_result_object", return_value=res
     )
     json_lattice = '{"workflow_function": "asdf"}'
-    dispatch_id = make_dispatch(json_lattice)
-
+    dispatch_id = await make_dispatch(json_lattice)
     assert dispatch_id == res.dispatch_id
     mock_register.assert_called_with(res)
 
