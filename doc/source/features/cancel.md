@@ -2,19 +2,19 @@
 
 # Cancel with Confidence: Efficiently Manage Workflows in Covalent
 
-Covalent offers the unique ability to cancel a workflow or any task in a workflow at any point before or during execution. 
+Covalent offers the unique ability to cancel a workflow or any task in a workflow at any point before or during execution.
 
 ## Why Cancel?
 
-Most ETL and workflow orchestrators focus solely on production workflows, with emphasis on automation, performance, and efficient management of business processes. Covalent was designed to support research-based as well as production workflows. Research workflows require the flexibility to accommodate modifications, including cancellation of running tasks. 
+Most ETL and workflow orchestrators focus solely on production workflows, with emphasis on automation, performance, and efficient management of business processes. Covalent was designed to support research-based as well as production workflows. Research workflows require the flexibility to accommodate modifications, including cancellation of running tasks.
 
 Covalent's cancellation feature is indispensable in research workflow management, enabling you to stop any task or workflow that is taking too long to complete from consuming further resources. Covalent empowers you to confidently execute computation tasks on cutting-edge hardware platforms with high cost or limited availability, such as quantum computers, HPC clusters, GPU arrays, and cloud services, preventing budget and schedule overruns.
 
-Besides stopping unneeded, over-long, and unnecessary jobs, the ability to cancel workflows or tasks encourages researchers and developers to modify their workflows to suit their changing needs, such as adjusting the computation pipeline or input data. 
+Besides stopping unneeded, over-long, and unnecessary jobs, the ability to cancel workflows or tasks encourages researchers and developers to modify their workflows to suit their changing needs, such as adjusting the computation pipeline or input data.
 
 ## How To Cancel a Task or Workflow
 
-To cancel a dispatched workflow from a Python notebook or interactive environment, you issue a ``cancel`` directive with the ``dispatch_id`` of the workflow. 
+To cancel a dispatched workflow from a Python notebook or interactive environment, you issue a ``cancel`` directive with the ``dispatch_id`` of the workflow.
 
 The following code illustrates how to use the Covalent ``cancel`` API.
 
@@ -50,7 +50,7 @@ For complete examples of cancelling a task or workflow, see the {doc}`How-to gui
 
 ## How Task Cancellation Works
 
-Recall that Covalent tasks (``@electrons``) are executed by various {doc}`executors <../api/executors/index>`. If the task is already running, cancelling it involves stopping the task's process, thread, or program on the resource fronted by the executor. 
+Recall that Covalent tasks (``@electrons``) are executed by various {doc}`executors <../api/executors/index>`. If the task is already running, cancelling it involves stopping the task's process, thread, or program on the resource fronted by the executor.
 
 An executor assigns a unique **job handle** to a task when the executor begins processing it. The **job handle** identifies the compute resource and the ID assigned by the compute resource. Some examples are:
 
@@ -76,7 +76,7 @@ A task decorated with a remote executor such as {doc}`AWSBatch <../api/executors
 
 1. pickling the electron's `function`, `args`, and `kwargs`
 2. uploading the resulting pickle files to the remote destination
-3. provisioning compute resources 
+3. provisioning compute resources
 4. fetching remote files
 
 Once a workflow is dispatched, if you then request a particular node be canceled, Covalent might be performing any of these preliminary actions when the cancellation request comes in. In general, Covalent stops at the earliest possible point in the process, doing no more processing of any kind on the task once it receives the cancellation request.

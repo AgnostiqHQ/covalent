@@ -5,7 +5,7 @@ PyPI packages to be installed before executing an electron
 
 .. autoclass:: covalent._workflow.depspip.DepsPip
    :members:
-   
+
 Examples
 ~~~~~~~~
 

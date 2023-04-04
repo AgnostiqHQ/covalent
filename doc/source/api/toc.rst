@@ -13,7 +13,7 @@ Task Helpers
     - :ref:`deps_bash_api`
     - :ref:`deps_call_api`
     - :ref:`deps_pip_api`
-    
+
 - :ref:`file_transfer_api`
 - :ref:`file_transfer_strategy_api`
 
@@ -43,7 +43,7 @@ Dispatch Infrastructure
 - :ref:`dispatcher_interface_api`
 - :ref:`triggers_api`
 - :ref:`cancel_api`
-- :ref:`results_interface_api` 
+- :ref:`results_interface_api`
 
 
 Covalent CLI Tool

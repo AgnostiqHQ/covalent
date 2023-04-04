@@ -5,7 +5,7 @@ Functions, shell commands, PyPI packages, and other dependencies to be called in
 
 .. autoclass:: covalent._workflow.depscall.DepsCall
    :members:
-   
+
 
 Examples
 ~~~~~~~~
