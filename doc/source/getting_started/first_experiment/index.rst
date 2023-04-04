@@ -227,6 +227,6 @@ Read :doc:`Concepts <../../concepts/concepts>` gain a deeper understanding of ho
 
 See the :doc:`Tutorials <../../tutorials/tutorials>` to see how to apply Covalent to real-world machine learning problems in a variety of subject domains.
 
-See the :doc:`API Reference <../../api/index>` for usage information on ``electron``, ``lattice``, and ready-to-use executors.
+See the :doc:`API Reference <../../api/api>` for usage information on ``electron``, ``lattice``, and ready-to-use executors.
 
 See :doc:`AWS Plugins <../../api/executors/awsplugins>` to see how you can specify an executor to run this example on an AWS node using only two more lines of code.

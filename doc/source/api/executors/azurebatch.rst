@@ -1,9 +1,9 @@
 .. _azurebatch_executor:
 
-🔌 Azure Batch Executor
+Azure Batch Executor
 """"""""""""""""""""""""
 
-.. image:: Azure_Batch.png
+.. image:: ./executors/Azure_Batch.png
 
 Covalent Azure Batch executor is an interface between Covalent and `Microsoft Azure Batch <https://azure.microsoft.com/en-us/products/batch/#overview>`_. This executor allows execution of Covalent tasks on Azure's Batch service.
 

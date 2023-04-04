@@ -3,7 +3,7 @@
 Google Batch Executor
 """"""""""""""""""""""""
 
-.. image:: Azure_Batch.png
+.. image:: executors/Azure_Batch.png
 
 Covalent Google Batch executor is an interface between Covalent and `Google Cloud Platform's Batch compute service <https://cloud.google.com/batch/docs/get-started>`_. This executor allows execution of Covalent tasks on Google Batch compute service.
 

@@ -3,7 +3,7 @@
 AWS Lambda Executor
 """""""""""""""""""""""""""
 
-.. image:: AWS_Lambda.jpg
+.. image:: executors/AWS_Lambda.jpg
 
 With this executor, users can execute tasks (electrons) or entire lattices using the AWS Lambda serverless compute service. It is appropriate
 to use this plugin for electrons that are expected to be short lived, low in compute intensity. This plugin can also be used for workflows with a high number of electrons
