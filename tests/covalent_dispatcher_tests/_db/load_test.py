@@ -26,7 +26,12 @@ from unittest.mock import MagicMock, call
 import pytest
 
 from covalent._shared_files.util_classes import Status
-from covalent_dispatcher._db.load import _result_from, get_result_object_from_storage
+from covalent_dispatcher._db.load import (
+    _result_from,
+    electron_record,
+    get_result_object_from_storage,
+    sublattice_dispatch_id,
+)
 
 
 def test_result_from(mocker):
@@ -222,3 +227,31 @@ def test_get_result_object_from_storage_exception(mocker):
     session_mock.query().where().first.assert_called_once()
 
     result_from_mock.assert_not_called()
+
+
+def test_electron_record(mocker):
+    """Test the electron_record method."""
+
+    workflow_db_mock = mocker.patch("covalent_dispatcher._db.load.workflow_db")
+    session_mock = workflow_db_mock.session.return_value.__enter__.return_value
+
+    electron_record("mock-dispatch-id", "mock-node-id")
+    session_mock.query().filter().filter().filter().first.assert_called_once()
+
+
+def test_sublattice_dispatch_id(mocker):
+    """Test the sublattice_dispatch_id method."""
+
+    class MockObject:
+        dispatch_id = "mock-dispatch-id"
+
+    workflow_db_mock = mocker.patch("covalent_dispatcher._db.load.workflow_db")
+    session_mock = workflow_db_mock.session.return_value.__enter__.return_value
+
+    session_mock.query().filter().first.return_value = MockObject()
+    res = sublattice_dispatch_id("mock-electron-id")
+    assert res == "mock-dispatch-id"
+
+    session_mock.query().filter().first.return_value = []
+    res = sublattice_dispatch_id("mock-electron-id")
+    assert res is None

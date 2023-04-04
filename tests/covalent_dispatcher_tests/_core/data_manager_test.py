@@ -47,6 +47,7 @@ from covalent_dispatcher._core.data_manager import (
     initialize_result_object,
     make_derived_dispatch,
     make_dispatch,
+    make_sublattice_dispatch,
     persist_result,
     update_node_result,
     upsert_lattice_data,
@@ -260,7 +261,26 @@ async def test_make_dispatch(mocker):
 
 @pytest.mark.asyncio
 async def test_make_sublattice_dispatch(mocker):
-    pass
+    """Test the make sublattice dispatch method."""
+
+    mock_result_object = get_mock_result()
+    output_mock = MagicMock()
+    mock_node_result = {"node_id": 0, "output": output_mock}
+    load_electron_record_mock = mocker.patch(
+        "covalent_dispatcher._db.load.electron_record", return_value={"id": "mock-electron-id"}
+    )
+    make_dispatch_mock = mocker.patch(
+        "covalent_dispatcher._core.data_manager.make_dispatch", return_value="mock-dispatch-id"
+    )
+
+    res = await make_sublattice_dispatch(mock_result_object, mock_node_result)
+    assert res == "mock-dispatch-id"
+    load_electron_record_mock.assert_called_with(
+        mock_result_object.dispatch_id, mock_node_result["node_id"]
+    )
+    make_dispatch_mock.assert_called_with(
+        output_mock.object_string, mock_result_object, "mock-electron-id"
+    )
 
 
 @pytest.mark.parametrize("reuse", [True, False])
