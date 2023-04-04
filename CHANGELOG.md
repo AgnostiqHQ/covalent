@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Adding Google Batch executor plugin RTD
+- Updating and reorganizing RTD API documentation
+- Adding example links in API documentation
 
 ### Docs
 
