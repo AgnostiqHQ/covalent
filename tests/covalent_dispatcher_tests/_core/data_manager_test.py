@@ -411,7 +411,8 @@ async def test_update_parent_electron(mocker, sub_status, mapped_status):
     mock_get_res = mocker.patch(
         "covalent_dispatcher._core.data_manager.get_result_object", return_value=parent_result_obj
     )
-
+    load_mock = mocker.patch("covalent_dispatcher._core.data_manager.load")
+    load_mock.sublattice_dispatch_id.return_value = "mock-sub-dispatch-id"
     await _update_parent_electron(sub_result_obj)
 
     mock_get_res.assert_called_with(parent_dispatch_id)
