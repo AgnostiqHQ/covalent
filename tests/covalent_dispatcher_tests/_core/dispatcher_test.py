@@ -397,7 +397,7 @@ async def test_run_planned_workflow_cancelled_update(mocker):
         "covalent_dispatcher._core.dispatcher._handle_cancelled_node", side_effect=side_effect
     )
     status_queue = asyncio.Queue()
-    status_queue.put_nowait((0, Result.CANCELLED))
+    status_queue.put_nowait((0, Result.CANCELLED, {}))
     await _run_planned_workflow(result_object, status_queue)
     assert mock_submit_task.await_count == 1
     mock_handle_cancelled.assert_awaited_with(result_object, 0)
@@ -431,7 +431,7 @@ async def test_run_planned_workflow_failed_update(mocker):
         "covalent_dispatcher._core.dispatcher._handle_failed_node", side_effect=side_effect
     )
     status_queue = asyncio.Queue()
-    status_queue.put_nowait((0, Result.FAILED))
+    status_queue.put_nowait((0, Result.FAILED, {}))
     await _run_planned_workflow(result_object, status_queue)
     assert mock_submit_task.await_count == 1
     mock_handle_failed.assert_awaited_with(result_object, 0)
