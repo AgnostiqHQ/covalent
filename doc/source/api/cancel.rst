@@ -10,4 +10,3 @@ Examples
 ~~~~~~~~
 
 - :doc:`Cancel a running workflow <../../how_to/execution/cancel_dispatch>`
-

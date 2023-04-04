@@ -15,4 +15,3 @@ Examples
 
 - :doc:`Query a workflow result <../how_to/collection/query_lattice_execution_result>`
 - :doc:`Query individual task results <../how_to/collection/query_electron_execution_result>`
-

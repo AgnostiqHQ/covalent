@@ -18,4 +18,3 @@ Dispatch Infrastructure
 
 .. _results_interface_api:
 .. include:: ./results.rst
-

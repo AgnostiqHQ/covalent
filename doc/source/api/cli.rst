@@ -7,4 +7,3 @@ The command line interface (CLI) tool is used to manage the Covalent server.
     :prog: covalent
     :commands: start,stop,restart,status,purge,logs,db,migrate-legacy-result-object,cluster
     :nested: full
-

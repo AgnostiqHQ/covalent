@@ -51,4 +51,3 @@ Covalent CLI Tool
 
 - :ref:`cli_tool_api`
 - :ref:`config_api`
-
