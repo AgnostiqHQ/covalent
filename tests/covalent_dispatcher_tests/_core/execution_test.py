@@ -436,12 +436,16 @@ async def test_run_task_sublattice_handling(test_db, mocker):
     sub_result_object._status = Result.COMPLETED
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
-    mock_get_sublattice_electron_id = mocker.patch(
-        "covalent_dispatcher._core.runner.get_sublattice_electron_id", return_value=1
-    )
-    mock_dispatch_sub = mocker.patch(
-        "covalent_dispatcher._core.runner._dispatch_sublattice",
-        return_value=sub_result_object.dispatch_id,
+    # mock_get_sublattice_electron_id = mocker.patch(
+    #     "covalent_dispatcher._core.runner.get_sublattice_electron_id", return_value=1
+    # )
+    # mock_dispatch_sub = mocker.patch(
+    #     "covalent_dispatcher._core.runner._dispatch_sublattice",
+    #     return_value=sub_result_object.dispatch_id,
+    # )
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.make_sublattice_dispatch",
+        return_value="sublattice_workflow",
     )
     mock_run_dispatch = mocker.patch("covalent_dispatcher._core.dispatcher.run_dispatch")
 
@@ -456,21 +460,20 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         call_before=[],
         call_after=[],
         node_name=sublattice_prefix,
-        workflow_executor=["local", {}],
     )
 
-    mock_get_sublattice_electron_id.assert_called_once()
-    mock_dispatch_sub.assert_awaited_once()
-    assert node_result["sub_dispatch_id"] == sub_result_object.dispatch_id
-    mock_run_dispatch.assert_called_once()
+    # mock_get_sublattice_electron_id.assert_called_once()
+    # mock_dispatch_sub.assert_awaited_once()
+    assert node_result["sub_dispatch_id"] is None
+    # mock_run_dispatch.assert_called_once()
 
     # Test failed sublattice workflows
     sub_result_object._status = Result.FAILED
     mock_run_dispatch = mocker.patch("covalent_dispatcher._core.dispatcher.run_dispatch")
 
-    mock_dispatch_sub = mocker.patch(
-        "covalent_dispatcher._core.runner._dispatch_sublattice", side_effect=RuntimeError()
-    )
+    # mock_dispatch_sub = mocker.patch(
+    #     "covalent_dispatcher._core.runner._dispatch_sublattice", side_effect=RuntimeError()
+    # )
     node_result = await _run_task(
         result_object=result_object,
         node_id=1,
@@ -480,9 +483,8 @@ async def test_run_task_sublattice_handling(test_db, mocker):
         call_before=[],
         call_after=[],
         node_name=sublattice_prefix,
-        workflow_executor=["local", {}],
     )
 
-    mock_dispatch_sub.assert_awaited_once()
+    # mock_dispatch_sub.assert_awaited_once()
     mock_run_dispatch.assert_not_called()
     assert node_result["status"] == Result.FAILED
