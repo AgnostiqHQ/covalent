@@ -50,24 +50,23 @@ _cancel_threadpool = ThreadPoolExecutor()
 
 
 # TODO: Update docstring
-def get_executor(node_id, selected_executor, loop=None, pool=None) -> AsyncBaseExecutor:
+def get_executor(node_id: int, selected_executor, loop=None, pool=None) -> AsyncBaseExecutor:
     """_summary_
 
     Args:
-        node_id (_type_): _description_
+        node_id:
         selected_executor (_type_): _description_
         loop (_type_, optional): _description_. Defaults to None.
         pool (_type_, optional): _description_. Defaults to None.
 
     Returns:
         AsyncBaseExecutor: _description_
+
     """
-
     short_name, object_dict = selected_executor
-
     app_log.debug(f"Running task {node_id} using executor {short_name}, {object_dict}")
 
-    # the executor is determined during scheduling and provided in the execution metadata
+    # The executor is determined during scheduling and provided in the execution metadata
     executor = _executor_manager.get_executor(short_name)
     executor.from_dict(object_dict)
     executor._init_runtime(loop=loop, cancel_pool=pool)

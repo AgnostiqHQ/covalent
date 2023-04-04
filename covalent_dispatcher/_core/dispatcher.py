@@ -407,5 +407,4 @@ def run_dispatch(dispatch_id: str) -> asyncio.Future:
         asyncio.Future
     """
     result_object = datasvc.get_result_object(dispatch_id)
-    app_log.debug(f"Result object: {result_object}")
     return asyncio.create_task(run_workflow(result_object))
