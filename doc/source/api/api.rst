@@ -4,7 +4,7 @@
 Covalent API
 ############
 
-This is the component reference for the Covalent Python API. 
+This is the component reference for the Covalent Python API.
 
 Index
 #####
@@ -43,7 +43,7 @@ API
 .. toctree::
    :maxdepth: 1
    :hidden:
-   
+
    section_workflow_components
    section_task_helpers
    section_executors

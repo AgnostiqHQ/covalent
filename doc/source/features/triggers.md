@@ -4,7 +4,7 @@
 
 Triggers are a powerful feature in Covalent that enable you to automate repetitive tasks and streamline your workflow. With triggers, you configure a workflow to run automatically every time a specific event occurs.
 
-To use triggers, attach a {doc}`trigger <../api/triggers>` object to a workflow (`../api/lattice`). Then, every time the event described in the trigger occurs, the trigger dispatches the lattice. 
+To use triggers, attach a {doc}`trigger <../api/triggers>` object to a workflow (`../api/lattice`). Then, every time the event described in the trigger occurs, the trigger dispatches the lattice.
 
 For example, if you want to plot a graph of a CSV file every time the file is modified, you can use a trigger to automate that process. The trigger watches the CSV file for changes and runs the workflow to plot a graph of the data whenever it detects a change.
 
@@ -68,7 +68,7 @@ When you dispatch the `my_workflow` lattice defined above using `ct.dispatch`, t
     ```{note}
     You can supply a single `trigger` object or a list of `trigger` objects to the `triggers` parameter.
     ```
-4. Upon registration, the `observe()` method of the trigger is called. This starts an asynchronous observer waiting for the condition to be met. In this example, a {doc}`TimeTrigger <../api/triggers>` object with an interval of 5 seconds calls the `trigger()` method every 5 seconds. 
+4. Upon registration, the `observe()` method of the trigger is called. This starts an asynchronous observer waiting for the condition to be met. In this example, a {doc}`TimeTrigger <../api/triggers>` object with an interval of 5 seconds calls the `trigger()` method every 5 seconds.
 5. `ct.dispatch` returns with the generated `dispatch_id`.
 6. The `trigger()` method, when it is called, dispatches the associated lattice using the previously generated (parent) `dispatch_id`, and obtains a new (child) `dispatch_id`.
 
@@ -83,7 +83,7 @@ tr_object.lattice_dispatch_id = dispatch_id
 tr_object.register()
 ```
 
-This method of attaching a trigger is equivalent to the previous, but provides more flexibility. For example, you can register the same trigger to multiple workflows by just repeating the last two lines with each workflow's `dispatch_id`. 
+This method of attaching a trigger is equivalent to the previous, but provides more flexibility. For example, you can register the same trigger to multiple workflows by just repeating the last two lines with each workflow's `dispatch_id`.
 
 This method also eliminates the need to consider triggers when designing a workflow, decoupling the trigger creation code from the workflow code. And in fact, since a trigger can be set after workflow creation, this method can be used to attach a trigger from an entirely different Python process than the one where the workflow was created.
 
@@ -107,7 +107,7 @@ When deployed remotely, a trigger must use the Covalent server's REST API endpoi
 
 #### Attaching a Trigger to a Workflow on a Remote Server
 
-To trigger a dispatched workflow from a separate host, provide the `dispatch_id` and the address of both the Covalent server and the trigger server. 
+To trigger a dispatched workflow from a separate host, provide the `dispatch_id` and the address of both the Covalent server and the trigger server.
 
 For example, consider a scenario where there are three hosts: two remote servers and one client. Covalent is running on `ServerA` without trigger support; the trigger server (only) is running on`ServerB`; and `Client` is a client node.
 
@@ -150,7 +150,7 @@ trigger.dispatcher_addr = `<ServerA_addr>`
 trigger.observe()
 ```
 
-The `trigger.observe()` function can be called synchronously (blocking) or asynchronously (non-blocking). If you use `trigger.observe()` as a blocking call, we recommend that you run it on a separate thread so it doesn't block other components of your server. You can check if `trigger.observe()` is blocking by querying the trigger's `trigger.observe_blocks` attribute. The `trigger.observe()` funciton is especially useful when writing custom triggers, for example to trigger workflows on email or Slack messages. 
+The `trigger.observe()` function can be called synchronously (blocking) or asynchronously (non-blocking). If you use `trigger.observe()` as a blocking call, we recommend that you run it on a separate thread so it doesn't block other components of your server. You can check if `trigger.observe()` is blocking by querying the trigger's `trigger.observe_blocks` attribute. The `trigger.observe()` funciton is especially useful when writing custom triggers, for example to trigger workflows on email or Slack messages.
 
 For further examples of how to use triggers, see these articles in the How-to Guide:
 

@@ -25,7 +25,7 @@ Covalent API Index
 
 :ref:`DepsCall<deps_call_api>`
 
-:ref:`DepsPip<deps_pip_api>` 
+:ref:`DepsPip<deps_pip_api>`
 
 :ref:`Dispatcher<dispatcher_interface_api>`
 
@@ -33,14 +33,14 @@ Covalent API Index
 
 :ref:`ECSExecutor<awsecs_executor>`
 
-:ref:`Electron <electrons_api>` 
+:ref:`Electron <electrons_api>`
 
 :ref:`FileTransfer<file_transfer_api>`
 
 :ref:`FileTransferStrategy<file_transfer_strategy_api>`
 
 :ref:`GCPBatchExecutor<gcpbatch_api>`
-    
+
 :ref:`Lattice <lattices_api>`
 
 :ref:`Lepton <leptons_api>`
