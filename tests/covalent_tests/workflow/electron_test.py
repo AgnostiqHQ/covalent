@@ -20,14 +20,18 @@
 
 """Unit tests for electron"""
 
+import json
+
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._workflow.electron import (
     Electron,
+    _build_sublattice_graph,
     filter_null_metadata,
     get_serialized_function_str,
     to_decoded_electron_collection,
 )
+from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 from covalent.executor.executor_plugins.local import LocalExecutor
 
@@ -67,6 +71,41 @@ def workflow_2():
     ct.wait(res_3, [res_1])
 
     return res_3
+
+
+def test_build_sublattice_graph():
+    """
+    Test building a sublattice graph
+    """
+
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    parent_metadata = {
+        "executor": "parent_executor",
+        "executor_data": {},
+        "workflow_executor": "my_postprocessor",
+        "workflow_executor_data": {},
+        "deps": {"bash": None, "pip": None},
+        "call_before": [],
+        "call_after": [],
+        "triggers": None,
+        "results_dir": None,
+    }
+
+    json_lattice = _build_sublattice_graph(workflow, json.dumps(parent_metadata), 1)
+    lattice = Lattice.deserialize_from_json(json_lattice)
+
+    assert list(lattice.transport_graph._graph.nodes) == list(range(3))
+    for k in lattice.metadata.keys():
+        # results_dir will be deprecated soon
+        if k != "results_dir":
+            assert parent_metadata[k] == lattice.metadata[k]
 
 
 def test_wait_for_building():

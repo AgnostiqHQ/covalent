@@ -136,7 +136,7 @@ async def update_node_result(result_object, node_result) -> None:
     app_log.debug(f"Updating node result for {node_result['node_id']}.")
 
     if (
-        node_result["status"] == Result.COMPLETED
+        node_result["status"] == RESULT_STATUS.COMPLETED
         and node_result["node_name"].startswith(sublattice_prefix)
         and not node_result["sub_dispatch_id"]
     ):
@@ -149,7 +149,7 @@ async def update_node_result(result_object, node_result) -> None:
         update._node(result_object, **node_result)
     except Exception as ex:
         app_log.exception(f"Error persisting node update: {ex}")
-        node_result["status"] = Result.FAILED
+        node_result["status"] = RESULT_STATUS.FAILED
     finally:
         sub_dispatch_id = node_result["sub_dispatch_id"]
         detail = {"sub_dispatch_id": sub_dispatch_id} if sub_dispatch_id is not None else {}
@@ -366,8 +366,8 @@ async def _update_parent_electron(result_object: Result):
     if parent_eid := result_object._electron_id:
         dispatch_id, node_id = resolve_electron_id(parent_eid)
         status = result_object.status
-        if status == Result.POSTPROCESSING_FAILED:
-            status = Result.FAILED
+        if status == RESULT_STATUS.POSTPROCESSING_FAILED:
+            status = RESULT_STATUS.FAILED
         parent_result_obj = get_result_object(dispatch_id)
         node_result = generate_node_result(
             node_id=node_id,

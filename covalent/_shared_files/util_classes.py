@@ -51,17 +51,6 @@ class RESULT_STATUS:
     CANCELLED = Status("CANCELLED")
     DISPATCHING = Status("DISPATCHING")  # Sublattice dispatch status
 
-    @staticmethod
-    def is_terminal(status):
-        return str(status) in TERMINAL_STATUSES
-
-
-TERMINAL_STATUSES = {
-    str(RESULT_STATUS.COMPLETED),
-    str(RESULT_STATUS.FAILED),
-    str(RESULT_STATUS.CANCELLED),
-}
-
 
 class DispatchInfo(NamedTuple):
     """

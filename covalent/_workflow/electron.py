@@ -64,7 +64,19 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kwargs):
+def _build_sublattice_graph(
+    sub: Lattice, json_parent_metadata: str, *args: List, **kwargs: Dict
+) -> dict:
+    """Build sublattice graph.
+
+    Args:
+        sub: Sublattice.
+        json_parent_metadata: Sublattice electron parent metadata.
+
+    Returns:
+        Serialized sublattice graph.
+
+    """
     parent_metadata = json.loads(json_parent_metadata)
     for k in sub.metadata.keys():
         if not sub.metadata[k] and k != "triggers":
