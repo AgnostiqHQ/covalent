@@ -91,7 +91,8 @@ def get_default_dispatcher_config():
             "new_lattice_arn": os.environ.get("COVALENT_SNS_NEW_LATTICE_ARN", ""),
             "lattice_update_arn": os.environ.get("COVALENT_SNS_LATTICE_UPDATE_ARN", ""),
             "electron_update_arn": os.environ.get("COVALENT_SNS_ELECTRON_UPDATE_ARN", ""),
-        }
+        },
+        "data_uri_filter_policy": os.environ.get("COVALENT_DATA_URI_FILTER_POLICY", "http"),
     }
 
 

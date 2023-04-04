@@ -48,6 +48,7 @@ from .transport import TransportableObject, _TransportGraph, encode_metadata
 if TYPE_CHECKING:
     from .._results_manager.result import Result
     from ..executor import BaseExecutor
+    from ..triggers import BaseTrigger
 
 from .._shared_files.utils import get_imports, get_serialized_function_str
 
@@ -97,7 +98,6 @@ class Lattice:
 
     # To be called after build_graph
     def serialize_to_json(self) -> str:
-
         attributes = deepcopy(self.__dict__)
         attributes["workflow_function"] = self.workflow_function.to_dict()
 
@@ -232,10 +232,11 @@ class Lattice:
 
         # Set any lattice metadata not explicitly set by the user
         constraint_names = {"executor", "workflow_executor", "deps", "call_before", "call_after"}
-        new_metadata = {}
-        for name in constraint_names:
-            if not self.metadata[name]:
-                new_metadata[name] = DEFAULT_METADATA_VALUES[name]
+        new_metadata = {
+            name: DEFAULT_METADATA_VALUES[name]
+            for name in constraint_names
+            if not self.metadata[name]
+        }
         new_metadata = encode_metadata(new_metadata)
 
         for k, v in new_metadata.items():
@@ -340,6 +341,7 @@ def lattice(
     deps_pip: Union[DepsPip, list] = None,
     call_before: Union[List[DepsCall], DepsCall] = [],
     call_after: Union[List[DepsCall], DepsCall] = [],
+    triggers: Union["BaseTrigger", List["BaseTrigger"]] = None,
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
     """
@@ -358,6 +360,7 @@ def lattice(
         deps_pip: An optional DepsPip object specifying a list of PyPI packages to install before running `_func`
         call_before: An optional list of DepsCall objects specifying python functions to invoke before the electron
         call_after: An optional list of DepsCall objects specifying python functions to invoke after the electron
+        triggers: Any triggers that need to be attached to this lattice, default is None
 
     Returns:
         :obj:`Lattice <covalent._workflow.lattice.Lattice>` : Lattice object inside which the decorated function exists.
@@ -388,12 +391,18 @@ def lattice(
     if isinstance(call_after, DepsCall):
         call_after = [call_after]
 
+    from ..triggers import BaseTrigger
+
+    if isinstance(triggers, BaseTrigger):
+        triggers = [triggers]
+
     constraints = {
         "executor": executor,
         "workflow_executor": workflow_executor,
         "deps": deps,
         "call_before": call_before,
         "call_after": call_after,
+        "triggers": triggers,
     }
 
     constraints = encode_metadata(constraints)
@@ -468,7 +477,6 @@ def _post_process(lattice: Lattice, *ordered_node_outputs) -> Any:
 
     with active_lattice_manager.claim(lattice):
         lattice.post_processing = True
-        print("Post processing lattice with attrs", lattice.__dict__)
         lattice.electron_outputs = list(ordered_node_outputs)
         args = [arg.get_deserialized() for arg in lattice.args]
         kwargs = {k: v.get_deserialized() for k, v in lattice.kwargs.items()}
@@ -511,17 +519,13 @@ def _preprocess_retval(retval):
     node_ids = []
     if isinstance(retval, Electron):
         node_ids.append(retval.node_id)
-        print(f"Preprocess: Encountered node {retval.node_id}")
     elif isinstance(retval, list) or isinstance(retval, tuple) or isinstance(retval, set):
-        print("Recursively preprocessing iterable")
         for e in retval:
             node_ids.extend(_preprocess_retval(e))
     elif isinstance(retval, dict):
-        print("Recursively preprocessing dictionary")
         for k, v in retval.items():
             node_ids.extend(_preprocess_retval(v))
     else:
-        print("Encountered primitive or unsupported type:", retval)
         return []
 
     return node_ids
@@ -531,21 +535,16 @@ def _postprocess_recursively(retval, **referenced_outputs):
     from .electron import Electron
 
     if isinstance(retval, Electron):
-        print(f"Looking up node {retval.node_id}")
         key = f"node:{retval.node_id}"
         node_output = referenced_outputs[key]
         return node_output
     elif isinstance(retval, list):
-        print("Recursively postprocessing list")
         return list(map(lambda x: _postprocess_recursively(x, **referenced_outputs), retval))
     elif isinstance(retval, tuple):
-        print("Recursively postprocessing tuple")
         return tuple(map(lambda x: _postprocess_recursively(x, **referenced_outputs), retval))
     elif isinstance(retval, set):
-        print("Recursively postprocessing set")
         return {_postprocess_recursively(x, **referenced_outputs) for x in retval}
     elif isinstance(retval, dict):
-        print("Recursively postprocessing dictionary")
         return {k: _postprocess_recursively(v, **referenced_outputs) for k, v in retval.items()}
     else:
         return retval
@@ -573,7 +572,6 @@ def pre_process_new(lattice: Lattice, retval: Any, bound_electrons: Dict):
         num_nodes = len(lattice.transport_graph._graph.nodes)
         # Add pp_electron to the graph -- this will also add a
         # parameter node in case retval is not a single electron
-        print("lattice return value:", retval)
         bound_pp = pp_electron(retval, **referenced_electrons)
 
         # Edit pp electron name
@@ -581,10 +579,7 @@ def pre_process_new(lattice: Lattice, retval: Any, bound_electrons: Dict):
 
         # Wait for non-referenced electrons
         if get_config("sdk.eager_postprocess") == "true":
-            print("Workflow will be postprocessed eagerly")
+            pass
         else:
-            print("Referenced nodes:", list(referenced_electrons.keys()))
             wait_parents = [v for k, v in bound_electrons.items() if k not in node_id_refs]
             wait(child=bound_pp, parents=wait_parents)
-
-            print("Waiting for electrons", [p.node_id for p in wait_parents])

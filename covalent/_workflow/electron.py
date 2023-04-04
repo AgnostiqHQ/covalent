@@ -23,10 +23,15 @@
 import inspect
 import json
 import operator
+
+# imports for multistage sublattices
+import tempfile
 from builtins import list
 from dataclasses import asdict
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, Iterable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
+
+from covalent._dispatcher_plugins.local import LocalDispatcher
 
 from .._file_transfer.enums import Order
 from .._file_transfer.file_transfer import FileTransfer
@@ -41,7 +46,11 @@ from .._shared_files.defaults import (
     prefix_separator,
     sublattice_prefix,
 )
-from .._shared_files.utils import get_named_params, get_serialized_function_str
+from .._shared_files.utils import (
+    filter_null_metadata,
+    get_named_params,
+    get_serialized_function_str,
+)
 from .depsbash import DepsBash
 from .depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from .depspip import DepsPip
@@ -82,6 +91,7 @@ class Electron:
         node_id: int = None,
         metadata: dict = None,
         task_group_id: int = None,
+        packing_tasks: bool = False,
     ) -> None:
         if metadata is None:
             metadata = {}
@@ -89,6 +99,7 @@ class Electron:
         self.node_id = node_id
         self.metadata = metadata
         self.task_group_id = task_group_id
+        self.packing_tasks = packing_tasks
 
     def set_metadata(self, name: str, value: Any) -> None:
         """
@@ -164,7 +175,6 @@ class Electron:
             """
 
             def decorator(f):
-
                 op1_name = op1
                 if hasattr(op1, "function") and op1.function:
                     op1_name = op1.function.__name__
@@ -229,7 +239,6 @@ class Electron:
         return complex()
 
     def __iter__(self):
-
         last_frame = inspect.currentframe().f_back
         bytecode = last_frame.f_code.co_code
         expected_unpack_values = bytecode[last_frame.f_lasti + 1]
@@ -307,6 +316,7 @@ class Electron:
                     function=get_attr,
                     metadata=self.metadata.copy(),
                     task_group_id=self.task_group_id,
+                    packing_tasks=True,
                 )
             else:
                 get_attr_electron = Electron(function=get_attr, metadata=self.metadata.copy())
@@ -316,7 +326,6 @@ class Electron:
         return super().__getattr__(attr)
 
     def __getitem__(self, key: Union[int, str]) -> "Electron":
-
         if active_lattice := active_lattice_manager.get_active_lattice():
 
             def get_item(e, key):
@@ -331,6 +340,7 @@ class Electron:
                     function=get_item,
                     metadata=self.metadata.copy(),
                     task_group_id=self.task_group_id,
+                    packing_tasks=True,
                 )
             else:
                 get_item_electron = Electron(function=get_item, metadata=self.metadata.copy())
@@ -361,7 +371,6 @@ class Electron:
             return self.function(*args, **kwargs)
 
         if active_lattice.post_processing:
-
             output = active_lattice.electron_outputs[0]
 
             active_lattice.electron_outputs.pop(0)
@@ -408,9 +417,10 @@ class Electron:
 
             return bound_electron
 
-        # Add a node to the transport graph of the active lattice
-
-        if self.task_group_id is not None:
+        # Add a node to the transport graph of the active lattice.
+        # Electrons bound to nodes will never be packed with the
+        # "master" Electron.
+        if self.packing_tasks:
             self.node_id = active_lattice.transport_graph.add_node(
                 name=sublattice_prefix + self.function.__name__
                 if isinstance(self.function, Lattice)
@@ -464,6 +474,7 @@ class Electron:
             metadata=self.metadata,
             node_id=self.node_id,
             task_group_id=self.task_group_id,
+            packing_tasks=self.packing_tasks,
         )
         active_lattice._bound_electrons[self.node_id] = bound_electron
 
@@ -517,6 +528,7 @@ class Electron:
                 function=_auto_list_node,
                 metadata=collection_metadata,
                 task_group_id=self.task_group_id,
+                packing_tasks=True,
             )
             bound_electron = list_electron(*param_value)
             transport_graph.set_node_value(bound_electron.node_id, "name", electron_list_prefix)
@@ -540,6 +552,7 @@ class Electron:
                 function=_auto_dict_node,
                 metadata=collection_metadata,
                 task_group_id=self.task_group_id,
+                packing_tasks=True,
             )
             bound_electron = dict_electron(**param_value)
             transport_graph.set_node_value(bound_electron.node_id, "name", electron_dict_prefix)
@@ -553,7 +566,6 @@ class Electron:
             )
 
         else:
-
             encoded_param_value = TransportableObject.make_transportable(param_value)
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),
@@ -633,6 +645,16 @@ class Electron:
             metadata=self.metadata,
             node_id=self.node_id,
         )
+
+    @property
+    def as_transportable_dict(self) -> Dict:
+        """Get transportable electron object and metadata."""
+        return {
+            "name": self.function.__name__,
+            "function": TransportableObject(self.function).to_dict(),
+            "function_string": get_serialized_function_str(self.function),
+            "metadata": filter_null_metadata(self.metadata),
+        }
 
 
 def electron(
@@ -725,13 +747,17 @@ def electron(
     constraints = encode_metadata(constraints)
 
     def decorator_electron(func=None):
+        """Electron decorator function"""
+        electron_object = Electron(func)
+        for k, v in constraints.items():
+            electron_object.set_metadata(k, v)
+        electron_object.__doc__ = func.__doc__
+
         @wraps(func)
         def wrapper(*args, **kwargs):
-            electron_object = Electron(func)
-            for k, v in constraints.items():
-                electron_object.set_metadata(k, v)
-            electron_object.__doc__ = func.__doc__
             return electron_object(*args, **kwargs)
+
+        wrapper.electron_object = electron_object
 
         return wrapper
 
@@ -778,8 +804,17 @@ def to_decoded_electron_collection(**x):
 def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kwargs):
     parent_metadata = json.loads(json_parent_metadata)
     for k in sub.metadata.keys():
-        if not sub.metadata[k]:
+        if not sub.metadata[k] and k != "triggers":
             sub.metadata[k] = parent_metadata[k]
 
     sub.build_graph(*args, **kwargs)
-    return sub.serialize_to_json()
+
+    with tempfile.TemporaryDirectory(prefix="covalent-") as staging_path:
+        manifest = LocalDispatcher.prepare_manifest(sub, staging_path)
+
+        # Omit these two steps to return the manifest to Covalent and
+        # request the assets be pulled
+        recv_manifest = LocalDispatcher.register_manifest(manifest, push_assets=True)
+        LocalDispatcher.upload_assets(recv_manifest)
+
+    return recv_manifest.json()
