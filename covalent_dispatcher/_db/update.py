@@ -80,8 +80,8 @@ def _node(
         start_time: The start time of the node execution.
         end_time: The end time of the node execution.
         status: The status of the node execution.
-        output: The output of the node unless error occured in which case None.
-        error: The error of the node if occured else None.
+        output: The output of the node unless error ocurred in which case None.
+        error: The error of the node if ocurred else None.
         sublattice_result: The result of the sublattice if any.
         stdout: The stdout of the node execution.
         stderr: The stderr of the node execution.

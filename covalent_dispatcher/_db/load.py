@@ -21,7 +21,7 @@
 """Functions to load results from the database."""
 
 
-from typing import Dict
+from typing import Dict, Union
 
 from covalent import lattice
 from covalent._results_manager.result import Result
@@ -187,3 +187,19 @@ def electron_record(dispatch_id: str, node_id: str) -> Dict:
             .first()
             .Electron.__dict__
         )
+
+
+def sublattice_dispatch_id(electron_id: int) -> Union[str, None]:
+    """Get the dispatch id of the sublattice for a given electron id.
+
+    Args:
+        electron_id: Electron ID.
+
+    Returns:
+        Dispatch id of sublattice. None, if the electron is not a sublattice.
+
+    """
+    with workflow_db.session() as session:
+        if record := (session.query(Lattice).filter(Lattice.electron_id == electron_id).first()):
+            return record.dispatch_id
+    return None

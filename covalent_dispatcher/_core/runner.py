@@ -33,7 +33,6 @@ from typing import Any, Dict, List, Literal, Tuple, Union
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-from covalent._shared_files.defaults import sublattice_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent.executor import _executor_manager
@@ -104,33 +103,6 @@ def _get_task_input_values(result_object: Result, abs_task_inputs: dict) -> dict
     return node_values
 
 
-async def _handle_built_sublattice(dispatch_id: str, node_result: Dict) -> None:
-    """Make dispatch for sublattice node.
-
-    Note: The status COMPLETED which invokes this function refers to the graph being built. Once this step is completed, the sublattice is ready to be dispatched. Hence, the status is changed to DISPATCHING.
-
-    Args:
-        dispatch_id: Dispatch ID
-        node_result: Node result dictionary
-
-    """
-    try:
-        node_result["status"] = RESULT_STATUS.DISPATCHING
-        result_object = datasvc.get_result_object(dispatch_id)
-        sub_dispatch_id = await datasvc.make_sublattice_dispatch(result_object, node_result)
-        node_result["sub_dispatch_id"] = sub_dispatch_id
-        node_result["start_time"] = datetime.now(timezone.utc)
-        node_result["end_time"] = None
-    except Exception as ex:
-        tb = "".join(traceback.TracebackException.from_exception(ex).format())
-        node_result["status"] = RESULT_STATUS.FAILED
-        node_result["error"] = tb
-        app_log.debug(f"Failed to make sublattice dispatch: {tb}")
-
-    result_object = datasvc.get_result_object(dispatch_id)
-    await datasvc.update_node_result(result_object, node_result)
-
-
 # Domain: runner
 async def run_abstract_task(
     dispatch_id: str,
@@ -149,16 +121,6 @@ async def run_abstract_task(
 
     result_object = datasvc.get_result_object(dispatch_id)
     await datasvc.update_node_result(result_object, node_result)
-
-    if (
-        node_result["status"] == Result.COMPLETED
-        and node_name.startswith(sublattice_prefix)
-        and not node_result["sub_dispatch_id"]
-    ):
-        app_log.debug(
-            f"Sublattice {node_name} build graph completed, invoking make sublattice dispatch..."
-        )
-        await _handle_built_sublattice(dispatch_id, node_result)
 
 
 # Domain: runner
@@ -179,6 +141,7 @@ async def _run_abstract_task(
             app_log.debug(f"Don't run cancelled task {dispatch_id}:{node_id}")
             return datasvc.generate_node_result(
                 node_id=node_id,
+                node_name=node_name,
                 start_time=timestamp,
                 end_time=timestamp,
                 status=RESULT_STATUS.CANCELLED,
@@ -202,6 +165,7 @@ async def _run_abstract_task(
         app_log.error(f"Exception when trying to resolve inputs or deps: {ex}")
         return datasvc.generate_node_result(
             node_id=node_id,
+            node_name=node_name,
             start_time=timestamp,
             end_time=timestamp,
             status=RESULT_STATUS.FAILED,
@@ -209,6 +173,7 @@ async def _run_abstract_task(
         )
     node_result = datasvc.generate_node_result(
         node_id=node_id,
+        node_name=node_name,
         start_time=timestamp,
         status=RESULT_STATUS.RUNNING,
     )
@@ -276,6 +241,7 @@ async def _run_task(
         error_msg = tb if debug_mode else str(ex)
         return datasvc.generate_node_result(
             node_id=node_id,
+            node_name=node_name,
             end_time=datetime.now(timezone.utc),
             status=RESULT_STATUS.FAILED,
             error=error_msg,
@@ -298,6 +264,7 @@ async def _run_task(
 
         node_result = datasvc.generate_node_result(
             node_id=node_id,
+            node_name=node_name,
             end_time=datetime.now(timezone.utc),
             status=status,
             output=output,
@@ -312,6 +279,7 @@ async def _run_task(
         error_msg = tb if debug_mode else str(ex)
         node_result = datasvc.generate_node_result(
             node_id=node_id,
+            node_name=node_name,
             end_time=datetime.now(timezone.utc),
             status=RESULT_STATUS.FAILED,
             error=error_msg,

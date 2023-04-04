@@ -23,11 +23,15 @@ Defines the core functionality of the result service
 """
 
 import asyncio
+import traceback
 import uuid
+from datetime import datetime, timezone
 from typing import Callable, Dict, Optional
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
+from covalent._shared_files.defaults import sublattice_prefix
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport_graph_ops import TransportGraphOps
 
@@ -47,6 +51,7 @@ _dispatch_status_queues = {}
 
 def generate_node_result(
     node_id: int,
+    node_name: str,
     start_time=None,
     end_time=None,
     status=None,
@@ -62,6 +67,7 @@ def generate_node_result(
 
     Arg(s)
         node_id: ID of the node in the transport graph
+        node_name: Name of the node
         start_time: Start time of the node
         end_time: Time at which the node finished executing
         status: Status of the node's execution
@@ -77,6 +83,7 @@ def generate_node_result(
     """
     return {
         "node_id": node_id,
+        "node_name": node_name,
         "start_time": start_time,
         "end_time": end_time,
         "status": status,
@@ -87,6 +94,30 @@ def generate_node_result(
         "sub_dispatch_id": sub_dispatch_id,
         "sublattice_result": sublattice_result,
     }
+
+
+async def _handle_built_sublattice(dispatch_id: str, node_result: Dict) -> None:
+    """Make dispatch for sublattice node.
+
+    Note: The status COMPLETED which invokes this function refers to the graph being built. Once this step is completed, the sublattice is ready to be dispatched. Hence, the status is changed to DISPATCHING.
+
+    Args:
+        dispatch_id: Dispatch ID
+        node_result: Node result dictionary
+
+    """
+    try:
+        node_result["status"] = RESULT_STATUS.DISPATCHING
+        result_object = get_result_object(dispatch_id)
+        sub_dispatch_id = await make_sublattice_dispatch(result_object, node_result)
+        node_result["sub_dispatch_id"] = sub_dispatch_id
+        node_result["start_time"] = datetime.now(timezone.utc)
+        node_result["end_time"] = None
+    except Exception as ex:
+        tb = "".join(traceback.TracebackException.from_exception(ex).format())
+        node_result["status"] = RESULT_STATUS.FAILED
+        node_result["error"] = tb
+        app_log.debug(f"Failed to make sublattice dispatch: {tb}")
 
 
 # Domain: result
@@ -100,8 +131,20 @@ async def update_node_result(result_object, node_result) -> None:
 
     Return(s)
         None
+
     """
     app_log.debug(f"Updating node result for {node_result['node_id']}.")
+
+    if (
+        node_result["status"] == Result.COMPLETED
+        and node_result["node_name"].startswith(sublattice_prefix)
+        and not node_result["sub_dispatch_id"]
+    ):
+        app_log.debug(
+            f"Sublattice {node_result['node_name']} build graph completed, invoking make sublattice dispatch..."
+        )
+        await _handle_built_sublattice(result_object.dispatch_id, node_result)
+
     try:
         update._node(result_object, **node_result)
     except Exception as ex:
@@ -325,15 +368,18 @@ async def _update_parent_electron(result_object: Result):
         status = result_object.status
         if status == Result.POSTPROCESSING_FAILED:
             status = Result.FAILED
+        parent_result_obj = get_result_object(dispatch_id)
         node_result = generate_node_result(
             node_id=node_id,
+            node_name=parent_result_obj.lattice.transport_graph.get_node_value(node_id, "name"),
             end_time=result_object.end_time,
             status=status,
             output=result_object._result,
             error=result_object._error,
+            sub_dispatch_id=load.sublattice_dispatch_id(parent_eid),
             sublattice_result=result_object,
         )
-        parent_result_obj = get_result_object(dispatch_id)
+
         app_log.debug(f"Updating sublattice parent node {dispatch_id}:{node_id}")
         await update_node_result(parent_result_obj, node_result)
 

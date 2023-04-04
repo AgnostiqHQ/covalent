@@ -172,6 +172,7 @@ async def _submit_task(result_object, node_id):
         timestamp = datetime.now(timezone.utc)
         node_result = datasvc.generate_node_result(
             node_id=node_id,
+            node_name=node_name,
             start_time=timestamp,
             end_time=timestamp,
             status=RESULT_STATUS.COMPLETED,
@@ -184,6 +185,7 @@ async def _submit_task(result_object, node_id):
         timestamp = datetime.now(timezone.utc)
         node_result = datasvc.generate_node_result(
             node_id=node_id,
+            node_name=node_name,
             start_time=timestamp,
             end_time=timestamp,
             status=RESULT_STATUS.COMPLETED,
@@ -262,6 +264,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
             app_log.debug(
                 f"Submitted sublattice (dispatch id: {sub_dispatch_id}) to run_dispatch."
             )
+            continue
 
         unresolved_tasks -= 1
 
