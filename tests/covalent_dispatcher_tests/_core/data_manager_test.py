@@ -29,15 +29,18 @@ import pytest
 
 import covalent as ct
 from covalent._results_manager import Result
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.data_manager import (
     _dispatch_status_queues,
     _get_result_object_from_new_lattice,
     _get_result_object_from_old_result,
+    _handle_built_sublattice,
     _register_result_object,
     _registered_dispatches,
     _update_parent_electron,
     finalize_dispatch,
+    generate_node_result,
     get_result_object,
     get_status_queue,
     initialize_result_object,
@@ -86,6 +89,32 @@ def get_mock_result() -> Result:
     return result_object
 
 
+@pytest.mark.asyncio
+async def test_handle_built_sublattice(mocker):
+    """Test the handle_built_sublattice function."""
+
+    get_result_object_mock = mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_result_object", return_value="mock-result"
+    )
+    make_sublattice_dispatch_mock = mocker.patch(
+        "covalent_dispatcher._core.data_manager.make_sublattice_dispatch",
+        return_value="mock-sub-dispatch-id",
+    )
+    mock_node_result = generate_node_result(
+        node_id=0,
+        node_name="mock_node_name",
+        status=RESULT_STATUS.COMPLETED,
+    )
+
+    await _handle_built_sublattice("mock-dispatch-id", mock_node_result)
+    get_result_object_mock.assert_called_with("mock-dispatch-id")
+    make_sublattice_dispatch_mock.assert_called_with("mock-result", mock_node_result)
+    assert mock_node_result["status"] == RESULT_STATUS.DISPATCHING
+    assert mock_node_result["start_time"] is not None
+    assert mock_node_result["end_time"] is None
+    assert mock_node_result["sub_dispatch_id"] == "mock-sub-dispatch-id"
+
+
 def test_initialize_result_object(mocker, test_db):
     """Test the `initialize_result_object` function"""
 
@@ -113,7 +142,9 @@ def test_initialize_result_object(mocker, test_db):
     assert sub_result_object._root_dispatch_id == result_object.dispatch_id
 
 
-@pytest.mark.parametrize("node_status", [Result.COMPLETED, Result.FAILED, Result.CANCELLED])
+@pytest.mark.parametrize(
+    "node_status", [RESULT_STATUS.COMPLETED, RESULT_STATUS.FAILED, RESULT_STATUS.CANCELLED]
+)
 @pytest.mark.asyncio
 async def test_update_node_result(mocker, node_status):
     """Check that update_node_result pushes the correct status updates"""
@@ -152,12 +183,12 @@ async def test_update_node_result_handles_db_exceptions(mocker):
     node_result = {
         "node_id": 0,
         "node_name": "mock_node_name",
-        "status": Result.COMPLETED,
+        "status": RESULT_STATUS.COMPLETED,
         "sub_dispatch_id": None,
     }
     await update_node_result(result_object, node_result)
 
-    status_queue.put.assert_awaited_with((0, Result.FAILED, {}))
+    status_queue.put.assert_awaited_with((0, RESULT_STATUS.FAILED, {}))
 
 
 @pytest.mark.asyncio
@@ -173,6 +204,11 @@ async def test_make_dispatch(mocker):
     dispatch_id = await make_dispatch(json_lattice)
     assert dispatch_id == res.dispatch_id
     mock_register.assert_called_with(res)
+
+
+@pytest.mark.asyncio
+async def test_make_sublattice_dispatch(mocker):
+    pass
 
 
 @pytest.mark.parametrize("reuse", [True, False])
@@ -374,7 +410,10 @@ async def test_persist_result(mocker):
 
 @pytest.mark.parametrize(
     "sub_status,mapped_status",
-    [(Result.COMPLETED, Result.COMPLETED), (Result.POSTPROCESSING_FAILED, Result.FAILED)],
+    [
+        (RESULT_STATUS.COMPLETED, RESULT_STATUS.COMPLETED),
+        (RESULT_STATUS.POSTPROCESSING_FAILED, RESULT_STATUS.FAILED),
+    ],
 )
 @pytest.mark.asyncio
 async def test_update_parent_electron(mocker, sub_status, mapped_status):
