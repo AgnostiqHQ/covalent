@@ -23,7 +23,7 @@
 
 import json
 import os
-from typing import Tuple
+from typing import Dict, Tuple
 
 from sqlalchemy.orm import Session
 
@@ -44,7 +44,7 @@ from covalent._shared_files.schemas.electron import (
     ElectronSchema,
 )
 from covalent_dispatcher._dal.asset import Asset, StorageType
-from covalent_dispatcher._dal.electron import Electron, ElectronMeta
+from covalent_dispatcher._dal.electron import ElectronMeta
 from covalent_dispatcher._dal.lattice import Lattice
 from covalent_dispatcher._db import models
 from covalent_dispatcher._db.write_result_to_db import get_electron_type
@@ -63,16 +63,18 @@ def import_electron(
 
     electron_kwargs = _get_electron_meta(e, lat, node_storage_path, job_id)
 
-    electron_row = ElectronMeta.insert(session, insert_kwargs=electron_kwargs, flush=True)
-    electron_record = Electron(session, electron_row)
+    electron_row = ElectronMeta.insert(session, insert_kwargs=electron_kwargs, flush=False)
 
-    electron_assets = import_electron_assets(
+    electron_assets, asset_recs = import_electron_assets(
         session,
         e,
-        electron_record,
         node_storage_path,
     )
-    return electron_row, ElectronSchema(id=e.id, metadata=e.metadata, assets=electron_assets)
+    return (
+        electron_row,
+        asset_recs,
+        ElectronSchema(id=e.id, metadata=e.metadata, assets=electron_assets),
+    )
 
 
 def _get_electron_meta(
@@ -116,11 +118,18 @@ def _get_electron_meta(
 def import_electron_assets(
     session: Session,
     e: ElectronSchema,
-    record: Electron,
     node_storage_path: str,
-) -> ElectronAssets:
-    """Insert asset records and populate the asset link table"""
-    asset_ids = {}
+) -> Tuple[ElectronAssets, Dict[str, models.Asset]]:
+    """Insert asset records
+
+
+    Returns pair (ElectronAssets, asset_records), where
+    `asset_records` is a mapping from asset key to asset records.
+
+    """
+
+    # Maps asset keys to asset records
+    asset_recs = {}
 
     for asset_key, asset, object_key in [
         ("function", e.assets.function, ELECTRON_FUNCTION_FILENAME),
@@ -144,15 +153,10 @@ def import_electron_assets(
             "digest_hex": asset.digest,
             "remote_uri": asset.uri,
         }
-        asset_ids[asset_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
+        asset_recs[asset_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
 
         # Send this back to the client
         asset.digest = None
         asset.remote_uri = f"file://{local_uri}"
 
-    session.flush()
-
-    for key, asset_rec in asset_ids.items():
-        record.associate_asset(session, key, asset_rec.id)
-
-    return e.assets
+    return e.assets, asset_recs

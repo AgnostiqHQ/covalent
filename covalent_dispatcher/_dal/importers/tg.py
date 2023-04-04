@@ -66,18 +66,28 @@ def import_transport_graph(
 
     gids = {k: list(map(lambda n: n.id, v)) for k, v in task_groups.items()}
 
+    gid_job_record_map = {}
+
+    # Maps node ids to asset record dictionaries
+    electron_asset_links = {}
+
     for gid, node_group in task_groups.items():
         # Create a job record for each task group
         job_kwargs = {
             "cancel_requested": cancel_requested,
         }
 
-        job_record = Job.insert(session, insert_kwargs=job_kwargs, flush=True)
+        gid_job_record_map[gid] = Job.insert(session, insert_kwargs=job_kwargs, flush=False)
 
+    # Compute job record primary keys
+    session.flush()
+
+    for gid, node_group in task_groups.items():
         for node in node_group:
             node_storage_path = os.path.join(storage_path, f"node_{node.id}")
             os.makedirs(node_storage_path)
-            e_record, node = import_electron(
+            job_record = gid_job_record_map[gid]
+            e_record, asset_records_by_key, node = import_electron(
                 session,
                 node,
                 lat,
@@ -86,6 +96,15 @@ def import_transport_graph(
             )
             output_nodes.append(node)
             electron_map[node.id] = e_record
+            electron_asset_links[node.id] = asset_records_by_key
+
+    # Compute asset ids, electron ids, and create associations
+    session.flush()
+
+    for node_id, asset_records in electron_asset_links.items():
+        electron_dal = Electron(session, electron_map[node_id])
+        for key, asset_rec in asset_records.items():
+            electron_dal.associate_asset(session, key, asset_rec.id)
 
     edges = [_import_edge(session, e, electron_map) for e in tg.links]
 
