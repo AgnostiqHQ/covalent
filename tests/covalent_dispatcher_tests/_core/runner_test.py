@@ -27,6 +27,7 @@ import json
 from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+from mock import call
 
 import covalent as ct
 from covalent._results_manager import Result
@@ -39,6 +40,7 @@ from covalent_dispatcher._core.runner import (
     _run_abstract_task,
     _run_task,
     cancel_tasks,
+    get_executor,
 )
 from covalent_dispatcher._db.datastore import DataStore
 
@@ -78,6 +80,19 @@ def get_mock_result() -> Result:
     result_object._initialize_nodes()
 
     return result_object
+
+
+def test_get_executor(mocker):
+    """Test that get_executor returns the correct executor"""
+
+    executor_manager_mock = mocker.patch("covalent_dispatcher._core.runner._executor_manager")
+    executor = get_executor(0, ["local", {"mock-key": "mock-value"}], "mock-loop", "mock-pool")
+    assert executor_manager_mock.get_executor.mock_calls == [
+        call("local"),
+        call().from_dict({"mock-key": "mock-value"}),
+        call()._init_runtime(loop="mock-loop", cancel_pool="mock-pool"),
+    ]
+    assert executor == executor_manager_mock.get_executor()
 
 
 def test_gather_deps():
