@@ -24,6 +24,7 @@ import json
 
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
+from covalent._shared_files.defaults import sublattice_prefix
 from covalent._workflow.electron import (
     Electron,
     _build_sublattice_graph,
@@ -318,3 +319,33 @@ def test_as_transportable_dict(mocker):
     assert transportable_electron["metadata"] == filter_null_metadata(mock_metadata)
     assert transportable_electron["function_string"] == get_serialized_function_str(test_func)
     assert TransportableObject(test_func).to_dict() == transportable_electron["function"]
+
+
+def test_call_sublattice(mocker):
+    """Test the sublattice logic when the __call__ method is invoked."""
+
+    @ct.lattice(executor="mock")
+    def mock_workflow(x):
+        return sublattice(x)
+
+    @ct.electron
+    def mock_task(x):
+        return x
+
+    @ct.electron
+    @ct.lattice
+    def sublattice(x):
+        return mock_task(x)
+
+    with active_lattice_manager.claim(mock_workflow):
+        bound_electron = sublattice()
+        assert bound_electron.metadata["executor"] == "mock"
+        print(mock_workflow.transport_graph._graph.nodes(data=True))
+        print(list(mock_workflow.transport_graph._graph.nodes(data=True)[0].keys()))
+        for _, node_data in mock_workflow.transport_graph._graph.nodes(data=True):
+            if node_data["name"].startswith(sublattice_prefix):
+                assert "mock_task" in node_data["function_string"]
+                assert "sublattice" in node_data["function_string"]
+                assert (
+                    node_data["function"].get_deserialized().__name__ == "_build_sublattice_graph"
+                )
