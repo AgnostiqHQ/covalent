@@ -385,7 +385,7 @@ async def _make_sublattice_dispatch(result_object: SRVResult, node_result: dict)
 
     imported_manifest = await manifest_importer.import_manifest(
         manifest=manifest,
-        parent_result_object=result_object,
+        parent_dispatch_id=result_object.dispatch_id,
         parent_electron_id=parent_electron_id,
     )
 

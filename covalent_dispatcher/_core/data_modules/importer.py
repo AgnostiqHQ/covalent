@@ -56,13 +56,18 @@ def get_unique_id() -> str:
 
 def _import_manifest(
     res: ResultSchema,
-    parent_result_object: Optional[SRVResult] = None,
+    parent_dispatch_id: Optional[str] = None,
     parent_electron_id: Optional[int] = None,
 ) -> ResultSchema:
     if not res.metadata.dispatch_id:
         res.metadata.dispatch_id = get_unique_id()
 
-    if parent_result_object:
+    # Compute root_dispatch_id for sublattice dispatches
+    if parent_dispatch_id:
+        parent_result_object = SRVResult.from_dispatch_id(
+            dispatch_id=parent_dispatch_id,
+            bare=True,
+        )
         res.metadata.root_dispatch_id = parent_result_object.root_dispatch_id
     else:
         res.metadata.root_dispatch_id = res.metadata.dispatch_id
@@ -90,11 +95,11 @@ async def _pull_assets(manifest: ResultSchema) -> None:
 
 async def import_manifest(
     manifest: ResultSchema,
-    parent_result_object: Optional[SRVResult] = None,
+    parent_dispatch_id: Optional[str] = None,
     parent_electron_id: Optional[int] = None,
 ) -> ResultSchema:
     filtered_manifest = await run_in_executor(
-        _import_manifest, manifest, parent_result_object, parent_electron_id
+        _import_manifest, manifest, parent_dispatch_id, parent_electron_id
     )
     await _pull_assets(filtered_manifest)
 
