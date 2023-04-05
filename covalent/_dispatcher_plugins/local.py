@@ -507,7 +507,10 @@ class LocalDispatcher(BaseDispatcher):
 
     @staticmethod
     def register_manifest(
-        manifest: ResultSchema, dispatcher_addr: Optional[str] = None, push_assets: bool = True
+        manifest: ResultSchema,
+        dispatcher_addr: Optional[str] = None,
+        parent_dispatch_id: Optional[str] = None,
+        push_assets: bool = True,
     ) -> ResultSchema:
         """Submits a manifest for registration.
 
@@ -530,6 +533,9 @@ class LocalDispatcher(BaseDispatcher):
             stripped = manifest
 
         test_url = f"http://{dispatcher_addr}/api/v1/dispatchv2/register"
+
+        if parent_dispatch_id:
+            test_url = f"{test_url}/{parent_dispatch_id}"
 
         r = requests.post(test_url, data=stripped.json())
         r.raise_for_status()

@@ -82,7 +82,12 @@ async def submitv0(request: Request) -> UUID:
 
 @router.post("/dispatchv2/register")
 async def register(manifest: ResultSchema) -> ResultSchema:
-    return await dispatcher.register_dispatch(manifest)
+    return await dispatcher.register_dispatch(manifest, None)
+
+
+@router.post("/dispatchv2/register/{parent_dispatch_id}")
+async def register_sub_dispatch(parent_dispatch_id: str, manifest: ResultSchema) -> ResultSchema:
+    return await dispatcher.register_dispatch(manifest, parent_dispatch_id)
 
 
 @router.post("/dispatchv2/resubmit")

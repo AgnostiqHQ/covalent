@@ -22,7 +22,7 @@
 Self-contained entry point for the dispatcher
 """
 
-from typing import List
+from typing import List, Optional
 
 from covalent._shared_files import logger
 from covalent._shared_files.schemas.result import ResultSchema
@@ -142,7 +142,9 @@ async def cancel_running_dispatch(dispatch_id: str, task_ids: List[int] = None) 
     await cancel_dispatch(dispatch_id, task_ids)
 
 
-async def register_dispatch(manifest: ResultSchema) -> ResultSchema:
+async def register_dispatch(
+    manifest: ResultSchema, parent_dispatch_id: Optional[str]
+) -> ResultSchema:
     from ._core.data_modules.importer import import_manifest
 
-    return await import_manifest(manifest, None, None)
+    return await import_manifest(manifest, parent_dispatch_id, None)
