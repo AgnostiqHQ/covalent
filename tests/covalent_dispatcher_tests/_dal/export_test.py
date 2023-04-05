@@ -231,7 +231,7 @@ def test_export_result_manifest(test_db, mocker):
         manifest = serialize_result(res, sdk_tmp_dir)
         received_manifest = manifest.copy(deep=True)
 
-        import_result(received_manifest, srv_tmp_dir)
+        import_result(received_manifest, srv_tmp_dir, None)
         srv_res = get_result_object(dispatch_id)
         ts = datetime.now()
         srv_res._start_time = ts

@@ -53,7 +53,9 @@ app_log = logger.app_log
 
 
 def import_result(
-    res: ResultSchema, base_path: str, electron_id: Optional[int] = None
+    res: ResultSchema,
+    base_path: str,
+    electron_id: Optional[int],
 ) -> ResultSchema:
     """Imports a ResultSchema into the DB"""
 
