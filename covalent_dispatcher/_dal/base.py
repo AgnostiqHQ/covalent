@@ -99,24 +99,19 @@ class DispatchedObject(ABC):
         fields = {type(self).meta_record_map(k) for k in self.query_keys}
         self.metadata.refresh(session, fields=fields)
 
-    def get_metadata(self, key: str, session: Session = None, refresh: bool = True):
+    def get_metadata(self, key: str, session: Session, refresh: bool = True):
         attr = type(self).meta_record_map(key)
         if refresh:
-            if session:
-                self._refresh_metadata(session)
-            else:
-                with self.session() as session:
-                    self._refresh_metadata(session)
+            self._refresh_metadata(session)
         return self.metadata.attrs[attr]
 
-    def set_metadata(self, key: str, val: Union[str, int], session: Session = None):
-        if session:
-            record_attr = type(self).meta_record_map(key)
-            self.metadata.update(session, values={record_attr: val})
-        else:
-            with self.session() as session:
-                record_attr = type(self).meta_record_map(key)
-                self.metadata.update(session, values={record_attr: val})
+    def set_metadata(self, key: str, val: Union[str, int], session: Session):
+        record_attr = type(self).meta_record_map(key)
+        self.metadata.update(session, values={record_attr: val})
+
+    def incr_metadata(self, key: str, delta: int, session: Session):
+        attr = type(self).meta_record_map(key)
+        self.metadata.incr(session, increments={attr: delta})
 
     def get_asset(self, key: str) -> Asset:
         if key not in self.assets:

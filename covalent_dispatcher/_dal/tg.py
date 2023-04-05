@@ -76,16 +76,10 @@ class _TransportGraph:
     def get_node_value(
         self, node_id: int, key: str, session: Session = None, refresh: bool = True
     ):
-        record = self.get_node_values(
-            node_id=node_id, keys=[key], session=session, refresh=refresh
+        records = self.get_values_for_nodes(
+            node_ids=[node_id], keys=[key], session=session, refresh=refresh
         )
-        return record[key]
-
-    def get_node_values(
-        self, node_id: int, keys: List[str], session: Session = None, refresh: bool = True
-    ) -> Dict:
-        node = self.get_node(node_id, session)
-        return self.get_values_for_nodes([node_id], keys, session, refresh)[0]
+        return records[0][key]
 
     def get_values_for_nodes(
         self, node_ids: List[int], keys: List[str], session: Session = None, refresh: bool = True

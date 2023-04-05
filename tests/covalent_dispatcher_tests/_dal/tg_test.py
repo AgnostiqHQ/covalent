@@ -122,7 +122,10 @@ def test_transport_graph_get_set(bare_mode, test_db, mocker):
     assert tg.get_node_value(0, "executor") == "local"
     assert tg.get_node_value(0, "executor_data") == le.to_dict()
 
-    assert tg.get_node_values(0, ["name", "executor"]) == {"name": "task", "executor": "local"}
+    assert tg.get_values_for_nodes([0], ["name", "executor"])[0] == {
+        "name": "task",
+        "executor": "local",
+    }
 
     tg.set_node_value(1, "status", SDKResult.COMPLETED)
     assert tg.get_node_value(1, "status") == SDKResult.COMPLETED

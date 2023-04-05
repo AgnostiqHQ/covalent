@@ -70,14 +70,6 @@ class Record(Generic[T]):
             session.flush()
         return new_record
 
-    def update(self, session: Session, *, values: dict):
-        type(self).update_bulk(
-            session,
-            values=values,
-            equality_filters={"id": self.primary_key},
-            membership_filters={},
-        )
-
     @classmethod
     def update_bulk(
         cls, session: Session, *, values: dict, equality_filters: dict, membership_filters: dict
@@ -88,6 +80,43 @@ class Record(Generic[T]):
         for attr, vals in membership_filters.items():
             stmt = stmt.where(getattr(cls.model, attr).in_(vals))
         session.execute(stmt)
+
+    @classmethod
+    def incr_bulk(
+        cls,
+        session: Session,
+        *,
+        increments: dict,
+        equality_filters: dict,
+        membership_filters: dict,
+    ):
+        kwargs = {}
+        for field, delta in increments.items():
+            col = getattr(cls.model, field)
+            kwargs[field] = col + delta
+
+        stmt = update(cls.model).values(**kwargs)
+        for attr, val in equality_filters.items():
+            stmt = stmt.where(getattr(cls.model, attr) == val)
+        for attr, vals in membership_filters.items():
+            stmt = stmt.where(getattr(cls.model, attr).in_(vals))
+        session.execute(stmt)
+
+    def update(self, session: Session, *, values: dict):
+        type(self).update_bulk(
+            session,
+            values=values,
+            equality_filters={"id": self.primary_key},
+            membership_filters={},
+        )
+
+    def incr(self, session: Session, *, increments: dict):
+        type(self).incr_bulk(
+            session,
+            increments=increments,
+            equality_filters={"id": self.primary_key},
+            membership_filters={},
+        )
 
     def refresh(self, session: Session, *, fields: set):
         records = type(self).get(

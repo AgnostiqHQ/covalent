@@ -111,31 +111,31 @@ class Result(DispatchedObject):
 
     @property
     def start_time(self):
-        return self.get_metadata("start_time")
+        return self.get_value("start_time")
 
     @property
     def end_time(self):
-        return self.get_metadata("end_time")
+        return self.get_value("end_time")
 
     @property
     def dispatch_id(self):
-        return self.get_metadata("dispatch_id")
+        return self.get_value("dispatch_id")
 
     @property
     def root_dispatch_id(self):
-        return self.get_metadata("root_dispatch_id")
+        return self.get_value("root_dispatch_id")
 
     @property
     def status(self) -> Status:
-        return Status(self.get_metadata("status"))
+        return self.get_value("status")
 
     @property
     def result(self):
-        return self.get_asset("result").load_data()
+        return self.get_value("result")
 
     @property
     def error(self):
-        return self.get_asset("error").load_data()
+        return self.get_value("error")
 
     def commit(self):
         with self.session() as session:
@@ -239,8 +239,7 @@ class Result(DispatchedObject):
             if status is not None:
                 self.lattice.transport_graph.set_node_value(node_id, "status", status, session)
                 if status == RESULT_STATUS.COMPLETED:
-                    completed_num = self.get_value("completed_electron_num", session)
-                    self.set_value("completed_electron_num", completed_num + 1, session)
+                    self.incr_metadata("completed_electron_num", 1, session)
 
             if output is not None:
                 self.lattice.transport_graph.set_node_value(node_id, "output", output, session)
@@ -290,8 +289,12 @@ class Result(DispatchedObject):
                 filter(lambda e: e.get_value("status") == RESULT_STATUS.CANCELLED, nodes)
             )
 
-            failed_nodes = list(map(lambda x: (x.node_id, x.get_metadata("name")), failed))
-            cancelled_nodes = list(map(lambda x: (x.node_id, x.get_metadata("name")), cancelled))
+            failed_nodes = list(
+                map(lambda x: (x.node_id, x.get_metadata("name", session, False)), failed)
+            )
+            cancelled_nodes = list(
+                map(lambda x: (x.node_id, x.get_metadata("name", session, False)), cancelled)
+            )
 
         return {"failed": failed_nodes, "cancelled": cancelled_nodes}
 

@@ -162,4 +162,4 @@ def test_lattice_get_metadata(test_db, mocker):
 
         lat = Lattice(session, record)
 
-    assert lat.get_metadata("executor") == "awsbatch"
+    assert lat.get_value("executor") == "awsbatch"
