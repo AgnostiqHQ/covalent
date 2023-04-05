@@ -22,6 +22,7 @@
 
 import inspect
 import os
+import shutil
 import socket
 import toml
 import uuid
@@ -252,3 +253,20 @@ def request_api_key() -> str:
             raise RuntimeError("api key not found")
 
     return api_key
+
+
+# For use by LocalDispatcher and ResultsManager when running Covalent
+# server locally
+def copy_file_locally(src_uri, dest_uri):
+    scheme_prefix = "file://"
+    if src_uri.startswith(scheme_prefix):
+        src_path = src_uri[len(scheme_prefix) :]
+    else:
+        raise TypeError(f"{src_uri} is not a valid URI")
+        # src_path = src_uri
+    if dest_uri.startswith(scheme_prefix):
+        dest_path = dest_uri[len(scheme_prefix) :]
+    else:
+        raise TypeError(f"{dest_uri} is not a valid URI")
+
+    shutil.copyfile(src_path, dest_path)
