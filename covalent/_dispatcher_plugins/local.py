@@ -42,6 +42,53 @@ class LocalDispatcher(BaseDispatcher):
     def dispatch(
         orig_lattice: Lattice,
         dispatcher_addr: str = None,
+        *,
+        disable_run: bool = False,
+    ) -> Callable:
+        """
+        Wrapping the dispatching functionality to allow input passing
+        and server address specification.
+
+        Afterwards, send the lattice to the dispatcher server and return
+        the assigned dispatch id.
+
+        Args:
+            orig_lattice: The lattice/workflow to send to the dispatcher server.
+            dispatcher_addr: The address of the dispatcher server.  If None then then defaults to the address set in Covalent's config.
+
+        Returns:
+            Wrapper function which takes the inputs of the workflow as arguments
+        """
+
+        @wraps(orig_lattice)
+        def wrapper(*args, **kwargs) -> str:
+            """
+            Send the lattice to the dispatcher server and return
+            the assigned dispatch id.
+
+            Args:
+                *args: The inputs of the workflow.
+                **kwargs: The keyword arguments of the workflow.
+
+            Returns:
+                The dispatch id of the workflow.
+            """
+
+            dispatch_id = LocalDispatcher.submit(orig_lattice, dispatcher_addr)(
+                *args, **kwargs
+            )
+
+            if not disable_run:
+                return LocalDispatcher.start(dispatch_id, dispatcher_addr)
+            else:
+                return dispatch_id
+
+        return wrapper
+
+    @staticmethod
+    def submit(
+        orig_lattice: Lattice,
+        dispatcher_addr: str = None,
     ) -> Callable:
         """
         Wrapping the dispatching functionality to allow input passing
@@ -82,7 +129,7 @@ class LocalDispatcher(BaseDispatcher):
             # Serialize the transport graph to JSON
             json_lattice = lattice.serialize_to_json()
 
-            test_url = f"{dispatcher_addr}/api/v1/submit"
+            test_url = f"{dispatcher_addr}/api/v1/dispatchv2/submit"
             headers = {"x-api-key": request_api_key()}
 
             if not headers["x-api-key"]:
@@ -93,6 +140,40 @@ class LocalDispatcher(BaseDispatcher):
             return r.content.decode("utf-8").strip().replace('"', "")
 
         return wrapper
+
+    @staticmethod
+    def start(
+        dispatch_id: str,
+        dispatcher_addr: str = None,
+    ) -> Callable:
+        """
+        Wrapping the dispatching functionality to allow input passing
+        and server address specification.
+
+        Afterwards, send the lattice to the dispatcher server and return
+        the assigned dispatch id.
+
+        Args:
+            orig_lattice: The lattice/workflow to send to the dispatcher server.
+            dispatcher_addr: The address of the dispatcher server.  If None then then defaults to the address set in Covalent's config.
+
+        Returns:
+            Wrapper function which takes the inputs of the workflow as arguments
+        """
+
+        if dispatcher_addr is None:
+            dispatcher_addr = format_server_url()
+
+        test_url = f"{dispatcher_addr}/api/v1/dispatchv2/start/{dispatch_id}"
+        headers = {"x-api-key": request_api_key()}
+
+        if not headers["x-api-key"]:
+            return
+
+        r = requests.put(test_url, headers=headers)
+        r.raise_for_status()
+        return r.content.decode("utf-8").strip().replace('"', "")
+
 
     @staticmethod
     def dispatch_sync(

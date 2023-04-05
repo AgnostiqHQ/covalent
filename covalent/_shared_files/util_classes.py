@@ -40,6 +40,8 @@ class Status:
 
 class RESULT_STATUS:
     NEW_OBJECT = Status("NEW_OBJECT")
+    STARTING = Status("STARTING")  # Dispatch level
+    PENDING_REUSE = Status("PENDING_REUSE")  # For redispatch
     COMPLETED = Status("COMPLETED")
     POSTPROCESSING = Status("POSTPROCESSING")
     PENDING_POSTPROCESSING = Status("PENDING_POSTPROCESSING")
