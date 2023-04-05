@@ -34,9 +34,11 @@ def get_context():
 @contextmanager
 def set_context(node_id: int, dispatch_id: str):
     global current_context
+    global unset_context
     current_context = Context(node_id=node_id, dispatch_id=dispatch_id)
     yield
-    current_context = None
+    current_context = unset_context
 
 
-current_context = None
+unset_context = Context(node_id=None, dispatch_id=None)
+current_context = unset_context
