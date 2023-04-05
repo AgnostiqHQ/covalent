@@ -64,7 +64,7 @@ def test_check_nodes():
         return identity(a=result1)
 
     check.build_graph(a=1, b=2)
-    assert [0, 1, 2, 3] == list(check.transport_graph._graph.nodes)
+    assert list(check.transport_graph._graph.nodes) == list(range(5))
 
 
 def test_electron_takes_nested_iterables():
@@ -657,7 +657,7 @@ def test_two_iterations():
         return first + b + last
 
     midword.build_graph("hello world", "beautiful", 6)
-    assert [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] == list(midword.transport_graph._graph.nodes)
+    assert list(midword.transport_graph._graph.nodes) == list(range(11))
 
 
 def test_two_iterations_float():
@@ -673,7 +673,7 @@ def test_two_iterations_float():
         return half + quarter
 
     add_half_quarter.build_graph(0.1)
-    assert [0, 1, 2, 3, 4, 5, 6] == list(add_half_quarter.transport_graph._graph.nodes)
+    assert list(add_half_quarter.transport_graph._graph.nodes) == list(range(8))
 
 
 def test_wait_for():
