@@ -802,6 +802,11 @@ def to_decoded_electron_collection(**x):
 
 # Copied from runner.py
 def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kwargs):
+    import os
+
+    # Read the parent dispatch id if set in the environment
+    parent_dispatch_id = os.environ.get("COVALENT_DISPATCH_ID", None)
+
     parent_metadata = json.loads(json_parent_metadata)
     for k in sub.metadata.keys():
         if not sub.metadata[k] and k != "triggers":
@@ -814,7 +819,9 @@ def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kw
 
         # Omit these two steps to return the manifest to Covalent and
         # request the assets be pulled
-        recv_manifest = LocalDispatcher.register_manifest(manifest, push_assets=True)
+        recv_manifest = LocalDispatcher.register_manifest(
+            manifest, parent_dispatch_id=parent_dispatch_id, push_assets=True
+        )
         LocalDispatcher.upload_assets(recv_manifest)
 
     return recv_manifest.json()
