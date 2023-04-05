@@ -20,6 +20,7 @@
 
 """FastAPI models for /api/v1/resultv2 endpoints"""
 
+import platform
 
 from pydantic import BaseModel
 
@@ -88,6 +89,7 @@ class LatticeMetadata(BaseModel):
     executor_data: dict
     workflow_executor: str
     workflow_executor_data: dict
+    python_version: str = platform.python_version()
 
 
 class LatticeSchema(BaseModel):
