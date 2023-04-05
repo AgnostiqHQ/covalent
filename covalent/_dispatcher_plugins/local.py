@@ -55,6 +55,8 @@ def get_redispatch_request_body(
     if new_args or new_kwargs:
         res = get_result(dispatch_id)
         lat = res.lattice
+        if "_bound_electrons" not in lat.__dict__.keys():
+            lat.__dict__["_bound_electrons"] = {}
         lat.build_graph(*new_args, **new_kwargs)
         json_lattice = lat.serialize_to_json()
     else:
@@ -248,12 +250,11 @@ class LocalDispatcher(BaseDispatcher):
 
             Returns:
                 The result of the executed workflow.
-            """
 
+            """
             body = get_redispatch_request_body(
                 dispatch_id, new_args, new_kwargs, replace_electrons, reuse_previous_results
             )
-
             redispatch_url = f"{dispatcher_addr}/api/redispatch"
             r = requests.post(redispatch_url, json=body, params={"is_pending": is_pending})
             r.raise_for_status()

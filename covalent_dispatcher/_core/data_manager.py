@@ -156,8 +156,8 @@ def get_unique_id() -> str:
 
     Returns:
         str: Unique ID
-    """
 
+    """
     return str(uuid.uuid4())
 
 
@@ -207,7 +207,18 @@ def make_derived_dispatch(
     electron_updates: Optional[Dict[str, Callable]] = None,
     reuse_previous_results: bool = False,
 ) -> str:
-    """Make a re-dispatch from a previous dispatch."""
+    """Make a re-dispatch from a previous dispatch.
+
+    Args:
+        parent_dispatch_id: dispatch ID of the parent dispatch.
+        json_lattice: JSON-serialized lattice to use for the new dispatch.
+        electron_updates: dictionary of electron updates to apply to the new dispatch.
+        reuse_previous_results: whether to reuse previous results from the parent dispatch.
+
+    Returns:
+        str: dispatch ID of the new dispatch.
+
+    """
     if electron_updates is None:
         electron_updates = {}
 
