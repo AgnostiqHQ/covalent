@@ -28,6 +28,7 @@ import pytest
 
 import covalent as ct
 from covalent._results_manager import Result as SDKResult
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice as SDKLattice
 from covalent_dispatcher._dal.electron import ASSET_KEYS as ELECTRON_ASSET_KEYS
 from covalent_dispatcher._dal.lattice import ASSET_KEYS as LATTICE_ASSET_KEYS
@@ -405,3 +406,28 @@ def test_get_linked_assets(test_db, mocker):
     num_nodes = len(res.lattice.transport_graph._graph.nodes)
     assert len(assets["lattice"]) == len(ASSET_KEYS) + len(LATTICE_ASSET_KEYS)
     assert len(assets["nodes"]) == num_nodes * len(ELECTRON_ASSET_KEYS)
+
+
+def test_result_ensure_run_once(test_db, mocker):
+    res = get_mock_result()
+    res._initialize_nodes()
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+
+    update.persist(res)
+
+    with test_db.session() as session:
+        record = (
+            session.query(models.Lattice)
+            .where(models.Lattice.dispatch_id == "mock_dispatch")
+            .first()
+        )
+        srvres = Result(session, record)
+
+    assert srvres.status == RESULT_STATUS.NEW_OBJECT
+    assert Result.ensure_run_once("mock_dispatch") is True
+    assert srvres.status == RESULT_STATUS.STARTING
+    assert Result.ensure_run_once("mock_dispatch") is False
+    assert srvres.status == RESULT_STATUS.STARTING

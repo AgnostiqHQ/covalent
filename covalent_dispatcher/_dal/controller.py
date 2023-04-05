@@ -47,7 +47,13 @@ class Record(Generic[T]):
 
     @classmethod
     def get(
-        cls, session: Session, *, fields: list, equality_filters: dict, membership_filters: dict
+        cls,
+        session: Session,
+        *,
+        fields: list,
+        equality_filters: dict,
+        membership_filters: dict,
+        for_update: bool = False,
     ):
         stmt = select(cls.model)
         for attr, val in equality_filters.items():
@@ -56,6 +62,9 @@ class Record(Generic[T]):
             stmt = stmt.where(getattr(cls.model, attr).in_(vals))
         if len(fields) > 0:
             stmt = stmt.options(load_only(*fields))
+        if for_update:
+            stmt = stmt.with_for_update()
+
         return session.scalars(stmt).all()
 
     @classmethod

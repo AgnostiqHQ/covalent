@@ -441,16 +441,7 @@ async def get_dispatch_attributes(dispatch_id: str, keys: List[str]) -> Dict:
 # Ensure that a dispatch is only run once; in the future, also check
 # if all assets have been uploaded
 def _ensure_dispatch_sync(dispatch_id: str) -> bool:
-    result_object = get_result_object(dispatch_id, bare=True)
-
-    # Atomically increment the dispatch status from NEW_OBJ/PENDING to STARTING
-    with result_object.session() as session:
-        old_status = result_object.get_value("status", session, False)
-        if old_status == RESULT_STATUS.NEW_OBJECT:
-            result_object.set_value("status", RESULT_STATUS.STARTING, session)
-            return True
-        else:
-            return False
+    return SRVResult.ensure_run_once(dispatch_id)
 
 
 async def ensure_dispatch(dispatch_id: str) -> bool:

@@ -339,6 +339,39 @@ class Result(DispatchedObject):
         return assets
 
     @classmethod
+    def ensure_run_once(cls, dispatch_id: str) -> bool:
+        """Ensure that a dispatch is only run once.
+
+
+        Returns:
+            bool: whether the dispatch can be run
+        """
+        # Atomically increment dispatch status from NEW_OBJ to STARTING
+        with cls.session() as session:
+            record = ResultMeta.get(
+                session,
+                fields=["id", "dispatch_id", "status"],
+                equality_filters={"dispatch_id": dispatch_id},
+                membership_filters={},
+                for_update=True,
+            )[0]
+            status = get_filters["status"](record.status)
+
+            if status == RESULT_STATUS.NEW_OBJECT:
+                new_status = set_filters["status"](RESULT_STATUS.STARTING)
+                ResultMeta.update_bulk(
+                    session,
+                    values={"status": new_status},
+                    equality_filters={"dispatch_id": dispatch_id},
+                    membership_filters={},
+                )
+                app_log.debug(f"dispatch {dispatch_id} has not been run")
+                return True
+            else:
+                app_log.debug(f"dispatch {dispatch_id} has already been run")
+                return False
+
+    @classmethod
     def from_dispatch_id(
         cls,
         dispatch_id: str,
