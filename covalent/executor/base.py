@@ -48,7 +48,7 @@ import aiofiles
 
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
-from covalent.executor.utils import Signals
+from covalent.executor.utils import Signals, set_context
 
 from .._shared_files import TaskRuntimeError, logger
 from .._shared_files.context_managers import active_dispatch_info_manager
@@ -64,6 +64,8 @@ def wrapper_fn(
     function: TransportableObject,
     call_before: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
     call_after: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
+    node_id: int,
+    dispatch_id: str,
     *args,
     **kwargs,
 ):
@@ -106,7 +108,8 @@ def wrapper_fn(
     for key, val in cb_retvals.items():
         new_kwargs[key] = val
 
-    output = fn(*new_args, **new_kwargs)
+    with set_context(node_id, dispatch_id):
+        output = fn(*new_args, **new_kwargs)
 
     for tup in call_after:
         serialized_fn, serialized_args, serialized_kwargs, retval_key = tup

@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -18,5 +18,25 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .wrappers import Signals
-from .context import get_context, set_context
+from pydantic import BaseModel
+from contextlib import contextmanager
+
+
+class Context(BaseModel):
+    node_id: int
+    dispatch_id: str
+
+
+def get_context():
+    return current_context
+
+
+@contextmanager
+def set_context(node_id: int, dispatch_id: str):
+    global current_context
+    current_context = Context(node_id=node_id, dispatch_id=dispatch_id)
+    yield
+    current_context = None
+
+
+current_context = None

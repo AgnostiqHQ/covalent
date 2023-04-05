@@ -313,7 +313,7 @@ async def _run_task(
 
         else:
             app_log.debug(f"Executing task {node_name}")
-            assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
+            assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after, node_id, dispatch_id)
 
             asyncio.create_task(executor_proxy.watch(dispatch_id, node_id, executor))
 
