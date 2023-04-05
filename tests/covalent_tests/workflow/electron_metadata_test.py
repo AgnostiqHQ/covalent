@@ -22,6 +22,8 @@
 
 import json
 
+from covalent._shared_files.defaults import get_default_executor, postprocess_prefix
+
 
 def test_electrons_get_lattice_metadata_1():
     """case 1: test explicit electron metadata always wins"""
@@ -48,13 +50,14 @@ def test_electrons_get_lattice_metadata_1():
     data = hello_world.transport_graph.serialize_to_json()
     data = json.loads(data)
 
-    for i in data["nodes"]:
-        if "parameter" not in i["name"]:
-            print(i)
-            assert i["metadata"]["executor"] == "electron_executor"
-            assert i["metadata"]["deps"]["bash"] == electron_bash_dep.to_dict()
-            assert len(i["metadata"]["call_before"]) == 2
-            assert len(i["metadata"]["call_after"]) == 0
+    for node_data in data["nodes"]:
+        if node_data["name"].startswith(postprocess_prefix):
+            assert node_data["metadata"]["executor"] == get_default_executor()
+        elif "parameter" not in node_data["name"]:
+            assert node_data["metadata"]["executor"] == "electron_executor"
+            assert node_data["metadata"]["deps"]["bash"] == electron_bash_dep.to_dict()
+            assert len(node_data["metadata"]["call_before"]) == 2
+            assert len(node_data["metadata"]["call_after"]) == 0
 
 
 def test_electrons_get_lattice_metadata_2():
@@ -84,12 +87,14 @@ def test_electrons_get_lattice_metadata_2():
     data = hello_world.transport_graph.serialize_to_json()
     data = json.loads(data)
 
-    for i in data["nodes"]:
-        if "parameter" not in i["name"]:
-            assert i["metadata"]["executor"] == "lattice_executor"
-            assert i["metadata"]["deps"]["bash"] == lattice_bash_dep.to_dict()
-            assert len(i["metadata"]["call_before"]) == 1
-            assert len(i["metadata"]["call_after"]) == 1
+    for node_data in data["nodes"]:
+        if node_data["name"].startswith(postprocess_prefix):
+            assert node_data["metadata"]["executor"] == get_default_executor()
+        elif "parameter" not in node_data["name"]:
+            assert node_data["metadata"]["executor"] == "lattice_executor"
+            assert node_data["metadata"]["deps"]["bash"] == lattice_bash_dep.to_dict()
+            assert len(node_data["metadata"]["call_before"]) == 1
+            assert len(node_data["metadata"]["call_after"]) == 1
 
 
 def test_electrons_get_lattice_metadata_3():

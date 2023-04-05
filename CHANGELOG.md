@@ -7,10 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Doubling of nodes that are added to the transport graph.
+- Ensure postprocessing node end time is added as the workflow end time.
+
+### Added
+
+- Postprocessing as electrons.
+- Postprocessing class in `postprocessing.py` module for all the different postprocessing helper methods and algorithms.
+
+### Changed
+
+- Postprocessing logic.
+
+### Removed
+
+- Postprocessing from runners.
+
+### Docs
+
+- Adding Google Batch executor plugin RTD
+
 ### Docs
 
 - Updated How-to documents.
 - Port of Pennylane's Univariate QVR tutorial using Covalent to this repo.
+- Adding troubleshooting guide to RTD's
 - Added a note to First Experiment offering initial intro to executors.
 
 ## [0.219.0-rc.0] - 2023-03-01
