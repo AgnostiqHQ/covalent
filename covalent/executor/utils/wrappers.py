@@ -166,6 +166,8 @@ def run_task_from_uris(
     task_ids = task_group_metadata["task_ids"]
     gid = task_group_metadata["task_group_id"]
 
+    os.environ["COVALENT_DISPATCH_ID"] = dispatch_id
+
     # For dev only -- log each task group
     app_log.debug(f"Running task group {dispatch_id}:{gid}")
 

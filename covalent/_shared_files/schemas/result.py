@@ -25,7 +25,6 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from ..util_classes import Status
 from .asset import AssetSchema
 from .lattice import LatticeSchema
 
@@ -49,7 +48,7 @@ ASSET_KEYS = {
 class ResultMetadata(BaseModel):
     dispatch_id: str
     root_dispatch_id: str
-    status: Status
+    status: str
     start_time: Optional[datetime]
     end_time: Optional[datetime]
 

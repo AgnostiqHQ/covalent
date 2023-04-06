@@ -31,6 +31,7 @@ from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
 from .._serialize.result import merge_response_manifest, serialize_result, strip_local_uris
 from .._shared_files import logger
+from .._shared_files.config import get_config
 from .._shared_files.schemas.asset import AssetSchema
 from .._shared_files.schemas.result import ResultSchema
 from .._shared_files.utils import copy_file_locally, format_server_url, request_api_key
@@ -71,6 +72,8 @@ class LocalDispatcher(BaseDispatcher):
             Wrapper function which takes the inputs of the workflow as arguments
         """
 
+        multistage = get_config("sdk.multistage_dispatch") == "true"
+
         @wraps(orig_lattice)
         def wrapper(*args, **kwargs) -> str:
             """
@@ -85,9 +88,14 @@ class LocalDispatcher(BaseDispatcher):
                 The dispatch id of the workflow.
             """
 
-            dispatch_id = LocalDispatcher.submit(orig_lattice, dispatcher_addr)(
-                *args, **kwargs
-            )
+            if multistage:
+                dispatch_id = LocalDispatcher.register(orig_lattice, dispatcher_addr)(
+                    *args, **kwargs
+                )
+            else:
+                dispatch_id = LocalDispatcher.submit(orig_lattice, dispatcher_addr)(
+                    *args, **kwargs
+                )
 
             if not disable_run:
                 return LocalDispatcher.start(dispatch_id, dispatcher_addr)

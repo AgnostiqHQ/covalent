@@ -28,6 +28,7 @@ from .._shared_files.schemas.lattice import (
     LATTICE_RESULTS_FILENAME,
 )
 from .._shared_files.schemas.result import ResultAssets, ResultMetadata, ResultSchema
+from .._shared_files.util_classes import Status
 from .common import AssetType, load_asset, save_asset
 from .lattice import deserialize_lattice, serialize_lattice
 
@@ -49,7 +50,7 @@ def _serialize_result_metadata(res: Result) -> ResultMetadata:
     return ResultMetadata(
         dispatch_id=res._dispatch_id,
         root_dispatch_id=res._root_dispatch_id,
-        status=res._status,
+        status=str(res._status),
     )
 
 
@@ -57,7 +58,7 @@ def _deserialize_result_metadata(meta: ResultMetadata) -> dict:
     return {
         "_dispatch_id": meta.dispatch_id,
         "_root_dispatch_id": meta.root_dispatch_id,
-        "_status": meta.status,
+        "_status": Status(meta.status),
     }
 
 
