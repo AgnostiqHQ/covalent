@@ -179,9 +179,11 @@ def test_result_from(mocker):
         "lattice_imports",
         "post_processing",
         "electron_outputs",
+        "_bound_electrons",
     }
     assert lattice_mock_attrs["post_processing"] is False
     assert lattice_mock_attrs["electron_outputs"] == {}
+    assert lattice_mock_attrs["_bound_electrons"] == {}
 
     _, args, _ = lattice_mock.mock_calls[0]
     assert args[0].__name__ == "dummy_function"
