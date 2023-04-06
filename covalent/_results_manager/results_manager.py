@@ -556,10 +556,11 @@ class ResultManager:
             f.write(ResultSchema.parse_obj(self._manifest).json())
 
     @staticmethod
-    def load(path: str) -> "ResultManager":
+    def load(path: str, results_dir: str) -> "ResultManager":
         with open(path, "r") as f:
             manifest_json = f.read()
-        return ResultManager(ResultSchema.parse_raw(manifest_json))
+
+        return ResultManager(ResultSchema.parse_raw(manifest_json), results_dir)
 
     def download_result_asset(self, key: str):
         _download_result_asset(self._manifest, self._results_dir, key)

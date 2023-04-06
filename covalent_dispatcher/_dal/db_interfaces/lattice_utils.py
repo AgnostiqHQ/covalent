@@ -99,7 +99,6 @@ _asset_record_map = {
 
 
 def get_executor_data_filter(raw: str):
-    print("DEBUG get_executor_data_filter: ", type(raw), raw)
     return json.loads(raw)
 
 
