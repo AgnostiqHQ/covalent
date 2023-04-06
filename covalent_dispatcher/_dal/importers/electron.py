@@ -86,7 +86,7 @@ def _get_electron_meta(
         "name": e.metadata.name,
         "executor": e.metadata.executor,
         "executor_data": json.dumps(e.metadata.executor_data),
-        "status": str(e.metadata.status),
+        "status": e.metadata.status,
         "started_at": e.metadata.start_time,
         "completed_at": e.metadata.end_time,
     }

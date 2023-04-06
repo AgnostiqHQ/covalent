@@ -185,7 +185,7 @@ def _get_result_meta(res: ResultSchema, storage_path: str, electron_id: Optional
     kwargs = {
         "dispatch_id": res.metadata.dispatch_id,
         "root_dispatch_id": res.metadata.root_dispatch_id,
-        "status": str(res.metadata.status),
+        "status": res.metadata.status,
         "started_at": res.metadata.start_time,
         "completed_at": res.metadata.end_time,
     }

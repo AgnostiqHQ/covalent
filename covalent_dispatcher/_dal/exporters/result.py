@@ -52,7 +52,7 @@ def _export_result_meta(res: Result) -> ResultMetadata:
     for key in METADATA_KEYS:
         if key in METADATA_KEYS_TO_OMIT:
             continue
-        metadata_kwargs[key] = res.get_value(key, None, refresh=False)
+        metadata_kwargs[key] = res.get_metadata(key, None, refresh=False)
 
     return ResultMetadata(**metadata_kwargs)
 

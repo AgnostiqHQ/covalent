@@ -25,7 +25,6 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from ..util_classes import Status
 from .asset import AssetSchema
 
 ELECTRON_METADATA_KEYS = {
@@ -87,7 +86,7 @@ class ElectronMetadata(BaseModel):
     executor: str
     executor_data: dict
     sub_dispatch_id: Optional[str]
-    status: Optional[Status]
+    status: Optional[str]
     start_time: Optional[datetime]
     end_time: Optional[datetime]
 

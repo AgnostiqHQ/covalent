@@ -51,7 +51,7 @@ def _export_electron_meta(e: Electron) -> ElectronMetadata:
         executor=executor,
         executor_data=executor_data,
         sub_dispatch_id=sub_dispatch_id,
-        status=status,
+        status=str(status),
         start_time=start_time,
         end_time=end_time,
     )

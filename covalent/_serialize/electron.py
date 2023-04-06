@@ -36,7 +36,7 @@ from .._shared_files.schemas.electron import (
     ElectronMetadata,
     ElectronSchema,
 )
-from .._shared_files.util_classes import RESULT_STATUS
+from .._shared_files.util_classes import RESULT_STATUS, Status
 from .common import AssetType, load_asset, save_asset
 
 ASSET_TYPES = {
@@ -88,7 +88,7 @@ def _serialize_node_metadata(node_attrs: dict, node_storage_path: str) -> Electr
         name=name,
         executor=executor,
         executor_data=executor_data,
-        status=status,
+        status=str(status),
         start_time=start_time,
         end_time=end_time,
     )
@@ -98,7 +98,7 @@ def _deserialize_node_metadata(meta: ElectronMetadata) -> dict:
     return {
         "task_group_id": meta.task_group_id,
         "name": meta.name,
-        "status": meta.status,
+        "status": Status(meta.status),
         "start_time": meta.start_time,
         "end_time": meta.end_time,
         "sub_dispatch_id": meta.sub_dispatch_id,

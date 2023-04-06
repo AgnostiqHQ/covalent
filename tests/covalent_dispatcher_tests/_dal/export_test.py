@@ -241,4 +241,4 @@ def test_export_result_manifest(test_db, mocker):
         export_manifest = export_result_manifest(dispatch_id)
 
         assert export_manifest.metadata.start_time == ts
-        assert export_manifest.metadata.status == SDKResult.RUNNING
+        assert export_manifest.metadata.status == str(SDKResult.RUNNING)
