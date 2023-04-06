@@ -124,6 +124,7 @@ def test_import_result(mocker, test_db):
 
 def test_import_previously_imported_result(mocker, test_db):
     dispatch_id = "test_import_previous_result"
+    sub_dispatch_id = "test_import_previous_result_sub"
 
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
 
@@ -136,9 +137,18 @@ def test_import_previously_imported_result(mocker, test_db):
     ) as srv_dir:
         res = get_mock_result(dispatch_id, sdk_dir)
         import_result(res, srv_dir, None)
-        import_result(res, srv_dir, 1)
 
-    mock_filter_uris.assert_called_once()
+    with tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir, tempfile.TemporaryDirectory(
+        prefix="covalent-"
+    ) as srv_dir:
+        sub_res = get_mock_result(sub_dispatch_id, sdk_dir)
+        import_result(sub_res, srv_dir, None)
+        srv_res = get_result_object(dispatch_id, bare=True)
+        parent_node = srv_res.lattice.transport_graph.get_node(0)
 
-    srv_res = get_result_object(dispatch_id, bare=True)
-    assert srv_res._electron_id == 1
+    with tempfile.TemporaryDirectory(prefix="covalent-") as srv_dir:
+        import_result(sub_res, srv_dir, parent_node._electron_id)
+
+    sub_srv_res = get_result_object(sub_dispatch_id, bare=True)
+    assert mock_filter_uris.call_count == 2
+    assert sub_srv_res._electron_id == parent_node._electron_id
