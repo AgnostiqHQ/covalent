@@ -891,10 +891,6 @@ def test_redispatch_reusing_previous_results():
         return x + y
 
     @ct.electron
-    def mult_task(x, y):
-        return x * y
-
-    @ct.electron
     def square_task(x):
         return x * x
 

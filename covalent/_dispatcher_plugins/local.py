@@ -55,8 +55,6 @@ def get_redispatch_request_body(
     if new_args or new_kwargs:
         res = get_result(dispatch_id)
         lat = res.lattice
-        if "_bound_electrons" not in lat.__dict__.keys():
-            lat.__dict__["_bound_electrons"] = {}
         lat.build_graph(*new_args, **new_kwargs)
         json_lattice = lat.serialize_to_json()
     else:
@@ -93,7 +91,7 @@ class LocalDispatcher(BaseDispatcher):
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
             dispatcher_addr: The address of the dispatcher server.  If None then defaults to the address set in Covalent's config.
-            disable_run: Whether to disable running the worklow and rather just save it on Covalent's server for later execution
+            disable_run: Whether to disable running the workflow and rather just save it on Covalent's server for later execution
 
         Returns:
             Wrapper function which takes the inputs of the workflow as arguments

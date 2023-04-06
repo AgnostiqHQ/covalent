@@ -76,6 +76,9 @@ async def redispatch(request: Request, is_pending: bool = False) -> str:
         json_lattice = data["json_lattice"]
         electron_updates = data["electron_updates"]
         reuse_previous_results = data["reuse_previous_results"]
+        app_log.debug(
+            f"Unpacked redispatch request for {dispatch_id}. reuse_previous_results: {reuse_previous_results}, electron_updates: {electron_updates}"
+        )
         return await dispatcher.run_redispatch(
             dispatch_id, json_lattice, electron_updates, reuse_previous_results, is_pending
         )

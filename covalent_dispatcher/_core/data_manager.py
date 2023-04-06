@@ -191,7 +191,16 @@ def _get_result_object_from_new_lattice(
 def _get_result_object_from_old_result(
     old_result_object: Result, reuse_previous_results: bool
 ) -> Result:
-    """Get new result object for re-dispatching from old result object."""
+    """Get new result object for re-dispatching from old result object.
+
+    Args:
+        old_result_object: Parent dispatch result object.
+        reuse_previous_results: Whether to reuse previous results from the parent dispatch.
+
+    Returns:
+        Result object.
+
+    """
     result_object = Result(old_result_object.lattice, get_unique_id())
     result_object._num_nodes = old_result_object._num_nodes
 
@@ -219,6 +228,7 @@ def make_derived_dispatch(
         str: dispatch ID of the new dispatch.
 
     """
+    app_log.debug("Making derived dispatch ...")
     if electron_updates is None:
         electron_updates = {}
 
@@ -239,6 +249,7 @@ def make_derived_dispatch(
     )
     update.persist(result_object)
     _register_result_object(result_object)
+    app_log.debug(f"Redispatch result object: {result_object}")
 
     return result_object.dispatch_id
 
