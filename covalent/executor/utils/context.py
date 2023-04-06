@@ -23,8 +23,8 @@ from contextlib import contextmanager
 
 
 class Context(BaseModel):
-    node_id: int
-    dispatch_id: str
+    node_id: int = None
+    dispatch_id: str = None
 
 
 def get_context():
@@ -40,5 +40,5 @@ def set_context(node_id: int, dispatch_id: str):
     current_context = unset_context
 
 
-unset_context = Context(node_id=None, dispatch_id=None)
+unset_context = Context()
 current_context = unset_context
