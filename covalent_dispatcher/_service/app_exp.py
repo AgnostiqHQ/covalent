@@ -229,7 +229,7 @@ def _export_result_sync(
 
 
 @router.get("/resultv2/{dispatch_id}/assets/node/{node_id}/{key}")
-async def get_node_asset_exp(
+async def get_node_asset(
     dispatch_id: str,
     node_id: int,
     key: ElectronAssetKey,
@@ -265,7 +265,7 @@ async def get_node_asset_exp(
 
 
 @router.get("/resultv2/{dispatch_id}/assets/dispatch/{key}")
-async def get_dispatch_asset_exp(
+async def get_dispatch_asset(
     dispatch_id: str,
     key: DispatchAssetKey,
     start_byte: int = 0,
@@ -302,7 +302,7 @@ async def get_dispatch_asset_exp(
 
 
 @router.get("/resultv2/{dispatch_id}/assets/lattice/{key}")
-async def get_lattice_asset_exp(
+async def get_lattice_asset(
     dispatch_id: str,
     key: LatticeAssetKey,
     start_byte: int = 0,
@@ -337,9 +337,8 @@ async def get_lattice_asset_exp(
     return StreamingResponse(generator)
 
 
-# Demo only!!!
 @router.post("/resultv2/{dispatch_id}/assets/node/{node_id}/{key}")
-async def upload_node_asset_exp(dispatch_id: str, node_id: int, key: str, asset_file: UploadFile):
+async def upload_node_asset(dispatch_id: str, node_id: int, key: str, asset_file: UploadFile):
     app_log.debug(f"Requested asset {key} for node {dispatch_id}:{node_id}")
 
     with workflow_db.session() as session:
@@ -366,9 +365,7 @@ async def upload_node_asset_exp(dispatch_id: str, node_id: int, key: str, asset_
 
 
 @router.post("/resultv2/{dispatch_id}/assets/dispatch/{key}")
-async def upload_dispatch_asset_exp(
-    dispatch_id: str, key: DispatchAssetKey, asset_file: UploadFile
-):
+async def upload_dispatch_asset(dispatch_id: str, key: DispatchAssetKey, asset_file: UploadFile):
     with workflow_db.session() as session:
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
         status = lattice_record.status if lattice_record else None
@@ -393,7 +390,7 @@ async def upload_dispatch_asset_exp(
 
 
 @router.post("/resultv2/{dispatch_id}/assets/lattice/{key}")
-async def upload_lattice_asset_exp(dispatch_id: str, key: LatticeAssetKey, asset_file: UploadFile):
+async def upload_lattice_asset(dispatch_id: str, key: LatticeAssetKey, asset_file: UploadFile):
     with workflow_db.session() as session:
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
         status = lattice_record.status if lattice_record else None
