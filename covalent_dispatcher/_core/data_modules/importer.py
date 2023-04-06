@@ -56,8 +56,8 @@ def get_unique_id() -> str:
 
 def _import_manifest(
     res: ResultSchema,
-    parent_dispatch_id: Optional[str] = None,
-    parent_electron_id: Optional[int] = None,
+    parent_dispatch_id: Optional[str],
+    parent_electron_id: Optional[int],
 ) -> ResultSchema:
     if not res.metadata.dispatch_id:
         res.metadata.dispatch_id = get_unique_id()
@@ -95,8 +95,8 @@ async def _pull_assets(manifest: ResultSchema) -> None:
 
 async def import_manifest(
     manifest: ResultSchema,
-    parent_dispatch_id: Optional[str] = None,
-    parent_electron_id: Optional[int] = None,
+    parent_dispatch_id: Optional[str],
+    parent_electron_id: Optional[int],
 ) -> ResultSchema:
     filtered_manifest = await run_in_executor(
         _import_manifest, manifest, parent_dispatch_id, parent_electron_id
