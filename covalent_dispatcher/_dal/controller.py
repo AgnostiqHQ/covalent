@@ -68,8 +68,10 @@ class Record(Generic[T]):
         return session.scalars(stmt).all()
 
     @classmethod
-    def get_by_primary_key(cls, session: Session, primary_key: int) -> T:
-        return session.get(cls.model, primary_key)
+    def get_by_primary_key(
+        cls, session: Session, primary_key: int, *, for_update: bool = False
+    ) -> T:
+        return session.get(cls.model, primary_key, with_for_update=for_update)
 
     @classmethod
     def insert(cls, session: Session, *, insert_kwargs: dict, flush: bool = True) -> T:
@@ -127,12 +129,13 @@ class Record(Generic[T]):
             membership_filters={},
         )
 
-    def refresh(self, session: Session, *, fields: set):
+    def refresh(self, session: Session, *, fields: set, for_update: bool = False):
         records = type(self).get(
             session,
             fields=fields,
             equality_filters={"id": self._id},
             membership_filters={},
+            for_update=for_update,
         )
         record = records[0]
         self._attrs = {k: getattr(record, k) for k in fields}

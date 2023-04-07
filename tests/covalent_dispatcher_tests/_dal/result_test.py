@@ -431,3 +431,78 @@ def test_result_ensure_run_once(test_db, mocker):
     assert srvres.status == RESULT_STATUS.STARTING
     assert Result.ensure_run_once("mock_dispatch") is False
     assert srvres.status == RESULT_STATUS.STARTING
+
+
+def test_result_filters_illegal_status_updates(test_db, mocker):
+    res = get_mock_result()
+    res._initialize_nodes()
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+
+    update.persist(res)
+
+    with test_db.session() as session:
+        record = (
+            session.query(models.Lattice)
+            .where(models.Lattice.dispatch_id == "mock_dispatch")
+            .first()
+        )
+        srvres = Result(session, record)
+
+    first_update = srvres._update_node(0, status=RESULT_STATUS.RUNNING)
+    second_update = srvres._update_node(0, status=RESULT_STATUS.COMPLETED)
+    third_update = srvres._update_node(0, status=RESULT_STATUS.COMPLETED)
+
+    assert first_update and second_update
+    assert not third_update
+
+
+def test_result_filters_parent_electron_updates(test_db, mocker):
+    """Check filtering of status updates for sublattice electrons"""
+
+    res = get_mock_result()
+    sub_res = get_mock_result()
+    res.lattice.transport_graph.set_node_value(0, "name", ":sublattice:")
+    sub_res._dispatch_id = "sub_mock_dispatch"
+    res._initialize_nodes()
+    sub_res._initialize_nodes()
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+
+    update.persist(res)
+    update.persist(sub_res)
+
+    with test_db.session() as session:
+        record = (
+            session.query(models.Lattice)
+            .where(models.Lattice.dispatch_id == "mock_dispatch")
+            .first()
+        )
+        sub_record = (
+            session.query(models.Lattice)
+            .where(models.Lattice.dispatch_id == "sub_mock_dispatch")
+            .first()
+        )
+
+        srvres = Result(session, record)
+        subl_node = srvres.lattice.transport_graph.get_node(0, session)
+
+        sub_srvres = Result(session, sub_record)
+        sub_srvres.set_value("electron_id", subl_node._electron_id, session)
+
+    sub_srvres._update_dispatch(status=RESULT_STATUS.RUNNING)
+
+    assert subl_node.get_value("sub_dispatch_id") == sub_res._dispatch_id
+
+    first_update = srvres._update_node(0, status=RESULT_STATUS.RUNNING)
+    second_update = srvres._update_node(0, status=RESULT_STATUS.COMPLETED)
+    sub_srvres._update_dispatch(status=RESULT_STATUS.COMPLETED)
+    third_update = srvres._update_node(0, status=RESULT_STATUS.COMPLETED)
+
+    assert first_update
+    assert not second_update
+    assert third_update

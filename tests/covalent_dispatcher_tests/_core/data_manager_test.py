@@ -126,9 +126,13 @@ def test_initialize_result_object(mocker, test_db):
 async def test_update_node_result(mocker, node_status, node_type, output_status, sub_id):
     """Check that update_node_result pushes the correct status updates"""
 
-    result_object = get_mock_result()
+    result_object = MagicMock()
+    result_object.dispatch_id = "test_update_node_result"
+
     node_result = {"node_id": 0, "status": node_status}
-    mock_update_node = mocker.patch("covalent_dispatcher._dal.result.Result._update_node")
+    mock_update_node = mocker.patch(
+        "covalent_dispatcher._dal.result.Result._update_node", return_value=True
+    )
     node_info = {"type": node_type, "sub_dispatch_id": sub_id, "status": Result.NEW_OBJ}
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_electron_attributes", return_value=node_info
@@ -158,20 +162,23 @@ async def test_update_node_result(mocker, node_status, node_type, output_status,
 
 
 @pytest.mark.parametrize(
-    "node_status,old_status",
+    "node_status,old_status,valid_update",
     [
-        (Result.COMPLETED, Result.RUNNING),
-        (Result.COMPLETED, Result.COMPLETED),
-        (Result.FAILED, Result.COMPLETED),
+        (Result.COMPLETED, Result.RUNNING, True),
+        (Result.COMPLETED, Result.COMPLETED, False),
+        (Result.FAILED, Result.COMPLETED, False),
     ],
 )
 @pytest.mark.asyncio
-async def test_update_node_result_filters_illegal_updates(mocker, node_status, old_status):
+async def test_update_node_result_filters_illegal_updates(
+    mocker, node_status, old_status, valid_update
+):
     """Check that update_node_result pushes the correct status updates"""
 
-    result_object = get_mock_result()
+    result_object = MagicMock()
+    result_object.dispatch_id = "test_update_node_result_filters_illegal_updates"
+    result_object._update_node = MagicMock(return_value=valid_update)
     node_result = {"node_id": 0, "status": node_status}
-    mock_update_node = mocker.patch("covalent_dispatcher._dal.result.Result._update_node")
     node_info = {"type": "function", "sub_dispatch_id": "", "status": old_status}
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_electron_attributes", return_value=node_info
@@ -191,7 +198,7 @@ async def test_update_node_result_filters_illegal_updates(mocker, node_status, o
 
     await update_node_result(result_object.dispatch_id, node_result)
 
-    if old_status == node_status or RESULT_STATUS.is_terminal(old_status):
+    if not valid_update:
         mock_notify.assert_not_awaited()
     else:
         mock_notify.assert_awaited()
@@ -201,7 +208,8 @@ async def test_update_node_result_filters_illegal_updates(mocker, node_status, o
 async def test_update_node_result_handles_keyerrors(mocker):
     """Check that update_node_result handles invalid dispatch id or node id"""
 
-    result_object = get_mock_result()
+    result_object = MagicMock()
+    result_object.dispatch_id = "test_update_node_result_handles_keyerrors"
     node_result = {"node_id": -5, "status": RESULT_STATUS.COMPLETED}
     mock_update_node = mocker.patch("covalent_dispatcher._dal.result.Result._update_node")
     node_info = {"type": "function", "sub_dispatch_id": "", "status": RESULT_STATUS.RUNNING}
@@ -222,7 +230,9 @@ async def test_update_node_result_handles_keyerrors(mocker):
 async def test_update_node_result_handles_subl_exceptions(mocker):
     """Check that update_node_result pushes the correct status updates"""
 
-    result_object = get_mock_result()
+    result_object = MagicMock()
+    result_object.dispatch_id = "test_update_node_result_handles_subl_exception"
+
     node_type = "sublattice"
     sub_id = ""
     node_result = {"node_id": 0, "status": Result.COMPLETED}
@@ -256,7 +266,8 @@ async def test_update_node_result_handles_subl_exceptions(mocker):
 async def test_update_node_result_handles_db_exceptions(mocker):
     """Check that update_node_result handles db write failures"""
 
-    result_object = get_mock_result()
+    result_object = MagicMock()
+    result_object.dispatch_id = "test_update_node_result_handles_db_exceptions"
     result_object._update_node = MagicMock(side_effect=RuntimeError())
     mock_get_result = mocker.patch(
         "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
@@ -273,7 +284,8 @@ async def test_update_node_result_handles_db_exceptions(mocker):
 
 @pytest.mark.asyncio
 async def test_make_dispatch(mocker):
-    res = get_mock_result()
+    res = MagicMock()
+    res.dispatch_id = "test_make_dispatch"
     mock_init_result = mocker.patch(
         "covalent_dispatcher._core.data_manager.initialize_result_object", return_value=res
     )
@@ -446,7 +458,8 @@ def test_get_result_object(mocker):
 
 @pytest.mark.parametrize("stateless", [False, True])
 def test_register_result_object(mocker, stateless):
-    result_object = get_mock_result()
+    result_object = MagicMock()
+    result_object.dispatch_id = "test_register_result_object"
     srvres_obj = MagicMock()
     dispatch_id = result_object.dispatch_id
     mocker.patch(
@@ -472,7 +485,8 @@ def test_register_result_object(mocker, stateless):
 
 @pytest.mark.parametrize("stateless", [False, True])
 def test_unregister_result_object(mocker, stateless):
-    result_object = get_mock_result()
+    result_object = MagicMock()
+    result_object.dispatch_id = "test_unregister_result_object"
     dispatch_id = result_object.dispatch_id
     mocker.patch(
         "covalent_dispatcher._core.data_manager.STATELESS",
@@ -512,7 +526,8 @@ async def test_persist_result(mocker):
 async def test_update_parent_electron(mocker, sub_status, mapped_status):
     import datetime
 
-    mock_res = get_mock_result()
+    mock_res = MagicMock()
+    mock_res.dispatch_id = "test_update_parent_electron"
     parent_result_obj = MagicMock()
     sub_result_obj = MagicMock()
     eid = 5

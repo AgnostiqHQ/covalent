@@ -95,9 +95,9 @@ class DispatchedObject(ABC):
     def meta_record_map(cls, key: str) -> str:
         return key
 
-    def _refresh_metadata(self, session: Session):
+    def _refresh_metadata(self, session: Session, *, for_update: bool = False):
         fields = {type(self).meta_record_map(k) for k in self.query_keys}
-        self.metadata.refresh(session, fields=fields)
+        self.metadata.refresh(session, fields=fields, for_update=for_update)
 
     def get_metadata(self, key: str, session: Session, refresh: bool = True):
         attr = type(self).meta_record_map(key)
@@ -160,7 +160,13 @@ class DispatchedObject(ABC):
 
     @classmethod
     def get_db_records(
-        cls, session: Session, *, keys: list, equality_filters: dict, membership_filters: dict
+        cls,
+        session: Session,
+        *,
+        keys: list,
+        equality_filters: dict,
+        membership_filters: dict,
+        for_update: bool = False,
     ):
         # transform keys to db field names
         fields = list(map(cls.meta_record_map, keys))
@@ -179,6 +185,7 @@ class DispatchedObject(ABC):
             fields=fields,
             equality_filters=eq_filters_transformed,
             membership_filters=member_filters_transformed,
+            for_update=for_update,
         )
 
     @classmethod

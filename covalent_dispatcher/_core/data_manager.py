@@ -82,35 +82,30 @@ def generate_node_result(
 # Domain: result
 async def update_node_result(dispatch_id, node_result):
     app_log.debug("Updating node result (run_planned_workflow).")
-    old_status = RESULT_STATUS.NEW_OBJECT
     valid_update = True
     try:
         node_id = node_result["node_id"]
         node_status = node_result["status"]
         node_info = await get_electron_attributes(
-            dispatch_id, node_id, ["type", "sub_dispatch_id", "status"]
+            dispatch_id, node_id, ["type", "sub_dispatch_id"]
         )
-        old_status = node_info["status"]
         node_type = node_info["type"]
         sub_dispatch_id = node_info["sub_dispatch_id"]
 
-        app_log.debug(f"{dispatch_id}:{node_id}: previous status was {old_status}")
-
-        # Filter illegal status transitions
-        if node_status:
-            if RESULT_STATUS.is_terminal(old_status) or old_status == node_status:
-                app_log.debug(
-                    f"{dispatch_id}:{node_id}: illegal status update {old_status} -> {node_status}"
-                )
-                return
-
-        # Handle returns from _build_sublattice_graph
+        # Handle returns from _build_sublattice_graph -- change
+        # COMPLETED -> DISPATCHING
         node_result = await _filter_sublattice_status(
             dispatch_id, node_id, node_status, node_type, sub_dispatch_id, node_result
         )
         result_object = await run_in_executor(get_result_object, dispatch_id, True)
         update_partial = functools.partial(result_object._update_node, **node_result)
-        await run_in_executor(update_partial)
+
+        valid_update = await run_in_executor(update_partial)
+        if not valid_update:
+            app_log.warning(
+                f"Invalid status update {node_status} for node {dispatch_id}:{node_id}"
+            )
+            return
 
         if node_result["status"] == RESULT_STATUS.DISPATCHING:
             app_log.debug("Received sublattice dispatch")
@@ -134,7 +129,6 @@ async def update_node_result(dispatch_id, node_result):
 
     finally:
         if not valid_update:
-            # Bail out if invalid dispatch id or node id
             return
 
         node_id = node_result["node_id"]
@@ -142,13 +136,8 @@ async def update_node_result(dispatch_id, node_result):
         dispatch_id = dispatch_id
 
         detail = {"sub_dispatch_id": sub_dispatch_id} if sub_dispatch_id else {}
-        if node_status:
-            if not RESULT_STATUS.is_terminal(old_status) and old_status != node_status:
-                await dispatcher.notify_node_status(dispatch_id, node_id, node_status, detail)
-            else:
-                app_log.debug(
-                    f"{dispatch_id}:{node_id}: illegal status update {old_status} -> {node_status}"
-                )
+        if node_status and valid_update:
+            await dispatcher.notify_node_status(dispatch_id, node_id, node_status, detail)
 
 
 # Domain: result

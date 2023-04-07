@@ -199,7 +199,7 @@ class Result(DispatchedObject):
         output_uri: str = None,
         stdout_uri: str = None,
         stderr_uri: str = None,
-    ) -> None:
+    ) -> bool:
         """
         Update the node result in the transport graph.
         Called after any change in node's execution state.
@@ -216,12 +216,23 @@ class Result(DispatchedObject):
             stderr: The stderr of the node execution.
 
         Returns:
-            None
+            True/False indicating whether the update succeeded
         """
 
         app_log.debug("Inside update node")
 
         with self.session() as session:
+            if status is not None:
+                # This acquires a lock on the electron's row to achieve atomic RMW
+                if self._can_update_node_status(session, node_id, status):
+                    self.lattice.transport_graph.set_node_value(node_id, "status", status, session)
+                    if status == RESULT_STATUS.COMPLETED:
+                        self.incr_metadata("completed_electron_num", 1, session)
+                else:
+                    # Abort the update if illegal status update
+                    session.rollback()
+                    return False
+
             # Current node name
             name = self.lattice.transport_graph.get_node_value(node_id, "name", session)
 
@@ -235,12 +246,6 @@ class Result(DispatchedObject):
 
             if end_time is not None:
                 self.lattice.transport_graph.set_node_value(node_id, "end_time", end_time, session)
-
-            if status is not None:
-                self.lattice.transport_graph.set_node_value(node_id, "status", status, session)
-                if status == RESULT_STATUS.COMPLETED:
-                    self.incr_metadata("completed_electron_num", 1, session)
-
             if output is not None:
                 self.lattice.transport_graph.set_node_value(node_id, "output", output, session)
 
@@ -263,6 +268,46 @@ class Result(DispatchedObject):
             self._end_time = end_time
             app_log.debug(f"Postprocess status: {self._status}")
             self.commit()
+
+        return True
+
+    def _can_update_node_status(self, session: Session, node_id: int, new_status: Status) -> bool:
+        """Checks whether a node status update is valid.
+
+        The following status transitions are disallowed:
+        * same-status updates e.g. completed -> completed
+        * transitions from a terminal status
+
+        In addition, a terminal status update for a sublattice electron must be consistent with the sublattice dispatch's status.
+
+        Returns:
+            bool: Whether the status update is allowed
+
+        Side effects:
+            This uses SELECT FOR UPDATE to acquire a row lock
+        """
+
+        node = self.lattice.transport_graph.get_node(node_id, session)
+        node._refresh_metadata(session, for_update=True)
+        old_status = node.get_value("status", session, refresh=False)
+        if RESULT_STATUS.is_terminal(old_status) or old_status == new_status:
+            app_log.debug(
+                f"{self.dispatch_id}:{node_id}: illegal status update {old_status} -> {new_status}"
+            )
+            return False
+
+        # If node is a sublattice electron, ensure that terminal
+        # status updates agree with the sublattice dispatch status
+        node_type = node.get_value("type", session, refresh=False)
+        if node_type == "sublattice" and RESULT_STATUS.is_terminal(new_status):
+            # Fetch sublattice result
+            sub_dispatch_id = node.get_value("sub_dispatch_id", session, refresh=False)
+            if sub_dispatch_id:
+                sub_result = Result.from_dispatch_id(sub_dispatch_id, bare=True)
+                if sub_result.status != new_status:
+                    return False
+
+        return True
 
     def _get_failed_nodes(self) -> List[int]:
         """
