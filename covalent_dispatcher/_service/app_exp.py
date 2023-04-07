@@ -24,7 +24,6 @@ import shutil
 from typing import Optional
 from uuid import UUID
 
-import anyio
 from fastapi import APIRouter, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 
@@ -229,7 +228,7 @@ def _export_result_sync(
 
 
 @router.get("/resultv2/{dispatch_id}/assets/node/{node_id}/{key}")
-async def get_node_asset(
+def get_node_asset(
     dispatch_id: str,
     node_id: int,
     key: ElectronAssetKey,
@@ -265,7 +264,7 @@ async def get_node_asset(
 
 
 @router.get("/resultv2/{dispatch_id}/assets/dispatch/{key}")
-async def get_dispatch_asset(
+def get_dispatch_asset(
     dispatch_id: str,
     key: DispatchAssetKey,
     start_byte: int = 0,
@@ -302,7 +301,7 @@ async def get_dispatch_asset(
 
 
 @router.get("/resultv2/{dispatch_id}/assets/lattice/{key}")
-async def get_lattice_asset(
+def get_lattice_asset(
     dispatch_id: str,
     key: LatticeAssetKey,
     start_byte: int = 0,
@@ -338,7 +337,7 @@ async def get_lattice_asset(
 
 
 @router.post("/resultv2/{dispatch_id}/assets/node/{node_id}/{key}")
-async def upload_node_asset(dispatch_id: str, node_id: int, key: str, asset_file: UploadFile):
+def upload_node_asset(dispatch_id: str, node_id: int, key: str, asset_file: UploadFile):
     app_log.debug(f"Requested asset {key} for node {dispatch_id}:{node_id}")
 
     with workflow_db.session() as session:
@@ -358,14 +357,12 @@ async def upload_node_asset(dispatch_id: str, node_id: int, key: str, asset_file
             content={"message": f"Error retrieving metadata for asset {key}."},
         )
 
-    loop = asyncio.get_running_loop()
-    await loop.run_in_executor(None, _copy_file_obj, asset_file.file, path)
-
+    _copy_file_obj(asset_file.file, path)
     return f"Uploaded file to {path}"
 
 
 @router.post("/resultv2/{dispatch_id}/assets/dispatch/{key}")
-async def upload_dispatch_asset(dispatch_id: str, key: DispatchAssetKey, asset_file: UploadFile):
+def upload_dispatch_asset(dispatch_id: str, key: DispatchAssetKey, asset_file: UploadFile):
     with workflow_db.session() as session:
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
         status = lattice_record.status if lattice_record else None
@@ -383,14 +380,12 @@ async def upload_dispatch_asset(dispatch_id: str, key: DispatchAssetKey, asset_f
             content={"message": f"Error retrieving metadata for asset {key}."},
         )
 
-    loop = asyncio.get_running_loop()
-    await loop.run_in_executor(None, _copy_file_obj, asset_file.file, path)
-
+    _copy_file_obj(asset_file.file, path)
     return f"Uploaded file to {path}"
 
 
 @router.post("/resultv2/{dispatch_id}/assets/lattice/{key}")
-async def upload_lattice_asset(dispatch_id: str, key: LatticeAssetKey, asset_file: UploadFile):
+def upload_lattice_asset(dispatch_id: str, key: LatticeAssetKey, asset_file: UploadFile):
     with workflow_db.session() as session:
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
         status = lattice_record.status if lattice_record else None
@@ -408,9 +403,7 @@ async def upload_lattice_asset(dispatch_id: str, key: LatticeAssetKey, asset_fil
             content={"message": f"Error retrieving metadata for asset {key}."},
         )
 
-    loop = asyncio.get_running_loop()
-    await loop.run_in_executor(None, _copy_file_obj, asset_file.file, path)
-
+    _copy_file_obj(asset_file.file, path)
     return f"Uploaded file to {path}"
 
 
@@ -419,19 +412,17 @@ def _copy_file_obj(src_fileobj, dest_path):
         shutil.copyfileobj(src_fileobj, dest_fileobj)
 
 
-async def _generate_file_slice(
-    file_path: str, start_byte: int, end_byte: int, chunk_size: int = 65536
-):
+def _generate_file_slice(file_path: str, start_byte: int, end_byte: int, chunk_size: int = 65536):
     """Generator of a byte slice from a file"""
     byte_pos = start_byte
 
-    async with await anyio.open_file(file_path, "rb") as f:
-        await f.seek(start_byte)
+    with open(file_path, "rb") as f:
+        f.seek(start_byte)
         if end_byte < 0:
-            async for chunk in f:
+            for chunk in f:
                 yield chunk
         else:
             while byte_pos + chunk_size < end_byte:
                 byte_pos += chunk_size
-                yield await f.read(chunk_size)
-            yield await f.read(end_byte - byte_pos)
+                yield f.read(chunk_size)
+            yield f.read(end_byte - byte_pos)
