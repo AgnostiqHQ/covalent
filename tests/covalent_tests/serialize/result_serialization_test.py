@@ -50,6 +50,8 @@ def test_serialize_deserialize_result():
 
         assert len(res.inputs["args"]) == 2
         assert len(res.lattice.args) == 2
+        assert res.inputs["args"][0].get_deserialized() == 2
+        assert res.inputs["args"][1].get_deserialized() == 3
         assert res.lattice.args[0].get_deserialized() == 2
         assert res.lattice.args[1].get_deserialized() == 3
 
