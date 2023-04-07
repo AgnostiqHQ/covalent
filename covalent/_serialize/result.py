@@ -29,11 +29,12 @@ from .._shared_files.schemas.lattice import (
 )
 from .._shared_files.schemas.result import ResultAssets, ResultMetadata, ResultSchema
 from .._shared_files.util_classes import Status
+from .._workflow.transport import TransportableObject
 from .common import AssetType, load_asset, save_asset
 from .lattice import deserialize_lattice, serialize_lattice
 
 ASSET_TYPES = {
-    "inputs": AssetType.OBJECT,
+    "inputs": AssetType.TRANSPORTABLE,
     "error": AssetType.TEXT,
     "result": AssetType.TRANSPORTABLE,
 }
@@ -63,7 +64,13 @@ def _deserialize_result_metadata(meta: ResultMetadata) -> dict:
 
 
 def _serialize_result_assets(res: Result, storage_path: str) -> ResultAssets:
-    # NOTE: We can avoid pickling here since the UI actually consumes only the string representation
+
+    # Repack result inputs as a single TransportableObject
+    input_args = [v.get_deserialized() for v in res._inputs["args"]]
+    input_kwargs = {k: v.get_deserialized() for k, v in res._inputs["kwargs"].items()}
+    repacked_inputs = TransportableObject({"args": input_args, "kwargs": input_kwargs})
+    res._inputs = repacked_inputs
+
     inputs_asset = save_asset(
         res._inputs, ASSET_TYPES["inputs"], storage_path, ASSET_FILENAME_MAP["inputs"]
     )
