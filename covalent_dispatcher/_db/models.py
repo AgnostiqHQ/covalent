@@ -292,7 +292,7 @@ class Asset(Base):
     digest_alg = Column(Text, nullable=True)
 
     # Hex repr of digest
-    digest_hex = Column(Text, nullable=True)
+    digest = Column(Text, nullable=True)
 
     # Remote location of asset
     remote_uri = Column(Text, nullable=True)

@@ -150,7 +150,7 @@ def import_electron_assets(
             "storage_path": node_storage_path,
             "object_key": object_key,
             "digest_alg": "sha1",
-            "digest_hex": asset.digest,
+            "digest": asset.digest,
             "remote_uri": asset.uri,
             "size": asset.size,
         }

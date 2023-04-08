@@ -46,13 +46,13 @@ def test_db():
     )
 
 
-def get_asset_record(storage_path, object_key, digest_alg="", digest_hex=""):
+def get_asset_record(storage_path, object_key, digest_alg="", digest=""):
     return models.Asset(
         storage_type=StorageType.LOCAL,
         storage_path=storage_path,
         object_key=object_key,
         digest_alg=digest_alg,
-        digest_hex=digest_hex,
+        digest=digest,
     )
 
 

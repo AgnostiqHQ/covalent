@@ -227,14 +227,14 @@ def transaction_insert_asset_record(
     storage_path: str,
     object_key: str,
     digest_alg: str,
-    digest_hex: str,
+    digest: str,
 ) -> Asset:
     asset_row = Asset(
         storage_type=storage_type,
         storage_path=storage_path,
         object_key=object_key,
         digest_alg=digest_alg,
-        digest_hex=digest_hex,
+        digest=digest,
     )
     session.add(asset_row)
     session.flush()

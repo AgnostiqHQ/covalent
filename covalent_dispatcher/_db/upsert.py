@@ -135,7 +135,7 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
             "storage_path": str(data_storage_path),
             "object_key": filename,
             "digest_alg": digest.algorithm,
-            "digest_hex": digest.hexdigest,
+            "digest": digest.hexdigest,
         }
 
         assets[key] = Asset.insert(session, insert_kwargs=asset_record_kwargs, flush=True)
@@ -301,7 +301,7 @@ def _electron_data(
                     "storage_path": str(node_path),
                     "object_key": filename,
                     "digest_alg": digest.algorithm,
-                    "digest_hex": digest.hexdigest,
+                    "digest": digest.hexdigest,
                 }
 
                 assets[key] = Asset.insert(session, insert_kwargs=asset_record_kwargs, flush=True)

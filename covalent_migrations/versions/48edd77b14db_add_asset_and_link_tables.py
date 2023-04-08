@@ -46,7 +46,7 @@ def upgrade() -> None:
         sa.Column("storage_path", sa.Text(), nullable=False),
         sa.Column("object_key", sa.Text(), nullable=False),
         sa.Column("digest_alg", sa.Text(), nullable=True),
-        sa.Column("digest_hex", sa.Text(), nullable=True),
+        sa.Column("digest", sa.Text(), nullable=True),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_table(
