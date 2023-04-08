@@ -159,7 +159,7 @@ async def test_run_completed_workflow(mocker, wait):
     mock_plan = mocker.patch("covalent_dispatcher._core.dispatcher._plan_workflow")
     dispatch_status = await run_workflow(dispatch_id, wait)
 
-    mock_unregister.assert_called_with(dispatch_id)
+    mock_unregister.assert_not_called()
     assert dispatch_status == Result.COMPLETED
 
 
