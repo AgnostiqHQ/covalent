@@ -205,11 +205,13 @@ class ElectronDependency(Base):
     id = Column(Integer, primary_key=True)
 
     # Unique ID of electron
-    electron_id = Column(Integer, ForeignKey("electrons.id", name="electron_link"), nullable=False)
+    electron_id = Column(
+        Integer, ForeignKey("electrons.id", name="child_electron_link"), nullable=False
+    )
 
     # Unique ID of the electron's parent
     parent_electron_id = Column(
-        Integer, ForeignKey("electrons.id", name="electron_link"), nullable=False
+        Integer, ForeignKey("electrons.id", name="parent_electron_link"), nullable=False
     )
 
     edge_name = Column(Text, nullable=False)
@@ -294,3 +296,6 @@ class Asset(Base):
 
     # Remote location of asset
     remote_uri = Column(Text, nullable=True)
+
+    # Size in bytes
+    size = Column(Integer, nullable=True)

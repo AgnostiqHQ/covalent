@@ -100,9 +100,10 @@ def _export_result_assets(res: Result) -> ResultAssets:
     manifests = {}
     for asset_key in ASSET_KEYS:
         asset = res.assets[asset_key]
+        size = asset.size
         scheme = asset.storage_type.value
         remote_uri = f"{scheme}://{asset.storage_path}/{asset.object_key}"
-        manifests[asset_key] = AssetSchema(remote_uri=remote_uri)
+        manifests[asset_key] = AssetSchema(remote_uri=remote_uri, size=size)
 
     return ResultAssets(**manifests)
 

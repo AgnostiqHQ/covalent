@@ -56,7 +56,7 @@ def save_asset(data: Any, data_type: AssetType, storage_path: str, filename: str
     with open(path, "wb") as f:
         f.write(serialized)
     uri = f"{scheme}://{path}"
-    return AssetSchema(digest=digest, uri=uri)
+    return AssetSchema(digest=digest, size=len(serialized), uri=uri)
 
 
 def load_asset(asset_meta: AssetSchema, data_type: AssetType) -> Any:

@@ -51,6 +51,7 @@ FIELDS = {
     "digest_alg",
     "digest_hex",
     "remote_uri",
+    "size",
 }
 
 
@@ -87,6 +88,10 @@ class Asset(Record[AssetRecord]):
     @property
     def remote_uri(self) -> str:
         return self._metadata["remote_uri"]
+
+    @property
+    def size(self) -> int:
+        return self._metadata["size"]
 
     def store_data(self, data: Any) -> None:
         store_file(self.storage_path, self.object_key, data)

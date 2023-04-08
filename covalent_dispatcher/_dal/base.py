@@ -121,6 +121,11 @@ class DispatchedObject(ABC):
 
         return self.assets[key]
 
+    def update_asset(self, key: str, values: dict):
+        asset = self.get_asset(key)
+        with self.session() as session:
+            asset.update(session, values=values)
+
     def _get_value(self, key: str, session: Session, refresh: bool = True) -> Any:
         if key in self.computed_fields:
             handler = self.computed_fields[key]

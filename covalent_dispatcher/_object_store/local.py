@@ -40,5 +40,13 @@ class LocalProvider(BaseProvider):
 
         return Digest(algorithm=ALGORITHM, hexdigest=h.hexdigest())
 
+    def size(self, bucket_name: str, object_key: str) -> int:
+        path = os.path.join(bucket_name, object_key)
+
+        try:
+            return os.path.size(path)
+        except OSError:
+            return 0
+
 
 local_store = LocalProvider()

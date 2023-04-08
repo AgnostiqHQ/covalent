@@ -801,6 +801,11 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         #       "stdout": stdout_uri,
         #       "stderr": stderr_uri,
         #   },
+        #   "digests": {
+        #       "output": output_sha,
+        #       "stdout": stdout_sha,
+        #       "stderr": stderr_sha,
+        #   },
         # }
 
         # corresponding to the node ids (task_ids) specified in the

@@ -29,3 +29,6 @@ class AssetSchema(BaseModel):
     digest: Optional[str]
     uri: Optional[str]
     remote_uri: Optional[str]
+
+    # Size of the asset in bytes
+    size: Optional[int]

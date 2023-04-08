@@ -118,6 +118,7 @@ def import_lattice_assets(
             "digest_alg": "sha1",
             "digest_hex": asset.digest,
             "remote_uri": asset.uri,
+            "size": asset.size,
         }
         asset_ids[asset_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
 
