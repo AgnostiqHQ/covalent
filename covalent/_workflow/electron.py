@@ -814,14 +814,16 @@ def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kw
 
     sub.build_graph(*args, **kwargs)
 
-    with tempfile.TemporaryDirectory(prefix="covalent-") as staging_path:
-        manifest = LocalDispatcher.prepare_manifest(sub, staging_path)
+    return sub.serialize_to_json()
 
-        # Omit these two steps to return the manifest to Covalent and
-        # request the assets be pulled
-        recv_manifest = LocalDispatcher.register_manifest(
-            manifest, parent_dispatch_id=parent_dispatch_id, push_assets=True
-        )
-        LocalDispatcher.upload_assets(recv_manifest)
+    # with tempfile.TemporaryDirectory(prefix="covalent-") as staging_path:
+    #     manifest = LocalDispatcher.prepare_manifest(sub, staging_path)
 
-    return recv_manifest.json()
+    #     # Omit these two steps to return the manifest to Covalent and
+    #     # request the assets be pulled
+    #     recv_manifest = LocalDispatcher.register_manifest(
+    #         manifest, parent_dispatch_id=parent_dispatch_id, push_assets=True
+    #     )
+    #     LocalDispatcher.upload_assets(recv_manifest)
+
+    # return recv_manifest.json()
