@@ -52,6 +52,8 @@ def _serialize_result_metadata(res: Result) -> ResultMetadata:
         dispatch_id=res._dispatch_id,
         root_dispatch_id=res._root_dispatch_id,
         status=str(res._status),
+        start_time=res._start_time,
+        end_time=res._end_time,
     )
 
 
@@ -60,6 +62,8 @@ def _deserialize_result_metadata(meta: ResultMetadata) -> dict:
         "_dispatch_id": meta.dispatch_id,
         "_root_dispatch_id": meta.root_dispatch_id,
         "_status": Status(meta.status),
+        "_start_time": meta.start_time,
+        "_end_time": meta.end_time,
     }
 
 

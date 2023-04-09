@@ -21,6 +21,7 @@
 """Unit tests for result serializer"""
 
 import tempfile
+from datetime import datetime, timezone
 
 import covalent as ct
 from covalent._results_manager.result import Result
@@ -44,10 +45,15 @@ def test_serialize_deserialize_result():
 
     workflow.build_graph(2, 3)
     result_object = Result(workflow)
+    ts = datetime.now(timezone.utc)
+    result_object._start_time = ts
+    result_object._end_time = ts
     with tempfile.TemporaryDirectory() as d:
         manifest = serialize_result(result_object, d)
         res = deserialize_result(manifest)
 
+        assert res._start_time == ts
+        assert res._end_time == ts
         assert len(res.inputs["args"]) == 2
         assert len(res.lattice.args) == 2
         assert res.inputs["args"][0].get_deserialized() == 2
