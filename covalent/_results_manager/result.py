@@ -216,7 +216,7 @@ Node Outputs
         if isinstance(self._inputs, TransportableObject):
             input_dict = self._inputs.get_deserialized()
             args = [TransportableObject(v) for v in input_dict["args"]]
-            kwargs = {k: TransportableObject(v) for k, v in input_dict["kwargs"].items()}
+            kwargs = {k: TransportableObject(v) for k, v in input_dict["kwargs"]}
             self._inputs = {"args": args, "kwargs": kwargs}
 
         return self._inputs
