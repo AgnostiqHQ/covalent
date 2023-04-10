@@ -211,14 +211,6 @@ Node Outputs
         Inputs sent to the "Lattice" function for dispatching.
         """
 
-        # Unpack TransportableObject client-side into a dictionary of
-        # TransportableObjects.
-        if isinstance(self._inputs, TransportableObject):
-            input_dict = self._inputs.get_deserialized()
-            args = [TransportableObject(v) for v in input_dict["args"]]
-            kwargs = {k: TransportableObject(v) for k, v in input_dict["kwargs"].items()}
-            self._inputs = {"args": args, "kwargs": kwargs}
-
         return self._inputs
 
     @property
