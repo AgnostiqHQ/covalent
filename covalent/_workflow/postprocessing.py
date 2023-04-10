@@ -24,9 +24,8 @@ from builtins import list
 from dataclasses import asdict
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
-from covalent._shared_files.config import get_config
-
 from .._shared_files import logger
+from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import (
     DefaultMetadataValues,
