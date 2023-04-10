@@ -232,7 +232,7 @@ class Postprocessor:
             bound_pp = pp_electron(retval, **referenced_electrons)
 
             # Edit pp electron name
-            self.lattice.tg.set_node_value(
+            self.lattice.transport_graph.set_node_value(
                 bound_pp.node_id, "name", f"{postprocess_prefix}reconstruct"
             )
 

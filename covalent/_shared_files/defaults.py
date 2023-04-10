@@ -63,7 +63,7 @@ def get_default_sdk_config():
         ),
         "no_cluster": "true" if os.environ.get("COVALENT_DISABLE_DASK") == "1" else "false",
         "exhaustive_postprocess": "true",
-        "eager_preprocess": "false",  # Note that exhaustive and eager options are mutually exclusive.
+        "eager_postprocess": "false",  # Note that exhaustive and eager options are mutually exclusive.
     }
 
 
