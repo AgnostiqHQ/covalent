@@ -120,13 +120,11 @@ class Lattice:
             attributes["electron_outputs"][node_name] = output.to_dict()
 
         attributes["cova_imports"] = list(self.cova_imports)
-
         return json.dumps(attributes)
 
     @staticmethod
     def deserialize_from_json(json_data: str) -> None:
         attributes = json.loads(json_data)
-
         attributes["cova_imports"] = set(attributes["cova_imports"])
 
         for node_name, object_dict in attributes["electron_outputs"].items():

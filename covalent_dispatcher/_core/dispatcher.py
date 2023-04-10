@@ -183,15 +183,17 @@ async def _submit_task(result_object, node_id):
 
     elif node_status == RESULT_STATUS.COMPLETED:
         timestamp = datetime.now(timezone.utc)
+        output = result_object.lattice.transport_graph.get_node_value(node_id, "output")
         node_result = datasvc.generate_node_result(
             node_id=node_id,
             node_name=node_name,
             start_time=timestamp,
             end_time=timestamp,
             status=RESULT_STATUS.COMPLETED,
+            output=output,
         )
         await datasvc.update_node_result(result_object, node_result)
-        app_log.debug(f"Skipped completed node execution {node_id}.")
+        app_log.debug(f"Skipped completed node execution {node_name}.")
 
     else:
         # Gather inputs and dispatch task
@@ -405,6 +407,8 @@ def run_dispatch(dispatch_id: str) -> asyncio.Future:
 
     Return(s)
         asyncio.Future
+
     """
+    app_log.debug(f"Running dispatch with dispatch_id: {dispatch_id}.")
     result_object = datasvc.get_result_object(dispatch_id)
     return asyncio.create_task(run_workflow(result_object))

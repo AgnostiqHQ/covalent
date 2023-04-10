@@ -125,6 +125,7 @@ def _result_from(lattice_record: Lattice) -> Result:
         "lattice_imports": lattice_imports,
         "post_processing": False,
         "electron_outputs": {},
+        "_bound_electrons": {},
     }
 
     def dummy_function(x):

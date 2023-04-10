@@ -333,6 +333,7 @@ def make_derived_dispatch(
     )
     update.persist(result_object)
     _register_result_object(result_object)
+    app_log.debug(f"Redispatch result object: {result_object}")
 
     return result_object.dispatch_id
 
