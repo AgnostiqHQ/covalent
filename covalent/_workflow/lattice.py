@@ -244,9 +244,12 @@ class Lattice:
                     )
                     raise
 
+        pp = Postprocessor(lattice=self)
+
         if get_config("sdk.exhaustive_postprocess") == "true":
-            pp = Postprocessor(lattice=self)
             pp.add_exhaustive_postprocess_node(self._bound_electrons.copy())
+        elif get_config("sdk.eager_postprocess") == "true":
+            pp.add_eager_postprocess_node(retval, self._bound_electrons.copy())
 
         self._bound_electrons = {}  # Reset bound electrons
 
