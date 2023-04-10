@@ -583,6 +583,7 @@ async def test_submit_task(mocker):
     assert mock_result.lattice.transport_graph.get_node_value.mock_calls == [
         call(0, "name"),
         call(0, "status"),
+        call(0, "output"),
     ]
     update_node_result_mock.assert_called_with(mock_result, generate_node_result_mock.return_value)
     generate_node_result_mock.assert_called_once()
