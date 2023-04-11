@@ -43,7 +43,7 @@ Intermediate
    * - Machine Learning
      - :doc:`Modeling time series for sales forecasting<./machine_learning/dnn_comparison>`
    * - Machine Learning
-     - :doc:`Training a quantum-classical neural network<./qiskit_hybrid_neural_network/hybrid_resnet>`
+     - :doc:`Training a quantum-classical neural network<./qiskit_hybrid_neural_network/source>`
 
 ~~~~~~~~
 Advanced
