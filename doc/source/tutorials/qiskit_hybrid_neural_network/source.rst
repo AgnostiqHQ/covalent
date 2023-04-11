@@ -2,12 +2,15 @@
 Training a Quantum-Classical Neural Network with Covalent as Qiskit Runtime
 ***************************************************************************
 
-The script below uses Covalent to train a neural network model that classifies images of dogs and cats. It uses GPU's via AWS Batch and QPU's via IBM Quantum.
+The script below trains a hybrid neural network model that classifies images of dogs and cats.
 
-To run the script, install the relevant requirements
+To run the script, install the relevant requirements:
 
 .. code-block:: bash
+    :caption: command to install script requirements
     pip install -r ./requirements.txt
+
+Below, Covalent is used to access GPU's via AWS Batch and QPU's via IBM Quantum.
 
 .. code-block:: python
     :caption: Covalent implementation of the hybrid neutral network
