@@ -1,6 +1,6 @@
-***************************************************************************
-Training a Quantum-Classical Neural Network with Covalent as Qiskit Runtime
-***************************************************************************
+*****************************************************************************
+Training a Quantum-Classical Neural Network with Qiskit Runtime and AWS Batch
+*****************************************************************************
 
 The script below trains a hybrid neural network model that classifies images of dogs and cats.
 
