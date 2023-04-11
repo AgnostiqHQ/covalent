@@ -21,13 +21,15 @@
 
 """Functions to export server-side data to client"""
 
-from pathlib import Path
 from typing import Dict
+
+from sqlalchemy.orm import Session
 
 from covalent._shared_files.schemas.result import ResultSchema
 from covalent._workflow.lattice import Lattice as SDKLattice
 from covalent._workflow.transport import _TransportGraph as SDKGraph
 
+from .asset import Asset
 from .electron import ASSET_KEYS as ELECTRON_ASSETS
 from .electron import METADATA_KEYS as ELECTRON_META
 from .exporters.result import export_result
@@ -47,6 +49,7 @@ NODE_ATTRIBUTES.add("sub_dispatch_id")
 LATTICE_ATTRIBUTES = LATTICE_META.union(LATTICE_ASSETS)
 RESULT_ATTRIBUTES = RESULT_META.union(RESULT_ASSETS)
 
+local_scheme_prefix = "file://"
 
 SDK_NODE_META_KEYS = {
     "executor",
@@ -161,21 +164,32 @@ def export_result_manifest(dispatch_id: str) -> ResultSchema:
     return export_result(srv_res)
 
 
-def get_node_asset_uri(dispatch_id: str, node_id: int, key: str) -> str:
+def get_node_asset(session: Session, dispatch_id: str, node_id: int, key: str) -> Asset:
     srv_res = get_result_object(dispatch_id, bare=True)
     node = srv_res.lattice.transport_graph.get_node(node_id)
-    asset = node.get_asset(key)
-
-    return str(Path(asset.storage_path) / asset.object_key)
+    return node.get_asset(key)
 
 
-def get_lattice_asset_uri(dispatch_id: str, key: str) -> str:
+def get_node_asset_path(session: Session, dispatch_id: str, node_id: int, key: str) -> str:
+    asset = get_node_asset(session, dispatch_id, node_id, key)
+    return asset.internal_uri[len(local_scheme_prefix) :]
+
+
+def get_lattice_asset(session: Session, dispatch_id: str, key: str) -> Asset:
     srv_res = get_result_object(dispatch_id, bare=True)
-    asset = srv_res.lattice.get_asset(KEY_SUBSTITUTIONS.get(key, key))
-    return str(Path(asset.storage_path) / asset.object_key)
+    return srv_res.lattice.get_asset(KEY_SUBSTITUTIONS.get(key, key))
 
 
-def get_dispatch_asset_uri(dispatch_id: str, key: str) -> str:
+def get_lattice_asset_path(session: Session, dispatch_id: str, key: str) -> str:
+    asset = get_lattice_asset(session, dispatch_id, key)
+    return asset.internal_uri[len(local_scheme_prefix) :]
+
+
+def get_dispatch_asset(session: Session, dispatch_id: str, key: str) -> Asset:
     srv_res = get_result_object(dispatch_id, bare=True)
-    asset = srv_res.get_asset(key)
-    return str(Path(asset.storage_path) / asset.object_key)
+    return srv_res.get_asset(key)
+
+
+def get_dispatch_asset_path(session: Session, dispatch_id: str, key: str) -> str:
+    asset = get_dispatch_asset(session, dispatch_id, key)
+    return asset.internal_uri[len(local_scheme_prefix) :]

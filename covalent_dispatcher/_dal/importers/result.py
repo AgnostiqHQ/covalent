@@ -217,7 +217,7 @@ def import_result_assets(
             "storage_type": StorageType.LOCAL.value,
             "storage_path": storage_path,
             "object_key": object_key,
-            "digest_alg": "sha1",
+            "digest_alg": asset.digest_alg,
             "digest": asset.digest,
             "remote_uri": asset.uri,
             "size": asset.size,

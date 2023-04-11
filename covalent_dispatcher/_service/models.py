@@ -70,6 +70,9 @@ from covalent._shared_files.schemas.result import ResultSchema
 range_regex = "bytes=([0-9]+)-([0-9]*)"
 range_pattern = re.compile(range_regex)
 
+digest_regex = "(sha|sha-256)=([0-9a-f]+)"
+digest_pattern = re.compile(digest_regex)
+
 
 class DispatchAssetKey(str, Enum):
     inputs = "inputs"

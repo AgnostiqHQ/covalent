@@ -26,6 +26,7 @@ from pydantic import BaseModel
 
 
 class AssetSchema(BaseModel):
+    digest_alg: Optional[str]
     digest: Optional[str]
     uri: Optional[str]
     remote_uri: Optional[str]

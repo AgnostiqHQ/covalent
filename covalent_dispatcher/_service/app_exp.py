@@ -32,12 +32,13 @@ from covalent._results_manager.result import Result
 from covalent._shared_files import logger
 from covalent._shared_files.schemas.result import ResultSchema
 
+from .._dal.asset_update import update_dispatch_asset, update_lattice_asset, update_node_asset
 from .._dal.export import (
     export_result_manifest,
     export_serialized_result,
-    get_dispatch_asset_uri,
-    get_lattice_asset_uri,
-    get_node_asset_uri,
+    get_dispatch_asset_path,
+    get_lattice_asset_path,
+    get_node_asset_path,
 )
 from .._db.datastore import workflow_db
 from .._db.models import Lattice
@@ -46,6 +47,8 @@ from .models import (
     ElectronAssetKey,
     ExportResponseSchema,
     LatticeAssetKey,
+    digest_pattern,
+    digest_regex,
     range_pattern,
     range_regex,
 )
@@ -265,7 +268,8 @@ def get_node_asset(
             )
 
     try:
-        path = get_node_asset_uri(dispatch_id, node_id, key.value)
+        with workflow_db.session() as session:
+            path = get_node_asset_path(session, dispatch_id, node_id, key.value)
     except:
         return JSONResponse(
             status_code=404,
@@ -305,7 +309,8 @@ def get_dispatch_asset(
             )
 
     try:
-        path = get_dispatch_asset_uri(dispatch_id, key.value)
+        with workflow_db.session() as session:
+            path = get_dispatch_asset_path(session, dispatch_id, key.value)
         app_log.debug(f"Dispatch result uri: {path}")
     except:
         return JSONResponse(
@@ -347,7 +352,8 @@ def get_lattice_asset(
             )
 
     try:
-        path = get_lattice_asset_uri(dispatch_id, key.value)
+        with workflow_db.session() as session:
+            path = get_lattice_asset_path(session, dispatch_id, key.value)
         app_log.debug(f"Lattice asset uri: {path}")
     except:
         return JSONResponse(
@@ -359,7 +365,14 @@ def get_lattice_asset(
 
 
 @router.post("/resultv2/{dispatch_id}/assets/node/{node_id}/{key}")
-def upload_node_asset(dispatch_id: str, node_id: int, key: str, asset_file: UploadFile):
+def upload_node_asset(
+    dispatch_id: str,
+    node_id: int,
+    key: str,
+    asset_file: UploadFile,
+    content_length: int = Header(),
+    digest: Union[str, None] = Header(default=None, regex=digest_regex),
+):
     app_log.debug(f"Requested asset {key} for node {dispatch_id}:{node_id}")
 
     with workflow_db.session() as session:
@@ -372,7 +385,8 @@ def upload_node_asset(dispatch_id: str, node_id: int, key: str, asset_file: Uplo
             )
 
     try:
-        path = get_node_asset_uri(dispatch_id, node_id, key)
+        with workflow_db.session() as session:
+            path = get_node_asset_path(session, dispatch_id, node_id, key)
     except:
         return JSONResponse(
             status_code=404,
@@ -380,11 +394,33 @@ def upload_node_asset(dispatch_id: str, node_id: int, key: str, asset_file: Uplo
         )
 
     _copy_file_obj(asset_file.file, path)
+
+    with workflow_db.session() as session:
+        update = {"size": content_length}
+        if digest:
+            alg, checksum = _extract_checksum(digest)
+            update["digest_alg"] = alg
+            update["digest"] = checksum
+        update_node_asset(
+            session,
+            dispatch_id,
+            node_id,
+            key,
+            values=update,
+        )
+        app_log.debug(f"Updated size for node asset {dispatch_id}:{node_id}:{key}")
+
     return f"Uploaded file to {path}"
 
 
 @router.post("/resultv2/{dispatch_id}/assets/dispatch/{key}")
-def upload_dispatch_asset(dispatch_id: str, key: DispatchAssetKey, asset_file: UploadFile):
+def upload_dispatch_asset(
+    dispatch_id: str,
+    key: DispatchAssetKey,
+    asset_file: UploadFile,
+    content_length: int = Header(),
+    digest: Union[str, None] = Header(default=None, regex=digest_regex),
+):
     with workflow_db.session() as session:
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
         status = lattice_record.status if lattice_record else None
@@ -395,7 +431,8 @@ def upload_dispatch_asset(dispatch_id: str, key: DispatchAssetKey, asset_file: U
             )
 
     try:
-        path = get_dispatch_asset_uri(dispatch_id, key.value)
+        with workflow_db.session() as session:
+            path = get_dispatch_asset_path(session, dispatch_id, key.value)
     except:
         return JSONResponse(
             status_code=404,
@@ -403,11 +440,32 @@ def upload_dispatch_asset(dispatch_id: str, key: DispatchAssetKey, asset_file: U
         )
 
     _copy_file_obj(asset_file.file, path)
+
+    with workflow_db.session() as session:
+        update = {"size": content_length}
+        if digest:
+            alg, checksum = _extract_checksum(digest)
+            update["digest_alg"] = alg
+            update["digest"] = checksum
+        update_dispatch_asset(
+            session,
+            dispatch_id,
+            key,
+            values=update,
+        )
+        app_log.debug(f"Updated size for dispatch asset {dispatch_id}:{key}")
+
     return f"Uploaded file to {path}"
 
 
 @router.post("/resultv2/{dispatch_id}/assets/lattice/{key}")
-def upload_lattice_asset(dispatch_id: str, key: LatticeAssetKey, asset_file: UploadFile):
+def upload_lattice_asset(
+    dispatch_id: str,
+    key: LatticeAssetKey,
+    asset_file: UploadFile,
+    content_length: int = Header(),
+    digest: Union[str, None] = Header(default=None, regex=digest_regex),
+):
     with workflow_db.session() as session:
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
         status = lattice_record.status if lattice_record else None
@@ -418,7 +476,8 @@ def upload_lattice_asset(dispatch_id: str, key: LatticeAssetKey, asset_file: Upl
             )
 
     try:
-        path = get_lattice_asset_uri(dispatch_id, key.value)
+        with workflow_db.session() as session:
+            path = get_lattice_asset_path(session, dispatch_id, key.value)
     except:
         return JSONResponse(
             status_code=404,
@@ -426,6 +485,22 @@ def upload_lattice_asset(dispatch_id: str, key: LatticeAssetKey, asset_file: Upl
         )
 
     _copy_file_obj(asset_file.file, path)
+
+    with workflow_db.session() as session:
+        update = {"size": content_length}
+        if digest:
+            alg, checksum = _extract_checksum(digest)
+            update["digest_alg"] = alg
+            update["digest"] = checksum
+
+        update_lattice_asset(
+            session,
+            dispatch_id,
+            key,
+            values=update,
+        )
+        app_log.debug(f"Updated size for lattice asset {dispatch_id}:{key}")
+
     return f"Uploaded file to {path}"
 
 
@@ -461,3 +536,10 @@ def _extract_byte_range(byte_range_header: str) -> Tuple[int, int]:
         end_byte = int(end)
 
     return start_byte, end_byte
+
+
+def _extract_checksum(digest_header: str) -> Tuple[str, str]:
+    match = digest_pattern.match(digest_header)
+    alg = match.group(0)
+    checksum = match.group(1)
+    return alg, checksum

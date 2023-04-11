@@ -8,6 +8,8 @@ import cloudpickle
 
 from .._shared_files.schemas.asset import AssetSchema
 
+CHECKSUM_ALGORITHM = "sha"
+
 
 class AssetType(Enum):
     OBJECT = 0
@@ -56,7 +58,7 @@ def save_asset(data: Any, data_type: AssetType, storage_path: str, filename: str
     with open(path, "wb") as f:
         f.write(serialized)
     uri = f"{scheme}://{path}"
-    return AssetSchema(digest=digest, size=len(serialized), uri=uri)
+    return AssetSchema(digest_alg=CHECKSUM_ALGORITHM, digest=digest, size=len(serialized), uri=uri)
 
 
 def load_asset(asset_meta: AssetSchema, data_type: AssetType) -> Any:

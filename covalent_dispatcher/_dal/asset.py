@@ -90,6 +90,11 @@ class Asset(Record[AssetRecord]):
         return self._metadata["remote_uri"]
 
     @property
+    def internal_uri(self) -> str:
+        scheme = self.storage_type.value
+        return f"{scheme}://" + str(Path(self.storage_path) / self.object_key)
+
+    @property
     def size(self) -> int:
         return self._metadata["size"]
 
