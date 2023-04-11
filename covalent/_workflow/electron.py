@@ -467,7 +467,7 @@ class Electron:
                 )
 
             # For keyword arguments
-            # Filter out kwargs to be injected by call_before calldeps at execution
+            # Filter out kwargs to be injected by call_before call_deps during execution.
             call_before = self.metadata["call_before"]
             retval_keywords = {item["attributes"]["retval_keyword"]: None for item in call_before}
             for key, value in named_kwargs.items():
@@ -485,6 +485,8 @@ class Electron:
             self.function,
             metadata=self.metadata,
             node_id=self.node_id,
+            task_group_id=self.task_group_id,
+            packing_tasks=self.packing_tasks,
         )
         active_lattice._bound_electrons[self.node_id] = bound_electron
         return bound_electron
@@ -531,7 +533,12 @@ class Electron:
             def _auto_list_node(*args, **kwargs):
                 return list(args)
 
-            list_electron = Electron(function=_auto_list_node, metadata=collection_metadata)
+            list_electron = Electron(
+                function=_auto_list_node,
+                metadata=collection_metadata,
+                task_group_id=self.task_group_id,
+                packing_tasks=True,
+            )  # Group the auto-generated node with the main node.
             bound_electron = list_electron(*param_value)
             transport_graph.set_node_value(bound_electron.node_id, "name", electron_list_prefix)
             transport_graph.add_edge(
@@ -547,7 +554,12 @@ class Electron:
             def _auto_dict_node(*args, **kwargs):
                 return dict(kwargs)
 
-            dict_electron = Electron(function=_auto_dict_node, metadata=collection_metadata)
+            dict_electron = Electron(
+                function=_auto_dict_node,
+                metadata=collection_metadata,
+                task_group_id=self.task_group_id,
+                packing_tasks=True,
+            )  # Group the auto-generated node with the main node.
             bound_electron = dict_electron(**param_value)
             transport_graph.set_node_value(bound_electron.node_id, "name", electron_dict_prefix)
             transport_graph.add_edge(
