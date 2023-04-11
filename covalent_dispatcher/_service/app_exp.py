@@ -21,10 +21,10 @@
 import asyncio
 import json
 import shutil
-from typing import Optional
+from typing import Optional, Tuple, Union
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Request, UploadFile
+from fastapi import APIRouter, Header, HTTPException, Request, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 
 import covalent_dispatcher.entry_point as dispatcher
@@ -41,7 +41,14 @@ from .._dal.export import (
 )
 from .._db.datastore import workflow_db
 from .._db.models import Lattice
-from .models import DispatchAssetKey, ElectronAssetKey, ExportResponseSchema, LatticeAssetKey
+from .models import (
+    DispatchAssetKey,
+    ElectronAssetKey,
+    ExportResponseSchema,
+    LatticeAssetKey,
+    range_pattern,
+    range_regex,
+)
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -232,16 +239,21 @@ def get_node_asset(
     dispatch_id: str,
     node_id: int,
     key: ElectronAssetKey,
-    start_byte: int = 0,
-    end_byte: int = -1,
+    range: Union[str, None] = Header(default=None, regex=range_regex),
 ):
-    app_log.debug(f"Requested asset {key.value} for node {dispatch_id}:{node_id}")
+    start_byte = 0
+    end_byte = -1
+    if range:
+        start_byte, end_byte = _extract_byte_range(range)
 
     if end_byte >= 0 and end_byte < start_byte:
         raise HTTPException(
             status_code=400,
             detail="Invalid byte range",
         )
+    app_log.debug(
+        f"Requested asset {key.value} ([{start_byte}:{end_byte}]) for node {dispatch_id}:{node_id}"
+    )
 
     with workflow_db.session() as session:
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
@@ -267,16 +279,21 @@ def get_node_asset(
 def get_dispatch_asset(
     dispatch_id: str,
     key: DispatchAssetKey,
-    start_byte: int = 0,
-    end_byte: int = -1,
+    range: Union[str, None] = Header(default=None, regex=range_regex),
 ):
-    app_log.debug(f"Requested asset {key.value} for dispatch {dispatch_id}")
+    start_byte = 0
+    end_byte = -1
+    if range:
+        start_byte, end_byte = _extract_byte_range(range)
 
     if end_byte >= 0 and end_byte < start_byte:
         raise HTTPException(
             status_code=400,
             detail="Invalid byte range",
         )
+    app_log.debug(
+        f"Requested asset {key.value} ([{start_byte}:{end_byte}]) for dispatch {dispatch_id}"
+    )
 
     with workflow_db.session() as session:
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
@@ -304,16 +321,21 @@ def get_dispatch_asset(
 def get_lattice_asset(
     dispatch_id: str,
     key: LatticeAssetKey,
-    start_byte: int = 0,
-    end_byte: int = -1,
+    range: Union[str, None] = Header(default=None, regex=range_regex),
 ):
-    app_log.debug(f"Requested lattice asset {key.value} for dispatch {dispatch_id}")
+    start_byte = 0
+    end_byte = -1
+    if range:
+        start_byte, end_byte = _extract_byte_range(range)
 
     if end_byte >= 0 and end_byte < start_byte:
         raise HTTPException(
             status_code=400,
             detail="Invalid byte range",
         )
+    app_log.debug(
+        f"Requested lattice asset {key.value} ([{start_byte}:{end_byte}])for dispatch {dispatch_id}"
+    )
 
     with workflow_db.session() as session:
         lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
@@ -426,3 +448,16 @@ def _generate_file_slice(file_path: str, start_byte: int, end_byte: int, chunk_s
                 byte_pos += chunk_size
                 yield f.read(chunk_size)
             yield f.read(end_byte - byte_pos)
+
+
+def _extract_byte_range(byte_range_header: str) -> Tuple[int, int]:
+    start_byte = 0
+    end_byte = -1
+    match = range_pattern.match(byte_range_header)
+    start = match.group(1)
+    end = match.group(2)
+    start_byte = int(start)
+    if end:
+        end_byte = int(end)
+
+    return start_byte, end_byte

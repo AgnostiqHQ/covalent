@@ -20,6 +20,7 @@
 
 """FastAPI models for /api/v1/resultv2 endpoints"""
 
+import re
 from enum import Enum
 from typing import Optional
 
@@ -65,6 +66,9 @@ from covalent._shared_files.schemas.result import ResultSchema
 #     "call_before",
 #     "call_after",
 # }
+
+range_regex = "bytes=([0-9]+)-([0-9]*)"
+range_pattern = re.compile(range_regex)
 
 
 class DispatchAssetKey(str, Enum):
