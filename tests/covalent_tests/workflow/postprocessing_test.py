@@ -114,17 +114,17 @@ def test_postprocess():
 @pytest.mark.parametrize(
     "retval, node_ids",
     [
-        (Electron(function=lambda x: x, node_id=1), [1]),
+        (Electron(function=lambda x: x, node_id=1), {1}),
         (
             [Electron(function=lambda x: x, node_id=1), Electron(function=lambda x: x, node_id=2)],
-            [1, 2],
+            {1, 2},
         ),
         (
             {
                 "a": Electron(function=lambda x: x, node_id=1),
                 "b": Electron(function=lambda x: x, node_id=2),
             },
-            [1, 2],
+            {1, 2},
         ),
         ("unsupported", []),
     ],
