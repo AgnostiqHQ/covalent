@@ -1,0 +1,12 @@
+covalent==0.209.1
+covalent-aws-plugins==0.13.0
+covalent-awsbatch-plugin==0.26.0
+matplotlib==3.7.1
+numpy==1.23.5
+qiskit-aer==0.12.0
+qiskit-ibm-runtime==0.9.1
+qiskit-ibmq-provider==0.20.2
+qiskit-terra==0.23.2
+scipy==1.10.1
+torch==2.0.0
+torchvision==0.15.1
