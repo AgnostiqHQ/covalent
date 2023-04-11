@@ -46,7 +46,7 @@ class TimingExecutor(BaseExecutor):
 
         time_taken = time.process_time() - start
 
-        with open(f"{self.timing_filepath}", "w+") as f:
+        with open(f"{self.timing_filepath}", "w") as f:
             f.write(
                 f"Node {task_metadata['node_id']} in dispatch {task_metadata['dispatch_id']} took {time_taken}s of CPU time."
             )
