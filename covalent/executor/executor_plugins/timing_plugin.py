@@ -23,7 +23,7 @@
 
 import time
 from pathlib import Path
-from typing import Callable, Dict, List
+from typing import Any, Callable, Dict, List
 
 from covalent.executor.base import BaseExecutor
 
@@ -35,11 +35,31 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
 
 
 class TimingExecutor(BaseExecutor):
+    """Executor that times the execution time."""
+
     def __init__(self, timing_filepath: str = "", **kwargs):
+        """Init function.
+
+        Args:
+            timing_filepath: Filepath where the timing information will be written.
+
+        """
         self.timing_filepath = str(Path(timing_filepath).resolve())
         super().__init__(**kwargs)
 
-    def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
+    def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict) -> Any:
+        """Measures the time taken to execute a function.
+
+        Args:
+            function: Function to be executed.
+            args: Arguments to be passed to the function.
+            kwargs: Keyword arguments to be passed to the function.
+            task_metadata: Metadata about the task. Expects node_id and dispatch_id.
+
+        Returns:
+            The result of the function.
+
+        """
         start = time.process_time()
 
         result = function(*args, **kwargs)
