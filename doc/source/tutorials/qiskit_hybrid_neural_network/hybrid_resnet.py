@@ -15,15 +15,13 @@ from pathlib import Path
 from typing import Any, List, Optional, Tuple
 from zipfile import ZipFile
 
-import covalent as ct
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import torch
 from qiskit import QuantumCircuit, QuantumRegister
 from qiskit.circuit import Parameter
 from qiskit.quantum_info import SparsePauliOp
-from qiskit_ibm_runtime import (Estimator, IBMBackend, Options,
-                                QiskitRuntimeService, RuntimeJob)
+from qiskit_ibm_runtime import Estimator, IBMBackend, Options, QiskitRuntimeService, RuntimeJob
 from torch import Tensor, nn
 from torch.nn.modules.loss import L1Loss
 from torch.optim import Adam
@@ -31,6 +29,8 @@ from torch.utils.data import DataLoader
 from torchvision import transforms
 from torchvision.datasets import ImageFolder
 from torchvision.models import resnet34
+
+import covalent as ct
 
 # export IBM_QUANTUM_TOKEN="abcdefghijklmnopqrstuvwxyz1234567890mytokenfromibmquantum"
 
