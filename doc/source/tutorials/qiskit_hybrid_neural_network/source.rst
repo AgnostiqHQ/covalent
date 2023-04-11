@@ -4,16 +4,25 @@ Training a Quantum-Classical Neural Network with Covalent as Qiskit Runtime
 
 The script below trains a hybrid neural network model that classifies images of dogs and cats.
 
-To run the script, install the relevant requirements:
+To run the script, first ``pip install`` the relevant requirements:
 
-.. code-block:: bash
-    :caption: command to install script requirements
-    pip install -r ./requirements.txt
+* covalent==0.209.1
+* covalent-aws-plugins==0.13.0
+* covalent-awsbatch-plugin==0.26.0
+* matplotlib==3.7.1
+* numpy==1.23.5
+* qiskit-aer==0.12.0
+* qiskit-ibm-runtime==0.9.1
+* qiskit-ibmq-provider==0.20.2
+* qiskit-terra==0.23.2
+* scipy==1.10.1
+* torch==2.0.0
+* torchvision==0.15.1
 
 Below, Covalent is used to access GPU's via AWS Batch and QPU's via IBM Quantum.
 
 .. code-block:: python
-    :caption: Covalent implementation of the hybrid neutral network
+
     """
     Use Covalent to access EC2 instance on AWS that submits jobs to IBM Quantum
 
