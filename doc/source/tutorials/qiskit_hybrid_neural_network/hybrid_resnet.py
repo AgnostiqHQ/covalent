@@ -58,29 +58,28 @@ EXECUTOR = ct.executor.AWSBatchExecutor(
 )
 
 S3_STRATEGY = ct.fs_strategies.S3(
-    credentials="/Users/username/.aws/credentials",
-    region_name="us-east-1"
+    credentials="/Users/username/.aws/credentials", region_name="us-east-1"
 )
 
 FT_1 = ct.fs.FileTransfer(  # download training/validation data from S3 bucket
     from_file=f"s3://{BUCKET_NAME}/{DATA_DIR.name}.zip",
     to_file=f"{DATA_DIR.name}.zip",
     order=ct.fs.Order.BEFORE,
-    strategy=S3_STRATEGY
+    strategy=S3_STRATEGY,
 )
 
 FT_2 = ct.fs.FileTransfer(  # upload model state to S3 bucket
     from_file=STATE_FILE.name,
     to_file=f"s3://{BUCKET_NAME}/{STATE_FILE.name}",
     order=ct.fs.Order.AFTER,
-    strategy=S3_STRATEGY
+    strategy=S3_STRATEGY,
 )
 
 FT_3 = ct.fs.FileTransfer(  # download model state from S3 bucket
     from_file=f"s3://{BUCKET_NAME}/{STATE_FILE.name}",
     to_file=STATE_FILE.name,
     order=ct.fs.Order.BEFORE,
-    strategy=S3_STRATEGY
+    strategy=S3_STRATEGY,
 )
 
 
@@ -133,24 +132,20 @@ class ParametricQC:
         circuits: List[QuantumCircuit],
         observables: List[SparsePauliOp],
     ) -> RuntimeJob:
-
         # run job inside a try-except loop and retry if something goes wrong
         job = None
         retries = 0
         while retries < ParametricQC.RETRY_MAX:
-
             try:
                 job = self.estimator.run(
-                    circuits=circuits,
-                    observables=observables,
-                    parameter_values=parameter_values
+                    circuits=circuits, observables=observables, parameter_values=parameter_values
                 )
                 break
 
             except RuntimeError as re:
                 warnings.warn(
                     f"job failed on attempt {retries + 1}:\n\n'{re}'\nresubmitting...",
-                    category=UserWarning
+                    category=UserWarning,
                 )
                 retries += 1
 
@@ -178,10 +173,7 @@ class QuantumFunction(torch.autograd.Function):
         return qc.run(batch_inputs)
 
     @staticmethod
-    def backward(
-        ctx,
-        grad_output: Tensor
-    ):
+    def backward(ctx, grad_output: Tensor):
         """backward pass computation using parameter shift rule"""
         batch_inputs = ctx.saved_tensors[0]
         qc = ctx.qc
@@ -191,10 +183,8 @@ class QuantumFunction(torch.autograd.Function):
 
         # loop over each input in the batch
         for i, _input in enumerate(batch_inputs):
-
             # loop entries in each input
             for j in range(len(_input)):
-
                 # compute parameters for parameter shift rule
                 d = torch.zeros(_input.shape)
                 d[j] = qc.shift
@@ -238,7 +228,7 @@ class QuantumLayer(torch.nn.Module):
         return {
             "n_qubits": self.qc.n_qubits,
             "runs_total": ParametricQC.runs_total,
-            "calls_total": ParametricQC.calls_total
+            "calls_total": ParametricQC.calls_total,
         }
 
 
@@ -265,6 +255,7 @@ def _get_model(
         estimator = Estimator(session=backend, options=options)
     else:
         from qiskit.primitives import Estimator as _Estimator
+
         estimator = _Estimator(options=options)
 
     # initialize sequential neural network model
@@ -279,14 +270,13 @@ def _get_model(
 
 def _get_transform(image_size: int) -> transforms.Compose:
     """get transformations for image data"""
-    return transforms.Compose([
-        transforms.Resize((image_size, image_size)),
-        transforms.ToTensor(),
-        transforms.Normalize(
-            mean=[0.485, 0.456, 0.406],
-            std=[0.229, 0.224, 0.225]
-        )
-    ])
+    return transforms.Compose(
+        [
+            transforms.Resize((image_size, image_size)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ]
+    )
 
 
 def _dataloader(
@@ -319,15 +309,13 @@ def _dataloader(
         return DataLoader(
             ImageFolder(test_dir, transform=transform, target_transform=_g),
             shuffle=shuffle,
-            batch_size=batch_size
+            batch_size=batch_size,
         )
     raise ValueError("parameter `kind` must be 'train' or 'test'.")
 
 
 def _init_ibm_runtime(
-    backend_name: str,
-    n_qubits: int,
-    n_shots: int
+    backend_name: str, n_qubits: int, n_shots: int
 ) -> Tuple[IBMBackend, Options]:
     """Initialize the account; instantiate the estimator"""
 
@@ -353,6 +341,7 @@ def _init_ibm_runtime(
 @dataclass
 class TrainingResult:
     """container for training result and metadata"""
+
     backend_name: str
     n_qubits: int
     n_shots: int
@@ -464,7 +453,7 @@ def plot_predictions(
     device: str = "cpu",
     save_name: str = "predictions.png",
     random_seed: Optional[int] = None,
-    files=[]
+    files=[],
 ) -> TrainingResult:
     """create labelled plots of the model"""
     # set non-interactive MPL backend
@@ -484,7 +473,7 @@ def plot_predictions(
         nrows=grid_dims[0],
         ncols=grid_dims[1],
         figsize=(1.5 * grid_dims[0], 1.25 * grid_dims[1]),
-        layout="constrained"
+        layout="constrained",
     )
 
     n = 0
@@ -497,7 +486,6 @@ def plot_predictions(
     )
 
     with torch.no_grad():
-
         model.eval()
         for x, y in loader_test:
             # determine index in plots grid
