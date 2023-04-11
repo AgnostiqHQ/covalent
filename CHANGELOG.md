@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Tutorial for hybrid neural network using Covalent, AWSBatch, and Qiskit Runtime.
+
 ### Fixed
 
 - Doubling of nodes that are added to the transport graph.
