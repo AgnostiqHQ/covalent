@@ -49,7 +49,7 @@ class RESULT_STATUS:
     FAILED = Status("FAILED")
     RUNNING = Status("RUNNING")
     CANCELLED = Status("CANCELLED")
-    SUBLATTICE_DISPATCHING = Status("SUBLATTICE_DISPATCHING")  # Sublattice dispatch status
+    DISPATCHING_SUBLATTICE = Status("DISPATCHING_SUBLATTICE")  # Sublattice dispatch status
 
 
 class DispatchInfo(NamedTuple):

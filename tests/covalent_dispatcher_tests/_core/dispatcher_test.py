@@ -470,7 +470,7 @@ async def test_run_planned_workflow_dispatching(mocker):
     )
     status_queue = asyncio.Queue()
     status_queue.put_nowait(
-        (0, RESULT_STATUS.SUBLATTICE_DISPATCHING, {"sub_dispatch_id": "mock_sub_dispatch_id"})
+        (0, RESULT_STATUS.DISPATCHING_SUBLATTICE, {"sub_dispatch_id": "mock_sub_dispatch_id"})
     )
     status_queue.put_nowait((0, RESULT_STATUS.FAILED, {}))  # This ensures that the loop is exited.
     await _run_planned_workflow(result_object, status_queue)
