@@ -158,32 +158,31 @@ async def _submit_task(result_object, node_id):
 
     # Handle parameter nodes
     if node_name.startswith(parameter_prefix):
-        app_log.debug("7C: Parameter if block (run_planned_workflow).")
         output = result_object.lattice.transport_graph.get_node_value(node_id, "value")
-        app_log.debug(f"7C: Node output: {output} (run_planned_workflow).")
-        app_log.debug("8: Starting update node (run_planned_workflow).")
-
         timestamp = datetime.now(timezone.utc)
-        node_result = {
-            "node_id": node_id,
-            "start_time": timestamp,
-            "end_time": timestamp,
-            "status": Result.COMPLETED,
-            "output": output,
-        }
+        node_result = datasvc.generate_node_result(
+            node_id=node_id,
+            start_time=timestamp,
+            end_time=timestamp,
+            status=Result.COMPLETED,
+            output=output,
+        )
+
         await datasvc.update_node_result(result_object, node_result)
         app_log.debug("8A: Update node success (run_planned_workflow).")
 
     elif node_status == Result.COMPLETED:
+        output = result_object.lattice.transport_graph.get_node_value(node_id, "output")
         timestamp = datetime.now(timezone.utc)
-        node_result = {
-            "node_id": node_id,
-            "start_time": timestamp,
-            "end_time": timestamp,
-            "status": Result.COMPLETED,
-        }
+        node_result = datasvc.generate_node_result(
+            node_id=node_id,
+            start_time=timestamp,
+            end_time=timestamp,
+            status=Result.COMPLETED,
+            output=output,
+        )
         await datasvc.update_node_result(result_object, node_result)
-        app_log.debug(f"Skipped completed node {node_id}.")
+        app_log.debug(f"Skipped completed node {node_name}.")
 
     else:
         # Executor for post_processing and dispatching sublattices
@@ -398,6 +397,8 @@ def run_dispatch(dispatch_id: str) -> asyncio.Future:
 
     Return(s)
         asyncio.Future
+
     """
+    app_log.debug(f"Running dispatch with dispatch_id: {dispatch_id}.")
     result_object = datasvc.get_result_object(dispatch_id)
     return asyncio.create_task(run_workflow(result_object))

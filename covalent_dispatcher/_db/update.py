@@ -110,6 +110,7 @@ def _node(
     upsert.electron_data(result)
 
     if node_name.startswith(postprocess_prefix):
+        app_log.warning(f"Persisting postprocess result {output}, node_name: {node_name}")
         result._result = output
         result._status = status
         result._end_time = end_time

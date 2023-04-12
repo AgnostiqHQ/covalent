@@ -91,7 +91,7 @@ class LocalDispatcher(BaseDispatcher):
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
             dispatcher_addr: The address of the dispatcher server.  If None then defaults to the address set in Covalent's config.
-            disable_run: Whether to disable running the worklow and rather just save it on Covalent's server for later execution
+            disable_run: Whether to disable running the workflow and rather just save it on Covalent's server for later execution
 
         Returns:
             Wrapper function which takes the inputs of the workflow as arguments
@@ -248,12 +248,11 @@ class LocalDispatcher(BaseDispatcher):
 
             Returns:
                 The result of the executed workflow.
-            """
 
+            """
             body = get_redispatch_request_body(
                 dispatch_id, new_args, new_kwargs, replace_electrons, reuse_previous_results
             )
-
             redispatch_url = f"{dispatcher_addr}/api/redispatch"
             r = requests.post(redispatch_url, json=body, params={"is_pending": is_pending})
             r.raise_for_status()
