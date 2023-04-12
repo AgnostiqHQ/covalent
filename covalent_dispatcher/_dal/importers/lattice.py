@@ -48,8 +48,6 @@ from covalent._shared_files.schemas.lattice import (
 from covalent_dispatcher._dal.asset import Asset, StorageType
 from covalent_dispatcher._dal.lattice import Lattice
 
-KEY_SUBSTITUTIONS = {"name": "__name__", "doc": "__doc__"}
-
 
 def _get_lattice_meta(lat: LatticeSchema, storage_path) -> dict:
     kwargs = {
@@ -99,9 +97,6 @@ def import_lattice_assets(
     for asset_key, asset in lat.assets:
         object_key = ASSET_FILENAME_MAP[asset_key]
 
-        # ugly hack -- Lattice.__doc__ should be Lattice.doc serverside
-        internal_key = KEY_SUBSTITUTIONS.get(asset_key, asset_key)
-
         local_uri = os.path.join(storage_path, object_key)
 
         asset_kwargs = {
@@ -113,7 +108,7 @@ def import_lattice_assets(
             "remote_uri": asset.uri,
             "size": asset.size,
         }
-        asset_ids[internal_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
+        asset_ids[asset_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
 
         # Send this back to the client
         asset.digest = None

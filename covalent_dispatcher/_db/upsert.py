@@ -107,7 +107,7 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
     for key, filename, data in [
         ("workflow_function", LATTICE_FUNCTION_FILENAME, result.lattice.workflow_function),
         ("workflow_function_string", LATTICE_FUNCTION_STRING_FILENAME, workflow_func_string),
-        ("__doc__", LATTICE_DOCSTRING_FILENAME, result.lattice.__doc__),
+        ("doc", LATTICE_DOCSTRING_FILENAME, result.lattice.__doc__),
         # (
         #     "executor_data",
         #     LATTICE_EXECUTOR_DATA_FILENAME,

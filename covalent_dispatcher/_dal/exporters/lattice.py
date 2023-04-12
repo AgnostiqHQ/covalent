@@ -28,14 +28,11 @@ from covalent_dispatcher._dal.lattice import ASSET_KEYS, METADATA_KEYS, Lattice
 
 from .tg import export_transport_graph
 
-KEY_SUBSTITUTIONS = {"__name__": "name", "__doc__": "doc"}
-
 
 def _export_lattice_meta(lat: Lattice) -> LatticeMetadata:
     metadata_kwargs = {}
     for key in METADATA_KEYS:
-        param = KEY_SUBSTITUTIONS.get(key, key)
-        metadata_kwargs[param] = lat.get_value(key, None, refresh=False)
+        metadata_kwargs[key] = lat.get_value(key, None, refresh=False)
 
     return LatticeMetadata(**metadata_kwargs)
 
@@ -43,12 +40,11 @@ def _export_lattice_meta(lat: Lattice) -> LatticeMetadata:
 def _export_lattice_assets(lat: Lattice) -> LatticeAssets:
     manifests = {}
     for asset_key in ASSET_KEYS:
-        param = KEY_SUBSTITUTIONS.get(asset_key, asset_key)
         asset = lat.assets[asset_key]
         size = asset.size
         scheme = asset.storage_type.value
         remote_uri = f"{scheme}://{asset.storage_path}/{asset.object_key}"
-        manifests[param] = AssetSchema(remote_uri=remote_uri, size=size)
+        manifests[asset_key] = AssetSchema(remote_uri=remote_uri, size=size)
     return LatticeAssets(**manifests)
 
 

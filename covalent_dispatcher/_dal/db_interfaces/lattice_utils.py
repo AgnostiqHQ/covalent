@@ -32,8 +32,8 @@ ATTRIBUTES = {
     "workflow_function_string",
     "transport_graph",
     "metadata",
-    "__name__",
-    "__doc__",
+    "name",
+    "doc",
     "named_args",
     "named_kwargs",
     "cova_imports",
@@ -42,7 +42,7 @@ ATTRIBUTES = {
 
 
 METADATA_KEYS = {
-    "__name__",
+    "name",
     # metadata
     "executor",
     "workflow_executor",
@@ -53,7 +53,7 @@ METADATA_KEYS = {
 ASSET_KEYS = {
     "workflow_function",
     "workflow_function_string",
-    "__doc__",
+    "doc",
     "named_args",
     "named_kwargs",
     "cova_imports",
@@ -65,7 +65,7 @@ ASSET_KEYS = {
 }
 
 _meta_record_map = {
-    "__name__": "name",
+    "name": "name",
     "executor": "executor",
     "executor_data": "executor_data",
     "workflow_executor": "workflow_executor",
@@ -85,7 +85,7 @@ _meta_record_map.update(_db_meta_record_map)
 _asset_record_map = {
     "workflow_function": "function_filename",
     "workflow_function_string": "function_string_filename",
-    "__doc__": "docstring_filename",
+    "doc": "docstring_filename",
     "named_args": "named_args_filename",
     "named_kwargs": "named_kwargs_filename",
     "cova_imports": "cova_imports_filename",

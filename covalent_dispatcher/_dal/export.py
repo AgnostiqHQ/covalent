@@ -77,7 +77,7 @@ DEFERRED_KEYS = {
 }
 
 # Temporary hack for API
-KEY_SUBSTITUTIONS = {"doc": "__doc__"}
+KEY_SUBSTITUTIONS = {"doc": "__doc__", "name": "__name__"}
 
 
 # Functions to support get_result
@@ -117,7 +117,8 @@ def _to_client_lattice(srv_lat: SRVLattice) -> SDKLattice:
     sdk_lat = SDKLattice(dummy)
     for k in LATTICE_ATTRIBUTES:
         if k not in DEFERRED_KEYS and k not in SDK_LAT_META_KEYS:
-            setattr(sdk_lat, k, srv_lat.get_value(k))
+            sdk_key = KEY_SUBSTITUTIONS.get(k, k)
+            setattr(sdk_lat, sdk_key, srv_lat.get_value(k))
     lat_meta = {k: srv_lat.get_value(k) for k in SDK_LAT_META_KEYS}
     sdk_lat.metadata = lat_meta
 
@@ -177,7 +178,7 @@ def get_node_asset_path(session: Session, dispatch_id: str, node_id: int, key: s
 
 def get_lattice_asset(session: Session, dispatch_id: str, key: str) -> Asset:
     srv_res = get_result_object(dispatch_id, bare=True)
-    return srv_res.lattice.get_asset(KEY_SUBSTITUTIONS.get(key, key))
+    return srv_res.lattice.get_asset(key)
 
 
 def get_lattice_asset_path(session: Session, dispatch_id: str, key: str) -> str:

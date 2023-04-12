@@ -66,7 +66,7 @@ DEFERRED_KEYS = {
 }
 
 # Temporary hack for API
-KEY_SUBSTITUTIONS = {"doc": "__doc__"}
+KEY_SUBSTITUTIONS = {"doc": "doc"}
 
 
 def update_node_asset(session: Session, dispatch_id: str, node_id: int, key: str, values: dict):

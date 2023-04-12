@@ -137,7 +137,7 @@ def test_lattice_get_set_value(test_db, mocker):
 
         lat = Lattice(session, record)
 
-    assert lat.get_value("__name__") == "workflow"
+    assert lat.get_value("name") == "workflow"
     lat.set_value("executor", "awsbatch")
     assert lat.get_value("executor") == "awsbatch"
 
