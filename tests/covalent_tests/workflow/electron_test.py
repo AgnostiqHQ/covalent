@@ -95,7 +95,7 @@ def test_build_sublattice_graph():
         "deps": {"bash": None, "pip": None},
         "call_before": [],
         "call_after": [],
-        "triggers": None,
+        "triggers": "mock-trigger",
         "results_dir": None,
     }
 
@@ -105,7 +105,9 @@ def test_build_sublattice_graph():
     assert list(lattice.transport_graph._graph.nodes) == list(range(3))
     for k in lattice.metadata.keys():
         # results_dir will be deprecated soon
-        if k != "results_dir":
+        if k == "triggers":
+            assert lattice.metadata[k] is None
+        elif k != "results_dir":
             assert parent_metadata[k] == lattice.metadata[k]
 
 
