@@ -340,8 +340,6 @@ def test_call_sublattice(mocker):
     with active_lattice_manager.claim(mock_workflow):
         bound_electron = sublattice()
         assert bound_electron.metadata["executor"] == "mock"
-        print(mock_workflow.transport_graph._graph.nodes(data=True))
-        print(list(mock_workflow.transport_graph._graph.nodes(data=True)[0].keys()))
         for _, node_data in mock_workflow.transport_graph._graph.nodes(data=True):
             if node_data["name"].startswith(sublattice_prefix):
                 assert "mock_task" in node_data["function_string"]
