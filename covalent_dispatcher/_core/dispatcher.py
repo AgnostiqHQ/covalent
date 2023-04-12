@@ -260,7 +260,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
             continue
 
         # Note: A node status can only be 'DISPATCHING' if it is a sublattice and the corresponding graph has been built.
-        if node_status == RESULT_STATUS.DISPATCHING:
+        if node_status == RESULT_STATUS.SUBLATTICE_DISPATCHING:
             sub_dispatch_id = detail["sub_dispatch_id"]
             run_dispatch(sub_dispatch_id)
             app_log.debug(

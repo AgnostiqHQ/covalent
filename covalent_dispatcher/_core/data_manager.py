@@ -107,7 +107,7 @@ async def _handle_built_sublattice(dispatch_id: str, node_result: Dict) -> None:
 
     """
     try:
-        node_result["status"] = RESULT_STATUS.DISPATCHING
+        node_result["status"] = RESULT_STATUS.SUBLATTICE_DISPATCHING
         result_object = get_result_object(dispatch_id)
         sub_dispatch_id = await make_sublattice_dispatch(result_object, node_result)
         node_result["sub_dispatch_id"] = sub_dispatch_id

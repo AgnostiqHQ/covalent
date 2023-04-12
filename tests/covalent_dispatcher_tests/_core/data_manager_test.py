@@ -111,7 +111,7 @@ async def test_handle_built_sublattice(mocker):
     await _handle_built_sublattice("mock-dispatch-id", mock_node_result)
     get_result_object_mock.assert_called_with("mock-dispatch-id")
     make_sublattice_dispatch_mock.assert_called_with("mock-result", mock_node_result)
-    assert mock_node_result["status"] == RESULT_STATUS.DISPATCHING
+    assert mock_node_result["status"] == RESULT_STATUS.SUBLATTICE_DISPATCHING
     assert mock_node_result["start_time"] is not None
     assert mock_node_result["end_time"] is None
     assert mock_node_result["sub_dispatch_id"] == "mock-sub-dispatch-id"
