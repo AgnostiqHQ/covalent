@@ -68,6 +68,20 @@ LATTICE_LATTICE_IMPORTS_FILENAME = "lattice_imports.pkl"
 LATTICE_STORAGE_TYPE = "file"
 
 
+ASSET_FILENAME_MAP = {
+    "workflow_function": LATTICE_FUNCTION_FILENAME,
+    "workflow_function_string": LATTICE_FUNCTION_STRING_FILENAME,
+    "doc": LATTICE_DOCSTRING_FILENAME,
+    "named_args": LATTICE_NAMED_ARGS_FILENAME,
+    "named_kwargs": LATTICE_NAMED_KWARGS_FILENAME,
+    "cova_imports": LATTICE_COVA_IMPORTS_FILENAME,
+    "lattice_imports": LATTICE_LATTICE_IMPORTS_FILENAME,
+    "deps": LATTICE_DEPS_FILENAME,
+    "call_before": LATTICE_CALL_BEFORE_FILENAME,
+    "call_after": LATTICE_CALL_AFTER_FILENAME,
+}
+
+
 class LatticeAssets(BaseModel):
     workflow_function: AssetSchema
     workflow_function_string: AssetSchema

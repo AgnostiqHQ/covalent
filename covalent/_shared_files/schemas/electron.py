@@ -65,6 +65,20 @@ ELECTRON_CALL_AFTER_FILENAME = "call_after.pkl"
 ELECTRON_STORAGE_TYPE = "file"
 
 
+ASSET_FILENAME_MAP = {
+    "function": ELECTRON_FUNCTION_FILENAME,
+    "function_string": ELECTRON_FUNCTION_STRING_FILENAME,
+    "value": ELECTRON_VALUE_FILENAME,
+    "output": ELECTRON_RESULTS_FILENAME,
+    "deps": ELECTRON_DEPS_FILENAME,
+    "call_before": ELECTRON_CALL_BEFORE_FILENAME,
+    "call_after": ELECTRON_CALL_AFTER_FILENAME,
+    "stdout": ELECTRON_STDOUT_FILENAME,
+    "stderr": ELECTRON_STDERR_FILENAME,
+    "error": ELECTRON_ERROR_FILENAME,
+}
+
+
 class ElectronAssets(BaseModel):
     function: AssetSchema
     function_string: AssetSchema

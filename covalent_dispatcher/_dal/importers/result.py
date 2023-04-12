@@ -28,13 +28,8 @@ from sqlalchemy.orm import Session
 
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-from covalent._shared_files.schemas.lattice import (
-    LATTICE_ERROR_FILENAME,
-    LATTICE_INPUTS_FILENAME,
-    LATTICE_RESULTS_FILENAME,
-    LatticeSchema,
-)
-from covalent._shared_files.schemas.result import ResultAssets, ResultSchema
+from covalent._shared_files.schemas.lattice import LatticeSchema
+from covalent._shared_files.schemas.result import ASSET_FILENAME_MAP, ResultAssets, ResultSchema
 from covalent._shared_files.utils import format_server_url
 from covalent_dispatcher._dal.asset import Asset, StorageType
 from covalent_dispatcher._dal.electron import ElectronMeta
@@ -206,11 +201,8 @@ def import_result_assets(
     """Insert asset records and populate the asset link table"""
     asset_ids = {}
 
-    for asset_key, asset, object_key in [
-        ("inputs", manifest.assets.inputs, LATTICE_INPUTS_FILENAME),
-        ("result", manifest.assets.result, LATTICE_RESULTS_FILENAME),
-        ("error", manifest.assets.error, LATTICE_ERROR_FILENAME),
-    ]:
+    for asset_key, asset in manifest.assets:
+        object_key = ASSET_FILENAME_MAP[asset_key]
         local_uri = os.path.join(storage_path, object_key)
 
         asset_kwargs = {

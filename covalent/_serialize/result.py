@@ -22,12 +22,12 @@
 
 
 from .._results_manager.result import Result
-from .._shared_files.schemas.lattice import (
-    LATTICE_ERROR_FILENAME,
-    LATTICE_INPUTS_FILENAME,
-    LATTICE_RESULTS_FILENAME,
+from .._shared_files.schemas.result import (
+    ASSET_FILENAME_MAP,
+    ResultAssets,
+    ResultMetadata,
+    ResultSchema,
 )
-from .._shared_files.schemas.result import ResultAssets, ResultMetadata, ResultSchema
 from .._shared_files.util_classes import Status
 from .common import AssetType, load_asset, save_asset
 from .lattice import deserialize_lattice, serialize_lattice
@@ -36,13 +36,6 @@ ASSET_TYPES = {
     "inputs": AssetType.OBJECT,
     "error": AssetType.TEXT,
     "result": AssetType.TRANSPORTABLE,
-}
-
-
-ASSET_FILENAME_MAP = {
-    "inputs": LATTICE_INPUTS_FILENAME,
-    "result": LATTICE_RESULTS_FILENAME,
-    "error": LATTICE_ERROR_FILENAME,
 }
 
 

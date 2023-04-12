@@ -27,6 +27,7 @@ import os
 from sqlalchemy.orm import Session
 
 from covalent._shared_files.schemas.lattice import (
+    ASSET_FILENAME_MAP,
     LATTICE_CALL_AFTER_FILENAME,
     LATTICE_CALL_BEFORE_FILENAME,
     LATTICE_COVA_IMPORTS_FILENAME,
@@ -46,6 +47,8 @@ from covalent._shared_files.schemas.lattice import (
 )
 from covalent_dispatcher._dal.asset import Asset, StorageType
 from covalent_dispatcher._dal.lattice import Lattice
+
+KEY_SUBSTITUTIONS = {"name": "__name__", "doc": "__doc__"}
 
 
 def _get_lattice_meta(lat: LatticeSchema, storage_path) -> dict:
@@ -93,22 +96,12 @@ def import_lattice_assets(
     """Insert asset records and populate the asset link table"""
     asset_ids = {}
 
-    for asset_key, asset, object_key in [
-        ("workflow_function", lat.assets.workflow_function, LATTICE_FUNCTION_FILENAME),
-        (
-            "workflow_function_string",
-            lat.assets.workflow_function_string,
-            LATTICE_FUNCTION_STRING_FILENAME,
-        ),
-        ("__doc__", lat.assets.doc, LATTICE_DOCSTRING_FILENAME),
-        ("named_args", lat.assets.named_args, LATTICE_NAMED_ARGS_FILENAME),
-        ("named_kwargs", lat.assets.named_kwargs, LATTICE_NAMED_KWARGS_FILENAME),
-        ("cova_imports", lat.assets.cova_imports, LATTICE_COVA_IMPORTS_FILENAME),
-        ("lattice_imports", lat.assets.lattice_imports, LATTICE_LATTICE_IMPORTS_FILENAME),
-        ("deps", lat.assets.deps, LATTICE_DEPS_FILENAME),
-        ("call_before", lat.assets.call_before, LATTICE_CALL_BEFORE_FILENAME),
-        ("call_after", lat.assets.call_after, LATTICE_CALL_AFTER_FILENAME),
-    ]:
+    for asset_key, asset in lat.assets:
+        object_key = ASSET_FILENAME_MAP[asset_key]
+
+        # ugly hack -- Lattice.__doc__ should be Lattice.doc serverside
+        internal_key = KEY_SUBSTITUTIONS.get(asset_key, asset_key)
+
         local_uri = os.path.join(storage_path, object_key)
 
         asset_kwargs = {
@@ -120,7 +113,7 @@ def import_lattice_assets(
             "remote_uri": asset.uri,
             "size": asset.size,
         }
-        asset_ids[asset_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
+        asset_ids[internal_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
 
         # Send this back to the client
         asset.digest = None

@@ -29,6 +29,7 @@ from sqlalchemy.orm import Session
 
 from covalent._shared_files import logger
 from covalent._shared_files.schemas.electron import (
+    ASSET_FILENAME_MAP,
     ELECTRON_CALL_AFTER_FILENAME,
     ELECTRON_CALL_BEFORE_FILENAME,
     ELECTRON_DEPS_FILENAME,
@@ -131,20 +132,9 @@ def import_electron_assets(
     # Maps asset keys to asset records
     asset_recs = {}
 
-    for asset_key, asset, object_key in [
-        ("function", e.assets.function, ELECTRON_FUNCTION_FILENAME),
-        ("function_string", e.assets.function_string, ELECTRON_FUNCTION_STRING_FILENAME),
-        ("value", e.assets.value, ELECTRON_VALUE_FILENAME),
-        ("output", e.assets.output, ELECTRON_RESULTS_FILENAME),
-        ("error", e.assets.error, ELECTRON_ERROR_FILENAME),
-        ("stdout", e.assets.stdout, ELECTRON_STDOUT_FILENAME),
-        ("stderr", e.assets.stderr, ELECTRON_STDERR_FILENAME),
-        ("deps", e.assets.deps, ELECTRON_DEPS_FILENAME),
-        ("call_before", e.assets.call_before, ELECTRON_CALL_BEFORE_FILENAME),
-        ("call_after", e.assets.call_after, ELECTRON_CALL_AFTER_FILENAME),
-    ]:
+    for asset_key, asset in e.assets:
+        object_key = ASSET_FILENAME_MAP[asset_key]
         local_uri = os.path.join(node_storage_path, object_key)
-
         asset_kwargs = {
             "storage_type": StorageType.LOCAL.value,
             "storage_path": node_storage_path,
