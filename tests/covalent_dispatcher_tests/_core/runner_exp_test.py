@@ -309,10 +309,16 @@ async def test_get_task_result(mocker):
     mock_task_result = {
         "dispatch_id": "dispatch",
         "node_id": 0,
-        "uris": {
-            "output": asset_uri,
-            "stdout": asset_uri,
-            "stderr": asset_uri,
+        "assets": {
+            "output": {
+                "remote_uri": asset_uri,
+            },
+            "stdout": {
+                "remote_uri": asset_uri,
+            },
+            "stderr": {
+                "remote_uri": asset_uri,
+            },
         },
         "status": RESULT_STATUS.COMPLETED,
     }

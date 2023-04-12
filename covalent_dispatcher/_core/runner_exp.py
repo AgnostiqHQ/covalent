@@ -189,13 +189,8 @@ async def _get_task_result(task_group_metadata: Dict, data: Any):
         node_results = []
         for task_result in task_group_results:
             task_id = task_result["node_id"]
-            output_uri = task_result["uris"]["output"]
-            stdout_uri = task_result["uris"]["stdout"]
-            stderr_uri = task_result["uris"]["stderr"]
             status = task_result["status"]
-
-            src_uris = {"output": output_uri, "stdout": stdout_uri, "stderr": stderr_uri}
-            await am.download_assets_for_node(dispatch_id, task_id, src_uris)
+            await am.download_assets_for_node(dispatch_id, task_id, task_result["assets"])
 
             node_result = datamgr.generate_node_result(
                 node_id=task_id, end_time=datetime.now(timezone.utc), status=status

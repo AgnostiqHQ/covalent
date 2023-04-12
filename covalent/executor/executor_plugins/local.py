@@ -162,12 +162,18 @@ class LocalExecutor(BaseExecutor):
 
                 task_result = {
                     "dispatch_id": dispatch_id,
-                    "node_id": node_id,
+                    "node_id": task_id,
                     "status": terminal_status,
-                    "uris": {
-                        "output": output_uri,
-                        "stdout": stdout_uri,
-                        "stderr": stderr_uri,
+                    "assets": {
+                        "output": {
+                            "remote_uri": "",
+                        },
+                        "stdout": {
+                            "remote_uri": "",
+                        },
+                        "stderr": {
+                            "remote_uri": "",
+                        },
                     },
                 }
             task_results.append(task_result)

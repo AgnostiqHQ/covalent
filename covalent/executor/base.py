@@ -791,21 +791,25 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         task_group_metadata: Dict,
         data: Any,
     ) -> List[Dict]:
-        # Returns a list of task results
+        # Returns a list of task results, each of the form
         # {
         #   "dispatch_id": dispatch_id,
         #   "node_id": node_id,
         #   "status": status,
-        #   "uris": {
-        #       "output": output_uri,
-        #       "stdout": stdout_uri,
-        #       "stderr": stderr_uri,
-        #   },
-        #   "digests": {
-        #       "output": output_sha,
-        #       "stdout": stdout_sha,
-        #       "stderr": stderr_sha,
-        #   },
+        #   "assets": {
+        #       "output":  {
+        #         "remote_uri": output_uri,
+        #         "size": output_size
+        #       },
+        #       "stdout":  {
+        #         "remote_uri": stdout_uri,
+        #         "size": stdout_size,
+        #       },
+        #       "stderr":  {
+        #         "remote_uri": stderr_uri,
+        #         "size": stderr_size,
+        #       },
+        #     },
         # }
 
         # corresponding to the node ids (task_ids) specified in the

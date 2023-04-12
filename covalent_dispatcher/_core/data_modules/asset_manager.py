@@ -51,7 +51,7 @@ async def upload_asset_for_nodes(dispatch_id: str, key: str, dest_uris: dict):
     await asyncio.gather(*futs)
 
 
-async def download_assets_for_node(dispatch_id: str, node_id: int, src_uris: dict):
+async def download_assets_for_node(dispatch_id: str, node_id: int, asset_updates: dict):
     # Keys for src_uris: "output", "stdout", "stderr"
 
     result_object = get_result_object(dispatch_id, bare=True)
@@ -60,12 +60,28 @@ async def download_assets_for_node(dispatch_id: str, node_id: int, src_uris: dic
     loop = asyncio.get_running_loop()
 
     futs = []
+    db_updates = {}
 
-    # Filter empty URIs
-    filtered_src_uris = {key: src for key, src in src_uris.items() if src}
+    # Mapping from asset key to (non-empty) remote uri
+    assets_to_download = {}
 
-    assets_to_download = {key: node.get_asset(key) for key in filtered_src_uris}
+    # Prepare asset metadata update; prune empty fields
+    for key in asset_updates:
+        update = {}
+        asset = asset_updates[key]
+        if asset["remote_uri"]:
+            assets_to_download[key] = asset["remote_uri"]
+        # Prune empty fields
+        for attr, val in asset.items():
+            if val is not None:
+                update[attr] = val
+        if update:
+            db_updates[key] = update
 
-    for key, asset in assets_to_download.items():
-        futs.append(loop.run_in_executor(am_pool, asset.download, filtered_src_uris[key]))
+    # Update metadata
+    await loop.run_in_executor(am_pool, node.update_assets, db_updates)
+
+    for key, remote_uri in assets_to_download.items():
+        asset = node.get_asset(key)
+        futs.append(loop.run_in_executor(am_pool, asset.download, remote_uri))
     await asyncio.gather(*futs)

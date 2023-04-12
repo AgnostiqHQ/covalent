@@ -119,6 +119,8 @@ async def test_download_assets_for_node(test_db, mocker):
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
 
+    mock_update_assets = mocker.patch("covalent_dispatcher._dal.electron.Electron.update_assets")
+
     srvres = get_mock_srvresult(sdkres, test_db)
 
     with tempfile.NamedTemporaryFile("w", delete=False, suffix=".txt") as temp:
@@ -132,9 +134,33 @@ async def test_download_assets_for_node(test_db, mocker):
     src_uri_stdout = os.path.join("file://", src_path_stdout)
     src_uri_stderr = os.path.join("file://", src_path_stderr)
 
+    assets = {
+        "output": {
+            "remote_uri": "",
+        },
+        "stdout": {"remote_uri": src_uri_stdout, "size": None, "digest": "0af23"},
+        "stderr": {
+            "remote_uri": src_uri_stderr,
+        },
+    }
+    expected_update = {
+        "output": {
+            "remote_uri": "",
+        },
+        "stdout": {
+            "remote_uri": src_uri_stdout,
+            "digest": "0af23",
+        },
+        "stderr": {
+            "remote_uri": src_uri_stderr,
+        },
+    }
     await am.download_assets_for_node(
-        srvres.dispatch_id, 0, {"stdout": src_uri_stdout, "stderr": src_uri_stderr}
+        srvres.dispatch_id,
+        0,
+        assets,
     )
 
+    mock_update_assets.assert_called_with(expected_update)
     assert srvres.lattice.transport_graph.get_node_value(0, "stdout") == "Hello!\n"
     assert srvres.lattice.transport_graph.get_node_value(0, "stderr") == "Bye!\n"

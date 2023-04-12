@@ -61,9 +61,9 @@ class Asset(Record[AssetRecord]):
 
     model = AssetRecord
 
-    def __init__(self, session: Session, record: AssetRecord, *, keys: set = FIELDS):
+    def __init__(self, session: Session, record: AssetRecord, *, keys: list = FIELDS):
         self._id = record.id
-        self._metadata = {k: getattr(record, k) for k in keys}
+        self._attrs = {k: getattr(record, k) for k in keys}
 
     @property
     def primary_key(self):
@@ -71,23 +71,23 @@ class Asset(Record[AssetRecord]):
 
     @property
     def storage_type(self) -> StorageType:
-        return StorageType(self._metadata["storage_type"])
+        return StorageType(self._attrs["storage_type"])
 
     @property
     def storage_path(self) -> str:
-        return self._metadata["storage_path"]
+        return self._attrs["storage_path"]
 
     @property
     def object_key(self) -> str:
-        return self._metadata["object_key"]
+        return self._attrs["object_key"]
 
     @property
     def digest(self) -> str:
-        return self._metadata["digest"]
+        return self._attrs["digest"]
 
     @property
     def remote_uri(self) -> str:
-        return self._metadata["remote_uri"]
+        return self._attrs["remote_uri"]
 
     @property
     def internal_uri(self) -> str:
@@ -96,7 +96,7 @@ class Asset(Record[AssetRecord]):
 
     @property
     def size(self) -> int:
-        return self._metadata["size"]
+        return self._attrs["size"]
 
     def store_data(self, data: Any) -> None:
         store_file(self.storage_path, self.object_key, data)

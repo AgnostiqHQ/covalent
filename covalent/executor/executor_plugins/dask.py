@@ -246,10 +246,16 @@ class DaskExecutor(AsyncBaseExecutor):
                 "dispatch_id": dispatch_id,
                 "node_id": task_id,
                 "status": terminal_status,
-                "uris": {
-                    "output": "",
-                    "stdout": "",
-                    "stderr": "",
+                "assets": {
+                    "output": {
+                        "remote_uri": "",
+                    },
+                    "stdout": {
+                        "remote_uri": "",
+                    },
+                    "stderr": {
+                        "remote_uri": "",
+                    },
                 },
             }
 

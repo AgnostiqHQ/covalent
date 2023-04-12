@@ -37,7 +37,7 @@ class Record(Generic[T]):
     def model(cls) -> type(T):
         raise NotImplementedError
 
-    def __init__(self, session: Session, record: models.Base, *, fields: set):
+    def __init__(self, session: Session, record: models.Base, *, fields: list):
         self._id = record.id
         self._attrs = {k: getattr(record, k) for k in fields}
 
