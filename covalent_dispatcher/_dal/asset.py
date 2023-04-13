@@ -82,6 +82,10 @@ class Asset(Record[AssetRecord]):
         return self._attrs["object_key"]
 
     @property
+    def digest_alg(self) -> str:
+        return self._attrs["digest_alg"]
+
+    @property
     def digest(self) -> str:
         return self._attrs["digest"]
 

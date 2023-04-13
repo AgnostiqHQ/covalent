@@ -137,28 +137,6 @@ class Result(DispatchedObject):
     def error(self):
         return self.get_value("error")
 
-    def commit(self):
-        with self.session() as session:
-            if self._start_time is not None:
-                self.set_value("start_time", self._start_time, session)
-                self._start_time = None
-
-            if self._end_time is not None:
-                self.set_value("end_time", self._end_time, session)
-                self._end_time = None
-
-            if self._status is not None:
-                self.set_value("status", str(self._status), session)
-                self._status = None
-
-            if self._error is not None:
-                self.set_value("error", self._error, session)
-                self._error = None
-
-            if self._result is not None:
-                self.set_value("result", self._result, session)
-                self._result = None
-
     def get_value(self, key: str, session: Session = None, refresh: bool = True):
         return get_filters[key](super().get_value(key, session, refresh))
 
@@ -184,6 +162,28 @@ class Result(DispatchedObject):
                 self.set_value("error", error, session)
             if result is not None:
                 self.set_value("result", result, session)
+
+        # Copy output and error assets to sublattice's parent electron
+        if RESULT_STATUS.is_terminal(status) and self._electron_id:
+            with self.session() as session:
+                electron_rec = Electron.get_db_records(
+                    session,
+                    keys={"id", "parent_lattice_id"},
+                    equality_filters={"id": self._electron_id},
+                    membership_filters={},
+                )[0]
+                parent_electron = Electron(session, electron_rec)
+
+            subl_output = self.get_asset("result")
+            subl_err = self.get_asset("error")
+            electron_output = parent_electron.get_asset("output")
+            electron_err = parent_electron.get_asset("error")
+
+            _copy_asset(subl_output, electron_output)
+            _copy_asset(subl_err, electron_err)
+            with self.session() as session:
+                _copy_asset_meta(session, subl_output, electron_output)
+                _copy_asset_meta(session, subl_err, electron_err)
 
     def _update_node(
         self,
@@ -261,13 +261,15 @@ class Result(DispatchedObject):
         # Handle postprocessing node
         tg = self.lattice.transport_graph
         if name.startswith(postprocess_prefix) and end_time is not None:
+            app_log.debug(f"Postprocess status: {status}")
             workflow_result = self.get_asset("result")
             node_output = tg.get_node(node_id).get_asset("output")
             _copy_asset(node_output, workflow_result)
-            self._status = status
-            self._end_time = end_time
-            app_log.debug(f"Postprocess status: {self._status}")
-            self.commit()
+            # Copy asset metadata
+            with self.session() as session:
+                _copy_asset_meta(session, node_output, workflow_result)
+
+            self._update_dispatch(status=status, end_time=end_time)
 
         return True
 
@@ -452,6 +454,15 @@ def _copy_asset(src: Asset, dest: Asset):
     scheme = dest.storage_type.value
     dest_uri = scheme + "://" + os.path.join(dest.storage_path, dest.object_key)
     src.upload(dest_uri)
+
+
+def _copy_asset_meta(session: Session, src: Asset, dest: Asset):
+    update = {
+        "digest_alg": src.digest_alg,
+        "digest": src.digest,
+        "size": src.size,
+    }
+    dest.update(session, values=update)
 
 
 def get_result_object(

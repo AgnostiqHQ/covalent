@@ -177,9 +177,7 @@ def test_to_client_result(test_db, mocker):
     srv_res = get_result_object(res.dispatch_id)
 
     ts = datetime.now()
-    srv_res._start_time = ts
-    srv_res._status = SDKResult.RUNNING
-    srv_res.commit()
+    srv_res._update_dispatch(start_time=ts, status=SDKResult.RUNNING)
 
     res_export = export_serialized_result(res.dispatch_id)
 
@@ -207,9 +205,7 @@ def test_to_client_result(test_db, mocker):
     assert ser_res["end_time"] is None
     assert ser_res["status"] == str(SDKResult.RUNNING)
 
-    srv_res._end_time = ts
-    srv_res._status = SDKResult.COMPLETED
-    srv_res.commit()
+    srv_res._update_dispatch(end_time=ts, status=SDKResult.COMPLETED)
     res_export = export_serialized_result(res.dispatch_id)
 
     ser_res = res_export["result"]
@@ -234,9 +230,7 @@ def test_export_result_manifest(test_db, mocker):
         import_result(received_manifest, srv_tmp_dir, None)
         srv_res = get_result_object(dispatch_id)
         ts = datetime.now()
-        srv_res._start_time = ts
-        srv_res._status = SDKResult.RUNNING
-        srv_res.commit()
+        srv_res._update_dispatch(start_time=ts, status=SDKResult.RUNNING)
 
         export_manifest = export_result_manifest(dispatch_id)
 

@@ -310,8 +310,6 @@ async def _update_parent_electron(result_object: SRVResult):
             node_id=node_id,
             end_time=result_object.end_time,
             status=status,
-            output=result_object.result,
-            error=result_object.error,
         )
         parent_result_obj = get_result_object(dispatch_id)
         app_log.debug(f"Updating sublattice parent node {dispatch_id}:{node_id}")

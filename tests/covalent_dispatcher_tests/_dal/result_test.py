@@ -149,10 +149,6 @@ def test_result_get_set_value(test_db, mocker):
         error="RuntimeException",
         result=5,
     )
-    srvres._status = SDKResult.RUNNING
-    srvres._error = "RuntimeException"
-    srvres._result = 5
-    srvres.commit()
 
     assert srvres.start_time == start_time
     assert srvres.end_time == end_time
