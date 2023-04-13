@@ -356,14 +356,19 @@ def test_electron_auto_task_groups():
     def task(arr: list):
         return sum(arr)
 
+    @ct.electron
+    @ct.lattice
+    def sublattice(x):
+        return task(x)
+
     @ct.lattice
     def workflow(x):
-        return task(x)
+        return sublattice(x)
 
     workflow.build_graph([[1, 2], 3])
     tg = workflow.transport_graph
     assert tg.get_node_value(0, "task_group_id") == 0
-    assert tg.get_node_value(1, "task_group_id") == 0
-    assert tg.get_node_value(2, "task_group_id") == 0
-    for i in range(3, 7):
+    assert tg.get_node_value(3, "task_group_id") == 0
+    assert tg.get_node_value(4, "task_group_id") == 0
+    for i in [1, 2, 5, 6, 7, 8]:
         assert tg.get_node_value(i, "task_group_id") == i
