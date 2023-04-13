@@ -35,7 +35,6 @@ class TimingExecutor(BaseExecutor):
         super().__init__(**kwargs)
 
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
-
         start = time.process_time()
 
         result = function(*args, **kwargs)
