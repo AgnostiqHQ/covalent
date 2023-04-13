@@ -189,6 +189,25 @@ def test_postprocess_recursively(postprocessor, mocker):
     def test_func(x):
         return x
 
-    mock_electron = Electron(function=test_func, node_id=0)
-    res = postprocessor._postprocess_recursively(mock_electron, **{"node:0": "mock-output"})
-    assert res == "mock-output"
+    mock_electron_0 = Electron(function=test_func, node_id=0)
+    res = postprocessor._postprocess_recursively(mock_electron_0, **{"node:0": "mock-output-0"})
+    assert res == "mock-output-0"
+
+    mock_electron_1 = Electron(function=test_func, node_id=1)
+    res = postprocessor._postprocess_recursively(
+        [mock_electron_0, mock_electron_1],
+        **{"node:0": "mock-output-0", "node:1": "mock-output-1"},
+    )
+    assert res == ["mock-output-0", "mock-output-1"]
+
+    res = postprocessor._postprocess_recursively(
+        {mock_electron_0, mock_electron_1},
+        **{"node:0": "mock-output-0", "node:1": "mock-output-1"},
+    )
+    assert res == {"mock-output-0", "mock-output-1"}
+
+    res = postprocessor._postprocess_recursively(
+        (mock_electron_0, mock_electron_1),
+        **{"node:0": "mock-output-0", "node:1": "mock-output-1"},
+    )
+    assert res == ("mock-output-0", "mock-output-1")
