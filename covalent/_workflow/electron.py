@@ -299,6 +299,7 @@ class Electron:
                         function=get_item,
                         metadata=iterable_metadata,
                         task_group_id=self.task_group_id,
+                        packing_tasks=True,
                     )
                 )
                 yield get_item_electron(self, i)

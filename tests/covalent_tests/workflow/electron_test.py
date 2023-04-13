@@ -372,3 +372,46 @@ def test_electron_auto_task_groups():
     assert tg.get_node_value(4, "task_group_id") == 0
     for i in [1, 2, 5, 6, 7, 8]:
         assert tg.get_node_value(i, "task_group_id") == i
+
+
+def test_electron_get_attr():
+    class Point:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
+
+    @ct.electron
+    def create_point():
+        return Point(3, 4)
+
+    @ct.electron
+    def add(a, b):
+        return a + b
+
+    @ct.lattice
+    def workflow():
+        point = create_point()
+        return add(point.x, point.y)
+
+    workflow.build_graph()
+    tg = workflow.transport_graph
+
+    # TG:
+    # 0: point
+    # 1: point.__getattr__
+    # 2: "x"
+    # 3: point.__getattr__
+    # 4: "y"
+    # 5: add
+    # 6: "postprocess"
+
+    point_electron_gid = tg.get_node_value(0, "task_group_id")
+    getitem_x_gid = tg.get_node_value(1, "task_group_id")
+    getitem_y_gid = tg.get_node_value(3, "task_group_id")
+    assert point_electron_gid == 0
+    assert getitem_x_gid == point_electron_gid
+    assert getitem_y_gid == point_electron_gid
+    assert tg.get_node_value(2, "task_group_id") == 2
+    assert tg.get_node_value(4, "task_group_id") == 4
+    assert tg.get_node_value(5, "task_group_id") == 5
+    assert tg.get_node_value(6, "task_group_id") == 6
