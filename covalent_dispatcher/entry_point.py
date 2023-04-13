@@ -48,7 +48,7 @@ async def run_dispatcher(json_lattice: str, disable_run: bool = False):
 
     from ._core import make_dispatch, run_dispatch
 
-    dispatch_id = make_dispatch(json_lattice)
+    dispatch_id = await make_dispatch(json_lattice)
 
     if not disable_run:
         run_dispatch(dispatch_id)
@@ -75,7 +75,7 @@ async def run_redispatch(
     redispatch_id = make_derived_dispatch(
         dispatch_id, json_lattice, electron_updates, reuse_previous_results
     )
-    app_log.debug(f"Redispatch_id {redispatch_id} created.")
+    app_log.debug(f"Redispatch id {redispatch_id} created.")
     run_dispatch(redispatch_id)
 
     app_log.debug(f"Re-dispatching {dispatch_id} as {redispatch_id}")
