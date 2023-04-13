@@ -266,6 +266,24 @@ def test_autogen_dict_electrons():
     assert set(g.edges) == set([(1, 0, 0), (2, 1, 0), (3, 1, 0), (0, 4, 0), (0, 4, 1), (1, 4, 0)])
 
 
+def test_as_transportable_dict(mocker):
+    """Test the get transportable electron function."""
+
+    @ct.electron
+    def test_func(a):
+        return a
+
+    mock_metadata = {"a": 1, "b": 2, "c": None}
+    # Construct bound electron, i.e. electron with non-null function and node_id
+    electron = Electron(function=test_func, node_id=1, metadata=mock_metadata)
+    transportable_electron = electron.as_transportable_dict
+
+    assert transportable_electron["name"] == "test_func"
+    assert transportable_electron["metadata"] == filter_null_metadata(mock_metadata)
+    assert transportable_electron["function_string"] == get_serialized_function_str(test_func)
+    assert TransportableObject(test_func).to_dict() == transportable_electron["function"]
+
+
 def test_electron_auto_task_groups():
     @ct.electron
     def task(arr: list):
@@ -284,19 +302,127 @@ def test_electron_auto_task_groups():
         assert tg.get_node_value(i, "task_group_id") == i
 
 
-def test_as_transportable_dict(mocker):
-    """Test the get transportable electron function."""
+def test_electron_auto_task_groups_getattr():
+    """Test task packing with __getattr__"""
+
+    class Point:
+        def __init__(self, x, y):
+            self.x = x
+            self.y = y
 
     @ct.electron
-    def test_func(a):
-        return a
+    def create_point():
+        return Point(3, 4)
 
-    mock_metadata = {"a": 1, "b": 2, "c": None}
-    # Construct bound electron, i.e. electron with non-null function and node_id
-    electron = Electron(function=test_func, node_id=1, metadata=mock_metadata)
-    transportable_electron = electron.as_transportable_dict
+    @ct.electron
+    def add(a, b):
+        return a + b
 
-    assert transportable_electron["name"] == "test_func"
-    assert transportable_electron["metadata"] == filter_null_metadata(mock_metadata)
-    assert transportable_electron["function_string"] == get_serialized_function_str(test_func)
-    assert TransportableObject(test_func).to_dict() == transportable_electron["function"]
+    @ct.lattice
+    def workflow():
+        point = create_point()
+        return add(point.x, point.y)
+
+    workflow.build_graph()
+    tg = workflow.transport_graph
+
+    # TG:
+    # 0: point
+    # 1: point.__getattr__
+    # 2: "x"
+    # 3: point.__getattr__
+    # 4: "y"
+    # 5: add
+    # 6: "postprocess"
+
+    point_electron_gid = tg.get_node_value(0, "task_group_id")
+    getitem_x_gid = tg.get_node_value(1, "task_group_id")
+    getitem_y_gid = tg.get_node_value(3, "task_group_id")
+    assert point_electron_gid == 0
+    assert getitem_x_gid == point_electron_gid
+    assert getitem_y_gid == point_electron_gid
+    assert tg.get_node_value(2, "task_group_id") == 2
+    assert tg.get_node_value(4, "task_group_id") == 4
+    assert tg.get_node_value(5, "task_group_id") == 5
+    assert tg.get_node_value(6, "task_group_id") == 6
+
+
+def test_electron_auto_task_groups_getitem():
+    """Test task packing with __getitem__"""
+
+    @ct.electron
+    def create_array():
+        return [3, 4]
+
+    @ct.electron
+    def add(a, b):
+        return a + b
+
+    @ct.lattice
+    def workflow():
+        arr = create_array()
+        return add(arr[0], arr[1])
+
+    workflow.build_graph()
+    tg = workflow.transport_graph
+
+    # TG:
+    # 0: arr
+    # 1: arr.__getitem__
+    # 2: 0
+    # 3: arr.__getitem__
+    # 4: 1
+    # 5: add
+    # 6: "postprocess"
+
+    arr_electron_gid = tg.get_node_value(0, "task_group_id")
+    getitem_x_gid = tg.get_node_value(1, "task_group_id")
+    getitem_y_gid = tg.get_node_value(3, "task_group_id")
+    assert arr_electron_gid == 0
+    assert getitem_x_gid == arr_electron_gid
+    assert getitem_y_gid == arr_electron_gid
+    assert tg.get_node_value(2, "task_group_id") == 2
+    assert tg.get_node_value(4, "task_group_id") == 4
+    assert tg.get_node_value(5, "task_group_id") == 5
+    assert tg.get_node_value(6, "task_group_id") == 6
+
+
+def test_electron_auto_task_groups_iter():
+    """Test task packing with __iter__"""
+
+    @ct.electron
+    def create_tuple():
+        return (3, 4)
+
+    @ct.electron
+    def add(a, b):
+        return a + b
+
+    @ct.lattice
+    def workflow():
+        tup = create_tuple()
+        x, y = tup
+        return add(x, y)
+
+    workflow.build_graph()
+    tg = workflow.transport_graph
+
+    # TG:
+    # 0: tup
+    # 1: tup.__getitem__
+    # 2: 0
+    # 3: tup.__getitem__
+    # 4: 1
+    # 5: add
+    # 6: "postprocess"
+
+    tup_electron_gid = tg.get_node_value(0, "task_group_id")
+    getitem_x_gid = tg.get_node_value(1, "task_group_id")
+    getitem_y_gid = tg.get_node_value(3, "task_group_id")
+    assert tup_electron_gid == 0
+    assert getitem_x_gid == tup_electron_gid
+    assert getitem_y_gid == tup_electron_gid
+    assert tg.get_node_value(2, "task_group_id") == 2
+    assert tg.get_node_value(4, "task_group_id") == 4
+    assert tg.get_node_value(5, "task_group_id") == 5
+    assert tg.get_node_value(6, "task_group_id") == 6

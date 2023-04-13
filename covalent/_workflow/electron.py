@@ -280,6 +280,7 @@ class Electron:
                         function=get_item,
                         metadata=iterable_metadata,
                         task_group_id=self.task_group_id,
+                        packing_tasks=True,
                     )
                 else:
                     get_item_electron = Electron(function=get_item, metadata=iterable_metadata)
