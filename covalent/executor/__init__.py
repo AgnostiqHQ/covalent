@@ -54,6 +54,12 @@ class _ExecutorManager:
         if os.environ.get("COVALENT_PLUGIN_LOAD", "true").lower() == "true":
             self.generate_plugins_list()
 
+    def __new__(cls):
+        # Singleton pattern for this class
+        if not hasattr(cls, "instance"):
+            cls.instance = super().__new__(cls)
+        return cls.instance
+
     def generate_plugins_list(self) -> None:
         """
         Generate a list of available executor plugins.
@@ -83,6 +89,7 @@ class _ExecutorManager:
         user_plugins_path = (
             f"{get_config('sdk.executor_dir')}:{os.environ.get('COVALENT_EXECUTOR_DIR')}"
         )
+        app_log.debug(f"Loading user plugins from: {user_plugins_path}")
         self._load_executors(user_plugins_path)
 
         # Look for pip-installed plugins:
@@ -124,9 +131,9 @@ class _ExecutorManager:
     def _is_plugin_name_valid(self, the_module):
         """Assert if the plugin variable name is valid"""
 
+        plugin_name_var = "EXECUTOR_PLUGIN_NAME"
         return bool(
-            hasattr(the_module, "EXECUTOR_PLUGIN_NAME")
-            or hasattr(the_module, "executor_plugin_name")
+            hasattr(the_module, plugin_name_var) or hasattr(the_module, plugin_name_var.lower())
         )
 
     def nonzero_plugin_classes(self, plugin_class):
@@ -208,7 +215,7 @@ class _ExecutorManager:
     def _load_executors(self, executor_dir: str) -> None:
         """
         Load executor plugins from a directory.
-        Populates the executor map and executor_plugins_map attributes.
+        Populates the executor map and executor_plugins_map attributes with user's plugins.
 
         Args:
             executor_dir: The directory to load executor plugins from.
@@ -257,14 +264,8 @@ class _ExecutorManager:
         return executor_list
 
 
-# def initialize_executor_manager():
 _executor_manager = _ExecutorManager()
 
 for name in _executor_manager.executor_plugins_map:
     plugin_class = _executor_manager.executor_plugins_map[name]
     globals()[plugin_class.__name__] = plugin_class
-
-# globals()["_executor_manager"] = _executor_manager
-
-app_log.debug(f"e_dir: {_executor_manager.executor_plugins_map.get('timing_plugin')}")
-app_log.debug(f"environ: {os.environ.get('COVALENT_EXECUTOR_DIR')}")
