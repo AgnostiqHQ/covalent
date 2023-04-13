@@ -465,9 +465,7 @@ async def test_run_planned_workflow_dispatching(mocker):
     mock_handle_failed = mocker.patch(
         "covalent_dispatcher._core.dispatcher._handle_failed_node", side_effect=side_effect
     )
-    mock_run_dispatch = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.run_dispatch", return_value=asyncio.Future()
-    )
+    mock_run_dispatch = mocker.patch("covalent_dispatcher._core.dispatcher.run_dispatch")
     status_queue = asyncio.Queue()
     status_queue.put_nowait(
         (0, RESULT_STATUS.DISPATCHING_SUBLATTICE, {"sub_dispatch_id": "mock_sub_dispatch_id"})

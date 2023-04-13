@@ -75,7 +75,7 @@ async def run_redispatch(
     redispatch_id = make_derived_dispatch(
         dispatch_id, json_lattice, electron_updates, reuse_previous_results
     )
-    app_log.debug(f"Redispatch_id {redispatch_id} created.")
+    app_log.debug(f"Redispatch id {redispatch_id} created.")
     run_dispatch(redispatch_id)
 
     app_log.debug(f"Re-dispatching {dispatch_id} as {redispatch_id}")
