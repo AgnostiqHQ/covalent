@@ -415,3 +415,84 @@ def test_electron_get_attr():
     assert tg.get_node_value(4, "task_group_id") == 4
     assert tg.get_node_value(5, "task_group_id") == 5
     assert tg.get_node_value(6, "task_group_id") == 6
+
+
+def test_electron_auto_task_groups_getitem():
+    """Test task packing with __getitem__"""
+
+    @ct.electron
+    def create_array():
+        return [3, 4]
+
+    @ct.electron
+    def add(a, b):
+        return a + b
+
+    @ct.lattice
+    def workflow():
+        arr = create_array()
+        return add(arr[0], arr[1])
+
+    workflow.build_graph()
+    tg = workflow.transport_graph
+
+    # TG:
+    # 0: arr
+    # 1: arr.__getitem__
+    # 2: 0
+    # 3: arr.__getitem__
+    # 4: 1
+    # 5: add
+    # 6: "postprocess"
+
+    arr_electron_gid = tg.get_node_value(0, "task_group_id")
+    getitem_x_gid = tg.get_node_value(1, "task_group_id")
+    getitem_y_gid = tg.get_node_value(3, "task_group_id")
+    assert arr_electron_gid == 0
+    assert getitem_x_gid == arr_electron_gid
+    assert getitem_y_gid == arr_electron_gid
+    assert tg.get_node_value(2, "task_group_id") == 2
+    assert tg.get_node_value(4, "task_group_id") == 4
+    assert tg.get_node_value(5, "task_group_id") == 5
+    assert tg.get_node_value(6, "task_group_id") == 6
+
+
+def test_electron_auto_task_groups_iter():
+    """Test task packing with __iter__"""
+
+    @ct.electron
+    def create_tuple():
+        return (3, 4)
+
+    @ct.electron
+    def add(a, b):
+        return a + b
+
+    @ct.lattice
+    def workflow():
+        tup = create_tuple()
+        x, y = tup
+        return add(x, y)
+
+    workflow.build_graph()
+    tg = workflow.transport_graph
+
+    # TG:
+    # 0: tup
+    # 1: tup.__getitem__
+    # 2: 0
+    # 3: tup.__getitem__
+    # 4: 1
+    # 5: add
+    # 6: "postprocess"
+
+    tup_electron_gid = tg.get_node_value(0, "task_group_id")
+    getitem_x_gid = tg.get_node_value(1, "task_group_id")
+    getitem_y_gid = tg.get_node_value(3, "task_group_id")
+    assert tup_electron_gid == 0
+    assert getitem_x_gid == tup_electron_gid
+    assert getitem_y_gid == tup_electron_gid
+    assert tg.get_node_value(2, "task_group_id") == 2
+    assert tg.get_node_value(4, "task_group_id") == 4
+    assert tg.get_node_value(5, "task_group_id") == 5
+    assert tg.get_node_value(6, "task_group_id") == 6
