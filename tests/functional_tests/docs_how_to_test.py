@@ -44,7 +44,7 @@ ignore_files = [
 ]
 
 
-@pytest.mark.parametrize("file,expected_return_value", zip(files, expected_return_values))
+@pytest.mark.parametrize("file, expected_return_value", zip(files, expected_return_values))
 def test_how_to_file(file, expected_return_value):
     if os.path.basename(file) not in ignore_files:
         proc = Popen(

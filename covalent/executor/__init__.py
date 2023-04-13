@@ -95,7 +95,6 @@ class _ExecutorManager:
                 ],
             )
         )
-        app_log.debug(f"Loading user plugins from: {user_plugins_path}")
         self._load_executors(user_plugins_path)
 
         # Look for pip-installed plugins:
@@ -237,6 +236,9 @@ class _ExecutorManager:
                 module_files = glob.glob(os.path.join(e_dir, "*.py"))
 
                 for module_file in module_files:
+                    if module_file.endswith("__init__.py"):
+                        continue
+
                     module_name = module_file[:-3]
 
                     # Import the module that contains the plugin
