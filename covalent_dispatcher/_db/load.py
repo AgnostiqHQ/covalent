@@ -169,11 +169,11 @@ def get_result_object_from_storage(dispatch_id: str) -> Result:
 
 
 def electron_record(dispatch_id: str, node_id: str) -> Dict:
-    """Get electron record for a given dispatch if and transport graph node id.
+    """Get electron record for a given dispatch if and node id.
 
     Args:
         dispatch_id: Dispatch id for lattice.
-        node_id: Transport graph node id of
+        node_id: Node id of the electron.
 
     Returns:
         Electron record.
@@ -203,4 +203,3 @@ def sublattice_dispatch_id(electron_id: int) -> Union[str, None]:
     with workflow_db.session() as session:
         if record := (session.query(Lattice).filter(Lattice.electron_id == electron_id).first()):
             return record.dispatch_id
-    return None

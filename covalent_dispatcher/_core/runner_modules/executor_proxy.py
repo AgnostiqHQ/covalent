@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-""" Monitor executor instances """
+""" Monitor executor instances."""
 
 
 from typing import Any
@@ -45,7 +45,8 @@ async def _get_cancel_requested(dispatch_id: str, task_id: int):
         task_id: ID of the task within the lattice
 
     Return(s)
-        Canellation status of the task
+        Cancellation status of the task
+
     """
     # Don't hit the DB for post-processing task
     if task_id < 0:
