@@ -21,16 +21,7 @@
 """Functions to convert lattice -> LatticeSchema"""
 
 from .._shared_files.schemas.lattice import (
-    LATTICE_CALL_AFTER_FILENAME,
-    LATTICE_CALL_BEFORE_FILENAME,
-    LATTICE_COVA_IMPORTS_FILENAME,
-    LATTICE_DEPS_FILENAME,
-    LATTICE_DOCSTRING_FILENAME,
-    LATTICE_FUNCTION_FILENAME,
-    LATTICE_FUNCTION_STRING_FILENAME,
-    LATTICE_LATTICE_IMPORTS_FILENAME,
-    LATTICE_NAMED_ARGS_FILENAME,
-    LATTICE_NAMED_KWARGS_FILENAME,
+    ASSET_FILENAME_MAP,
     LatticeAssets,
     LatticeMetadata,
     LatticeSchema,
@@ -50,20 +41,6 @@ ASSET_TYPES = {
     "deps": AssetType.OBJECT,
     "call_before": AssetType.OBJECT,
     "call_after": AssetType.OBJECT,
-}
-
-
-ASSET_FILENAME_MAP = {
-    "workflow_function": LATTICE_FUNCTION_FILENAME,
-    "workflow_function_string": LATTICE_FUNCTION_STRING_FILENAME,
-    "doc": LATTICE_DOCSTRING_FILENAME,
-    "named_args": LATTICE_NAMED_ARGS_FILENAME,
-    "named_kwargs": LATTICE_NAMED_KWARGS_FILENAME,
-    "cova_imports": LATTICE_COVA_IMPORTS_FILENAME,
-    "lattice_imports": LATTICE_LATTICE_IMPORTS_FILENAME,
-    "deps": LATTICE_DEPS_FILENAME,
-    "call_before": LATTICE_CALL_BEFORE_FILENAME,
-    "call_after": LATTICE_CALL_AFTER_FILENAME,
 }
 
 

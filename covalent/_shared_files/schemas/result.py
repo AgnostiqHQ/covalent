@@ -26,7 +26,12 @@ from typing import Optional
 from pydantic import BaseModel
 
 from .asset import AssetSchema
-from .lattice import LatticeSchema
+from .lattice import (
+    LATTICE_ERROR_FILENAME,
+    LATTICE_INPUTS_FILENAME,
+    LATTICE_RESULTS_FILENAME,
+    LatticeSchema,
+)
 
 METADATA_KEYS = {
     "start_time",
@@ -42,6 +47,13 @@ ASSET_KEYS = {
     "inputs",
     "result",
     "error",
+}
+
+
+ASSET_FILENAME_MAP = {
+    "inputs": LATTICE_INPUTS_FILENAME,
+    "result": LATTICE_RESULTS_FILENAME,
+    "error": LATTICE_ERROR_FILENAME,
 }
 
 
