@@ -87,12 +87,14 @@ class _ExecutorManager:
 
         # Look for executor plugins in a user-defined path:
         user_plugins_path = ":".join(
-            [
-                get_config("sdk.executor_dir"),
-                os.environ.get("COVALENT_EXECUTOR_DIR", ""),
-            ]
+            filter(
+                None,
+                [
+                    get_config("sdk.executor_dir"),
+                    os.environ.get("COVALENT_EXECUTOR_DIR"),
+                ],
+            )
         )
-
         app_log.debug(f"Loading user plugins from: {user_plugins_path}")
         self._load_executors(user_plugins_path)
 
