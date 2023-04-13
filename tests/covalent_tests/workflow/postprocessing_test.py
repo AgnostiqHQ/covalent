@@ -23,6 +23,7 @@
 from unittest.mock import MagicMock, Mock
 
 import pytest
+from mock import call
 
 import covalent as ct
 from covalent._shared_files.defaults import postprocess_prefix
@@ -156,3 +157,27 @@ def test_add_exhaustive_postprocess_node(postprocessor):
         postprocessor.lattice.transport_graph._graph.nodes(data=True)[0]["name"]
         == postprocess_prefix
     )
+
+
+def test_add_eager_postprocess_node(postprocessor, mocker):
+    """Test method that adds eager postprocess node."""
+
+    def test_func(x):
+        return x
+
+    get_node_ids_from_retval_mock = mocker.patch(
+        "covalent._workflow.postprocessing.Postprocessor._get_node_ids_from_retval"
+    )
+    get_electron_metadata_mock = mocker.patch(
+        "covalent._workflow.postprocessing.Postprocessor._get_electron_metadata"
+    )
+
+    mock_electron = Electron(function=test_func, node_id=0)
+    mock_bound_electrons = {0: mock_electron}
+    postprocessor.add_eager_postprocess_node(mock_electron, mock_bound_electrons)
+    get_electron_metadata_mock.assert_called_once_with()
+    assert get_node_ids_from_retval_mock.mock_calls == [call(mock_electron), call().__iter__()]
+
+
+def test_postprocess_recursively(postprocessor, mocker):
+    """"""
