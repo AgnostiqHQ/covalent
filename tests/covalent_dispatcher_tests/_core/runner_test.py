@@ -86,7 +86,7 @@ def test_get_executor(mocker):
     """Test that get_executor returns the correct executor"""
 
     executor_manager_mock = mocker.patch("covalent_dispatcher._core.runner._executor_manager")
-    executor = get_executor(0, ["local", {"mock-key": "mock-value"}], "mock-loop", "mock-pool")
+    executor = get_executor(["local", {"mock-key": "mock-value"}], "mock-loop", "mock-pool")
     assert executor_manager_mock.get_executor.mock_calls == [
         call("local"),
         call().from_dict({"mock-key": "mock-value"}),
@@ -252,9 +252,8 @@ async def test__cancel_task(mocker):
     mock_executor._cancel = AsyncMock()
 
     mock_app_log = mocker.patch("covalent_dispatcher._core.runner.app_log.debug")
-    mock_executor_manager = mocker.patch(
-        "covalent_dispatcher._core.runner._executor_manager.get_executor",
-        return_value=mock_executor,
+    get_executor_mock = mocker.patch(
+        "covalent_dispatcher._core.runner.get_executor", return_value=mock_executor
     )
     mock_set_cancel_result = mocker.patch("covalent_dispatcher._core.runner.set_cancel_result")
 
@@ -269,9 +268,7 @@ async def test__cancel_task(mocker):
     await _cancel_task(dispatch_id, task_id, executor, executor_data, job_handle)
 
     assert mock_app_log.call_count == 2
-    mock_executor_manager.assert_called_with(executor)
-    mock_executor.from_dict.assert_called_with(executor_data)
-    mock_executor._init_runtime.assert_called()
+    get_executor_mock.assert_called_once()
     mock_executor._cancel.assert_called_with(task_metadata, json.loads(job_handle))
     mock_set_cancel_result.assert_called()
 
@@ -287,11 +284,10 @@ async def test__cancel_task_exception(mocker):
     mock_executor._cancel = AsyncMock(side_effect=Exception("cancel"))
 
     mock_app_log = mocker.patch("covalent_dispatcher._core.runner.app_log.debug")
-    mock_executor_manager = mocker.patch(
-        "covalent_dispatcher._core.runner._executor_manager.get_executor",
-        return_value=mock_executor,
+    get_executor_mock = mocker.patch(
+        "covalent_dispatcher._core.runner.get_executor", return_value=mock_executor
     )
-    mock_set_cancel_result = mocker.patch("covalent_dispatcher._core.runner.set_cancel_result")
+    mocker.patch("covalent_dispatcher._core.runner.set_cancel_result")
 
     dispatch_id = "abcd"
     task_id = 0
@@ -303,9 +299,7 @@ async def test__cancel_task_exception(mocker):
 
     cancel_result = await _cancel_task(dispatch_id, task_id, executor, executor_data, job_handle)
     assert mock_app_log.call_count == 3
-    mock_executor_manager.assert_called_with(executor)
-    mock_executor.from_dict.assert_called_with(executor_data)
-    mock_executor._init_runtime.assert_called()
+    get_executor_mock.assert_called_once()
     mock_executor._cancel.assert_called_with(task_metadata, json.loads(job_handle))
     assert cancel_result is False
 

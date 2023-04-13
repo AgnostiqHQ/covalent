@@ -101,9 +101,7 @@ class Postprocessor:
         """
         with active_lattice_manager.claim(self.lattice):
             self.lattice.post_processing = True
-            # app_log.debug(f"Postprocessing lattice with attrs: {self.lattice.__dict__}")
             self.lattice.electron_outputs = list(ordered_node_outputs)
-            # app_log.debug(f"Postprocessing: Electron outputs {self.lattice.electron_outputs}")
             args = [arg.get_deserialized() for arg in self.lattice.args]
             kwargs = {k: v.get_deserialized() for k, v in self.lattice.kwargs.items()}
             workflow_function = self.lattice.workflow_function.get_deserialized()

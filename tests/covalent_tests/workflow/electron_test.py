@@ -95,7 +95,7 @@ def test_build_sublattice_graph():
         "deps": {"bash": None, "pip": None},
         "call_before": [],
         "call_after": [],
-        "triggers": None,
+        "triggers": "mock-trigger",
         "results_dir": None,
     }
 
@@ -105,7 +105,9 @@ def test_build_sublattice_graph():
     assert list(lattice.transport_graph._graph.nodes) == list(range(3))
     for k in lattice.metadata.keys():
         # results_dir will be deprecated soon
-        if k != "results_dir":
+        if k == "triggers":
+            assert lattice.metadata[k] is None
+        elif k != "results_dir":
             assert parent_metadata[k] == lattice.metadata[k]
 
 
@@ -340,8 +342,6 @@ def test_call_sublattice(mocker):
     with active_lattice_manager.claim(mock_workflow):
         bound_electron = sublattice()
         assert bound_electron.metadata["executor"] == "mock"
-        print(mock_workflow.transport_graph._graph.nodes(data=True))
-        print(list(mock_workflow.transport_graph._graph.nodes(data=True)[0].keys()))
         for _, node_data in mock_workflow.transport_graph._graph.nodes(data=True):
             if node_data["name"].startswith(sublattice_prefix):
                 assert "mock_task" in node_data["function_string"]

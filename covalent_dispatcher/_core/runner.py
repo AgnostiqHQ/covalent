@@ -49,27 +49,27 @@ debug_mode = get_config("sdk.log_level") == "debug"
 _cancel_threadpool = ThreadPoolExecutor()
 
 
-# TODO: Update docstring
-def get_executor(node_id: int, selected_executor, loop=None, pool=None) -> AsyncBaseExecutor:
-    """_summary_
+# Domain: runner
+def get_executor(
+    executor: Union[Tuple, List],
+    loop: asyncio.BaseEventLoop = None,
+    cancel_pool: ThreadPoolExecutor = None,
+) -> AsyncBaseExecutor:
+    """Get unpacked and initialized executor object.
 
     Args:
-        node_id:
-        selected_executor (_type_): _description_
-        loop (_type_, optional): _description_. Defaults to None.
-        pool (_type_, optional): _description_. Defaults to None.
+        executor: Tuple containing short name and object dictionary for the executor.
+        loop: Running event loop. Defaults to None.
+        cancel_pool: Threadpool for cancelling tasks. Defaults to None.
 
     Returns:
-        AsyncBaseExecutor: _description_
+        Executor object.
 
     """
-    short_name, object_dict = selected_executor
-    app_log.debug(f"Running task {node_id} using executor {short_name}, {object_dict}")
-
-    # The executor is determined during scheduling and provided in the execution metadata
+    short_name, object_dict = executor
     executor = _executor_manager.get_executor(short_name)
     executor.from_dict(object_dict)
-    executor._init_runtime(loop=loop, cancel_pool=pool)
+    executor._init_runtime(loop=loop, cancel_pool=cancel_pool)
 
     return executor
 
@@ -225,14 +225,8 @@ async def _run_task(
 
     # Instantiate the executor from JSON
     try:
-        short_name, object_dict = executor
+        executor = get_executor(executor=executor, loop=asyncio.get_running_loop())
 
-        app_log.debug(f"Running task {node_name} using executor {short_name}, {object_dict}")
-
-        # the executor is determined during scheduling and provided in the execution metadata
-        executor = _executor_manager.get_executor(short_name)
-        executor.from_dict(object_dict)
-        executor._init_runtime(loop=asyncio.get_running_loop())
     except Exception as ex:
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
         app_log.debug("Exception when trying to instantiate executor:")
@@ -245,11 +239,13 @@ async def _run_task(
             status=RESULT_STATUS.FAILED,
             error=error_msg,
         )
-    # run the task on the executor and register any failures
+
+    # Run the task on the executor and register any failures.
     try:
         app_log.debug(f"Executing task {node_name}")
         assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
 
+        # Note: Executor proxy monitors the executors instances and watches the send and receive queues of the executor.
         asyncio.create_task(executor_proxy.watch(dispatch_id, node_id, executor))
 
         output, stdout, stderr, status = await executor._execute(
@@ -343,18 +339,18 @@ async def _cancel_task(
 
     Return(s)
         cancel_job_result: Status of the job cancellation action
+
     """
     app_log.debug(f"Cancel task {task_id} using executor {executor}, {executor_data}")
     app_log.debug(f"job_handle: {job_handle}")
 
     try:
-        executor = _executor_manager.get_executor(executor)
-        executor.from_dict(executor_data)
-        executor._init_runtime(loop=asyncio.get_running_loop(), cancel_pool=_cancel_threadpool)
-
+        executor = get_executor(
+            executor=executor, loop=asyncio.get_running_loop(), cancel_pool=_cancel_threadpool
+        )
         task_metadata = {"dispatch_id": dispatch_id, "node_id": task_id}
-
         cancel_job_result = await executor._cancel(task_metadata, json.loads(job_handle))
+
     except Exception as ex:
         app_log.debug(f"Exception when cancel task {dispatch_id}:{task_id}: {ex}")
         cancel_job_result = False
