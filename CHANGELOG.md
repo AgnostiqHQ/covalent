@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Tutorial for hybrid neural network using Covalent, AWSBatch, and Qiskit Runtime.
+- Task group id in Electrons.
+- Reconstruct postprocessing method.
+
 
 ### Fixed
 
