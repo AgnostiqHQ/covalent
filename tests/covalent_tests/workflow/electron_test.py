@@ -349,3 +349,21 @@ def test_call_sublattice(mocker):
                 assert (
                     node_data["function"].get_deserialized().__name__ == "_build_sublattice_graph"
                 )
+
+
+def test_electron_auto_task_groups():
+    @ct.electron
+    def task(arr: list):
+        return sum(arr)
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    workflow.build_graph([[1, 2], 3])
+    tg = workflow.transport_graph
+    assert tg.get_node_value(0, "task_group_id") == 0
+    assert tg.get_node_value(1, "task_group_id") == 0
+    assert tg.get_node_value(2, "task_group_id") == 0
+    for i in range(3, 7):
+        assert tg.get_node_value(i, "task_group_id") == i
