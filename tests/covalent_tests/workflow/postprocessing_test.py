@@ -176,8 +176,19 @@ def test_add_eager_postprocess_node(postprocessor, mocker):
     mock_bound_electrons = {0: mock_electron}
     postprocessor.add_eager_postprocess_node(mock_electron, mock_bound_electrons)
     get_electron_metadata_mock.assert_called_once_with()
-    assert get_node_ids_from_retval_mock.mock_calls == [call(mock_electron), call().__iter__()]
+    assert get_node_ids_from_retval_mock.mock_calls == [
+        call(mock_electron),
+        call().__iter__(),
+        call().__contains__(0),
+    ]
 
 
 def test_postprocess_recursively(postprocessor, mocker):
-    """"""
+    """Test postprocess_recursively method."""
+
+    def test_func(x):
+        return x
+
+    mock_electron = Electron(function=test_func, node_id=0)
+    res = postprocessor._postprocess_recursively(mock_electron, **{"node:0": "mock-output"})
+    assert res == "mock-output"
