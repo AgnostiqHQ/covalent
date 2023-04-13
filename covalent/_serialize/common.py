@@ -26,6 +26,8 @@ def _serialize_asset(data: Any, data_type: AssetType) -> bytes:
     elif data_type == AssetType.JSONABLE:
         return json.dumps(data)
     elif data_type == AssetType.TEXT:
+        if data is None:
+            data = ""
         return data.encode("utf-8")
     else:
         raise TypeError(f"Unsupported data type {type(data)}")
