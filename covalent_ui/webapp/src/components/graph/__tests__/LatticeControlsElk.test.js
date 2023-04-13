@@ -38,8 +38,7 @@ import ThemeProvider from '@mui/system/ThemeProvider'
 import { BrowserRouter } from 'react-router-dom'
 import { ReactFlowProvider } from 'react-flow-renderer'
 import { HelmetProvider } from 'react-helmet-async'
-import { act, renderHook } from '@testing-library/react-hooks'
-import '@testing-library/jest-dom'
+import { renderHook } from '@testing-library/react-hooks'
 
 function reduxRender(renderedComponent) {
   const store = configureStore({
@@ -200,13 +199,6 @@ describe('lattice toggle buttons', () => {
     expect(linkElement).toBeInTheDocument()
   })
 
-  test('toggleparams onclicked rendered', () => {
-    const handleClick = jest.fn()
-    reduxRender(<App handleClick={handleClick} />)
-    const linkElement = screen.getByTestId('tooglebuttonclick')
-    fireEvent.click(linkElement)
-  })
-
   test('renders toggledragablenode', async () => {
     reduxRender(<App />)
     const linkElement = screen.getByTestId('toggledragablenode')
@@ -232,25 +224,21 @@ describe('lattice toggle buttons', () => {
 
   it('render the change orientation left button', () => {
     const { result } = renderHook(() => <App direction={direction1} />)
-    act(() => {})
     expect(result.current.props.direction).toBe(direction1)
   })
 
   it('render the change orientation up button', () => {
     const { result } = renderHook(() => <App direction={direction2} />)
-    act(() => {})
     expect(result.current.props.direction).toBe(direction2)
   })
 
   it('render the change orientation right button', () => {
     const { result } = renderHook(() => <App direction={direction3} />)
-    act(() => {})
     expect(result.current.props.direction).toBe(direction3)
   })
 
   it('render the change orientation down button', () => {
     const { result } = renderHook(() => <App direction={direction} />)
-    act(() => {})
     expect(result.current.props.direction).toBe(direction)
   })
 

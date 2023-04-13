@@ -20,14 +20,17 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import App from '../InputSection'
+
+jest.mock('copy-to-clipboard')
 
 const data = {
   data: {
-    args: [], kwargs: { n: '15', serial: 'True', parallel: 'True' }
+    args: [],
+    kwargs: { n: '15', serial: 'True', parallel: 'True' },
   },
-  python_object: 'import pickle'
+  python_object: 'import pickle',
 }
 
 test('renders input section', () => {
@@ -47,6 +50,31 @@ test.each(inputSectionCases)('render %p data', (firstArgs, secongArgs) => {
   expect(element).toBeInTheDocument()
 })
 
+test('renders skeleton section', () => {
+  render(<App isFetching />)
+  const element = screen.getByTestId('inputSectionSkeleton')
+  expect(element).toBeInTheDocument()
+})
+
+test('renders copy section', () => {
+  render(<App inputs={data} preview />)
+  const element = screen.getByTestId('copySection')
+  expect(element).toBeInTheDocument()
+})
+
+test('input section copy works', () => {
+  jest.mock('../InputSection', () => ({
+    copy: jest.fn(),
+  }))
+
+  render(<App inputs={data} preview />)
+  const element = screen.getByTestId('copySection')
+  expect(element).toBeInTheDocument()
+  fireEvent.click(element)
+  // fireEvent(element, new MouseEvent('click', { copied: true }))
+  // const findText = screen.getByText('Python object copied')
+  // expect(findText).toBeInTheDocument()
+})
 test('renders preview section', () => {
   render(<App preview />)
 })

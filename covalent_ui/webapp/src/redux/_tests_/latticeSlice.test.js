@@ -31,7 +31,7 @@ import {
   latticeSlice,
 } from '../latticeSlice'
 
-describe('LATTICE DETAILS SLICE TESTS', () => {
+describe('lattice details slice', () => {
   it('lattice details is fullfilled', () => {
     const action = {
       type: latticeDetails.fulfilled,

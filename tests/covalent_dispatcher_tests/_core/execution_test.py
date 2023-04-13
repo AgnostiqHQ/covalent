@@ -155,7 +155,7 @@ def test_get_task_inputs():
     result_object = Result(lattice=received_lattice, dispatch_id="asdf")
     tg = received_lattice.transport_graph
 
-    assert list(tg._graph.nodes) == [0, 1, 2, 3, 4, 5, 6, 7]
+    assert list(tg._graph.nodes) == list(range(9))
     tg.set_node_value(0, "output", ct.TransportableObject(1))
     tg.set_node_value(2, "output", ct.TransportableObject(2))
 
@@ -366,12 +366,16 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
+    mocker.patch("covalent_dispatcher._core.runner._gather_deps")
+    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data")
+    mock_run_abstract_task = mocker.patch("covalent_dispatcher._core.runner._run_abstract_task")
 
     update.persist(result_object)
 
     result_object = await run_workflow(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
-    assert result_object.status == Result.PENDING_POSTPROCESSING
+    assert result_object.status == Result.RUNNING
+    assert mock_run_abstract_task.call_count == 1
 
 
 @pytest.mark.asyncio
@@ -391,6 +395,7 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     mocker.patch(
         "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
     )
+    mocker.patch("covalent_dispatcher._core.runner._run_abstract_task")
 
     update.persist(result_object)
 
@@ -398,6 +403,7 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
+    mock_run_abstract_task = mocker.patch("covalent_dispatcher._core.runner._run_abstract_task")
 
     def failing_workflow(x):
         assert False
@@ -406,7 +412,7 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     result_object = await run_workflow(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
 
-    assert result_object.status == Result.POSTPROCESSING_FAILED
+    assert result_object.status == Result.RUNNING
 
     result_object.lattice.workflow_function = ct.TransportableObject(failing_workflow)
     result_object.lattice.set_metadata("workflow_executor", "local")
@@ -414,12 +420,15 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     result_object = await run_workflow(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
 
-    assert result_object.status == Result.POSTPROCESSING_FAILED
+    assert result_object.status == Result.RUNNING
+    assert mock_run_abstract_task.call_count == 2
 
 
 @pytest.mark.asyncio
 async def test_run_task_sublattice_handling(test_db, mocker):
-
+    """
+    Test exception handling with running a sublattice
+    """
     result_object = get_mock_result()
     sub_result_object = get_mock_result()
     sub_result_object._dispatch_id = "sublattice_workflow"

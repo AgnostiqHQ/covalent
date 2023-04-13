@@ -65,4 +65,23 @@ describe('copy button', () => {
     fireEvent.click(element)
     expect(document.execCommand).toHaveBeenCalledWith('copy')
   })
+
+  test('rendering by passing props', () => {
+    render(
+      <App
+        title={'Copy'}
+        copy={copy}
+        borderRadius={10}
+        width="10px"
+        height="10px"
+      />
+    )
+    const jsdomAlert = window.prompt
+    window.prompt = () => {}
+    const element = screen.getByLabelText('Copy')
+    expect(element).toBeInTheDocument()
+    fireEvent.click(element)
+    expect(document.execCommand).toHaveBeenCalledWith('copy')
+    window.prompt = jsdomAlert
+  })
 })

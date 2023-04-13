@@ -32,11 +32,7 @@ import {
   Typography,
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
-import {
-  statusColor,
-  statusIcon,
-  statusLabel,
-} from '../../utils/misc'
+import { statusColor, statusIcon, statusLabel } from '../../utils/misc'
 import InputSection from '../common/InputSection'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import Heading from '../common/Heading'
@@ -45,8 +41,8 @@ import ExecutorSection from './ExecutorSection'
 
 export const nodeDrawerWidth = 360
 
-const NodeDrawer = ({ node,setSelectedElectron }) => {
-  const preview = useSelector((state) => state.latticePreview.lattice)   // unselect on close
+const NodeDrawer = ({ node, setSelectedElectron }) => {
+  const preview = useSelector((state) => state.latticePreview.lattice) // unselect on close
   const setSelectedElements = useStoreActions(
     (actions) => actions.setSelectedElements
   )
@@ -66,11 +62,11 @@ const NodeDrawer = ({ node,setSelectedElectron }) => {
           border: 'none',
           p: 3,
           bgcolor: alpha(theme.palette.background.default),
-          boxShadow:'0px 16px 50px rgba(0, 0, 0, 0.9)',
-          backdropFilter:'blur(8px)',
+          boxShadow: '0px 16px 50px rgba(0, 0, 0, 0.9)',
+          backdropFilter: 'blur(8px)',
           borderRadius: '16px',
           marginRight: '10px',
-          marginTop:'22px',
+          marginTop: '22px',
           height: '95vh',
         },
       })}
@@ -94,7 +90,7 @@ const NodeDrawer = ({ node,setSelectedElectron }) => {
               {node.name}
             </Typography>
             <Box>
-              <IconButton onClick={handleClose}>
+              <IconButton data-testid="closeNodeDrawer" onClick={handleClose}>
                 <Close />
               </IconButton>
             </Box>
@@ -132,6 +128,7 @@ const NodeDrawer = ({ node,setSelectedElectron }) => {
           )}
           <InputSection preview inputs={node.kwargs} />
           {/* Executor */}
+
           <ExecutorSection
             preview
             metadata={_.get(preview, 'lattice.metadata')}

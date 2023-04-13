@@ -37,7 +37,7 @@ const ElectronTooltip = styled(({ className, ...props }) => (
   },
 }))
 
-const ElectronNode = ({
+export const ElectronNode = ({
   data,
   selected,
   sourcePosition,
@@ -214,5 +214,3 @@ const ElectronNode = ({
     </>
   )
 }
-
-export default ElectronNode

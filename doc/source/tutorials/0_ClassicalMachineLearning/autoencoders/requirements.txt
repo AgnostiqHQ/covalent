@@ -1,5 +1,5 @@
 covalent
 matplotlib==3.5.1
 numpy==1.23.2
-torch==1.21.1
-torchvision==0.13.1
+torch==1.13.1
+torchvision==0.14.1

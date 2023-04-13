@@ -21,8 +21,7 @@
  */
 
 import { screen, render } from '@testing-library/react'
-import { DispatchLayout } from '../DispatchLayout'
-import DispatchLayoutValidate from '../DispatchLayout'
+import { DispatchLayout, DispatchLayoutValidate } from '../DispatchLayout'
 import React from 'react'
 import { BrowserRouter } from 'react-router-dom'
 import { Provider } from 'react-redux'

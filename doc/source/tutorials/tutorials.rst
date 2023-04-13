@@ -23,6 +23,8 @@ Beginner
      - :doc:`Using Covalent with PennyLane for hybrid computation<./1_QuantumMachineLearning/pennylane_hybrid/source>`
    * - Machine learning
      - :doc:`Linear and convolutional autoencoders<./0_ClassicalMachineLearning/autoencoders/source>`
+   * - IBM Quantum Cloud
+     - :doc:`Accessing IBM Quantum Cloud<./5_QPUAccessIBM/source>`
 
 ~~~~~~~~~~~~
 Intermediate
@@ -35,11 +37,13 @@ Intermediate
    * - Topic
      - Title
    * - Machine Learning
-     - :doc:`Iris classification<./1_QuantumMachineLearning/pennylane_ensemble_classification/source>`
+     - :doc:`Iris classification<./1_QuantumMachineLearning/pennylane_iris_classification/source>`
    * - Machine Learning
      - :doc:`Variational parity classification<./1_QuantumMachineLearning/pennylane_parity_classifier/source>`
    * - Machine Learning
      - :doc:`Modeling time series for sales forecasting<./machine_learning/dnn_comparison>`
+   * - Machine Learning
+     - :doc:`Training a quantum-classical neural network<./qiskit_hybrid_neural_network/source>`
 
 ~~~~~~~~
 Advanced
@@ -68,7 +72,7 @@ Advanced
 
 ---------------------------------
 
-Do you use Covalent in an interesting project? Contribute a tutorial on `GitHub <https://github.com/AgnostiqHQ/covalent/issues>`_.  To get started, check out the :doc:`guide <tutorial_guide>`.
+Do you use Covalent in an interesting project? Contribute a tutorial on `GitHub <https://github.com/AgnostiqHQ/covalent/issues>`_.  To get started, check out the `Tutorial Guidelines <https://github.com/AgnostiqHQ/covalent/blob/develop/doc/TUTORIAL_GUIDELINES.md>`_.
 
 .. Hidden tutorials:
    * - Machine Learning

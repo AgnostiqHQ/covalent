@@ -13,7 +13,7 @@ Covalent overcomes computational and operational challenges inherent in AI/ML ex
       - Operational Challenges
     * - Advanced compute hardware is expensive, and access is often limited – shared with other researchers, for example.
       - Proliferation of models, datasets, and hardware trials.
-    * - You'd like to iterate quickly, but running large models takes time
+    * - You'd like to iterate quickly, but running large models takes time.
       - Switching between development tools, including notebooks, scripts, and submission queues.
     * - Parallel computation speeds execution, but requires careful attention to data relationships.
       - Tracking, repeating, and sharing results.

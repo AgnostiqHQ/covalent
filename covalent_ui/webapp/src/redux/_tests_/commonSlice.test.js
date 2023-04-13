@@ -22,32 +22,34 @@
 
 import { commonSlice } from '../commonSlice'
 
-describe('COMMON SLICE TESTS', () => {
-
+describe('common slice  tests', () => {
   it('common slice toggleLatticeDrawer rendered', () => {
-    const action = { type: commonSlice.actions.toggleLatticeDrawer };
+    const action = { type: commonSlice.actions.toggleLatticeDrawer }
     const initialState = commonSlice.reducer(
       {
         latticeDrawerOpen: false,
-        callSocketApi: false
-      }, action);
+        callSocketApi: false,
+      },
+      action
+    )
     expect(initialState).toEqual({
       latticeDrawerOpen: true,
-      callSocketApi: false
+      callSocketApi: false,
     })
   })
 
   it('common slice socketAPI rendered', () => {
-    const action = { type: commonSlice.actions.socketAPI };
+    const action = { type: commonSlice.actions.socketAPI }
     const initialState = commonSlice.reducer(
       {
         latticeDrawerOpen: false,
-        callSocketApi: false
-      }, action);
+        callSocketApi: false,
+      },
+      action
+    )
     expect(initialState).toEqual({
       latticeDrawerOpen: false,
-      callSocketApi: true
+      callSocketApi: true,
     })
   })
-
 })

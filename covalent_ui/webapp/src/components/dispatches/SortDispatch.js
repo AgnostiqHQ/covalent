@@ -36,6 +36,7 @@ const SortDispatch = (props) => {
 
   return (
     <Box
+      data-testid="sort"
       onClick={() => {
         setFilterValue(title.toUpperCase())
         setSelected([])

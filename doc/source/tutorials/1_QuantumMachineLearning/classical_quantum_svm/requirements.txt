@@ -1,4 +1,5 @@
 covalent
+matplotlib==3.6.3
 qiskit==0.36.0
 qiskit-machine-learning==0.3.1
 scikit-learn==1.0.2

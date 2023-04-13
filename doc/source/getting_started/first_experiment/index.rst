@@ -137,41 +137,45 @@ Follow the steps below to run an example workflow.
 
     Type (or paste) the following Python code:
 
-        .. code:: python
+    .. code:: python
 
-          import covalent as ct
+      import covalent as ct
 
-          # Construct manageable tasks out of functions
-          # by adding the @covalent.electron decorator
-          @ct.electron
-          def add(x, y):
-             return x + y
+      local = ct.executor.LocalExecutor()
 
-          @ct.electron
-          def multiply(x, y):
-             return x*y
+      # Construct manageable tasks out of functions
+      # by adding the @covalent.electron decorator
+      @ct.electron(executor=local)
+      def add(x, y):
+         return x + y
 
-          @ct.electron
-          def divide(x, y):
-             return x/y
+      @ct.electron(executor=local)
+      def multiply(x, y):
+         return x*y
 
-          # Construct the workflow by stitching together
-          # the electrons defined earlier in a function with
-          # the @covalent.lattice decorator
-          @ct.lattice
-          def workflow(x, y):
-             r1 = add(x, y)
-             r2 = [multiply(r1, y) for _ in range(4)]
-             r3 = [divide(x, value) for value in r2]
-             return r3
+      @ct.electron(executor=local)
+      def divide(x, y):
+         return x/y
 
-          # Dispatch the workflow
-          dispatch_id = ct.dispatch(workflow)(1, 2)
-          result = ct.get_result(dispatch_id)
-          print(result)
+      # Construct the workflow by stitching together
+      # the electrons defined earlier in a function with
+      # the @covalent.lattice decorator
+      @ct.lattice
+      def workflow(x, y):
+         r1 = add(x, y)
+         r2 = [multiply(r1, y) for _ in range(4)]
+         r3 = [divide(x, value) for value in r2]
+         return r3
 
-   See :doc:`../../api/results` for a description of the result object returned by Covalent.
+      # Dispatch the workflow
+      dispatch_id = ct.dispatch(workflow)(1, 2)
+      result = ct.get_result(dispatch_id)
+      print(result)
 
+
+    See :doc:`../../api/executors/local` for a description of the executor object assigned to each of the electrons. For demonstration purposes, this example assigns the same simple executor to each electron (``LocalExecutor`` just runs the electron on the local host, relying on default process management). However, much of the power of Covalent comes from the ability to assign each electron a different executor, running different tasks on an arbitrary combination of different task managers on remote hosts, including AWS, Slurm, and many others. See :doc:`../../api/executors/index` for a list.
+
+    See :doc:`../../api/results` for a description of the result object returned by Covalent.
 
 Viewing the Workflow
 ####################

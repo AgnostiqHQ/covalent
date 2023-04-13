@@ -37,6 +37,7 @@ generator_prefix = f"{prefix_separator}generated{prefix_separator}"
 sublattice_prefix = f"{prefix_separator}sublattice{prefix_separator}"
 attr_prefix = f"{prefix_separator}attribute{prefix_separator}"
 arg_prefix = f"{prefix_separator}arg{prefix_separator}"
+postprocess_prefix = f"{prefix_separator}postprocess{prefix_separator}"
 
 WAIT_EDGE_NAME = "!waiting_edge"
 
@@ -60,7 +61,8 @@ def get_default_sdk_config():
             (os.environ.get("XDG_CONFIG_DIR") or (os.environ["HOME"] + "/.config"))
             + "/covalent/executor_plugins"
         ),
-        "no_cluster": "false",
+        "no_cluster": "true" if os.environ.get("COVALENT_DISABLE_DASK") == "1" else "false",
+        "exhaustive_postprocess": "true",
     }
 
 
@@ -126,7 +128,11 @@ def get_default_executor() -> dict:
     """
     from .config import get_config
 
-    return "local" if get_config("sdk.no_cluster") == "true" else "dask"
+    return (
+        "local"
+        if os.environ.get("COVALENT_DISABLE_DASK") == "1" or get_config("sdk.no_cluster") == "true"
+        else "dask"
+    )
 
 
 # Default configuration settings

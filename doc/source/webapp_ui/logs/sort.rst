@@ -1,6 +1,9 @@
 ========
 Sort
 ========
+
+Click Time or Status to sort the log by that column. Click |ascending| or |descending| to sort ascending or descending, respectively. Time is sorted chronologically; Status is alphabetical.
+
 .. image:: ../images/logs_sort.gif
    :align: center
    :width: 5000px
@@ -10,7 +13,3 @@ Sort
 
 .. |descending| image:: ../images/descending_arrow.png
     :width: 20px
-
-- Users can sort through a column by ascending |ascending| and descending |descending| orderings. By default, sorting is done in descending order of the time column.
-- Users can sort by the Time and Status columns.
-- Logs can be sorted by ascending and descending order of time; also logs can be sorted by alphabetical order and reverse alphabetical order of statuses such as **INFO**, **DEBUG**, **WARNING**, **WARN**, **ERROR** and **CRITICAL**.

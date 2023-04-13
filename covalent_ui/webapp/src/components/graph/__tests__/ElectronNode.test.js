@@ -20,9 +20,9 @@
 //  * Relief from the License may be granted by purchasing a commercial license.
 //  */
 
-import { render, screen, fireEvent } from '@testing-library/react'
-import App from '../ElectronNode'
-import "@testing-library/jest-dom";
+import { render, screen } from '@testing-library/react'
+import { ElectronNode } from '../ElectronNode'
+import '@testing-library/jest-dom'
 import React from 'react'
 import { Provider } from 'react-redux'
 import reducers from '../../../redux/reducers'
@@ -53,73 +53,70 @@ function reduxRender(renderedComponent) {
 
 describe('electronNode file Rendered', () => {
   const data = {
-    fullName: "identity", label: "identity", status: "COMPLETED",
+    fullName: 'identity',
+    label: 'identity',
+    status: 'COMPLETED',
   }
 
   test('renders electronNode', async () => {
-    reduxRender(<App data={data} />)
-    const linkElement = screen.getByTestId('electronNode')
-    expect(linkElement).toBeInTheDocument()
-  })
-
-  test('renders electronNode data rendered', async () => {
-    reduxRender(<App data={data} />)
+    reduxRender(<ElectronNode data={data} />)
     const linkElement = screen.getByTestId('electronNode')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders electronNode NODE_TEXT_COLOR', async () => {
-    reduxRender(<App data={data} NODE_TEXT_COLOR='rgba(250, 250, 250, 0.6)' />)
+    reduxRender(
+      <ElectronNode data={data} NODE_TEXT_COLOR="rgba(250, 250, 250, 0.6)" />
+    )
     const linkElement = screen.getByTestId('electronNode')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders electronNode hasBorder', async () => {
-    reduxRender(<App data={data} hasBorder='Completed' />)
+    reduxRender(<ElectronNode data={data} hasBorder="Completed" />)
     const linkElement = screen.getByTestId('electronNode')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders electronNode color', async () => {
-    reduxRender(<App data={data} color='Completed' />)
+    reduxRender(<ElectronNode data={data} color="Completed" />)
     const linkElement = screen.getByTestId('electronNode')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders handle electronNode', async () => {
-    reduxRender(<App data={data} />)
+    reduxRender(<ElectronNode data={data} />)
     const linkElement = screen.getByTestId('handleelectronNode')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders handle position checked', async () => {
-    reduxRender(<App data={data} position='top' />)
+    reduxRender(<ElectronNode data={data} position="top" />)
     const linkElement = screen.getByTestId('handleelectronNode')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders handle isConnectable checked', async () => {
-    reduxRender(<App data={data} isConnectable={false} />)
+    reduxRender(<ElectronNode data={data} isConnectable={false} />)
     const linkElement = screen.getByTestId('handleelectronNode')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders sourcehandle rendered', async () => {
-    reduxRender(<App data={data} />)
+    reduxRender(<ElectronNode data={data} />)
     const linkElement = screen.getByTestId('sourcehandleelectronNode')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders sourcehandle position rendered', async () => {
-    reduxRender(<App data={data} position='bottom' />)
+    reduxRender(<ElectronNode data={data} position="bottom" />)
     const linkElement = screen.getByTestId('sourcehandleelectronNode')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders sourcehandle connectable rendered', async () => {
-    reduxRender(<App data={data} isConnectable={false} />)
+    reduxRender(<ElectronNode data={data} isConnectable={false} />)
     const linkElement = screen.getByTestId('sourcehandleelectronNode')
     expect(linkElement).toBeInTheDocument()
   })
-
 })

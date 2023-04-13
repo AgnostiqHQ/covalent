@@ -7,6 +7,310 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Tutorial for hybrid neural network using Covalent, AWSBatch, and Qiskit Runtime.
+
+### Fixed
+
+- Doubling of nodes that are added to the transport graph.
+- Ensure postprocessing node end time is added as the workflow end time.
+- Functional tests
+
+### Added
+
+- Postprocessing as electrons.
+- Postprocessing class in `postprocessing.py` module for all the different postprocessing helper methods and algorithms.
+
+### Changed
+
+- Postprocessing logic.
+
+### Removed
+
+- Postprocessing from runners.
+
+### Docs
+
+- Adding Google Batch executor plugin RTD
+
+### Docs
+
+- Updated How-to documents.
+- Port of Pennylane's Univariate QVR tutorial using Covalent to this repo.
+- Adding troubleshooting guide to RTD's
+- Added a note to First Experiment offering initial intro to executors.
+
+## [0.219.0-rc.0] - 2023-03-01
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+
+
+### Docs
+
+* Adding `cancellation` RTD text files
+
+### Added
+
+- `disable_run` option added to enable "saving-only" option on covalent server and not executing the workflow
+- `register_triggers`, `stop_triggers` functions added to `LocalDispatcher` class
+- `triggers` parameter to the lattice metadata
+- `BaseTrigger`, `DirTrigger`, `TimeTrigger` classes added available to be assigned to any lattice enabling the triggers feature
+- `TriggerLoader` class added enabling loading of any kind of triggers including user defined ones without requiring installation
+- CLI options to start covalent server in triggers only, and no triggers mode
+- `is_pending` option added during redispatch to resume execution of a previously "saved-only", i.e pending workflow
+- API routes added for Triggers server
+
+### Changed
+
+- Modified `ct.get_result` to allow for status only requests
+
+### Fixed
+
+- UI crashing if time values are null
+- No longer adding "http://" every time a dispatcher address is provided in local dispatcher class in order to use the provided address exactly
+
+### Docs
+
+- Added documentation for "Triggers" and a separate section for similar "Features"
+- Tutorial guidelines
+
+### Tests
+
+- Updated and added tests to account for all of the above triggers related changes
+
+### Operations
+
+- Lowering number of jest workers as an attempt to fix flaky UI functional tests
+- Added exception for nightly to pass if conda release fails
+
+## [0.218.0-rc.0] - 2023-02-21
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Added
+
+- Added feature to support cancelling workflow dispatches
+- Updating/adding new tests to improve code coverage
+
+### Fixed
+
+- Redispatch bug involving copying reusable nodes from old transport graph to new transport graph.
+- Pennylane tutorial notebook.
+
+### Docs
+
+- Redispatch API section.
+- Add how to for redispatch.
+- Mention redispatch in the concepts section.
+- Update `AWS Lambda` executor RTD with steps to extend the base executor image for installing custom packages
+
+### Changed
+
+- Enhanced the Dockerfile to include builds from various sources and a differentiation between SDK and Server builds
+
+### Operations
+
+- Updated pre-commit hook versions
+- Updated codecov upload steps in tests workflow to fail if upload to codecov fails
+
+## [0.217.0-rc.0] - 2023-02-12
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- dwelsch-esi <116022979+dwelsch-esi@users.noreply.github.com>
+- Co-authored-by: dwelsch-memverge <david.welsch@memverge.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+
+### Fixed
+
+- Redispatch bug.
+
+### Changed
+
+- Location of function to load result from the database now moved to load module in covalent_dispatcher/_db folde.
+
+### Added
+- API endpoint for redispatching.
+- Unit and functional tests for redispatching.
+
+### Docs
+- Updated self-deployment (server deployment). 
+
+## [0.216.0-rc.0] - 2023-02-05
+
+### Authors
+
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+
+
+### Removed
+
+- References to specific IBMQ hub/group/project in tutorial 5
+
+### Added
+
+- TransportGraphOps class for diffing operations on transport graphs.
+- Added make derived dispatch method.
+- Apply electron updates method to _TransportGraph.
+
+### Operations
+
+- Added job in `nightly` to trigger base executor image builds after a Covalent `pre-release`
+
+## [0.215.0-rc.0] - 2023-02-01
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+### Docs
+
+- Added IBMQ tutorial
+
+### Added
+
+- Workflow re-dispatching functionality.
+
+## [0.214.0-rc.0] - 2023-01-25
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Operations
+
+- Fixed stable-changelog action removed `.catch` added `.on('error')`
+- Removed AWS base executor deployment from `release.yml`
+- Removed experimental tests from nightly test matrix (will be brought back but in different workflow)
+- Updated release workflow to continue if release tag already exists
+
+### Removed
+
+- Slurm executor reference from qaoa tutorial since it's not compatible with conda env at the moment.
+
+### Fixed
+
+- Braket pip installation instructions.
+
+## [0.213.2-rc.0] - 2023-01-21
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+
+
+### Fixed
+
+- Removing the entrypoint for SDK-only install
+- Updating client requirements to match server versions
+
+## [0.213.1-rc.0] - 2023-01-20
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- dwelsch-esi <116022979+dwelsch-esi@users.noreply.github.com>
+
+
+### Fixed
+
+- Load plugins only when COVALENT_PLUGIN_LOAD environment variable has been set to a Truthy value.
+
+### Docs
+- Published Self-Deployment Guide
+
+## [0.213.0-rc.0] - 2023-01-18
+
+### Authors
+
+- dwelsch-esi <116022979+dwelsch-esi@users.noreply.github.com>
+- Co-authored-by: dwelsch-memverge <david.welsch@memverge.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Fixed
+
+- MNIST tutorial now shows non-Null outputs and the classifier training log image has been updated.
+- Minor changes to tutorials: autoencoder, quantum and classical svm, ensemble classification, iris classification with Pennylane, quantum chemistry, DNN tutorial, qaoa, spacetime tutorial etc.
+- The range of `networkx` versions in requirements.txt weren't compatible with each other, thus it is pinned to `2.8.6` now
+- SDK-only sdist and installation should now work as expected, not packaging the server
+
+### Added
+
+- Added `dispatcher_addr` argument to `ct.get_result` similar to `ct.dispatch` so that it doesn't always fallback to using the default configured address
+
+### Tests
+
+- Updated `_get_result_from_dispatcher` test to verify whether using a link directly works or not
+
+### Docs
+- Revised UI reference. Added Settings page documentation.
+- Added broken UI links in README
+
+## [0.212.1-rc.0] - 2023-01-14
+
+### Authors
+
+- Casey Jao <casey@agnostiq.ai>
+
+
+### Fixed
+
+- Fixed naming of collection nodes (was breaking postprocessing)
+- Restored compatibility with stable release of AWS executors
+
+
+## [0.212.0-rc.0] - 2023-01-13
+
+### Authors
+
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Added
+
+- Front-end pending unit tests for the GUI.
+
 ## [0.211.1-rc.0] - 2023-01-12
 
 ### Authors
@@ -16,11 +320,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 
+### Fixed
 
-### Fixed 
-
-- Optimization of logs on the GUI for large log file sizes. 
-- Fixed UI pagination not working for more than 11 pages 
+- Optimization of logs on the GUI for large log file sizes.
+- Fixed UI pagination not working for more than 11 pages
 - Runtime field counting down for select running dispatches
 
 ## [0.211.0-rc.0] - 2023-01-10

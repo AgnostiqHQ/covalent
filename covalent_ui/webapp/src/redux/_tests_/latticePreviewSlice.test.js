@@ -22,15 +22,15 @@
 
 import { latticePreviewSlice } from '../latticePreviewSlice'
 
-describe('COMMON SLICE TESTS', () => {
-
+describe('lattice preview slice test', () => {
   it('latticePreviewSlice setLattice rendered', () => {
-    const action = { type: latticePreviewSlice.actions.setLattice };
+    const action = { type: latticePreviewSlice.actions.setLattice }
     const initialState = latticePreviewSlice.reducer(
       {
-        lattice: null
-      }, action);
+        lattice: null,
+      },
+      action
+    )
     expect(initialState).toEqual({ llattice: undefined })
   })
-
 })

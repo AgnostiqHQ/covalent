@@ -23,7 +23,6 @@ import React from 'react'
 import { render, screen, fireEvent } from '../../../testHelpers/testUtils'
 import App from '../MobileAppBar'
 import { BrowserRouter } from 'react-router-dom'
-import { Provider } from 'react-redux'
 import reducers from '../../../redux/reducers'
 import { configureStore } from '@reduxjs/toolkit'
 import theme from '../../../utils/theme'
@@ -35,11 +34,11 @@ function mockRender(renderedComponent) {
     reducer: reducers,
   })
   return render(
-    <Provider store={store}>
+    <redux.Provider store={store}>
       <ThemeProvider theme={theme}>
         <BrowserRouter>{renderedComponent}</BrowserRouter>
       </ThemeProvider>
-    </Provider>
+    </redux.Provider>
   )
 }
 

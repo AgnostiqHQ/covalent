@@ -31,17 +31,20 @@ from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 from .._shared_files import logger
+from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import DefaultMetadataValues
 from .._shared_files.utils import get_named_params, get_serialized_function_str
 from .depsbash import DepsBash
 from .depscall import DepsCall
 from .depspip import DepsPip
+from .postprocessing import Postprocessor
 from .transport import TransportableObject, _TransportGraph, encode_metadata
 
 if TYPE_CHECKING:
     from .._results_manager.result import Result
     from ..executor import BaseExecutor
+    from ..triggers import BaseTrigger
 
 from .._shared_files.utils import get_imports, get_serialized_function_str
 
@@ -86,9 +89,11 @@ class Lattice:
 
         self.workflow_function = TransportableObject.make_transportable(self.workflow_function)
 
+        # Bound electrons are defined as electrons with a valid node_id, since it means they are bound to a TransportGraph.
+        self._bound_electrons = {}  # Clear before serializing
+
     # To be called after build_graph
     def serialize_to_json(self) -> str:
-
         attributes = deepcopy(self.__dict__)
         attributes["workflow_function"] = self.workflow_function.to_dict()
 
@@ -115,15 +120,11 @@ class Lattice:
             attributes["electron_outputs"][node_name] = output.to_dict()
 
         attributes["cova_imports"] = list(self.cova_imports)
-        # for k, v in attributes.items():
-        #     print(k, type(v))
-
         return json.dumps(attributes)
 
     @staticmethod
     def deserialize_from_json(json_data: str) -> None:
         attributes = json.loads(json_data)
-
         attributes["cova_imports"] = set(attributes["cova_imports"])
 
         for node_name, object_dict in attributes["electron_outputs"].items():
@@ -223,10 +224,11 @@ class Lattice:
 
         # Set any lattice metadata not explicitly set by the user
         constraint_names = {"executor", "workflow_executor", "deps", "call_before", "call_after"}
-        new_metadata = {}
-        for name in constraint_names:
-            if not self.metadata[name]:
-                new_metadata[name] = DEFAULT_METADATA_VALUES[name]
+        new_metadata = {
+            name: DEFAULT_METADATA_VALUES[name]
+            for name in constraint_names
+            if not self.metadata[name]
+        }
         new_metadata = encode_metadata(new_metadata)
 
         for k, v in new_metadata.items():
@@ -235,12 +237,18 @@ class Lattice:
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
                 try:
-                    workflow_function(*new_args, **new_kwargs)
+                    retval = workflow_function(*new_args, **new_kwargs)
                 except Exception:
                     warnings.warn(
                         "Please make sure you are not manipulating an object inside the lattice."
                     )
                     raise
+
+        if get_config("sdk.exhaustive_postprocess") == "true":
+            pp = Postprocessor(lattice=self)
+            pp.add_exhaustive_postprocess_node(self._bound_electrons.copy())
+
+        self._bound_electrons = {}  # Reset bound electrons
 
     def draw(self, *args, **kwargs) -> None:
         """
@@ -322,6 +330,7 @@ def lattice(
     deps_pip: Union[DepsPip, list] = None,
     call_before: Union[List[DepsCall], DepsCall] = [],
     call_after: Union[List[DepsCall], DepsCall] = [],
+    triggers: Union["BaseTrigger", List["BaseTrigger"]] = None,
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
     """
@@ -340,6 +349,7 @@ def lattice(
         deps_pip: An optional DepsPip object specifying a list of PyPI packages to install before running `_func`
         call_before: An optional list of DepsCall objects specifying python functions to invoke before the electron
         call_after: An optional list of DepsCall objects specifying python functions to invoke after the electron
+        triggers: Any triggers that need to be attached to this lattice, default is None
 
     Returns:
         :obj:`Lattice <covalent._workflow.lattice.Lattice>` : Lattice object inside which the decorated function exists.
@@ -370,12 +380,18 @@ def lattice(
     if isinstance(call_after, DepsCall):
         call_after = [call_after]
 
+    from ..triggers import BaseTrigger
+
+    if isinstance(triggers, BaseTrigger):
+        triggers = [triggers]
+
     constraints = {
         "executor": executor,
         "workflow_executor": workflow_executor,
         "deps": deps,
         "call_before": call_before,
         "call_after": call_after,
+        "triggers": triggers,
     }
 
     constraints = encode_metadata(constraints)
@@ -391,6 +407,7 @@ def lattice(
 
         return wrapper_lattice()
 
+    # Don't change the snippet below. This a subtle piece of logic that's best understood as is written.
     if _func is None:  # decorator is called with arguments
         return decorator_lattice
     else:  # decorator is called without arguments

@@ -24,7 +24,6 @@ import App from '../PreviewDrawerContents'
 import React from 'react'
 import { render, screen } from '../../../testHelpers/testUtils'
 import { BrowserRouter } from 'react-router-dom'
-import { Provider } from 'react-redux'
 import reducers from '../../../redux/reducers'
 import { configureStore } from '@reduxjs/toolkit'
 import * as redux from 'react-redux'
@@ -34,9 +33,9 @@ function mockRender(renderedComponent) {
     reducer: reducers,
   })
   return render(
-    <Provider store={store}>
+    <redux.Provider store={store}>
       <BrowserRouter>{renderedComponent}</BrowserRouter>
-    </Provider>
+    </redux.Provider>
   )
 }
 
@@ -55,11 +54,11 @@ describe('preview drawer section', () => {
       lattice: {
         doc: 'covalent',
         inputs: {
-          data:{
+          data: {
             args: [],
             kwargs: { n: '15', serial: 'True', parallel: 'True' },
           },
-          python_object:'import pickle'
+          python_object: 'import pickle',
         },
         metadata: {
           executor_name: 'dask',

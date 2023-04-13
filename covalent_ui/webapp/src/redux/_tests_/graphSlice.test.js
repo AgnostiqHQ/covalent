@@ -22,15 +22,16 @@
 
 import { graphResults, graphSlice } from '../graphSlice'
 
-describe('GRAPH SLICE TESTS', () => {
-
+describe('graph slice tests', () => {
   it('graph slice rendered rejected', () => {
-    const action = { type: graphResults.rejected };
+    const action = { type: graphResults.rejected }
     const initialState = graphSlice.reducer(
       {
         graphList: {},
         graphResultsList: { isFetching: false, error: undefined },
-      }, action);
+      },
+      action
+    )
     expect(initialState).toEqual({
       graphList: {},
       graphResultsList: { isFetching: false, error: undefined },
@@ -38,12 +39,14 @@ describe('GRAPH SLICE TESTS', () => {
   })
 
   it('graph slice rendered pending', () => {
-    const action = { type: graphResults.pending };
+    const action = { type: graphResults.pending }
     const initialState = graphSlice.reducer(
       {
         graphList: {},
         graphResultsList: { isFetching: false, error: null },
-      }, action);
+      },
+      action
+    )
     expect(initialState).toEqual({
       graphList: {},
       graphResultsList: { isFetching: true, error: null },
@@ -55,49 +58,68 @@ describe('GRAPH SLICE TESTS', () => {
       type: graphResults.fulfilled,
       payload: {
         links: [
-          { arg_index: 0, edge_name: "x", parameter_type: "kwarg", source: 69, target: 82 },
-          { arg_index: 0, edge_name: "x", parameter_type: "kwarg", source: 69, target: 90 },
-          { arg_index: 0, edge_name: "x", parameter_type: "kwarg", source: 69, target: 98 }
+          {
+            arg_index: 0,
+            edge_name: 'x',
+            parameter_type: 'kwarg',
+            source: 69,
+            target: 82,
+          },
+          {
+            arg_index: 0,
+            edge_name: 'x',
+            parameter_type: 'kwarg',
+            source: 69,
+            target: 90,
+          },
+          {
+            arg_index: 0,
+            edge_name: 'x',
+            parameter_type: 'kwarg',
+            source: 69,
+            target: 98,
+          },
         ],
 
         nodes: [
           {
-            completed_at: "2022-08-09T06:19:32.183245",
+            completed_at: '2022-08-09T06:19:32.183245',
             id: 69,
-            name: "identity",
+            name: 'identity',
             node_id: 0,
-            started_at: "2022-08-09T06:19:31.969697",
-            status: "COMPLETED",
-            type: "function"
+            started_at: '2022-08-09T06:19:31.969697',
+            status: 'COMPLETED',
+            type: 'function',
           },
           {
-            completed_at: "2022-08-09T06:19:31.905793",
+            completed_at: '2022-08-09T06:19:31.905793',
             id: 70,
-            name: ":parameter:1",
+            name: ':parameter:1',
             node_id: 1,
-            started_at: "2022-08-09T06:19:31.905790",
-            status: "COMPLETED",
-            type: "parameter",
+            started_at: '2022-08-09T06:19:31.905790',
+            status: 'COMPLETED',
+            type: 'parameter',
           },
           {
-            completed_at: "2022-08-09T06:19:32.203227",
+            completed_at: '2022-08-09T06:19:32.203227',
             id: 71,
-            name: "identity",
+            name: 'identity',
             node_id: 2,
-            started_at: "2022-08-09T06:19:31.980171",
-            status: "COMPLETED",
-            type: "function",
-          }
-        ]
-      }
-    };
+            started_at: '2022-08-09T06:19:31.980171',
+            status: 'COMPLETED',
+            type: 'function',
+          },
+        ],
+      },
+    }
     const initialState = graphSlice.reducer(
       {
         graphResultsList: { isFetching: false, error: null },
-      }, action);
+      },
+      action
+    )
     expect(initialState).toEqual({
       graphResultsList: { isFetching: false, error: null },
     })
   })
-
 })

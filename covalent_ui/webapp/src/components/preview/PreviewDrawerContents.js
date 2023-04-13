@@ -109,7 +109,7 @@ const LatticePreviewOverview = ({ preview }) => {
   return (
     <>
       {/* Description */}
-      {preview.lattice.doc && (
+      {preview.lattice?.doc && (
         <>
           <Heading>Description</Heading>
           <Typography fontSize="body2.fontSize">

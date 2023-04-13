@@ -43,29 +43,30 @@ export function DispatchLayout() {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
   const graph_result = useSelector((state) => state.graphResults.graphList)
-  const latDetailError = useSelector((state) => state.latticeResults.latticeDetailsResults.error)
+  const latDetailError = useSelector(
+    (state) => state.latticeResults.latticeDetailsResults.error
+  )
   const sublatticesDispatchId = useSelector(
     (state) => state.latticeResults.sublatticesId
   )
   // check if socket message is received and call API
   const callSocketApi = useSelector((state) => state.common.callSocketApi)
   useEffect(() => {
-    if (sublatticesDispatchId?.dispatchId) dispatch(graphResults({ dispatchId: sublatticesDispatchId?.dispatchId }))
+    if (sublatticesDispatchId?.dispatchId)
+      dispatch(graphResults({ dispatchId: sublatticesDispatchId?.dispatchId }))
     else dispatch(graphResults({ dispatchId }))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [callSocketApi, sublatticesDispatchId])
 
-
   // reset store values to initial state when moved to another page
   useEffect(() => {
     return () => {
-      dispatch(resetGraphState());
-      dispatch(resetLatticeState());
-      dispatch(resetElectronState());
-    };
+      dispatch(resetGraphState())
+      dispatch(resetLatticeState())
+      dispatch(resetElectronState())
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
+  }, [])
 
   const selectedElectron = useStoreState((state) => {
     const nodeId = _.get(
@@ -84,13 +85,12 @@ export function DispatchLayout() {
   // unselect on change of dispatch
   useEffect(() => {
     setSelectedElements([])
-  }, [dispatchId, setSelectedElements,sublatticesDispatchId])
+  }, [dispatchId, setSelectedElements, sublatticesDispatchId])
 
   // dispatch id not found
   if (latDetailError !== null && latDetailError.status === 400) {
     return <NotFound text="Lattice dispatch not found." />
   }
-
   return (
     <>
       <DispatchTopBar />
@@ -100,15 +100,17 @@ export function DispatchLayout() {
           width: '100vw',
           height: '100vh',
           bgcolor: graphBgColor,
-          paddingTop: '35px'
+          paddingTop: '35px',
         }}
       >
-        {Object.keys(graph_result).length !== 0 && (<LatticeGraph
-          graph={graph_result}
-          hasSelectedNode={!!selectedElectron}
-          marginLeft={latticeDrawerWidth + navDrawerWidth}
-          dispatchId={dispatchId}
-        />)}
+        {Object.keys(graph_result).length !== 0 && (
+          <LatticeGraph
+            graph={graph_result}
+            hasSelectedNode={!!selectedElectron}
+            marginLeft={latticeDrawerWidth + navDrawerWidth}
+            dispatchId={dispatchId}
+          />
+        )}
       </Box>
       <NavDrawer />
       <LatticeDrawer>
@@ -118,7 +120,11 @@ export function DispatchLayout() {
         <NodeDrawer
           node={selectedElectron}
           graph={graph_result}
-          dispatchId={sublatticesDispatchId ? sublatticesDispatchId?.dispatchId : dispatchId}
+          dispatchId={
+            sublatticesDispatchId
+              ? sublatticesDispatchId?.dispatchId
+              : dispatchId
+          }
         />
       ) : (
         <PageLoading />
@@ -130,12 +136,10 @@ export function DispatchLayout() {
 const UUID_PATTERN =
   /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
 
-const DispatchLayoutValidate = () => {
+export const DispatchLayoutValidate = () => {
   let { dispatchId } = useParams()
   if (!UUID_PATTERN.test(dispatchId)) {
     return <NotFound text="Lattice dispatch not found." />
   }
   return <DispatchLayout />
 }
-
-export default DispatchLayoutValidate

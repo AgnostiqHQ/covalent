@@ -22,7 +22,12 @@
 
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
-from covalent._workflow.electron import Electron, to_decoded_electron_collection
+from covalent._workflow.electron import (
+    Electron,
+    filter_null_metadata,
+    get_serialized_function_str,
+    to_decoded_electron_collection,
+)
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 from covalent.executor.executor_plugins.local import LocalExecutor
 
@@ -84,7 +89,7 @@ def test_wait_for_post_processing():
             (4, TransportableObject(125)),
             (6, TransportableObject(1500)),
         ]
-        assert workflow.workflow_function.get_deserialized()() == 1500
+        assert workflow.workflow_function.get_deserialized()()[1].get_deserialized() == 1500
 
 
 def test_wait_for_post_processing_when_returning_waiting_electron():
@@ -99,7 +104,7 @@ def test_wait_for_post_processing_when_returning_waiting_electron():
             (2, TransportableObject(12)),
             (4, TransportableObject(64)),
         ]
-        assert workflow_2.workflow_function.get_deserialized()() == 64
+        assert workflow_2.workflow_function.get_deserialized()()[1].get_deserialized() == 64
 
 
 def test_collection_node_helper_electron():
@@ -155,8 +160,8 @@ def test_injected_inputs_are_not_in_tg():
     workflow.build_graph(2)
     g = workflow.transport_graph._graph
 
-    assert list(g.nodes) == [0, 1]
-    assert list(g.edges) == [(1, 0, 0)]
+    assert list(g.nodes) == list(range(3))
+    assert list(g.edges) == [(0, 2, 0), (1, 0, 0)]
 
 
 def test_metadata_in_electron_list():
@@ -228,13 +233,13 @@ def test_autogen_list_electrons():
 
     g = workflow.transport_graph._graph
 
-    assert list(g.nodes) == [0, 1, 2, 3]
+    assert list(g.nodes) == list(range(5))
     fn = g.nodes[1]["function"].get_deserialized()
     assert fn(2, 5, 7) == [2, 5, 7]
 
     assert g.nodes[2]["value"].get_deserialized() == 5
     assert g.nodes[3]["value"].get_deserialized() == 7
-    assert set(g.edges) == set([(1, 0, 0), (2, 1, 0), (3, 1, 0)])
+    assert set(g.edges) == {(1, 0, 0), (3, 1, 0), (2, 1, 0), (0, 4, 0)}
 
 
 def test_autogen_dict_electrons():
@@ -250,9 +255,27 @@ def test_autogen_dict_electrons():
 
     g = workflow.transport_graph._graph
 
-    assert list(g.nodes) == [0, 1, 2, 3]
+    assert list(g.nodes) == list(range(5))
     fn = g.nodes[1]["function"].get_deserialized()
     assert fn(x=2, y=5, z=7) == {"x": 2, "y": 5, "z": 7}
     assert g.nodes[2]["value"].get_deserialized() == 5
     assert g.nodes[3]["value"].get_deserialized() == 7
-    assert set(g.edges) == set([(1, 0, 0), (2, 1, 0), (3, 1, 0)])
+    assert set(g.edges) == {(1, 0, 0), (3, 1, 0), (2, 1, 0), (0, 4, 0)}
+
+
+def test_as_transportable_dict(mocker):
+    """Test the get transportable electron function."""
+
+    @ct.electron
+    def test_func(a):
+        return a
+
+    mock_metadata = {"a": 1, "b": 2, "c": None}
+    # Construct bound electron, i.e. electron with non-null function and node_id
+    electron = Electron(function=test_func, node_id=1, metadata=mock_metadata)
+    transportable_electron = electron.as_transportable_dict
+
+    assert transportable_electron["name"] == "test_func"
+    assert transportable_electron["metadata"] == filter_null_metadata(mock_metadata)
+    assert transportable_electron["function_string"] == get_serialized_function_str(test_func)
+    assert TransportableObject(test_func).to_dict() == transportable_electron["function"]

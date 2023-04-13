@@ -32,7 +32,7 @@ const initialState = {
   },
 
   // request status
-  fetchResult: { isFetching: false, error: null },
+  resultsSlice: { isFetching: false, error: null },
   fetchResults: { isFetching: false, error: null },
   deleteResults: { isFetching: false, error: null },
 }
@@ -79,7 +79,7 @@ export const resultsSlice = createSlice({
       // fetchResults
       .addCase(fetchResults.fulfilled, (state, { payload }) => {
         state.fetchResults.isFetching = false
-        // update results cache
+         // update results cache
         state.cache = _.keyBy(payload, 'dispatch_id')
       })
       .addCase(fetchResults.pending, (state) => {

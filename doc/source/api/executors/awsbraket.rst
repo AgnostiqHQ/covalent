@@ -19,7 +19,7 @@ To use this plugin with Covalent, simply install it using :code:`pip`:
 
 .. code:: bash
 
-   pip install covalent-awsbraket-plugin
+   pip install covalent-braket-plugin
 
 ===========================================
 2. Usage Example

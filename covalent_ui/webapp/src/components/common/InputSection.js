@@ -22,12 +22,7 @@
 
 import { useState } from 'react'
 import _ from 'lodash'
-import {
-  Paper,
-  Skeleton,
-  Tooltip,
-  tooltipClasses
-} from '@mui/material'
+import { Paper, Skeleton, Tooltip, tooltipClasses } from '@mui/material'
 import copy from 'copy-to-clipboard'
 import { styled } from '@mui/material/styles'
 import Heading from './Heading'
@@ -46,26 +41,30 @@ const InputSection = ({ isFetching, inputs, preview, ...props }) => {
   const [copied, setCopied] = useState(false)
   const inputSrc = preview
     ? _.join(
-      _.map(inputs?.data, (value, key) => `${key}: ${value}`),
-      '\n'
-    )
+        _.map(inputs?.data, (value, key) => `${key}: ${value}`),
+        '\n'
+      )
     : inputs?.data
   return (
     <>
       {isFetching ? (
-        <Skeleton sx={{ height: '80px' }} />
+        <Skeleton sx={{ height: '80px' }} data-testid="inputSectionSkeleton" />
       ) : (
         inputSrc && (
-          <InputTooltip title={copied ? 'Python object copied' : 'Copy python object'} arrow>
-            <div onClick={
-              () => {
+          <InputTooltip
+            title={copied ? 'Python object copied' : 'Copy python object'}
+            arrow
+          >
+            <div
+              data-testid="copySection"
+              onClick={() => {
                 copy(inputs?.python_object)
                 setCopied(true)
                 setTimeout(() => setCopied(false), 1200)
-              }
-            } >
-              <Heading data-testid='inputSection'>Input</Heading>
-              <Paper elevation={0} {...props} >
+              }}
+            >
+              <Heading data-testid="inputSection">Input</Heading>
+              <Paper elevation={0} {...props}>
                 <SyntaxHighlighter language="json" src={inputSrc} />
               </Paper>
             </div>

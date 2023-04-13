@@ -53,11 +53,11 @@ Covalent is developed using Python version 3.8 on Linux and macOS. The easiest w
 pip install covalent
 ```
 
-Refer to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide for detailed setup instructions. For a full list of supported platforms, see the Covalent [compatibility matrix](https://covalent.readthedocs.io/en/latest/getting_started/compatibility.html).
+Refer to the [Quick Start](https://covalent.readthedocs.io/en/latest/getting_started/quick_start/index.html) guide for quick setup instructions, or to the [First Experiment](https://covalent.readthedocs.io/en/latest/getting_started/first_experiment/index.html) guide for a more thorough approach. For a full list of supported platforms, see the Covalent [compatibility matrix](https://covalent.readthedocs.io/en/latest/getting_started/compatibility.html).
 
 ## 🚀 Getting started
 
-Ready to try it? Go to the [Getting Started](https://covalent.readthedocs.io/en/latest/getting_started/index.html) guide in the documentation.
+Ready to try it? Go to the [First Experiment](https://covalent.readthedocs.io/en/latest/getting_started/first_experiment/index.html) guide in the documentation.
 
 For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://covalent.readthedocs.io/en/latest/concepts/concepts.html) page in the documentation.
 
@@ -69,10 +69,10 @@ For a more in-depth description of Covalent's features and how they work, see th
  <tr>
     <td>
 
-  - [What is covalent ?](https://www.covalent.xyz/what-is-covalent/)
+  - [What is Covalent?](https://www.covalent.xyz/what-is-covalent/)
   - [Covalent in the era of cloud-HPC](https://www.covalent.xyz/navigating-the-modern-hpc-landscape/)
-  - [Basic Concepts of Covalent](https://covalent.readthedocs.io/en/stable/concepts/concepts.html)
-  - [How does covalent work ?](#how-does-it-work)
+  - [Basic Concepts of Covalent](https://covalent.readthedocs.io/en/latest/concepts/concepts.html)
+  - [How does Covalent work?](#how-does-it-work)
 </td>
     <td>
 
@@ -119,9 +119,13 @@ The Covalent user interface runs as a web server on the machine where the Covale
 
 The official documentation includes tips on getting started, high-level concepts, tutorials, and the API documentation, and more. To learn more, see the [Covalent documentation](https://covalent.readthedocs.io/en/latest/).
 
+## Troubleshooting
+
+Solutions to common issues can be found in the [Troubleshooting Guide](https://covalent.readthedocs.io/en/latest/).
+
 ## ✔️  Contributing
 
-To contribute to Covalent, refer to the [Contribution Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/CONTRIBUTING.md). We use GitHub's [issue tracking](https://github.com/AgnostiqHQ/covalent/issues) to manage known issues, bugs, and pull requests. Get started by forking the develop branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. Participation in the Covalent community is governed by the [Code of Conduct](https://github.com/AgnostiqHQ/covalent/blob/master/CODE_OF_CONDUCT.md).
+To contribute to Covalent, refer to the [Contribution Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/CONTRIBUTING.md). We use GitHub's [issue tracking](https://github.com/AgnostiqHQ/covalent/issues) to manage known issues, bugs, and pull requests. Get started by forking the develop branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. For more more information on adding tutorials, check the [Tutorial Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/doc/TUTORIAL_GUIDELINES.md) Participation in the Covalent community is governed by the [Code of Conduct](https://github.com/AgnostiqHQ/covalent/blob/master/CODE_OF_CONDUCT.md).
 
 ## ⚓ Citation
 

@@ -20,7 +20,7 @@
 //  * Relief from the License may be granted by purchasing a commercial license.
 //  */
 
-import { render, screen } from '@testing-library/react'
+import { render } from '@testing-library/react'
 // import {screen} from '@testing-library/dom'
 import LatticeGraph from '../LatticeGraph'
 import { BrowserRouter } from 'react-router-dom'
@@ -54,38 +54,51 @@ function reduxRender(renderedComponent) {
 }
 
 describe('lattice graph', () => {
-
   const elements = [
     {
-      id: "561", type: "electron", position: { x: 529, y: 12 },
-      data: { fullName: "identity", label: "identity", status: "COMPLETED" },
-      targetPosition: "top", sourcePosition: "bottom"
+      id: '561',
+      type: 'electron',
+      position: { x: 529, y: 12 },
+      data: { fullName: 'identity', label: 'identity', status: 'COMPLETED' },
+      targetPosition: 'top',
+      sourcePosition: 'bottom',
     },
     {
-      id: "562", type: "electron", position: { x: 729, y: 12 },
-      data: { fullName: "identity", label: "identity", status: "COMPLETED" },
-      targetPosition: "top", sourcePosition: "top"
+      id: '562',
+      type: 'electron',
+      position: { x: 729, y: 12 },
+      data: { fullName: 'identity', label: 'identity', status: 'COMPLETED' },
+      targetPosition: 'top',
+      sourcePosition: 'top',
     },
     {
-      id: "563", type: "electron", position: { x: 329, y: 12 },
-      data: { fullName: "identity", label: "identity", status: "COMPLETED" },
-      targetPosition: "top", sourcePosition: "top"
+      id: '563',
+      type: 'electron',
+      position: { x: 329, y: 12 },
+      data: { fullName: 'identity', label: 'identity', status: 'COMPLETED' },
+      targetPosition: 'top',
+      sourcePosition: 'top',
     },
     {
-      id: "564", type: "electron", position: { x: 929, y: 12 },
-      data: { fullName: "identity", label: "identity", status: "COMPLETED" },
-      targetPosition: "top", sourcePosition: "side"
+      id: '564',
+      type: 'electron',
+      position: { x: 929, y: 12 },
+      data: { fullName: 'identity', label: 'identity', status: 'COMPLETED' },
+      targetPosition: 'top',
+      sourcePosition: 'side',
     },
     {
-      id: "565", type: "electron", position: { x: 429, y: 12 },
-      data: { fullName: "identity", label: "identity", status: "COMPLETED" },
-      targetPosition: "top", sourcePosition: "side"
-    }
-
+      id: '565',
+      type: 'electron',
+      position: { x: 429, y: 12 },
+      data: { fullName: 'identity', label: 'identity', status: 'COMPLETED' },
+      targetPosition: 'top',
+      sourcePosition: 'side',
+    },
   ]
 
   test('Rendering lattice graph', async () => {
-    const nodesDraggable = false;
+    const nodesDraggable = false
     const link__bond = reduxRender(
       <>
         {elements && (
@@ -99,8 +112,7 @@ describe('lattice graph', () => {
             defaultZoom={1}
             minZoom={0}
             maxZoom={3}
-          >
-          </LatticeGraph>
+          ></LatticeGraph>
         )}
       </>
     )
@@ -109,8 +121,9 @@ describe('lattice graph', () => {
   })
 
   test('render lattice graph', () => {
-    const { container } = reduxRender(<LatticeGraph hidden={true} elements={elements} />);
-    expect(container.querySelector('.react-flow')).toBeDefined();
+    const { container } = reduxRender(
+      <LatticeGraph hidden={true} elements={elements} />
+    )
+    expect(container.querySelector('.react-flow')).toBeDefined()
   })
-
 })

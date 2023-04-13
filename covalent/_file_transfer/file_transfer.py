@@ -45,7 +45,6 @@ class FileTransfer:
         order: Order = Order.BEFORE,
         strategy: Optional[FileTransferStrategy] = None,
     ) -> None:
-
         if isinstance(from_file, str) or from_file is None:
             from_file = File(from_file)
         elif not isinstance(from_file, File):
@@ -85,7 +84,6 @@ class FileTransfer:
             )
 
     def cp(self):
-
         file_transfer_call_dep = None
         return_value_type = FtCallDepReturnValue.FROM_TO
 

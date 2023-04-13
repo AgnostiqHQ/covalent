@@ -20,13 +20,15 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import App from '../SortDispatch'
 import theme from '../../../utils/theme'
 import ThemeProvider from '@mui/system/ThemeProvider'
 
 function reduxRender(renderedComponent) {
-  return render(<ThemeProvider theme={theme}>{renderedComponent}</ThemeProvider>)
+  return render(
+    <ThemeProvider theme={theme}>{renderedComponent}</ThemeProvider>
+  )
 }
 
 const sortDispatchCases = [
@@ -39,5 +41,25 @@ describe('sort dispatch', () => {
     reduxRender(<App title="All" count={4} isFetching={false} />)
     const element = screen.getByText(firstArg)
     expect(element).toBeInTheDocument()
+  })
+
+  it('click sort', () => {
+    const setFilterValue = jest.fn()
+    const setSelected = jest.fn()
+    const setOffset = jest.fn()
+
+    reduxRender(
+      <App
+        title="All"
+        count={4}
+        isFetching={false}
+        setFilterValue={setFilterValue}
+        setSelected={setSelected}
+        setOffset={setOffset}
+      />
+    )
+    const element = screen.getByTestId('sort')
+    expect(element).toBeInTheDocument()
+    fireEvent.click(element)
   })
 })

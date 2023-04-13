@@ -25,6 +25,7 @@ import sys
 from setuptools import Command, find_packages, setup
 from setuptools.command.build_py import build_py
 from setuptools.command.develop import develop
+from setuptools.command.egg_info import egg_info, manifest_maker
 
 site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
@@ -33,9 +34,27 @@ with open("VERSION") as f:
 
 
 requirements_file = "requirements.txt"
-sdk_only = os.environ.get("COVALENT_SDK_ONLY")
-if sdk_only == "True":
+exclude_modules = [
+    "tests",
+    "tests.*",
+]
+sdk_only = os.environ.get("COVALENT_SDK_ONLY") == "1"
+if sdk_only:
     requirements_file = "requirements-client.txt"
+    exclude_modules += [
+        "covalent_dispatcher",
+        "covalent_dispatcher.*",
+        "covalent_ui",
+        "covalent_ui.*",
+        "covalent_migrations",
+    ]
+    entry_points = {}
+else:
+    entry_points = {
+        "console_scripts": [
+            "covalent = covalent_dispatcher._cli.cli:cli",
+        ],
+    }
 
 with open(requirements_file) as f:
     required = f.read().splitlines()
@@ -151,9 +170,34 @@ class BuildUI(Command):
             )
 
 
+class EggInfoCovalent(egg_info):
+    def find_sources(self):
+        manifest_filename = os.path.join(self.egg_info, "SOURCES.txt")
+        mm = manifest_maker(self.distribution)
+        mm.manifest = manifest_filename
+
+        if os.path.exists("MANIFEST.in") and sdk_only:
+            with open("MANIFEST.in", "r") as f:
+                lines = f.readlines()
+            with open("MANIFEST_SDK.in", "w") as f:
+                for line in lines:
+                    if not any(excluded in line for excluded in exclude_modules):
+                        f.write(line)
+
+            mm.template = "MANIFEST_SDK.in"
+
+        mm.run()
+        self.filelist = mm.filelist
+
+        try:
+            os.remove("MANIFEST_SDK.in")
+        except OSError:
+            pass
+
+
 setup_info = {
     "name": "covalent",
-    "packages": find_packages(exclude=["tests"]),
+    "packages": find_packages(exclude=exclude_modules),
     "version": version,
     "maintainer": "Agnostiq",
     "url": "https://github.com/AgnostiqHQ/covalent",
@@ -166,11 +210,6 @@ setup_info = {
     "long_description_content_type": "text/markdown",
     "include_package_data": True,
     "zip_safe": False,
-    "package_data": {
-        "covalent": ["executor/executor_plugins/local.py"],
-        "covalent_dispatcher": ["_service/app.py"],
-        "covalent_ui": recursively_append_files("covalent_ui/webapp/build"),
-    },
     "install_requires": required,
     "extras_require": {
         "aws": ["boto3>=1.20.48"],
@@ -199,16 +238,13 @@ setup_info = {
         "Topic :: System :: Distributed Computing",
     ],
     "cmdclass": {
+        "egg_info": EggInfoCovalent,
         "build_py": BuildCovalent,
         "develop": DevelopCovalent,
         "docs": Docs,
         "webapp": BuildUI,
     },
-    "entry_points": {
-        "console_scripts": [
-            "covalent = covalent_dispatcher._cli.cli:cli",
-        ],
-    },
+    "entry_points": entry_points,
 }
 
 if __name__ == "__main__":

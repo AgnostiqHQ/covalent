@@ -35,9 +35,7 @@ const DirectedEdge = (props) => {
       labelBgPadding={[8, 4]}
       labelBgBorderRadius={0}
       labelBgStyle={props?.labelBgStyle ? props?.labelBgStyle : { fill: theme.palette.background.default, color: '#fff', fillOpacity: 1 }}
-      // labelBgStyle={{ fill: theme.palette.background.default }}
       labelStyle={{ fill: NODE_TEXT_COLOR }}
-    // arrowHeadType="arrow"
     />
   )
 }

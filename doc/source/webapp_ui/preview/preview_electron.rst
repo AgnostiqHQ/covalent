@@ -1,8 +1,10 @@
 =========================
 Preview Electron Sidebar
 =========================
+
+Click a node to view the Electron sidebar on the Preview Transport Graph screen.
+
+Only the executor information and the electron's definition are shown in the sidebar, since no dispatch information is available.
+
 .. image:: ../images/preview_electronbar.png
    :align: center
-
-- The **preview electron sidebar** will only have the executor details for a dispatch and function of that particular node/electron.
-- This preview electron sidebar will remain same even for the dispatch with sublattices.

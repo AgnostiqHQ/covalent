@@ -189,21 +189,21 @@ export const logStatusIcon = (status) => {
     case 'WARNING':
     case 'WARN':
       return (
-        <SvgIcon sx={{ mt: 0.6, mr: 0.7, fontSize: '18px' }}>
+        <SvgIcon aria-label={status} sx={{ mt: 0.6, mr: 0.7, fontSize: '18px' }}>
           <WarningSvg />
         </SvgIcon>
       )
     case 'INFO':
     case 'DEBUG':
       return (
-        <SvgIcon sx={{ mt: 0.6 }}>
+        <SvgIcon aria-label={status} sx={{ mt: 0.6 }}>
           <InfoSvg />
         </SvgIcon>
       )
     case 'ERROR':
     case 'CRITICAL':
       return (
-        <SvgIcon sx={{ mt: 0.6, mr: 0.7, fontSize: '18px' }}>
+        <SvgIcon aria-label={status} sx={{ mt: 0.6, mr: 0.7, fontSize: '18px' }}>
           <ErrorSvg />
         </SvgIcon>
       )
@@ -217,7 +217,7 @@ export const statusIcon = (status) => {
     case 'RUNNING':
     case 'STARTING':
       return (
-        <SvgIcon sx={{ mr: 0.5 }}>
+        <SvgIcon aria-label={status} sx={{ mr: 0.5 }}>
           <LoaderSvg />
         </SvgIcon>
       )
@@ -226,7 +226,7 @@ export const statusIcon = (status) => {
     case 'REGISTERING':
     case 'PENDING_BACKEND':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon aria-label={status} sx={{ mt: 1 }}>
           <ActivitySvg />
         </SvgIcon>
       )
@@ -234,13 +234,13 @@ export const statusIcon = (status) => {
     case 'PROVISIONING':
     case 'DEPROVISIONING':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon aria-label={status} sx={{ mt: 1 }}>
           <QueuedSvg />
         </SvgIcon>
       )
     case 'COMPLETING':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon aria-label={status} sx={{ mt: 1 }}>
           <CompletingSvg />
         </SvgIcon>
       )
@@ -249,7 +249,7 @@ export const statusIcon = (status) => {
     case 'PENDING_POSTPROCESSING':
     case 'POSTPROCESSING_FAILED':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon aria-label={status} sx={{ mt: 1 }}>
           <CheckSvg />
         </SvgIcon>
       )
@@ -259,25 +259,25 @@ export const statusIcon = (status) => {
     case 'PROVISION_FAILED':
     case 'DEPROVISION_FAILED':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon aria-label={status} sx={{ mt: 1 }}>
           <ErrorSvg />
         </SvgIcon>
       )
     case 'CONNECTION_LOST':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon aria-label={status} sx={{ mt: 1 }}>
           <ConnectionLostSvg />
         </SvgIcon>
       )
     case 'TIMEOUT':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon aria-label={status} sx={{ mt: 1 }}>
           <TimeoutSvg />
         </SvgIcon>
       )
     case 'CANCELLED':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon aria-label={status} sx={{ mt: 1 }}>
           <CancelSvg />
         </SvgIcon>
       )
@@ -290,55 +290,55 @@ export const nodeLabelIcon = (type) => {
   switch (type) {
     case 'function':
       return (
-        <SvgIcon sx={{ mt: 1.2 }}>
+        <SvgIcon aria-label={type} sx={{ mt: 1.2 }}>
           <FunctionSvg />
         </SvgIcon>
       )
     case 'electron_list':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon aria-label={type} sx={{ mt: 1 }}>
           <ElectronListSvg />
         </SvgIcon>
       )
     case 'parameter':
       return (
-        <SvgIcon sx={{ mt: 1.6 }}>
+        <SvgIcon aria-label={type} sx={{ mt: 1.6 }}>
           <ParameterSvg />
         </SvgIcon>
       )
     case 'sublattice':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon aria-label={type} sx={{ mt: 1 }}>
           <SubLattice />
         </SvgIcon>
       )
     case 'electron_dict':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon aria-label={type} sx={{ mt: 1 }}>
           <ElectronDictSvg />
         </SvgIcon>
       )
     case 'attribute':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon aria-label={type} sx={{ mt: 1 }}>
           <AttributeSvg />
         </SvgIcon>
       )
     case 'generated':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon aria-label={type} sx={{ mt: 1 }}>
           <GeneratedSvg />
         </SvgIcon>
       )
     case 'subscripted':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon aria-label={type} sx={{ mt: 1 }}>
           <SubLattice />
         </SvgIcon>
       )
     case 'arg':
       return (
-        <SvgIcon sx={{ mt: 1 }}>
+        <SvgIcon aria-label={type} sx={{ mt: 1 }}>
           <ArgSvg />
         </SvgIcon>
       )
@@ -351,19 +351,19 @@ export const sublatticeIcon = (type, sub) => {
   switch (type) {
     case 'COMPLETED':
       return (
-        <SvgIcon sx={{ mr: 1, fontSize: '28px' }}>
+        <SvgIcon aria-label="COMPLETED" sx={{ mr: 1, fontSize: '28px' }}>
           <SuccessSvg />
         </SvgIcon>
       )
     case 'FAILED':
       return (
-        <SvgIcon sx={{ mr: 1, fontSize: '28px' }}>
+        <SvgIcon aria-label="FAILED" sx={{ mr: 1, fontSize: '28px' }}>
           <FailedSvg />
         </SvgIcon>
       )
     case 'RUNNING':
       return (
-        <SvgIcon sx={{ mr: 1, fontSize: '28px' }}>
+        <SvgIcon aria-label="RUNNING" sx={{ mr: 1, fontSize: '28px' }}>
           <RunningSvg />
         </SvgIcon>
       )
@@ -377,19 +377,19 @@ export const sublatticeIconTopBar = (type, sub) => {
   switch (type) {
     case 'COMPLETED':
       return (
-        <SvgIcon sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}>
+        <SvgIcon aria-label="COMPLETED" sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}>
           <SuccessTopBarSvg />
         </SvgIcon>
       )
     case 'FAILED':
       return (
-        <SvgIcon sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}>
+        <SvgIcon aria-label="FAILED" sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}>
           <FailedTopBarSvg />
         </SvgIcon>
       )
     case 'RUNNING':
       return (
-        <SvgIcon sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}>
+        <SvgIcon aria-label="RUNNING" sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}>
           <RunningTopBarSvg />
         </SvgIcon>
       )

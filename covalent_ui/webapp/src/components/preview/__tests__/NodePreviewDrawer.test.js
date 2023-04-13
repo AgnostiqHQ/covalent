@@ -28,6 +28,7 @@ import { Provider } from 'react-redux'
 import reducers from '../../../redux/reducers'
 import { configureStore } from '@reduxjs/toolkit'
 import { ReactFlowProvider } from 'react-flow-renderer'
+import userEvent from '@testing-library/user-event'
 
 function mockRender(renderedComponent) {
   const store = configureStore({
@@ -71,5 +72,12 @@ describe('lattice node preview drawer section', () => {
     mockRender(<App node={node} />)
     const linkElement = screen.getByText(secondArgs)
     expect(linkElement).toBeInTheDocument()
+  })
+
+  test('close nodeDrawer section', async () => {
+    mockRender(<App node={node} />)
+    const linkElement = await screen.findByTestId('closeNodeDrawer')
+    expect(linkElement).toBeInTheDocument()
+    userEvent.click(linkElement)
   })
 })

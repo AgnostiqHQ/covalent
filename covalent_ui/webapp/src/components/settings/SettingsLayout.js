@@ -20,8 +20,6 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-//  import { Container } from '@mui/material'
-//  import ResultListing from '../dispatches/ResultListing'
 import { Box } from '@mui/system'
 import NavDrawer from '../common/NavDrawer'
 import SettingsCard from '../settings/SettingsCard'

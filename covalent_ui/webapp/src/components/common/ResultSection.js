@@ -53,7 +53,7 @@ const ResultSection = ({ isFetching, results, preview, ...props }) => {
   return (
     <>
       {isFetching ? (
-        <Skeleton sx={{ height: '80px' }} />
+        <Skeleton data-testid='skeleton' sx={{ height: '80px' }} />
       ) : (
         resultSrc && (
           <ResultTooltip title={copied ? 'Python object copied' : 'Copy python object'} arrow>

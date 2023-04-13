@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
-from .._shared_files.defaults import prefix_separator, sublattice_prefix
+from .._shared_files.defaults import postprocess_prefix, prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.lattice import Lattice
 from .._workflow.transport import TransportableObject
@@ -73,7 +73,6 @@ class Result:
     CANCELLED = RESULT_STATUS.CANCELLED
 
     def __init__(self, lattice: Lattice, dispatch_id: str = "") -> None:
-
         self._start_time = None
         self._end_time = None
 
@@ -235,24 +234,7 @@ Node Outputs
 
         self._num_nodes = self.lattice.transport_graph.get_internal_graph_copy().number_of_nodes()
         for node_id in range(self._num_nodes):
-
-            self.lattice.transport_graph.set_node_value(node_id, "start_time", None)
-
-            self.lattice.transport_graph.set_node_value(node_id, "end_time", None)
-
-            self.lattice.transport_graph.set_node_value(node_id, "status", Result.NEW_OBJ)
-
-            self.lattice.transport_graph.set_node_value(node_id, "output", None)
-
-            self.lattice.transport_graph.set_node_value(node_id, "error", None)
-
-            self.lattice.transport_graph.set_node_value(node_id, "sub_dispatch_id", None)
-
-            self.lattice.transport_graph.set_node_value(node_id, "sublattice_result", None)
-
-            self.lattice.transport_graph.set_node_value(node_id, "stdout", None)
-
-            self.lattice.transport_graph.set_node_value(node_id, "stderr", None)
+            self.lattice.transport_graph.reset_node(node_id)
 
     def get_node_result(self, node_id: int) -> dict:
         """Return the result of a particular node.
@@ -322,15 +304,24 @@ Node Outputs
             for node_id in self._lattice.transport_graph._graph.nodes
         ]
 
-    def post_process(self):
+    def post_process(self) -> Any:
+        """Post-processing method. This method was introduced to enable manual client-side postprocessing in case automatic post-processing by the server fails (e.g. insufficient dask worker memory)
 
-        # Copied from server-side _post_process()
+        Returns:
+            Any: Post-processed result output
+
+        """
         node_outputs = self.get_all_node_outputs()
-        ordered_node_outputs = []
-        for i, item in enumerate(node_outputs.items()):
-            key, val = item
-            if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix):
-                ordered_node_outputs.append((i, val))
+        ordered_node_outputs = [
+            val.get_deserialized()
+            for key, val in node_outputs.items()
+            if (
+                not key.startswith(prefix_separator)
+                or key.startswith(sublattice_prefix)
+                or key.startswith(postprocess_prefix)
+            )
+            and isinstance(val, TransportableObject)
+        ]
 
         lattice = self._lattice
 
