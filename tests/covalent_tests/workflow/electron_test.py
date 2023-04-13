@@ -20,14 +20,19 @@
 
 """Unit tests for electron"""
 
+import json
+
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
+from covalent._shared_files.defaults import sublattice_prefix
 from covalent._workflow.electron import (
     Electron,
+    _build_sublattice_graph,
     filter_null_metadata,
     get_serialized_function_str,
     to_decoded_electron_collection,
 )
+from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 from covalent.executor.executor_plugins.local import LocalExecutor
 
@@ -67,6 +72,43 @@ def workflow_2():
     ct.wait(res_3, [res_1])
 
     return res_3
+
+
+def test_build_sublattice_graph():
+    """
+    Test building a sublattice graph
+    """
+
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    parent_metadata = {
+        "executor": "parent_executor",
+        "executor_data": {},
+        "workflow_executor": "my_postprocessor",
+        "workflow_executor_data": {},
+        "deps": {"bash": None, "pip": None},
+        "call_before": [],
+        "call_after": [],
+        "triggers": "mock-trigger",
+        "results_dir": None,
+    }
+
+    json_lattice = _build_sublattice_graph(workflow, json.dumps(parent_metadata), 1)
+    lattice = Lattice.deserialize_from_json(json_lattice)
+
+    assert list(lattice.transport_graph._graph.nodes) == list(range(3))
+    for k in lattice.metadata.keys():
+        # results_dir will be deprecated soon
+        if k == "triggers":
+            assert lattice.metadata[k] is None
+        elif k != "results_dir":
+            assert parent_metadata[k] == lattice.metadata[k]
 
 
 def test_wait_for_building():
@@ -279,3 +321,31 @@ def test_as_transportable_dict(mocker):
     assert transportable_electron["metadata"] == filter_null_metadata(mock_metadata)
     assert transportable_electron["function_string"] == get_serialized_function_str(test_func)
     assert TransportableObject(test_func).to_dict() == transportable_electron["function"]
+
+
+def test_call_sublattice(mocker):
+    """Test the sublattice logic when the __call__ method is invoked."""
+
+    @ct.lattice(executor="mock")
+    def mock_workflow(x):
+        return sublattice(x)
+
+    @ct.electron
+    def mock_task(x):
+        return x
+
+    @ct.electron
+    @ct.lattice
+    def sublattice(x):
+        return mock_task(x)
+
+    with active_lattice_manager.claim(mock_workflow):
+        bound_electron = sublattice()
+        assert bound_electron.metadata["executor"] == "mock"
+        for _, node_data in mock_workflow.transport_graph._graph.nodes(data=True):
+            if node_data["name"].startswith(sublattice_prefix):
+                assert "mock_task" in node_data["function_string"]
+                assert "sublattice" in node_data["function_string"]
+                assert (
+                    node_data["function"].get_deserialized().__name__ == "_build_sublattice_graph"
+                )

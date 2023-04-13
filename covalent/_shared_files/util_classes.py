@@ -40,6 +40,8 @@ class Status:
 
 class RESULT_STATUS:
     NEW_OBJECT = Status("NEW_OBJECT")
+    STARTING = Status("STARTING")  # Dispatch level
+    PENDING_REUSE = Status("PENDING_REUSE")  # For redispatch
     COMPLETED = Status("COMPLETED")
     POSTPROCESSING = Status("POSTPROCESSING")
     PENDING_POSTPROCESSING = Status("PENDING_POSTPROCESSING")
@@ -47,6 +49,7 @@ class RESULT_STATUS:
     FAILED = Status("FAILED")
     RUNNING = Status("RUNNING")
     CANCELLED = Status("CANCELLED")
+    DISPATCHING_SUBLATTICE = Status("DISPATCHING_SUBLATTICE")  # Sublattice dispatch status
 
 
 class DispatchInfo(NamedTuple):
