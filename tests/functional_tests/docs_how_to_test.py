@@ -41,6 +41,7 @@ ignore_files = [
     "cancel_dispatch.ipynb",
     "construct_bash_task.ipynb",
     "file_transfers_to_from_remote.ipynb",
+    "creating_custom_executors.ipynb",
 ]
 
 
