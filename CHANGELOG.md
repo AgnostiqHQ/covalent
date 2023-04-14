@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Updating `nightly` frequency (temp)
+
 ### Added
 
 - Tutorial for hybrid neural network using Covalent, AWSBatch, and Qiskit Runtime.
