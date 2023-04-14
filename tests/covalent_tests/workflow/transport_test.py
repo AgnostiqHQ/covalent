@@ -217,16 +217,25 @@ def test_transport_graph_initialization():
     assert not tg.lattice_metadata
 
 
-def test_transport_graph_add_nodes(transport_graph):
+@pytest.mark.parametrize("task_group_id, expected_task_group_id", [(None, 0), (1984, 1984)])
+def test_transport_graph_add_nodes(transport_graph, task_group_id, expected_task_group_id):
     """Test addition of nodes (electrons) to the transport graph."""
 
     tg = transport_graph
     assert len(tg._graph.nodes) == 0
     node_id = tg.add_node(
-        name="square", kwargs={"x": 2}, function=subtask, metadata={"mock_field": "mock_value"}
+        name="square",
+        kwargs={"x": 2},
+        function=subtask,
+        metadata={"mock_field": "mock_value"},
+        task_group_id=task_group_id,
     )
     assert len(tg._graph.nodes) == 1
     assert node_id == 0
+    node_metadata = tg._graph.nodes(data=True)[0]
+    assert node_metadata["name"] == "square"
+    assert node_metadata["kwargs"] == {"x": 2}
+    assert node_metadata["task_group_id"] == expected_task_group_id
 
 
 def test_transport_graph_get_and_set_edges(workflow_transport_graph):

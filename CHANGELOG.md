@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Tutorial for hybrid neural network using Covalent, AWSBatch, and Qiskit Runtime.
 - Environment variable that users can set to specify the location where Covalent can find their defined executors.
+- Task group id in Electrons.
+- Reconstruct postprocessing method.
 
 ### Fixed
 
@@ -18,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ensure postprocessing node end time is added as the workflow end time.
 - Functional tests
 - Custom executor how to guide, and its loading mechanism in covalent server.
+- Broken postprocessing unit test.
 
 ### Added
 

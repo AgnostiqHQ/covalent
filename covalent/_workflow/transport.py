@@ -319,7 +319,9 @@ class _TransportGraph:
             "stderr": None,
         }
 
-    def add_node(self, name: str, function: Callable, metadata: Dict, **attr) -> int:
+    def add_node(
+        self, name: str, function: Callable, metadata: Dict, task_group_id: int = None, **attr
+    ) -> int:
         """
         Adds a node to the graph.
 
@@ -327,15 +329,17 @@ class _TransportGraph:
             name: The name of the node.
             function: The function to be executed.
             metadata: The metadata of the node.
+            task_group_id: The task group id of the node.
             attr: Any other attributes that need to be added to the node.
 
         Returns:
             node_key: The node id.
-        """
 
+        """
         node_id = len(self._graph.nodes)
         self._graph.add_node(
             node_id,
+            task_group_id=task_group_id if task_group_id is not None else node_id,
             name=name,
             function=TransportableObject(function),
             metadata=metadata,

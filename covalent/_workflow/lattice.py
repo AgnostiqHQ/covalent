@@ -206,8 +206,8 @@ class Lattice:
 
         Returns:
             None
-        """
 
+        """
         self.args = [TransportableObject.make_transportable(arg) for arg in args]
         self.kwargs = {k: TransportableObject.make_transportable(v) for k, v in kwargs.items()}
 
@@ -244,9 +244,12 @@ class Lattice:
                     )
                     raise
 
+        pp = Postprocessor(lattice=self)
+
         if get_config("sdk.exhaustive_postprocess") == "true":
-            pp = Postprocessor(lattice=self)
             pp.add_exhaustive_postprocess_node(self._bound_electrons.copy())
+        else:
+            pp.add_reconstruct_postprocess_node(retval, self._bound_electrons.copy())
 
         self._bound_electrons = {}  # Reset bound electrons
 
