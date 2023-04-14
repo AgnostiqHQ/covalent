@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Doubling of nodes that are added to the transport graph.
 - Ensure postprocessing node end time is added as the workflow end time.
 - Functional tests
+- Broken postprocessing unit test.
 
 ### Added
 
