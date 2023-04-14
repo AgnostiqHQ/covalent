@@ -211,3 +211,15 @@ def test_postprocess_recursively(postprocessor, mocker):
         **{"node:0": "mock-output-0", "node:1": "mock-output-1"},
     )
     assert res == ("mock-output-0", "mock-output-1")
+
+    res = postprocessor._postprocess_recursively(
+        {"0": mock_electron_0, "1": mock_electron_1},
+        **{"node:0": "mock-output-0", "node:1": "mock-output-1"},
+    )
+    assert res == {"0": "mock-output-0", "1": "mock-output-1"}
+
+    res = postprocessor._postprocess_recursively(
+        "mock",
+        **{"node:0": "mock-output-0", "node:1": "mock-output-1"},
+    )
+    assert res == "mock"

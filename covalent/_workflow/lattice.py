@@ -206,8 +206,8 @@ class Lattice:
 
         Returns:
             None
-        """
 
+        """
         self.args = [TransportableObject.make_transportable(arg) for arg in args]
         self.kwargs = {k: TransportableObject.make_transportable(v) for k, v in kwargs.items()}
 
