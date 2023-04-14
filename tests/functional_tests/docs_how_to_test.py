@@ -41,10 +41,11 @@ ignore_files = [
     "cancel_dispatch.ipynb",
     "construct_bash_task.ipynb",
     "file_transfers_to_from_remote.ipynb",
+    "creating_custom_executors.ipynb",
 ]
 
 
-@pytest.mark.parametrize("file,expected_return_value", zip(files, expected_return_values))
+@pytest.mark.parametrize("file, expected_return_value", zip(files, expected_return_values))
 def test_how_to_file(file, expected_return_value):
     if os.path.basename(file) not in ignore_files:
         proc = Popen(
