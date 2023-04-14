@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Tutorial for hybrid neural network using Covalent, AWSBatch, and Qiskit Runtime.
-- Environment variable that user's can use to set the location where covalent can find their defined executors.
+- Environment variable that users can set to specify the location where Covalent can find their defined executors.
 
 ### Fixed
 
