@@ -35,15 +35,15 @@ from covalent._workflow.postprocessing import Postprocessor
 def postprocessor():
     """Get postprocessor object."""
 
-    @ct.electron
+    @ct.electron(executor="local")
     def task_1(x):
         return x
 
-    @ct.electron
+    @ct.electron(executor="local")
     def task_2(x):
         return [x * 2]
 
-    @ct.lattice
+    @ct.lattice(executor="local")
     def workflow(x):
         res_1 = task_1(x)
         res_2 = task_2(x)
@@ -138,6 +138,14 @@ def test_get_node_ids_from_retval(postprocessor, retval, node_ids):
 def test_get_electron_metadata(postprocessor):
     """Test method that retrieves the postprocessing electron metadata."""
     assert postprocessor._get_electron_metadata() == {
+        "executor": None,
+        "deps": {},
+        "call_before": [],
+        "call_after": [],
+        "workflow_executor": "local",
+        "executor_data": {},
+        "workflow_executor_data": {},
+    } or {
         "executor": None,
         "deps": {},
         "call_before": [],
