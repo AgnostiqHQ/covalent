@@ -22,7 +22,7 @@
 
 from builtins import list
 from dataclasses import asdict
-from typing import TYPE_CHECKING, Any, Dict, List, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
 from .._shared_files import logger
 from .._shared_files.context_managers import active_lattice_manager
@@ -108,7 +108,7 @@ class Postprocessor:
             self.lattice.post_processing = False
             return result
 
-    def _get_node_ids_from_retval(self, retval: Union["Electron", List, Dict]) -> List[int]:
+    def _get_node_ids_from_retval(self, retval: Union["Electron", List, Dict]) -> Set[int]:
         """Get the list of electron node ids from the return value of a lattice function.
 
         Args:
@@ -124,7 +124,7 @@ class Postprocessor:
         if isinstance(retval, Electron):
             node_ids.append(retval.node_id)
             app_log.debug(f"Preprocess: Encountered node {retval.node_id}")
-        elif isinstance(retval, list) or isinstance(retval, tuple) or isinstance(retval, set):
+        elif isinstance(retval, (list, tuple, set)):
             app_log.debug("Recursively preprocessing iterable")
             for e in retval:
                 node_ids.extend(self._get_node_ids_from_retval(e))
@@ -136,7 +136,7 @@ class Postprocessor:
             app_log.debug(f"Encountered primitive or unsupported type: {retval}")
             return []
 
-        return node_ids
+        return set(node_ids)
 
     def _get_electron_metadata(self) -> Dict:
         """Get the metadata for the postprocess electron.
@@ -154,7 +154,7 @@ class Postprocessor:
         return pp_metadata
 
     def add_exhaustive_postprocess_node(self, bound_electrons: Dict) -> None:
-        """This function adds a postprocess node to the transport graph. The postprocess node will be executed after all other nodes have been executed.
+        """This function adds a postprocess node to the transport graph based on the 'exhaustive' algorithm.
 
         Args:
             bound_electrons: Dictionary of bound electrons with node_id as key and the electron object as the value. A bound is an electron that has been assigned a node_id and is part of a transport graph.
@@ -173,3 +173,65 @@ class Postprocessor:
             )
             bound_pp = pp_electron(*filtered_ordered_electrons)
             tg.set_node_value(bound_pp.node_id, "name", postprocess_prefix)
+
+    def _postprocess_recursively(self, retval, **referenced_outputs):
+        from .electron import Electron
+
+        if isinstance(retval, Electron):
+            key = f"node:{retval.node_id}"
+            return referenced_outputs[key]
+        elif isinstance(retval, list):
+            return list(
+                map(lambda x: self._postprocess_recursively(x, **referenced_outputs), retval)
+            )
+        elif isinstance(retval, tuple):
+            return tuple(
+                map(lambda x: self._postprocess_recursively(x, **referenced_outputs), retval)
+            )
+        elif isinstance(retval, set):
+            return {self._postprocess_recursively(x, **referenced_outputs) for x in retval}
+        elif isinstance(retval, dict):
+            return {
+                k: self._postprocess_recursively(v, **referenced_outputs)
+                for k, v in retval.items()
+            }
+        else:
+            return retval
+
+    def add_reconstruct_postprocess_node(
+        self, retval: Union["Electron", List, Dict], bound_electrons: Dict
+    ):
+        """This function adds a postprocess node to the transport graph based on the 'eager reconstruction' algorithm.
+
+        Args:
+            retval: Return value of the lattice function.
+            bound_electrons: Dictionary of bound electrons with node_id as key and the electron object as the value. A bound is an electron that has been assigned a node_id and is part of a transport graph.
+
+        Returns:
+            None
+
+        """
+        from .electron import Electron, wait
+
+        node_id_refs = self._get_node_ids_from_retval(retval)
+        referenced_electrons = {}
+        for node_id in node_id_refs:
+            key = f"node:{node_id}"
+            referenced_electrons[key] = bound_electrons[node_id]
+
+        with active_lattice_manager.claim(self.lattice):
+            pp_metadata = self._get_electron_metadata()
+            pp_electron = Electron(function=self._postprocess_recursively, metadata=pp_metadata)
+
+            # Add pp_electron to the graph -- this will also add a
+            # parameter node in case retval is not a single electron
+            bound_pp = pp_electron(retval, **referenced_electrons)
+
+            # Edit pp electron name
+            self.lattice.transport_graph.set_node_value(
+                bound_pp.node_id, "name", f"{postprocess_prefix}reconstruct"
+            )
+
+            # Wait for non-referenced electrons
+            wait_parents = [v for k, v in bound_electrons.items() if k not in node_id_refs]
+            wait(child=bound_pp, parents=wait_parents)

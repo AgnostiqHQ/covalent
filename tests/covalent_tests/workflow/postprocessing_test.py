@@ -23,6 +23,7 @@
 from unittest.mock import MagicMock, Mock
 
 import pytest
+from mock import call
 
 import covalent as ct
 from covalent._shared_files.defaults import postprocess_prefix
@@ -114,17 +115,17 @@ def test_postprocess():
 @pytest.mark.parametrize(
     "retval, node_ids",
     [
-        (Electron(function=lambda x: x, node_id=1), [1]),
+        (Electron(function=lambda x: x, node_id=1), {1}),
         (
             [Electron(function=lambda x: x, node_id=1), Electron(function=lambda x: x, node_id=2)],
-            [1, 2],
+            {1, 2},
         ),
         (
             {
                 "a": Electron(function=lambda x: x, node_id=1),
                 "b": Electron(function=lambda x: x, node_id=2),
             },
-            [1, 2],
+            {1, 2},
         ),
         ("unsupported", []),
     ],
@@ -164,3 +165,69 @@ def test_add_exhaustive_postprocess_node(postprocessor):
         postprocessor.lattice.transport_graph._graph.nodes(data=True)[0]["name"]
         == postprocess_prefix
     )
+
+
+def test_add_reconstruct_postprocess_node(postprocessor, mocker):
+    """Test method that adds eager postprocess node."""
+
+    def test_func(x):
+        return x
+
+    get_node_ids_from_retval_mock = mocker.patch(
+        "covalent._workflow.postprocessing.Postprocessor._get_node_ids_from_retval"
+    )
+    get_electron_metadata_mock = mocker.patch(
+        "covalent._workflow.postprocessing.Postprocessor._get_electron_metadata"
+    )
+
+    mock_electron = Electron(function=test_func, node_id=0)
+    mock_bound_electrons = {0: mock_electron}
+    postprocessor.add_reconstruct_postprocess_node(mock_electron, mock_bound_electrons)
+    get_electron_metadata_mock.assert_called_once_with()
+    assert get_node_ids_from_retval_mock.mock_calls == [
+        call(mock_electron),
+        call().__iter__(),
+        call().__contains__(0),
+    ]
+
+
+def test_postprocess_recursively(postprocessor, mocker):
+    """Test postprocess_recursively method."""
+
+    def test_func(x):
+        return x
+
+    mock_electron_0 = Electron(function=test_func, node_id=0)
+    res = postprocessor._postprocess_recursively(mock_electron_0, **{"node:0": "mock-output-0"})
+    assert res == "mock-output-0"
+
+    mock_electron_1 = Electron(function=test_func, node_id=1)
+    res = postprocessor._postprocess_recursively(
+        [mock_electron_0, mock_electron_1],
+        **{"node:0": "mock-output-0", "node:1": "mock-output-1"},
+    )
+    assert res == ["mock-output-0", "mock-output-1"]
+
+    res = postprocessor._postprocess_recursively(
+        {mock_electron_0, mock_electron_1},
+        **{"node:0": "mock-output-0", "node:1": "mock-output-1"},
+    )
+    assert res == {"mock-output-0", "mock-output-1"}
+
+    res = postprocessor._postprocess_recursively(
+        (mock_electron_0, mock_electron_1),
+        **{"node:0": "mock-output-0", "node:1": "mock-output-1"},
+    )
+    assert res == ("mock-output-0", "mock-output-1")
+
+    res = postprocessor._postprocess_recursively(
+        {"0": mock_electron_0, "1": mock_electron_1},
+        **{"node:0": "mock-output-0", "node:1": "mock-output-1"},
+    )
+    assert res == {"0": "mock-output-0", "1": "mock-output-1"}
+
+    res = postprocessor._postprocess_recursively(
+        "mock",
+        **{"node:0": "mock-output-0", "node:1": "mock-output-1"},
+    )
+    assert res == "mock"
