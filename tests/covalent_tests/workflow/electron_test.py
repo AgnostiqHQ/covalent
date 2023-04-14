@@ -305,7 +305,7 @@ def test_autogen_dict_electrons():
     assert set(g.edges) == {(1, 0, 0), (3, 1, 0), (2, 1, 0), (0, 4, 0)}
 
 
-def test_as_transportable_dict(mocker):
+def test_as_transportable_dict():
     """Test the get transportable electron function."""
 
     @ct.electron
@@ -323,7 +323,7 @@ def test_as_transportable_dict(mocker):
     assert TransportableObject(test_func).to_dict() == transportable_electron["function"]
 
 
-def test_call_sublattice(mocker):
+def test_call_sublattice():
     """Test the sublattice logic when the __call__ method is invoked."""
 
     @ct.lattice(executor="mock")
@@ -367,11 +367,8 @@ def test_electron_auto_task_groups():
 
     workflow.build_graph([[1, 2], 3])
     tg = workflow.transport_graph
-    assert tg.get_node_value(0, "task_group_id") == 0
-    assert tg.get_node_value(3, "task_group_id") == 0
-    assert tg.get_node_value(4, "task_group_id") == 0
-    for i in [1, 2, 5, 6, 7, 8]:
-        assert tg.get_node_value(i, "task_group_id") == i
+    assert all(tg.get_node_value(i, "task_group_id") == 0 for i in [0, 3, 4])
+    assert all(tg.get_node_value(i, "task_group_id") == i for i in [1, 2, 5, 6, 7, 8])
 
 
 def test_electron_get_attr():
@@ -411,10 +408,7 @@ def test_electron_get_attr():
     assert point_electron_gid == 0
     assert getitem_x_gid == point_electron_gid
     assert getitem_y_gid == point_electron_gid
-    assert tg.get_node_value(2, "task_group_id") == 2
-    assert tg.get_node_value(4, "task_group_id") == 4
-    assert tg.get_node_value(5, "task_group_id") == 5
-    assert tg.get_node_value(6, "task_group_id") == 6
+    assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
 
 
 def test_electron_auto_task_groups_getitem():
@@ -451,10 +445,7 @@ def test_electron_auto_task_groups_getitem():
     assert arr_electron_gid == 0
     assert getitem_x_gid == arr_electron_gid
     assert getitem_y_gid == arr_electron_gid
-    assert tg.get_node_value(2, "task_group_id") == 2
-    assert tg.get_node_value(4, "task_group_id") == 4
-    assert tg.get_node_value(5, "task_group_id") == 5
-    assert tg.get_node_value(6, "task_group_id") == 6
+    assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
 
 
 def test_electron_auto_task_groups_iter():
@@ -492,7 +483,4 @@ def test_electron_auto_task_groups_iter():
     assert tup_electron_gid == 0
     assert getitem_x_gid == tup_electron_gid
     assert getitem_y_gid == tup_electron_gid
-    assert tg.get_node_value(2, "task_group_id") == 2
-    assert tg.get_node_value(4, "task_group_id") == 4
-    assert tg.get_node_value(5, "task_group_id") == 5
-    assert tg.get_node_value(6, "task_group_id") == 6
+    assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
