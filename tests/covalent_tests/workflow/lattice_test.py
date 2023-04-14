@@ -22,6 +22,8 @@
 
 from dataclasses import asdict
 
+import pytest
+
 import covalent as ct
 from covalent._shared_files.defaults import DefaultMetadataValues, postprocess_prefix
 
@@ -88,7 +90,8 @@ def test_lattice_executor_settings():
     assert workflow_2.metadata["executor"] == "custom_executor"
 
 
-def test_lattice_build_graph(mocker):
+@pytest.mark.parametrize("postprocess", ["true", "false"])
+def test_lattice_build_graph(mocker, postprocess):
     """Test the build graph method in lattice."""
 
     @ct.electron
@@ -99,5 +102,6 @@ def test_lattice_build_graph(mocker):
     def workflow(x):
         return task(x)
 
+    mocker.patch("covalent._shared_files.config.get_config", return_value=postprocess)
     workflow.build_graph(1)
     assert workflow.transport_graph.get_node_value(2, "name") == postprocess_prefix
