@@ -159,7 +159,7 @@ def test_add_exhaustive_postprocess_node(postprocessor):
     )
 
 
-def test_add_eager_postprocess_node(postprocessor, mocker):
+def test_add_reconstruct_postprocess_node(postprocessor, mocker):
     """Test method that adds eager postprocess node."""
 
     def test_func(x):
@@ -171,20 +171,16 @@ def test_add_eager_postprocess_node(postprocessor, mocker):
     get_electron_metadata_mock = mocker.patch(
         "covalent._workflow.postprocessing.Postprocessor._get_electron_metadata"
     )
-    test_postprocess_recursively_mock = mocker.patch(
-        "covalent._workflow.postprocessing.Postprocessor._postprocess_recursively"
-    )
 
     mock_electron = Electron(function=test_func, node_id=0)
     mock_bound_electrons = {0: mock_electron}
-    postprocessor.add_eager_postprocess_node(mock_electron, mock_bound_electrons)
+    postprocessor.add_reconstruct_postprocess_node(mock_electron, mock_bound_electrons)
     get_electron_metadata_mock.assert_called_once_with()
     assert get_node_ids_from_retval_mock.mock_calls == [
         call(mock_electron),
         call().__iter__(),
         call().__contains__(0),
     ]
-    print(test_postprocess_recursively_mock.mock_calls)
 
 
 def test_postprocess_recursively(postprocessor, mocker):

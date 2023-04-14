@@ -199,7 +199,7 @@ class Postprocessor:
         else:
             return retval
 
-    def add_eager_postprocess_node(
+    def add_reconstruct_postprocess_node(
         self, retval: Union["Electron", List, Dict], bound_electrons: Dict
     ):
         """This function adds a postprocess node to the transport graph based on the 'eager reconstruction' algorithm.
@@ -234,6 +234,6 @@ class Postprocessor:
             )
 
             # Wait for non-referenced electrons
-            if get_config("sdk.eager_postprocess") != "true":
+            if get_config("sdk.reconstruct_postprocess") != "true":
                 wait_parents = [v for k, v in bound_electrons.items() if k not in node_id_refs]
                 wait(child=bound_pp, parents=wait_parents)

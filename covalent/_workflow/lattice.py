@@ -247,7 +247,7 @@ class Lattice:
         pp = Postprocessor(lattice=self)
 
         if get_config("sdk.exhaustive_postprocess") != "true":
-            pp.add_eager_postprocess_node(retval, self._bound_electrons.copy())
+            pp.add_reconstruct_postprocess_node(retval, self._bound_electrons.copy())
         else:
             pp.add_exhaustive_postprocess_node(self._bound_electrons.copy())
 

@@ -100,7 +100,7 @@ def test_lattice_build_graph(mocker):
         return task(x)
 
     original_exhaustive_value = ct._shared_files.config.get_config("sdk.exhaustive_postprocess")
-    original_reconstruct_value = ct._shared_files.config.get_config("sdk.eager_postprocess")
+    original_reconstruct_value = ct._shared_files.config.get_config("sdk.reconstruct_postprocess")
     ct._shared_files.config.set_config("sdk.exhaustive_postprocess", "false")
     workflow.build_graph(1)
     assert workflow.transport_graph.get_node_value(2, "name") == f"{postprocess_prefix}reconstruct"
@@ -108,4 +108,4 @@ def test_lattice_build_graph(mocker):
     workflow.build_graph(1)
     assert workflow.transport_graph.get_node_value(2, "name") == postprocess_prefix
     ct._shared_files.config.set_config("sdk.exhaustive_postprocess", original_exhaustive_value)
-    ct._shared_files.config.set_config("sdk.eager_postprocess", original_reconstruct_value)
+    ct._shared_files.config.set_config("sdk.reconstruct_postprocess", original_reconstruct_value)
