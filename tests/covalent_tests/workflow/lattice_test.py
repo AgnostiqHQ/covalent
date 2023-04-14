@@ -22,8 +22,6 @@
 
 from dataclasses import asdict
 
-import pytest
-
 import covalent as ct
 from covalent._shared_files.defaults import DefaultMetadataValues, postprocess_prefix
 
@@ -90,8 +88,7 @@ def test_lattice_executor_settings():
     assert workflow_2.metadata["executor"] == "custom_executor"
 
 
-@pytest.mark.parametrize("postprocess", ["true", "false"])
-def test_lattice_build_graph(mocker, postprocess):
+def test_lattice_build_graph(mocker):
     """Test the build graph method in lattice."""
 
     @ct.electron
@@ -102,6 +99,13 @@ def test_lattice_build_graph(mocker, postprocess):
     def workflow(x):
         return task(x)
 
-    mocker.patch("covalent._shared_files.config.get_config", return_value=postprocess)
+    original_exhaustive_value = ct._shared_files.config.get_config("sdk.exhaustive_postprocess")
+    original_reconstruct_value = ct._shared_files.config.get_config("sdk.eager_postprocess")
+    ct._shared_files.config.set_config("sdk.exhaustive_postprocess", "false")
+    workflow.build_graph(1)
+    assert workflow.transport_graph.get_node_value(2, "name") == f"{postprocess_prefix}reconstruct"
+    ct._shared_files.config.set_config("sdk.exhaustive_postprocess", "true")
     workflow.build_graph(1)
     assert workflow.transport_graph.get_node_value(2, "name") == postprocess_prefix
+    ct._shared_files.config.set_config("sdk.exhaustive_postprocess", original_exhaustive_value)
+    ct._shared_files.config.set_config("sdk.eager_postprocess", original_reconstruct_value)

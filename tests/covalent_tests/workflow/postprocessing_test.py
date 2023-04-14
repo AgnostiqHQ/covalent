@@ -171,6 +171,9 @@ def test_add_eager_postprocess_node(postprocessor, mocker):
     get_electron_metadata_mock = mocker.patch(
         "covalent._workflow.postprocessing.Postprocessor._get_electron_metadata"
     )
+    test_postprocess_recursively_mock = mocker.patch(
+        "covalent._workflow.postprocessing.Postprocessor._postprocess_recursively"
+    )
 
     mock_electron = Electron(function=test_func, node_id=0)
     mock_bound_electrons = {0: mock_electron}
@@ -181,6 +184,7 @@ def test_add_eager_postprocess_node(postprocessor, mocker):
         call().__iter__(),
         call().__contains__(0),
     ]
+    print(test_postprocess_recursively_mock.mock_calls)
 
 
 def test_postprocess_recursively(postprocessor, mocker):
