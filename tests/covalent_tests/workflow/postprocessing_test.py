@@ -182,7 +182,7 @@ def test_add_reconstruct_postprocess_node(postprocessor, mocker):
 
     mock_electron = Electron(function=test_func, node_id=0)
     mock_bound_electrons = {0: mock_electron}
-    postprocessor.add_reconstruct_postprocess_node(mock_electron, mock_bound_electrons)
+    postprocessor.add_process_node(mock_electron, mock_bound_electrons)
     get_electron_metadata_mock.assert_called_once_with()
     assert get_node_ids_from_retval_mock.mock_calls == [
         call(mock_electron),
