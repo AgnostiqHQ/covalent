@@ -25,7 +25,6 @@ from dataclasses import asdict
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
 from .._shared_files import logger
-from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import (
     DefaultMetadataValues,
@@ -234,6 +233,5 @@ class Postprocessor:
             )
 
             # Wait for non-referenced electrons
-            if get_config("sdk.reconstruct_postprocess") != "true":
-                wait_parents = [v for k, v in bound_electrons.items() if k not in node_id_refs]
-                wait(child=bound_pp, parents=wait_parents)
+            wait_parents = [v for k, v in bound_electrons.items() if k not in node_id_refs]
+            wait(child=bound_pp, parents=wait_parents)
