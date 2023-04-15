@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Authors
+
+- Madhur Tandon <madhurtandon23@gmail.com>
+
+### Fixed
+
+- Result status comparison
+
 ## [0.220.0-rc.0] - 2023-04-14
 
 ### Authors
