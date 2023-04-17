@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Moved TransportableObject from transport.py to a new file transportable_object.py.
+
 ## [0.220.0-rc.0] - 2023-04-14
 
 ### Authors
@@ -50,7 +54,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Postprocessing logic.
 - Sublattice logic. Sublattices are now treated as electrons. Once the transport graph has been built, the status get changed to `DISPATCHING` at which point it is executed as another workflow.
-- Moved TransportableObject from transport.py to a new file transportable_object.py.
 
 ### Removed
 
