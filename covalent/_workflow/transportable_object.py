@@ -92,6 +92,25 @@ class _TOArchive:
                 data = _TOArchiveUtils.parse_data(self, data_offset)
         return _TOArchive(header, object_string, data)
 
+    def _to_transportable_object(self) -> "TransportableObject":
+        """Convert a _TOArchive to a TransportableObject.
+
+        Args:
+            ar: Archived transportable object to be converted.
+
+        Returns:
+            Transportable object.
+
+        """
+        decoded_object_str = self.object_string.decode("utf-8")
+        decoded_data = self.data.decode("utf-8")
+        decoded_header = json.loads(self.header.decode("utf-8"))
+        to = TransportableObject(None)
+        to._header = decoded_header
+        to._object_string = decoded_object_str or ""
+        to._object = decoded_data or ""
+        return to
+
 
 class _TOArchiveUtils:
     """TOArchive utilities object."""
@@ -277,7 +296,7 @@ class TransportableObject:
             The serialized object along with the python version.
 
         """
-        return _to_archive(self).cat()
+        return self._to_archive().cat()
 
     def serialize_to_json(self) -> str:
         """
@@ -334,7 +353,7 @@ class TransportableObject:
 
         """
         ar = _TOArchive.load(serialized, header_only, string_only)
-        return _from_archive(ar)
+        return ar._to_transportable_object()
 
     @staticmethod
     def deserialize_list(collection: list) -> list:
@@ -388,38 +407,17 @@ class TransportableObject:
                 raise TypeError("Couldn't deserialize collection")
         return new_dict
 
+    def _to_archive(self) -> _TOArchive:
+        """Convert a TransportableObject to a _TOArchive.
 
-def _to_archive(to: TransportableObject) -> _TOArchive:
-    """Convert a TransportableObject to a _TOArchive.
+        Args:
+            to: Transportable object to be converted.
 
-    Args:
-        to: Transportable object to be converted.
+        Returns:
+            Archived transportable object.
 
-    Returns:
-        Archived transportable object.
-
-    """
-    header = json.dumps(to._header).encode("utf-8")
-    object_string = to._object_string.encode("utf-8")
-    data = to._object.encode("utf-8")
-    return _TOArchive(header=header, object_string=object_string, data=data)
-
-
-def _from_archive(ar: _TOArchive) -> TransportableObject:
-    """Convert a _TOArchive to a TransportableObject.
-
-    Args:
-        ar: Archived transportable object to be converted.
-
-    Returns:
-        Transportable object.
-
-    """
-    decoded_object_str = ar.object_string.decode("utf-8")
-    decoded_data = ar.data.decode("utf-8")
-    decoded_header = json.loads(ar.header.decode("utf-8"))
-    to = TransportableObject(None)
-    to._header = decoded_header
-    to._object_string = decoded_object_str or ""
-    to._object = decoded_data or ""
-    return to
+        """
+        header = json.dumps(self._header).encode("utf-8")
+        object_string = self._object_string.encode("utf-8")
+        data = self._object.encode("utf-8")
+        return _TOArchive(header=header, object_string=object_string, data=data)
