@@ -173,9 +173,6 @@ class TransportableObject:
     A function is converted to a transportable object by serializing it using cloudpickle
     and then whenever executing it, the transportable object is deserialized. The object
     will also contain additional info like the python version used to serialize it.
-    Attributes:
-        _object: The serialized object.
-        python_version: The python version used on the client's machine.
     """
 
     def __init__(self, obj: Any) -> None:
@@ -183,6 +180,11 @@ class TransportableObject:
 
         Args:
             obj: Object to be serialized.
+
+        Attributes:
+            _object: The serialized object.
+            _object_string: The string representation of the object.
+            _header: The header of the object with python version (python version used on the client's machine), doc (Object doc string) and name attributes.
 
         Returns:
             None
@@ -222,8 +224,9 @@ class TransportableObject:
     def get_deserialized(self) -> Callable:
         """
         Get the deserialized transportable object.
-        Args:
-            None
+
+        Note that this method is different from the `deserialize` method which deserializes from the `archived` transportable object.
+
         Returns:
             function: The deserialized object/callable function.
 
@@ -258,6 +261,8 @@ class TransportableObject:
         """
         Get the serialized transportable object.
 
+        Note that this is different from the `serialize` method which serializes the `archived` transportable object.
+
         Returns:
             object: The serialized transportable object.
 
@@ -266,10 +271,10 @@ class TransportableObject:
 
     def serialize(self) -> bytes:
         """
-        Serialize the transportable object.
+        Serialize the transportable object to the archived transportable object.
 
         Returns:
-            pickled_object: The serialized object along with the python version.
+            The serialized object along with the python version.
 
         """
         return _to_archive(self).cat()
@@ -319,13 +324,13 @@ class TransportableObject:
     def deserialize(
         serialized: bytes, *, header_only: bool = False, string_only: bool = False
     ) -> "TransportableObject":
-        """Deserialize the transportable object.
+        """Deserialize the transportable object from the archived transportable object.
 
         Args:
             data: Serialized transportable object
 
         Returns:
-            object: The deserialized transportable object.
+            The deserialized transportable object.
 
         """
         ar = _TOArchive.load(serialized, header_only, string_only)

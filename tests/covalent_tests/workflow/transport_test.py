@@ -115,8 +115,9 @@ def test_transportable_object_get_deserialized(transportable_object):
     assert to.get_deserialized()(x=2) == subtask(x=2)
 
 
-def test_transportable_object_sedeser_string_only():
-    """Test extracting string only from serialized to"""
+def test_transportable_object_serialize_deserialize_string_only():
+    """Test extracting string only from serialized transportable object."""
+
     x = 123
     to = TransportableObject(x)
 
@@ -130,8 +131,9 @@ def test_transportable_object_sedeser_string_only():
     assert new_to._header["attrs"] == new_to.attrs
 
 
-def test_transportable_object_sedeser_header_only():
-    """Test extracting header only from serialized to"""
+def test_transportable_object_serialize_deserialize_header_only():
+    """Test extracting header only from serialized transportable object."""
+
     x = 123
     to = TransportableObject(x)
 
@@ -146,6 +148,8 @@ def test_transportable_object_sedeser_header_only():
 
 
 def test_transportable_object_from_dict(transportable_object):
+    """Test transportable object creation from dictionary."""
+
     to = transportable_object
 
     object_dict = to.to_dict()
@@ -155,7 +159,7 @@ def test_transportable_object_from_dict(transportable_object):
 
 
 def test_transportable_object_to_dict_attributes(transportable_object):
-    """Test attributes from `to_dict` contain correct name and docstrings"""
+    """Test attributes from `to_dict` contain correct name and doc strings."""
 
     tr_dict = transportable_object.to_dict()
 
@@ -164,6 +168,8 @@ def test_transportable_object_to_dict_attributes(transportable_object):
 
 
 def test_transportable_object_serialize_to_json(transportable_object):
+    """Test the transportable object can be serialized to JSON."""
+
     import json
 
     to = transportable_object
@@ -171,7 +177,7 @@ def test_transportable_object_serialize_to_json(transportable_object):
 
 
 def test_transportable_object_deserialize_from_json(transportable_object):
-    import json
+    """Test the transportable object can be deserialized from JSON."""
 
     to = transportable_object
     json_string = to.serialize_to_json()
@@ -180,7 +186,7 @@ def test_transportable_object_deserialize_from_json(transportable_object):
 
 
 def test_transportable_object_make_transportable_idempotent(transportable_object):
-    """Test that `make_transportable` is idempotent"""
+    """Test that `make_transportable` is idempotent."""
 
     to = transportable_object
     assert TransportableObject.make_transportable(to) == to
@@ -226,7 +232,7 @@ def test_transportable_object_deserialize_list():
 
 
 def test_transportable_object_deserialize_list_exception():
-    """Test deserialization of a list of transportable objects."""
+    """Test exception when deserializing of a list of transportable objects."""
 
     with pytest.raises(TypeError):
         TransportableObject.deserialize_list([lambda x: x])
@@ -252,7 +258,7 @@ def test_transportable_object_deserialize_dict():
 
 
 def test_transportable_object_deserialize_dict_exception():
-    """Test deserialization of a list of transportable objects."""
+    """Test exception when deserializing a dictionary of transportable objects."""
 
     with pytest.raises(TypeError):
         TransportableObject.deserialize_dict({"a": lambda x: x})
