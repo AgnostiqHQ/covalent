@@ -127,6 +127,7 @@ def test_transportable_object_sedeser_string_only():
     assert new_to._header["py_version"] == platform.python_version()
     assert new_to._header["attrs"]["name"] == ""
     assert "doc" in new_to._header["attrs"]
+    assert new_to._header["attrs"] == new_to.attrs
 
 
 def test_transportable_object_sedeser_header_only():
@@ -204,7 +205,7 @@ def test_transportable_object_serialize_deserialize(transportable_object):
 def test_transportable_object_deserialize_list():
     """Test deserialization of a list of transportable objects."""
 
-    deserialized = [1, 2, {"a": 3, "b": [4, 5]}]
+    deserialized = [1, 2, {"a": 3, "b": [4, 5]}, [6, 7]]
     serialized_list = [
         TransportableObject.make_transportable(1),
         TransportableObject.make_transportable(2),
@@ -215,24 +216,46 @@ def test_transportable_object_deserialize_list():
                 TransportableObject.make_transportable(5),
             ],
         },
+        [
+            TransportableObject.make_transportable(6),
+            TransportableObject.make_transportable(7),
+        ],
     ]
 
     assert TransportableObject.deserialize_list(serialized_list) == deserialized
 
 
+def test_transportable_object_deserialize_list_exception():
+    """Test deserialization of a list of transportable objects."""
+
+    with pytest.raises(TypeError):
+        TransportableObject.deserialize_list([lambda x: x])
+
+
 def test_transportable_object_deserialize_dict():
     """Test deserialization of a dictionary of transportable objects."""
 
-    deserialized = {"a": 1, "b": [2, {"c": 3}]}
+    deserialized = {"a": 1, "b": [2, {"c": 3}], "c": {"d": 4, "e": 5}}
     serialized_dict = {
         "a": TransportableObject.make_transportable(1),
         "b": [
             TransportableObject.make_transportable(2),
             {"c": TransportableObject.make_transportable(3)},
         ],
+        "c": {
+            "d": TransportableObject.make_transportable(4),
+            "e": TransportableObject.make_transportable(5),
+        },
     }
 
     assert TransportableObject.deserialize_dict(serialized_dict) == deserialized
+
+
+def test_transportable_object_deserialize_dict_exception():
+    """Test deserialization of a list of transportable objects."""
+
+    with pytest.raises(TypeError):
+        TransportableObject.deserialize_dict({"a": lambda x: x})
 
 
 def test_transport_graph_initialization():
