@@ -20,6 +20,12 @@
 
 """Main Covalent public functionality."""
 
+# patching must be done before importing any other modules
+from gevent import monkey
+monkey.patch_socket()
+monkey.patch_ssl()
+monkey.patch_time()
+
 from importlib import metadata
 
 from . import _file_transfer as fs  # nopycln: import
