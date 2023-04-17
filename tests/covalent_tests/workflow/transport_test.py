@@ -124,6 +124,9 @@ def test_transportable_object_sedeser_string_only():
     new_to = TransportableObject.deserialize(ser, string_only=True)
     assert new_to.object_string == to.object_string
     assert new_to._object == ""
+    assert new_to._header["py_version"] == platform.python_version()
+    assert new_to._header["attrs"]["name"] == ""
+    assert "doc" in new_to._header["attrs"]
 
 
 def test_transportable_object_sedeser_header_only():
@@ -136,6 +139,9 @@ def test_transportable_object_sedeser_header_only():
 
     assert new_to.object_string == ""
     assert new_to._header
+    assert new_to._header["py_version"] == platform.python_version()
+    assert new_to._header["attrs"]["name"] == ""
+    assert "doc" in new_to._header["attrs"]
 
 
 def test_transportable_object_from_dict(transportable_object):
@@ -188,9 +194,16 @@ def test_transportable_object_serialize_deserialize(transportable_object):
 
     assert new_to.get_deserialized()(x=3) == subtask(x=3)
     assert new_to.python_version == to.python_version
+    assert new_to._header["py_version"] == platform.python_version()
+    assert new_to._header["attrs"] == {
+        "name": "subtask",
+        "doc": "Workflow subtask.",
+    }
 
 
-def test_transportable_object_deserialize_list(transportable_object):
+def test_transportable_object_deserialize_list():
+    """Test deserialization of a list of transportable objects."""
+
     deserialized = [1, 2, {"a": 3, "b": [4, 5]}]
     serialized_list = [
         TransportableObject.make_transportable(1),
@@ -207,7 +220,9 @@ def test_transportable_object_deserialize_list(transportable_object):
     assert TransportableObject.deserialize_list(serialized_list) == deserialized
 
 
-def test_transportable_object_deserialize_dict(transportable_object):
+def test_transportable_object_deserialize_dict():
+    """Test deserialization of a dictionary of transportable objects."""
+
     deserialized = {"a": 1, "b": [2, {"c": 3}]}
     serialized_dict = {
         "a": TransportableObject.make_transportable(1),
