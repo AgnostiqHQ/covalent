@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Moved TransportableObject from transport.py to a new file transportable_object.py.
+
 ## [0.220.0-rc.0] - 2023-04-14
 
 ### Authors
