@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""TransportableObject"""
+"""Transportable object module."""
 
 import base64
 import json
@@ -36,12 +36,28 @@ BYTE_ORDER = "big"
 
 
 class _TOArchive:
+    """Archived transportable object."""
+
     def __init__(self, header: bytes, object_string: bytes, data: bytes):
+        """Initialize TOArchive.
+
+        Args:
+            header: Archived transportable object header.
+            object_string: Archived transportable object string.
+            data: Archived transportable object data.
+
+        """
         self.header = header
         self.object_string = object_string
         self.data = data
 
     def cat(self) -> bytes:
+        """Concatenate TOArchive.
+
+        Returns:
+            Concatenated TOArchive.
+
+        """
         header_size = len(self.header)
         string_size = len(self.object_string)
         data_offset = STRING_OFFSET_BYTES + DATA_OFFSET_BYTES + header_size + string_size
@@ -52,42 +68,103 @@ class _TOArchive:
 
         return string_offset + data_offset + self.header + self.object_string + self.data
 
-    def load(serialized: bytes, header_only: bool, string_only: bool) -> "_TOArchive":
-        string_offset = _TOArchiveUtils.string_offset(serialized)
-        header = _TOArchiveUtils.parse_header(serialized, string_offset)
+    def load(self, header_only: bool, string_only: bool) -> "_TOArchive":
+        """Load TOArchive object.
+
+        Args:
+            header_only: Load header only.
+            string_only: Load string only.
+
+        Returns:
+            Archived transportable object.
+
+        """
+        string_offset = _TOArchiveUtils.string_offset(self)
+        header = _TOArchiveUtils.parse_header(self, string_offset)
         object_string = b""
         data = b""
 
         if not header_only:
-            data_offset = _TOArchiveUtils.data_offset(serialized)
-            object_string = _TOArchiveUtils.parse_string(serialized, string_offset, data_offset)
+            data_offset = _TOArchiveUtils.data_offset(self)
+            object_string = _TOArchiveUtils.parse_string(self, string_offset, data_offset)
 
             if not string_only:
-                data = _TOArchiveUtils.parse_data(serialized, data_offset)
+                data = _TOArchiveUtils.parse_data(self, data_offset)
         return _TOArchive(header, object_string, data)
 
 
 class _TOArchiveUtils:
+    """TOArchive utilities object."""
+
     @staticmethod
     def data_offset(serialized: bytes) -> int:
+        """Get data offset.
+
+        Args:
+            serialized: Serialized TOArchive.
+
+        Returns:
+            Data offset.
+
+        """
         size64 = serialized[STRING_OFFSET_BYTES : STRING_OFFSET_BYTES + DATA_OFFSET_BYTES]
         return int.from_bytes(size64, BYTE_ORDER, signed=False)
 
     @staticmethod
     def string_offset(serialized: bytes) -> int:
+        """String offset.
+
+        Args:
+            serialized: Serialized TOArchive.
+
+        Returns:
+            String offset.
+
+        """
         size64 = serialized[:STRING_OFFSET_BYTES]
         return int.from_bytes(size64, BYTE_ORDER, signed=False)
 
     @staticmethod
     def parse_header(serialized: bytes, string_offset: int) -> bytes:
+        """Parse TOArchive header.
+
+        Args:
+            serialized: Serialized TOArchive.
+            string_offset: String offset.
+
+        Returns:
+            Serialized TOArchive header.
+
+        """
         return serialized[HEADER_OFFSET:string_offset]
 
     @staticmethod
     def parse_string(serialized: bytes, string_offset: int, data_offset: int) -> bytes:
+        """Parse string.
+
+        Args:
+            serialized: Serialized TOArchive.
+            string_offset: String offset.
+            data_offset: Data offset.
+
+        Returns:
+            Serialized TOArchive object string.
+
+        """
         return serialized[string_offset:data_offset]
 
     @staticmethod
     def parse_data(serialized: bytes, data_offset: int) -> bytes:
+        """Parse data.
+
+        Args:
+            serialized: Serialized TOArchive.
+            data_offset: Data offset.
+
+        Returns:
+            Serialized TOArchive data.
+
+        """
         return serialized[data_offset:]
 
 
@@ -102,6 +179,15 @@ class TransportableObject:
     """
 
     def __init__(self, obj: Any) -> None:
+        """Initialize TransportableObject.
+
+        Args:
+            obj: Object to be serialized.
+
+        Returns:
+            None
+
+        """
         b64object = base64.b64encode(cloudpickle.dumps(obj))
         object_string_u8 = str(obj).encode("utf-8")
 
@@ -140,23 +226,30 @@ class TransportableObject:
             None
         Returns:
             function: The deserialized object/callable function.
-        """
 
+        """
         return cloudpickle.loads(base64.b64decode(self._object.encode("utf-8")))
 
     def to_dict(self) -> dict:
-        """Return a JSON-serializable dictionary representation of self"""
+        """Return a JSON-serializable dictionary representation of self.
+
+        Returns:
+            dict: A JSON-serializable dictionary representation of self.
+
+        """
         return {"type": "TransportableObject", "attributes": self.__dict__.copy()}
 
     @staticmethod
     def from_dict(object_dict) -> "TransportableObject":
-        """Rehydrate a dictionary representation
-        Args:
-            object_dict: a dictionary representation returned by `to_dict`
-        Returns:
-            A `TransportableObject` represented by `object_dict`
-        """
+        """Rehydrate a dictionary representation.
 
+        Args:
+            object_dict: a dictionary representation returned by `to_dict`.
+
+        Returns:
+            A `TransportableObject` represented by `object_dict`.
+
+        """
         sc = TransportableObject(None)
         sc.__dict__ = object_dict["attributes"]
         return sc
@@ -164,51 +257,59 @@ class TransportableObject:
     def get_serialized(self) -> str:
         """
         Get the serialized transportable object.
-        Args:
-            None
+
         Returns:
             object: The serialized transportable object.
-        """
 
+        """
         return self._object
 
     def serialize(self) -> bytes:
         """
         Serialize the transportable object.
-        Args:
-            None
-        Returns:
-            pickled_object: The serialized object alongwith the python version.
-        """
 
+        Returns:
+            pickled_object: The serialized object along with the python version.
+
+        """
         return _to_archive(self).cat()
 
     def serialize_to_json(self) -> str:
         """
         Serialize the transportable object to JSON.
-        Args:
-            None
-        Returns:
-            A JSON string representation of the transportable object
-        """
 
+        Returns:
+            A JSON string representation of the transportable object.
+
+        """
         return json.dumps(self.to_dict())
 
     @staticmethod
     def deserialize_from_json(json_string: str) -> str:
         """
         Reconstruct a transportable object from JSON
-        Args:
-            json_string: A JSON string representation of a TransportableObject
-        Returns:
-            A TransportableObject instance
-        """
 
+        Args:
+            json_string: A JSON string representation of a TransportableObject.
+
+        Returns:
+            A TransportableObject instance.
+
+        """
         object_dict = json.loads(json_string)
         return TransportableObject.from_dict(object_dict)
 
     @staticmethod
-    def make_transportable(obj) -> "TransportableObject":
+    def make_transportable(obj: Any) -> "TransportableObject":
+        """Make an object transportable.
+
+        Args:
+            obj: The object to make transportable.
+
+        Returns:
+            Transportable object.
+
+        """
         if isinstance(obj, TransportableObject):
             return obj
         else:
@@ -218,14 +319,15 @@ class TransportableObject:
     def deserialize(
         serialized: bytes, *, header_only: bool = False, string_only: bool = False
     ) -> "TransportableObject":
-        """
-        Deserialize the transportable object.
+        """Deserialize the transportable object.
+
         Args:
-            data: serialized transportable object
+            data: Serialized transportable object
+
         Returns:
             object: The deserialized transportable object.
-        """
 
+        """
         ar = _TOArchive.load(serialized, header_only, string_only)
         return _from_archive(ar)
 
@@ -235,8 +337,14 @@ class TransportableObject:
         Recursively deserializes a list of TransportableObjects. More
         precisely, `collection` is a list, each of whose entries is
         assumed to be either a `TransportableObject`, a list, or dict`
-        """
 
+        Args:
+            collection: A list of TransportableObjects.
+
+        Returns:
+            A list of deserialized objects.
+
+        """
         new_list = []
         for item in collection:
             if isinstance(item, TransportableObject):
@@ -255,8 +363,14 @@ class TransportableObject:
         Recursively deserializes a dict of TransportableObjects. More
         precisely, `collection` is a dict, each of whose entries is
         assumed to be either a `TransportableObject`, a list, or dict`
-        """
 
+        Args:
+            collection: A dictionary of TransportableObjects.
+
+        Returns:
+            A dictionary of deserialized objects.
+
+        """
         new_dict = {}
         for k, item in collection.items():
             if isinstance(item, TransportableObject):
@@ -271,6 +385,15 @@ class TransportableObject:
 
 
 def _to_archive(to: TransportableObject) -> _TOArchive:
+    """Convert a TransportableObject to a _TOArchive.
+
+    Args:
+        to: Transportable object to be converted.
+
+    Returns:
+        Archived transportable object.
+
+    """
     header = json.dumps(to._header).encode("utf-8")
     object_string = to._object_string.encode("utf-8")
     data = to._object.encode("utf-8")
@@ -278,6 +401,15 @@ def _to_archive(to: TransportableObject) -> _TOArchive:
 
 
 def _from_archive(ar: _TOArchive) -> TransportableObject:
+    """Convert a _TOArchive to a TransportableObject.
+
+    Args:
+        ar: Archived transportable object to be converted.
+
+    Returns:
+        Transportable object.
+
+    """
     decoded_object_str = ar.object_string.decode("utf-8")
     decoded_data = ar.data.decode("utf-8")
     decoded_header = json.loads(ar.header.decode("utf-8"))
