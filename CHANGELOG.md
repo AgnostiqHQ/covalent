@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Authors
+
+- Madhur Tandon <madhurtandon23@gmail.com>
+
+### Fixed
+
+- Result status comparison
+
+## [0.221.0-rc.0] - 2023-04-17
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
 ### Changed
 
 - Moved TransportableObject from transport.py to a new file transportable_object.py.
