@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Update requirements file for the tutorials: `1_QuantumMachineLearning/pennylane_kernel/source.ipynb` and `machine_learning/dnn_comparison.ipynb`.
+
 ### Authors
 
 - Madhur Tandon <madhurtandon23@gmail.com>
