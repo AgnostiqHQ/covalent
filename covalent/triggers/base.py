@@ -167,7 +167,7 @@ class BaseTrigger:
 
         status = self._get_status()
 
-        if status == str(Result.NEW_OBJ) or status is None:
+        if status == Result.NEW_OBJ or status is None:
             # To continue the pending dispatch
             same_dispatch_id = self._do_redispatch(True)
             app_log.debug(f"Initiating run for pending dispatch_id: {same_dispatch_id}")

@@ -924,10 +924,10 @@ def test_redispatch_reusing_previous_results_and_new_args():
     dispatch_id = ct.dispatch(failing_workflow)(1, 0)
     result = ct.get_result(dispatch_id, wait=True)
     assert result.result is None
-    assert str(result.status) == "FAILED"
+    assert result.status == "FAILED"
 
     redispatch_id = ct.redispatch(dispatch_id=dispatch_id, reuse_previous_results=True)(1, 1)
     result = ct.get_result(redispatch_id, wait=True)
     assert int(result.result) == 1
-    assert str(result.status) == "COMPLETED"
+    assert result.status == "COMPLETED"
     assert result.get_node_result(0)["start_time"] == result.get_node_result(0)["end_time"]
