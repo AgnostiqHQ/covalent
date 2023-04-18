@@ -1,3 +1,5 @@
 covalent
+covalent-aws-plugins[batch]
+covalent-aws-plugins[ecs]
 pandas==1.4.4
 tensorflow==2.9.1
