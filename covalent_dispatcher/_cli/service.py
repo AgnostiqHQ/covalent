@@ -720,59 +720,56 @@ def cluster(
     admin_port = get_config("dask.admin_port")
     admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
 
+    console = Console()
+
+    def print_json(data):
+        table = Table()
+        table.add_column("Key")
+        table.add_column("Value")
+
+        if isinstance(data, dict):
+            for key, value in data.items():
+                table.add_row(key, str(value))
+        elif isinstance(data, tuple):
+            for idx, value in enumerate(data):
+                table.add_row(str(idx), str(value))
+        elif isinstance(data, int):
+            table.add_row("Size", str(data))
+
+        console.print(table)
+
     if status:
-        click.echo(
-            json.dumps(
-                loop.run_until_complete(_get_cluster_status(admin_server_addr)),
-                sort_keys=True,
-                indent=4,
+        print_json(loop.run_until_complete(_get_cluster_status(admin_server_addr)))
+    elif info:
+        print_json(loop.run_until_complete(_get_cluster_info(admin_server_addr)))
+    elif address:
+        print_json(loop.run_until_complete(_get_cluster_address(admin_server_addr)))
+    elif size:
+        print_json(loop.run_until_complete(_get_cluster_size(admin_server_addr)))
+    elif restart:
+        with Status("Restarting the cluster...", spinner="dots") as status:
+
+            loop.run_until_complete(_cluster_restart(admin_server_addr))
+            console.print()
+            status.update("Cluster restarted")
+            console.print(
+                Panel("Cluster restarted", box=ROUNDED, expand=False, border_style="green")
             )
-        )
-        return
-    if info:
-        click.echo(
-            json.dumps(
-                loop.run_until_complete(_get_cluster_info(admin_server_addr)),
-                sort_keys=True,
-                indent=4,
+    elif logs:
+        print_json(loop.run_until_complete(_get_cluster_logs(admin_server_addr)))
+    elif scale:
+        with Status("Scaling the cluster...", spinner="dots") as status:
+            loop.run_until_complete(_cluster_scale(admin_server_addr, nworkers=scale))
+            console.print()
+            status.update(f"Cluster scaled to have {scale} workers")
+            console.print(
+                Panel(
+                    f"Cluster scaled to have {scale} workers",
+                    box=ROUNDED,
+                    expand=False,
+                    border_style="green",
+                )
             )
-        )
-        return
-    if address:
-        click.echo(
-            json.dumps(
-                loop.run_until_complete(_get_cluster_address(admin_server_addr)),
-                sort_keys=True,
-                indent=4,
-            )
-        )
-        return
-    if size:
-        click.echo(
-            json.dumps(
-                loop.run_until_complete(_get_cluster_size(admin_server_addr)),
-                sort_keys=True,
-                indent=4,
-            )
-        )
-        return
-    if restart:
-        loop.run_until_complete(_cluster_restart(admin_server_addr))
-        click.echo("Cluster restarted")
-        return
-    if logs:
-        click.echo(
-            json.dumps(
-                loop.run_until_complete(_get_cluster_logs(admin_server_addr)),
-                sort_keys=True,
-                indent=4,
-            )
-        )
-        return
-    if scale:
-        loop.run_until_complete(_cluster_scale(admin_server_addr, nworkers=scale))
-        click.echo(f"Cluster scaled to have {scale} workers")
-        return
 
 
 @click.command()
