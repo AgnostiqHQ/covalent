@@ -32,6 +32,16 @@ from subprocess import DEVNULL, Popen
 from typing import Optional
 
 import click
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
+from rich.syntax import Syntax
+from rich.status import Status
+from rich.box import ROUNDED
+from rich.text import Text
+from rich.panel import Panel
+
+
 import dask.system
 import psutil
 import requests
@@ -53,6 +63,16 @@ MIGRATION_WARNING_MSG = "Covalent not started. The database needs to be upgraded
 MIGRATION_COMMAND_MSG = (
     '   (use "covalent db migrate" to run database migrations and then retry "covalent start")'
 )
+
+
+def print_header(console):
+    branding_title = Text("Covalent", style="bold blue")
+    github_link = Text("GitHub: https://github.com/AgnostiqHQ/covalent", style="cyan")
+    docs_link = Text("Docs: http://docs.covalent.xyz", style="cyan")
+    console.print(Panel.fit(branding_title, padding=(1, 20)))
+    console.print(github_link)
+    console.print(docs_link)
+    console.print()
 
 
 def _read_pid(filename: str) -> int:
@@ -247,7 +267,7 @@ def _graceful_shutdown(pidfile: str) -> None:
     Returns:
         None
     """
-
+    console = Console()
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
         proc = psutil.Process(pid)
@@ -256,10 +276,10 @@ def _graceful_shutdown(pidfile: str) -> None:
         with contextlib.suppress(psutil.NoSuchProcess):
             proc.terminate()
             proc.wait()
-        click.echo("Covalent server has stopped.")
+        console.print("[green]Covalent server has stopped.[/green]")
 
     else:
-        click.echo("Covalent server was not running.")
+        console.print("[yellow]Covalent server was not running.[/yellow]")
 
     _rm_pid_file(pidfile)
 
@@ -349,6 +369,13 @@ def start(
     Start the Covalent server.
     """
 
+    console = Console()
+    print_header(console)
+
+    # Display a header with a border
+    console.print(Panel("Starting Covalent Server", expand=False, border_style="blue"))
+    console.print()
+
     if os.environ.get("COVALENT_DEBUG_MODE") == "1":
         develop = True
 
@@ -362,18 +389,21 @@ def start(
 
     # No migrations have run as of yet - run them automatically
     if not ignore_migrations and db.current_revision() is None:
-        db.run_migrations(logging_enabled=False)
+        with Status("Running migrations...", console=console):
+            db.run_migrations(logging_enabled=False)
 
     if db.is_migration_pending and not ignore_migrations:
-        click.secho(MIGRATION_WARNING_MSG, fg="yellow")
-        click.echo(MIGRATION_COMMAND_MSG)
+        console.print(MIGRATION_WARNING_MSG, style="yellow")
+        console.print(MIGRATION_COMMAND_MSG)
+        console.print()
         return ctx.exit(1)
 
     if ignore_migrations and db.is_migration_pending:
-        click.secho(
+        console.print(
             'Warning: Ignoring migrations is not recommended and may have unanticipated side effects. Use "covalent db migrate" to run migrations.',
-            fg="yellow",
+            style="yellow",
         )
+        console.print()
 
     set_config("user_interface.port", port)
     set_config("dispatcher.port", port)
@@ -390,11 +420,50 @@ def start(
     else:
         set_config("sdk.no_cluster", "true")
 
-    port = _graceful_start(
-        UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop, no_triggers, triggers_only
-    )
+    with Status("Starting server...", console=console):
+        port = _graceful_start(
+            UI_SRVDIR,
+            UI_PIDFILE,
+            UI_LOGFILE,
+            port,
+            no_cluster,
+            develop,
+            no_triggers,
+            triggers_only,
+        )
+
     set_config("user_interface.port", port)
     set_config("dispatcher.port", port)
+
+    # Display server configuration in a table
+    console.print()
+    config_table = Table(title="Covalent Server Configuration", box=ROUNDED, show_header=False)
+    config_table.add_column("Option", style="bold", no_wrap=True)
+    config_table.add_column("Value")
+
+    config_table.add_row("Dispatcher Address", str(get_config("dispatcher.address")))
+    config_table.add_row("Port", Text(str(port), style="green"))
+    config_table.add_row("Develop", Text(str(develop), style="blue" if develop else "red"))
+    config_table.add_row(
+        "No Cluster", Text(str(no_cluster), style="blue" if no_cluster else "red")
+    )
+    config_table.add_row("Memory per Worker", Text(str(mem_per_worker), style="magenta"))
+    config_table.add_row("Threads per Worker", Text(str(threads_per_worker), style="magenta"))
+    config_table.add_row("Workers", Text(str(workers), style="magenta"))
+    config_table.add_row(
+        "Ignore Migrations",
+        Text(str(ignore_migrations), style="yellow" if ignore_migrations else "green"),
+    )
+    config_table.add_row(
+        "No Triggers", Text(str(no_triggers), style="blue" if no_triggers else "red")
+    )
+    config_table.add_row(
+        "Triggers Only", Text(str(triggers_only), style="blue" if triggers_only else "red")
+    )
+
+    console.print(config_table)
+    console.print("Server Status: [green]:heavy_check_mark:[/green] Running", style="bold")
+    console.print("For additional help, use 'covalent --help'")
 
 
 @click.command()
@@ -402,16 +471,15 @@ def stop() -> None:
     """
     Stop the Covalent server.
     """
-    _graceful_shutdown(UI_PIDFILE)
+    console = Console()
+    print_header(console)
+    with Status("Stopping Covalent server...", console=console):
+        _graceful_shutdown(UI_PIDFILE)
 
 
 @click.command()
 @click.option(
-    "-p",
-    "--port",
-    default=None,
-    type=int,
-    help="Restart Covalent server on a different port.",
+    "-p", "--port", default=None, type=int, help="Restart Covalent server on a different port.",
 )
 @click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
 @click.pass_context
@@ -439,14 +507,27 @@ def status() -> None:
     """
     Query the status of the Covalent server.
     """
+    console = Console()
+    print_header(console)
+    # Status table
 
-    pid = _read_pid(UI_PIDFILE)
-    if _read_pid(UI_PIDFILE) != -1 and psutil.pid_exists(pid):
+    with Status("Checking Covalent's Process ID...", console=console):
+        pid = _read_pid(UI_PIDFILE)
         ui_port = get_config("user_interface.port")
-        click.echo(f"Covalent server is running at http://localhost:{ui_port}.")
+        exists = psutil.pid_exists(pid)
+
+    status_table = Table()
+    status_table.add_column("Component", style="bold")
+    status_table.add_column("Status", style="bold")
+    if pid != -1 and exists:
+        status_table.add_row(
+            "Covalent Server", f"[green]Running[/green] at http://localhost:{ui_port}"
+        )
     else:
         _rm_pid_file(UI_PIDFILE)
-        click.echo("Covalent server is stopped.")
+        status_table.add_row("Covalent Server", "[red]Stopped[/red]")
+
+    console.print(status_table)
 
 
 @click.command()
@@ -519,12 +600,17 @@ def logs() -> None:
     """
     Show Covalent server logs.
     """
+    console = Console()
     if os.path.exists(UI_LOGFILE):
         with open(UI_LOGFILE, "r") as logfile:
-            for line in logfile:
-                click.echo(line.rstrip("\n"))
+            log_content = logfile.read()
+            syntax = Syntax(log_content, "log", theme="monokai", line_numbers=True, word_wrap=True)
+            console.print(syntax)
     else:
-        click.echo(f"{UI_LOGFILE} not found. Restart the server to create a new log file.")
+        console.print(
+            f"{UI_LOGFILE} not found. Restart the server to create a new log file.",
+            style="bold red",
+        )
 
 
 @click.command()
@@ -692,5 +778,25 @@ def cluster(
 @click.command()
 def config() -> None:
     """Print Covalent's configuration to stdout"""
+    console = Console()
+    print_header(console)
+
     cm.read_config()
-    click.echo(json.dumps(cm.config_data, sort_keys=True, indent=4))
+    config_data = json.loads(json.dumps(cm.config_data, sort_keys=True))
+
+    for section in config_data:
+        keys = config_data[section]
+
+        # Create a table for each section
+        section_table = Table(title=f"[bold]{section}[/bold]", title_style="bold")
+        section_table.add_column("Key", style="bold")
+        section_table.add_column("Value", style="bold")
+
+        for key in keys:
+            section_table.add_row(key, str(config_data[section][key]))
+
+        # Wrap the table in a panel
+        section_panel = Panel(section_table, expand=False, border_style="blue", padding=(0, 1))
+
+        console.print(section_panel)
+        console.print("\n")

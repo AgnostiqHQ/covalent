@@ -37,8 +37,13 @@ from .service import (
     start,
     status,
     stop,
+    print_header,
 )
-
+from rich.console import Console
+from rich.table import Table
+from rich.text import Text
+from rich.panel import Panel
+from rich.box import ROUNDED
 
 # Main entrypoint
 @click.group(invoke_without_command=True)
@@ -48,15 +53,26 @@ def cli(ctx: click.Context, version: bool) -> None:
     """
     Covalent CLI tool used to manage the servers.
     """
+    console = Console()
+    print_header(console)
+
     if version:
-        click.echo("covalent:  Covalent Workflow CLI Tool")
-        click.echo("Copyright (C) 2021 Agnostiq Inc.")
-        click.echo("Built using Python 3.8 (Platform: x86_64-linux)")
-        click.echo(f"Release version {metadata.version('covalent')}")
+        version_table = Table()
+        version_table.add_column("Component")
+        version_table.add_column("Details")
+
+        version_table.add_row("covalent:", "Covalent Workflow Tool")
+        version_table.add_row("Copyright (C)", "2021 Agnostiq Inc.")
+        version_table.add_row("Built using", "Python 3.8 (Platform: x86_64-linux)")
+        version_table.add_row("Release version", f"{metadata.version('covalent')}")
+
+        console.print(version_table)
     elif ctx.invoked_subcommand is None:
         # Display the help menu if no command was provided
         ctx = click.get_current_context()
-        click.echo(ctx.get_help())
+        help_text = Text(ctx.get_help(), justify="left")
+        help_panel = Panel(help_text, box=ROUNDED, title="Covalent CLI Help", expand=False)
+        console.print(help_panel)
 
 
 # Server management
