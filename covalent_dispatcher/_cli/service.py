@@ -40,6 +40,7 @@ from rich.status import Status
 from rich.box import ROUNDED
 from rich.text import Text
 from rich.panel import Panel
+from rich.prompt import Prompt
 
 
 import dask.system
@@ -545,7 +546,7 @@ def purge(hard: bool, yes: bool, hell_yeah: bool) -> None:
     """
     Purge Covalent from this system. This command is for developers.
     """
-
+    console = Console()
     removal_list = {
         get_config("sdk.log_dir"),
         get_config("dispatcher.cache_dir"),
@@ -562,22 +563,29 @@ def purge(hard: bool, yes: bool, hell_yeah: bool) -> None:
         removal_list.add(get_config("dispatcher.db_path"))
 
     if not yes:
-        click.secho(f"{''.join(['*'] * 21)} WARNING {''.join(['*'] * 21)}", fg="yellow")
+        warning_text = Text("WARNING", style="bold yellow")
+        warning_panel = Panel(warning_text, style="yellow", expand=False, padding=(0, 10))
+        console.print(warning_panel)
 
-        click.echo("Purging will perform the following operations: ")
+        console.print("Purging will perform the following operations: ")
 
-        click.echo("1. Stop the covalent server if running.")
+        console.print("1. Stop the covalent server if running.")
 
         for i, rem_path in enumerate(removal_list, start=2):
             if os.path.isdir(rem_path):
-                click.echo(f"{i}. {rem_path} directory will be deleted.")
+                console.print(f"{i}. {rem_path} directory will be deleted.", style="red")
             else:
-                click.echo(f"{i}. {rem_path} file will be deleted.")
+                console.print(f"{i}. {rem_path} file will be deleted.", style="red")
 
         if hard:
-            click.secho("WARNING: All user data will be deleted.", fg="red")
+            console.print("WARNING: All user data will be deleted.", style="bold red")
 
-        click.confirm("\nWould you like to proceed?", abort=True)
+        ans = Prompt.ask(  # Use Prompt.ask instead of console.Prompt.ask
+            "Are you sure you want to continue?", choices=["y", "n"], default="n"
+        )
+        if ans == "n":
+            console.print("Purge aborted.")
+            return
 
     # Shutdown covalent server
     _graceful_shutdown(UI_PIDFILE)
@@ -590,9 +598,9 @@ def purge(hard: bool, yes: bool, hell_yeah: bool) -> None:
             with contextlib.suppress(FileNotFoundError):
                 os.remove(rem_path)
 
-        click.echo(f"Removed {rem_path}.")
+        console.print(f"Removed {rem_path}.")
 
-    click.echo("Covalent server files have been purged.")
+    console.print("Covalent server files have been purged.")
 
 
 @click.command()
