@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Moved TransportableObject from transport.py to a new file transportable_object.py.
+- Added rich support to cli for better printing statements. 
 
 ## [0.220.0-rc.0] - 2023-04-14
 
