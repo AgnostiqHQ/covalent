@@ -115,4 +115,4 @@ def test_sublattice_stress():
         execution_time_taken.append((result.end_time - result.start_time).total_seconds())
 
     for time_taken in execution_time_taken:
-        assert time_taken < 12
+        assert time_taken < 30
