@@ -18,29 +18,42 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""Test the deps functionality."""
 
-"""QA script to test basic workflow functionality."""
+from pathlib import Path
+
+import numpy
 
 import covalent as ct
+from covalent import DepsBash, DepsCall, DepsPip
 
 
-def test_basic_workflow():
-    """Test the basic workflow functionality."""
+def test_deps_workflow():
+    """Test the deps functionality."""
 
-    @ct.electron
-    def join_words(a, b):
-        return ", ".join([a, b])
+    deps_pip = DepsPip(packages=["numpy==1.23.1"])
+    deps_bash = DepsBash(commands=["echo $HOME >> /tmp/deps_bash_test.txt"])
 
-    @ct.electron
-    def excitement(a):
-        return f"{a}!"
+    def deps_call():
+        Path("/tmp/deps_bash_test.txt").unlink()
+
+    @ct.electron(
+        call_before=[deps_pip, deps_bash],
+        call_after=[DepsCall(deps_call)],
+    )
+    def get_deps_results():
+        results = []
+        with open("/tmp/deps_bash_test.txt", "r") as f:
+            results.append(f.read())
+        results.append(numpy.sum(numpy.identity(3)))
+        return results
 
     @ct.lattice
-    def simple_workflow(a, b):
-        phrase = join_words(a, b)
-        return excitement(phrase)
+    def workflow():
+        return get_deps_results()
 
-    dispatch_id = ct.dispatch(simple_workflow)("Hello", "World")
+    # Dispatch the workflow
+    dispatch_id = ct.dispatch(workflow)()
     res = ct.get_result(dispatch_id, wait=True)
-    assert res.result == "Hello, World!"
+    assert int(res.result[1]) == 3
     assert res.status == "COMPLETED"
