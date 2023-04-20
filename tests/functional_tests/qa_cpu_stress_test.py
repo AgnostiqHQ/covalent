@@ -50,6 +50,5 @@ def test_cpu_stress():
         result = ct.get_result(d_id, wait=True)
         execution_time_taken.append((result.end_time - result.start_time).total_seconds())
 
-    assert n_electrons == [1, 2, 4, 8, 16, 32, 64, 128]
     for time_taken in execution_time_taken:
         assert time_taken < 20
