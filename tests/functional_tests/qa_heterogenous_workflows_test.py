@@ -85,3 +85,5 @@ def test_heterogenous_workflows(workflow_type, parallel, serial, n):
         assert res.result == 186282
     elif workflow_type == WORKFLOW_TYPES.HAGRID:
         assert res.result == 23579476910
+
+    assert res.status == "COMPLETED"
