@@ -13,3 +13,4 @@ pytest-cov==3.0.0
 pytest-mock==3.8.2
 pytest-rerunfailures==10.2
 scikit-image==0.19.1
+scikit-learn==1.2.2
