@@ -180,6 +180,8 @@ def required_params_passed(func: Callable, kwargs: Dict) -> bool:
 
 def get_named_params(func, args, kwargs):
     ordered_params_dict = inspect.signature(func).parameters
+    if len(args) + len(kwargs) > len(ordered_params_dict):
+        raise ValueError(f"Too many parameters given, expected {len(ordered_params_dict)}")
     named_args = {}
     named_kwargs = {}
 
