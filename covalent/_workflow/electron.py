@@ -96,9 +96,7 @@ class Electron:
         node_id: Node id of the electron.
         metadata: Metadata to be used for the function execution.
         kwargs: Keyword arguments if any.
-        task_group_id: the group to which the task be assigned when
-        it is bound to a graph node. If unset, the group id will
-        default to node id.
+        task_group_id: the group to which the task be assigned when it is bound to a graph node. If unset, the group id will default to node id.
         packing_tasks: Flag to indicate whether task packing is enabled.
     """
 
