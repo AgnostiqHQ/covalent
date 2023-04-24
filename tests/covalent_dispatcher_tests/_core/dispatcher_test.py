@@ -207,7 +207,7 @@ def test_extraneous_args_and_kwargs():
     def job(val1, val2):
         return val1 + val2
 
-    with pytest.raises(ValueError, match="Too many parameters given"):
+    with pytest.raises(ValueError, match="Too many parameters given, expected 2"):
         ct.dispatch(job)(1, 2, 10)
 
 
