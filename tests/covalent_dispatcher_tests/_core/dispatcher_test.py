@@ -201,16 +201,6 @@ def test_get_abstract_task_inputs():
     assert task_inputs["args"] == [0, 2]
 
 
-def test_extraneous_args_and_kwargs():
-    @ct.lattice
-    @ct.electron
-    def job(val1, val2):
-        return val1 + val2
-
-    with pytest.raises(ValueError, match="Too many parameters given, expected 2"):
-        ct.dispatch(job)(1, 2, 10)
-
-
 @pytest.mark.asyncio
 async def test_handle_completed_node(mocker):
     """Unit test for completed node handler"""

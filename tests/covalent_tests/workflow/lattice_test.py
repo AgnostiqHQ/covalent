@@ -18,9 +18,11 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Unit tests for electron"""
+"""Unit tests for lattice"""
 
 from dataclasses import asdict
+
+import pytest
 
 import covalent as ct
 from covalent._shared_files.defaults import DefaultMetadataValues, postprocess_prefix
@@ -107,3 +109,18 @@ def test_lattice_build_graph(mocker):
     workflow.build_graph(1)
     assert workflow.transport_graph.get_node_value(2, "name") == postprocess_prefix
     ct._shared_files.config.set_config("sdk.exhaustive_postprocess", original_exhaustive_value)
+
+
+def test_lattice_build_graph_with_extra_args(mocker):
+    """Test the build graph method in lattice with extra args."""
+
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    with pytest.raises(ValueError, match="Too many parameters given, expected 1"):
+        workflow.build_graph(1, 2)
