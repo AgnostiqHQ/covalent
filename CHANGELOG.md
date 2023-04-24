@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update requirements file for the tutorials: `1_QuantumMachineLearning/pennylane_kernel/source.ipynb` and `machine_learning/dnn_comparison.ipynb`.
 - Add macOS 13 (Ventura) to [compatibility list](doc/source/getting_started/compatibility.rst).
+- Fixed broken links and typos in the documentation.
 
 ### Authors
 
