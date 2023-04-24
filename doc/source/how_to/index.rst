@@ -61,6 +61,10 @@ Constructing Workflows
 
 :doc:`Constructing a Task from Bash Scripts <./coding/construct_bash_task>`
 
+:doc:`How to add a directory trigger to a lattice <./coding/dir_trigger>`
+
+:doc:`How to add a time trigger to a lattice <./coding/time_trigger>`
+
 .. _howto_executing:
 
 Executing a Workflow
@@ -81,6 +85,8 @@ Executing a Workflow
 :doc:`Executing a Lattice as an Electron (Sublattice) <./execution/execute_sublattice>`
 
 :doc:`Choosing an Executor For a Task <./execution/choosing_executors>`
+
+:doc:`Canceling a Workflow <./execution/cancel_dispatch>`
 
 .. :doc:`Executing an Electron in a Conda Environment <./execution/choosing_conda_environments>`
 
