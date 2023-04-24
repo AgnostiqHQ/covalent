@@ -98,6 +98,6 @@ Reset the configuration using the :code:`purge` subcommand:
     Purging will perform the following operations:
     1. Stop the covalent server if running.
     2. /home/user/.cache/covalent directory will be deleted.
-    3. /home/neptune/.config/covalent directory will be deleted.
+    3. /home/user/.config/covalent directory will be deleted.
 
     Would you like to proceed? [y/N]:
