@@ -82,7 +82,7 @@ Executing a Workflow
 
 :doc:`Choosing an Executor For a Task <./execution/choosing_executors>`
 
-:doc:`Executing an Electron in a Conda Environment <./execution/choosing_conda_environments>`
+.. :doc:`Executing an Electron in a Conda Environment <./execution/choosing_conda_environments>`
 
 .. _howto_querying:
 
