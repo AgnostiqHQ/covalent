@@ -69,12 +69,8 @@ def get_default_sdk_config():
             (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
             + "/covalent/dispatches"
         ),
-        "multistage_dispatch": "true"
-        if os.environ.get("COVALENT_USE_MULTISTAGE_DISPATCH") == "1"
-        else "false",
-        "multistage_get_result": "true"
-        if os.environ.get("COVALENT_USE_MULTISTAGE_GET_RESULT") == "1"
-        else "false",
+        "multistage_dispatch": "true",
+        "multistage_get_result": "true",
         "results_dir": os.environ.get("COVALENT_RESULTS_DIR")
         or (
             (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
@@ -102,6 +98,7 @@ def get_default_dispatcher_config():
         "use_stateless_datamgr": os.environ.get("COVALENT_USE_STATELESS_DATAMGR", "true")
         or "false",
         "data_uri_filter_policy": os.environ.get("COVALENT_DATA_URI_FILTER_POLICY", "http"),
+        "lru_num_dispatches": 100,
     }
 
 

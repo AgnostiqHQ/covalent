@@ -385,6 +385,44 @@ class Result(DispatchedObject):
                 assets["nodes"] = list(map(lambda r: r["asset"], node_records))
         return assets
 
+    def populate_assets(self):
+        """Prepopulate the asset maps"""
+
+        # Compute mapping from electron_id -> transport_graph_node_id
+
+        tg = self.lattice.transport_graph
+        g = tg.get_internal_graph_copy()
+        all_nodes = tg.get_nodes(node_ids=list(g.nodes))
+
+        eid_node_id_map = {node._electron_id: node.node_id for node in all_nodes}
+
+        with self.session() as session:
+            # Workflow scope
+            workflow_assets = Result.get_linked_assets(
+                session,
+                fields=[],
+                equality_filters={"id": self.metadata.primary_key},
+                membership_filters={},
+            )
+            # Electron scope
+
+            node_assets = Electron.get_linked_assets(
+                session,
+                fields=[],
+                equality_filters={"parent_lattice_id": self.metadata.primary_key},
+                membership_filters={},
+            )
+
+        for rec in workflow_assets:
+            self.assets[rec["key"]] = rec["asset"]
+
+        for key, val in self.assets.items():
+            self.lattice.assets[key] = val
+
+        for rec in node_assets:
+            node = tg.get_node(eid_node_id_map[rec["meta_id"]])
+            node.assets[rec["key"]] = rec["asset"]
+
     @classmethod
     def ensure_run_once(cls, dispatch_id: str) -> bool:
         """Ensure that a dispatch is only run once.
@@ -473,6 +511,7 @@ def get_result_object(
     lattice_keys: list = LATTICE_KEYS,
     electron_keys: list = ELECTRON_KEYS,
 ) -> Result:
+    app_log.debug(f"Retrieving result object {dispatch_id} from DB")
     return Result.from_dispatch_id(
         dispatch_id,
         bare,

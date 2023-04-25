@@ -19,70 +19,28 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-"""Functions to export server-side data to client"""
+"""Functions for updating asset metadata"""
 
 
 from sqlalchemy.orm import Session
 
-from .electron import ASSET_KEYS as ELECTRON_ASSETS
-from .electron import METADATA_KEYS as ELECTRON_META
-from .lattice import ASSET_KEYS as LATTICE_ASSETS
-from .lattice import METADATA_KEYS as LATTICE_META
-from .result import ASSET_KEYS as RESULT_ASSETS
-from .result import METADATA_KEYS as RESULT_META
-from .result import get_result_object
-
-NODE_ATTRIBUTES = ELECTRON_META.union(ELECTRON_ASSETS)
-NODE_ATTRIBUTES.add("sub_dispatch_id")
-
-
-LATTICE_ATTRIBUTES = LATTICE_META.union(LATTICE_ASSETS)
-RESULT_ATTRIBUTES = RESULT_META.union(RESULT_ASSETS)
-
-
-SDK_NODE_META_KEYS = {
-    "executor",
-    "executor_data",
-    "deps",
-    "call_before",
-    "call_after",
-}
-
-SDK_LAT_META_KEYS = {
-    "executor",
-    "executor_data",
-    "workflow_executor",
-    "workflow_executor_data",
-    "deps",
-    "call_before",
-    "call_after",
-}
-
-DEFERRED_KEYS = {
-    "inputs",
-    "output",
-    "value",
-    "result",
-}
-
-# Temporary hack for API
-KEY_SUBSTITUTIONS = {"doc": "doc"}
+from .cache import get_cached_result_object
 
 
 def update_node_asset(session: Session, dispatch_id: str, node_id: int, key: str, values: dict):
-    srv_res = get_result_object(dispatch_id, bare=True)
+    srv_res = get_cached_result_object(dispatch_id)
     node = srv_res.lattice.transport_graph.get_node(node_id)
     asset = node.get_asset(key)
     asset.update(session, values=values)
 
 
 def update_lattice_asset(session: Session, dispatch_id: str, key: str, values: dict):
-    srv_res = get_result_object(dispatch_id, bare=True)
-    asset = srv_res.lattice.get_asset(KEY_SUBSTITUTIONS.get(key, key))
+    srv_res = get_cached_result_object(dispatch_id)
+    asset = srv_res.lattice.get_asset(key)
     asset.update(session, values=values)
 
 
 def update_dispatch_asset(session: Session, dispatch_id: str, key: str, values: dict):
-    srv_res = get_result_object(dispatch_id, bare=True)
+    srv_res = get_cached_result_object(dispatch_id)
     asset = srv_res.get_asset(key)
     asset.update(session, values=values)

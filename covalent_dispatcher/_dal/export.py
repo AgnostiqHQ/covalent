@@ -25,11 +25,13 @@ from typing import Dict
 
 from sqlalchemy.orm import Session
 
+from covalent._shared_files import logger
 from covalent._shared_files.schemas.result import ResultSchema
 from covalent._workflow.lattice import Lattice as SDKLattice
 from covalent._workflow.transport import _TransportGraph as SDKGraph
 
 from .asset import Asset
+from .cache import get_cached_result_object
 from .electron import ASSET_KEYS as ELECTRON_ASSETS
 from .electron import METADATA_KEYS as ELECTRON_META
 from .exporters.result import export_result
@@ -75,6 +77,8 @@ DEFERRED_KEYS = {
     "value",
     "result",
 }
+
+app_log = logger.app_log
 
 # Temporary hack for API
 KEY_SUBSTITUTIONS = {"doc": "__doc__", "name": "__name__"}
@@ -166,7 +170,7 @@ def export_result_manifest(dispatch_id: str) -> ResultSchema:
 
 
 def get_node_asset(session: Session, dispatch_id: str, node_id: int, key: str) -> Asset:
-    srv_res = get_result_object(dispatch_id, bare=True)
+    srv_res = get_cached_result_object(dispatch_id)
     node = srv_res.lattice.transport_graph.get_node(node_id)
     return node.get_asset(key)
 
@@ -177,7 +181,7 @@ def get_node_asset_path(session: Session, dispatch_id: str, node_id: int, key: s
 
 
 def get_lattice_asset(session: Session, dispatch_id: str, key: str) -> Asset:
-    srv_res = get_result_object(dispatch_id, bare=True)
+    srv_res = get_cached_result_object(dispatch_id)
     return srv_res.lattice.get_asset(key)
 
 
@@ -187,7 +191,7 @@ def get_lattice_asset_path(session: Session, dispatch_id: str, key: str) -> str:
 
 
 def get_dispatch_asset(session: Session, dispatch_id: str, key: str) -> Asset:
-    srv_res = get_result_object(dispatch_id, bare=True)
+    srv_res = get_cached_result_object(dispatch_id)
     return srv_res.get_asset(key)
 
 
