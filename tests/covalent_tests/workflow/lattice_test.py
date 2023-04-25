@@ -18,9 +18,11 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Unit tests for electron"""
+"""Unit tests for lattice"""
 
 from dataclasses import asdict
+
+import pytest
 
 import covalent as ct
 from covalent._shared_files.defaults import DefaultMetadataValues, postprocess_prefix
@@ -107,3 +109,38 @@ def test_lattice_build_graph(mocker):
     workflow.build_graph(1)
     assert workflow.transport_graph.get_node_value(2, "name") == postprocess_prefix
     ct._shared_files.config.set_config("sdk.exhaustive_postprocess", original_exhaustive_value)
+
+
+def test_lattice_build_graph_with_extra_args(mocker):
+    """Test the build graph method in lattice with extra args / kwargs."""
+
+    @ct.electron
+    def task(x, y):
+        return x + y
+
+    @ct.lattice
+    def workflow(x, y):
+        return task(x, y)
+
+    with pytest.raises(
+        ValueError, match="Too many positional arguments given, expected 2, received 3"
+    ):
+        workflow.build_graph(1, 2, 3)
+
+    with pytest.raises(
+        ValueError, match="Too many positional arguments given, expected 0, received 1"
+    ):
+        workflow.build_graph(1, x=2)
+
+    # no issues here
+    workflow.build_graph(1, y=2)
+
+    with pytest.raises(ValueError, match="Unexpected keyword arguments: a, b"):
+        workflow.build_graph(1, a=2, b=3)
+
+    with pytest.raises(ValueError, match="Unexpected keyword arguments: a"):
+        workflow.build_graph(a=1)
+
+    # fewer arguments handled internally by function call
+    with pytest.raises(TypeError, match="missing 1 required positional argument: 'y'"):
+        workflow.build_graph(1)
