@@ -112,7 +112,7 @@ def test_lattice_build_graph(mocker):
 
 
 def test_lattice_build_graph_with_extra_args(mocker):
-    """Test the build graph method in lattice with extra args."""
+    """Test the build graph method in lattice with extra args / kwargs."""
 
     @ct.electron
     def task(x, y):
