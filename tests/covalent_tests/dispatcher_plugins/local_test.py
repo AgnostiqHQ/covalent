@@ -119,3 +119,25 @@ def test_dispatching_a_non_lattice():
         TypeError, match="Dispatcher expected a Lattice, received <class 'function'> instead."
     ):
         LocalDispatcher.dispatch(workflow)(1, 2)
+
+
+def test_dispatch_when_no_server_is_running():
+    """test dispatching a lattice when no server is running"""
+
+    # the test suite is using another port, thus, with the dummy address below
+    # the covalent server is not running in some sense.
+    dummy_dispatcher_addr = "http://localhost:12345"
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    with pytest.raises(
+        ConnectionError,
+        match=f"The Covalent dispatcher server is not running at {dummy_dispatcher_addr}.",
+    ):
+        LocalDispatcher.dispatch(workflow, dispatcher_addr=dummy_dispatcher_addr)(1, 2)
