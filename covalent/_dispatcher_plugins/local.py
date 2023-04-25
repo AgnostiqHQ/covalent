@@ -122,6 +122,11 @@ class LocalDispatcher(BaseDispatcher):
             # To access the disable_run passed to the dispatch function
             nonlocal disable_run
 
+            if not isinstance(orig_lattice, Lattice):
+                message = f"Dispatcher expected a Lattice, received {type(orig_lattice)} instead."
+                app_log.error(message)
+                raise ValueError(message)
+
             lattice = deepcopy(orig_lattice)
 
             lattice.build_graph(*args, **kwargs)

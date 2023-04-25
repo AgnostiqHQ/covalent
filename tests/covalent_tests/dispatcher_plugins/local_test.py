@@ -101,3 +101,21 @@ def test_redispatch(mocker, replace_electrons, expected_arg, is_pending):
     requests_mock.post().content.decode().strip().replace.assert_called_once_with('"', "")
 
     get_request_body_mock.assert_called_once_with("mock-dispatch-id", (), {}, expected_arg, False)
+
+
+def test_dispatching_a_non_lattice():
+    """test dispatching a non-lattice"""
+
+    @ct.electron
+    def task(a, b):
+        return a + b
+
+    @ct.electron
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    with pytest.raises(
+        ValueError, match="Dispatcher expected a Lattice, received <class 'function'> instead."
+    ):
+        LocalDispatcher.dispatch(workflow)(1, 2)
