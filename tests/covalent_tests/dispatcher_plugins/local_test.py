@@ -107,8 +107,8 @@ def test_dispatching_a_non_lattice():
     """test dispatching a non-lattice"""
 
     @ct.electron
-    def task(a, b):
-        return a + b
+    def task(a, b, c):
+        return a + b + c
 
     @ct.electron
     @ct.lattice
