@@ -81,7 +81,7 @@ class BaseTrigger:
         """
         Register this trigger to the Triggers server and start observing.
         """
-        self._register(self.to_dict(), self.triggers_server_addr)
+        self._register(self.to_dict())
 
     @staticmethod
     def _register(trigger_data) -> None:
@@ -91,6 +91,9 @@ class BaseTrigger:
         Args:
             trigger_data: Dictionary representation of a trigger
         """
+        # with open("/home/neptune/dev/covalent/debug.txt", "w") as f:
+        #     f.write(str(trigger_data))
+
         triggers_server_addr = trigger_data.get("triggers_server_addr")
         if triggers_server_addr is None:
             triggers_server_addr = (
