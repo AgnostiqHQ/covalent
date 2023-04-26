@@ -91,8 +91,6 @@ class BaseTrigger:
         Args:
             trigger_data: Dictionary representation of a trigger
         """
-        # with open("/home/neptune/dev/covalent/debug.txt", "w") as f:
-        #     f.write(str(trigger_data))
 
         triggers_server_addr = trigger_data.get("triggers_server_addr")
         if triggers_server_addr is None:
