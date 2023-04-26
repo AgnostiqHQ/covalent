@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Result status comparison
 - Raise error on extra args/kwargs
+- Fixed redispatching and trigger server address passing in base trigger
 
 ## [0.221.0-rc.0] - 2023-04-17
 
