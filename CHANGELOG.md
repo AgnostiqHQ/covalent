@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Implementation of `result_object` property method to be backwards compatible with version 0.209.1.
+- Implementation of `TransportableObject` property method to be backwards compatible with version 0.209.1.
 
 ### Tests
 
