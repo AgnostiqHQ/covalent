@@ -233,6 +233,7 @@ class TransportableObject:
 
     @property
     def object_string(self):
+        # For version compatibility with older Covalent
         try:
             return self._object_string
         except AttributeError:
