@@ -233,12 +233,14 @@ class TransportableObject:
 
     @property
     def object_string(self):
-        return self._object_string
+        # For version compatibility with older Covalent
+        try:
+            return self._object_string
+        except AttributeError:
+            return self.__dict__["object_string"]
 
     def __eq__(self, obj) -> bool:
-        if not isinstance(obj, TransportableObject):
-            return False
-        return self.__dict__ == obj.__dict__
+        return self.__dict__ == obj.__dict__ if isinstance(obj, TransportableObject) else False
 
     def get_deserialized(self) -> Callable:
         """
