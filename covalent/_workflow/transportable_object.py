@@ -239,9 +239,7 @@ class TransportableObject:
             return self.__dict__["object_string"]
 
     def __eq__(self, obj) -> bool:
-        if not isinstance(obj, TransportableObject):
-            return False
-        return self.__dict__ == obj.__dict__
+        return self.__dict__ == obj.__dict__ if isinstance(obj, TransportableObject) else False
 
     def get_deserialized(self) -> Callable:
         """

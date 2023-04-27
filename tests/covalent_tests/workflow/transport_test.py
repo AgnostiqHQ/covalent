@@ -22,7 +22,7 @@
 
 import copy
 import platform
-from unittest.mock import call
+from unittest.mock import PropertyMock, call, patch
 
 import cloudpickle
 import networkx as nx
@@ -604,3 +604,11 @@ def test_apply_electron_updates(workflow_transport_graph, mocker):
     workflow_transport_graph.apply_electron_updates({"mock-name": "mock-value"})
     get_node_value_mock.mock_calls = [call(0, "name"), call(1, "name")]
     replace_node_mock.mock_calls = [call(0, "mock-value"), call(1, "mock-value")]
+
+
+def test_object_string(transportable_object):
+    """Test that the object string is retrievable even with AttributeError."""
+
+    obj_str_mock = patch.object(transportable_object, "object_string", new_callable=PropertyMock)
+    obj_str_mock.side_effect = AttributeError
+    assert transportable_object.object_string

@@ -155,7 +155,7 @@ class BaseTrigger:
             dispatch_id=self.lattice_dispatch_id,
             dispatcher_addr=self.dispatcher_addr,
             is_pending=is_pending,
-        )
+        )()
 
     def trigger(self) -> None:
         """
