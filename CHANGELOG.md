@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Implementation of `result_object` property method to be backwards compatible with version 0.209.1.
+
 ### Tests
 
 - Move QA scripts from QA repo to Covalent functional tests.
+- Updated QA stress test execution time baseline.
 
 ### Docs
 

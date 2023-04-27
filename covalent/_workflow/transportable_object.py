@@ -233,7 +233,10 @@ class TransportableObject:
 
     @property
     def object_string(self):
-        return self._object_string
+        try:
+            return self._object_string
+        except AttributeError:
+            return self.__dict__["object_string"]
 
     def __eq__(self, obj) -> bool:
         if not isinstance(obj, TransportableObject):
