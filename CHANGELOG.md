@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Implementation of `TransportableObject` property method to be backwards compatible with version 0.209.1.
+
+### Tests
+
+- Updated QA stress test execution time baseline.
+
 ## [0.221.1-rc.0] - 2023-04-26
 
 ### Authors

@@ -120,7 +120,7 @@ def test_do_redispatch(mocker, use_internal_func, is_pending):
         mock_run_coro.assert_called_once()
         mock_fut_res.result.assert_called_once()
     else:
-        mock_redispatch = mocker.patch("covalent.redispatch")
+        mock_redispatch = mocker.patch("covalent.redispatch")()
         mock_redispatch.return_value = mock_redispatch_id
         redispatch_id = base_trigger._do_redispatch(is_pending)
 

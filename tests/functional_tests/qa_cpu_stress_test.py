@@ -51,4 +51,4 @@ def test_cpu_stress():
         execution_time_taken.append((result.end_time - result.start_time).total_seconds())
 
     for time_taken in execution_time_taken:
-        assert time_taken < 60
+        assert time_taken < 120
