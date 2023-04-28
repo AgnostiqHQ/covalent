@@ -145,17 +145,8 @@ def test_dispatch_when_no_server_is_running():
         LocalDispatcher.dispatch(workflow, dispatcher_addr=dummy_dispatcher_addr)(1, 2)
 
 
-def test_dispatcher_submit_api_raise_for_status(mocker):
-    """test dispatching a lattice when submit api raises an error"""
-
-    def patched_post(url, data=None, json=None, **kwargs):
-        r = Response()
-        r.status_code = 404
-        r.url = "http://dummy"
-        r.reason = "dummy reason"
-        return r
-
-    mocker.patch("covalent._dispatcher_plugins.local.requests.post", side_effect=patched_post)
+def test_dispatcher_submit_api(mocker):
+    """test dispatching a lattice with submit api"""
 
     @ct.electron
     def task(a, b, c):
@@ -165,6 +156,25 @@ def test_dispatcher_submit_api_raise_for_status(mocker):
     def workflow(a, b):
         return task(a, b, c=4)
 
+    # test when api raises an implicit error
+    r = Response()
+    r.status_code = 404
+    r.url = "http://dummy"
+    r.reason = "dummy reason"
+
+    mocker.patch("covalent._dispatcher_plugins.local.requests.post", return_value=r)
+
     with pytest.raises(HTTPError, match="404 Client Error: dummy reason for url: http://dummy"):
         dispatch_id = LocalDispatcher.dispatch(workflow)(1, 2)
         assert dispatch_id is None
+
+    # test when api doesn't raise an implicit error
+    r = Response()
+    r.status_code = 201
+    r.url = "http://dummy"
+    r._content = b"abcde"
+
+    mocker.patch("covalent._dispatcher_plugins.local.requests.post", return_value=r)
+
+    dispatch_id = LocalDispatcher.dispatch(workflow)(1, 2)
+    assert dispatch_id == "abcde"
