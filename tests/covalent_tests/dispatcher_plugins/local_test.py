@@ -116,6 +116,6 @@ def test_dispatching_a_non_lattice():
         return task(a, b, c=4)
 
     with pytest.raises(
-        ValueError, match="Dispatcher expected a Lattice, received <class 'function'> instead."
+        TypeError, match="Dispatcher expected a Lattice, received <class 'function'> instead."
     ):
         LocalDispatcher.dispatch(workflow)(1, 2)

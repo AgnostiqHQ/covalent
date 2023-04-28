@@ -125,7 +125,7 @@ class LocalDispatcher(BaseDispatcher):
             if not isinstance(orig_lattice, Lattice):
                 message = f"Dispatcher expected a Lattice, received {type(orig_lattice)} instead."
                 app_log.error(message)
-                raise ValueError(message)
+                raise TypeError(message)
 
             lattice = deepcopy(orig_lattice)
 
