@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Raise error on dispatching a non-lattice
 
+### Authors
+
+- Madhur Tandon <madhurtandon23@gmail.com>
+
 ### Operations
 
 - Removed "already released" check from stable changelog action
