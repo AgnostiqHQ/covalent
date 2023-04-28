@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Raise error on dispatching a non-lattice
+
+### Authors
+
+- Madhur Tandon <madhurtandon23@gmail.com>
+
 ### Operations
 
 - Removed "already released" check from stable changelog action
@@ -18,7 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
-
 
 ### Changed
 
