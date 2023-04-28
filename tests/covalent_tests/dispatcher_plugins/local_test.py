@@ -24,6 +24,8 @@
 from unittest.mock import MagicMock
 
 import pytest
+from requests import Response
+from requests.exceptions import HTTPError
 
 import covalent as ct
 from covalent._dispatcher_plugins.local import LocalDispatcher, get_redispatch_request_body
@@ -141,3 +143,28 @@ def test_dispatch_when_no_server_is_running():
         match=f"The Covalent dispatcher server is not running at {dummy_dispatcher_addr}.",
     ):
         LocalDispatcher.dispatch(workflow, dispatcher_addr=dummy_dispatcher_addr)(1, 2)
+
+
+def test_dispatcher_submit_api_raise_for_status(mocker):
+    """test dispatching a lattice when submit api raises an error"""
+
+    def patched_post(url, data=None, json=None, **kwargs):
+        r = Response()
+        r.status_code = 404
+        r.url = "http://dummy"
+        r.reason = "dummy reason"
+        return r
+
+    mocker.patch("covalent._dispatcher_plugins.local.requests.post", side_effect=patched_post)
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    with pytest.raises(HTTPError, match="404 Client Error: dummy reason for url: http://dummy"):
+        dispatch_id = LocalDispatcher.dispatch(workflow)(1, 2)
+        assert dispatch_id is None
