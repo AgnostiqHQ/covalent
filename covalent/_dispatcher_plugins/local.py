@@ -146,12 +146,17 @@ class LocalDispatcher(BaseDispatcher):
 
             submit_dispatch_url = f"{dispatcher_addr}/api/submit"
 
-            r = requests.post(
-                submit_dispatch_url, data=json_lattice, params={"disable_run": disable_run}
-            )
-            r.raise_for_status()
-
-            lattice_dispatch_id = r.content.decode("utf-8").strip().replace('"', "")
+            lattice_dispatch_id = None
+            try:
+                r = requests.post(
+                    submit_dispatch_url, data=json_lattice, params={"disable_run": disable_run}
+                )
+                r.raise_for_status()
+                lattice_dispatch_id = r.content.decode("utf-8").strip().replace('"', "")
+            except requests.exceptions.ConnectionError as e:
+                message = f"The Covalent dispatcher server is not running at {dispatcher_addr}. You must start Covalent (with `covalent start`) before dispatching your workflow."
+                app_log.error(message)
+                raise ConnectionError(message) from e
 
             if not disable_run or triggers_data is None:
                 return lattice_dispatch_id
