@@ -60,6 +60,14 @@ def test_config_manager_init_write_update_config(
         "sdk.executor_dir",
     ]
 
+    server_specific_config_keys = [
+        "dispatcher.cache_dir",
+        "dispatcher.results_dir",
+        "dispatcher.log_dir",
+        "user_interface.log_dir",
+        "dispatcher.db_path",
+    ]
+
     with tempfile.TemporaryDirectory() as tmp_dir:
         monkeypatch.setenv("COVALENT_CONFIG_DIR", tmp_dir)
         update_config_mock = mocker.patch(
@@ -84,7 +92,13 @@ def test_config_manager_init_write_update_config(
     path_mock_calls = path_mock.mock_calls
 
     for key in config_keys:
-        assert mocker.call(key) in get_mock_calls and path_mock_calls
+        assert (mocker.call(key) in get_mock_calls) and (mocker.call(key) in path_mock_calls)
+
+    # check if creation doesn't happen during config manager init
+    for key in server_specific_config_keys:
+        assert (mocker.call(key) not in get_mock_calls) and (
+            mocker.call(key) not in path_mock_calls
+        )
 
 
 def test_set_config_str_key(mocker):

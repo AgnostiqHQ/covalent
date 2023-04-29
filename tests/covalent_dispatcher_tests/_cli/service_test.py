@@ -193,7 +193,9 @@ def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_
             get_mock_calls = get_mock.mock_calls
 
             for each_path in config_paths:
-                assert mocker.call(each_path) in get_mock_calls and path_mock_calls
+                assert (mocker.call(each_path) in get_mock_calls) and (
+                    mocker.call(each_path) in path_mock_calls
+                )
 
             popen_mock.assert_called_once()
             assert popen_mock.call_args[0][0] == launch_str
