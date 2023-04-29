@@ -191,7 +191,10 @@ class DaskCluster(Process):
             self.cluster = LocalCluster(
                 n_workers=self.num_workers,
                 threads_per_worker=self.threads_per_worker,
-                **{"memory_limit": self.mem_per_worker},
+                **{
+                    "memory_limit": self.mem_per_worker,
+                    "local_directory": get_config("dispatcher.cache_dir"),
+                },
             )
         except Exception as e:
             self.logger.exception(e)
