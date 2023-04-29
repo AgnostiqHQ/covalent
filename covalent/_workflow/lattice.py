@@ -23,6 +23,7 @@
 import json
 import os
 import warnings
+import webbrowser
 from builtins import list
 from contextlib import redirect_stdout
 from copy import deepcopy
@@ -267,9 +268,15 @@ class Lattice:
         """
 
         import covalent_ui.result_webhook as result_webhook
+        from covalent_ui.result_webhook import get_ui_url
 
         self.build_graph(*args, **kwargs)
         result_webhook.send_draw_request(self)
+        draw_preview_url = get_ui_url("/preview")
+        message = f"To preview the transport graph of the lattice, visit {draw_preview_url}"
+        app_log.info(message)
+        print(message)
+        webbrowser.open(draw_preview_url)
 
     def __call__(self, *args, **kwargs):
         """Execute lattice as an ordinary function for testing purposes."""
