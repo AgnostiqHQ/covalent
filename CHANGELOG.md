@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Open UI preview of transport graph when `lattice.draw()` is invoked and print URL of the same
 - Defer creation of server specific config entries until covalent is started
 
+### Docs
+
+- Updated Feature documentation for Triggers with an example and minor corrections
+
 ### Authors
 
 - Madhur Tandon <madhurtandon23@gmail.com>
