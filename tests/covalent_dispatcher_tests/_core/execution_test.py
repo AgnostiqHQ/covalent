@@ -25,7 +25,9 @@ Integration tests for the dispatcher, runner, and result modules
 import asyncio
 from typing import Dict, List
 
+import dask
 import pytest
+from dask.distributed import LocalCluster
 
 import covalent as ct
 from covalent._results_manager import Result
@@ -36,6 +38,28 @@ from covalent_dispatcher._db import update
 from covalent_dispatcher._db.datastore import DataStore
 
 TEST_RESULTS_DIR = "/tmp/results"
+
+DEFAULT_THREADS_PER_WORKERS = 1
+DEFAULT_N_WORKERS = dask.system.CPU_COUNT
+DEFAULT_MEM_PER_WORKER = "auto"
+
+
+@pytest.fixture
+def test_cluster():
+    cluster = LocalCluster(
+        n_workers=DEFAULT_N_WORKERS,
+        threads_per_worker=DEFAULT_THREADS_PER_WORKERS,
+        **{"memory_limit": DEFAULT_MEM_PER_WORKER},
+    )
+    yield cluster
+    cluster.close()
+
+
+@pytest.fixture
+def event_loop():
+    loop = asyncio.new_event_loop()
+    yield loop
+    loop.close()
 
 
 @pytest.fixture
@@ -294,17 +318,15 @@ async def test_run_workflow_with_failing_leaf(mocker):
     assert result_object._error == "The following tasks failed:\n0: failing_task"
 
 
-async def test_run_workflow_does_not_deserialize(mocker):
+@pytest.mark.asyncio
+async def test_run_workflow_does_not_deserialize(mocker, test_cluster, event_loop):
     """Check that dispatcher does not deserialize user data when using
     out-of-process `workflow_executor`"""
-
-    from dask.distributed import LocalCluster
 
     from covalent._workflow.lattice import Lattice
     from covalent.executor import DaskExecutor
 
-    lc = LocalCluster()
-    dask_exec = DaskExecutor(lc.scheduler_address)
+    dask_exec = DaskExecutor(test_cluster.scheduler_address)
 
     @ct.electron(executor=dask_exec)
     def task(x):
@@ -317,24 +339,36 @@ async def test_run_workflow_does_not_deserialize(mocker):
         res1 = ct.electron(sublattice_task(x), executor=dask_exec)
         return res1
 
+    asyncio.set_event_loop(event_loop)
+
+    dispatch_id = "asdf"
     workflow.build_graph(5)
 
     json_lattice = workflow.serialize_to_json()
-    dispatch_id = "asdf"
     lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice, lattice.metadata["results_dir"])
-    result_object._dispatch_id = dispatch_id
+    result_object = Result(lattice, dispatch_id=dispatch_id)
     result_object._initialize_nodes()
 
+    mocker.patch("covalent_dispatcher._db.update.persist")
+    mock_unregister = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
+    )
     mocker.patch("covalent_dispatcher._db.datastore.DataStore.factory", return_value=test_db)
     mocker.patch(
         "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
     )
+
+    status_queue = asyncio.Queue()
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
+    )
+
     update.persist(result_object)
 
     mock_to_deserialize = mocker.patch("covalent.TransportableObject.get_deserialized")
 
     result_object = await run_workflow(result_object)
+    mock_unregister.assert_called_with(result_object.dispatch_id)
 
     mock_to_deserialize.assert_not_called()
     assert result_object.status == Result.COMPLETED
