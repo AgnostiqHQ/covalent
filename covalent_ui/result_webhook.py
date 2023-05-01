@@ -29,7 +29,8 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent_dispatcher._db.dispatchdb import encode_dict, extract_graph, extract_metadata
 
-DEFAULT_PORT = get_config("user_interface.port")
+DEFAULT_UI_ADDRESS = get_config("user_interface.address")
+DEFAULT_UI_PORT = get_config("user_interface.port")
 
 app_log = logger.app_log
 
@@ -37,7 +38,7 @@ app_log = logger.app_log
 
 
 def get_ui_url(path):
-    baseUrl = f"http://localhost:{DEFAULT_PORT}"
+    baseUrl = f"http://{DEFAULT_UI_ADDRESS}:{DEFAULT_UI_PORT}"
     return f"{baseUrl}{path}"
 
 
