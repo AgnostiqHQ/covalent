@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Redispatch feature page in Read the Docs.
+
 ### Fixed
 
 - Raise error on dispatching a non-lattice
