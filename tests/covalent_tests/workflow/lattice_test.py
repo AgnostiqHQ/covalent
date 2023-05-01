@@ -26,7 +26,7 @@ import pytest
 
 import covalent as ct
 from covalent._shared_files.defaults import DefaultMetadataValues, postprocess_prefix
-from covalent_ui.result_webhook import get_ui_url
+from covalent._shared_files.utils import get_ui_url
 
 DEFAULT_METADATA_VALUES = asdict(DefaultMetadataValues())
 

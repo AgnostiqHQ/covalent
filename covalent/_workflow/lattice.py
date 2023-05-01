@@ -268,7 +268,7 @@ class Lattice:
         """
 
         import covalent_ui.result_webhook as result_webhook
-        from covalent_ui.result_webhook import get_ui_url
+        from covalent._shared_files.utils import get_ui_url
 
         self.build_graph(*args, **kwargs)
         result_webhook.send_draw_request(self)
