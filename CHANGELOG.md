@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Raise error on dispatching a non-lattice
+- Helpful message when trying to dispatch a workflow when covalent server is not available
+- Open UI preview of transport graph when `lattice.draw()` is invoked and print URL of the same
+- Defer creation of server specific config entries until covalent is started
+
+### Docs
+
+- Updated Feature documentation for Triggers with an example and minor corrections
+
+### Authors
+
+- Madhur Tandon <madhurtandon23@gmail.com>
+
+### Operations
+
+- Removed "already released" check from stable changelog action
+
+## [0.222.0-rc.0] - 2023-04-27
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
 ### Changed
 
 - Implementation of `TransportableObject` property method to be backwards compatible with version 0.209.1.
