@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Defer creation of server specific config entries until covalent is started
 - Move dask worker space to covalent cache instead of `site-packages`
 
+### Docs
+
+- Updated Feature documentation for Triggers with an example and minor corrections
+
 ### Authors
 
 - Madhur Tandon <madhurtandon23@gmail.com>
