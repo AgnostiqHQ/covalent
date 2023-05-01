@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Adding the base `CloudResourceManager` class
+
+
 ### Fixed
 
 - Raise error on dispatching a non-lattice
