@@ -24,6 +24,7 @@ import shutil
 import subprocess
 from configparser import ConfigParser
 from enum import Enum
+from pathlib import Path
 from typing import Dict, Optional
 
 from covalent._shared_files.config import set_config
@@ -40,28 +41,6 @@ class DeployStatus(Enum):
     ERROR = 2
 
 
-def is_int(value: str) -> bool:
-    """
-    Check if the string passed is int convertible
-    """
-    try:
-        int(value)
-        return True
-    except ValueError:
-        return False
-
-
-def is_float(value: str) -> bool:
-    """
-    Check if string is convertible to float
-    """
-    try:
-        float(value)
-        return True
-    except ValueError:
-        return False
-
-
 class CloudResourceManager:
     """
     Base cloud resource manager class
@@ -74,22 +53,24 @@ class CloudResourceManager:
         options: Optional[Dict[str, str]] = None,
     ):
         self.executor_name = executor_name
-        self.executor_tf_path = os.path.join(executor_module_path, "assets/infra")
+        self.executor_tf_path = str(
+            Path(executor_module_path).expanduser().resolve() / "terraform"
+        )
         self.executor_options = options
 
-    @staticmethod
-    def _print_stdout(process: subprocess.Popen) -> Optional[int]:
+    def _print_stdout(self, process: subprocess.Popen) -> Optional[int]:
         """
         Print the stdout from the subprocess to console
-        Arg(s)
+
+        Args:
             process: Python subprocess whose stdout is to be printed to screen
-        Return(s)
-            None
+
+        Returns:
+            returncode of the process
         """
         while process.poll() is None:
             if proc_stdout := process.stdout.readline():
                 print(proc_stdout.strip().decode("utf-8"))
-
             else:
                 break
         return process.poll()
@@ -99,11 +80,13 @@ class CloudResourceManager:
     ) -> Optional[int]:
         """
         Run the `cmd` in a subprocess shell with the env_vars set in the process's new environment
-        Arg(s)
+
+        Args:
             cmd: Command to execute in the subprocess
             workdir: Working directory of the subprocess
             env_vars: Dictionary of environment variables to set in the processes execution environment
-        Return(s)
+
+        Returns:
             Exit code of the process
         """
         proc = subprocess.Popen(
@@ -112,43 +95,48 @@ class CloudResourceManager:
             stderr=subprocess.STDOUT,
             cwd=workdir,
             shell=True,
-            bufsize=-1,
             env=env_vars,
         )
         retcode = self._print_stdout(proc)
-        return retcode
+
+        if retcode != 0:
+            raise subprocess.CalledProcessError(returncode=retcode, cmd=cmd)
 
     def _update_config(self, tf_executor_config_file: str) -> None:
         """
-        Update covalent configuration with the executor values
+        Update covalent configuration with the executor
+        config values as obtained from terraform
         """
         executor_config = ConfigParser()
         executor_config.read(tf_executor_config_file)
         for key in executor_config[self.executor_name]:
             value = executor_config[self.executor_name][key]
-            converted_value = (
-                int(value) if is_int(value) else float(value) if is_float(value) else value
-            )
-            set_config({f"executors.{self.executor_name}.{key}": converted_value})
+            set_config({f"executors.{self.executor_name}.{key}": value})
+
+    def _get_tf_path(self) -> str:
+        """
+        Get the terraform path
+        """
+        if terraform := shutil.which("terraform"):
+            return terraform
+        else:
+            raise CommandNotFoundError("Terraform not found on system")
 
     def up(self, dry_run: bool = True):
         """
         Setup executor resources
         """
-        terraform = shutil.which("terraform")
-        if not terraform:
-            raise CommandNotFoundError("Terraform not found on system")
+        terraform = self._get_tf_path()
 
-        tfvars_file = os.path.join(self.executor_tf_path, "terraform.tfvars")
-        tf_executor_config_file = os.path.join(self.executor_tf_path, f"{self.executor_name}.conf")
+        tfvars_file = Path(self.executor_tf_path) / "terraform.tfvars"
+        tf_executor_config_file = Path(self.executor_tf_path) / f"{self.executor_name}.conf"
 
         tf_init = " ".join([terraform, "init"])
         tf_plan = " ".join([terraform, "plan", "-out", "tf.plan"])
         tf_apply = " ".join([terraform, "apply", "tf.plan"])
 
-        retcode = self._run_in_subprocess(cmd=tf_init, workdir=self.executor_tf_path)
-        if retcode != 0:
-            raise subprocess.CalledProcessError(returncode=retcode, cmd=tf_init)
+        # Run `terraform init`
+        self._run_in_subprocess(cmd=tf_init, workdir=self.executor_tf_path)
 
         # Setup terraform infra variables as passed by the user
         tf_vars_env_dict = os.environ.copy()
@@ -158,20 +146,17 @@ class CloudResourceManager:
                     tf_vars_env_dict[f"TF_VAR_{key}"] = value
                     f.write(f'{key}="{value}"\n')
 
-        # Plan the infrastructure
-        retcode = self._run_in_subprocess(
+        # Run `terraform plan`
+        self._run_in_subprocess(
             cmd=tf_plan, workdir=self.executor_tf_path, env_vars=tf_vars_env_dict
         )
-        if retcode != 0:
-            raise subprocess.CalledProcessError(returncode=retcode, cmd=tf_plan)
 
         # Create infrastructure as per the plan
+        # Run `terraform apply`
         if not dry_run:
-            retcode = self._run_in_subprocess(
+            self._run_in_subprocess(
                 cmd=tf_apply, workdir=self.executor_tf_path, env_vars=tf_vars_env_dict
             )
-            if retcode != 0:
-                raise subprocess.CalledProcessError(returncode=retcode, cmd=tf_apply)
 
             # Update covalent executor config based on Terraform output
             self._update_config(tf_executor_config_file)
@@ -180,23 +165,26 @@ class CloudResourceManager:
         """
         Teardown executor resources
         """
-        terraform = shutil.which("terraform")
-        if not terraform:
-            raise CommandNotFoundError("Terraform not found on system")
-
         if not dry_run:
-            tfvars_file = os.path.join(self.executor_tf_path, "terraform.tfvars")
+            terraform = self._get_tf_path()
+
+            tfvars_file = Path(self.executor_tf_path) / "terraform.tfvars"
 
             tf_destroy = " ".join([terraform, "destroy", "-auto-approve"])
-            retcode = self._run_in_subprocess(cmd=tf_destroy, workdir=self.executor_tf_path)
-            if retcode != 0:
-                raise subprocess.CalledProcessError(cmd=tf_destroy, returncode=retcode)
 
-            if os.path.exists(tfvars_file):
-                os.remove(tfvars_file)
+            # Run `terraform destroy`
+            self._run_in_subprocess(cmd=tf_destroy, workdir=self.executor_tf_path)
+
+            if Path(tfvars_file).exists():
+                Path(tfvars_file).unlink()
 
     def status(self):
         """
         Return executor resource deployment status
         """
-        pass
+        terraform = self._get_tf_path()
+
+        tf_state = " ".join([terraform, "state", "list"])
+
+        # Run `terraform state list`
+        self._run_in_subprocess(cmd=tf_state, workdir=self.executor_tf_path)
