@@ -15,22 +15,27 @@ Triggers are especially useful if you're using Covalent as part of a larger pipe
 
 ## Using Triggers
 
-Covalent offers multiple options to start the server with regards to triggers. The default way starts the Covalent server with the triggers server endpoints included.
+Covalent provides several options for starting the server in relation to triggers. By default, the Covalent server starts with the triggers server endpoints included.
 
 ```{note}
-It is also *possible* to start the Covalent server without the triggers endpoints and manage the `observe()` method manually, or start the standalone triggers server without Covalent.
+It is also *possible* to start the Covalent server without the triggers endpoints and manage the `observe()` method of the triggers manually, or start the standalone triggers server without Covalent.
 ```
 
 The following code block showcases the three different start options:
 
 ```{code-block} bash
 # Starting the default way which starts with the triggers server endpoints as part of Covalent server
+
 covalent start
+
 # Starting the Covalent server without the trigger endpoints, thus in order to use triggers you will have
 # either have to start the triggers server independently or manage the observe() method of triggers manually
+
 covalent start --no-triggers
+
 # Starting the standalone triggers server without Covalent, this is useful if your Covalent server
 # is running on a different machine than the triggers server
+
 covalent start --triggers-only
 ```
 
@@ -120,6 +125,56 @@ Keep in mind that it's important to handle the blocking/non-blocking nature of t
 
 This becomes extremely useful when writing custom triggers, for example to trigger workflows off of email/slack messages. The ability to run `trigger.observe()` as part of your own server or process opens up a world of possibilities to integrate triggers into your workflow in a way that best suits your use case.
 
+## Types of Triggers in Covalent
+
+Covalent offers an array of triggers designed to cater to diverse use cases, simplifying the automation of tasks based on a range of conditions. It's important to note that this list represents the currently available triggers, with more to be added in the future. If you find these triggers valuable and have suggestions for new ones, we encourage you to contribute to Covalent's GitHub repository.
+
+Here are the currently available triggers in Covalent:
+
+1. `DirTrigger`: This trigger observes a specified directory or file for events such as creation, deletion, modification, or movement. It performs the trigger action when these events occur. For example:
+
+```{code-block} python
+from covalent.triggers import DirTrigger
+import covalent as ct
+
+dir_trigger = DirTrigger(dir_path='path/to/your/directory', event_names=['modified'])
+
+@ct.lattice(triggers=dir_trigger)
+def my_workflow():
+    ...
+```
+
+2. `TimeTrigger`: This trigger performs the trigger action after a specified time interval. It is useful for recurring tasks or periodic data processing. For example:
+
+```{code-block} python
+from covalent.triggers import TimeTrigger
+import covalent as ct
+
+time_trigger = TimeTrigger(time_gap=5)  # Trigger action every 5 seconds
+
+@ct.lattice(triggers=time_trigger)
+def my_workflow():
+    ...
+```
+
+
+3. `SQLiteTrigger`: This trigger monitors an SQLite database for changes and performs the trigger action when changes occur. It is helpful for automating tasks in response to database updates. For example:
+
+```{code-block} python
+from covalent.triggers import SQLiteTrigger
+import covalent as ct
+
+sqlite_trigger = SQLiteTrigger(db_path='path/to/your/database.sqlite',table_name='your_table)
+
+@ct.lattice(triggers=sqlite_trigger)
+def my_workflow():
+    ...
+
+```
+
+These triggers can be easily integrated into your Covalent workflows to automate various tasks based on the desired conditions.
+
+## Trigger How-to Guides
 
 For further examples on how to use triggers, check out the Trigger how to guides:
 - {doc}`How to add a directory trigger to a lattice <../how_to/orchestration/dir_trigger>`
