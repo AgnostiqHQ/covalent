@@ -35,7 +35,7 @@ from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import DefaultMetadataValues
-from .._shared_files.utils import get_named_params, get_serialized_function_str
+from .._shared_files.utils import get_named_params, get_serialized_function_str, get_ui_url
 from .depsbash import DepsBash
 from .depscall import DepsCall
 from .depspip import DepsPip
@@ -268,7 +268,6 @@ class Lattice:
         """
 
         import covalent_ui.result_webhook as result_webhook
-        from covalent_ui.result_webhook import get_ui_url
 
         self.build_graph(*args, **kwargs)
         result_webhook.send_draw_request(self)

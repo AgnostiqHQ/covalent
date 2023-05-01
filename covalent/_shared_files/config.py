@@ -59,11 +59,6 @@ class ConfigManager:
 
         Path(self.get("sdk.log_dir")).mkdir(parents=True, exist_ok=True)
         Path(self.get("sdk.executor_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("dispatcher.log_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("user_interface.log_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("dispatcher.db_path")).parent.mkdir(parents=True, exist_ok=True)
 
     def generate_default_config(self) -> None:
         """

@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Raise error on dispatching a non-lattice
 - Helpful message when trying to dispatch a workflow when covalent server is not available
 - Open UI preview of transport graph when `lattice.draw()` is invoked and print URL of the same
+- Defer creation of server specific config entries until covalent is started
 
 ### Authors
 
