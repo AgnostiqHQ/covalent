@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import importlib
 import os
 import shutil
 import subprocess
@@ -29,6 +30,7 @@ from typing import Dict, Optional
 
 from covalent._shared_files.config import set_config
 from covalent._shared_files.exceptions import CommandNotFoundError
+from covalent.executor import _executor_manager
 
 
 class DeployStatus(Enum):
@@ -39,6 +41,53 @@ class DeployStatus(Enum):
     OK = 0
     DESTROYED = 1
     ERROR = 2
+
+
+def get_executor_module(executor_name: str):
+    return importlib.import_module(
+        _executor_manager.executor_plugins_map[executor_name].__module__
+    )
+
+
+def get_converted_value(value: str):
+    """
+    Convert the value to the appropriate type
+    """
+    if value.lower() == "true":
+        return True
+    elif value.lower() == "false":
+        return False
+    elif value.lower() == "null":
+        return None
+    elif value.isdigit():
+        return int(value)
+    elif value.replace(".", "", 1).isdigit():
+        return float(value)
+    else:
+        return value
+
+
+def validate_options(executor_options: Dict[str, str], executor_name: str):
+    """
+    Validate the options passed to the CRM
+    """
+    # Importing validation classes from the executor module
+    module = get_executor_module(executor_name)
+    ExecutorPluginDefaults = getattr(module, "ExecutorPluginDefaults")
+    ExecutorInfraDefaults = getattr(module, "ExecutorInfraDefaults")
+
+    # Validating the passed options:
+    # TODO: What exactly are the options passed? Are they plugin defaults or infra defaults?
+
+    plugin_attrs = list(ExecutorPluginDefaults.schema()["properties"].keys())
+    infra_attrs = list(ExecutorInfraDefaults.schema()["properties"].keys())
+
+    plugin_params = {k: v for k, v in executor_options.items() if k in plugin_attrs}
+    infra_params = {k: v for k, v in executor_options.items() if k in infra_attrs}
+
+    # Validate options
+    ExecutorPluginDefaults(**plugin_params)
+    ExecutorInfraDefaults(**infra_params)
 
 
 class CloudResourceManager:
@@ -54,9 +103,14 @@ class CloudResourceManager:
     ):
         self.executor_name = executor_name
         self.executor_tf_path = str(
-            Path(executor_module_path).expanduser().resolve() / "terraform"
+            Path(executor_module_path).expanduser().resolve() / "assets" / "infra"
         )
+
+        # Includes both plugin and infra options
         self.executor_options = options
+
+        if self.executor_options:
+            validate_options(self.executor_options, self.executor_name)
 
     def _print_stdout(self, process: subprocess.Popen) -> Optional[int]:
         """
@@ -107,11 +161,14 @@ class CloudResourceManager:
         Update covalent configuration with the executor
         config values as obtained from terraform
         """
+
+        # Puts the plugin options in covalent's config
         executor_config = ConfigParser()
         executor_config.read(tf_executor_config_file)
         for key in executor_config[self.executor_name]:
             value = executor_config[self.executor_name][key]
-            set_config({f"executors.{self.executor_name}.{key}": value})
+            converted_value = get_converted_value(value)
+            set_config({f"executors.{self.executor_name}.{key}": converted_value})
 
     def _get_tf_path(self) -> str:
         """
@@ -144,6 +201,8 @@ class CloudResourceManager:
             with open(tfvars_file, "w") as f:
                 for key, value in self.executor_options.items():
                     tf_vars_env_dict[f"TF_VAR_{key}"] = value
+
+                    # Write whatever the user has passed to the terraform.tfvars file
                     f.write(f'{key}="{value}"\n')
 
         # Run `terraform plan`
@@ -154,12 +213,14 @@ class CloudResourceManager:
         # Create infrastructure as per the plan
         # Run `terraform apply`
         if not dry_run:
-            self._run_in_subprocess(
+            cmd_output = self._run_in_subprocess(
                 cmd=tf_apply, workdir=self.executor_tf_path, env_vars=tf_vars_env_dict
             )
 
             # Update covalent executor config based on Terraform output
             self._update_config(tf_executor_config_file)
+
+            return cmd_output
 
     def down(self, dry_run: bool = True):
         """
@@ -173,10 +234,12 @@ class CloudResourceManager:
             tf_destroy = " ".join([terraform, "destroy", "-auto-approve"])
 
             # Run `terraform destroy`
-            self._run_in_subprocess(cmd=tf_destroy, workdir=self.executor_tf_path)
+            cmd_output = self._run_in_subprocess(cmd=tf_destroy, workdir=self.executor_tf_path)
 
             if Path(tfvars_file).exists():
                 Path(tfvars_file).unlink()
+
+            return cmd_output
 
     def status(self):
         """
@@ -187,4 +250,14 @@ class CloudResourceManager:
         tf_state = " ".join([terraform, "state", "list"])
 
         # Run `terraform state list`
-        self._run_in_subprocess(cmd=tf_state, workdir=self.executor_tf_path)
+        return self._run_in_subprocess(cmd=tf_state, workdir=self.executor_tf_path)
+
+
+# if __name__ == "__main__":
+#     module = get_executor_module("awsbatch")
+#     ExecutorPluginDefaults: BaseModel = getattr(module, "ExecutorPluginDefaults")
+#     ExecutorInfraDefaults: BaseModel = getattr(module, "ExecutorInfraDefaults")
+
+#     attrs = list(ExecutorPluginDefaults.schema()["properties"].keys())
+#     attrs.extend(list(ExecutorInfraDefaults.schema()["properties"].keys()))
+#     print(attrs)
