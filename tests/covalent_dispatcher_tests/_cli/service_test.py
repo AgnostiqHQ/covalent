@@ -139,6 +139,17 @@ def test_graceful_start_when_pid_exists(mocker):
 def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_flag):
     """Test the graceful server start function."""
 
+    config_paths = [
+        "dispatcher.cache_dir",
+        "dispatcher.results_dir",
+        "dispatcher.log_dir",
+        "user_interface.log_dir",
+        "dispatcher.db_path",
+    ]
+
+    def patched_fn(entry):
+        return entry
+
     read_pid_mock = mocker.patch("covalent_dispatcher._cli.service._read_pid")
     pid_exists_mock = mocker.patch("psutil.pid_exists", return_value=False)
     rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
@@ -146,6 +157,10 @@ def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_
         "covalent_dispatcher._cli.service._next_available_port", return_value=1984
     )
     popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
+    get_mock = mocker.patch(
+        "covalent._shared_files.config.ConfigManager.get", side_effect=patched_fn
+    )
+    path_mock = mocker.patch("covalent_dispatcher._cli.service.Path.__init__", return_value=None)
     click_echo_mock = mocker.patch("click.echo")
     requests_mock = mocker.patch(
         "covalent_dispatcher._cli.service.requests.get",
@@ -173,6 +188,14 @@ def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_
                 "", "", "output.log", 15, False, False, no_triggers_flag, triggers_only_flag
             )
             assert res == 1984
+
+            path_mock_calls = path_mock.mock_calls
+            get_mock_calls = get_mock.mock_calls
+
+            for each_path in config_paths:
+                assert (mocker.call(each_path) in get_mock_calls) and (
+                    mocker.call(each_path) in path_mock_calls
+                )
 
             popen_mock.assert_called_once()
             assert popen_mock.call_args[0][0] == launch_str

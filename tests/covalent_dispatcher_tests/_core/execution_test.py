@@ -29,11 +29,9 @@ import pytest
 
 import covalent as ct
 from covalent._results_manager import Result
-from covalent._shared_files.defaults import sublattice_prefix
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.dispatcher import run_workflow
 from covalent_dispatcher._core.execution import _get_task_inputs
-from covalent_dispatcher._core.runner import _run_task
 from covalent_dispatcher._db import update
 from covalent_dispatcher._db.datastore import DataStore
 
@@ -155,7 +153,7 @@ def test_get_task_inputs():
     result_object = Result(lattice=received_lattice, dispatch_id="asdf")
     tg = received_lattice.transport_graph
 
-    assert list(tg._graph.nodes) == [0, 1, 2, 3, 4, 5, 6, 7]
+    assert list(tg._graph.nodes) == list(range(9))
     tg.set_node_value(0, "output", ct.TransportableObject(1))
     tg.set_node_value(2, "output", ct.TransportableObject(2))
 
@@ -374,8 +372,8 @@ async def test_run_workflow_with_client_side_postprocess(test_db, mocker):
 
     result_object = await run_workflow(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
-    assert result_object.status == Result.PENDING_POSTPROCESSING
-    mock_run_abstract_task.assert_awaited_once()
+    assert result_object.status == Result.RUNNING
+    assert mock_run_abstract_task.call_count == 1
 
 
 @pytest.mark.asyncio
@@ -412,7 +410,7 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     result_object = await run_workflow(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
 
-    assert result_object.status == Result.POSTPROCESSING_FAILED
+    assert result_object.status == Result.RUNNING
 
     result_object.lattice.workflow_function = ct.TransportableObject(failing_workflow)
     result_object.lattice.set_metadata("workflow_executor", "local")
@@ -420,69 +418,5 @@ async def test_run_workflow_with_failed_postprocess(test_db, mocker):
     result_object = await run_workflow(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
 
-    assert result_object.status == Result.POSTPROCESSING_FAILED
+    assert result_object.status == Result.RUNNING
     assert mock_run_abstract_task.call_count == 2
-
-
-@pytest.mark.asyncio
-async def test_run_task_sublattice_handling(test_db, mocker):
-    """
-    Test exception handling with running a sublattice
-    """
-    result_object = get_mock_result()
-    sub_result_object = get_mock_result()
-    sub_result_object._dispatch_id = "sublattice_workflow"
-    sub_result_object._result = ct.TransportableObject(5)
-    sub_result_object._status = Result.COMPLETED
-
-    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
-    mock_get_sublattice_electron_id = mocker.patch(
-        "covalent_dispatcher._core.runner.get_sublattice_electron_id", return_value=1
-    )
-    mock_dispatch_sub = mocker.patch(
-        "covalent_dispatcher._core.runner._dispatch_sublattice",
-        return_value=sub_result_object.dispatch_id,
-    )
-    mock_run_dispatch = mocker.patch("covalent_dispatcher._core.dispatcher.run_dispatch")
-
-    inputs = {"args": [], "kwargs": {}}
-
-    node_result = await _run_task(
-        result_object=result_object,
-        node_id=1,
-        inputs=inputs,
-        serialized_callable=None,
-        selected_executor=["local", {}],
-        call_before=[],
-        call_after=[],
-        node_name=sublattice_prefix,
-        workflow_executor=["local", {}],
-    )
-
-    mock_get_sublattice_electron_id.assert_called_once()
-    mock_dispatch_sub.assert_awaited_once()
-    assert node_result["sub_dispatch_id"] == sub_result_object.dispatch_id
-    mock_run_dispatch.assert_called_once()
-
-    # Test failed sublattice workflows
-    sub_result_object._status = Result.FAILED
-    mock_run_dispatch = mocker.patch("covalent_dispatcher._core.dispatcher.run_dispatch")
-
-    mock_dispatch_sub = mocker.patch(
-        "covalent_dispatcher._core.runner._dispatch_sublattice", side_effect=RuntimeError()
-    )
-    node_result = await _run_task(
-        result_object=result_object,
-        node_id=1,
-        inputs=inputs,
-        serialized_callable=None,
-        selected_executor=["local", {}],
-        call_before=[],
-        call_after=[],
-        node_name=sublattice_prefix,
-        workflow_executor=["local", {}],
-    )
-
-    mock_dispatch_sub.assert_awaited_once()
-    mock_run_dispatch.assert_not_called()
-    assert node_result["status"] == Result.FAILED

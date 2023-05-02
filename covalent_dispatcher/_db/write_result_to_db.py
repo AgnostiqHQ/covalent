@@ -256,9 +256,7 @@ def transaction_insert_electrons_data(
 
     session.add(electron_row)
     session.flush()
-    electron_id = electron_row.id
-
-    return electron_id
+    return electron_row.id
 
 
 def insert_electrons_data(*args, **kwargs):
@@ -283,7 +281,7 @@ def transaction_insert_electron_dependency_data(
         dependency information of an electron
     """
 
-    # TODO - Update how we access the transport graph edges directly in favor of using some interface provied by the TransportGraph class.
+    # TODO - Update how we access the transport graph edges directly in favor of using some interface provided by the TransportGraph class.
     node_links = nx.readwrite.node_link_data(lattice.transport_graph._graph)["links"]
 
     electron_dependency_ids = []
@@ -352,7 +350,6 @@ def transaction_upsert_electron_dependency_data(
         .first()
         is not None
     )
-    app_log.debug(f"electron_dependencies_exist is {electron_dependencies_exist}")
     if not electron_dependencies_exist:
         transaction_insert_electron_dependency_data(
             session=session, dispatch_id=dispatch_id, lattice=lattice

@@ -205,6 +205,8 @@ jobs:
             echo "Invalid backend specified in test matrix."
             exit 1
           fi
+        env:
+          COVALENT_EXECUTOR_DIR: doc/source/how_to/execution/custom_executors
 
       - name: Run SDK tests and measure coverage
         id: sdk-tests
