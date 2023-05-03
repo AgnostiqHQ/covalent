@@ -21,6 +21,7 @@
 
 import asyncio
 from pathlib import Path
+from typing import Dict, Tuple
 
 import click
 
@@ -28,54 +29,104 @@ from covalent.cloud_resource_manager.cloud_resource_manager import CloudResource
 from covalent.executor import _executor_manager
 
 
-@click.group(invoke_without_command=True)
-@click.argument("executor_name", nargs=1)
-@click.pass_context
-def deploy(ctx: click.Context, executor_name: str):
+# TODO - Check if this should go in the executor manager.
+def get_executor_module_path(executor_name: str) -> Path:
     """
-    Load the executor plugin installation path based on the executor name provided.
+    Get the executor module path based on the executor name provided.
     Will raise KeyError if the `executor_name` plugin is not installed
+
+    Args:
+        executor_name: Name of executor to get module path for.
+
+    Returns:
+        Path to executor module.
+
     """
-    executor_module_path = Path(
+    return Path(
         __import__(_executor_manager.executor_plugins_map[executor_name].__module__).__path__[0]
     )
-    ctx.obj = {"executor_name": executor_name, "executor_module_path": executor_module_path}
 
 
-@click.command
+@click.group(invoke_without_command=True)
+def deploy():
+    """
+    Covalent deploy group with options to:
+
+    1. Spin resources up via `covalent deploy up <executor_name> <options>`.
+    2. Tear resources down via `covalent deploy down <executor_name> <options>`.
+    3. Show status of resources via `covalent deploy status <executor_name>`.
+    4. Show status of all resources via `covalent deploy status`.
+
+    """
+    pass
+
+
+@deploy.command()
+@click.argument("executor_name", nargs=1)
 @click.argument("options", nargs=-1)
-@click.pass_obj
-def up(executor_metadata: dict, options):
-    executor_name = executor_metadata["executor_name"]
-    executor_module_path = executor_metadata["executor_module_path"]
-    cmd_options = dict(opt.split("=") for opt in options)
+def up(executor_name: str, options: Dict) -> None:
+    """Spin up resources corresponding to executor.
 
-    # Create the cloud resource manager and deploy the resources
+    Args:
+        executor_name: Short name of executor to spin up.
+        options: Options to pass to the Cloud Resource Manager when provisioning the resources.
+
+    Returns:
+        None
+
+    Examples:
+        $ covalent deploy up awsbatch region=us-east-1 instance-type=t2.micro
+        $ covalent deploy up ecs
+
+    """
+    cmd_options = dict(opt.split("=") for opt in options)
+    executor_module_path = get_executor_module_path(executor_name)
+
+    # Instantiate the cloud resource manager and spin up resources.
     crm = CloudResourceManager(executor_name, executor_module_path, cmd_options)
     click.echo(asyncio.run(crm.up()))
 
 
-@click.command
-@click.argument("options", nargs=-1)
-@click.pass_obj
-def down(executor_metadata: dict, options):
-    executor_name = executor_metadata["executor_name"]
-    executor_module_path = executor_metadata["executor_module_path"]
-    cmd_options = dict(opt.split("=") for opt in options)
+# TODO - Double check if options need to be provided for the UX.
+@deploy.command()
+@click.argument("executor_name", nargs=1)
+def down(executor_name: str) -> None:
+    """Teardown resources corresponding to executor.
 
-    # Create the cloud resource manager and teardown the resources
-    crm = CloudResourceManager(executor_name, executor_module_path, cmd_options)
+    Args:
+        executor_name: Short name of executor to spin up.
+
+    Returns:
+        None
+
+    Examples:
+        $ covalent deploy down awsbatch
+        $ covalent deploy down ecs
+
+    """
+    executor_module_path = get_executor_module_path(executor_name)
+    crm = CloudResourceManager(executor_name, executor_module_path)
     click.echo(asyncio.run(crm.down()))
 
 
-@click.command
-@click.pass_obj
-def status(executor_metadata: dict):
-    executor_name = executor_metadata["executor_name"]
-    executor_module_path = executor_metadata["executor_module_path"]
-    click.echo(executor_module_path)
+@deploy.command()
+@click.argument("executor_name", nargs=-1, required=False)
+def status(executor_name: Tuple[str]) -> None:
+    """Show executor resource provision status.
 
+    Args:
+        executor_name: Short name(s) of executor to show status for.
 
-deploy.add_command(up)
-deploy.add_command(down)
-deploy.add_command(status)
+    Returns:
+        None
+
+    Examples:
+        $ covalent deploy status awsbatch
+        $ covalent deploy status awsbatch ecs
+        $ covalent deploy status
+
+    """
+    if executor_name:
+        click.echo(f"Showing status for {executor_name}...")
+    else:
+        click.echo("Showing status for all executors...")
