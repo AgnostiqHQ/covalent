@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Redispatch feature page in Read the Docs.
+- Clarify installation instructions for SLURM plugin in Read the Docs.
 
 ### Fixed
 
