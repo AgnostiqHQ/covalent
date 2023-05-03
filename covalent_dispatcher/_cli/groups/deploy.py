@@ -65,7 +65,7 @@ def deploy():
 
 @deploy.command()
 @click.argument("executor_name", nargs=1)
-@click.argument("options", nargs=-1)
+@click.option("--help", "-h", is_flag=True)
 def up(executor_name: str, options: Dict) -> None:
     """Spin up resources corresponding to executor.
 
@@ -108,6 +108,8 @@ def down(executor_name: str) -> None:
     click.echo(asyncio.run(crm.down()))
 
 
+# TODO - Key error for uninstalled plugins need to be handled.
+# TODO - Color code status.
 @deploy.command()
 @click.argument("executor_names", nargs=-1, required=False)
 def status(executor_names: Tuple[str]) -> None:
@@ -137,7 +139,6 @@ def status(executor_names: Tuple[str]) -> None:
         executor_module_path = get_executor_module_path(executor_name)
         crm = CloudResourceManager(executor_name, executor_module_path)
         status, description = asyncio.run(crm.status())
-
         table.add_row(executor_name, status, description)
 
     console = Console()
