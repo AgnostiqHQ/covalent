@@ -18,4 +18,4 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .cloud_resource_manager import CloudResourceManager
+from .core import CloudResourceManager
