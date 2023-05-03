@@ -24,23 +24,12 @@ import os
 import shutil
 import subprocess
 from configparser import ConfigParser
-from enum import Enum
 from pathlib import Path
 from typing import Dict, Optional
 
 from covalent._shared_files.config import set_config
 from covalent._shared_files.exceptions import CommandNotFoundError
 from covalent.executor import _executor_manager
-
-
-class DeployStatus(Enum):
-    """
-    Status of the terraform deployment
-    """
-
-    OK = 0
-    DESTROYED = 1
-    ERROR = 2
 
 
 def get_executor_module(executor_name: str):
@@ -243,7 +232,9 @@ class CloudResourceManager:
 
     def status(self):
         """
-        Return executor resource deployment status
+        Return the list of resources being managed by terraform, i.e.
+        if empty, then either the resources have not been created or
+        have been destroyed already.
         """
         terraform = self._get_tf_path()
 
@@ -254,10 +245,26 @@ class CloudResourceManager:
 
 
 # if __name__ == "__main__":
-#     module = get_executor_module("awsbatch")
-#     ExecutorPluginDefaults: BaseModel = getattr(module, "ExecutorPluginDefaults")
-#     ExecutorInfraDefaults: BaseModel = getattr(module, "ExecutorInfraDefaults")
 
-#     attrs = list(ExecutorPluginDefaults.schema()["properties"].keys())
-#     attrs.extend(list(ExecutorInfraDefaults.schema()["properties"].keys()))
-#     print(attrs)
+#     executor_module_path = Path(
+#         __import__(_executor_manager.executor_plugins_map["awsbatch"].__module__).__path__[0]
+#     )
+
+
+#     crm = CloudResourceManager(
+#         executor_name="awsbatch",
+#         executor_module_path=executor_module_path,
+#         options={
+#             "prefix": "sankalp",
+#         }
+#     )
+
+#     crm.up(dry_run=False)
+
+#     time.sleep(2)
+
+#     crm.status()
+
+#     time.sleep(2)
+
+#     crm.down(dry_run=False)
