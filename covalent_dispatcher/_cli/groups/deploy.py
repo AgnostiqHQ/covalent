@@ -24,6 +24,8 @@ from pathlib import Path
 from typing import Dict, Tuple
 
 import click
+from rich.console import Console
+from rich.table import Table
 
 from covalent.cloud_resource_manager.cloud_resource_manager import CloudResourceManager
 from covalent.executor import _executor_manager
@@ -81,13 +83,10 @@ def up(executor_name: str, options: Dict) -> None:
     """
     cmd_options = dict(opt.split("=") for opt in options)
     executor_module_path = get_executor_module_path(executor_name)
-
-    # Instantiate the cloud resource manager and spin up resources.
     crm = CloudResourceManager(executor_name, executor_module_path, cmd_options)
     click.echo(asyncio.run(crm.up()))
 
 
-# TODO - Double check if options need to be provided for the UX.
 @deploy.command()
 @click.argument("executor_name", nargs=1)
 def down(executor_name: str) -> None:
@@ -110,12 +109,12 @@ def down(executor_name: str) -> None:
 
 
 @deploy.command()
-@click.argument("executor_name", nargs=-1, required=False)
-def status(executor_name: Tuple[str]) -> None:
+@click.argument("executor_names", nargs=-1, required=False)
+def status(executor_names: Tuple[str]) -> None:
     """Show executor resource provision status.
 
     Args:
-        executor_name: Short name(s) of executor to show status for.
+        executor_names: Short name(s) of executor to show status for.
 
     Returns:
         None
@@ -126,7 +125,20 @@ def status(executor_name: Tuple[str]) -> None:
         $ covalent deploy status
 
     """
-    if executor_name:
-        click.echo(f"Showing status for {executor_name}...")
-    else:
-        click.echo("Showing status for all executors...")
+    if not executor_names:
+        executor_names = _executor_manager.executor_plugins_map.keys()
+
+    table = Table()
+    table.add_column("Executor", justify="center")
+    table.add_column("Status", justify="center")
+    table.add_column("Description", justify="center")
+
+    for executor_name in executor_names:
+        executor_module_path = get_executor_module_path(executor_name)
+        crm = CloudResourceManager(executor_name, executor_module_path)
+        status, description = asyncio.run(crm.status())
+
+        table.add_row(executor_name, status, description)
+
+    console = Console()
+    click.echo(console.print(table))
