@@ -227,6 +227,7 @@ def status(executor_names: Tuple[str]) -> None:
     if invalid_executor_names:
         click.echo(
             click.style(
-                f"{', '.join(invalid_executor_names)} are not valid executors.", fg="yellow"
+                f"Warning: {', '.join(invalid_executor_names)} are not valid executors.",
+                fg="yellow",
             )
         )
