@@ -31,23 +31,6 @@ from covalent.cloud_resource_manager.core import CloudResourceManager
 from covalent.executor import _executor_manager
 
 
-def get_executor_module_path(executor_name: str) -> Path:
-    """
-    Get the executor module path based on the executor name provided.
-    Will raise KeyError if the `executor_name` plugin is not installed
-
-    Args:
-        executor_name: Name of executor to get module path for.
-
-    Returns:
-        Path to executor module.
-
-    """
-    return Path(
-        __import__(_executor_manager.executor_plugins_map[executor_name].__module__).__path__[0]
-    )
-
-
 def get_crm_object(executor_name: str, options: Dict = None) -> CloudResourceManager:
     """
     Get the CloudResourceManager object.
@@ -56,7 +39,10 @@ def get_crm_object(executor_name: str, options: Dict = None) -> CloudResourceMan
         CloudResourceManager object.
 
     """
-    return CloudResourceManager(executor_name, get_executor_module_path(executor_name), options)
+    executor_module_path = Path(
+        __import__(_executor_manager.executor_plugins_map[executor_name].__module__).__path__[0]
+    )
+    return CloudResourceManager(executor_name, executor_module_path, options)
 
 
 @click.group(invoke_without_command=True)
@@ -76,8 +62,17 @@ def deploy():
 @deploy.command(context_settings={"ignore_unknown_options": True})
 @click.argument("executor_name", nargs=1)
 @click.argument("vars", nargs=-1)
-@click.option("--help", "-h", is_flag=True, help="Show this message and exit.")
-def up(executor_name: str, vars: Dict, help) -> None:
+@click.option(
+    "--help", "-h", is_flag=True, help="Get info on default and current values for resources."
+)
+@click.option("--dry-run", "-dr", is_flag=True, help="Get info on current parameter settings.")
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    help="Show the full Terraform output when provisioning resources.",
+)
+def up(executor_name: str, vars: Dict, help: bool, dry_run: bool) -> None:
     """Spin up resources corresponding to executor.
 
     Args:
@@ -91,6 +86,7 @@ def up(executor_name: str, vars: Dict, help) -> None:
         $ covalent deploy up awsbatch --region=us-east-1 --instance-type=t2.micro
         $ covalent deploy up ecs
         $ covalent deploy up ecs --help
+        $ covalent deploy up awslambda --verbose --region=us-east-1 --instance-type=t2.micro
 
     """
     cmd_options = {key[2:]: value for key, value in (var.split("=") for var in vars)}
@@ -108,14 +104,29 @@ def up(executor_name: str, vars: Dict, help) -> None:
                 crm.resource_parameters[argument]["default"],
                 crm.resource_parameters[argument]["value"],
             )
+        click.echo(Console().print(table))
         return
 
-    click.echo(asyncio.run(crm.up()))
+    if dry_run:
+        asyncio.run(crm.up(dry_run=dry_run))
+        table = Table()
+        table.add_column("Settings", justify="center")
+        for argument in crm.resource_parameters:
+            table.add_row(f"{argument: crm.resource_parameters[argument]['value']}")
+        click.echo(Console().print(table))
+    else:
+        click.echo(asyncio.run(crm.up()))
 
 
 @deploy.command()
 @click.argument("executor_name", nargs=1)
-def down(executor_name: str) -> None:
+@click.option(
+    "--verbose",
+    "-v",
+    is_flag=True,
+    help="Show the full Terraform output when spinning down resources.",
+)
+def down(executor_name: str, verbose: bool) -> None:
     """Teardown resources corresponding to executor.
 
     Args:
@@ -126,7 +137,7 @@ def down(executor_name: str) -> None:
 
     Examples:
         $ covalent deploy down awsbatch
-        $ covalent deploy down ecs
+        $ covalent deploy down ecs --verbose
 
     """
     crm = get_crm_object(executor_name)
@@ -175,8 +186,7 @@ def status(executor_names: Tuple[str]) -> None:
         except KeyError:
             invalid_executor_names.append(executor_name)
 
-    console = Console()
-    click.echo(console.print(table))
+    click.echo(Console().print(table))
 
     if invalid_executor_names:
         click.echo(
