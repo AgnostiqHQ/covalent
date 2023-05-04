@@ -20,6 +20,7 @@
 
 
 import asyncio
+from functools import partial
 from pathlib import Path
 from typing import Dict, Tuple
 
@@ -43,6 +44,36 @@ def get_crm_object(executor_name: str, options: Dict = None) -> CloudResourceMan
         __import__(_executor_manager.executor_plugins_map[executor_name].__module__).__path__[0]
     )
     return CloudResourceManager(executor_name, executor_module_path, options)
+
+
+def preprocess_msg(msg: str) -> str:
+    """Preprocess Terraform output message
+
+    Args:
+        msg: Message to be preprocessed.
+
+    Returns:
+        Preprocessed message.
+
+    """
+    return msg.strip()
+
+
+def print_callback(msg: str, verbose: bool = True) -> None:
+    """Print Terraform output to the console
+
+    Args:
+        msg: Message to be printed on the console.
+        verbose: If False, print the message to the console inline otherwise add a new line.
+
+    """
+    if not (filtered_msg := preprocess_msg(msg)):
+        return
+
+    if verbose:
+        click.echo(filtered_msg)
+    else:
+        click.echo(filtered_msg, nl=False)
 
 
 @click.group(invoke_without_command=True)
@@ -72,7 +103,7 @@ def deploy():
     is_flag=True,
     help="Show the full Terraform output when provisioning resources.",
 )
-def up(executor_name: str, vars: Dict, help: bool, dry_run: bool) -> None:
+def up(executor_name: str, vars: Dict, help: bool, dry_run: bool, verbose: bool) -> None:
     """Spin up resources corresponding to executor.
 
     Args:
@@ -107,15 +138,17 @@ def up(executor_name: str, vars: Dict, help: bool, dry_run: bool) -> None:
         click.echo(Console().print(table))
         return
 
+    console_msg = asyncio.run(
+        crm.up(dry_run=dry_run, print_callback=partial(print_callback, verbose=verbose))
+    )
     if dry_run:
-        asyncio.run(crm.up(dry_run=dry_run))
         table = Table()
         table.add_column("Settings", justify="center")
         for argument in crm.resource_parameters:
             table.add_row(f"{argument: crm.resource_parameters[argument]['value']}")
         click.echo(Console().print(table))
     else:
-        click.echo(asyncio.run(crm.up()))
+        click.echo(console_msg)
 
 
 @deploy.command()
@@ -141,7 +174,7 @@ def down(executor_name: str, verbose: bool) -> None:
 
     """
     crm = get_crm_object(executor_name)
-    click.echo(asyncio.run(crm.down()))
+    click.echo(asyncio.run(crm.down(partial(print_callback, verbose=verbose))))
 
 
 # TODO - Color code status.

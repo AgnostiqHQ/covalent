@@ -25,7 +25,7 @@ import shutil
 import subprocess
 from configparser import ConfigParser
 from pathlib import Path
-from typing import Dict, Optional
+from typing import Callable, Dict, Optional
 
 from covalent._shared_files.config import set_config
 from covalent._shared_files.exceptions import CommandNotFoundError
@@ -101,7 +101,7 @@ class CloudResourceManager:
         if self.executor_options:
             validate_options(self.executor_options, self.executor_name)
 
-    def _print_stdout(self, process: subprocess.Popen) -> Optional[int]:
+    def _print_stdout(self, process: subprocess.Popen, print_callback: Callable) -> Optional[int]:
         """
         Print the stdout from the subprocess to console
 
@@ -113,13 +113,17 @@ class CloudResourceManager:
         """
         while process.poll() is None:
             if proc_stdout := process.stdout.readline():
-                print(proc_stdout.strip().decode("utf-8"))
+                print_callback(proc_stdout.strip().decode("utf-8"))
             else:
                 break
         return process.poll()
 
     def _run_in_subprocess(
-        self, cmd: str, workdir: str, env_vars: Optional[Dict[str, str]] = None
+        self,
+        cmd: str,
+        workdir: str,
+        print_callback: Callable,
+        env_vars: Optional[Dict[str, str]] = None,
     ) -> Optional[int]:
         """
         Run the `cmd` in a subprocess shell with the env_vars set in the process's new environment
@@ -140,7 +144,7 @@ class CloudResourceManager:
             shell=True,
             env=env_vars,
         )
-        retcode = self._print_stdout(proc)
+        retcode = self._print_stdout(proc, print_callback)
 
         if retcode != 0:
             raise subprocess.CalledProcessError(returncode=retcode, cmd=cmd)
@@ -168,7 +172,7 @@ class CloudResourceManager:
         else:
             raise CommandNotFoundError("Terraform not found on system")
 
-    def up(self, dry_run: bool = True):
+    def up(self, print_callback: Callable, dry_run: bool = True):
         """
         Setup executor resources
         """
@@ -196,7 +200,10 @@ class CloudResourceManager:
 
         # Run `terraform plan`
         self._run_in_subprocess(
-            cmd=tf_plan, workdir=self.executor_tf_path, env_vars=tf_vars_env_dict
+            cmd=tf_plan,
+            workdir=self.executor_tf_path,
+            env_vars=tf_vars_env_dict,
+            print_callback=print_callback,
         )
 
         # Create infrastructure as per the plan
@@ -211,24 +218,25 @@ class CloudResourceManager:
 
             return cmd_output
 
-    def down(self, dry_run: bool = True):
+    def down(self, print_callback: Callable):
         """
         Teardown executor resources
         """
-        if not dry_run:
-            terraform = self._get_tf_path()
+        terraform = self._get_tf_path()
 
-            tfvars_file = Path(self.executor_tf_path) / "terraform.tfvars"
+        tfvars_file = Path(self.executor_tf_path) / "terraform.tfvars"
 
-            tf_destroy = " ".join([terraform, "destroy", "-auto-approve"])
+        tf_destroy = " ".join([terraform, "destroy", "-auto-approve"])
 
-            # Run `terraform destroy`
-            cmd_output = self._run_in_subprocess(cmd=tf_destroy, workdir=self.executor_tf_path)
+        # Run `terraform destroy`
+        cmd_output = self._run_in_subprocess(
+            cmd=tf_destroy, workdir=self.executor_tf_path, print_callback=print_callback
+        )
 
-            if Path(tfvars_file).exists():
-                Path(tfvars_file).unlink()
+        if Path(tfvars_file).exists():
+            Path(tfvars_file).unlink()
 
-            return cmd_output
+        return cmd_output
 
     def status(self):
         """
