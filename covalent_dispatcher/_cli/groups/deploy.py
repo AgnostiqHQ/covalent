@@ -22,7 +22,7 @@
 import asyncio
 from functools import partial
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
 import click
 from rich.console import Console
@@ -46,17 +46,23 @@ def get_crm_object(executor_name: str, options: Dict = None) -> CloudResourceMan
     return CloudResourceManager(executor_name, executor_module_path, options)
 
 
-def preprocess_msg(msg: str) -> str:
-    """Preprocess Terraform output message
+def filter_lines(lines: List[str]) -> List[str]:
+    """Filters out empty lines and lines comprised only of delimiters.
 
     Args:
-        msg: Message to be preprocessed.
+        lines (List[str]): A list of strings representing the lines to filter.
+        delimiters (List[str]): A list of strings representing the delimiters to check for.
 
     Returns:
-        Preprocessed message.
+        List[str]: A list of strings representing the non-empty lines.
 
     """
-    return msg.strip()
+    delimiters = ["\n", "\r", "\t", " "]
+    return [
+        line.strip()
+        for line in lines
+        if line.strip() and any(d not in delimiters for d in line.strip())
+    ]
 
 
 def print_callback(msg: str, verbose: bool = True) -> None:
@@ -67,13 +73,10 @@ def print_callback(msg: str, verbose: bool = True) -> None:
         verbose: If False, print the message to the console inline otherwise add a new line.
 
     """
-    if not (filtered_msg := preprocess_msg(msg)):
+    if not (filtered_lines := filter_lines([msg])):
         return
 
-    if verbose:
-        click.echo(filtered_msg)
-    else:
-        click.echo(filtered_msg, nl=False)
+    click.echo(filtered_lines[0], nl=verbose)
 
 
 @click.group(invoke_without_command=True)
