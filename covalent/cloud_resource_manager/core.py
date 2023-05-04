@@ -172,7 +172,7 @@ class CloudResourceManager:
         else:
             raise CommandNotFoundError("Terraform not found on system")
 
-    def up(self, print_callback: Callable, dry_run: bool = True):
+    def up(self, print_callback: Callable, progressbar_callback: Callable, dry_run: bool = True):
         """
         Setup executor resources
         """
@@ -186,7 +186,10 @@ class CloudResourceManager:
         tf_apply = " ".join([terraform, "apply", "tf.plan"])
 
         # Run `terraform init`
-        self._run_in_subprocess(cmd=tf_init, workdir=self.executor_tf_path)
+        self._run_in_subprocess(
+            cmd=tf_init, workdir=self.executor_tf_path, print_callback=print_callback
+        )
+        progressbar_callback("Provisioning infrastructure ...")
 
         # Setup terraform infra variables as passed by the user
         tf_vars_env_dict = os.environ.copy()
@@ -210,7 +213,10 @@ class CloudResourceManager:
         # Run `terraform apply`
         if not dry_run:
             cmd_output = self._run_in_subprocess(
-                cmd=tf_apply, workdir=self.executor_tf_path, env_vars=tf_vars_env_dict
+                cmd=tf_apply,
+                workdir=self.executor_tf_path,
+                env_vars=tf_vars_env_dict,
+                print_callback=print_callback,
             )
 
             # Update covalent executor config based on Terraform output
@@ -238,7 +244,7 @@ class CloudResourceManager:
 
         return cmd_output
 
-    def status(self):
+    def status(self, print_callback: Callable):
         """
         Return the list of resources being managed by terraform, i.e.
         if empty, then either the resources have not been created or
@@ -249,7 +255,9 @@ class CloudResourceManager:
         tf_state = " ".join([terraform, "state", "list"])
 
         # Run `terraform state list`
-        return self._run_in_subprocess(cmd=tf_state, workdir=self.executor_tf_path)
+        return self._run_in_subprocess(
+            cmd=tf_state, workdir=self.executor_tf_path, print_callback=print_callback
+        )
 
 
 # if __name__ == "__main__":

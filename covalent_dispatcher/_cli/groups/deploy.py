@@ -20,6 +20,7 @@
 
 
 import asyncio
+import time
 from functools import partial
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -65,7 +66,15 @@ def filter_lines(lines: List[str]) -> List[str]:
     ]
 
 
-def print_callback(msg: str, verbose: bool = True) -> None:
+def add_progress_bar(label: str) -> None:
+    """Add progress bar to the console."""
+    with click.progressbar(length=10, label=label) as progress_bar:
+        for _ in range(10):
+            time.sleep(0.5)
+            progress_bar.update(1)
+
+
+def print_callback(msg: str, verbose: bool = False) -> None:
     """Print Terraform output to the console
 
     Args:
@@ -73,10 +82,8 @@ def print_callback(msg: str, verbose: bool = True) -> None:
         verbose: If False, print the message to the console inline otherwise add a new line.
 
     """
-    if not (filtered_lines := filter_lines([msg])):
-        return
-
-    click.echo(filtered_lines[0], nl=verbose)
+    if verbose and (filtered_lines := filter_lines([msg])):
+        click.echo(filtered_lines[0])
 
 
 @click.group(invoke_without_command=True)
@@ -142,8 +149,13 @@ def up(executor_name: str, vars: Dict, help: bool, dry_run: bool, verbose: bool)
         return
 
     console_msg = asyncio.run(
-        crm.up(dry_run=dry_run, print_callback=partial(print_callback, verbose=verbose))
+        crm.up(
+            dry_run=dry_run,
+            print_callback=partial(print_callback, verbose=verbose),
+            progressbar_callback=add_progress_bar,
+        )
     )
+
     if dry_run:
         table = Table()
         table.add_column("Settings", justify="center")
@@ -217,7 +229,7 @@ def status(executor_names: Tuple[str]) -> None:
     for executor_name in executor_names:
         try:
             crm = get_crm_object(executor_name)
-            status = asyncio.run(crm.status())
+            status = asyncio.run(crm.status(partial(print_callback, verbose=False)))
             table.add_row(executor_name, status, description[status])
         except KeyError:
             invalid_executor_names.append(executor_name)
