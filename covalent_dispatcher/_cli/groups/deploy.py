@@ -27,11 +27,10 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-from covalent.cloud_resource_manager.cloud_resource_manager import CloudResourceManager
+from covalent.cloud_resource_manager.core import CloudResourceManager
 from covalent.executor import _executor_manager
 
 
-# TODO - Check if this should go in the executor manager.
 def get_executor_module_path(executor_name: str) -> Path:
     """
     Get the executor module path based on the executor name provided.
@@ -49,6 +48,17 @@ def get_executor_module_path(executor_name: str) -> Path:
     )
 
 
+def get_crm_object(executor_name: str, options: Dict = None) -> CloudResourceManager:
+    """
+    Get the CloudResourceManager object.
+
+    Returns:
+        CloudResourceManager object.
+
+    """
+    return CloudResourceManager(executor_name, get_executor_module_path(executor_name), options)
+
+
 @click.group(invoke_without_command=True)
 def deploy():
     """
@@ -63,10 +73,11 @@ def deploy():
     pass
 
 
-@deploy.command()
+@deploy.command(context_settings={"ignore_unknown_options": True})
 @click.argument("executor_name", nargs=1)
-@click.option("--help", "-h", is_flag=True)
-def up(executor_name: str, options: Dict) -> None:
+@click.argument("vars", nargs=-1)
+@click.option("--help", "-h", is_flag=True, help="Show this message and exit.")
+def up(executor_name: str, vars: Dict, help) -> None:
     """Spin up resources corresponding to executor.
 
     Args:
@@ -77,13 +88,28 @@ def up(executor_name: str, options: Dict) -> None:
         None
 
     Examples:
-        $ covalent deploy up awsbatch region=us-east-1 instance-type=t2.micro
+        $ covalent deploy up awsbatch --region=us-east-1 --instance-type=t2.micro
         $ covalent deploy up ecs
+        $ covalent deploy up ecs --help
 
     """
-    cmd_options = dict(opt.split("=") for opt in options)
-    executor_module_path = get_executor_module_path(executor_name)
-    crm = CloudResourceManager(executor_name, executor_module_path, cmd_options)
+    cmd_options = {key[2:]: value for key, value in (var.split("=") for var in vars)}
+    crm = get_crm_object(executor_name, cmd_options)
+    if help:
+        table = Table()
+        table.add_column("Argument", justify="center")
+        table.add_column("Required", justify="center")
+        table.add_column("Default", justify="center")
+        table.add_column("Current value", justify="center")
+        for argument in crm.resource_parameters:
+            table.add_row(
+                argument,
+                crm.resource_parameters[argument]["required"],
+                crm.resource_parameters[argument]["default"],
+                crm.resource_parameters[argument]["value"],
+            )
+        return
+
     click.echo(asyncio.run(crm.up()))
 
 
@@ -103,12 +129,10 @@ def down(executor_name: str) -> None:
         $ covalent deploy down ecs
 
     """
-    executor_module_path = get_executor_module_path(executor_name)
-    crm = CloudResourceManager(executor_name, executor_module_path)
+    crm = get_crm_object(executor_name)
     click.echo(asyncio.run(crm.down()))
 
 
-# TODO - Key error for uninstalled plugins need to be handled.
 # TODO - Color code status.
 @deploy.command()
 @click.argument("executor_names", nargs=-1, required=False)
@@ -127,6 +151,13 @@ def status(executor_names: Tuple[str]) -> None:
         $ covalent deploy status
 
     """
+    description = {
+        "up": "Resources are provisioned.",
+        "down": "Resources are not provisioned.",
+        "*up": "Resources are partially provisioned.",
+        "*down": "Resources are partially deprovisioned.",
+    }
+
     if not executor_names:
         executor_names = _executor_manager.executor_plugins_map.keys()
 
@@ -135,11 +166,21 @@ def status(executor_names: Tuple[str]) -> None:
     table.add_column("Status", justify="center")
     table.add_column("Description", justify="center")
 
+    invalid_executor_names = []
     for executor_name in executor_names:
-        executor_module_path = get_executor_module_path(executor_name)
-        crm = CloudResourceManager(executor_name, executor_module_path)
-        status, description = asyncio.run(crm.status())
-        table.add_row(executor_name, status, description)
+        try:
+            crm = get_crm_object(executor_name)
+            status = asyncio.run(crm.status())
+            table.add_row(executor_name, status, description[status])
+        except KeyError:
+            invalid_executor_names.append(executor_name)
 
     console = Console()
     click.echo(console.print(table))
+
+    if invalid_executor_names:
+        click.echo(
+            click.style(
+                f"{', '.join(invalid_executor_names)} are not valid executors.", fg="yellow"
+            )
+        )
