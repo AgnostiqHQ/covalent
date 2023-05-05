@@ -58,6 +58,7 @@ def test_config_manager_init_write_update_config(
     config_keys = [
         "sdk.log_dir",
         "sdk.executor_dir",
+        "dispatcher.db_path",
     ]
 
     server_specific_config_keys = [
@@ -65,7 +66,6 @@ def test_config_manager_init_write_update_config(
         "dispatcher.results_dir",
         "dispatcher.log_dir",
         "user_interface.log_dir",
-        "dispatcher.db_path",
     ]
 
     with tempfile.TemporaryDirectory() as tmp_dir:
