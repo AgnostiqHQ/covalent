@@ -166,7 +166,7 @@ async def test_run_abstract_task_get_cancel_requested(mocker):
         side_effect=RuntimeError(),
     )
     mock_get_cancel_requested = mocker.patch(
-        "covalent_dispatcher._core.runner_modules.executor_proxy",
+        "covalent_dispatcher._core.runner_modules.executor_proxy._get_cancel_requested",
         return_value=AsyncMock(return_value=True),
     )
     mock_generate_node_result = mocker.patch(
