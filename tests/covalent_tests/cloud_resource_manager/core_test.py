@@ -17,3 +17,16 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+
+import pytest
+
+from covalent.cloud_resource_manager import CloudResourceManager
+
+
+@pytest.fixture
+def cloud_resource_manager():
+    return CloudResourceManager()
+
+
+def test_cloud_resource_manager(cloud_resource_manager):
+    pass
