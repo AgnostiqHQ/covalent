@@ -101,7 +101,9 @@ class CloudResourceManager:
         if self.executor_options:
             validate_options(self.executor_options, self.executor_name)
 
-    def _print_stdout(self, process: subprocess.Popen, print_callback: Callable) -> Optional[int]:
+    def _print_stdout(
+        self, process: subprocess.Popen, print_callback: Callable = None
+    ) -> Optional[int]:
         """
         Print the stdout from the subprocess to console
 
@@ -111,18 +113,16 @@ class CloudResourceManager:
         Returns:
             returncode of the process
         """
-        while process.poll() is None:
-            if proc_stdout := process.stdout.readline():
+        while process.poll() is None and (proc_stdout := process.stdout.readline()):
+            if print_callback:
                 print_callback(proc_stdout.strip().decode("utf-8"))
-            else:
-                break
         return process.poll()
 
     def _run_in_subprocess(
         self,
         cmd: str,
         workdir: str,
-        print_callback: Callable,
+        print_callback: Callable = None,
         env_vars: Optional[Dict[str, str]] = None,
     ) -> Optional[int]:
         """
@@ -172,7 +172,7 @@ class CloudResourceManager:
         else:
             raise CommandNotFoundError("Terraform not found on system")
 
-    def up(self, print_callback: Callable, progressbar_callback: Callable, dry_run: bool = True):
+    def up(self, print_callback: Callable, dry_run: bool = True):
         """
         Setup executor resources
         """
@@ -186,10 +186,7 @@ class CloudResourceManager:
         tf_apply = " ".join([terraform, "apply", "tf.plan"])
 
         # Run `terraform init`
-        self._run_in_subprocess(
-            cmd=tf_init, workdir=self.executor_tf_path, print_callback=print_callback
-        )
-        progressbar_callback("Provisioning infrastructure ...")
+        self._run_in_subprocess(cmd=tf_init, workdir=self.executor_tf_path)
 
         # Setup terraform infra variables as passed by the user
         tf_vars_env_dict = os.environ.copy()
@@ -206,7 +203,6 @@ class CloudResourceManager:
             cmd=tf_plan,
             workdir=self.executor_tf_path,
             env_vars=tf_vars_env_dict,
-            print_callback=print_callback,
         )
 
         # Create infrastructure as per the plan
@@ -244,7 +240,7 @@ class CloudResourceManager:
 
         return cmd_output
 
-    def status(self, print_callback: Callable):
+    def status(self):
         """
         Return the list of resources being managed by terraform, i.e.
         if empty, then either the resources have not been created or
@@ -255,9 +251,7 @@ class CloudResourceManager:
         tf_state = " ".join([terraform, "state", "list"])
 
         # Run `terraform state list`
-        return self._run_in_subprocess(
-            cmd=tf_state, workdir=self.executor_tf_path, print_callback=print_callback
-        )
+        return self._run_in_subprocess(cmd=tf_state, workdir=self.executor_tf_path)
 
 
 # if __name__ == "__main__":

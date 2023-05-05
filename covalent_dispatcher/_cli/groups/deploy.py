@@ -20,10 +20,8 @@
 
 
 import asyncio
-import time
-from functools import partial
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple
 
 import click
 from rich.console import Console
@@ -47,43 +45,70 @@ def get_crm_object(executor_name: str, options: Dict = None) -> CloudResourceMan
     return CloudResourceManager(executor_name, executor_module_path, options)
 
 
-def filter_lines(lines: List[str]) -> List[str]:
-    """Filters out empty lines and lines comprised only of delimiters.
+def get_print_callback(
+    console: Console, console_status: Console.status, prepend_msg: str, verbose: bool
+):
+    """Get print callback method.
 
     Args:
-        lines (List[str]): A list of strings representing the lines to filter.
-        delimiters (List[str]): A list of strings representing the delimiters to check for.
+        console: Rich console object.
+        console_status: Console status object.
+        prepend_msg: Message to prepend to the output.
+        verbose: Whether to print the output inline or not.
 
     Returns:
-        List[str]: A list of strings representing the non-empty lines.
+        Callback method.
 
     """
-    delimiters = ["\n", "\r", "\t", " "]
-    return [
-        line.strip()
-        for line in lines
-        if line.strip() and any(d not in delimiters for d in line.strip())
-    ]
+    if verbose:
+        return console.log
+
+    def inline_print_callback(msg):
+        status.update(f"{prepend_msg} {msg}")
+
+    return inline_print_callback
 
 
-def add_progress_bar(label: str) -> None:
-    """Add progress bar to the console."""
-    with click.progressbar(length=10, label=label) as progress_bar:
-        for _ in range(10):
-            time.sleep(0.5)
-            progress_bar.update(1)
-
-
-def print_callback(msg: str, verbose: bool = False) -> None:
-    """Print Terraform output to the console
+def get_settings_table(crm: CloudResourceManager) -> Table:
+    """Get resource provisioning settings table.
 
     Args:
-        msg: Message to be printed on the console.
-        verbose: If False, print the message to the console inline otherwise add a new line.
+        crm: CloudResourceManager object.
+
+    Returns:
+        Table with resource provisioning settings.
 
     """
-    if verbose and (filtered_lines := filter_lines([msg])):
-        click.echo(filtered_lines[0])
+    table = Table()
+    table.add_column("Settings", justify="center")
+    for argument in crm.resource_parameters:
+        table.add_row(f"{argument: crm.resource_parameters[argument]['value']}")
+    return table
+
+
+def get_up_help_table(crm: CloudResourceManager) -> Table:
+    """Get resource provisioning help table.
+
+    Args:
+        crm: CloudResourceManager object.
+
+    Returns:
+        Table with resource provisioning help.
+
+    """
+    table = Table()
+    table.add_column("Argument", justify="center")
+    table.add_column("Required", justify="center")
+    table.add_column("Default", justify="center")
+    table.add_column("Current value", justify="center")
+    for argument in crm.resource_parameters:
+        table.add_row(
+            argument,
+            crm.resource_parameters[argument]["required"],
+            crm.resource_parameters[argument]["default"],
+            crm.resource_parameters[argument]["value"],
+        )
+    return table
 
 
 @click.group(invoke_without_command=True)
@@ -133,37 +158,27 @@ def up(executor_name: str, vars: Dict, help: bool, dry_run: bool, verbose: bool)
     cmd_options = {key[2:]: value for key, value in (var.split("=") for var in vars)}
     crm = get_crm_object(executor_name, cmd_options)
     if help:
-        table = Table()
-        table.add_column("Argument", justify="center")
-        table.add_column("Required", justify="center")
-        table.add_column("Default", justify="center")
-        table.add_column("Current value", justify="center")
-        for argument in crm.resource_parameters:
-            table.add_row(
-                argument,
-                crm.resource_parameters[argument]["required"],
-                crm.resource_parameters[argument]["default"],
-                crm.resource_parameters[argument]["value"],
-            )
-        click.echo(Console().print(table))
+        click.echo(Console().print(get_up_help_table(crm)))
         return
 
-    console_msg = asyncio.run(
-        crm.up(
-            dry_run=dry_run,
-            print_callback=partial(print_callback, verbose=verbose),
-            progressbar_callback=add_progress_bar,
-        )
-    )
+    console = Console()
+    prepend_msg = "[bold green] Provisioning resources..."
+    click.echo(Console().print(get_settings_table(crm)))
 
-    if dry_run:
-        table = Table()
-        table.add_column("Settings", justify="center")
-        for argument in crm.resource_parameters:
-            table.add_row(f"{argument: crm.resource_parameters[argument]['value']}")
-        click.echo(Console().print(table))
-    else:
-        click.echo(console_msg)
+    with console.status(prepend_msg) as status:
+        console_msg = asyncio.run(
+            crm.up(
+                dry_run=dry_run,
+                print_callback=get_print_callback(
+                    console=console,
+                    console_status=status,
+                    prepend_msg=prepend_msg,
+                    verbose=verbose,
+                ),
+            )
+        )
+
+    click.echo(console_msg)
 
 
 @deploy.command()
@@ -189,7 +204,22 @@ def down(executor_name: str, verbose: bool) -> None:
 
     """
     crm = get_crm_object(executor_name)
-    click.echo(asyncio.run(crm.down(partial(print_callback, verbose=verbose))))
+
+    console = Console()
+    prepend_msg = "[bold green] Destroying resources..."
+    with console.status(prepend_msg) as status:
+        console_msg = asyncio.run(
+            crm.down(
+                print_callback=get_print_callback(
+                    console=console,
+                    console_status=status,
+                    prepend_msg=prepend_msg,
+                    verbose=verbose,
+                )
+            )
+        )
+
+    click.echo(console_msg)
 
 
 # TODO - Color code status.
@@ -229,7 +259,7 @@ def status(executor_names: Tuple[str]) -> None:
     for executor_name in executor_names:
         try:
             crm = get_crm_object(executor_name)
-            status = asyncio.run(crm.status(partial(print_callback, verbose=False)))
+            status = asyncio.run(crm.status())
             table.add_row(executor_name, status, description[status])
         except KeyError:
             invalid_executor_names.append(executor_name)
