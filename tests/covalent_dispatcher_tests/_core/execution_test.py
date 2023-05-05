@@ -349,11 +349,13 @@ async def test_run_workflow_does_not_deserialize(mocker, test_cluster, event_loo
     result_object = Result(lattice, dispatch_id=dispatch_id)
     result_object._initialize_nodes()
 
+    mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
+    mocker.patch("covalent_dispatcher._db.upsert._electron_data")
     mocker.patch("covalent_dispatcher._db.update.persist")
     mock_unregister = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
-    mocker.patch("covalent_dispatcher._db.datastore.DataStore.factory", return_value=test_db)
+    mocker.patch("covalent_dispatcher._core.runner._get_cancel_requested", return_value=False)
     mocker.patch(
         "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
     )
