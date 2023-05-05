@@ -57,6 +57,7 @@ class ConfigManager:
             Path(self.config_file).parent.mkdir(parents=True, exist_ok=True)
             self.write_config()
 
+        Path(get_config("dispatcher.db_path")).parent.mkdir(parents=True, exist_ok=True)
         Path(self.get("sdk.log_dir")).mkdir(parents=True, exist_ok=True)
         Path(self.get("sdk.executor_dir")).mkdir(parents=True, exist_ok=True)
 
