@@ -27,9 +27,9 @@ from configparser import ConfigParser
 from pathlib import Path
 from typing import Callable, Dict, Optional
 
-from covalent._shared_files.config import set_config
-from covalent._shared_files.exceptions import CommandNotFoundError
-from covalent.executor import _executor_manager
+from .._shared_files.config import set_config
+from .._shared_files.exceptions import CommandNotFoundError
+from ..executor import _executor_manager
 
 
 def get_executor_module(executor_name: str):
