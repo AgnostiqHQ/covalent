@@ -44,8 +44,6 @@ class ConfigManager:
 
         DEFAULT_CONFIG = asdict(DefaultConfig())
 
-        Path(get_config("dispatcher.db_path")).parent.mkdir(parents=True, exist_ok=True)
-
         self.config_file = DEFAULT_CONFIG["sdk"]["config_file"]
 
         self.generate_default_config()

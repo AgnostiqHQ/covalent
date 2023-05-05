@@ -225,6 +225,7 @@ def _graceful_start(
     Path(get_config("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
     Path(get_config("dispatcher.log_dir")).mkdir(parents=True, exist_ok=True)
     Path(get_config("user_interface.log_dir")).mkdir(parents=True, exist_ok=True)
+    Path(get_config("dispatcher.db_path")).parent.mkdir(parents=True, exist_ok=True)
 
     return port
 
