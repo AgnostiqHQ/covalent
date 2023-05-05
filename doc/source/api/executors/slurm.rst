@@ -5,12 +5,21 @@ Slurm Executor
 
 This executor plugin interfaces Covalent with HPC systems managed by `Slurm <https://slurm.schedmd.com/documentation.html>`_. For workflows to be deployable, users must have SSH access to the Slurm login node, writable storage space on the remote filesystem, and permissions to submit jobs to Slurm.
 
+============
+Installation
+============
+
 To use this plugin with Covalent, simply install it using :code:`pip`:
 
 .. code:: bash
 
     pip install covalent-slurm-plugin
 
+On the remote system, the Python version in the environment you plan to use must match that used when dispatching the calculations. Additionally, the remote system's Python environment must have the base covalent package installed (e.g. :code:`pip install covalent`).
+
+=====
+Usage
+=====
 
 The following shows an example of a Covalent `configuration <https://covalent.readthedocs.io/en/latest/how_to/config/customization.html>`_ that is modified to support Slurm:
 
