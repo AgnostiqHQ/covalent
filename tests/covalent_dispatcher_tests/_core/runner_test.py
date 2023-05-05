@@ -347,7 +347,8 @@ async def test__get_cancel_requested(mocker):
     dispatch_id = "abcd"
     task_id = 0
     mock_get_jobs_metadata = mocker.patch(
-        "covalent_dispatcher._core.runner.get_jobs_metadata", return_value=AsyncMock()
+        "covalent_dispatcher._core.runner_modules.executor_proxy.job_manager.get_jobs_metadata",
+        return_value=AsyncMock(),
     )
 
     await _get_cancel_requested(dispatch_id, task_id)
