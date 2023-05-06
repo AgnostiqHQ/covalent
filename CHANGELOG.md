@@ -25,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated Feature documentation for Triggers with an example and minor corrections
 
+### Removed
+
+- Duplicate mocks for `UI_SRVDIR`
+
 ### Authors
 
 - Madhur Tandon <madhurtandon23@gmail.com>
