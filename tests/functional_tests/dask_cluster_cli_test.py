@@ -26,6 +26,7 @@ import pytest
 from dask.distributed import LocalCluster
 from distributed.comm import parse_address, unparse_address
 
+from covalent._shared_files.config import get_config
 from covalent_dispatcher._cli.cli import cluster
 from covalent_dispatcher._cli.service import (
     _cluster_restart,
@@ -48,7 +49,10 @@ def test_cluster():
     cluster = LocalCluster(
         n_workers=DEFAULT_N_WORKERS,
         threads_per_worker=DEFAULT_THREADS_PER_WORKERS,
-        **{"memory_limit": DEFAULT_MEM_PER_WORKER},
+        **{
+            "memory_limit": DEFAULT_MEM_PER_WORKER,
+            "local_directory": get_config("dispatcher.cache_dir"),
+        },
     )
     yield cluster
     cluster.close()
@@ -128,6 +132,7 @@ async def test_cluster_info_cli(admin_worker_addr, event_loop):
     # Check the keys match for each worker in the cluster
     for _, value in response["workers"].items():
         assert list(value.keys()) == worker_info_expected_keys
+        assert value["local_directory"].startswith(get_config("dispatcher.cache_dir"))
 
 
 @pytest.mark.asyncio
