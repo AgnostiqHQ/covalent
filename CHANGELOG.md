@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Duplicate mocks for `UI_SRVDIR`
+- Duplicate `_get_cancel_requested` method from `covalent_dispatcher/_core/runner.py`
 
 ### Authors
 
