@@ -35,13 +35,13 @@ from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.runner import (
     _cancel_task,
     _gather_deps,
-    _get_cancel_requested,
     _get_metadata_for_nodes,
     _run_abstract_task,
     _run_task,
     cancel_tasks,
     get_executor,
 )
+from covalent_dispatcher._core.runner_modules.executor_proxy import _get_cancel_requested
 from covalent_dispatcher._db.datastore import DataStore
 
 TEST_RESULTS_DIR = "/tmp/results"
@@ -166,7 +166,7 @@ async def test_run_abstract_task_get_cancel_requested(mocker):
         side_effect=RuntimeError(),
     )
     mock_get_cancel_requested = mocker.patch(
-        "covalent_dispatcher._core.runner._get_cancel_requested",
+        "covalent_dispatcher._core.runner_modules.executor_proxy._get_cancel_requested",
         return_value=AsyncMock(return_value=True),
     )
     mock_generate_node_result = mocker.patch(
@@ -347,7 +347,8 @@ async def test__get_cancel_requested(mocker):
     dispatch_id = "abcd"
     task_id = 0
     mock_get_jobs_metadata = mocker.patch(
-        "covalent_dispatcher._core.runner.get_jobs_metadata", return_value=AsyncMock()
+        "covalent_dispatcher._core.runner_modules.executor_proxy.job_manager.get_jobs_metadata",
+        return_value=AsyncMock(),
     )
 
     await _get_cancel_requested(dispatch_id, task_id)
