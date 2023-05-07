@@ -355,7 +355,7 @@ async def test_run_workflow_does_not_deserialize(mocker, test_cluster, event_loo
     mock_unregister = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
-    mocker.patch("covalent_dispatcher._core.runner._get_cancel_requested", return_value=False)
+    mock_run_abstract_task = mocker.patch("covalent_dispatcher._core.runner._run_abstract_task")
     mocker.patch(
         "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
     )
@@ -373,7 +373,8 @@ async def test_run_workflow_does_not_deserialize(mocker, test_cluster, event_loo
     mock_unregister.assert_called_with(result_object.dispatch_id)
 
     mock_to_deserialize.assert_not_called()
-    assert result_object.status == Result.COMPLETED
+    assert result_object.status == Result.RUNNING
+    assert mock_run_abstract_task.call_count == 1
 
 
 @pytest.mark.asyncio
