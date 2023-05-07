@@ -1017,6 +1017,7 @@ def test_sdk_no_cluster(mocker, monkeypatch):
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
+    mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
