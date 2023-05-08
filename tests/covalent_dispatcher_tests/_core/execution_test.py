@@ -310,8 +310,6 @@ async def test_run_workflow_does_not_deserialize(mocker):
         res1 = ct.electron(sublattice_task(x), executor="local")
         return res1
 
-    # asyncio.set_event_loop(event_loop)
-
     dispatch_id = "asdf"
     workflow.build_graph(5)
 
