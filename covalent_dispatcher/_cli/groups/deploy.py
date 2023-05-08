@@ -109,8 +109,8 @@ def get_up_help_table(crm: CloudResourceManager) -> Table:
         table.add_row(
             argument,
             crm.plugin_settings[argument]["required"],
-            crm.plugin_settings[argument]["default"],
-            crm.plugin_settings[argument]["value"],
+            str(crm.plugin_settings[argument]["default"]),
+            str(crm.plugin_settings[argument]["value"]),
         )
     return table
 
@@ -249,14 +249,19 @@ def status(executor_names: Tuple[str]) -> None:
 
     """
     description = {
-        "up": "Resources are provisioned.",
-        "down": "Resources are not provisioned.",
-        "*up": "Resources are partially provisioned.",
-        "*down": "Resources are partially deprovisioned.",
+        "up": "Provisioned Resources.",
+        "down": "No infrastructure provisioned.",
+        "*up": "Warning: Provisioning error, retry 'up'.",
+        "*down": "Warning: Teardown error, retry 'down'.",
     }
 
     if not executor_names:
-        executor_names = _executor_manager.executor_plugins_map.keys()
+        executor_names = [
+            name
+            for name in _executor_manager.executor_plugins_map.keys()
+            if name not in ["dask", "local", "remote_executor"]
+        ]
+        click.echo(f"Executors: {', '.join(executor_names)}")
 
     table = Table()
     table.add_column("Executor", justify="center")

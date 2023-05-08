@@ -75,18 +75,12 @@ def validate_options(executor_options: Dict[str, str], executor_name: str):
     plugin_attrs = list(ExecutorPluginDefaults.schema()["properties"].keys())
     infra_attrs = list(ExecutorInfraDefaults.schema()["properties"].keys())
 
-    # app_log.debug(f"Plugin attrs: {plugin_attrs}")
-    # app_log.debug(f"Infra attrs: {infra_attrs}")
-
     plugin_params = {k: v for k, v in executor_options.items() if k in plugin_attrs}
     infra_params = {k: v for k, v in executor_options.items() if k in infra_attrs}
 
     # Validate options
     ExecutorPluginDefaults(**plugin_params)
     ExecutorInfraDefaults(**infra_params)
-
-    # app_log.debug(f"Plugin params: {plugin_params}")
-    # app_log.debug(f"Infra params: {infra_params}")
 
 
 def get_plugin_settings(executor_name: str, executor_options: Dict) -> Dict:
@@ -97,9 +91,6 @@ def get_plugin_settings(executor_name: str, executor_options: Dict) -> Dict:
 
     plugin_settings = ExecutorPluginDefaults.schema()["properties"]
     infra_settings = ExecutorInfraDefaults.schema()["properties"]
-
-    # app_log.debug(f"Executor plugin settings: {plugin_settings}")
-    # app_log.debug(f"Executor infra settings: {infra_settings}")
 
     settings_dict = {
         key: {
@@ -121,13 +112,11 @@ def get_plugin_settings(executor_name: str, executor_options: Dict) -> Dict:
         else:
             settings_dict[key] = {"required": "Yes", "default": None, "value": None}
 
-    # app_log.debug(f"Settings default values: {settings_dict}")
-
     if executor_options:
         for key, value in executor_options.items():
             settings_dict[key]["value"] = value
 
-    # app_log.debug(f"Settings default values + newly set values: {settings_dict}")
+    app_log.debug(f"Settings default values + newly set values: {settings_dict}")
 
     return settings_dict
 
@@ -202,9 +191,11 @@ class CloudResourceManager:
         )
         retcode = self._print_stdout(proc, print_callback)
 
-        # app_log.debug(f"Return code: {retcode}")
+        if retcode is not None:
+            app_log.debug(f"Return code: {retcode}")
 
-        if retcode != 0:
+        if retcode is not None and retcode != 0:
+            app_log.debug("Called process error...")
             raise subprocess.CalledProcessError(returncode=retcode, cmd=cmd)
 
     def _update_config(self, tf_executor_config_file: str) -> None:
@@ -244,25 +235,22 @@ class CloudResourceManager:
         tf_plan = " ".join([terraform, "plan", "-out", "tf.plan"])
         tf_apply = " ".join([terraform, "apply", "tf.plan"])
 
-        # app_log.debug(f"Terraform init command: {tf_init}")
-        # app_log.debug(f"Terraform plan command: {tf_plan}")
-        # app_log.debug(f"Terraform apply command: {tf_apply}")
-
         # Run `terraform init`
         self._run_in_subprocess(cmd=tf_init, workdir=self.executor_tf_path)
-        # app_log.debug("Terraform init successful")
+        app_log.debug("Terraform init successful")
 
         # Setup terraform infra variables as passed by the user
         tf_vars_env_dict = os.environ.copy()
-        # app_log.debug(f"TF vars env dict: {tf_vars_env_dict}")
+        app_log.debug(f"TF vars env dict: {tf_vars_env_dict}")
 
         if self.executor_options:
-            # app_log.debug(f"Executor options: {self.executor_options}")
+            app_log.debug(f"Executor options: {self.executor_options}")
 
             with open(tfvars_file, "w") as f:
                 for key, value in self.executor_options.items():
                     tf_vars_env_dict[f"TF_VAR_{key}"] = value
-                    # app_log.debug(f"TF_VAR_{key}={value}")
+                    app_log.debug(f"TF_VAR_{key}={value}")
+
                     # Write whatever the user has passed to the terraform.tfvars file
                     f.write(f'{key}="{value}"\n')
 
@@ -273,7 +261,7 @@ class CloudResourceManager:
             env_vars=tf_vars_env_dict,
             print_callback=print_callback,
         )
-        # app_log.debug("Terraform plan successful")
+        app_log.debug("Terraform plan successful")
 
         # Create infrastructure as per the plan
         # Run `terraform apply`
@@ -285,17 +273,17 @@ class CloudResourceManager:
                 print_callback=print_callback,
             )
 
-            # app_log.debug("Terraform apply successful")
+            app_log.debug("Terraform apply successful")
 
             # Update covalent executor config based on Terraform output
             self._update_config(tf_executor_config_file)
 
-            # app_log.debug("Terraform config updated")
-            # app_log.debug(f"Command output: {cmd_output}")
+            app_log.debug("Terraform config updated")
+            app_log.debug(f"Command output: {cmd_output}")
 
             return cmd_output
 
-        # app_log.debug("Terraform apply skipped - dry run was activated")
+        app_log.debug("Terraform apply skipped - dry run was activated")
 
     def down(self, print_callback: Callable):
         """
@@ -312,12 +300,12 @@ class CloudResourceManager:
             cmd=tf_destroy, workdir=self.executor_tf_path, print_callback=print_callback
         )
 
-        # app_log.debug("Resources spun down successfully")
+        app_log.debug("Resources spun down successfully")
 
         if Path(tfvars_file).exists():
             Path(tfvars_file).unlink()
 
-        # app_log.debug(f"Command output: {cmd_output}")
+        app_log.debug(f"Command output: {cmd_output}")
 
         return cmd_output
 
