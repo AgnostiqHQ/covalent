@@ -352,3 +352,46 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
         mock_update_config.assert_called_once_with(
             f"{crm.executor_tf_path}/{executor_name}.conf",
         )
+
+
+@pytest.mark.parametrize(
+    "tfvars_exists",
+    [
+        True,
+        False,
+    ],
+)
+def test_down(mocker, crm, tfvars_exists):
+    test_tf_path = "test_tf_path"
+    test_tfvars_file = f"{crm.executor_tf_path}/terraform.tfvars"
+
+    mock_get_tf_path = mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._get_tf_path",
+        return_value=test_tf_path,
+    )
+
+    mock_run_in_subprocess = mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._run_in_subprocess",
+    )
+
+    mock_path_exists = mocker.patch(
+        "covalent.cloud_resource_manager.core.Path.exists",
+        return_value=tfvars_exists,
+    )
+
+    mock_path_unlink = mocker.patch(
+        "covalent.cloud_resource_manager.core.Path.unlink",
+    )
+
+    crm.down()
+
+    mock_get_tf_path.assert_called_once()
+    mock_run_in_subprocess.assert_called_once_with(
+        cmd=f"{mock_get_tf_path.return_value} destroy -auto-approve",
+        workdir=crm.executor_tf_path,
+    )
+
+    mock_path_exists.assert_called_once()
+
+    if tfvars_exists:
+        mock_path_unlink.assert_called_once()

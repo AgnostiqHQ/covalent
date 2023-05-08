@@ -216,7 +216,7 @@ class CloudResourceManager:
 
         terraform = self._get_tf_path()
 
-        tfvars_file = Path(self.executor_tf_path) / "terraform.tfvars"
+        tfvars_file = str(Path(self.executor_tf_path) / "terraform.tfvars")
 
         tf_destroy = " ".join([terraform, "destroy", "-auto-approve"])
 
