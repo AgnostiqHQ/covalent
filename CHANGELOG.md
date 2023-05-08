@@ -31,6 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Duplicate mocks for `UI_SRVDIR`
 - Duplicate `_get_cancel_requested` method from `covalent_dispatcher/_core/runner.py`
 
+### Tests
+
+- Re-enable `test_run_workflow_does_not_deserialize`
+
 ### Authors
 
 - Madhur Tandon <madhurtandon23@gmail.com>
