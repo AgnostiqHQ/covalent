@@ -25,34 +25,18 @@ Integration tests for the dispatcher, runner, and result modules
 import asyncio
 from typing import Dict, List
 
-import dask
 import pytest
-from dask.distributed import LocalCluster
 
 import covalent as ct
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
+from covalent.executor.executor_plugins.local import LocalExecutor
 from covalent_dispatcher._core.dispatcher import run_workflow
 from covalent_dispatcher._core.execution import _get_task_inputs
 from covalent_dispatcher._db import update
 from covalent_dispatcher._db.datastore import DataStore
 
 TEST_RESULTS_DIR = "/tmp/results"
-
-DEFAULT_THREADS_PER_WORKERS = 1
-DEFAULT_N_WORKERS = dask.system.CPU_COUNT
-DEFAULT_MEM_PER_WORKER = "auto"
-
-
-@pytest.fixture
-def test_cluster():
-    cluster = LocalCluster(
-        n_workers=DEFAULT_N_WORKERS,
-        threads_per_worker=DEFAULT_THREADS_PER_WORKERS,
-        **{"memory_limit": DEFAULT_MEM_PER_WORKER},
-    )
-    yield cluster
-    cluster.close()
 
 
 @pytest.fixture
@@ -319,24 +303,21 @@ async def test_run_workflow_with_failing_leaf(mocker):
 
 
 @pytest.mark.asyncio
-async def test_run_workflow_does_not_deserialize(mocker, test_cluster, event_loop):
+async def test_run_workflow_does_not_deserialize(mocker, event_loop):
     """Check that dispatcher does not deserialize user data when using
     out-of-process `workflow_executor`"""
 
-    from covalent._workflow.lattice import Lattice
-    from covalent.executor import DaskExecutor
+    local_exec = LocalExecutor()
 
-    dask_exec = DaskExecutor(test_cluster.scheduler_address)
-
-    @ct.electron(executor=dask_exec)
+    @ct.electron(executor=local_exec)
     def task(x):
         return x
 
-    @ct.lattice(executor=dask_exec, workflow_executor=dask_exec)
+    @ct.lattice(executor=local_exec, workflow_executor=local_exec)
     def workflow(x):
         # Exercise both sublatticing and postprocessing
-        sublattice_task = ct.lattice(task, workflow_executor=dask_exec)
-        res1 = ct.electron(sublattice_task(x), executor=dask_exec)
+        sublattice_task = ct.lattice(task, workflow_executor=local_exec)
+        res1 = ct.electron(sublattice_task(x), executor=local_exec)
         return res1
 
     asyncio.set_event_loop(event_loop)
