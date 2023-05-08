@@ -42,7 +42,7 @@ def get_executor_module(executor_name: str) -> ModuleType:
 
     Returns:
         The executor module
-        
+
     """
     return importlib.import_module(
         _executor_manager.executor_plugins_map[executor_name].__module__
@@ -58,7 +58,7 @@ def get_converted_value(value: str) -> Any:
 
     Returns:
         Converted value with appropriate type
-        
+
     """
     if value.lower() == "true":
         return True
@@ -84,7 +84,7 @@ def validate_options(executor_options: Dict[str, str], executor_name: str) -> No
 
     Raises:
         pydantic.ValidationError: If the options are invalid
-        
+
     """
     # Importing validation classes from the executor module
     module = get_executor_module(executor_name)
@@ -159,7 +159,7 @@ class CloudResourceManager:
 
         Returns:
             None
-            
+
         """
         proc = subprocess.Popen(
             args=cmd,
@@ -186,7 +186,7 @@ class CloudResourceManager:
 
         Returns:
             None
-            
+
         """
         # Puts the plugin options in covalent's config
         executor_config = ConfigParser()
@@ -204,7 +204,7 @@ class CloudResourceManager:
 
         Returns:
             Path to terraform executable
-            
+
         """
         if terraform := shutil.which("terraform"):
             return terraform
@@ -220,7 +220,7 @@ class CloudResourceManager:
 
         Returns:
             None
-            
+
         """
         terraform = self._get_tf_path()
 
@@ -270,7 +270,7 @@ class CloudResourceManager:
 
         Returns:
             None
-            
+
         """
         terraform = self._get_tf_path()
 
@@ -299,7 +299,7 @@ class CloudResourceManager:
 
         Returns:
             None
-            
+
         """
         terraform = self._get_tf_path()
 
