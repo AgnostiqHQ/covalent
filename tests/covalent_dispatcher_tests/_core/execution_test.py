@@ -294,50 +294,56 @@ async def test_run_workflow_with_failing_leaf(mocker):
     assert result_object._error == "The following tasks failed:\n0: failing_task"
 
 
+@pytest.mark.asyncio
 async def test_run_workflow_does_not_deserialize(mocker):
     """Check that dispatcher does not deserialize user data when using
     out-of-process `workflow_executor`"""
 
-    from dask.distributed import LocalCluster
-
-    from covalent._workflow.lattice import Lattice
-    from covalent.executor import DaskExecutor
-
-    lc = LocalCluster()
-    dask_exec = DaskExecutor(lc.scheduler_address)
-
-    @ct.electron(executor=dask_exec)
+    @ct.electron(executor="local")
     def task(x):
         return x
 
-    @ct.lattice(executor=dask_exec, workflow_executor=dask_exec)
+    @ct.lattice(executor="local", workflow_executor="local")
     def workflow(x):
         # Exercise both sublatticing and postprocessing
-        sublattice_task = ct.lattice(task, workflow_executor=dask_exec)
-        res1 = ct.electron(sublattice_task(x), executor=dask_exec)
+        sublattice_task = ct.lattice(task, workflow_executor="local")
+        res1 = ct.electron(sublattice_task(x), executor="local")
         return res1
 
+    dispatch_id = "asdf"
     workflow.build_graph(5)
 
     json_lattice = workflow.serialize_to_json()
-    dispatch_id = "asdf"
     lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice, lattice.metadata["results_dir"])
-    result_object._dispatch_id = dispatch_id
+    result_object = Result(lattice, dispatch_id=dispatch_id)
     result_object._initialize_nodes()
 
-    mocker.patch("covalent_dispatcher._db.datastore.DataStore.factory", return_value=test_db)
+    mocker.patch("covalent_dispatcher._db.upsert._lattice_data")
+    mocker.patch("covalent_dispatcher._db.upsert._electron_data")
+    mocker.patch("covalent_dispatcher._db.update.persist")
+    mock_unregister = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
+    )
+    mock_run_abstract_task = mocker.patch("covalent_dispatcher._core.runner._run_abstract_task")
     mocker.patch(
         "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
     )
+
+    status_queue = asyncio.Queue()
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
+    )
+
     update.persist(result_object)
 
     mock_to_deserialize = mocker.patch("covalent.TransportableObject.get_deserialized")
 
     result_object = await run_workflow(result_object)
+    mock_unregister.assert_called_with(result_object.dispatch_id)
 
     mock_to_deserialize.assert_not_called()
-    assert result_object.status == Result.COMPLETED
+    assert result_object.status == Result.RUNNING
+    assert mock_run_abstract_task.call_count == 1
 
 
 @pytest.mark.asyncio
