@@ -54,6 +54,10 @@ def crm(executor_name, executor_module_path):
 
 
 def test_get_executor_module(mocker):
+    """
+    Unit test for get_executor_module method
+    """
+
     test_executor_name = "test_executor"
     test_executor_module = "test_executor_module"
 
@@ -85,10 +89,18 @@ def test_get_executor_module(mocker):
     ],
 )
 def test_get_converted_value(value, expected):
+    """
+    Unit test for get_converted_value method
+    """
+
     assert get_converted_value(value) == expected
 
 
 def test_validate_options(mocker):
+    """
+    Unit test for validate_options method
+    """
+
     executor_options = {"test_key": "test_value"}
     executor_name = "test_executor"
 
@@ -125,6 +137,10 @@ def test_validate_options(mocker):
     ],
 )
 def test_cloud_resource_manager_init(mocker, options):
+    """
+    Unit test for CloudResourceManager's init method
+    """
+
     test_executor_name = "test_executor"
     test_executor_module_path = "test_executor_module_path"
 
@@ -151,6 +167,10 @@ def test_cloud_resource_manager_init(mocker, options):
 
 
 def test_print_stdout(mocker, crm):
+    """
+    Unit test for CloudResourceManager._print_stdout() method
+    """
+
     test_stdout = "test_stdout".encode("utf-8")
     test_return_code = 0
 
@@ -177,6 +197,10 @@ def test_print_stdout(mocker, crm):
     ],
 )
 def test_run_in_subprocess(mocker, test_retcode, crm):
+    """
+    Unit test for CloudResourceManager._run_in_subprocess() method.
+    """
+
     test_cmd = "test_cmd"
     test_workdir = "test_workdir"
     test_env_vars = {"test_env_key": "test_env_value"}
@@ -220,6 +244,10 @@ def test_run_in_subprocess(mocker, test_retcode, crm):
 
 
 def test_update_config(mocker, crm, executor_name):
+    """
+    Unit test for CloudResourceManager._update_config() method.
+    """
+
     test_tf_executor_config_file = "test_tf_executor_config_file"
     test_key = "test_key"
     test_value = "test_value"
@@ -261,6 +289,10 @@ def test_update_config(mocker, crm, executor_name):
     ],
 )
 def test_get_tf_path(mocker, test_tf_path, crm):
+    """
+    Unit test for CloudResourceManager._get_tf_path() method
+    """
+
     mock_shutil_which = mocker.patch(
         "covalent.cloud_resource_manager.core.shutil.which",
         return_value=test_tf_path,
@@ -283,6 +315,10 @@ def test_get_tf_path(mocker, test_tf_path, crm):
     ],
 )
 def test_up(mocker, dry_run, executor_options, executor_name, executor_module_path):
+    """
+    Unit test for CloudResourceManager.up() method
+    """
+
     test_tf_path = "test_tf_path"
 
     mock_get_tf_path = mocker.patch(
@@ -362,8 +398,11 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
     ],
 )
 def test_down(mocker, crm, tfvars_exists):
+    """
+    Unit test for CloudResourceManager.down() method.
+    """
+
     test_tf_path = "test_tf_path"
-    test_tfvars_file = f"{crm.executor_tf_path}/terraform.tfvars"
 
     mock_get_tf_path = mocker.patch(
         "covalent.cloud_resource_manager.core.CloudResourceManager._get_tf_path",
@@ -395,3 +434,28 @@ def test_down(mocker, crm, tfvars_exists):
 
     if tfvars_exists:
         mock_path_unlink.assert_called_once()
+
+
+def test_status(mocker, crm):
+    """
+    Unit test for CloudResourceManager.status() method.
+    """
+
+    test_tf_path = "test_tf_path"
+
+    mock_get_tf_path = mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._get_tf_path",
+        return_value=test_tf_path,
+    )
+
+    mock_run_in_subprocess = mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._run_in_subprocess",
+    )
+
+    crm.status()
+
+    mock_get_tf_path.assert_called_once()
+    mock_run_in_subprocess.assert_called_once_with(
+        cmd=f"{test_tf_path} state list",
+        workdir=crm.executor_tf_path,
+    )
