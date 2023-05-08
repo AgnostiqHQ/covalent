@@ -30,7 +30,6 @@ import pytest
 from covalent._shared_files.exceptions import CommandNotFoundError
 from covalent.cloud_resource_manager.core import (
     CloudResourceManager,
-    get_converted_value,
     get_executor_module,
     validate_options,
 )
@@ -47,7 +46,15 @@ def executor_module_path():
 
 
 @pytest.fixture
-def crm(executor_name, executor_module_path):
+def crm(mocker, executor_name, executor_module_path):
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.get_executor_module",
+    )
+
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.getattr",
+    )
+
     return CloudResourceManager(
         executor_name=executor_name,
         executor_module_path=executor_module_path,
@@ -78,36 +85,12 @@ def test_get_executor_module(mocker):
     mock_import_module.assert_called_once()
 
 
-@pytest.mark.parametrize(
-    "value, expected",
-    [
-        ("true", True),
-        ("false", False),
-        ("null", None),
-        ("1", 1),
-        ("1.0", 1.0),
-        ("test", "test"),
-    ],
-)
-def test_get_converted_value(value, expected):
-    """
-    Unit test for get_converted_value method
-    """
-
-    assert get_converted_value(value) == expected
-
-
 def test_validate_options(mocker):
     """
     Unit test for validate_options method
     """
 
     executor_options = {"test_key": "test_value"}
-    executor_name = "test_executor"
-
-    mock_get_executor_module = mocker.patch(
-        "covalent.cloud_resource_manager.core.get_executor_module",
-    )
 
     mock_defaults_model = mocker.MagicMock()
     mocker.patch(
@@ -120,9 +103,7 @@ def test_validate_options(mocker):
         return_value=list(executor_options.keys()),
     )
 
-    validate_options(executor_options, executor_name)
-
-    mock_get_executor_module.assert_called_once_with(executor_name)
+    validate_options(mock_defaults_model, mock_defaults_model, executor_options)
 
     assert mock_list.call_count == 2
 
@@ -137,32 +118,41 @@ def test_validate_options(mocker):
         {"test_key": "test_value"},
     ],
 )
-def test_cloud_resource_manager_init(mocker, options):
+def test_cloud_resource_manager_init(mocker, options, executor_name, executor_module_path):
     """
     Unit test for CloudResourceManager's init method
     """
-
-    test_executor_name = "test_executor"
-    test_executor_module_path = "test_executor_module_path"
 
     mock_validate_options = mocker.patch(
         "covalent.cloud_resource_manager.core.validate_options",
     )
 
+    mock_get_executor_module = mocker.patch(
+        "covalent.cloud_resource_manager.core.get_executor_module",
+    )
+
+    mock_model_class = mocker.MagicMock()
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.getattr",
+        return_value=mock_model_class,
+    )
+
     crm = CloudResourceManager(
-        executor_name=test_executor_name,
-        executor_module_path=test_executor_module_path,
+        executor_name=executor_name,
+        executor_module_path=executor_module_path,
         options=options,
     )
 
-    assert crm.executor_name == test_executor_name
+    assert crm.executor_name == executor_name
     assert crm.executor_tf_path == str(
-        Path(test_executor_module_path).expanduser().resolve() / "assets" / "infra"
+        Path(executor_module_path).expanduser().resolve() / "assets" / "infra"
     )
+
+    mock_get_executor_module.assert_called_once_with(executor_name)
     assert crm.executor_options == options
 
     if options:
-        mock_validate_options.assert_called_once_with(options, test_executor_name)
+        mock_validate_options.assert_called_once_with(mock_model_class, mock_model_class, options)
     else:
         mock_validate_options.assert_not_called()
 
@@ -257,14 +247,12 @@ def test_update_config(mocker, crm, executor_name):
     test_config_parser[executor_name] = {test_key: test_value}
     test_config_parser.read = mocker.MagicMock()
 
+    crm.ExecutorPluginDefaults = mocker.MagicMock()
+    crm.ExecutorPluginDefaults.return_value.dict.return_value = {test_key: test_value}
+
     mocker.patch(
         "covalent.cloud_resource_manager.core.ConfigParser",
         return_value=test_config_parser,
-    )
-
-    mock_get_converted_value = mocker.patch(
-        "covalent.cloud_resource_manager.core.get_converted_value",
-        return_value=test_value,
     )
 
     mock_set_config = mocker.patch(
@@ -276,7 +264,6 @@ def test_update_config(mocker, crm, executor_name):
     )
 
     test_config_parser.read.assert_called_once_with(test_tf_executor_config_file)
-    mock_get_converted_value.assert_called_once_with(test_value)
     mock_set_config.assert_called_once_with(
         {f"executors.{executor_name}.{test_key}": test_value},
     )
@@ -308,6 +295,23 @@ def test_get_tf_path(mocker, test_tf_path, crm):
     mock_shutil_which.assert_called_once_with("terraform")
 
 
+def test_get_tf_statefile_path(mocker, crm, executor_name):
+    """
+    Unit test for CloudResourceManager._get_tf_statefile_path() method
+    """
+
+    test_tf_state_file = "test_tf_state_file"
+
+    mock_get_config = mocker.patch(
+        "covalent.cloud_resource_manager.core.get_config",
+        return_value=test_tf_state_file,
+    )
+
+    assert crm._get_tf_statefile_path() == f"{executor_name}.tfstate"
+
+    mock_get_config.assert_called_once_with("dispatcher.db_path")
+
+
 @pytest.mark.parametrize(
     "dry_run, executor_options",
     [
@@ -321,10 +325,24 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
     """
 
     test_tf_path = "test_tf_path"
+    test_tf_state_file = "test_tf_state_file"
 
     mock_get_tf_path = mocker.patch(
         "covalent.cloud_resource_manager.core.CloudResourceManager._get_tf_path",
         return_value=test_tf_path,
+    )
+
+    mock_get_tf_statefile_path = mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._get_tf_statefile_path",
+        return_value=test_tf_state_file,
+    )
+
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.get_executor_module",
+    )
+
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.getattr",
     )
 
     # Mocking as we are instantiating with executor options
@@ -359,6 +377,7 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
         crm.up(dry_run=dry_run)
 
     mock_get_tf_path.assert_called_once()
+    mock_get_tf_statefile_path.assert_called_once()
     mock_run_in_subprocess.assert_any_call(
         cmd=f"{test_tf_path} init",
         workdir=crm.executor_tf_path,
@@ -376,14 +395,14 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
         mock_file().write.assert_called_once_with(f'{key}="{value}"\n')
 
     mock_run_in_subprocess.assert_any_call(
-        cmd=f"{test_tf_path} plan -out tf.plan",
+        cmd=f"{test_tf_path} plan -out tf.plan -state={test_tf_state_file}",
         workdir=crm.executor_tf_path,
         env_vars=test_tf_dict,
     )
 
     if not dry_run:
         mock_run_in_subprocess.assert_any_call(
-            cmd=f"{test_tf_path} apply tf.plan",
+            cmd=f"{test_tf_path} apply tf.plan -state={test_tf_state_file}",
             workdir=crm.executor_tf_path,
             env_vars=test_tf_dict,
         )
@@ -393,23 +412,22 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
         )
 
 
-@pytest.mark.parametrize(
-    "tfvars_exists",
-    [
-        True,
-        False,
-    ],
-)
-def test_down(mocker, crm, tfvars_exists):
+def test_down(mocker, crm):
     """
     Unit test for CloudResourceManager.down() method.
     """
 
     test_tf_path = "test_tf_path"
+    test_tf_state_file = "test_tf_state_file"
 
     mock_get_tf_path = mocker.patch(
         "covalent.cloud_resource_manager.core.CloudResourceManager._get_tf_path",
         return_value=test_tf_path,
+    )
+
+    mock_get_tf_statefile_path = mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._get_tf_statefile_path",
+        return_value=test_tf_state_file,
     )
 
     mock_run_in_subprocess = mocker.patch(
@@ -418,7 +436,7 @@ def test_down(mocker, crm, tfvars_exists):
 
     mock_path_exists = mocker.patch(
         "covalent.cloud_resource_manager.core.Path.exists",
-        return_value=tfvars_exists,
+        return_value=True,
     )
 
     mock_path_unlink = mocker.patch(
@@ -428,15 +446,14 @@ def test_down(mocker, crm, tfvars_exists):
     crm.down()
 
     mock_get_tf_path.assert_called_once()
+    mock_get_tf_statefile_path.assert_called_once()
     mock_run_in_subprocess.assert_called_once_with(
-        cmd=f"{mock_get_tf_path.return_value} destroy -auto-approve",
+        cmd=f"{mock_get_tf_path.return_value} destroy -auto-approve -state={test_tf_state_file}",
         workdir=crm.executor_tf_path,
     )
 
-    mock_path_exists.assert_called_once()
-
-    if tfvars_exists:
-        mock_path_unlink.assert_called_once()
+    assert mock_path_exists.call_count == 2
+    assert mock_path_unlink.call_count == 3
 
 
 def test_status(mocker, crm):
@@ -445,10 +462,16 @@ def test_status(mocker, crm):
     """
 
     test_tf_path = "test_tf_path"
+    test_tf_state_file = "test_tf_state_file"
 
     mock_get_tf_path = mocker.patch(
         "covalent.cloud_resource_manager.core.CloudResourceManager._get_tf_path",
         return_value=test_tf_path,
+    )
+
+    mock_get_tf_statefile_path = mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._get_tf_statefile_path",
+        return_value=test_tf_state_file,
     )
 
     mock_run_in_subprocess = mocker.patch(
@@ -458,7 +481,8 @@ def test_status(mocker, crm):
     crm.status()
 
     mock_get_tf_path.assert_called_once()
+    mock_get_tf_statefile_path.assert_called_once()
     mock_run_in_subprocess.assert_called_once_with(
-        cmd=f"{test_tf_path} state list",
+        cmd=f"{test_tf_path} state list -state={test_tf_state_file}",
         workdir=crm.executor_tf_path,
     )
