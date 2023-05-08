@@ -19,7 +19,10 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-import asyncio
+"""Covalent deploy CLI group."""
+
+
+import subprocess
 from pathlib import Path
 from typing import Dict, Tuple
 
@@ -42,6 +45,7 @@ def get_crm_object(executor_name: str, options: Dict = None) -> CloudResourceMan
     executor_module_path = Path(
         __import__(_executor_manager.executor_plugins_map[executor_name].__module__).__path__[0]
     )
+    click.echo(executor_module_path)
     return CloudResourceManager(executor_name, executor_module_path, options)
 
 
@@ -61,10 +65,10 @@ def get_print_callback(
 
     """
     if verbose:
-        return console.log
+        return console.print
 
     def inline_print_callback(msg):
-        status.update(f"{prepend_msg} {msg}")
+        console_status.update(f"{prepend_msg} {msg}")
 
     return inline_print_callback
 
@@ -80,9 +84,9 @@ def get_settings_table(crm: CloudResourceManager) -> Table:
 
     """
     table = Table()
-    table.add_column("Settings", justify="center")
-    for argument in crm.resource_parameters:
-        table.add_row(f"{argument: crm.resource_parameters[argument]['value']}")
+    table.add_column("Settings", justify="left")
+    for argument in crm.plugin_settings:
+        table.add_row(f"{argument}: {crm.plugin_settings[argument]['value']}")
     return table
 
 
@@ -101,12 +105,12 @@ def get_up_help_table(crm: CloudResourceManager) -> Table:
     table.add_column("Required", justify="center")
     table.add_column("Default", justify="center")
     table.add_column("Current value", justify="center")
-    for argument in crm.resource_parameters:
+    for argument in crm.plugin_settings:
         table.add_row(
             argument,
-            crm.resource_parameters[argument]["required"],
-            crm.resource_parameters[argument]["default"],
-            crm.resource_parameters[argument]["value"],
+            crm.plugin_settings[argument]["required"],
+            crm.plugin_settings[argument]["default"],
+            crm.plugin_settings[argument]["value"],
         )
     return table
 
@@ -163,11 +167,10 @@ def up(executor_name: str, vars: Dict, help: bool, dry_run: bool, verbose: bool)
 
     console = Console()
     prepend_msg = "[bold green] Provisioning resources..."
-    click.echo(Console().print(get_settings_table(crm)))
 
     with console.status(prepend_msg) as status:
-        console_msg = asyncio.run(
-            crm.up(
+        try:
+            console_msg = crm.up(
                 dry_run=dry_run,
                 print_callback=get_print_callback(
                     console=console,
@@ -176,9 +179,12 @@ def up(executor_name: str, vars: Dict, help: bool, dry_run: bool, verbose: bool)
                     verbose=verbose,
                 ),
             )
-        )
+        except subprocess.CalledProcessError as e:
+            click.echo(f"Unable to provision resources due to the following error: {e}")
+            return
 
-    click.echo(console_msg)
+    click.echo(Console().print(get_settings_table(crm)))
+    click.echo("Completed.")
 
 
 @deploy.command()
@@ -208,7 +214,7 @@ def down(executor_name: str, verbose: bool) -> None:
     console = Console()
     prepend_msg = "[bold green] Destroying resources..."
     with console.status(prepend_msg) as status:
-        console_msg = asyncio.run(
+        try:
             crm.down(
                 print_callback=get_print_callback(
                     console=console,
@@ -217,9 +223,11 @@ def down(executor_name: str, verbose: bool) -> None:
                     verbose=verbose,
                 )
             )
-        )
+        except subprocess.CalledProcessError as e:
+            click.echo(f"Unable to destroy resources due to the following error: {e}")
+            return
 
-    click.echo(console_msg)
+    click.echo("Completed.")
 
 
 # TODO - Color code status.
@@ -259,7 +267,7 @@ def status(executor_names: Tuple[str]) -> None:
     for executor_name in executor_names:
         try:
             crm = get_crm_object(executor_name)
-            status = asyncio.run(crm.status())
+            status = crm.status()
             table.add_row(executor_name, status, description[status])
         except KeyError:
             invalid_executor_names.append(executor_name)
