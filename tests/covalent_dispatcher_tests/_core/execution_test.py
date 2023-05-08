@@ -30,7 +30,6 @@ import pytest
 import covalent as ct
 from covalent._results_manager import Result
 from covalent._workflow.lattice import Lattice
-from covalent.executor.executor_plugins.local import LocalExecutor
 from covalent_dispatcher._core.dispatcher import run_workflow
 from covalent_dispatcher._core.execution import _get_task_inputs
 from covalent_dispatcher._db import update
@@ -307,17 +306,15 @@ async def test_run_workflow_does_not_deserialize(mocker, event_loop):
     """Check that dispatcher does not deserialize user data when using
     out-of-process `workflow_executor`"""
 
-    local_exec = LocalExecutor()
-
-    @ct.electron(executor=local_exec)
+    @ct.electron(executor="local")
     def task(x):
         return x
 
-    @ct.lattice(executor=local_exec, workflow_executor=local_exec)
+    @ct.lattice(executor="local", workflow_executor="local")
     def workflow(x):
         # Exercise both sublatticing and postprocessing
-        sublattice_task = ct.lattice(task, workflow_executor=local_exec)
-        res1 = ct.electron(sublattice_task(x), executor=local_exec)
+        sublattice_task = ct.lattice(task, workflow_executor="local")
+        res1 = ct.electron(sublattice_task(x), executor="local")
         return res1
 
     asyncio.set_event_loop(event_loop)
