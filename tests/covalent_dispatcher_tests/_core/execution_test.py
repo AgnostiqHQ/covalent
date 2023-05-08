@@ -39,13 +39,6 @@ TEST_RESULTS_DIR = "/tmp/results"
 
 
 @pytest.fixture
-def event_loop():
-    loop = asyncio.new_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest.fixture
 def test_db():
     """Instantiate and return an in-memory database."""
 
@@ -302,7 +295,7 @@ async def test_run_workflow_with_failing_leaf(mocker):
 
 
 @pytest.mark.asyncio
-async def test_run_workflow_does_not_deserialize(mocker, event_loop):
+async def test_run_workflow_does_not_deserialize(mocker):
     """Check that dispatcher does not deserialize user data when using
     out-of-process `workflow_executor`"""
 
@@ -317,7 +310,7 @@ async def test_run_workflow_does_not_deserialize(mocker, event_loop):
         res1 = ct.electron(sublattice_task(x), executor="local")
         return res1
 
-    asyncio.set_event_loop(event_loop)
+    # asyncio.set_event_loop(event_loop)
 
     dispatch_id = "asdf"
     workflow.build_graph(5)
