@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import subprocess
 from functools import partial
 from pathlib import Path
 
@@ -151,3 +152,58 @@ def test_print_stdout(mocker):
     mock_print.assert_called_once_with(test_stdout.decode("utf-8"))
     assert mock_process.poll.call_count == 3
     assert return_code == test_return_code
+
+
+@pytest.mark.parametrize(
+    "test_retcode",
+    [
+        0,
+        1,
+    ],
+)
+def test_run_in_subprocess(mocker, test_retcode):
+    test_cmd = "test_cmd"
+    test_workdir = "test_workdir"
+    test_env_vars = {"test_env_key": "test_env_value"}
+
+    mock_process = mocker.MagicMock()
+    mock_popen = mocker.patch(
+        "covalent.cloud_resource_manager.core.subprocess.Popen",
+        return_value=mock_process,
+    )
+
+    mock_print_stdout = mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._print_stdout",
+        return_value=test_retcode,
+    )
+
+    crm = CloudResourceManager(
+        executor_name="test_executor",
+        executor_module_path="test_executor_module_path",
+    )
+
+    if test_retcode != 0:
+        exception = subprocess.CalledProcessError(returncode=test_retcode, cmd=test_cmd)
+        with pytest.raises(Exception, match=str(exception)):
+            crm._run_in_subprocess(
+                cmd=test_cmd,
+                workdir=test_workdir,
+                env_vars=test_env_vars,
+            )
+    else:
+        crm._run_in_subprocess(
+            cmd=test_cmd,
+            workdir=test_workdir,
+            env_vars=test_env_vars,
+        )
+
+    mock_popen.assert_called_once_with(
+        args=test_cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        cwd=test_workdir,
+        shell=True,
+        env=test_env_vars,
+    )
+
+    mock_print_stdout.assert_called_once_with(mock_process)
