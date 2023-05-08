@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Added the `CloudResourceManager` class
+
+### Tests
+
+- Added tests for the `CloudResourceManager` class
+
 ### Docs
 
 - Redispatch feature page in Read the Docs.
