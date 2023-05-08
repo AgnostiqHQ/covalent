@@ -25,23 +25,41 @@ import shutil
 import subprocess
 from configparser import ConfigParser
 from pathlib import Path
-from typing import Dict, Optional
+from types import ModuleType
+from typing import Any, Dict, Optional
 
 from covalent._shared_files.config import set_config
 from covalent._shared_files.exceptions import CommandNotFoundError
 from covalent.executor import _executor_manager
 
 
-def get_executor_module(executor_name: str):
+def get_executor_module(executor_name: str) -> ModuleType:
+    """
+    Get the executor module from the executor name
+
+    Args:
+        executor_name: Name of the executor
+
+    Returns:
+        The executor module
+    """
+
     return importlib.import_module(
         _executor_manager.executor_plugins_map[executor_name].__module__
     )
 
 
-def get_converted_value(value: str):
+def get_converted_value(value: str) -> Any:
     """
     Convert the value to the appropriate type
+
+    Args:
+        value: Value to be converted
+
+    Returns:
+        Converted value with appropriate type
     """
+
     if value.lower() == "true":
         return True
     elif value.lower() == "false":
@@ -56,10 +74,18 @@ def get_converted_value(value: str):
         return value
 
 
-def validate_options(executor_options: Dict[str, str], executor_name: str):
+def validate_options(executor_options: Dict[str, str], executor_name: str) -> None:
     """
     Validate the options passed to the CRM
+
+    Args:
+        executor_options: Options passed to the CRM
+        executor_name: Name of the executor
+
+    Raises:
+        pydantic.ValidationError: If the options are invalid
     """
+
     # Importing validation classes from the executor module
     module = get_executor_module(executor_name)
     ExecutorPluginDefaults = getattr(module, "ExecutorPluginDefaults")
@@ -100,7 +126,7 @@ class CloudResourceManager:
         if self.executor_options:
             validate_options(self.executor_options, self.executor_name)
 
-    def _print_stdout(self, process: subprocess.Popen) -> Optional[int]:
+    def _print_stdout(self, process: subprocess.Popen) -> int:
         """
         Print the stdout from the subprocess to console
 
@@ -110,6 +136,7 @@ class CloudResourceManager:
         Returns:
             returncode of the process
         """
+
         while process.poll() is None:
             if proc_stdout := process.stdout.readline():
                 print(proc_stdout.strip().decode("utf-8"))
@@ -117,9 +144,11 @@ class CloudResourceManager:
                 break
         return process.poll()
 
+        # TODO: Return the command output alongwith returncode
+
     def _run_in_subprocess(
         self, cmd: str, workdir: str, env_vars: Optional[Dict[str, str]] = None
-    ) -> Optional[int]:
+    ) -> None:
         """
         Run the `cmd` in a subprocess shell with the env_vars set in the process's new environment
 
@@ -129,8 +158,9 @@ class CloudResourceManager:
             env_vars: Dictionary of environment variables to set in the processes execution environment
 
         Returns:
-            Exit code of the process
+            None
         """
+
         proc = subprocess.Popen(
             args=cmd,
             stdout=subprocess.PIPE,
@@ -144,10 +174,18 @@ class CloudResourceManager:
         if retcode != 0:
             raise subprocess.CalledProcessError(returncode=retcode, cmd=cmd)
 
+        # TODO: Return the command output
+
     def _update_config(self, tf_executor_config_file: str) -> None:
         """
         Update covalent configuration with the executor
         config values as obtained from terraform
+
+        Args:
+            tf_executor_config_file: Path to the terraform executor config file
+
+        Returns:
+            None
         """
 
         # Puts the plugin options in covalent's config
@@ -160,16 +198,30 @@ class CloudResourceManager:
     def _get_tf_path(self) -> str:
         """
         Get the terraform path
+
+        Args:
+            None
+
+        Returns:
+            Path to terraform executable
         """
+
         if terraform := shutil.which("terraform"):
             return terraform
         else:
             raise CommandNotFoundError("Terraform not found on system")
 
-    def up(self, dry_run: bool = True):
+    def up(self, dry_run: bool = True) -> None:
         """
-        Setup executor resources
+        Spin up executor resources with terraform
+
+        Args:
+            dry_run: If True, only run terraform plan and not apply
+
+        Returns:
+            None
         """
+
         terraform = self._get_tf_path()
 
         tfvars_file = str(Path(self.executor_tf_path) / "terraform.tfvars")
@@ -209,9 +261,15 @@ class CloudResourceManager:
 
         return cmd_output
 
-    def down(self):
+    def down(self) -> None:
         """
-        Teardown executor resources
+        Teardown previously spun up executor resources with terraform
+
+        Args:
+            None
+
+        Returns:
+            None
         """
 
         terraform = self._get_tf_path()
@@ -228,12 +286,21 @@ class CloudResourceManager:
 
         return cmd_output
 
-    def status(self):
+    def status(self) -> None:
         """
-        Return the list of resources being managed by terraform, i.e.
+        Get the status of the spun up executor resources
+
+        TODO: Return the list of resources being managed by terraform, i.e.
         if empty, then either the resources have not been created or
         have been destroyed already.
+
+        Args:
+            None
+
+        Returns:
+            None
         """
+
         terraform = self._get_tf_path()
 
         tf_state = " ".join([terraform, "state", "list"])

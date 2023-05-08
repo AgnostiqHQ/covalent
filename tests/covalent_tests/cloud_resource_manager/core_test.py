@@ -23,6 +23,7 @@ import subprocess
 from configparser import ConfigParser
 from functools import partial
 from pathlib import Path
+from unittest import mock
 
 import pytest
 
@@ -311,7 +312,7 @@ def test_get_tf_path(mocker, test_tf_path, crm):
     "dry_run, executor_options",
     [
         (True, None),
-        (False, None),
+        (False, {"test_key": "test_value"}),
     ],
 )
 def test_up(mocker, dry_run, executor_options, executor_name, executor_module_path):
@@ -326,6 +327,11 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
         return_value=test_tf_path,
     )
 
+    # Mocking as we are instantiating with executor options
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.validate_options",
+    )
+
     mock_run_in_subprocess = mocker.patch(
         "covalent.cloud_resource_manager.core.CloudResourceManager._run_in_subprocess",
     )
@@ -334,12 +340,6 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
     mock_environ_copy = mocker.patch(
         "covalent.cloud_resource_manager.core.os.environ.copy",
         return_value=test_tf_dict,
-    )
-
-    mock_open = mocker.mock_open()
-    mocker.patch(
-        "covalent.cloud_resource_manager.core.open",
-        return_value=mock_open,
     )
 
     mock_update_config = mocker.patch(
@@ -352,7 +352,11 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
         options=executor_options,
     )
 
-    crm.up(dry_run=dry_run)
+    with mock.patch(
+        "covalent.cloud_resource_manager.core.open",
+        mock.mock_open(),
+    ) as mock_file:
+        crm.up(dry_run=dry_run)
 
     mock_get_tf_path.assert_called_once()
     mock_run_in_subprocess.assert_any_call(
@@ -363,14 +367,13 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
     mock_environ_copy.assert_called_once()
 
     if executor_options:
-        mock_open.assert_called_once_with(
+        mock_file.assert_called_once_with(
             f"{crm.executor_tf_path}/terraform.tfvars",
             "w",
         )
 
-        mock_open.write.assert_called_once_with(
-            f'{key}="{value}"\n' for key, value in executor_options.items()
-        )
+        key, value = list(executor_options.items())[0]
+        mock_file().write.assert_called_once_with(f'{key}="{value}"\n')
 
     mock_run_in_subprocess.assert_any_call(
         cmd=f"{test_tf_path} plan -out tf.plan",
