@@ -26,6 +26,7 @@ Plugins
    awsecs
    awsbatch
    azurebatch
+   gcpbatch
 
 Base executor
 *************
