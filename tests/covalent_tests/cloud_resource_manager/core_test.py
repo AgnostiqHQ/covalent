@@ -35,6 +35,24 @@ from covalent.cloud_resource_manager.core import (
 )
 
 
+@pytest.fixture
+def executor_name():
+    return "test_executor"
+
+
+@pytest.fixture
+def executor_module_path():
+    return "test_executor_module_path"
+
+
+@pytest.fixture
+def crm(executor_name, executor_module_path):
+    return CloudResourceManager(
+        executor_name=executor_name,
+        executor_module_path=executor_module_path,
+    )
+
+
 def test_get_executor_module(mocker):
     test_executor_name = "test_executor"
     test_executor_module = "test_executor_module"
@@ -132,7 +150,7 @@ def test_cloud_resource_manager_init(mocker, options):
         mock_validate_options.assert_not_called()
 
 
-def test_print_stdout(mocker):
+def test_print_stdout(mocker, crm):
     test_stdout = "test_stdout".encode("utf-8")
     test_return_code = 0
 
@@ -142,11 +160,6 @@ def test_print_stdout(mocker):
     mock_process.stdout.readline.side_effect = partial(next, iter([test_stdout, None]))
 
     mock_print = mocker.patch("covalent.cloud_resource_manager.core.print")
-
-    crm = CloudResourceManager(
-        executor_name="test_executor",
-        executor_module_path="test_executor_module_path",
-    )
 
     return_code = crm._print_stdout(mock_process)
 
@@ -163,7 +176,7 @@ def test_print_stdout(mocker):
         1,
     ],
 )
-def test_run_in_subprocess(mocker, test_retcode):
+def test_run_in_subprocess(mocker, test_retcode, crm):
     test_cmd = "test_cmd"
     test_workdir = "test_workdir"
     test_env_vars = {"test_env_key": "test_env_value"}
@@ -177,11 +190,6 @@ def test_run_in_subprocess(mocker, test_retcode):
     mock_print_stdout = mocker.patch(
         "covalent.cloud_resource_manager.core.CloudResourceManager._print_stdout",
         return_value=test_retcode,
-    )
-
-    crm = CloudResourceManager(
-        executor_name="test_executor",
-        executor_module_path="test_executor_module_path",
     )
 
     if test_retcode != 0:
@@ -211,15 +219,13 @@ def test_run_in_subprocess(mocker, test_retcode):
     mock_print_stdout.assert_called_once_with(mock_process)
 
 
-def test_update_config(mocker):
-    test_executor_name = "test_executor"
+def test_update_config(mocker, crm, executor_name):
     test_tf_executor_config_file = "test_tf_executor_config_file"
     test_key = "test_key"
     test_value = "test_value"
-    test_executor_config = {test_executor_name: {test_key: test_value}}
 
     test_config_parser = ConfigParser()
-    test_config_parser[test_executor_name] = {test_key: test_value}
+    test_config_parser[executor_name] = {test_key: test_value}
     test_config_parser.read = mocker.MagicMock()
 
     mocker.patch(
@@ -236,11 +242,6 @@ def test_update_config(mocker):
         "covalent.cloud_resource_manager.core.set_config",
     )
 
-    crm = CloudResourceManager(
-        executor_name=test_executor_name,
-        executor_module_path="test_executor_module_path",
-    )
-
     crm._update_config(
         tf_executor_config_file=test_tf_executor_config_file,
     )
@@ -248,7 +249,7 @@ def test_update_config(mocker):
     test_config_parser.read.assert_called_once_with(test_tf_executor_config_file)
     mock_get_converted_value.assert_called_once_with(test_value)
     mock_set_config.assert_called_once_with(
-        {f"executors.{test_executor_name}.{test_key}": test_value},
+        {f"executors.{executor_name}.{test_key}": test_value},
     )
 
 
@@ -259,15 +260,10 @@ def test_update_config(mocker):
         None,
     ],
 )
-def test_get_tf_path(mocker, test_tf_path):
+def test_get_tf_path(mocker, test_tf_path, crm):
     mock_shutil_which = mocker.patch(
         "covalent.cloud_resource_manager.core.shutil.which",
         return_value=test_tf_path,
-    )
-
-    crm = CloudResourceManager(
-        executor_name="test_executor",
-        executor_module_path="test_executor_module_path",
     )
 
     if test_tf_path:
@@ -277,3 +273,82 @@ def test_get_tf_path(mocker, test_tf_path):
             crm._get_tf_path()
 
     mock_shutil_which.assert_called_once_with("terraform")
+
+
+@pytest.mark.parametrize(
+    "dry_run, executor_options",
+    [
+        (True, None),
+        (False, None),
+    ],
+)
+def test_up(mocker, dry_run, executor_options, executor_name, executor_module_path):
+    test_tf_path = "test_tf_path"
+
+    mock_get_tf_path = mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._get_tf_path",
+        return_value=test_tf_path,
+    )
+
+    mock_run_in_subprocess = mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._run_in_subprocess",
+    )
+
+    test_tf_dict = {"test_tf_key": "test_tf_value"}
+    mock_environ_copy = mocker.patch(
+        "covalent.cloud_resource_manager.core.os.environ.copy",
+        return_value=test_tf_dict,
+    )
+
+    mock_open = mocker.mock_open()
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.open",
+        return_value=mock_open,
+    )
+
+    mock_update_config = mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._update_config",
+    )
+
+    crm = CloudResourceManager(
+        executor_name=executor_name,
+        executor_module_path=executor_module_path,
+        options=executor_options,
+    )
+
+    crm.up(dry_run=dry_run)
+
+    mock_get_tf_path.assert_called_once()
+    mock_run_in_subprocess.assert_any_call(
+        cmd=f"{test_tf_path} init",
+        workdir=crm.executor_tf_path,
+    )
+
+    mock_environ_copy.assert_called_once()
+
+    if executor_options:
+        mock_open.assert_called_once_with(
+            f"{crm.executor_tf_path}/terraform.tfvars",
+            "w",
+        )
+
+        mock_open.write.assert_called_once_with(
+            f'{key}="{value}"\n' for key, value in executor_options.items()
+        )
+
+    mock_run_in_subprocess.assert_any_call(
+        cmd=f"{test_tf_path} plan -out tf.plan",
+        workdir=crm.executor_tf_path,
+        env_vars=test_tf_dict,
+    )
+
+    if not dry_run:
+        mock_run_in_subprocess.assert_any_call(
+            cmd=f"{test_tf_path} apply tf.plan",
+            workdir=crm.executor_tf_path,
+            env_vars=test_tf_dict,
+        )
+
+        mock_update_config.assert_called_once_with(
+            f"{crm.executor_tf_path}/{executor_name}.conf",
+        )

@@ -172,8 +172,8 @@ class CloudResourceManager:
         """
         terraform = self._get_tf_path()
 
-        tfvars_file = Path(self.executor_tf_path) / "terraform.tfvars"
-        tf_executor_config_file = Path(self.executor_tf_path) / f"{self.executor_name}.conf"
+        tfvars_file = str(Path(self.executor_tf_path) / "terraform.tfvars")
+        tf_executor_config_file = str(Path(self.executor_tf_path) / f"{self.executor_name}.conf")
 
         tf_init = " ".join([terraform, "init"])
         tf_plan = " ".join([terraform, "plan", "-out", "tf.plan"])
@@ -193,7 +193,7 @@ class CloudResourceManager:
                     f.write(f'{key}="{value}"\n')
 
         # Run `terraform plan`
-        self._run_in_subprocess(
+        cmd_output = self._run_in_subprocess(
             cmd=tf_plan, workdir=self.executor_tf_path, env_vars=tf_vars_env_dict
         )
 
@@ -207,26 +207,26 @@ class CloudResourceManager:
             # Update covalent executor config based on Terraform output
             self._update_config(tf_executor_config_file)
 
-            return cmd_output
+        return cmd_output
 
-    def down(self, dry_run: bool = True):
+    def down(self):
         """
         Teardown executor resources
         """
-        if not dry_run:
-            terraform = self._get_tf_path()
 
-            tfvars_file = Path(self.executor_tf_path) / "terraform.tfvars"
+        terraform = self._get_tf_path()
 
-            tf_destroy = " ".join([terraform, "destroy", "-auto-approve"])
+        tfvars_file = Path(self.executor_tf_path) / "terraform.tfvars"
 
-            # Run `terraform destroy`
-            cmd_output = self._run_in_subprocess(cmd=tf_destroy, workdir=self.executor_tf_path)
+        tf_destroy = " ".join([terraform, "destroy", "-auto-approve"])
 
-            if Path(tfvars_file).exists():
-                Path(tfvars_file).unlink()
+        # Run `terraform destroy`
+        cmd_output = self._run_in_subprocess(cmd=tf_destroy, workdir=self.executor_tf_path)
 
-            return cmd_output
+        if Path(tfvars_file).exists():
+            Path(tfvars_file).unlink()
+
+        return cmd_output
 
     def status(self):
         """
