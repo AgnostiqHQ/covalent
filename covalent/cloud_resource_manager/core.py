@@ -153,8 +153,7 @@ class CloudResourceManager:
         # Puts the plugin options in covalent's config
         executor_config = ConfigParser()
         executor_config.read(tf_executor_config_file)
-        for key in executor_config[self.executor_name]:
-            value = executor_config[self.executor_name][key]
+        for key, value in executor_config[self.executor_name].items():
             converted_value = get_converted_value(value)
             set_config({f"executors.{self.executor_name}.{key}": converted_value})
 

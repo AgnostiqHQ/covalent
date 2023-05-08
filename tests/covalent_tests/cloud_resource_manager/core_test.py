@@ -20,11 +20,13 @@
 
 
 import subprocess
+from configparser import ConfigParser
 from functools import partial
 from pathlib import Path
 
 import pytest
 
+from covalent._shared_files.exceptions import CommandNotFoundError
 from covalent.cloud_resource_manager.core import (
     CloudResourceManager,
     get_converted_value,
@@ -207,3 +209,71 @@ def test_run_in_subprocess(mocker, test_retcode):
     )
 
     mock_print_stdout.assert_called_once_with(mock_process)
+
+
+def test_update_config(mocker):
+    test_executor_name = "test_executor"
+    test_tf_executor_config_file = "test_tf_executor_config_file"
+    test_key = "test_key"
+    test_value = "test_value"
+    test_executor_config = {test_executor_name: {test_key: test_value}}
+
+    test_config_parser = ConfigParser()
+    test_config_parser[test_executor_name] = {test_key: test_value}
+    test_config_parser.read = mocker.MagicMock()
+
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.ConfigParser",
+        return_value=test_config_parser,
+    )
+
+    mock_get_converted_value = mocker.patch(
+        "covalent.cloud_resource_manager.core.get_converted_value",
+        return_value=test_value,
+    )
+
+    mock_set_config = mocker.patch(
+        "covalent.cloud_resource_manager.core.set_config",
+    )
+
+    crm = CloudResourceManager(
+        executor_name=test_executor_name,
+        executor_module_path="test_executor_module_path",
+    )
+
+    crm._update_config(
+        tf_executor_config_file=test_tf_executor_config_file,
+    )
+
+    test_config_parser.read.assert_called_once_with(test_tf_executor_config_file)
+    mock_get_converted_value.assert_called_once_with(test_value)
+    mock_set_config.assert_called_once_with(
+        {f"executors.{test_executor_name}.{test_key}": test_value},
+    )
+
+
+@pytest.mark.parametrize(
+    "test_tf_path",
+    [
+        "test_tf_path",
+        None,
+    ],
+)
+def test_get_tf_path(mocker, test_tf_path):
+    mock_shutil_which = mocker.patch(
+        "covalent.cloud_resource_manager.core.shutil.which",
+        return_value=test_tf_path,
+    )
+
+    crm = CloudResourceManager(
+        executor_name="test_executor",
+        executor_module_path="test_executor_module_path",
+    )
+
+    if test_tf_path:
+        assert crm._get_tf_path() == test_tf_path
+    else:
+        with pytest.raises(CommandNotFoundError, match="Terraform not found on system"):
+            crm._get_tf_path()
+
+    mock_shutil_which.assert_called_once_with("terraform")
