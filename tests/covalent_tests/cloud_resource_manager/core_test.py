@@ -20,13 +20,76 @@
 
 import pytest
 
-from covalent.cloud_resource_manager import CloudResourceManager
+from covalent.cloud_resource_manager.core import (
+    get_converted_value,
+    get_executor_module,
+    validate_options,
+)
 
 
-@pytest.fixture
-def cloud_resource_manager():
-    return CloudResourceManager()
+def test_get_executor_module(mocker):
+    test_executor_name = "test_executor"
+    test_executor_module = "test_executor_module"
+
+    mock_import_module = mocker.patch(
+        "covalent.cloud_resource_manager.core.importlib.import_module",
+        return_value=test_executor_module,
+    )
+
+    mocker.patch(
+        "covalent.cloud_resource_manager.core._executor_manager.executor_plugins_map",
+        return_value={test_executor_name: "test"},
+    )
+
+    returned_module = get_executor_module(test_executor_name)
+
+    assert returned_module == test_executor_module
+    mock_import_module.assert_called_once()
 
 
-def test_cloud_resource_manager(cloud_resource_manager):
+@pytest.mark.parametrize(
+    "value, expected",
+    [
+        ("true", True),
+        ("false", False),
+        ("null", None),
+        ("1", 1),
+        ("1.0", 1.0),
+        ("test", "test"),
+    ],
+)
+def test_get_converted_value(value, expected):
+    assert get_converted_value(value) == expected
+
+
+def test_validate_options(mocker):
+    executor_options = {"test_key": "test_value"}
+    executor_name = "test_executor"
+
+    mock_get_executor_module = mocker.patch(
+        "covalent.cloud_resource_manager.core.get_executor_module",
+    )
+
+    mock_defaults_model = mocker.MagicMock()
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.getattr",
+        return_value=mock_defaults_model,
+    )
+
+    mock_list = mocker.patch(
+        "covalent.cloud_resource_manager.core.list",
+        return_value=list(executor_options.keys()),
+    )
+
+    validate_options(executor_options, executor_name)
+
+    mock_get_executor_module.assert_called_once_with(executor_name)
+
+    assert mock_list.call_count == 2
+
+    mock_defaults_model.assert_any_call(**executor_options)
+    assert mock_defaults_model.call_count == 2
+
+
+def test_cloud_resource_manager_init():
     pass

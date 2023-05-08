@@ -66,7 +66,6 @@ def validate_options(executor_options: Dict[str, str], executor_name: str):
     ExecutorInfraDefaults = getattr(module, "ExecutorInfraDefaults")
 
     # Validating the passed options:
-    # TODO: What exactly are the options passed? Are they plugin defaults or infra defaults?
 
     plugin_attrs = list(ExecutorPluginDefaults.schema()["properties"].keys())
     infra_attrs = list(ExecutorInfraDefaults.schema()["properties"].keys())
@@ -242,29 +241,3 @@ class CloudResourceManager:
 
         # Run `terraform state list`
         return self._run_in_subprocess(cmd=tf_state, workdir=self.executor_tf_path)
-
-
-# if __name__ == "__main__":
-
-#     executor_module_path = Path(
-#         __import__(_executor_manager.executor_plugins_map["awsbatch"].__module__).__path__[0]
-#     )
-
-
-#     crm = CloudResourceManager(
-#         executor_name="awsbatch",
-#         executor_module_path=executor_module_path,
-#         options={
-#             "prefix": "sankalp",
-#         }
-#     )
-
-#     crm.up(dry_run=False)
-
-#     time.sleep(2)
-
-#     crm.status()
-
-#     time.sleep(2)
-
-#     crm.down(dry_run=False)
