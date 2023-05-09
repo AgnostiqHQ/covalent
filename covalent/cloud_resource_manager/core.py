@@ -25,52 +25,51 @@ import shutil
 import subprocess
 from configparser import ConfigParser
 from pathlib import Path
+from types import ModuleType
 from typing import Callable, Dict, Optional
 
-from .._shared_files import logger
-from .._shared_files.config import set_config
-from .._shared_files.exceptions import CommandNotFoundError
-from ..executor import _executor_manager
+from covalent._shared_files import logger
+from covalent._shared_files.config import get_config, set_config
+from covalent._shared_files.exceptions import CommandNotFoundError
+from covalent.executor import _executor_manager
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-def get_executor_module(executor_name: str):
+def get_executor_module(executor_name: str) -> ModuleType:
+    """
+    Get the executor module from the executor name
+
+    Args:
+        executor_name: Name of the executor
+
+    Returns:
+        The executor module
+
+    """
     return importlib.import_module(
         _executor_manager.executor_plugins_map[executor_name].__module__
     )
 
 
-def get_converted_value(value: str):
-    """
-    Convert the value to the appropriate type
-    """
-    if value.lower() == "true":
-        return True
-    elif value.lower() == "false":
-        return False
-    elif value.lower() == "null":
-        return None
-    elif value.isdigit():
-        return int(value)
-    elif value.replace(".", "", 1).isdigit():
-        return float(value)
-    else:
-        return value
-
-
-def validate_options(executor_options: Dict[str, str], executor_name: str):
+def validate_options(
+    ExecutorPluginDefaults, ExecutorInfraDefaults, executor_options: Dict[str, str]
+) -> None:
     """
     Validate the options passed to the CRM
+
+    Args:
+        ExecutorPluginDefaults: Executor plugin defaults validation class
+        ExecutorInfraDefaults: Executor infra defaults validation class
+        executor_options: Options passed to the CRM
+
+    Raises:
+        pydantic.ValidationError: If the options are invalid
+
     """
-    # Importing validation classes from the executor module
-    module = get_executor_module(executor_name)
-    ExecutorPluginDefaults = getattr(module, "ExecutorPluginDefaults")
-    ExecutorInfraDefaults = getattr(module, "ExecutorInfraDefaults")
 
     # Validating the passed options:
-    # TODO: What exactly are the options passed? Are they plugin defaults or infra defaults?
 
     plugin_attrs = list(ExecutorPluginDefaults.schema()["properties"].keys())
     infra_attrs = list(ExecutorInfraDefaults.schema()["properties"].keys())
@@ -83,12 +82,20 @@ def validate_options(executor_options: Dict[str, str], executor_name: str):
     ExecutorInfraDefaults(**infra_params)
 
 
-def get_plugin_settings(executor_name: str, executor_options: Dict) -> Dict:
-    """Get plugin settings."""
-    module = get_executor_module(executor_name)
-    ExecutorPluginDefaults = getattr(module, "ExecutorPluginDefaults")
-    ExecutorInfraDefaults = getattr(module, "ExecutorInfraDefaults")
+def get_plugin_settings(
+    ExecutorPluginDefaults, ExecutorInfraDefaults, executor_options: Dict
+) -> Dict:
+    """Get plugin settings.
 
+    Args:
+        ExecutorPluginDefaults: Executor plugin defaults validation class.
+        ExecutorInfraDefaults: Executor infra defaults validation class.
+        executor_options: Resource provisioning options passed to the CRM.
+
+    Returns:
+        Dictionary of plugin settings.
+
+    """
     plugin_settings = ExecutorPluginDefaults.schema()["properties"]
     infra_settings = ExecutorInfraDefaults.schema()["properties"]
 
@@ -140,22 +147,30 @@ class CloudResourceManager:
         # Includes both plugin and infra options
         self.executor_options = options
 
+        # Importing validation classes from the executor module
+        module = get_executor_module(executor_name)
+        self.ExecutorPluginDefaults = getattr(module, "ExecutorPluginDefaults")
+        self.ExecutorInfraDefaults = getattr(module, "ExecutorInfraDefaults")
+
         if self.executor_options:
-            validate_options(self.executor_options, self.executor_name)
+            validate_options(
+                self.ExecutorPluginDefaults, self.ExecutorInfraDefaults, self.executor_options
+            )
 
-        self.plugin_settings = get_plugin_settings(self.executor_name, self.executor_options)
+        self.plugin_settings = get_plugin_settings(
+            self.ExecutorPluginDefaults, self.ExecutorInfraDefaults, self.executor_options
+        )
 
-    def _print_stdout(
-        self, process: subprocess.Popen, print_callback: Callable = None
-    ) -> Optional[int]:
+    def _print_stdout(self, process: subprocess.Popen, print_callback: Callable) -> int:
         """
         Print the stdout from the subprocess to console
 
         Args:
-            process: Python subprocess whose stdout is to be printed to screen
+            process: Python subprocess whose stdout is to be printed to screen.
+            print_callback: Callback function to print the stdout.
 
         Returns:
-            returncode of the process
+            Return code of the process.
 
         """
         while (retcode := process.poll()) is None:
@@ -163,13 +178,15 @@ class CloudResourceManager:
                 print_callback(proc_stdout.strip().decode("utf-8"))
         return retcode
 
+        # TODO: Return the command output along with return code
+
     def _run_in_subprocess(
         self,
         cmd: str,
         workdir: str,
-        print_callback: Callable = None,
         env_vars: Optional[Dict[str, str]] = None,
-    ) -> Optional[int]:
+        print_callback: Optional[Callable] = None,
+    ) -> None:
         """
         Run the `cmd` in a subprocess shell with the env_vars set in the process's new environment
 
@@ -179,7 +196,8 @@ class CloudResourceManager:
             env_vars: Dictionary of environment variables to set in the processes execution environment
 
         Returns:
-            Exit code of the process
+            None
+
         """
         proc = subprocess.Popen(
             args=cmd,
@@ -204,29 +222,68 @@ class CloudResourceManager:
         """
         Update covalent configuration with the executor
         config values as obtained from terraform
-        """
 
+        Args:
+            tf_executor_config_file: Path to the terraform executor config file
+
+        Returns:
+            None
+
+        """
         # Puts the plugin options in covalent's config
         executor_config = ConfigParser()
         executor_config.read(tf_executor_config_file)
-        for key in executor_config[self.executor_name]:
-            value = executor_config[self.executor_name][key]
-            converted_value = get_converted_value(value)
-            set_config({f"executors.{self.executor_name}.{key}": converted_value})
-            self.plugin_settings[key]["value"] = converted_value
+
+        filtered_executor_config = {
+            k: v if v != "null" else None for k, v in executor_config[self.executor_name].items()
+        }
+
+        validated_config = self.ExecutorPluginDefaults(**filtered_executor_config).dict()
+
+        for key, value in validated_config.items():
+            set_config({f"executors.{self.executor_name}.{key}": value})
+            self.plugin_settings[key]["value"] = value
 
     def _get_tf_path(self) -> str:
         """
         Get the terraform path
+
+        Args:
+            None
+
+        Returns:
+            Path to terraform executable
+
         """
         if terraform := shutil.which("terraform"):
             return terraform
         else:
             raise CommandNotFoundError("Terraform not found on system")
 
+    def _get_tf_statefile_path(self) -> str:
+        """
+        Get the terraform state file path
+
+        Args:
+            None
+
+        Returns:
+            Path to terraform state file
+
+        """
+        # Saving in a directory which doesn't get deleted on purge
+        return str(Path(get_config("dispatcher.db_path")).parent / f"{self.executor_name}.tfstate")
+
     def up(self, print_callback: Callable, dry_run: bool = True):
         """
-        Setup executor resources
+        Spin up executor resources with terraform
+
+        Args:
+            dry_run: If True, only run terraform plan and not apply
+
+        Returns:
+            None
+
         """
         terraform = self._get_tf_path()
 
@@ -287,12 +344,19 @@ class CloudResourceManager:
 
         app_log.debug("Terraform apply skipped - dry run was activated")
 
-    def down(self, print_callback: Callable):
+    def down(self, print_callback: Callable) -> None:
         """
-        Teardown executor resources
+        Teardown previously spun up executor resources with terraform.
+
+        Args:
+            print_callback: Callback function to print output.
+
+        Returns:
+            None
+
         """
         terraform = self._get_tf_path()
-
+        tf_state_file = self._get_tf_statefile_path()
         tfvars_file = Path(self.executor_tf_path) / "terraform.tfvars"
 
         tf_destroy = " ".join(["TF_CLI_ARGS=-no-color", terraform, "destroy", "-auto-approve"])
@@ -307,45 +371,33 @@ class CloudResourceManager:
         if Path(tfvars_file).exists():
             Path(tfvars_file).unlink()
 
+        if Path(tf_state_file).exists():
+            Path(tf_state_file).unlink()
+            Path(f"{tf_state_file}.backup").unlink()
+
         app_log.debug(f"Command output: {cmd_output}")
 
         return cmd_output
 
-    def status(self):
+    def status(self) -> None:
         """
-        Return the list of resources being managed by terraform, i.e.
+        Get the status of the spun up executor resources
+
+        TODO: Return the list of resources being managed by terraform, i.e.
         if empty, then either the resources have not been created or
         have been destroyed already.
+
+        Args:
+            None
+
+        Returns:
+            None
+
         """
         terraform = self._get_tf_path()
+        tf_state_file = self._get_tf_statefile_path()
 
-        tf_state = " ".join([terraform, "state", "list"])
+        tf_state = " ".join([terraform, "state", "list", f"-state={tf_state_file}"])
 
         # Run `terraform state list`
         return self._run_in_subprocess(cmd=tf_state, workdir=self.executor_tf_path)
-
-
-# if __name__ == "__main__":
-
-#     executor_module_path = Path(
-#         __import__(_executor_manager.executor_plugins_map["awsbatch"].__module__).__path__[0]
-#     )
-
-
-#     crm = CloudResourceManager(
-#         executor_name="awsbatch",
-#         executor_module_path=executor_module_path,
-#         options={
-#             "prefix": "sankalp",
-#         }
-#     )
-
-#     crm.up(dry_run=False)
-
-#     time.sleep(2)
-
-#     crm.status()
-
-#     time.sleep(2)
-
-#     crm.down(dry_run=False)

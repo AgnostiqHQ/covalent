@@ -9,7 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Adding the base `CloudResourceManager` class 
+- Added the `CloudResourceManager` class
+
+### Tests
+
+- Added tests for the `CloudResourceManager` class
 
 ### Docs
 
