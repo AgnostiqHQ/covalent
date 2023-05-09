@@ -279,7 +279,7 @@ class CloudResourceManager:
         # Saving in a directory which doesn't get deleted on purge
         return str(Path(get_config("dispatcher.db_path")).parent / f"{self.executor_name}.tfstate")
 
-    def up(self, print_callback: Callable, dry_run: bool = True):
+    def up(self, print_callback: Callable, dry_run: bool = True) -> None:
         """
         Spin up executor resources with terraform
 
@@ -323,10 +323,6 @@ class CloudResourceManager:
             print_callback=print_callback,
         )
 
-        # terraform_log_file = self._terraform_log_env_vars["TF_LOG_PATH"]
-        # if Path(terraform_log_file).exists():
-        #     Path(terraform_log_file).unlink()
-
         # Create infrastructure as per the plan
         # Run `terraform apply`
         if not dry_run:
@@ -340,11 +336,9 @@ class CloudResourceManager:
             # Update covalent executor config based on Terraform output
             self._update_config(tf_executor_config_file)
 
-            # terraform_log_file = self._terraform_log_env_vars["TF_LOG_PATH"]
-            # if Path(terraform_log_file).exists():
-            #     Path(terraform_log_file).unlink()
-
-            return cmd_output
+        terraform_log_file = self._terraform_log_env_vars["TF_LOG_PATH"]
+        if Path(terraform_log_file).exists():
+            Path(terraform_log_file).unlink()
 
     def down(self, print_callback: Callable) -> None:
         """
@@ -364,7 +358,7 @@ class CloudResourceManager:
         tf_destroy = " ".join(["TF_CLI_ARGS=-no-color", terraform, "destroy", "-auto-approve"])
 
         # Run `terraform destroy`
-        cmd_output = self._run_in_subprocess(
+        self._run_in_subprocess(
             cmd=tf_destroy,
             workdir=self.executor_tf_path,
             print_callback=print_callback,
@@ -381,8 +375,6 @@ class CloudResourceManager:
         if Path(tf_state_file).exists():
             Path(tf_state_file).unlink()
             Path(f"{tf_state_file}.backup").unlink()
-
-        return cmd_output
 
     def status(self) -> None:
         """

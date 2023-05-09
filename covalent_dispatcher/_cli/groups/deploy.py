@@ -170,7 +170,7 @@ def up(executor_name: str, vars: Dict, help: bool, dry_run: bool, verbose: bool)
 
     with console.status(prepend_msg) as status:
         try:
-            console_msg = crm.up(
+            crm.up(
                 dry_run=dry_run,
                 print_callback=get_print_callback(
                     console=console,
