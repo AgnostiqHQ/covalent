@@ -354,21 +354,29 @@ class CloudResourceManager:
         terraform = self._get_tf_path()
         tf_state_file = self._get_tf_statefile_path()
         tfvars_file = Path(self.executor_tf_path) / "terraform.tfvars"
+        terraform_log_file = self._terraform_log_env_vars["TF_LOG_PATH"]
 
-        tf_destroy = " ".join(["TF_CLI_ARGS=-no-color", terraform, "destroy", "-auto-approve"])
+        tf_destroy = " ".join(
+            [
+                "TF_CLI_ARGS=-no-color",
+                "TF_LOG=ERROR",
+                f"TF_LOG_PATH={terraform_log_file}",
+                terraform,
+                "destroy",
+                "-auto-approve",
+            ]
+        )
 
         # Run `terraform destroy`
         self._run_in_subprocess(
             cmd=tf_destroy,
             workdir=self.executor_tf_path,
             print_callback=print_callback,
-            env_vars=self._terraform_log_env_vars,
         )
 
         if Path(tfvars_file).exists():
             Path(tfvars_file).unlink()
 
-        terraform_log_file = self._terraform_log_env_vars["TF_LOG_PATH"]
         if Path(terraform_log_file).exists():
             Path(terraform_log_file).unlink()
 
