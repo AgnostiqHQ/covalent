@@ -156,12 +156,12 @@ class CloudResourceManager:
 
         Returns:
             returncode of the process
+
         """
-        while process.poll() is None and (proc_stdout := process.stdout.readline()):
-            proc_output = proc_stdout.strip().decode("utf-8")
-            if print_callback:
-                print_callback(proc_output)
-        return process.poll()
+        while (retcode := process.poll()) is None:
+            if (proc_stdout := process.stdout.readline()) and print_callback:
+                print_callback(proc_stdout.strip().decode("utf-8"))
+        return retcode
 
     def _run_in_subprocess(
         self,
@@ -191,10 +191,12 @@ class CloudResourceManager:
         )
         retcode = self._print_stdout(proc, print_callback)
 
-        if retcode is not None:
-            app_log.debug(f"Return code: {retcode}")
+        # if retcode is not None:
+        #     app_log.debug(f"Return code: {retcode}")
+        app_log.debug(f"Return code: {retcode}")
 
-        if retcode is not None and retcode != 0:
+        # if retcode is not None and retcode != 0:
+        if retcode != 0:
             app_log.debug("Called process error...")
             raise subprocess.CalledProcessError(returncode=retcode, cmd=cmd)
 
@@ -231,9 +233,9 @@ class CloudResourceManager:
         tfvars_file = Path(self.executor_tf_path) / "terraform.tfvars"
         tf_executor_config_file = Path(self.executor_tf_path) / f"{self.executor_name}.conf"
 
-        tf_init = " ".join([terraform, "init"])
-        tf_plan = " ".join([terraform, "plan", "-out", "tf.plan"])
-        tf_apply = " ".join([terraform, "apply", "tf.plan"])
+        tf_init = " ".join(["TF_CLI_ARGS=-no-color", terraform, "init"])
+        tf_plan = " ".join(["TF_CLI_ARGS=-no-color", terraform, "plan", "-out", "tf.plan"])
+        tf_apply = " ".join(["TF_CLI_ARGS=-no-color", terraform, "apply", "tf.plan"])
 
         # Run `terraform init`
         self._run_in_subprocess(cmd=tf_init, workdir=self.executor_tf_path)
@@ -293,7 +295,7 @@ class CloudResourceManager:
 
         tfvars_file = Path(self.executor_tf_path) / "terraform.tfvars"
 
-        tf_destroy = " ".join([terraform, "destroy", "-auto-approve"])
+        tf_destroy = " ".join(["TF_CLI_ARGS=-no-color", terraform, "destroy", "-auto-approve"])
 
         # Run `terraform destroy`
         cmd_output = self._run_in_subprocess(

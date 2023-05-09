@@ -83,10 +83,11 @@ def get_settings_table(crm: CloudResourceManager) -> Table:
         Table with resource provisioning settings.
 
     """
-    table = Table()
-    table.add_column("Settings", justify="left")
+    table = Table(title="Settings")
+    table.add_column("Argument", justify="left")
+    table.add_column("Value", justify="left")
     for argument in crm.plugin_settings:
-        table.add_row(f"{argument}: {crm.plugin_settings[argument]['value']}")
+        table.add_row(argument, str(crm.plugin_settings[argument]["value"]))
     return table
 
 
