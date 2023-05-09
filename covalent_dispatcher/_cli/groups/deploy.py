@@ -45,7 +45,6 @@ def get_crm_object(executor_name: str, options: Dict = None) -> CloudResourceMan
     executor_module_path = Path(
         __import__(_executor_manager.executor_plugins_map[executor_name].__module__).__path__[0]
     )
-    click.echo(executor_module_path)
     return CloudResourceManager(executor_name, executor_module_path, options)
 
 
@@ -181,7 +180,9 @@ def up(executor_name: str, vars: Dict, help: bool, dry_run: bool, verbose: bool)
                 ),
             )
         except subprocess.CalledProcessError as e:
-            click.echo(f"Unable to provision resources due to the following error: {e}")
+            click.echo(
+                f"Unable to provision resources due to the following error:\n\n{e.stderr[-1]}"
+            )
             return
 
     click.echo(Console().print(get_settings_table(crm)))
@@ -225,7 +226,9 @@ def down(executor_name: str, verbose: bool) -> None:
                 )
             )
         except subprocess.CalledProcessError as e:
-            click.echo(f"Unable to destroy resources due to the following error: {e}")
+            click.echo(
+                f"Unable to destroy resources due to the following error:\n\n{e.stderr[-1]}"
+            )
             return
 
     click.echo("Completed.")

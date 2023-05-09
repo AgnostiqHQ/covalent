@@ -26,15 +26,11 @@ import subprocess
 from configparser import ConfigParser
 from pathlib import Path
 from types import ModuleType
-from typing import Callable, Dict, Optional
+from typing import Callable, Dict, List, Optional
 
-from covalent._shared_files import logger
 from covalent._shared_files.config import get_config, set_config
 from covalent._shared_files.exceptions import CommandNotFoundError
 from covalent.executor import _executor_manager
-
-app_log = logger.app_log
-log_stack_info = logger.log_stack_info
 
 
 def get_executor_module(executor_name: str) -> ModuleType:
@@ -68,7 +64,6 @@ def validate_options(
         pydantic.ValidationError: If the options are invalid
 
     """
-
     # Validating the passed options:
 
     plugin_attrs = list(ExecutorPluginDefaults.schema()["properties"].keys())
@@ -123,8 +118,6 @@ def get_plugin_settings(
         for key, value in executor_options.items():
             settings_dict[key]["value"] = value
 
-    app_log.debug(f"Settings default values + newly set values: {settings_dict}")
-
     return settings_dict
 
 
@@ -161,6 +154,11 @@ class CloudResourceManager:
             self.ExecutorPluginDefaults, self.ExecutorInfraDefaults, self.executor_options
         )
 
+        self._terraform_log_env_vars = {
+            "TF_LOG": "ERROR",
+            "TF_LOG_PATH": Path(self.executor_tf_path) / "terraform-error.log",
+        }
+
     def _print_stdout(self, process: subprocess.Popen, print_callback: Callable) -> int:
         """
         Print the stdout from the subprocess to console
@@ -179,6 +177,17 @@ class CloudResourceManager:
         return retcode
 
         # TODO: Return the command output along with return code
+
+    def _parse_terraform_error_log(self) -> List[str]:
+        """Parse the terraform error logs.
+
+        Returns:
+            List of lines in the terraform error log.
+
+        """
+        with open(self._terraform_log_env_vars["TF_LOG_PATH"], "r") as f:
+            lines = f.readlines()
+        return lines
 
     def _run_in_subprocess(
         self,
@@ -209,14 +218,10 @@ class CloudResourceManager:
         )
         retcode = self._print_stdout(proc, print_callback)
 
-        # if retcode is not None:
-        #     app_log.debug(f"Return code: {retcode}")
-        app_log.debug(f"Return code: {retcode}")
-
-        # if retcode is not None and retcode != 0:
         if retcode != 0:
-            app_log.debug("Called process error...")
-            raise subprocess.CalledProcessError(returncode=retcode, cmd=cmd)
+            raise subprocess.CalledProcessError(
+                returncode=retcode, cmd=cmd, stderr=self._parse_terraform_error_log()
+            )
 
     def _update_config(self, tf_executor_config_file: str) -> None:
         """
@@ -295,20 +300,17 @@ class CloudResourceManager:
         tf_apply = " ".join(["TF_CLI_ARGS=-no-color", terraform, "apply", "tf.plan"])
 
         # Run `terraform init`
-        self._run_in_subprocess(cmd=tf_init, workdir=self.executor_tf_path)
-        app_log.debug("Terraform init successful")
+        self._run_in_subprocess(
+            cmd=tf_init, workdir=self.executor_tf_path, env_vars=self._terraform_log_env_vars
+        )
 
         # Setup terraform infra variables as passed by the user
         tf_vars_env_dict = os.environ.copy()
-        app_log.debug(f"TF vars env dict: {tf_vars_env_dict}")
 
         if self.executor_options:
-            app_log.debug(f"Executor options: {self.executor_options}")
-
             with open(tfvars_file, "w") as f:
                 for key, value in self.executor_options.items():
                     tf_vars_env_dict[f"TF_VAR_{key}"] = value
-                    app_log.debug(f"TF_VAR_{key}={value}")
 
                     # Write whatever the user has passed to the terraform.tfvars file
                     f.write(f'{key}="{value}"\n')
@@ -317,10 +319,13 @@ class CloudResourceManager:
         self._run_in_subprocess(
             cmd=tf_plan,
             workdir=self.executor_tf_path,
-            env_vars=tf_vars_env_dict,
+            env_vars=tf_vars_env_dict.update(self._terraform_log_env_vars),
             print_callback=print_callback,
         )
-        app_log.debug("Terraform plan successful")
+
+        # terraform_log_file = self._terraform_log_env_vars["TF_LOG_PATH"]
+        # if Path(terraform_log_file).exists():
+        #     Path(terraform_log_file).unlink()
 
         # Create infrastructure as per the plan
         # Run `terraform apply`
@@ -328,21 +333,18 @@ class CloudResourceManager:
             cmd_output = self._run_in_subprocess(
                 cmd=tf_apply,
                 workdir=self.executor_tf_path,
-                env_vars=tf_vars_env_dict,
+                env_vars=tf_vars_env_dict.update(self._terraform_log_env_vars),
                 print_callback=print_callback,
             )
-
-            app_log.debug("Terraform apply successful")
 
             # Update covalent executor config based on Terraform output
             self._update_config(tf_executor_config_file)
 
-            app_log.debug("Terraform config updated")
-            app_log.debug(f"Command output: {cmd_output}")
+            # terraform_log_file = self._terraform_log_env_vars["TF_LOG_PATH"]
+            # if Path(terraform_log_file).exists():
+            #     Path(terraform_log_file).unlink()
 
             return cmd_output
-
-        app_log.debug("Terraform apply skipped - dry run was activated")
 
     def down(self, print_callback: Callable) -> None:
         """
@@ -363,19 +365,22 @@ class CloudResourceManager:
 
         # Run `terraform destroy`
         cmd_output = self._run_in_subprocess(
-            cmd=tf_destroy, workdir=self.executor_tf_path, print_callback=print_callback
+            cmd=tf_destroy,
+            workdir=self.executor_tf_path,
+            print_callback=print_callback,
+            env_vars=self._terraform_log_env_vars,
         )
-
-        app_log.debug("Resources spun down successfully")
 
         if Path(tfvars_file).exists():
             Path(tfvars_file).unlink()
 
+        terraform_log_file = self._terraform_log_env_vars["TF_LOG_PATH"]
+        if Path(terraform_log_file).exists():
+            Path(terraform_log_file).unlink()
+
         if Path(tf_state_file).exists():
             Path(tf_state_file).unlink()
             Path(f"{tf_state_file}.backup").unlink()
-
-        app_log.debug(f"Command output: {cmd_output}")
 
         return cmd_output
 
