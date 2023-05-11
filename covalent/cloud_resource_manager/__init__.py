@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -18,18 +18,4 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-
-class MissingLatticeRecordError(Exception):
-    pass
-
-
-class TaskRuntimeError(Exception):
-    pass
-
-
-class TaskCancelledError(Exception):
-    pass
-
-
-class CommandNotFoundError(Exception):
-    pass
+from .core import CloudResourceManager

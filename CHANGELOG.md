@@ -7,11 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Added the `CloudResourceManager` class
+
+### Tests
+
+- Added tests for the `CloudResourceManager` class
+
 ### Docs
 
 - Fix docstring for set_config
 - Redispatch feature page in Read the Docs.
-- Clarify installation instructions for SLURM plugin in Read the Docs.
+- Clarify installation instructions for SLURM plugin in Read the Docs (x2).
 
 ### Fixed
 
@@ -20,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Helpful message when trying to dispatch a workflow when covalent server is not available
 - Open UI preview of transport graph when `lattice.draw()` is invoked and print URL of the same
 - Defer creation of server specific config entries until covalent is started
+- Functional tests on CI
+- Move dask worker space to covalent cache instead of `site-packages`
 
 ### Docs
 
@@ -28,6 +38,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Duplicate mocks for `UI_SRVDIR`
+- Duplicate `_get_cancel_requested` method from `covalent_dispatcher/_core/runner.py`
+
+### Tests
+
+- Re-enable `test_run_workflow_does_not_deserialize`
 
 ### Authors
 

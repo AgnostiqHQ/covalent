@@ -1017,6 +1017,7 @@ def test_sdk_no_cluster(mocker, monkeypatch):
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
+    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
@@ -1027,6 +1028,7 @@ def test_sdk_no_cluster(mocker, monkeypatch):
 
     res = runner.invoke(start, cli_args)
 
+    assert set_config_mock.call_count == 6
     graceful_start_mock.assert_called_once()
 
 

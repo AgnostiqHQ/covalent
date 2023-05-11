@@ -135,7 +135,7 @@ async def _run_abstract_task(
     timestamp = datetime.now(timezone.utc)
 
     try:
-        cancel_req = await _get_cancel_requested(dispatch_id, node_id)
+        cancel_req = await executor_proxy._get_cancel_requested(dispatch_id, node_id)
         if cancel_req:
             app_log.debug(f"Don't run cancelled task {dispatch_id}:{node_id}")
             return datasvc.generate_node_result(
@@ -418,18 +418,3 @@ def _get_metadata_for_nodes(dispatch_id: str, node_ids: list) -> List[Any]:
     res = datasvc.get_result_object(dispatch_id)
     tg = res.lattice.transport_graph
     return list(map(lambda x: tg.get_node_value(x, "metadata"), node_ids))
-
-
-async def _get_cancel_requested(dispatch_id: str, task_id: int) -> Any:
-    """
-    Query if a specific task has been requested to be cancelled
-
-    Arg(s)
-        dispatch_id: Dispatch ID of the workflow
-        task_id: ID of the node to be cancelled
-
-    Return(s)
-        Whether the task has been requested to be cancelled or not
-    """
-    records = await get_jobs_metadata(dispatch_id, [task_id])
-    return records[0]["cancel_requested"]
