@@ -40,7 +40,9 @@ class Signals(Enum):
     EXIT = 2
 
 
-def io_wrapper(workdir: str, fn: Callable, args: List, kwargs: Dict) -> Tuple[Any, str, str, str]:
+def io_wrapper(
+    fn: Callable, args: List, kwargs: Dict, workdir: str = "."
+) -> Tuple[Any, str, str, str]:
     """Wrapper function to execute the given function in a separate
     process and capture stdout and stderr"""
     with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
