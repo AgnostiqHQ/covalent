@@ -26,6 +26,7 @@ This is a plugin executor module; it is loaded if found and properly structured.
 """
 
 import os
+from pathlib import Path
 from typing import Callable, Dict, List, Literal
 
 from dask.distributed import CancelledError, Client, Future
@@ -33,7 +34,7 @@ from dask.distributed import CancelledError, Client, Future
 from covalent._shared_files import TaskRuntimeError, logger
 
 # Relative imports are not allowed in executor plugins
-from covalent._shared_files.config import get_config
+from covalent._shared_files.config import get_config, set_config
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._shared_files.utils import _address_client_mapper
 from covalent.executor.base import AsyncBaseExecutor
@@ -51,6 +52,7 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     "cache_dir": os.path.join(
         os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "covalent"
     ),
+    "workdir": os.path.join(os.environ["HOME"], "covalent", "workdir"),
 }
 
 
@@ -66,13 +68,18 @@ class DaskExecutor(AsyncBaseExecutor):
         log_stderr: str = "stderr.log",
         conda_env: str = "",
         cache_dir: str = "",
+        workdir: str = "",
         current_env_on_conda_fail: bool = False,
     ) -> None:
         if not cache_dir:
-            cache_dir = os.path.join(
-                os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
-                "covalent",
-            )
+            cache_dir = _EXECUTOR_PLUGIN_DEFAULTS["cache_dir"]
+
+        if not workdir:
+            try:
+                workdir = get_config("executors.dask.workdir")
+            except KeyError:
+                workdir = _EXECUTOR_PLUGIN_DEFAULTS["workdir"]
+                set_config("executors.dask.workdir", workdir)
 
         if not scheduler_address:
             try:
@@ -85,6 +92,8 @@ class DaskExecutor(AsyncBaseExecutor):
         super().__init__(log_stdout, log_stderr, conda_env, cache_dir, current_env_on_conda_fail)
 
         self.scheduler_address = scheduler_address
+        self.workdir = workdir
+        Path(self.workdir).mkdir(parents=True, exist_ok=True)
 
     async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         """Submit the function and inputs to the dask cluster"""
@@ -102,7 +111,7 @@ class DaskExecutor(AsyncBaseExecutor):
             _address_client_mapper[self.scheduler_address] = dask_client
             await dask_client
 
-        future = dask_client.submit(dask_wrapper, function, args, kwargs)
+        future = dask_client.submit(dask_wrapper, self.workdir, function, args, kwargs)
         await self.set_job_handle(future.key)
         app_log.debug(f"Submitted task {node_id} to dask with key {future.key}")
 
