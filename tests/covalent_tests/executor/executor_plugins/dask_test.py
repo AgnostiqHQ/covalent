@@ -35,9 +35,10 @@ def test_dask_executor_init(mocker):
 
     from covalent.executor import DaskExecutor
 
-    de = DaskExecutor("127.0.0.1")
+    de = DaskExecutor("127.0.0.1", workdir="abcde")
 
     assert de.scheduler_address == "127.0.0.1"
+    assert de.workdir == "abcde"
 
 
 def test_dask_wrapper_fn(mocker):
