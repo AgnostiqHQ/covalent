@@ -50,7 +50,7 @@ def test_local_executor_init(mocker, capsys):
         == f"Couldn't find `executors.local.workdir` in config, creating a default one at {default_workdir_path}\n"
     )
 
-    assert le.workdir == os.path.join(os.environ["HOME"], "covalent", "workdir")
+    assert le.workdir == default_workdir_path
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         le = LocalExecutor(workdir=tmp_dir)
