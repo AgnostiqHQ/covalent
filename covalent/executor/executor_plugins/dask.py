@@ -82,7 +82,6 @@ class DaskExecutor(AsyncBaseExecutor):
                 info_msg = f"Couldn't find `executors.dask.workdir` in config, creating a default one at {workdir}"
                 app_log.info(info_msg)
                 print(info_msg)
-                set_config("executors.dask.workdir", workdir)
 
         if not scheduler_address:
             try:
@@ -96,6 +95,7 @@ class DaskExecutor(AsyncBaseExecutor):
 
         self.scheduler_address = scheduler_address
         self.workdir = workdir
+        set_config("executors.dask.workdir", self.workdir)
         Path(self.workdir).mkdir(parents=True, exist_ok=True)
 
     async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
