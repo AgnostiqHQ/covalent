@@ -21,6 +21,7 @@
 """Tests for Covalent dask executor."""
 
 import asyncio
+import os
 from unittest.mock import AsyncMock
 
 import pytest
@@ -34,6 +35,11 @@ def test_dask_executor_init(mocker):
     """Test dask executor constructor"""
 
     from covalent.executor import DaskExecutor
+
+    de = DaskExecutor("127.0.0.1")
+
+    assert de.scheduler_address == "127.0.0.1"
+    assert de.workdir == os.path.join(os.environ["HOME"], "covalent", "workdir")
 
     de = DaskExecutor("127.0.0.1", workdir="abcde")
 

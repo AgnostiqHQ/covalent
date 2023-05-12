@@ -21,6 +21,7 @@
 """Tests for Covalent local executor."""
 
 import io
+import os
 import tempfile
 from functools import partial
 from unittest.mock import MagicMock
@@ -33,6 +34,14 @@ from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._workflow.transport import TransportableObject
 from covalent.executor.base import wrapper_fn
 from covalent.executor.executor_plugins.local import LocalExecutor
+
+
+def test_local_executor_init():
+    le = LocalExecutor()
+    assert le.workdir == os.path.join(os.environ["HOME"], "covalent", "workdir")
+
+    le = LocalExecutor(workdir="abcde")
+    assert le.workdir == "abcde"
 
 
 def test_local_executor_passes_results_dir(mocker):
