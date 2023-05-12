@@ -27,6 +27,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+import covalent as ct
 from covalent._shared_files import TaskRuntimeError
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent.executor.executor_plugins.dask import DaskExecutor
@@ -53,6 +54,22 @@ def test_dask_executor_init(mocker, capsys):
         de = DaskExecutor("127.0.0.1", workdir=tmp_dir)
         assert de.scheduler_address == "127.0.0.1"
         assert de.workdir == tmp_dir
+
+
+def test_dask_executor_with_workdir():
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        de = ct.executor.DaskExecutor(workdir=tmp_dir)
+
+        @ct.lattice
+        @ct.electron(executor=de)
+        def simple_task(x, y):
+            with open("job.txt", "w") as w:
+                w.write(str(x + y))
+            return "Done!"
+
+        ct.get_result(ct.dispatch(simple_task)(1, 2), wait=True)
+        assert os.listdir(tmp_dir) == ["job.txt"]
+        assert open(os.path.join(tmp_dir, "job.txt")).read() == "3"
 
 
 def test_dask_wrapper_fn(mocker):

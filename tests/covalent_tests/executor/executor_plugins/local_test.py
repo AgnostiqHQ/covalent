@@ -57,6 +57,22 @@ def test_local_executor_init(mocker, capsys):
         assert le.workdir == tmp_dir
 
 
+def test_local_executor_with_workdir():
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        le = ct.executor.LocalExecutor(workdir=tmp_dir)
+
+        @ct.lattice
+        @ct.electron(executor=le)
+        def simple_task(x, y):
+            with open("job.txt", "w") as w:
+                w.write(str(x + y))
+            return "Done!"
+
+        ct.get_result(ct.dispatch(simple_task)(1, 2), wait=True)
+        assert os.listdir(tmp_dir) == ["job.txt"]
+        assert open(os.path.join(tmp_dir, "job.txt")).read() == "3"
+
+
 def test_local_executor_passes_results_dir(mocker):
     """Test that the local executor calls the stream writing function with the results directory specified."""
     with tempfile.TemporaryDirectory() as tmp_dir:
