@@ -36,6 +36,12 @@ from covalent.executor.base import wrapper_fn
 from covalent.executor.executor_plugins.local import LocalExecutor
 
 
+def simple_task(x, y):
+    with open("job.txt", "w") as w:
+        w.write(str(x + y))
+    return "Done!"
+
+
 def test_local_executor_init(mocker, capsys):
     """Test local executor constructor"""
 
@@ -57,20 +63,24 @@ def test_local_executor_init(mocker, capsys):
         assert le.workdir == tmp_dir
 
 
-def test_local_executor_with_workdir():
+def test_local_executor_with_workdir(mocker):
     with tempfile.TemporaryDirectory() as tmp_dir:
         le = ct.executor.LocalExecutor(workdir=tmp_dir)
 
-        @ct.lattice
-        @ct.electron(executor=le)
-        def simple_task(x, y):
-            with open("job.txt", "w") as w:
-                w.write(str(x + y))
-            return "Done!"
+        mock_set_job_handle = mocker.patch.object(le, "set_job_handle", MagicMock(return_value=42))
+        mock_get_cancel_requested = mocker.patch.object(
+            le, "get_cancel_requested", MagicMock(return_value=False)
+        )
 
-        ct.get_result(ct.dispatch(simple_task)(1, 2), wait=True)
+        args = [1, 2]
+        kwargs = {}
+        task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+        assert le.run(simple_task, args, kwargs, task_metadata)
         assert os.listdir(tmp_dir) == ["job.txt"]
         assert open(os.path.join(tmp_dir, "job.txt")).read() == "3"
+
+        mock_set_job_handle.assert_called_once()
+        mock_get_cancel_requested.assert_called_once()
 
 
 def test_local_executor_passes_results_dir(mocker):

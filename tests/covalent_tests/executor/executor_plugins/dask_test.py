@@ -56,20 +56,33 @@ def test_dask_executor_init(mocker, capsys):
         assert de.workdir == tmp_dir
 
 
-def test_dask_executor_with_workdir():
-    with tempfile.TemporaryDirectory() as tmp_dir:
-        de = ct.executor.DaskExecutor(workdir=tmp_dir)
+def test_dask_executor_with_workdir(mocker):
+    from dask.distributed import LocalCluster
 
-        @ct.lattice
-        @ct.electron(executor=de)
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        lc = LocalCluster()
+        de = ct.executor.DaskExecutor(lc.scheduler_address, workdir=tmp_dir)
+
+        mock_get_cancel_requested = mocker.patch.object(
+            de, "get_cancel_requested", AsyncMock(return_value=False)
+        )
+        mock_set_job_handle = mocker.patch.object(de, "set_job_handle", AsyncMock())
+
         def simple_task(x, y):
             with open("job.txt", "w") as w:
                 w.write(str(x + y))
             return "Done!"
 
-        ct.get_result(ct.dispatch(simple_task)(1, 2), wait=True)
+        args = [1, 2]
+        kwargs = {}
+        task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+        result = asyncio.run(de.run(simple_task, args, kwargs, task_metadata))
+        assert result == "Done!"
         assert os.listdir(tmp_dir) == ["job.txt"]
         assert open(os.path.join(tmp_dir, "job.txt")).read() == "3"
+
+        mock_get_cancel_requested.assert_awaited()
+        mock_set_job_handle.assert_awaited()
 
 
 def test_dask_wrapper_fn(mocker):
