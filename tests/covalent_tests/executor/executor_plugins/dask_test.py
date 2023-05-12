@@ -22,6 +22,7 @@
 
 import asyncio
 import os
+import tempfile
 from unittest.mock import AsyncMock
 
 import pytest
@@ -31,20 +32,27 @@ from covalent._shared_files.exceptions import TaskCancelledError
 from covalent.executor.executor_plugins.dask import DaskExecutor
 
 
-def test_dask_executor_init(mocker):
+def test_dask_executor_init(mocker, capsys):
     """Test dask executor constructor"""
 
-    from covalent.executor import DaskExecutor
+    mocker.patch("covalent.executor.executor_plugins.dask.get_config", side_effect=KeyError())
+    default_workdir_path = os.path.join(os.environ["HOME"], "covalent", "workdir")
 
     de = DaskExecutor("127.0.0.1")
 
-    assert de.scheduler_address == "127.0.0.1"
-    assert de.workdir == os.path.join(os.environ["HOME"], "covalent", "workdir")
+    captured = capsys.readouterr()
+    assert (
+        captured.out
+        == f"Couldn't find `executors.dask.workdir` in config, creating a default one at {default_workdir_path}\n"
+    )
 
-    de = DaskExecutor("127.0.0.1", workdir="abcde")
-
     assert de.scheduler_address == "127.0.0.1"
-    assert de.workdir == "abcde"
+    assert de.workdir == default_workdir_path
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        de = DaskExecutor("127.0.0.1", workdir=tmp_dir)
+        assert de.scheduler_address == "127.0.0.1"
+        assert de.workdir == tmp_dir
 
 
 def test_dask_wrapper_fn(mocker):

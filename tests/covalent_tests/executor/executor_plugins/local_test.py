@@ -36,12 +36,25 @@ from covalent.executor.base import wrapper_fn
 from covalent.executor.executor_plugins.local import LocalExecutor
 
 
-def test_local_executor_init():
+def test_local_executor_init(mocker, capsys):
+    """Test local executor constructor"""
+
+    mocker.patch("covalent.executor.executor_plugins.local.get_config", side_effect=KeyError())
+    default_workdir_path = os.path.join(os.environ["HOME"], "covalent", "workdir")
+
     le = LocalExecutor()
+
+    captured = capsys.readouterr()
+    assert (
+        captured.out
+        == f"Couldn't find `executors.local.workdir` in config, creating a default one at {default_workdir_path}\n"
+    )
+
     assert le.workdir == os.path.join(os.environ["HOME"], "covalent", "workdir")
 
-    le = LocalExecutor(workdir="abcde")
-    assert le.workdir == "abcde"
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        le = LocalExecutor(workdir=tmp_dir)
+        assert le.workdir == tmp_dir
 
 
 def test_local_executor_passes_results_dir(mocker):

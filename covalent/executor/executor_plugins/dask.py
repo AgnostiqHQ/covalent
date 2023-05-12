@@ -79,6 +79,9 @@ class DaskExecutor(AsyncBaseExecutor):
                 workdir = get_config("executors.dask.workdir")
             except KeyError:
                 workdir = _EXECUTOR_PLUGIN_DEFAULTS["workdir"]
+                info_msg = f"Couldn't find `executors.dask.workdir` in config, creating a default one at {workdir}"
+                app_log.info(info_msg)
+                print(info_msg)
                 set_config("executors.dask.workdir", workdir)
 
         if not scheduler_address:

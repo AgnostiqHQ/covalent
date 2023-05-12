@@ -68,6 +68,9 @@ class LocalExecutor(BaseExecutor):
                 workdir = get_config("executors.local.workdir")
             except KeyError:
                 workdir = _EXECUTOR_PLUGIN_DEFAULTS["workdir"]
+                info_msg = f"Couldn't find `executors.local.workdir` in config, creating a default one at {workdir}"
+                app_log.info(info_msg)
+                print(info_msg)
                 set_config("executors.local.workdir", workdir)
 
         super().__init__(*args, **kwargs)
