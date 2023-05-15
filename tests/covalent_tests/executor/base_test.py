@@ -116,7 +116,10 @@ def test_wrapper_fn():
 
     call_before = [(serialized_cb, serialized_cb_args, serialized_cb_kwargs, "")]
     call_after = [(serialized_ca, serialized_ca_args, serialized_ca_kwargs, "")]
-    serialized_output = wrapper_fn(serialized_fn, call_before, call_after, *args, **kwargs)
+    workdir = "."
+    serialized_output = wrapper_fn(
+        serialized_fn, call_before, call_after, workdir, *args, **kwargs
+    )
 
     assert serialized_output.get_deserialized() == (25, 2)
 
@@ -216,11 +219,12 @@ def test_base_executor_execute(mocker):
     kwargs = {"y": TransportableObject(3)}
     call_before = []
     call_after = []
+    workdir = "."
     dispatch_id = "asdf"
     results_dir = "/tmp"
     node_id = -1
 
-    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after, workdir)
     mock_notify = mocker.patch("covalent.executor.BaseExecutor._notify")
 
     result, stdout, stderr, exception_raised = me.execute(
@@ -453,6 +457,7 @@ def test_executor_setup_teardown_method(mocker):
     call_after = []
     dispatch_id = "asdf"
     results_dir = "/tmp"
+    workdir = "."
     node_id = -1
 
     task_metadata = {
@@ -461,7 +466,7 @@ def test_executor_setup_teardown_method(mocker):
         "results_dir": results_dir,
     }
 
-    assembled_callable = partial(wrapper_fn, function, call_before, call_after)
+    assembled_callable = partial(wrapper_fn, function, call_before, call_after, workdir)
     mock_notify = mocker.patch("covalent.executor.BaseExecutor._notify")
 
     result, stdout, stderr, exception_raised = me.execute(
