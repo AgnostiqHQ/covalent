@@ -1,3 +1,2 @@
 covalent
-matplotlib>=3.4.3
 pymatgen[relaxation]==2023.5.10
