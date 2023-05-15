@@ -36,7 +36,7 @@ from covalent.executor.executor_plugins.dask import DaskExecutor
 def test_dask_executor_init(mocker):
     """Test dask executor constructor"""
 
-    mocker.patch("covalent.executor.executor_plugins.dask.get_config", side_effect=KeyError())
+    mocker.patch("covalent.executor.base.get_config", side_effect=KeyError())
     default_workdir_path = os.path.join(os.environ["HOME"], "covalent", "workdir")
 
     de = DaskExecutor("127.0.0.1")

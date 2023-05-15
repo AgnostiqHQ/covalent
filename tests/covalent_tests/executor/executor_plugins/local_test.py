@@ -45,7 +45,7 @@ def simple_task(x, y):
 def test_local_executor_init(mocker):
     """Test local executor constructor"""
 
-    mocker.patch("covalent.executor.executor_plugins.local.get_config", side_effect=KeyError())
+    mocker.patch("covalent.executor.base.get_config", side_effect=KeyError())
     default_workdir_path = os.path.join(os.environ["HOME"], "covalent", "workdir")
 
     le = LocalExecutor()

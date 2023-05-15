@@ -68,6 +68,7 @@ class DaskExecutor(AsyncBaseExecutor):
         log_stderr: str = "stderr.log",
         conda_env: str = "",
         cache_dir: str = "",
+        workdir: str = "",
         current_env_on_conda_fail: bool = False,
     ) -> None:
         if not cache_dir:
@@ -81,7 +82,9 @@ class DaskExecutor(AsyncBaseExecutor):
                     "No dask scheduler address found in config. Address must be set manually."
                 )
 
-        super().__init__(log_stdout, log_stderr, conda_env, cache_dir, current_env_on_conda_fail)
+        super().__init__(
+            log_stdout, log_stderr, cache_dir, workdir, conda_env, current_env_on_conda_fail
+        )
 
         self.scheduler_address = scheduler_address
 
