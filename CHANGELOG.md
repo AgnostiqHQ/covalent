@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix docstring for set_config
 - Redispatch feature page in Read the Docs.
 - Clarify installation instructions for SLURM plugin in Read the Docs (x2).
+- Fix waiting order of electrons in docs inside snippet for adding a dependency when inputs and outputs are independent.
 
 ### Fixed
 
