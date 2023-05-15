@@ -106,7 +106,7 @@ class DaskExecutor(AsyncBaseExecutor):
             _address_client_mapper[self.scheduler_address] = dask_client
             await dask_client
 
-        future = dask_client.submit(dask_wrapper, function, args, kwargs, self.workdir)
+        future = dask_client.submit(dask_wrapper, function, args, kwargs)
         await self.set_job_handle(future.key)
         app_log.debug(f"Submitted task {node_id} to dask with key {future.key}")
 

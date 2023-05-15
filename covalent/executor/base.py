@@ -65,6 +65,7 @@ def wrapper_fn(
     function: TransportableObject,
     call_before: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
     call_after: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
+    workdir: str = ".",
     *args,
     **kwargs,
 ):
@@ -75,6 +76,9 @@ def wrapper_fn(
     the various executors.
 
     """
+
+    current_dir = os.getcwd()
+    os.chdir(workdir)
 
     cb_retvals = {}
     for tup in call_before:
@@ -115,6 +119,8 @@ def wrapper_fn(
         ca_args = serialized_args.get_deserialized()
         ca_kwargs = serialized_kwargs.get_deserialized()
         ca_fn(*ca_args, **ca_kwargs)
+
+    os.chdir(current_dir)
 
     return TransportableObject(output)
 

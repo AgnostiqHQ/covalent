@@ -86,7 +86,7 @@ class LocalExecutor(BaseExecutor):
             raise TaskCancelledError
 
         # Run the target function in a separate process
-        fut = proc_pool.submit(io_wrapper, function, args, kwargs, self.workdir)
+        fut = proc_pool.submit(io_wrapper, function, args, kwargs)
 
         output, worker_stdout, worker_stderr, tb = fut.result()
 

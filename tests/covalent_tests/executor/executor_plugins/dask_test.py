@@ -23,13 +23,16 @@
 import asyncio
 import os
 import tempfile
-from unittest.mock import AsyncMock
+from functools import partial
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
 import covalent as ct
+from covalent import TransportableObject
 from covalent._shared_files import TaskRuntimeError
 from covalent._shared_files.exceptions import TaskCancelledError
+from covalent.executor import wrapper_fn
 from covalent.executor.executor_plugins.dask import DaskExecutor
 
 
@@ -57,21 +60,40 @@ def test_dask_executor_with_workdir(mocker):
         lc = LocalCluster()
         de = ct.executor.DaskExecutor(lc.scheduler_address, workdir=tmp_dir)
 
-        mock_get_cancel_requested = mocker.patch.object(
-            de, "get_cancel_requested", AsyncMock(return_value=False)
-        )
-        mock_set_job_handle = mocker.patch.object(de, "set_job_handle", AsyncMock())
-
+        @ct.electron
         def simple_task(x, y):
             with open("job.txt", "w") as w:
                 w.write(str(x + y))
             return "Done!"
 
-        args = [1, 2]
-        kwargs = {}
-        task_metadata = {"dispatch_id": "asdf", "node_id": 1}
-        result = asyncio.run(de.run(simple_task, args, kwargs, task_metadata))
-        assert result == "Done!"
+        mock_get_cancel_requested = mocker.patch.object(
+            de, "get_cancel_requested", AsyncMock(return_value=False)
+        )
+        mock_set_job_handle = mocker.patch.object(de, "set_job_handle", AsyncMock())
+        mocker.patch.object(de, "_notify", MagicMock())
+
+        function = TransportableObject(simple_task)
+        args = [TransportableObject(1)]
+        kwargs = {"y": TransportableObject(2)}
+
+        assembled_callable = partial(wrapper_fn, function, [], [], de.workdir)
+
+        dispatch_id = "asdf"
+        results_dir = "/tmp"
+        node_id = 1
+
+        result, _, _, _ = asyncio.run(
+            de.execute(
+                function=assembled_callable,
+                args=args,
+                kwargs=kwargs,
+                dispatch_id=dispatch_id,
+                results_dir=results_dir,
+                node_id=node_id,
+            )
+        )
+
+        assert result.get_deserialized() == "Done!"
         assert os.listdir(tmp_dir) == ["job.txt"]
         assert open(os.path.join(tmp_dir, "job.txt")).read() == "3"
 
