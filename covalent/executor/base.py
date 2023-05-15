@@ -154,7 +154,8 @@ class _AbstractBaseExecutor(ABC):
             try:
                 workdir = get_config(f"executors.{short_name}.workdir")
             except KeyError:
-                debug_msg = f"Couldn't find `executors.{short_name}.workdir` in config, must be set manually."
+                workdir = os.path.join(os.environ["HOME"], "covalent", "workdir")
+                debug_msg = f"Couldn't find `executors.{short_name}.workdir` in config, using default value {workdir}."
                 app_log.debug(debug_msg)
 
         self.workdir = workdir
