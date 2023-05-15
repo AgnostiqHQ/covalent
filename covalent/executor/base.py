@@ -150,14 +150,7 @@ class _AbstractBaseExecutor(ABC):
         self.retries = retries
 
         if not workdir:
-            short_name = self.short_name()
-            try:
-                workdir = get_config(f"executors.{short_name}.workdir")
-            except KeyError:
-                workdir = os.path.join(os.environ["HOME"], "covalent", "workdir")
-                debug_msg = f"Couldn't find `executors.{short_name}.workdir` in config, will create a default one at {workdir}"
-                app_log.debug(debug_msg)
-
+            workdir = get_config(f"executors.{self.short_name()}.workdir")
         self.workdir = workdir
 
     def get_dispatch_context(self, dispatch_info: DispatchInfo) -> ContextManager[DispatchInfo]:
