@@ -42,19 +42,13 @@ def simple_task(x, y):
     return "Done!"
 
 
-def test_local_executor_init(mocker, capsys):
+def test_local_executor_init(mocker):
     """Test local executor constructor"""
 
     mocker.patch("covalent.executor.executor_plugins.local.get_config", side_effect=KeyError())
     default_workdir_path = os.path.join(os.environ["HOME"], "covalent", "workdir")
 
     le = LocalExecutor()
-
-    captured = capsys.readouterr()
-    assert (
-        captured.out
-        == f"Couldn't find `executors.local.workdir` in config, creating a default one at {default_workdir_path}\n"
-    )
 
     assert le.workdir == default_workdir_path
 

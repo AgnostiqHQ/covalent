@@ -34,7 +34,7 @@ from dask.distributed import CancelledError, Client, Future
 from covalent._shared_files import TaskRuntimeError, logger
 
 # Relative imports are not allowed in executor plugins
-from covalent._shared_files.config import get_config, set_config
+from covalent._shared_files.config import get_config
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._shared_files.utils import _address_client_mapper
 from covalent.executor.base import AsyncBaseExecutor
@@ -68,20 +68,10 @@ class DaskExecutor(AsyncBaseExecutor):
         log_stderr: str = "stderr.log",
         conda_env: str = "",
         cache_dir: str = "",
-        workdir: str = "",
         current_env_on_conda_fail: bool = False,
     ) -> None:
         if not cache_dir:
             cache_dir = _EXECUTOR_PLUGIN_DEFAULTS["cache_dir"]
-
-        if not workdir:
-            try:
-                workdir = get_config("executors.dask.workdir")
-            except KeyError:
-                workdir = _EXECUTOR_PLUGIN_DEFAULTS["workdir"]
-                info_msg = f"Couldn't find `executors.dask.workdir` in config, creating a default one at {workdir}"
-                app_log.info(info_msg)
-                print(info_msg)
 
         if not scheduler_address:
             try:
@@ -94,12 +84,11 @@ class DaskExecutor(AsyncBaseExecutor):
         super().__init__(log_stdout, log_stderr, conda_env, cache_dir, current_env_on_conda_fail)
 
         self.scheduler_address = scheduler_address
-        self.workdir = workdir
-        set_config("executors.dask.workdir", self.workdir)
-        Path(self.workdir).mkdir(parents=True, exist_ok=True)
 
     async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         """Submit the function and inputs to the dask cluster"""
+
+        Path(self.workdir).mkdir(parents=True, exist_ok=True)
 
         if await self.get_cancel_requested():
             app_log.debug("Task has cancelled")

@@ -32,7 +32,6 @@ from typing import Any, Callable, Dict, List
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import TaskCancelledError, TaskRuntimeError, logger
-from covalent._shared_files.config import get_config, set_config
 from covalent.executor import BaseExecutor
 
 # Store the wrapper function in an external module to avoid module
@@ -62,21 +61,6 @@ class LocalExecutor(BaseExecutor):
     Local executor class that directly invokes the input function.
     """
 
-    def __init__(self, workdir: str = "", *args, **kwargs) -> None:
-        if not workdir:
-            try:
-                workdir = get_config("executors.local.workdir")
-            except KeyError:
-                workdir = _EXECUTOR_PLUGIN_DEFAULTS["workdir"]
-                info_msg = f"Couldn't find `executors.local.workdir` in config, creating a default one at {workdir}"
-                app_log.info(info_msg)
-                print(info_msg)
-
-        super().__init__(*args, **kwargs)
-        self.workdir = workdir
-        set_config("executors.local.workdir", self.workdir)
-        Path(self.workdir).mkdir(parents=True, exist_ok=True)
-
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict) -> Any:
         """
         Execute the function locally
@@ -90,6 +74,9 @@ class LocalExecutor(BaseExecutor):
         Return(s)
             Task output
         """
+
+        Path(self.workdir).mkdir(parents=True, exist_ok=True)
+
         app_log.debug(f"Running function {function} locally")
 
         self.set_job_handle(42)
