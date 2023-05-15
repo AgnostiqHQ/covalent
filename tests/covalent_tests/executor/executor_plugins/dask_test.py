@@ -72,24 +72,18 @@ def test_dask_executor_with_workdir(mocker):
         mock_set_job_handle = mocker.patch.object(de, "set_job_handle", AsyncMock())
         mocker.patch.object(de, "_notify", MagicMock())
 
-        function = TransportableObject(simple_task)
-        args = [TransportableObject(1)]
-        kwargs = {"y": TransportableObject(2)}
-
-        assembled_callable = partial(wrapper_fn, function, [], [], de.workdir)
-
-        dispatch_id = "asdf"
-        results_dir = "/tmp"
-        node_id = 1
+        assembled_callable = partial(
+            wrapper_fn, TransportableObject(simple_task), [], [], de.workdir
+        )
 
         result, _, _, _ = asyncio.run(
             de.execute(
                 function=assembled_callable,
-                args=args,
-                kwargs=kwargs,
-                dispatch_id=dispatch_id,
-                results_dir=results_dir,
-                node_id=node_id,
+                args=[TransportableObject(1)],
+                kwargs={"y": TransportableObject(2)},
+                dispatch_id="asdf",
+                results_dir="/tmp",
+                node_id=1,
             )
         )
 
