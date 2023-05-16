@@ -31,7 +31,6 @@ from typing import Any, Callable, Dict, List
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import TaskCancelledError, TaskRuntimeError, logger
-from covalent._shared_files.defaults import CACHE_HOME
 from covalent.executor import BaseExecutor
 
 # Store the wrapper function in an external module to avoid module
@@ -47,9 +46,15 @@ log_stack_info = logger.log_stack_info
 _EXECUTOR_PLUGIN_DEFAULTS = {
     "log_stdout": "stdout.log",
     "log_stderr": "stderr.log",
-    "cache_dir": os.path.join(CACHE_HOME, "covalent"),
+    "cache_dir": os.path.join(
+        os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "covalent"
+    ),
     "workdir": os.environ.get("COVALENT_WORKDIR")
-    or os.path.join(CACHE_HOME, "covalent", "workdir"),
+    or os.path.join(
+        os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
+        "covalent",
+        "workdir",
+    ),
 }
 
 proc_pool = ProcessPoolExecutor()

@@ -34,7 +34,6 @@ from covalent._shared_files import TaskRuntimeError, logger
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files.config import get_config
-from covalent._shared_files.defaults import CACHE_HOME
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._shared_files.utils import _address_client_mapper
 from covalent.executor.base import AsyncBaseExecutor
@@ -49,9 +48,15 @@ log_stack_info = logger.log_stack_info
 _EXECUTOR_PLUGIN_DEFAULTS = {
     "log_stdout": "stdout.log",
     "log_stderr": "stderr.log",
-    "cache_dir": os.path.join(CACHE_HOME, "covalent"),
+    "cache_dir": os.path.join(
+        os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "covalent"
+    ),
     "workdir": os.environ.get("COVALENT_WORKDIR")
-    or os.path.join(CACHE_HOME, "covalent", "workdir"),
+    or os.path.join(
+        os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
+        "covalent",
+        "workdir",
+    ),
 }
 
 
