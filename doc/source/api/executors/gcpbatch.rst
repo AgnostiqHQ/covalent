@@ -57,10 +57,10 @@ Here we present an example on how a user can use the GCP Batch executor plugin i
         project_id = "my-gcp-project-id",
         container_image_uri = "my-executor-container-image-uri",
         service_account_email = "my-service-account-email",
-        vcpu = 2, # Number of vCPUs to allocate
-        memory = 512, # Memory in MB to allocate
-        time_limit = 300, # Time limit of job in seconds
-        poll_freq = 3 # Number of seconds to pause before polling for the job's status
+        vcpus = 2,  # Number of vCPUs to allocate
+        memory = 512,  # Memory in MB to allocate
+        time_limit = 300,  # Time limit of job in seconds
+        poll_freq = 3  # Number of seconds to pause before polling for the job's status
     )
 
     # Use executor plugin to train our SVM model.
