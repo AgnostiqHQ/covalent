@@ -23,6 +23,7 @@
 import io
 import os
 import tempfile
+from dataclasses import asdict
 from functools import partial
 from unittest.mock import MagicMock
 
@@ -30,17 +31,20 @@ import pytest
 
 import covalent as ct
 from covalent._shared_files import TaskRuntimeError
+from covalent._shared_files.defaults import DefaultConfig
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._workflow.transport import TransportableObject
 from covalent.executor.base import wrapper_fn
 from covalent.executor.executor_plugins.local import LocalExecutor
+
+DEFAULT_CONFIG = asdict(DefaultConfig())
 
 
 def test_local_executor_init(mocker):
     """Test local executor constructor"""
 
     mocker.patch("covalent.executor.base.get_config", side_effect=KeyError())
-    default_workdir_path = os.path.join(os.environ["HOME"], "covalent", "workdir")
+    default_workdir_path = DEFAULT_CONFIG["dispatcher"]["workdir"]
 
     le = LocalExecutor()
 

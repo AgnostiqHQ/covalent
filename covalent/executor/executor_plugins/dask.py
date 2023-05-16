@@ -26,7 +26,6 @@ This is a plugin executor module; it is loaded if found and properly structured.
 """
 
 import os
-from pathlib import Path
 from typing import Callable, Dict, List, Literal
 
 from dask.distributed import CancelledError, Client, Future
@@ -35,6 +34,7 @@ from covalent._shared_files import TaskRuntimeError, logger
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files.config import get_config
+from covalent._shared_files.defaults import CACHE_HOME
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._shared_files.utils import _address_client_mapper
 from covalent.executor.base import AsyncBaseExecutor
@@ -49,10 +49,9 @@ log_stack_info = logger.log_stack_info
 _EXECUTOR_PLUGIN_DEFAULTS = {
     "log_stdout": "stdout.log",
     "log_stderr": "stderr.log",
-    "cache_dir": os.path.join(
-        os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "covalent"
-    ),
-    "workdir": os.path.join(os.environ["HOME"], "covalent", "workdir"),
+    "cache_dir": os.path.join(CACHE_HOME, "covalent"),
+    "workdir": os.environ.get("COVALENT_WORKDIR")
+    or os.path.join(CACHE_HOME, "covalent", "workdir"),
 }
 
 
@@ -68,8 +67,8 @@ class DaskExecutor(AsyncBaseExecutor):
         log_stderr: str = "stderr.log",
         conda_env: str = "",
         cache_dir: str = "",
-        workdir: str = "",
         current_env_on_conda_fail: bool = False,
+        workdir: str = "",
     ) -> None:
         if not cache_dir:
             cache_dir = _EXECUTOR_PLUGIN_DEFAULTS["cache_dir"]
@@ -83,15 +82,18 @@ class DaskExecutor(AsyncBaseExecutor):
                 )
 
         super().__init__(
-            log_stdout, log_stderr, cache_dir, workdir, conda_env, current_env_on_conda_fail
+            log_stdout,
+            log_stderr,
+            cache_dir,
+            conda_env,
+            current_env_on_conda_fail,
+            workdir=workdir,
         )
 
         self.scheduler_address = scheduler_address
 
     async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         """Submit the function and inputs to the dask cluster"""
-
-        Path(self.workdir).mkdir(parents=True, exist_ok=True)
 
         if await self.get_cancel_requested():
             app_log.debug("Task has cancelled")

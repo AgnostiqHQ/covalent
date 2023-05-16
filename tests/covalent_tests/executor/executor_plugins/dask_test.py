@@ -23,6 +23,7 @@
 import asyncio
 import os
 import tempfile
+from dataclasses import asdict
 from functools import partial
 from unittest.mock import AsyncMock, MagicMock
 
@@ -31,16 +32,19 @@ import pytest
 import covalent as ct
 from covalent import TransportableObject
 from covalent._shared_files import TaskRuntimeError
+from covalent._shared_files.defaults import DefaultConfig
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent.executor import wrapper_fn
 from covalent.executor.executor_plugins.dask import DaskExecutor
+
+DEFAULT_CONFIG = asdict(DefaultConfig())
 
 
 def test_dask_executor_init(mocker):
     """Test dask executor constructor"""
 
     mocker.patch("covalent.executor.base.get_config", side_effect=KeyError())
-    default_workdir_path = os.path.join(os.environ["HOME"], "covalent", "workdir")
+    default_workdir_path = DEFAULT_CONFIG["dispatcher"]["workdir"]
 
     de = DaskExecutor("127.0.0.1")
 
