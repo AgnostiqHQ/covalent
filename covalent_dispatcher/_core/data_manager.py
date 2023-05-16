@@ -457,19 +457,33 @@ async def get_incomplete_tasks(dispatch_id: str):
     )
 
 
-async def get_incoming_edges(dispatch_id: str, node_id: int):
+def get_incoming_edges_sync(dispatch_id: str, node_id: int):
     result_object = get_result_object(dispatch_id)
     return result_object.lattice.transport_graph.get_incoming_edges(node_id)
 
 
-async def get_node_successors(
-    dispatch_id: str, node_id: int, attrs: List[str] = ["task_group_id"]
+async def get_incoming_edges(dispatch_id: str, node_id: int):
+    return await run_in_executor(get_incoming_edges_sync, dispatch_id, node_id)
+
+
+def get_node_successors_sync(
+    dispatch_id: str,
+    node_id: int,
+    attrs: List[str],
 ) -> List[Dict]:
     result_object = get_result_object(dispatch_id)
     return result_object.lattice.transport_graph.get_successors(node_id, attrs)
 
 
-async def get_graph_nodes_links(dispatch_id: str) -> dict:
+async def get_node_successors(
+    dispatch_id: str,
+    node_id: int,
+    attrs: List[str] = ["task_group_id"],
+) -> List[Dict]:
+    return await run_in_executor(get_node_successors_sync, dispatch_id, node_id, attrs)
+
+
+def get_graph_nodes_links_sync(dispatch_id: str) -> dict:
     """Return the internal transport graph in NX node-link form"""
 
     # Need the whole NX graph here
@@ -478,8 +492,16 @@ async def get_graph_nodes_links(dispatch_id: str) -> dict:
     return nx.readwrite.node_link_data(g)
 
 
-async def get_nodes(dispatch_id: str) -> List[int]:
+async def get_graph_nodes_links(dispatch_id: str) -> dict:
+    return await run_in_executor(get_graph_nodes_links_sync, dispatch_id)
+
+
+def get_nodes_sync(dispatch_id: str) -> List[int]:
     # Read the whole NX graph
     result_object = get_result_object(dispatch_id, False)
     g = result_object.lattice.transport_graph.get_internal_graph_copy()
     return list(g.nodes)
+
+
+async def get_nodes(dispatch_id: str) -> List[int]:
+    return await run_in_executor(get_nodes, dispatch_id)
