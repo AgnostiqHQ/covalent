@@ -45,7 +45,7 @@ Intermediate
    * - Machine Learning
      - :doc:`Training a quantum-classical neural network<./qiskit_hybrid_neural_network/source>`
    * - Quantum Chemistry
-     - :doc:`Dynamic Quantum Chemistry Workflow<./3_QuantumChemistry/dynamic_quantum_chemistry/source>`
+     - :doc:`Dynamic quantum chemistry workflow<./3_QuantumChemistry/dynamic_quantum_chemistry/source>`
 
 ~~~~~~~~
 Advanced
