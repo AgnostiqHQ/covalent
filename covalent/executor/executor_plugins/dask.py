@@ -55,7 +55,7 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     ),
 }
 
-MANAGED_EXECUTION = os.environ.get("COVALENT_USE_MANAGED_DASK") == "1"
+MANAGED_EXECUTION = True
 
 # Dictionary to map Dask clients to their scheduler addresses
 _address_client_map = {}
