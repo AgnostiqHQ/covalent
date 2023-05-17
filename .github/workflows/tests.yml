@@ -151,6 +151,7 @@ jobs:
         if: env.NEED_PYTHON || env.BUILD_AND_RUN_ALL
         uses: conda-incubator/setup-miniconda@v2
         with:
+          miniconda-version: "latest"
           python-version: ${{ matrix.python-version }}
           auto-activate-base: true
           activate-environment: ""
