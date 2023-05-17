@@ -207,22 +207,22 @@ In order to successfully execute tasks using the Google Batch executor, some clo
 
 * Google storage bucket
 
-   The executor uses a storage bucket to store/cache exception/result objects that get generated during execution.
+The executor uses a storage bucket to store/cache exception/result objects that get generated during execution.
 
 * Google Docker artifact registry
 
-   The executor submits a container job whose image is pulled from the provided ``container_image_uri`` argument of the executor.
+The executor submits a container job whose image is pulled from the provided ``container_image_uri`` argument of the executor.
 
 * Service account
 
-   Keeping good security practices in mind, the jobs are executed using a service account that only has the necessary permissions attached to it that are required for the job to finish.
+Keeping good security practices in mind, the jobs are executed using a service account that only has the necessary permissions attached to it that are required for the job to finish.
 
 
  Users can free to provision these resources as they see fit or they can use Covalent to provision these for them. Covalent CLI can be used to deploy the required cloud resources. Covalent behind the scenes uses `Terraform <https://www.terraform.io/>`_ to provision the cloud resources. The terraform HCL scripts can be found in the plugin's Github repository `here <https://github.com/AgnostiqHQ/covalent-gcpbatch-plugin/tree/develop/covalent_gcpbatch_plugin/assets/infra>`_.
 
  To run the scripts manually, users must first authenticate with Google cloud via their CLI and print out the access tokens with the following commands:
 
- .. code:: shell
+.. code:: shell
 
   gcloud auth application-default login
   gcloud auth print-access-token
@@ -230,12 +230,12 @@ In order to successfully execute tasks using the Google Batch executor, some clo
 
  Once the user has authenticated, the infrastructure can be deployed by running the Terraform commands in the `infra` folder of the plugin's repository.
 
- .. code:: shell
+.. code:: shell
 
   terraform plan -out tf.plan
   terrafrom apply tf.plan -var="access_token=<access_token>"
 
- .. note::
+.. note::
 
   For first time deployment, the terraform provides must be initialized properly via ``terraform init``.
 
