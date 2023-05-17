@@ -20,7 +20,7 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 import { useEffect, useRef, useState, createRef, memo, useMemo } from 'react'
-import { useScreenshot, createFileName } from "use-react-screenshot"
+import { useScreenshot, createFileName } from 'use-react-screenshot'
 import ReactFlow, {
   MiniMap,
   getIncomers,
@@ -60,6 +60,7 @@ const LatticeGraph = ({
   const [direction, setDirection] = useState('DOWN')
   const [showMinimap, setShowMinimap] = useState(false)
   const [showParams, setShowParams] = useState(false)
+  const [showPostProcess, setPostProcess] = useState(false)
   const [nodesDraggable, setNodesDraggable] = useState(false)
   const [algorithm, setAlgorithm] = useState('layered')
   const [hideLabels, setHideLabels] = useState(false)
@@ -116,7 +117,8 @@ const LatticeGraph = ({
         showParams,
         algorithm,
         hideLabels,
-        preview
+        preview,
+        showPostProcess
       )
         .then((els) => {
           setElements(els)
@@ -124,7 +126,7 @@ const LatticeGraph = ({
         .catch((error) => console.log(error))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [graph, direction, showParams, algorithm, hideLabels])
+  }, [graph, direction, showParams, algorithm, hideLabels, showPostProcess])
 
   // menu for layout
   const [anchorEl, setAnchorEl] = useState(null)
@@ -191,51 +193,44 @@ const LatticeGraph = ({
   // }
 
   const getAllIncomers = (node, elements, prevIncomers = []) => {
-    const incomers = getIncomers(node, elements);
-    const result = incomers.reduce(
-      (memo, incomer) => {
-        memo.push(incomer);
+    const incomers = getIncomers(node, elements)
+    const result = incomers.reduce((memo, incomer) => {
+      memo.push(incomer)
 
-        if ((prevIncomers.findIndex(n => n.id === incomer.id) === -1)) {
-          prevIncomers.push(incomer);
+      if (prevIncomers.findIndex((n) => n.id === incomer.id) === -1) {
+        prevIncomers.push(incomer)
 
-          getAllIncomers(incomer, elements, prevIncomers).forEach((foundNode) => {
-            memo.push(foundNode);
+        getAllIncomers(incomer, elements, prevIncomers).forEach((foundNode) => {
+          memo.push(foundNode)
 
-            if ((prevIncomers.findIndex(n => n.id === foundNode.id) === -1)) {
-              prevIncomers.push(incomer);
-
-            }
-          });
-        }
-        return memo;
-      },
-      []
-    );
-    return result;
+          if (prevIncomers.findIndex((n) => n.id === foundNode.id) === -1) {
+            prevIncomers.push(incomer)
+          }
+        })
+      }
+      return memo
+    }, [])
+    return result
   }
 
   const getAllOutgoers = (node, elements, prevOutgoers = []) => {
-    const outgoers = getOutgoers(node, elements);
-    return outgoers.reduce(
-      (memo, outgoer) => {
-        memo.push(outgoer);
+    const outgoers = getOutgoers(node, elements)
+    return outgoers.reduce((memo, outgoer) => {
+      memo.push(outgoer)
 
-        if ((prevOutgoers.findIndex(n => n.id === outgoer.id) === -1)) {
-          prevOutgoers.push(outgoer);
+      if (prevOutgoers.findIndex((n) => n.id === outgoer.id) === -1) {
+        prevOutgoers.push(outgoer)
 
-          getAllOutgoers(outgoer, elements, prevOutgoers).forEach((foundNode) => {
-            memo.push(foundNode);
+        getAllOutgoers(outgoer, elements, prevOutgoers).forEach((foundNode) => {
+          memo.push(foundNode)
 
-            if ((prevOutgoers.findIndex(n => n.id === foundNode.id) === -1)) {
-              prevOutgoers.push(foundNode);
-            }
-          });
-        }
-        return memo;
-      },
-      []
-    )
+          if (prevOutgoers.findIndex((n) => n.id === foundNode.id) === -1) {
+            prevOutgoers.push(foundNode)
+          }
+        })
+      }
+      return memo
+    }, [])
   }
 
   const highlightPath = (node, elements, selection) => {
@@ -277,7 +272,6 @@ const LatticeGraph = ({
     }
   }
 
-
   useEffect(() => {
     if (!hasSelectedNode) resetNodeStyles()
   }, [hasSelectedNode])
@@ -298,8 +292,11 @@ const LatticeGraph = ({
     })
   }
 
-  const nodeTypes = useMemo(() => ({ electron: ElectronNode, parameter: ParameterNode }), []);
-  const edgeTypes = useMemo(() => ({ directed: DirectedEdge }), []);
+  const nodeTypes = useMemo(
+    () => ({ electron: ElectronNode, parameter: ParameterNode }),
+    []
+  )
+  const edgeTypes = useMemo(() => ({ directed: DirectedEdge }), [])
 
   return (
     <>
@@ -343,6 +340,10 @@ const LatticeGraph = ({
           <LatticeControls
             marginLeft={marginLeft}
             marginRight={marginRight}
+            showPostProcess={showPostProcess}
+            togglePostProcess={() => {
+              setPostProcess(!showPostProcess)
+            }}
             showParams={showParams}
             toggleParams={() => {
               setShowParams(!showParams)
