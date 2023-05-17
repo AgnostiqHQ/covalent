@@ -11,9 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Ability to specify a `workdir` for `local` and `dask` executors
 
-### Authors
+### Fixed
 
-- Madhur Tandon <madhurtandon23@gmail.com>
+- only pin `aiohttp` downwards to fix install on Python 3.11 [#1654](https://github.com/AgnostiqHQ/covalent/pulls/1654)
 
 ## [0.223.0-rc.0] - 2023-05-17
 
