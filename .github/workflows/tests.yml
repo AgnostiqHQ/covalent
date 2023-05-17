@@ -146,6 +146,15 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Set up Conda
+        id: install-conda
+        if: env.NEED_PYTHON || env.BUILD_AND_RUN_ALL
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          auto-activate-base: true
+          activate-environment: ""
+
       - name: Install Python dependencies
         id: install-python-deps
         if: env.NEED_PYTHON || env.BUILD_AND_RUN_ALL
