@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Resolving correct python executable
+
+### Authors
+
+- Madhur Tandon <madhurtandon23@gmail.com>
+
 ## [0.223.0-rc.0] - 2023-05-17
 
 ### Authors
@@ -48,7 +56,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Defer creation of server specific config entries until covalent is started
 - Functional tests on CI
 - Move dask worker space to covalent cache instead of `site-packages`
-- Resolving correct python executable
 
 ### Docs
 
