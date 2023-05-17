@@ -35,7 +35,6 @@ from click.testing import CliRunner
 from covalent_dispatcher._cli.service import (
     MIGRATION_COMMAND_MSG,
     MIGRATION_WARNING_MSG,
-    UI_LOGFILE,
     _graceful_shutdown,
     _graceful_start,
     _is_server_running,
