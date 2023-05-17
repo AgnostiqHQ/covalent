@@ -27,6 +27,7 @@ import json
 import os
 import shutil
 import socket
+import sys
 import time
 from pathlib import Path
 from subprocess import DEVNULL, Popen
@@ -198,7 +199,7 @@ def _graceful_start(
     no_cluster_flag = "--no-cluster" if no_cluster else ""
 
     port = _next_available_port(port)
-    launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} {no_cluster_flag} {no_triggers_flag} {triggers_only_flag}>> {logfile} 2>&1"
+    launch_str = f"{pypath} {sys.executable} app.py {dev_mode_flag} --port {port} {no_cluster_flag} {no_triggers_flag} {triggers_only_flag}>> {logfile} 2>&1"
 
     proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
     pid = proc.pid
