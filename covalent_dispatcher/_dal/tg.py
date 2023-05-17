@@ -98,6 +98,17 @@ class _TransportGraph:
         node.set_value(key, val, session)
 
     def get_incoming_edges(self, node_id: int) -> List[Tuple[int, int, Dict]]:
+        """Query in-edges of a node.
+
+        Returns:
+            List[Edge], where
+
+            Edge is a dictionary with structure
+                source: int,
+                target: int,
+                attrs: dict
+        """
+
         # Read from internal NX graph
         if not self.bare:
             pred = list(self._graph.predecessors(node_id))
@@ -119,7 +130,17 @@ class _TransportGraph:
             )
 
     def get_successors(self, node_id: int, attr_keys: List = []) -> List[Dict]:
-        """Get child nodes with multiplicity"""
+        """Get child nodes with multiplicity.
+
+        Parameters:
+            node_id: id of node
+            attr_keys: list of node attributes to return, such as task_group_id
+
+        Returns:
+            List[Dict], where each dictionary is of the form
+            {"node_id": node_id, attr_key_1: node_attr[attr_key_1], ...}
+
+        """
 
         # Read from internal NX graph
         if not self.bare:

@@ -34,7 +34,6 @@ from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.data_manager import (
     _get_result_object_from_new_lattice,
     _make_sublattice_dispatch,
-    _register_result_object,
     _update_parent_electron,
     finalize_dispatch,
     get_result_object,
@@ -289,14 +288,10 @@ async def test_make_dispatch(mocker):
     mock_init_result = mocker.patch(
         "covalent_dispatcher._core.data_manager.initialize_result_object", return_value=res
     )
-    mock_register = mocker.patch(
-        "covalent_dispatcher._core.data_manager._register_result_object", return_value=res
-    )
     json_lattice = '{"workflow_function": "asdf"}'
     dispatch_id = await make_dispatch(json_lattice)
 
     assert dispatch_id == res.dispatch_id
-    mock_register.assert_called_with(res)
 
 
 @pytest.mark.parametrize("reuse", [True, False])
@@ -365,10 +360,6 @@ async def test_make_derived_dispatch_from_lattice(mocker, reuse):
         return_value=mock_new_result,
     )
 
-    register_result_object_mock = mocker.patch(
-        "covalent_dispatcher._core.data_manager._register_result_object"
-    )
-
     mocker.patch(
         "covalent_dispatcher._dal.tg_ops.TransportGraphOps.apply_electron_updates",
         mock_apply_electron_updates,
@@ -387,7 +378,6 @@ async def test_make_derived_dispatch_from_lattice(mocker, reuse):
     )
 
     mock_apply_electron_updates.assert_called_once_with(mock_electron_updates)
-    register_result_object_mock.assert_called_once_with(mock_new_result)
     assert redispatch_id == "mock-redispatch-id"
 
 
@@ -415,9 +405,6 @@ async def test_make_derived_dispatch_from_old_result(mocker, reuse):
         return_value=mock_new_result,
     )
     update_mock = mocker.patch("covalent_dispatcher._core.data_manager.update")
-    register_result_object_mock = mocker.patch(
-        "covalent_dispatcher._core.data_manager._register_result_object"
-    )
     mocker.patch(
         "covalent_dispatcher._dal.tg_ops.TransportGraphOps.apply_electron_updates",
         mock_apply_electron_updates,
@@ -434,7 +421,6 @@ async def test_make_derived_dispatch_from_old_result(mocker, reuse):
 
     mock_apply_electron_updates.assert_called_once_with({})
     update_mock().persist.called_once_with(mock_new_result)
-    register_result_object_mock.assert_called_once_with(mock_new_result)
     assert redispatch_id == "mock-redispatch-id"
 
 
@@ -447,60 +433,14 @@ def test_get_result_object(mocker):
     )
 
     dispatch_id = result_object.dispatch_id
-    _registered_dispatches = {}
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager._registered_dispatches",
-        _registered_dispatches,
-    )
-    _registered_dispatches[dispatch_id] = result_object
     assert get_result_object(dispatch_id) is result_object
 
 
 @pytest.mark.parametrize("stateless", [False, True])
-def test_register_result_object(mocker, stateless):
-    result_object = MagicMock()
-    result_object.dispatch_id = "test_register_result_object"
-    srvres_obj = MagicMock()
-    dispatch_id = result_object.dispatch_id
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.STATELESS",
-        stateless,
-    )
-    mock_get_res_from_db = mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_result_object_from_db", return_value=srvres_obj
-    )
-    _registered_dispatches = {}
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager._registered_dispatches",
-        _registered_dispatches,
-    )
-
-    _register_result_object(result_object)
-    if not stateless:
-        assert _registered_dispatches[dispatch_id] is srvres_obj
-        del _registered_dispatches[dispatch_id]
-    else:
-        assert dispatch_id not in _registered_dispatches
-
-
-@pytest.mark.parametrize("stateless", [False, True])
 def test_unregister_result_object(mocker, stateless):
-    result_object = MagicMock()
-    result_object.dispatch_id = "test_unregister_result_object"
-    dispatch_id = result_object.dispatch_id
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.STATELESS",
-        stateless,
-    )
-    _registered_dispatches = {dispatch_id: result_object}
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager._registered_dispatches",
-        _registered_dispatches,
-    )
-    _registered_dispatches[dispatch_id] = result_object
+    dispatch_id = "test_unregister_result_object"
     finalize_dispatch(dispatch_id)
-    if not stateless:
-        assert dispatch_id not in _registered_dispatches
+    pass
 
 
 @pytest.mark.asyncio

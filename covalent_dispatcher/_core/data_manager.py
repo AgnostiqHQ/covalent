@@ -27,11 +27,8 @@ import traceback
 import uuid
 from typing import Any, Callable, Dict, List, Optional
 
-import networkx as nx
-
 from covalent._results_manager import Result
 from covalent._shared_files import logger
-from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas.result import ResultSchema
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
@@ -43,16 +40,12 @@ from .._dal.result import get_result_object as get_result_object_from_db
 from .._db import update
 from .._db.write_result_to_db import resolve_electron_id
 from . import dispatcher
+from .data_modules import graph
 from .data_modules import importer as manifest_importer
 from .data_modules.utils import run_in_executor
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-# References to result objects of live dispatches
-_registered_dispatches = {}
-
-STATELESS = get_config("dispatcher.use_stateless_datamgr") != "false"
 
 
 def generate_node_result(
@@ -195,7 +188,6 @@ async def make_dispatch(
         parent_result_object,
         parent_electron_id,
     )
-    _register_result_object(result_object)
     return result_object.dispatch_id
 
 
@@ -250,8 +242,6 @@ def _make_derived_dispatch_sync(
     ops = TransportGraphOps(result_object.lattice.transport_graph)
     ops.apply_electron_updates(electron_updates)
 
-    _register_result_object(result_object)
-
     return result_object.dispatch_id
 
 
@@ -273,24 +263,12 @@ async def make_derived_dispatch(
 
 
 def get_result_object(dispatch_id: str, bare: bool = True) -> SRVResult:
-    if STATELESS:
-        app_log.debug(f"Getting result object from db, bare={bare}")
-        return get_result_object_from_db(dispatch_id, bare)
-    else:
-        app_log.debug("Getting cached result object")
-        return _registered_dispatches[dispatch_id]
-
-
-def _register_result_object(result_object: Result):
-    if not STATELESS:
-        dispatch_id = result_object.dispatch_id
-        _registered_dispatches[dispatch_id] = get_result_object_from_db(dispatch_id)
+    app_log.debug(f"Getting result object from db, bare={bare}")
+    return get_result_object_from_db(dispatch_id, bare)
 
 
 def finalize_dispatch(dispatch_id: str):
     app_log.debug(f"Finalizing dispatch {dispatch_id}")
-    if not STATELESS:
-        del _registered_dispatches[dispatch_id]
 
 
 async def persist_result(dispatch_id: str):
@@ -320,11 +298,10 @@ def _get_attrs_for_electrons_sync(
     dispatch_id: str, node_ids: List[int], keys: List[str]
 ) -> List[Dict]:
     result_object = get_result_object(dispatch_id)
-    refresh = False if STATELESS else True
     attrs = result_object.lattice.transport_graph.get_values_for_nodes(
         node_ids=node_ids,
         keys=keys,
-        refresh=refresh,
+        refresh=False,
     )
     return attrs
 
@@ -412,7 +389,7 @@ async def update_dispatch_result(dispatch_id, dispatch_result):
 
 
 def _get_dispatch_attributes_sync(dispatch_id: str, keys: List[str]) -> Any:
-    refresh = False if STATELESS else True
+    refresh = False
     result_object = get_result_object(dispatch_id)
     return result_object.get_values(keys, refresh=refresh)
 
@@ -450,29 +427,15 @@ async def ensure_dispatch(dispatch_id: str) -> bool:
 async def get_incomplete_tasks(dispatch_id: str):
     # Need to filter all electrons in the latice
     result_object = get_result_object(dispatch_id, False)
-    refresh = False if STATELESS else True
+    refresh = False
     return await run_in_executor(
         result_object._get_incomplete_nodes,
         refresh,
     )
 
 
-def get_incoming_edges_sync(dispatch_id: str, node_id: int):
-    result_object = get_result_object(dispatch_id)
-    return result_object.lattice.transport_graph.get_incoming_edges(node_id)
-
-
 async def get_incoming_edges(dispatch_id: str, node_id: int):
-    return await run_in_executor(get_incoming_edges_sync, dispatch_id, node_id)
-
-
-def get_node_successors_sync(
-    dispatch_id: str,
-    node_id: int,
-    attrs: List[str],
-) -> List[Dict]:
-    result_object = get_result_object(dispatch_id)
-    return result_object.lattice.transport_graph.get_successors(node_id, attrs)
+    return await run_in_executor(graph.get_incoming_edges, dispatch_id, node_id)
 
 
 async def get_node_successors(
@@ -480,28 +443,12 @@ async def get_node_successors(
     node_id: int,
     attrs: List[str] = ["task_group_id"],
 ) -> List[Dict]:
-    return await run_in_executor(get_node_successors_sync, dispatch_id, node_id, attrs)
-
-
-def get_graph_nodes_links_sync(dispatch_id: str) -> dict:
-    """Return the internal transport graph in NX node-link form"""
-
-    # Need the whole NX graph here
-    result_object = get_result_object(dispatch_id, False)
-    g = result_object.lattice.transport_graph.get_internal_graph_copy()
-    return nx.readwrite.node_link_data(g)
+    return await run_in_executor(graph.get_node_successors, dispatch_id, node_id, attrs)
 
 
 async def get_graph_nodes_links(dispatch_id: str) -> dict:
-    return await run_in_executor(get_graph_nodes_links_sync, dispatch_id)
-
-
-def get_nodes_sync(dispatch_id: str) -> List[int]:
-    # Read the whole NX graph
-    result_object = get_result_object(dispatch_id, False)
-    g = result_object.lattice.transport_graph.get_internal_graph_copy()
-    return list(g.nodes)
+    return await run_in_executor(graph.get_graph_nodes_links, dispatch_id)
 
 
 async def get_nodes(dispatch_id: str) -> List[int]:
-    return await run_in_executor(get_nodes, dispatch_id)
+    return await run_in_executor(graph.get_nodes, dispatch_id)
