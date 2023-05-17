@@ -25,7 +25,7 @@ To use this plugin with Covalent, simply install it using :code:`pip`:
 2. Usage Example
 ===========================================
 
-Here we present an example on how a user can use the GCP Batch executor plugin in their Covalent workflows. In this example we train a simple SVM (support vector machine) model using the Google Batch executor. This executor is quite minimal in terms of the required cloud resoures that need to be provisioned prior to first use. The Google Batch executor needs the following cloud resources pre-configured
+Here we present an example on how a user can use the GCP Batch executor plugin in their Covalent workflows. In this example we train a simple SVM (support vector machine) model using the Google Batch executor. This executor is quite minimal in terms of the required cloud resources that need to be provisioned prior to first use. The Google Batch executor needs the following cloud resources pre-configured:
 
 * A Google storage bucket
 * Cloud artifact registry for Docker images
@@ -39,7 +39,7 @@ Here we present an example on how a user can use the GCP Batch executor plugin i
 
 .. note::
 
-   Details about Google services accounts and how to use them properly can be found `here <https://cloud.google.com/iam/docs/service-account-overview>`_
+   Details about Google services accounts and how to use them properly can be found `here <https://cloud.google.com/iam/docs/service-account-overview>`_.
 
 
 .. code-block:: python
@@ -54,13 +54,14 @@ Here we present an example on how a user can use the GCP Batch executor plugin i
 
     executor = ct.executor.GCPBatchExecutor(
         bucket_name = "my-gcp-bucket",
+        region='us-east1',
         project_id = "my-gcp-project-id",
         container_image_uri = "my-executor-container-image-uri",
         service_account_email = "my-service-account-email",
-        vcpu = 2, # Number of vCPUs to allocate
-        memory = 512, # Memory in MB to allocate
-        time_limit = 300, # Time limit of job in seconds
-        poll_freq = 3 # Number of seconds to pause before polling for the job's status
+        vcpus = 2,  # Number of vCPUs to allocate
+        memory = 512,  # Memory in MB to allocate
+        time_limit = 300,  # Time limit of job in seconds
+        poll_freq = 3  # Number of seconds to pause before polling for the job's status
     )
 
     # Use executor plugin to train our SVM model.
@@ -115,11 +116,7 @@ Here we present an example on how a user can use the GCP Batch executor plugin i
 
     print(result)
 
-During the execution of the workflow one can navigate to the UI to see the status of the workflow, once completed however the above script should also output a value with the score of our model.
-
-.. code-block:: python
-
-    0.8666666666666667
+During the execution of the workflow the user can navigate to the web-based browser UI to see the status of the computations.
 
 
 ===========================================
@@ -210,39 +207,39 @@ In order to successfully execute tasks using the Google Batch executor, some clo
 
 * Google storage bucket
 
-   The executor uses a storage bucket to store/cache exception/result objects that get generated during execution
+The executor uses a storage bucket to store/cache exception/result objects that get generated during execution.
 
 * Google Docker artifact registry
 
-   The executor submits a container job whose image is pulled from the provided ``container_image_uri`` argument of the executor
+The executor submits a container job whose image is pulled from the provided ``container_image_uri`` argument of the executor.
 
 * Service account
 
-   Keeping good security practices in mind, the jobs are executed using a service account that only has the necessary permissions attached to it that are required for the job to finish.
+Keeping good security practices in mind, the jobs are executed using a service account that only has the necessary permissions attached to it that are required for the job to finish.
 
 
- Users can free to provision these resources as they see fit or they can use Covalent to provision these for them. Covalent CLI can be used to deploy the required cloud resources. Covalent behind the scenes uses `Terraform <https://www.terraform.io/>`_ to provision the cloud resources. The terraform HCL scripts can be found in the plugin's Github repository `here <https://github.com/AgnostiqHQ/covalent-gcpbatch-plugin/tree/develop/covalent_gcpbatch_plugin/assets/infra>`_.
+Users can free to provision these resources as they see fit or they can use Covalent to provision these for them. Covalent CLI can be used to deploy the required cloud resources. Covalent behind the scenes uses `Terraform <https://www.terraform.io/>`_ to provision the cloud resources. The terraform HCL scripts can be found in the plugin's Github repository `here <https://github.com/AgnostiqHQ/covalent-gcpbatch-plugin/tree/develop/covalent_gcpbatch_plugin/assets/infra>`_.
 
- To run the scripts manually, users must first authenticate with Google cloud via their CLI
+To run the scripts manually, users must first authenticate with Google cloud via their CLI and print out the access tokens with the following commands:
 
- .. code:: shell
+.. code:: shell
 
-  gcloud auth login
+  gcloud auth application-default login
+  gcloud auth print-access-token
 
 
- Once the user has authenticated, the infrastructure can be stood up by simply apply the Terraform scripts i.e.
+Once the user has authenticated, the infrastructure can be deployed by running the Terraform commands in the `infra` folder of the plugin's repository.
 
- .. code:: shell
+.. code:: shell
 
   terraform plan -out tf.plan
-  terrafrom apply tf.plan
+  terrafrom apply tf.plan -var="access_token=<access_token>"
 
+.. note::
 
- .. note::
+  For first time deployment, the terraform provides must be initialized properly via ``terraform init``.
 
-  For first time deployment, the terraform provides must be initialized properly via ``terraform init``
-
-The HCL scripts also build the base executor docker image and upload it to the artficat registry after it gets created. This way the user need not build and push an image separately as the process is fully automated via Covalent.
+The HCL scripts also build the base executor docker image and upload it to the artifact registry after it gets created. This way the user need not build and push an image separately as the process is fully automated via Covalent.
 
 
 
