@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Defer creation of server specific config entries until covalent is started
 - Functional tests on CI
 - Move dask worker space to covalent cache instead of `site-packages`
+- only pin `aiohttp` downwards to fix install on Python 3.11 [#1654](https://github.com/AgnostiqHQ/covalent/pulls/1654)
 
 ### Docs
 
@@ -289,7 +290,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unit and functional tests for redispatching.
 
 ### Docs
-- Updated self-deployment (server deployment). 
+- Updated self-deployment (server deployment).
 
 ## [0.216.0-rc.0] - 2023-02-05
 
@@ -2010,7 +2011,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Updated `covalent db migrations` to overwrite `alembic.ini` `script_location` with absolute path to migrations folder
-- Updated `covalent db alembic [args]` command to use project root as `cwd` for alembic subprocess  
+- Updated `covalent db alembic [args]` command to use project root as `cwd` for alembic subprocess
 
 ## [0.161.1] - 2022-08-03
 
