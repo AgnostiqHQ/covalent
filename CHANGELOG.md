@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Defer creation of server specific config entries until covalent is started
 - Functional tests on CI
 - Move dask worker space to covalent cache instead of `site-packages`
+- Resolving correct python executable
 
 ### Docs
 
