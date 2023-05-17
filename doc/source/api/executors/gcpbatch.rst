@@ -3,7 +3,7 @@
 Google Batch Executor
 """"""""""""""""""""""""
 
-.. image:: Azure_Batch.png
+.. image:: GCP_Batch.png
 
 Covalent Google Batch executor is an interface between Covalent and `Google Cloud Platform's Batch compute service <https://cloud.google.com/batch/docs/get-started>`_. This executor allows execution of Covalent tasks on Google Batch compute service.
 
@@ -228,7 +228,7 @@ To run the scripts manually, users must first authenticate with Google cloud via
   gcloud auth print-access-token
 
 
-Once the user has authenticated, the infrastructure can be deployed by running the Terraform commands in the `infra` folder of the plugin's repository.
+Once the user has authenticated, the infrastructure can be deployed by running the Terraform commands in the ``infra`` folder of the plugin's repository.
 
 .. code:: shell
 
@@ -239,16 +239,8 @@ Once the user has authenticated, the infrastructure can be deployed by running t
 
   For first time deployment, the terraform provides must be initialized properly via ``terraform init``.
 
-The HCL scripts also build the base executor docker image and upload it to the artifact registry after it gets created. This way the user need not build and push an image separately as the process is fully automated via Covalent.
+The Terraform script also builds the base executor docker image and uploads it to the artifact registry after getting created. This means that users do not have to manually build and push the image.
 
-
-
-
-
-
-===========================================
-5. Source
-===========================================
 
 .. autoclass:: covalent.executor.GCPBatchExecutor
     :members:
