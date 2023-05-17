@@ -218,9 +218,9 @@ The executor submits a container job whose image is pulled from the provided ``c
 Keeping good security practices in mind, the jobs are executed using a service account that only has the necessary permissions attached to it that are required for the job to finish.
 
 
- Users can free to provision these resources as they see fit or they can use Covalent to provision these for them. Covalent CLI can be used to deploy the required cloud resources. Covalent behind the scenes uses `Terraform <https://www.terraform.io/>`_ to provision the cloud resources. The terraform HCL scripts can be found in the plugin's Github repository `here <https://github.com/AgnostiqHQ/covalent-gcpbatch-plugin/tree/develop/covalent_gcpbatch_plugin/assets/infra>`_.
+Users can free to provision these resources as they see fit or they can use Covalent to provision these for them. Covalent CLI can be used to deploy the required cloud resources. Covalent behind the scenes uses `Terraform <https://www.terraform.io/>`_ to provision the cloud resources. The terraform HCL scripts can be found in the plugin's Github repository `here <https://github.com/AgnostiqHQ/covalent-gcpbatch-plugin/tree/develop/covalent_gcpbatch_plugin/assets/infra>`_.
 
- To run the scripts manually, users must first authenticate with Google cloud via their CLI and print out the access tokens with the following commands:
+To run the scripts manually, users must first authenticate with Google cloud via their CLI and print out the access tokens with the following commands:
 
 .. code:: shell
 
