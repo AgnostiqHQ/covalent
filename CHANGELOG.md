@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Ability to specify a `workdir` for `local` and `dask` executors
+
+### Authors
+
+- Madhur Tandon <madhurtandon23@gmail.com>
+
 ## [0.223.0-rc.0] - 2023-05-17
 
 ### Authors
@@ -25,7 +33,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added the `CloudResourceManager` class
 - A new tutorial for a dynamic quantum chemistry workflow
-- Ability to specify a `workdir` for `local` and `dask` executors
 
 ### Tests
 
