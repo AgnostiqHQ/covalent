@@ -228,7 +228,7 @@ To run the scripts manually, users must first authenticate with Google cloud via
   gcloud auth print-access-token
 
 
- Once the user has authenticated, the infrastructure can be deployed by running the Terraform commands in the `infra` folder of the plugin's repository.
+Once the user has authenticated, the infrastructure can be deployed by running the Terraform commands in the `infra` folder of the plugin's repository.
 
 .. code:: shell
 
