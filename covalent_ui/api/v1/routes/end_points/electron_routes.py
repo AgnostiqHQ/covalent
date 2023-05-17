@@ -26,14 +26,9 @@ import uuid
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import Session
 
-from covalent._results_manager import Result
-from covalent._results_manager.results_manager import get_result
-from covalent._shared_files.defaults import (
-    WAIT_EDGE_NAME,
-    electron_dict_prefix,
-    electron_list_prefix,
-)
-from covalent._workflow.transport import TransportableObject
+from covalent._shared_files.defaults import WAIT_EDGE_NAME
+from covalent_dispatcher._core.data_modules import graph as core_graph
+from covalent_dispatcher._dal.export import get_node_asset
 from covalent_ui.api.v1.data_layer.electron_dal import Electrons
 from covalent_ui.api.v1.database.config.db import engine
 from covalent_ui.api.v1.models.electrons_model import (
@@ -86,60 +81,41 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
         )
 
 
-# Copied from execution.py
-def get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dict:
-    """
-    Return the required inputs for a task execution.
-    This makes sure that any node with child nodes isn't executed twice and fetches the
-    result of parent node to use as input for the child node.
+def _get_abstract_task_inputs(dispatch_id: str, node_id: int) -> dict:
+    """Return placeholders for the required inputs for a task execution.
+
     Args:
+        dispatch_id: id of the current dispatch
         node_id: Node id of this task in the transport graph.
         node_name: Name of the node.
-        result_object: Result object to be used to update and store execution related
-                       info including the results.
-    Returns:
-        inputs: Input dictionary to be passed to the task containing args, kwargs,
-                and any parent node execution results if present.
+
+    Returns: inputs: Input dictionary to be passed to the task with
+        `node_id` placeholders for args, kwargs. These are to be
+        resolved to their values later.
     """
 
-    if node_name.startswith(electron_list_prefix):
-        values = [
-            result_object.lattice.transport_graph.get_node_value(parent, "output")
-            for parent in result_object.lattice.transport_graph.get_dependencies(node_id)
-        ]
-        task_input = {"args": [], "kwargs": {"x": TransportableObject.make_transportable(values)}}
-    elif node_name.startswith(electron_dict_prefix):
-        values = {}
-        for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
-            edge_data = result_object.lattice.transport_graph.get_edge_data(parent, node_id)
+    abstract_task_input = {"args": [], "kwargs": {}}
 
-            value = result_object.lattice.transport_graph.get_node_value(parent, "output")
-            for e_key, d in edge_data.items():
+    in_edges = core_graph.get_incoming_edges(dispatch_id, node_id)
+    for edge in in_edges:
+        parent = edge["source"]
+
+        d = edge["attrs"]
+
+        if d["edge_name"] != WAIT_EDGE_NAME:
+            if d["param_type"] == "arg":
+                abstract_task_input["args"].append((parent, d["arg_index"]))
+            elif d["param_type"] == "kwarg":
                 key = d["edge_name"]
-                values[key] = value
+                abstract_task_input["kwargs"][key] = parent
 
-        task_input = {"args": [], "kwargs": {"x": TransportableObject.make_transportable(values)}}
-    else:
-        task_input = {"args": [], "kwargs": {}}
+    sorted_args = sorted(abstract_task_input["args"], key=lambda x: x[1])
+    abstract_task_input["args"] = [x[0] for x in sorted_args]
 
-        for parent in result_object.lattice.transport_graph.get_dependencies(node_id):
-            edge_data = result_object.lattice.transport_graph.get_edge_data(parent, node_id)
-            value = result_object.lattice.transport_graph.get_node_value(parent, "output")
-
-            for e_key, d in edge_data.items():
-                if not d["edge_name"] != WAIT_EDGE_NAME:
-                    if d["param_type"] == "arg":
-                        task_input["args"].append((value, d["arg_index"]))
-                    elif d["param_type"] == "kwarg":
-                        key = d["edge_name"]
-                        task_input["kwargs"][key] = value
-
-        sorted_args = sorted(task_input["args"], key=lambda x: x[1])
-        task_input["args"] = [x[0] for x in sorted_args]
-
-    return task_input
+    return abstract_task_input
 
 
+# Domain: data
 def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
     """
     Get Electron Inputs
@@ -150,15 +126,35 @@ def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
         Returns the inputs data from Result object
     """
 
-    result_object = get_result(dispatch_id=str(dispatch_id), wait=False)
+    abstract_inputs = _get_abstract_task_inputs(dispatch_id=str(dispatch_id), node_id=electron_id)
+
+    # Resolve node ids to object strings
+    input_assets = {"args": [], "kwargs": {}}
 
     with Session(engine) as session:
-        electron = Electrons(session)
-        result = electron.get_electrons_id(dispatch_id, electron_id)
-        inputs = get_task_inputs(
-            node_id=electron_id, node_name=result.name, result_object=result_object
-        )
-        return validate_data(inputs)
+        for arg in abstract_inputs["args"]:
+            asset = get_node_asset(
+                session=session,
+                dispatch_id=str(dispatch_id),
+                node_id=arg,
+                key="output",
+            )
+            input_assets["args"].append(asset)
+        for k, v in abstract_inputs["kwargs"].items():
+            asset = get_node_asset(
+                session=session,
+                dispatch_id=str(dispatch_id),
+                node_id=v,
+                key="output",
+            )
+            input_assets["kwargs"][k] = asset
+
+    # For now we load the picklefile from the object store into memory, but once
+    # TransportableObjects are no longer pickled we will be
+    # able to load the byte range for the object string.
+    input_args = [asset.load_data() for asset in input_assets["args"]]
+    input_kwargs = {k: asset.load_data() for k, asset in input_assets["kwargs"].items()}
+    return validate_data({"args": input_args, "kwargs": input_kwargs})
 
 
 @routes.get("/{dispatch_id}/electron/{electron_id}/details/{name}")
