@@ -7,9 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.223.1-rc.0] - 2023-05-17
+
+### Authors
+
+- Janosh Riebesell <janosh.riebesell@gmail.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+### Fixed
+
+- only pin `aiohttp` downwards to fix install on Python 3.11 [#1654](https://github.com/AgnostiqHQ/covalent/pulls/1654)
+
+## [0.223.0-rc.0] - 2023-05-17
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Madhur Tandon <20173739+madhur-tandon@users.noreply.github.com>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Andrew S. Rosen <asrosen93@gmail.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+
+
 ### Added
 
 - Added the `CloudResourceManager` class
+- A new tutorial for a dynamic quantum chemistry workflow
 
 ### Tests
 
@@ -22,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Clarify installation instructions for SLURM plugin in Read the Docs (x2).
 - Fix waiting order of electrons in docs inside snippet for adding a dependency when inputs and outputs are independent.
 - Expose GCP Batch executor RTD.
+- Add GCP Batch executor image in RTD.
 
 ### Fixed
 
