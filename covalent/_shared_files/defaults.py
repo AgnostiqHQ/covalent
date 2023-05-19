@@ -90,12 +90,6 @@ def get_default_dispatcher_config():
             (os.environ.get("XDG_DATA_HOME") or (os.environ["HOME"] + "/.local/share"))
             + "/covalent/dispatcher_db.sqlite"
         ),
-        "workdir": os.environ.get("COVALENT_WORKDIR")
-        or os.path.join(
-            os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
-            "covalent",
-            "workdir",
-        ),
     }
 
 

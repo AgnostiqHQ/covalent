@@ -23,7 +23,6 @@
 import io
 import os
 import tempfile
-from dataclasses import asdict
 from functools import partial
 from unittest.mock import MagicMock
 
@@ -31,20 +30,17 @@ import pytest
 
 import covalent as ct
 from covalent._shared_files import TaskRuntimeError
-from covalent._shared_files.defaults import DefaultConfig
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._workflow.transport import TransportableObject
 from covalent.executor.base import wrapper_fn
-from covalent.executor.executor_plugins.local import LocalExecutor
-
-DEFAULT_CONFIG = asdict(DefaultConfig())
+from covalent.executor.executor_plugins.local import _EXECUTOR_PLUGIN_DEFAULTS, LocalExecutor
 
 
 def test_local_executor_init(mocker):
     """Test local executor constructor"""
 
-    mocker.patch("covalent.executor.base.get_config", side_effect=KeyError())
-    default_workdir_path = DEFAULT_CONFIG["dispatcher"]["workdir"]
+    mocker.patch("covalent.executor.executor_plugins.local.get_config", side_effect=KeyError())
+    default_workdir_path = _EXECUTOR_PLUGIN_DEFAULTS["workdir"]
 
     le = LocalExecutor()
 
@@ -59,7 +55,8 @@ def test_local_executor_with_workdir(mocker):
     with tempfile.TemporaryDirectory() as tmp_dir:
         le = ct.executor.LocalExecutor(workdir=tmp_dir)
 
-        @ct.electron
+        @ct.lattice
+        @ct.electron(executor=le)
         def simple_task(x, y):
             with open("job.txt", "w") as w:
                 w.write(str(x + y))
@@ -69,28 +66,16 @@ def test_local_executor_with_workdir(mocker):
         mock_get_cancel_requested = mocker.patch.object(
             le, "get_cancel_requested", MagicMock(return_value=False)
         )
-        mock__notify = mocker.patch.object(le, "_notify", MagicMock())
 
-        assembled_callable = partial(
-            wrapper_fn, TransportableObject(simple_task), [], [], le.workdir
-        )
-
-        result, _, _, _ = le.execute(
-            function=assembled_callable,
-            args=[TransportableObject(1)],
-            kwargs={"y": TransportableObject(2)},
-            dispatch_id="asdf",
-            results_dir="/tmp",
-            node_id=1,
-        )
-
-        assert result.get_deserialized() == "Done!"
+        args = [1, 2]
+        kwargs = {}
+        task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+        assert le.run(simple_task, args, kwargs, task_metadata)
         assert os.listdir(tmp_dir) == ["job.txt"]
         assert open(os.path.join(tmp_dir, "job.txt")).read() == "3"
 
         mock_set_job_handle.assert_called_once()
         mock_get_cancel_requested.assert_called_once()
-        mock__notify.assert_called_once()
 
 
 def test_local_executor_passes_results_dir(mocker):

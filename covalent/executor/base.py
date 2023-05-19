@@ -30,7 +30,6 @@ import os
 import queue
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import asdict
 from pathlib import Path
 from typing import (
     Any,
@@ -52,23 +51,19 @@ from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
 from covalent.executor.utils import Signals
 
 from .._shared_files import TaskRuntimeError, logger
-from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_dispatch_info_manager
-from .._shared_files.defaults import DefaultConfig
 from .._shared_files.util_classes import RESULT_STATUS, DispatchInfo
 from .._workflow.transport import TransportableObject
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 TypeJSON = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
-DEFAULT_CONFIG = asdict(DefaultConfig())
 
 
 def wrapper_fn(
     function: TransportableObject,
     call_before: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
     call_after: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
-    workdir: str = ".",
     *args,
     **kwargs,
 ):
@@ -79,11 +74,6 @@ def wrapper_fn(
     the various executors.
 
     """
-
-    Path(workdir).mkdir(parents=True, exist_ok=True)
-
-    current_dir = os.getcwd()
-    os.chdir(workdir)
 
     cb_retvals = {}
     for tup in call_before:
@@ -125,8 +115,6 @@ def wrapper_fn(
         ca_kwargs = serialized_kwargs.get_deserialized()
         ca_fn(*ca_args, **ca_kwargs)
 
-    os.chdir(current_dir)
-
     return TransportableObject(output)
 
 
@@ -140,7 +128,6 @@ class _AbstractBaseExecutor(ABC):
         cache_dir: The location used for cached files in the executor.
         time_limit: time limit for the task
         retries: Number of times to retry execution upon failure
-        workdir: The working directory used for storing files produced from workflows.
 
     """
 
@@ -151,7 +138,6 @@ class _AbstractBaseExecutor(ABC):
         cache_dir: str = "",
         time_limit: int = -1,
         retries: int = 0,
-        workdir: str = "",
         *args,
         **kwargs,
     ):
@@ -160,17 +146,6 @@ class _AbstractBaseExecutor(ABC):
         self.cache_dir = cache_dir
         self.time_limit = time_limit
         self.retries = retries
-
-        if not workdir:
-            short_name = self.short_name()
-            try:
-                workdir = get_config(f"executors.{short_name}.workdir")
-            except KeyError:
-                workdir = DEFAULT_CONFIG["dispatcher"]["workdir"]
-                debug_msg = f"Couldn't find `executors.{short_name}.workdir` in config, using default value {workdir}."
-                app_log.debug(debug_msg)
-
-        self.workdir = workdir
 
     def get_dispatch_context(self, dispatch_info: DispatchInfo) -> ContextManager[DispatchInfo]:
         """

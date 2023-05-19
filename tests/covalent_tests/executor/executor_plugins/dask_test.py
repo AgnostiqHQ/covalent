@@ -23,28 +23,21 @@
 import asyncio
 import os
 import tempfile
-from dataclasses import asdict
-from functools import partial
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock
 
 import pytest
 
 import covalent as ct
-from covalent import TransportableObject
 from covalent._shared_files import TaskRuntimeError
-from covalent._shared_files.defaults import DefaultConfig
 from covalent._shared_files.exceptions import TaskCancelledError
-from covalent.executor import wrapper_fn
-from covalent.executor.executor_plugins.dask import DaskExecutor
-
-DEFAULT_CONFIG = asdict(DefaultConfig())
+from covalent.executor.executor_plugins.dask import _EXECUTOR_PLUGIN_DEFAULTS, DaskExecutor
 
 
 def test_dask_executor_init(mocker):
     """Test dask executor constructor"""
 
-    mocker.patch("covalent.executor.base.get_config", side_effect=KeyError())
-    default_workdir_path = DEFAULT_CONFIG["dispatcher"]["workdir"]
+    mocker.patch("covalent.executor.executor_plugins.dask.get_config", side_effect=KeyError())
+    default_workdir_path = _EXECUTOR_PLUGIN_DEFAULTS["workdir"]
 
     de = DaskExecutor("127.0.0.1")
 
@@ -64,7 +57,8 @@ def test_dask_executor_with_workdir(mocker):
         lc = LocalCluster()
         de = ct.executor.DaskExecutor(lc.scheduler_address, workdir=tmp_dir)
 
-        @ct.electron
+        @ct.lattice
+        @ct.electron(executor=de)
         def simple_task(x, y):
             with open("job.txt", "w") as w:
                 w.write(str(x + y))
@@ -74,24 +68,12 @@ def test_dask_executor_with_workdir(mocker):
             de, "get_cancel_requested", AsyncMock(return_value=False)
         )
         mock_set_job_handle = mocker.patch.object(de, "set_job_handle", AsyncMock())
-        mocker.patch.object(de, "_notify", MagicMock())
 
-        assembled_callable = partial(
-            wrapper_fn, TransportableObject(simple_task), [], [], de.workdir
-        )
-
-        result, _, _, _ = asyncio.run(
-            de.execute(
-                function=assembled_callable,
-                args=[TransportableObject(1)],
-                kwargs={"y": TransportableObject(2)},
-                dispatch_id="asdf",
-                results_dir="/tmp",
-                node_id=1,
-            )
-        )
-
-        assert result.get_deserialized() == "Done!"
+        args = [1, 2]
+        kwargs = {}
+        task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+        result = asyncio.run(de.run(simple_task, args, kwargs, task_metadata))
+        assert result == "Done!"
         assert os.listdir(tmp_dir) == ["job.txt"]
         assert open(os.path.join(tmp_dir, "job.txt")).read() == "3"
 

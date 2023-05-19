@@ -31,6 +31,7 @@ from typing import Any, Callable, Dict, List
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import TaskCancelledError, TaskRuntimeError, logger
+from covalent._shared_files.config import get_config
 from covalent.executor import BaseExecutor
 
 # Store the wrapper function in an external module to avoid module
@@ -49,8 +50,7 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     "cache_dir": os.path.join(
         os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "covalent"
     ),
-    "workdir": os.environ.get("COVALENT_WORKDIR")
-    or os.path.join(
+    "workdir": os.path.join(
         os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
         "covalent",
         "workdir",
@@ -64,6 +64,19 @@ class LocalExecutor(BaseExecutor):
     """
     Local executor class that directly invokes the input function.
     """
+
+    def __init__(self, workdir: str = "", *args, **kwargs) -> None:
+        if not workdir:
+            try:
+                workdir = get_config("executors.local.workdir")
+            except KeyError:
+                workdir = _EXECUTOR_PLUGIN_DEFAULTS["workdir"]
+                debug_msg = f"Couldn't find `executors.local.workdir` in config, using default value {workdir}."
+                app_log.debug(debug_msg)
+
+        super().__init__(*args, **kwargs)
+
+        self.workdir = workdir
 
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict) -> Any:
         """
@@ -88,7 +101,7 @@ class LocalExecutor(BaseExecutor):
             raise TaskCancelledError
 
         # Run the target function in a separate process
-        fut = proc_pool.submit(io_wrapper, function, args, kwargs)
+        fut = proc_pool.submit(io_wrapper, function, args, kwargs, self.workdir)
 
         output, worker_stdout, worker_stderr, tb = fut.result()
 

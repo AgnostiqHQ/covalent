@@ -51,8 +51,7 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     "cache_dir": os.path.join(
         os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "covalent"
     ),
-    "workdir": os.environ.get("COVALENT_WORKDIR")
-    or os.path.join(
+    "workdir": os.path.join(
         os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
         "covalent",
         "workdir",
@@ -78,6 +77,14 @@ class DaskExecutor(AsyncBaseExecutor):
         if not cache_dir:
             cache_dir = _EXECUTOR_PLUGIN_DEFAULTS["cache_dir"]
 
+        if not workdir:
+            try:
+                workdir = get_config("executors.dask.workdir")
+            except KeyError:
+                workdir = _EXECUTOR_PLUGIN_DEFAULTS["workdir"]
+                debug_msg = f"Couldn't find `executors.dask.workdir` in config, using default value {workdir}."
+                app_log.debug(debug_msg)
+
         if not scheduler_address:
             try:
                 scheduler_address = get_config("dask.scheduler_address")
@@ -92,9 +99,9 @@ class DaskExecutor(AsyncBaseExecutor):
             cache_dir,
             conda_env,
             current_env_on_conda_fail,
-            workdir=workdir,
         )
 
+        self.workdir = workdir
         self.scheduler_address = scheduler_address
 
     async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
@@ -113,7 +120,7 @@ class DaskExecutor(AsyncBaseExecutor):
             _address_client_mapper[self.scheduler_address] = dask_client
             await dask_client
 
-        future = dask_client.submit(dask_wrapper, function, args, kwargs)
+        future = dask_client.submit(dask_wrapper, function, args, kwargs, self.workdir)
         await self.set_job_handle(future.key)
         app_log.debug(f"Submitted task {node_id} to dask with key {future.key}")
 
