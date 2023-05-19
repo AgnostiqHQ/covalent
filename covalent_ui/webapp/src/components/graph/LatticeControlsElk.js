@@ -47,6 +47,8 @@ import { ReactComponent as FitViewSvg } from '../../assets/latticeControls/fit-v
 import { ReactComponent as ZoomInSvg } from '../../assets/latticeControls/zoom-in.svg'
 import { ReactComponent as ZoomOutSvg } from '../../assets/latticeControls/zoom-out.svg'
 import { ReactComponent as PostProcessSvg } from '../../assets/latticeControls/post-process.svg'
+import { ReactComponent as PrettifySvg } from '../../assets/latticeControls/prettify.svg'
+import { ReactComponent as ParameterSvg } from '../../assets/latticeControls/parameter.svg'
 
 const LatticeControls = ({
   marginLeft = 0,
@@ -70,6 +72,8 @@ const LatticeControls = ({
   handleHideLabels,
   hideLabels,
   toggleScreenShot,
+  togglePrettify,
+  prettify,
 }) => {
   const { zoomIn, zoomOut } = useZoomPanHelper()
   const { fitView } = useFitViewHelper()
@@ -263,7 +267,17 @@ const LatticeControls = ({
           value=""
           selected={showParams}
         >
-          P
+          <SvgIcon
+            data-testid="Postprocess toggle button"
+            sx={{
+              pt: 0.5,
+              mt: 0,
+              mb: 0,
+              ml: 1,
+            }}
+          >
+            <ParameterSvg />
+          </SvgIcon>{' '}
         </ToggleButton>
       </Hint>
       <Hint title="Toggle Postprocess">
@@ -283,6 +297,26 @@ const LatticeControls = ({
             }}
           >
             <PostProcessSvg />
+          </SvgIcon>{' '}
+        </ToggleButton>
+      </Hint>
+      <Hint title="Prettify">
+        <ToggleButton
+          data-testid="prettify"
+          value=""
+          onClick={togglePrettify}
+          selected={prettify}
+        >
+          <SvgIcon
+            data-testid="Postprocess toggle button"
+            sx={{
+              pt: 0.5,
+              mt: 0,
+              mb: 0,
+              ml: 1,
+            }}
+          >
+            <PrettifySvg />
           </SvgIcon>{' '}
         </ToggleButton>
       </Hint>

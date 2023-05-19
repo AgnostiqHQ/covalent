@@ -23,7 +23,7 @@
 import _ from 'lodash'
 import ELK from 'elkjs/lib/elk.bundled.js'
 import { isNode } from 'react-flow-renderer'
-import { isParameter, isPostProcess } from '../../utils/misc'
+import { isParameter, isPostProcess, Prettify } from '../../utils/misc'
 
 const nodeLabel = (type, name) => {
   switch (type) {
@@ -59,7 +59,8 @@ const mapGraphToElements = (
   showParams,
   hideLabels,
   preview,
-  showPostProcess
+  showPostProcess,
+  prettify
 ) => {
   if (!showPostProcess) {
     graph = filterGraph(graph, (node) => !isPostProcess(node))
@@ -73,6 +74,8 @@ const mapGraphToElements = (
     const isParam = isParameter(node)
     const name = isParam
       ? node?.name?.replace(':parameter:', '')
+      : prettify
+      ? Prettify(node.name, node.type)
       : nodeLabel(node?.type, node.name)
     return {
       id: String(node.id),
@@ -118,7 +121,8 @@ const assignNodePositions = async (
   algorithm,
   hideLabels,
   preview,
-  showPostProcess
+  showPostProcess,
+  prettify
 ) => {
   const elements = mapGraphToElements(
     graph,
@@ -126,7 +130,8 @@ const assignNodePositions = async (
     showParams,
     hideLabels,
     preview,
-    showPostProcess
+    showPostProcess,
+    prettify
   )
   const nodes = []
   const edges = []

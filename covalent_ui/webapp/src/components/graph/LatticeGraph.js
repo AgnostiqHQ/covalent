@@ -48,6 +48,8 @@ function usePrevious(value) {
 }
 
 const LatticeGraph = ({
+  togglePrettify,
+  prettify,
   graph,
   preview,
   hasSelectedNode,
@@ -69,6 +71,24 @@ const LatticeGraph = ({
 
   // set Margin
   const prevMarginRight = usePrevious(marginRight)
+
+  const nodeMap = new Map((graph?.nodes ?? []).map((node) => [node.name, node]))
+
+  const searchName = ':postprocess:'
+  const searchStatus = 'FAILED'
+  const desiredNode = nodeMap.get(searchName)
+
+  useEffect(() => {
+    if (desiredNode && desiredNode.status === searchStatus) {
+      setPostProcess(true)
+    }
+
+    // setPostProcess(
+    // 	!!graph?.nodes?.find(
+    // 		obj => obj.name.startsWith(':postprocess:') && obj.status === 'NEW_OBJECT'
+    // 	)
+    // );
+  }, [graph, desiredNode])
 
   const marginSet = () => {
     setTimeout(() => {
@@ -109,7 +129,17 @@ const LatticeGraph = ({
   // layouting
   useEffect(() => {
     if (algorithm === 'oldLayout') {
-      setElements(layout(graph, direction, showParams, hideLabels, preview))
+      setElements(
+        layout(
+          graph,
+          direction,
+          showParams,
+          hideLabels,
+          preview,
+          showPostProcess,
+          prettify
+        )
+      )
     } else {
       assignNodePositions(
         graph,
@@ -118,7 +148,8 @@ const LatticeGraph = ({
         algorithm,
         hideLabels,
         preview,
-        showPostProcess
+        showPostProcess,
+        prettify
       )
         .then((els) => {
           setElements(els)
@@ -126,7 +157,15 @@ const LatticeGraph = ({
         .catch((error) => console.log(error))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [graph, direction, showParams, algorithm, hideLabels, showPostProcess])
+  }, [
+    graph,
+    direction,
+    showParams,
+    algorithm,
+    hideLabels,
+    showPostProcess,
+    prettify,
+  ])
 
   // menu for layout
   const [anchorEl, setAnchorEl] = useState(null)
@@ -355,6 +394,8 @@ const LatticeGraph = ({
             toggleScreenShot={() => {
               setScreen(true)
             }}
+            togglePrettify={togglePrettify}
+            prettify={prettify}
             open={open}
             anchorEl={anchorEl}
             handleClick={handleClick}
