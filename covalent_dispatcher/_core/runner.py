@@ -243,9 +243,7 @@ async def _run_task(
     # Run the task on the executor and register any failures.
     try:
         app_log.debug(f"Executing task {node_name}")
-        assembled_callable = partial(
-            wrapper_fn, serialized_callable, call_before, call_after, executor.workdir
-        )
+        assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
 
         # Note: Executor proxy monitors the executors instances and watches the send and receive queues of the executor.
         asyncio.create_task(executor_proxy.watch(dispatch_id, node_id, executor))
