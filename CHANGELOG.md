@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Ability to specify a `workdir` for `local` and `dask` executors
 
+### Operations
+
+- Nightly frequency set to midnight EST 
+
 ## [0.223.1-rc.0] - 2023-05-17
 
 ### Authors
