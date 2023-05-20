@@ -45,10 +45,12 @@ def test_local_executor_init(mocker):
     le = LocalExecutor()
 
     assert le.workdir == default_workdir_path
+    assert le.create_unique_workdir is False
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        le = LocalExecutor(workdir=tmp_dir)
+        le = LocalExecutor(workdir=tmp_dir, create_unique_workdir=True)
         assert le.workdir == tmp_dir
+        assert le.create_unique_workdir is True
 
 
 def test_local_executor_with_workdir(mocker):

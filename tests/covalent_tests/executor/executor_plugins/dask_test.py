@@ -43,11 +43,13 @@ def test_dask_executor_init(mocker):
 
     assert de.scheduler_address == "127.0.0.1"
     assert de.workdir == default_workdir_path
+    assert de.create_unique_workdir is False
 
     with tempfile.TemporaryDirectory() as tmp_dir:
-        de = DaskExecutor("127.0.0.1", workdir=tmp_dir)
+        de = DaskExecutor("127.0.0.1", workdir=tmp_dir, create_unique_workdir=True)
         assert de.scheduler_address == "127.0.0.1"
         assert de.workdir == tmp_dir
+        assert de.create_unique_workdir is True
 
 
 def test_dask_executor_with_workdir(mocker):
