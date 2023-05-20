@@ -27,7 +27,7 @@ This is a plugin executor module; it is loaded if found and properly structured.
 
 import os
 from concurrent.futures import ProcessPoolExecutor
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import TaskCancelledError, TaskRuntimeError, logger
@@ -55,6 +55,7 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
         "covalent",
         "workdir",
     ),
+    "create_unique_workdir": False,
 }
 
 proc_pool = ProcessPoolExecutor()
@@ -65,7 +66,9 @@ class LocalExecutor(BaseExecutor):
     Local executor class that directly invokes the input function.
     """
 
-    def __init__(self, workdir: str = "", *args, **kwargs) -> None:
+    def __init__(
+        self, workdir: str = "", create_unique_workdir: Optional[bool] = None, *args, **kwargs
+    ) -> None:
         if not workdir:
             try:
                 workdir = get_config("executors.local.workdir")
@@ -74,9 +77,18 @@ class LocalExecutor(BaseExecutor):
                 debug_msg = f"Couldn't find `executors.local.workdir` in config, using default value {workdir}."
                 app_log.debug(debug_msg)
 
+        if create_unique_workdir is None:
+            try:
+                create_unique_workdir = get_config("executors.local.create_unique_workdir")
+            except KeyError:
+                create_unique_workdir = _EXECUTOR_PLUGIN_DEFAULTS["create_unique_workdir"]
+                debug_msg = f"Couldn't find `executors.local.create_unique_workdir` in config, using default value {create_unique_workdir}."
+                app_log.debug(debug_msg)
+
         super().__init__(*args, **kwargs)
 
         self.workdir = workdir
+        self.create_unique_workdir = create_unique_workdir
 
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict) -> Any:
         """
@@ -100,8 +112,16 @@ class LocalExecutor(BaseExecutor):
             app_log.debug("Task has been cancelled don't proceed")
             raise TaskCancelledError
 
+        dispatch_id = task_metadata["dispatch_id"]
+        node_id = task_metadata["node_id"]
+
+        if self.create_unique_workdir:
+            current_workdir = os.path.join(self.workdir, dispatch_id, f"node_{node_id}")
+        else:
+            current_workdir = self.workdir
+
         # Run the target function in a separate process
-        fut = proc_pool.submit(io_wrapper, function, args, kwargs, self.workdir)
+        fut = proc_pool.submit(io_wrapper, function, args, kwargs, current_workdir)
 
         output, worker_stdout, worker_stderr, tb = fut.result()
 

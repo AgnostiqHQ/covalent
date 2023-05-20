@@ -55,7 +55,9 @@ def test_dask_executor_with_workdir(mocker):
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         lc = LocalCluster()
-        de = ct.executor.DaskExecutor(lc.scheduler_address, workdir=tmp_dir)
+        de = ct.executor.DaskExecutor(
+            lc.scheduler_address, workdir=tmp_dir, create_unique_workdir=True
+        )
 
         @ct.lattice
         @ct.electron(executor=de)
@@ -74,8 +76,13 @@ def test_dask_executor_with_workdir(mocker):
         task_metadata = {"dispatch_id": "asdf", "node_id": 1}
         result = asyncio.run(de.run(simple_task, args, kwargs, task_metadata))
         assert result == "Done!"
-        assert os.listdir(tmp_dir) == ["job.txt"]
-        assert open(os.path.join(tmp_dir, "job.txt")).read() == "3"
+
+        target_dir = os.path.join(
+            tmp_dir, task_metadata["dispatch_id"], f"node_{task_metadata['node_id']}"
+        )
+
+        assert os.listdir(target_dir) == ["job.txt"]
+        assert open(os.path.join(target_dir, "job.txt")).read() == "3"
 
         mock_get_cancel_requested.assert_awaited()
         mock_set_job_handle.assert_awaited()

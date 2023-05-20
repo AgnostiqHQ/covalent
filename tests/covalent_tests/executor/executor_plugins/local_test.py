@@ -53,7 +53,7 @@ def test_local_executor_init(mocker):
 
 def test_local_executor_with_workdir(mocker):
     with tempfile.TemporaryDirectory() as tmp_dir:
-        le = ct.executor.LocalExecutor(workdir=tmp_dir)
+        le = ct.executor.LocalExecutor(workdir=tmp_dir, create_unique_workdir=True)
 
         @ct.lattice
         @ct.electron(executor=le)
@@ -71,8 +71,13 @@ def test_local_executor_with_workdir(mocker):
         kwargs = {}
         task_metadata = {"dispatch_id": "asdf", "node_id": 1}
         assert le.run(simple_task, args, kwargs, task_metadata)
-        assert os.listdir(tmp_dir) == ["job.txt"]
-        assert open(os.path.join(tmp_dir, "job.txt")).read() == "3"
+
+        target_dir = os.path.join(
+            tmp_dir, task_metadata["dispatch_id"], f"node_{task_metadata['node_id']}"
+        )
+
+        assert os.listdir(target_dir) == ["job.txt"]
+        assert open(os.path.join(target_dir, "job.txt")).read() == "3"
 
         mock_set_job_handle.assert_called_once()
         mock_get_cancel_requested.assert_called_once()
