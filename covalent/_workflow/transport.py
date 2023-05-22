@@ -20,9 +20,7 @@
 
 """Class implementation of the transport graph in the workflow graph."""
 
-import base64
 import json
-import platform
 from copy import deepcopy
 from typing import Any, Callable, Dict
 
@@ -31,212 +29,13 @@ import networkx as nx
 
 from .._shared_files.defaults import parameter_prefix
 from .._shared_files.util_classes import RESULT_STATUS
-
-
-class TransportableObject:
-    """
-    A function is converted to a transportable object by serializing it using cloudpickle
-    and then whenever executing it, the transportable object is deserialized. The object
-    will also contain additional info like the python version used to serialize it.
-
-    Attributes:
-        _object: The serialized object.
-        python_version: The python version used on the client's machine.
-    """
-
-    def __init__(self, obj: Any) -> None:
-        self._object = base64.b64encode(cloudpickle.dumps(obj)).decode("utf-8")
-        self.python_version = platform.python_version()
-
-        self.object_string = str(obj)
-
-        try:
-            self._json = json.dumps(obj)
-
-        except TypeError as ex:
-            self._json = ""
-
-        self.attrs = {"doc": getattr(obj, "__doc__", ""), "name": getattr(obj, "__name__", "")}
-
-    def __eq__(self, obj) -> bool:
-        if not isinstance(obj, TransportableObject):
-            return False
-        return self.__dict__ == obj.__dict__
-
-    def get_deserialized(self) -> Callable:
-        """
-        Get the deserialized transportable object.
-
-        Args:
-            None
-
-        Returns:
-            function: The deserialized object/callable function.
-
-        """
-
-        return cloudpickle.loads(base64.b64decode(self._object.encode("utf-8")))
-
-    @property
-    def json(self):
-        return self._json
-
-    def to_dict(self) -> dict:
-        """Return a JSON-serializable dictionary representation of self"""
-        return {"type": "TransportableObject", "attributes": self.__dict__.copy()}
-
-    @staticmethod
-    def from_dict(object_dict) -> "TransportableObject":
-        """Rehydrate a dictionary representation
-
-        Args:
-            object_dict: a dictionary representation returned by `to_dict`
-
-        Returns:
-            A `TransportableObject` represented by `object_dict`
-        """
-
-        sc = TransportableObject(None)
-        sc.__dict__ = object_dict["attributes"]
-        return sc
-
-    def get_serialized(self) -> str:
-        """
-        Get the serialized transportable object.
-
-        Args:
-            None
-
-        Returns:
-            object: The serialized transportable object.
-        """
-
-        return self._object
-
-    def serialize(self) -> bytes:
-        """
-        Serialize the transportable object.
-
-        Args:
-            None
-
-        Returns:
-            pickled_object: The serialized object alongwith the python version.
-        """
-
-        return cloudpickle.dumps(
-            {
-                "object": self.get_serialized(),
-                "object_string": self.object_string,
-                "json": self._json,
-                "attrs": self.attrs,
-                "py_version": self.python_version,
-            }
-        )
-
-    def serialize_to_json(self) -> str:
-        """
-        Serialize the transportable object to JSON.
-
-        Args:
-            None
-
-        Returns:
-            A JSON string representation of the transportable object
-        """
-
-        return json.dumps(self.to_dict())
-
-    @staticmethod
-    def deserialize_from_json(json_string: str) -> str:
-        """
-        Reconstruct a transportable object from JSON
-
-        Args:
-            json_string: A JSON string representation of a TransportableObject
-
-        Returns:
-            A TransportableObject instance
-        """
-
-        object_dict = json.loads(json_string)
-        return TransportableObject.from_dict(object_dict)
-
-    @staticmethod
-    def make_transportable(obj) -> "TransportableObject":
-        if isinstance(obj, TransportableObject):
-            return obj
-        else:
-            return TransportableObject(obj)
-
-    @staticmethod
-    def deserialize(data: bytes) -> "TransportableObject":
-        """
-        Deserialize the transportable object.
-
-        Args:
-            data: Cloudpickled function.
-
-        Returns:
-            object: The deserialized transportable object.
-        """
-
-        obj = cloudpickle.loads(data)
-        sc = TransportableObject(None)
-        sc._object = obj["object"]
-        sc._json = obj["json"]
-        sc.attrs = obj["attrs"]
-        sc.python_version = obj["py_version"]
-        return sc
-
-    @staticmethod
-    def deserialize_list(collection: list) -> list:
-        """
-        Recursively deserializes a list of TransportableObjects. More
-        precisely, `collection` is a list, each of whose entries is
-        assumed to be either a `TransportableObject`, a list, or dict`
-        """
-
-        new_list = []
-        for item in collection:
-            if isinstance(item, TransportableObject):
-                new_list.append(item.get_deserialized())
-            elif isinstance(item, list):
-                new_list.append(TransportableObject.deserialize_list(item))
-            elif isinstance(item, dict):
-                new_list.append(TransportableObject.deserialize_dict(item))
-            else:
-                raise TypeError("Couldn't deserialize collection")
-        return new_list
-
-    @staticmethod
-    def deserialize_dict(collection: dict) -> dict:
-        """
-        Recursively deserializes a dict of TransportableObjects. More
-        precisely, `collection` is a dict, each of whose entries is
-        assumed to be either a `TransportableObject`, a list, or dict`
-
-        """
-
-        new_dict = {}
-        for k, item in collection.items():
-            if isinstance(item, TransportableObject):
-                new_dict[k] = item.get_deserialized()
-            elif isinstance(item, list):
-                new_dict[k] = TransportableObject.deserialize_list(item)
-            elif isinstance(item, dict):
-                new_dict[k] = TransportableObject.deserialize_dict(item)
-            else:
-                raise TypeError("Couldn't deserialize collection")
-        return new_dict
+from .transportable_object import TransportableObject
 
 
 # Functions for encoding the transport graph
-
-
 def encode_metadata(metadata: dict) -> dict:
     # Idempotent
-    # Special handling required for: executor, workflow_executor, deps, call_before/after
+    # Special handling required for: executor, workflow_executor, deps, call_before/after, triggers
 
     encoded_metadata = deepcopy(metadata)
     if "executor" in metadata:
@@ -258,24 +57,33 @@ def encode_metadata(metadata: dict) -> dict:
             encoded_metadata["workflow_executor_data"] = encoded_wf_executor
 
     # Bash Deps, Pip Deps, Env Deps, etc
-    if "deps" in metadata:
-        if metadata["deps"] is not None:
-            for dep_type, dep_object in metadata["deps"].items():
-                if dep_object and not isinstance(dep_object, dict):
-                    encoded_metadata["deps"][dep_type] = dep_object.to_dict()
+    if "deps" in metadata and metadata["deps"] is not None:
+        for dep_type, dep_object in metadata["deps"].items():
+            if dep_object and not isinstance(dep_object, dict):
+                encoded_metadata["deps"][dep_type] = dep_object.to_dict()
 
     # call_before/after
-    if "call_before" in metadata:
-        if metadata["call_before"] is not None:
-            for i, dep in enumerate(metadata["call_before"]):
-                if not isinstance(dep, dict):
-                    encoded_metadata["call_before"][i] = dep.to_dict()
+    if "call_before" in metadata and metadata["call_before"] is not None:
+        for i, dep in enumerate(metadata["call_before"]):
+            if not isinstance(dep, dict):
+                encoded_metadata["call_before"][i] = dep.to_dict()
 
-    if "call_after" in metadata:
-        if metadata["call_after"] is not None:
-            for i, dep in enumerate(metadata["call_after"]):
-                if not isinstance(dep, dict):
-                    encoded_metadata["call_after"][i] = dep.to_dict()
+    if "call_after" in metadata and metadata["call_after"] is not None:
+        for i, dep in enumerate(metadata["call_after"]):
+            if not isinstance(dep, dict):
+                encoded_metadata["call_after"][i] = dep.to_dict()
+
+    # triggers
+    if "triggers" in metadata:
+        if isinstance(metadata["triggers"], list):
+            encoded_metadata["triggers"] = []
+            for tr in metadata["triggers"]:
+                if isinstance(tr, dict):
+                    encoded_metadata["triggers"].append(tr)
+                else:
+                    encoded_metadata["triggers"].append(tr.to_dict())
+        else:
+            encoded_metadata["triggers"] = metadata["triggers"]
 
     return encoded_metadata
 
@@ -312,7 +120,9 @@ class _TransportGraph:
             "stderr": None,
         }
 
-    def add_node(self, name: str, function: Callable, metadata: Dict, **attr) -> int:
+    def add_node(
+        self, name: str, function: Callable, metadata: Dict, task_group_id: int = None, **attr
+    ) -> int:
         """
         Adds a node to the graph.
 
@@ -320,15 +130,17 @@ class _TransportGraph:
             name: The name of the node.
             function: The function to be executed.
             metadata: The metadata of the node.
+            task_group_id: The task group id of the node.
             attr: Any other attributes that need to be added to the node.
 
         Returns:
             node_key: The node id.
-        """
 
+        """
         node_id = len(self._graph.nodes)
         self._graph.add_node(
             node_id,
+            task_group_id=task_group_id if task_group_id is not None else node_id,
             name=name,
             function=TransportableObject(function),
             metadata=metadata,
@@ -383,9 +195,8 @@ class _TransportGraph:
             value: The value from the node stored at the value key.
 
         Raises:
-            KeyError: If the value key is not found.
+            KeyError: If the value key or node key is not found.
         """
-
         return self._graph.nodes[node_key][value_key]
 
     def set_node_value(self, node_key: int, value_key: int, value: Any) -> None:

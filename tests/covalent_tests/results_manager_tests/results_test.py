@@ -141,6 +141,14 @@ def test_str_result(result_2, mocker):
     assert "task_1" in s
 
 
+def test_result_status_comparison(result_2, mocker):
+    """Test result.status __eq__ and __ne__ methods"""
+    assert result_2.status == "NEW_OBJECT"
+    assert result_2.status == Result.NEW_OBJ
+    assert result_2.status != "COMPLETED"
+    assert result_2.status != Result.COMPLETED
+
+
 def test_result_root_dispatch_id(result_1):
     """Test the `root_dispatch_id` property`"""
 

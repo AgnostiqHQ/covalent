@@ -64,7 +64,7 @@ def test_check_nodes():
         return identity(a=result1)
 
     check.build_graph(a=1, b=2)
-    assert [0, 1, 2, 3] == list(check.transport_graph._graph.nodes)
+    assert list(check.transport_graph._graph.nodes) == list(range(5))
 
 
 def test_electron_takes_nested_iterables():
@@ -621,29 +621,6 @@ def test_all_parameter_types_in_lattice():
     assert result.result == (10, (3, 4), {"d": 6, "e": 7})
 
 
-def test_client_workflow_executor():
-    """
-    Test setting `workflow_executor="client"`
-    """
-
-    @ct.electron
-    def new_func(a, b, c, d, e):
-        return a + b + c + d + e
-
-    @ct.lattice(workflow_executor="client")
-    def work_func(a, b, c):
-        return new_func(a, b, c, d=4, e=5)
-
-    dispatch_id = ct.dispatch(work_func)(1, 2, c=3)
-
-    workflow_result = rm.get_result(dispatch_id, wait=True)
-    assert workflow_result.status == Result.PENDING_POSTPROCESSING
-    assert workflow_result.result is None
-    update.persist(workflow_result)
-    assert workflow_result.post_process() == 15
-    rm._delete_result(dispatch_id)
-
-
 def test_two_iterations():
     """Confirm we can build the graph with more than one iteration"""
 
@@ -657,7 +634,7 @@ def test_two_iterations():
         return first + b + last
 
     midword.build_graph("hello world", "beautiful", 6)
-    assert [0, 1, 2, 3, 4, 5, 6, 7, 8, 9] == list(midword.transport_graph._graph.nodes)
+    assert list(midword.transport_graph._graph.nodes) == list(range(11))
 
 
 def test_two_iterations_float():
@@ -673,7 +650,7 @@ def test_two_iterations_float():
         return half + quarter
 
     add_half_quarter.build_graph(0.1)
-    assert [0, 1, 2, 3, 4, 5, 6] == list(add_half_quarter.transport_graph._graph.nodes)
+    assert list(add_half_quarter.transport_graph._graph.nodes) == list(range(8))
 
 
 def test_wait_for():
@@ -891,10 +868,6 @@ def test_redispatch_reusing_previous_results():
         return x + y
 
     @ct.electron
-    def mult_task(x, y):
-        return x * y
-
-    @ct.electron
     def square_task(x):
         return x * x
 
@@ -951,9 +924,10 @@ def test_redispatch_reusing_previous_results_and_new_args():
     dispatch_id = ct.dispatch(failing_workflow)(1, 0)
     result = ct.get_result(dispatch_id, wait=True)
     assert result.result is None
-    assert str(result.status) == "FAILED"
+    assert result.status == "FAILED"
 
     redispatch_id = ct.redispatch(dispatch_id=dispatch_id, reuse_previous_results=True)(1, 1)
     result = ct.get_result(redispatch_id, wait=True)
     assert int(result.result) == 1
-    assert str(result.status) == "COMPLETED"
+    assert result.status == "COMPLETED"
+    assert result.get_node_result(0)["start_time"] == result.get_node_result(0)["end_time"]

@@ -39,31 +39,51 @@ def mock_initialize_result_object(lattice):
 
 
 @pytest.mark.asyncio
-async def test_run_dispatcher(mocker):
+@pytest.mark.parametrize("disable_run", [True, False])
+async def test_run_dispatcher(mocker, disable_run):
+    """
+    Test run_dispatcher is called with the
+    right arguments in different conditions
+    """
+
     mock_run_dispatch = mocker.patch("covalent_dispatcher._core.run_dispatch")
     mock_make_dispatch = mocker.patch(
         "covalent_dispatcher._core.make_dispatch", return_value=DISPATCH_ID
     )
     json_lattice = '{"workflow_function": "asdf"}'
-    dispatch_id = await run_dispatcher(json_lattice)
+
+    dispatch_id = await run_dispatcher(json_lattice, disable_run)
     assert dispatch_id == DISPATCH_ID
+
     mock_make_dispatch.assert_called_with(json_lattice)
-    mock_run_dispatch.assert_called_with(dispatch_id)
+    if not disable_run:
+        mock_run_dispatch.assert_called_with(dispatch_id)
 
 
 @pytest.mark.asyncio
-async def test_run_redispatch(mocker):
-    """Test the run redispatch function."""
+@pytest.mark.parametrize("is_pending", [True, False])
+async def test_run_redispatch(mocker, is_pending):
+    """
+    Test the run_redispatch function is called
+    with the right arguments in differnet conditions
+    """
+
     make_derived_dispatch_mock = mocker.patch(
         "covalent_dispatcher._core.make_derived_dispatch", return_value="mock-redispatch-id"
     )
     run_dispatch_mock = mocker.patch("covalent_dispatcher._core.run_dispatch")
-    redispatch_id = await run_redispatch(DISPATCH_ID, "mock-json-lattice", {}, False)
+    redispatch_id = await run_redispatch(DISPATCH_ID, "mock-json-lattice", {}, False, is_pending)
+
+    if not is_pending:
+        make_derived_dispatch_mock.assert_called_once_with(
+            DISPATCH_ID, "mock-json-lattice", {}, False
+        )
+
     run_dispatch_mock.assert_called_once_with(redispatch_id)
-    make_derived_dispatch_mock.assert_called_once_with(DISPATCH_ID, "mock-json-lattice", {}, False)
 
 
-def test_cancel_running_dispatch(mocker):
-    mock_cancel_workflow = mocker.patch("covalent_dispatcher._core.cancel_workflow")
-    cancel_running_dispatch(DISPATCH_ID)
-    mock_cancel_workflow.assert_called_once_with(DISPATCH_ID)
+@pytest.mark.asyncio
+async def test_cancel_running_dispatch(mocker):
+    mock_cancel_workflow = mocker.patch("covalent_dispatcher.entry_point.cancel_dispatch")
+    await cancel_running_dispatch(DISPATCH_ID)
+    mock_cancel_workflow.assert_awaited_once_with(DISPATCH_ID, [])

@@ -42,24 +42,24 @@ router: APIRouter = APIRouter()
 
 
 @router.post("/submit")
-async def submit(request: Request) -> UUID:
+async def submit(request: Request, disable_run: bool = False) -> UUID:
     """
     Function to accept the submit request of
     new dispatch and return the dispatch id
     back to the client.
 
     Args:
-        None
+        disable_run: Whether to disable the execution of this lattice
 
     Returns:
         dispatch_id: The dispatch id in a json format
-                     returned as a Fast API Response object.
+                     returned as a Fast API Response object
     """
     try:
         data = await request.json()
         data = json.dumps(data).encode("utf-8")
 
-        return await dispatcher.run_dispatcher(data)
+        return await dispatcher.run_dispatcher(data, disable_run)
     except Exception as e:
         raise HTTPException(
             status_code=400,
@@ -68,7 +68,7 @@ async def submit(request: Request) -> UUID:
 
 
 @router.post("/redispatch")
-async def redispatch(request: Request) -> str:
+async def redispatch(request: Request, is_pending: bool = False) -> str:
     """Endpoint to redispatch a workflow."""
     try:
         data = await request.json()
@@ -76,11 +76,11 @@ async def redispatch(request: Request) -> str:
         json_lattice = data["json_lattice"]
         electron_updates = data["electron_updates"]
         reuse_previous_results = data["reuse_previous_results"]
+        app_log.debug(
+            f"Unpacked redispatch request for {dispatch_id}. reuse_previous_results: {reuse_previous_results}, electron_updates: {electron_updates}"
+        )
         return await dispatcher.run_redispatch(
-            dispatch_id,
-            json_lattice,
-            electron_updates,
-            reuse_previous_results,
+            dispatch_id, json_lattice, electron_updates, reuse_previous_results, is_pending
         )
 
     except Exception as e:
@@ -103,21 +103,21 @@ async def cancel(request: Request) -> str:
         Fast API Response object confirming that the dispatch
         has been cancelled.
     """
-    try:
-        data = await request.body()
-        dispatch_id = data.decode("utf-8")
 
-        dispatcher.cancel_running_dispatch(dispatch_id)
+    data = await request.json()
+
+    dispatch_id = data["dispatch_id"]
+    task_ids = data["task_ids"]
+
+    await dispatcher.cancel_running_dispatch(dispatch_id, task_ids)
+    if task_ids:
+        return f"Cancelled tasks {task_ids} in dispatch {dispatch_id}."
+    else:
         return f"Dispatch {dispatch_id} cancelled."
-    except Exception as e:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Failed to cancel workflow: {e}",
-        ) from e
 
 
 @router.get("/result/{dispatch_id}")
-def get_result(
+async def get_result(
     dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
 ):
     with workflow_db.session() as session:

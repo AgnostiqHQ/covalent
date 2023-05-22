@@ -26,19 +26,12 @@ import requests
 import covalent_ui.app as ui_server
 from covalent._results_manager import Result
 from covalent._shared_files import logger
-from covalent._shared_files.config import get_config
+from covalent._shared_files.utils import get_ui_url
 from covalent_dispatcher._db.dispatchdb import encode_dict, extract_graph, extract_metadata
-
-DEFAULT_PORT = get_config("user_interface.port")
 
 app_log = logger.app_log
 
 # UI server webhook for result updates
-
-
-def get_ui_url(path):
-    base_url = f"http://localhost:{DEFAULT_PORT}"
-    return f"{base_url}{path}"
 
 
 async def send_update(result: Result) -> None:
@@ -62,8 +55,6 @@ async def send_update(result: Result) -> None:
             },
         },
     )
-
-    app_log.debug("Moving to Fast API soon - stay tuned!!")
     try:
         # ignore response
         timeout = aiohttp.ClientTimeout(total=1)

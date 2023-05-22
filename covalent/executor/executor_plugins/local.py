@@ -27,10 +27,10 @@ This is a plugin executor module; it is loaded if found and properly structured.
 
 import os
 from concurrent.futures import ProcessPoolExecutor
-from typing import Callable, Dict, List
+from typing import Any, Callable, Dict, List
 
 # Relative imports are not allowed in executor plugins
-from covalent._shared_files import TaskRuntimeError, logger
+from covalent._shared_files import TaskCancelledError, TaskRuntimeError, logger
 from covalent.executor import BaseExecutor
 
 # Store the wrapper function in an external module to avoid module
@@ -59,8 +59,26 @@ class LocalExecutor(BaseExecutor):
     Local executor class that directly invokes the input function.
     """
 
-    def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
+    def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict) -> Any:
+        """
+        Execute the function locally
+
+        Arg(s)
+            function: Function to be executed
+            args: Arguments passed to the function
+            kwargs: Keyword arguments passed to the function
+            task_metadata: Metadata of the task to be executed
+
+        Return(s)
+            Task output
+        """
         app_log.debug(f"Running function {function} locally")
+
+        self.set_job_handle(42)
+
+        if self.get_cancel_requested():
+            app_log.debug("Task has been cancelled don't proceed")
+            raise TaskCancelledError
 
         # Run the target function in a separate process
         fut = proc_pool.submit(io_wrapper, function, args, kwargs)

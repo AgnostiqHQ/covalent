@@ -22,14 +22,17 @@
 Self-contained entry point for the dispatcher
 """
 
+from typing import List
 
 from covalent._shared_files import logger
+
+from ._core import cancel_dispatch
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-async def run_dispatcher(json_lattice: str):
+async def run_dispatcher(json_lattice: str, disable_run: bool = False):
     """
     Run the dispatcher from the lattice asynchronously using Dask.
     Assign a new dispatch id to the result object and return it.
@@ -37,6 +40,7 @@ async def run_dispatcher(json_lattice: str):
 
     Args:
         json_lattice: A JSON-serialized lattice
+        disable_run: Whether to disable execution of this lattice
 
     Returns:
         dispatch_id: A string containing the dispatch id of current dispatch.
@@ -44,22 +48,34 @@ async def run_dispatcher(json_lattice: str):
 
     from ._core import make_dispatch, run_dispatch
 
-    dispatch_id = make_dispatch(json_lattice)
-    run_dispatch(dispatch_id)
+    dispatch_id = await make_dispatch(json_lattice)
 
-    app_log.debug("Submitted result object to run_workflow.")
+    if not disable_run:
+        run_dispatch(dispatch_id)
+        app_log.debug(f"Submitted dispatch_id {dispatch_id} to run_workflow.")
 
     return dispatch_id
 
 
 async def run_redispatch(
-    dispatch_id: str, json_lattice: str, electron_updates: dict, reuse_previous_results: bool
+    dispatch_id: str,
+    json_lattice: str,
+    electron_updates: dict,
+    reuse_previous_results: bool,
+    is_pending: bool = False,
 ):
     from ._core import make_derived_dispatch, run_dispatch
+
+    app_log.debug("Running redispatch ...")
+    if is_pending:
+        run_dispatch(dispatch_id)
+        app_log.debug(f"Submitted pending dispatch_id {dispatch_id} to run_dispatch.")
+        return dispatch_id
 
     redispatch_id = make_derived_dispatch(
         dispatch_id, json_lattice, electron_updates, reuse_previous_results
     )
+    app_log.debug(f"Redispatch id {redispatch_id} created.")
     run_dispatch(redispatch_id)
 
     app_log.debug(f"Re-dispatching {dispatch_id} as {redispatch_id}")
@@ -67,7 +83,7 @@ async def run_redispatch(
     return redispatch_id
 
 
-def cancel_running_dispatch(dispatch_id: str) -> None:
+async def cancel_running_dispatch(dispatch_id: str, task_ids: List[int] = None) -> None:
     """
     Cancels a running dispatch job.
 
@@ -78,6 +94,7 @@ def cancel_running_dispatch(dispatch_id: str) -> None:
         None
     """
 
-    from ._core import cancel_workflow
+    if task_ids is None:
+        task_ids = []
 
-    cancel_workflow(dispatch_id)
+    await cancel_dispatch(dispatch_id, task_ids)

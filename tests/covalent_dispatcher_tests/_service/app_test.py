@@ -62,6 +62,11 @@ class MockDataStore:
 
 
 @pytest.fixture
+def app():
+    yield fast_app
+
+
+@pytest.fixture
 def client():
     with TestClient(fast_app) as c:
         yield c
@@ -80,15 +85,16 @@ def test_db_file():
 
 
 @pytest.mark.asyncio
-async def test_submit(mocker, client):
+@pytest.mark.parametrize("disable_run", [True, False])
+async def test_submit(mocker, client, disable_run):
     """Test the submit endpoint."""
     mock_data = json.dumps({}).encode("utf-8")
     run_dispatcher_mock = mocker.patch(
         "covalent_dispatcher.run_dispatcher", return_value=DISPATCH_ID
     )
-    response = client.post("/api/submit", data=mock_data)
+    response = client.post("/api/submit", data=mock_data, params={"disable_run": disable_run})
     assert response.json() == DISPATCH_ID
-    run_dispatcher_mock.assert_called_once_with(mock_data)
+    run_dispatcher_mock.assert_called_once_with(mock_data, disable_run)
 
 
 @pytest.mark.asyncio
@@ -102,7 +108,8 @@ async def test_submit_exception(mocker, client):
 
 
 @pytest.mark.asyncio
-async def test_redispatch(mocker, client):
+@pytest.mark.parametrize("is_pending", [True, False])
+async def test_redispatch(mocker, client, is_pending):
     """Test the redispatch endpoint."""
     json_lattice = None
     electron_updates = None
@@ -119,11 +126,33 @@ async def test_redispatch(mocker, client):
         "covalent_dispatcher.run_redispatch", return_value=DISPATCH_ID
     )
 
-    response = client.post("/api/redispatch", data=mock_data)
+    response = client.post("/api/redispatch", data=mock_data, params={"is_pending": is_pending})
     assert response.json() == DISPATCH_ID
     run_redispatch_mock.assert_called_once_with(
-        DISPATCH_ID, json_lattice, electron_updates, reuse_previous_results
+        DISPATCH_ID, json_lattice, electron_updates, reuse_previous_results, is_pending
     )
+
+
+def test_cancel_dispatch(mocker, app, client):
+    """
+    Test cancelling dispatch
+    """
+    mocker.patch("covalent_dispatcher.cancel_running_dispatch")
+    response = client.post(
+        "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
+    )
+    assert response.json() == f"Dispatch {DISPATCH_ID} cancelled."
+
+
+def test_cancel_tasks(mocker, app, client):
+    """
+    Test cancelling tasks within a lattice after dispatch
+    """
+    mocker.patch("covalent_dispatcher.cancel_running_dispatch")
+    response = client.post(
+        "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": [0, 1]})
+    )
+    assert response.json() == f"Cancelled tasks [0, 1] in dispatch {DISPATCH_ID}."
 
 
 @pytest.mark.asyncio
@@ -143,9 +172,11 @@ async def test_cancel(mocker, client):
     cancel_running_dispatch_mock = mocker.patch(
         "covalent_dispatcher.cancel_running_dispatch", return_value=DISPATCH_ID
     )
-    response = client.post("/api/cancel", data=DISPATCH_ID.encode("utf-8"))
+    response = client.post(
+        "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
+    )
     assert response.json() == f"Dispatch {DISPATCH_ID} cancelled."
-    cancel_running_dispatch_mock.assert_called_once_with(DISPATCH_ID)
+    cancel_running_dispatch_mock.assert_called_once_with(DISPATCH_ID, [])
 
 
 @pytest.mark.asyncio
@@ -154,10 +185,14 @@ async def test_cancel_exception(mocker, client):
     cancel_running_dispatch_mock = mocker.patch(
         "covalent_dispatcher.cancel_running_dispatch", side_effect=Exception("mock")
     )
-    response = client.post("/api/cancel", data=DISPATCH_ID.encode("utf-8"))
-    assert response.status_code == 400
-    assert response.json()["detail"] == "Failed to cancel workflow: mock"
-    cancel_running_dispatch_mock.assert_called_once_with(DISPATCH_ID)
+
+    with pytest.raises(Exception):
+        response = client.post(
+            "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
+        )
+        assert response.status_code == 400
+        assert response.json()["detail"] == "Failed to cancel workflow: mock"
+        cancel_running_dispatch_mock.assert_called_once_with(DISPATCH_ID, [])
 
 
 def test_get_result(mocker, client, test_db_file):
@@ -177,7 +212,7 @@ def test_get_result(mocker, client, test_db_file):
     response = client.get(f"/api/result/{DISPATCH_ID}")
     result = response.json()
     assert result["id"] == DISPATCH_ID
-    assert result["status"] == str(Result.COMPLETED)
+    assert result["status"] == Result.COMPLETED
     os.remove("/tmp/testdb.sqlite")
 
 

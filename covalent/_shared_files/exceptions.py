@@ -25,3 +25,11 @@ class MissingLatticeRecordError(Exception):
 
 class TaskRuntimeError(Exception):
     pass
+
+
+class TaskCancelledError(Exception):
+    pass
+
+
+class CommandNotFoundError(Exception):
+    pass

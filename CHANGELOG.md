@@ -7,12 +7,282 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Nightly frequency set to midnight EST 
+
+## [0.223.1-rc.0] - 2023-05-17
+
+### Authors
+
+- Janosh Riebesell <janosh.riebesell@gmail.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
 ### Fixed
 
-- Fixed ui-backend failing test cases.
+- only pin `aiohttp` downwards to fix install on Python 3.11 [#1654](https://github.com/AgnostiqHQ/covalent/pulls/1654)
+
+## [0.223.0-rc.0] - 2023-05-17
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Madhur Tandon <20173739+madhur-tandon@users.noreply.github.com>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Andrew S. Rosen <asrosen93@gmail.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+
+
+### Added
+
+- Added the `CloudResourceManager` class
+- A new tutorial for a dynamic quantum chemistry workflow
+
+### Tests
+
+- Added tests for the `CloudResourceManager` class
 
 ### Docs
 
+- Fix docstring for set_config
+- Redispatch feature page in Read the Docs.
+- Clarify installation instructions for SLURM plugin in Read the Docs (x2).
+- Fix waiting order of electrons in docs inside snippet for adding a dependency when inputs and outputs are independent.
+- Expose GCP Batch executor RTD.
+- Add GCP Batch executor image in RTD.
+
+### Fixed
+
+- DB path creation now takes place at import time so that the CLI commands don't fail
+- Raise error on dispatching a non-lattice
+- Helpful message when trying to dispatch a workflow when covalent server is not available
+- Open UI preview of transport graph when `lattice.draw()` is invoked and print URL of the same
+- Defer creation of server specific config entries until covalent is started
+- Functional tests on CI
+- Move dask worker space to covalent cache instead of `site-packages`
+
+### Docs
+
+- Updated Feature documentation for Triggers with an example and minor corrections
+
+### Removed
+
+- Duplicate mocks for `UI_SRVDIR`
+- Duplicate `_get_cancel_requested` method from `covalent_dispatcher/_core/runner.py`
+
+### Tests
+
+- Re-enable `test_run_workflow_does_not_deserialize`
+
+### Authors
+
+- Madhur Tandon <madhurtandon23@gmail.com>
+
+### Operations
+
+- Removed "already released" check from stable changelog action
+
+## [0.222.0-rc.0] - 2023-04-27
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+### Changed
+
+- Implementation of `TransportableObject` property method to be backwards compatible with version 0.209.1.
+
+### Tests
+
+- Updated QA stress test execution time baseline.
+
+## [0.221.1-rc.0] - 2023-04-26
+
+### Authors
+
+- Madhur Tandon <20173739+madhur-tandon@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Rob de Wit <RCdeWit@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+
+### Tests
+
+- Move QA scripts from QA repo to Covalent functional tests.
+
+### Docs
+
+- Update requirements file for the tutorials: `1_QuantumMachineLearning/pennylane_kernel/source.ipynb` and `machine_learning/dnn_comparison.ipynb`.
+- Add macOS 13 (Ventura) to [compatibility list](doc/source/getting_started/compatibility.rst).
+- Fixed broken links and typos in the documentation.
+
+### Authors
+
+- Madhur Tandon <madhurtandon23@gmail.com>
+
+### Fixed
+
+- Result status comparison
+- Raise error on extra args/kwargs
+- Fixed redispatching and trigger server address passing in base trigger
+
+## [0.221.0-rc.0] - 2023-04-17
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Changed
+
+- Moved TransportableObject from transport.py to a new file transportable_object.py.
+
+## [0.220.0-rc.0] - 2023-04-14
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- dwelsch-esi <116022979+dwelsch-esi@users.noreply.github.com>
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+
+
+### Operations
+
+- Updating `nightly` frequency (temp)
+
+### Added
+
+- Tutorial for hybrid neural network using Covalent, AWSBatch, and Qiskit Runtime.
+- Environment variable that users can set to specify the location where Covalent can find their defined executors.
+- Task group id in Electrons.
+- Reconstruct postprocessing method.
+
+### Fixed
+
+- Doubling of nodes that are added to the transport graph.
+- Ensure postprocessing node end time is added as the workflow end time.
+- Functional tests
+- Custom executor how to guide, and its loading mechanism in covalent server.
+- Broken postprocessing unit test.
+
+### Added
+
+- Postprocessing as electrons.
+- Postprocessing class in `postprocessing.py` module for all the different postprocessing helper methods and algorithms.
+
+### Changed
+
+- Postprocessing logic.
+- Sublattice logic. Sublattices are now treated as electrons. Once the transport graph has been built, the status get changed to `DISPATCHING` at which point it is executed as another workflow.
+
+### Removed
+
+- Postprocessing from runners.
+
+### Docs
+
+- Adding Google Batch executor plugin RTD
+
+### Docs
+
+- Updated How-to documents.
+- Port of Pennylane's Univariate QVR tutorial using Covalent to this repo.
+- Adding troubleshooting guide to RTD's
+- Added a note to First Experiment offering initial intro to executors.
+
+## [0.219.0-rc.0] - 2023-03-01
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+
+
+### Docs
+
+* Adding `cancellation` RTD text files
+
+### Added
+
+- `disable_run` option added to enable "saving-only" option on covalent server and not executing the workflow
+- `register_triggers`, `stop_triggers` functions added to `LocalDispatcher` class
+- `triggers` parameter to the lattice metadata
+- `BaseTrigger`, `DirTrigger`, `TimeTrigger` classes added available to be assigned to any lattice enabling the triggers feature
+- `TriggerLoader` class added enabling loading of any kind of triggers including user defined ones without requiring installation
+- CLI options to start covalent server in triggers only, and no triggers mode
+- `is_pending` option added during redispatch to resume execution of a previously "saved-only", i.e pending workflow
+- API routes added for Triggers server
+
+### Changed
+
+- Modified `ct.get_result` to allow for status only requests
+
+### Fixed
+
+- UI crashing if time values are null
+- No longer adding "http://" every time a dispatcher address is provided in local dispatcher class in order to use the provided address exactly
+
+### Docs
+
+- Added documentation for "Triggers" and a separate section for similar "Features"
+- Tutorial guidelines
+
+### Tests
+
+- Updated and added tests to account for all of the above triggers related changes
+
+### Operations
+
+- Lowering number of jest workers as an attempt to fix flaky UI functional tests
+- Added exception for nightly to pass if conda release fails
+
+## [0.218.0-rc.0] - 2023-02-21
+
+### Authors
+
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
+
+
+### Added
+
+- Added feature to support cancelling workflow dispatches
+- Updating/adding new tests to improve code coverage
+
+### Fixed
+
+- Redispatch bug involving copying reusable nodes from old transport graph to new transport graph.
+- Pennylane tutorial notebook.
+
+### Docs
+
+- Redispatch API section.
+- Add how to for redispatch.
+- Mention redispatch in the concepts section.
 - Update `AWS Lambda` executor RTD with steps to extend the base executor image for installing custom packages
 
 ### Changed
@@ -22,6 +292,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Updated pre-commit hook versions
+- Updated codecov upload steps in tests workflow to fail if upload to codecov fails
 
 ## [0.217.0-rc.0] - 2023-02-12
 

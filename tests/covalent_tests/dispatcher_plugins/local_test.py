@@ -24,6 +24,8 @@
 from unittest.mock import MagicMock
 
 import pytest
+from requests import Response
+from requests.exceptions import HTTPError
 
 import covalent as ct
 from covalent._dispatcher_plugins.local import LocalDispatcher, get_redispatch_request_body
@@ -72,11 +74,12 @@ def test_get_redispatch_request_body_args_kwargs(mocker):
     get_result_mock().lattice.build_graph.assert_called_once_with(*[1, 2], **{"a": 1, "b": 2})
 
 
+@pytest.mark.parametrize("is_pending", [True, False])
 @pytest.mark.parametrize(
     "replace_electrons,expected_arg",
     [(None, {}), ({"mock-electron-1": "mock-electron-2"}, {"mock-electron-1": "mock-electron-2"})],
 )
-def test_redispatch(mocker, replace_electrons, expected_arg):
+def test_redispatch(mocker, replace_electrons, expected_arg, is_pending):
     """Test the local re-dispatch function."""
 
     mocker.patch("covalent._dispatcher_plugins.local.get_config", return_value="mock-config")
@@ -87,12 +90,91 @@ def test_redispatch(mocker, replace_electrons, expected_arg):
     )
 
     local_dispatcher = LocalDispatcher()
-    func = local_dispatcher.redispatch("mock-dispatch-id", replace_electrons=replace_electrons)
+    func = local_dispatcher.redispatch(
+        "mock-dispatch-id", replace_electrons=replace_electrons, is_pending=is_pending
+    )
     func()
     requests_mock.post.assert_called_once_with(
-        "http://mock-config:mock-config/api/redispatch", json={"mock-request-body"}
+        "http://mock-config:mock-config/api/redispatch",
+        json={"mock-request-body"},
+        params={"is_pending": is_pending},
     )
     requests_mock.post().raise_for_status.assert_called_once()
     requests_mock.post().content.decode().strip().replace.assert_called_once_with('"', "")
 
     get_request_body_mock.assert_called_once_with("mock-dispatch-id", (), {}, expected_arg, False)
+
+
+def test_dispatching_a_non_lattice():
+    """test dispatching a non-lattice"""
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.electron
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    with pytest.raises(
+        TypeError, match="Dispatcher expected a Lattice, received <class 'function'> instead."
+    ):
+        LocalDispatcher.dispatch(workflow)(1, 2)
+
+
+def test_dispatch_when_no_server_is_running():
+    """test dispatching a lattice when no server is running"""
+
+    # the test suite is using another port, thus, with the dummy address below
+    # the covalent server is not running in some sense.
+    dummy_dispatcher_addr = "http://localhost:12345"
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    with pytest.raises(
+        ConnectionError,
+        match=f"The Covalent dispatcher server is not running at {dummy_dispatcher_addr}.",
+    ):
+        LocalDispatcher.dispatch(workflow, dispatcher_addr=dummy_dispatcher_addr)(1, 2)
+
+
+def test_dispatcher_submit_api(mocker):
+    """test dispatching a lattice with submit api"""
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    # test when api raises an implicit error
+    r = Response()
+    r.status_code = 404
+    r.url = "http://dummy"
+    r.reason = "dummy reason"
+
+    mocker.patch("covalent._dispatcher_plugins.local.requests.post", return_value=r)
+
+    with pytest.raises(HTTPError, match="404 Client Error: dummy reason for url: http://dummy"):
+        dispatch_id = LocalDispatcher.dispatch(workflow)(1, 2)
+        assert dispatch_id is None
+
+    # test when api doesn't raise an implicit error
+    r = Response()
+    r.status_code = 201
+    r.url = "http://dummy"
+    r._content = b"abcde"
+
+    mocker.patch("covalent._dispatcher_plugins.local.requests.post", return_value=r)
+
+    dispatch_id = LocalDispatcher.dispatch(workflow)(1, 2)
+    assert dispatch_id == "abcde"

@@ -42,6 +42,10 @@ Intermediate
      - :doc:`Variational parity classification<./1_QuantumMachineLearning/pennylane_parity_classifier/source>`
    * - Machine Learning
      - :doc:`Modeling time series for sales forecasting<./machine_learning/dnn_comparison>`
+   * - Machine Learning
+     - :doc:`Training a quantum-classical neural network<./qiskit_hybrid_neural_network/source>`
+   * - Quantum Chemistry
+     - :doc:`Dynamic quantum chemistry workflow<./3_QuantumChemistry/dynamic_quantum_chemistry/source>`
 
 ~~~~~~~~
 Advanced
@@ -70,7 +74,7 @@ Advanced
 
 ---------------------------------
 
-Do you use Covalent in an interesting project? Contribute a tutorial on `GitHub <https://github.com/AgnostiqHQ/covalent/issues>`_.  To get started, check out the :doc:`guide <tutorial_guide>`.
+Do you use Covalent in an interesting project? Contribute a tutorial on `GitHub <https://github.com/AgnostiqHQ/covalent/issues>`_.  To get started, check out the `Tutorial Guidelines <https://github.com/AgnostiqHQ/covalent/blob/develop/doc/TUTORIAL_GUIDELINES.md>`_.
 
 .. Hidden tutorials:
    * - Machine Learning

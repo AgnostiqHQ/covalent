@@ -8,7 +8,7 @@ File and Data Transfer
 Basic File transfer interface
 ********************************
 
-File Transfer from (source) and to (destination) local or remote files prior/post electron execution. Instances are are provided to `files` keyword argument in an electron decorator.
+File Transfer from (source) and to (destination) local or remote files prior/post electron execution. Instances are provided to `files` keyword argument in an electron decorator.
 
 
 .. automodule:: covalent.fs

@@ -26,12 +26,12 @@ from typing import Any, Union
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
+from covalent._shared_files.defaults import postprocess_prefix
 from covalent._shared_files.util_classes import Status
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import _TransportGraph
 
 from . import upsert
-from .write_result_to_db import upsert_electron_dependency_data
 
 app_log = logger.app_log
 
@@ -47,11 +47,8 @@ def persist(record: Union[Result, Lattice, _TransportGraph], electron_id: int = 
     """
     if isinstance(record, Result):
         _initialize_results_dir(record)
-        app_log.debug("upsert start")
-        upsert._lattice_data(record, electron_id=electron_id)
-        upsert._electron_data(record)
-        app_log.debug("upsert complete")
-        upsert_electron_dependency_data(record.dispatch_id, record.lattice)
+        app_log.debug("Persisting record...")
+        upsert.persist_result(record, electron_id)
         app_log.debug("persist complete")
     if isinstance(record, Lattice):
         persist(record.transport_graph)
@@ -83,15 +80,18 @@ def _node(
         start_time: The start time of the node execution.
         end_time: The end time of the node execution.
         status: The status of the node execution.
-        output: The output of the node unless error occured in which case None.
-        error: The error of the node if occured else None.
+        output: The output of the node unless error occurred in which case None.
+        error: The error of the node if occurred else None.
         sublattice_result: The result of the sublattice if any.
         stdout: The stdout of the node execution.
         stderr: The stderr of the node execution.
 
     Returns:
         None
+
     """
+    if node_name is None:
+        node_name = result.lattice.transport_graph.get_node_value(node_id, "name")
 
     result._update_node(
         node_id=node_id,
@@ -107,7 +107,14 @@ def _node(
         stderr=stderr,
     )
 
-    upsert._electron_data(result)
+    upsert.electron_data(result)
+
+    if node_name.startswith(postprocess_prefix):
+        app_log.warning(f"Persisting postprocess result {output}, node_name: {node_name}")
+        result._result = output
+        result._status = status
+        result._end_time = end_time
+        upsert.lattice_data(result)
 
 
 def _initialize_results_dir(result):

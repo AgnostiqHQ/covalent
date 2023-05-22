@@ -237,9 +237,6 @@ def test_process_lattice():
     assert lattice.metadata["call_after"] == []
 
 
-2
-
-
 def test_process_result_object():
     """Test process_result_object"""
 

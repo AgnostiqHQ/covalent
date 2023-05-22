@@ -234,6 +234,7 @@ jobs:
   conda:
     needs: pypi
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       fail-fast: false
       matrix:

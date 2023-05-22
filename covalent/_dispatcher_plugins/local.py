@@ -18,18 +18,24 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import json
 from copy import deepcopy
 from functools import wraps
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Union
 
 import requests
 
 from .._results_manager import wait
 from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result
+from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._workflow.lattice import Lattice
+from ..triggers import BaseTrigger
 from .base import BaseDispatcher
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
 
 
 def get_redispatch_request_body(
@@ -73,6 +79,7 @@ class LocalDispatcher(BaseDispatcher):
     def dispatch(
         orig_lattice: Lattice,
         dispatcher_addr: str = None,
+        disable_run: bool = False,
     ) -> Callable:
         """
         Wrapping the dispatching functionality to allow input passing
@@ -83,7 +90,8 @@ class LocalDispatcher(BaseDispatcher):
 
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
-            dispatcher_addr: The address of the dispatcher server.  If None then then defaults to the address set in Covalent's config.
+            dispatcher_addr: The address of the dispatcher server.  If None then defaults to the address set in Covalent's config.
+            disable_run: Whether to disable running the workflow and rather just save it on Covalent's server for later execution
 
         Returns:
             Wrapper function which takes the inputs of the workflow as arguments
@@ -91,7 +99,10 @@ class LocalDispatcher(BaseDispatcher):
 
         if dispatcher_addr is None:
             dispatcher_addr = (
-                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+                "http://"
+                + get_config("dispatcher.address")
+                + ":"
+                + str(get_config("dispatcher.port"))
             )
 
         @wraps(orig_lattice)
@@ -108,6 +119,14 @@ class LocalDispatcher(BaseDispatcher):
                 The dispatch id of the workflow.
             """
 
+            # To access the disable_run passed to the dispatch function
+            nonlocal disable_run
+
+            if not isinstance(orig_lattice, Lattice):
+                message = f"Dispatcher expected a Lattice, received {type(orig_lattice)} instead."
+                app_log.error(message)
+                raise TypeError(message)
+
             lattice = deepcopy(orig_lattice)
 
             lattice.build_graph(*args, **kwargs)
@@ -115,11 +134,36 @@ class LocalDispatcher(BaseDispatcher):
             # Serialize the transport graph to JSON
             json_lattice = lattice.serialize_to_json()
 
-            test_url = f"http://{dispatcher_addr}/api/submit"
+            # Extract triggers here
+            json_lattice = json.loads(json_lattice)
+            triggers_data = json_lattice["metadata"].pop("triggers")
 
-            r = requests.post(test_url, data=json_lattice)
-            r.raise_for_status()
-            return r.content.decode("utf-8").strip().replace('"', "")
+            if not disable_run:
+                # Determine whether to disable first run based on trigger_data
+                disable_run = triggers_data is not None
+
+            json_lattice = json.dumps(json_lattice)
+
+            submit_dispatch_url = f"{dispatcher_addr}/api/submit"
+
+            lattice_dispatch_id = None
+            try:
+                r = requests.post(
+                    submit_dispatch_url, data=json_lattice, params={"disable_run": disable_run}
+                )
+                r.raise_for_status()
+                lattice_dispatch_id = r.content.decode("utf-8").strip().replace('"', "")
+            except requests.exceptions.ConnectionError as e:
+                message = f"The Covalent dispatcher server is not running at {dispatcher_addr}. You must start Covalent (with `covalent start`) before dispatching your workflow."
+                app_log.error(message)
+                raise ConnectionError(message) from e
+
+            if not disable_run or triggers_data is None:
+                return lattice_dispatch_id
+
+            LocalDispatcher.register_triggers(triggers_data, lattice_dispatch_id)
+
+            return lattice_dispatch_id
 
         return wrapper
 
@@ -137,15 +181,18 @@ class LocalDispatcher(BaseDispatcher):
 
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
-            dispatcher_addr: The address of the dispatcher server. If None then then defaults to the address set in Covalent's config.
+            dispatcher_addr: The address of the dispatcher server. If None then defaults to the address set in Covalent's config.
 
         Returns:
-            Wrapper function which takes the inputs of the workflow as arguments
+            Wrapper function which takes the inputs of the workflow as arguments.
         """
 
         if dispatcher_addr is None:
             dispatcher_addr = (
-                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+                "http://"
+                + get_config("dispatcher.address")
+                + ":"
+                + str(get_config("dispatcher.port"))
             )
 
         @wraps(lattice)
@@ -175,23 +222,104 @@ class LocalDispatcher(BaseDispatcher):
         dispatcher_addr: str = None,
         replace_electrons: Dict[str, Callable] = None,
         reuse_previous_results: bool = False,
+        is_pending: bool = False,
     ) -> Callable:
+        """
+        Wrapping the dispatching functionality to allow input passing and server address specification.
+
+        Args:
+            dispatch_id: The dispatch id of the workflow to re-dispatch.
+            dispatcher_addr: The address of the dispatcher server. If None then then defaults to the address set in Covalent's config.
+            replace_electrons: A dictionary of electron names and the new electron to replace them with.
+            reuse_previous_results: Boolean value whether to reuse the results from the previous dispatch.
+
+        Returns:
+            Wrapper function which takes the inputs of the workflow as arguments.
+        """
+
         if dispatcher_addr is None:
             dispatcher_addr = (
-                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+                "http://"
+                + get_config("dispatcher.address")
+                + ":"
+                + str(get_config("dispatcher.port"))
             )
 
         if replace_electrons is None:
             replace_electrons = {}
 
         def func(*new_args, **new_kwargs):
+            """
+            Prepare the redispatch request body and redispatch the workflow.
+
+            Args:
+                *args: The inputs of the workflow.
+                **kwargs: The keyword arguments of the workflow.
+
+            Returns:
+                The result of the executed workflow.
+
+            """
             body = get_redispatch_request_body(
                 dispatch_id, new_args, new_kwargs, replace_electrons, reuse_previous_results
             )
-
-            test_url = f"http://{dispatcher_addr}/api/redispatch"
-            r = requests.post(test_url, json=body)
+            redispatch_url = f"{dispatcher_addr}/api/redispatch"
+            r = requests.post(redispatch_url, json=body, params={"is_pending": is_pending})
             r.raise_for_status()
             return r.content.decode("utf-8").strip().replace('"', "")
 
         return func
+
+    @staticmethod
+    def register_triggers(triggers_data: List[Dict], dispatch_id: str) -> None:
+        """
+        Register the given triggers to the Triggers server.
+        Register also starts the `observe()` method of said trigger.
+        This is done by calling `BaseTrigger._register` method
+        with the given trigger dictionary and is equivalent to
+        calling the trigger objects `register()` method.
+
+        Args:
+            triggers_data: List of trigger dictionaries to be registered
+            dispatch_id: Lattice's dispatch id to be linked with given triggers
+
+        Returns:
+            None
+        """
+
+        for tr_dict in triggers_data:
+            tr_dict["lattice_dispatch_id"] = dispatch_id
+            BaseTrigger._register(tr_dict)
+
+    @staticmethod
+    def stop_triggers(
+        dispatch_ids: Union[str, List[str]], triggers_server_addr: str = None
+    ) -> None:
+        """
+        Stop observing on all triggers of all given dispatch ids registered on the Triggers server.
+        Args:
+            dispatch_ids: Dispatch ID(s) for whose triggers are to be stopped
+            triggers_server_addr: Address of the Triggers server; configured dispatcher's address is used as default
+        Returns:
+            None
+        """
+
+        if triggers_server_addr is None:
+            triggers_server_addr = (
+                "http://"
+                + get_config("dispatcher.address")
+                + ":"
+                + str(get_config("dispatcher.port"))
+            )
+
+        stop_triggers_url = f"{triggers_server_addr}/api/triggers/stop_observe"
+
+        if isinstance(dispatch_ids, str):
+            dispatch_ids = [dispatch_ids]
+
+        r = requests.post(stop_triggers_url, json=dispatch_ids)
+        r.raise_for_status()
+
+        app_log.debug("Triggers for following dispatch_ids have stopped observing:")
+        for d_id in dispatch_ids:
+            app_log.debug(d_id)
