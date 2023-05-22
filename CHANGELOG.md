@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- `executor` property to `Electron` class, allowing updation of executor after electron function definition
+
 ### Operations
 
 - Nightly frequency set to midnight EST 
