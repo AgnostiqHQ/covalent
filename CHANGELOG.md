@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Added ability to hide post-processing electrons.
+- Added prettify of names for the graph screen.
+
 ### Operations
 
 - Nightly frequency set to midnight EST 
