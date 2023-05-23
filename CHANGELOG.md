@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Resolving correct python executable
+
 ### Added
 
-- Added ability to hide post-processing electrons.
-- Added prettify of names for the graph screen.
+- `executor` property to `Electron` class, allowing updation of executor after electron function definition
+- Added ability to hide post-processing electrons on the UI.
+- Added prettify of names for the graph screen on the UI.
 
 ### Operations
 
