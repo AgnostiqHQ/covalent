@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Resolving correct python executable
+
 ### Added
 
 - `executor` property to `Electron` class, allowing updation of executor after electron function definition
