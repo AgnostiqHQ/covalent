@@ -25,7 +25,6 @@ This is a plugin executor module; it is loaded if found and properly structured.
 """
 
 import asyncio
-import json
 import os
 from concurrent.futures import ProcessPoolExecutor
 from typing import Any, Callable, Dict, List
@@ -130,6 +129,18 @@ class LocalExecutor(BaseExecutor):
             task_group_metadata,
             server_url,
         )
+
+        def handle_cancelled(fut):
+            import requests
+
+            app_log.debug(f"In done callback for {dispatch_id}:{gid}, future {fut}")
+            if fut.cancelled():
+                for task_id in task_ids:
+                    url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}/cancelled"
+                    requests.put(url)
+
+        future.add_done_callback(handle_cancelled)
+
         return 42
 
     def _receive(self, task_group_metadata: Dict, data: Any):
@@ -147,35 +158,27 @@ class LocalExecutor(BaseExecutor):
 
         for task_id in task_ids:
             # Handle the case where the job was cancelled before the task started running
-            result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
-            with open(result_path, "r") as f:
-                result_summary = json.load(f)
-                node_id = result_summary["node_id"]
-                output_uri = ""
-                stdout_uri = ""
-                stderr_uri = ""
-                exception_raised = result_summary["exception_occurred"]
+            app_log.debug(f"Receive called for task {dispatch_id}:{task_id} with status {data}")
 
-                terminal_status = (
-                    RESULT_STATUS.FAILED if exception_raised else RESULT_STATUS.COMPLETED
-                )
+            terminal_status = data["status"] if data else RESULT_STATUS.CANCELLED
 
-                task_result = {
-                    "dispatch_id": dispatch_id,
-                    "node_id": task_id,
-                    "status": terminal_status,
-                    "assets": {
-                        "output": {
-                            "remote_uri": "",
-                        },
-                        "stdout": {
-                            "remote_uri": "",
-                        },
-                        "stderr": {
-                            "remote_uri": "",
-                        },
+            task_result = {
+                "dispatch_id": dispatch_id,
+                "node_id": task_id,
+                "status": terminal_status,
+                "assets": {
+                    "output": {
+                        "remote_uri": "",
                     },
-                }
+                    "stdout": {
+                        "remote_uri": "",
+                    },
+                    "stderr": {
+                        "remote_uri": "",
+                    },
+                },
+            }
+
             task_results.append(task_result)
 
         app_log.debug(f"Returning results for tasks {dispatch_id}:{task_ids}")
