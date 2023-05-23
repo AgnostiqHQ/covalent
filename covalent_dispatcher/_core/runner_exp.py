@@ -174,6 +174,17 @@ async def _submit_abstract_task_group(
 
 
 async def _get_task_result(task_group_metadata: Dict, data: Any):
+    """Retrieve task results from executor.
+
+    Parameters:
+        task_group_metadata: metadata about the task group
+        data: task execution information (such as status)
+
+    Both `task_group_metadata` and `data` will be passed directly to
+    Executor.receive().
+
+    """
+
     dispatch_id = task_group_metadata["dispatch_id"]
     task_ids = task_group_metadata["task_ids"]
     gid = task_group_metadata["task_group_id"]
@@ -182,7 +193,12 @@ async def _get_task_result(task_group_metadata: Dict, data: Any):
         executor_name = await datamgr.get_electron_attribute(dispatch_id, gid, "executor")
         executor_data = await datamgr.get_electron_attribute(dispatch_id, gid, "executor_data")
 
-        executor = get_executor(gid, [executor_name, executor_data])
+        executor = get_executor(
+            node_id=gid,
+            selected_executor=[executor_name, executor_data],
+            loop=asyncio.get_running_loop(),
+            pool=None,
+        )
 
         task_group_results = await executor.receive(task_group_metadata, data)
 
@@ -242,7 +258,12 @@ async def run_abstract_task_group(
         app_log.debug(f"Attempting to instantiate executor {selected_executor}")
         task_ids = [task["function_id"] for task in task_seq]
         app_log.debug(f"Running task group {dispatch_id}:{task_group_id}")
-        executor = get_executor(task_group_id, selected_executor)
+        executor = get_executor(
+            node_id=task_group_id,
+            selected_executor=selected_executor,
+            loop=asyncio.get_running_loop(),
+            pool=None,
+        )
 
         # Check if the job should be cancelled
         if await jobs.get_cancel_requested(dispatch_id, task_ids[0]):

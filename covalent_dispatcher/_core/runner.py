@@ -153,7 +153,12 @@ async def _run_task(
     # Instantiate the executor from JSON
     try:
         app_log.debug(f"Instantiating executor for {dispatch_id}:{node_id}")
-        executor = get_executor(node_id, selected_executor)
+        executor = get_executor(
+            node_id=node_id,
+            selected_executor=selected_executor,
+            loop=asyncio.get_running_loop(),
+            pool=None,
+        )
     except Exception as ex:
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
         app_log.debug("Exception when trying to instantiate executor:")
