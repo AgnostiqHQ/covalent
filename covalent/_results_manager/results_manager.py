@@ -74,6 +74,9 @@ def get_result(
 
         raise ex
 
+    except requests.exceptions.ConnectionError:
+        return None
+
     return result
 
 
@@ -117,10 +120,10 @@ def _get_result_from_dispatcher(
             params={"wait": bool(int(wait)), "status_only": status_only},
             timeout=5,
         )
-    except requests.exceptions.Timeout:
+    except requests.exceptions.ConnectionError:
         message = f"The Covalent server cannot be reached at {dispatcher_addr}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
         print(message)
-        return
+        raise
 
     if response.status_code == 404:
         raise MissingLatticeRecordError
