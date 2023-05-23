@@ -39,14 +39,13 @@ import { resetElectronState } from '../../redux/electronSlice'
 import DispatchTopBar from './DispatchTopBar'
 import DispatchDrawerContents from './DispatchDrawerContents'
 
-export function DispatchLayout() {
+function DispatchLayout() {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
   const graph_result = useSelector((state) => state.graphResults.graphList)
   const latDetailError = useSelector(
     (state) => state.latticeResults.latticeDetailsResults.error
   )
-
   const sublatticesDispatchId = useSelector(
     (state) => state.latticeResults.sublatticesId
   )
@@ -83,25 +82,16 @@ export function DispatchLayout() {
     (actions) => actions.setSelectedElements
   )
 
-  const UUID_PATTERN =
-    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
-
   // unselect on change of dispatch
   useEffect(() => {
     setSelectedElements([])
   }, [dispatchId, setSelectedElements, sublatticesDispatchId])
 
   // dispatch id not found
-  // if (latDetailError !== null && latDetailError.status === 400) {
-  //   return <NotFound />
-  // }
-  return latDetailError?.detail?.length > 0 ? (
-    dispatchId.length < 10 && !UUID_PATTERN.test(dispatchId) ? (
-      <NotFound />
-    ) : (
-      <NotFound text="Lattice dispatch not found." />
-    )
-  ) : (
+  if (latDetailError !== null && latDetailError.status === 400) {
+    return <NotFound text="Lattice dispatch not found." />
+  }
+  return (
     <>
       <DispatchTopBar />
       <Box
@@ -143,14 +133,13 @@ export function DispatchLayout() {
   )
 }
 
-// const UUID_PATTERN =
-//   /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
+const UUID_PATTERN =
+  /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/
 
-// export const DispatchLayoutValidate = () => {
-//   let { dispatchId } = useParams()
-//   console.log(!UUID_PATTERN.test(dispatchId), 'jj')
-//   if (!UUID_PATTERN.test(dispatchId)) {
-//     return <NotFound text="Lattice dispatch not found." />
-//   }
-//   return <DispatchLayout />
-// }
+export function DispatchLayoutValidate () {
+  let { dispatchId } = useParams()
+  if (!UUID_PATTERN.test(dispatchId)) {
+    return <NotFound text="Lattice dispatch not found." />
+  }
+  return <DispatchLayout />
+}
