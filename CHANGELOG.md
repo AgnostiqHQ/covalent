@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `executor` property to `Electron` class, allowing updation of executor after electron function definition
+- Added ability to hide post-processing electrons on the UI.
+- Added prettify of names for the graph screen on the UI.
 
 ### Operations
 
