@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Error messages are propagated to stdout when the server is not started
+
 ### Fixed
 
 - Resolving correct python executable
