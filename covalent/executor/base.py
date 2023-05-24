@@ -162,7 +162,6 @@ class _AbstractBaseExecutor(ABC):
         return active_dispatch_info_manager.claim(dispatch_info)
 
     def short_name(self):
-        module = self.__module__
         return self.__module__.split("/")[-1].split(".")[-1]
 
     def to_dict(self) -> dict:
