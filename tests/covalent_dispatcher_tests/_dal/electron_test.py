@@ -137,7 +137,8 @@ def test_electron_get_set_value(test_db, mocker):
         e.set_value("status", SDKResult.RUNNING, session)
         assert e.get_value("status", session) == SDKResult.RUNNING
 
-    e.set_values([("output", 5), ("status", SDKResult.COMPLETED)])
+    e.set_value("output", 5)
+    e.set_value("status", SDKResult.COMPLETED)
     assert e.get_value("output") == 5
     assert e.get_value("status") == SDKResult.COMPLETED
 

@@ -87,12 +87,6 @@ class _TransportGraph:
         nodes = self.get_nodes(node_ids=node_ids, session=session)
         return list(map(lambda n: n.get_values(keys, session, refresh), nodes))
 
-    def set_node_values(
-        self, node_id: int, keyvals: List[Tuple[str, Any]], session: Session = None
-    ):
-        node = self.get_node(node_id, session)
-        node.set_values(keyvals, session)
-
     def set_node_value(self, node_id: int, key: str, val: Any, session: Session = None):
         node = self.get_node(node_id, session)
         node.set_value(key, val, session)

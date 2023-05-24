@@ -131,7 +131,8 @@ def test_transport_graph_get_set(bare_mode, test_db, mocker):
     assert tg.get_node_value(1, "status") == SDKResult.COMPLETED
 
     ts = datetime.now()
-    tg.set_node_values(0, [("end_time", ts), ("status", SDKResult.COMPLETED)])
+    tg.set_node_value(0, "end_time", ts)
+    tg.set_node_value(0, "status", SDKResult.COMPLETED)
     assert tg.get_node_value(0, "status") == SDKResult.COMPLETED
     assert tg.get_node_value(0, "end_time") == ts
 

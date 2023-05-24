@@ -21,8 +21,7 @@
 """Base classe for server-side analogues of workflow data types"""
 
 from abc import ABC, abstractmethod
-from contextlib import contextmanager
-from typing import Any, Dict, Generator, List, Tuple, Union
+from typing import Any, Dict, Generator, List, Union
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session, load_only
@@ -63,10 +62,8 @@ class DispatchedObject(ABC):
         return {}
 
     @classmethod
-    @contextmanager
     def session(cls) -> Generator[Session, None, None]:
-        with workflow_db.session() as session:
-            yield session
+        return workflow_db.session()
 
     def get_asset_ids(self, session: Session, keys: List[str]) -> Dict[str, int]:
         membership_filters = {"key": keys} if len(keys) > 0 else {}
@@ -159,11 +156,6 @@ class DispatchedObject(ABC):
 
     def get_values(self, keys: List[str], session: Session = None, refresh: bool = True) -> Dict:
         return {key: self.get_value(key, session, refresh) for key in keys}
-
-    def set_values(self, keyvals: List[Tuple[str, Any]], session: Session = None):
-        for item in keyvals:
-            k, v = item
-            self.set_value(k, v, session)
 
     @classmethod
     def get_db_records(
