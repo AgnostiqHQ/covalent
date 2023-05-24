@@ -58,11 +58,23 @@ import {
   electronError,
   electronInput,
 } from '../../redux/electronSlice'
-import { Prettify } from '../../utils/misc'
+import QElectronCard from './QElectronCard'
 
 export const nodeDrawerWidth = 360
 
-const NodeDrawer = ({ node, dispatchId, prettify }) => {
+const qElectronDetails = {
+  title: 'qelectrons',
+  quantam_calls: 250,
+  avg_time_ofcall: 12,
+}
+
+const NodeDrawer = ({
+  node,
+  dispatchId,
+  toggleQelectron,
+  openQelectronDrawer,
+  setOpenQelectronDrawer,
+}) => {
   const dispatch = useDispatch()
   const electronId = node !== undefined && node.node_id
   const electronDetail = useSelector(
@@ -123,6 +135,7 @@ const NodeDrawer = ({ node, dispatchId, prettify }) => {
   )
 
   const handleClose = () => {
+    setOpenQelectronDrawer(false)
     setSelectedElements([])
   }
 
@@ -333,6 +346,11 @@ const NodeDrawer = ({ node, dispatchId, prettify }) => {
               </Paper>
             </>
           )}
+          <QElectronCard
+            qElectronDetails={qElectronDetails}
+            openQelectronDrawer={openQelectronDrawer}
+            toggleQelectron={toggleQelectron}
+          />
         </>
       )}
     </Drawer>

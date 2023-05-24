@@ -33,6 +33,9 @@ const defaultTheme = createTheme({
   typography: {
     fontFamily: '"DM Sans", "Helvetica", "Arial", sans-serif',
     logsFont: '"Inter", "Arial", sans-serif',
+    sidebarh1: '1rem',
+    sidebarh2: '0.875rem',
+    sidebarh3: '0.75rem',
   },
   palette: {
     mode: 'dark',
@@ -43,6 +46,8 @@ const defaultTheme = createTheme({
       blue04: '#6473FF',
       white: '#ffff',
       highlightBlue: '#1B2632',
+      grey: '#AEB6FF4D',
+      blue02: '#323267',
     },
     secondary: {
       light: '#DAC3FF',
@@ -58,7 +63,8 @@ const defaultTheme = createTheme({
       darkblackbg: '#101820',
       buttonBg: '#10102C',
       executorBg: '#1E1E2E',
-      outRunBg:'#0B0B11'
+      outRunBg: '#0B0B11',
+      qelectronbg: '#30306780',
     },
     error: {
       main: '#FF6464',
