@@ -39,7 +39,7 @@ import { resetElectronState } from '../../redux/electronSlice'
 import DispatchTopBar from './DispatchTopBar'
 import DispatchDrawerContents from './DispatchDrawerContents'
 
-function DispatchLayout() {
+export function DispatchLayout() {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
   const graph_result = useSelector((state) => state.graphResults.graphList)
