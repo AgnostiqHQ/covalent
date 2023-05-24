@@ -21,7 +21,7 @@
  */
 
 import _ from 'lodash'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Box } from '@mui/material'
 import { useDispatch, useSelector } from 'react-redux'
 import { useStoreActions, useStoreState } from 'react-flow-renderer'
@@ -38,10 +38,12 @@ import { resetLatticeState } from '../../redux/latticeSlice'
 import { resetElectronState } from '../../redux/electronSlice'
 import DispatchTopBar from './DispatchTopBar'
 import DispatchDrawerContents from './DispatchDrawerContents'
+import QElectronDrawer from '../common/QElectronDrawer'
 
 export function DispatchLayout() {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
+  const [openQelectronDrawer, setOpenQelectronDrawer] = useState(false)
   const graph_result = useSelector((state) => state.graphResults.graphList)
   const latDetailError = useSelector(
     (state) => state.latticeResults.latticeDetailsResults.error
@@ -91,6 +93,7 @@ export function DispatchLayout() {
   if (latDetailError !== null && latDetailError.status === 400) {
     return <NotFound text="Lattice dispatch not found." />
   }
+
   return (
     <>
       <DispatchTopBar />
@@ -116,8 +119,18 @@ export function DispatchLayout() {
       <LatticeDrawer>
         <DispatchDrawerContents />
       </LatticeDrawer>
+
+      {
+        <QElectronDrawer
+          toggleQelectron={() => setOpenQelectronDrawer((prev) => !prev)}
+          openQelectronDrawer={openQelectronDrawer}
+        />
+      }
       {Object.keys(graph_result).length !== 0 ? (
         <NodeDrawer
+          setOpenQelectronDrawer={setOpenQelectronDrawer}
+          toggleQelectron={() => setOpenQelectronDrawer((prev) => !prev)}
+          openQelectronDrawer={openQelectronDrawer}
           node={selectedElectron}
           graph={graph_result}
           dispatchId={
