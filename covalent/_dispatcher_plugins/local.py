@@ -156,7 +156,7 @@ class LocalDispatcher(BaseDispatcher):
                 )
                 r.raise_for_status()
                 lattice_dispatch_id = r.content.decode("utf-8").strip().replace('"', "")
-            except requests.exceptions.Timeout:
+            except requests.exceptions.ConnectionError:
                 message = f"The Covalent server cannot be reached at {dispatcher_addr}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
                 print(message)
                 return
@@ -272,7 +272,7 @@ class LocalDispatcher(BaseDispatcher):
                     redispatch_url, json=body, params={"is_pending": is_pending}, timeout=5
                 )
                 r.raise_for_status()
-            except requests.exceptions.Timeout:
+            except requests.exceptions.ConnectionError:
                 message = f"The Covalent server cannot be reached at {dispatcher_addr}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
                 print(message)
                 return
