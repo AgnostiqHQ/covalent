@@ -18,7 +18,7 @@ To use this plugin with Covalent, simply install it using :code:`pip`:
 
 .. code:: bash
 
-    pip install covalent-gpcbatch-plugin
+    pip install covalent-gcpbatch-plugin
 
 
 ===========================================
