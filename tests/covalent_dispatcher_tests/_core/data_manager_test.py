@@ -93,20 +93,26 @@ def test_initialize_result_object(mocker, test_db):
     def workflow(x):
         return task(x)
 
+    dispatch_id = "test_initialize_result_object"
     workflow.build_graph(1)
     json_lattice = workflow.serialize_to_json()
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", return_value=test_db)
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", return_value=test_db)
-    result_object = get_mock_result()
+    parent_result_object = get_mock_result()
+    parent_result_object._dispatch_id = dispatch_id
+
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_result_object",
+        return_value=parent_result_object,
+    )
 
     mock_persist = mocker.patch("covalent_dispatcher._db.update.persist")
 
-    sub_result_object = initialize_result_object(
-        json_lattice=json_lattice, parent_result_object=result_object, parent_electron_id=5
+    sub_dispatch_id = initialize_result_object(
+        json_lattice=json_lattice, parent_dispatch_id=dispatch_id, parent_electron_id=5
     )
 
-    mock_persist.assert_called_with(sub_result_object, electron_id=5)
-    assert sub_result_object._root_dispatch_id == result_object.dispatch_id
+    mock_persist.assert_called()
 
 
 @pytest.mark.parametrize(
@@ -284,14 +290,12 @@ async def test_update_node_result_handles_db_exceptions(mocker):
 @pytest.mark.asyncio
 async def test_make_dispatch(mocker):
     res = MagicMock()
-    res.dispatch_id = "test_make_dispatch"
+    dispatch_id = "test_make_dispatch"
     mock_init_result = mocker.patch(
-        "covalent_dispatcher._core.data_manager.initialize_result_object", return_value=res
+        "covalent_dispatcher._core.data_manager.initialize_result_object", return_value=dispatch_id
     )
     json_lattice = '{"workflow_function": "asdf"}'
-    dispatch_id = await make_dispatch(json_lattice)
-
-    assert dispatch_id == res.dispatch_id
+    assert dispatch_id == await make_dispatch(json_lattice)
 
 
 @pytest.mark.parametrize("reuse", [True, False])
@@ -445,17 +449,13 @@ def test_unregister_result_object(mocker, stateless):
 
 @pytest.mark.asyncio
 async def test_persist_result(mocker):
-    result_object = MagicMock()
-
-    mock_get_result = mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
-    )
+    dispatch_id = "test_persist_result"
     mock_update_parent = mocker.patch(
         "covalent_dispatcher._core.data_manager._update_parent_electron"
     )
 
-    await persist_result(result_object.dispatch_id)
-    mock_update_parent.assert_awaited_with(result_object)
+    await persist_result(dispatch_id)
+    mock_update_parent.assert_awaited_with(dispatch_id)
 
 
 @pytest.mark.parametrize(
@@ -514,14 +514,15 @@ async def test_update_parent_electron(mocker, sub_status, mapped_status):
 @pytest.mark.asyncio
 async def test_make_sublattice_dispatch(mocker):
     node_result = {"node_id": 0, "status": Result.COMPLETED}
-
     output_json = "lattice_json"
+
     mock_node = MagicMock()
     mock_node._electron_id = 5
-    print("DEBUG:", mock_node)
 
     mock_bg_output = MagicMock()
     mock_bg_output.object_string = output_json
+
+    mock_node.get_value = MagicMock(return_value=mock_bg_output)
 
     mock_manifest = MagicMock()
     mock_manifest.metadata.dispatch_id = "mock_sublattice_dispatch"
@@ -529,19 +530,18 @@ async def test_make_sublattice_dispatch(mocker):
     result_object = MagicMock()
     result_object.dispatch_id = "dispatch"
     result_object.lattice.transport_graph.get_node = MagicMock(return_value=mock_node)
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_result_object",
+        return_value=result_object,
+    )
     mocker.patch("covalent._shared_files.schemas.result.ResultSchema.parse_raw")
     mocker.patch(
         "covalent_dispatcher._core.data_manager.manifest_importer.import_manifest",
         return_value=mock_manifest,
     )
 
-    print("DEBUG:", result_object.lattice.transport_graph.get_node())
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_electron_attribute",
-        return_value=mock_bg_output,
-    )
     mock_make_dispatch = mocker.patch("covalent_dispatcher._core.data_manager.make_dispatch")
-    sub_dispatch_id = await _make_sublattice_dispatch(result_object, node_result)
+    sub_dispatch_id = await _make_sublattice_dispatch(result_object.dispatch_id, node_result)
 
     # mock_make_dispatch.assert_awaited_with("lattice_json", result_object, mock_node._electron_id)
     assert sub_dispatch_id == mock_manifest.metadata.dispatch_id

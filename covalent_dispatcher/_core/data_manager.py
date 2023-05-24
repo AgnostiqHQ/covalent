@@ -22,7 +22,6 @@
 Defines the core functionality of the result service
 """
 
-import functools
 import traceback
 import uuid
 from typing import Any, Callable, Dict, List, Optional
@@ -90,10 +89,8 @@ async def update_node_result(dispatch_id, node_result):
         node_result = await _filter_sublattice_status(
             dispatch_id, node_id, node_status, node_type, sub_dispatch_id, node_result
         )
-        result_object = await run_in_executor(get_result_object, dispatch_id, True)
-        update_partial = functools.partial(result_object._update_node, **node_result)
 
-        valid_update = await run_in_executor(update_partial)
+        valid_update = await run_in_executor(_update_node, dispatch_id, node_result)
         if not valid_update:
             app_log.warning(
                 f"Invalid status update {node_status} for node {dispatch_id}:{node_id}"
@@ -103,13 +100,12 @@ async def update_node_result(dispatch_id, node_result):
         if node_result["status"] == RESULT_STATUS.DISPATCHING:
             app_log.debug("Received sublattice dispatch")
             try:
-                sub_dispatch_id = await _make_sublattice_dispatch(result_object, node_result)
+                sub_dispatch_id = await _make_sublattice_dispatch(dispatch_id, node_result)
             except Exception as ex:
                 tb = "".join(traceback.TracebackException.from_exception(ex).format())
                 node_result["status"] = RESULT_STATUS.FAILED
                 node_result["error"] = tb
-                update_partial = functools.partial(result_object._update_node, **node_result)
-                await run_in_executor(update_partial)
+                await run_in_executor(_update_node, dispatch_id, node_result)
 
     except KeyError as ex:
         valid_update = False
@@ -133,15 +129,21 @@ async def update_node_result(dispatch_id, node_result):
             await dispatcher.notify_node_status(dispatch_id, node_id, node_status, detail)
 
 
+# To be run in a threadpool; move this to a static method of Result
+def _update_node(dispatch_id: str, node_result: Dict):
+    result_object = get_result_object(dispatch_id, bare=True)
+    return result_object._update_node(**node_result)
+
+
 # Domain: result
 def initialize_result_object(
-    json_lattice: str, parent_result_object: SRVResult = None, parent_electron_id: int = None
+    json_lattice: str, parent_dispatch_id: str = None, parent_electron_id: int = None
 ) -> Result:
     """Convenience function for constructing a result object from a json-serialized lattice.
 
     Args:
         json_lattice: a JSON-serialized lattice
-        parent_result_object: the parent result object if json_lattice is a sublattice
+        parent_dispatch_id: the parent dispatch id if json_lattice is a sublattice
         parent_electron_id: the DB id of the parent electron (for sublattices)
 
     Returns:
@@ -151,7 +153,8 @@ def initialize_result_object(
     dispatch_id = get_unique_id()
     lattice = Lattice.deserialize_from_json(json_lattice)
     result_object = Result(lattice, dispatch_id)
-    if parent_result_object:
+    if parent_dispatch_id:
+        parent_result_object = get_result_object(parent_dispatch_id, bare=True)
         result_object._root_dispatch_id = parent_result_object.root_dispatch_id
 
     result_object._electron_id = parent_electron_id
@@ -161,7 +164,7 @@ def initialize_result_object(
     update.persist(result_object, electron_id=parent_electron_id)
     app_log.debug("Result object persisted.")
 
-    return result_object
+    return result_object.dispatch_id
 
 
 # Domain: result
@@ -180,15 +183,14 @@ def get_unique_id() -> str:
 
 
 async def make_dispatch(
-    json_lattice: str, parent_result_object: SRVResult = None, parent_electron_id: int = None
+    json_lattice: str, parent_dispatch_id: str = None, parent_electron_id: int = None
 ) -> Result:
-    result_object = await run_in_executor(
+    return await run_in_executor(
         initialize_result_object,
         json_lattice,
-        parent_result_object,
+        parent_dispatch_id,
         parent_electron_id,
     )
-    return result_object.dispatch_id
 
 
 def _get_result_object_from_new_lattice(
@@ -272,21 +274,23 @@ def finalize_dispatch(dispatch_id: str):
 
 
 async def persist_result(dispatch_id: str):
-    result_object = get_result_object(dispatch_id)
-    await _update_parent_electron(result_object)
+    await _update_parent_electron(dispatch_id)
 
 
-async def _update_parent_electron(result_object: SRVResult):
-    parent_eid = result_object._electron_id
+async def _update_parent_electron(dispatch_id: str):
+    dispatch_attrs = await get_dispatch_attributes(
+        dispatch_id, ["electron_id", "status", "end_time"]
+    )
+    parent_eid = dispatch_attrs["electron_id"]
 
     if parent_eid:
         dispatch_id, node_id = resolve_electron_id(parent_eid)
-        status = result_object.status
+        status = dispatch_attrs["status"]
         if status == Result.POSTPROCESSING_FAILED:
             status = Result.FAILED
         node_result = generate_node_result(
             node_id=node_id,
-            end_time=result_object.end_time,
+            end_time=dispatch_attrs["end_time"],
             status=status,
         )
         parent_result_obj = get_result_object(dispatch_id)
@@ -335,26 +339,34 @@ async def _filter_sublattice_status(
     return node_result
 
 
-# NB: this loads the JSON sublattice in memory
-async def _make_sublattice_dispatch(result_object: SRVResult, node_result: dict):
-    node_id = node_result["node_id"]
-    bg_output = await get_electron_attribute(result_object.dispatch_id, node_id, "output")
-    # json_lattice = bg_output.object_string
-    manifest = ResultSchema.parse_raw(bg_output.object_string)
-    parent_node = await run_in_executor(
-        result_object.lattice.transport_graph.get_node,
-        node_id,
+async def _make_sublattice_dispatch(dispatch_id: str, node_result: dict):
+    manifest, parent_electron_id = await run_in_executor(
+        _make_sublattice_dispatch_helper,
+        dispatch_id,
+        node_result,
     )
-    parent_electron_id = parent_node._electron_id
 
     imported_manifest = await manifest_importer.import_manifest(
         manifest=manifest,
-        parent_dispatch_id=result_object.dispatch_id,
+        parent_dispatch_id=dispatch_id,
         parent_electron_id=parent_electron_id,
     )
 
     return imported_manifest.metadata.dispatch_id
     # return await make_dispatch(json_lattice, result_object, parent_electron_id)
+
+
+def _make_sublattice_dispatch_helper(dispatch_id: str, node_result: Dict):
+    """Helper function for performing DB queries"""
+    result_object = get_result_object(dispatch_id, bare=True)
+    node_id = node_result["node_id"]
+    parent_node = result_object.lattice.transport_graph.get_node(node_id)
+    bg_output = parent_node.get_value("output")
+
+    manifest = ResultSchema.parse_raw(bg_output.object_string)
+    parent_electron_id = parent_node._electron_id
+
+    return manifest, parent_electron_id
 
 
 # Common Result object queries
@@ -426,12 +438,13 @@ async def ensure_dispatch(dispatch_id: str) -> bool:
 
 async def get_incomplete_tasks(dispatch_id: str):
     # Need to filter all electrons in the latice
+    return await run_in_executor(_get_incomplete_tasks_sync, dispatch_id)
+
+
+def _get_incomplete_tasks_sync(dispatch_id: str):
     result_object = get_result_object(dispatch_id, False)
     refresh = False
-    return await run_in_executor(
-        result_object._get_incomplete_nodes,
-        refresh,
-    )
+    return result_object._get_incomplete_nodes(refresh)
 
 
 async def get_incoming_edges(dispatch_id: str, node_id: int):
