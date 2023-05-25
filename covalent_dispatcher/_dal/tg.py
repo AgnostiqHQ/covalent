@@ -192,11 +192,10 @@ class _TransportGraph:
 
     @staticmethod
     def get_compute_graph(
-        lattice_id: int, bare: bool = False, *, keys: List = ELECTRON_KEYS
+        session: Session, lattice_id: int, bare: bool = False, *, keys: List = ELECTRON_KEYS
     ) -> _TransportGraph:
         if not bare:
-            with Node.session() as session:
-                nodes, edges = _nodes_and_edges(session, lattice_id, keys=keys)
+            nodes, edges = _nodes_and_edges(session, lattice_id, keys=keys)
             return _make_compute_graph(lattice_id, nodes, edges, keys=keys)
         else:
             app_log.debug("Getting bare transport graph")

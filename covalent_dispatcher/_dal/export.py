@@ -123,7 +123,8 @@ def _to_client_lattice(srv_lat: SRVLattice) -> SDKLattice:
     sdk_lat.metadata = lat_meta
 
     # Load transport graph
-    srv_graph = SRVGraph.get_compute_graph(srv_lat._lattice_id)
+    with SRVResult.session() as session:
+        srv_graph = SRVGraph.get_compute_graph(session, srv_lat._lattice_id)
 
     sdk_lat.transport_graph = _to_client_graph(srv_graph)
 

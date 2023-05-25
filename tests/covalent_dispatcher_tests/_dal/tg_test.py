@@ -83,7 +83,7 @@ def test_transport_graph_attributes(test_db, mocker):
         )
         lat_id = record.id
 
-    tg = _TransportGraph.get_compute_graph(lat_id, bare=False)
+    tg = _TransportGraph.get_compute_graph(session, lat_id, bare=False)
     assert list(tg._graph.nodes) == [0, 1, 2, 3]
     assert tg._graph.nodes[0]["task_group_id"] == 0
     assert tg.get_dependencies(0) == [1, 2]
@@ -116,7 +116,7 @@ def test_transport_graph_get_set(bare_mode, test_db, mocker):
         )
         lat_id = record.id
 
-    tg = _TransportGraph.get_compute_graph(lat_id, bare_mode)
+    tg = _TransportGraph.get_compute_graph(session, lat_id, bare_mode)
 
     assert tg.get_node_value(0, "name") == "task"
     assert tg.get_node_value(0, "executor") == "local"
@@ -159,7 +159,7 @@ def test_transport_graph_get_internal_graph_copy(test_db, mocker):
         )
         lat_id = record.id
 
-    tg = _TransportGraph.get_compute_graph(lat_id)
+    tg = _TransportGraph.get_compute_graph(session, lat_id)
 
     g = tg.get_internal_graph_copy()
 
@@ -204,7 +204,7 @@ def test_transport_graph_get_incoming_edges(bare_mode, test_db, mocker):
         )
         lat_id = record.id
 
-    tg = _TransportGraph.get_compute_graph(lat_id, bare=bare_mode)
+    tg = _TransportGraph.get_compute_graph(session, lat_id, bare=bare_mode)
     in_edges = tg.get_incoming_edges(0)
 
     assert len(in_edges) == 3
@@ -262,8 +262,8 @@ def test_transport_graph_get_edge_data(bare_mode, test_db, mocker):
         )
         lat_id = record.id
 
-    ref_tg = _TransportGraph.get_compute_graph(lat_id, bare=False)
-    tg = _TransportGraph.get_compute_graph(lat_id, bare=bare_mode)
+    ref_tg = _TransportGraph.get_compute_graph(session, lat_id, bare=False)
+    tg = _TransportGraph.get_compute_graph(session, lat_id, bare=bare_mode)
 
     child = tg.get_node(0)
 
@@ -318,7 +318,7 @@ def test_transport_graph_get_successors(bare_mode, test_db, mocker):
         )
         lat_id = record.id
 
-    tg = _TransportGraph.get_compute_graph(lat_id, bare=bare_mode)
+    tg = _TransportGraph.get_compute_graph(session, lat_id, bare=bare_mode)
 
     node_list = tg.get_successors(0, attr_keys=["status"])
     assert [n["node_id"] for n in node_list] == [4, 4, 6, 6, 6, 7, 7]

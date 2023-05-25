@@ -67,7 +67,7 @@ class Lattice(DispatchedObject):
         self._lattice_id = record.id
 
         self.transport_graph = _TransportGraph.get_compute_graph(
-            self._lattice_id, bare, keys=electron_keys
+            session, self._lattice_id, bare, keys=electron_keys
         )
 
     @property
