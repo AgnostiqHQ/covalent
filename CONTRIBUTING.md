@@ -1,7 +1,5 @@
 # First Steps
 
----
-
 To get started contributing to Covalent, you should fork this repository for your own development. (Learn more about [how to fork a repo](https://docs.github.com/en/get-started/quickstart/fork-a-repo).)
 
 Clone your fork locally:
@@ -54,8 +52,6 @@ pytest -v
 
 # Contribution for Covalent UI
 
----
-
 ## Setup
 
 - Clone the repo
@@ -96,6 +92,8 @@ yarn build
 ## Run web app
 
 ```shell
+cd covalent_ui/webapp
+yarn install
 yarn start
 ```
 
@@ -103,8 +101,6 @@ yarn start
 - Dispatch workflows to explore them in the UI.
 
 # Getting started with feature development
-
----
 
 Note that for complex issues, planning out the implementation details (on the issues page) is a very important step before writing any code in the feature branch. The feature development steps are listed below.
 
@@ -151,8 +147,6 @@ Once the changes in the feature branch are ready to be reviewed, tag the relevan
 If all the reviewers have approved the Pull Request and all the actions have passed, the last person to review the branch is responsible for merging the feature branch to develop.
 
 # Style Guide
-
----
 
 Contributing to the Covalent codebase should be an easy process, but there are a few things to consider to ensure your contributions meet the minimum software quality standards. The main points are explained below, and they are roughly grouped into the following categories: stylization, documentation, and testing.
 
@@ -650,8 +644,6 @@ Note that the base image must include a compatible version of Python and must be
 
 # Building Read the Docs (RTD) locally
 
----
-
 Contributing to the Covalent documentation is highly encouraged. This could mean adding How-To guides, tutorials etc. The steps required to build the RTD locally are listed below:
 
 #### Installation
@@ -693,7 +685,5 @@ python setup.py docs --clean
 ```
 
 # Contributor License Agreement
-
----
 
 All contributors to Covalent must agree to the terms in the [Contributor License Agreement](https://gist.github.com/wjcunningham7/3f21c684fc60c7598e0fe711caeb9ac1). Individual contributors should sign on their own behalf, while corporate contributors should sign on behalf of their employer. If you have any questions, direct them to the [support team](mailto:support@agnostiq.ai).
