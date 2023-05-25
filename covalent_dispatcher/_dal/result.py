@@ -179,11 +179,13 @@ class Result(DispatchedObject):
             electron_output = parent_electron.get_asset("output")
             electron_err = parent_electron.get_asset("error")
 
-            _copy_asset(subl_output, electron_output)
-            _copy_asset(subl_err, electron_err)
+            app_log.debug("Copying sublattice output to parent electron")
             with self.session() as session:
                 _copy_asset_meta(session, subl_output, electron_output)
                 _copy_asset_meta(session, subl_err, electron_err)
+
+            _copy_asset(subl_output, electron_output)
+            _copy_asset(subl_err, electron_err)
 
     def _update_node(
         self,
