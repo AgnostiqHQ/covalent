@@ -24,6 +24,7 @@ from http.client import HTTPMessage
 from unittest.mock import ANY, MagicMock, Mock, call
 
 import pytest
+import requests
 
 from covalent._results_manager import wait
 from covalent._results_manager.results_manager import _get_result_from_dispatcher, cancel
@@ -65,6 +66,35 @@ def test_get_result_from_dispatcher(mocker, dispatcher_addr):
         ]
         * retries
     )
+
+
+def test_get_result_from_dispatcher_raises_exception(mocker):
+    """
+    Test that _get_result_from_dispatcher raises an exception when
+    the dispatcher server is unreachable.
+    """
+
+    # TODO: Will need to edit this once `_get_result_from_dispatcher` is fixed
+    # to actually throw an exception when the dispatcher server is unreachable
+    # instead of just hanging.
+
+    mock_dispatcher_addr = "mock_dispatcher_addr"
+    mock_dispatch_id = "mock_dispatch_id"
+
+    message = f"The Covalent server cannot be reached at {mock_dispatcher_addr}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
+
+    mocker.patch("covalent._results_manager.results_manager.HTTPAdapter")
+    mock_session = mocker.patch("covalent._results_manager.results_manager.requests.Session")
+    mock_session.return_value.get.side_effect = requests.exceptions.ConnectionError
+
+    mock_print = mocker.patch("covalent._results_manager.results_manager.print")
+
+    with pytest.raises(requests.exceptions.ConnectionError):
+        _get_result_from_dispatcher(
+            mock_dispatch_id, wait=wait.LONG, dispatcher_addr=mock_dispatcher_addr
+        )
+
+    mock_print.assert_called_once_with(message)
 
 
 def test_cancel_with_single_task_id(mocker):
