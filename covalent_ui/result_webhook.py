@@ -62,8 +62,6 @@ async def send_update(result: Result) -> None:
             },
         },
     )
-
-    app_log.debug("Moving to Fast API soon - stay tuned!!")
     try:
         # ignore response
         timeout = aiohttp.ClientTimeout(total=1)

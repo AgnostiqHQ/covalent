@@ -43,6 +43,7 @@ from .._shared_files.utils import get_named_params, get_serialized_function_str
 from .depsbash import DepsBash
 from .depscall import DepsCall
 from .depspip import DepsPip
+from .postprocessing import Postprocessor
 from .transport import TransportableObject, _TransportGraph, encode_metadata
 
 if TYPE_CHECKING:
@@ -93,8 +94,8 @@ class Lattice:
 
         self.workflow_function = TransportableObject.make_transportable(self.workflow_function)
 
-        # Clear before serializing
-        self._bound_electrons = {}
+        # Bound electrons are defined as electrons with a valid node_id, since it means they are bound to a TransportGraph.
+        self._bound_electrons = {}  # Clear before serializing
 
     # To be called after build_graph
     def serialize_to_json(self) -> str:
@@ -124,15 +125,11 @@ class Lattice:
             attributes["electron_outputs"][node_name] = output.to_dict()
 
         attributes["cova_imports"] = list(self.cova_imports)
-        # for k, v in attributes.items():
-        #     print(k, type(v))
-
         return json.dumps(attributes)
 
     @staticmethod
     def deserialize_from_json(json_data: str) -> None:
         attributes = json.loads(json_data)
-
         attributes["cova_imports"] = set(attributes["cova_imports"])
 
         for node_name, object_dict in attributes["electron_outputs"].items():
@@ -214,8 +211,8 @@ class Lattice:
 
         Returns:
             None
-        """
 
+        """
         self.args = [TransportableObject.make_transportable(arg) for arg in args]
         self.kwargs = {k: TransportableObject.make_transportable(v) for k, v in kwargs.items()}
 
@@ -252,14 +249,14 @@ class Lattice:
                     )
                     raise
 
-        # Add postprocessing node to graph
+        pp = Postprocessor(lattice=self)
 
-        if get_config("sdk.full_postprocess") != "true":
-            pre_process_new(self, retval, self._bound_electrons.copy())
+        if get_config("sdk.exhaustive_postprocess") == "true":
+            pp.add_exhaustive_postprocess_node(self._bound_electrons.copy())
         else:
-            pre_process(self, self._bound_electrons.copy())
+            pp.add_reconstruct_postprocess_node(retval, self._bound_electrons.copy())
 
-        self._bound_electrons = {}
+        self._bound_electrons = {}  # Reset bound electrons
 
     def draw(self, *args, **kwargs) -> None:
         """
@@ -418,6 +415,7 @@ def lattice(
 
         return wrapper_lattice()
 
+    # Don't change the snippet below. This a subtle piece of logic that's best understood as is written.
     if _func is None:  # decorator is called with arguments
         return decorator_lattice
     else:  # decorator is called without arguments

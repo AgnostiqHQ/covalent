@@ -7,6 +7,134 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Implementation of `TransportableObject` property method to be backwards compatible with version 0.209.1.
+
+### Tests
+
+- Updated QA stress test execution time baseline.
+
+## [0.221.1-rc.0] - 2023-04-26
+
+### Authors
+
+- Madhur Tandon <20173739+madhur-tandon@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Rob de Wit <RCdeWit@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+
+
+### Tests
+
+- Move QA scripts from QA repo to Covalent functional tests.
+
+### Docs
+
+- Update requirements file for the tutorials: `1_QuantumMachineLearning/pennylane_kernel/source.ipynb` and `machine_learning/dnn_comparison.ipynb`.
+- Add macOS 13 (Ventura) to [compatibility list](doc/source/getting_started/compatibility.rst).
+- Fixed broken links and typos in the documentation.
+
+### Authors
+
+- Madhur Tandon <madhurtandon23@gmail.com>
+
+### Fixed
+
+- Result status comparison
+- Raise error on extra args/kwargs
+- Fixed redispatching and trigger server address passing in base trigger
+
+## [0.221.0-rc.0] - 2023-04-17
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Changed
+
+- Moved TransportableObject from transport.py to a new file transportable_object.py.
+
+## [0.220.0-rc.0] - 2023-04-14
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- dwelsch-esi <116022979+dwelsch-esi@users.noreply.github.com>
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+
+
+### Operations
+
+- Updating `nightly` frequency (temp)
+
+### Added
+
+- Tutorial for hybrid neural network using Covalent, AWSBatch, and Qiskit Runtime.
+- Environment variable that users can set to specify the location where Covalent can find their defined executors.
+- Task group id in Electrons.
+- Reconstruct postprocessing method.
+
+### Fixed
+
+- Doubling of nodes that are added to the transport graph.
+- Ensure postprocessing node end time is added as the workflow end time.
+- Functional tests
+- Custom executor how to guide, and its loading mechanism in covalent server.
+- Broken postprocessing unit test.
+
+### Added
+
+- Postprocessing as electrons.
+- Postprocessing class in `postprocessing.py` module for all the different postprocessing helper methods and algorithms.
+
+### Changed
+
+- Postprocessing logic.
+- Sublattice logic. Sublattices are now treated as electrons. Once the transport graph has been built, the status get changed to `DISPATCHING` at which point it is executed as another workflow.
+
+### Removed
+
+- Postprocessing from runners.
+
+### Docs
+
+- Adding Google Batch executor plugin RTD
+
+### Docs
+
+- Updated How-to documents.
+- Port of Pennylane's Univariate QVR tutorial using Covalent to this repo.
+- Adding troubleshooting guide to RTD's
+- Added a note to First Experiment offering initial intro to executors.
+
+## [0.219.0-rc.0] - 2023-03-01
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+
+
+### Docs
+
+* Adding `cancellation` RTD text files
+
 ### Added
 
 - `disable_run` option added to enable "saving-only" option on covalent server and not executing the workflow
@@ -40,8 +168,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Lowering number of jest workers as an attempt to fix flaky UI functional tests
 - Added exception for nightly to pass if conda release fails
-- Tutorial guidelines.
-- Port of Pennylane's Univariate QVR tutorial using Covalent to this repo.
 
 ## [0.218.0-rc.0] - 2023-02-21
 

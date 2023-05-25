@@ -20,15 +20,21 @@
 
 """Unit tests for electron"""
 
+import json
+
+import pytest
+
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
-from covalent._shared_files.defaults import WAIT_EDGE_NAME
+from covalent._shared_files.defaults import WAIT_EDGE_NAME, sublattice_prefix
 from covalent._workflow.electron import (
     Electron,
+    _build_sublattice_graph,
     filter_null_metadata,
     get_serialized_function_str,
     to_decoded_electron_collection,
 )
+from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 from covalent.executor.executor_plugins.local import LocalExecutor
 
@@ -68,6 +74,44 @@ def workflow_2():
     ct.wait(res_3, [res_1])
 
     return res_3
+
+
+@pytest.mark.skip(reason="disabled temporarily")
+def test_build_sublattice_graph():
+    """
+    Test building a sublattice graph
+    """
+
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    parent_metadata = {
+        "executor": "parent_executor",
+        "executor_data": {},
+        "workflow_executor": "my_postprocessor",
+        "workflow_executor_data": {},
+        "deps": {"bash": None, "pip": None},
+        "call_before": [],
+        "call_after": [],
+        "triggers": "mock-trigger",
+        "results_dir": None,
+    }
+
+    json_lattice = _build_sublattice_graph(workflow, json.dumps(parent_metadata), 1)
+    lattice = Lattice.deserialize_from_json(json_lattice)
+
+    assert list(lattice.transport_graph._graph.nodes) == list(range(3))
+    for k in lattice.metadata.keys():
+        # results_dir will be deprecated soon
+        if k == "triggers":
+            assert lattice.metadata[k] is None
+        elif k != "results_dir":
+            assert parent_metadata[k] == lattice.metadata[k]
 
 
 def test_wait_for_building():
@@ -266,7 +310,7 @@ def test_autogen_dict_electrons():
     assert set(g.edges) == set([(1, 0, 0), (2, 1, 0), (3, 1, 0), (0, 4, 0), (0, 4, 1), (1, 4, 0)])
 
 
-def test_as_transportable_dict(mocker):
+def test_as_transportable_dict():
     """Test the get transportable electron function."""
 
     @ct.electron
@@ -284,27 +328,55 @@ def test_as_transportable_dict(mocker):
     assert TransportableObject(test_func).to_dict() == transportable_electron["function"]
 
 
+def test_call_sublattice():
+    """Test the sublattice logic when the __call__ method is invoked."""
+
+    @ct.lattice(executor="mock")
+    def mock_workflow(x):
+        return sublattice(x)
+
+    @ct.electron
+    def mock_task(x):
+        return x
+
+    @ct.electron
+    @ct.lattice
+    def sublattice(x):
+        return mock_task(x)
+
+    with active_lattice_manager.claim(mock_workflow):
+        bound_electron = sublattice()
+        assert bound_electron.metadata["executor"] == "mock"
+        for _, node_data in mock_workflow.transport_graph._graph.nodes(data=True):
+            if node_data["name"].startswith(sublattice_prefix):
+                assert "mock_task" in node_data["function_string"]
+                assert "sublattice" in node_data["function_string"]
+                assert (
+                    node_data["function"].get_deserialized().__name__ == "_build_sublattice_graph"
+                )
+
+
 def test_electron_auto_task_groups():
     @ct.electron
     def task(arr: list):
         return sum(arr)
 
+    @ct.electron
+    @ct.lattice
+    def sublattice(x):
+        return task(x)
+
     @ct.lattice
     def workflow(x):
-        return task(x)
+        return sublattice(x)
 
     workflow.build_graph([[1, 2], 3])
     tg = workflow.transport_graph
-    assert tg.get_node_value(0, "task_group_id") == 0
-    assert tg.get_node_value(1, "task_group_id") == 0
-    assert tg.get_node_value(2, "task_group_id") == 0
-    for i in range(3, 7):
-        assert tg.get_node_value(i, "task_group_id") == i
+    assert all(tg.get_node_value(i, "task_group_id") == 0 for i in [0, 3, 4])
+    assert all(tg.get_node_value(i, "task_group_id") == i for i in [1, 2, 5, 6, 7, 8])
 
 
-def test_electron_auto_task_groups_getattr():
-    """Test task packing with __getattr__"""
-
+def test_electron_get_attr():
     class Point:
         def __init__(self, x, y):
             self.x = x
@@ -341,10 +413,7 @@ def test_electron_auto_task_groups_getattr():
     assert point_electron_gid == 0
     assert getitem_x_gid == point_electron_gid
     assert getitem_y_gid == point_electron_gid
-    assert tg.get_node_value(2, "task_group_id") == 2
-    assert tg.get_node_value(4, "task_group_id") == 4
-    assert tg.get_node_value(5, "task_group_id") == 5
-    assert tg.get_node_value(6, "task_group_id") == 6
+    assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
 
 
 def test_electron_auto_task_groups_getitem():
@@ -381,10 +450,7 @@ def test_electron_auto_task_groups_getitem():
     assert arr_electron_gid == 0
     assert getitem_x_gid == arr_electron_gid
     assert getitem_y_gid == arr_electron_gid
-    assert tg.get_node_value(2, "task_group_id") == 2
-    assert tg.get_node_value(4, "task_group_id") == 4
-    assert tg.get_node_value(5, "task_group_id") == 5
-    assert tg.get_node_value(6, "task_group_id") == 6
+    assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
 
 
 def test_electron_auto_task_groups_iter():
@@ -422,7 +488,4 @@ def test_electron_auto_task_groups_iter():
     assert tup_electron_gid == 0
     assert getitem_x_gid == tup_electron_gid
     assert getitem_y_gid == tup_electron_gid
-    assert tg.get_node_value(2, "task_group_id") == 2
-    assert tg.get_node_value(4, "task_group_id") == 4
-    assert tg.get_node_value(5, "task_group_id") == 5
-    assert tg.get_node_value(6, "task_group_id") == 6
+    assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])

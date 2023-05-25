@@ -26,7 +26,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
-from .._shared_files.defaults import prefix_separator, sublattice_prefix
+from .._shared_files.defaults import postprocess_prefix, prefix_separator, sublattice_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.lattice import Lattice
 from .._workflow.transport import TransportableObject
@@ -250,8 +250,8 @@ Node Outputs
                             - start_time: The start time of the node execution.
                             - end_time: The end time of the node execution.
                             - status: The status of the node execution.
-                            - output: The output of the node unless error occured in which case None.
-                            - error: The error of the node if occured else None.
+                            - output: The output of the node unless error occurred in which case None.
+                            - error: The error of the node if occurred else None.
                             - sublattice_result: The result of the sublattice if any.
                             - stdout: The stdout of the node execution.
                             - stderr: The stderr of the node execution.
@@ -305,14 +305,24 @@ Node Outputs
             for node_id in self._lattice.transport_graph._graph.nodes
         ]
 
-    def post_process(self):
-        # Copied from server-side _post_process()
+    def post_process(self) -> Any:
+        """Post-processing method. This method was introduced to enable manual client-side postprocessing in case automatic post-processing by the server fails (e.g. insufficient dask worker memory)
+
+        Returns:
+            Any: Post-processed result output
+
+        """
         node_outputs = self.get_all_node_outputs()
-        ordered_node_outputs = []
-        for i, item in enumerate(node_outputs.items()):
-            key, val = item
-            if not key.startswith(prefix_separator) or key.startswith(sublattice_prefix):
-                ordered_node_outputs.append(val)
+        ordered_node_outputs = [
+            val.get_deserialized()
+            for key, val in node_outputs.items()
+            if (
+                not key.startswith(prefix_separator)
+                or key.startswith(sublattice_prefix)
+                or key.startswith(postprocess_prefix)
+            )
+            and isinstance(val, TransportableObject)
+        ]
 
         lattice = self._lattice
 
@@ -359,7 +369,7 @@ Node Outputs
             node_id: The node id.
 
         Returns:
-            The output of said node. Will return None if error occured in execution.
+            The output of said node. Will return None if error occurred in execution.
         """
         return self._lattice.transport_graph.get_node_value(node_id, "output")
 
@@ -371,7 +381,7 @@ Node Outputs
             node_id: The node id.
 
         Returns:
-            The error of said node. Will return None if no error occured in execution.
+            The error of said node. Will return None if no error occurred in execution.
         """
         return self._lattice.transport_graph.get_node_value(node_id, "error")
 
@@ -409,8 +419,8 @@ Node Outputs
             start_time: The start time of the node execution.
             end_time: The end time of the node execution.
             status: The status of the node execution.
-            output: The output of the node unless error occured in which case None.
-            error: The error of the node if occured else None.
+            output: The output of the node unless error occurred in which case None.
+            error: The error of the node if occurred else None.
             sublattice_result: The result of the sublattice if any.
             stdout: The stdout of the node execution.
             stderr: The stderr of the node execution.

@@ -65,9 +65,7 @@ def test_check_nodes():
         return identity(a=result1)
 
     check.build_graph(a=1, b=2)
-
-    # Account for the postprocess electrons
-    assert [0, 1, 2, 3, 4] == list(check.transport_graph._graph.nodes)
+    assert list(check.transport_graph._graph.nodes) == list(range(5))
 
 
 def test_electron_takes_nested_iterables():
@@ -637,9 +635,7 @@ def test_two_iterations():
         return first + b + last
 
     midword.build_graph("hello world", "beautiful", 6)
-
-    # Account for pp electrons
-    assert [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10] == list(midword.transport_graph._graph.nodes)
+    assert list(midword.transport_graph._graph.nodes) == list(range(11))
 
 
 def test_two_iterations_float():
@@ -655,9 +651,7 @@ def test_two_iterations_float():
         return half + quarter
 
     add_half_quarter.build_graph(0.1)
-
-    # Account for pp electron
-    assert [0, 1, 2, 3, 4, 5, 6, 7] == list(add_half_quarter.transport_graph._graph.nodes)
+    assert list(add_half_quarter.transport_graph._graph.nodes) == list(range(8))
 
 
 def test_wait_for():
@@ -874,10 +868,6 @@ def test_redispatch_reusing_previous_results():
         return x + y
 
     @ct.electron
-    def mult_task(x, y):
-        return x * y
-
-    @ct.electron
     def square_task(x):
         return x * x
 
@@ -934,12 +924,12 @@ def test_redispatch_reusing_previous_results_and_new_args():
     dispatch_id = ct.dispatch(failing_workflow)(1, 0)
     result = ct.get_result(dispatch_id, wait=True)
     assert result.result is None
-    assert str(result.status) == "FAILED"
+    assert result.status == "FAILED"
 
     redispatch_id = ct.redispatch(dispatch_id=dispatch_id, reuse_previous_results=True)(1, 1)
     result = ct.get_result(redispatch_id, wait=True)
     assert int(result.result) == 1
-    assert str(result.status) == "COMPLETED"
+    assert result.status == "COMPLETED"
     assert result.get_node_result(0)["start_time"] == result.get_node_result(0)["end_time"]
 
 

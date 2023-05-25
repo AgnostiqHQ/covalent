@@ -1,0 +1,118 @@
+# Copyright 2023 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
+"""Sublattice stress test."""
+
+import numpy as np
+
+import covalent as ct
+
+N = 5
+STALL = 1e5
+X = 20
+
+
+def test_sublattice_stress():
+    """Stress test the sublattice."""
+
+    @ct.electron
+    def matrix_workload(mat_1, mat_2, stall=STALL, x=X):
+        i = 0
+        while i < stall:
+            x * x
+            i += 1
+
+        return mat_1
+
+    @ct.electron
+    def matrix_flatten(mat_1):
+        return np.ravel(mat_1)
+
+    @ct.electron
+    def split_in_half(mat_1):
+        return np.array_split(mat_1, 2)
+
+    @ct.lattice
+    def inflate(mat_1, dim=3):
+        mat_2 = np.random.default_rng().integers(3, size=(dim, dim))
+
+        mat_3 = matrix_workload(mat_1, mat_2)
+
+        mat_4 = matrix_flatten(mat_3)
+
+        mat_5 = matrix_workload(mat_1, mat_3)
+
+        return matrix_workload(mat_4, mat_5)
+
+    @ct.lattice
+    def deflate(mat_1, dim=3):
+        mat_2 = np.random.default_rng().integers(3, size=(dim, dim))
+
+        mat_3, mat_4 = split_in_half(mat_1)
+
+        mat_5 = matrix_workload(mat_1, mat_3)
+
+        mat_6 = matrix_workload(mat_2, mat_4)
+
+        mat_7 = matrix_flatten(mat_5)
+
+        mat_8, mat_9 = split_in_half(mat_6)
+
+        return mat_8, matrix_workload(mat_7, mat_9)
+
+    @ct.electron
+    @ct.lattice
+    def idi(mat_1):
+        mat_2 = inflate(mat_1)
+        mat_3, mat_4 = deflate(mat_2)
+        mat_5 = inflate(mat_3)
+
+        return matrix_workload(mat_4, mat_5)
+
+    @ct.lattice
+    def workflow(dim=3):
+        mat_1 = np.random.default_rng().integers(10, size=(dim, dim))
+
+        mat_2, mat_3 = split_in_half(mat_1)
+
+        mat_4 = matrix_workload(mat_2, mat_3)
+
+        mat_5 = inflate(mat_4, dim)
+
+        mat_6 = matrix_flatten(mat_5)
+
+        mat_7 = inflate(mat_5)
+
+        mat_8, mat_9 = deflate(mat_6)
+
+        mat_10 = idi(mat_9)
+
+        return matrix_workload(matrix_workload(mat_7, mat_10), mat_8)
+
+    iterations = list(range(N))
+    execution_time_taken = []
+    dispatch_ids = [ct.dispatch(workflow)() for _ in iterations]
+
+    for d_id in dispatch_ids:
+        result = ct.get_result(d_id, wait=True)
+        execution_time_taken.append((result.end_time - result.start_time).total_seconds())
+
+    for time_taken in execution_time_taken:
+        assert time_taken < 60

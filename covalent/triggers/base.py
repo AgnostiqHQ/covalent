@@ -81,16 +81,18 @@ class BaseTrigger:
         """
         Register this trigger to the Triggers server and start observing.
         """
-        self._register(self.to_dict(), self.triggers_server_addr)
+        self._register(self.to_dict())
 
     @staticmethod
-    def _register(trigger_data, triggers_server_addr=None) -> None:
+    def _register(trigger_data) -> None:
         """
         Register a trigger to the Triggers server given only its dictionary format and start observing.
 
         Args:
             trigger_data: Dictionary representation of a trigger
         """
+
+        triggers_server_addr = trigger_data.get("triggers_server_addr")
         if triggers_server_addr is None:
             triggers_server_addr = (
                 get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))

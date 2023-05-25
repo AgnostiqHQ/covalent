@@ -426,7 +426,7 @@ class BaseExecutor(_AbstractBaseExecutor):
         return cancel_result
 
     def teardown(self, task_metadata: Dict) -> Any:
-        """Placeholder to run nay executor specific cleanup/teardown actions"""
+        """Placeholder to run any executor specific cleanup/teardown actions"""
         pass
 
     async def send(

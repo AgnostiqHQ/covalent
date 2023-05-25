@@ -32,9 +32,8 @@ from .._shared_files.defaults import parameter_prefix
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .transportable_object import TransportableObject
 
+
 # Functions for encoding the transport graph
-
-
 def encode_metadata(metadata: dict) -> dict:
     # Idempotent
     # Special handling required for: executor, workflow_executor, deps, call_before/after, triggers
@@ -132,12 +131,13 @@ class _TransportGraph:
             name: The name of the node.
             function: The function to be executed.
             metadata: The metadata of the node.
+            task_group_id: The task group id of the node.
             attr: Any other attributes that need to be added to the node.
 
         Returns:
             node_key: The node id.
-        """
 
+        """
         node_id = len(self._graph.nodes)
 
         if task_group_id is None:

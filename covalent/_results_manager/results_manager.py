@@ -166,10 +166,11 @@ def cancel(dispatch_id: str, task_ids: List[int] = None, dispatcher_addr: str = 
 
     Args:
         dispatch_id: The dispatch id of the dispatch to be cancelled.
+        task_ids: Optional, list of task ids to cancel within the workflow
         dispatcher_addr: Dispatcher server address, if None then defaults to the address set in Covalent's config.
 
     Returns:
-        None
+        Cancellation response
     """
 
     if dispatcher_addr is None:
