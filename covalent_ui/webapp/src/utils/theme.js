@@ -56,6 +56,7 @@ const defaultTheme = createTheme({
     },
     background: {
       default: '#08081A',
+      defaultLight: '#08081A66',
       paper: '#1C1C46',
       coveBlack01: '#464660',
       coveBlack02: '#303067',

@@ -16,10 +16,11 @@ import { ReactComponent as QelectronSvg } from '../../assets/qelectron/qelectron
 const QElectronCard = (props) => {
   const { qElectronDetails, toggleQelectron, openQelectronDrawer } = props
 
-  const handleButtonClick = (event) => {
-    event.stopPropagation()
+  const handleButtonClick = (e) => {
+    e.stopPropagation()
     toggleQelectron()
   }
+
   return (
     //main container
     <Grid
@@ -28,13 +29,13 @@ const QElectronCard = (props) => {
       mt={5}
       p={2}
       sx={{
-        background: 'transparent',
+        backgroundColor: (theme) => theme.palette.background.default,
         border: '1px solid',
         borderRadius: '8px',
         cursor: 'pointer',
         borderColor: (theme) => theme.palette.primary.grey,
         '&:hover': {
-          backgroundColor: (theme) => theme.palette.background.default,
+          backgroundColor: (theme) => theme.palette.background.paper,
         },
       }}
     >

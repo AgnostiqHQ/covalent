@@ -14,7 +14,7 @@ import { statusIcon, statusColor, statusLabel } from '../../utils/misc'
 import CopyButton from './CopyButton'
 
 const QElectronTopBar = (props) => {
-  const { details } = props
+  const { details, toggleQelectron } = props
   return (
     <Grid
       container
@@ -30,6 +30,7 @@ const QElectronTopBar = (props) => {
     >
       <Grid item xs={6} container flexDirection="row" alignItems="center">
         <IconButton
+          onClick={() => toggleQelectron()}
           data-testid="backbtn"
           sx={{
             color: 'text.disabled',
