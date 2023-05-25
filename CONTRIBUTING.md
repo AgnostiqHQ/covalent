@@ -50,14 +50,6 @@ Contribution for Covalent UI
 
 ## Setup
 
-- Clone the repo
-- Install the dependencies
-
-```shell
-cd /covalent
-pip install -e .
-```
-
 - Install `node` (v16 or later) and `npm`:
 
 ```shell
