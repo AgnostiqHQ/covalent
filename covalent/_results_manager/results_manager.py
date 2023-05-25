@@ -74,9 +74,6 @@ def get_result(
 
         raise ex
 
-    except requests.exceptions.ConnectionError:
-        return None
-
     return result
 
 
@@ -114,16 +111,12 @@ def _get_result_from_dispatcher(
     http.mount("http://", adapter)
 
     result_url = f"{dispatcher_addr}/api/result/{dispatch_id}"
-    try:
-        response = http.get(
-            result_url,
-            params={"wait": bool(int(wait)), "status_only": status_only},
-            timeout=5,
-        )
-    except requests.exceptions.ConnectionError:
-        message = f"The Covalent server cannot be reached at {dispatcher_addr}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
-        print(message)
-        raise
+
+    response = http.get(
+        result_url,
+        params={"wait": bool(int(wait)), "status_only": status_only},
+        timeout=5,
+    )
 
     if response.status_code == 404:
         raise MissingLatticeRecordError

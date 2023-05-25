@@ -76,7 +76,7 @@ def test_get_redispatch_request_body_args_kwargs(mocker):
 
 @pytest.mark.parametrize("is_pending", [True, False])
 @pytest.mark.parametrize(
-    "replace_electrons,expected_arg",
+    "replace_electrons, expected_arg",
     [(None, {}), ({"mock-electron-1": "mock-electron-2"}, {"mock-electron-1": "mock-electron-2"})],
 )
 def test_redispatch(mocker, replace_electrons, expected_arg, is_pending):
@@ -104,6 +104,21 @@ def test_redispatch(mocker, replace_electrons, expected_arg, is_pending):
     requests_mock.post().content.decode().strip().replace.assert_called_once_with('"', "")
 
     get_request_body_mock.assert_called_once_with("mock-dispatch-id", (), {}, expected_arg, False)
+
+
+def test_redispatch_unreachable(mocker):
+    """Test the local re-dispatch function when the server is unreachable."""
+
+    mock_dispatch_id = "mock-dispatch-id"
+    dummy_dispatcher_addr = "http://localhost:12345"
+
+    message = f"The Covalent server cannot be reached at {dummy_dispatcher_addr}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
+
+    mock_print = mocker.patch("covalent._dispatcher_plugins.local.print")
+
+    LocalDispatcher.redispatch(mock_dispatch_id, dispatcher_addr=dummy_dispatcher_addr)()
+
+    mock_print.assert_called_once_with(message)
 
 
 def test_dispatching_a_non_lattice():
