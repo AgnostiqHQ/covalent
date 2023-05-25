@@ -11,10 +11,12 @@ import {
 import { alpha } from '@mui/material/styles'
 import QElectronTopBar from './QElectronTopBar'
 import QElelctronAccordion from './QElelctronAccordion'
+import QElectronList from '../qelectron/QElectronList'
 
 const nodeDrawerWidth = 1110
 
 const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer }) => {
+  const [expanded, setExpanded] = React.useState(true)
   const handleDrawerClose = () => {
     toggleQelectron()
   }
@@ -24,28 +26,29 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer }) => {
     status: 'RUNNING',
   }
 
-  //   useEffect(() => {
-  //     const handleOutsideClick = (event) => {
-  //       if (
-  //         openQelectronDrawer &&
-  //         !event.target.closest('.q-electron-card') &&
-  //         !event.target.closest('#nodeDrawer')
-  //       ) {
-  //         handleDrawerClose()
-  //       }
-  //     }
+  useEffect(() => {
+    const handleOutsideClick = (event) => {
+      if (
+        openQelectronDrawer &&
+        !event.target.closest('.q-electron-card') &&
+        !event.target.closest('#nodeDrawer')
+      ) {
+        handleDrawerClose()
+      }
+    }
 
-  //     document.addEventListener('mousedown', handleOutsideClick)
+    document.addEventListener('mousedown', handleOutsideClick)
 
-  //     return () => {
-  //       document.removeEventListener('mousedown', handleOutsideClick)
-  //     }
-  //   }, [openQelectronDrawer])
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick)
+    }
+  }, [openQelectronDrawer])
 
   return (
     <Drawer
       id="nodeDrawer"
       sx={(theme) => ({
+        position: 'relative',
         width: nodeDrawerWidth,
         '& .MuiDrawer-paper': {
           width: nodeDrawerWidth,
@@ -54,7 +57,7 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer }) => {
           p: 3,
           marginRight: '10px',
           marginTop: '22px',
-          height: '95vh',
+          maxHeight: '95vh',
           bgcolor: alpha(theme.palette.background.default),
           boxShadow: '0px 16px 50px rgba(0, 0, 0, 0.9)',
           backdropFilter: 'blur(8px)',
@@ -71,10 +74,17 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer }) => {
       onClose={handleDrawerClose}
       data-testid="nodeDrawer"
     >
-      <Grid container>
+      <Grid
+        container
+        sx={{ position: 'relative', maxHeight: '100%', overflow: 'auto' }}
+      >
         <Grid item xs={7.9}>
-          <QElectronTopBar details={details} />
-          <QElelctronAccordion />
+          <QElectronTopBar
+            details={details}
+            toggleQelectron={toggleQelectron}
+          />
+          <QElelctronAccordion expanded={expanded} setExpanded={setExpanded} />
+          <QElectronList expanded={expanded} />
         </Grid>
       </Grid>
     </Drawer>

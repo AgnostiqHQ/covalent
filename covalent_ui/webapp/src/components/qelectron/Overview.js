@@ -15,7 +15,7 @@ const Overview = (props) => {
   const code = `tensor([0.224,0.2213,.1214])`
   const { details } = props
   return (
-    <Grid container p={2} direcction="row">
+    <Grid container px={4} py={1} direcction="row">
       <Grid id="leftGrid" item xs={6}>
         <Typography
           sx={{

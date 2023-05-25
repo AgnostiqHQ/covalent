@@ -39,12 +39,12 @@ Light.registerLanguage('python', python)
 Light.registerLanguage('yaml', yaml)
 Light.registerLanguage('json', json)
 
-const SyntaxHighlighter = ({ src, preview, ...props }) => {
+const SyntaxHighlighter = ({ src, preview, fullwidth, ...props }) => {
   const [open, setOpen] = useState(false)
   const handleOpen = () => setOpen(true)
   const handleClose = () => setOpen(false)
 
-  const style = {
+  const styles = {
     position: 'absolute',
     top: '50%',
     left: '50%',
@@ -62,8 +62,8 @@ const SyntaxHighlighter = ({ src, preview, ...props }) => {
       <Grid
         container
         sx={{
-          width: preview ? '20rem' : null,
-          height: preview ? '10rem' : null,
+          width: preview ? (preview && fullwidth ? '100%' : '20rem') : null,
+          height: preview ? (preview && fullwidth ? '100%' : '10rem') : null,
         }}
       >
         <Grid item xs={11}>
@@ -80,7 +80,7 @@ const SyntaxHighlighter = ({ src, preview, ...props }) => {
             }}
             {...props}
           >
-            {_.trim(src, '"" \n')}
+            {_.trim(_.truncate(src, { length: 200 }), '"" \n')}
           </Light>
         </Grid>
         <Grid
@@ -118,9 +118,9 @@ const SyntaxHighlighter = ({ src, preview, ...props }) => {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box sx={style}>
-          <Grid container>
-            <Grid item xs={11}>
+        <Box sx={styles}>
+          <Grid container sx={{ height: '100%' }}>
+            <Grid item xs={11} sx={{ height: '100%' }}>
               <Light
                 data-testid="syntax"
                 language="python"
@@ -128,7 +128,7 @@ const SyntaxHighlighter = ({ src, preview, ...props }) => {
                 customStyle={{
                   margin: 0,
                   padding: 10,
-                  maxHeight: 240,
+                  maxHeight: ' 100%',
                   fontSize: 12,
                   backgroundColor: 'transparent',
                 }}
