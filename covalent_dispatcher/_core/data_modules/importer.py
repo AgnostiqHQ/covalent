@@ -75,10 +75,14 @@ def _import_manifest(
     return import_result(res, BASE_PATH, parent_electron_id)
 
 
+def _get_all_assets(dispatch_id: str):
+    result_object = SRVResult.from_dispatch_id(dispatch_id, bare=True)
+    return result_object.get_all_assets()
+
+
 async def _pull_assets(manifest: ResultSchema) -> None:
     dispatch_id = manifest.metadata.dispatch_id
-    result_object = SRVResult.from_dispatch_id(dispatch_id, bare=True)
-    assets = result_object.get_all_assets()
+    assets = await run_in_executor(_get_all_assets, dispatch_id)
     futs = []
     for asset in assets["lattice"]:
         if asset.remote_uri:
