@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Fix typo in GCP Batch executor RTD.
+- Add steps for setting up GUI for local development in contribution guidelines. 
 
 ### Fixed
 
