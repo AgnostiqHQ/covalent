@@ -21,10 +21,12 @@
 """Workflow stack testing of TransportGraph, Lattice and Electron classes."""
 
 import os
+import tempfile
 
 import pytest
 
 import covalent as ct
+import covalent._dispatcher_plugins.local as local
 import covalent._results_manager.results_manager as rm
 from covalent._results_manager.result import Result
 
@@ -939,3 +941,26 @@ def test_redispatch_reusing_previous_results_and_new_args():
     assert int(result.result) == 1
     assert str(result.status) == "COMPLETED"
     assert result.get_node_result(0)["start_time"] == result.get_node_result(0)["end_time"]
+
+
+def test_multistage_dispatch_with_pull_assets():
+    """Test submitting a dispatch with assets to be pulled."""
+
+    @ct.electron
+    def task(x):
+        return x**3
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    workflow.build_graph(5)
+    with tempfile.TemporaryDirectory() as staging_dir:
+        manifest = local.LocalDispatcher.prepare_manifest(workflow, staging_dir)
+        return_manifest = local.LocalDispatcher.register_manifest(manifest, push_assets=False)
+        dispatch_id = return_manifest.metadata.dispatch_id
+
+        local.LocalDispatcher.start(dispatch_id)
+
+        res = rm.get_result(dispatch_id, wait=True)
+        assert res.result == 125
