@@ -215,5 +215,5 @@ def test_electron_asset_digest(test_db, mocker):
         )
         e = Electron(session, record)
 
-        value = e.get_asset("value")
+        value = e.get_asset("value", session)
         assert "digest" in value._attrs

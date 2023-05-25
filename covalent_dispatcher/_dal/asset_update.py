@@ -70,19 +70,19 @@ KEY_SUBSTITUTIONS = {"doc": "doc"}
 
 
 def update_node_asset(session: Session, dispatch_id: str, node_id: int, key: str, values: dict):
-    srv_res = get_result_object(dispatch_id, bare=True)
-    node = srv_res.lattice.transport_graph.get_node(node_id)
-    asset = node.get_asset(key)
+    srv_res = get_result_object(dispatch_id, bare=True, session=session)
+    node = srv_res.lattice.transport_graph.get_node(node_id, session=session)
+    asset = node.get_asset(key, session)
     asset.update(session, values=values)
 
 
 def update_lattice_asset(session: Session, dispatch_id: str, key: str, values: dict):
-    srv_res = get_result_object(dispatch_id, bare=True)
-    asset = srv_res.lattice.get_asset(KEY_SUBSTITUTIONS.get(key, key))
+    srv_res = get_result_object(dispatch_id, bare=True, session=session)
+    asset = srv_res.lattice.get_asset(KEY_SUBSTITUTIONS.get(key, key), session)
     asset.update(session, values=values)
 
 
 def update_dispatch_asset(session: Session, dispatch_id: str, key: str, values: dict):
-    srv_res = get_result_object(dispatch_id, bare=True)
-    asset = srv_res.get_asset(key)
+    srv_res = get_result_object(dispatch_id, bare=True, session=session)
+    asset = srv_res.get_asset(key, session)
     asset.update(session, values=values)

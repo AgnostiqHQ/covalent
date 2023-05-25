@@ -76,6 +76,7 @@ class TransportGraphOps:
     def copy_nodes_from(self, tg: _TransportGraph, nodes):
         """Copy nodes from the transport graph in the argument."""
         for n in nodes:
+            old_node = tg.get_node(n)
             old_status = tg.get_node_value(n, "status")
             if old_status != RESULT_STATUS.COMPLETED:
                 continue
@@ -88,8 +89,9 @@ class TransportGraphOps:
                 self.tg.set_node_value(n, k, v)
             for k in ASSET_KEYS:
                 app_log.debug(f"Copying asset {k} for node {n}")
-                old = tg.get_node(n).get_asset(k)
-                new = self.tg.get_node(n).get_asset(k)
+                with old_node.session() as session:
+                    old = old_node.get_asset(k, session)
+                    new = self.tg.get_node(n).get_asset(k, session)
                 src_scheme = old.storage_type.value
                 src_uri = src_scheme + "://" + os.path.join(old.storage_path, old.object_key)
                 new.download(src_uri)
@@ -237,13 +239,15 @@ class TransportGraphOps:
         # inject parameter value checksums
         for node_id in A.nodes:
             node = self.tg.get_node(node_id)
-            value_asset = node.get_asset("value")
+            with node.session() as session:
+                value_asset = node.get_asset("value", session)
             value_hash = value_asset.digest
             A.nodes[node_id]["value"] = value_hash
 
         for node_id in B.nodes:
             node = tg_new.get_node(node_id)
-            value_asset = node.get_asset("value")
+            with node.session() as session:
+                value_asset = node.get_asset("value", session)
             value_hash = value_asset.digest
             B.nodes[node_id]["value"] = value_hash
 

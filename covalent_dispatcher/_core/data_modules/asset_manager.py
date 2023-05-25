@@ -45,7 +45,7 @@ async def upload_asset_for_nodes(dispatch_id: str, key: str, dest_uris: dict):
     for node_id, dest_uri in dest_uris.items():
         if dest_uri:
             node = tg.get_node(node_id)
-            asset = node.get_asset(key)
+            asset = node.get_asset(key, session=None)
             futs.append(loop.run_in_executor(am_pool, asset.upload, dest_uri))
 
     await asyncio.gather(*futs)
@@ -82,6 +82,6 @@ async def download_assets_for_node(dispatch_id: str, node_id: int, asset_updates
     await loop.run_in_executor(am_pool, node.update_assets, db_updates)
 
     for key, remote_uri in assets_to_download.items():
-        asset = node.get_asset(key)
+        asset = node.get_asset(key, session=None)
         futs.append(loop.run_in_executor(am_pool, asset.download, remote_uri))
     await asyncio.gather(*futs)

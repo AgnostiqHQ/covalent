@@ -166,9 +166,9 @@ def export_result_manifest(dispatch_id: str) -> ResultSchema:
 
 
 def get_node_asset(session: Session, dispatch_id: str, node_id: int, key: str) -> Asset:
-    srv_res = get_result_object(dispatch_id, bare=True)
-    node = srv_res.lattice.transport_graph.get_node(node_id)
-    return node.get_asset(key)
+    srv_res = get_result_object(dispatch_id, bare=True, session=session)
+    node = srv_res.lattice.transport_graph.get_node(node_id, session=session)
+    return node.get_asset(key, session)
 
 
 def get_node_asset_path(session: Session, dispatch_id: str, node_id: int, key: str) -> str:
@@ -177,8 +177,8 @@ def get_node_asset_path(session: Session, dispatch_id: str, node_id: int, key: s
 
 
 def get_lattice_asset(session: Session, dispatch_id: str, key: str) -> Asset:
-    srv_res = get_result_object(dispatch_id, bare=True)
-    return srv_res.lattice.get_asset(key)
+    srv_res = get_result_object(dispatch_id, bare=True, session=session)
+    return srv_res.lattice.get_asset(key, session)
 
 
 def get_lattice_asset_path(session: Session, dispatch_id: str, key: str) -> str:
@@ -187,8 +187,8 @@ def get_lattice_asset_path(session: Session, dispatch_id: str, key: str) -> str:
 
 
 def get_dispatch_asset(session: Session, dispatch_id: str, key: str) -> Asset:
-    srv_res = get_result_object(dispatch_id, bare=True)
-    return srv_res.get_asset(key)
+    srv_res = get_result_object(dispatch_id, bare=True, session=session)
+    return srv_res.get_asset(key, session)
 
 
 def get_dispatch_asset_path(session: Session, dispatch_id: str, key: str) -> str:

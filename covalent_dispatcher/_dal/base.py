@@ -110,20 +110,29 @@ class DispatchedObject(ABC):
         attr = type(self).meta_record_map(key)
         self.metadata.incr(session, increments={attr: delta})
 
-    def get_asset(self, key: str) -> Asset:
+    def get_asset(self, key: str, session: Session) -> Asset:
         if key not in self.assets:
-            with self.session() as session:
+            if session:
                 asset_id = self.get_asset_ids(session, [key])[key]
                 self.assets[key] = Asset.from_id(asset_id, session)
+            else:
+                with self.session() as session:
+                    asset_id = self.get_asset_ids(session, [key])[key]
+                    self.assets[key] = Asset.from_id(asset_id, session)
 
         return self.assets[key]
 
-    def update_assets(self, updates: Dict[str, Dict]):
+    def update_assets(self, updates: Dict[str, Dict], session: Session = None):
         """Bulk update associated assets"""
-        for key, values in updates.items():
-            with self.session() as session:
-                asset = self.get_asset(key)
+        if session:
+            for key, values in updates.items():
+                asset = self.get_asset(key, session)
                 asset.update(session, values=values)
+        else:
+            with self.session() as session:
+                for key, values in updates.items():
+                    asset = self.get_asset(key, session)
+                    asset.update(session, values=values)
 
     def _get_value(self, key: str, session: Session, refresh: bool = True) -> Any:
         if key in self.computed_fields:
@@ -132,7 +141,7 @@ class DispatchedObject(ABC):
         elif key in self.metadata_keys:
             return self.get_metadata(key, session, refresh)
         else:
-            return self.get_asset(key).load_data()
+            return self.get_asset(key, session).load_data()
 
     def get_value(self, key: str, session: Session = None, refresh: bool = True) -> Any:
         if session is not None:
@@ -145,7 +154,7 @@ class DispatchedObject(ABC):
         if key in type(self).metadata_keys:
             self.set_metadata(key, val, session)
         else:
-            self.get_asset(key).store_data(val)
+            self.get_asset(key, session).store_data(val)
 
     def set_value(self, key: str, val: Any, session: Session = None) -> None:
         if session is not None:

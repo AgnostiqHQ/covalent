@@ -174,10 +174,10 @@ class Result(DispatchedObject):
                 )[0]
                 parent_electron = Electron(session, electron_rec)
 
-            subl_output = self.get_asset("result")
-            subl_err = self.get_asset("error")
-            electron_output = parent_electron.get_asset("output")
-            electron_err = parent_electron.get_asset("error")
+                subl_output = self.get_asset("result", session)
+                subl_err = self.get_asset("error", session)
+                electron_output = parent_electron.get_asset("output", session)
+                electron_err = parent_electron.get_asset("error", session)
 
             app_log.debug("Copying sublattice output to parent electron")
             with self.session() as session:
@@ -264,12 +264,12 @@ class Result(DispatchedObject):
         tg = self.lattice.transport_graph
         if name.startswith(postprocess_prefix) and end_time is not None:
             app_log.debug(f"Postprocess status: {status}")
-            workflow_result = self.get_asset("result")
-            node_output = tg.get_node(node_id).get_asset("output")
-            _copy_asset(node_output, workflow_result)
             # Copy asset metadata
             with self.session() as session:
+                workflow_result = self.get_asset("result", session)
+                node_output = tg.get_node(node_id).get_asset("output", session)
                 _copy_asset_meta(session, node_output, workflow_result)
+            _copy_asset(node_output, workflow_result)
 
             self._update_dispatch(status=status, end_time=end_time)
 
@@ -426,11 +426,12 @@ class Result(DispatchedObject):
         dispatch_id: str,
         bare: bool,
         *,
+        session: Session = None,
         keys: list = RESULT_KEYS,
         lattice_keys: list = LATTICE_KEYS,
         electron_keys: list = ELECTRON_KEYS,
     ) -> Result:
-        with Result.session() as session:
+        if session:
             records = Result.get_db_records(
                 session,
                 keys=keys + lattice_keys,
@@ -450,6 +451,27 @@ class Result(DispatchedObject):
                 lattice_keys=lattice_keys,
                 electron_keys=electron_keys,
             )
+        else:
+            with Result.session() as session:
+                records = Result.get_db_records(
+                    session,
+                    keys=keys + lattice_keys,
+                    equality_filters={"dispatch_id": dispatch_id},
+                    membership_filters={},
+                )
+                if not records:
+                    raise KeyError(f"Dispatch {dispatch_id} not found")
+
+                record = records[0]
+
+                return Result(
+                    session,
+                    record,
+                    bare,
+                    keys=keys,
+                    lattice_keys=lattice_keys,
+                    electron_keys=electron_keys,
+                )
 
 
 def _copy_asset(src: Asset, dest: Asset):
@@ -471,6 +493,7 @@ def get_result_object(
     dispatch_id: str,
     bare: bool = False,
     *,
+    session: Session = None,
     keys: list = RESULT_KEYS,
     lattice_keys: list = LATTICE_KEYS,
     electron_keys: list = ELECTRON_KEYS,
@@ -478,6 +501,7 @@ def get_result_object(
     return Result.from_dispatch_id(
         dispatch_id,
         bare,
+        session=session,
         keys=keys,
         lattice_keys=lattice_keys,
         electron_keys=electron_keys,
