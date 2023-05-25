@@ -113,7 +113,10 @@ class LocalDispatcher(BaseDispatcher):
         multistage = get_config("sdk.multistage_dispatch") == "true"
 
         # Extract triggers here
-        triggers_data = orig_lattice.metadata.pop("triggers")
+        if "triggers" in orig_lattice.metadata:
+            triggers_data = orig_lattice.metadata.pop("triggers")
+        else:
+            triggers_data = None
 
         if not disable_run:
             # Determine whether to disable first run based on trigger_data
