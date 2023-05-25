@@ -33,7 +33,7 @@ import { socketAPI } from './redux/commonSlice'
 import theme from './utils/theme'
 import { ReactFlowProvider } from 'react-flow-renderer'
 import LatticePreviewLayout from './components/preview/LatticePreviewLayout'
-import {DispatchLayout} from './components/dispatch/DispatchLayout'
+import {DispatchLayoutValidate} from './components/dispatch/DispatchLayout'
 import TerminalLayout from './components/terminal/TerminalLayout'
 import SettingsLayout from './components/settings/SettingsLayout'
 import NotFound from './components/NotFound'
@@ -89,7 +89,7 @@ const App = () => {
           <Helmet defaultTitle="Covalent" titleTemplate="%s - Covalent" />
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/:dispatchId" element={<DispatchLayout />} />
+            <Route path="/:dispatchId" element={<DispatchLayoutValidate />} />
             <Route path="/preview" element={<LatticePreviewLayout />} />
             <Route path="/terminal" element={<TerminalLayout />} />
             <Route path="/settings" element={<SettingsLayout />} />

@@ -7,9 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Fix typo in GCP Batch executor RTD.
+
 ### Fixed
 
 - Resolving correct python executable
+- Error handling for random URLs/random dispatchId entered on the GUI
 
 ### Added
 
