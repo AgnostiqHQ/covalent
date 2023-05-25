@@ -27,10 +27,27 @@ import pytest
 import requests
 
 from covalent._results_manager import wait
-from covalent._results_manager.results_manager import _get_result_from_dispatcher, cancel
+from covalent._results_manager.results_manager import (
+    _get_result_from_dispatcher,
+    cancel,
+    get_result,
+)
 from covalent._shared_files.config import get_config
 
-DISPATCH_ID = "91c3ee18-5f2d-44ee-ac2a-39b79cf56646"
+
+def test_get_result_unreachable_dispatcher(mocker):
+    """
+    Test that get_result returns None when
+    the dispatcher server is unreachable.
+    """
+    mock_dispatch_id = "mock_dispatch_id"
+
+    mocker.patch(
+        "covalent._results_manager.results_manager._get_result_from_dispatcher",
+        side_effect=requests.exceptions.ConnectionError,
+    )
+
+    assert get_result(mock_dispatch_id) is None
 
 
 @pytest.mark.parametrize(
@@ -68,7 +85,7 @@ def test_get_result_from_dispatcher(mocker, dispatcher_addr):
     )
 
 
-def test_get_result_from_dispatcher_raises_exception(mocker):
+def test_get_result_from_dispatcher_unreachable(mocker):
     """
     Test that _get_result_from_dispatcher raises an exception when
     the dispatcher server is unreachable.
