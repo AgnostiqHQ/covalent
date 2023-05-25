@@ -1,5 +1,6 @@
-First Steps
-===========
+# First Steps
+
+---
 
 To get started contributing to Covalent, you should fork this repository for your own development. (Learn more about [how to fork a repo](https://docs.github.com/en/get-started/quickstart/fork-a-repo).)
 
@@ -19,6 +20,7 @@ conda activate covalent-dev
 ```
 
 Install Covalent's core requirements as well as the developer requirements:
+
 ```shell
 conda config --add channels conda-forge
 conda config --set channel_priority strict
@@ -30,24 +32,79 @@ pre-commit install
 ```
 
 Start the Covalent servers in developer mode:
+
 ```shell
 covalent start -d
 ```
 
-:bulb:*Note*
+:bulb:_Note_
 We have seen `OSError: protocol not found` when running Covalent in development mode for the first time on some Debian based systems. Running this command may fix the problem.
+
 ```
 apt-get -o Dpkg::Options::="--force-confmiss" install --reinstall netbase
 ```
+
 See more information on [Stackoverflow](https://stackoverflow.com/questions/65745342/oserror-protocol-not-found).
 
 Check the [writing tests](#writing-tests) section for more details on installing test specific packages. Finally, run the tests to verify your installation:
+
 ```shell
 pytest -v
 ```
 
-Getting started with feature development
-========================================
+# Contribution for Covalent UI
+
+---
+
+## Setup
+
+- Clone the repo
+- Install the dependencies
+
+```shell
+cd /covalent
+pip install -e .
+```
+
+- Install `node` (v16 or later) and `npm`:
+
+```shell
+# Linux
+curl -sL https://deb.nodesource.com/setup_16.x | bash -
+apt-get install -y nodejs
+
+# macOS
+brew install node
+```
+
+- Install `yarn`:
+
+```shell
+npm install --global yarn
+```
+
+## Build web app
+
+```
+cd covalent_ui/webapp
+yarn install
+yarn build
+```
+
+- The optimized production build of the UI web app lives under `covalent_ui/webapp/build`. It is statically served by the server by default.
+
+## Run web app
+
+```shell
+yarn start
+```
+
+- Open `http://localhost:<port>` in your browser.
+- Dispatch workflows to explore them in the UI.
+
+# Getting started with feature development
+
+---
 
 Note that for complex issues, planning out the implementation details (on the issues page) is a very important step before writing any code in the feature branch. The feature development steps are listed below.
 
@@ -93,29 +150,32 @@ Once the changes in the feature branch are ready to be reviewed, tag the relevan
 
 If all the reviewers have approved the Pull Request and all the actions have passed, the last person to review the branch is responsible for merging the feature branch to develop.
 
-Style Guide
-===========
+# Style Guide
+
+---
 
 Contributing to the Covalent codebase should be an easy process, but there are a few things to consider to ensure your contributions meet the minimum software quality standards. The main points are explained below, and they are roughly grouped into the following categories: stylization, documentation, and testing.
 
 ## General Guidelines
--   Use American English spellings and grammar.  Documentation with typos will be rejected.
--   Use complete sentences with capitalization and punctuation, except in short descriptions of arguments, return values, attributes, and exceptions in source code.
--   Multi-sentence argument descriptions, or longer sentence fragments with mid-sentence punctuation marks, should use capitalization and punctuation.
--   Comments may be written more informally than docstrings, as long as consistency and clarity are maintained. Capitalization and punctuation should be used with multi-sentence comments to aid with readability.
--   Avoid complex stylization in docstrings; these must be readable for users in a terminal/Jupyter environment.
--   Assume the user does not have access to any source files.
--   Variables must be restricted to the scope in which they are used; avoid use of global variables except when absolutely necessary.
--   Limit all lines to 99 characters.  Use a four-character indent for Python files; bash files use a two-character indent, and C uses a tab indent. These will be adjusted as needed by the pre-commit hooks.
--   A pre-commit hook, `detect-secrets` would run for detecting secrets based on `.secrets.baseline` file. To create a new `.secrets.baseline` file run `detect-secrets scan` command.  Refer to file `.pre-commit-config.yaml` file for the additional filters used and [detect-secrets repo](https://github.com/Yelp/detect-secrets#quickstart) for detailed documentation.
--   Input parameters to scripts should be passed using flags, rather than positional arguments. This may be implemented using the `getopt` libraries.  Bash scripts may accept parameters passed with or without flags.
--   Functions should perform a single task.  Generally functions should not contain more than 30 lines of code, not including line breaks, comments, and whitespace.
--   Use the `pylint` tool to improve the quality of your code. Contributions which decrease the codebase's code quality will be rejected.
--   All changes must be documented in the [changelog](./CHANGELOG.md).
--   New features or changes to UX must include a usage description in the form of a [how-to guide](https://covalent.readthedocs.io/en/latest/how_to/index.html).
--   All software source files should contain the copyright boilerplate displayed below, which includes a docstring describing the purpose of the file.
+
+- Use American English spellings and grammar.  Documentation with typos will be rejected.
+- Use complete sentences with capitalization and punctuation, except in short descriptions of arguments, return values, attributes, and exceptions in source code.
+- Multi-sentence argument descriptions, or longer sentence fragments with mid-sentence punctuation marks, should use capitalization and punctuation.
+- Comments may be written more informally than docstrings, as long as consistency and clarity are maintained. Capitalization and punctuation should be used with multi-sentence comments to aid with readability.
+- Avoid complex stylization in docstrings; these must be readable for users in a terminal/Jupyter environment.
+- Assume the user does not have access to any source files.
+- Variables must be restricted to the scope in which they are used; avoid use of global variables except when absolutely necessary.
+- Limit all lines to 99 characters.  Use a four-character indent for Python files; bash files use a two-character indent, and C uses a tab indent. These will be adjusted as needed by the pre-commit hooks.
+- A pre-commit hook, `detect-secrets` would run for detecting secrets based on `.secrets.baseline` file. To create a new `.secrets.baseline` file run `detect-secrets scan` command. Refer to file `.pre-commit-config.yaml` file for the additional filters used and [detect-secrets repo](https://github.com/Yelp/detect-secrets#quickstart) for detailed documentation.
+- Input parameters to scripts should be passed using flags, rather than positional arguments. This may be implemented using the `getopt` libraries.  Bash scripts may accept parameters passed with or without flags.
+- Functions should perform a single task.  Generally functions should not contain more than 30 lines of code, not including line breaks, comments, and whitespace.
+- Use the `pylint` tool to improve the quality of your code. Contributions which decrease the codebase's code quality will be rejected.
+- All changes must be documented in the [changelog](./CHANGELOG.md).
+- New features or changes to UX must include a usage description in the form of a [how-to guide](https://covalent.readthedocs.io/en/latest/how_to/index.html).
+- All software source files should contain the copyright boilerplate displayed below, which includes a docstring describing the purpose of the file.
 
 ## Source Code Boilerplate
+
 All files submitted must contain the following before all other lines:
 
 ```python
@@ -151,20 +211,22 @@ set -eu -o pipefail
 and files should end with an explicit exit code, e.g., `exit 0` indicates a successful exit.
 
 ## Naming Conventions
--   Class names use `CamelCase`
--   Functions, variables, filenames, and directories use `snake_case`
--   Constants use `SCREAMING_SNAKE_CASE`
--   Acronyms are a sequence of all-capitalized letters
--   Names should be descriptive and concise
--   Mathematical variables (“x”) may be used only when they are documented. This may be appropriate for standard variables used in literature.
--   Avoid using “I”, “l”, and “O” as variable names
--   Private objects and methods/functions of a class should start with an underscore, e.g., `self._variable` or `self._internal_function()`. A "private" class object is one that should not be used outside of the class definition. Unlike C++, Python has no way of stopping a user/developer from accessing or modifying any object in the class (hence the quotations around private). The underscore lets them know the object is for internal use only and that its internal usage could change without warning.
+
+- Class names use `CamelCase`
+- Functions, variables, filenames, and directories use `snake_case`
+- Constants use `SCREAMING_SNAKE_CASE`
+- Acronyms are a sequence of all-capitalized letters
+- Names should be descriptive and concise
+- Mathematical variables (“x”) may be used only when they are documented. This may be appropriate for standard variables used in literature.
+- Avoid using “I”, “l”, and “O” as variable names
+- Private objects and methods/functions of a class should start with an underscore, e.g., `self._variable` or `self._internal_function()`. A "private" class object is one that should not be used outside of the class definition. Unlike C++, Python has no way of stopping a user/developer from accessing or modifying any object in the class (hence the quotations around private). The underscore lets them know the object is for internal use only and that its internal usage could change without warning.
 
 ## References
--   Add references to other code units where applicable. Use the roles :class:, :func:, :attr:, :meth:, and :mod: so that Sphinx generates a cross-reference in generated documentation.
--   Add URL references to code taken from or inspired by code found online.
--   All digital references must specify a DOI, ISBN, arXiv ID, or URL, in that order of preference.
--   Add references to literature where applicable.  Academic journal articles should be in the following format:
+
+- Add references to other code units where applicable. Use the roles :class:, :func:, :attr:, :meth:, and :mod: so that Sphinx generates a cross-reference in generated documentation.
+- Add URL references to code taken from or inspired by code found online.
+- All digital references must specify a DOI, ISBN, arXiv ID, or URL, in that order of preference.
+- Add references to literature where applicable.  Academic journal articles should be in the following format:
 
 ```
 A.B. Lastname1, C. Lastname2 and D. Lastname3. Title of Article. Jour. Abbrev. 1, 123456 (2021).
@@ -172,7 +234,7 @@ doi: 10.1001/abcdef
 arXiv: quant-ph/000000
 ```
 
-Standard journal abbreviations can be found [here](https://www.library.caltech.edu/journal-title-abbreviations).  In the above example, ‘1’ refers to the volume number, and ‘123456’ refers to the first page number of the article.  For six or more authors use the first author’s name followed by *et al.*  References to other material should follow the *apsrev4-1* bibliography style and generally follow the same stylization as that for articles.  The DOI, if one exists, should be on the first line following a reference; if an arXiv ID also exists it may be added on a line following the DOI.
+Standard journal abbreviations can be found [here](https://www.library.caltech.edu/journal-title-abbreviations).  In the above example, ‘1’ refers to the volume number, and ‘123456’ refers to the first page number of the article.  For six or more authors use the first author’s name followed by *et al.*  References to other material should follow the _apsrev4-1_ bibliography style and generally follow the same stylization as that for articles.  The DOI, if one exists, should be on the first line following a reference; if an arXiv ID also exists it may be added on a line following the DOI.
 
 ## Python Docstrings
 
@@ -224,9 +286,9 @@ def func(arg1: <arg1_type>, arg2: <arg2_type>, arg3: <arg3_type> = "default_valu
     """
 ```
 
--   Relevant mathematical expressions should be formatted using inline latex and placed in the multi-line description.  Important or long equations may go on their own line.
--   Algorithmic functions should contain details about scaling with time and/or problem size, e.g., O(N); this information also goes in the multi-line description.
--   `<arg1_type>`, `<arg2_type>`, `<arg3_type>` and `<return_type>` are placeholders for the type hints of `arg1`, `arg2`, `arg3` and the return value.
+- Relevant mathematical expressions should be formatted using inline latex and placed in the multi-line description.  Important or long equations may go on their own line.
+- Algorithmic functions should contain details about scaling with time and/or problem size, e.g., O(N); this information also goes in the multi-line description.
+- `<arg1_type>`, `<arg2_type>`, `<arg3_type>` and `<return_type>` are placeholders for the type hints of `arg1`, `arg2`, `arg3` and the return value.
 
 ### Classes
 
@@ -241,11 +303,12 @@ class MyClass:
     """
 ```
 
--   Include public attributes here in the `Attributes` section, using the same formatting as a function's `Args` section.
--   Do not list methods in the class docstring.
--   Private attributes of a class do not need to be described in the class docstring. These are class objects that should not be used outside of the class definition.
+- Include public attributes here in the `Attributes` section, using the same formatting as a function's `Args` section.
+- Do not list methods in the class docstring.
+- Private attributes of a class do not need to be described in the class docstring. These are class objects that should not be used outside of the class definition.
 
 ### Variables
+
 Variables may optionally be documented using a docstring below their definition:
 
 ```python
@@ -273,15 +336,15 @@ fi
 
 ## Code Examples
 
--   You may assume that ‘covalent’ is imported as ‘ct’. All other imports must be specified explicitly.
--   For single line statements and associated output, use Python console syntax (pycon):
+- You may assume that ‘covalent’ is imported as ‘ct’. All other imports must be specified explicitly.
+- For single line statements and associated output, use Python console syntax (pycon):
 
 ```python
 >>> ct.dispatch(pipeline)(**params) # Dispatching a workflow returns a unique dispatch id.
 '8a7bfe54-d3c7-4ca1-861b-f55af6d5964a'
 ```
 
--   Multi-line statements should use “...” to indicate continuation lines:
+- Multi-line statements should use “...” to indicate continuation lines:
 
 ```python
 >>> dispatch_ids = []
@@ -290,7 +353,7 @@ fi
 ...     dispatch_ids.append(ct.dispatch(pipeline)(a=a))
 ```
 
--   For larger, more complicated code blocks, use standard Python code-block with Python console syntax for displaying output:
+- For larger, more complicated code blocks, use standard Python code-block with Python console syntax for displaying output:
 
 ```python
 >>> @ct.electron
@@ -322,15 +385,15 @@ dispatch_id: e4efd26c-240d-4ab1-9826-26ada91e429f
 
 ## Code Comments
 
--   Comments are used to explain the implementation or algorithm.  Assume the reader is a proficient programmer and understands basic principles and syntax.
--   Self-document code when possible.  Code should be clear and concise, flow logically, and be organized into stanzas according to what’s happening.  This helps avoid *unnecessary* comments.
--   Comments should occur directly above the code that is being described.  Use a single space between the "#" character and the start of text.
+- Comments are used to explain the implementation or algorithm.  Assume the reader is a proficient programmer and understands basic principles and syntax.
+- Self-document code when possible.  Code should be clear and concise, flow logically, and be organized into stanzas according to what’s happening.  This helps avoid _unnecessary_ comments.
+- Comments should occur directly above the code that is being described.  Use a single space between the "#" character and the start of text.
 
 ## Python Type Hints
 
 Type hints should be used for input parameters in functions and classes, as well as for return values as well. The typing module should be used for several circumstances:
 
-- When a parameter or return type is a container for multiple parameters.  Examples include a dict mapping strings to floats uses, `Dict[str,float]`, or a list of integers uses, `List[int]`
+- When a parameter or return type is a container for multiple parameters. Examples include a dict mapping strings to floats uses, `Dict[str,float]`, or a list of integers uses, `List[int]`
 
 - Nested Types: A dict mapping an integer to a list of floats is written `Dict[int,List[float]]`
 
@@ -423,15 +486,14 @@ For more urgent messages, denoting errors which will stop the program from execu
 
 The level of warning seen when executing code depends on the user's environment variable `LOGLEVEL`. Choices are:
 
-
-|Level|Numeric value|
-|-----|-------------|
-|CRITICAL|50|
-|ERROR|40|
-|WARNING|30|
-|INFO|20|
-|DEBUG|10|
-|NOTSET|0|
+| Level    | Numeric value |
+| -------- | ------------- |
+| CRITICAL | 50            |
+| ERROR    | 40            |
+| WARNING  | 30            |
+| INFO     | 20            |
+| DEBUG    | 10            |
+| NOTSET   | 0             |
 
 The lower the level, the more log messages are shown to the user. Executing, for example,
 
@@ -442,18 +504,18 @@ export LOGLEVEL=INFO
 guarantees all info, warning, error and critical messages will be shown. If this environment variable is not set, the default value of `WARNING` is used.
 
 ## Writing Tests
+
 All feature changes and bug fixes should be accompanied by tests. The bulk of the tests in the repo should be unit tests as opposed to functional or integration tests. A short definition of each type of test:
 
 1. Unit tests - the scope of unit tests are usually at a functional level, i.e. given an input, check if the output is as expected. Furthermore, care needs to be taken to mock other functions, context managers, I/O tasks within the function that is being tested.
 2. Integration tests - the scope of integration tests varies from a functional to module level. Here, we also test that functions or methods behave in certain ways given an input without mocking some of the other functions. The objective is to test how different functions / modules behave when "integrated".
 3. Functional tests - the scope of these tests are on a user experience level. The purpose here is to ensure that commonly defined software use cases leads to expected behaviour / output (without encountering runtime errors etc.) for a given input.
 
-
 Below, we list some important guidelines when writing tests.
 
-* **Write unit tests as opposed to integration or functional tests (unless there's a really good reason for it).**
+- **Write unit tests as opposed to integration or functional tests (unless there's a really good reason for it).**
 
-* In the case of bug fixes, write tests for which the code breaks before implementing the bug fix.
+- In the case of bug fixes, write tests for which the code breaks before implementing the bug fix.
 
 When writing tests, consider the following questions as guiding principles:
 
@@ -462,6 +524,7 @@ When writing tests, consider the following questions as guiding principles:
 3. Are these tests going to be helpful for debugging when a feature is added or modified?
 
 ### Installing test packages
+
 When it comes to testing, `pytest` is the recommended framework for this repository. Install all testing related packages with the following step:
 
 1. Navigate to the `tests` folder in the Covalent root directory.
@@ -474,6 +537,7 @@ The Covalent test suite can be run locally from the root directory with `pytest`
 Running the entire test suite everytime the code has been updated will take a while. The following commands are useful to hone in on a smaller subset of tests for development purposes.
 
 1. To run a specific test module:
+
 ```bash
 pytest tests/covalent_dispatcher_tests/_executor/local_test.py -vv -s
 ```
@@ -512,7 +576,6 @@ Some important commands to know about:
 
 This module can be used to mock module variables, environment variables etc. Check out the official [monkeypatch documentation](https://docs.pytest.org/en/6.2.x/monkeypatch.html).
 
-
 ## Covalent with Docker
 
 This repository contains a Dockerfile that can be used in a variety of ways for development and deployment. Note that we use the Dockerfile 1.4 syntax which requires BuildKit. For most users, it is sufficient to set the environment variable `DOCKER_BUILDKIT=1` before attempting to build images. All of the examples below use build arguments and target stages referenced in the Dockerfile. For a full list of build arguments, run `grep ARG Dockerfile`.
@@ -539,7 +602,7 @@ docker run -d -p 48008:48008 covalent-server:latest
 
 ### Covalent SDK
 
-The Covalent SDK can also run inside a container. This is useful in scenarios where containerized tasks use Covalent, e.g., in executor plugins.  Build the container using these options:
+The Covalent SDK can also run inside a container. This is useful in scenarios where containerized tasks use Covalent, e.g., in executor plugins. Build the container using these options:
 
 ```shell
 docker build --build-arg COVALENT_INSTALL_TYPE=sdk --tag covalent-sdk:latest .
@@ -585,8 +648,9 @@ Finally, users can specify a custom base image, which can be useful when users a
 
 Note that the base image must include a compatible version of Python and must be based on either Ubuntu or Debian.
 
-Building Read the Docs (RTD) locally
-====================================
+# Building Read the Docs (RTD) locally
+
+---
 
 Contributing to the Covalent documentation is highly encouraged. This could mean adding How-To guides, tutorials etc. The steps required to build the RTD locally are listed below:
 
@@ -628,7 +692,8 @@ The local RTD build can be cleaned using:
 python setup.py docs --clean
 ```
 
-Contributor License Agreement
-=============================
+# Contributor License Agreement
+
+---
 
 All contributors to Covalent must agree to the terms in the [Contributor License Agreement](https://gist.github.com/wjcunningham7/3f21c684fc60c7598e0fe711caeb9ac1). Individual contributors should sign on their own behalf, while corporate contributors should sign on behalf of their employer. If you have any questions, direct them to the [support team](mailto:support@agnostiq.ai).
