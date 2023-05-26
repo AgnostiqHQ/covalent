@@ -1,7 +1,6 @@
 from pathlib import Path
 
-from covalent_qelectron.quantum_server.server_utils import CircuitInfo
-
+from ..quantum_server.server_utils import CircuitInfo
 from .serialize import JsonLmdb, Strategy
 
 
@@ -29,8 +28,8 @@ class Database:
         if db_dir:
             self.db_dir = db_dir
         else:
-            import covalent as ct
-            self.db_dir = Path(ct.get_config("dispatcher")["qelectron_db_path"])
+            from ...._shared_files.config import get_config
+            self.db_dir = Path(get_config("dispatcher")["qelectron_db_path"])
 
     def _get_db_path(self, dispatch_id, node_id):
         dispatch_id = "default-dispatch" if dispatch_id is None else dispatch_id

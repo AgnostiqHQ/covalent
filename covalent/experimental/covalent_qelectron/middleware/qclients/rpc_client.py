@@ -1,6 +1,6 @@
 import zerorpc
-from covalent_qelectron.shared_utils import cloudpickle_serialize, cloudpickle_deserialize
-from covalent_qelectron.middleware.qclients import LocalQClient
+from ...shared_utils import cloudpickle_serialize, cloudpickle_deserialize
+from ...middleware.qclients import LocalQClient
 
 class RPCQClient(LocalQClient):
     def __init__(self) -> None:

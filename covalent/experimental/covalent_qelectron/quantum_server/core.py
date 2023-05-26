@@ -2,16 +2,18 @@ import datetime
 import uuid
 from typing import TYPE_CHECKING, Callable, List
 
-from covalent import get_context
 from pennylane.tape import QuantumScript
 
-from covalent_qelectron.executors import BaseQExecutor
-from covalent_qelectron.quantum_server.database import Database
-from covalent_qelectron.quantum_server.server_utils import (
-    CircuitInfo, get_cached_executor, get_circuit_id, reconstruct_executors)
-from covalent_qelectron.shared_utils import (dummy_deserialize,
-                                             dummy_serialize,
-                                             select_first_executor)
+from ....executor.utils import get_context
+from ..executors import BaseQExecutor
+from ..quantum_server.database import Database
+from ..quantum_server.server_utils import (
+    CircuitInfo,
+    get_cached_executor,
+    get_circuit_id,
+    reconstruct_executors,
+)
+from ..shared_utils import dummy_deserialize, dummy_serialize, select_first_executor
 
 if TYPE_CHECKING:
     from covalent_qelectron.core.qelectron import QElectronInfo

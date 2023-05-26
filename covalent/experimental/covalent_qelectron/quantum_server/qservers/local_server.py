@@ -1,3 +1,3 @@
-from covalent_qelectron.quantum_server import QServer
+from ...quantum_server import QServer
 
 LocalQServer = QServer

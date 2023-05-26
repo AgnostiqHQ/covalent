@@ -1,6 +1,8 @@
-import pennylane as qml
 from typing import List
-from covalent_qelectron.middleware.qclients import LocalQClient
+
+import pennylane as qml
+
+from ..middleware.qclients import LocalQClient
 
 
 class MiddleWare:

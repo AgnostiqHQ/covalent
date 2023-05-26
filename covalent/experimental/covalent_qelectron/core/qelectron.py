@@ -2,9 +2,9 @@ import functools
 
 from pydantic import BaseModel
 
-from covalent_qelectron.core.qnode_qe import QNodeQE
-from covalent_qelectron.executors import Simulator
-from covalent_qelectron.executors.base import AsyncBaseQCluster
+from ..core.qnode_qe import QNodeQE
+from ..executors import Simulator
+from ..executors.base import AsyncBaseQCluster
 
 
 class QElectronInfo(BaseModel):

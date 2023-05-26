@@ -1,4 +1,4 @@
-from covalent_qelectron.middleware.core import middleware
+from ..middleware.core import middleware
 
 
 class QNodeFutureResult:

@@ -6,7 +6,7 @@ from typing import Any, Dict, List
 import orjson
 from pydantic import BaseModel
 
-from covalent_qelectron.executors import BaseQExecutor
+from ..executors import BaseQExecutor
 
 BATCH_ID_SEPARATOR = "@"
 MAX_DIFFERENT_EXECUTORS = 10
@@ -29,7 +29,10 @@ class CircuitInfo(BaseModel):
 
 @lru_cache
 def get_cached_module():
-    return importlib.import_module(".quantum_server.proxy_executors", package="covalent_qelectron")
+    return importlib.import_module(
+        ".experimental.covalent_qelectron.quantum_server.proxy_executors",
+        package="covalent"
+    )
 
 
 def executor_from_dict(executor_dict: Dict):

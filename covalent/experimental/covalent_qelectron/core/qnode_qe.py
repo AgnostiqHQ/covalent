@@ -1,9 +1,11 @@
-import pennylane as qml
 from contextlib import contextmanager
-from covalent_qelectron.core.device import QEDevice
-from covalent_qelectron.core.future_result import QNodeFutureResult
-from pydantic import BaseModel
 from typing import Dict
+
+import pennylane as qml
+from pydantic import BaseModel
+
+from ..core.device import QEDevice
+from ..core.future_result import QNodeFutureResult
 
 
 class QNodeSpecs(BaseModel):

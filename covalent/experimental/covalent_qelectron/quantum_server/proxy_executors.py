@@ -1,6 +1,6 @@
-from covalent_qelectron.executors.base import *
-from covalent_qelectron.executors.plugins import *
-from covalent_qelectron.executors.clusters import *
+from ..executors.base import *
+from ..executors.plugins import *
+from ..executors.clusters import *
 
 
 # Ways to add new methods/attributes to the executor classes:

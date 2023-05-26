@@ -2,9 +2,8 @@ import base64
 
 import orjson
 
-from covalent_qelectron.executors.base import AsyncBaseQCluster
-from covalent_qelectron.shared_utils import (cloudpickle_deserialize,
-                                             cloudpickle_serialize)
+from ..executors.base import AsyncBaseQCluster
+from ..shared_utils import cloudpickle_deserialize, cloudpickle_serialize
 
 __all__ = [
     "QCluster",

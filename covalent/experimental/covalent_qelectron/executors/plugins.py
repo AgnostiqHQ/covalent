@@ -2,12 +2,14 @@ from typing import List, Union
 
 import pennylane as qml
 
-from covalent_qelectron.executors.base import (BaseProcessPoolQExecutor,
-                                               BaseQExecutor,
-                                               BaseThreadPoolQExecutor,
-                                               QCResult, SyncBaseQExecutor,
-                                               get_thread_pool)
-
+from ..executors.base import (
+    BaseProcessPoolQExecutor,
+    BaseQExecutor,
+    BaseThreadPoolQExecutor,
+    QCResult,
+    SyncBaseQExecutor,
+    get_thread_pool,
+)
 from .qiskit.plugins import QiskitExecutor
 
 __all__ = [

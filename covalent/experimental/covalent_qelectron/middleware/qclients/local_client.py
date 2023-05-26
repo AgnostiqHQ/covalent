@@ -1,6 +1,6 @@
-from covalent_qelectron.middleware.qclients import BaseQClient
-from covalent_qelectron.quantum_server.qservers import LocalQServer
-from covalent_qelectron.shared_utils import dummy_serialize, dummy_deserialize
+from ...middleware.qclients import BaseQClient
+from ...quantum_server.qservers import LocalQServer
+from ...shared_utils import dummy_deserialize, dummy_serialize
 
 # Since in the local case, the server and client are the same
 # thus the "server" class's functions are directly accessed

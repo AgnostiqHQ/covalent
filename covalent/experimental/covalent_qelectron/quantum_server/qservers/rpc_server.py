@@ -1,6 +1,7 @@
 import zerorpc
-from covalent_qelectron.quantum_server import QServer
-from covalent_qelectron.shared_utils import cloudpickle_serialize, cloudpickle_deserialize
+
+from ...quantum_server import QServer
+from ...shared_utils import cloudpickle_deserialize, cloudpickle_serialize
 
 
 class RPCQServer(QServer):
@@ -9,7 +10,6 @@ class RPCQServer(QServer):
 
     def deserialize(self, obj):
         return cloudpickle_deserialize(obj)
-
 
 
 if __name__ == "__main__":

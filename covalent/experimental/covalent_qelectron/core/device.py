@@ -2,7 +2,7 @@ from pennylane import QubitDevice, active_return
 from pennylane import numpy as np
 from pennylane.devices.default_qubit import DefaultQubit
 
-from covalent_qelectron.middleware.core import middleware
+from ..middleware.core import middleware
 
 
 class QEDevice(QubitDevice):
