@@ -110,7 +110,7 @@ async def register_and_observe(request: Request):
     else:
         active_triggers[lattice_did] = [trigger]
 
-    app_log.warning(f"Started trigger with id: {lattice_did}")
+    app_log.debug(f"Started trigger with id: {lattice_did}")
 
 
 @router.post("/triggers/stop_observe")
