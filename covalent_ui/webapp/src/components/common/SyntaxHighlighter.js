@@ -92,24 +92,23 @@ const SyntaxHighlighter = ({ src, preview, fullwidth, ...props }) => {
           sx={{
             display: 'flex',
             justifyContent: 'flex-end',
-            cursor: 'pointer',
           }}
         >
           {preview && (
-            <span style={{ flex: 'none' }} onClick={handleOpen}>
-              <SvgIcon
-                aria-label="view"
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  mr: 0,
-                  mt: 1,
-                  pr: 0,
-                }}
-              >
-                <ViewSvg />
-              </SvgIcon>
-            </span>
+            <SvgIcon
+              aria-label="view"
+              sx={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                mr: 0,
+                mt: 1,
+                pr: 0,
+                cursor: 'pointer',
+              }}
+              onClick={handleOpen}
+            >
+              <ViewSvg />
+            </SvgIcon>
           )}
         </Grid>
       </Grid>
@@ -147,23 +146,23 @@ const SyntaxHighlighter = ({ src, preview, fullwidth, ...props }) => {
                 sx={{
                   display: 'flex',
                   justifyContent: 'flex-end',
-                  cursor: 'pointer',
+                  cursor: 'default',
                 }}
               >
-                <span style={{ flex: 'none' }} onClick={handleClose}>
-                  <SvgIcon
-                    aria-label="view"
-                    sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      mr: 0,
-                      mt: 1,
-                      pr: 0,
-                    }}
-                  >
-                    <CloseSvg />
-                  </SvgIcon>
-                </span>
+                <SvgIcon
+                  aria-label="view"
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    mr: 0,
+                    mt: 1,
+                    pr: 0,
+                    cursor: 'pointer'
+                  }}
+                  onClick={handleClose}
+                >
+                  <CloseSvg />
+                </SvgIcon>
               </Grid>
             </Grid>
           </Box>
