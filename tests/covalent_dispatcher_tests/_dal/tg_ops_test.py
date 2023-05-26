@@ -59,12 +59,26 @@ def tg():
     tg.get_node_value = types.MethodType(get_node_value, tg)
     tg.set_node_value = types.MethodType(set_node_value, tg)
 
-    tg._graph.add_node(0, name="add", function=add, metadata={"0-mock-key": "0-mock-value"})
     tg._graph.add_node(
-        1, name="multiply", function=multiply, metadata={"1-mock-key": "1-mock-value"}
+        0,
+        name="add",
+        function=add,
+        metadata={"0-mock-key": "0-mock-value"},
+        status=RESULT_STATUS.NEW_OBJECT,
     )
     tg._graph.add_node(
-        2, name="identity", function=identity, metadata={"2-mock-key": "2-mock-value"}
+        1,
+        name="multiply",
+        function=multiply,
+        metadata={"1-mock-key": "1-mock-value"},
+        status=RESULT_STATUS.NEW_OBJECT,
+    )
+    tg._graph.add_node(
+        2,
+        name="identity",
+        function=identity,
+        metadata={"2-mock-key": "2-mock-value"},
+        status=RESULT_STATUS.NEW_OBJECT,
     )
     return tg
 
@@ -76,12 +90,26 @@ def tg_2():
     tg_2.get_node_value = types.MethodType(get_node_value, tg_2)
     tg_2.set_node_value = types.MethodType(set_node_value, tg_2)
 
-    tg_2._graph.add_node(0, name="not-add", function=add, metadata={"0- mock-key": "0-mock-value"})
     tg_2._graph.add_node(
-        1, name="multiply", function=multiply, metadata={"1- mock-key": "1-mock-value"}
+        0,
+        name="not-add",
+        function=add,
+        metadata={"0- mock-key": "0-mock-value"},
+        status=RESULT_STATUS.NEW_OBJECT,
     )
     tg_2._graph.add_node(
-        2, name="identity", function=identity, metadata={"2- mock-key": "2-mock-value"}
+        1,
+        name="multiply",
+        function=multiply,
+        metadata={"1- mock-key": "1-mock-value"},
+        status=RESULT_STATUS.NEW_OBJECT,
+    )
+    tg_2._graph.add_node(
+        2,
+        name="identity",
+        function=identity,
+        metadata={"2- mock-key": "2-mock-value"},
+        status=RESULT_STATUS.NEW_OBJECT,
     )
     return tg_2
 
@@ -321,6 +349,15 @@ def test_cmp_name_and_pval_true(tg, tg_ops):
 def test_cmp_name_and_pval_false(tg, tg_2, tg_ops):
     """Test the name and parameter value comparison method."""
     assert tg_ops._cmp_name_and_pval(tg._graph, tg_2._graph, 0) is False
+
+
+def test_cmp_name_and_pval_pending_replacement(tg, tg_ops):
+    """Test the name and parameter value comparison method."""
+    import copy
+
+    tg_3 = copy.deepcopy(tg)
+    tg_3.set_node_value(0, "status", RESULT_STATUS.PENDING_REPLACEMENT)
+    assert tg_ops._cmp_name_and_pval(tg._graph, tg_3._graph, 0) is False
 
 
 def test_get_reusable_nodes(mocker, tg, tg_2):

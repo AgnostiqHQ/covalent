@@ -105,11 +105,26 @@ class TransportGraphOps:
 
     @staticmethod
     def _cmp_name_and_pval(A: nx.MultiDiGraph, B: nx.MultiDiGraph, node: int) -> bool:
-        """Default node comparison function for diffing transport graphs."""
+        """Default node comparison function for diffing transport graphs.
+
+        Two nodes are considered the "same" if either:
+        * both are parameter nodes and have the same hash
+        * both are function nodes, have the same name,
+          and neither is marked PENDING_REPLACEMENT.
+        """
+
         name_A = A.nodes[node]["name"]
         name_B = B.nodes[node]["name"]
 
         if name_A != name_B:
+            return False
+
+        status_A = A.nodes[node]["status"]
+        status_B = B.nodes[node]["status"]
+        if (
+            status_A == RESULT_STATUS.PENDING_REPLACEMENT
+            or status_B == RESULT_STATUS.PENDING_REPLACEMENT
+        ):
             return False
 
         # Same name -- remaining case to check is if both are
