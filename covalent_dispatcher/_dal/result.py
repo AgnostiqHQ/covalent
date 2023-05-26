@@ -22,7 +22,6 @@
 
 from __future__ import annotations
 
-import os
 from datetime import datetime
 from typing import Any, Dict, List
 
@@ -33,7 +32,7 @@ from covalent._shared_files.defaults import postprocess_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS, Status
 
 from .._db import models
-from .asset import Asset
+from .asset import Asset, copy_asset, copy_asset_meta
 from .base import DispatchedObject
 from .controller import Record
 from .db_interfaces.result_utils import ASSET_KEYS  # nopycln: import
@@ -181,11 +180,11 @@ class Result(DispatchedObject):
 
             app_log.debug("Copying sublattice output to parent electron")
             with self.session() as session:
-                _copy_asset_meta(session, subl_output, electron_output)
-                _copy_asset_meta(session, subl_err, electron_err)
+                copy_asset_meta(session, subl_output, electron_output)
+                copy_asset_meta(session, subl_err, electron_err)
 
-            _copy_asset(subl_output, electron_output)
-            _copy_asset(subl_err, electron_err)
+            copy_asset(subl_output, electron_output)
+            copy_asset(subl_err, electron_err)
 
     def _update_node(
         self,
@@ -268,8 +267,8 @@ class Result(DispatchedObject):
             with self.session() as session:
                 workflow_result = self.get_asset("result", session)
                 node_output = tg.get_node(node_id).get_asset("output", session)
-                _copy_asset_meta(session, node_output, workflow_result)
-            _copy_asset(node_output, workflow_result)
+                copy_asset_meta(session, node_output, workflow_result)
+            copy_asset(node_output, workflow_result)
 
             self._update_dispatch(status=status, end_time=end_time)
 
@@ -472,21 +471,6 @@ class Result(DispatchedObject):
                     lattice_keys=lattice_keys,
                     electron_keys=electron_keys,
                 )
-
-
-def _copy_asset(src: Asset, dest: Asset):
-    scheme = dest.storage_type.value
-    dest_uri = scheme + "://" + os.path.join(dest.storage_path, dest.object_key)
-    src.upload(dest_uri)
-
-
-def _copy_asset_meta(session: Session, src: Asset, dest: Asset):
-    update = {
-        "digest_alg": src.digest_alg,
-        "digest": src.digest,
-        "size": src.size,
-    }
-    dest.update(session, values=update)
 
 
 def get_result_object(

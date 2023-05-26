@@ -207,6 +207,9 @@ def test_copy_nodes_from(tg, mocker):
     mocker.patch("covalent_dispatcher._dal.tg_ops.METADATA_KEYS", MOCK_META_KEYS)
     mocker.patch("covalent_dispatcher._dal.tg_ops.ASSET_KEYS", MOCK_ASSET_KEYS)
 
+    mock_copy_asset = mocker.patch("covalent_dispatcher._dal.tg_ops.copy_asset")
+    mock_copy_asset_meta = mocker.patch("covalent_dispatcher._dal.tg_ops.copy_asset_meta")
+
     tg_new = _TransportGraph(lattice_id=2)
 
     tg.get_node = MagicMock(return_value=mock_old_node)
@@ -249,7 +252,8 @@ def test_copy_nodes_from(tg, mocker):
     assert tg_ops.tg._graph.nodes[1]["name"] == "multiply"
     assert tg_ops.tg._graph.nodes(data=True)[2]["name"] == "replacement"
 
-    assert mock_old_asset.download.call_count == 2
+    assert mock_copy_asset.call_count == 2
+    assert mock_copy_asset_meta.call_count == 2
 
 
 def test_max_cbms(tg_ops):

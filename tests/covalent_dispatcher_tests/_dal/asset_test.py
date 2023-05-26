@@ -26,9 +26,12 @@ import tempfile
 import pytest
 
 from covalent_dispatcher._dal.asset import (
+    FIELDS,
     Asset,
     InvalidFileExtension,
     StorageType,
+    copy_asset,
+    copy_asset_meta,
     load_file,
     store_file,
 )
@@ -46,13 +49,14 @@ def test_db():
     )
 
 
-def get_asset_record(storage_path, object_key, digest_alg="", digest=""):
+def get_asset_record(storage_path, object_key, digest_alg="", digest="", size=0):
     return models.Asset(
-        storage_type=StorageType.LOCAL,
+        storage_type=StorageType.LOCAL.value,
         storage_path=storage_path,
         object_key=object_key,
         digest_alg=digest_alg,
         digest=digest,
+        size=size,
     )
 
 
@@ -126,6 +130,52 @@ def test_download_asset():
     assert a.load_data() == "Hello\n"
 
     os.unlink(dest_path)
+
+
+def test_copy_asset():
+    with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
+        src_path = temp.name
+        src_key = os.path.basename(src_path)
+    with open(src_path, "w") as f:
+        f.write("Hello\n")
+
+    storage_path = "/tmp"
+    rec = get_asset_record(storage_path, src_key)
+    src_asset = Asset(None, rec)
+
+    with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
+        dest_path = temp.name
+        dest_key = os.path.basename(dest_path)
+
+    rec = get_asset_record(storage_path, dest_key)
+    dest_asset = Asset(None, rec)
+
+    copy_asset(src_asset, dest_asset)
+
+    assert dest_asset.load_data() == "Hello\n"
+
+
+def test_copy_asset_metadata(test_db):
+    src_rec = get_asset_record("/tmp", "src_key", "sha", "srcdigest", 256)
+    dest_rec = get_asset_record("/tmp", "dest_key")
+
+    with test_db.session() as session:
+        session.add(src_rec)
+        session.add(dest_rec)
+
+    with test_db.session():
+        session.add(src_rec)
+        session.add(dest_rec)
+        src_asset = Asset(None, src_rec)
+        dest_asset = Asset(None, dest_rec)
+        copy_asset_meta(session, src_asset, dest_asset)
+
+    with test_db.session() as session:
+        dest_asset.refresh(session, fields=FIELDS)
+
+        assert dest_asset.digest_alg == "sha"
+        assert dest_asset.digest == "srcdigest"
+        assert dest_asset.size == 256
 
 
 # Moved from write_result_to_db_test.py

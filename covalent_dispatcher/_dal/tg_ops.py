@@ -20,7 +20,6 @@
 
 """Module for transport graph operations."""
 
-import os
 from collections import deque
 from typing import Any, Callable, Dict, List
 
@@ -31,6 +30,7 @@ from covalent._shared_files.defaults import parameter_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.transport import TransportableObject
 
+from .asset import copy_asset, copy_asset_meta
 from .electron import ASSET_KEYS, METADATA_KEYS
 from .tg import _TransportGraph
 
@@ -75,6 +75,8 @@ class TransportGraphOps:
 
     def copy_nodes_from(self, tg: _TransportGraph, nodes):
         """Copy nodes from the transport graph in the argument."""
+
+        assets_to_copy = []
         for n in nodes:
             old_node = tg.get_node(n)
             old_status = tg.get_node_value(n, "status")
@@ -88,13 +90,18 @@ class TransportGraphOps:
                     v = RESULT_STATUS.PENDING_REUSE
                 self.tg.set_node_value(n, k, v)
             for k in ASSET_KEYS:
+                # Copy asset metadata
                 app_log.debug(f"Copying asset {k} for node {n}")
                 with old_node.session() as session:
                     old = old_node.get_asset(k, session)
                     new = self.tg.get_node(n).get_asset(k, session)
-                src_scheme = old.storage_type.value
-                src_uri = src_scheme + "://" + os.path.join(old.storage_path, old.object_key)
-                new.download(src_uri)
+                    copy_asset_meta(session, old, new)
+                    assets_to_copy.append((old, new))
+
+        # Now perform all data copy operations (this could be slow)
+        for item in assets_to_copy:
+            src, dest = item
+            copy_asset(src, dest)
 
     @staticmethod
     def _cmp_name_and_pval(A: nx.MultiDiGraph, B: nx.MultiDiGraph, node: int) -> bool:

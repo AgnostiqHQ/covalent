@@ -177,3 +177,18 @@ def load_file(storage_path: str, filename: str) -> Any:
             data = f.read()
 
     return data
+
+
+def copy_asset(src: Asset, dest: Asset):
+    scheme = dest.storage_type.value
+    dest_uri = scheme + "://" + os.path.join(dest.storage_path, dest.object_key)
+    src.upload(dest_uri)
+
+
+def copy_asset_meta(session: Session, src: Asset, dest: Asset):
+    update = {
+        "digest_alg": src.digest_alg,
+        "digest": src.digest,
+        "size": src.size,
+    }
+    dest.update(session, values=update)
