@@ -20,7 +20,11 @@
 
 """Tests for Covalent command line interface (CLI) Tool."""
 
+import os
+import subprocess
+import sys
 import tempfile
+import venv
 from unittest import mock
 from unittest.mock import MagicMock, Mock
 
@@ -31,7 +35,6 @@ from click.testing import CliRunner
 from covalent_dispatcher._cli.service import (
     MIGRATION_COMMAND_MSG,
     MIGRATION_WARNING_MSG,
-    UI_LOGFILE,
     _graceful_shutdown,
     _graceful_start,
     _is_server_running,
@@ -52,6 +55,53 @@ from covalent_dispatcher._db.datastore import DataStore
 
 STOPPED_SERVER_STATUS_ECHO = "Covalent server is stopped.\n"
 RUNNING_SERVER_STATUS_ECHO = "Covalent server is running at http://localhost:42.\n"
+
+
+def has_conda():
+    try:
+        ret = subprocess.run(["conda"], check=True)
+        return ret.returncode == 0
+    except FileNotFoundError:
+        return False
+
+
+def conda_test(f):
+    mark = pytest.mark.conda
+    skip = pytest.mark.skipif(not has_conda(), reason="conda is unavailable")
+    return mark(skip(f))
+
+
+@conda_test
+def test_python_path_in_conda_env():
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        create_cmd = ["conda", "create", "-y", "--prefix", tmp_dir, "python=3.9.12"]
+        subprocess.run(create_cmd, check=True)
+        check_path_cmd = [
+            "conda",
+            "run",
+            "--prefix",
+            tmp_dir,
+            "python",
+            "-c",
+            "import sys; print(sys.executable)",
+        ]
+        res = subprocess.run(check_path_cmd, check=True, capture_output=True)
+        assert res.stdout.decode().startswith(tmp_dir)
+        check_version_cmd = ["conda", "run", "--prefix", tmp_dir, "python", "--version"]
+        res = subprocess.run(check_version_cmd, check=True, capture_output=True)
+        assert res.stdout.decode().strip() == "Python 3.9.12"
+
+
+def test_python_path_in_venv():
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        venv.create(tmp_dir, with_pip=False)
+        custom_env = os.environ.copy()
+        # equivalent of source venv/bin/activate
+        custom_env["VIRTUAL_ENV"] = tmp_dir
+        custom_env["PATH"] = f"{tmp_dir}/bin:$PATH"
+        check_path_cmd = ["python", "-c", "import sys; print(sys.executable)"]
+        res = subprocess.run(check_path_cmd, check=True, capture_output=True, env=custom_env)
+        assert res.stdout.decode().startswith(tmp_dir)
 
 
 def test_read_pid_nonexistent_file():
@@ -139,6 +189,17 @@ def test_graceful_start_when_pid_exists(mocker):
 def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_flag):
     """Test the graceful server start function."""
 
+    config_paths = [
+        "dispatcher.cache_dir",
+        "dispatcher.results_dir",
+        "dispatcher.log_dir",
+        "user_interface.log_dir",
+        "dispatcher.db_path",
+    ]
+
+    def patched_fn(entry):
+        return entry
+
     read_pid_mock = mocker.patch("covalent_dispatcher._cli.service._read_pid")
     pid_exists_mock = mocker.patch("psutil.pid_exists", return_value=False)
     rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
@@ -146,6 +207,10 @@ def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_
         "covalent_dispatcher._cli.service._next_available_port", return_value=1984
     )
     popen_mock = mocker.patch("covalent_dispatcher._cli.service.Popen")
+    get_mock = mocker.patch(
+        "covalent._shared_files.config.ConfigManager.get", side_effect=patched_fn
+    )
+    path_mock = mocker.patch("covalent_dispatcher._cli.service.Path.__init__", return_value=None)
     click_echo_mock = mocker.patch("click.echo")
     requests_mock = mocker.patch(
         "covalent_dispatcher._cli.service.requests.get",
@@ -154,9 +219,7 @@ def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_
     no_triggers_str = "--no-triggers" if no_triggers_flag else ""
     triggers_only_str = "--triggers-only" if triggers_only_flag else ""
 
-    launch_str = (
-        f" python app.py  --port 1984  {no_triggers_str} {triggers_only_str}>> output.log 2>&1"
-    )
+    launch_str = f" {sys.executable} app.py  --port 1984  {no_triggers_str} {triggers_only_str}>> output.log 2>&1"
 
     with mock.patch("covalent_dispatcher._cli.service.open", mock.mock_open()):
         if no_triggers_flag and triggers_only_flag:
@@ -173,6 +236,14 @@ def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_
                 "", "", "output.log", 15, False, False, no_triggers_flag, triggers_only_flag
             )
             assert res == 1984
+
+            path_mock_calls = path_mock.mock_calls
+            get_mock_calls = get_mock.mock_calls
+
+            for each_path in config_paths:
+                assert (mocker.call(each_path) in get_mock_calls) and (
+                    mocker.call(each_path) in path_mock_calls
+                )
 
             popen_mock.assert_called_once()
             assert popen_mock.call_args[0][0] == launch_str
@@ -259,7 +330,6 @@ def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations, cur
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
@@ -821,7 +891,6 @@ def test_start_config_mem_per_worker(mocker, monkeypatch):
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
@@ -847,7 +916,6 @@ def test_start_config_threads_per_worker(mocker, monkeypatch):
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
@@ -873,7 +941,6 @@ def test_start_config_num_workers(mocker, monkeypatch):
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
@@ -899,7 +966,6 @@ def test_start_all_dask_config(mocker, monkeypatch):
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
@@ -925,7 +991,6 @@ def test_start_dask_config_options_workers_and_mem_per_worker(mocker, monkeypatc
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
@@ -951,7 +1016,6 @@ def test_start_dask_config_options_workers_and_threads_per_worker(mocker, monkey
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
@@ -977,7 +1041,6 @@ def test_start_dask_config_options_mem_per_workers_and_threads_per_worker(mocker
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
@@ -1002,7 +1065,6 @@ def test_sdk_no_cluster(mocker, monkeypatch):
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
@@ -1014,6 +1076,7 @@ def test_sdk_no_cluster(mocker, monkeypatch):
 
     res = runner.invoke(start, cli_args)
 
+    assert set_config_mock.call_count == 6
     graceful_start_mock.assert_called_once()
 
 

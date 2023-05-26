@@ -56,8 +56,7 @@ try {
   });
   rl.on("close", () => {
     const version = headVersion.split("-rc");
-    if (version.length < 2)
-      core.setFailed("This stable version has already been released.");
+
     const changelogHeader =
       "## [" + version[0] + "] - " + new Date().toISOString().split("T")[0];
     const unreleased = "UNRELEASED";

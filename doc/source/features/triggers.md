@@ -177,5 +177,5 @@ These triggers can be easily integrated into your Covalent workflows to automate
 ## Trigger How-to Guides
 
 For further examples on how to use triggers, check out the Trigger how to guides:
-- {doc}`How to add a directory trigger to a lattice <../how_to/orchestration/dir_trigger>`
-- {doc}`How to add a time trigger to a lattice <../how_to/orchestration/time_trigger>`
+- {doc}`How to add a directory trigger to a lattice <../how_to/coding/dir_trigger>`
+- {doc}`How to add a time trigger to a lattice <../how_to/coding/time_trigger>`

@@ -7,6 +7,216 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Error messages are propagated to stdout when the server is not started. These changes are applied to `dispatch`, `redispatch`, and `get_result`.
+
+### Docs
+
+- Fix typo in GCP Batch executor RTD.
+- Add steps for setting up GUI for local development in contribution guidelines. 
+
+### Fixed
+
+- Resolving correct python executable
+- Error handling for random URLs/random dispatchId entered on the GUI
+
+### Added
+
+- `executor` property to `Electron` class, allowing updation of executor after electron function definition
+- Added ability to hide post-processing electrons on the UI.
+- Added prettify of names for the graph screen on the UI.
+- Ability to specify a `workdir` for `local` and `dask` executors along with `create_unique_workdir` option for each electron / node.
+
+### Removed
+
+- Removed unused module `covalent._data_store`
+
+### Operations
+
+- Nightly frequency set to midnight EST 
+
+## [0.223.1-rc.0] - 2023-05-17
+
+### Authors
+
+- Janosh Riebesell <janosh.riebesell@gmail.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+### Fixed
+
+- only pin `aiohttp` downwards to fix install on Python 3.11 [#1654](https://github.com/AgnostiqHQ/covalent/pulls/1654)
+
+## [0.223.0-rc.0] - 2023-05-17
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Madhur Tandon <20173739+madhur-tandon@users.noreply.github.com>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Andrew S. Rosen <asrosen93@gmail.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+
+
+### Added
+
+- Added the `CloudResourceManager` class
+- A new tutorial for a dynamic quantum chemistry workflow
+
+### Tests
+
+- Added tests for the `CloudResourceManager` class
+
+### Docs
+
+- Fix docstring for set_config
+- Redispatch feature page in Read the Docs.
+- Clarify installation instructions for SLURM plugin in Read the Docs (x2).
+- Fix waiting order of electrons in docs inside snippet for adding a dependency when inputs and outputs are independent.
+- Expose GCP Batch executor RTD.
+- Add GCP Batch executor image in RTD.
+
+### Fixed
+
+- DB path creation now takes place at import time so that the CLI commands don't fail
+- Raise error on dispatching a non-lattice
+- Helpful message when trying to dispatch a workflow when covalent server is not available
+- Open UI preview of transport graph when `lattice.draw()` is invoked and print URL of the same
+- Defer creation of server specific config entries until covalent is started
+- Functional tests on CI
+- Move dask worker space to covalent cache instead of `site-packages`
+
+### Docs
+
+- Updated Feature documentation for Triggers with an example and minor corrections
+
+### Removed
+
+- Duplicate mocks for `UI_SRVDIR`
+- Duplicate `_get_cancel_requested` method from `covalent_dispatcher/_core/runner.py`
+
+### Tests
+
+- Re-enable `test_run_workflow_does_not_deserialize`
+
+### Authors
+
+- Madhur Tandon <madhurtandon23@gmail.com>
+
+### Operations
+
+- Removed "already released" check from stable changelog action
+
+## [0.222.0-rc.0] - 2023-04-27
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+### Changed
+
+- Implementation of `TransportableObject` property method to be backwards compatible with version 0.209.1.
+
+### Tests
+
+- Updated QA stress test execution time baseline.
+
+## [0.221.1-rc.0] - 2023-04-26
+
+### Authors
+
+- Madhur Tandon <20173739+madhur-tandon@users.noreply.github.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Rob de Wit <RCdeWit@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+
+### Tests
+
+- Move QA scripts from QA repo to Covalent functional tests.
+
+### Docs
+
+- Update requirements file for the tutorials: `1_QuantumMachineLearning/pennylane_kernel/source.ipynb` and `machine_learning/dnn_comparison.ipynb`.
+- Add macOS 13 (Ventura) to [compatibility list](doc/source/getting_started/compatibility.rst).
+- Fixed broken links and typos in the documentation.
+
+### Authors
+
+- Madhur Tandon <madhurtandon23@gmail.com>
+
+### Fixed
+
+- Result status comparison
+- Raise error on extra args/kwargs
+- Fixed redispatching and trigger server address passing in base trigger
+
+## [0.221.0-rc.0] - 2023-04-17
+
+### Authors
+
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+
+
+### Changed
+
+- Moved TransportableObject from transport.py to a new file transportable_object.py.
+
+## [0.220.0-rc.0] - 2023-04-14
+
+### Authors
+
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Venkat Bala <15014089+venkatBala@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- dwelsch-esi <116022979+dwelsch-esi@users.noreply.github.com>
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+
+
+### Operations
+
+- Updating `nightly` frequency (temp)
+
+### Added
+
+- Tutorial for hybrid neural network using Covalent, AWSBatch, and Qiskit Runtime.
+- Environment variable that users can set to specify the location where Covalent can find their defined executors.
+- Task group id in Electrons.
+- Reconstruct postprocessing method.
+
+### Fixed
+
+- Doubling of nodes that are added to the transport graph.
+- Ensure postprocessing node end time is added as the workflow end time.
+- Functional tests
+- Custom executor how to guide, and its loading mechanism in covalent server.
+- Broken postprocessing unit test.
+
+### Added
+
+- Postprocessing as electrons.
+- Postprocessing class in `postprocessing.py` module for all the different postprocessing helper methods and algorithms.
+
+### Changed
+
+- Postprocessing logic.
+- Sublattice logic. Sublattices are now treated as electrons. Once the transport graph has been built, the status get changed to `DISPATCHING` at which point it is executed as another workflow.
+
+### Removed
+
+- Postprocessing from runners.
+
 ### Docs
 
 - Updated How-to documents.

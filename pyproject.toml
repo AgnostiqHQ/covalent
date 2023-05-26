@@ -40,3 +40,6 @@ skip_gitignore = true
 
 [tool.pycln]
 all = true
+
+[tool.pytest.ini_options]
+markers = ["conda: Marks tests that need conda"]

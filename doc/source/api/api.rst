@@ -64,7 +64,7 @@ Executing tasks (electrons) directly on the local machine
 File Transfer
 """""""""""""""""""""""""""
 
-File Transfer from (source) and to (destination) local or remote files prior/post electron execution. Instances are are provided to `files` keyword argument in an electron decorator.
+File Transfer from (source) and to (destination) local or remote files prior/post electron execution. Instances are provided to `files` keyword argument in an electron decorator.
 
 .. autoclass:: covalent._file_transfer.file.File
     :members:

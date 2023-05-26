@@ -21,23 +21,73 @@
 """Tests for Covalent dask executor."""
 
 import asyncio
+import os
+import tempfile
 from unittest.mock import AsyncMock
 
 import pytest
 
+import covalent as ct
 from covalent._shared_files import TaskRuntimeError
 from covalent._shared_files.exceptions import TaskCancelledError
-from covalent.executor.executor_plugins.dask import DaskExecutor
+from covalent.executor.executor_plugins.dask import _EXECUTOR_PLUGIN_DEFAULTS, DaskExecutor
 
 
 def test_dask_executor_init(mocker):
     """Test dask executor constructor"""
 
-    from covalent.executor import DaskExecutor
+    mocker.patch("covalent.executor.executor_plugins.dask.get_config", side_effect=KeyError())
+    default_workdir_path = _EXECUTOR_PLUGIN_DEFAULTS["workdir"]
 
     de = DaskExecutor("127.0.0.1")
 
     assert de.scheduler_address == "127.0.0.1"
+    assert de.workdir == default_workdir_path
+    assert de.create_unique_workdir is False
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        de = DaskExecutor("127.0.0.1", workdir=tmp_dir, create_unique_workdir=True)
+        assert de.scheduler_address == "127.0.0.1"
+        assert de.workdir == tmp_dir
+        assert de.create_unique_workdir is True
+
+
+def test_dask_executor_with_workdir(mocker):
+    from dask.distributed import LocalCluster
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        lc = LocalCluster()
+        de = ct.executor.DaskExecutor(
+            lc.scheduler_address, workdir=tmp_dir, create_unique_workdir=True
+        )
+
+        @ct.lattice
+        @ct.electron(executor=de)
+        def simple_task(x, y):
+            with open("job.txt", "w") as w:
+                w.write(str(x + y))
+            return "Done!"
+
+        mock_get_cancel_requested = mocker.patch.object(
+            de, "get_cancel_requested", AsyncMock(return_value=False)
+        )
+        mock_set_job_handle = mocker.patch.object(de, "set_job_handle", AsyncMock())
+
+        args = [1, 2]
+        kwargs = {}
+        task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+        result = asyncio.run(de.run(simple_task, args, kwargs, task_metadata))
+        assert result == "Done!"
+
+        target_dir = os.path.join(
+            tmp_dir, task_metadata["dispatch_id"], f"node_{task_metadata['node_id']}"
+        )
+
+        assert os.listdir(target_dir) == ["job.txt"]
+        assert open(os.path.join(target_dir, "job.txt")).read() == "3"
+
+        mock_get_cancel_requested.assert_awaited()
+        mock_set_job_handle.assert_awaited()
 
 
 def test_dask_wrapper_fn(mocker):
