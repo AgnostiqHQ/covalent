@@ -20,9 +20,9 @@ const QElectronTab = (props) => {
             },
             '& .MuiTab-root': {
               textTransform: 'capitalize',
-              color: 'gray',
+              color: (theme) => theme.palette.text.tertiary,
               '&.Mui-selected': {
-                color: 'white',
+                color: (theme) => theme.palette.text.secondary,
               },
             },
           }}

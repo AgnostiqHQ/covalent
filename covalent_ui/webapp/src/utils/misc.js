@@ -189,7 +189,10 @@ export const logStatusIcon = (status) => {
     case 'WARNING':
     case 'WARN':
       return (
-        <SvgIcon aria-label={status} sx={{ mt: 0.6, mr: 0.7, fontSize: '18px' }}>
+        <SvgIcon
+          aria-label={status}
+          sx={{ mt: 0.6, mr: 0.7, fontSize: '18px' }}
+        >
           <WarningSvg />
         </SvgIcon>
       )
@@ -203,7 +206,10 @@ export const logStatusIcon = (status) => {
     case 'ERROR':
     case 'CRITICAL':
       return (
-        <SvgIcon aria-label={status} sx={{ mt: 0.6, mr: 0.7, fontSize: '18px' }}>
+        <SvgIcon
+          aria-label={status}
+          sx={{ mt: 0.6, mr: 0.7, fontSize: '18px' }}
+        >
           <ErrorSvg />
         </SvgIcon>
       )
@@ -259,7 +265,7 @@ export const statusIcon = (status) => {
     case 'PROVISION_FAILED':
     case 'DEPROVISION_FAILED':
       return (
-        <SvgIcon aria-label={status} sx={{ mt: 1 }}>
+        <SvgIcon aria-label={status} sx={{ mt: 1.3 }}>
           <ErrorSvg />
         </SvgIcon>
       )
@@ -377,19 +383,28 @@ export const sublatticeIconTopBar = (type, sub) => {
   switch (type) {
     case 'COMPLETED':
       return (
-        <SvgIcon aria-label="COMPLETED" sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}>
+        <SvgIcon
+          aria-label="COMPLETED"
+          sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}
+        >
           <SuccessTopBarSvg />
         </SvgIcon>
       )
     case 'FAILED':
       return (
-        <SvgIcon aria-label="FAILED" sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}>
+        <SvgIcon
+          aria-label="FAILED"
+          sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}
+        >
           <FailedTopBarSvg />
         </SvgIcon>
       )
     case 'RUNNING':
       return (
-        <SvgIcon aria-label="RUNNING" sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}>
+        <SvgIcon
+          aria-label="RUNNING"
+          sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}
+        >
           <RunningTopBarSvg />
         </SvgIcon>
       )

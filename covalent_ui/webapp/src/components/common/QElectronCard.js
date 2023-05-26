@@ -85,7 +85,7 @@ const QElectronCard = (props) => {
                 display: 'flex',
                 justifyContent: 'flex-end',
                 mr: 0,
-                mt: 1.1,
+                mt: 1.5,
                 pr: 0,
               }}
             >
