@@ -22,7 +22,7 @@ import sqlite3
 import time
 from functools import partial
 from threading import Event
-from typing import Any, List, Tuple
+from typing import List
 
 from covalent._shared_files import logger
 
@@ -63,7 +63,7 @@ class SQLiteTrigger(BaseTrigger):
         db_path: str,
         table_name: str,
         poll_interval: int = 1,
-        where_clauses: List[Tuple[str, Any]] = None,
+        where_clauses: List[str] = None,
         trigger_after_n: int = 1,
         lattice_dispatch_id: str = None,
         dispatcher_addr: str = None,
@@ -75,8 +75,6 @@ class SQLiteTrigger(BaseTrigger):
         self.table_name = table_name
         self.poll_interval = poll_interval
 
-        if isinstance(where_clauses, tuple):
-            where_clauses = [where_clauses]
         self.where_clauses = where_clauses
 
         self.trigger_after_n = trigger_after_n

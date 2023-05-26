@@ -19,6 +19,8 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+from sqlite3 import OperationalError
+
 import pytest
 
 from covalent.triggers.sqlite_trigger import SQLiteTrigger
@@ -96,6 +98,28 @@ def test_sqlite_trigger_observe(mocker, where_clauses, sqlite_trigger):
 
     mock_sqlite.connect.return_value.cursor.return_value.close.assert_called_once()
     mock_sqlite.connect.return_value.close.assert_called_once()
+
+
+def test_sqlite_trigger_exception(mocker, sqlite_trigger):
+    """
+    Test the observe method of SQLiteTrigger when an OperationalError is raised
+    """
+
+    sqlite_trigger.trigger = mocker.MagicMock()
+
+    mock_connect = mocker.patch("covalent.triggers.sqlite_trigger.sqlite3.connect")
+    mocker.patch("covalent.triggers.sqlite_trigger.sqlite3.Row")
+    mock_event = mocker.patch("covalent.triggers.sqlite_trigger.Event")
+
+    mock_sleep = mocker.patch("covalent.triggers.sqlite_trigger.time.sleep")
+
+    mock_event.return_value.is_set.side_effect = [False, True]
+
+    mock_connect.return_value.cursor.return_value.execute.side_effect = OperationalError
+
+    sqlite_trigger.observe()
+
+    mock_sleep.assert_called_once_with(1)
 
 
 def test_sqlite_trigger_stop(mocker, sqlite_trigger):
