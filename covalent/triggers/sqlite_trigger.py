@@ -89,7 +89,7 @@ class SQLiteTrigger(BaseTrigger):
         where conditions are met or until stop has being called
         """
 
-        app_log.warning("Inside SQLiteTrigger's observe")
+        app_log.debug("Inside SQLiteTrigger's observe")
         event_count = 0
 
         connection = sqlite3.connect(self.db_path)
@@ -101,13 +101,9 @@ class SQLiteTrigger(BaseTrigger):
 
         if self.where_clauses:
             sql_poll_cmd += " WHERE "
-            sql_poll_cmd += " AND ".join([conds[0] for conds in self.where_clauses])
+            sql_poll_cmd += " AND ".join(list(self.where_clauses))
 
-            execute_cmd = partial(
-                cursor.execute, sql_poll_cmd, [conds[1] for conds in self.where_clauses]
-            )
-        else:
-            execute_cmd = partial(cursor.execute, sql_poll_cmd)
+        execute_cmd = partial(cursor.execute, sql_poll_cmd)
 
         self.stop_flag = Event()
         while not self.stop_flag.is_set():
