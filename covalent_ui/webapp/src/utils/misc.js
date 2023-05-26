@@ -291,7 +291,7 @@ export const statusIcon = (status) => {
     case 'PROVISION_FAILED':
     case 'DEPROVISION_FAILED':
       return (
-        <SvgIcon aria-label={status} sx={{ mt: 1 }}>
+        <SvgIcon aria-label={status} sx={{ mt: 1.3 }}>
           <ErrorSvg />
         </SvgIcon>
       )

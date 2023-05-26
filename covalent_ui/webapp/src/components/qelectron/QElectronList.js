@@ -48,6 +48,7 @@ import {
   Snackbar,
   SvgIcon,
   Pagination,
+  Tooltip,
 } from '@mui/material'
 import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
 import ReactTooltip from 'react-tooltip'
@@ -276,10 +277,9 @@ const QElectronList = ({ expanded }) => {
   const [disableDownload, setDisableDownload] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  const xlmatches = useMediaQuery('(min-height:850px)')
-  const xxlmatches = useMediaQuery('(min-height:940px)')
-  const slmatches = useMediaQuery('(min-height:1060px)')
-  
+  const isHeightAbove850px = useMediaQuery('(min-height: 850px)')
+  const isHeightAbove940px = useMediaQuery('(min-height: 940px)')
+  const isHeightAbove1040px = useMediaQuery('(min-height: 1040px)')
 
   const data = [
     {
@@ -292,13 +292,13 @@ const QElectronList = ({ expanded }) => {
       job_id: '123yrhe383u2h8ssdfsd...',
       start_time: '03 Feb, 12:05:38 ',
       executor: 'IBM Quantum',
-      status: 'RUNNING',
+      status: 'COMPLETED',
     },
     {
       job_id: '123yrhe383u2h8ssdfsd...',
       start_time: '03 Feb, 12:05:38 ',
       executor: 'IBM Quantum',
-      status: 'RUNNING',
+      status: 'FAILED',
     },
     {
       job_id: '123yrhe383u2h8ssdfsd...',
@@ -535,20 +535,36 @@ const QElectronList = ({ expanded }) => {
     setSortColumn(column)
   }
 
-  const getHeight = () => {
-    if (xlmatches) {
-      return expanded ? '23rem' : '40rem'
-    } else if (xxlmatches) {
-      return expanded ? '63rem' : '40rem'
-    } else if (slmatches) {
-      return expanded ? '24rem' : '48rem'
-    } else {
-      return expanded ? '16rem' : '32rem'
-    }
-  }
+  // const getHeight = () => {
+  //   if (xlmatches) {
+  //     return expanded ? '23rem' : '40rem'
+  //   } else if (xxlmatches) {
+  //     return expanded ? '63rem' : '40rem'
+  //   } else if (slmatches) {
+  //     return expanded ? '24rem' : '48rem'
+  //   } else {
+  //     return expanded ? '16rem' : '32rem'
+  //   }
+  // }
 
   return (
-    <Grid mt={3} px={2} sx={{ height: getHeight(), overflow: 'auto' }}>
+    <Grid
+      mt={3}
+      px={2}
+      sx={{
+        height: expanded ? '16rem' : '32rem',
+        ...(isHeightAbove850px && {
+          height: expanded ? '23rem' : '40rem',
+        }),
+        ...(isHeightAbove940px && {
+          height: expanded ? '28rem' : '44rem',
+        }),
+        ...(isHeightAbove1040px && {
+          height: expanded ? '36rem' : '51rem',
+        }),
+        overflow: 'auto',
+      }}
+    >
       <Box data-testid="logsTable">
         <Snackbar
           open={openSnackbar}
@@ -622,8 +638,13 @@ const QElectronList = ({ expanded }) => {
                               }}
                             >
                               {statusIcon(result.status)}
-                              {result.job_id}
-                              <CopyButton isBorderPresent />
+                              <Tooltip title={result.job_id}>
+                                <span>{result.job_id}</span>
+                              </Tooltip>
+                              <CopyButton
+                                isBorderPresent
+                                content={result.job_id}
+                              />
                             </Grid>
                           </TableCell>
                           <TableCell>

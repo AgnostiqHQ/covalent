@@ -9,7 +9,7 @@
 
 import { Grid, IconButton, Typography, Box } from '@mui/material'
 import React from 'react'
-import { ChevronLeft } from '@mui/icons-material'
+import { ChevronRight } from '@mui/icons-material'
 import { statusIcon, statusColor, statusLabel } from '../../utils/misc'
 import CopyButton from './CopyButton'
 
@@ -42,7 +42,7 @@ const QElectronTopBar = (props) => {
             height: '32px',
           }}
         >
-          <ChevronLeft />
+          <ChevronRight />
         </IconButton>
         <Typography mr={2}>{details.title}</Typography>
         <Grid
@@ -73,7 +73,7 @@ const QElectronTopBar = (props) => {
             backgroundColor: (theme) => theme.palette.background.buttonBg,
           }}
         >
-          <CopyButton />
+          <CopyButton content={details.title} />
         </Grid>
       </Grid>
       <Grid id="status Container">

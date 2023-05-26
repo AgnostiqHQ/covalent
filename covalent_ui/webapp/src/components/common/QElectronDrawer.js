@@ -26,23 +26,23 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer }) => {
     status: 'RUNNING',
   }
 
-  useEffect(() => {
-    const handleOutsideClick = (event) => {
-      if (
-        openQelectronDrawer &&
-        !event.target.closest('.q-electron-card') &&
-        !event.target.closest('#nodeDrawer')
-      ) {
-        handleDrawerClose()
-      }
-    }
+  // useEffect(() => {
+  //   const handleOutsideClick = (event) => {
+  //     if (
+  //       openQelectronDrawer &&
+  //       !event.target.closest('.q-electron-card') &&
+  //       !event.target.closest('#nodeDrawer')
+  //     ) {
+  //       handleDrawerClose()
+  //     }
+  //   }
 
-    document.addEventListener('mousedown', handleOutsideClick)
+  //   document.addEventListener('mousedown', handleOutsideClick)
 
-    return () => {
-      document.removeEventListener('mousedown', handleOutsideClick)
-    }
-  }, [openQelectronDrawer])
+  //   return () => {
+  //     document.removeEventListener('mousedown', handleOutsideClick)
+  //   }
+  // }, [openQelectronDrawer])
 
   return (
     <Drawer

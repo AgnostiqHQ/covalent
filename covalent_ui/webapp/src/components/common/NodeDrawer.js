@@ -139,6 +139,12 @@ const NodeDrawer = ({
     setSelectedElements([])
   }
 
+  useEffect(() => {
+    if (!node) {
+      setOpenQelectronDrawer(false)
+    }
+  })
+
   const nodeLabel = (type, name) => {
     switch (type) {
       case 'parameter':

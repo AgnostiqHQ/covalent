@@ -21,6 +21,7 @@
  */
 import * as React from 'react'
 import Box from '@mui/material/Box'
+import Slide from '@mui/material/Slide'
 import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal'
 import _ from 'lodash'
@@ -46,11 +47,11 @@ const SyntaxHighlighter = ({ src, preview, fullwidth, ...props }) => {
 
   const styles = {
     position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: ' 90%',
-    height: '90%',
+    top: '2%',
+    left: '2%',
+    transform: 'translate(-2%, -2%)',
+    width: ' 95%',
+    height: '95%',
     bgcolor: '#0B0B11E5',
     border: '2px solid transparent',
     boxShadow: 24,
@@ -118,53 +119,55 @@ const SyntaxHighlighter = ({ src, preview, fullwidth, ...props }) => {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Box sx={styles}>
-          <Grid container sx={{ height: '100%' }}>
-            <Grid item xs={11} sx={{ height: '100%' }}>
-              <Light
-                data-testid="syntax"
-                language="python"
-                style={style}
-                customStyle={{
-                  margin: 0,
-                  padding: 10,
-                  maxHeight: ' 100%',
-                  fontSize: 12,
-                  backgroundColor: 'transparent',
-                }}
-                {...props}
-              >
-                {_.trim(src, '"" \n')}
-              </Light>
-            </Grid>
-            <Grid
-              item
-              pr={1}
-              pt={0.5}
-              xs={1}
-              sx={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                cursor: 'pointer',
-              }}
-            >
-              <span style={{ flex: 'none' }} onClick={handleClose}>
-                <SvgIcon
-                  aria-label="view"
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    mr: 0,
-                    mt: 1,
-                    pr: 0,
+        <Slide direction="down" in={open}>
+          <Box sx={styles}>
+            <Grid container sx={{ height: '100%' }}>
+              <Grid item xs={11} sx={{ height: '100%' }}>
+                <Light
+                  data-testid="syntax"
+                  language="python"
+                  style={style}
+                  customStyle={{
+                    margin: 0,
+                    padding: 10,
+                    maxHeight: ' 100%',
+                    fontSize: 12,
+                    backgroundColor: 'transparent',
                   }}
+                  {...props}
                 >
-                  <CloseSvg />
-                </SvgIcon>
-              </span>
+                  {_.trim(src, '"" \n')}
+                </Light>
+              </Grid>
+              <Grid
+                item
+                pr={1}
+                pt={0.5}
+                xs={1}
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  cursor: 'pointer',
+                }}
+              >
+                <span style={{ flex: 'none' }} onClick={handleClose}>
+                  <SvgIcon
+                    aria-label="view"
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                      mr: 0,
+                      mt: 1,
+                      pr: 0,
+                    }}
+                  >
+                    <CloseSvg />
+                  </SvgIcon>
+                </span>
+              </Grid>
             </Grid>
-          </Grid>
-        </Box>
+          </Box>
+        </Slide>
       </Modal>
     </>
   )
