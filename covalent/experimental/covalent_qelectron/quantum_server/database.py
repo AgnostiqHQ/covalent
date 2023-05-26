@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from ...._shared_files.config import get_config
 from ..quantum_server.server_utils import CircuitInfo
 from .serialize import JsonLmdb, Strategy
 
@@ -26,9 +27,8 @@ class Database:
 
     def __init__(self, db_dir=None):
         if db_dir:
-            self.db_dir = db_dir
+            self.db_dir = Path(db_dir)
         else:
-            from ...._shared_files.config import get_config
             self.db_dir = Path(get_config("dispatcher")["qelectron_db_path"])
 
     def _get_db_path(self, dispatch_id, node_id):
