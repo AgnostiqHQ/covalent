@@ -97,7 +97,11 @@ class Electron:
         self.node_id = node_id
         self.metadata = metadata
         self.task_group_id = task_group_id
-        self.packing_tasks = packing_tasks
+        self._packing_tasks = packing_tasks
+
+    @property
+    def packing_tasks(self) -> bool:
+        return self._packing_tasks
 
     def set_metadata(self, name: str, value: Any) -> None:
         """
