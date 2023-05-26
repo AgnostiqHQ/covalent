@@ -245,6 +245,7 @@ def import_result_assets(
     return manifest.assets
 
 
+# To be called after import_result
 def handle_redispatch(
     manifest: ResultSchema,
     parent_dispatch_id: str,

@@ -29,7 +29,7 @@ from typing import Optional
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas.result import ResultSchema
-from covalent_dispatcher._dal.importers.result import import_result
+from covalent_dispatcher._dal.importers.result import handle_redispatch, import_result
 from covalent_dispatcher._dal.result import Result as SRVResult
 
 from .utils import run_in_executor
@@ -107,4 +107,29 @@ async def import_manifest(
     )
     await _pull_assets(filtered_manifest)
 
+    return filtered_manifest
+
+
+def _import_derived_manifest(
+    manifest: ResultSchema,
+    parent_dispatch_id: str,
+    reuse_previous_results: bool,
+) -> ResultSchema:
+    filtered_manifest = _import_manifest(manifest)
+    return handle_redispatch(filtered_manifest, parent_dispatch_id, reuse_previous_results)
+
+
+async def import_derived_manifest(
+    manifest: ResultSchema,
+    parent_dispatch_id: str,
+    reuse_previous_results: bool,
+) -> ResultSchema:
+    filtered_manifest = await run_in_executor(
+        _import_derived_manifest,
+        manifest,
+        parent_dispatch_id,
+        reuse_previous_results,
+    )
+
+    # We don't support pulling assets here
     return filtered_manifest
