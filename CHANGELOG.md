@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added prettify of names for the graph screen on the UI.
 - Ability to specify a `workdir` for `local` and `dask` executors along with `create_unique_workdir` option for each electron / node.
 - Heartbeat file is created and updated when the server is running
+- Added `SQLiteTrigger` class to the `triggers` module.
 
 ### Removed
 
