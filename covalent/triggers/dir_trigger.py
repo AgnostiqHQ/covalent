@@ -71,10 +71,10 @@ class DirTrigger(BaseTrigger):
         dir_path,
         event_names,
         batch_size: int = 1,
+        recursive: bool = False,
         lattice_dispatch_id: str = None,
         dispatcher_addr: str = None,
         triggers_server_addr: str = None,
-        recursive: bool = False,
     ):
         super().__init__(lattice_dispatch_id, dispatcher_addr, triggers_server_addr)
 
