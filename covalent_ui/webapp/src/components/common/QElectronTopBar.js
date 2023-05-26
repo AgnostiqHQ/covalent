@@ -44,7 +44,7 @@ const QElectronTopBar = (props) => {
         >
           <ChevronRight />
         </IconButton>
-        <Typography mr={2}>{details.title}</Typography>
+        <Typography fontSize='sidebarh2' mr={2}>{details.title}</Typography>
         <Grid
           sx={{
             width: '32px',

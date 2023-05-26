@@ -65,7 +65,7 @@ export const nodeDrawerWidth = 360
 const qElectronDetails = {
   title: 'qelectrons',
   quantam_calls: 250,
-  avg_time_ofcall: 12,
+  avg_time_ofcall: '12s',
 }
 
 const NodeDrawer = ({
