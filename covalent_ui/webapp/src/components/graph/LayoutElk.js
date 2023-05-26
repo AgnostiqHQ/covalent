@@ -23,7 +23,7 @@
 import _ from 'lodash'
 import ELK from 'elkjs/lib/elk.bundled.js'
 import { isNode } from 'react-flow-renderer'
-import { isParameter, isPostProcess, Prettify } from '../../utils/misc'
+import { isParameter, isPostProcess, isSystemGenerator, Prettify } from '../../utils/misc'
 
 const nodeLabel = (type, name) => {
   switch (type) {
@@ -60,13 +60,17 @@ const mapGraphToElements = (
   hideLabels,
   preview,
   showPostProcess,
-  prettify
+  prettify,
+  showSystemGenerated
 ) => {
   if (!showPostProcess) {
     graph = filterGraph(graph, (node) => !isPostProcess(node))
   }
   if (!showParams) {
     graph = filterGraph(graph, (node) => !isParameter(node))
+  }
+  if (!showSystemGenerated) {
+    graph = filterGraph(graph, (node) => !isSystemGenerator(node))
   }
 
   const nodes = _.map(graph.nodes, (node) => {
@@ -75,8 +79,8 @@ const mapGraphToElements = (
     const name = isParam
       ? node?.name?.replace(':parameter:', '')
       : prettify
-      ? Prettify(node.name, node.type)
-      : nodeLabel(node?.type, node.name)
+        ? Prettify(node.name, node.type)
+        : nodeLabel(node?.type, node.name)
     return {
       id: String(node.id),
       type: isParam ? 'parameter' : 'electron',
@@ -122,7 +126,8 @@ const assignNodePositions = async (
   hideLabels,
   preview,
   showPostProcess,
-  prettify
+  prettify,
+  showSystemGenerated
 ) => {
   const elements = mapGraphToElements(
     graph,
@@ -131,7 +136,8 @@ const assignNodePositions = async (
     hideLabels,
     preview,
     showPostProcess,
-    prettify
+    prettify,
+    showSystemGenerated
   )
   const nodes = []
   const edges = []

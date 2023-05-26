@@ -109,6 +109,8 @@ export const isParameter = (node) => _.startsWith(node.name, ':parameter:')
 
 export const isPostProcess = (node) => node?.name.startsWith(':postprocess:')
 
+export const isSystemGenerator = (node) => node?.name.startsWith(':') && !node?.name.startsWith(':sub')
+
 export const displayStatus = (status) => _.startCase(_.lowerCase(status))
 
 export const Prettify = (inputString, type) => {

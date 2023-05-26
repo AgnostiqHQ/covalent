@@ -206,7 +206,7 @@ const LatticeDispatchOverview = ({ dispatchId, latDetails, isFetching }) => {
       <Heading />
 
       {Object.keys(drawerFunctionString).length === 0 &&
-      drawerFunctionStringListFetching ? (
+        drawerFunctionStringListFetching ? (
         <Skeleton height={100} />
       ) : (
         <Paper

@@ -84,12 +84,12 @@ const mapGraphToElements = (
 
     const name = prettify
       ? Prettify(
-          isParam ? _.trim(node.name, ':parameter:') : node.name,
-          node.type
-        )
+        isParam ? _.trim(node.name, ':parameter:') : node.name,
+        node.type
+      )
       : isParam
-      ? _.trim(node.name, ':parameter:')
-      : node.name
+        ? _.trim(node.name, ':parameter:')
+        : node.name
 
     return {
       id: String(node.id),

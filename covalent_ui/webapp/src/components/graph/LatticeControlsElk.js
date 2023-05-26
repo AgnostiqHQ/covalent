@@ -74,6 +74,8 @@ const LatticeControls = ({
   toggleScreenShot,
   togglePrettify,
   prettify,
+  showSystemGenerated,
+  toggleSystemParams
 }) => {
   const { zoomIn, zoomOut } = useZoomPanHelper()
   const { fitView } = useFitViewHelper()
@@ -300,6 +302,27 @@ const LatticeControls = ({
           </SvgIcon>{' '}
         </ToggleButton>
       </Hint>
+      <Hint title="Toggle system-generated">
+        <ToggleButton
+          data-testid="togglesystemgenerated"
+          onClick={toggleSystemParams}
+          value=""
+          selected={showSystemGenerated}
+        >
+          <SvgIcon
+            data-testid="System generated toggle button"
+            sx={{
+              pt: 0.5,
+              mt: 0,
+              mb: 0,
+              ml: 1,
+            }}
+          >
+            <PostProcessSvg />
+          </SvgIcon>{' '}
+        </ToggleButton>
+      </Hint>
+
       <Hint title="Prettify">
         <ToggleButton
           data-testid="prettify"
@@ -339,6 +362,7 @@ const LatticeControls = ({
           )}
         </ToggleButton>
       </Hint>
+
     </ToggleButtonGroup>
   )
 }
