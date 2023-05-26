@@ -236,3 +236,69 @@ def test_export_result_manifest(test_db, mocker):
 
         assert export_manifest.metadata.start_time == ts
         assert export_manifest.metadata.status == str(SDKResult.RUNNING)
+
+
+def test_import_export_manifest(test_db, mocker):
+    """Check that Export(Import) == identity modulo asset uris"""
+
+    import tempfile
+    from datetime import datetime
+
+    res = get_mock_result()
+    dispatch_id = "test_import_export_manifest"
+    res._dispatch_id = dispatch_id
+    res._root_dispatch_id = dispatch_id
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+
+    with tempfile.TemporaryDirectory() as sdk_tmp_dir, tempfile.TemporaryDirectory() as srv_tmp_dir:
+        manifest = serialize_result(res, sdk_tmp_dir)
+        received_manifest = manifest.copy(deep=True)
+
+        import_result(received_manifest, srv_tmp_dir, None)
+
+        export_manifest = export_result_manifest(dispatch_id)
+
+        submitted = manifest.dict()
+        exported = export_manifest.dict()
+
+        # Check that workflow metadata are preserved
+        for key in submitted["metadata"]:
+            assert submitted["metadata"][key] == exported["metadata"][key]
+
+        sub_lattice = submitted["lattice"]
+        exp_lattice = exported["lattice"]
+        for key in sub_lattice["metadata"]:
+            assert sub_lattice["metadata"][key] == exp_lattice["metadata"][key]
+
+        # Check workflow assets; uris are filtered by the server
+        for key in submitted["assets"]:
+            submitted["assets"][key].pop("uri")
+            submitted["assets"][key].pop("remote_uri")
+            exported["assets"][key].pop("uri")
+            exported["assets"][key].pop("remote_uri")
+            assert submitted["assets"][key] == exported["assets"][key]
+
+        for key in sub_lattice["assets"]:
+            sub_lattice["assets"][key].pop("uri")
+            sub_lattice["assets"][key].pop("remote_uri")
+            exp_lattice["assets"][key].pop("uri")
+            exp_lattice["assets"][key].pop("remote_uri")
+            assert sub_lattice["assets"][key] == exp_lattice["assets"][key]
+
+        sub_tg = sub_lattice["transport_graph"]
+        exp_tg = exp_lattice["transport_graph"]
+        sorted(sub_tg["nodes"], key=lambda x: x["id"])
+        sorted(exp_tg["nodes"], key=lambda x: x["id"])
+
+        # Check transport graphs
+        for i, sub_node in enumerate(sub_tg["nodes"]):
+            exp_node = exp_tg["nodes"][i]
+            for key in sub_node["assets"]:
+                sub_node["assets"][key].pop("uri")
+                sub_node["assets"][key].pop("remote_uri")
+                exp_node["assets"][key].pop("uri")
+                exp_node["assets"][key].pop("remote_uri")
+
+                assert sub_node["assets"][key] == exp_node["assets"][key]
+
+        assert sub_tg["links"] == exp_tg["links"]
