@@ -7,13 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Error messages are propagated to stdout when the server is not started. These changes are applied to `dispatch`, `redispatch`, and `get_result`.
+
 ### Docs
 
 - Fix typo in GCP Batch executor RTD.
+- Add steps for setting up GUI for local development in contribution guidelines. 
 
 ### Fixed
 
 - Resolving correct python executable
+- Error handling for random URLs/random dispatchId entered on the GUI
 
 ### Added
 
@@ -22,6 +28,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added prettify of names for the graph screen on the UI.
 - Ability to specify a `workdir` for `local` and `dask` executors along with `create_unique_workdir` option for each electron / node.
 - Heartbeat file is created and updated when the server is running
+
+### Removed
+
+- Removed unused module `covalent._data_store`
 
 ### Operations
 
