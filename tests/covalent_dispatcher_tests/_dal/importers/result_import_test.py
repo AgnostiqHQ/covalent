@@ -195,6 +195,7 @@ def test_handle_redispatch_identical(mocker, test_db, parent_status, new_status)
             tg.set_node_value(n, "status", parent_status)
 
     with tempfile.TemporaryDirectory(prefix="covalent-") as srv_dir_2:
+        # Import the redispatch manifest and filter it through handle_redispatch
         redispatch_manifest = import_result(redispatch_manifest, srv_dir_2, None)
         redispatch_manifest = handle_redispatch(redispatch_manifest, dispatch_id, True)
 
@@ -206,6 +207,12 @@ def test_handle_redispatch_identical(mocker, test_db, parent_status, new_status)
     for key, asset in redispatch_manifest.lattice.assets:
         n_workflow_assets += 1
         assert asset.remote_uri == ""
+
+    n_electron_assets = 0
+    for node in redispatch_manifest.lattice.transport_graph.nodes:
+        for key, asset in node.assets:
+            n_electron_assets += 1
+            assert asset.remote_uri == ""
 
     assert mock_copy_workflow_asset_meta.call_count == n_workflow_assets
     assert mock_copy_workflow_asset.call_count == n_workflow_assets
