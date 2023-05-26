@@ -20,6 +20,7 @@
 
 """Tests for importing ResultSchema into the DB"""
 
+import copy
 import tempfile
 
 import pytest
@@ -28,7 +29,8 @@ import covalent as ct
 from covalent._results_manager.result import Result as SDKResult
 from covalent._serialize.result import serialize_result
 from covalent._shared_files.schemas.result import ResultSchema
-from covalent_dispatcher._dal.importers.result import SERVER_URL, import_result
+from covalent._shared_files.util_classes import RESULT_STATUS
+from covalent_dispatcher._dal.importers.result import SERVER_URL, handle_redispatch, import_result
 from covalent_dispatcher._dal.result import get_result_object
 from covalent_dispatcher._db.datastore import DataStore
 
@@ -152,3 +154,63 @@ def test_import_previously_imported_result(mocker, test_db):
     sub_srv_res = get_result_object(sub_dispatch_id, bare=True)
     assert mock_filter_uris.call_count == 2
     assert sub_srv_res._electron_id == parent_node._electron_id
+
+
+@pytest.mark.parametrize(
+    "parent_status,new_status",
+    [
+        (RESULT_STATUS.COMPLETED, RESULT_STATUS.PENDING_REUSE),
+        (RESULT_STATUS.CANCELLED, RESULT_STATUS.NEW_OBJECT),
+        (RESULT_STATUS.NEW_OBJECT, RESULT_STATUS.NEW_OBJECT),
+    ],
+)
+def test_handle_redispatch_identical(mocker, test_db, parent_status, new_status):
+    """Test redispatching a workflow with no modifications."""
+
+    dispatch_id = "test_handle_redispatch"
+    redispatch_id = "test_handle_redispatch_2"
+
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+    mock_copy_node_asset = mocker.patch("covalent_dispatcher._dal.tg_ops.copy_asset")
+    mock_copy_workflow_asset = mocker.patch("covalent_dispatcher._dal.importers.result.copy_asset")
+    mock_copy_node_asset_meta = mocker.patch("covalent_dispatcher._dal.tg_ops.copy_asset_meta")
+    mock_copy_workflow_asset_meta = mocker.patch(
+        "covalent_dispatcher._dal.importers.result.copy_asset_meta"
+    )
+
+    with tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir, tempfile.TemporaryDirectory(
+        prefix="covalent-"
+    ) as srv_dir:
+        manifest = get_mock_result(dispatch_id, sdk_dir)
+
+        redispatch_manifest = copy.deepcopy(manifest)
+        redispatch_manifest.metadata.dispatch_id = redispatch_id
+        redispatch_manifest.metadata.root_dispatch_id = redispatch_id
+
+        import_result(manifest, srv_dir, None)
+
+        parent_result_object = get_result_object(dispatch_id, bare=False)
+        tg = parent_result_object.lattice.transport_graph
+        for n in tg._graph.nodes:
+            tg.set_node_value(n, "status", parent_status)
+
+    with tempfile.TemporaryDirectory(prefix="covalent-") as srv_dir_2:
+        redispatch_manifest = import_result(redispatch_manifest, srv_dir_2, None)
+        redispatch_manifest = handle_redispatch(redispatch_manifest, dispatch_id, True)
+
+    n_workflow_assets = 0
+    for key, asset in redispatch_manifest.assets:
+        n_workflow_assets += 1
+        assert asset.remote_uri == ""
+
+    for key, asset in redispatch_manifest.lattice.assets:
+        n_workflow_assets += 1
+        assert asset.remote_uri == ""
+
+    assert mock_copy_workflow_asset_meta.call_count == n_workflow_assets
+    assert mock_copy_workflow_asset.call_count == n_workflow_assets
+
+    result_object = get_result_object(redispatch_id, bare=False)
+    tg = result_object.lattice.transport_graph
+    for n in tg._graph.nodes:
+        assert tg.get_node_value(n, "status") == new_status

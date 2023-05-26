@@ -36,6 +36,8 @@ from covalent_dispatcher._dal.electron import ElectronMeta
 from covalent_dispatcher._dal.job import Job
 from covalent_dispatcher._dal.result import Result, ResultMeta
 
+from ..asset import copy_asset, copy_asset_meta
+from ..tg_ops import TransportGraphOps
 from ..utils.uri_filters import AssetScope, URIFilterPolicy, filter_asset_uri
 from .lattice import _get_lattice_meta, import_lattice_assets
 from .tg import import_transport_graph
@@ -153,25 +155,40 @@ def _filter_remote_uris(manifest: ResultSchema) -> ResultSchema:
 
     # Workflow-level
     for key, asset in manifest.assets:
-        filtered_uri = filter_asset_uri(
-            URI_FILTER_POLICY, asset.remote_uri, {}, AssetScope.DISPATCH, dispatch_id, None, key
-        )
-        asset.remote_uri = filtered_uri
+        if asset.remote_uri:
+            filtered_uri = filter_asset_uri(
+                URI_FILTER_POLICY,
+                asset.remote_uri,
+                {},
+                AssetScope.DISPATCH,
+                dispatch_id,
+                None,
+                key,
+            )
+            asset.remote_uri = filtered_uri
 
     for key, asset in manifest.lattice.assets:
-        filtered_uri = filter_asset_uri(
-            URI_FILTER_POLICY, asset.remote_uri, {}, AssetScope.LATTICE, dispatch_id, None, key
-        )
-        asset.remote_uri = filtered_uri
+        if asset.remote_uri:
+            filtered_uri = filter_asset_uri(
+                URI_FILTER_POLICY, asset.remote_uri, {}, AssetScope.LATTICE, dispatch_id, None, key
+            )
+            asset.remote_uri = filtered_uri
 
     # Now filter each node
     tg = manifest.lattice.transport_graph
     for node in tg.nodes:
         for key, asset in node.assets:
-            filtered_uri = filter_asset_uri(
-                URI_FILTER_POLICY, asset.remote_uri, {}, AssetScope.NODE, dispatch_id, node.id, key
-            )
-            asset.remote_uri = filtered_uri
+            if asset.remote_uri:
+                filtered_uri = filter_asset_uri(
+                    URI_FILTER_POLICY,
+                    asset.remote_uri,
+                    {},
+                    AssetScope.NODE,
+                    dispatch_id,
+                    node.id,
+                    key,
+                )
+                asset.remote_uri = filtered_uri
 
     return manifest
 
@@ -226,3 +243,91 @@ def import_result_assets(
         record.associate_asset(session, key, asset_rec.id)
 
     return manifest.assets
+
+
+def handle_redispatch(
+    manifest: ResultSchema,
+    parent_dispatch_id: str,
+    reuse_previous_results: bool,
+) -> ResultSchema:
+    # * Compare transport graphs (tg_ops)
+    # * Copy reusable nodes (tg_ops)
+    # * Handle reuse_previous_results
+    # * Filter node statuses in the DB: PENDING_REPLACEMENT -> NEW_OBJECT
+    # * Filter asset upload URIs for reusable nodes
+    # * Return filtered manifest
+
+    dispatch_id = manifest.metadata.dispatch_id
+
+    # Load the full NX graph for graph diffing (only node metadata
+    # will actually be loaded in memory).
+    result_object = Result.from_dispatch_id(dispatch_id, bare=False)
+    parent_result_object = Result.from_dispatch_id(parent_dispatch_id, bare=False)
+
+    tg_new = result_object.lattice.transport_graph
+    tg_old = parent_result_object.lattice.transport_graph
+
+    # Get the nodes that can potentially be reused from the previous
+    # dispatch, assuming that they have previously completed.
+    reusable_nodes = TransportGraphOps(tg_old).get_reusable_nodes(tg_new)
+
+    # No need to upload assets for reusable nodes since they can be
+    # copied internally from the previous dispatch. Thus, don't return
+    # an upload URI to the client.
+    reusable_nodes_set = set(reusable_nodes)
+    tg_manifest = manifest.lattice.transport_graph
+    for node in tg_manifest.nodes:
+        if node.id in reusable_nodes_set:
+            for key, asset in node.assets:
+                asset.remote_uri = ""
+
+    # Two cases:
+    #
+    # If not reuse_previous_results, copy assets for all reusable
+    # nodes but leave all metadata as initialized by the SDK.  This
+    # will cause all nodes to be rerun since their statuses will be
+    # NEW_OBJECT.
+
+    # If reuse_previous_results, copy all assets and metadata from the
+    # previous dispatch. This will cause reusable nodes with a
+    # COMPLETED corresponding node in the old dispatch to be marked
+    # PENDING_REUSE in the DB, signalling to the dispatcher that they
+    # don't need to be re-run.
+    TransportGraphOps(tg_new).copy_nodes_from(
+        tg_old, reusable_nodes, copy_metadata=reuse_previous_results
+    )
+
+    # Since the graph comparison is finished, we can upgrade
+    # PENDING_REPLACEMENT to NEW_OBJECT in the DB.
+    TransportGraphOps(tg_new).reset_nodes()
+
+    # Copy corresponding workflow assets with the same hashes and
+    # don't ask the client to upload them.
+    assets_to_copy = []
+    with Result.session() as session:
+        for key, asset in manifest.assets:
+            new_asset = result_object.get_asset(key, session)
+            old_asset = parent_result_object.get_asset(key, session)
+            if new_asset.digest == old_asset.digest:
+                asset.remote_uri = ""
+                assets_to_copy.append((old_asset, new_asset))
+
+        for key, asset in manifest.lattice.assets:
+            new_asset = result_object.lattice.get_asset(key, session)
+            old_asset = parent_result_object.lattice.get_asset(key, session)
+            if new_asset.digest == old_asset.digest:
+                asset.remote_uri = ""
+                assets_to_copy.append((old_asset, new_asset))
+
+    # Copy asset metadata
+    with Result.session() as session:
+        for item in assets_to_copy:
+            src, dest = item
+            copy_asset_meta(session, src, dest)
+
+    # Copy asset data
+    for item in assets_to_copy:
+        src, dest = item
+        copy_asset(src, dest)
+
+    return manifest

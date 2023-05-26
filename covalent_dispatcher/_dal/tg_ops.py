@@ -46,10 +46,11 @@ class TransportGraphOps:
             "start_time": None,
             "end_time": None,
             "status": RESULT_STATUS.NEW_OBJECT,
-            "output": None,
-            "error": "",
-            "stdout": "",
-            "stderr": "",
+            # This will be overwritten by the SDK
+            # "output": None,
+            # "error": "",
+            # "stdout": "",
+            # "stderr": "",
         }
 
     @staticmethod
@@ -73,22 +74,32 @@ class TransportGraphOps:
         """Check if the edge attributes are the same in both graphs."""
         return A.adj[parent][node] == B.adj[parent][node]
 
-    def copy_nodes_from(self, tg: _TransportGraph, nodes):
+    def copy_nodes_from(self, tg: _TransportGraph, nodes, *, copy_metadata: bool = True):
         """Copy nodes from the transport graph in the argument."""
 
         assets_to_copy = []
+
         for n in nodes:
             old_node = tg.get_node(n)
             old_status = tg.get_node_value(n, "status")
-            if old_status != RESULT_STATUS.COMPLETED:
-                continue
 
-            for k in METADATA_KEYS:
-                app_log.debug(f"Copying metadata {k} for node {n}")
-                v = tg.get_node_value(n, k)
-                if k == "status":
-                    v = RESULT_STATUS.PENDING_REUSE
-                self.tg.set_node_value(n, k, v)
+            if copy_metadata:
+                # Only previously completed nodes can actually be
+                # reused
+                if old_status != RESULT_STATUS.COMPLETED:
+                    continue
+
+                for k in METADATA_KEYS:
+                    app_log.debug(f"Copying metadata {k} for node {n}")
+                    v = tg.get_node_value(n, k)
+                    if k == "status":
+                        # This will cause the dispatcher to skip
+                        # re-running the node.
+                        v = RESULT_STATUS.PENDING_REUSE
+                    self.tg.set_node_value(n, k, v)
+
+            # TODO: Use the ElectronAssets link table as the source of
+            # truth instead of these hardcoded values
             for k in ASSET_KEYS:
                 # Copy asset metadata
                 app_log.debug(f"Copying asset {k} for node {n}")
@@ -275,6 +286,13 @@ class TransportGraphOps:
 
         status_A, _ = self._max_cbms(A, B, node_cmp=self._cmp_name_and_pval)
         return [k for k, v in status_A.items() if v]
+
+    def reset_nodes(self):
+        """Reset all nodes to be replaced."""
+        for node_id in self.tg._graph.nodes:
+            status = self.tg.get_node_value(node_id, "status")
+            if status == RESULT_STATUS.PENDING_REPLACEMENT:
+                self._reset_node(node_id)
 
     def _reset_node(self, node_id: int) -> None:
         """Reset node values to starting state."""

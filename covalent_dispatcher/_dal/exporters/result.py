@@ -101,9 +101,13 @@ def _export_result_assets(res: Result) -> ResultAssets:
     for asset_key in ASSET_KEYS:
         asset = res.assets[asset_key]
         size = asset.size
+        digest_alg = asset.digest_alg
+        digest = asset.digest
         scheme = asset.storage_type.value
         remote_uri = f"{scheme}://{asset.storage_path}/{asset.object_key}"
-        manifests[asset_key] = AssetSchema(remote_uri=remote_uri, size=size)
+        manifests[asset_key] = AssetSchema(
+            remote_uri=remote_uri, size=size, digest_alg=digest_alg, digest=digest
+        )
 
     return ResultAssets(**manifests)
 
