@@ -24,9 +24,6 @@
 # Descend into subdirectories
 !*/
 
-# Temporarily allowing installable tarball
-!/dist/*.tar.gz
-
 # Allow tests, docs, core source, github actions, and detect-secrets filters
 !/.detect_secrets_filters/**
 !/.github/**
