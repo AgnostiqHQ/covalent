@@ -45,6 +45,9 @@ class SQLiteTrigger(BaseTrigger):
                        polling the database
         trigger_after_n: Number of times the event must happen after which the workflow will be triggered.
                          e.g value of 2 means workflow will be triggered once the event has occurred twice.
+        lattice_dispatch_id: Lattice dispatch id of the workflow to be triggered
+        dispatcher_addr: Address of the dispatcher server
+        triggers_server_addr: Address of the triggers server
 
     Attributes:
         self.db_path: Absolute path to the database file
