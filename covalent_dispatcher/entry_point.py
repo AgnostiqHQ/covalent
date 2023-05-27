@@ -155,7 +155,7 @@ async def register_redispatch(
     parent_dispatch_id: str,
     reuse_previous_results: bool,
 ) -> ResultSchema:
-    from _core.data_modules.importer import import_derived_manifest
+    from ._core.data_modules.importer import import_derived_manifest
 
     return await import_derived_manifest(
         manifest,

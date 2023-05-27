@@ -287,7 +287,7 @@ def handle_redispatch(
 
                     # Don't pull asset
                     dal_asset = dal_node.get_asset(key, session)
-                    dal_asset.set_remote("")
+                    dal_asset.set_remote(session, "")
 
     # Two cases:
     #
@@ -318,6 +318,7 @@ def handle_redispatch(
             old_asset = parent_result_object.get_asset(key, session)
             if new_asset.digest == old_asset.digest:
                 asset.remote_uri = ""
+                app_log.debug(f"Copying workflow asset {key}")
                 assets_to_copy.append((old_asset, new_asset))
                 # Don't pull asset
                 new_asset.set_remote(session, "")
@@ -327,6 +328,7 @@ def handle_redispatch(
             old_asset = parent_result_object.lattice.get_asset(key, session)
             if new_asset.digest == old_asset.digest:
                 asset.remote_uri = ""
+                app_log.debug(f"Copying workflow asset {key}")
                 assets_to_copy.append((old_asset, new_asset))
                 # Don't pull asset
                 new_asset.set_remote(session, "")

@@ -96,6 +96,7 @@ async def register(
     try:
         return await dispatcher.register_dispatch(manifest, parent_dispatch_id)
     except Exception as e:
+        app_log.debug(f"Exception in register: {e}")
         raise HTTPException(
             status_code=400,
             detail=f"Failed to submit workflow: {e}",
@@ -115,6 +116,7 @@ async def register_redispatch(
             reuse_previous_results,
         )
     except Exception as e:
+        app_log.debug(f"Exception in register_redispatch: {e}")
         raise HTTPException(
             status_code=400,
             detail=f"Failed to submit workflow: {e}",

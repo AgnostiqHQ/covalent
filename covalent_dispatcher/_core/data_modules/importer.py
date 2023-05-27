@@ -115,7 +115,7 @@ def _import_derived_manifest(
     parent_dispatch_id: str,
     reuse_previous_results: bool,
 ) -> ResultSchema:
-    filtered_manifest = _import_manifest(manifest)
+    filtered_manifest = _import_manifest(manifest, None, None)
     return handle_redispatch(filtered_manifest, parent_dispatch_id, reuse_previous_results)
 
 
