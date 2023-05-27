@@ -102,6 +102,9 @@ class Asset(Record[AssetRecord]):
     def size(self) -> int:
         return self._attrs["size"]
 
+    def set_remote(self, session: Session, uri: str):
+        self.update(session, values={"remote_uri": uri})
+
     def store_data(self, data: Any) -> None:
         store_file(self.storage_path, self.object_key, data)
 

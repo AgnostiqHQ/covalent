@@ -131,5 +131,6 @@ async def import_derived_manifest(
         reuse_previous_results,
     )
 
-    # We don't support pulling assets here
+    await _pull_assets(filtered_manifest)
+
     return filtered_manifest

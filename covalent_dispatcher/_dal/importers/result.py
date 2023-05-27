@@ -277,10 +277,17 @@ def handle_redispatch(
     # an upload URI to the client.
     reusable_nodes_set = set(reusable_nodes)
     tg_manifest = manifest.lattice.transport_graph
-    for node in tg_manifest.nodes:
-        if node.id in reusable_nodes_set:
-            for key, asset in node.assets:
-                asset.remote_uri = ""
+
+    with Result.session() as session:
+        for node in tg_manifest.nodes:
+            if node.id in reusable_nodes_set:
+                dal_node = tg_new.get_node(node.id)
+                for key, asset in node.assets:
+                    asset.remote_uri = ""
+
+                    # Don't pull asset
+                    dal_asset = dal_node.get_asset(key, session)
+                    dal_asset.set_remote("")
 
     # Two cases:
     #
@@ -312,6 +319,8 @@ def handle_redispatch(
             if new_asset.digest == old_asset.digest:
                 asset.remote_uri = ""
                 assets_to_copy.append((old_asset, new_asset))
+                # Don't pull asset
+                new_asset.set_remote(session, "")
 
         for key, asset in manifest.lattice.assets:
             new_asset = result_object.lattice.get_asset(key, session)
@@ -319,6 +328,8 @@ def handle_redispatch(
             if new_asset.digest == old_asset.digest:
                 asset.remote_uri = ""
                 assets_to_copy.append((old_asset, new_asset))
+                # Don't pull asset
+                new_asset.set_remote(session, "")
 
     # Copy asset metadata
     with Result.session() as session:

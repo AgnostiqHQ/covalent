@@ -34,8 +34,13 @@ async def test_import_derived_manifest(mocker):
         "covalent_dispatcher._core.data_modules.importer.handle_redispatch",
     )
 
+    mock_pull = mocker.patch(
+        "covalent_dispatcher._core.data_modules.importer._pull_assets",
+    )
+
     mock_manifest = {}
     await import_derived_manifest(mock_manifest, "parent_dispatch", True)
 
     mock_import_manifest.assert_called()
+    mock_pull.assert_awaited()
     mock_handle_redispatch.assert_called()
