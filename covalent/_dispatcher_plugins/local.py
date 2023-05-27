@@ -538,7 +538,7 @@ class LocalDispatcher(BaseDispatcher):
         test_url = f"http://{dispatcher_addr}/api/v1/dispatchv2/register"
 
         if parent_dispatch_id:
-            test_url = f"{test_url}/{parent_dispatch_id}"
+            test_url = f"{test_url}?parent_dispatch_id={parent_dispatch_id}"
 
         r = requests.post(test_url, data=stripped.json())
         r.raise_for_status()
