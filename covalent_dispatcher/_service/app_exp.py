@@ -93,7 +93,32 @@ async def submitv0(request: Request) -> UUID:
 async def register(
     manifest: ResultSchema, parent_dispatch_id: Union[str, None] = None
 ) -> ResultSchema:
-    return await dispatcher.register_dispatch(manifest, parent_dispatch_id)
+    try:
+        return await dispatcher.register_dispatch(manifest, parent_dispatch_id)
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to submit workflow: {e}",
+        ) from e
+
+
+@router.post("/dispatchv2/register/{dispatch_id}")
+async def register_redispatch(
+    manifest: ResultSchema,
+    dispatch_id: str,
+    reuse_previous_results: bool = False,
+):
+    try:
+        return await dispatcher.register_redispatch(
+            manifest,
+            dispatch_id,
+            reuse_previous_results,
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to submit workflow: {e}",
+        ) from e
 
 
 @router.post("/dispatchv2/resubmit")
