@@ -70,10 +70,11 @@ const QElelctronAccordion = (props) => {
   return (
     <Grid mt={2}>
       <Accordion
+        TransitionProps={{ timeout: 800 }}
         expanded={expanded}
         // onChange={handleAccordChange}
         sx={{
-          background: (theme) => theme.palette.background.paper,
+          background: (theme) => theme.palette.background.qelectronDrawerbg,
           border: '2px solid',
           borderRadius: '8px',
           minHeight: expanded ? '19rem' : '2rem',
@@ -81,7 +82,13 @@ const QElelctronAccordion = (props) => {
         }}
       >
         <AccordionSummary
-          sx={{ height: '2rem' }}
+          sx={{
+            height: '2rem',
+            padding: 0, // Remove the default padding
+            '& .MuiAccordionSummary-content': {
+              margin: 0, // Remove the default margin
+            },
+          }}
           p={0}
           expandIcon={
             <IconButton

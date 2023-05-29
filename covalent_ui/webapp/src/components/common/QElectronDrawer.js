@@ -46,6 +46,7 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer }) => {
 
   return (
     <Drawer
+      transitionDuration={800}
       id="nodeDrawer"
       sx={(theme) => ({
         position: 'relative',
@@ -58,7 +59,7 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer }) => {
           marginRight: '10px',
           marginTop: '22px',
           maxHeight: '95vh',
-          bgcolor: alpha(theme.palette.background.default),
+          bgcolor: (theme) => theme.palette.background.qelectronDrawerbg,
           boxShadow: '0px 16px 50px rgba(0, 0, 0, 0.9)',
           backdropFilter: 'blur(8px)',
           borderRadius: '16px',

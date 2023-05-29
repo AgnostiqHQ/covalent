@@ -15,88 +15,93 @@ const Overview = (props) => {
   const code = `tensor([0.224,0.2213,.1214])`
   const { details } = props
   return (
-    <Grid container px={4} py={1} direcction="row">
-      <Grid id="leftGrid" item xs={6}>
-        <Typography
-          sx={{
-            color: (theme) => theme.palette.text.primary,
-            fontSize: theme.typography.sidebarh2,
-            fontWeight: 'bold',
-          }}
-        >
-          Execution Details
-        </Typography>
-        <Typography
-          sx={{
-            fontSize: theme.typography.sidebarh3,
-            mt: 2,
-            color: (theme) => theme.palette.text.tertiary,
-          }}
-        >
-          Backend
-        </Typography>
-        <Typography
-          sx={{
-            fontSize: theme.typography.sidebarh2,
-            mt: 1,
-            color: (theme) => theme.palette.text.primary,
-          }}
-        >
-          {details.backend}
-        </Typography>
-        <Typography
-          sx={{
-            fontSize: theme.typography.sidebarh3,
-            mt: 2,
-            color: (theme) => theme.palette.text.tertiary,
-          }}
-        >
-          Time Elapsed
-        </Typography>
-        <Typography
-          sx={{
-            fontSize: theme.typography.sidebarh2,
-            mt: 1,
-            color: (theme) => theme.palette.text.primary,
-          }}
-        >
-          {details.time}
-        </Typography>
-        <Typography
-          sx={{
-            fontSize: theme.typography.sidebarh3,
-            mt: 2,
-            color: (theme) => theme.palette.text.tertiary,
-          }}
-        >
-          Start time - End time
-        </Typography>
-        <Typography
-          sx={{
-            fontSize: theme.typography.sidebarh2,
-            mt: 1,
-            color: (theme) => theme.palette.text.primary,
-          }}
-        >
-          {details.start_time} -{details.end_time}
-        </Typography>
-      </Grid>
-      <Grid
-        id="rightGrid"
-        item
-        xs={6}
-        sx={{ display: 'flex', alignItems: 'center' }}
+    <>
+      {' '}
+      <Typography
+        px={2}
+        sx={{
+          color: (theme) => theme.palette.text.primary,
+          fontSize: theme.typography.sidebarh2,
+          fontWeight: 'bold',
+        }}
       >
-        <Paper
-          elevation={0}
-          sx={(theme) => ({
-            bgcolor: theme.palette.background.outRunBg,
-          })}
+        Execution Details
+      </Typography>
+      <Grid container px={2} py={1} direcction="row">
+        <Grid id="leftGrid" item xs={6}>
+          <Typography
+            sx={{
+              fontSize: theme.typography.sidebarh3,
+              mt: 2,
+              color: (theme) => theme.palette.text.tertiary,
+            }}
+          >
+            Backend
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: theme.typography.sidebarh2,
+              mt: 1,
+              color: (theme) => theme.palette.text.primary,
+            }}
+          >
+            {details.backend}
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: theme.typography.sidebarh3,
+              mt: 2,
+              color: (theme) => theme.palette.text.tertiary,
+            }}
+          >
+            Time Elapsed
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: theme.typography.sidebarh2,
+              mt: 1,
+              color: (theme) => theme.palette.text.primary,
+            }}
+          >
+            {details.time}
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: theme.typography.sidebarh3,
+              mt: 2,
+              color: (theme) => theme.palette.text.tertiary,
+            }}
+          >
+            Start time - End time
+          </Typography>
+          <Typography
+            sx={{
+              fontSize: theme.typography.sidebarh2,
+              mt: 1,
+              color: (theme) => theme.palette.text.primary,
+            }}
+          >
+            {details.start_time} -{details.end_time}
+          </Typography>
+        </Grid>
+        <Grid
+          id="rightGrid"
+          item
+          xs={6}
+          sx={{ display: 'flex', alignItems: 'center' }}
+          pt={1}
         >
-          <SyntaxHighlighter src={code} preview />
-        </Paper>
+          <Paper
+            elevation={0}
+            sx={(theme) => ({
+              bgcolor: theme.palette.background.outRunBg,
+            })}
+          >
+            <SyntaxHighlighter src={code} preview />
+          </Paper>
+        </Grid>
       </Grid>
-    </Grid>
+    </>
   )
 }
 

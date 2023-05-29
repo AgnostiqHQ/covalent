@@ -200,7 +200,7 @@ const StyledTable = styled(Table)(({ theme }) => ({
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
     color: theme.palette.text.tertiary,
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: 'transparent',
   },
 
   // copy btn on hover
@@ -211,10 +211,10 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize hover
   [`& .${tableBodyClasses.root} .${tableRowClasses.root}:hover`]: {
-    backgroundColor: theme.palette.background.default,
+    backgroundColor: theme.palette.background.coveBlack02,
 
     [`& .${tableCellClasses.root}`]: {
-      borderColor: theme.palette.background.paper,
+      borderColor: 'transparent',
       paddingTop: 4,
       paddingBottom: 4,
     },
@@ -224,11 +224,11 @@ const StyledTable = styled(Table)(({ theme }) => ({
   },
 
   [`& .${tableBodyClasses.root} .${tableRowClasses.root}`]: {
-    backgroundColor: theme.palette.background.paper,
+    backgroundColor: 'transparent',
     cursor: 'pointer',
 
     [`& .${tableCellClasses.root}`]: {
-      borderColor: theme.palette.background.paper,
+      borderColor: 'transparent',
       paddingTop: 4,
       paddingBottom: 4,
     },
@@ -247,7 +247,7 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize border
   [`& .${tableCellClasses.root}`]: {
-    borderColor: theme.palette.background.paper,
+    borderColor: 'transparent',
     paddingTop: 4,
     paddingBottom: 4,
   },
@@ -550,19 +550,20 @@ const QElectronList = ({ expanded }) => {
   return (
     <Grid
       mt={3}
-      px={2}
+      px={0}
       sx={{
-        height: expanded ? '16rem' : '32rem',
+        height: expanded ? '17rem' : '33rem',
         ...(isHeightAbove850px && {
-          height: expanded ? '23rem' : '40rem',
+          height: expanded ? '23.5rem' : '39.25rem',
         }),
         ...(isHeightAbove940px && {
-          height: expanded ? '28rem' : '44rem',
+          height: expanded ? '29rem' : '44.75rem',
         }),
         ...(isHeightAbove1040px && {
-          height: expanded ? '36rem' : '51rem',
+          height: expanded ? '36rem' : '51.5rem',
         }),
         overflow: 'auto',
+        background: (theme) => theme.palette.background.qListBg,
       }}
     >
       <Box data-testid="logsTable">
