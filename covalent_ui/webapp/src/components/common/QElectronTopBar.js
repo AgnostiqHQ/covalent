@@ -24,7 +24,7 @@ const QElectronTopBar = (props) => {
       justifyContent="space-between"
       p={1.5}
       sx={{
-        background: (theme) => theme.palette.background.qelectronbg,
+        background: (theme) => theme.palette.background.coveBlack02,
         borderRadius: '8px',
       }}
     >
@@ -44,7 +44,9 @@ const QElectronTopBar = (props) => {
         >
           <ChevronRight />
         </IconButton>
-        <Typography fontSize='sidebarh2' mr={2}>{details.title}</Typography>
+        <Typography fontSize="sidebarh2" mr={2}>
+          {details.title}
+        </Typography>
         <Grid
           sx={{
             width: '32px',

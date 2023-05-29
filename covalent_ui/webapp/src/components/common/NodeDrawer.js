@@ -163,6 +163,7 @@ const NodeDrawer = ({
 
   return (
     <Drawer
+      transitionDuration={800}
       sx={(theme) => ({
         width: nodeDrawerWidth,
         '& .MuiDrawer-paper': {

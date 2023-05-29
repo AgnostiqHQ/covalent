@@ -35,7 +35,7 @@ const QElectronCard = (props) => {
         cursor: 'pointer',
         borderColor: (theme) => theme.palette.primary.grey,
         '&:hover': {
-          backgroundColor: (theme) => theme.palette.background.paper,
+          backgroundColor: (theme) => theme.palette.background.coveBlack02,
         },
       }}
     >
