@@ -83,12 +83,12 @@ def generate_node_result(
     Return(s)
         Dictionary of the inputs
     """
-    clean_stdout, bytes_data, bytes_lock = extract_qelectron_db(stdout)
-    qelectron_data_exists = bool(bytes_data and bytes_lock)
+    clean_stdout, bytes_data = extract_qelectron_db(stdout)
+    qelectron_data_exists = bool(bytes_data)
 
     if qelectron_data_exists:
         app_log.debug(f"Reproducing Qelectron database for node {node_id}")
-        write_qelectron_db(dispatch_id, node_id, bytes_data, bytes_lock)
+        write_qelectron_db(dispatch_id, node_id, bytes_data)
 
     return {
         "node_id": node_id,
