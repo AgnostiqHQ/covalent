@@ -46,6 +46,7 @@ const SyntaxHighlighter = ({ src, preview, fullwidth, ...props }) => {
   const handleClose = () => setOpen(false)
 
   const styles = {
+    outline: 'none',
     position: 'absolute',
     top: '2%',
     left: '2%',
@@ -118,7 +119,7 @@ const SyntaxHighlighter = ({ src, preview, fullwidth, ...props }) => {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Slide direction="down" in={open}>
+        <Slide direction="down" in={open} timeout={800} unmountOnExit>
           <Box sx={styles}>
             <Grid container sx={{ height: '100%' }}>
               <Grid item xs={11} sx={{ height: '100%' }}>
@@ -157,7 +158,7 @@ const SyntaxHighlighter = ({ src, preview, fullwidth, ...props }) => {
                     mr: 0,
                     mt: 1,
                     pr: 0,
-                    cursor: 'pointer'
+                    cursor: 'pointer',
                   }}
                   onClick={handleClose}
                 >

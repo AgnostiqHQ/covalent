@@ -115,7 +115,7 @@ const Circuit = ({ circuitDetails }) => {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Slide direction="down" in={openModal}>
+        <Slide direction="down" in={openModal} timeout={800}>
           <Box sx={styles}>
             <Grid container sx={{ height: '100%' }}>
               <Grid item xs={11} sx={{ height: '100%' }}>
