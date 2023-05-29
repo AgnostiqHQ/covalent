@@ -139,6 +139,7 @@ async def _run_abstract_task(
         if cancel_req:
             app_log.debug(f"Don't run cancelled task {dispatch_id}:{node_id}")
             return datasvc.generate_node_result(
+                dispatch_id=dispatch_id,
                 node_id=node_id,
                 node_name=node_name,
                 start_time=timestamp,
@@ -162,7 +163,8 @@ async def _run_abstract_task(
 
     except Exception as ex:
         app_log.error(f"Exception when trying to resolve inputs or deps: {ex}")
-        return datasvc.generate_node_result(
+        node_result = datasvc.generate_node_result(
+            dispatch_id=dispatch_id,
             node_id=node_id,
             node_name=node_name,
             start_time=timestamp,
@@ -171,6 +173,7 @@ async def _run_abstract_task(
             error=str(ex),
         )
     node_result = datasvc.generate_node_result(
+        dispatch_id=dispatch_id,
         node_id=node_id,
         node_name=node_name,
         start_time=timestamp,
@@ -232,7 +235,8 @@ async def _run_task(
         app_log.debug("Exception when trying to instantiate executor:")
         app_log.debug(tb)
         error_msg = tb if debug_mode else str(ex)
-        return datasvc.generate_node_result(
+        node_result = datasvc.generate_node_result(
+            dispatch_id=dispatch_id,
             node_id=node_id,
             node_name=node_name,
             end_time=datetime.now(timezone.utc),
@@ -273,6 +277,7 @@ async def _run_task(
         app_log.debug(tb)
         error_msg = tb if debug_mode else str(ex)
         node_result = datasvc.generate_node_result(
+            dispatch_id=dispatch_id,
             node_id=node_id,
             node_name=node_name,
             end_time=datetime.now(timezone.utc),

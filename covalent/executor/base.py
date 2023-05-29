@@ -49,6 +49,7 @@ import aiofiles
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
 from covalent.executor.utils import Signals, set_context
+from covalent.experimental.qelectron_utils import print_qelectron_db, remove_qelectron_db
 
 from .._shared_files import TaskRuntimeError, logger
 from .._shared_files.context_managers import active_dispatch_info_manager
@@ -117,6 +118,8 @@ def wrapper_fn(
         ca_args = serialized_args.get_deserialized()
         ca_kwargs = serialized_kwargs.get_deserialized()
         ca_fn(*ca_args, **ca_kwargs)
+
+    print_qelectron_db(dispatch_id, node_id)
 
     return TransportableObject(output)
 
@@ -333,7 +336,7 @@ class BaseExecutor(_AbstractBaseExecutor):
                 filename.touch(exist_ok=True)
 
                 with open(filepath, "a") as f:
-                    f.write(ss)
+                    f.write(remove_qelectron_db(ss))
 
     async def _execute(
         self,
@@ -616,7 +619,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
                 filename.touch(exist_ok=True)
 
                 async with aiofiles.open(filepath, "a") as f:
-                    await f.write(ss)
+                    await f.write(remove_qelectron_db(ss))
 
     async def _execute(
         self,

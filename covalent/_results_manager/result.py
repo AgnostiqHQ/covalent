@@ -407,6 +407,7 @@ Node Outputs
         sublattice_result: "Result" = None,
         stdout: str = None,
         stderr: str = None,
+        qelectron_data_exists: bool = False,
     ) -> None:
         """
         Update the node result in the transport graph.
@@ -423,6 +424,7 @@ Node Outputs
             sublattice_result: The result of the sublattice if any.
             stdout: The stdout of the node execution.
             stderr: The stderr of the node execution.
+            qelectron_data_exists: Flag indicating presence of Qelectron(s) inside the task
 
         Returns:
             None
@@ -463,6 +465,9 @@ Node Outputs
 
         if stderr is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
+
+        if qelectron_data_exists:
+            self.lattice.transport_graph.set_node_value(node_id, "qelectron_data_exists", qelectron_data_exists)
 
         app_log.debug("Inside update node - SUCCESS")
 
