@@ -29,3 +29,7 @@ class TaskRuntimeError(Exception):
 
 class TaskCancelledError(Exception):
     pass
+
+
+class CommandNotFoundError(Exception):
+    pass

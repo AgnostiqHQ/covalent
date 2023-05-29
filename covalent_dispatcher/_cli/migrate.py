@@ -23,6 +23,7 @@
 import pickle
 
 from covalent._results_manager import Result
+from covalent._shared_files import logger
 from covalent._shared_files.defaults import (
     attr_prefix,
     electron_dict_prefix,
@@ -37,6 +38,9 @@ from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
 
 from .._db import update
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
 
 
 def process_node(node: dict) -> dict:
@@ -115,7 +119,7 @@ def process_transport_graph(tg: _TransportGraph) -> _TransportGraph:
     tg_new = _TransportGraph()
     g = tg.get_internal_graph_copy()
     for node_id in g.nodes:
-        print(f"Processing node {node_id}")
+        app_log.debug(f"Processing node {node_id}")
         process_node(g.nodes[node_id])
 
     if tg.lattice_metadata:
@@ -161,7 +165,7 @@ def process_lattice(lattice: Lattice) -> Lattice:
 
     lattice.transport_graph = process_transport_graph(lattice.transport_graph)
     lattice.transport_graph.lattice_metadata = lattice.metadata
-    print("Processed transport graph")
+    app_log.debug("Processed transport graph")
 
     return lattice
 
@@ -176,9 +180,9 @@ def process_result_object(result_object: Result) -> Result:
         the modernized result object
     """
 
-    print(f"Processing result object for dispatch {result_object.dispatch_id}")
+    app_log.debug(f"Processing result object for dispatch {result_object.dispatch_id}")
     process_lattice(result_object._lattice)
-    print("Processed lattice")
+    app_log.debug("Processed lattice")
     if result_object.lattice.args:
         result_object._inputs["args"] = result_object.lattice.args
     if result_object.lattice.kwargs:

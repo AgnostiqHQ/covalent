@@ -33,7 +33,7 @@ def test_register(mocker):
     """
 
     mock_config = "mock-config"
-    mock_json_data = "mock-json-data"
+    mock_json_data = {"trigger_server_addr": "mock-json-data", "name": "mock-name"}
     mocker.patch("covalent.triggers.base.get_config", return_value=mock_config)
     mocker.patch("covalent.triggers.base.BaseTrigger.to_dict", return_value=mock_json_data)
     requests_mock = mocker.patch("covalent.triggers.base.requests")

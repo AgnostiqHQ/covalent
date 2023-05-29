@@ -27,7 +27,9 @@ import json
 import os
 import shutil
 import socket
+import sys
 import time
+from pathlib import Path
 from subprocess import DEVNULL, Popen
 from typing import Optional
 
@@ -197,7 +199,7 @@ def _graceful_start(
     no_cluster_flag = "--no-cluster" if no_cluster else ""
 
     port = _next_available_port(port)
-    launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} {no_cluster_flag} {no_triggers_flag} {triggers_only_flag}>> {logfile} 2>&1"
+    launch_str = f"{pypath} {sys.executable} app.py {dev_mode_flag} --port {port} {no_cluster_flag} {no_triggers_flag} {triggers_only_flag}>> {logfile} 2>&1"
 
     proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
     pid = proc.pid
@@ -219,6 +221,12 @@ def _graceful_start(
         click.echo(f"Covalent Triggers server has started at {dispatcher_addr}")
     else:
         click.echo(f"Covalent server has started at {dispatcher_addr}")
+
+    Path(get_config("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
+    Path(get_config("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
+    Path(get_config("dispatcher.log_dir")).mkdir(parents=True, exist_ok=True)
+    Path(get_config("user_interface.log_dir")).mkdir(parents=True, exist_ok=True)
+
     return port
 
 
