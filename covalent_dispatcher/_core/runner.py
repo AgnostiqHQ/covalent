@@ -179,6 +179,7 @@ async def _run_abstract_task(
         if cancel_req:
             app_log.debug(f"Don't run cancelled task {dispatch_id}:{node_id}")
             return datasvc.generate_node_result(
+                dispatch_id=dispatch_id,
                 node_id=node_id,
                 start_time=timestamp,
                 end_time=timestamp,
@@ -202,6 +203,7 @@ async def _run_abstract_task(
     except Exception as ex:
         app_log.error(f"Exception when trying to resolve inputs or deps: {ex}")
         node_result = datasvc.generate_node_result(
+            dispatch_id=dispatch_id,
             node_id=node_id,
             start_time=timestamp,
             end_time=timestamp,
@@ -211,6 +213,7 @@ async def _run_abstract_task(
         return node_result
 
     node_result = datasvc.generate_node_result(
+        dispatch_id=dispatch_id,
         node_id=node_id,
         start_time=timestamp,
         status=Result.RUNNING,
@@ -280,6 +283,7 @@ async def _run_task(
         app_log.debug(tb)
         error_msg = tb if debug_mode else str(ex)
         node_result = datasvc.generate_node_result(
+            dispatch_id=dispatch_id,
             node_id=node_id,
             end_time=datetime.now(timezone.utc),
             status=Result.FAILED,
@@ -304,6 +308,7 @@ async def _run_task(
             )
 
             node_result = datasvc.generate_node_result(
+                dispatch_id=dispatch_id,
                 node_id=node_id,
                 sub_dispatch_id=sub_dispatch_id,
             )
@@ -327,6 +332,7 @@ async def _run_task(
             )
 
             node_result = datasvc.generate_node_result(
+                dispatch_id=dispatch_id,
                 node_id=node_id,
                 end_time=datetime.now(timezone.utc),
                 status=status,
@@ -341,6 +347,7 @@ async def _run_task(
         app_log.debug(tb)
         error_msg = tb if debug_mode else str(ex)
         node_result = datasvc.generate_node_result(
+            dispatch_id=dispatch_id,
             node_id=node_id,
             end_time=datetime.now(timezone.utc),
             status=Result.FAILED,
