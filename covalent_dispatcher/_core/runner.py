@@ -262,6 +262,7 @@ async def _run_task(
         )
 
         node_result = datasvc.generate_node_result(
+            dispatch_id=dispatch_id,
             node_id=node_id,
             node_name=node_name,
             end_time=datetime.now(timezone.utc),
