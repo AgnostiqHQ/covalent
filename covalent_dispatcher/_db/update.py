@@ -69,6 +69,7 @@ def _node(
     sublattice_result: "Result" = None,
     stdout: str = None,
     stderr: str = None,
+    qelectron_data_exists: bool = False,
 ) -> None:
     """
     Update the node result in the transport graph.
@@ -85,6 +86,7 @@ def _node(
         sublattice_result: The result of the sublattice if any.
         stdout: The stdout of the node execution.
         stderr: The stderr of the node execution.
+        qelectron_data_exists: Flag indicating presence of Qelectron(s) inside the task
 
     Returns:
         None
@@ -105,6 +107,7 @@ def _node(
         sublattice_result=sublattice_result,
         stdout=stdout,
         stderr=stderr,
+        qelectron_data_exists=qelectron_data_exists,
     )
 
     upsert.electron_data(result)
