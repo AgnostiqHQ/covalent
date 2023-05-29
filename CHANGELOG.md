@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Error messages are propagated to stdout when the server is not started. These changes are applied to `dispatch`, `redispatch`, and `get_result`.
+- Ignoring the `httpx` check by the `requirements` workflow as it is required by the upgradation of `FastAPI`.
 
 ### Docs
 
