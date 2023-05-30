@@ -24,8 +24,10 @@ const QElectronTopBar = (props) => {
       justifyContent="space-between"
       p={1.5}
       sx={{
-        background: (theme) => theme.palette.background.coveBlack02,
+        background: 'transparent',
         borderRadius: '8px',
+        border: '1px solid',
+        borderColor: (theme) => theme.palette.background.coveBlack02,
       }}
     >
       <Grid item xs={6} container flexDirection="row" alignItems="center">

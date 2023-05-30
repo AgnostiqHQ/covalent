@@ -9,23 +9,23 @@
 
 import { Grid, Typography, SvgIcon, Box, Modal } from '@mui/material'
 import React, { useState } from 'react'
-import Slide from '@mui/material/Slide'
 import theme from '../../utils/theme'
 import { ReactComponent as QelectronSvg } from '../../assets/qelectron/circuit.svg'
 import { ReactComponent as CircuitLarge } from '../../assets/qelectron/circuit-large.svg'
 import { ReactComponent as CloseSvg } from '../../assets/close.svg'
 
 const styles = {
+  outline: 'none',
   position: 'absolute',
-  top: '2%',
-  left: '2%',
-  transform: 'translate(-2%, -2%)',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  p: 4,
   width: ' 95%',
   height: '95%',
   bgcolor: '#0B0B11E5',
   border: '2px solid transparent',
   boxShadow: 24,
-  p: 4,
 }
 
 const SingleGrid = ({ title, value }) => {
@@ -121,66 +121,64 @@ const Circuit = ({ circuitDetails }) => {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Slide direction="down" in={openModal} timeout={800}>
-          <Box sx={styles}>
-            <Grid container sx={{ height: '100%' }}>
-              <Grid item xs={11} sx={{ height: '100%' }}>
-                <Grid
-                  mt={2}
-                  container
-                  justifyContent="center"
-                  sx={{ width: '900px', height: '320px' }}
-                >
-                  <span
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                    }}
-                  >
-                    <SvgIcon
-                      aria-label="view"
-                      sx={{
-                        width: '100%',
-                        height: '100%',
-                        color: (theme) => theme.palette.text.primary,
-                      }}
-                      component={CircuitLarge}
-                      viewBox="0 0 900 320" // Specify the viewBox to match the desired container size
-                    />
-                  </span>
-                </Grid>
-              </Grid>
+        <Box sx={styles}>
+          <Grid container sx={{ height: '100%' }}>
+            <Grid item xs={11} sx={{ height: '100%' }}>
               <Grid
-                item
-                pr={1}
-                pt={0.5}
-                xs={1}
-                sx={{
-                  display: 'flex',
-                  justifyContent: 'flex-end',
-                  cursor: 'pointer',
-                }}
+                mt={2}
+                container
+                justifyContent="center"
+                sx={{ width: '900px', height: '320px' }}
               >
-                <span style={{ flex: 'none' }} onClick={handleClose}>
+                <span
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                  }}
+                >
                   <SvgIcon
                     aria-label="view"
                     sx={{
-                      display: 'flex',
-                      justifyContent: 'flex-end',
-                      mr: 0,
-                      mt: 1,
-                      pr: 0,
+                      width: '100%',
+                      height: '100%',
+                      color: (theme) => theme.palette.text.primary,
                     }}
-                  >
-                    <CloseSvg />
-                  </SvgIcon>
+                    component={CircuitLarge}
+                    viewBox="0 0 900 320" // Specify the viewBox to match the desired container size
+                  />
                 </span>
               </Grid>
             </Grid>
-          </Box>
-        </Slide>
+            <Grid
+              item
+              pr={1}
+              pt={0.5}
+              xs={1}
+              sx={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                cursor: 'pointer',
+              }}
+            >
+              <span style={{ flex: 'none' }} onClick={handleClose}>
+                <SvgIcon
+                  aria-label="view"
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    mr: 0,
+                    mt: 1,
+                    pr: 0,
+                  }}
+                >
+                  <CloseSvg />
+                </SvgIcon>
+              </span>
+            </Grid>
+          </Grid>
+        </Box>
       </Modal>
     </Grid>
   )
