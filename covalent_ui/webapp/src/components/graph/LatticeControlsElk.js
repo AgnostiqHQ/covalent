@@ -76,7 +76,7 @@ const LatticeControls = ({
   togglePrettify,
   prettify,
   showSystemGenerated,
-  toggleSystemParams
+  toggleSystemGenerated
 }) => {
   const { zoomIn, zoomOut } = useZoomPanHelper()
   const { fitView } = useFitViewHelper()
@@ -306,7 +306,7 @@ const LatticeControls = ({
       <Hint title="Toggle system-generated">
         <ToggleButton
           data-testid="togglesystemgenerated"
-          onClick={toggleSystemParams}
+          onClick={toggleSystemGenerated}
           value=""
           selected={showSystemGenerated}
         >

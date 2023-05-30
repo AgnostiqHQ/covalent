@@ -34,7 +34,8 @@ const layout = (
   hideLabels,
   preview,
   showPostProcess,
-  prettify
+  prettify,
+  showSystemGenerated
 ) => {
   const elements = mapGraphToElements(
     graph,
@@ -43,9 +44,10 @@ const layout = (
     hideLabels,
     preview,
     showPostProcess,
-    prettify
+    prettify,
+    showSystemGenerated
   )
-  assignNodePositions(elements, direction, preview, showPostProcess, prettify)
+  assignNodePositions(elements, direction, preview, showPostProcess, prettify, showSystemGenerated)
   return elements
 }
 

@@ -63,7 +63,7 @@ const LatticeGraph = ({
   const [showMinimap, setShowMinimap] = useState(false)
   const [showParams, setShowParams] = useState(false)
   const [showPostProcess, setPostProcess] = useState(false)
-  const [showSystemGenerated, setSystemGenerated] = useState(true)
+  const [showSystemGenerated, setSystemGenerated] = useState(false)
   const [nodesDraggable, setNodesDraggable] = useState(false)
   const [algorithm, setAlgorithm] = useState('layered')
   const [hideLabels, setHideLabels] = useState(false)
@@ -152,8 +152,7 @@ const LatticeGraph = ({
         preview,
         showPostProcess,
         prettify,
-        showSystemGenerated,
-        setPostProcess
+        showSystemGenerated
       )
         .then((els) => {
           setElements(els)
@@ -414,7 +413,7 @@ const LatticeGraph = ({
             nodesDraggable={nodesDraggable}
             toggleNodesDraggable={() => setNodesDraggable(!nodesDraggable)}
             showSystemGenerated={showSystemGenerated}
-            toggleSystemParams={() => {
+            toggleSystemGenerated={() => {
               setSystemGenerated(!showSystemGenerated)
             }}
           />

@@ -23,7 +23,7 @@
 import _ from 'lodash'
 import ELK from 'elkjs/lib/elk.bundled.js'
 import { isNode } from 'react-flow-renderer'
-import { isParameter, isPostProcess, isSystemGenerator, Prettify } from '../../utils/misc'
+import { isParameter, Prettify, allowSublatticeAndGeneralNodes, allowPostProcessAndSubgraph, allowParameterAndSubgraph } from '../../utils/misc'
 
 const nodeLabel = (type, name) => {
   switch (type) {
@@ -63,14 +63,14 @@ const mapGraphToElements = (
   prettify,
   showSystemGenerated
 ) => {
-  if (!showPostProcess) {
-    graph = filterGraph(graph, (node) => !isPostProcess(node))
-  }
-  if (!showParams) {
-    graph = filterGraph(graph, (node) => !isParameter(node))
-  }
-  if (!showSystemGenerated) {
-    graph = filterGraph(graph, (node) => !isSystemGenerator(node))
+  if (!showSystemGenerated && !showPostProcess && !showParams) {// by default hide all system generated but sublattice
+    graph = filterGraph(graph, (node) => allowSublatticeAndGeneralNodes(node))
+  } else if (!showSystemGenerated && showPostProcess && !showParams) { // hide all system generated except sublattice and postprocess
+    graph = filterGraph(graph, (node) => allowPostProcessAndSubgraph(node))
+  } else if (!showSystemGenerated && !showPostProcess && showParams) { // hide all system generated except sublattice and parameter
+    graph = filterGraph(graph, (node) => allowParameterAndSubgraph(node))
+  } else {
+    graph = graph;
   }
 
   const nodes = _.map(graph.nodes, (node) => {

@@ -107,9 +107,31 @@ export const truncateMiddle = (s, start, end, omission = '…') => {
 
 export const isParameter = (node) => _.startsWith(node.name, ':parameter:')
 
-export const isPostProcess = (node) => node?.name.startsWith(':postprocess:')
+export const isPostProcess = (node) => node?.name.startsWith(':') && node?.name.startsWith(':postprocess:')
 
-export const isSystemGenerator = (node) => node?.name.startsWith(':') && !node?.name.startsWith(':sub') && !node?.name.startsWith(':postprocess') && !node?.name.startsWith(':param')
+// to filter all system generated nodes other than sublattice
+export const allowSublatticeAndGeneralNodes = (node) => {
+  if (!node?.name.startsWith(':')) return true;
+  if (node?.name.startsWith(':') && node?.name.startsWith(':sublattice')) return true;
+  return false;
+}
+
+// to filter all system generated nodes other than sublattice and postprocess
+export const allowPostProcessAndSubgraph = (node) => {
+  if (!node?.name.startsWith(':')) return true;
+  if (node?.name.startsWith(':') && node?.name.startsWith(':sublattice')) return true;
+  if (node?.name.startsWith(':') && node?.name.startsWith(':postprocess:')) return true;
+  return false;
+}
+
+// to filter all system generated nodes other than sublattice and postprocess
+export const allowParameterAndSubgraph = (node) => {
+  if (!node?.name.startsWith(':')) return true;
+  if (node?.name.startsWith(':') && node?.name.startsWith(':sublattice')) return true;
+  if (node?.name.startsWith(':') && node?.name.startsWith(':parameter')) return true;
+  return false;
+}
+
 
 export const displayStatus = (status) => _.startCase(_.lowerCase(status))
 
