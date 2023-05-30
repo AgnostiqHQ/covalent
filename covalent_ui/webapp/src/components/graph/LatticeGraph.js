@@ -152,7 +152,8 @@ const LatticeGraph = ({
         preview,
         showPostProcess,
         prettify,
-        showSystemGenerated
+        showSystemGenerated,
+        setPostProcess
       )
         .then((els) => {
           setElements(els)
@@ -386,10 +387,12 @@ const LatticeGraph = ({
             showPostProcess={showPostProcess}
             togglePostProcess={() => {
               setPostProcess(!showPostProcess)
+              setSystemGenerated(!showSystemGenerated)
             }}
             showParams={showParams}
             toggleParams={() => {
               setShowParams(!showParams)
+              setSystemGenerated(!showSystemGenerated)
             }}
             showMinimap={showMinimap}
             toggleMinimap={() => {
@@ -415,6 +418,8 @@ const LatticeGraph = ({
             showSystemGenerated={showSystemGenerated}
             toggleSystemParams={() => {
               setSystemGenerated(!showSystemGenerated)
+              setShowParams(!showParams)
+              setPostProcess(!showPostProcess)
             }}
           />
           {showMinimap && (
