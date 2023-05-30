@@ -456,9 +456,18 @@ def status() -> None:
     """
 
     pid = _read_pid(UI_PIDFILE)
+    process = psutil.Process(pid)
+    virtual_mem = process.memory_info().vms
     if _read_pid(UI_PIDFILE) != -1 and psutil.pid_exists(pid):
         ui_port = get_config("user_interface.port")
         click.echo(f"Covalent server is running at http://localhost:{ui_port}.")
+    elif virtual_mem > 0:
+        click.echo("Covalent server is unhealthy: swapped out of memory")
+    elif status == psutil.STATUS_ZOMBIE:
+        click.echo("Covalent server is unhealthy: zombie process")
+    elif status == psutil.STATUS_STOPPED:
+        click.echo("Covalent server is unhealthy: process stopped")
+
     else:
         _rm_pid_file(UI_PIDFILE)
         click.echo("Covalent server is stopped.")
