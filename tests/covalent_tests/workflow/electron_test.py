@@ -496,6 +496,15 @@ def test_electron_executor_property():
     def mock_task():
         pass
 
+    mock_encoded_metadata = encode_metadata({"executor": LocalExecutor()})
+
     mock_task_electron = mock_task.electron_object
+
+    # If string is passed
     mock_task_electron.executor = "mock"
     assert mock_task_electron.metadata["executor"] == "mock"
+
+    # If executor object is passed
+    mock_task_electron.executor = LocalExecutor()
+    assert mock_task_electron.metadata["executor"] == mock_encoded_metadata["executor"]
+    assert mock_task_electron.metadata["executor_data"] == mock_encoded_metadata["executor_data"]
