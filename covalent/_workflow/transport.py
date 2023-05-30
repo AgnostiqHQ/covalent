@@ -113,7 +113,7 @@ class _TransportGraph:
             "start_time": None,
             "end_time": None,
             "status": RESULT_STATUS.NEW_OBJECT,
-            "output": None,
+            "output": TransportableObject(None),
             "error": "",
             "sub_dispatch_id": None,
             "sublattice_result": None,
