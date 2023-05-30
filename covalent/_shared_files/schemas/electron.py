@@ -26,6 +26,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from .asset import AssetSchema
+from .common import StatusEnum
 
 ELECTRON_METADATA_KEYS = {
     "task_group_id",
@@ -100,7 +101,7 @@ class ElectronMetadata(BaseModel):
     executor: str
     executor_data: dict
     sub_dispatch_id: Optional[str]
-    status: Optional[str]
+    status: StatusEnum
     start_time: Optional[datetime]
     end_time: Optional[datetime]
 

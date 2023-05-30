@@ -26,6 +26,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 from .asset import AssetSchema
+from .common import StatusEnum
 from .lattice import (
     LATTICE_ERROR_FILENAME,
     LATTICE_INPUTS_FILENAME,
@@ -60,7 +61,7 @@ ASSET_FILENAME_MAP = {
 class ResultMetadata(BaseModel):
     dispatch_id: str
     root_dispatch_id: str
-    status: str
+    status: StatusEnum
     start_time: Optional[datetime]
     end_time: Optional[datetime]
 
