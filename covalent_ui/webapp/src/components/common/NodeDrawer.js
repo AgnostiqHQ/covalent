@@ -33,6 +33,8 @@ import {
   Paper,
   Typography,
   Skeleton,
+  SvgIcon,
+  Grid,
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 
@@ -59,6 +61,8 @@ import {
   electronInput,
 } from '../../redux/electronSlice'
 import QElectronCard from './QElectronCard'
+import { ReactComponent as QelectronSvg } from '../../assets/qelectron/qelectron.svg'
+import CopyButton from './CopyButton'
 
 export const nodeDrawerWidth = 360
 
@@ -163,7 +167,7 @@ const NodeDrawer = ({
 
   return (
     <Drawer
-      transitionDuration={800}
+      transitionDuration={400}
       sx={(theme) => ({
         width: nodeDrawerWidth,
         '& .MuiDrawer-paper': {
@@ -194,6 +198,7 @@ const NodeDrawer = ({
         <>
           <Box
             sx={{
+              width: '100%',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
@@ -203,12 +208,46 @@ const NodeDrawer = ({
             {!electronDetail && electronDetailIsFetching ? (
               <Skeleton data-testid="node__box_skl" width={150} />
             ) : (
-              <Typography sx={{ color: '#A5A6F6', overflowWrap: 'anywhere' }}>
+              <Typography
+                sx={{
+                  color: '#A5A6F6',
+                  overflowWrap: 'anywhere',
+                  display: 'flex',
+                  alignItems: 'center',
+                }}
+              >
                 {nodeLabel(electronDetail?.type, electronDetail?.name)}
+                <span>
+                  <SvgIcon
+                    aria-label="view"
+                    sx={{
+                      display: 'flex',
+                      justifyContent: 'flex-end',
+                      mr: 0,
+                      ml: 1.5,
+                      mt: 0.7,
+                      pr: 0,
+                    }}
+                  >
+                    <QelectronSvg />
+                  </SvgIcon>
+                </span>
               </Typography>
             )}
+            <Box ml={5} sx={{ display: 'flex', alignItems: 'center' }}>
+              <Typography mt={0.2} sx={{ fontSize: '14px', color: '#86869A' }}>
+                {qElectronDetails.quantam_calls}
+              </Typography>
+              <Grid>
+                {' '}
+                <CopyButton />
+              </Grid>
+            </Box>
 
-            <Box data-testid="node__dra_close">
+            <Box
+              data-testid="node__dra_close"
+              sx={{ position: 'absolute', top: 0, right: 1.5 }}
+            >
               <IconButton onClick={handleClose}>
                 <Close />
               </IconButton>

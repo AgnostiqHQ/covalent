@@ -46,7 +46,7 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer }) => {
 
   return (
     <Drawer
-      transitionDuration={800}
+      transitionDuration={600}
       id="nodeDrawer"
       sx={(theme) => ({
         position: 'relative',

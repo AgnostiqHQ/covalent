@@ -21,8 +21,6 @@
  */
 import * as React from 'react'
 import Box from '@mui/material/Box'
-import Slide from '@mui/material/Slide'
-import Typography from '@mui/material/Typography'
 import Modal from '@mui/material/Modal'
 import _ from 'lodash'
 import { Light } from 'react-syntax-highlighter'
@@ -48,15 +46,15 @@ const SyntaxHighlighter = ({ src, preview, fullwidth, ...props }) => {
   const styles = {
     outline: 'none',
     position: 'absolute',
-    top: '2%',
-    left: '2%',
-    transform: 'translate(-2%, -2%)',
+    top: '50%',
+    left: '50%',
+    transform: 'translate(-50%, -50%)',
+    p: 4,
     width: ' 95%',
     height: '95%',
     bgcolor: '#0B0B11E5',
     border: '2px solid transparent',
     boxShadow: 24,
-    p: 4,
   }
 
   return (
@@ -119,55 +117,53 @@ const SyntaxHighlighter = ({ src, preview, fullwidth, ...props }) => {
         aria-labelledby="modal-modal-title"
         aria-describedby="modal-modal-description"
       >
-        <Slide direction="down" in={open} timeout={800} unmountOnExit>
-          <Box sx={styles}>
-            <Grid container sx={{ height: '100%' }}>
-              <Grid item xs={11} sx={{ height: '100%' }}>
-                <Light
-                  data-testid="syntax"
-                  language="python"
-                  style={style}
-                  customStyle={{
-                    margin: 0,
-                    padding: 10,
-                    maxHeight: ' 100%',
-                    fontSize: 12,
-                    backgroundColor: 'transparent',
-                  }}
-                  {...props}
-                >
-                  {_.trim(src, '"" \n')}
-                </Light>
-              </Grid>
-              <Grid
-                item
-                pr={1}
-                pt={0.5}
-                xs={1}
+        <Box sx={styles}>
+          <Grid container sx={{ height: '100%' }}>
+            <Grid item xs={11} sx={{ height: '100%' }}>
+              <Light
+                data-testid="syntax"
+                language="python"
+                style={style}
+                customStyle={{
+                  margin: 0,
+                  padding: 10,
+                  maxHeight: ' 100%',
+                  fontSize: 12,
+                  backgroundColor: 'transparent',
+                }}
+                {...props}
+              >
+                {_.trim(src, '"" \n')}
+              </Light>
+            </Grid>
+            <Grid
+              item
+              pr={1}
+              pt={0.5}
+              xs={1}
+              sx={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                cursor: 'default',
+              }}
+            >
+              <SvgIcon
+                aria-label="view"
                 sx={{
                   display: 'flex',
                   justifyContent: 'flex-end',
-                  cursor: 'default',
+                  mr: 0,
+                  mt: 1,
+                  pr: 0,
+                  cursor: 'pointer',
                 }}
+                onClick={handleClose}
               >
-                <SvgIcon
-                  aria-label="view"
-                  sx={{
-                    display: 'flex',
-                    justifyContent: 'flex-end',
-                    mr: 0,
-                    mt: 1,
-                    pr: 0,
-                    cursor: 'pointer',
-                  }}
-                  onClick={handleClose}
-                >
-                  <CloseSvg />
-                </SvgIcon>
-              </Grid>
+                <CloseSvg />
+              </SvgIcon>
             </Grid>
-          </Box>
-        </Slide>
+          </Grid>
+        </Box>
       </Modal>
     </>
   )

@@ -70,7 +70,7 @@ const QElelctronAccordion = (props) => {
   return (
     <Grid mt={2}>
       <Accordion
-        TransitionProps={{ timeout: 800 }}
+        TransitionProps={{ timeout: 400 }}
         expanded={expanded}
         // onChange={handleAccordChange}
         sx={{
