@@ -109,7 +109,7 @@ export const isParameter = (node) => _.startsWith(node.name, ':parameter:')
 
 export const isPostProcess = (node) => node?.name.startsWith(':postprocess:')
 
-export const isSystemGenerator = (node) => node?.name.startsWith(':') && !node?.name.startsWith(':sub')
+export const isSystemGenerator = (node) => node?.name.startsWith(':') && !node?.name.startsWith(':sub') && !node?.name.startsWith(':postprocess') && !node?.name.startsWith(':param')
 
 export const displayStatus = (status) => _.startCase(_.lowerCase(status))
 

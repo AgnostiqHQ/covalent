@@ -49,6 +49,7 @@ import { ReactComponent as ZoomOutSvg } from '../../assets/latticeControls/zoom-
 import { ReactComponent as PostProcessSvg } from '../../assets/latticeControls/post-process.svg'
 import { ReactComponent as PrettifySvg } from '../../assets/latticeControls/prettify.svg'
 import { ReactComponent as ParameterSvg } from '../../assets/latticeControls/parameter.svg'
+import { ReactComponent as GeneratedSvg } from '../../assets/nodeType/generated.svg'
 
 const LatticeControls = ({
   marginLeft = 0,
@@ -318,7 +319,7 @@ const LatticeControls = ({
               ml: 1,
             }}
           >
-            <PostProcessSvg />
+            <GeneratedSvg />
           </SvgIcon>{' '}
         </ToggleButton>
       </Hint>
