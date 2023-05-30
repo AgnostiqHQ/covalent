@@ -771,8 +771,8 @@ def to_decoded_electron_collection(**x):
 def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kwargs):
     import os
 
-    # Read the parent dispatch id if set in the environment
-    parent_dispatch_id = os.environ.get("COVALENT_DISPATCH_ID", None)
+    # Read the parent dispatch id
+    parent_dispatch_id = os.environ["COVALENT_DISPATCH_ID"]
 
     parent_metadata = json.loads(json_parent_metadata)
     for k in sub.metadata.keys():
