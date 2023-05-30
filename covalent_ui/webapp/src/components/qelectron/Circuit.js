@@ -66,7 +66,13 @@ const Circuit = ({ circuitDetails }) => {
       flexDirection="column
     "
     >
-      <Grid id="topGrid" item container xs={10} justifyContent="space-between">
+      <Grid
+        id="topGrid"
+        item
+        container
+        xs={11.85}
+        justifyContent="space-between"
+      >
         <SingleGrid title="No. of Qbits" value={circuitDetails.no_of_qbits} />
         <SingleGrid title="No.1 Qbit Gates" value={circuitDetails.no1_gates} />
         <SingleGrid title="No.2 Qbit Gates" value={circuitDetails.no2_gates} />
@@ -85,7 +91,7 @@ const Circuit = ({ circuitDetails }) => {
           mt={2}
           container
           justifyContent="center"
-          sx={{ width: '700px', height: '120px', cursor: 'pointer' }}
+          sx={{ width: '750px', height: '120px', cursor: 'pointer' }}
           onClick={() => setOpenModal(true)}
         >
           <span
@@ -104,7 +110,7 @@ const Circuit = ({ circuitDetails }) => {
                 color: (theme) => theme.palette.text.primary,
               }}
               component={QelectronSvg}
-              viewBox="0 0 700 120" // Specify the viewBox to match the desired container size
+              viewBox="0 0 750 120" // Specify the viewBox to match the desired container size
             />
           </span>
         </Grid>
