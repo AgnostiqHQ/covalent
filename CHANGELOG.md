@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Resolving correct python executable
 - Error handling for random URLs/random dispatchId entered on the GUI
+- Fixed support for dynamically assigning `executor` to `Electron` class
 
 ### Added
 
@@ -33,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Removed unused module `covalent._data_store`
+- Stress test files of cpu and sublattice stress tests removed from functional tests suite.
 
 ### Operations
 
