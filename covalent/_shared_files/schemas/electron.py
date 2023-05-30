@@ -105,6 +105,12 @@ class ElectronMetadata(BaseModel):
     start_time: Optional[datetime]
     end_time: Optional[datetime]
 
+    # For use by redispatch
+    def reset(self):
+        self.status = StatusEnum.NEW_OBJECT
+        self.start_time = None
+        self.end_time = None
+
 
 class ElectronSchema(BaseModel):
     id: int

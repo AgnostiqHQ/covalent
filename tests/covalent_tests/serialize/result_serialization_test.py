@@ -74,3 +74,41 @@ def test_serialize_deserialize_result():
 
         for edge in tg1._graph.edges:
             assert tg1._graph.edges[edge].items() <= tg2._graph.edges[edge].items()
+
+
+def reset_metadata():
+    @ct.electron
+    def identity(x):
+        return x
+
+    @ct.electron
+    def add(x, y):
+        return x + y
+
+    @ct.lattice
+    def workflow(x, y):
+        res1 = identity(x)
+        res2 = identity(y)
+        return add(res1, res2)
+
+    workflow.build_graph(2, 3)
+    result_object = Result(workflow)
+    ts = datetime.now(timezone.utc)
+    result_object._start_time = ts
+    result_object._end_time = ts
+    result_object.lattice.transport_graph.set_node_value(0, "status", Result.COMPLETED)
+    with tempfile.TemporaryDirectory() as d:
+        manifest = serialize_result(result_object, d)
+
+        manifest.reset_metadata()
+
+        assert manifest.metadata.status == str(Result.NEW_OBJ)
+
+        assert manifest.metadata.start_time is None
+        assert manifest.metadata.end_time is None
+
+        tg = manifest.lattice.transport_graph
+        for i in tg.nodes:
+            assert tg.nodes[i].metadata.status == str(Result.NEW_OBJ)
+            assert tg.nodes[i].metadata.start_time is None
+            assert tg.nodes[i].metadata.end_time is None

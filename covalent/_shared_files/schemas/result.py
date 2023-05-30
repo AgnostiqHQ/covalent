@@ -65,6 +65,14 @@ class ResultMetadata(BaseModel):
     start_time: Optional[datetime]
     end_time: Optional[datetime]
 
+    # For use by redispatch
+    def reset(self):
+        self.dispatch_id = ""
+        self.root_dispatch_id = ""
+        self.status = StatusEnum.NEW_OBJECT
+        self.start_time = None
+        self.end_time = None
+
 
 class ResultAssets(BaseModel):
     inputs: AssetSchema
@@ -76,3 +84,11 @@ class ResultSchema(BaseModel):
     metadata: ResultMetadata
     assets: ResultAssets
     lattice: LatticeSchema
+
+    # For use by redispatch
+    def reset_metadata(self):
+        self.metadata.reset()
+
+        tg = self.lattice.transport_graph
+        for node in tg.nodes:
+            node.metadata.reset()

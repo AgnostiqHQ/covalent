@@ -31,3 +31,8 @@ from .electron import ElectronSchema
 class TransportGraphSchema(BaseModel):
     nodes: List[ElectronSchema]
     links: List[EdgeSchema]
+
+    # For use by redispatch
+    def reset(self):
+        for node in self.nodes:
+            node.metadata.reset()
