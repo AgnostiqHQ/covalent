@@ -29,8 +29,8 @@ import shutil
 import socket
 import sys
 import time
-from pathlib import Path
 import traceback
+from pathlib import Path
 from subprocess import DEVNULL, Popen
 from typing import Optional
 
