@@ -14,7 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Fix typo in GCP Batch executor RTD.
-- Add steps for setting up GUI for local development in contribution guidelines. 
+- Add steps for setting up GUI for local development in contribution guidelines.
+- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
 
 ### Fixed
 
