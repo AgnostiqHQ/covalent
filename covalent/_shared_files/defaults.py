@@ -93,7 +93,7 @@ def get_default_dispatcher_config():
         "qelectron_db_path": os.environ.get("COVALENT_DATABASE")
         or (
             (os.environ.get("XDG_DATA_HOME") or (os.environ["HOME"] + "/.local/share")) +
-            "/covalent/qelectron_qb"
+            "/covalent/qelectron_db"
         ),
     }
 
