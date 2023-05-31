@@ -26,7 +26,7 @@ import { isNode } from 'react-flow-renderer'
 import {
   isParameter, Prettify, allowSublatticeAndGeneralNodes, allowPostProcessAndSubgraph,
   allowParameterAndSubgraph, allowSystemGeneratedAlone, allowSystemGenAndPostprocess,
-  allowSystemGenAndParameter
+  allowOtherThanSystemGen, allowSystemGenAndParameter
 } from '../../utils/misc'
 
 const nodeLabel = (type, name) => {
@@ -69,19 +69,19 @@ const mapGraphToElements = (
 ) => {
   if (!showSystemGenerated && !showPostProcess && !showParams) {// by default hide all system generated but sublattice
     graph = filterGraph(graph, (node) => allowSublatticeAndGeneralNodes(node))
-  } else if (!showSystemGenerated && showPostProcess && !showParams) { // hide all system generated except sublattice and postprocess
-    graph = filterGraph(graph, (node) => allowPostProcessAndSubgraph(node))
   } else if (!showSystemGenerated && !showPostProcess && showParams) { // hide all system generated except sublattice and parameter
     graph = filterGraph(graph, (node) => allowParameterAndSubgraph(node))
+  } else if (!showSystemGenerated && showPostProcess && !showParams) { // hide all system generated except sublattice and postprocess
+    graph = filterGraph(graph, (node) => allowPostProcessAndSubgraph(node))
   } else if (showSystemGenerated && !showPostProcess && !showParams) { // hide all system generated except sublattice and parameter
     graph = filterGraph(graph, (node) => allowSystemGeneratedAlone(node))
   } else if (showSystemGenerated && showPostProcess && !showParams) { // hide paramater only
     graph = filterGraph(graph, (node) => allowSystemGenAndPostprocess(node))
+  } else if (!showSystemGenerated && showPostProcess && showParams) { // hide post process only
+    graph = filterGraph(graph, (node) => allowOtherThanSystemGen(node))
   } else if (showSystemGenerated && !showPostProcess && showParams) { // hide post process only
     graph = filterGraph(graph, (node) => allowSystemGenAndParameter(node))
-  } else {
-    graph = graph;
-  }
+  } // else show all nodes without filter
 
   const nodes = _.map(graph.nodes, (node) => {
     const handlePositions = getHandlePositions(direction)
