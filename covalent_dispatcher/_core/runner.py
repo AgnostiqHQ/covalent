@@ -23,6 +23,7 @@ Defines the core functionality of the runner
 """
 
 import asyncio
+import importlib
 import json
 import traceback
 from concurrent.futures import ThreadPoolExecutor
@@ -37,6 +38,8 @@ from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent.executor import _executor_manager
 from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
+from covalent.executor.utils import set_context
+from covalent._workflow.transport import TransportableObject
 
 from . import data_manager as datasvc
 from .data_modules.job_manager import get_jobs_metadata, set_cancel_result
@@ -247,7 +250,25 @@ async def _run_task(
     # Run the task on the executor and register any failures.
     try:
         app_log.debug(f"Executing task {node_name}")
-        assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after, node_id, dispatch_id)
+
+        def qelectron_compatible_wrapper(node_id, dispatch_id, ser_user_fn, *args, **kwargs):
+            
+            user_fn = ser_user_fn.get_deserialized()
+            
+            try:
+                mod_qe_utils = importlib.import_module("covalent.experimental.qelectron_utils")
+
+                with set_context(node_id, dispatch_id):
+                    res = user_fn(*args, **kwargs)
+                    mod_qe_utils.print_qelectron_db()
+                
+                return res
+            except ModuleNotFoundError:
+                return user_fn(*args, **kwargs)
+
+        serialized_callable = TransportableObject(partial(qelectron_compatible_wrapper, node_id, dispatch_id, serialized_callable))
+
+        assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
 
         # Note: Executor proxy monitors the executors instances and watches the send and receive queues of the executor.
         asyncio.create_task(executor_proxy.watch(dispatch_id, node_id, executor))

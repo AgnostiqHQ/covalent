@@ -48,8 +48,7 @@ import aiofiles
 
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
-from covalent.executor.utils import Signals, set_context
-from covalent.experimental.qelectron_utils import print_qelectron_db, remove_qelectron_db
+from covalent.executor.utils import Signals
 
 from .._shared_files import TaskRuntimeError, logger
 from .._shared_files.context_managers import active_dispatch_info_manager
@@ -65,8 +64,6 @@ def wrapper_fn(
     function: TransportableObject,
     call_before: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
     call_after: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
-    node_id: int,
-    dispatch_id: str,
     *args,
     **kwargs,
 ):
@@ -109,8 +106,7 @@ def wrapper_fn(
     for key, val in cb_retvals.items():
         new_kwargs[key] = val
 
-    with set_context(node_id, dispatch_id):
-        output = fn(*new_args, **new_kwargs)
+    output = fn(*new_args, **new_kwargs)
 
     for tup in call_after:
         serialized_fn, serialized_args, serialized_kwargs, retval_key = tup
@@ -118,8 +114,6 @@ def wrapper_fn(
         ca_args = serialized_args.get_deserialized()
         ca_kwargs = serialized_kwargs.get_deserialized()
         ca_fn(*ca_args, **ca_kwargs)
-
-    print_qelectron_db(dispatch_id, node_id)
 
     return TransportableObject(output)
 
@@ -336,7 +330,7 @@ class BaseExecutor(_AbstractBaseExecutor):
                 filename.touch(exist_ok=True)
 
                 with open(filepath, "a") as f:
-                    f.write(remove_qelectron_db(ss))
+                    f.write(ss)
 
     async def _execute(
         self,
@@ -619,7 +613,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
                 filename.touch(exist_ok=True)
 
                 async with aiofiles.open(filepath, "a") as f:
-                    await f.write(remove_qelectron_db(ss))
+                    await f.write(ss)
 
     async def _execute(
         self,

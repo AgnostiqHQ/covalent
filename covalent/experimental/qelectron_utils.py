@@ -5,6 +5,7 @@ from typing import Tuple
 
 from .._shared_files import logger
 from .._shared_files.config import get_config
+from ..executor.utils.context import get_context
 
 _QE_DB_DATA_MARKER = "<====QELECTRON_DB_DATA====>"
 _DATA_FILENAME = "data.mdb"
@@ -13,17 +14,19 @@ _QE_DB_DIRNAME = ".database"
 app_log = logger.app_log
 
 
-def print_qelectron_db(dispatch_id: str, node_id: int) -> None:
+def print_qelectron_db() -> None:
     """
     Check for QElectron database file and dump it into stdout
 
     Args(s)
-        dispatch_id: Dispatch ID of the workflow
-        node_id: ID of the node in the transport graph
+        None
 
     Return(s)
         None
     """
+    context = get_context()
+    node_id, dispatch_id = context.node_id, context.dispatch_id
+
     db_dir = Path(get_config("dispatcher")["qelectron_db_path"]).resolve()
     task_subdir = db_dir / dispatch_id / f"node-{node_id}"
     if not task_subdir.exists():
