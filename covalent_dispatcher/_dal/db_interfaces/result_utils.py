@@ -24,6 +24,7 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
+from covalent._shared_files.schemas import result
 from covalent._shared_files.util_classes import Status
 
 from ..._db import models
@@ -46,23 +47,10 @@ ATTRIBUTES = {
     "error",
 }
 
-METADATA_KEYS = {
-    "start_time",
-    "end_time",
-    "results_dir",
-    "dispatch_id",
-    "root_dispatch_id",
-    "electron_id",
-    "status",
-    "num_nodes",
-}
+METADATA_KEYS = result.METADATA_KEYS.copy()
+METADATA_KEYS.update({"results_dir", "electron_id"})
+ASSET_KEYS = result.ASSET_KEYS
 
-
-ASSET_KEYS = {
-    "inputs",
-    "result",
-    "error",
-}
 
 _meta_record_map = {
     "start_time": "started_at",

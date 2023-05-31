@@ -25,6 +25,7 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
+from covalent._shared_files.schemas.electron import ELECTRON_ASSET_KEYS, ELECTRON_METADATA_KEYS
 from covalent._shared_files.util_classes import Status
 
 from ..._db import models
@@ -45,31 +46,8 @@ ATTRIBUTES = {
     "metadata",
 }
 
-
-METADATA_KEYS = {
-    "task_group_id",
-    "name",
-    "start_time",
-    "end_time",
-    "status",
-    # electron metadata
-    "executor",
-    "executor_data",
-}
-
-ASSET_KEYS = {
-    "function",
-    "function_string",
-    "output",
-    "value",
-    "error",
-    "stdout",
-    "stderr",
-    # electron metadata
-    "deps",
-    "call_before",
-    "call_after",
-}
+METADATA_KEYS = ELECTRON_METADATA_KEYS
+ASSET_KEYS = ELECTRON_ASSET_KEYS
 
 COMPUTED_FIELDS = {"sub_dispatch_id"}
 

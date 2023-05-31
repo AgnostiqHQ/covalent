@@ -25,6 +25,8 @@ from typing import Dict, List
 
 from sqlalchemy.orm import Session
 
+from covalent._shared_files.schemas import lattice
+
 from ..._db import models
 
 ATTRIBUTES = {
@@ -40,29 +42,14 @@ ATTRIBUTES = {
     "lattice_imports",
 }
 
+METADATA_KEYS = lattice.LATTICE_METADATA_KEYS.copy()
+METADATA_KEYS.remove("__name__")
+METADATA_KEYS.add("name")
 
-METADATA_KEYS = {
-    "name",
-    # metadata
-    "executor",
-    "workflow_executor",
-    "executor_data",
-    "workflow_executor_data",
-}
+ASSET_KEYS = lattice.LATTICE_ASSET_KEYS.copy()
+ASSET_KEYS.remove("__doc__")
+ASSET_KEYS.add("doc")
 
-ASSET_KEYS = {
-    "workflow_function",
-    "workflow_function_string",
-    "doc",
-    "named_args",
-    "named_kwargs",
-    "cova_imports",
-    "lattice_imports",
-    # metadata
-    "deps",
-    "call_before",
-    "call_after",
-}
 
 _meta_record_map = {
     "name": "name",
