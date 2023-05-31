@@ -34,7 +34,6 @@ from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.schemas.asset import AssetSchema
 from .._shared_files.schemas.result import ResultSchema
-from .._shared_files.util_classes import RESULT_STATUS
 from .._shared_files.utils import copy_file_locally
 from .._workflow.lattice import Lattice
 from ..triggers import BaseTrigger
@@ -124,13 +123,6 @@ def get_redispatch_request_body_v2(
     lat.build_graph(*new_args, **new_kwargs)
     if replace_electrons:
         del lat.__dict__["_replace_electrons"]
-
-    # Mark all replaced electrons as PENDING_REPLACEMENT
-    tg = lat.transport_graph
-    for node_id in tg._graph.nodes:
-        name = tg.get_node_value(node_id, "name")
-        if name in replace_electrons:
-            tg.set_node_status(node_id, "status", RESULT_STATUS.PENDING_REPLACEMENT)
 
     return serialize_result(Result(lat), staging_dir)
 

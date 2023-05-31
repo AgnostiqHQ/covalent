@@ -172,8 +172,7 @@ def test_handle_redispatch_identical(mocker, test_db, parent_status, new_status)
 
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
     mock_copy_node_asset = mocker.patch("covalent_dispatcher._dal.tg_ops.copy_asset")
-    mock_copy_workflow_asset = mocker.patch("covalent_dispatcher._dal.importers.result.copy_asset")
-    mock_copy_node_asset_meta = mocker.patch("covalent_dispatcher._dal.tg_ops.copy_asset_meta")
+    mock_copy_asset_meta = mocker.patch("covalent_dispatcher._dal.asset.copy_asset_meta")
     mock_copy_workflow_asset_meta = mocker.patch(
         "covalent_dispatcher._dal.importers.result.copy_asset_meta"
     )
@@ -216,11 +215,11 @@ def test_handle_redispatch_identical(mocker, test_db, parent_status, new_status)
             n_electron_assets += 1
             assert asset.remote_uri == ""
 
-    assert mock_copy_workflow_asset_meta.call_count == n_workflow_assets
+    assert mock_copy_workflow_asset_meta.call_count == n_workflow_assets + n_electron_assets
 
     result_object = get_result_object(redispatch_id, bare=False)
     tg = result_object.lattice.transport_graph
     for n in tg._graph.nodes:
         assert tg.get_node_value(n, "status") == new_status
 
-    assert len(assets_to_copy) == n_workflow_assets
+    assert len(assets_to_copy) == n_workflow_assets + n_electron_assets

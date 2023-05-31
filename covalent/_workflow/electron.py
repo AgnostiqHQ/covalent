@@ -46,6 +46,7 @@ from .._shared_files.defaults import (
     prefix_separator,
     sublattice_prefix,
 )
+from .._shared_files.util_classes import RESULT_STATUS
 from .._shared_files.utils import (
     filter_null_metadata,
     get_named_params,
@@ -378,6 +379,31 @@ class Electron:
                     meta = DEFAULT_METADATA_VALUES[k]
                 self.set_metadata(k, meta)
 
+        # Handle replace_electrons
+        name = self.function.__name__
+        if name in active_lattice.replace_electrons:
+            # Temporarily pop the replacement to avoid infinite
+            # recursion.
+            replacement_electron = active_lattice.replace_electrons.pop(name)
+
+            # TODO: check that replacement has the same
+            # signature. Also, although electron -> sublattice or
+            # sublattice -> electron are technically possible, these
+            # replacements will not work with the "exhaustive"
+            # postprocess method which requires that the number of nodes be
+            # determined by the lattice inputs.
+
+            # This will return a bound replacement electron
+            bound_electron = replacement_electron(*args, **kwargs)
+            active_lattice.transport_graph.set_node_value(
+                bound_electron.node_id,
+                "status",
+                RESULT_STATUS.PENDING_REPLACEMENT,
+            )
+
+            active_lattice.replace_electrons[name] = replacement_electron
+            return bound_electron
+
         # Handle sublattices by injecting _build_sublattice_graph node
         if isinstance(self.function, Lattice):
             parent_metadata = active_lattice.metadata.copy()
@@ -404,26 +430,6 @@ class Electron:
                 function_string,
             )
 
-            return bound_electron
-
-        # Handle replace_electrons
-        name = self.function.__name__
-        if name in active_lattice.replace_electrons:
-            # Temporarily pop the replacement to avoid infinite
-            # recursion.
-            replacement_electron = active_lattice.replace_electrons.pop(name)
-
-            # TODO: check that replacement has the same
-            # signature. Also, although electron -> sublattice or
-            # sublattice -> electron are technically possible, these
-            # replacements will not work with the "exhaustive"
-            # postprocess method which requires that the number of nodes be
-            # determined by the lattice inputs.
-
-            # This will return a bound replacement electron
-            bound_electron = replacement_electron(*args, **kwargs)
-
-            active_lattice.replace_electrons[name] = replacement_electron
             return bound_electron
 
         # Add a node to the transport graph of the active lattice. Electrons bound to nodes will never be packed with the

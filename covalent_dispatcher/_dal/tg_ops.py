@@ -90,11 +90,9 @@ class TransportGraphOps:
             old_node = tg.get_node(n)
             old_status = tg.get_node_value(n, "status")
 
-            if copy_metadata:
+            if copy_metadata and old_status == RESULT_STATUS.COMPLETED:
                 # Only previously completed nodes can actually be
                 # reused
-                if old_status != RESULT_STATUS.COMPLETED:
-                    continue
 
                 for k in METADATA_KEYS:
                     app_log.debug(f"Copying metadata {k} for node {n}")
