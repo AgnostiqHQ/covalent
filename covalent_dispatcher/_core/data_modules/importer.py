@@ -29,14 +29,18 @@ from typing import Optional
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas.result import ResultSchema
+from covalent_dispatcher._dal.asset import copy_asset
 from covalent_dispatcher._dal.importers.result import handle_redispatch, import_result
 from covalent_dispatcher._dal.result import Result as SRVResult
 
-from .utils import run_in_executor
+from .utils import dm_pool, run_in_executor
 
 BASE_PATH = get_config("dispatcher.results_dir")
 
 app_log = logger.app_log
+
+# Concurrent futures for copying assets during redispatch
+copy_futures = {}
 
 
 # Domain: result
@@ -110,13 +114,28 @@ async def import_manifest(
     return filtered_manifest
 
 
+def _copy_assets(assets_to_copy):
+    for item in assets_to_copy:
+        src, dest = item
+        copy_asset(src, dest)
+
+
 def _import_derived_manifest(
     manifest: ResultSchema,
     parent_dispatch_id: str,
     reuse_previous_results: bool,
 ) -> ResultSchema:
     filtered_manifest = _import_manifest(manifest, None, None)
-    return handle_redispatch(filtered_manifest, parent_dispatch_id, reuse_previous_results)
+    filtered_manifest, assets_to_copy = handle_redispatch(
+        filtered_manifest, parent_dispatch_id, reuse_previous_results
+    )
+
+    dispatch_id = filtered_manifest.metadata.dispatch_id
+    fut = dm_pool.submit(_copy_assets, assets_to_copy)
+    copy_futures[dispatch_id] = fut
+    fut.add_done_callback(lambda x: copy_futures.pop(dispatch_id))
+
+    return filtered_manifest
 
 
 async def import_derived_manifest(

@@ -63,6 +63,8 @@ log_stack_info = logger.log_stack_info
 
 router: APIRouter = APIRouter()
 
+_background_tasks = set()
+
 
 @router.post("/dispatchv2/submit")
 async def submitv0(request: Request) -> UUID:
@@ -150,7 +152,10 @@ async def resubmit(request: Request) -> str:
 @router.put("/dispatchv2/start/{dispatch_id}")
 async def start(dispatch_id: str):
     try:
-        await dispatcher.start_dispatch(dispatch_id)
+        fut = asyncio.create_task(dispatcher.start_dispatch(dispatch_id))
+        _background_tasks.add(fut)
+        fut.add_done_callback(_background_tasks.discard)
+
         return dispatch_id
     except Exception as e:
         raise HTTPException(

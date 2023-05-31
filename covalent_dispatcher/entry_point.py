@@ -22,6 +22,7 @@
 Self-contained entry point for the dispatcher
 """
 
+import asyncio
 from typing import List, Optional
 
 from covalent._shared_files import logger
@@ -82,8 +83,15 @@ async def start_dispatch(dispatch_id: str):
         dispatch_id: A string containing the dispatch id of current dispatch.
     """
 
-    from ._core import run_dispatch
+    from ._core import copy_futures, run_dispatch
 
+    # Wait for any pending asset transfers
+    _fut = copy_futures.get(dispatch_id, None)
+    if _fut is not None:
+        # _fut is a concurrent.future.Future, so we need to wrap it in
+        # an asyncio.Future
+        app_log.debug(f"Waiting on asset transfers for dispatch {dispatch_id}")
+        await asyncio.wrap_future(_fut)
     # TODO: must be idempotent
     run_dispatch(dispatch_id)
     app_log.debug(f"Running dispatch {dispatch_id}")

@@ -20,6 +20,8 @@
 
 """Unit tests for the importer entry point"""
 
+from unittest.mock import MagicMock
+
 import pytest
 
 from covalent_dispatcher._core.data_modules.importer import import_derived_manifest
@@ -27,11 +29,20 @@ from covalent_dispatcher._core.data_modules.importer import import_derived_manif
 
 @pytest.mark.asyncio
 async def test_import_derived_manifest(mocker):
+    mock_manifest = MagicMock()
+    mock_manifest.metadata.dispatch_id = "test_import_derived_manifest"
+
     mock_import_manifest = mocker.patch(
         "covalent_dispatcher._core.data_modules.importer._import_manifest",
     )
+
+    mock_copy = mocker.patch(
+        "covalent_dispatcher._core.data_modules.importer._copy_assets",
+    )
+
     mock_handle_redispatch = mocker.patch(
         "covalent_dispatcher._core.data_modules.importer.handle_redispatch",
+        return_value=(mock_manifest, []),
     )
 
     mock_pull = mocker.patch(
@@ -44,3 +55,4 @@ async def test_import_derived_manifest(mocker):
     mock_import_manifest.assert_called()
     mock_pull.assert_awaited()
     mock_handle_redispatch.assert_called()
+    mock_copy.assert_called_with([])

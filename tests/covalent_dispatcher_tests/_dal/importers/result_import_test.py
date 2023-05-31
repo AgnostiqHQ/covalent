@@ -197,7 +197,9 @@ def test_handle_redispatch_identical(mocker, test_db, parent_status, new_status)
     with tempfile.TemporaryDirectory(prefix="covalent-") as srv_dir_2:
         # Import the redispatch manifest and filter it through handle_redispatch
         redispatch_manifest = import_result(redispatch_manifest, srv_dir_2, None)
-        redispatch_manifest = handle_redispatch(redispatch_manifest, dispatch_id, True)
+        redispatch_manifest, assets_to_copy = handle_redispatch(
+            redispatch_manifest, dispatch_id, True
+        )
 
     n_workflow_assets = 0
     for key, asset in redispatch_manifest.assets:
@@ -215,9 +217,10 @@ def test_handle_redispatch_identical(mocker, test_db, parent_status, new_status)
             assert asset.remote_uri == ""
 
     assert mock_copy_workflow_asset_meta.call_count == n_workflow_assets
-    assert mock_copy_workflow_asset.call_count == n_workflow_assets
 
     result_object = get_result_object(redispatch_id, bare=False)
     tg = result_object.lattice.transport_graph
     for n in tg._graph.nodes:
         assert tg.get_node_value(n, "status") == new_status
+
+    assert len(assets_to_copy) == n_workflow_assets

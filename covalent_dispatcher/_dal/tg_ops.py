@@ -74,7 +74,14 @@ class TransportGraphOps:
         """Check if the edge attributes are the same in both graphs."""
         return A.adj[parent][node] == B.adj[parent][node]
 
-    def copy_nodes_from(self, tg: _TransportGraph, nodes, *, copy_metadata: bool = True):
+    def copy_nodes_from(
+        self,
+        tg: _TransportGraph,
+        nodes,
+        *,
+        copy_metadata: bool = True,
+        defer_copy_objects: bool = False,
+    ) -> List:
         """Copy nodes from the transport graph in the argument."""
 
         assets_to_copy = []
@@ -110,9 +117,13 @@ class TransportGraphOps:
                     assets_to_copy.append((old, new))
 
         # Now perform all data copy operations (this could be slow)
-        for item in assets_to_copy:
-            src, dest = item
-            copy_asset(src, dest)
+        if not defer_copy_objects:
+            for item in assets_to_copy:
+                src, dest = item
+                copy_asset(src, dest)
+
+        # Return the assets to copy at a later time
+        return assets_to_copy
 
     @staticmethod
     def _cmp_name_and_pval(A: nx.MultiDiGraph, B: nx.MultiDiGraph, node: int) -> bool:

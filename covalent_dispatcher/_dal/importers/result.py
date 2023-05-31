@@ -22,7 +22,7 @@
 """Functions to transform ResultSchema -> Result"""
 
 import os
-from typing import Optional
+from typing import List, Optional, Tuple
 
 from sqlalchemy.orm import Session
 
@@ -36,7 +36,7 @@ from covalent_dispatcher._dal.electron import ElectronMeta
 from covalent_dispatcher._dal.job import Job
 from covalent_dispatcher._dal.result import Result, ResultMeta
 
-from ..asset import copy_asset, copy_asset_meta
+from ..asset import copy_asset_meta
 from ..tg_ops import TransportGraphOps
 from ..utils.uri_filters import AssetScope, URIFilterPolicy, filter_asset_uri
 from .lattice import _get_lattice_meta, import_lattice_assets
@@ -250,7 +250,7 @@ def handle_redispatch(
     manifest: ResultSchema,
     parent_dispatch_id: str,
     reuse_previous_results: bool,
-) -> ResultSchema:
+) -> Tuple[ResultSchema, List[Tuple[Asset, Asset]]]:
     # * Compare transport graphs (tg_ops)
     # * Copy reusable nodes (tg_ops)
     # * Handle reuse_previous_results
@@ -301,8 +301,11 @@ def handle_redispatch(
     # COMPLETED corresponding node in the old dispatch to be marked
     # PENDING_REUSE in the DB, signalling to the dispatcher that they
     # don't need to be re-run.
-    TransportGraphOps(tg_new).copy_nodes_from(
-        tg_old, reusable_nodes, copy_metadata=reuse_previous_results
+    assets_to_copy = TransportGraphOps(tg_new).copy_nodes_from(
+        tg_old,
+        reusable_nodes,
+        copy_metadata=reuse_previous_results,
+        defer_copy_objects=True,
     )
 
     # Since the graph comparison is finished, we can upgrade
@@ -311,7 +314,7 @@ def handle_redispatch(
 
     # Copy corresponding workflow assets with the same hashes and
     # don't ask the client to upload them.
-    assets_to_copy = []
+
     with Result.session() as session:
         for key, asset in manifest.assets:
             new_asset = result_object.get_asset(key, session)
@@ -340,8 +343,8 @@ def handle_redispatch(
             copy_asset_meta(session, src, dest)
 
     # Copy asset data
-    for item in assets_to_copy:
-        src, dest = item
-        copy_asset(src, dest)
+    # for item in assets_to_copy:
+    #     src, dest = item
+    #     copy_asset(src, dest)
 
-    return manifest
+    return manifest, assets_to_copy
