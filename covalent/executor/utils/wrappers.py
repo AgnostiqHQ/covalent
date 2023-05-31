@@ -30,12 +30,11 @@ import traceback
 from contextlib import redirect_stderr, redirect_stdout
 from typing import Any, Callable, Dict, List, Tuple
 
-import cloudpickle as pickle
-
 from covalent._workflow.depsbash import DepsBash
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from covalent._workflow.depspip import DepsPip
 from covalent._workflow.transport import TransportableObject
+from covalent.executor.utils.serialize import deserialize_node_asset, serialize_node_asset
 
 
 def wrapper_fn(
@@ -181,7 +180,7 @@ def run_task_from_uris(
 
                     resp = requests.get(function_uri, stream=True)
                     resp.raise_for_status()
-                    serialized_fn = pickle.loads(resp.content)
+                    serialized_fn = deserialize_node_asset(resp.content, "function")
                     # function_uri = resources[task_id]
                     # if function_uri.startswith(prefix):
                     #     function_uri = function_uri[prefix_len:]
@@ -202,7 +201,7 @@ def run_task_from_uris(
                         url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{node_id}/output"
                         resp = requests.get(url, stream=True)
                         resp.raise_for_status()
-                        ser_args.append(pickle.loads(resp.content))
+                        ser_args.append(deserialize_node_asset(resp.content, "output"))
 
                     # kwargs_uris = {k: outputs[v] for k, v in kwargs_ids.items()}
                     # for key, uri in kwargs_uris.items():
@@ -214,7 +213,7 @@ def run_task_from_uris(
                         url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{node_id}/output"
                         resp = requests.get(url, stream=True)
                         resp.raise_for_status()
-                        ser_kwargs[k] = pickle.loads(resp.content)
+                        ser_kwargs[k] = deserialize_node_asset(resp.content, "output")
 
                     # deps_id = task["deps_id"]
                     # deps_uri = resources[deps_id]
@@ -227,7 +226,7 @@ def run_task_from_uris(
                     )
                     resp = requests.get(deps_url, stream=True)
                     resp.raise_for_status()
-                    deps_json = pickle.loads(resp.content)
+                    deps_json = deserialize_node_asset(resp.content, "deps")
 
                     # call_before_id = task["call_before_id"]
                     # call_before_uri = resources[call_before_id]
@@ -238,7 +237,7 @@ def run_task_from_uris(
                     cb_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/call_before"
                     resp = requests.get(cb_url, stream=True)
                     resp.raise_for_status()
-                    call_before_json = pickle.loads(resp.content)
+                    call_before_json = deserialize_node_asset(resp.content, "call_before")
 
                     # call_after_id = task["call_after_id"]
                     # call_after_uri = resources[call_after_id]
@@ -249,19 +248,19 @@ def run_task_from_uris(
                     ca_url = f"{server_url}/api/v1/resultv2/{dispatch_id}/assets/node/{task_id}/call_after"
                     resp = requests.get(ca_url, stream=True)
                     resp.raise_for_status()
-                    call_after_json = pickle.loads(resp.content)
+                    call_after_json = deserialize_node_asset(resp.content, "call_after")
 
                     call_before, call_after = _gather_deps(
                         deps_json, call_before_json, call_after_json
                     )
                     exception_occurred = False
 
-                    ser_output = wrapper_fn(
+                    transportable_output = wrapper_fn(
                         serialized_fn, call_before, call_after, *ser_args, **ser_kwargs
                     )
-
+                    ser_output = serialize_node_asset(transportable_output, "output")
                     with open(result_uri, "wb") as f:
-                        pickle.dump(ser_output, f)
+                        f.write(ser_output)
 
                     outputs[task_id] = result_uri
 

@@ -18,7 +18,7 @@ class AssetType(Enum):
     TEXT = 3
 
 
-def _serialize_asset(data: Any, data_type: AssetType) -> bytes:
+def serialize_asset(data: Any, data_type: AssetType) -> bytes:
     if data_type == AssetType.OBJECT:
         return cloudpickle.dumps(data)
     elif data_type == AssetType.TRANSPORTABLE:
@@ -31,7 +31,7 @@ def _serialize_asset(data: Any, data_type: AssetType) -> bytes:
         raise TypeError(f"Unsupported data type {type(data)}")
 
 
-def _deserialize_asset(data: bytes, data_type: AssetType) -> Any:
+def deserialize_asset(data: bytes, data_type: AssetType) -> Any:
     if data_type == AssetType.OBJECT:
         return cloudpickle.loads(data)
     elif data_type == AssetType.TRANSPORTABLE:
@@ -51,7 +51,7 @@ def _sha1_asset(data: bytes) -> str:
 def save_asset(data: Any, data_type: AssetType, storage_path: str, filename: str) -> AssetSchema:
     scheme = "file"
 
-    serialized = _serialize_asset(data, data_type)
+    serialized = serialize_asset(data, data_type)
     digest = _sha1_asset(serialized)
     path = Path(storage_path) / filename
     path = path.resolve()
@@ -74,4 +74,4 @@ def load_asset(asset_meta: AssetSchema, data_type: AssetType) -> Any:
         path = uri
     with open(path, "rb") as f:
         data = f.read()
-    return _deserialize_asset(data, data_type)
+    return deserialize_asset(data, data_type)
