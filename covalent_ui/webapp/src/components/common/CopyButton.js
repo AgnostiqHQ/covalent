@@ -60,6 +60,7 @@ const CopyButton = ({
             borderRadius: borderRadius ? borderRadius : '8px',
             width: width ? width : '32px',
             height: height ? height : '32px',
+            padding:0
           }}
           container
           direction="row"
