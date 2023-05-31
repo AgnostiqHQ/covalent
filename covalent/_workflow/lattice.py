@@ -194,6 +194,10 @@ class Lattice:
 
         return self.metadata.get(name, None)
 
+    @property
+    def replace_electrons(self) -> Dict[str, Callable]:
+        return self.__dict__.get("_replace_electrons", {})
+
     def build_graph(self, *args, **kwargs) -> None:
         """
         Builds the transport graph for the lattice by executing the workflow

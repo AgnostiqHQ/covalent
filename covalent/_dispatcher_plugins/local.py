@@ -28,12 +28,13 @@ import requests
 
 from .._results_manager import wait
 from .._results_manager.result import Result
-from .._results_manager.results_manager import get_result
+from .._results_manager.results_manager import get_result, get_result_manager
 from .._serialize.result import merge_response_manifest, serialize_result, strip_local_uris
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.schemas.asset import AssetSchema
 from .._shared_files.schemas.result import ResultSchema
+from .._shared_files.util_classes import RESULT_STATUS
 from .._shared_files.utils import copy_file_locally
 from .._workflow.lattice import Lattice
 from ..triggers import BaseTrigger
@@ -80,6 +81,58 @@ def get_redispatch_request_body(
         "electron_updates": updates,
         "reuse_previous_results": reuse_previous_results,
     }
+
+
+def get_redispatch_request_body_v2(
+    dispatch_id: str,
+    staging_dir: str,
+    new_args: List,
+    new_kwargs: Dict,
+    replace_electrons: Optional[Dict[str, Callable]],
+    dispatcher_addr: str = None,
+) -> ResultSchema:
+    rm = get_result_manager(dispatch_id, dispatcher_addr=dispatcher_addr, wait=True)
+    manifest = ResultSchema.parse_obj(rm._manifest)
+
+    # If no changes to inputs or electron, just retry the dispatch
+    if not new_args and not new_kwargs and not replace_electrons:
+        manifest.reset_metadata()
+        app_log.debug("Resubmitting manifest only")
+        return manifest
+
+    # In all other cases we need to rebuild the graph
+    rm.download_lattice_asset("workflow_function")
+    rm.download_lattice_asset("workflow_function_string")
+    rm.load_lattice_asset("workflow_function")
+    rm.load_lattice_asset("workflow_function_string")
+
+    if replace_electrons is None:
+        replace_electrons = {}
+
+    lat = rm.result_object.lattice
+
+    if replace_electrons:
+        lat._replace_electrons = replace_electrons
+
+    # If lattice inputs are not supplied, retrieve them from the previous dispatch
+    if not new_args and not new_kwargs:
+        rm.download_result_asset("inputs")
+        rm.load_result_asset("inputs")
+        new_args = [arg.get_deserialized() for arg in rm.result_object.inputs["args"]]
+        new_kargs = {k: v.get_deserialized() for k, v in rm.result_object.inputs["kwargs"].items()}
+
+    lat.build_graph(*new_args, **new_kwargs)
+    if replace_electrons:
+        del lat.__dict__["_replace_electrons"]
+
+    # Mark all replaced electrons as PENDING_REPLACEMENT
+    tg = lat.transport_graph
+    for node_id in tg._graph.nodes:
+        name = tg.get_node_value(node_id, "name")
+        if name in replace_electrons:
+            tg.set_node_status(node_id, "status", RESULT_STATUS.PENDING_REPLACEMENT)
+
+    return serialize_result(Result(lat), staging_dir)
 
 
 class LocalDispatcher(BaseDispatcher):
@@ -313,6 +366,16 @@ class LocalDispatcher(BaseDispatcher):
         if replace_electrons is None:
             replace_electrons = {}
 
+        multistage = get_config("sdk.multistage_dispatch") == "true"
+
+        if multistage:
+            return LocalDispatcher.register_redispatch(
+                dispatch_id=dispatch_id,
+                dispatcher_addr=dispatcher_addr,
+                replace_electrons=replace_electrons,
+                reuse_previous_results=reuse_previous_results,
+            )
+
         def func(*new_args, **new_kwargs):
             """
             Prepare the redispatch request body and redispatch the workflow.
@@ -502,6 +565,73 @@ class LocalDispatcher(BaseDispatcher):
         return wrapper
 
     @staticmethod
+    def register_redispatch(
+        dispatch_id: str,
+        dispatcher_addr: str = None,
+        replace_electrons: Dict[str, Callable] = None,
+        reuse_previous_results: bool = False,
+    ) -> Callable:
+        """
+        Wrapping the dispatching functionality to allow input passing and server address specification.
+
+        Args:
+            dispatch_id: The dispatch id of the workflow to re-dispatch.
+            dispatcher_addr: The address of the dispatcher server. If None then then defaults to the address set in Covalent's config.
+            replace_electrons: A dictionary of electron names and the new electron to replace them with.
+            reuse_previous_results: Boolean value whether to reuse the results from the previous dispatch.
+
+        Returns:
+            Wrapper function which takes the inputs of the workflow as arguments.
+        """
+
+        if dispatcher_addr is None:
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
+
+        def func(*new_args, **new_kwargs):
+            """
+            Prepare the redispatch request body and redispatch the workflow.
+
+            Args:
+                *args: The inputs of the workflow.
+                **kwargs: The keyword arguments of the workflow.
+
+            Returns:
+                The result of the executed workflow.
+            """
+
+            with tempfile.TemporaryDirectory() as staging_dir:
+                manifest = get_redispatch_request_body_v2(
+                    dispatch_id=dispatch_id,
+                    staging_dir=staging_dir,
+                    new_args=new_args,
+                    new_kwargs=new_kwargs,
+                    replace_electrons=replace_electrons,
+                    dispatcher_addr=dispatcher_addr,
+                )
+
+                LocalDispatcher.register_derived_manifest(
+                    manifest,
+                    dispatch_id,
+                    reuse_previous_results=reuse_previous_results,
+                    dispatcher_addr=dispatcher_addr,
+                )
+
+                redispatch_id = manifest.metadata.dispatch_id
+
+                path = dispatch_cache_dir / f"{redispatch_id}"
+
+                with open(path, "w") as f:
+                    f.write(manifest.json())
+
+                LocalDispatcher.upload_assets(manifest)
+
+            return LocalDispatcher.start(redispatch_id, dispatcher_addr)
+
+        return func
+
+    @staticmethod
     def prepare_manifest(lattice, storage_path) -> ResultSchema:
         """Prepare a built-out lattice for submission"""
 
@@ -548,6 +678,41 @@ class LocalDispatcher(BaseDispatcher):
         return merge_response_manifest(manifest, parsed_resp)
 
     @staticmethod
+    def register_derived_manifest(
+        manifest: ResultSchema,
+        dispatch_id: str,
+        reuse_previous_results: bool = False,
+        dispatcher_addr: Optional[str] = None,
+        push_assets: bool = True,
+    ) -> ResultSchema:
+        """Submits a derived manifest for registration.
+
+        Returns:
+            Dictionary representation of manifest with asset remote_uris filled in
+
+        """
+
+        if dispatcher_addr is None:
+            dispatcher_addr = (
+                get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
+            )
+
+        if push_assets:
+            stripped = strip_local_uris(manifest)
+        else:
+            stripped = manifest
+
+        test_url = f"http://{dispatcher_addr}/api/v1/dispatchv2/register/{dispatch_id}"
+
+        params = {"reuse_previous_results": reuse_previous_results}
+        r = requests.post(test_url, data=stripped.json(), params=params)
+        r.raise_for_status()
+
+        parsed_resp = ResultSchema.parse_obj(r.json())
+
+        return merge_response_manifest(manifest, parsed_resp)
+
+    @staticmethod
     def upload_assets(manifest: ResultSchema):
         assets = LocalDispatcher._extract_assets(manifest)
         LocalDispatcher._upload(assets)
@@ -580,6 +745,9 @@ class LocalDispatcher(BaseDispatcher):
         local_scheme_prefix = "file://"
         total = len(assets)
         for i, asset in enumerate(assets):
+            if not asset.remote_uri:
+                app_log.debug(f"Skipping asset {i+1} out of {total}")
+                continue
             if asset.remote_uri.startswith(local_scheme_prefix):
                 copy_file_locally(asset.uri, asset.remote_uri)
             else:

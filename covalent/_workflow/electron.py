@@ -406,6 +406,26 @@ class Electron:
 
             return bound_electron
 
+        # Handle replace_electrons
+        name = self.function.__name__
+        if name in active_lattice.replace_electrons:
+            # Temporarily pop the replacement to avoid infinite
+            # recursion.
+            replacement_electron = active_lattice.replace_electrons.pop(name)
+
+            # TODO: check that replacement has the same
+            # signature. Also, although electron -> sublattice or
+            # sublattice -> electron are technically possible, these
+            # replacements will not work with the "exhaustive"
+            # postprocess method which requires that the number of nodes be
+            # determined by the lattice inputs.
+
+            # This will return a bound replacement electron
+            bound_electron = replacement_electron(*args, **kwargs)
+
+            active_lattice.replace_electrons[name] = replacement_electron
+            return bound_electron
+
         # Add a node to the transport graph of the active lattice. Electrons bound to nodes will never be packed with the
         # 'master' Electron. # Add non-sublattice node to the transport graph of the active lattice.
         self.node_id = active_lattice.transport_graph.add_node(
