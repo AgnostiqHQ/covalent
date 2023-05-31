@@ -24,6 +24,7 @@ import '@testing-library/jest-dom'
 import {
   logStatusLabel,
   isParameter,
+  isPostProcess,
   formatDate,
   formatLogDate,
   sublatticeIconTopBar,
@@ -35,6 +36,13 @@ import {
   logStatusIcon,
   statusIcon,
   nodeLabelIcon,
+  allowSublatticeAndGeneralNodes,
+  allowPostProcessAndSubgraph,
+  allowParameterAndSubgraph,
+  allowSystemGeneratedAlone,
+  allowSystemGenAndPostprocess,
+  allowSystemGenAndParameter,
+  getLocalStartTime
 } from '../misc'
 import { render, screen } from '@testing-library/react'
 
@@ -74,6 +82,34 @@ describe('testing misc', () => {
   test('testing isParameter: checks the input value', () => {
     const node = { name: ':parameter:' }
     expect(isParameter(node)).toEqual(true)
+  })
+  test('testing isPostProcess: checks the input value', () => {
+    const node = { name: ':postprocess:' }
+    expect(isPostProcess(node)).toEqual(true)
+  })
+  test('testing allowSublatticeAndGeneralNodes: checks the input value', () => {
+    const node = [{ name: ':sublattice:' }, { name: ':mui:' }]
+    expect(allowSublatticeAndGeneralNodes(node)).toEqual(true)
+  })
+  test('testing allowPostProcessAndSubgraph: checks the input value', () => {
+    const node = [{ name: ':sublattice:' }, { name: ':mui:' }, { name: ':postprocess' }]
+    expect(allowPostProcessAndSubgraph(node)).toEqual(true)
+  })
+  test('testing allowParameterAndSubgraph: checks the input value', () => {
+    const node = [{ name: ':sublattice:' }, { name: ':mui:' }, { name: ':parameter' }]
+    expect(allowParameterAndSubgraph(node)).toEqual(true)
+  })
+  test('testing allowSystemGeneratedAlone: checks the input value', () => {
+    const node = [{ name: ':sublattice:' }, { name: ':mui:' }]
+    expect(allowSystemGeneratedAlone(node)).toEqual(true)
+  })
+  test('testing allowSystemGenAndPostprocess: checks the input value', () => {
+    const node = [{ name: ':mui:' }]
+    expect(allowSystemGenAndPostprocess(node)).toEqual(true)
+  })
+  test('testing allowSystemGenAndParameter: checks the input value', () => {
+    const node = [{ name: ':parameter' }]
+    expect(allowSystemGenAndParameter(node)).toEqual(true)
   })
 })
 
@@ -162,6 +198,14 @@ describe('testing logStatusIcon', () => {
   })
   test('default case', () => {
     expect(logStatusIcon('')).toBeNull()
+  })
+})
+
+describe('testing getLocalStartTime', () => {
+  test('testing getLocalStartTime', () => {
+    expect(getLocalStartTime(new Date('Wed, 27 July 2016 13:30:00'))).toEqual(
+      '2016-07-27T13:30:00.000Z'
+    )
   })
 })
 

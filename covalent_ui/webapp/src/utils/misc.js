@@ -111,27 +111,45 @@ export const isPostProcess = (node) => node?.name.startsWith(':') && node?.name.
 
 // to filter all system generated nodes other than sublattice
 export const allowSublatticeAndGeneralNodes = (node) => {
-  if (!node?.name.startsWith(':')) return true;
-  if (node?.name.startsWith(':') && node?.name.startsWith(':sublattice')) return true;
+  if (!node?.name?.startsWith(':')) return true;
+  if (node?.name?.startsWith(':') && node?.name?.startsWith(':sublattice')) return true;
   return false;
 }
 
 // to filter all system generated nodes other than sublattice and postprocess
 export const allowPostProcessAndSubgraph = (node) => {
-  if (!node?.name.startsWith(':')) return true;
-  if (node?.name.startsWith(':') && node?.name.startsWith(':sublattice')) return true;
-  if (node?.name.startsWith(':') && node?.name.startsWith(':postprocess:')) return true;
+  if (!node?.name?.startsWith(':')) return true;
+  if (node?.name?.startsWith(':') && node?.name?.startsWith(':sublattice')) return true;
+  if (node?.name?.startsWith(':') && node?.name?.startsWith(':postprocess:')) return true;
   return false;
 }
 
 // to filter all system generated nodes other than sublattice and postprocess
 export const allowParameterAndSubgraph = (node) => {
-  if (!node?.name.startsWith(':')) return true;
-  if (node?.name.startsWith(':') && node?.name.startsWith(':sublattice')) return true;
-  if (node?.name.startsWith(':') && node?.name.startsWith(':parameter')) return true;
+  if (!node?.name?.startsWith(':')) return true;
+  if (node?.name?.startsWith(':') && node?.name?.startsWith(':sublattice')) return true;
+  if (node?.name?.startsWith(':') && node?.name?.startsWith(':parameter')) return true;
   return false;
 }
 
+// to filter all system generated only
+export const allowSystemGeneratedAlone = (node) => {
+  if (node?.name?.startsWith(':') && node?.name?.startsWith(':postprocess')) return false;
+  if (node?.name?.startsWith(':') && node?.name?.startsWith(':parameter')) return false;
+  return true;
+}
+
+// to filter all system generated and postprocess
+export const allowSystemGenAndPostprocess = (node) => {
+  if (node?.name?.startsWith(':') && node?.name?.startsWith(':postprocess')) return false;
+  return true;
+}
+
+// to filter all system generated and parameter
+export const allowSystemGenAndParameter = (node) => {
+  if (node?.name?.startsWith(':') && node?.name?.startsWith(':parameter')) return false;
+  return true;
+}
 
 export const displayStatus = (status) => _.startCase(_.lowerCase(status))
 
