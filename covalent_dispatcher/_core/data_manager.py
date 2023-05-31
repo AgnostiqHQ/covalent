@@ -68,8 +68,9 @@ def generate_node_result(
     Helper routine to prepare the node result
 
     Arg(s)
-        dispatch_id: ID of the workflow dispatch
+        dispatch_id: ID of the dispatched workflow
         node_id: ID of the node in the trasport graph
+        node_name: Name of the node
         start_time: Start time of the node
         end_time: Time at which the node finished executing
         status: Status of the node's execution
