@@ -51,7 +51,7 @@ from .wait import EXTREME
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
-multistage_get_result = get_config("sdk.multistage_get_result") == "true"
+multistage_get_result = get_config("sdk.multistage_dispatch") == "true"
 
 
 SDK_NODE_META_KEYS = {
