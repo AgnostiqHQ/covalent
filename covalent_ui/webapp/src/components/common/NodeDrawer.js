@@ -234,15 +234,6 @@ const NodeDrawer = ({
                 </span>
               </Typography>
             )}
-            <Box ml={5} sx={{ display: 'flex', alignItems: 'center' }}>
-              <Typography mt={0.2} sx={{ fontSize: '14px', color: '#86869A' }}>
-                {qElectronDetails.quantam_calls}
-              </Typography>
-              <Grid>
-                {' '}
-                <CopyButton />
-              </Grid>
-            </Box>
 
             <Box
               data-testid="node__dra_close"
@@ -255,28 +246,64 @@ const NodeDrawer = ({
           </Box>
 
           {/* Status */}
-          {electronDetail.status && (
-            <>
-              <Heading>Status</Heading>
-              {!electronDetail && electronDetailIsFetching ? (
-                <Skeleton data-testid="node__status_skl" width={150} />
-              ) : (
-                <Box
-                  sx={{
-                    mt: 1,
-                    mb: 2,
-                    color: statusColor(electronDetail.status),
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  {statusIcon(electronDetail.status)}
-                  &nbsp;
-                  {statusLabel(electronDetail.status)}
-                </Box>
+          <Grid container sx={{ background: '', position: 'relative' }}>
+            <Grid
+              id="statusGrid"
+              item
+              xs={8}
+              sx={{ display: 'flex', flexDirection: 'column' }}
+            >
+              {electronDetail.status && (
+                <Grid item container direction="column">
+                  <Heading>Status</Heading>
+                  {!electronDetail && electronDetailIsFetching ? (
+                    <Skeleton data-testid="node__status_skl" width={150} />
+                  ) : (
+                    <Box
+                      sx={{
+                        mt: 1,
+                        mb: 2,
+                        color: statusColor(electronDetail.status),
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {statusIcon(electronDetail.status)}
+                      &nbsp;
+                      {statusLabel(electronDetail.status)}
+                    </Box>
+                  )}
+                </Grid>
               )}
-            </>
-          )}
+            </Grid>
+            <Grid
+              xs={4}
+              item
+              sx={{ display: 'flex', justifyContent: 'flex-end' }}
+            >
+              <Box
+                ml={5}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  position: 'absolute',
+                  top:10,
+                  right:-18
+                }}
+              >
+                <Typography
+                  mt={0.2}
+                  sx={{ fontSize: '14px', color: '#86869A' }}
+                >
+                  {qElectronDetails.quantam_calls}
+                </Typography>
+                <Grid>
+                  {' '}
+                  <CopyButton />
+                </Grid>
+              </Box>
+            </Grid>
+          </Grid>
 
           {electronErrorData && <ErrorCard error={electronErrorData.data} />}
 
