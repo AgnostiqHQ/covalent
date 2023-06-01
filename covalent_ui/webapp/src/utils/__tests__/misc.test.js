@@ -42,7 +42,8 @@ import {
   allowSystemGeneratedAlone,
   allowSystemGenAndPostprocess,
   allowSystemGenAndParameter,
-  getLocalStartTime
+  getLocalStartTime,
+  allowOtherThanSystemGen
 } from '../misc'
 import { render, screen } from '@testing-library/react'
 
@@ -83,33 +84,76 @@ describe('testing misc', () => {
     const node = { name: ':parameter:' }
     expect(isParameter(node)).toEqual(true)
   })
+  test('testing isParameter: null check', () => {
+    const node = { name: ':parameter:' }
+    expect(isParameter(node)).toBe(true)
+  })
   test('testing isPostProcess: checks the input value', () => {
     const node = { name: ':postprocess:' }
     expect(isPostProcess(node)).toEqual(true)
+  })
+  test('testing isPostProcess: null check', () => {
+    const node = { name: ':postprocess:' }
+    expect(isPostProcess(node)).toBe(true)
   })
   test('testing allowSublatticeAndGeneralNodes: checks the input value', () => {
     const node = [{ name: ':sublattice:' }, { name: ':mui:' }]
     expect(allowSublatticeAndGeneralNodes(node)).toEqual(true)
   })
+  test('testing allowSublatticeAndGeneralNodes: null check', () => {
+    const node = [{ name: ':sublattice:' }, { name: ':mui:' }]
+    expect(allowSublatticeAndGeneralNodes(node)).toBe(true)
+  })
   test('testing allowPostProcessAndSubgraph: checks the input value', () => {
     const node = [{ name: ':sublattice:' }, { name: ':mui:' }, { name: ':postprocess' }]
     expect(allowPostProcessAndSubgraph(node)).toEqual(true)
+  })
+  test('testing allowPostProcessAndSubgraph: null check', () => {
+    const node = [{ name: ':sublattice:' }, { name: ':mui:' }, { name: ':postprocess' }]
+    expect(allowPostProcessAndSubgraph(node)).toBe(true)
   })
   test('testing allowParameterAndSubgraph: checks the input value', () => {
     const node = [{ name: ':sublattice:' }, { name: ':mui:' }, { name: ':parameter' }]
     expect(allowParameterAndSubgraph(node)).toEqual(true)
   })
+  test('testing allowParameterAndSubgraph: null check', () => {
+    const node = [{ name: ':sublattice:' }, { name: ':mui:' }, { name: ':parameter' }]
+    expect(allowParameterAndSubgraph(node)).toBe(true)
+  })
   test('testing allowSystemGeneratedAlone: checks the input value', () => {
     const node = [{ name: ':sublattice:' }, { name: ':mui:' }]
     expect(allowSystemGeneratedAlone(node)).toEqual(true)
+  })
+  test('testing allowSystemGeneratedAlone: null check', () => {
+    const node = [{ name: ':sublattice:' }, { name: ':mui:' }]
+    expect(allowSystemGeneratedAlone(node)).toBe(true)
   })
   test('testing allowSystemGenAndPostprocess: checks the input value', () => {
     const node = [{ name: ':mui:' }]
     expect(allowSystemGenAndPostprocess(node)).toEqual(true)
   })
+  test('testing allowSystemGenAndPostprocess: null check', () => {
+    const node = [{ name: ':mui:' }]
+    expect(allowSystemGenAndPostprocess(node)).toBe(true)
+  })
   test('testing allowSystemGenAndParameter: checks the input value', () => {
     const node = [{ name: ':parameter' }]
     expect(allowSystemGenAndParameter(node)).toEqual(true)
+  })
+  test('testing allowOtherThanSystemGen: checks the input value parameter', () => {
+    const node = { name: ':parameter' }
+    expect(allowOtherThanSystemGen(node)).toEqual(true)
+  })
+  test('testing allowOtherThanSystemGen: checks the input value postprocess', () => {
+    const node = { name: ':postprocess' }
+    expect(allowOtherThanSystemGen(node)).toEqual(true)
+  })
+  test('testing allowOtherThanSystemGen: checks the input value sublattice', () => {
+    const node = { name: ':sublattice' }
+    expect(allowOtherThanSystemGen(node)).toEqual(true)
+  })
+  test('allowOtherThanSystemGen null check', () => {
+    expect(allowOtherThanSystemGen()).toBe(true)
   })
 })
 
