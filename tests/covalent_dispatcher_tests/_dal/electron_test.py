@@ -26,6 +26,7 @@ import pytest
 import covalent as ct
 from covalent._results_manager import Result as SDKResult
 from covalent._workflow.lattice import Lattice as SDKLattice
+from covalent._workflow.transportable_object import TransportableObject
 from covalent_dispatcher._dal.electron import ASSET_KEYS, METADATA_KEYS, Electron
 from covalent_dispatcher._db import models, update
 from covalent_dispatcher._db.datastore import DataStore
@@ -137,9 +138,9 @@ def test_electron_get_set_value(test_db, mocker):
         e.set_value("status", SDKResult.RUNNING, session)
         assert e.get_value("status", session) == SDKResult.RUNNING
 
-    e.set_value("output", 5)
+    e.set_value("output", TransportableObject(5))
     e.set_value("status", SDKResult.COMPLETED)
-    assert e.get_value("output") == 5
+    assert e.get_value("output").get_deserialized() == 5
     assert e.get_value("status") == SDKResult.COMPLETED
 
 

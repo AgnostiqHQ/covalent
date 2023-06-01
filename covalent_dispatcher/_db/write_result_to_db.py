@@ -23,10 +23,7 @@
 import os
 from datetime import datetime as dt
 from datetime import timezone
-from pathlib import Path
-from typing import Any
 
-import cloudpickle
 import networkx as nx
 from sqlalchemy import update
 from sqlalchemy.orm import Session
@@ -46,7 +43,6 @@ from covalent._shared_files.defaults import (
 from covalent._shared_files.exceptions import MissingLatticeRecordError
 from covalent._workflow.lattice import Lattice as LatticeClass
 
-from .._object_store.local import Digest, local_store
 from .datastore import workflow_db
 from .models import Asset, Electron, ElectronAsset, ElectronDependency, Job, Lattice, LatticeAsset
 
@@ -577,41 +573,3 @@ def write_lattice_error(dispatch_id: str, error: str) -> None:
 
         with open(os.path.join(valid_update.storage_path, valid_update.error_filename), "w") as f:
             f.write(error)
-
-
-def store_file(storage_path: str, filename: str, data: Any = None) -> Digest:
-    """This function writes data corresponding to the filepaths in the DB."""
-
-    if filename.endswith(".pkl"):
-        with open(Path(storage_path) / filename, "wb") as f:
-            cloudpickle.dump(data, f)
-
-    elif filename.endswith(".log") or filename.endswith(".txt"):
-        if data is None:
-            data = ""
-
-        if not isinstance(data, str):
-            raise InvalidFileExtension("Data must be string type.")
-
-        with open(Path(storage_path) / filename, "w+") as f:
-            f.write(data)
-
-    else:
-        raise InvalidFileExtension("The file extension is not supported.")
-
-    digest = local_store.digest(bucket_name=storage_path, object_key=filename)
-    return digest
-
-
-def load_file(storage_path: str, filename: str) -> Any:
-    """This function loads data for the filenames in the DB."""
-
-    if filename.endswith(".pkl"):
-        with open(Path(storage_path) / filename, "rb") as f:
-            data = cloudpickle.load(f)
-
-    elif filename.endswith(".log") or filename.endswith(".txt"):
-        with open(Path(storage_path) / filename, "r") as f:
-            data = f.read()
-
-    return data

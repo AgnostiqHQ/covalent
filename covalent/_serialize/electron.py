@@ -28,6 +28,7 @@ from .._shared_files.schemas.electron import (
     ElectronSchema,
 )
 from .._shared_files.util_classes import RESULT_STATUS, Status
+from .._workflow.transportable_object import TransportableObject
 from .common import AssetType, load_asset, save_asset
 
 ASSET_TYPES = {
@@ -104,7 +105,7 @@ def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> Electron
         ASSET_FILENAME_MAP["function_string"],
     )
 
-    node_value = node_attrs.get("value", None)
+    node_value = node_attrs.get("value", TransportableObject(None))
     value_asset = save_asset(
         node_value,
         ASSET_TYPES["value"],
@@ -112,7 +113,7 @@ def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> Electron
         ASSET_FILENAME_MAP["value"],
     )
 
-    node_output = node_attrs.get("output", None)
+    node_output = node_attrs.get("output", TransportableObject(None))
     output_asset = save_asset(
         node_output,
         ASSET_TYPES["output"],

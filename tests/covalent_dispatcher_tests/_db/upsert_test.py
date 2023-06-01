@@ -26,6 +26,7 @@ import pytest
 import covalent as ct
 from covalent._results_manager.result import Result
 from covalent._workflow.lattice import Lattice as LatticeClass
+from covalent._workflow.transportable_object import TransportableObject
 from covalent.executor import LocalExecutor
 from covalent_dispatcher._db.datastore import DataStore
 from covalent_dispatcher._db.upsert import (
@@ -110,4 +111,6 @@ def test_upsert_electron_data_handles_missing_keys(test_db, result_1, mocker):
     mock_store_file.assert_any_call(node_path, ELECTRON_ERROR_FILENAME, None)
     mock_store_file.assert_any_call(node_path, ELECTRON_STDOUT_FILENAME, None)
     mock_store_file.assert_any_call(node_path, ELECTRON_STDERR_FILENAME, None)
-    mock_store_file.assert_any_call(node_path, ELECTRON_RESULTS_FILENAME, None)
+    mock_store_file.assert_any_call(
+        node_path, ELECTRON_RESULTS_FILENAME, TransportableObject(None)
+    )

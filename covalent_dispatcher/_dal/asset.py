@@ -29,6 +29,7 @@ import cloudpickle
 from sqlalchemy.orm import Session
 
 from covalent._shared_files import logger
+from covalent._workflow.transport import TransportableObject
 
 from .._db.models import Asset as AssetRecord
 from .._object_store.local import Digest, local_store
@@ -161,6 +162,9 @@ def store_file(storage_path: str, filename: str, data: Any = None) -> Digest:
         with open(Path(storage_path) / filename, "w+") as f:
             f.write(data)
 
+    elif filename.endswith(".tobj"):
+        with open(Path(storage_path) / filename, "wb") as f:
+            f.write(data.serialize())
     else:
         raise InvalidFileExtension("The file extension is not supported.")
 
@@ -178,6 +182,10 @@ def load_file(storage_path: str, filename: str) -> Any:
     elif filename.endswith(".log") or filename.endswith(".txt"):
         with open(Path(storage_path) / filename, "r") as f:
             data = f.read()
+
+    elif filename.endswith(".tobj"):
+        with open(Path(storage_path) / filename, "rb") as f:
+            data = TransportableObject.deserialize(f.read())
 
     return data
 

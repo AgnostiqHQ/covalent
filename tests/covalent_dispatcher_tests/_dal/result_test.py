@@ -30,6 +30,7 @@ import covalent as ct
 from covalent._results_manager import Result as SDKResult
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice as SDKLattice
+from covalent._workflow.transportable_object import TransportableObject
 from covalent_dispatcher._dal.electron import ASSET_KEYS as ELECTRON_ASSET_KEYS
 from covalent_dispatcher._dal.lattice import ASSET_KEYS as LATTICE_ASSET_KEYS
 from covalent_dispatcher._dal.result import ASSET_KEYS, METADATA_KEYS, Result, get_result_object
@@ -147,14 +148,14 @@ def test_result_get_set_value(test_db, mocker):
         end_time=end_time,
         status=SDKResult.RUNNING,
         error="RuntimeException",
-        result=5,
+        result=TransportableObject(5),
     )
 
     assert srvres.start_time == start_time
     assert srvres.end_time == end_time
     assert srvres.error == "RuntimeException"
     assert srvres.status == SDKResult.RUNNING
-    assert srvres.result == 5
+    assert srvres.result.get_deserialized() == 5
 
 
 def test_result_update_node(test_db, mocker):
@@ -211,7 +212,7 @@ def test_result_update_node_2(test_db, mocker):
     import datetime
 
     from covalent._workflow.transport import TransportableObject
-    from covalent_dispatcher._db.write_result_to_db import load_file
+    from covalent_dispatcher._dal.asset import load_file
 
     res = get_mock_result()
     res._initialize_nodes()
@@ -274,7 +275,7 @@ def test_result_update_node_2(test_db, mocker):
         node_id=0,
         end_time=timestamp,
         status=SDKResult.COMPLETED,
-        output=5,
+        output=TransportableObject(5),
     )
 
     with test_db.session() as session:
@@ -292,7 +293,7 @@ def test_result_update_node_2(test_db, mocker):
         result = load_file(
             storage_path=electron_record.storage_path, filename=electron_record.results_filename
         )
-        assert result == 5
+        assert result.get_deserialized() == 5
 
         assert lattice_record.electron_num == 3
         assert lattice_record.completed_electron_num == 1
@@ -367,15 +368,15 @@ def test_get_all_node_outputs(test_db, mocker):
 
         srvres = Result(session, record)
 
-    srvres.lattice.transport_graph.set_node_value(0, "output", 25)
-    srvres.lattice.transport_graph.set_node_value(1, "output", 5)
-    srvres.lattice.transport_graph.set_node_value(2, "output", 25)
+    srvres.lattice.transport_graph.set_node_value(0, "output", TransportableObject(25))
+    srvres.lattice.transport_graph.set_node_value(1, "output", TransportableObject(5))
+    srvres.lattice.transport_graph.set_node_value(2, "output", TransportableObject(25))
     node_outputs = srvres.get_all_node_outputs()
 
     expected_outputs = [25, 5, 25]
     for i, item in enumerate(node_outputs.items()):
         key, val = item
-        assert expected_outputs[i] == val
+        assert expected_outputs[i] == val.get_deserialized()
 
 
 def test_get_linked_assets(test_db, mocker):

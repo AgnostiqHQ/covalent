@@ -26,12 +26,11 @@ import os
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-import cloudpickle as pickle
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
-from .._serialize.common import load_asset
+from .._serialize.common import deserialize_asset, load_asset
 from .._serialize.electron import ASSET_FILENAME_MAP as ELECTRON_ASSET_FILENAMES
 from .._serialize.electron import ASSET_TYPES as ELECTRON_ASSET_TYPES
 from .._serialize.lattice import ASSET_FILENAME_MAP as LATTICE_ASSET_FILENAMES
@@ -361,7 +360,7 @@ def _get_node_output_from_dispatcher(
         raise MissingLatticeRecordError
     response.raise_for_status()
 
-    return pickle.loads(response.content)
+    return deserialize_asset(response.content, ELECTRON_ASSET_TYPES["output"])
 
 
 def _download_intermediate_outputs(result_object: Result, dispatcher_addr: str):
@@ -391,7 +390,7 @@ def _get_dispatch_result_from_dispatcher(
         raise MissingLatticeRecordError
     response.raise_for_status()
 
-    return pickle.loads(response.content)
+    return deserialize_asset(response.content, RESULT_ASSET_TYPES["result"])
 
 
 def _download_workflow_output(result_object: Result, dispatcher_addr: str):

@@ -31,10 +31,10 @@ from covalent._results_manager.result import Result, import_result_object
 from covalent._shared_files.defaults import WAIT_EDGE_NAME
 from covalent._workflow.lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
+from covalent_dispatcher._dal.asset import load_file
 from covalent_dispatcher._db import update, upsert
 from covalent_dispatcher._db.datastore import DataStore
 from covalent_dispatcher._db.models import Electron, ElectronDependency, Job, Lattice
-from covalent_dispatcher._db.write_result_to_db import load_file
 from covalent_dispatcher._service.app_exp import export_serialized_result
 
 # TEMP_RESULTS_DIR = "/tmp/results"

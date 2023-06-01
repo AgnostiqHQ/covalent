@@ -7,6 +7,7 @@ from typing import Any
 import cloudpickle
 
 from .._shared_files.schemas.asset import AssetSchema
+from .._workflow.transportable_object import TransportableObject
 
 CHECKSUM_ALGORITHM = "sha"
 
@@ -22,7 +23,7 @@ def serialize_asset(data: Any, data_type: AssetType) -> bytes:
     if data_type == AssetType.OBJECT:
         return cloudpickle.dumps(data)
     elif data_type == AssetType.TRANSPORTABLE:
-        return cloudpickle.dumps(data)
+        return data.serialize()
     elif data_type == AssetType.JSONABLE:
         return json.dumps(data)
     elif data_type == AssetType.TEXT:
@@ -35,7 +36,7 @@ def deserialize_asset(data: bytes, data_type: AssetType) -> Any:
     if data_type == AssetType.OBJECT:
         return cloudpickle.loads(data)
     elif data_type == AssetType.TRANSPORTABLE:
-        return cloudpickle.loads(data)
+        return TransportableObject.deserialize(data)
     elif data_type == AssetType.JSONABLE:
         return json.loads(data)
     elif data_type == AssetType.TEXT:

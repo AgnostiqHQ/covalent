@@ -50,7 +50,7 @@ LATTICE_ASSET_KEYS = {
     "call_after",
 }
 
-LATTICE_FUNCTION_FILENAME = "function.pkl"
+LATTICE_FUNCTION_FILENAME = "function.tobj"
 LATTICE_FUNCTION_STRING_FILENAME = "function_string.txt"
 LATTICE_DOCSTRING_FILENAME = "function_docstring.txt"
 LATTICE_EXECUTOR_DATA_FILENAME = "executor_data.pkl"
@@ -59,7 +59,7 @@ LATTICE_ERROR_FILENAME = "error.log"
 LATTICE_INPUTS_FILENAME = "inputs.pkl"
 LATTICE_NAMED_ARGS_FILENAME = "named_args.pkl"
 LATTICE_NAMED_KWARGS_FILENAME = "named_kwargs.pkl"
-LATTICE_RESULTS_FILENAME = "results.pkl"
+LATTICE_RESULTS_FILENAME = "results.tobj"
 LATTICE_DEPS_FILENAME = "deps.pkl"
 LATTICE_CALL_BEFORE_FILENAME = "call_before.pkl"
 LATTICE_CALL_AFTER_FILENAME = "call_after.pkl"

@@ -29,6 +29,7 @@ from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas import electron, lattice, result
+from covalent._workflow.transportable_object import TransportableObject
 
 from .._dal.asset import Asset, store_file
 from .._dal.electron import Electron
@@ -248,7 +249,7 @@ def _electron_data(
             try:
                 node_value = tg.get_node_value(node_id, "value")
             except KeyError:
-                node_value = None
+                node_value = TransportableObject(None)
 
             try:
                 node_stdout = tg.get_node_value(node_id, "stdout")
@@ -268,7 +269,7 @@ def _electron_data(
             try:
                 node_output = tg.get_node_value(node_id, "output")
             except KeyError:
-                node_output = None
+                node_output = TransportableObject(None)
 
             executor = tg.get_node_value(node_id, "metadata")["executor"]
             started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
