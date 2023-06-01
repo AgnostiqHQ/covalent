@@ -25,7 +25,7 @@ def serialize_asset(data: Any, data_type: AssetType) -> bytes:
     elif data_type == AssetType.TRANSPORTABLE:
         return data.serialize()
     elif data_type == AssetType.JSONABLE:
-        return json.dumps(data)
+        return json.dumps(data).encode("utf-8")
     elif data_type == AssetType.TEXT:
         return data.encode("utf-8")
     else:
@@ -38,7 +38,7 @@ def deserialize_asset(data: bytes, data_type: AssetType) -> Any:
     elif data_type == AssetType.TRANSPORTABLE:
         return TransportableObject.deserialize(data)
     elif data_type == AssetType.JSONABLE:
-        return json.loads(data)
+        return json.loads(data.decode("utf-8"))
     elif data_type == AssetType.TEXT:
         return data.decode("utf-8")
     else:

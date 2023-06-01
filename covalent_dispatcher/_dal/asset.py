@@ -20,6 +20,7 @@
 
 """Asset class and utility functions"""
 
+import json
 import os
 from enum import Enum
 from pathlib import Path
@@ -165,6 +166,10 @@ def store_file(storage_path: str, filename: str, data: Any = None) -> Digest:
     elif filename.endswith(".tobj"):
         with open(Path(storage_path) / filename, "wb") as f:
             f.write(data.serialize())
+
+    elif filename.endswith(".json"):
+        with open(Path(storage_path) / filename, "w") as f:
+            json.dump(data, f)
     else:
         raise InvalidFileExtension("The file extension is not supported.")
 
@@ -186,6 +191,10 @@ def load_file(storage_path: str, filename: str) -> Any:
     elif filename.endswith(".tobj"):
         with open(Path(storage_path) / filename, "rb") as f:
             data = TransportableObject.deserialize(f.read())
+
+    elif filename.endswith(".json"):
+        with open(Path(storage_path) / filename, "r") as f:
+            data = json.load(f)
 
     return data
 

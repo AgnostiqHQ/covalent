@@ -38,9 +38,9 @@ ASSET_TYPES = {
     "named_kwargs": AssetType.OBJECT,
     "cova_imports": AssetType.OBJECT,
     "lattice_imports": AssetType.OBJECT,
-    "deps": AssetType.OBJECT,
-    "call_before": AssetType.OBJECT,
-    "call_after": AssetType.OBJECT,
+    "deps": AssetType.JSONABLE,
+    "call_before": AssetType.JSONABLE,
+    "call_after": AssetType.JSONABLE,
 }
 
 

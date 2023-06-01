@@ -109,7 +109,7 @@ async def test_gather_deps(mocker, test_db):
     workflow.build_graph(5)
 
     received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
-    sdkres = Result(received_workflow, "asdf")
+    sdkres = Result(received_workflow, "test_gather_deps")
     result_object = get_mock_srvresult(sdkres, test_db)
 
     async def get_electron_attr(dispatch_id, node_id, key):
