@@ -61,6 +61,10 @@ def _deserialize_result_metadata(meta: ResultMetadata) -> dict:
 
 def _serialize_result_assets(res: Result, storage_path: str) -> ResultAssets:
     # NOTE: We can avoid pickling here since the UI actually consumes only the string representation
+
+    # Convert a collection of TransportableObjects to a
+    # TransportableObject serializing a collection
+    res._repack_inputs()
     inputs_asset = save_asset(
         res._inputs, ASSET_TYPES["inputs"], storage_path, ASSET_FILENAME_MAP["inputs"]
     )

@@ -20,6 +20,7 @@
 
 """Result object."""
 import os
+import re
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
@@ -103,11 +104,34 @@ class Result:
 
         self._error = ""
 
+    def _repack_inputs(self):
+        raw_args = [arg.get_deserialized() for arg in self._inputs["args"]]
+        raw_kwargs = {k: v.get_deserialized() for k, v in self._inputs["kwargs"].items()}
+        self._inputs = TransportableObject({"args": raw_args, "kwargs": raw_kwargs})
+
     def __str__(self):
         """String representation of the result object"""
 
-        arg_str_repr = [e.object_string for e in self.inputs["args"]]
-        kwarg_str_repr = {key: value.object_string for key, value in self.inputs["kwargs"].items()}
+        if isinstance(self.inputs, dict):
+            arg_str_repr = [e.object_string for e in self.inputs["args"]]
+            kwarg_str_repr = {
+                key: value.object_string for key, value in self.inputs["kwargs"].items()
+            }
+        elif isinstance(self.inputs, TransportableObject):
+            input_string = self.inputs.object_string
+
+            regex = r"^\{'args': \[(.*)\], 'kwargs': \{(.*)\}\}$"
+            pattern = re.compile(regex)
+            m = pattern.match(input_string)
+            if m:
+                arg_str_repr = m.group(1)
+                kwarg_str_repr = m.group(2)
+            else:
+                arg_str_repr = str(None)
+                kwarg_str_repr = str(None)
+        else:
+            arg_str_repr = str(None)
+            kwarg_str_repr = str(None)
 
         show_result_str = f"""
 Lattice Result
