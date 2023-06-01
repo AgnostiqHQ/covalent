@@ -112,6 +112,7 @@ class TransportableObject:
 
         self._header = {
             "py_version": platform.python_version(),
+            "cloudpickle_version": cloudpickle.__version__,
             "attrs": {
                 "doc": getattr(obj, "__doc__", ""),
                 "name": getattr(obj, "__name__", ""),
@@ -121,6 +122,10 @@ class TransportableObject:
     @property
     def python_version(self):
         return self._header["py_version"]
+
+    @property
+    def header(self):
+        return self._header
 
     @property
     def attrs(self):
