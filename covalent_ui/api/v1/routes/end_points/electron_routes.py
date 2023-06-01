@@ -184,32 +184,32 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
                 response = handler.read_from_text(result["function_string_filename"])
                 return ElectronFileResponse(data=response)
             elif name == "function":
-                response, python_object = handler.read_from_pickle(result["function_filename"])
+                response, python_object = handler.read_from_serialized(result["function_filename"])
                 return ElectronFileResponse(data=response, python_object=python_object)
             elif name == "executor":
                 executor_name = result["executor"]
                 executor_data = json.loads(result["executor_data"])
-                # executor_data = handler.read_from_pickle(result["executor_data_filename"])
+                # executor_data = handler.read_from_serialized(result["executor_data_filename"])
                 return ElectronExecutorResponse(
                     executor_name=executor_name, executor_details=executor_data
                 )
             elif name == "result":
-                response, python_object = handler.read_from_pickle(result["results_filename"])
+                response, python_object = handler.read_from_serialized(result["results_filename"])
                 return ElectronFileResponse(data=str(response), python_object=python_object)
             elif name == "value":
-                response = handler.read_from_pickle(result["value_filename"])
+                response = handler.read_from_serialized(result["value_filename"])
                 return ElectronFileResponse(data=str(response))
             elif name == "stdout":
                 response = handler.read_from_text(result["stdout_filename"])
                 return ElectronFileResponse(data=response)
             elif name == "deps":
-                response = handler.read_from_pickle(result["deps_filename"])
+                response = handler.read_from_serialized(result["deps_filename"])
                 return ElectronFileResponse(data=response)
             elif name == "call_before":
-                response = handler.read_from_pickle(result["call_before_filename"])
+                response = handler.read_from_serialized(result["call_before_filename"])
                 return ElectronFileResponse(data=response)
             elif name == "call_after":
-                response = handler.read_from_pickle(result["call_after_filename"])
+                response = handler.read_from_serialized(result["call_after_filename"])
                 return ElectronFileResponse(data=response)
             elif name == "error":
                 # Error and stderr won't be both populated if `error`
