@@ -641,7 +641,7 @@ class Electron:
 # edit the class definition itself.
 Electron.executor = property(lambda self: self.get_metadata("executor"))
 Electron.executor = Electron.executor.setter(
-    lambda self, value: self.set_metadata("executor", value)
+    lambda self, value: self.metadata.update(encode_metadata({"executor": value}))
 )
 
 

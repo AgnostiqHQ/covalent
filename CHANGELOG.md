@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Resolving correct python executable
 - Error handling for random URLs/random dispatchId entered on the GUI
+- Fixed support for dynamically assigning `executor` to `Electron` class
 
 ### Added
 
@@ -27,10 +28,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added ability to hide post-processing electrons on the UI.
 - Added prettify of names for the graph screen on the UI.
 - Ability to specify a `workdir` for `local` and `dask` executors along with `create_unique_workdir` option for each electron / node.
+- Heartbeat file is created and updated when the server is running
+- Added `SQLiteTrigger` class to the `triggers` module.
 
 ### Removed
 
 - Removed unused module `covalent._data_store`
+- Stress test files of cpu and sublattice stress tests removed from functional tests suite.
 
 ### Operations
 
