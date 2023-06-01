@@ -77,7 +77,7 @@ const mapGraphToElements = (
     graph = filterGraph(graph, (node) => allowSystemGeneratedAlone(node))
   } else if (showSystemGenerated && showPostProcess && !showParams) { // hide paramater only
     graph = filterGraph(graph, (node) => allowSystemGenAndPostprocess(node))
-  } else if (!showSystemGenerated && showPostProcess && showParams) { // hide post process only
+  } else if (!showSystemGenerated && showPostProcess && showParams) { // hide system generated only
     graph = filterGraph(graph, (node) => allowOtherThanSystemGen(node))
   } else if (showSystemGenerated && !showPostProcess && showParams) { // hide post process only
     graph = filterGraph(graph, (node) => allowSystemGenAndParameter(node))
