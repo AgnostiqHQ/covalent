@@ -668,6 +668,7 @@ def _get_result_multistage(
         if intermediate_outputs:
             tg = rm.result_object.lattice.transport_graph
             for node_id in tg._graph.nodes:
+                rm.download_node_asset(node_id, "output")
                 rm.load_node_asset(node_id, "output")
 
         # Fetch sublattice result objects recursively
