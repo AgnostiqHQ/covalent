@@ -190,7 +190,6 @@ class Electron:
 
             return decorator
 
-        @electron
         @rename(operand_1, op, operand_2)
         def func_for_op(arg_1: Union[Any, "Electron"], arg_2: Union[Any, "Electron"]) -> Any:
             """
@@ -206,7 +205,25 @@ class Electron:
 
             return op_table[op](arg_1, arg_2)
 
-        return func_for_op(arg_1=operand_1, arg_2=operand_2)
+        # Mint an arithmetic electron and execute it using the
+        # enclosing lattice's workflow_executor.
+
+        metadata = encode_metadata(DEFAULT_METADATA_VALUES.copy())
+        executor = metadata["workflow_executor"]
+        executor_data = metadata["workflow_executor_data"]
+        op_electron = Electron(func_for_op, metadata=metadata)
+
+        if active_lattice := active_lattice_manager.get_active_lattice():
+            executor = active_lattice.metadata.get(
+                "workflow_executor", metadata["workflow_executor"]
+            )
+            executor_data = active_lattice.metadata.get(
+                "workflow_executor_data", metadata["workflow_executor_data"]
+            )
+            op_electron.metadata["executor"] = executor
+            op_electron.metadata["executor_data"] = executor_data
+
+        return op_electron(arg_1=operand_1, arg_2=operand_2)
 
     def __add__(self, other):
         return self.get_op_function(self, other, "+")
