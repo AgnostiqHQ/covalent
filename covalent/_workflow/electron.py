@@ -212,7 +212,7 @@ class Electron:
         return self.get_op_function(self, other, "+")
 
     def __radd__(self, other):
-        return self.__add__(other)
+        return self.get_op_function(other, self, "+")
 
     def __sub__(self, other):
         return self.get_op_function(self, other, "-")
