@@ -406,9 +406,23 @@ def _get_dispatch_attributes_sync(dispatch_id: str, keys: List[str]) -> Any:
     return result_object.get_values(keys, refresh=refresh)
 
 
+def _get_lattice_attributes_sync(dispatch_id: str, keys: List[str]) -> Any:
+    refresh = False
+    result_object = get_result_object(dispatch_id)
+    return result_object.lattice.get_values(keys, refresh=refresh)
+
+
 async def get_dispatch_attributes(dispatch_id: str, keys: List[str]) -> Dict:
     return await run_in_executor(
         _get_dispatch_attributes_sync,
+        dispatch_id,
+        keys,
+    )
+
+
+async def get_lattice_attributes(dispatch_id: str, keys: List[str]) -> Dict:
+    return await run_in_executor(
+        _get_lattice_attributes_sync,
         dispatch_id,
         keys,
     )

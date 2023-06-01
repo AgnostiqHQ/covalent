@@ -97,6 +97,8 @@ class Lattice:
         # Bound electrons are defined as electrons with a valid node_id, since it means they are bound to a TransportGraph.
         self._bound_electrons = {}  # Clear before serializing
 
+        self.python_version = self.workflow_function.python_version
+
     # To be called after build_graph
     def serialize_to_json(self) -> str:
         attributes = deepcopy(self.__dict__)

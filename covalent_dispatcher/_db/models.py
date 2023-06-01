@@ -116,6 +116,9 @@ class Lattice(Base):
     # Name of the column which signifies soft deletion of a lattice
     is_active = Column(Boolean, nullable=False, default=True)
 
+    # Python version
+    python_version = Column(Text)
+
     # Timestamps
     created_at = Column(DateTime, nullable=False, server_default=func.now())
     updated_at = Column(DateTime, nullable=False, onupdate=func.now(), server_default=func.now())

@@ -172,6 +172,7 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         "lattice_imports_filename": LATTICE_LATTICE_IMPORTS_FILENAME,
         "results_dir": results_dir,
         "root_dispatch_id": result.root_dispatch_id,
+        "python_version": result.lattice.python_version,
         "created_at": datetime.now(timezone.utc),
         "updated_at": datetime.now(timezone.utc),
         "started_at": result.start_time,
