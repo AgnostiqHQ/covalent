@@ -20,6 +20,7 @@
 
 """Unit tests for lattice serializer"""
 
+import platform
 import tempfile
 
 import covalent as ct
@@ -44,6 +45,7 @@ def test_serialize_deserialize_lattice():
     workflow.build_graph(2, 3)
     with tempfile.TemporaryDirectory() as d:
         model = serialize_lattice(workflow, d)
+        assert model.metadata.python_version == platform.python_version()
         lat = deserialize_lattice(model)
 
         assert len(lat.args) == 2

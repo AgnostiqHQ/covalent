@@ -20,7 +20,6 @@
 
 """FastAPI models for /api/v1/resultv2 endpoints"""
 
-import platform
 
 from pydantic import BaseModel
 
@@ -29,6 +28,7 @@ from .transport_graph import TransportGraphSchema
 
 LATTICE_METADATA_KEYS = {
     "__name__",
+    "python_version",
     # metadata
     "executor",
     "workflow_executor",
@@ -103,7 +103,7 @@ class LatticeMetadata(BaseModel):
     executor_data: dict
     workflow_executor: str
     workflow_executor_data: dict
-    python_version: str = platform.python_version()
+    python_version: str
 
 
 class LatticeSchema(BaseModel):

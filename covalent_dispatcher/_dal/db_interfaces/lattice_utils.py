@@ -53,6 +53,7 @@ ASSET_KEYS.add("doc")
 
 _meta_record_map = {
     "name": "name",
+    "python_version": "python_version",
     "executor": "executor",
     "executor_data": "executor_data",
     "workflow_executor": "workflow_executor",
