@@ -258,7 +258,7 @@ class Electron:
     def __complex__(self):
         return complex()
 
-    def _get_collection_electron(self, name: str, func: Callable) -> "Electron":
+    def _get_collection_electron(self, name: str, func: Callable, metadata: Dict) -> "Electron":
         """Get collection electron with task packing enabled.
 
         Args:
@@ -274,7 +274,7 @@ class Electron:
             if name.startswith(sublattice_prefix)
             else Electron(
                 function=func,
-                metadata=self.metadata.copy(),
+                metadata=metadata,
                 task_group_id=self.task_group_id,
                 packing_tasks=True,
             )
@@ -315,7 +315,7 @@ class Electron:
 
                 # Pack with main electron unless it is a sublattice.
                 name = active_lattice.transport_graph.get_node_value(self.node_id, "name")
-                yield self._get_collection_electron(name, get_item)(self, i)
+                yield self._get_collection_electron(name, get_item, iterable_metadata)(self, i)
 
     def __getattr__(self, attr: str) -> "Electron":
         # This is to handle the cases where magic functions are attempted
@@ -340,7 +340,8 @@ class Electron:
 
             # Pack with main electron except for sublattices
             name = active_lattice.transport_graph.get_node_value(self.node_id, "name")
-            bound_electron = self._get_collection_electron(name, get_attr)(self, attr)
+            metadata = self.metadata.copy()
+            bound_electron = self._get_collection_electron(name, get_attr, metadata)(self, attr)
             return bound_electron
 
         return super().__getattr__(attr)
@@ -353,7 +354,8 @@ class Electron:
 
             get_item.__name__ = prefix_separator + self.function.__name__ + ".__getitem__"
             name = active_lattice.transport_graph.get_node_value(self.node_id, "name")
-            return self._get_collection_electron(name, get_item)(self, key)
+            metadata = self.metadata.copy()
+            return self._get_collection_electron(name, get_item, metadata)(self, key)
 
         raise StopIteration
 
