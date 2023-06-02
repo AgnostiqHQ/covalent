@@ -26,6 +26,7 @@ import os
 
 from sqlalchemy.orm import Session
 
+from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas.lattice import (
     ASSET_FILENAME_MAP,
     LATTICE_CALL_AFTER_FILENAME,
@@ -50,7 +51,9 @@ from covalent_dispatcher._dal.lattice import Lattice
 
 
 def _get_lattice_meta(lat: LatticeSchema, storage_path) -> dict:
+    results_dir = os.environ.get("COVALENT_DATA_DIR") or get_config("dispatcher.results_dir")
     kwargs = {
+        "results_dir": results_dir,  # Needed for current executors
         "storage_path": storage_path,
         "storage_type": LATTICE_STORAGE_TYPE,
         "name": lat.metadata.name,

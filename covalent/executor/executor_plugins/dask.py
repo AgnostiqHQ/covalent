@@ -59,7 +59,7 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     ),
 }
 
-MANAGED_EXECUTION = True
+MANAGED_EXECUTION = "COVALENT_FORCE_LEGACY_RUNNER" not in os.environ
 
 # Dictionary to map Dask clients to their scheduler addresses
 _address_client_map = {}

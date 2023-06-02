@@ -26,6 +26,8 @@ import traceback
 import uuid
 from typing import Any, Callable, Dict, List, Optional
 
+from pydantic import ValidationError
+
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.schemas.result import ResultSchema
@@ -340,20 +342,47 @@ async def _filter_sublattice_status(
 
 
 async def _make_sublattice_dispatch(dispatch_id: str, node_result: dict):
-    manifest, parent_electron_id = await run_in_executor(
-        _make_sublattice_dispatch_helper,
-        dispatch_id,
-        node_result,
-    )
+    try:
+        manifest, parent_electron_id = await run_in_executor(
+            _make_sublattice_dispatch_helper,
+            dispatch_id,
+            node_result,
+        )
 
-    imported_manifest = await manifest_importer.import_manifest(
-        manifest=manifest,
-        parent_dispatch_id=dispatch_id,
-        parent_electron_id=parent_electron_id,
-    )
+        imported_manifest = await manifest_importer.import_manifest(
+            manifest=manifest,
+            parent_dispatch_id=dispatch_id,
+            parent_electron_id=parent_electron_id,
+        )
 
-    return imported_manifest.metadata.dispatch_id
-    # return await make_dispatch(json_lattice, result_object, parent_electron_id)
+        return imported_manifest.metadata.dispatch_id
+
+    except ValidationError as ex:
+        # Fall back to legacy sublattice handling
+        # NB: this loads the JSON sublattice in memory
+        json_lattice, parent_electron_id = await run_in_executor(
+            _legacy_sublattice_dispatch_helper,
+            dispatch_id,
+            node_result,
+        )
+        return await make_dispatch(
+            json_lattice,
+            dispatch_id,
+            parent_electron_id,
+        )
+
+
+def _legacy_sublattice_dispatch_helper(dispatch_id: str, node_result: Dict):
+    app_log.debug("falling back to legacy sublattice dispatch")
+
+    result_object = get_result_object(dispatch_id, bare=True)
+    node_id = node_result["node_id"]
+    parent_node = result_object.lattice.transport_graph.get_node(node_id)
+    bg_output = parent_node.get_value("output")
+
+    parent_electron_id = parent_node._electron_id
+    json_lattice = bg_output.object_string
+    return json_lattice, parent_electron_id
 
 
 def _make_sublattice_dispatch_helper(dispatch_id: str, node_result: Dict):

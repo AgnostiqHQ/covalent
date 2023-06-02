@@ -73,12 +73,15 @@ class ReceiveModel(BaseModel):
     status: StatusEnum
 
 
+MANAGED_EXECUTION = "COVALENT_FORCE_LEGACY_RUNNER" not in os.environ
+
+
 class LocalExecutor(BaseExecutor):
     """
     Local executor class that directly invokes the input function.
     """
 
-    SUPPORTS_MANAGED_EXECUTION = True
+    SUPPORTS_MANAGED_EXECUTION = MANAGED_EXECUTION
 
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict) -> Any:
         """
