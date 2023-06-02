@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Resolving correct python executable
 - Error handling for random URLs/random dispatchId entered on the GUI
 - Fixed support for dynamically assigning `executor` to `Electron` class
+- Fixed nightly by activating environment before running tests in `tests.yml`
 
 ### Added
 

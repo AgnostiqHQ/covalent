@@ -154,7 +154,7 @@ jobs:
           miniconda-version: "latest"
           python-version: ${{ matrix.python-version }}
           auto-activate-base: true
-          activate-environment: ""
+          activate-environment: true
 
       - name: Install Python dependencies
         id: install-python-deps
