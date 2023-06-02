@@ -40,6 +40,7 @@ from covalent._shared_files.config import get_config
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._shared_files.util_classes import RESULT_STATUS, Status
 from covalent.executor.base import AsyncBaseExecutor
+from covalent.executor.schemas import TaskUpdate
 from covalent.executor.utils.wrappers import io_wrapper as dask_wrapper
 from covalent.executor.utils.wrappers import run_task_from_uris
 
@@ -230,7 +231,7 @@ class DaskExecutor(AsyncBaseExecutor):
 
         return future.key
 
-    async def receive(self, task_group_metadata: Dict, data: Any):
+    async def receive(self, task_group_metadata: Dict, data: Any) -> List[TaskUpdate]:
         # Job should have reached a terminal state by the time this is invoked.
         dispatch_id = task_group_metadata["dispatch_id"]
         task_ids = task_group_metadata["task_ids"]
@@ -278,7 +279,7 @@ class DaskExecutor(AsyncBaseExecutor):
                 },
             }
 
-            task_results.append(task_result)
+            task_results.append(TaskUpdate(**task_result))
 
         app_log.debug(f"Returning results for tasks {dispatch_id}:{task_ids}")
         return task_results

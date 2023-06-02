@@ -24,8 +24,11 @@ Utilties to transfer data between Covalent and compute backends
 
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from dataclasses import asdict
+from typing import Dict
 
 from covalent._shared_files import logger
+from covalent._shared_files.schemas.asset import AssetUpdate
 
 from ..._dal.result import get_result_object as get_result_object
 
@@ -51,7 +54,9 @@ async def upload_asset_for_nodes(dispatch_id: str, key: str, dest_uris: dict):
     await asyncio.gather(*futs)
 
 
-async def download_assets_for_node(dispatch_id: str, node_id: int, asset_updates: dict):
+async def download_assets_for_node(
+    dispatch_id: str, node_id: int, asset_updates: Dict[str, AssetUpdate]
+):
     # Keys for src_uris: "output", "stdout", "stderr"
 
     result_object = get_result_object(dispatch_id, bare=True)
@@ -68,7 +73,7 @@ async def download_assets_for_node(dispatch_id: str, node_id: int, asset_updates
     # Prepare asset metadata update; prune empty fields
     for key in asset_updates:
         update = {}
-        asset = asset_updates[key]
+        asset = asdict(asset_updates[key])
         if asset["remote_uri"]:
             assets_to_download[key] = asset["remote_uri"]
         # Prune empty fields

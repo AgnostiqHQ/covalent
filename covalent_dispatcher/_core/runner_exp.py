@@ -200,13 +200,14 @@ async def _get_task_result(task_group_metadata: Dict, data: Any):
             pool=None,
         )
 
+        # Expects a list of TaskUpdates
         task_group_results = await executor.receive(task_group_metadata, data)
 
         node_results = []
         for task_result in task_group_results:
-            task_id = task_result["node_id"]
-            status = task_result["status"]
-            await am.download_assets_for_node(dispatch_id, task_id, task_result["assets"])
+            task_id = task_result.node_id
+            status = task_result.status.value
+            await am.download_assets_for_node(dispatch_id, task_id, task_result.assets)
 
             node_result = datamgr.generate_node_result(
                 node_id=task_id, end_time=datetime.now(timezone.utc), status=status

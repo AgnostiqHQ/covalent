@@ -28,6 +28,7 @@ import pytest
 
 import covalent as ct
 from covalent._results_manager import Result as SDKResult
+from covalent._shared_files.schemas.asset import AssetUpdate
 from covalent._workflow.lattice import Lattice as SDKLattice
 from covalent_dispatcher._core.data_modules import asset_manager as am
 from covalent_dispatcher._dal.result import Result, get_result_object
@@ -143,6 +144,8 @@ async def test_download_assets_for_node(test_db, mocker):
             "remote_uri": src_uri_stderr,
         },
     }
+    assets = {k: AssetUpdate(**v) for k, v in assets.items()}
+
     expected_update = {
         "output": {
             "remote_uri": "",

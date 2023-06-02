@@ -41,6 +41,7 @@ from covalent.executor.utils import Signals
 from .._shared_files import TaskRuntimeError, logger
 from .._shared_files.context_managers import active_dispatch_info_manager
 from .._shared_files.util_classes import RESULT_STATUS, DispatchInfo, Status
+from .schemas import TaskUpdate
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -456,7 +457,7 @@ class BaseExecutor(_AbstractBaseExecutor):
         self,
         task_group_metadata: Dict,
         data: Any,
-    ) -> List[Dict]:
+    ) -> List[TaskUpdate]:
         # Returns (output_uri, stdout_uri, stderr_uri,
         # exception_raised)
 
@@ -790,7 +791,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         self,
         task_group_metadata: Dict,
         data: Any,
-    ) -> List[Dict]:
+    ) -> List[TaskUpdate]:
         # Returns a list of task results, each of the form
         # {
         #   "dispatch_id": dispatch_id,

@@ -32,11 +32,13 @@ from typing import Any, Callable, Dict, List
 
 from pydantic import BaseModel
 
-# Relative imports are not allowed in executor plugins
 from covalent._shared_files import TaskCancelledError, TaskRuntimeError, logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import RESULT_STATUS, Status
 from covalent.executor import BaseExecutor
+
+# Relative imports are not allowed in executor plugins
+from covalent.executor.schemas import TaskUpdate
 
 # Store the wrapper function in an external module to avoid module
 # import errors during pickling
@@ -157,7 +159,7 @@ class LocalExecutor(BaseExecutor):
 
         return 42
 
-    def _receive(self, task_group_metadata: Dict, data: Any):
+    def _receive(self, task_group_metadata: Dict, data: Any) -> List[TaskUpdate]:
         # Returns (output_uri, stdout_uri, stderr_uri,
         # exception_raised)
 
@@ -197,7 +199,7 @@ class LocalExecutor(BaseExecutor):
                 },
             }
 
-            task_results.append(task_result)
+            task_results.append(TaskUpdate(**task_result))
 
         app_log.debug(f"Returning results for tasks {dispatch_id}:{task_ids}")
         return task_results
@@ -223,7 +225,7 @@ class LocalExecutor(BaseExecutor):
             task_group_metadata,
         )
 
-    async def receive(self, task_group_metadata: Dict, data: Any):
+    async def receive(self, task_group_metadata: Dict, data: Any) -> List[TaskUpdate]:
         # Returns (output_uri, stdout_uri, stderr_uri,
         # exception_raised)
 

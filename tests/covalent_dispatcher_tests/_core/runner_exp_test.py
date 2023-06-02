@@ -34,6 +34,7 @@ from covalent._results_manager import Result
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 from covalent.executor.base import AsyncBaseExecutor
+from covalent.executor.schemas import TaskUpdate
 from covalent_dispatcher._core.runner_exp import (
     _get_task_result,
     _listen_for_job_events,
@@ -322,7 +323,7 @@ async def test_get_task_result(mocker):
         },
         "status": RESULT_STATUS.COMPLETED,
     }
-    me.receive = AsyncMock(return_value=[mock_task_result])
+    me.receive = AsyncMock(return_value=[TaskUpdate(**mock_task_result)])
 
     mocker.patch(
         "covalent_dispatcher._core.runner_exp.datamgr.get_electron_attribute",
