@@ -27,7 +27,13 @@ from covalent._shared_files import logger
 from covalent.executor.base import _AbstractBaseExecutor as _ABE
 from covalent.executor.utils import Signals
 
-from .jobs import get_cancel_requested, get_job_status, put_job_handle, put_job_status
+from .jobs import (
+    get_cancel_requested,
+    get_job_status,
+    get_version_info,
+    put_job_handle,
+    put_job_status,
+)
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -40,6 +46,7 @@ _putters["job_handle"] = put_job_handle
 _putters["job_status"] = put_job_status
 _getters["cancel_requested"] = get_cancel_requested
 _getters["job_status"] = get_job_status
+_getters["version_info"] = get_version_info
 
 
 async def _handle_message(

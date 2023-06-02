@@ -145,6 +145,7 @@ async def _submit_abstract_task_group(
         # - set the job handle
         # - set job status
 
+        # Watch the task group
         fut = asyncio.create_task(executor_proxy.watch(dispatch_id, task_ids[0], executor))
         _futures.add(fut)
         fut.add_done_callback(_futures.discard)

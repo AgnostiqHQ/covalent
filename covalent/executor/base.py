@@ -222,6 +222,18 @@ class BaseExecutor(_AbstractBaseExecutor):
         """
         return self._notify_sync(Signals.GET, "cancel_requested")
 
+    def get_version_info(self) -> Dict:
+        """
+        Query the database for the task's Python and Covalent version
+
+        Arg:
+            dispatch_id: Dispatch ID of the lattice
+
+        Returns:
+            {"python": python_version, "covalent": sdk_version}
+        """
+        return self._notify_sync(Signals.GET, "version_info")
+
     def set_job_handle(self, handle: TypeJSON) -> Any:
         """
         Save the job_id/handle returned by the backend executing the task
@@ -566,6 +578,18 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             Whether the task has been requested to be cancelled
         """
         return await self._notify_sync(Signals.GET, "cancel_requested")
+
+    async def get_version_info(self) -> Dict:
+        """
+        Query the database for dispatch version metadata.
+
+        Arg:
+            dispatch_id: Dispatch ID of the lattice
+
+        Returns:
+            {"python": python_version, "covalent": sdk_version}
+        """
+        return await self._notify_sync(Signals.GET, "version_info")
 
     async def set_job_handle(self, handle: TypeJSON) -> Any:
         """

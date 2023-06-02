@@ -23,6 +23,7 @@
 
 from covalent._shared_files import logger
 from covalent._shared_files.util_classes import Status
+from covalent_dispatcher._core import data_manager as datamgr
 
 from .. import data_manager as datasvc
 from ..data_modules import job_manager
@@ -48,6 +49,26 @@ async def get_cancel_requested(dispatch_id: str, task_id: int):
     job_records = await job_manager.get_jobs_metadata(dispatch_id, [task_id])
     app_log.debug(f"Job record: {job_records[0]}")
     return job_records[0]["cancel_requested"]
+
+
+async def get_version_info(dispatch_id: str, task_id: int):
+    """
+    Query the database for the dispatch version information
+
+    Arg:
+        dispatch_id: Dispatch ID of the lattice
+        task_id: ID of the task within the lattice
+
+    Returns:
+        {"python": python_version, "covalent": sdk_version}
+    """
+
+    data = await datamgr.get_lattice_attributes(dispatch_id, ["python_version", "sdk_version"])
+
+    return {
+        "python": data["python_version"],
+        "covalent": data["sdk_version"],
+    }
 
 
 async def get_job_status(dispatch_id: str, task_id: int) -> Status:
