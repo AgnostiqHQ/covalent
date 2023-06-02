@@ -271,12 +271,12 @@ def get_node_asset(
     dispatch_id: str,
     node_id: int,
     key: ElectronAssetKey,
-    range: Union[str, None] = Header(default=None, regex=range_regex),
+    Range: Union[str, None] = Header(default=None, regex=range_regex),
 ):
     start_byte = 0
     end_byte = -1
-    if range:
-        start_byte, end_byte = _extract_byte_range(range)
+    if Range:
+        start_byte, end_byte = _extract_byte_range(Range)
 
     if end_byte >= 0 and end_byte < start_byte:
         raise HTTPException(
@@ -312,12 +312,12 @@ def get_node_asset(
 def get_dispatch_asset(
     dispatch_id: str,
     key: DispatchAssetKey,
-    range: Union[str, None] = Header(default=None, regex=range_regex),
+    Range: Union[str, None] = Header(default=None, regex=range_regex),
 ):
     start_byte = 0
     end_byte = -1
-    if range:
-        start_byte, end_byte = _extract_byte_range(range)
+    if Range:
+        start_byte, end_byte = _extract_byte_range(Range)
 
     if end_byte >= 0 and end_byte < start_byte:
         raise HTTPException(
@@ -355,12 +355,12 @@ def get_dispatch_asset(
 def get_lattice_asset(
     dispatch_id: str,
     key: LatticeAssetKey,
-    range: Union[str, None] = Header(default=None, regex=range_regex),
+    Range: Union[str, None] = Header(default=None, regex=range_regex),
 ):
     start_byte = 0
     end_byte = -1
-    if range:
-        start_byte, end_byte = _extract_byte_range(range)
+    if Range:
+        start_byte, end_byte = _extract_byte_range(Range)
 
     if end_byte >= 0 and end_byte < start_byte:
         raise HTTPException(
