@@ -28,6 +28,7 @@ import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import WAIT_EDGE_NAME, sublattice_prefix
 from covalent._workflow.electron import (
+    TASK_PACKING,
     Electron,
     _build_sublattice_graph,
     filter_null_metadata,
@@ -372,8 +373,12 @@ def test_electron_auto_task_groups():
 
     workflow.build_graph([[1, 2], 3])
     tg = workflow.transport_graph
-    assert all(tg.get_node_value(i, "task_group_id") == 0 for i in [0, 3, 4])
-    assert all(tg.get_node_value(i, "task_group_id") == i for i in [1, 2, 5, 6, 7, 8])
+
+    if TASK_PACKING:
+        assert all(tg.get_node_value(i, "task_group_id") == 0 for i in [0, 3, 4])
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in [1, 2, 5, 6, 7, 8])
+    else:
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in range(0, 9))
 
 
 def test_electron_get_attr():
@@ -407,13 +412,16 @@ def test_electron_get_attr():
     # 5: add
     # 6: "postprocess"
 
-    point_electron_gid = tg.get_node_value(0, "task_group_id")
-    getitem_x_gid = tg.get_node_value(1, "task_group_id")
-    getitem_y_gid = tg.get_node_value(3, "task_group_id")
-    assert point_electron_gid == 0
-    assert getitem_x_gid == point_electron_gid
-    assert getitem_y_gid == point_electron_gid
-    assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
+    if TASK_PACKING:
+        point_electron_gid = tg.get_node_value(0, "task_group_id")
+        getitem_x_gid = tg.get_node_value(1, "task_group_id")
+        getitem_y_gid = tg.get_node_value(3, "task_group_id")
+        assert point_electron_gid == 0
+        assert getitem_x_gid == point_electron_gid
+        assert getitem_y_gid == point_electron_gid
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
+    else:
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in range(0, 7))
 
 
 def test_electron_auto_task_groups_getitem():
@@ -444,13 +452,16 @@ def test_electron_auto_task_groups_getitem():
     # 5: add
     # 6: "postprocess"
 
-    arr_electron_gid = tg.get_node_value(0, "task_group_id")
-    getitem_x_gid = tg.get_node_value(1, "task_group_id")
-    getitem_y_gid = tg.get_node_value(3, "task_group_id")
-    assert arr_electron_gid == 0
-    assert getitem_x_gid == arr_electron_gid
-    assert getitem_y_gid == arr_electron_gid
-    assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
+    if TASK_PACKING:
+        arr_electron_gid = tg.get_node_value(0, "task_group_id")
+        getitem_x_gid = tg.get_node_value(1, "task_group_id")
+        getitem_y_gid = tg.get_node_value(3, "task_group_id")
+        assert arr_electron_gid == 0
+        assert getitem_x_gid == arr_electron_gid
+        assert getitem_y_gid == arr_electron_gid
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
+    else:
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in range(0, 7))
 
 
 def test_electron_auto_task_groups_iter():
@@ -482,10 +493,13 @@ def test_electron_auto_task_groups_iter():
     # 5: add
     # 6: "postprocess"
 
-    tup_electron_gid = tg.get_node_value(0, "task_group_id")
-    getitem_x_gid = tg.get_node_value(1, "task_group_id")
-    getitem_y_gid = tg.get_node_value(3, "task_group_id")
-    assert tup_electron_gid == 0
-    assert getitem_x_gid == tup_electron_gid
-    assert getitem_y_gid == tup_electron_gid
-    assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
+    if TASK_PACKING:
+        tup_electron_gid = tg.get_node_value(0, "task_group_id")
+        getitem_x_gid = tg.get_node_value(1, "task_group_id")
+        getitem_y_gid = tg.get_node_value(3, "task_group_id")
+        assert tup_electron_gid == 0
+        assert getitem_x_gid == tup_electron_gid
+        assert getitem_y_gid == tup_electron_gid
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
+    else:
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in range(0, 7))

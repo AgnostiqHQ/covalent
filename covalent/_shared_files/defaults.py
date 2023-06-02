@@ -69,6 +69,7 @@ def get_default_sdk_config():
             (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
             + "/covalent/dispatches"
         ),
+        "task_packing": "true" if os.environ.get("COVALENT_ENABLE_TASK_PACKING") else "false",
         "multistage_dispatch": "true"
         if os.environ.get("COVALENT_USE_MULTISTAGE_DISPATCH") == "1"
         else "false",
