@@ -32,6 +32,7 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent.executor.base import AsyncBaseExecutor
+from covalent.executor.schemas import ResourceMap, TaskSpec
 from covalent.executor.utils import Signals
 
 from . import data_manager as datamgr
@@ -114,7 +115,7 @@ async def _submit_abstract_task_group(
             resources["deps"][call_before_id] = call_before_uri
             resources["deps"][call_after_id] = call_after_uri
 
-            task_specs.append(task_spec)
+            task_specs.append(TaskSpec(**task_spec))
 
         node_upload_uris = {
             node_id: executor.get_upload_uri(task_group_metadata, f"node_{node_id}")
@@ -145,7 +146,7 @@ async def _submit_abstract_task_group(
 
         send_retval = await executor.send(
             task_specs,
-            resources,
+            ResourceMap(**resources),
             task_group_metadata,
         )
 

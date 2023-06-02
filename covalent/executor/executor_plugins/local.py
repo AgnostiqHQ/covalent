@@ -27,6 +27,7 @@ This is a plugin executor module; it is loaded if found and properly structured.
 import asyncio
 import os
 from concurrent.futures import ProcessPoolExecutor
+from dataclasses import asdict
 from enum import Enum
 from typing import Any, Callable, Dict, List
 
@@ -38,7 +39,7 @@ from covalent._shared_files.util_classes import RESULT_STATUS, Status
 from covalent.executor import BaseExecutor
 
 # Relative imports are not allowed in executor plugins
-from covalent.executor.schemas import TaskUpdate
+from covalent.executor.schemas import ResourceMap, TaskSpec, TaskUpdate
 
 # Store the wrapper function in an external module to avoid module
 # import errors during pickling
@@ -116,8 +117,8 @@ class LocalExecutor(BaseExecutor):
 
     def _send(
         self,
-        task_specs: List[Dict],
-        resources: dict,
+        task_specs: List[TaskSpec],
+        resources: ResourceMap,
         task_group_metadata: dict,
     ):
         dispatch_id = task_group_metadata["dispatch_id"]
@@ -138,8 +139,8 @@ class LocalExecutor(BaseExecutor):
         app_log.debug(f"Running task group {dispatch_id}:{task_ids}")
         future = proc_pool.submit(
             run_task_from_uris,
-            task_specs,
-            resources,
+            list(map(lambda t: asdict(t), task_specs)),
+            asdict(resources),
             output_uris,
             self.cache_dir,
             task_group_metadata,
@@ -206,8 +207,8 @@ class LocalExecutor(BaseExecutor):
 
     async def send(
         self,
-        task_specs: List[Dict],
-        resources: dict,
+        task_specs: List[TaskSpec],
+        resources: ResourceMap,
         task_group_metadata: dict,
     ):
         # Assets are assumed to be accessible by the compute backend

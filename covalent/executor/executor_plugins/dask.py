@@ -27,6 +27,7 @@ This is a plugin executor module; it is loaded if found and properly structured.
 
 import asyncio
 import os
+from dataclasses import asdict
 from enum import Enum
 from typing import Any, Callable, Dict, List, Literal
 
@@ -40,7 +41,7 @@ from covalent._shared_files.config import get_config
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._shared_files.util_classes import RESULT_STATUS, Status
 from covalent.executor.base import AsyncBaseExecutor
-from covalent.executor.schemas import TaskUpdate
+from covalent.executor.schemas import ResourceMap, TaskSpec, TaskUpdate
 from covalent.executor.utils.wrappers import io_wrapper as dask_wrapper
 from covalent.executor.utils.wrappers import run_task_from_uris
 
@@ -172,8 +173,8 @@ class DaskExecutor(AsyncBaseExecutor):
 
     async def send(
         self,
-        task_specs: List[Dict],
-        resources: dict,
+        task_specs: List[TaskSpec],
+        resources: ResourceMap,
         task_group_metadata: dict,
     ):
         # Assets are assumed to be accessible by the compute backend
@@ -205,8 +206,8 @@ class DaskExecutor(AsyncBaseExecutor):
 
         future = dask_client.submit(
             run_task_from_uris,
-            task_specs,
-            resources,
+            list(map(lambda t: asdict(t), task_specs)),
+            asdict(resources),
             output_uris,
             self.cache_dir,
             task_group_metadata,

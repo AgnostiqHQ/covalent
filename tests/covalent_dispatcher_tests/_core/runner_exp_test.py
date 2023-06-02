@@ -34,7 +34,7 @@ from covalent._results_manager import Result
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 from covalent.executor.base import AsyncBaseExecutor
-from covalent.executor.schemas import TaskUpdate
+from covalent.executor.schemas import ResourceMap, TaskSpec, TaskUpdate
 from covalent_dispatcher._core.runner_exp import (
     _get_task_result,
     _listen_for_job_events,
@@ -241,8 +241,8 @@ async def test_submit_abstract_task_group(mocker):
     mock_upload.assert_awaited()
 
     me.send.assert_awaited_with(
-        [mock_task_spec_0, mock_task_spec_3],
-        resources,
+        [TaskSpec(**mock_task_spec_0), TaskSpec(**mock_task_spec_3)],
+        ResourceMap(**resources),
         task_group_metadata,
     )
     assert send_retval == "42"
