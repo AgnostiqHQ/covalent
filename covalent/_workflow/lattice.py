@@ -20,6 +20,7 @@
 
 """Class corresponding to computation workflow."""
 
+import importlib.metadata
 import json
 import os
 import warnings
@@ -98,6 +99,7 @@ class Lattice:
         self._bound_electrons = {}  # Clear before serializing
 
         self.python_version = self.workflow_function.python_version
+        self.sdk_version = importlib.metadata.version("covalent")
 
     # To be called after build_graph
     def serialize_to_json(self) -> str:

@@ -46,6 +46,7 @@ def test_serialize_deserialize_lattice():
     with tempfile.TemporaryDirectory() as d:
         model = serialize_lattice(workflow, d)
         assert model.metadata.python_version == platform.python_version()
+        assert model.metadata.sdk_version == ct.__version__
         lat = deserialize_lattice(model)
 
         assert len(lat.args) == 2
