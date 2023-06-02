@@ -317,9 +317,10 @@ def run_task_from_uris(
                         json.dump(result_summary, f)
 
                     # Notify Covalent that the task has terminated
-                    terminal_status = "failed" if exception_occurred else "completed"
-                    url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}/{terminal_status}"
-                    requests.put(url)
+                    terminal_status = "FAILED" if exception_occurred else "COMPLETED"
+                    url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}"
+                    data = {"status": terminal_status}
+                    requests.put(url, json=data)
 
     # Deal with any tasks that did not run
     n = len(results)

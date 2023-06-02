@@ -27,16 +27,18 @@ This is a plugin executor module; it is loaded if found and properly structured.
 
 import asyncio
 import os
+from enum import Enum
 from typing import Any, Callable, Dict, List, Literal
 
 from dask.distributed import CancelledError, Client, Future, fire_and_forget
+from pydantic import BaseModel
 
 from covalent._shared_files import TaskRuntimeError, logger
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files.config import get_config
 from covalent._shared_files.exceptions import TaskCancelledError
-from covalent._shared_files.util_classes import RESULT_STATUS
+from covalent._shared_files.util_classes import RESULT_STATUS, Status
 from covalent.executor.base import AsyncBaseExecutor
 from covalent.executor.utils.wrappers import io_wrapper as dask_wrapper
 from covalent.executor.utils.wrappers import run_task_from_uris
@@ -60,6 +62,17 @@ MANAGED_EXECUTION = True
 # Dictionary to map Dask clients to their scheduler addresses
 _address_client_map = {}
 _lock = asyncio.Lock()
+
+
+# Valid terminal statuses
+class StatusEnum(str, Enum):
+    CANCELLED = str(RESULT_STATUS.CANCELLED)
+    COMPLETED = str(RESULT_STATUS.COMPLETED)
+    FAILED = str(RESULT_STATUS.FAILED)
+
+
+class ReceiveModel(BaseModel):
+    status: StatusEnum
 
 
 class DaskExecutor(AsyncBaseExecutor):
@@ -206,8 +219,8 @@ class DaskExecutor(AsyncBaseExecutor):
             app_log.debug(f"In done callback for {dispatch_id}:{gid}, future {fut}")
             if fut.cancelled():
                 for task_id in task_ids:
-                    url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}/cancelled"
-                    requests.put(url)
+                    url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}"
+                    requests.put(url, json={"status": "CANCELLED"})
 
         future.add_done_callback(handle_cancelled)
 
@@ -226,9 +239,15 @@ class DaskExecutor(AsyncBaseExecutor):
 
         for task_id in task_ids:
             # TODO: Handle the case where the job was cancelled before the task started running
-            app_log.debug(f"Receive called for task {dispatch_id}:{task_id} with status {data}")
+            app_log.debug(f"Receive called for task {dispatch_id}:{task_id} with data {data}")
 
-            terminal_status = data["status"] if data else RESULT_STATUS.CANCELLED
+            if not data:
+                terminal_status = RESULT_STATUS.CANCELLED
+            else:
+                received = ReceiveModel.parse_obj(data)
+                terminal_status = Status(received.status)
+
+            # terminal_status = data["status"] if data else RESULT_STATUS.CANCELLED
             # result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
             # with open(result_path, "r") as f:
             #     result_summary = json.load(f)

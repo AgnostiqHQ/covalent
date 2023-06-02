@@ -217,7 +217,6 @@ async def _get_task_result(task_group_metadata: Dict, data: Any):
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
         app_log.debug(f"Exception occurred when receiving task group {gid}:")
         app_log.debug(tb)
-        print("DEBUG: ", tb)
         error_msg = tb if debug_mode else str(ex)
         ts = datetime.now(timezone.utc)
 
