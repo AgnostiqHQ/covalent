@@ -26,12 +26,13 @@ This is a plugin executor module; it is loaded if found and properly structured.
 """
 
 import asyncio
+import json
 import os
 from dataclasses import asdict
 from enum import Enum
 from typing import Any, Callable, Dict, List, Literal
 
-from dask.distributed import CancelledError, Client, Future, fire_and_forget
+from dask.distributed import CancelledError, Client, Future
 from pydantic import BaseModel
 
 from covalent._shared_files import TaskRuntimeError, logger
@@ -43,7 +44,7 @@ from covalent._shared_files.util_classes import RESULT_STATUS, Status
 from covalent.executor.base import AsyncBaseExecutor
 from covalent.executor.schemas import ResourceMap, TaskSpec, TaskUpdate
 from covalent.executor.utils.wrappers import io_wrapper as dask_wrapper
-from covalent.executor.utils.wrappers import run_task_from_uris
+from covalent.executor.utils.wrappers import run_task_from_uris_alt
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "DaskExecutor"
@@ -59,6 +60,14 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     ),
 }
 
+# See https://github.com/dask/distributed/issues/5667
+_clients = {}
+
+# See
+# https://stackoverflow.com/questions/62164283/why-do-my-dask-futures-get-stuck-in-pending-and-never-finish
+_futures = {}
+
+
 MANAGED_EXECUTION = "COVALENT_FORCE_LEGACY_RUNNER" not in os.environ
 
 # Dictionary to map Dask clients to their scheduler addresses
@@ -71,6 +80,7 @@ class StatusEnum(str, Enum):
     CANCELLED = str(RESULT_STATUS.CANCELLED)
     COMPLETED = str(RESULT_STATUS.COMPLETED)
     FAILED = str(RESULT_STATUS.FAILED)
+    READY = "READY"
 
 
 class ReceiveModel(BaseModel):
@@ -195,7 +205,6 @@ class DaskExecutor(AsyncBaseExecutor):
             stdout_uri = os.path.join(self.cache_dir, f"stdout_{dispatch_id}-{node_id}.txt")
             stderr_uri = os.path.join(self.cache_dir, f"stderr_{dispatch_id}-{node_id}.txt")
             output_uris.append((result_uri, stdout_uri, stderr_uri))
-        # future = dask_client.submit(lambda x: x**3, 3)
 
         dispatcher_addr = get_config("dispatcher.address")
         dispatcher_port = get_config("dispatcher.port")
@@ -205,7 +214,7 @@ class DaskExecutor(AsyncBaseExecutor):
         await self.set_job_handle(key)
 
         future = dask_client.submit(
-            run_task_from_uris,
+            run_task_from_uris_alt,
             list(map(lambda t: asdict(t), task_specs)),
             asdict(resources),
             output_uris,
@@ -215,22 +224,39 @@ class DaskExecutor(AsyncBaseExecutor):
             key=key,
         )
 
-        def handle_cancelled(fut):
-            import requests
+        _clients[key] = dask_client
+        _futures[key] = future
 
-            app_log.debug(f"In done callback for {dispatch_id}:{gid}, future {fut}")
-            if fut.cancelled():
-                for task_id in task_ids:
-                    url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}"
-                    requests.put(url, json={"status": "CANCELLED"})
+        # def handle_cancelled(fut):
+        #     import requests
 
-        future.add_done_callback(handle_cancelled)
+        #     app_log.debug(f"In done callback for {dispatch_id}:{gid}, future {fut}")
+        #     if fut.cancelled():
+        #         for task_id in task_ids:
+        #             url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}"
+        #             requests.put(url, json={"status": "CANCELLED"})
 
-        fire_and_forget(future)
+        # future.add_done_callback(handle_cancelled)
 
-        app_log.debug(f"Fire and forgetting task group {dispatch_id}:{gid}")
+        # fire_and_forget(future)
+
+        # app_log.debug(f"Fire and forgetting task group {dispatch_id}:{gid}")
 
         return future.key
+
+    async def poll(self, task_group_metadata: Dict, poll_data: Any):
+        fut = _futures.pop(poll_data)
+        app_log.debug(f"Future {fut}")
+        await fut
+
+        _clients.pop(poll_data)
+
+        if fut.cancelled():
+            return {"status": StatusEnum.CANCELLED.value}
+        else:
+            return {"status": StatusEnum.READY.value}
+
+        # raise NotImplementedError
 
     async def receive(self, task_group_metadata: Dict, data: Any) -> List[TaskUpdate]:
         # Job should have reached a terminal state by the time this is invoked.
@@ -239,29 +265,35 @@ class DaskExecutor(AsyncBaseExecutor):
 
         task_results = []
 
+        if not data:
+            terminal_status = RESULT_STATUS.CANCELLED
+        else:
+            received = ReceiveModel.parse_obj(data)
+            terminal_status = Status(received.status)
+
         for task_id in task_ids:
             # TODO: Handle the case where the job was cancelled before the task started running
             app_log.debug(f"Receive called for task {dispatch_id}:{task_id} with data {data}")
 
-            if not data:
-                terminal_status = RESULT_STATUS.CANCELLED
+            if terminal_status == RESULT_STATUS.CANCELLED:
+                output_uri = ""
+                stdout_uri = ""
+                stderr_uri = ""
+
             else:
-                received = ReceiveModel.parse_obj(data)
-                terminal_status = Status(received.status)
+                # terminal_status = data["status"] if data else RESULT_STATUS.CANCELLED
+                result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
+                with open(result_path, "r") as f:
+                    result_summary = json.load(f)
+                    node_id = result_summary["node_id"]
+                    output_uri = result_summary["output_uri"]
+                    stdout_uri = result_summary["stdout_uri"]
+                    stderr_uri = result_summary["stderr_uri"]
+                    exception_raised = result_summary["exception_occurred"]
 
-            # terminal_status = data["status"] if data else RESULT_STATUS.CANCELLED
-            # result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
-            # with open(result_path, "r") as f:
-            #     result_summary = json.load(f)
-            #     node_id = result_summary["node_id"]
-            #     output_uri = ""
-            #     stdout_uri = ""
-            #     stderr_uri = ""
-            #     exception_raised = result_summary["exception_occurred"]
-
-            # terminal_status = (
-            #     RESULT_STATUS.FAILED if exception_raised else RESULT_STATUS.COMPLETED
-            # )
+                terminal_status = (
+                    RESULT_STATUS.FAILED if exception_raised else RESULT_STATUS.COMPLETED
+                )
 
             task_result = {
                 "dispatch_id": dispatch_id,
@@ -269,13 +301,13 @@ class DaskExecutor(AsyncBaseExecutor):
                 "status": terminal_status,
                 "assets": {
                     "output": {
-                        "remote_uri": "",
+                        "remote_uri": output_uri,
                     },
                     "stdout": {
-                        "remote_uri": "",
+                        "remote_uri": stdout_uri,
                     },
                     "stderr": {
-                        "remote_uri": "",
+                        "remote_uri": stderr_uri,
                     },
                 },
             }
@@ -286,9 +318,9 @@ class DaskExecutor(AsyncBaseExecutor):
         return task_results
 
     def get_upload_uri(self, task_group_metadata: Dict, object_key: str):
-        # dispatch_id = task_group_metadata["dispatch_id"]
-        # task_group_id = task_group_metadata["task_group_id"]
+        dispatch_id = task_group_metadata["dispatch_id"]
+        task_group_id = task_group_metadata["task_group_id"]
 
-        # filename = f"asset_{dispatch_id}-{task_group_id}_{object_key}.pkl"
-        # return os.path.join("file://", self.cache_dir, filename)
-        return ""
+        filename = f"asset_{dispatch_id}-{task_group_id}_{object_key}.pkl"
+        return os.path.join("file://", self.cache_dir, filename)
+        # return ""

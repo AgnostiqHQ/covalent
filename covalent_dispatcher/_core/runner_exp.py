@@ -54,6 +54,8 @@ _job_events = None
 
 _job_event_listener = None
 
+_futures = set()
+
 # message format:
 # Ready for retrieve result
 # {"task_group_metadata": dict, "event": "READY"}
@@ -141,8 +143,11 @@ async def _submit_abstract_task_group(
         # Use one proxy for the task group; handles the following requests:
         # - check if the job has a pending cancel request
         # - set the job handle
+        # - set job status
 
-        asyncio.create_task(executor_proxy.watch(dispatch_id, task_ids[0], executor))
+        fut = asyncio.create_task(executor_proxy.watch(dispatch_id, task_ids[0], executor))
+        _futures.add(fut)
+        fut.add_done_callback(_futures.discard)
 
         send_retval = await executor.send(
             task_specs,
@@ -295,7 +300,9 @@ async def run_abstract_task_group(
                     abstract_inputs,
                     selected_executor,
                 )
-                asyncio.create_task(coro)
+                fut = asyncio.create_task(coro)
+                _futures.add(fut)
+                fut.add_done_callback(_futures.discard)
                 return
 
             else:
@@ -358,7 +365,9 @@ async def _listen_for_job_events():
             if event == "READY":
                 task_group_metadata = msg["task_group_metadata"]
                 detail = msg["detail"]
-                asyncio.create_task(_get_task_result(task_group_metadata, detail))
+                fut = asyncio.create_task(_get_task_result(task_group_metadata, detail))
+                _futures.add(fut)
+                fut.add_done_callback(_futures.discard)
                 continue
 
             if event == "FAILED":
@@ -396,6 +405,12 @@ async def _mark_failed(task_group_metadata: dict, detail: str):
 async def _poll_task_status(
     task_group_metadata: Dict, executor: AsyncBaseExecutor, poll_data: Any
 ):
+    """Polls a group of tasks until it terminates.
+
+    `poll_data` is the return value of `Executor.send()` and will be
+    passed directly to `Executor.poll()`.
+
+    """
     # Return immediately if no polling logic (default return value is -1)
 
     dispatch_id = task_group_metadata["dispatch_id"]
