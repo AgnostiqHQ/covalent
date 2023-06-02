@@ -252,7 +252,7 @@ class DaskExecutor(AsyncBaseExecutor):
         _clients.pop(poll_data)
 
         if fut.cancelled():
-            return {"status": StatusEnum.CANCELLED.value}
+            raise TaskCancelledError()
         else:
             return {"status": StatusEnum.READY.value}
 

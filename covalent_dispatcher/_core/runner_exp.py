@@ -30,6 +30,7 @@ from typing import Any, Dict
 
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
+from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent.executor.base import AsyncBaseExecutor
 from covalent.executor.schemas import ResourceMap, TaskSpec
@@ -157,6 +158,20 @@ async def _submit_abstract_task_group(
         )
 
         app_log.debug(f"Submitted task group {dispatch_id}:{task_group_id}")
+
+    except TaskCancelledError:
+        app_log.debug(f"Task group {dispatch_id}:{task_group_id} cancelled")
+
+        send_retval = None
+
+        node_results = [
+            datamgr.generate_node_result(
+                node_id=task_id,
+                end_time=datetime.now(timezone.utc),
+                status=RESULT_STATUS.CANCELLED,
+            )
+            for task_id in task_ids
+        ]
 
     except Exception as ex:
         tb = "".join(traceback.TracebackException.from_exception(ex).format())
@@ -425,6 +440,10 @@ async def _poll_task_status(
 
     except NotImplementedError:
         app_log.debug(f"Executor {executor.short_name()} is async.")
+
+    except TaskCancelledError:
+        app_log.debug(f"Task group {dispatch_id}:{task_group_id} cancelled")
+        await _mark_ready(task_group_metadata, None)
 
     except Exception as ex:
         task_group_id = task_group_metadata["task_group_id"]

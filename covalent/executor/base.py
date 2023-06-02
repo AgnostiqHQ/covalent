@@ -816,7 +816,9 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         task_group_metadata: Dict,
         data: Any,
     ) -> List[TaskUpdate]:
-        # Returns a list of task results, each of the form
+        # Returns a list of task results, each a TaskUpdate dataclass
+        # of the form
+        #
         # {
         #   "dispatch_id": dispatch_id,
         #   "node_id": node_id,
@@ -824,15 +826,12 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         #   "assets": {
         #       "output":  {
         #         "remote_uri": output_uri,
-        #         "size": output_size
         #       },
         #       "stdout":  {
         #         "remote_uri": stdout_uri,
-        #         "size": stdout_size,
         #       },
         #       "stderr":  {
         #         "remote_uri": stderr_uri,
-        #         "size": stderr_size,
         #       },
         #     },
         # }

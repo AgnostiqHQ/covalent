@@ -31,6 +31,7 @@ from sqlalchemy.pool import StaticPool
 
 import covalent as ct
 from covalent._results_manager import Result
+from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 from covalent.executor.base import AsyncBaseExecutor
@@ -427,6 +428,14 @@ async def test_poll_status(mocker):
     await _poll_task_status(task_group_metadata, me, "42")
     mock_mark_ready.assert_not_awaited()
     mock_mark_failed.assert_awaited()
+    mock_mark_ready.reset_mock()
+    mock_mark_failed.reset_mock()
+
+    me.poll = AsyncMock(side_effect=TaskCancelledError())
+
+    await _poll_task_status(task_group_metadata, me, "42")
+    mock_mark_ready.assert_awaited_with(task_group_metadata, None)
+    mock_mark_failed.assert_not_awaited()
 
 
 @pytest.mark.asyncio
