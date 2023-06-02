@@ -82,9 +82,9 @@ def _serialize_result_assets(res: Result, storage_path: str) -> ResultAssets:
 
 
 def _deserialize_result_assets(assets: ResultAssets) -> dict:
-    error = load_asset(assets.error, AssetType.TEXT)
-    result = load_asset(assets.result, AssetType.TRANSPORTABLE)
-    inputs = load_asset(assets.inputs, AssetType.OBJECT)
+    error = load_asset(assets.error, ASSET_TYPES["error"])
+    result = load_asset(assets.result, ASSET_TYPES["result"])
+    inputs = load_asset(assets.inputs, ASSET_TYPES["inputs"])
     return {"_result": result, "_error": error, "_inputs": inputs}
 
 

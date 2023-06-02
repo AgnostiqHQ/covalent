@@ -180,17 +180,17 @@ def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> Electron
 
 
 def _deserialize_node_assets(ea: ElectronAssets) -> dict:
-    function = load_asset(ea.function, AssetType.TRANSPORTABLE)
-    function_string = load_asset(ea.function_string, AssetType.TEXT)
-    value = load_asset(ea.value, AssetType.TRANSPORTABLE)
-    output = load_asset(ea.output, AssetType.TRANSPORTABLE)
-    deps = load_asset(ea.deps, AssetType.OBJECT)
-    call_before = load_asset(ea.call_before, AssetType.OBJECT)
-    call_after = load_asset(ea.call_after, AssetType.OBJECT)
+    function = load_asset(ea.function, ASSET_TYPES["function"])
+    function_string = load_asset(ea.function_string, ASSET_TYPES["function_string"])
+    value = load_asset(ea.value, ASSET_TYPES["value"])
+    output = load_asset(ea.output, ASSET_TYPES["output"])
+    deps = load_asset(ea.deps, ASSET_TYPES["deps"])
+    call_before = load_asset(ea.call_before, ASSET_TYPES["call_before"])
+    call_after = load_asset(ea.call_after, ASSET_TYPES["call_after"])
 
-    stdout = load_asset(ea.stdout, AssetType.TEXT)
-    stderr = load_asset(ea.stderr, AssetType.TEXT)
-    error = load_asset(ea.error, AssetType.TEXT)
+    stdout = load_asset(ea.stdout, ASSET_TYPES["stdout"])
+    stderr = load_asset(ea.stderr, ASSET_TYPES["stderr"])
+    error = load_asset(ea.error, ASSET_TYPES["error"])
 
     return {
         "function": function,

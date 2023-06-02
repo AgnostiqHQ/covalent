@@ -162,16 +162,18 @@ def _serialize_lattice_assets(lat, storage_path: str) -> LatticeAssets:
 
 
 def _deserialize_lattice_assets(assets: LatticeAssets) -> dict:
-    workflow_function = load_asset(assets.workflow_function, AssetType.TRANSPORTABLE)
-    workflow_function_string = load_asset(assets.workflow_function_string, AssetType.TEXT)
-    doc = load_asset(assets.doc, AssetType.TEXT)
-    named_args = load_asset(assets.named_args, AssetType.OBJECT)
-    named_kwargs = load_asset(assets.named_kwargs, AssetType.OBJECT)
-    cova_imports = load_asset(assets.cova_imports, AssetType.OBJECT)
-    lattice_imports = load_asset(assets.lattice_imports, AssetType.OBJECT)
-    deps = load_asset(assets.deps, AssetType.OBJECT)
-    call_before = load_asset(assets.call_before, AssetType.OBJECT)
-    call_after = load_asset(assets.call_after, AssetType.OBJECT)
+    workflow_function = load_asset(assets.workflow_function, ASSET_TYPES["workflow_function"])
+    workflow_function_string = load_asset(
+        assets.workflow_function_string, ASSET_TYPES["workflow_function_string"]
+    )
+    doc = load_asset(assets.doc, ASSET_TYPES["doc"])
+    named_args = load_asset(assets.named_args, ASSET_TYPES["named_args"])
+    named_kwargs = load_asset(assets.named_kwargs, ASSET_TYPES["named_kwargs"])
+    cova_imports = load_asset(assets.cova_imports, ASSET_TYPES["cova_imports"])
+    lattice_imports = load_asset(assets.lattice_imports, ASSET_TYPES["lattice_imports"])
+    deps = load_asset(assets.deps, ASSET_TYPES["deps"])
+    call_before = load_asset(assets.call_before, ASSET_TYPES["call_before"])
+    call_after = load_asset(assets.call_after, ASSET_TYPES["call_after"])
     return {
         "workflow_function": workflow_function,
         "workflow_function_string": workflow_function_string,
