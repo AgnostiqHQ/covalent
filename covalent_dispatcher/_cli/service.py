@@ -56,6 +56,8 @@ MIGRATION_WARNING_MSG = "Covalent not started. The database needs to be upgraded
 MIGRATION_COMMAND_MSG = (
     '   (use "covalent db migrate" to run database migrations and then retry "covalent start")'
 )
+ZOMBIE_PROCESS_STATUS_MSG = "Covalent server is unhealthy: Process is in zombie status"
+STOPPED_PROCESS_STATUS_MSG = "Covalent server is unhealthy: Process is in stopped status"
 
 
 def _read_pid(filename: str) -> int:
@@ -456,18 +458,13 @@ def status() -> None:
     """
 
     pid = _read_pid(UI_PIDFILE)
-    process = psutil.Process(pid)
-    virtual_mem = process.memory_info().vms
     if _read_pid(UI_PIDFILE) != -1 and psutil.pid_exists(pid):
         ui_port = get_config("user_interface.port")
         click.echo(f"Covalent server is running at http://localhost:{ui_port}.")
-    elif virtual_mem > 0:
-        click.echo("Covalent server is unhealthy: swapped out of memory")
-    elif status == psutil.STATUS_ZOMBIE:
-        click.echo("Covalent server is unhealthy: zombie process")
-    elif status == psutil.STATUS_STOPPED:
-        click.echo("Covalent server is unhealthy: process stopped")
-
+    elif psutil.pid_exists(pid) and psutil.Process(pid).status == psutil.STATUS_ZOMBIE:
+        click.echo(ZOMBIE_PROCESS_STATUS_MSG)
+    elif psutil.pid_exists(pid) and psutil.Process(pid).status == psutil.STATUS_STOPPED:
+        click.echo(STOPPED_PROCESS_STATUS_MSG)
     else:
         _rm_pid_file(UI_PIDFILE)
         click.echo("Covalent server is stopped.")
