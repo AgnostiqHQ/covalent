@@ -59,6 +59,7 @@ from covalent_dispatcher._db.datastore import DataStore
 STOPPED_SERVER_STATUS_ECHO = "Covalent server is stopped.\n"
 RUNNING_SERVER_STATUS_ECHO = "Covalent server is running at http://localhost:42.\n"
 
+
 def has_conda():
     try:
         ret = subprocess.run(["conda"], check=True)
