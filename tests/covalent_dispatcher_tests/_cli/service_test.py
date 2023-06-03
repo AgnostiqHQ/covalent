@@ -21,7 +21,6 @@
 """Tests for Covalent command line interface (CLI) Tool."""
 
 import os
-import psutil
 import subprocess
 import sys
 import tempfile
@@ -29,6 +28,7 @@ import venv
 from unittest import mock
 from unittest.mock import MagicMock, Mock
 
+import psutil
 import pytest
 import requests
 from click.testing import CliRunner
@@ -36,8 +36,8 @@ from click.testing import CliRunner
 from covalent_dispatcher._cli.service import (
     MIGRATION_COMMAND_MSG,
     MIGRATION_WARNING_MSG,
-    ZOMBIE_PROCESS_STATUS_MSG,
     STOPPED_PROCESS_STATUS_MSG,
+    ZOMBIE_PROCESS_STATUS_MSG,
     _graceful_shutdown,
     _graceful_start,
     _is_server_running,
