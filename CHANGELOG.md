@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Error messages are propagated to stdout when the server is not started. These changes are applied to `dispatch`, `redispatch`, and `get_result`.
 
+- Add CLI status for zombie, stopped process.
+
 ### Docs
 
 - Fix typo in GCP Batch executor RTD.
