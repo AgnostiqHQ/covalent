@@ -21,6 +21,7 @@
 """Tests for Covalent command line interface (CLI) Tool."""
 
 import os
+import psutil
 import subprocess
 import sys
 import tempfile
@@ -35,6 +36,8 @@ from click.testing import CliRunner
 from covalent_dispatcher._cli.service import (
     MIGRATION_COMMAND_MSG,
     MIGRATION_WARNING_MSG,
+    ZOMBIE_PROCESS_STATUS_MSG,
+    STOPPED_PROCESS_STATUS_MSG,
     _graceful_shutdown,
     _graceful_start,
     _is_server_running,
@@ -55,7 +58,6 @@ from covalent_dispatcher._db.datastore import DataStore
 
 STOPPED_SERVER_STATUS_ECHO = "Covalent server is stopped.\n"
 RUNNING_SERVER_STATUS_ECHO = "Covalent server is running at http://localhost:42.\n"
-
 
 def has_conda():
     try:
@@ -447,19 +449,22 @@ def test_restart_preserves_nocluster(mocker, port_tag, port, pid, server, no_clu
 
 
 @pytest.mark.parametrize(
-    "port_val,pid,echo_output,file_removed,pid_exists",
+    "port_val,pid,echo_output,file_removed,pid_exists,process_status",
     [
-        (None, -1, STOPPED_SERVER_STATUS_ECHO, True, False),
-        (42, 42, RUNNING_SERVER_STATUS_ECHO, False, True),
-        (42, 42, STOPPED_SERVER_STATUS_ECHO, True, False),
+        (None, -1, STOPPED_SERVER_STATUS_ECHO, True, False, None),
+        (42, 42, RUNNING_SERVER_STATUS_ECHO, False, True, None),
+        (42, 42, STOPPED_SERVER_STATUS_ECHO, True, False, None),
+        (42, 42, ZOMBIE_PROCESS_STATUS_MSG, False, True, psutil.STATUS_ZOMBIE),
+        (42, 42, STOPPED_PROCESS_STATUS_MSG, False, True, psutil.STATUS_STOPPED),
     ],
 )
-def test_status(mocker, port_val, pid, echo_output, file_removed, pid_exists):
+def test_status(mocker, port_val, pid, echo_output, file_removed, pid_exists, process_status):
     """Test covalent status command."""
 
     mocker.patch("covalent_dispatcher._cli.service.get_config", return_value=port_val)
     mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=pid)
     mocker.patch("psutil.pid_exists", return_value=pid_exists)
+    mocker.patch("psutil.Process.status", return_value=process_status)
     rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
 
     runner = CliRunner()
