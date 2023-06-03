@@ -352,7 +352,7 @@ def _get_node_output_from_dispatcher(
             get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
         )
 
-    url = f"http://{dispatcher_addr}/api/v1/resultv2/{dispatch_id}/assets/node/{node_id}/output"
+    url = f"http://{dispatcher_addr}/api/v1/assets/{dispatch_id}/node/{node_id}/output"
 
     response = requests.get(url, stream=True)
 
@@ -382,7 +382,7 @@ def _get_dispatch_result_from_dispatcher(
             get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
         )
 
-    url = f"http://{dispatcher_addr}/api/v1/resultv2/{dispatch_id}/assets/dispatch/result"
+    url = f"http://{dispatcher_addr}/api/v1/assets/{dispatch_id}/dispatch/result"
 
     response = requests.get(url, stream=True)
 
