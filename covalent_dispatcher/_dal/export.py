@@ -70,7 +70,6 @@ SDK_LAT_META_KEYS = {
 }
 
 DEFERRED_KEYS = {
-    "inputs",
     "output",
     "value",
     "result",

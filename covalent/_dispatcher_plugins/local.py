@@ -115,13 +115,12 @@ def get_redispatch_request_body_v2(
 
     # If lattice inputs are not supplied, retrieve them from the previous dispatch
     if not new_args and not new_kwargs:
-        rm.download_lattice_asset("named_args")
-        rm.download_lattice_asset("named_kwargs")
-        rm.load_lattice_asset("named_args")
-        rm.load_lattice_asset("named_kwargs")
+        rm.download_lattice_asset("inputs")
+        rm.load_lattice_asset("inputs")
         res_obj = rm.result_object
-        new_args = [arg.get_deserialized() for _, arg in res_obj.lattice.named_args.items()]
-        new_kargs = {k: v.get_deserialized() for k, v in res_obj.lattice.named_kwargs.items()}
+        inputs = res_obj.inputs.get_deserialized()
+        new_args = inputs["args"]
+        new_kargs = inputs["kwargs"]
 
     lat.build_graph(*new_args, **new_kwargs)
     if replace_electrons:

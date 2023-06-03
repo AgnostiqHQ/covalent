@@ -84,10 +84,6 @@ def test_import_result(mocker, test_db):
     assets = res.assets
     filtered_assets = filtered_res.assets
 
-    assert assets.inputs.digest == filtered_assets.inputs.digest
-    assert assets.inputs.uri == filtered_assets.inputs.uri
-    assert filtered_assets.inputs.remote_uri.startswith(SERVER_URL)
-
     assert assets.result.digest == filtered_assets.result.digest
     assert assets.result.uri == filtered_assets.result.uri
     assert filtered_assets.result.remote_uri.startswith(SERVER_URL)
@@ -111,6 +107,10 @@ def test_import_result(mocker, test_db):
     assert assets.doc.digest == filtered_assets.doc.digest
     assert assets.doc.uri == filtered_assets.doc.uri
     assert filtered_assets.doc.remote_uri.startswith(SERVER_URL)
+
+    assert assets.inputs.digest == filtered_assets.inputs.digest
+    assert assets.inputs.uri == filtered_assets.inputs.uri
+    assert filtered_assets.inputs.remote_uri.startswith(SERVER_URL)
 
     tg = lat.transport_graph
     filtered_tg = filtered_lat.transport_graph

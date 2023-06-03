@@ -34,8 +34,9 @@ ASSET_TYPES = {
     "workflow_function": AssetType.TRANSPORTABLE,
     "workflow_function_string": AssetType.TEXT,
     "doc": AssetType.TEXT,
-    "named_args": AssetType.OBJECT,
-    "named_kwargs": AssetType.OBJECT,
+    "inputs": AssetType.TRANSPORTABLE,
+    "named_args": AssetType.TRANSPORTABLE,
+    "named_kwargs": AssetType.TRANSPORTABLE,
     "cova_imports": AssetType.OBJECT,
     "lattice_imports": AssetType.OBJECT,
     "deps": AssetType.JSONABLE,
@@ -104,6 +105,10 @@ def _serialize_lattice_assets(lat, storage_path: str) -> LatticeAssets:
         ASSET_FILENAME_MAP["doc"],
     )
 
+    inputs_asset = save_asset(
+        lat.inputs, ASSET_TYPES["inputs"], storage_path, ASSET_FILENAME_MAP["inputs"]
+    )
+
     # Deprecate
     named_args_asset = save_asset(
         lat.named_args,
@@ -154,6 +159,7 @@ def _serialize_lattice_assets(lat, storage_path: str) -> LatticeAssets:
         workflow_function=workflow_func_asset,
         workflow_function_string=workflow_func_str_asset,
         doc=docstring_asset,
+        inputs=inputs_asset,
         named_args=named_args_asset,
         named_kwargs=named_kwargs_asset,
         cova_imports=cova_imports_asset,
@@ -170,6 +176,7 @@ def _deserialize_lattice_assets(assets: LatticeAssets) -> dict:
         assets.workflow_function_string, ASSET_TYPES["workflow_function_string"]
     )
     doc = load_asset(assets.doc, ASSET_TYPES["doc"])
+    inputs = load_asset(assets.inputs, ASSET_TYPES["inputs"])
     named_args = load_asset(assets.named_args, ASSET_TYPES["named_args"])
     named_kwargs = load_asset(assets.named_kwargs, ASSET_TYPES["named_kwargs"])
     cova_imports = load_asset(assets.cova_imports, ASSET_TYPES["cova_imports"])
@@ -181,6 +188,7 @@ def _deserialize_lattice_assets(assets: LatticeAssets) -> dict:
         "workflow_function": workflow_function,
         "workflow_function_string": workflow_function_string,
         "__doc__": doc,
+        "inputs": inputs,
         "named_args": named_args,
         "named_kwargs": named_kwargs,
         "cova_imports": cova_imports,
@@ -220,10 +228,5 @@ def deserialize_lattice(model: LatticeSchema) -> Lattice:
     attrs["transport_graph"] = tg
 
     lat.__dict__.update(attrs)
-
-    if lat.named_args:
-        lat.args = [v for _, v in lat.named_args.items()]
-    if lat.named_kwargs:
-        lat.kwargs = lat.named_kwargs
 
     return lat

@@ -43,7 +43,6 @@ ATTRIBUTES = {
     "task_cancelled",
     "result",
     "num_nodes",
-    "inputs",
     "error",
 }
 
@@ -78,7 +77,6 @@ _meta_record_map.update(lattice_utils._meta_record_map)
 
 # Obsoleted by LatticeAsset table
 _asset_record_map = {
-    "inputs": "inputs_filename",
     "result": "results_filename",
     "error": "error_filename",
 }

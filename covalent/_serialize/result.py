@@ -33,7 +33,6 @@ from .common import AssetType, load_asset, save_asset
 from .lattice import deserialize_lattice, serialize_lattice
 
 ASSET_TYPES = {
-    "inputs": AssetType.OBJECT,
     "error": AssetType.TEXT,
     "result": AssetType.TRANSPORTABLE,
 }
@@ -62,13 +61,6 @@ def _deserialize_result_metadata(meta: ResultMetadata) -> dict:
 def _serialize_result_assets(res: Result, storage_path: str) -> ResultAssets:
     # NOTE: We can avoid pickling here since the UI actually consumes only the string representation
 
-    # Convert a collection of TransportableObjects to a
-    # TransportableObject serializing a collection
-    res._repack_inputs()
-    inputs_asset = save_asset(
-        res._inputs, ASSET_TYPES["inputs"], storage_path, ASSET_FILENAME_MAP["inputs"]
-    )
-
     error_asset = save_asset(
         res._error, ASSET_TYPES["error"], storage_path, ASSET_FILENAME_MAP["error"]
     )
@@ -78,14 +70,13 @@ def _serialize_result_assets(res: Result, storage_path: str) -> ResultAssets:
         storage_path,
         ASSET_FILENAME_MAP["result"],
     )
-    return ResultAssets(inputs=inputs_asset, result=result_asset, error=error_asset)
+    return ResultAssets(result=result_asset, error=error_asset)
 
 
 def _deserialize_result_assets(assets: ResultAssets) -> dict:
     error = load_asset(assets.error, ASSET_TYPES["error"])
     result = load_asset(assets.result, ASSET_TYPES["result"])
-    inputs = load_asset(assets.inputs, ASSET_TYPES["inputs"])
-    return {"_result": result, "_error": error, "_inputs": inputs}
+    return {"_result": result, "_error": error}
 
 
 def serialize_result(res: Result, storage_path: str) -> ResultSchema:

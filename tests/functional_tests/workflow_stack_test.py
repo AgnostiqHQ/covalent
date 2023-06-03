@@ -613,7 +613,7 @@ def test_all_parameter_types_in_lattice():
     rm._delete_result(dispatch_id)
 
     workflow_inputs = result.inputs.get_deserialized()
-    assert workflow_inputs["args"] == [1, 2, 3, 4]
+    assert workflow_inputs["args"] == (1, 2, 3, 4)
     assert workflow_inputs["kwargs"] == {
         "c": 5,
         "d": 6,

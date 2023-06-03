@@ -169,8 +169,8 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         saved_named_kwargs = load_file(
             storage_path=lattice_storage_path, filename=lattice_row.named_kwargs_filename
         )
-        saved_named_args_raw = {k: v.get_deserialized() for k, v in saved_named_args.items()}
-        saved_named_kwargs_raw = {k: v.get_deserialized() for k, v in saved_named_kwargs.items()}
+        saved_named_args_raw = saved_named_args.get_deserialized()
+        saved_named_kwargs_raw = saved_named_kwargs.get_deserialized()
 
         assert saved_named_args_raw == {}
         assert saved_named_kwargs_raw == {"a": 1, "b": 2}

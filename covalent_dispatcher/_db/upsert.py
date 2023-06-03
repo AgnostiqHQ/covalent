@@ -125,7 +125,7 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         #     result.lattice.metadata["workflow_executor_data"],
         # ),
         ("error", LATTICE_ERROR_FILENAME, result.error),
-        ("inputs", LATTICE_INPUTS_FILENAME, result.inputs),
+        ("inputs", LATTICE_INPUTS_FILENAME, result.lattice.inputs),
         ("named_args", LATTICE_NAMED_ARGS_FILENAME, result.lattice.named_args),
         ("named_kwargs", LATTICE_NAMED_KWARGS_FILENAME, result.lattice.named_kwargs),
         ("result", LATTICE_RESULTS_FILENAME, result._result),

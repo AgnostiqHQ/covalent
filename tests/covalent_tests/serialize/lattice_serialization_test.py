@@ -49,9 +49,9 @@ def test_serialize_deserialize_lattice():
         assert model.metadata.sdk_version == ct.__version__
         lat = deserialize_lattice(model)
 
-        assert len(lat.args) == 2
-        assert lat.args[0].get_deserialized() == 2
-        assert lat.args[1].get_deserialized() == 3
+        lat.inputs = lat.inputs.get_deserialized()
+        assert lat.inputs["args"][0] == 2
+        assert lat.inputs["args"][1] == 3
 
         tg1 = workflow.transport_graph
         tg2 = lat.transport_graph

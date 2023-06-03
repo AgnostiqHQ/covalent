@@ -41,6 +41,7 @@ LATTICE_ASSET_KEYS = {
     "workflow_function",
     "workflow_function_string",
     "__doc__",
+    "inputs",
     "named_args",
     "named_kwargs",
     "cova_imports",
@@ -57,9 +58,9 @@ LATTICE_DOCSTRING_FILENAME = "function_docstring.txt"
 LATTICE_EXECUTOR_DATA_FILENAME = "executor_data.pkl"
 LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME = "workflow_executor_data.pkl"
 LATTICE_ERROR_FILENAME = "error.log"
-LATTICE_INPUTS_FILENAME = "inputs.pkl"
-LATTICE_NAMED_ARGS_FILENAME = "named_args.pkl"
-LATTICE_NAMED_KWARGS_FILENAME = "named_kwargs.pkl"
+LATTICE_INPUTS_FILENAME = "inputs.tobj"
+LATTICE_NAMED_ARGS_FILENAME = "named_args.tobj"
+LATTICE_NAMED_KWARGS_FILENAME = "named_kwargs.tobj"
 LATTICE_RESULTS_FILENAME = "results.tobj"
 LATTICE_DEPS_FILENAME = "deps.json"
 LATTICE_CALL_BEFORE_FILENAME = "call_before.json"
@@ -73,6 +74,7 @@ ASSET_FILENAME_MAP = {
     "workflow_function": LATTICE_FUNCTION_FILENAME,
     "workflow_function_string": LATTICE_FUNCTION_STRING_FILENAME,
     "doc": LATTICE_DOCSTRING_FILENAME,
+    "inputs": LATTICE_INPUTS_FILENAME,
     "named_args": LATTICE_NAMED_ARGS_FILENAME,
     "named_kwargs": LATTICE_NAMED_KWARGS_FILENAME,
     "cova_imports": LATTICE_COVA_IMPORTS_FILENAME,
@@ -87,6 +89,7 @@ class LatticeAssets(BaseModel):
     workflow_function: AssetSchema
     workflow_function_string: AssetSchema
     doc: AssetSchema  # __doc__
+    inputs: AssetSchema
     named_args: AssetSchema
     named_kwargs: AssetSchema
     cova_imports: AssetSchema

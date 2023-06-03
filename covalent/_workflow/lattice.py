@@ -85,10 +85,9 @@ class Lattice:
         self.__name__ = self.workflow_function.__name__
         self.__doc__ = self.workflow_function.__doc__
         self.post_processing = False
-        self.args = []
-        self.kwargs = {}
-        self.named_args = {}
-        self.named_kwargs = {}
+        self.inputs = None
+        self.named_args = None
+        self.named_kwargs = None
         self.electron_outputs = {}
         self.lattice_imports, self.cova_imports = get_imports(self.workflow_function)
         self.cova_imports.update({"electron"})
@@ -111,18 +110,9 @@ class Lattice:
         if self.transport_graph:
             attributes["transport_graph"] = self.transport_graph.serialize_to_json()
 
-        attributes["args"] = []
-        attributes["kwargs"] = {}
-
-        for arg in self.args:
-            attributes["args"].append(arg.to_dict())
-        for k, v in self.kwargs.items():
-            attributes["kwargs"][k] = v.to_dict()
-
-        for k, v in self.named_args.items():
-            attributes["named_args"][k] = v.to_dict()
-        for k, v in self.named_kwargs.items():
-            attributes["named_kwargs"][k] = v.to_dict()
+        attributes["inputs"] = self.inputs.to_dict()
+        attributes["named_args"] = self.named_args.to_dict()
+        attributes["named_kwargs"] = self.named_kwargs.to_dict()
 
         attributes["electron_outputs"] = {}
         for node_name, output in self.electron_outputs.items():
@@ -139,17 +129,9 @@ class Lattice:
         for node_name, object_dict in attributes["electron_outputs"].items():
             attributes["electron_outputs"][node_name] = TransportableObject.from_dict(object_dict)
 
-        for k, v in attributes["named_kwargs"].items():
-            attributes["named_kwargs"][k] = TransportableObject.from_dict(v)
-
-        for k, v in attributes["named_args"].items():
-            attributes["named_args"][k] = TransportableObject.from_dict(v)
-
-        for k, v in attributes["kwargs"].items():
-            attributes["kwargs"][k] = TransportableObject.from_dict(v)
-
-        for i, arg in enumerate(attributes["args"]):
-            attributes["args"][i] = TransportableObject.from_dict(arg)
+        attributes["named_kwargs"] = TransportableObject.from_dict(attributes["named_kwargs"])
+        attributes["named_args"] = TransportableObject.from_dict(attributes["named_args"])
+        attributes["inputs"] = TransportableObject.from_dict(attributes["inputs"])
 
         if attributes["transport_graph"]:
             tg = _TransportGraph()
@@ -221,19 +203,18 @@ class Lattice:
             None
 
         """
-        self.args = [TransportableObject.make_transportable(arg) for arg in args]
-        self.kwargs = {k: TransportableObject.make_transportable(v) for k, v in kwargs.items()}
 
         self.transport_graph.reset()
 
         workflow_function = self.workflow_function.get_deserialized()
 
-        named_args, named_kwargs = get_named_params(workflow_function, self.args, self.kwargs)
-        self.named_args = named_args
-        self.named_kwargs = named_kwargs
+        named_args, named_kwargs = get_named_params(workflow_function, args, kwargs)
+        new_args = [v for _, v in named_args.items()]
+        new_kwargs = {k: v for k, v in named_kwargs.items()}
 
-        new_args = [v.get_deserialized() for _, v in named_args.items()]
-        new_kwargs = {k: v.get_deserialized() for k, v in named_kwargs.items()}
+        self.inputs = TransportableObject({"args": args, "kwargs": kwargs})
+        self.named_args = TransportableObject(named_args)
+        self.named_kwargs = TransportableObject(named_kwargs)
 
         # Set any lattice metadata not explicitly set by the user
         constraint_names = {"executor", "workflow_executor", "deps", "call_before", "call_after"}
@@ -484,8 +465,9 @@ def _post_process(lattice: Lattice, *ordered_node_outputs) -> Any:
     with active_lattice_manager.claim(lattice):
         lattice.post_processing = True
         lattice.electron_outputs = list(ordered_node_outputs)
-        args = [arg.get_deserialized() for arg in lattice.args]
-        kwargs = {k: v.get_deserialized() for k, v in lattice.kwargs.items()}
+        inputs = lattice.inputs.get_deserialized()
+        args = inputs["args"]
+        kwargs = inputs["kwargs"]
         workflow_function = lattice.workflow_function.get_deserialized()
         result = workflow_function(*args, **kwargs)
         lattice.post_processing = False

@@ -142,6 +142,7 @@ def test_to_client_lattice(test_db, mocker):
     del res.lattice.metadata["triggers"]
 
     assert sdk_lattice.metadata == res.lattice.metadata
+    assert sdk_lattice.inputs == res.lattice.inputs
     assert sdk_lattice.named_args == res.lattice.named_args
     assert sdk_lattice.named_kwargs == res.lattice.named_kwargs
     assert sdk_lattice.lattice_imports == res.lattice.lattice_imports
@@ -196,6 +197,7 @@ def test_to_client_result(test_db, mocker):
     del res.lattice.metadata["triggers"]
 
     assert sdk_lat.metadata == res.lattice.metadata
+    assert sdk_lat.inputs == res.lattice.inputs
     assert sdk_lat.named_args == res.lattice.named_args
     assert sdk_lat.named_kwargs == res.lattice.named_kwargs
     assert sdk_lat.lattice_imports == res.lattice.lattice_imports

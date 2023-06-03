@@ -27,12 +27,7 @@ from pydantic import BaseModel
 
 from .asset import AssetSchema
 from .common import StatusEnum
-from .lattice import (
-    LATTICE_ERROR_FILENAME,
-    LATTICE_INPUTS_FILENAME,
-    LATTICE_RESULTS_FILENAME,
-    LatticeSchema,
-)
+from .lattice import LATTICE_ERROR_FILENAME, LATTICE_RESULTS_FILENAME, LatticeSchema
 
 METADATA_KEYS = {
     "start_time",
@@ -45,14 +40,12 @@ METADATA_KEYS = {
 
 
 ASSET_KEYS = {
-    "inputs",
     "result",
     "error",
 }
 
 
 ASSET_FILENAME_MAP = {
-    "inputs": LATTICE_INPUTS_FILENAME,
     "result": LATTICE_RESULTS_FILENAME,
     "error": LATTICE_ERROR_FILENAME,
 }
@@ -75,7 +68,6 @@ class ResultMetadata(BaseModel):
 
 
 class ResultAssets(BaseModel):
-    inputs: AssetSchema
     result: AssetSchema
     error: AssetSchema
 

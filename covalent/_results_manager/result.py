@@ -96,28 +96,12 @@ class Result:
 
         self._num_nodes = -1
 
-        self._inputs = {"args": [], "kwargs": {}}
-        if lattice.args:
-            self._inputs["args"] = lattice.args
-        if lattice.kwargs:
-            self._inputs["kwargs"] = lattice.kwargs
-
         self._error = ""
-
-    def _repack_inputs(self):
-        raw_args = [arg.get_deserialized() for arg in self._inputs["args"]]
-        raw_kwargs = {k: v.get_deserialized() for k, v in self._inputs["kwargs"].items()}
-        self._inputs = TransportableObject({"args": raw_args, "kwargs": raw_kwargs})
 
     def __str__(self):
         """String representation of the result object"""
 
-        if isinstance(self.inputs, dict):
-            arg_str_repr = [e.object_string for e in self.inputs["args"]]
-            kwarg_str_repr = {
-                key: value.object_string for key, value in self.inputs["kwargs"].items()
-            }
-        elif isinstance(self.inputs, TransportableObject):
+        if isinstance(self.inputs, TransportableObject):
             input_string = self.inputs.object_string
 
             regex = r"^\{'args': \[(.*)\], 'kwargs': \{(.*)\}\}$"
@@ -235,7 +219,7 @@ Node Outputs
         Inputs sent to the "Lattice" function for dispatching.
         """
 
-        return self._inputs
+        return self.lattice.inputs
 
     @property
     def error(self) -> str:
@@ -353,8 +337,9 @@ Node Outputs
         with active_lattice_manager.claim(lattice):
             lattice.post_processing = True
             lattice.electron_outputs = ordered_node_outputs
-            args = [arg.get_deserialized() for arg in lattice.args]
-            kwargs = {k: v.get_deserialized() for k, v in lattice.kwargs.items()}
+            inputs = self.lattice.inputs.get_deserialized()
+            args = inputs["args"]
+            kwargs = inputs["kwargs"]
             workflow_function = lattice.workflow_function.get_deserialized()
             result = workflow_function(*args, **kwargs)
             lattice.post_processing = False
@@ -570,7 +555,6 @@ def import_result_object(result_export: dict) -> Result:
     start_time = None
     end_time = None
     status = None
-    inputs = {"args": [], "kwargs": {}}
     error = None
 
     if result_attrs["start_time"]:
@@ -582,15 +566,9 @@ def import_result_object(result_export: dict) -> Result:
     status = Status(result_attrs["status"])
     error = result_attrs["error"]
 
-    inputs["args"] = [v for _, v in lat.named_args.items()]
-    inputs["kwargs"] = lat.named_kwargs
-    lat.args = inputs["args"]
-    lat.kwargs = inputs["kwargs"]
-
     result_object._start_time = start_time
     result_object._end_time = end_time
     result_object._status = status
-    result_object._inputs = inputs
     result_object._error = error
 
     result_object._lattice = lat

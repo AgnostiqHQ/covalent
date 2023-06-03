@@ -75,7 +75,6 @@ digest_pattern = re.compile(digest_regex)
 
 
 class DispatchAssetKey(str, Enum):
-    inputs = "inputs"
     result = "result"
     error = "error"
 
@@ -85,6 +84,7 @@ class LatticeAssetKey(str, Enum):
     workflow_function_string = "workflow_function_string"
     doc = "doc"
     doc_legacy = "__doc__"
+    inputs = "inputs"
     named_args = "named_args"
     named_kwargs = "named_kwargs"
     deps = "deps"
