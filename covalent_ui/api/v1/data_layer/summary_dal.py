@@ -323,9 +323,9 @@ class Summary:
                 success.append(dispatch_id)
             except InterfaceError:
                 failure.append(dispatch_id)
-        if len(success) > 0:
+        if success:
             message = "Dispatch(es) have been deleted successfully!"
-            if len(failure) > 0:
+            if failure:
                 message = "Some of the dispatches could not be deleted"
 
         return DeleteDispatchesResponse(
@@ -358,8 +358,7 @@ class Summary:
             .all()
         )
         dispatch_ids = [o.id for o in filter_dispatches]
-        dispatches = [uuid.UUID(o.dispatch_id) for o in filter_dispatches]
-        if len(dispatches) >= 1:
+        if dispatches := [uuid.UUID(o.dispatch_id) for o in filter_dispatches]:
             try:
                 electron_ids = (
                     self.db_con.query(Electron.id)
@@ -416,7 +415,7 @@ class Summary:
                 success = dispatches
             except InterfaceError:
                 failure = dispatches
-        if (len(failure) == 0 and len(success) == 0) or (len(failure) > 0 and len(success) == 0):
+        if not failure and not success or failure and not success:
             message = "No dispatches were deleted"
         elif len(failure) > 0 and len(success) > 0:
             message = "Some of the dispatches could not be deleted"
@@ -433,10 +432,14 @@ class Summary:
         if status_filter == Status.ALL:
             filters = [status.value for status in Status]
         elif status_filter == Status.COMPLETED:
-            filters.append(Status.COMPLETED.value)
-            filters.append(Status.POSTPROCESSING.value)
-            filters.append(Status.POSTPROCESSING_FAILED.value)
-            filters.append(Status.PENDING_POSTPROCESSING.value)
+            filters.extend(
+                (
+                    Status.COMPLETED.value,
+                    Status.POSTPROCESSING.value,
+                    Status.POSTPROCESSING_FAILED.value,
+                    Status.PENDING_POSTPROCESSING.value,
+                )
+            )
         else:
             filters = [status_filter.value]
 

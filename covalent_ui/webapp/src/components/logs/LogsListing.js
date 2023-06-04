@@ -112,7 +112,7 @@ const ResultsTableToolbar = ({ query, onSearch, setQuery }) => {
         endAdornment={
           <InputAdornment
             position="end"
-            sx={{ visibility: !!query ? 'visible' : 'hidden' }}
+            sx={{ visibility: query ? 'visible' : 'hidden' }}
           >
             <IconButton size="small" onClick={() => setQuery('')} data-testid="clear">
               <ClearIcon fontSize="inherit" sx={{ color: 'text.secondary' }} />
@@ -344,7 +344,9 @@ const LogsListing = () => {
   }
 
   useEffect(() => {
-    if (offset === 0) setPage(1)
+    if (offset === 0) {
+      setPage(1)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offset])
 
@@ -509,7 +511,7 @@ const LogsListing = () => {
                           backgroundColor="#1C1C46"
                           delayShow={300}
                         >
-                          {!copied ? 'Click to copy log message' : 'Copied'}
+                          {copied ? 'Copied' : 'Click to copy log message'}
                         </ReactTooltip>
                       </>
                     ))}

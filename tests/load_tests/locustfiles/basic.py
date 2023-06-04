@@ -43,8 +43,7 @@ class BasicUser(HttpUser):
     def serialize_workflow(workflow, lattice_args):
         lattice = ct.lattice(workflow)
         lattice.build_graph(*lattice_args, {})
-        json_lattice = lattice.serialize_to_json()
-        return json_lattice
+        return lattice.serialize_to_json()
 
     @task
     def submit_identity_workflow(self):

@@ -65,8 +65,7 @@ class Graph:
             where lattices.id == :a
         """
         )
-        result = self.db_con.execute(sql, {"a": parent_lattice_id}).fetchall()
-        return result
+        return self.db_con.execute(sql, {"a": parent_lattice_id}).fetchall()
 
     def get_links(self, parent_lattice_id: int):
         """

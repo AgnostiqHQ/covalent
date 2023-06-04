@@ -126,7 +126,7 @@ const mapGraphToElements = (
 }
 
 // node width is used by the layout engine to avoid node overlap
-const fontSize = theme.typography.fontSize
+const {fontSize} = theme.typography
 const lineHeight = theme.typography.body1.lineHeight * fontSize
 
 const nodeWidth = (name) => _.size(name) * fontSize
@@ -137,10 +137,15 @@ const edgeHeight = lineHeight
 
 const assignNodePositions = (elements, direction, preview) => {
   let handleDirection = ''
-  if (direction === 'DOWN') handleDirection = 'TB'
-  else if (direction === 'RIGHT') handleDirection = 'LR'
-  else if (direction === 'LEFT') handleDirection = 'RL'
-  else handleDirection = 'BT'
+  if (direction === 'DOWN') {
+    handleDirection = 'TB'
+  } else if (direction === 'RIGHT') {
+           handleDirection = 'LR'
+         } else if (direction === 'LEFT') {
+                  handleDirection = 'RL'
+                } else {
+                  handleDirection = 'BT'
+                }
   const dagreGraph = new dagre.graphlib.Graph()
   dagreGraph.setDefaultEdgeLabel(() => ({}))
   dagreGraph.setGraph({

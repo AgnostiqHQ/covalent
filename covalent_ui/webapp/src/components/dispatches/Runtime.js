@@ -51,8 +51,8 @@ export const humanize = humanizeDuration.humanizer({
 const parseDate = (date) => (_.isString(date) ? parseISO(date) : date)
 
 const Runtime = ({ startTime, endTime, sx }) => {
-  let startTimeToLocal = new Date((startTime = startTime + 'Z'))
-  let endTimeToLocal = new Date((endTime = endTime + 'Z'))
+  let startTimeToLocal = new Date((startTime += 'Z'))
+  let endTimeToLocal = new Date((endTime += 'Z'))
   if (!isValid(startTimeToLocal)) {
     return ''
   }

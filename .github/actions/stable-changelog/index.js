@@ -31,28 +31,32 @@ try {
       isInPrereleaseBlock = false;
       lastRelease = text.match(re)[0];
       rl.close();
-    } else if (isInPrereleaseBlock && text.includes("### Authors"))
-      section = "Authors";
-    else if (isInPrereleaseBlock && text.includes("### Added"))
-      section = "Added";
-    else if (isInPrereleaseBlock && text.includes("### Changed"))
-      section = "Changed";
-    else if (isInPrereleaseBlock && text.includes("### Removed"))
-      section = "Removed";
-    else if (isInPrereleaseBlock && text.includes("### Fixed"))
-      section = "Fixed";
-    else if (isInPrereleaseBlock && text.includes("### Tests"))
-      section = "Tests";
-    else if (isInPrereleaseBlock && text.includes("### Docs")) section = "Docs";
-    else if (isInPrereleaseBlock && text.includes("### Operations"))
-      section = "Operations";
-    else if (isInPrereleaseBlock && text.includes("##")) section = null;
-    else if (isInPrereleaseBlock && text.length > 2 && section === "Authors") {
-      isAuthorAlreadyIncluded = summary.Authors.find(author => author.includes(text.split(/[<>]/)[1]))
-      if(!isAuthorAlreadyIncluded)
-          summary.Authors.push(text);
-    } else if (isInPrereleaseBlock && text.length > 2 && section)
-      summary[section].push(text);
+    } else if (isInPrereleaseBlock && text.includes("### Authors")) {
+             section = "Authors";
+           } else if (isInPrereleaseBlock && text.includes("### Added")) {
+                    section = "Added";
+                  } else if (isInPrereleaseBlock && text.includes("### Changed")) {
+                           section = "Changed";
+                         } else if (isInPrereleaseBlock && text.includes("### Removed")) {
+                                  section = "Removed";
+                                } else if (isInPrereleaseBlock && text.includes("### Fixed")) {
+                                         section = "Fixed";
+                                       } else if (isInPrereleaseBlock && text.includes("### Tests")) {
+                                                section = "Tests";
+                                              } else if (isInPrereleaseBlock && text.includes("### Docs")) {
+                                                       section = "Docs";
+                                                     } else if (isInPrereleaseBlock && text.includes("### Operations")) {
+                                                              section = "Operations";
+                                                            } else if (isInPrereleaseBlock && text.includes("##")) {
+                                                                     section = null;
+                                                                   } else if (isInPrereleaseBlock && text.length > 2 && section === "Authors") {
+                                                                                                                                                                                                                                                                                                                                                                     isAuthorAlreadyIncluded = summary.Authors.find(author => author.includes(text.split(/[<>]/)[1]))
+                                                                                                                                                                                                                                                                                                                                                                     if (!isAuthorAlreadyIncluded) {
+                                                                                                                                                                                                                                                                                                                                                                       summary.Authors.push(text);
+                                                                                                                                                                                                                                                                                                                                                                     }
+                                                                                                                                                                                                                                                                                                                                                                   } else if (isInPrereleaseBlock && text.length > 2 && section) {
+                                                                                                                                                                                                                                                                                                                                                                            summary[section].push(text);
+                                                                                                                                                                                                                                                                                                                                                                          }
   });
   rl.on("close", () => {
     const version = headVersion.split("-rc");

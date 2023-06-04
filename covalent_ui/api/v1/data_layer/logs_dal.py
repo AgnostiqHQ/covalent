@@ -40,8 +40,8 @@ class Logs:
             unmatch_str = ""
             log = []
             reverse_list = direction.value == "DESC"
+            split_reg = r"\[(.*)\] \[(TRACE|DEBUG|INFO|NOTICE|WARN|WARNING|ERROR|SEVERE|CRITICAL|FATAL)\]"  # r"\[(.*)\] \[(.*)\] ((.|\n)*)"
             for i in logfile:
-                split_reg = r"\[(.*)\] \[(TRACE|DEBUG|INFO|NOTICE|WARN|WARNING|ERROR|SEVERE|CRITICAL|FATAL)\]"  # r"\[(.*)\] \[(.*)\] ((.|\n)*)"
                 data = re.split(pattern=split_reg, string=i)
                 if len(data) > 1:
                     try:
@@ -52,7 +52,7 @@ class Logs:
                             "message": data[3],
                         }
                     except ValueError:
-                        json_data = {"log_date": f"{None}", "status": data[2], "message": data[1:]}
+                        json_data = {"log_date": None, "status": data[2], "message": data[1:]}
                     log.append(json_data)
                 else:
                     len_log = len(log)
@@ -60,10 +60,9 @@ class Logs:
                     if len_log > 0 and ((unmatch_str != "")):
                         msg = log[len_log - 1]["message"] + "\n"
                         log[len_log - 1]["message"] = msg + unmatch_str
-                        unmatch_str = ""
                     else:
                         log.append({"log_date": None, "status": "INFO", "message": unmatch_str})
-                        unmatch_str = ""
+                    unmatch_str = ""
             log = [
                 i
                 for i in log

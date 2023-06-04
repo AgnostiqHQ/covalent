@@ -417,7 +417,4 @@ def lattice(
         return wrapper_lattice()
 
     # Don't change the snippet below. This a subtle piece of logic that's best understood as is written.
-    if _func is None:  # decorator is called with arguments
-        return decorator_lattice
-    else:  # decorator is called without arguments
-        return decorator_lattice(_func)
+    return decorator_lattice if _func is None else decorator_lattice(_func)

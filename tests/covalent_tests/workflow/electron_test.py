@@ -227,8 +227,8 @@ def test_metadata_in_electron_list():
     task_metadata = workflow.transport_graph.get_node_value(0, "metadata")
     e_list_metadata = workflow.transport_graph.get_node_value(1, "metadata")
 
-    assert list(e_list_metadata["call_before"]) == []
-    assert list(e_list_metadata["call_after"]) == []
+    assert not list(e_list_metadata["call_before"])
+    assert not list(e_list_metadata["call_after"])
 
     assert e_list_metadata["executor"] == task_metadata["executor"]
 

@@ -7,10 +7,14 @@
 "use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     o[k2] = m[k];
 }));
 var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
@@ -19,9 +23,15 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
     o["default"] = v;
 });
 var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
+    if (mod && mod.__esModule) {
+      return mod;
+    }
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) {
+      for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) {
+                           __createBinding(result, mod, k);
+                         }
+    }
     __setModuleDefault(result, mod);
     return result;
 };
@@ -106,10 +116,14 @@ function escapeProperty(s) {
 "use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     o[k2] = m[k];
 }));
 var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
@@ -118,9 +132,15 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
     o["default"] = v;
 });
 var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
+    if (mod && mod.__esModule) {
+      return mod;
+    }
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) {
+      for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) {
+                           __createBinding(result, mod, k);
+                         }
+    }
     __setModuleDefault(result, mod);
     return result;
 };
@@ -249,10 +269,12 @@ function getBooleanInput(name, options) {
     const trueValue = ['true', 'True', 'TRUE'];
     const falseValue = ['false', 'False', 'FALSE'];
     const val = getInput(name, options);
-    if (trueValue.includes(val))
-        return true;
-    if (falseValue.includes(val))
-        return false;
+    if (trueValue.includes(val)) {
+      return true;
+    }
+    if (falseValue.includes(val)) {
+      return false;
+    }
     throw new TypeError(`Input does not meet YAML 1.2 "Core Schema" specification: ${name}\n` +
         `Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
 }
@@ -450,10 +472,14 @@ Object.defineProperty(exports, "toPlatformPath", ({ enumerable: true, get: funct
 
 // For internal use, subject to change.
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     o[k2] = m[k];
 }));
 var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
@@ -462,9 +488,15 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
     o["default"] = v;
 });
 var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
+    if (mod && mod.__esModule) {
+      return mod;
+    }
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) {
+      for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) {
+                           __createBinding(result, mod, k);
+                         }
+    }
     __setModuleDefault(result, mod);
     return result;
 };
@@ -598,10 +630,14 @@ exports.OidcClient = OidcClient;
 "use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     o[k2] = m[k];
 }));
 var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
@@ -610,9 +646,15 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
     o["default"] = v;
 });
 var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
+    if (mod && mod.__esModule) {
+      return mod;
+    }
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) {
+      for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) {
+                           __createBinding(result, mod, k);
+                         }
+    }
     __setModuleDefault(result, mod);
     return result;
 };
@@ -1033,7 +1075,7 @@ class Context {
         this.graphqlUrl = (_c = process.env.GITHUB_GRAPHQL_URL) !== null && _c !== void 0 ? _c : `https://api.github.com/graphql`;
     }
     get issue() {
-        const payload = this.payload;
+        const {payload} = this;
         return Object.assign(Object.assign({}, this.repo), { number: (payload.issue || payload.pull_request || payload).number });
     }
     get repo() {
@@ -1061,10 +1103,14 @@ exports.Context = Context;
 "use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     o[k2] = m[k];
 }));
 var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
@@ -1073,9 +1119,15 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
     o["default"] = v;
 });
 var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
+    if (mod && mod.__esModule) {
+      return mod;
+    }
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) {
+      for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) {
+                           __createBinding(result, mod, k);
+                         }
+    }
     __setModuleDefault(result, mod);
     return result;
 };
@@ -1105,10 +1157,14 @@ exports.getOctokit = getOctokit;
 "use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     o[k2] = m[k];
 }));
 var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
@@ -1117,9 +1173,15 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
     o["default"] = v;
 });
 var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
+    if (mod && mod.__esModule) {
+      return mod;
+    }
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) {
+      for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) {
+                           __createBinding(result, mod, k);
+                         }
+    }
     __setModuleDefault(result, mod);
     return result;
 };
@@ -1155,10 +1217,14 @@ exports.getApiBaseUrl = getApiBaseUrl;
 "use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     o[k2] = m[k];
 }));
 var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
@@ -1167,9 +1233,15 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
     o["default"] = v;
 });
 var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
+    if (mod && mod.__esModule) {
+      return mod;
+    }
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) {
+      for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) {
+                           __createBinding(result, mod, k);
+                         }
+    }
     __setModuleDefault(result, mod);
     return result;
 };
@@ -1305,10 +1377,14 @@ exports.PersonalAccessTokenCredentialHandler = PersonalAccessTokenCredentialHand
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     o[k2] = m[k];
 }));
 var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
@@ -1317,9 +1393,15 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
     o["default"] = v;
 });
 var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
+    if (mod && mod.__esModule) {
+      return mod;
+    }
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) {
+      for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) {
+                           __createBinding(result, mod, k);
+                         }
+    }
     __setModuleDefault(result, mod);
     return result;
 };
@@ -2056,14 +2138,18 @@ var graphql = __nccwpck_require__(8467);
 var authToken = __nccwpck_require__(334);
 
 function _objectWithoutPropertiesLoose(source, excluded) {
-  if (source == null) return {};
+  if (source == null) {
+    return {};
+  }
   var target = {};
   var sourceKeys = Object.keys(source);
   var key, i;
 
   for (i = 0; i < sourceKeys.length; i++) {
     key = sourceKeys[i];
-    if (excluded.indexOf(key) >= 0) continue;
+    if (excluded.indexOf(key) >= 0) {
+      continue;
+    }
     target[key] = source[key];
   }
 
@@ -2071,7 +2157,9 @@ function _objectWithoutPropertiesLoose(source, excluded) {
 }
 
 function _objectWithoutProperties(source, excluded) {
-  if (source == null) return {};
+  if (source == null) {
+    return {};
+  }
 
   var target = _objectWithoutPropertiesLoose(source, excluded);
 
@@ -2082,8 +2170,12 @@ function _objectWithoutProperties(source, excluded) {
 
     for (i = 0; i < sourceSymbolKeys.length; i++) {
       key = sourceSymbolKeys[i];
-      if (excluded.indexOf(key) >= 0) continue;
-      if (!Object.prototype.propertyIsEnumerable.call(source, key)) continue;
+      if (excluded.indexOf(key) >= 0) {
+        continue;
+      }
+      if (!Object.prototype.propertyIsEnumerable.call(source, key)) {
+        continue;
+      }
       target[key] = source[key];
     }
   }
@@ -2182,22 +2274,21 @@ class Octokit {
   }
 
   static defaults(defaults) {
-    const OctokitWithDefaults = class extends this {
-      constructor(...args) {
-        const options = args[0] || {};
-
-        if (typeof defaults === "function") {
-          super(defaults(options));
-          return;
-        }
-
-        super(Object.assign({}, defaults, options, options.userAgent && defaults.userAgent ? {
-          userAgent: `${options.userAgent} ${defaults.userAgent}`
-        } : null));
-      }
-
-    };
-    return OctokitWithDefaults;
+    return class extends this {
+          constructor(...args) {
+            const options = args[0] || {};
+    
+            if (typeof defaults === "function") {
+              super(defaults(options));
+              return;
+            }
+    
+            super(Object.assign({}, defaults, options, options.userAgent && defaults.userAgent ? {
+              userAgent: `${options.userAgent} ${defaults.userAgent}`
+            } : null));
+          }
+    
+        };
   }
   /**
    * Attach a plugin (or many) to your Octokit instance.
@@ -2211,8 +2302,7 @@ class Octokit {
     var _a;
 
     const currentPlugins = this.plugins;
-    const NewOctokit = (_a = class extends this {}, _a.plugins = currentPlugins.concat(newPlugins.filter(plugin => !currentPlugins.includes(plugin))), _a);
-    return NewOctokit;
+    return (_a = class extends this {}, _a.plugins = currentPlugins.concat(newPlugins.filter(plugin => !currentPlugins.includes(plugin))), _a);
   }
 
 }
@@ -2251,9 +2341,13 @@ function mergeDeep(defaults, options) {
   const result = Object.assign({}, defaults);
   Object.keys(options).forEach(key => {
     if (isPlainObject.isPlainObject(options[key])) {
-      if (!(key in defaults)) Object.assign(result, {
-        [key]: options[key]
-      });else result[key] = mergeDeep(defaults[key], options[key]);
+      if (!(key in defaults)) {
+        Object.assign(result, {
+              [key]: options[key]
+            });
+      } else {
+        result[key] = mergeDeep(defaults[key], options[key]);
+      }
     } else {
       Object.assign(result, {
         [key]: options[key]
@@ -2407,61 +2501,61 @@ function getValues(context, operator, key, modifier) {
       result = [];
 
   if (isDefined(value) && value !== "") {
-    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-      value = value.toString();
-
-      if (modifier && modifier !== "*") {
-        value = value.substring(0, parseInt(modifier, 10));
-      }
-
-      result.push(encodeValue(operator, value, isKeyOperator(operator) ? key : ""));
-    } else {
-      if (modifier === "*") {
-        if (Array.isArray(value)) {
-          value.filter(isDefined).forEach(function (value) {
-            result.push(encodeValue(operator, value, isKeyOperator(operator) ? key : ""));
-          });
-        } else {
-          Object.keys(value).forEach(function (k) {
-            if (isDefined(value[k])) {
-              result.push(encodeValue(operator, value[k], k));
+      if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+              value = value.toString();
+        
+              if (modifier && modifier !== "*") {
+                value = value.substring(0, parseInt(modifier, 10));
+              }
+        
+              result.push(encodeValue(operator, value, isKeyOperator(operator) ? key : ""));
             }
-          });
-        }
-      } else {
-        const tmp = [];
-
-        if (Array.isArray(value)) {
-          value.filter(isDefined).forEach(function (value) {
-            tmp.push(encodeValue(operator, value));
-          });
-        } else {
-          Object.keys(value).forEach(function (k) {
-            if (isDefined(value[k])) {
-              tmp.push(encodeUnreserved(k));
-              tmp.push(encodeValue(operator, value[k].toString()));
-            }
-          });
-        }
-
-        if (isKeyOperator(operator)) {
-          result.push(encodeUnreserved(key) + "=" + tmp.join(","));
-        } else if (tmp.length !== 0) {
-          result.push(tmp.join(","));
+      else if (modifier === "*") {
+                if (Array.isArray(value)) {
+                  value.filter(isDefined).forEach(function (value) {
+                    result.push(encodeValue(operator, value, isKeyOperator(operator) ? key : ""));
+                  });
+                } else {
+                  Object.keys(value).forEach(function (k) {
+                    if (isDefined(value[k])) {
+                      result.push(encodeValue(operator, value[k], k));
+                    }
+                  });
+                }
+              }
+      else {
+                const tmp = [];
+        
+                if (Array.isArray(value)) {
+                  value.filter(isDefined).forEach(function (value) {
+                    tmp.push(encodeValue(operator, value));
+                  });
+                } else {
+                  Object.keys(value).forEach(function (k) {
+                    if (isDefined(value[k])) {
+                      tmp.push(encodeUnreserved(k));
+                      tmp.push(encodeValue(operator, value[k].toString()));
+                    }
+                  });
+                }
+        
+                if (isKeyOperator(operator)) {
+                  result.push(encodeUnreserved(key) + "=" + tmp.join(","));
+                } else if (tmp.length !== 0) {
+                  result.push(tmp.join(","));
+                }
+              }
+    }
+  else if (operator === ";") {
+        if (isDefined(value)) {
+          result.push(encodeUnreserved(key));
         }
       }
-    }
-  } else {
-    if (operator === ";") {
-      if (isDefined(value)) {
-        result.push(encodeUnreserved(key));
+  else if (value === "" && (operator === "&" || operator === "?")) {
+        result.push(encodeUnreserved(key) + "=");
+      } else if (value === "") {
+        result.push("");
       }
-    } else if (value === "" && (operator === "&" || operator === "?")) {
-      result.push(encodeUnreserved(key) + "=");
-    } else if (value === "") {
-      result.push("");
-    }
-  }
 
   return result;
 }
@@ -2546,18 +2640,17 @@ function parse(options) {
 
 
   if (["GET", "HEAD"].includes(method)) {
-    url = addQueryParameters(url, remainingParameters);
-  } else {
-    if ("data" in remainingParameters) {
-      body = remainingParameters.data;
-    } else {
-      if (Object.keys(remainingParameters).length) {
-        body = remainingParameters;
-      } else {
-        headers["content-length"] = 0;
-      }
+      url = addQueryParameters(url, remainingParameters);
     }
-  } // default content-type for JSON if body is set
+  else if ("data" in remainingParameters) {
+               body = remainingParameters.data;
+             }
+       else if (Object.keys(remainingParameters).length) {
+                 body = remainingParameters;
+               }
+       else {
+                 headers["content-length"] = 0;
+               }
 
 
   if (!headers["content-type"] && typeof body !== "undefined") {
@@ -2670,7 +2763,9 @@ function graphql(request, query, options) {
     }
 
     for (const key in options) {
-      if (!FORBIDDEN_VARIABLE_OPTIONS.includes(key)) continue;
+      if (!FORBIDDEN_VARIABLE_OPTIONS.includes(key)) {
+        continue;
+      }
       return Promise.reject(new Error(`[@octokit/graphql] "${key}" cannot be used as variable name`));
     }
   }
@@ -2825,7 +2920,9 @@ function normalizePaginatedListResponse(response) {
   }
 
   const responseNeedsNormalization = "total_count" in response.data && !("url" in response.data);
-  if (!responseNeedsNormalization) return response; // keep the additional properties intact as there is currently no other way
+  if (!responseNeedsNormalization) {
+    return response;
+  } // keep the additional properties intact as there is currently no other way
   // to retrieve the same information.
 
   const incompleteResults = response.data.incomplete_results;
@@ -2853,15 +2950,16 @@ function normalizePaginatedListResponse(response) {
 function iterator(octokit, route, parameters) {
   const options = typeof route === "function" ? route.endpoint(parameters) : octokit.request.endpoint(route, parameters);
   const requestMethod = typeof route === "function" ? route : octokit.request;
-  const method = options.method;
-  const headers = options.headers;
-  let url = options.url;
+  const {method, headers} = options;
+  let {url} = options;
   return {
     [Symbol.asyncIterator]: () => ({
       async next() {
-        if (!url) return {
-          done: true
-        };
+        if (!url) {
+          return {
+                  done: true
+                };
+        }
 
         try {
           const response = await requestMethod({
@@ -2878,7 +2976,9 @@ function iterator(octokit, route, parameters) {
             value: normalizedResponse
           };
         } catch (error) {
-          if (error.status !== 409) throw error;
+          if (error.status !== 409) {
+            throw error;
+          }
           url = "";
           return {
             value: {
@@ -4269,7 +4369,9 @@ function fetchWrapper(requestOptions) {
       data
     };
   }).catch(error => {
-    if (error instanceof requestError.RequestError) throw error;
+    if (error instanceof requestError.RequestError) {
+      throw error;
+    }
     throw new requestError.RequestError(error.message, 500, {
       request: requestOptions
     });
@@ -4291,7 +4393,9 @@ async function getResponseData(response) {
 }
 
 function toErrorMessage(data) {
-  if (typeof data === "string") return data; // istanbul ignore else - just in case
+  if (typeof data === "string") {
+    return data;
+  } // istanbul ignore else - just in case
 
   if ("message" in data) {
     if (Array.isArray(data.errors)) {
@@ -4575,15 +4679,21 @@ function isObject(o) {
 function isPlainObject(o) {
   var ctor,prot;
 
-  if (isObject(o) === false) return false;
+  if (isObject(o) === false) {
+    return false;
+  }
 
   // If has modified constructor
   ctor = o.constructor;
-  if (ctor === undefined) return true;
+  if (ctor === undefined) {
+    return true;
+  }
 
   // If has modified prototype
   prot = ctor.prototype;
-  if (isObject(prot) === false) return false;
+  if (isObject(prot) === false) {
+    return false;
+  }
 
   // If constructor does not have an Object-specific method
   if (prot.hasOwnProperty('isPrototypeOf') === false) {
@@ -4631,22 +4741,26 @@ const naiveLength = () => 1
 // the Yallist.Node object.
 class LRUCache {
   constructor (options) {
-    if (typeof options === 'number')
+    if (typeof options === 'number') {
       options = { max: options }
+    }
 
-    if (!options)
+    if (!options) {
       options = {}
+    }
 
-    if (options.max && (typeof options.max !== 'number' || options.max < 0))
+    if (options.max && (typeof options.max !== 'number' || options.max < 0)) {
       throw new TypeError('max must be a non-negative number')
+    }
     // Kind of weird to have a default max of Infinity, but oh well.
     const max = this[MAX] = options.max || Infinity
 
     const lc = options.length || naiveLength
     this[LENGTH_CALCULATOR] = (typeof lc !== 'function') ? naiveLength : lc
     this[ALLOW_STALE] = options.stale || false
-    if (options.maxAge && typeof options.maxAge !== 'number')
+    if (options.maxAge && typeof options.maxAge !== 'number') {
       throw new TypeError('maxAge must be a number')
+    }
     this[MAX_AGE] = options.maxAge || 0
     this[DISPOSE] = options.dispose
     this[NO_DISPOSE_ON_SET] = options.noDisposeOnSet || false
@@ -4656,8 +4770,9 @@ class LRUCache {
 
   // resize the cache when the max changes.
   set max (mL) {
-    if (typeof mL !== 'number' || mL < 0)
+    if (typeof mL !== 'number' || mL < 0) {
       throw new TypeError('max must be a non-negative number')
+    }
 
     this[MAX] = mL || Infinity
     trim(this)
@@ -4674,8 +4789,9 @@ class LRUCache {
   }
 
   set maxAge (mA) {
-    if (typeof mA !== 'number')
+    if (typeof mA !== 'number') {
       throw new TypeError('maxAge must be a non-negative number')
+    }
 
     this[MAX_AGE] = mA
     trim(this)
@@ -4686,8 +4802,9 @@ class LRUCache {
 
   // resize the cache when the lengthCalculator changes.
   set lengthCalculator (lC) {
-    if (typeof lC !== 'function')
+    if (typeof lC !== 'function') {
       lC = naiveLength
+    }
 
     if (lC !== this[LENGTH_CALCULATOR]) {
       this[LENGTH_CALCULATOR] = lC
@@ -4707,7 +4824,7 @@ class LRUCache {
   rforEach (fn, thisp) {
     thisp = thisp || this
     for (let walker = this[LRU_LIST].tail; walker !== null;) {
-      const prev = walker.prev
+      const {prev} = walker
       forEachStep(this, fn, walker, thisp)
       walker = prev
     }
@@ -4716,7 +4833,7 @@ class LRUCache {
   forEach (fn, thisp) {
     thisp = thisp || this
     for (let walker = this[LRU_LIST].head; walker !== null;) {
-      const next = walker.next
+      const {next} = walker
       forEachStep(this, fn, walker, thisp)
       walker = next
     }
@@ -4758,8 +4875,9 @@ class LRUCache {
   set (key, value, maxAge) {
     maxAge = maxAge || this[MAX_AGE]
 
-    if (maxAge && typeof maxAge !== 'number')
+    if (maxAge && typeof maxAge !== 'number') {
       throw new TypeError('maxAge must be a number')
+    }
 
     const now = maxAge ? Date.now() : 0
     const len = this[LENGTH_CALCULATOR](value, key)
@@ -4775,9 +4893,8 @@ class LRUCache {
 
       // dispose of the old one before overwriting
       // split out into 2 ifs for better coverage tracking
-      if (this[DISPOSE]) {
-        if (!this[NO_DISPOSE_ON_SET])
-          this[DISPOSE](key, item.value)
+      if (this[DISPOSE] && !this[NO_DISPOSE_ON_SET]) {
+            this[DISPOSE](key, item.value)
       }
 
       item.now = now
@@ -4794,8 +4911,9 @@ class LRUCache {
 
     // oversized objects fall out of cache automatically.
     if (hit.length > this[MAX]) {
-      if (this[DISPOSE])
+      if (this[DISPOSE]) {
         this[DISPOSE](key, value)
+      }
 
       return false
     }
@@ -4808,7 +4926,9 @@ class LRUCache {
   }
 
   has (key) {
-    if (!this[CACHE].has(key)) return false
+    if (!this[CACHE].has(key)) {
+      return false
+    }
     const hit = this[CACHE].get(key).value
     return !isStale(this, hit)
   }
@@ -4823,8 +4943,9 @@ class LRUCache {
 
   pop () {
     const node = this[LRU_LIST].tail
-    if (!node)
+    if (!node) {
       return null
+    }
 
     del(this, node)
     return node.value
@@ -4843,16 +4964,15 @@ class LRUCache {
     for (let l = arr.length - 1; l >= 0; l--) {
       const hit = arr[l]
       const expiresAt = hit.e || 0
-      if (expiresAt === 0)
-        // the item was created without expiration in a non aged cache
+      if (expiresAt === 0) {
         this.set(hit.k, hit.v)
-      else {
-        const maxAge = expiresAt - now
-        // dont add already expired items
-        if (maxAge > 0) {
-          this.set(hit.k, hit.v, maxAge)
-        }
-      }
+      } else {
+              const maxAge = expiresAt - now
+              // dont add already expired items
+              if (maxAge > 0) {
+                this.set(hit.k, hit.v, maxAge)
+              }
+            }
     }
   }
 
@@ -4866,23 +4986,25 @@ const get = (self, key, doUse) => {
   if (node) {
     const hit = node.value
     if (isStale(self, hit)) {
-      del(self, node)
-      if (!self[ALLOW_STALE])
-        return undefined
-    } else {
-      if (doUse) {
-        if (self[UPDATE_AGE_ON_GET])
-          node.value.now = Date.now()
-        self[LRU_LIST].unshiftNode(node)
-      }
-    }
+          del(self, node)
+          if (!self[ALLOW_STALE]) {
+            return undefined
+          }
+        }
+    else if (doUse) {
+            if (self[UPDATE_AGE_ON_GET]) {
+              node.value.now = Date.now()
+            }
+            self[LRU_LIST].unshiftNode(node)
+          }
     return hit.value
   }
 }
 
 const isStale = (self, hit) => {
-  if (!hit || (!hit.maxAge && !self[MAX_AGE]))
+  if (!hit || (!hit.maxAge && !self[MAX_AGE])) {
     return false
+  }
 
   const diff = Date.now() - hit.now
   return hit.maxAge ? diff > hit.maxAge
@@ -4896,7 +5018,7 @@ const trim = self => {
       // We know that we're about to delete this one, and also
       // what the next least recently used key will be, so just
       // go ahead and set it now.
-      const prev = walker.prev
+      const {prev} = walker
       del(self, walker)
       walker = prev
     }
@@ -4906,8 +5028,9 @@ const trim = self => {
 const del = (self, node) => {
   if (node) {
     const hit = node.value
-    if (self[DISPOSE])
+    if (self[DISPOSE]) {
       self[DISPOSE](hit.key, hit.value)
+    }
 
     self[LENGTH] -= hit.length
     self[CACHE].delete(hit.key)
@@ -4929,11 +5052,13 @@ const forEachStep = (self, fn, node, thisp) => {
   let hit = node.value
   if (isStale(self, hit)) {
     del(self, node)
-    if (!self[ALLOW_STALE])
+    if (!self[ALLOW_STALE]) {
       hit = undefined
+    }
   }
-  if (hit)
+  if (hit) {
     fn.call(thisp, hit.value, hit.key, self)
+  }
 }
 
 module.exports = LRUCache
@@ -4961,7 +5086,7 @@ var zlib = _interopDefault(__nccwpck_require__(9796));
 // Based on https://github.com/tmpvar/jsdom/blob/aa85b2abf07766ff7bf5c1f6daafb3726f2f2db5/lib/jsdom/living/blob.js
 
 // fix for "Readable" isn't a named export issue
-const Readable = Stream.Readable;
+const {Readable} = Stream;
 
 const BUFFER = Symbol('buffer');
 const TYPE = Symbol('type');
@@ -5030,7 +5155,7 @@ class Blob {
 		return '[object Blob]';
 	}
 	slice() {
-		const size = this.size;
+		const {size} = this;
 
 		const start = arguments[0];
 		const end = arguments[1];
@@ -5113,7 +5238,7 @@ try {
 const INTERNALS = Symbol('Body internals');
 
 // fix an issue where "PassThrough" isn't a named export for node <10
-const PassThrough = Stream.PassThrough;
+const {PassThrough} = Stream;
 
 /**
  * Body mixin
@@ -5140,17 +5265,23 @@ function Body(body) {
 	} else if (isURLSearchParams(body)) {
 		// body is a URLSearchParams
 		body = Buffer.from(body.toString());
-	} else if (isBlob(body)) ; else if (Buffer.isBuffer(body)) ; else if (Object.prototype.toString.call(body) === '[object ArrayBuffer]') {
-		// body is ArrayBuffer
-		body = Buffer.from(body);
-	} else if (ArrayBuffer.isView(body)) {
-		// body is ArrayBufferView
-		body = Buffer.from(body.buffer, body.byteOffset, body.byteLength);
-	} else if (body instanceof Stream) ; else {
-		// none of the above
-		// coerce to string then buffer
-		body = Buffer.from(String(body));
-	}
+	} else if (isBlob(body)) {
+          ;
+        } else if (Buffer.isBuffer(body)) {
+                 ;
+               } else if (Object.prototype.toString.call(body) === '[object ArrayBuffer]') {
+                       		// body is ArrayBuffer
+                       		body = Buffer.from(body);
+                       	} else if (ArrayBuffer.isView(body)) {
+                       		// body is ArrayBufferView
+                       		body = Buffer.from(body.buffer, body.byteOffset, body.byteLength);
+                       	} else if (body instanceof Stream) {
+                                 ;
+                               } else {
+                                                      		// none of the above
+                                                      		// coerce to string then buffer
+                                                      		body = Buffer.from(String(body));
+                                                      	}
 	this[INTERNALS] = {
 		body,
 		disturbed: false,
@@ -5297,7 +5428,7 @@ function consumeBody() {
 		return Body.Promise.reject(this[INTERNALS].error);
 	}
 
-	let body = this.body;
+	let {body} = this;
 
 	// body is null
 	if (body === null) {
@@ -5479,7 +5610,7 @@ function isBlob(obj) {
  */
 function clone(instance) {
 	let p1, p2;
-	let body = instance.body;
+	let {body} = instance;
 
 	// don't allow cloning a used body
 	if (instance.bodyUsed) {
@@ -5556,7 +5687,7 @@ function extractContentType(body) {
  * @return  Number?            Number of bytes, or null if not possible
  */
 function getTotalBytes(instance) {
-	const body = instance.body;
+	const {body} = instance;
 
 
 	if (body === null) {
@@ -5588,7 +5719,7 @@ function getTotalBytes(instance) {
  * @return  Void
  */
 function writeToStream(dest, instance) {
-	const body = instance.body;
+	const {body} = instance;
 
 
 	if (body === null) {
@@ -5678,39 +5809,41 @@ class Headers {
 
 		// We don't worry about converting prop to ByteString here as append()
 		// will handle it.
-		if (init == null) ; else if (typeof init === 'object') {
-			const method = init[Symbol.iterator];
-			if (method != null) {
-				if (typeof method !== 'function') {
-					throw new TypeError('Header pairs must be iterable');
-				}
-
-				// sequence<sequence<ByteString>>
-				// Note: per spec we have to first exhaust the lists then process them
-				const pairs = [];
-				for (const pair of init) {
-					if (typeof pair !== 'object' || typeof pair[Symbol.iterator] !== 'function') {
-						throw new TypeError('Each header pair must be iterable');
-					}
-					pairs.push(Array.from(pair));
-				}
-
-				for (const pair of pairs) {
-					if (pair.length !== 2) {
-						throw new TypeError('Each header pair must be a name/value tuple');
-					}
-					this.append(pair[0], pair[1]);
-				}
-			} else {
-				// record<ByteString, ByteString>
-				for (const key of Object.keys(init)) {
-					const value = init[key];
-					this.append(key, value);
-				}
-			}
-		} else {
-			throw new TypeError('Provided initializer must be an object');
-		}
+		if (init == null) {
+    ;
+  } else if (typeof init === 'object') {
+  			const method = init[Symbol.iterator];
+  			if (method != null) {
+  				if (typeof method !== 'function') {
+  					throw new TypeError('Header pairs must be iterable');
+  				}
+  
+  				// sequence<sequence<ByteString>>
+  				// Note: per spec we have to first exhaust the lists then process them
+  				const pairs = [];
+  				for (const pair of init) {
+  					if (typeof pair !== 'object' || typeof pair[Symbol.iterator] !== 'function') {
+  						throw new TypeError('Each header pair must be iterable');
+  					}
+  					pairs.push(Array.from(pair));
+  				}
+  
+  				for (const pair of pairs) {
+  					if (pair.length !== 2) {
+  						throw new TypeError('Each header pair must be a name/value tuple');
+  					}
+  					this.append(pair[0], pair[1]);
+  				}
+  			} else {
+  				// record<ByteString, ByteString>
+  				for (const key of Object.keys(init)) {
+  					const value = init[key];
+  					this.append(key, value);
+  				}
+  			}
+  		} else {
+  			throw new TypeError('Provided initializer must be an object');
+  		}
 	}
 
 	/**
@@ -5990,7 +6123,7 @@ function createHeadersLenient(obj) {
 const INTERNALS$1 = Symbol('Response internals');
 
 // fix an issue where "STATUS_CODES" aren't a named export for node <10
-const STATUS_CODES = http.STATUS_CODES;
+const {STATUS_CODES} = http;
 
 /**
  * Response class
@@ -6185,7 +6318,9 @@ class Request {
 		}
 
 		let signal = isRequest(input) ? input.signal : null;
-		if ('signal' in init) signal = init.signal;
+		if ('signal' in init) {
+    signal = init.signal;
+  }
 
 		if (signal != null && !isAbortSignal(signal)) {
 			throw new TypeError('Expected signal to be an instanceof AbortSignal');
@@ -6261,7 +6396,7 @@ Object.defineProperties(Request.prototype, {
  * @return  Object   The options object to be passed to http.request
  */
 function getNodeRequestOptions(request) {
-	const parsedURL = request[INTERNALS$2].parsedURL;
+	const {parsedURL} = request[INTERNALS$2];
 	const headers = new Headers(request[INTERNALS$2].headers);
 
 	// fetch step 1.3
@@ -6307,7 +6442,7 @@ function getNodeRequestOptions(request) {
 		headers.set('Accept-Encoding', 'gzip,deflate');
 	}
 
-	let agent = request.agent;
+	let {agent} = request;
 	if (typeof agent === 'function') {
 		agent = agent(parsedURL);
 	}
@@ -6387,7 +6522,7 @@ function fetch(url, opts) {
 		const options = getNodeRequestOptions(request);
 
 		const send = (options.protocol === 'https:' ? https : http).request;
-		const signal = request.signal;
+		const {signal} = request;
 
 		let response = null;
 
@@ -6397,7 +6532,9 @@ function fetch(url, opts) {
 			if (request.body && request.body instanceof Stream.Readable) {
 				request.body.destroy(error);
 			}
-			if (!response || !response.body) return;
+			if (!response || !response.body) {
+     return;
+   }
 			response.body.emit('error', error);
 		};
 
@@ -6421,7 +6558,9 @@ function fetch(url, opts) {
 
 		function finalize() {
 			req.abort();
-			if (signal) signal.removeEventListener('abort', abortAndFinalize);
+			if (signal) {
+     signal.removeEventListener('abort', abortAndFinalize);
+   }
 			clearTimeout(reqTimeout);
 		}
 
@@ -6539,7 +6678,9 @@ function fetch(url, opts) {
 
 			// prepare response
 			res.once('end', function () {
-				if (signal) signal.removeEventListener('abort', abortAndFinalize);
+				if (signal) {
+      signal.removeEventListener('abort', abortAndFinalize);
+    }
 			});
 			let body = res.pipe(new PassThrough$1());
 
@@ -6671,7 +6812,9 @@ once.proto = once(function () {
 
 function once (fn) {
   var f = function () {
-    if (f.called) return f.value
+    if (f.called) {
+      return f.value
+    }
     f.called = true
     return f.value = fn.apply(this, arguments)
   }
@@ -6681,8 +6824,9 @@ function once (fn) {
 
 function onceStrict (fn) {
   var f = function () {
-    if (f.called)
+    if (f.called) {
       throw new Error(f.onceError)
+    }
     f.called = true
     return f.value = fn.apply(this, arguments)
   }
@@ -6931,7 +7075,7 @@ class Range {
       return cached
     }
 
-    const loose = this.options.loose
+    const {loose} = this.options
     // `1.2.3 - 1.2.4` => `>=1.2.3 <=1.2.4`
     const hr = loose ? re[t.HYPHENRANGELOOSE] : re[t.HYPHENRANGE]
     range = range.replace(hr, hyphenReplace(this.options.includePrerelease))
@@ -7844,10 +7988,8 @@ const diff = (version1, version2) => {
     const prefix = hasPre ? 'pre' : ''
     const defaultResult = hasPre ? 'prerelease' : ''
     for (const key in v1) {
-      if (key === 'major' || key === 'minor' || key === 'patch') {
-        if (v1[key] !== v2[key]) {
-          return prefix + key
-        }
+      if ((key === 'major' || key === 'minor' || key === 'patch') && v1[key] !== v2[key]) {
+            return prefix + key
       }
     }
     return defaultResult // may be undefined
@@ -8510,13 +8652,9 @@ const maxSatisfying = (versions, range, options) => {
     return null
   }
   versions.forEach((v) => {
-    if (rangeObj.test(v)) {
-      // satisfies(v, range, options)
-      if (!max || maxSV.compare(v) === -1) {
-        // compare(max, v, true)
-        max = v
-        maxSV = new SemVer(max, options)
-      }
+    if (rangeObj.test(v) && (!max || maxSV.compare(v) === -1)) {
+          max = v
+          maxSV = new SemVer(max, options)
     }
   })
   return max
@@ -8541,13 +8679,9 @@ const minSatisfying = (versions, range, options) => {
     return null
   }
   versions.forEach((v) => {
-    if (rangeObj.test(v)) {
-      // satisfies(v, range, options)
-      if (!min || minSV.compare(v) === 1) {
-        // compare(min, v, true)
-        min = v
-        minSV = new SemVer(min, options)
-      }
+    if (rangeObj.test(v) && (!min || minSV.compare(v) === 1)) {
+          min = v
+          minSV = new SemVer(min, options)
     }
   })
   return min
@@ -8927,13 +9061,11 @@ const simpleSubset = (sub, dom, options) => {
     hasDomGT = hasDomGT || c.operator === '>' || c.operator === '>='
     hasDomLT = hasDomLT || c.operator === '<' || c.operator === '<='
     if (gt) {
-      if (needDomGTPre) {
-        if (c.semver.prerelease && c.semver.prerelease.length &&
-            c.semver.major === needDomGTPre.major &&
-            c.semver.minor === needDomGTPre.minor &&
-            c.semver.patch === needDomGTPre.patch) {
-          needDomGTPre = false
-        }
+      if (needDomGTPre && (c.semver.prerelease && c.semver.prerelease.length &&
+                  c.semver.major === needDomGTPre.major &&
+                  c.semver.minor === needDomGTPre.minor &&
+                  c.semver.patch === needDomGTPre.patch)) {
+            needDomGTPre = false
       }
       if (c.operator === '>' || c.operator === '>=') {
         higher = higherGT(gt, c, options)
@@ -8945,13 +9077,11 @@ const simpleSubset = (sub, dom, options) => {
       }
     }
     if (lt) {
-      if (needDomLTPre) {
-        if (c.semver.prerelease && c.semver.prerelease.length &&
-            c.semver.major === needDomLTPre.major &&
-            c.semver.minor === needDomLTPre.minor &&
-            c.semver.patch === needDomLTPre.patch) {
-          needDomLTPre = false
-        }
+      if (needDomLTPre && (c.semver.prerelease && c.semver.prerelease.length &&
+                  c.semver.major === needDomLTPre.major &&
+                  c.semver.minor === needDomLTPre.minor &&
+                  c.semver.patch === needDomLTPre.patch)) {
+            needDomLTPre = false
       }
       if (c.operator === '<' || c.operator === '<=') {
         lower = lowerLT(lt, c, options)
@@ -9233,7 +9363,9 @@ module.exports.toASCII = function(domain_name, useSTD3, processing_option, verif
     }
   }
 
-  if (result.error) return null;
+  if (result.error) {
+    return null;
+  }
   return labels.join(".");
 };
 
@@ -10236,7 +10368,9 @@ function createNumberConversion(bitLength, typeOpts) {
     const moduloBound = typeOpts.moduloBitLength ? Math.pow(2, typeOpts.moduloBitLength - 1) : Math.pow(2, bitLength - 1);
 
     return function(V, opts) {
-        if (!opts) opts = {};
+        if (!opts) {
+          opts = {};
+        }
 
         let x = +V;
 
@@ -10256,8 +10390,8 @@ function createNumberConversion(bitLength, typeOpts) {
         if (!isNaN(x) && opts.clamp) {
             x = evenRound(x);
 
-            if (x < lowerBound) x = lowerBound;
-            if (x > upperBound) x = upperBound;
+            x = Math.max(x, lowerBound)
+            x = Math.min(x, upperBound);
             return x;
         }
 
@@ -10266,7 +10400,7 @@ function createNumberConversion(bitLength, typeOpts) {
         }
 
         x = sign(x) * Math.floor(Math.abs(x));
-        x = x % moduloVal;
+        x %= moduloVal;
 
         if (!typeOpts.unsigned && x >= moduloBound) {
             return x - moduloVal;
@@ -10327,7 +10461,9 @@ conversions["float"] = conversions["double"];
 conversions["unrestricted float"] = conversions["unrestricted double"];
 
 conversions["DOMString"] = function (V, opts) {
-    if (!opts) opts = {};
+    if (!opts) {
+      opts = {};
+    }
 
     if (opts.treatNullAsEmptyString && V === null) {
         return "";
@@ -10356,23 +10492,23 @@ conversions["USVString"] = function (V) {
         const c = S.charCodeAt(i);
         if (c < 0xD800 || c > 0xDFFF) {
             U.push(String.fromCodePoint(c));
-        } else if (0xDC00 <= c && c <= 0xDFFF) {
-            U.push(String.fromCodePoint(0xFFFD));
-        } else {
-            if (i === n - 1) {
-                U.push(String.fromCodePoint(0xFFFD));
-            } else {
-                const d = S.charCodeAt(i + 1);
-                if (0xDC00 <= d && d <= 0xDFFF) {
-                    const a = c & 0x3FF;
-                    const b = d & 0x3FF;
-                    U.push(String.fromCodePoint((2 << 15) + (2 << 9) * a + b));
-                    ++i;
-                } else {
-                    U.push(String.fromCodePoint(0xFFFD));
-                }
-            }
-        }
+        } else if (c >= 0xDC00 && c <= 0xDFFF) {
+                           U.push(String.fromCodePoint(0xFFFD));
+                       }
+               else if (i === n - 1) {
+                               U.push(String.fromCodePoint(0xFFFD));
+                           }
+               else {
+                               const d = S.charCodeAt(i + 1);
+                               if (d >= 0xDC00 && d <= 0xDFFF) {
+                                   const a = c & 0x3FF;
+                                   const b = d & 0x3FF;
+                                   U.push(String.fromCodePoint((2 << 15) + (2 << 9) * a + b));
+                                   ++i;
+                               } else {
+                                   U.push(String.fromCodePoint(0xFFFD));
+                               }
+                           }
     }
 
     return U.join('');
@@ -10795,7 +10931,9 @@ module.exports = {
     return obj;
   },
   setup(obj, constructorArgs, privateData) {
-    if (!privateData) privateData = {};
+    if (!privateData) {
+      privateData = {};
+    }
     privateData.wrapper = obj;
 
     obj[impl] = new Impl.implementation(constructorArgs, privateData);
@@ -11004,10 +11142,8 @@ function parseIPv4Number(input) {
 
 function parseIPv4(input) {
   const parts = input.split(".");
-  if (parts[parts.length - 1] === "") {
-    if (parts.length > 1) {
-      parts.pop();
-    }
+  if (parts[parts.length - 1] === "" && parts.length > 1) {
+        parts.pop();
   }
 
   if (parts.length > 4) {
@@ -11322,7 +11458,7 @@ function trimTabAndNewline(url) {
 }
 
 function shortenPath(url) {
-  const path = url.path;
+  const {path} = url;
   if (path.length === 0) {
     return;
   }
@@ -11943,7 +12079,7 @@ URLStateMachine.prototype["parse cannot-be-a-base-URL path"] = function parseCan
     }
 
     if (!isNaN(c)) {
-      this.url.path[0] = this.url.path[0] + percentEncodeChar(c, isC0ControlPercentEncode);
+      this.url.path[0] += percentEncodeChar(c, isC0ControlPercentEncode);
     }
   }
 
@@ -12174,10 +12310,13 @@ module.exports.implForWrapper = function (wrapper) {
 // decorations and such are not lost along the way.
 module.exports = wrappy
 function wrappy (fn, cb) {
-  if (fn && cb) return wrappy(fn)(cb)
+  if (fn && cb) {
+    return wrappy(fn)(cb)
+  }
 
-  if (typeof fn !== 'function')
+  if (typeof fn !== 'function') {
     throw new TypeError('need wrapper function')
+  }
 
   Object.keys(fn).forEach(function (k) {
     wrapper[k] = fn[k]
@@ -12503,12 +12642,8 @@ Yallist.prototype.slice = function (from, to) {
   if (to < from || to < 0) {
     return ret
   }
-  if (from < 0) {
-    from = 0
-  }
-  if (to > this.length) {
-    to = this.length
-  }
+  from = Math.max(from, 0)
+  to = Math.min(to, this.length);
   for (var i = 0, walker = this.head; walker !== null && i < from; i++) {
     walker = walker.next
   }
@@ -12531,12 +12666,8 @@ Yallist.prototype.sliceReverse = function (from, to) {
   if (to < from || to < 0) {
     return ret
   }
-  if (from < 0) {
-    from = 0
-  }
-  if (to > this.length) {
-    to = this.length
-  }
+  from = Math.max(from, 0)
+  to = Math.min(to, this.length);
   for (var i = this.length, walker = this.tail; walker !== null && i > to; i--) {
     walker = walker.prev
   }
@@ -12823,7 +12954,9 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /******/ 			__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nccwpck_require__);
 /******/ 			threw = false;
 /******/ 		} finally {
-/******/ 			if(threw) delete __webpack_module_cache__[moduleId];
+/******/ 			if (threw) {
+              delete __webpack_module_cache__[moduleId];
+            }
 /******/ 		}
 /******/
 /******/ 		// Return the exports of the module
@@ -12833,7 +12966,9 @@ module.exports = JSON.parse('[[[0,44],"disallowed_STD3_valid"],[[45,46],"valid"]
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat */
 /******/
-/******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
+/******/ 	if (typeof __nccwpck_require__ !== 'undefined') {
+            __nccwpck_require__.ab = __dirname + "/";
+          }
 /******/
 /************************************************************************/
 var __webpack_exports__ = {};

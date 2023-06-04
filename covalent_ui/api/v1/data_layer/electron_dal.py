@@ -40,7 +40,7 @@ class Electrons:
         Return:
             Electron with PK as electron_id
         """
-        data = (
+        return (
             self.db_con.query(
                 Electron.id,
                 Electron.transport_graph_node_id,
@@ -67,7 +67,10 @@ class Electrons:
                     (
                         func.strftime(
                             "%s",
-                            func.IFNULL(Electron.completed_at, func.datetime.now(timezone.utc)),
+                            func.IFNULL(
+                                Electron.completed_at,
+                                func.datetime.now(timezone.utc),
+                            ),
                         )
                         - func.strftime("%s", Electron.started_at)
                     )
@@ -81,4 +84,3 @@ class Electrons:
             )
             .first()
         )
-        return data

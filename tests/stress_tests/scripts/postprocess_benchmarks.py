@@ -41,7 +41,7 @@ for benchmark_name in benchmarks:
     noct_results = []
 
     if not benchmark_dir.is_dir():
-        print("Skipping {} as it is not a directory".format(benchmark_name))
+        print(f"Skipping {benchmark_name} as it is not a directory")
         continue
 
     for branch in os.listdir(benchmark_dir):
@@ -59,8 +59,7 @@ for benchmark_name in benchmarks:
                 else:
                     noct_results.append(d)
 
-    results = ct_results + noct_results
     csvfile = f"{benchmark_name}_ttwc.csv"
-    if results:
+    if results := ct_results + noct_results:
         pd.DataFrame(results).to_csv(benchmark_dir / csvfile, index=False)
-        print("Writing results for {} to {}".format(benchmark_name, csvfile))
+        print(f"Writing results for {benchmark_name} to {csvfile}")

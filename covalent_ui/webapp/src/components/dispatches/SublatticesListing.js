@@ -216,8 +216,9 @@ const SublatticesListing = () => {
   }
 
   const sublatticesDispatch = (sublatticeId) => {
-    if (sublatticeId.totalElectrons !== 0)
+    if (sublatticeId.totalElectrons !== 0) {
       dispatch(sublatticesDispatchId(sublatticeId))
+    }
   }
 
   return (

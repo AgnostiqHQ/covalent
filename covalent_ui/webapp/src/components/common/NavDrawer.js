@@ -315,7 +315,7 @@ export const LinkButton = ({
               position: position,
               left: -10,
               bottom: bottom,
-              marginTop: margintop ? margintop : '0px',
+              marginTop: margintop || '0px',
               '&:hover': {
                 background: (theme) => theme.palette.background.default,
               },
@@ -323,46 +323,42 @@ export const LinkButton = ({
             onClick={() => menuClick(path)}
             selected={!!selected}
           >
-            {!!selected ? (
-              <SvgIcon
-                sx={{
-                  mx: 0.5,
-                  border: '1px solid #998AFF',
-                  width: '30px',
-                  height: '30px',
-                  paddingTop: paddingTop,
-                  paddingRight: paddingRight,
-                  paddingLeft: paddingLeft,
-                  paddingBottom: paddingBottom,
-                  borderRadius: '6px',
-                  my: 2,
-                }}
-                component={icon}
-              />
-            ) : (
-              <SvgIcon
-                sx={{
-                  mx: 'auto',
-                  my: 2,
-                  marginLeft: '4px',
-                  border: '1px solid',
-                  borderColor: (theme) => theme.palette.background.default,
-                  width: '30px',
-                  height: '30px',
-                  paddingTop: paddingTop,
-                  paddingRight: paddingRight,
-                  paddingLeft: paddingLeft,
-                  paddingBottom: paddingBottom,
-                  borderRadius: '6px',
-
-                  '&:hover': {
-                    border: '1px solid #998AFF',
-                    my: 2,
-                  },
-                }}
-                component={icon}
-              />
-            )}
+            {selected ? <SvgIcon
+                                          sx={{
+                                            mx: 0.5,
+                                            border: '1px solid #998AFF',
+                                            width: '30px',
+                                            height: '30px',
+                                            paddingTop: paddingTop,
+                                            paddingRight: paddingRight,
+                                            paddingLeft: paddingLeft,
+                                            paddingBottom: paddingBottom,
+                                            borderRadius: '6px',
+                                            my: 2,
+                                          }}
+                                          component={icon}
+                                        /> : <SvgIcon
+                                          sx={{
+                                            mx: 'auto',
+                                            my: 2,
+                                            marginLeft: '4px',
+                                            border: '1px solid',
+                                            borderColor: (theme) => theme.palette.background.default,
+                                            width: '30px',
+                                            height: '30px',
+                                            paddingTop: paddingTop,
+                                            paddingRight: paddingRight,
+                                            paddingLeft: paddingLeft,
+                                            paddingBottom: paddingBottom,
+                                            borderRadius: '6px',
+                          
+                                            '&:hover': {
+                                              border: '1px solid #998AFF',
+                                              my: 2,
+                                            },
+                                          }}
+                                          component={icon}
+                                        />}
           </ListItemButton>
         </Tooltip>
       )}

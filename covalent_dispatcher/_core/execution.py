@@ -51,6 +51,4 @@ def _get_task_inputs(node_id: int, node_name: str, result_object: Result) -> dic
     abstract_kwargs = abstract_inputs["kwargs"]
     args = [input_values[node_id] for node_id in abstract_args]
     kwargs = {k: input_values[v] for k, v in abstract_kwargs.items()}
-    task_input = {"args": args, "kwargs": kwargs}
-
-    return task_input
+    return {"args": args, "kwargs": kwargs}

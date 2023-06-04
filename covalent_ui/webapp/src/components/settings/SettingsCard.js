@@ -170,7 +170,9 @@ const SettingsCard = () => {
   const isChildHasList = (item) => {
     let childIsObject = false
     _.map(item, function (value) {
-      if (_.isObject(value)) childIsObject = true
+      if (_.isObject(value)) {
+        childIsObject = true
+      }
     })
     return childIsObject
   }

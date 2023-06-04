@@ -76,25 +76,15 @@ class Lepton(Electron):
     _LANG_SHELL = ["bash", "shell"]
     _SCRIPTING_LANGUAGES = _LANG_PY + _LANG_SHELL
 
-    def __init__(
-        self,
-        language: str = "python",
-        *,
-        library_name: str = "",
-        function_name: str = "",
-        argtypes: Optional[List] = [],
-        command: Optional[Union[str, List[str]]] = "",
-        named_outputs: Optional[List[str]] = [],
-        display_name: Optional[str] = "",
-        executor: Union[
+    def __init__(self, language: str = "python", *, library_name: str = "", function_name: str = "", argtypes: Optional[List] = None, command: Optional[Union[str, List[str]]] = "", named_outputs: Optional[List[str]] = None, display_name: Optional[str] = "", executor: Union[
             List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]
-        ] = DEFAULT_METADATA_VALUES["executor"],
-        files: List[FileTransfer] = [],
-        deps_bash: Union[DepsBash, List, str] = DEFAULT_METADATA_VALUES["deps"].get("bash", []),
-        deps_pip: Union[DepsPip, list] = DEFAULT_METADATA_VALUES["deps"].get("pip", None),
-        call_before: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_before"],
-        call_after: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_after"],
-    ) -> None:
+        ] = DEFAULT_METADATA_VALUES["executor"], files: List[FileTransfer] = None, deps_bash: Union[DepsBash, List, str] = DEFAULT_METADATA_VALUES["deps"].get("bash", []), deps_pip: Union[DepsPip, list] = DEFAULT_METADATA_VALUES["deps"].get("pip", None), call_before: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_before"], call_after: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_after"]) -> None:
+        if argtypes is None:
+            argtypes = []
+        if named_outputs is None:
+            named_outputs = []
+        if files is None:
+            files = []
         self.language = language
         self.library_name = library_name
         self.function_name = function_name
@@ -151,7 +141,7 @@ class Lepton(Electron):
 
         if isinstance(deps_bash, DepsBash):
             deps["bash"] = deps_bash
-        if isinstance(deps_bash, list) or isinstance(deps_bash, str):
+        if isinstance(deps_bash, (list, str)):
             deps["bash"] = DepsBash(commands=deps_bash)
 
         if isinstance(deps_pip, DepsPip):
@@ -425,7 +415,7 @@ def bash(
 
     if isinstance(deps_bash, DepsBash):
         deps["bash"] = deps_bash
-    if isinstance(deps_bash, list) or isinstance(deps_bash, str):
+    if isinstance(deps_bash, (list, str)):
         deps["bash"] = DepsBash(commands=deps_bash)
 
     if isinstance(deps_pip, DepsPip):
@@ -459,7 +449,4 @@ def bash(
 
         return wrapper
 
-    if _func is None:
-        return decorator_bash_lepton
-    else:
-        return decorator_bash_lepton(_func)
+    return decorator_bash_lepton if _func is None else decorator_bash_lepton(_func)

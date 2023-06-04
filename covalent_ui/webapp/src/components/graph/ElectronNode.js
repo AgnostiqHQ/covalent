@@ -68,9 +68,7 @@ export const ElectronNode = ({
                 overflow: 'hidden',
                 // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
                 color: (theme) =>
-                  !selected
-                    ? theme.palette.text.tertiary
-                    : theme.palette.text.primary,
+                  selected ? theme.palette.text.primary : theme.palette.text.tertiary,
                 '&:hover': {
                   color: (theme) => theme.palette.text.primary,
                 },
@@ -115,7 +113,7 @@ export const ElectronNode = ({
         >
           <Paper
             data-testid="electronNode"
-            elevation={!selected ? 1 : 5}
+            elevation={selected ? 5 : 1}
             sx={{
               height: '34px',
               display: 'flex',
@@ -123,13 +121,9 @@ export const ElectronNode = ({
               px: 1,
               py: 0.5,
               borderRadius: '100px',
-              bgcolor: !selected
-                ? (theme) => theme.palette.background.paper
-                : (theme) => theme.palette.primary.dark,
-              color: !selected ? NODE_TEXT_COLOR : '#FAFAFA',
-              borderColor: !selected
-                ? (theme) => theme.palette.primary.highlightBlue
-                : (theme) => theme.palette.background.paper,
+              bgcolor: selected ? (theme) => theme.palette.primary.dark : (theme) => theme.palette.background.paper,
+              color: selected ? '#FAFAFA' : NODE_TEXT_COLOR,
+              borderColor: selected ? (theme) => theme.palette.background.paper : (theme) => theme.palette.primary.highlightBlue,
               borderStyle: 'solid',
               borderWidth: hasBorder ? 1 : 0,
               '&:hover': {
@@ -171,45 +165,42 @@ export const ElectronNode = ({
             )}
           </Paper>
         </ElectronTooltip>
-        {!data.hideLabels ? (
-          <ElectronTooltip title={data.node_id} arrow placement="bottom-end">
-            <Paper
-              elevation={!selected ? 1 : 5}
-              sx={{
-                position: 'absolute',
-                top: data.executor ? 48 : 30,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                borderRadius: '16px',
-                minWidth: '20%',
-                // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
-                color: (theme) =>
-                  !selected
-                    ? theme.palette.text.tertiary
-                    : theme.palette.text.primary,
-
-                '&:hover': {
-                  color: (theme) => theme.palette.text.primary,
-                },
-              }}
-            >
-              <Handle
-                type="target"
-                position={targetPosition}
-                isConnectable={isConnectable}
-              />
-              <Typography sx={{ fontSize: '0.625rem' }}>
-                {data.node_id}
-              </Typography>
-              <Handle
-                type="source"
-                position={sourcePosition}
-                isConnectable={isConnectable}
-              />
-            </Paper>
-          </ElectronTooltip>
-        ) : null}
+        {data.hideLabels ? null : 
+                   <ElectronTooltip title={data.node_id} arrow placement="bottom-end">
+                     <Paper
+                       elevation={selected ? 5 : 1}
+                       sx={{
+                         position: 'absolute',
+                         top: data.executor ? 48 : 30,
+                         display: 'flex',
+                         alignItems: 'center',
+                         justifyContent: 'center',
+                         borderRadius: '16px',
+                         minWidth: '20%',
+                         // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
+                         color: (theme) =>
+                           selected ? theme.palette.text.primary : theme.palette.text.tertiary,
+         
+                         '&:hover': {
+                           color: (theme) => theme.palette.text.primary,
+                         },
+                       }}
+                     >
+                       <Handle
+                         type="target"
+                         position={targetPosition}
+                         isConnectable={isConnectable}
+                       />
+                       <Typography sx={{ fontSize: '0.625rem' }}>
+                         {data.node_id}
+                       </Typography>
+                       <Handle
+                         type="source"
+                         position={sourcePosition}
+                         isConnectable={isConnectable}
+                       />
+                     </Paper>
+                   </ElectronTooltip>}
       </Grid>
     </>
   )

@@ -578,14 +578,14 @@ class Electron:
             new_metadata["executor"] = self.metadata["executor"]
             new_metadata["executor_data"] = self.metadata["executor_data"]
 
-        node_id = graph.add_node(
+        return graph.add_node(
             name=prefix,
             function=to_decoded_electron_collection,
             metadata=new_metadata,
-            function_string=get_serialized_function_str(to_decoded_electron_collection),
+            function_string=get_serialized_function_str(
+                to_decoded_electron_collection
+            ),
         )
-
-        return node_id
 
     def wait_for(self, electrons: Union["Electron", Iterable["Electron"]]):
         """

@@ -103,7 +103,9 @@ const LatticeGraph = ({
   }
 
   useEffect(() => {
-    if (!highlighted) marginSet()
+    if (!highlighted) {
+      marginSet()
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fitView, marginLeft, marginRight, graph, elements, highlighted])
 
@@ -233,23 +235,22 @@ const LatticeGraph = ({
 
   const getAllIncomers = (node, elements, prevIncomers = []) => {
     const incomers = getIncomers(node, elements)
-    const result = incomers.reduce((memo, incomer) => {
-      memo.push(incomer)
-
-      if (prevIncomers.findIndex((n) => n.id === incomer.id) === -1) {
-        prevIncomers.push(incomer)
-
-        getAllIncomers(incomer, elements, prevIncomers).forEach((foundNode) => {
-          memo.push(foundNode)
-
-          if (prevIncomers.findIndex((n) => n.id === foundNode.id) === -1) {
+    return incomers.reduce((memo, incomer) => {
+          memo.push(incomer)
+    
+          if (prevIncomers.findIndex((n) => n.id === incomer.id) === -1) {
             prevIncomers.push(incomer)
+    
+            getAllIncomers(incomer, elements, prevIncomers).forEach((foundNode) => {
+              memo.push(foundNode)
+    
+              if (prevIncomers.findIndex((n) => n.id === foundNode.id) === -1) {
+                prevIncomers.push(incomer)
+              }
+            })
           }
-        })
-      }
-      return memo
-    }, [])
-    return result
+          return memo
+        }, []);
   }
 
   const getAllOutgoers = (node, elements, prevOutgoers = []) => {
@@ -312,7 +313,9 @@ const LatticeGraph = ({
   }
 
   useEffect(() => {
-    if (!hasSelectedNode) resetNodeStyles()
+    if (!hasSelectedNode) {
+      resetNodeStyles()
+    }
   }, [hasSelectedNode])
 
   const resetNodeStyles = () => {

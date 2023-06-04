@@ -52,7 +52,7 @@ def fft_test(width, n_iterations):
     X = gen.random(width)
     nX = np.sqrt(np.sum(X * X))
     X /= nX
-    for i in range(n_iterations):
+    for _ in range(n_iterations):
         res = fft.fft(X)
 
     res = fft.ifft(res)
@@ -70,18 +70,12 @@ def sample_task(*args, **kwargs):
 
 def test_prime(n):
     m = int(math.floor(math.sqrt(n)))
-    for d in range(2, m + 1):
-        if n % d == 0:
-            return False
-    return True
+    return all(n % d != 0 for d in range(2, m + 1))
 
 
 # This takes 9s on my system
 def sample_cpu_task(*args, **kwargs):
-    res = []
-    for i in range(2, 1000000):
-        res.append(test_prime(i))
-    return res
+    return [test_prime(i) for i in range(2, 1000000)]
 
 
 # General workflow with a feedforward transport graph
@@ -113,7 +107,7 @@ def feedforward_workflow(tasks, predecessors):
 
 # Without covalent
 for w in widths:
-    tasks = [[sample_task for i in range(w)]]
+    tasks = [[sample_task for _ in range(w)]]
 
     tasks[0][0] = sample_cpu_task
 
@@ -128,17 +122,17 @@ for w in widths:
         outfile = f"{benchmark_dir}/no_ct_width_{w}_trial_{i}"
         with open(outfile, "w") as f:
             yaml.dump({"test": benchmark_name, "ct": False, "width": w, "runtime": end - start}, f)
-        print("(w/o ct) runtime for width {}: {} seconds".format(w, end - start))
+        print(f"(w/o ct) runtime for width {w}: {end - start} seconds")
 
 time.sleep(3)
 
 # With covalent
 for w in widths:
-    tasks = [[sample_task for i in range(w)]]
+    tasks = [[sample_task for _ in range(w)]]
     tasks[0][0] = sample_cpu_task
 
     deps = []
-    for i in range(trials_per_width):
+    for _ in range(trials_per_width):
         workflow = ct.lattice(feedforward_workflow)
 
         result = ct.dispatch_sync(workflow)(tasks, deps)
@@ -157,4 +151,4 @@ for w in widths:
                 },
                 f,
             )
-        print("runtime for width {}: {} seconds".format(w, result.end_time - result.start_time))
+        print(f"runtime for width {w}: {result.end_time - result.start_time} seconds")

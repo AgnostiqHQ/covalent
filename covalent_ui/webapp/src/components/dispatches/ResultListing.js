@@ -425,7 +425,7 @@ export const ResultsTableToolbar = ({
           count={allDispatches}
           isFetching={!dashboardOverviewFetching}
           setFilterValue={setFilterValue}
-          isSelected={filterValue === 'ALL' ? true : false}
+          isSelected={!!(filterValue === 'ALL')}
           setSelected={setSelected}
           setOffset={setOffset}
         />
@@ -434,7 +434,7 @@ export const ResultsTableToolbar = ({
           count={runningDispatches}
           isFetching={!dashboardOverviewFetching}
           setFilterValue={setFilterValue}
-          isSelected={filterValue === 'RUNNING' ? true : false}
+          isSelected={!!(filterValue === 'RUNNING')}
           setSelected={setSelected}
           setOffset={setOffset}
         />
@@ -444,7 +444,7 @@ export const ResultsTableToolbar = ({
           isFetching={!dashboardOverviewFetching}
           setFilterValue={setFilterValue}
           filterValue={filterValue}
-          isSelected={filterValue === 'COMPLETED' ? true : false}
+          isSelected={!!(filterValue === 'COMPLETED')}
           setSelected={setSelected}
           setOffset={setOffset}
         />
@@ -453,7 +453,7 @@ export const ResultsTableToolbar = ({
           count={failedDispatches}
           isFetching={!dashboardOverviewFetching}
           setFilterValue={setFilterValue}
-          isSelected={filterValue === 'FAILED' ? true : false}
+          isSelected={!!(filterValue === 'FAILED')}
           setSelected={setSelected}
           setOffset={setOffset}
         />
@@ -490,7 +490,7 @@ export const ResultsTableToolbar = ({
         endAdornment={
           <InputAdornment
             position="end"
-            sx={{ visibility: !!query ? 'visible' : 'hidden' }}
+            sx={{ visibility: query ? 'visible' : 'hidden' }}
           >
             <IconButton
               data-testid="closeIconButton"
@@ -685,7 +685,9 @@ const ResultListing = () => {
   }, [isError])
 
   useEffect(() => {
-    if (offset === 0) setPage(1)
+    if (offset === 0) {
+      setPage(1)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offset])
 
@@ -907,7 +909,7 @@ const ResultListing = () => {
                             />
                           </TableCell>
                         ) : (
-                          <TableCell>{!result.runTime ? '-' : secondsToHms(result.runTime)}</TableCell>
+                          <TableCell>{result.runTime ? secondsToHms(result.runTime) : '-'}</TableCell>
                         )}
 
                         <TableCell>

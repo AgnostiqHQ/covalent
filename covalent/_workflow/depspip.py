@@ -27,7 +27,9 @@ from .deps import Deps
 from .transport import TransportableObject
 
 
-def apply_pip_deps(pkgs: [] = [], requirements_content: str = ""):
+def apply_pip_deps(pkgs: [] = None, requirements_content: str = ""):
+    if pkgs is None:
+        pkgs = []
     if requirements_content:
         reqs_filename = ""
         with tempfile.NamedTemporaryFile("w", delete=False) as f:
@@ -56,12 +58,10 @@ class DepsPip(Deps):
 
     """
 
-    def __init__(self, packages: Union[List, str] = [], reqs_path: str = ""):
-        if isinstance(packages, str):
-            self.packages = [packages]
-        else:
-            self.packages = packages
-
+    def __init__(self, packages: Union[List, str] = None, reqs_path: str = ""):
+        if packages is None:
+            packages = []
+        self.packages = [packages] if isinstance(packages, str) else packages
         self.reqs_path = reqs_path
         self.requirements_content = ""
 

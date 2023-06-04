@@ -90,29 +90,28 @@ const SortDispatch = (props) => {
         {title}
       </Typography>
 
-      {!isFetching ? (
-        <Chip
-          label={count ? count : 0}
-          className="chipContainer"
-          sx={{
-            minWidth: '24px',
-            height: '24px',
-            color: (theme) => theme.palette.text.tertiary,
-            borderRadius: '8px',
-            border: '1px solid ',
-            borderColor: (theme) => theme.palette.background.coveBlack03,
-            backgroundColor: (theme) => theme.palette.background.coveBlack03,
-            '&:hover': {
-              cursor: 'default',
-              border: '1px solid ',
-              borderColor: (theme) => theme.palette.primary.blue04,
-            },
-            '& .MuiChip-label': { fontSize: '14px', padding: '0' },
-          }}
-        />
-      ) : (
-        <Skeleton width={33} height={50} />
-      )}
+      {isFetching ? 
+               <Skeleton width={33} height={50} />
+              : 
+               <Chip
+                 label={count || 0}
+                 className="chipContainer"
+                 sx={{
+                   minWidth: '24px',
+                   height: '24px',
+                   color: (theme) => theme.palette.text.tertiary,
+                   borderRadius: '8px',
+                   border: '1px solid ',
+                   borderColor: (theme) => theme.palette.background.coveBlack03,
+                   backgroundColor: (theme) => theme.palette.background.coveBlack03,
+                   '&:hover': {
+                     cursor: 'default',
+                     border: '1px solid ',
+                     borderColor: (theme) => theme.palette.primary.blue04,
+                   },
+                   '& .MuiChip-label': { fontSize: '14px', padding: '0' },
+                 }}
+               />}
     </Box>
   )
 }

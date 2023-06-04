@@ -100,9 +100,8 @@ def process_node(node: dict) -> dict:
     # Function nodes: encode output and sublattice_result
     else:
         node["output"] = TransportableObject.make_transportable(node["output"])
-        if "sublattice_result" in node:
-            if node["sublattice_result"] is not None:
-                node["sublattice_result"] = process_result_object(node["sublattice_result"])
+        if "sublattice_result" in node and node["sublattice_result"] is not None:
+            node["sublattice_result"] = process_result_object(node["sublattice_result"])
 
     return node
 

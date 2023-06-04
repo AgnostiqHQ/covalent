@@ -143,8 +143,8 @@ class DaskExecutor(AsyncBaseExecutor):
 
         try:
             result, worker_stdout, worker_stderr, tb = await future
-        except CancelledError:
-            raise TaskCancelledError()
+        except CancelledError as e:
+            raise TaskCancelledError() from e
 
         print(worker_stdout, end="", file=self.task_stdout)
         print(worker_stderr, end="", file=self.task_stderr)
