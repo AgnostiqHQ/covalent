@@ -30,7 +30,7 @@ from setuptools.command.egg_info import egg_info, manifest_maker
 site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
 with open("VERSION") as f:
-    version = f.read(encoding="utf-8").strip()
+    version = f.read().strip()
 
 
 requirements_file = "requirements.txt"
@@ -206,7 +206,7 @@ setup_info = {
     "author": "Agnostiq",
     "author_email": "support@agnostiq.ai",
     "description": "Covalent Workflow Tool",
-    "long_description": open("README.md").read(),
+    "long_description": open("README.md").read(encoding="utf-8"),
     "long_description_content_type": "text/markdown",
     "include_package_data": True,
     "zip_safe": False,
