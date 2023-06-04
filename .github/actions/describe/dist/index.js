@@ -2277,17 +2277,17 @@ class Octokit {
     return class extends this {
           constructor(...args) {
             const options = args[0] || {};
-    
+
             if (typeof defaults === "function") {
               super(defaults(options));
               return;
             }
-    
+
             super(Object.assign({}, defaults, options, options.userAgent && defaults.userAgent ? {
               userAgent: `${options.userAgent} ${defaults.userAgent}`
             } : null));
           }
-    
+
         };
   }
   /**
@@ -2503,11 +2503,11 @@ function getValues(context, operator, key, modifier) {
   if (isDefined(value) && value !== "") {
       if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
               value = value.toString();
-        
+
               if (modifier && modifier !== "*") {
                 value = value.substring(0, parseInt(modifier, 10));
               }
-        
+
               result.push(encodeValue(operator, value, isKeyOperator(operator) ? key : ""));
             }
       else if (modifier === "*") {
@@ -2525,7 +2525,7 @@ function getValues(context, operator, key, modifier) {
               }
       else {
                 const tmp = [];
-        
+
                 if (Array.isArray(value)) {
                   value.filter(isDefined).forEach(function (value) {
                     tmp.push(encodeValue(operator, value));
@@ -2538,7 +2538,7 @@ function getValues(context, operator, key, modifier) {
                     }
                   });
                 }
-        
+
                 if (isKeyOperator(operator)) {
                   result.push(encodeUnreserved(key) + "=" + tmp.join(","));
                 } else if (tmp.length !== 0) {
@@ -5460,7 +5460,7 @@ class Headers {
   				if (typeof method !== 'function') {
   					throw new TypeError('Header pairs must be iterable');
   				}
-  
+
   				// sequence<sequence<ByteString>>
   				// Note: per spec we have to first exhaust the lists then process them
   				const pairs = [];
@@ -5470,7 +5470,7 @@ class Headers {
   					}
   					pairs.push(Array.from(pair));
   				}
-  
+
   				for (const pair of pairs) {
   					if (pair.length !== 2) {
   						throw new TypeError('Each header pair must be a name/value tuple');

@@ -237,13 +237,13 @@ const LatticeGraph = ({
     const incomers = getIncomers(node, elements)
     return incomers.reduce((memo, incomer) => {
           memo.push(incomer)
-    
+
           if (prevIncomers.findIndex((n) => n.id === incomer.id) === -1) {
             prevIncomers.push(incomer)
-    
+
             getAllIncomers(incomer, elements, prevIncomers).forEach((foundNode) => {
               memo.push(foundNode)
-    
+
               if (prevIncomers.findIndex((n) => n.id === foundNode.id) === -1) {
                 prevIncomers.push(incomer)
               }

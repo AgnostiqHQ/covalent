@@ -80,11 +80,11 @@
               }
             ) => {
               const { nodes, width, height, minZoom, maxZoom } = store.getState()
-   
+
               if (!nodes.length) {
                 return
               }
-   
+
               const bounds = getRectOfNodes(
                 options.includeHiddenNodes
                   ? nodes
@@ -101,7 +101,7 @@
                 options.marginRight || 0
               )
               const transform = zoomIdentity.translate(x, y).scale(zoom)
-   
+
               d3Zoom.transform(
                 getTransition(d3Selection, options.duration),
                 transform
@@ -110,7 +110,7 @@
             initialized: true,
           }
         }
-   
+
         return initialFitViewHelper
       }, [store, d3Zoom, d3Selection]);
  }

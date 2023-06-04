@@ -146,7 +146,7 @@ const ParameterNode = ({
           </Typography>
         </Paper>
       </ParameterTooltip>
-      {data.hideLabels ? null : 
+      {data.hideLabels ? null :
                <ParameterTooltip
                  title={_.truncate(data.node_id, { length: 70 })}
                  arrow
@@ -162,7 +162,7 @@ const ParameterNode = ({
                      borderRadius: '16px',
                      minWidth: '20%',
                      bgcolor: (theme) => theme.palette.background.paper,
-       
+
                      // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
                      color: (theme) => theme.palette.text.tertiary,
                      cursor: 'default',

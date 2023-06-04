@@ -165,7 +165,7 @@ export const ElectronNode = ({
             )}
           </Paper>
         </ElectronTooltip>
-        {data.hideLabels ? null : 
+        {data.hideLabels ? null :
                    <ElectronTooltip title={data.node_id} arrow placement="bottom-end">
                      <Paper
                        elevation={selected ? 5 : 1}
@@ -180,7 +180,7 @@ export const ElectronNode = ({
                          // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
                          color: (theme) =>
                            selected ? theme.palette.text.primary : theme.palette.text.tertiary,
-         
+
                          '&:hover': {
                            color: (theme) => theme.palette.text.primary,
                          },

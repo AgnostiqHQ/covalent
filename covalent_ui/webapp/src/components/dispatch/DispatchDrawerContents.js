@@ -120,7 +120,7 @@ const DispatchDrawerContents = () => {
           component={TreeSvg}
           sx={{ verticalAlign: 'middle', marginTop: 1 }}
         />
-        {dispatchId ? 
+        {dispatchId ?
                    <Tooltip title={dispatchId} placement="top">
                      <Typography
                        component="span"
@@ -134,7 +134,7 @@ const DispatchDrawerContents = () => {
                        {truncateMiddle(dispatchId, 8, 13)}
                      </Typography>
                    </Tooltip>
-                  : 
+                  :
                    <Skeleton width={200} />}
 
         <CopyButton

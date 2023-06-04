@@ -90,9 +90,9 @@ const SortDispatch = (props) => {
         {title}
       </Typography>
 
-      {isFetching ? 
+      {isFetching ?
                <Skeleton width={33} height={50} />
-              : 
+              :
                <Chip
                  label={count || 0}
                  className="chipContainer"

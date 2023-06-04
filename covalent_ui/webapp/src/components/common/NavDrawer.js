@@ -351,7 +351,7 @@ export const LinkButton = ({
                                             paddingLeft: paddingLeft,
                                             paddingBottom: paddingBottom,
                                             borderRadius: '6px',
-                          
+
                                             '&:hover': {
                                               border: '1px solid #998AFF',
                                               my: 2,
