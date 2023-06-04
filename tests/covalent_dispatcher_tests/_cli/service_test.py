@@ -58,6 +58,8 @@ from covalent_dispatcher._db.datastore import DataStore
 
 STOPPED_SERVER_STATUS_ECHO = "Covalent server is stopped.\n"
 RUNNING_SERVER_STATUS_ECHO = "Covalent server is running at http://localhost:42.\n"
+STOPPED_PROCESS_STATUS_ECHO = STOPPED_PROCESS_STATUS_MSG + "\n"
+ZOMBIE_PROCESS_STATUS_ECHO = ZOMBIE_PROCESS_STATUS_MSG + "\n"
 
 
 def has_conda():
@@ -453,10 +455,10 @@ def test_restart_preserves_nocluster(mocker, port_tag, port, pid, server, no_clu
     "port_val,pid,echo_output,file_removed,pid_exists,process_status",
     [
         (None, -1, STOPPED_SERVER_STATUS_ECHO, True, False, None),
-        (42, 42, RUNNING_SERVER_STATUS_ECHO, False, True, None),
+        (42, 42, RUNNING_SERVER_STATUS_ECHO, False, True, psutil.STATUS_RUNNING),
         (42, 42, STOPPED_SERVER_STATUS_ECHO, True, False, None),
-        (42, 42, ZOMBIE_PROCESS_STATUS_MSG, False, True, psutil.STATUS_ZOMBIE),
-        (42, 42, STOPPED_PROCESS_STATUS_MSG, False, True, psutil.STATUS_STOPPED),
+        (42, 42, ZOMBIE_PROCESS_STATUS_ECHO, False, True, psutil.STATUS_ZOMBIE),
+        (42, 42, STOPPED_PROCESS_STATUS_ECHO, False, True, psutil.STATUS_STOPPED),
     ],
 )
 def test_status(mocker, port_val, pid, echo_output, file_removed, pid_exists, process_status):
@@ -467,12 +469,15 @@ def test_status(mocker, port_val, pid, echo_output, file_removed, pid_exists, pr
     mocker.patch("psutil.pid_exists", return_value=pid_exists)
     mocker.patch("psutil.Process.status", return_value=process_status)
     rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
+    process_mock = Mock(spec=psutil.Process)
+    process_mock.status.return_value = process_status
+    with mocker.patch("psutil.Process", return_value=process_mock):
 
-    runner = CliRunner()
-    res = runner.invoke(status)
+        runner = CliRunner()
+        res = runner.invoke(status)
 
-    assert res.output == echo_output
-    assert rm_pid_file_mock.called is file_removed
+        assert res.output == echo_output
+        assert rm_pid_file_mock.called is file_removed
 
 
 def test_is_server_running(mocker):
