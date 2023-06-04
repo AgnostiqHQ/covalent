@@ -412,7 +412,7 @@ def start(
             no_triggers,
             triggers_only,
         )
-    except Exception as e:
+    except Exception:
         click.secho("Error: ", fg="red")
         click.secho(
             "Covalent was unable to start due to the following error: ", fg="red", bold=True
