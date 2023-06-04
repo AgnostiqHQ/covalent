@@ -1,5 +1,5 @@
 from contextlib import contextmanager
-from typing import Dict
+from typing import Dict, Optional
 
 import pennylane as qml
 from pydantic import BaseModel
@@ -19,19 +19,19 @@ class QNodeSpecs(BaseModel):
     num_trainable_params: int = None
     num_device_wires: int
     device_name: str
-    diff_method: str
+    diff_method: Optional[str]
     expansion_strategy: str
     gradient_options: Dict[str, int]
-    interface: str
-    gradient_fn: str
-    num_gradient_executions: int
+    interface: Optional[str]
+    gradient_fn: Optional[str]
+    num_gradient_executions: int = 0
     num_parameter_shift_executions: int = None
 
 
 class QNodeQE(qml.QNode):
     """
         Initialize a QElectron instance from a given QNode and Executor.
-        
+
         Args:
             qnode (qml.QNode): The QNode to wrap.
             executors (Executor): The executors to choose from to use for running the QNode.
@@ -54,7 +54,7 @@ class QNodeQE(qml.QNode):
             expansion_strategy=self.original_qnode.expansion_strategy,
             max_expansion=self.original_qnode.max_expansion,
         )
-    
+
     @contextmanager
     def mark_call_async(self):
         self.device._async_run = True
@@ -67,19 +67,19 @@ class QNodeQE(qml.QNode):
     def run_later(self, *args, **kwargs):
         """
         Run the QNode asynchronously.
-        
+
         Args:
             *args: Positional arguments to pass to the QNode.
             **kwargs: Keyword arguments to pass to the QNode.
-            
+
         Returns:
             FutureResult: A wrapper object for the async result of running the QNode.
         """
-        
+
         with self.mark_call_async():
             self(*args, **kwargs)
             batch_id = self.device._batch_id
-        
+
         return QNodeFutureResult(batch_id)
 
     def __call__(self, *args, **kwargs):
