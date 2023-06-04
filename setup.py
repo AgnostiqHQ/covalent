@@ -30,7 +30,7 @@ from setuptools.command.egg_info import egg_info, manifest_maker
 site.ENABLE_USER_SITE = "--user" in sys.argv[1:]
 
 with open("VERSION") as f:
-    version = f.read().strip()
+    version = f.read(encoding="utf-8").strip()
 
 
 requirements_file = "requirements.txt"
