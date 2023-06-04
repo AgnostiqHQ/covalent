@@ -1144,3 +1144,19 @@ def test_terminate_child_processes(mocker):
     _terminate_child_processes(1)
 
     psutil_process_mock.assert_called_with(1)
+
+
+def test_graceful_start_permission_exception(mocker):
+
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start",
+        side_effect=PermissionError("Permission denied"),
+    )
+    click_secho_mock = mocker.patch("covalent_dispatcher._cli.service.click.secho")
+
+    runner = CliRunner()
+    result = runner.invoke(start)
+    assert result.exit_code == 1
+
+    assert graceful_start_mock.called_once()
+    assert click_secho_mock.call_count == 3
