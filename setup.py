@@ -181,7 +181,7 @@ class EggInfoCovalent(egg_info):
                 lines = f.readlines()
             with open("MANIFEST_SDK.in", "w") as f:
                 for line in lines:
-                    if not any(excluded in line for excluded in exclude_modules):
+                    if all(excluded not in line for excluded in exclude_modules):
                         f.write(line)
 
             mm.template = "MANIFEST_SDK.in"

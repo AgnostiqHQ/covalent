@@ -129,7 +129,7 @@ def _next_available_port(requested_port: int) -> int:
         try:
             sock.bind(("localhost", try_port))
             avail_port_found = True
-        except:
+        except Exception:
             try_port += 1
 
     sock.close()

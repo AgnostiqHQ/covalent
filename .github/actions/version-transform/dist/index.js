@@ -7,10 +7,14 @@
 "use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     o[k2] = m[k];
 }));
 var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
@@ -19,9 +23,15 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
     o["default"] = v;
 });
 var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
+    if (mod && mod.__esModule) {
+      return mod;
+    }
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) {
+      for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) {
+                           __createBinding(result, mod, k);
+                         }
+    }
     __setModuleDefault(result, mod);
     return result;
 };
@@ -106,10 +116,14 @@ function escapeProperty(s) {
 "use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     o[k2] = m[k];
 }));
 var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
@@ -118,9 +132,15 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
     o["default"] = v;
 });
 var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
+    if (mod && mod.__esModule) {
+      return mod;
+    }
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) {
+      for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) {
+                           __createBinding(result, mod, k);
+                         }
+    }
     __setModuleDefault(result, mod);
     return result;
 };
@@ -249,10 +269,12 @@ function getBooleanInput(name, options) {
     const trueValue = ['true', 'True', 'TRUE'];
     const falseValue = ['false', 'False', 'FALSE'];
     const val = getInput(name, options);
-    if (trueValue.includes(val))
-        return true;
-    if (falseValue.includes(val))
-        return false;
+    if (trueValue.includes(val)) {
+      return true;
+    }
+    if (falseValue.includes(val)) {
+      return false;
+    }
     throw new TypeError(`Input does not meet YAML 1.2 "Core Schema" specification: ${name}\n` +
         `Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
 }
@@ -450,10 +472,14 @@ Object.defineProperty(exports, "toPlatformPath", ({ enumerable: true, get: funct
 
 // For internal use, subject to change.
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     o[k2] = m[k];
 }));
 var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
@@ -462,9 +488,15 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
     o["default"] = v;
 });
 var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
+    if (mod && mod.__esModule) {
+      return mod;
+    }
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) {
+      for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) {
+                           __createBinding(result, mod, k);
+                         }
+    }
     __setModuleDefault(result, mod);
     return result;
 };
@@ -598,10 +630,14 @@ exports.OidcClient = OidcClient;
 "use strict";
 
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     o[k2] = m[k];
 }));
 var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
@@ -610,9 +646,15 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
     o["default"] = v;
 });
 var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
+    if (mod && mod.__esModule) {
+      return mod;
+    }
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) {
+      for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) {
+                           __createBinding(result, mod, k);
+                         }
+    }
     __setModuleDefault(result, mod);
     return result;
 };
@@ -1089,10 +1131,14 @@ exports.PersonalAccessTokenCredentialHandler = PersonalAccessTokenCredentialHand
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
 }) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
+    if (k2 === undefined) {
+      k2 = k;
+    }
     o[k2] = m[k];
 }));
 var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
@@ -1101,9 +1147,15 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
     o["default"] = v;
 });
 var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
+    if (mod && mod.__esModule) {
+      return mod;
+    }
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) {
+      for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) {
+                           __createBinding(result, mod, k);
+                         }
+    }
     __setModuleDefault(result, mod);
     return result;
 };
@@ -2801,7 +2853,9 @@ module.exports = require("util");
 /******/ 			__webpack_modules__[moduleId].call(module.exports, module, module.exports, __nccwpck_require__);
 /******/ 			threw = false;
 /******/ 		} finally {
-/******/ 			if(threw) delete __webpack_module_cache__[moduleId];
+/******/ 			if (threw) {
+              delete __webpack_module_cache__[moduleId];
+            }
 /******/ 		}
 /******/
 /******/ 		// Return the exports of the module
@@ -2811,7 +2865,9 @@ module.exports = require("util");
 /************************************************************************/
 /******/ 	/* webpack/runtime/compat */
 /******/
-/******/ 	if (typeof __nccwpck_require__ !== 'undefined') __nccwpck_require__.ab = __dirname + "/";
+/******/ 	if (typeof __nccwpck_require__ !== 'undefined') {
+            __nccwpck_require__.ab = __dirname + "/";
+          }
 /******/
 /************************************************************************/
 var __webpack_exports__ = {};

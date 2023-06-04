@@ -36,10 +36,7 @@ import covalent as ct
 
 def test_prime(n):
     m = int(math.floor(math.sqrt(n)))
-    for d in range(2, m + 1):
-        if n % d == 0:
-            return False
-    return True
+    return all(n % d != 0 for d in range(2, m + 1))
 
 
 def fft_test(width, n_iterations):
@@ -47,7 +44,7 @@ def fft_test(width, n_iterations):
     X = gen.random(width)
     nX = np.sqrt(np.sum(X * X))
     X /= nX
-    for i in range(n_iterations):
+    for _ in range(n_iterations):
         res = fft.fft(X)
 
     res = fft.ifft(res)
@@ -64,10 +61,7 @@ def sample_task(*args, **kwargs):
 
 # This takes 9s on my system
 def sample_cpu_task(*args, **kwargs):
-    res = []
-    for i in range(2, 1000000):
-        res.append(test_prime(i))
-    return res
+    return [test_prime(i) for i in range(2, 1000000)]
 
 
 # This uses about 600 MB on my system and completes in 3s

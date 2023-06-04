@@ -23,10 +23,7 @@ from covalent._shared_files.config import get_config
 log_level = get_config("sdk.log_level").upper()
 log_to_file = get_config("sdk.enable_logging").upper() == "TRUE"
 
-if log_to_file:
-    log = log_level
-else:
-    log = None
+log = log_level if log_to_file else None
 
 
 def log_config():

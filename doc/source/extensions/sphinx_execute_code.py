@@ -104,8 +104,7 @@ class ExecuteCode(Directive):
         sys.stdout = sys.__stdout__
         sys.stderr = sys.__stderr__
 
-        results = list()
-        results.append(output.getvalue())
+        results = [output.getvalue()]
         results.append(err.getvalue())
         results = "".join(results)
 
@@ -127,10 +126,10 @@ class ExecuteCode(Directive):
             try:
                 with open(filename, "r") as code_file:
                     code = code_file.read()
-                    self.warning("code is %s" % code)
+                    self.warning(f"code is {code}")
             except (IOError, OSError) as err:
                 # Raise warning instead of a code block
-                error = "Error opening file: %s, working folder: %s" % (err, os.getcwd())
+                error = f"Error opening file: {err}, working folder: {os.getcwd()}"
                 self.warning(error)
                 return [nodes.warning(error, error)]
 
@@ -146,7 +145,7 @@ class ExecuteCode(Directive):
                 suffix = ""
                 if "hide_filename" not in self.options:
                     suffix = "" if filename is None else str(filename)
-                output.append(nodes.caption(text="Example %s" % suffix))
+                output.append(nodes.caption(text=f"Example {suffix}"))
             output.append(input_code)
 
         # Show the code results

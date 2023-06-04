@@ -101,12 +101,11 @@ async def _handle_message(
     if action == Signals.GET:
         return await _getters[body](dispatch_id, task_id)
 
-    if action == Signals.PUT:
-        key, val = body
-        await _putters[key](dispatch_id, task_id, val)
-        return None
-    else:
+    if action != Signals.PUT:
         raise KeyError(f"Unknown action {action}")
+    key, val = body
+    await _putters[key](dispatch_id, task_id, val)
+    return None
 
 
 async def watch(dispatch_id: str, task_id: int, executor: _ABE) -> None:

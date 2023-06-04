@@ -246,7 +246,7 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         saved_named_args_raw = {k: v.get_deserialized() for k, v in saved_named_args.items()}
         saved_named_kwargs_raw = {k: v.get_deserialized() for k, v in saved_named_kwargs.items()}
 
-        assert saved_named_args_raw == {}
+        assert not saved_named_args_raw
         assert saved_named_kwargs_raw == {"a": 1, "b": 2}
 
         # Check that the electron records are as expected
@@ -320,7 +320,7 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         assert result_1.result == result.get_deserialized()
 
         # Check that the electron records are as expected
-        for i, electron in enumerate(electron_rows):
+        for electron in electron_rows:
             if electron.name.startswith(postprocess_prefix):
                 assert electron.status == "NEW_OBJECT"
             else:

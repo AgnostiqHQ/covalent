@@ -146,47 +146,46 @@ const ParameterNode = ({
           </Typography>
         </Paper>
       </ParameterTooltip>
-      {!data.hideLabels ? (
-        <ParameterTooltip
-          title={_.truncate(data.node_id, { length: 70 })}
-          arrow
-          placement="bottom-end"
-        >
-          <Paper
-            sx={{
-              position: 'absolute',
-              top: 31,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '16px',
-              minWidth: '20%',
-              bgcolor: (theme) => theme.palette.background.paper,
-
-              // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
-              color: (theme) => theme.palette.text.tertiary,
-              cursor: 'default',
-              '&:hover': {
-                color: (theme) => theme.palette.text.primary,
-              },
-            }}
-          >
-            <Handle
-              type="target"
-              position={targetPosition}
-              isConnectable={isConnectable}
-            />
-            <Typography sx={{ fontSize: '0.625rem' }}>
-              {data.node_id}
-            </Typography>
-            <Handle
-              type="source"
-              position={sourcePosition}
-              isConnectable={isConnectable}
-            />
-          </Paper>
-        </ParameterTooltip>
-      ) : null}
+      {data.hideLabels ? null : 
+               <ParameterTooltip
+                 title={_.truncate(data.node_id, { length: 70 })}
+                 arrow
+                 placement="bottom-end"
+               >
+                 <Paper
+                   sx={{
+                     position: 'absolute',
+                     top: 31,
+                     display: 'flex',
+                     alignItems: 'center',
+                     justifyContent: 'center',
+                     borderRadius: '16px',
+                     minWidth: '20%',
+                     bgcolor: (theme) => theme.palette.background.paper,
+       
+                     // bgcolor: !selected ? theme.palette.background.paper : '#1B2632',
+                     color: (theme) => theme.palette.text.tertiary,
+                     cursor: 'default',
+                     '&:hover': {
+                       color: (theme) => theme.palette.text.primary,
+                     },
+                   }}
+                 >
+                   <Handle
+                     type="target"
+                     position={targetPosition}
+                     isConnectable={isConnectable}
+                   />
+                   <Typography sx={{ fontSize: '0.625rem' }}>
+                     {data.node_id}
+                   </Typography>
+                   <Handle
+                     type="source"
+                     position={sourcePosition}
+                     isConnectable={isConnectable}
+                   />
+                 </Paper>
+               </ParameterTooltip>}
     </Grid>
   )
 }

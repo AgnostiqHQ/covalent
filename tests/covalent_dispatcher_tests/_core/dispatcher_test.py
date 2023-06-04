@@ -204,15 +204,9 @@ def test_get_abstract_task_inputs():
 @pytest.mark.asyncio
 async def test_handle_completed_node(mocker):
     """Unit test for completed node handler"""
-    pending_parents = {}
-
     result_object = get_mock_result()
 
-    # tg edges are (1, 0), (0, 2)
-    pending_parents[0] = 1
-    pending_parents[1] = 0
-    pending_parents[2] = 1
-
+    pending_parents = {0: 1, 1: 0, 2: 1}
     mock_upsert_lattice = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data"
     )

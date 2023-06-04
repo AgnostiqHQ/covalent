@@ -91,9 +91,7 @@ const mapGraphToElements = (
         hideLabels: hideLabels,
         nodeType: node.type,
         preview,
-        sublattices_id: node.sublattice_dispatch_id
-          ? node.sublattice_dispatch_id
-          : null,
+        sublattices_id: node.sublattice_dispatch_id || null,
       },
       targetPosition: handlePositions.target,
       sourcePosition: handlePositions.source,

@@ -105,9 +105,7 @@ def extract_metadata(metadata: dict):
 
 def encode_dict(d):
     """Avoid JSON encoding when python str() suffices"""
-    if not isinstance(d, dict):
-        return d
-    return {k: str(v) for (k, v) in d.items()}
+    return {k: str(v) for (k, v) in d.items()} if isinstance(d, dict) else d
 
 
 def extract_graph(graph):
@@ -122,17 +120,13 @@ def extract_graph(graph):
 def result_encoder(obj):
     if isinstance(obj, Status):
         return obj.STATUS
-    if isinstance(obj, datetime):
-        return obj.isoformat()
-    return str(obj)
+    return obj.isoformat() if isinstance(obj, datetime) else str(obj)
 
 
 def encode_result(result_obj):
     lattice = result_obj.lattice
 
-    result_string = result_obj.encoded_result.json
-    if not result_string:
-        result_string = result_obj.encoded_result.object_string
+    result_string = result_obj.encoded_result.json or result_obj.encoded_result.object_string
 
     named_args = {k: v.object_string for k, v in lattice.named_args.items()}
     named_kwargs = {k: v.object_string for k, v in lattice.named_kwargs.items()}
@@ -154,9 +148,7 @@ def encode_result(result_obj):
         "graph": extract_graph(result_obj.lattice.transport_graph._graph),
     }
 
-    jsonified_result = simplejson.dumps(result_dict, default=result_encoder, ignore_nan=True)
-
-    return jsonified_result
+    return simplejson.dumps(result_dict, default=result_encoder, ignore_nan=True)
 
 
 class DispatchDB:
@@ -165,10 +157,7 @@ class DispatchDB:
     """
 
     def __init__(self, dbpath: str = None) -> None:
-        if dbpath:
-            self._dbpath = dbpath
-        else:
-            self._dbpath = get_config("user_interface.dispatch_db")
+        self._dbpath = dbpath or get_config("user_interface.dispatch_db")
 
     def __enter__(self):
         return self

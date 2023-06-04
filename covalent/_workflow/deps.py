@@ -34,7 +34,11 @@ class Deps(ABC):
 
     """
 
-    def __init__(self, apply_fn=None, apply_args=[], apply_kwargs={}, *, retval_keyword=""):
+    def __init__(self, apply_fn=None, apply_args=None, apply_kwargs=None, *, retval_keyword=""):
+        if apply_args is None:
+            apply_args = []
+        if apply_kwargs is None:
+            apply_kwargs = {}
         self.apply_fn = TransportableObject(apply_fn)
         self.apply_args = TransportableObject(apply_args)
         self.apply_kwargs = TransportableObject(apply_kwargs)

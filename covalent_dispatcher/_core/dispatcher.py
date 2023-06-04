@@ -289,11 +289,11 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
         app_log.debug(f"Workflow {result_object.dispatch_id} cancelled or failed")
         failed_nodes = result_object._get_failed_nodes()
         failed_nodes = map(lambda x: f"{x[0]}: {x[1]}", failed_nodes)
-        failed_nodes_msg = "\n".join(failed_nodes)
-        result_object._error = "The following tasks failed:\n" + failed_nodes_msg
         result_object._status = (
             RESULT_STATUS.FAILED if result_object._task_failed else RESULT_STATUS.CANCELLED
         )
+        failed_nodes_msg = "\n".join(failed_nodes)
+        result_object._error = "The following tasks failed:\n" + failed_nodes_msg
         return result_object
 
     app_log.debug(

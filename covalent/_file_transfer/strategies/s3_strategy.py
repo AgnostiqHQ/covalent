@@ -43,10 +43,10 @@ class S3(FileTransferStrategy):
 
         try:
             import boto3
-        except ImportError:
+        except ImportError as e:
             raise ImportError(
                 "Using S3 strategy requires boto3 from AWS installed on your system."
-            )
+            ) from e
 
         if self.credentials:
             os.environ["AWS_SHARED_CREDENTIALS_FILE"] = self.credentials

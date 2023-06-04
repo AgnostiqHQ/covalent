@@ -131,7 +131,7 @@ const LatticeStatusCard = ({
       >
         <Box
           sx={{
-            borderRight: !isFetching ? '1px solid #303067' : 'none',
+            borderRight: isFetching ? 'none' : '1px solid #303067',
             height: '25px',
             display: 'flex',
             alignItems: 'center',

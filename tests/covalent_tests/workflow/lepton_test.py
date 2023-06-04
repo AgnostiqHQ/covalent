@@ -324,7 +324,7 @@ def test_wrap_task(mocker, init_mock, language, display_name, cmd):
         return
 
     assert task.__code__.co_name == f"{language}_wrapper"
-    assert task.__name__ == display_name or ("myfunc" if not cmd else "mycommand")
+    assert task.__name__ == display_name or ("mycommand" if cmd else "myfunc")
     assert task.__qualname__ == f"Lepton.{display_name}" if display_name else "Lepton.mylib.myfunc"
     assert (
         task.__module__ == "covalent._workflow.lepton.console"

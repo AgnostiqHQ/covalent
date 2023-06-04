@@ -282,12 +282,12 @@ Node Outputs
             node_outputs: A dictionary containing the output of every node execution.
         """
 
-        all_node_outputs = {}
-        for node_id in self._lattice.transport_graph._graph.nodes:
-            all_node_outputs[
-                f"{self._get_node_name(node_id=node_id)}({node_id})"
-            ] = self._get_node_output(node_id=node_id)
-        return all_node_outputs
+        return {
+            f"{self._get_node_name(node_id=node_id)}({node_id})": self._get_node_output(
+                node_id=node_id
+            )
+            for node_id in self._lattice.transport_graph._graph.nodes
+        }
 
     def get_all_node_results(self) -> List[Dict]:
         """

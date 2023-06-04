@@ -5,9 +5,13 @@ const run = async () => {
   const token = core.getInput("token");
   const branch = core.getInput("branch");
   let stable = core.getInput("stable");
-  if (stable === "true") stable = true;
-  else if (stable === "false") stable = false;
-  else core.setFailed("There is an error in the stable input");
+  if (stable === "true") {
+    stable = true;
+  } else if (stable === "false") {
+           stable = false;
+         } else {
+           core.setFailed("There is an error in the stable input");
+         }
   const octokit = github.getOctokit(token);
   const {owner:owner,repo:repo} = github.context.repo
   let {
@@ -28,12 +32,11 @@ const run = async () => {
   while (latestTag == null) {
     i = 0;
     while (i < tags.length && latestTag == null) {
-      if (
-        commit === tags[i].commit.sha &&
-        (!tags[i].name.match("rc") || !stable) &&
-        tags[i].name.match(re)
-      )
+      if (commit === tags[i].commit.sha &&
+              (!tags[i].name.match("rc") || !stable) &&
+              tags[i].name.match(re)) {
         latestTag = tags[i].name;
+      }
       i++;
     }
     if (latestTag == null) {

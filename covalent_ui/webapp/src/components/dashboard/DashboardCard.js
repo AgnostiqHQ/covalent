@@ -61,7 +61,9 @@ const DashboardCard = () => {
   }, [isDeleted, callSocketApi])
 
   useEffect(() => {
-    if (isError) setOpenSnackbar(true)
+    if (isError) {
+      setOpenSnackbar(true)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isError])
 

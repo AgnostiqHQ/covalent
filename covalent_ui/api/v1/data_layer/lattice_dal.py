@@ -137,7 +137,7 @@ class Lattices:
             List of sub Lattices
         """
 
-        data = (
+        return (
             self.db_con.query(
                 Lattice.dispatch_id.label("dispatch_id"),
                 Lattice.name.label("lattice_name"),
@@ -145,7 +145,10 @@ class Lattices:
                     (
                         func.strftime(
                             "%s",
-                            func.IFNULL(Lattice.completed_at, func.datetime.now(timezone.utc)),
+                            func.IFNULL(
+                                Lattice.completed_at,
+                                func.datetime.now(timezone.utc),
+                            ),
                         )
                         - func.strftime("%s", Lattice.started_at)
                     )
@@ -172,5 +175,3 @@ class Lattices:
             )
             .all()
         )
-
-        return data

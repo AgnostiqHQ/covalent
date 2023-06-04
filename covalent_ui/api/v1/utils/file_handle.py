@@ -45,37 +45,32 @@ def transportable_object(obj):
 def validate_data(unpickled_object):
     """Validate unpickled object"""
     if isinstance(unpickled_object, list):
-        if not (unpickled_object):
-            return ""
-        else:
-            list_str = "".join([obj for obj in unpickled_object])
-            return list_str
+        return "".join(list(unpickled_object)) if unpickled_object else ""
     if isinstance(unpickled_object, dict):
-        args_array = []
-        kwargs_array = {}
-        if bool(unpickled_object):
-            if "type" in unpickled_object:
-                return unpickled_object
-            for obj in unpickled_object["args"]:
-                args_array.append(obj.object_string) if obj is not None else None
-
-            for obj in unpickled_object["kwargs"]:
-                kwargs_array[obj] = (
-                    unpickled_object["kwargs"][obj].object_string
-                    if unpickled_object["kwargs"][obj] is not None
-                    else None
-                )
-
-            to_transportable_object = TransportableObject(
-                {"args": tuple(args_array), "kwargs": kwargs_array}
-            )
-            object_bytes = transportable_object(to_transportable_object)
-            return (
-                str(({"args": tuple(args_array), "kwargs": kwargs_array})),
-                f"import pickle{object_bytes}",
-            )
-        else:
+        if not bool(unpickled_object):
             return None
+        if "type" in unpickled_object:
+            return unpickled_object
+        args_array = []
+        for obj in unpickled_object["args"]:
+            args_array.append(obj.object_string) if obj is not None else None
+
+        kwargs_array = {
+            obj: (
+                unpickled_object["kwargs"][obj].object_string
+                if unpickled_object["kwargs"][obj] is not None
+                else None
+            )
+            for obj in unpickled_object["kwargs"]
+        }
+        to_transportable_object = TransportableObject(
+            {"args": tuple(args_array), "kwargs": kwargs_array}
+        )
+        object_bytes = transportable_object(to_transportable_object)
+        return (
+            str(({"args": tuple(args_array), "kwargs": kwargs_array})),
+            f"import pickle{object_bytes}",
+        )
     elif isinstance(unpickled_object, str):
         return (
             unpickled_object if (unpickled_object != "" or unpickled_object is not None) else None
@@ -110,24 +105,19 @@ class FileHandler:
     def read_from_text(self, path):
         """Return data from text file"""
         try:
-            with open(self.location + "/" + path, "r", encoding="utf-8") as read_file:
+            with open(f"{self.location}/{path}", "r", encoding="utf-8") as read_file:
                 text_object = read_file.readlines()
-                list_str = ""
                 read_file.close()
-                if isinstance(text_object, list):
-                    for i in text_object:
-                        list_str += i
-                    return list_str if (list_str != "" or list_str is not None) else None
-                else:
+                if not isinstance(text_object, list):
                     return text_object if (text_object != "" or text_object is not None) else None
-        except EOFError:
-            return None
+                list_str = "".join(text_object)
+                return list_str if (list_str != "" or list_str is not None) else None
         except Exception:
             return None
 
     def __unpickle_file(self, path):
         try:
-            with open(self.location + "/" + path, "rb") as read_file:
+            with open(f"{self.location}/{path}", "rb") as read_file:
                 unpickled_object = pickle.load(read_file)
                 read_file.close()
                 return unpickled_object

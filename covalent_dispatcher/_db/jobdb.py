@@ -165,6 +165,4 @@ def to_job_ids(dispatch_id: str, task_ids: List[int]) -> List[int]:
             .where(Electron.transport_graph_node_id.in_(task_ids))
         )
 
-        records = session.scalars(stmt).all()
-
-        return records
+        return session.scalars(stmt).all()

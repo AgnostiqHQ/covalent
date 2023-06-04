@@ -84,7 +84,7 @@ const LatticePreviewLayout = () => {
           graph={lattice.graph}
           hasSelectedNode={!!selectedElectron}
           marginLeft={latticeDrawerWidth + navDrawerWidth}
-          marginRight={!!selectedElectron ? nodeDrawerWidth : 0}
+          marginRight={selectedElectron ? nodeDrawerWidth : 0}
         />
       </Box>
 

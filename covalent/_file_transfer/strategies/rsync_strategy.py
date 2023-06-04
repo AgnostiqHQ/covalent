@@ -65,12 +65,9 @@ class Rsync(FileTransferStrategy):
         remote_source = f"{self.user}@{self.host}:{remote_filepath}"
 
         if transfer_from_remote:
-            args.append(remote_source)
-            args.append(local_filepath)
+            args.extend((remote_source, local_filepath))
         else:
-            args.append(local_filepath)
-            args.append(remote_source)
-
+            args.extend((local_filepath, remote_source))
         return " ".join(args)
 
     def get_rsync_cmd(

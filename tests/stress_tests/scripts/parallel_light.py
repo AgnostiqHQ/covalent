@@ -72,7 +72,7 @@ def feedforward_workflow(tasks, predecessors):
 
 # Without covalent
 for w in widths:
-    tasks = [[sample_task for i in range(w)]]
+    tasks = [[sample_task for _ in range(w)]]
     deps = []
     for i in range(trials_per_width):
         workflow = ct.lattice(feedforward_workflow)
@@ -84,15 +84,15 @@ for w in widths:
         outfile = f"{benchmark_dir}/no_ct_width_{w}_trial_{i}"
         with open(outfile, "w") as f:
             yaml.dump({"test": benchmark_name, "ct": False, "width": w, "runtime": end - start}, f)
-        print("(w/o ct) runtime for width {}: {} seconds".format(w, end - start))
+        print(f"(w/o ct) runtime for width {w}: {end - start} seconds")
 
 time.sleep(3)
 
 # With covalent
 for w in widths:
-    tasks = [[sample_task for i in range(w)]]
+    tasks = [[sample_task for _ in range(w)]]
     deps = []
-    for i in range(trials_per_width):
+    for _ in range(trials_per_width):
         workflow = ct.lattice(feedforward_workflow)
 
         result = ct.dispatch_sync(workflow)(tasks, deps)
@@ -111,4 +111,4 @@ for w in widths:
                 },
                 f,
             )
-        print("runtime for width {}: {} seconds".format(w, result.end_time - result.start_time))
+        print(f"runtime for width {w}: {result.end_time - result.start_time} seconds")

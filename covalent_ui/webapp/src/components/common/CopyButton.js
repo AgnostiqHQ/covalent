@@ -57,9 +57,9 @@ const CopyButton = ({
         <Grid
           sx={{
             border: isBorderPresent ? '1px solid #303067' : null,
-            borderRadius: borderRadius ? borderRadius : '8px',
-            width: width ? width : '32px',
-            height: height ? height : '32px',
+            borderRadius: borderRadius || '8px',
+            width: width || '32px',
+            height: height || '32px',
           }}
           container
           direction="row"
