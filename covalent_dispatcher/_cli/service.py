@@ -467,13 +467,13 @@ def status() -> None:
     """
 
     pid = _read_pid(UI_PIDFILE)
-    if _read_pid(UI_PIDFILE) != -1 and psutil.pid_exists(pid):
+    if psutil.pid_exists(pid) and psutil.Process(pid).status() == psutil.STATUS_ZOMBIE:
+        click.echo(ZOMBIE_PROCESS_STATUS_MSG)
+    elif psutil.pid_exists(pid) and psutil.Process(pid).status() == psutil.STATUS_STOPPED:
+        click.echo(STOPPED_PROCESS_STATUS_MSG)
+    elif _read_pid(UI_PIDFILE) != -1 and psutil.pid_exists(pid):
         ui_port = get_config("user_interface.port")
         click.echo(f"Covalent server is running at http://localhost:{ui_port}.")
-    elif psutil.pid_exists(pid) and psutil.Process(pid).status == psutil.STATUS_ZOMBIE:
-        click.echo(ZOMBIE_PROCESS_STATUS_MSG)
-    elif psutil.pid_exists(pid) and psutil.Process(pid).status == psutil.STATUS_STOPPED:
-        click.echo(STOPPED_PROCESS_STATUS_MSG)
     else:
         _rm_pid_file(UI_PIDFILE)
         click.echo("Covalent server is stopped.")
