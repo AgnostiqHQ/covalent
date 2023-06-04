@@ -1147,7 +1147,6 @@ def test_terminate_child_processes(mocker):
 
 
 def test_graceful_start_permission_exception(mocker):
-
     graceful_start_mock = mocker.patch(
         "covalent_dispatcher._cli.service._graceful_start",
         side_effect=PermissionError("Permission denied"),
