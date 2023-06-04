@@ -291,10 +291,13 @@ def validate_device(name: str, meas_type: str):
         # pylint: disable=no-member
         supported_dev_names = _pennylane_qiskit_devices().measurements_map.get(meas_type, [])
         devices_str = ", ".join(["'" + d + "'" for d in supported_dev_names])
-        l = len(supported_dev_names)
 
-        raise PennylaneQiskitError(
-            f"qml.{meas_type} measurement is not supported for '{name}' device; "
-            f"compatible {'device is' if l == 1 else 'devices are'} {devices_str}."
-        )
+        msg = f"qml.{meas_type} measurement is not supported for '{name}' device"
+        if len(supported_dev_names) == 0:
+            msg += "; no QElectron devices support this measurement."
+        else:
+            msg += f"; compatible devices are {devices_str}."
+
+        raise PennylaneQiskitError(msg)
+
     return name
