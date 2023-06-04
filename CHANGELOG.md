@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Docs
-
-- Fix typo in `Lattice` RTD.
-
 ## [0.224.0-rc.0] - 2023-06-04
 
 ### Authors
