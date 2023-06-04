@@ -472,7 +472,6 @@ def test_status(mocker, port_val, pid, echo_output, file_removed, pid_exists, pr
     process_mock = Mock(spec=psutil.Process)
     process_mock.status.return_value = process_status
     with mocker.patch("psutil.Process", return_value=process_mock):
-
         runner = CliRunner()
         res = runner.invoke(status)
 
