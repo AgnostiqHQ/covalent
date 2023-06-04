@@ -582,9 +582,7 @@ class Electron:
             name=prefix,
             function=to_decoded_electron_collection,
             metadata=new_metadata,
-            function_string=get_serialized_function_str(
-                to_decoded_electron_collection
-            ),
+            function_string=get_serialized_function_str(to_decoded_electron_collection),
         )
 
     def wait_for(self, electrons: Union["Electron", Iterable["Electron"]]):

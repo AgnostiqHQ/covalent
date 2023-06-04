@@ -52,7 +52,15 @@ class DepsCall(Deps):
 
     """
 
-    def __init__(self, func=None, args=None, kwargs=None, *, retval_keyword="", override_reserved_retval_keys=False):
+    def __init__(
+        self,
+        func=None,
+        args=None,
+        kwargs=None,
+        *,
+        retval_keyword="",
+        override_reserved_retval_keys=False,
+    ):
         if args is None:
             args = []
         if kwargs is None:

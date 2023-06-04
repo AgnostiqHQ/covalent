@@ -109,9 +109,7 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
             )
         handler = FileHandler(lattice_data["directory"])
         if name == "result":
-            response, python_object = handler.read_from_pickle(
-                lattice_data["results_filename"]
-            )
+            response, python_object = handler.read_from_pickle(lattice_data["results_filename"])
             return LatticeFileResponse(data=str(response), python_object=python_object)
         if name == "inputs":
             response, python_object = handler.read_from_pickle(lattice_data["inputs_filename"])
@@ -137,9 +135,7 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
             response = handler.read_from_text(lattice_data["error_filename"])
             return LatticeFileResponse(data=response)
         elif name == "function":
-            response, python_object = handler.read_from_pickle(
-                lattice_data["function_filename"]
-            )
+            response, python_object = handler.read_from_pickle(lattice_data["function_filename"])
             return LatticeFileResponse(data=response, python_object=python_object)
         elif name == "transport_graph":
             response = handler.read_from_pickle(lattice_data["transport_graph_filename"])

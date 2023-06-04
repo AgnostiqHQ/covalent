@@ -84,11 +84,7 @@ def post_settings(new_entries: Dict, override_existing: bool = True):
     Returns:
         settings updated successfully when updated.
     """
-    if [
-        validator.value
-        for validator in Validators
-        if validator.value in new_entries
-    ]:
+    if [validator.value for validator in Validators if validator.value in new_entries]:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=[

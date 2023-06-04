@@ -76,9 +76,25 @@ class Lepton(Electron):
     _LANG_SHELL = ["bash", "shell"]
     _SCRIPTING_LANGUAGES = _LANG_PY + _LANG_SHELL
 
-    def __init__(self, language: str = "python", *, library_name: str = "", function_name: str = "", argtypes: Optional[List] = None, command: Optional[Union[str, List[str]]] = "", named_outputs: Optional[List[str]] = None, display_name: Optional[str] = "", executor: Union[
+    def __init__(
+        self,
+        language: str = "python",
+        *,
+        library_name: str = "",
+        function_name: str = "",
+        argtypes: Optional[List] = None,
+        command: Optional[Union[str, List[str]]] = "",
+        named_outputs: Optional[List[str]] = None,
+        display_name: Optional[str] = "",
+        executor: Union[
             List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]
-        ] = DEFAULT_METADATA_VALUES["executor"], files: List[FileTransfer] = None, deps_bash: Union[DepsBash, List, str] = DEFAULT_METADATA_VALUES["deps"].get("bash", []), deps_pip: Union[DepsPip, list] = DEFAULT_METADATA_VALUES["deps"].get("pip", None), call_before: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_before"], call_after: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_after"]) -> None:
+        ] = DEFAULT_METADATA_VALUES["executor"],
+        files: List[FileTransfer] = None,
+        deps_bash: Union[DepsBash, List, str] = DEFAULT_METADATA_VALUES["deps"].get("bash", []),
+        deps_pip: Union[DepsPip, list] = DEFAULT_METADATA_VALUES["deps"].get("pip", None),
+        call_before: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_before"],
+        call_after: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_after"],
+    ) -> None:
         if argtypes is None:
             argtypes = []
         if named_outputs is None:
