@@ -29,7 +29,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
 - Co-authored-by: Casey Jao <casey@agnostiq.ai>
 
-
 ### Changed
 
 - Error messages are propagated to stdout when the server is not started. These changes are applied to `dispatch`, `redispatch`, and `get_result`.
@@ -37,7 +36,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Fix typo in GCP Batch executor RTD.
-- Add steps for setting up GUI for local development in contribution guidelines. 
+- Add steps for setting up GUI for local development in contribution guidelines.
 
 ### Fixed
 
@@ -62,7 +61,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
-- Nightly frequency set to midnight EST 
+- Nightly frequency set to midnight EST
 
 ## [0.223.1-rc.0] - 2023-05-17
 
@@ -87,7 +86,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Andrew S. Rosen <asrosen93@gmail.com>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
-
 
 ### Added
 
@@ -192,7 +190,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 
-
 ### Changed
 
 - Moved TransportableObject from transport.py to a new file transportable_object.py.
@@ -210,7 +207,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
 - dwelsch-esi <116022979+dwelsch-esi@users.noreply.github.com>
 - Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
-
 
 ### Operations
 
@@ -268,10 +264,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Venkat Bala <15014089+venkatBala@users.noreply.github.com>
 - Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
 
-
 ### Docs
 
-* Adding `cancellation` RTD text files
+- Adding `cancellation` RTD text files
 
 ### Added
 
@@ -320,7 +315,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
 
-
 ### Added
 
 - Added feature to support cancelling workflow dispatches
@@ -364,14 +358,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Location of function to load result from the database now moved to load module in covalent_dispatcher/_db folde.
+- Location of function to load result from the database now moved to load module in covalent_dispatcher/\_db folde.
 
 ### Added
+
 - API endpoint for redispatching.
 - Unit and functional tests for redispatching.
 
 ### Docs
-- Updated self-deployment (server deployment). 
+
+- Updated self-deployment (server deployment).
 
 ## [0.216.0-rc.0] - 2023-02-05
 
@@ -382,7 +378,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
 
-
 ### Removed
 
 - References to specific IBMQ hub/group/project in tutorial 5
@@ -391,7 +386,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - TransportGraphOps class for diffing operations on transport graphs.
 - Added make derived dispatch method.
-- Apply electron updates method to _TransportGraph.
+- Apply electron updates method to \_TransportGraph.
 
 ### Operations
 
@@ -419,7 +414,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Alejandro Esquivel <ae@alejandro.ltd>
 
-
 ### Operations
 
 - Fixed stable-changelog action removed `.catch` added `.on('error')`
@@ -441,7 +435,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
 
-
 ### Fixed
 
 - Removing the entrypoint for SDK-only install
@@ -455,12 +448,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Alejandro Esquivel <ae@alejandro.ltd>
 - dwelsch-esi <116022979+dwelsch-esi@users.noreply.github.com>
 
-
 ### Fixed
 
 - Load plugins only when COVALENT_PLUGIN_LOAD environment variable has been set to a Truthy value.
 
 ### Docs
+
 - Published Self-Deployment Guide
 
 ## [0.213.0-rc.0] - 2023-01-18
@@ -479,7 +472,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 
-
 ### Fixed
 
 - MNIST tutorial now shows non-Null outputs and the classifier training log image has been updated.
@@ -496,6 +488,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated `_get_result_from_dispatcher` test to verify whether using a link directly works or not
 
 ### Docs
+
 - Revised UI reference. Added Settings page documentation.
 - Added broken UI links in README
 
@@ -505,12 +498,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Casey Jao <casey@agnostiq.ai>
 
-
 ### Fixed
 
 - Fixed naming of collection nodes (was breaking postprocessing)
 - Restored compatibility with stable release of AWS executors
-
 
 ## [0.212.0-rc.0] - 2023-01-13
 
@@ -520,7 +511,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
 - Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
-
 
 ### Added
 
@@ -547,8 +537,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Alejandro Esquivel <ae@alejandro.ltd>
 
-
 ### Changed
+
 - Changed decode-uri-component package version on webapp yarn-lock file.
 - Changed json5 package version on webapp yarn-lock file.
 
@@ -557,7 +547,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Authors
 
 - Alejandro Esquivel <ae@alejandro.ltd>
-
 
 ### Changed
 
@@ -587,7 +576,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Venkat Bala <15014089+venkatBala@users.noreply.github.com>
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
 
-
 ### Fixed
 
 - Removed merge conflict symbols in changelog
@@ -611,7 +599,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
 - Venkat Bala <15014089+venkatBala@users.noreply.github.com>
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
-
 
 ### Added
 
@@ -682,7 +669,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
-
 - Added DNN tutorial
 - Updated AWS Plugins install instructions
 - Updated AWS Plugins documentation (minor fixes)
@@ -696,7 +682,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Corrected some API class names in headers.
 - Added an executors-and-UI graphic.
 - Adding `Deployment` section for self-hosting guide
-
 
 ## [0.208.0-rc.0] - 2022-11-05
 
@@ -739,7 +724,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Alejandro Esquivel <ae@alejandro.ltd>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 
-
 ### Changed
 
 - Running migrations automatically if none have run in the past (fresh installs, after purging)
@@ -757,7 +741,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Casey Jao <casey@agnostiq.ai>
 - Venkat Bala <15014089+venkatBala@users.noreply.github.com>
-
 
 ### Docs
 
@@ -791,7 +774,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Venkat Bala <15014089+venkatBala@users.noreply.github.com>
 - Casey Jao <casey@agnostiq.ai>
 
-
 ### Changed
 
 - Made `root_dispatch_id` nullable to circumvent migration issues with sqlite in certain platforms
@@ -813,7 +795,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Alejandro Esquivel <ae@alejandro.ltd>
 - Venkat Bala <15014089+venkatBala@users.noreply.github.com>
 - Casey Jao <casey@agnostiq.ai>
-
 
 ### Fixed
 
@@ -841,7 +822,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: RaviPsiog <ravieja.gurram@psiog.com>
 - Aravind <100823292+Aravind-psiog@users.noreply.github.com>
 - Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
-
 
 ### Operations
 
@@ -871,7 +851,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
 - Will Cunningham <wjcunningham7@gmail.com>
 
-
 ### Added
 
 - Ability to use terminal on the GUI.
@@ -898,12 +877,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 - Casey Jao <casey@agnostiq.ai>
 
-
 ### Added
 
 - Ability to view sublattices list as part of the main lattice
 - Ability to view subalattices graph as part of main lattice
-
 
 ### Fixed
 
@@ -925,9 +902,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: Casey Jao <casey@agnostiq.ai>
 - Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 - Scott Wyman Neagle <wymnea@protonmail.com>
-
 
 ### Docs
 
@@ -976,8 +952,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
 - Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
 - Co-authored-by: Casey Jao <casey@agnostiq.ai>
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
-
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 
 ## Docs
 
@@ -1102,14 +1077,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scott Wyman Neagle <scott@agnostiq.ai>
 - Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
 
-
 ### Operations
 
 - Fix `release.yml` workflow
 - Adding a step in `release.yml/docker` job to trigger the AWS executor base image build in the remote repo `covalent-aws-plugins`
 - Pass all the necessary inputs for the triggered workflow as part of the HTTP POST request body
 - Added MacOS 12 to test matrix
-
 
 ### Changed
 
@@ -1174,10 +1147,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
 - Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
 - Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Casey Jao <casey@agnostiq.ai>
-
 
 ### Fixed
 
@@ -1192,6 +1164,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced DB tests to check faithfulness of persist and rehydrate operations
 
 ### Docs
+
 - Update user interface docs for filter and delete features.
 - Added credential management page
 
@@ -1208,10 +1181,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
 - Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
 - Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Casey Jao <casey@agnostiq.ai>
-
 
 ### Changed
 
@@ -1231,10 +1203,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
 - Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
 - Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Casey Jao <casey@agnostiq.ai>
-
 
 ### Changed
 
@@ -1257,10 +1228,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
 - Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
 - Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Casey Jao <casey@agnostiq.ai>
-
 
 ### Operations
 
@@ -1285,10 +1255,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
 - Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
 - Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Casey Jao <casey@agnostiq.ai>
-
 
 ### Changed
 
@@ -1311,9 +1280,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
 - Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
 - Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
-
 
 ### Changed
 
@@ -1332,9 +1300,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
 - Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
 - Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
-
 
 ### Added
 
@@ -1353,8 +1320,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
 - Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
 - Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
-
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 
 ### Changed
 
@@ -1373,7 +1339,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
 - Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
 - Co-authored-by: Amalan Jenicious F <amalan.jenicious@psiog.com>
-
 
 ### Added
 
@@ -1398,7 +1363,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Alejandro Esquivel <ae@alejandro.ltd>
 - Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
 - Aravind-psiog <100823292+Aravind-psiog@users.noreply.github.com>
-
 
 ### Added
 
@@ -1441,7 +1405,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sankalp Sanand <sankalp@agnostiq.ai>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 - Venkat Bala <venkat@agnostiq.ai>
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
@@ -1490,7 +1454,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sankalp Sanand <sankalp@agnostiq.ai>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 
-
 ### Fixed
 
 - Switched the `render_as_batch` flag in the alembic env context so that `ALTER` commands are supported in SQLite migrations.
@@ -1513,7 +1476,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Casey Jao <casey@agnostiq.ai>
 - Sankalp Sanand <sankalp@agnostiq.ai>
 
-
 ### Fixed
 
 - Function's `__doc__` and `__name__` storage in dict/json for transportable object fixed.
@@ -1530,7 +1492,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Venkat Bala <venkat@agnostiq.ai>
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 - Casey Jao <casey@agnostiq.ai>
-
 
 ### Changed
 
@@ -1552,7 +1513,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Scott Wyman Neagle <scott@agnostiq.ai>
 - Venkat Bala <venkat@agnostiq.ai>
-
 
 ### Added
 
@@ -1576,7 +1536,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Alejandro Esquivel <ae@alejandro.ltd>
 - Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
 - Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
-
 
 ### Fixed
 
@@ -1611,7 +1570,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
 - Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
 
-
 ### Fixed
 
 - lattice.draw() fix on the GUI.
@@ -1626,7 +1584,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
-
 
 ### Added
 
@@ -1665,7 +1622,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Manjunath PV <manjunath.poilath@psiog.com>
 - Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
 
-
 ### Changed
 
 - Lazy loading mechanism on the GUI.
@@ -1697,12 +1653,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Casey Jao <casey@agnostiq.ai>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 - Scott Wyman Neagle <scott@agnostiq.ai>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
 - Sankalp Sanand <sankalp@agnostiq.ai>
-
 
 ### Removed
 
@@ -1727,8 +1682,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Authors
 
-
-
 ### Changed
 
 - Changed terser package version on webapp yarn-lock file.
@@ -1740,7 +1693,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 - Casey Jao <casey@agnostiq.ai>
-
 
 ### Changed
 
@@ -1790,7 +1742,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Casey Jao <casey@agnostiq.ai>
 
-
 ### Operations
 
 - Update precommit yaml.
@@ -1811,7 +1762,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Casey Jao <casey@agnostiq.ai>
 
-
 ### Operations
 
 - Trigger Slack alert for failed tests on `workflow_run`
@@ -1822,7 +1772,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Casey Jao <casey@agnostiq.ai>
 - Alejandro Esquivel <ae@alejandro.ltd>
-
 
 ### Changed
 
@@ -1841,7 +1790,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Authors
 
 - Sankalp Sanand <sankalp@agnostiq.ai>
-
 
 ### Added
 
@@ -1873,7 +1821,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Aravind-psiog <aravind.prabaharan@psiog.com>
 - Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
-
 
 ### Changed
 
@@ -1927,7 +1874,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Venkat Bala <venkat@agnostiq.ai>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 
-
 ### Changed
 
 - Temporarily allow executor plugin variable name to be either in uppercase or lowercase
@@ -1939,7 +1885,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Venkat Bala <venkat@agnostiq.ai>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 
-
 ### Added
 
 - Adding a `covalent config` convenience CLI to quickly view retrive the covalent configuration
@@ -1950,7 +1895,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Venkat Bala <venkat@agnostiq.ai>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
-
 
 ### Added
 
@@ -1966,7 +1910,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 
-
 ### Added
 
 - S3 File transfer strategy
@@ -1981,11 +1924,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Venkat Bala <venkat@agnostiq.ai>
 
-
 ### Tests
 
 - Update dask cli test to match Covalent Dask cluster configuration
-
 
 ### Changed
 
@@ -1997,7 +1938,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Authors
 
 - Casey Jao <casey@agnostiq.ai>
-
 
 ### Changed
 
@@ -2020,7 +1960,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
 - Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
-
 
 ### Changed
 
@@ -2052,7 +1991,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 
-
 ### Added
 
 - Added `rsync` dependency in `Dockerfile`
@@ -2076,7 +2014,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Alejandro Esquivel <ae@alejandro.ltd>
 - Co-authored-by: Casey Jao <casey@agnostiq.ai>
 
-
 ### Changed
 
 - Updated Base executor to support non-unique `retval_key`s, particularly for use in File Transfer where we may have several CallDeps with the reserved `retval_key` of value `files`.
@@ -2088,11 +2025,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Alejandro Esquivel <ae@alejandro.ltd>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 
-
 ### Fixed
 
 - Updated `covalent db migrations` to overwrite `alembic.ini` `script_location` with absolute path to migrations folder
-- Updated `covalent db alembic [args]` command to use project root as `cwd` for alembic subprocess  
+- Updated `covalent db alembic [args]` command to use project root as `cwd` for alembic subprocess
 
 ## [0.161.1] - 2022-08-03
 
@@ -2103,7 +2039,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Poojith U Rao <106616820+poojithurao@users.noreply.github.com>
 - Co-authored-by: Casey Jao <casey@agnostiq.ai>
-
 
 ### Fixed
 
@@ -2121,7 +2056,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scott Wyman Neagle <scott@agnostiq.ai>
 - Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
 
-
 ### Changed
 
 - Replaced `Session(DispatchDB()._get_data_store().engine)` with `workflow_db.session()`
@@ -2137,7 +2071,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Alejandro Esquivel <ae@alejandro.ltd>
 - Scott Wyman Neagle <scott@agnostiq.ai>
-
 
 ### Fixed
 
@@ -2158,7 +2091,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Casey Jao <casey@agnostiq.ai>
 - Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
 
-
 ### Changed
 
 - `Executor.run()` now accepts a `task_metadata` dictionary. Current
@@ -2170,7 +2102,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Casey Jao <casey@agnostiq.ai>
 - Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
-
 
 ### Changed
 
@@ -2188,14 +2119,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Authors
 
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
 - Alejandro Esquivel <ae@alejandro.ltd>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Casey Jao <casey@agnostiq.ai>
 - Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
-
 
 ### Changed
 
@@ -2206,7 +2136,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Authors
 
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
 - Alejandro Esquivel <ae@alejandro.ltd>
@@ -2221,13 +2151,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Authors
 
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
 - Alejandro Esquivel <ae@alejandro.ltd>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Casey Jao <casey@agnostiq.ai>
-
 
 ### Changed
 
@@ -2250,12 +2179,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Authors
 
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
 - Alejandro Esquivel <ae@alejandro.ltd>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
-
 
 ### Added
 
@@ -2266,12 +2194,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Authors
 
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
 - Alejandro Esquivel <ae@alejandro.ltd>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
-
 
 ### Fixed
 
@@ -2289,7 +2216,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Alejandro Esquivel <ae@alejandro.ltd>
 
-
 ### Added
 
 - Exposing `alembic {args}` cli commands through: `covalent db alembic {args}`
@@ -2302,7 +2228,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
 - Alejandro Esquivel <ae@alejandro.ltd>
 
-
 ### Added
 
 - Added methods to programatically fetch information from Alembic without needing subprocess
@@ -2314,11 +2239,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Casey Jao <casey@agnostiq.ai>
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
 
-
 ### Fixed
 
 - Stdout and stderr are now captured when using the dask executor.
-
 
 ### Tests
 
@@ -2329,7 +2252,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Authors
 
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
-
 
 ### Added
 
@@ -2347,7 +2269,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 
-
 ### Changed
 
 - Pass default DataStore object to node value retrieval method in the Results object.
@@ -2358,7 +2279,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
-
 
 ### Fixed
 
@@ -2372,7 +2292,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scott Wyman Neagle <scott@agnostiq.ai>
 - Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
 - Sankalp Sanand <sankalp@agnostiq.ai>
-
 
 ### Added
 
@@ -2400,7 +2319,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 
-
 ### Added
 
 - Initialize database tables when the covalent server is started.
@@ -2411,7 +2329,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Scott Wyman Neagle <scott@agnostiq.ai>
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
-
 
 ### Removed
 
@@ -2424,7 +2341,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Alejandro Esquivel <ae@alejandro.ltd>
 
-
 ### Changed
 
 - Changed DataStore default db path to correspond to dispatch db config path
@@ -2432,7 +2348,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Added workflow to stale and close pull requests
-
 
 ### Docs
 
@@ -2444,7 +2359,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Authors
 
 - Casey Jao <casey@agnostiq.ai>
-
 
 ### Changed
 
@@ -2458,8 +2372,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Casey Jao <casey@agnostiq.ai>
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
-
-
 
 ### Added
 
@@ -2477,7 +2389,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
 - Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
 
-
 ### Removed
 
 - `entry_point.get_result()`
@@ -2494,7 +2405,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 - Alejandro Esquivel <ae@alejandro.ltd>
 
-
 ### Added
 
 - Set up alembic migrations & added migration guide (`alembic/README.md`)
@@ -2505,7 +2415,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
-
 
 ### Changed
 
@@ -2525,7 +2434,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 
-
 ### Added
 
 - `electron_num`, `completed_electron_num` fields to the Lattice table.
@@ -2543,7 +2451,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 
-
 ### Changed
 
 - Deprecate topological sort in favor of inspect in-degree of nodes until they are zero before dispatching task
@@ -2560,7 +2467,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
-
 
 ### Added
 
@@ -2581,7 +2487,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 - Co-authored-by: Will Cunningham <wjcunningham7@users.noreply.github.com>
 
-
 ### Fixed
 
 - Fixes Reverse IP problem. All References to `0.0.0.0` are changed to `localhost` . More details can be found [here](https://github.com/AgnostiqHQ/covalent/issues/202)
@@ -2594,7 +2499,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
-
 
 ### Added
 
@@ -2612,7 +2516,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
-
 
 ### Added
 
@@ -2632,7 +2535,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
-
 
 ### Added
 
@@ -2654,7 +2556,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scott Wyman Neagle <scott@agnostiq.ai>
 - Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
 
-
 ### Changed
 
 - Result.save() has been deprecated in favor of Result.persist() and querying the database directly.
@@ -2666,7 +2567,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Casey Jao <casey@agnostiq.ai>
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
-
 
 ### Operations
 
@@ -2684,7 +2584,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Casey Jao <casey@agnostiq.ai>
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 
-
 ### Changed
 
 - Covalent server can now process workflows without having their deps installed
@@ -2694,7 +2593,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Authors
 
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
-
 
 ### Removed
 
@@ -2709,7 +2607,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Authors
 
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
-
 
 ### Added
 
@@ -2730,7 +2627,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Sankalp Sanand <sankalp@agnostiq.ai>
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
-
 
 ### Fixed
 
@@ -2779,7 +2675,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 
-
 ### Fixed
 
 - `Result.persist` test in `result_test.py`.
@@ -2789,7 +2684,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Authors
 
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 - Co-authored-by: Casey Jao <casey@agnostiq.ai>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
@@ -2805,7 +2700,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scott Wyman Neagle <scott@agnostiq.ai>
 - Co-authored-by: Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
-
 
 ### Added
 
@@ -2824,7 +2718,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: Sankalp Sanand <sankalp@agnostiq.ai>
 
-
 ### Added
 
 - Added Folder class
@@ -2838,13 +2731,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Authors
 
-- Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+- Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 - Venkat Bala <venkat@agnostiq.ai>
 - Co-authored-by: Okechukwu Ochia <emmirald@gmail.com>
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
-
 
 ### Added
 
@@ -2867,7 +2759,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 
-
 ### Added
 
 - `Result.persist` method in `covalent/_results_manager/result.py`.
@@ -2886,7 +2777,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Alejandro Esquivel <ae@alejandro.ltd>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 
-
 ### Added
 
 - Added Folder class
@@ -2903,7 +2793,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 Will Cunningham <wjcunningham7@users.noreply.github.com>
 Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
-
 
 ### Operations
 
@@ -2925,7 +2814,6 @@ Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 Faiyaz Hasan <faiyaz@agnostiq.ai>
 Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 
-
 ### Added
 
 - `covalent/_results_manager/write_result_to_db.py` module and methods to insert / update data in the DB.
@@ -2944,7 +2832,6 @@ Will Cunningham <wjcunningham7@users.noreply.github.com>
 Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 
-
 ### Removed
 
 - Unused requirements `gunicorn` and `eventlet` in `requirements.txt` as well as `dask` in `tests/requirements.txt`, since it is already included in the core requirements.
@@ -2957,11 +2844,10 @@ Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.gi
 
 ### Authors
 
-Okechukwu  Emmanuel Ochia <okechukwu@agnostiq.ai>
+Okechukwu Emmanuel Ochia <okechukwu@agnostiq.ai>
 Co-authored-by: Venkat Bala <venkat@agnostiq.ai>
 Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
-
 
 ### Added
 
@@ -2979,7 +2865,6 @@ Co-authored-by: Scott Wyman Neagle <scott@agnostiq.ai>
 Scott Wyman Neagle <scott@agnostiq.ai>
 Casey Jao <casey@agnostiq.ai>
 
-
 ### Fixed
 
 - `covalent status` checks if the server process is still alive.
@@ -2989,34 +2874,39 @@ Casey Jao <casey@agnostiq.ai>
 - Updates to changelog logic to handle multiple authors
 
 ## [0.119.0] - 2022-07-03
-### Authors
-@cjao
 
+### Authors
+
+@cjao
 
 ### Added
 
 - Introduce support for pip dependencies
 
 ## [0.118.0] - 2022-07-02
-### Authors
-@AlejandroEsquivel
 
+### Authors
+
+@AlejandroEsquivel
 
 ### Added
 
 - Introduced File, FileTransfer, and FileTransferStrategy classes to support various File Transfer use cases prior/post electron execution
 
 ## [0.117.0] - 2022-07-02
-### Authors
-@Emmanuel289
 
+### Authors
+
+@Emmanuel289
 
 ### Added
 
 - Included retry action in 'tests.yaml' workflow.
 
 ## [0.116.0] - 2022-06-29
+
 ### Authors
+
 @Prasy12
 
 ### Changed
@@ -3028,9 +2918,10 @@ Casey Jao <casey@agnostiq.ai>
 - Ability to change to different layouts from the GUI.
 
 ## [0.115.0] - 2022-06-28
-### Authors
-@cjao
 
+### Authors
+
+@cjao
 
 ### Added
 
@@ -3043,9 +2934,10 @@ Casey Jao <casey@agnostiq.ai>
 - pre-commit autoupdate
 
 ## [0.114.0] - 2022-06-23
-### Authors
-@dependabot[bot]
 
+### Authors
+
+@dependabot[bot]
 
 ### Changed
 
@@ -3350,7 +3242,7 @@ Casey Jao <casey@agnostiq.ai>
 
 ### Changed
 
-- Input parameter names and docstrings in _shared_files.config.update_config were changed for clarity.
+- Input parameter names and docstrings in \_shared_files.config.update_config were changed for clarity.
 
 ## [0.29.1] - 2022-03-07
 
@@ -3607,7 +3499,7 @@ Installed executor plugins don't have to be referred to by their full module nam
 
 ### Fixed
 
-- If a user's configuration file does not have a needed exeutor parameter, the default parameter (defined in _shared_files/defaults.py) is used.
+- If a user's configuration file does not have a needed exeutor parameter, the default parameter (defined in \_shared_files/defaults.py) is used.
 - Each executor plugin is no longer initialized upon the import of Covalent. This allows required parameters in executor plugins.
 
 ## Changed
@@ -3637,7 +3529,7 @@ Installed executor plugins don't have to be referred to by their full module nam
 
 ### Added
 
-- Tests for covalent/_shared_files/config.py
+- Tests for covalent/\_shared_files/config.py
 
 ## [0.24.12] - 2022-02-10
 
@@ -3665,17 +3557,17 @@ Installed executor plugins don't have to be referred to by their full module nam
 
 ## Changed
 
-- Implementation of `_port_from_pid` in covalent_dispatcher/_cli/service.py.
+- Implementation of `_port_from_pid` in covalent_dispatcher/\_cli/service.py.
 
 ## Added
 
-- Unit tests for command line interface (CLI) functionalities in covalent_dispatcher/_cli/service.py and covalent_dispatcher/_cli/cli.py.
+- Unit tests for command line interface (CLI) functionalities in covalent_dispatcher/\_cli/service.py and covalent_dispatcher/\_cli/cli.py.
 
 ## [0.24.8] - 2022-02-07
 
 ### Fixed
 
-- If a user's configuration file does not have a needed parameter, the default parameter (defined in _shared_files/defaults.py) is used.
+- If a user's configuration file does not have a needed parameter, the default parameter (defined in \_shared_files/defaults.py) is used.
 
 ## [0.24.7] - 2022-02-07
 
@@ -3779,7 +3671,7 @@ Installed executor plugins don't have to be referred to by their full module nam
 
 ### Fixed
 
-- `_write_dispatch_to_python_file` isn't called each time a task is saved. It is now only called in the final save in `_run_planned_workflow` (in covalent_dispatcher/_core/__init__.py).
+- `_write_dispatch_to_python_file` isn't called each time a task is saved. It is now only called in the final save in `_run_planned_workflow` (in covalent_dispatcher/\_core/**init**.py).
 
 ## [0.22.18] - 2022-02-03
 
@@ -3799,7 +3691,7 @@ Installed executor plugins don't have to be referred to by their full module nam
 ### Added
 
 - Functions to check if UI and dispatcher servers are running.
-- Tests for the `is_ui_running` and `is_server_running` in covalent_dispatcher/_cli/service.py.
+- Tests for the `is_ui_running` and `is_server_running` in covalent_dispatcher/\_cli/service.py.
 
 ## [0.22.15] - 2022-02-01
 
@@ -3809,15 +3701,15 @@ Installed executor plugins don't have to be referred to by their full module nam
 
 ### Added
 
-- Test for `purge` method in covalent_dispatcher/_cli/service.py.
+- Test for `purge` method in covalent_dispatcher/\_cli/service.py.
 
 ### Removed
 
-- Unused `covalent_dispatcher` import from covalent_dispatcher/_cli/service.py.
+- Unused `covalent_dispatcher` import from covalent_dispatcher/\_cli/service.py.
 
 ### Changed
 
-- Moved `_config_manager` import from within the `purge` method to the covalent_dispatcher/_cli/service.py for the purpose of mocking in tests.
+- Moved `_config_manager` import from within the `purge` method to the covalent_dispatcher/\_cli/service.py for the purpose of mocking in tests.
 
 ## [0.22.14] - 2022-02-01
 
@@ -4171,7 +4063,7 @@ Installed executor plugins don't have to be referred to by their full module nam
 
 ### Changed
 
-- Installation of entire covalent_dispatcher instead of covalent_dispatcher/_service in setup.py.
+- Installation of entire covalent_dispatcher instead of covalent_dispatcher/\_service in setup.py.
 
 ## [0.15.7] - 2022-01-13
 
@@ -4547,7 +4439,7 @@ Installed executor plugins don't have to be referred to by their full module nam
 
 ### Changed
 
-- Removed _shared_files directory and contents from covalent_dispatcher. Logging in covalent_dispatcher now uses the logger in covalent/_shared_files/logging.py.
+- Removed \_shared_files directory and contents from covalent_dispatcher. Logging in covalent_dispatcher now uses the logger in covalent/\_shared_files/logging.py.
 
 ## [0.8.3] - 2021-12-10
 
@@ -4712,7 +4604,7 @@ Installed executor plugins don't have to be referred to by their full module nam
 ### Removed
 
 - Redundant lines from .gitignore
-- *.ipynb from .gitignore
+- \*.ipynb from .gitignore
 
 ## [0.6.4] - 2021-11-30
 
