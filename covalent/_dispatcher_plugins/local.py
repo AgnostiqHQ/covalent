@@ -24,7 +24,7 @@ from functools import wraps
 from pathlib import Path
 from typing import Callable, Dict, List, Optional, Union
 
-import requests
+from furl import furl
 
 from .._api.apiclient import CovalentAPIClient as APIClient
 from .._results_manager import wait
@@ -751,6 +751,12 @@ def _upload_asset(local_uri, remote_uri):
     with open(local_path, "rb") as f:
         files = {"asset_file": f}
         app_log.debug(f"uploading to {remote_uri}")
-        headers = APIClient.get_extra_headers()
-        r = requests.post(remote_uri, files=files, headers=headers)
+        f = furl(remote_uri)
+        scheme = f.scheme
+        host = f.host
+        port = f.port
+        dispatcher_addr = f"{scheme}://{host}:{port}"
+        endpoint = str(f.path)
+        api_client = APIClient(dispatcher_addr)
+        r = api_client.post(endpoint, files=files)
         r.raise_for_status()
