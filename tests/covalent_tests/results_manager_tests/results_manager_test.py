@@ -20,7 +20,6 @@
 
 """Tests for results manager."""
 
-from unittest.mock import MagicMock
 
 from covalent._results_manager.results_manager import cancel
 
@@ -63,28 +62,24 @@ DISPATCH_ID = "91c3ee18-5f2d-44ee-ac2a-39b79cf56646"
 
 
 def test_cancel_with_single_task_id(mocker):
-    mock_get_config = mocker.patch("covalent._results_manager.results_manager.get_config")
     mock_request_post = mocker.patch(
-        "covalent._results_manager.results_manager.requests.post", MagicMock()
+        "covalent._api.apiclient.requests.Session.post",
     )
 
     cancel(dispatch_id="dispatch", task_ids=1)
 
-    assert mock_get_config.call_count == 2
     mock_request_post.assert_called_once()
     mock_request_post.return_value.raise_for_status.assert_called_once()
 
 
 def test_cancel_with_multiple_task_ids(mocker):
-    mock_get_config = mocker.patch("covalent._results_manager.results_manager.get_config")
     mock_task_ids = [0, 1]
 
     mock_request_post = mocker.patch(
-        "covalent._results_manager.results_manager.requests.post", MagicMock()
+        "covalent._api.apiclient.requests.Session.post",
     )
 
     cancel(dispatch_id="dispatch", task_ids=[1, 2, 3])
 
-    assert mock_get_config.call_count == 2
     mock_request_post.assert_called_once()
     mock_request_post.return_value.raise_for_status.assert_called_once()

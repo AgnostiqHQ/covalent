@@ -26,10 +26,11 @@ import os
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-import requests
+from furl import furl
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
+from .._api.apiclient import CovalentAPIClient
 from .._serialize.common import deserialize_asset, load_asset
 from .._serialize.electron import ASSET_FILENAME_MAP as ELECTRON_ASSET_FILENAMES
 from .._serialize.electron import ASSET_TYPES as ELECTRON_ASSET_TYPES
@@ -43,7 +44,7 @@ from .._shared_files.config import get_config
 from .._shared_files.exceptions import MissingLatticeRecordError
 from .._shared_files.schemas.asset import AssetSchema
 from .._shared_files.schemas.result import ResultSchema
-from .._shared_files.utils import copy_file_locally
+from .._shared_files.utils import copy_file_locally, format_server_url
 from .result import Result, import_result_object
 from .wait import EXTREME
 
@@ -173,20 +174,18 @@ def cancel(dispatch_id: str, task_ids: List[int] = None, dispatcher_addr: str = 
     """
 
     if dispatcher_addr is None:
-        dispatcher_addr = (
-            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
-        )
+        dispatcher_addr = format_server_url()
 
     if task_ids is None:
         task_ids = []
 
-    url = f"http://{dispatcher_addr}/api/cancel"
+    api_client = CovalentAPIClient(dispatcher_addr)
+    endpoint = "/api/cancel"
 
     if isinstance(task_ids, int):
         task_ids = [task_ids]
 
-    r = requests.post(url, json={"dispatch_id": dispatch_id, "task_ids": task_ids})
-    r.raise_for_status()
+    r = api_client.post(endpoint, json={"dispatch_id": dispatch_id, "task_ids": task_ids})
     return r.content.decode("utf-8").strip().replace('"', "")
 
 
@@ -283,18 +282,17 @@ def _get_result_v2_from_dispatcher(
     """
 
     if dispatcher_addr is None:
-        dispatcher_addr = (
-            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
-        )
+        dispatcher_addr = format_server_url()
 
     retries = int(EXTREME) if wait else 5
 
     adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
-    http = requests.Session()
-    http.mount("http://", adapter)
-    url = "http://" + dispatcher_addr + "/api/v1/resultv2/" + dispatch_id
-    response = http.get(
-        url,
+    api_client = CovalentAPIClient(dispatcher_addr, adapter=adapter, auto_raise=False)
+
+    endpoint = f"/api/v1/resultv2/{dispatch_id}"
+
+    response = api_client.get(
+        endpoint,
         params={"wait": bool(int(wait)), "status_only": status_only},
     )
     if response.status_code == 404:
@@ -348,13 +346,12 @@ def _get_node_output_from_dispatcher(
     """
 
     if dispatcher_addr is None:
-        dispatcher_addr = (
-            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
-        )
+        dispatcher_addr = format_server_url()
 
-    url = f"http://{dispatcher_addr}/api/v1/assets/{dispatch_id}/node/{node_id}/output"
+    api_client = CovalentAPIClient(dispatcher_addr, auto_raise=False)
+    endpoint = f"/api/v1/assets/{dispatch_id}/node/{node_id}/output"
 
-    response = requests.get(url, stream=True)
+    response = api_client.get(endpoint, stream=True)
 
     if response.status_code == 404:
         raise MissingLatticeRecordError
@@ -378,13 +375,12 @@ def _get_dispatch_result_from_dispatcher(
     dispatcher_addr: str = None,
 ) -> Dict:
     if dispatcher_addr is None:
-        dispatcher_addr = (
-            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
-        )
+        dispatcher_addr = format_server_url()
 
-    url = f"http://{dispatcher_addr}/api/v1/assets/{dispatch_id}/dispatch/result"
+    endpoint = f"/api/v1/assets/{dispatch_id}/dispatch/result"
 
-    response = requests.get(url, stream=True)
+    api_client = CovalentAPIClient(dispatcher_addr, auto_raise=False)
+    response = api_client.get(endpoint, stream=True)
 
     if response.status_code == 404:
         raise MissingLatticeRecordError
@@ -427,18 +423,16 @@ def _get_result_export_from_dispatcher(
     """
 
     if dispatcher_addr is None:
-        dispatcher_addr = (
-            get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port"))
-        )
+        dispatcher_addr = format_server_url()
 
     retries = int(EXTREME) if wait else 5
 
     adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
-    http = requests.Session()
-    http.mount("http://", adapter)
-    url = "http://" + dispatcher_addr + "/api/v1/export/" + dispatch_id
-    response = http.get(
-        url,
+    api_client = CovalentAPIClient(dispatcher_addr, adapter=adapter, auto_raise=False)
+
+    endpoint = "/api/v1/export/" + dispatch_id
+    response = api_client.get(
+        endpoint,
         params={"wait": bool(int(wait)), "status_only": status_only},
     )
     if response.status_code == 404:
@@ -496,8 +490,14 @@ def download_asset(remote_uri: str, local_path: str, chunk_size: int = 1024 * 10
     if remote_uri.startswith(local_scheme):
         copy_file_locally(remote_uri, f"file://{local_path}")
     else:
-        r = requests.get(remote_uri, stream=True)
-        r.raise_for_status()
+        f = furl(remote_uri)
+        scheme = f.scheme
+        host = f.host
+        port = f.port
+        dispatcher_addr = f"{scheme}://{host}:{port}"
+        endpoint = str(f.path)
+        api_client = CovalentAPIClient(dispatcher_addr)
+        r = api_client.get(endpoint, stream=True)
         with open(local_path, "wb") as f:
             for chunk in r.iter_content(chunk_size=chunk_size):
                 f.write(chunk)

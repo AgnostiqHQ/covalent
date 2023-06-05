@@ -17,32 +17,3 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
-
-
-"""Unit tests for local module in dispatcher_plugins."""
-
-
-import covalent as ct
-from covalent._dispatcher_plugins.local import get_redispatch_request_body
-
-
-def test_get_redispatch_request_body_null_arguments():
-    """Test the get request body function with null arguments."""
-
-    @ct.electron
-    def identity(a):
-        return a
-
-    @ct.electron
-    def add(a, b):
-        return a + b
-
-    response = get_redispatch_request_body(
-        "mock-dispatch-id",
-    )
-    assert response == {
-        "json_lattice": None,
-        "dispatch_id": "mock-dispatch-id",
-        "electron_updates": {},
-        "reuse_previous_results": False,
-    }
