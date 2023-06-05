@@ -73,7 +73,7 @@ class ReceiveModel(BaseModel):
     status: StatusEnum
 
 
-MANAGED_EXECUTION = "COVALENT_FORCE_LEGACY_RUNNER" not in os.environ
+MANAGED_EXECUTION = True
 
 
 class LocalExecutor(BaseExecutor):
