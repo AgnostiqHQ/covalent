@@ -26,12 +26,15 @@ import pytest
 
 import covalent as ct
 from covalent._shared_files.defaults import DefaultMetadataValues, postprocess_prefix
+from covalent._shared_files.utils import get_ui_url
 
 DEFAULT_METADATA_VALUES = asdict(DefaultMetadataValues())
 
 
-def test_lattice_draw(mocker):
+def test_lattice_draw(mocker, capsys):
+    draw_preview_url = get_ui_url("/preview")
     mock_send_draw_req = mocker.patch("covalent_ui.result_webhook.send_draw_request")
+    mock_webbrowser_open = mocker.patch("webbrowser.open")
 
     @ct.electron
     def task(x):
@@ -43,7 +46,14 @@ def test_lattice_draw(mocker):
 
     workflow.draw(2)
 
+    captured = capsys.readouterr()
+    assert (
+        captured.out
+        == f"To preview the transport graph of the lattice, visit {draw_preview_url}\n"
+    )
+
     mock_send_draw_req.assert_called_once()
+    mock_webbrowser_open.assert_called_once()
 
 
 def test_lattice_workflow_executor_settings():

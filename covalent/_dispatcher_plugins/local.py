@@ -240,6 +240,11 @@ class LocalDispatcher(BaseDispatcher):
                 The dispatch id of the workflow.
             """
 
+            if not isinstance(orig_lattice, Lattice):
+                message = f"Dispatcher expected a Lattice, received {type(orig_lattice)} instead."
+                app_log.error(message)
+                raise TypeError(message)
+
             lattice = deepcopy(orig_lattice)
 
             lattice.build_graph(*args, **kwargs)
@@ -524,6 +529,11 @@ class LocalDispatcher(BaseDispatcher):
             Returns:
                 The dispatch id of the workflow.
             """
+
+            if not isinstance(orig_lattice, Lattice):
+                message = f"Dispatcher expected a Lattice, received {type(orig_lattice)} instead."
+                app_log.error(message)
+                raise TypeError(message)
 
             lattice = deepcopy(orig_lattice)
 

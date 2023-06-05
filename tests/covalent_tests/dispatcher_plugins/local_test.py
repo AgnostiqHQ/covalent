@@ -22,27 +22,84 @@
 """Unit tests for local module in dispatcher_plugins."""
 
 
+import pytest
+from requests import Response
+from requests.exceptions import HTTPError
+
 import covalent as ct
-from covalent._dispatcher_plugins.local import get_redispatch_request_body
+from covalent._dispatcher_plugins.local import LocalDispatcher
 
 
-def test_get_redispatch_request_body_null_arguments():
-    """Test the get request body function with null arguments."""
-
-    @ct.electron
-    def identity(a):
-        return a
+def test_dispatching_a_non_lattice():
+    """test dispatching a non-lattice"""
 
     @ct.electron
-    def add(a, b):
-        return a + b
+    def task(a, b, c):
+        return a + b + c
 
-    response = get_redispatch_request_body(
-        "mock-dispatch-id",
-    )
-    assert response == {
-        "json_lattice": None,
-        "dispatch_id": "mock-dispatch-id",
-        "electron_updates": {},
-        "reuse_previous_results": False,
-    }
+    @ct.electron
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    with pytest.raises(
+        TypeError, match="Dispatcher expected a Lattice, received <class 'function'> instead."
+    ):
+        LocalDispatcher.dispatch(workflow)(1, 2)
+
+
+def test_dispatch_when_no_server_is_running():
+    """test dispatching a lattice when no server is running"""
+
+    # the test suite is using another port, thus, with the dummy address below
+    # the covalent server is not running in some sense.
+    dummy_dispatcher_addr = "http://localhost:12345"
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    with pytest.raises(
+        ConnectionError,
+        match="The Covalent dispatcher server cannot be reached",
+    ):
+        LocalDispatcher.dispatch(workflow, dispatcher_addr=dummy_dispatcher_addr)(1, 2)
+
+
+def test_dispatcher_submit_api(mocker):
+    """test dispatching a lattice with submit api"""
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    # test when api raises an implicit error
+    r = Response()
+    r.status_code = 404
+    r.url = "http://dummy"
+    r.reason = "dummy reason"
+
+    mocker.patch("covalent._api.apiclient.requests.post", return_value=r)
+
+    with pytest.raises(HTTPError, match="404 Client Error: dummy reason for url: http://dummy"):
+        dispatch_id = LocalDispatcher.dispatch(workflow)(1, 2)
+        assert dispatch_id is None
+
+    # test when api doesn't raise an implicit error
+    r = Response()
+    r.status_code = 201
+    r.url = "http://dummy"
+    r._content = b"abcde"
+
+    mocker.patch("covalent._api.apiclient.requests.post", return_value=r)
+
+    dispatch_id = LocalDispatcher.dispatch(workflow)(1, 2)
+    assert dispatch_id == "abcde"

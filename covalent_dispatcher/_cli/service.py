@@ -28,6 +28,7 @@ import os
 import shutil
 import socket
 import time
+from pathlib import Path
 from subprocess import DEVNULL, Popen
 from typing import Optional
 
@@ -219,6 +220,13 @@ def _graceful_start(
         click.echo(f"Covalent Triggers server has started at {dispatcher_addr}")
     else:
         click.echo(f"Covalent server has started at {dispatcher_addr}")
+
+    Path(get_config("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
+    Path(get_config("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
+    Path(get_config("dispatcher.log_dir")).mkdir(parents=True, exist_ok=True)
+    Path(get_config("user_interface.log_dir")).mkdir(parents=True, exist_ok=True)
+    Path(get_config("dispatcher.db_path")).parent.mkdir(parents=True, exist_ok=True)
+
     return port
 
 

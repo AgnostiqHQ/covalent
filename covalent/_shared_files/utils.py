@@ -32,6 +32,14 @@ from .config import get_config
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
+DEFAULT_UI_ADDRESS = get_config("user_interface.address")
+DEFAULT_UI_PORT = get_config("user_interface.port")
+
+
+def get_ui_url(path):
+    baseUrl = f"http://{DEFAULT_UI_ADDRESS}:{DEFAULT_UI_PORT}"
+    return f"{baseUrl}{path}"
+
 
 def get_random_available_port() -> int:
     """
