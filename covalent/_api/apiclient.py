@@ -52,7 +52,8 @@ class CovalentAPIClient:
 
         except requests.exceptions.ConnectionError:
             message = f"The Covalent server cannot be reached at {url}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
-            raise requests.exceptions.ConnectionError(message)
+            print(message)
+            raise
 
         return r
 
@@ -70,7 +71,8 @@ class CovalentAPIClient:
                 r.raise_for_status()
         except requests.exceptions.ConnectionError:
             message = f"The Covalent server cannot be reached at {url}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
-            raise requests.exceptions.ConnectionError(message)
+            print(message)
+            raise
 
         return r
 
@@ -88,7 +90,8 @@ class CovalentAPIClient:
                 r.raise_for_status()
         except requests.exceptions.ConnectionError:
             message = f"The Covalent server cannot be reached at {url}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
-            raise requests.exceptions.ConnectionError(message)
+            print(message)
+            raise
 
         return r
 
