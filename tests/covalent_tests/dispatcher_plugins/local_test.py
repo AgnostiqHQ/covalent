@@ -24,7 +24,7 @@
 
 import pytest
 from requests import Response
-from requests.exceptions import HTTPError
+from requests.exceptions import ConnectionError, HTTPError
 
 import covalent as ct
 from covalent._dispatcher_plugins.local import LocalDispatcher
@@ -65,7 +65,7 @@ def test_dispatch_when_no_server_is_running():
 
     with pytest.raises(
         ConnectionError,
-        match="The Covalent dispatcher server cannot be reached",
+        match="The Covalent server cannot be reached",
     ):
         LocalDispatcher.dispatch(workflow, dispatcher_addr=dummy_dispatcher_addr)(1, 2)
 
@@ -87,10 +87,10 @@ def test_dispatcher_submit_api(mocker):
     r.url = "http://dummy"
     r.reason = "dummy reason"
 
-    mocker.patch("covalent._api.apiclient.requests.post", return_value=r)
+    mocker.patch("covalent._api.apiclient.requests.Session.post", return_value=r)
 
     with pytest.raises(HTTPError, match="404 Client Error: dummy reason for url: http://dummy"):
-        dispatch_id = LocalDispatcher.dispatch(workflow)(1, 2)
+        dispatch_id = LocalDispatcher.submit(workflow)(1, 2)
         assert dispatch_id is None
 
     # test when api doesn't raise an implicit error
@@ -99,7 +99,7 @@ def test_dispatcher_submit_api(mocker):
     r.url = "http://dummy"
     r._content = b"abcde"
 
-    mocker.patch("covalent._api.apiclient.requests.post", return_value=r)
+    mocker.patch("covalent._api.apiclient.requests.Session.post", return_value=r)
 
-    dispatch_id = LocalDispatcher.dispatch(workflow)(1, 2)
+    dispatch_id = LocalDispatcher.submit(workflow)(1, 2)
     assert dispatch_id == "abcde"
