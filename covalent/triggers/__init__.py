@@ -20,5 +20,6 @@
 
 from .base import BaseTrigger  # nopycln: import
 from .dir_trigger import DirTrigger  # nopycln: import
+from .sqlite_trigger import SQLiteTrigger  # nopycln: import
 from .time_trigger import TimeTrigger  # nopycln: import
 from .trigger_loader import available_triggers  # nopycln: import

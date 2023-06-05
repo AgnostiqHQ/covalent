@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from covalent.triggers import BaseTrigger, DirTrigger, TimeTrigger
+from covalent.triggers import BaseTrigger, DirTrigger, SQLiteTrigger, TimeTrigger
 
 
 class TriggerLoader:
@@ -28,6 +28,7 @@ class TriggerLoader:
             BaseTrigger.__name__: BaseTrigger,
             DirTrigger.__name__: DirTrigger,
             TimeTrigger.__name__: TimeTrigger,
+            SQLiteTrigger.__name__: SQLiteTrigger,
         }
 
     def __new__(cls):

@@ -7,9 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.224.0-rc.0] - 2023-06-04
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Madhur Tandon <20173739+madhur-tandon@users.noreply.github.com>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Andrew S. Rosen <asrosen93@gmail.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: sriranjani venkatesan <sriranjani.venkatesan@psiog.com>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Error messages are propagated to stdout when the server is not started. These changes are applied to `dispatch`, `redispatch`, and `get_result`.
+
+### Docs
+
+- Fix typo in GCP Batch executor RTD.
+- Add steps for setting up GUI for local development in contribution guidelines. 
+
 ### Fixed
 
 - Resolving correct python executable
+- Error handling for random URLs/random dispatchId entered on the GUI
+- Fixed support for dynamically assigning `executor` to `Electron` class
+- Fixed nightly by activating environment before running tests in `tests.yml`
 
 ### Added
 
@@ -17,6 +47,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added ability to hide post-processing electrons on the UI.
 - Added prettify of names for the graph screen on the UI.
 - Ability to specify a `workdir` for `local` and `dask` executors along with `create_unique_workdir` option for each electron / node.
+- Heartbeat file is created and updated when the server is running
+- Added `SQLiteTrigger` class to the `triggers` module.
+
+### Removed
+
+- Removed unused module `covalent._data_store`
+- Stress test files of cpu and sublattice stress tests removed from functional tests suite.
 
 ### Operations
 

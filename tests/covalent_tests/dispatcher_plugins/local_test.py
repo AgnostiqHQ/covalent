@@ -48,12 +48,15 @@ def test_dispatching_a_non_lattice():
         LocalDispatcher.dispatch(workflow)(1, 2)
 
 
-def test_dispatch_when_no_server_is_running():
+def test_dispatch_when_no_server_is_running(mocker):
     """test dispatching a lattice when no server is running"""
 
     # the test suite is using another port, thus, with the dummy address below
     # the covalent server is not running in some sense.
     dummy_dispatcher_addr = "http://localhost:12345"
+    endpoint = "/api/v1/dispatchv2/register"
+    url = dummy_dispatcher_addr + endpoint
+    message = f"The Covalent server cannot be reached at {url}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
 
     @ct.electron
     def task(a, b, c):
@@ -63,11 +66,12 @@ def test_dispatch_when_no_server_is_running():
     def workflow(a, b):
         return task(a, b, c=4)
 
-    with pytest.raises(
-        ConnectionError,
-        match="The Covalent server cannot be reached",
-    ):
+    mock_print = mocker.patch("covalent._api.apiclient.print")
+
+    with pytest.raises(ConnectionError):
         LocalDispatcher.dispatch(workflow, dispatcher_addr=dummy_dispatcher_addr)(1, 2)
+
+    mock_print.assert_called_once_with(message)
 
 
 def test_dispatcher_submit_api(mocker):

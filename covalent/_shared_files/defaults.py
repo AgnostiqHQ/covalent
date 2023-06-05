@@ -105,6 +105,18 @@ def get_default_dispatcher_config():
             (os.environ.get("XDG_DATA_HOME") or (os.environ["HOME"] + "/.local/share"))
             + "/covalent/dispatcher_db.sqlite"
         ),
+        "heartbeat_interval": os.environ.get("COVALENT_HEARTBEAT_INTERVAL") or 5,
+        "heartbeat_file": os.environ.get("COVALENT_HEARTBEAT_FILE")
+        or os.path.join(
+            (
+                os.environ.get("COVALENT_CACHE_DIR")
+                or os.path.join(
+                    os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
+                    "covalent",
+                )
+            ),
+            "heartbeat",
+        ),
         "use_async_dispatcher": os.environ.get("COVALENT_USE_ASYNC_DISPATCHER", "true") or "false",
         "data_uri_filter_policy": os.environ.get("COVALENT_DATA_URI_FILTER_POLICY", "http"),
     }

@@ -41,6 +41,7 @@ from distributed.comm import unparse_address
 from distributed.core import connect, rpc
 
 from covalent._shared_files.config import ConfigManager, get_config, set_config
+from covalent_ui.heartbeat import Heartbeat
 
 from .._db.datastore import DataStore
 from .migrate import migrate_pickled_result_object
@@ -264,6 +265,7 @@ def _graceful_shutdown(pidfile: str) -> None:
         with contextlib.suppress(psutil.NoSuchProcess):
             proc.terminate()
             proc.wait()
+        Heartbeat.stop()
         click.echo("Covalent server has stopped.")
 
     else:
