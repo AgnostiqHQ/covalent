@@ -264,16 +264,6 @@ async def run_abstract_task_group(
     known_nodes: list,
     selected_executor: Any,
 ) -> None:
-    global _job_events
-
-    # Bind the queue to the FastAPI event loop
-    if not _job_events:
-        _job_events = asyncio.Queue()
-
-    global _job_event_listener
-    if not _job_event_listener:
-        _job_event_listener = asyncio.create_task(_listen_for_job_events())
-
     executor = None
 
     try:
@@ -368,6 +358,7 @@ async def run_abstract_task_group(
 
 
 async def _listen_for_job_events():
+    app_log.debug("Starting event listener")
     while True:
         msg = await _job_events.get()
         try:

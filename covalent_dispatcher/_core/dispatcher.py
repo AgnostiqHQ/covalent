@@ -277,16 +277,6 @@ async def run_workflow(dispatch_id: str, wait: bool = SYNC_DISPATCHES) -> RESULT
 
     app_log.debug("Inside run_workflow.")
 
-    global _global_status_queue
-    global _global_event_listener
-
-    # Bind status queue to the FastAPI event loop
-    if not _global_status_queue:
-        _global_status_queue = asyncio.Queue()
-
-    if not _global_event_listener:
-        _global_event_listener = asyncio.create_task(_node_event_listener())
-
     # Ensure that the dispatch is run at most once
     can_run = await datasvc.ensure_dispatch(dispatch_id)
 

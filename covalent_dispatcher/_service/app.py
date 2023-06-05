@@ -27,6 +27,8 @@ from fastapi import APIRouter, FastAPI, HTTPException, Request
 
 import covalent_dispatcher as dispatcher
 from covalent._shared_files import logger
+from covalent_dispatcher._core import dispatcher as core_dispatcher
+from covalent_dispatcher._core import runner_exp as core_runner
 
 from .._db.dispatchdb import DispatchDB
 from .heartbeat import Heartbeat
@@ -41,12 +43,27 @@ _futures = set()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """Initialize global variables"""
+
     heartbeat = Heartbeat()
     fut = asyncio.create_task(heartbeat.start())
     _futures.add(fut)
     fut.add_done_callback(_futures.discard)
 
+    # Runner event queue and listener
+    core_runner._job_events = asyncio.Queue()
+    core_runner._job_event_listener = asyncio.create_task(core_runner._listen_for_job_events())
+
+    # Dispatcher event queue and listener
+    core_dispatcher._global_status_queue = asyncio.Queue()
+    core_dispatcher._global_event_listener = asyncio.create_task(
+        core_dispatcher._node_event_listener()
+    )
+
     yield
+
+    core_dispatcher._global_event.listener.cancel()
+    core_runner._job_event_listener.cancel()
 
 
 @router.post("/submit")
