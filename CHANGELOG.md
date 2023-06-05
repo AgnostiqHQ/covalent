@@ -7,8 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Redispatch feature page in Read the Docs.
+- Clarify installation instructions for SLURM plugin in Read the Docs.
+
 ### Fixed
 
+- DB path creation now takes place at import time so that the CLI commands don't fail
 - Raise error on dispatching a non-lattice
 - Helpful message when trying to dispatch a workflow when covalent server is not available
 - Open UI preview of transport graph when `lattice.draw()` is invoked and print URL of the same
@@ -17,6 +23,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Updated Feature documentation for Triggers with an example and minor corrections
+
+### Removed
+
+- Duplicate mocks for `UI_SRVDIR`
+- Duplicate `_get_cancel_requested` method from `covalent_dispatcher/_core/runner.py`
 
 ### Authors
 

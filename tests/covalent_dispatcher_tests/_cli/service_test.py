@@ -144,7 +144,6 @@ def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_
         "dispatcher.results_dir",
         "dispatcher.log_dir",
         "user_interface.log_dir",
-        "dispatcher.db_path",
     ]
 
     def patched_fn(entry):
@@ -282,7 +281,6 @@ def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations, cur
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
@@ -844,7 +842,6 @@ def test_start_config_mem_per_worker(mocker, monkeypatch):
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
@@ -870,7 +867,6 @@ def test_start_config_threads_per_worker(mocker, monkeypatch):
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
@@ -896,7 +892,6 @@ def test_start_config_num_workers(mocker, monkeypatch):
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
@@ -922,7 +917,6 @@ def test_start_all_dask_config(mocker, monkeypatch):
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
@@ -948,7 +942,6 @@ def test_start_dask_config_options_workers_and_mem_per_worker(mocker, monkeypatc
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
@@ -974,7 +967,6 @@ def test_start_dask_config_options_workers_and_threads_per_worker(mocker, monkey
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
@@ -1000,7 +992,6 @@ def test_start_dask_config_options_mem_per_workers_and_threads_per_worker(mocker
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
@@ -1025,8 +1016,6 @@ def test_sdk_no_cluster(mocker, monkeypatch):
     )
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
-    set_config_mock = mocker.patch("covalent_dispatcher._cli.service.set_config")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_SRVDIR", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_PIDFILE", "mock")
     monkeypatch.setattr("covalent_dispatcher._cli.service.UI_LOGFILE", "mock")
