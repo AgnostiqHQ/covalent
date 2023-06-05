@@ -19,11 +19,9 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import asyncio
-from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 
 import aiofiles
-from fastapi import FastAPI
 
 from covalent._shared_files.config import get_config
 
@@ -56,11 +54,3 @@ class Heartbeat:
             file.write(
                 f"DEAD {datetime.now(tz=timezone.utc).strftime(Heartbeat.TIMESTAMP_FORMAT)}"
             )
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    heartbeat = Heartbeat()
-    asyncio.create_task(heartbeat.start())
-
-    yield

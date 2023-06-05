@@ -41,7 +41,7 @@ from distributed.comm import unparse_address
 from distributed.core import connect, rpc
 
 from covalent._shared_files.config import ConfigManager, get_config, set_config
-from covalent_ui.heartbeat import Heartbeat
+from covalent_dispatcher._service.heartbeat import Heartbeat
 
 from .._db.datastore import DataStore
 from .migrate import migrate_pickled_result_object

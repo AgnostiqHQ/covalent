@@ -18,20 +18,35 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import asyncio
 import json
+from contextlib import asynccontextmanager
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, FastAPI, HTTPException, Request
 
 import covalent_dispatcher as dispatcher
 from covalent._shared_files import logger
 
 from .._db.dispatchdb import DispatchDB
+from .heartbeat import Heartbeat
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 router: APIRouter = APIRouter()
+
+_futures = set()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    heartbeat = Heartbeat()
+    fut = asyncio.create_task(heartbeat.start())
+    _futures.add(fut)
+    fut.add_done_callback(_futures.discard)
+
+    yield
 
 
 @router.post("/submit")
