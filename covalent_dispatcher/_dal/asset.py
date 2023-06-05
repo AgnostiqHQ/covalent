@@ -200,12 +200,28 @@ def load_file(storage_path: str, filename: str) -> Any:
 
 
 def copy_asset(src: Asset, dest: Asset):
+    """Copy the data for an asset.
+
+    Args:
+        session: SQLalchemy session
+        src: The source asset
+        dest The destination asset
+    """
+
     scheme = dest.storage_type.value
     dest_uri = scheme + "://" + os.path.join(dest.storage_path, dest.object_key)
     src.upload(dest_uri)
 
 
 def copy_asset_meta(session: Session, src: Asset, dest: Asset):
+    """Copy the metadata for an asset.
+
+    Args:
+        session: SQLalchemy session
+        src: The source asset
+        dest The destination asset
+    """
+
     update = {
         "digest_alg": src.digest_alg,
         "digest": src.digest,

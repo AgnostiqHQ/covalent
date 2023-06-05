@@ -32,6 +32,10 @@ T = TypeVar("T", bound=models.Base)
 
 
 class Record(Generic[T]):
+    """
+    Thin wrapper for a SQLALchemy record
+    """
+
     @classmethod
     @property
     def model(cls) -> type(T):
@@ -55,6 +59,16 @@ class Record(Generic[T]):
         membership_filters: dict,
         for_update: bool = False,
     ):
+        """Bulk ORM-enabled SELECT.
+
+        Args:
+            session: SQLalchemy session
+            fields: List of columns to select
+            equality_filters: Dict{field_name: value}
+            membership_filters: Dict{field_name: value_list}
+            for_update: Whether to lock the selected rows
+
+        """
         stmt = select(cls.model)
         for attr, val in equality_filters.items():
             stmt = stmt.where(getattr(cls.model, attr) == val)
@@ -75,6 +89,17 @@ class Record(Generic[T]):
 
     @classmethod
     def insert(cls, session: Session, *, insert_kwargs: dict, flush: bool = True) -> T:
+        """INSERT a record into the DB.
+
+        Args:
+            session: SQLalchemy session
+            insert_kwargs: kwargs to pass to the model constructor
+            flush: Whether to flush the session immediately
+
+        Returns:
+            The bound record
+        """
+
         new_record = cls.model(**insert_kwargs)
         session.add(new_record)
         if flush:
@@ -85,6 +110,15 @@ class Record(Generic[T]):
     def update_bulk(
         cls, session: Session, *, values: dict, equality_filters: dict, membership_filters: dict
     ):
+        """Bulk update.
+
+        Args:
+            session: SQLAlchemy session
+            values: dictionary of values to pass to UPDATE
+            equality_filters: Dict{field_name: value}
+            membership_filters: Dict{field_name: value_list}
+        """
+
         stmt = update(cls.model).values(**values)
         for attr, val in equality_filters.items():
             stmt = stmt.where(getattr(cls.model, attr) == val)
@@ -101,6 +135,15 @@ class Record(Generic[T]):
         equality_filters: dict,
         membership_filters: dict,
     ):
+        """Bulk increment numerical fields
+
+        Args:
+            session: SQLAlchemy session
+            increment: dictionary {field: delta}
+            equality_filters: Dict{field_name: value}
+            membership_filters: Dict{field_name: value_list}
+        """
+
         kwargs = {}
         for field, delta in increments.items():
             col = getattr(cls.model, field)
@@ -114,6 +157,8 @@ class Record(Generic[T]):
         session.execute(stmt)
 
     def update(self, session: Session, *, values: dict):
+        """Update the corresponding DB record."""
+
         type(self).update_bulk(
             session,
             values=values,
@@ -122,6 +167,7 @@ class Record(Generic[T]):
         )
 
     def incr(self, session: Session, *, increments: dict):
+        """Increment the fields of the corresponding record."""
         type(self).incr_bulk(
             session,
             increments=increments,
@@ -130,6 +176,7 @@ class Record(Generic[T]):
         )
 
     def refresh(self, session: Session, *, fields: set, for_update: bool = False):
+        """Sync with DB"""
         records = type(self).get(
             session,
             fields=fields,

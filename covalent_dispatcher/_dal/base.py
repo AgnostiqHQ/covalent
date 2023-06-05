@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Base classe for server-side analogues of workflow data types"""
+"""Base class for server-side analogues of workflow data types"""
 
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Generator, List, Union
@@ -32,14 +32,24 @@ from .asset import Asset
 
 
 class DispatchedObject(ABC):
+    """Base class for types with both metadata and assets.
+
+    Each subclass must define two properties:
+    - `meta_type`: The controller class for the type's "pure metadata" table
+    - `asset_link_type`: The controller class for the type's asset-links table
+
+    """
+
     @classmethod
     @property
     def meta_type(cls) -> type(controller.Record):
+        """Returns the metadata controller class."""
         raise NotImplementedError
 
     @classmethod
     @property
     def asset_link_type(cls) -> type(controller.Record):
+        """Returns the asset link controller class"""
         raise NotImplementedError
 
     @classmethod

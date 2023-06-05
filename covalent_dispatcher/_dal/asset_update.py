@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-"""Functions to export server-side data to client"""
+"""Functions to handle asset metadata updates"""
 
 
 from sqlalchemy.orm import Session
