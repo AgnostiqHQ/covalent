@@ -503,3 +503,18 @@ def test_electron_auto_task_groups_iter():
         assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
     else:
         assert all(tg.get_node_value(i, "task_group_id") == i for i in range(0, 7))
+
+
+def test_electron_executor_property():
+    """
+    Test that the executor property assignment
+    of an electron works as expected.
+    """
+
+    @ct.electron
+    def mock_task():
+        pass
+
+    mock_task_electron = mock_task.electron_object
+    mock_task_electron.executor = "mock"
+    assert mock_task_electron.metadata["executor"] == "mock"

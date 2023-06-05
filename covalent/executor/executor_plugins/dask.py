@@ -30,7 +30,7 @@ import json
 import os
 from dataclasses import asdict
 from enum import Enum
-from typing import Any, Callable, Dict, List, Literal
+from typing import Any, Callable, Dict, List, Literal, Optional
 
 from dask.distributed import CancelledError, Client, Future
 from pydantic import BaseModel
@@ -58,6 +58,12 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     "cache_dir": os.path.join(
         os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "covalent"
     ),
+    "workdir": os.path.join(
+        os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
+        "covalent",
+        "workdir",
+    ),
+    "create_unique_workdir": False,
 }
 
 # See https://github.com/dask/distributed/issues/5667
@@ -101,13 +107,27 @@ class DaskExecutor(AsyncBaseExecutor):
         log_stderr: str = "stderr.log",
         cache_dir: str = "",
         current_env_on_conda_fail: bool = False,
-        time_limit: int = 600,
+        workdir: str = "",
+        create_unique_workdir: Optional[bool] = None,
     ) -> None:
         if not cache_dir:
-            cache_dir = os.path.join(
-                os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
-                "covalent",
-            )
+            cache_dir = _EXECUTOR_PLUGIN_DEFAULTS["cache_dir"]
+
+        if not workdir:
+            try:
+                workdir = get_config("executors.dask.workdir")
+            except KeyError:
+                workdir = _EXECUTOR_PLUGIN_DEFAULTS["workdir"]
+                debug_msg = f"Couldn't find `executors.dask.workdir` in config, using default value {workdir}."
+                app_log.debug(debug_msg)
+
+        if create_unique_workdir is None:
+            try:
+                create_unique_workdir = get_config("executors.dask.create_unique_workdir")
+            except KeyError:
+                create_unique_workdir = _EXECUTOR_PLUGIN_DEFAULTS["create_unique_workdir"]
+                debug_msg = f"Couldn't find `executors.dask.create_unique_workdir` in config, using default value {create_unique_workdir}."
+                app_log.debug(debug_msg)
 
         if not scheduler_address:
             try:
@@ -117,10 +137,11 @@ class DaskExecutor(AsyncBaseExecutor):
                     "No dask scheduler address found in config. Address must be set manually."
                 )
 
-        super().__init__(log_stdout, log_stderr, cache_dir=cache_dir)
-
+        self.workdir = workdir
+        self.create_unique_workdir = create_unique_workdir
         self.scheduler_address = scheduler_address
-        self.time_limit = time_limit
+
+        super().__init__(log_stdout, log_stderr, cache_dir=cache_dir)
 
     async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         """Submit the function and inputs to the dask cluster"""
@@ -129,6 +150,7 @@ class DaskExecutor(AsyncBaseExecutor):
             app_log.debug("Task has cancelled")
             raise TaskCancelledError
 
+        dispatch_id = task_metadata["dispatch_id"]
         node_id = task_metadata["node_id"]
 
         dask_client = _address_client_map.get(self.scheduler_address)
@@ -138,7 +160,12 @@ class DaskExecutor(AsyncBaseExecutor):
             _address_client_map[self.scheduler_address] = dask_client
             await dask_client
 
-        future = dask_client.submit(dask_wrapper, function, args, kwargs)
+        if self.create_unique_workdir:
+            current_workdir = os.path.join(self.workdir, dispatch_id, f"node_{node_id}")
+        else:
+            current_workdir = self.workdir
+
+        future = dask_client.submit(dask_wrapper, function, args, kwargs, current_workdir)
         await self.set_job_handle(future.key)
         app_log.debug(f"Submitted task {node_id} to dask with key {future.key}")
 

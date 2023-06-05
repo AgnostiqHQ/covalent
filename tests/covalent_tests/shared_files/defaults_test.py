@@ -43,7 +43,7 @@ def env_vars(mocker):
     }
 
 
-def test_get_default_sdk_config(env_vars, mocker):
+def test_get_default_sdk_config(env_vars):
     """Tests that the default SDK configuration is as expected"""
 
     with mock.patch.dict(os.environ, env_vars, clear=True):

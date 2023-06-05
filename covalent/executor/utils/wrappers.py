@@ -28,6 +28,7 @@ import os
 import sys
 import traceback
 from contextlib import redirect_stderr, redirect_stdout
+from pathlib import Path
 from typing import Any, Callable, Dict, List, Tuple
 
 from covalent._workflow.depsbash import DepsBash
@@ -95,16 +96,26 @@ def wrapper_fn(
     return TransportableObject(output)
 
 
-def io_wrapper(fn: Callable, args: List, kwargs: Dict) -> Tuple[Any, str, str, str]:
+def io_wrapper(
+    fn: Callable,
+    args: List,
+    kwargs: Dict,
+    workdir: str = ".",
+) -> Tuple[Any, str, str, str]:
     """Wrapper function to execute the given function in a separate
     process and capture stdout and stderr"""
     with redirect_stdout(io.StringIO()) as stdout, redirect_stderr(io.StringIO()) as stderr:
         try:
+            Path(workdir).mkdir(parents=True, exist_ok=True)
+            current_dir = os.getcwd()
+            os.chdir(workdir)
             output = fn(*args, **kwargs)
             tb = ""
         except Exception as ex:
             output = None
             tb = "".join(traceback.TracebackException.from_exception(ex).format())
+        finally:
+            os.chdir(current_dir)
     return output, stdout.getvalue(), stderr.getvalue(), tb
 
 
