@@ -389,7 +389,6 @@ def _generate_file_slice(file_url: str, start_byte: int, end_byte: int, chunk_si
     """
     byte_pos = start_byte
     file_path = str(furl(file_url).path)
-    print("DEBUG: start_byte", type(start_byte), start_byte)
     with open(file_path, "rb") as f:
         f.seek(start_byte)
         if end_byte < 0:
