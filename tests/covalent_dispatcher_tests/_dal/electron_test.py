@@ -86,6 +86,28 @@ def test_electron_attributes(test_db, mocker):
     assert e.get_value("task_group_id") == e.node_id
 
 
+def test_electron_populate_asset_map(test_db, mocker):
+    res = get_mock_result()
+    res._initialize_nodes()
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+
+    update.persist(res)
+
+    with test_db.session() as session:
+        record = (
+            session.query(models.Electron)
+            .where(models.Electron.transport_graph_node_id == 0)
+            .first()
+        )
+        e = Electron(session, record)
+        e.populate_asset_map(session)
+
+    assert e.assets.keys() == ASSET_KEYS
+
+
 def test_electron_restricted_attributes(test_db, mocker):
     """Test loading subset of attr"""
     res = get_mock_result()

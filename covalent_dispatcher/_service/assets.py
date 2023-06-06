@@ -23,6 +23,7 @@
 import mmap
 import os
 import shutil
+from functools import lru_cache
 from typing import BinaryIO, Tuple, Union
 
 from fastapi import APIRouter, Header, HTTPException, UploadFile
@@ -62,6 +63,8 @@ router: APIRouter = APIRouter()
 
 _background_tasks = set()
 
+LRU_CACHE_SIZE = 50
+
 
 @router.get("/{dispatch_id}/node/{node_id}/{key}")
 def get_node_asset(
@@ -73,50 +76,54 @@ def get_node_asset(
 ):
     start_byte = 0
     end_byte = -1
-    if Range:
-        start_byte, end_byte = _extract_byte_range(Range)
-
-    if end_byte >= 0 and end_byte < start_byte:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid byte range",
-        )
-    app_log.debug(
-        f"Requested asset {key.value} ([{start_byte}:{end_byte}]) for node {dispatch_id}:{node_id}"
-    )
-
-    with workflow_db.session() as session:
-        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-        status = lattice_record.status if lattice_record else None
-        if not lattice_record:
-            return JSONResponse(
-                status_code=404,
-                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-            )
 
     try:
-        with workflow_db.session() as session:
-            result_object = get_result_object(dispatch_id, bare=True, session=session)
-            node = result_object.lattice.transport_graph.get_node(node_id, session=session)
-            asset = node.get_asset(key=key.value, session=session)
-    except:
-        return JSONResponse(
-            status_code=404,
-            content={"message": f"Error retrieving asset {key.value}."},
+        if Range:
+            start_byte, end_byte = _extract_byte_range(Range)
+
+        if end_byte >= 0 and end_byte < start_byte:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid byte range",
+            )
+        app_log.debug(
+            f"Requested asset {key.value} ([{start_byte}:{end_byte}]) for node {dispatch_id}:{node_id}"
         )
 
-    # Explicit representation overrides the byte range
-    if representation is None or ELECTRON_ASSET_TYPES[key.value] != AssetType.TRANSPORTABLE:
-        start_byte = start_byte
-        end_byte = end_byte
-    elif representation == AssetRepresentation.string:
-        start_byte, end_byte = _get_tobj_string_offsets(asset.internal_uri)
-    else:
-        start_byte, end_byte = _get_tobj_pickle_offsets(asset.internal_uri)
+        with workflow_db.session() as session:
+            lattice_record = (
+                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+            )
+            status = lattice_record.status if lattice_record else None
+            if not lattice_record:
+                return JSONResponse(
+                    status_code=404,
+                    content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+                )
 
-    app_log.debug(f"Serving byte range {start_byte}:{end_byte} of {asset.internal_uri}")
-    generator = _generate_file_slice(asset.internal_uri, start_byte, end_byte)
-    return StreamingResponse(generator)
+        result_object = get_cached_result_object(dispatch_id)
+        app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
+
+        node = result_object.lattice.transport_graph.get_node(node_id)
+        with workflow_db.session() as session:
+            asset = node.get_asset(key=key.value, session=session)
+
+        # Explicit representation overrides the byte range
+        if representation is None or ELECTRON_ASSET_TYPES[key.value] != AssetType.TRANSPORTABLE:
+            start_byte = start_byte
+            end_byte = end_byte
+        elif representation == AssetRepresentation.string:
+            start_byte, end_byte = _get_tobj_string_offsets(asset.internal_uri)
+        else:
+            start_byte, end_byte = _get_tobj_pickle_offsets(asset.internal_uri)
+
+        app_log.debug(f"Serving byte range {start_byte}:{end_byte} of {asset.internal_uri}")
+        generator = _generate_file_slice(asset.internal_uri, start_byte, end_byte)
+        return StreamingResponse(generator)
+
+    except Exception as e:
+        app_log.debug(e)
+        raise
 
 
 @router.get("/{dispatch_id}/dispatch/{key}")
@@ -128,50 +135,51 @@ def get_dispatch_asset(
 ):
     start_byte = 0
     end_byte = -1
-    if Range:
-        start_byte, end_byte = _extract_byte_range(Range)
-
-    if end_byte >= 0 and end_byte < start_byte:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid byte range",
-        )
-    app_log.debug(
-        f"Requested asset {key.value} ([{start_byte}:{end_byte}]) for dispatch {dispatch_id}"
-    )
-
-    with workflow_db.session() as session:
-        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-        status = lattice_record.status if lattice_record else None
-        if not lattice_record:
-            return JSONResponse(
-                status_code=404,
-                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-            )
 
     try:
-        with workflow_db.session() as session:
-            result_object = get_result_object(dispatch_id, bare=True, session=session)
-            asset = result_object.get_asset(key=key.value, session=session)
-        app_log.debug(f"Dispatch result uri: {asset.internal_uri}")
-    except:
-        return JSONResponse(
-            status_code=404,
-            content={"message": f"Error retrieving asset {key.value}."},
+        if Range:
+            start_byte, end_byte = _extract_byte_range(Range)
+
+        if end_byte >= 0 and end_byte < start_byte:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid byte range",
+            )
+        app_log.debug(
+            f"Requested asset {key.value} ([{start_byte}:{end_byte}]) for dispatch {dispatch_id}"
         )
 
-    # Explicit representation overrides the byte range
-    if representation is None or RESULT_ASSET_TYPES[key.value] != AssetType.TRANSPORTABLE:
-        start_byte = start_byte
-        end_byte = end_byte
-    elif representation == AssetRepresentation.string:
-        start_byte, end_byte = _get_tobj_string_offsets(asset.internal_uri)
-    else:
-        start_byte, end_byte = _get_tobj_pickle_offsets(asset.internal_uri)
+        with workflow_db.session() as session:
+            lattice_record = (
+                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+            )
+            status = lattice_record.status if lattice_record else None
+            if not lattice_record:
+                return JSONResponse(
+                    status_code=404,
+                    content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+                )
 
-    app_log.debug(f"Serving byte range {start_byte}:{end_byte} of {asset.internal_uri}")
-    generator = _generate_file_slice(asset.internal_uri, start_byte, end_byte)
-    return StreamingResponse(generator)
+        result_object = get_cached_result_object(dispatch_id)
+        app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
+        with workflow_db.session() as session:
+            asset = result_object.get_asset(key=key.value, session=session)
+
+        # Explicit representation overrides the byte range
+        if representation is None or RESULT_ASSET_TYPES[key.value] != AssetType.TRANSPORTABLE:
+            start_byte = start_byte
+            end_byte = end_byte
+        elif representation == AssetRepresentation.string:
+            start_byte, end_byte = _get_tobj_string_offsets(asset.internal_uri)
+        else:
+            start_byte, end_byte = _get_tobj_pickle_offsets(asset.internal_uri)
+
+        app_log.debug(f"Serving byte range {start_byte}:{end_byte} of {asset.internal_uri}")
+        generator = _generate_file_slice(asset.internal_uri, start_byte, end_byte)
+        return StreamingResponse(generator)
+    except Exception as e:
+        app_log.debug(e)
+        raise
 
 
 @router.get("/{dispatch_id}/lattice/{key}")
@@ -183,49 +191,52 @@ def get_lattice_asset(
 ):
     start_byte = 0
     end_byte = -1
-    if Range:
-        start_byte, end_byte = _extract_byte_range(Range)
-
-    if end_byte >= 0 and end_byte < start_byte:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid byte range",
-        )
-    app_log.debug(
-        f"Requested lattice asset {key.value} ([{start_byte}:{end_byte}])for dispatch {dispatch_id}"
-    )
-
-    with workflow_db.session() as session:
-        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-        status = lattice_record.status if lattice_record else None
-        if not lattice_record:
-            return JSONResponse(
-                status_code=404,
-                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-            )
 
     try:
-        with workflow_db.session() as session:
-            result_object = get_result_object(dispatch_id, bare=True, session=session)
-            asset = result_object.lattice.get_asset(key=key.value, session=session)
-        app_log.debug(f"Lattice asset uri: {asset.internal_uri}")
-    except:
-        return JSONResponse(
-            status_code=404,
-            content={"message": f"Error retrieving asset {key.value}."},
-        )
-    # Explicit representation overrides the byte range
-    if representation is None or LATTICE_ASSET_TYPES[key.value] != AssetType.TRANSPORTABLE:
-        start_byte = start_byte
-        end_byte = end_byte
-    elif representation == AssetRepresentation.string:
-        start_byte, end_byte = _get_tobj_string_offsets(asset.internal_uri)
-    else:
-        start_byte, end_byte = _get_tobj_pickle_offsets(asset.internal_uri)
+        if Range:
+            start_byte, end_byte = _extract_byte_range(Range)
 
-    app_log.debug(f"Serving byte range {start_byte}:{end_byte} of {asset.internal_uri}")
-    generator = _generate_file_slice(asset.internal_uri, start_byte, end_byte)
-    return StreamingResponse(generator)
+        if end_byte >= 0 and end_byte < start_byte:
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid byte range",
+            )
+        app_log.debug(
+            f"Requested lattice asset {key.value} ([{start_byte}:{end_byte}])for dispatch {dispatch_id}"
+        )
+
+        with workflow_db.session() as session:
+            lattice_record = (
+                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+            )
+            status = lattice_record.status if lattice_record else None
+            if not lattice_record:
+                return JSONResponse(
+                    status_code=404,
+                    content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+                )
+
+        result_object = get_cached_result_object(dispatch_id)
+        app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
+        with workflow_db.session() as session:
+            asset = result_object.lattice.get_asset(key=key.value, session=session)
+
+        # Explicit representation overrides the byte range
+        if representation is None or LATTICE_ASSET_TYPES[key.value] != AssetType.TRANSPORTABLE:
+            start_byte = start_byte
+            end_byte = end_byte
+        elif representation == AssetRepresentation.string:
+            start_byte, end_byte = _get_tobj_string_offsets(asset.internal_uri)
+        else:
+            start_byte, end_byte = _get_tobj_pickle_offsets(asset.internal_uri)
+
+        app_log.debug(f"Serving byte range {start_byte}:{end_byte} of {asset.internal_uri}")
+        generator = _generate_file_slice(asset.internal_uri, start_byte, end_byte)
+        return StreamingResponse(generator)
+
+    except Exception as e:
+        app_log.debug(e)
+        raise e
 
 
 @router.post("/{dispatch_id}/node/{node_id}/{key}")
@@ -239,44 +250,42 @@ def upload_node_asset(
 ):
     app_log.debug(f"Requested asset {key} for node {dispatch_id}:{node_id}")
 
-    with workflow_db.session() as session:
-        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-        status = lattice_record.status if lattice_record else None
-        if not lattice_record:
-            return JSONResponse(
-                status_code=404,
-                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-            )
-
     try:
         with workflow_db.session() as session:
-            result_object = get_result_object(dispatch_id, bare=True, session=session)
-            node = result_object.lattice.transport_graph.get_node(node_id, session=session)
+            lattice_record = (
+                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+            )
+            status = lattice_record.status if lattice_record else None
+            if not lattice_record:
+                return JSONResponse(
+                    status_code=404,
+                    content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+                )
+
+        result_object = get_cached_result_object(dispatch_id)
+        app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
+        node = result_object.lattice.transport_graph.get_node(node_id)
+        with workflow_db.session() as session:
             asset = node.get_asset(key=key.value, session=session)
-            app_log.debug(f"Asset uri {asset.internal_uri}")
+        app_log.debug(f"Asset uri {asset.internal_uri}")
+
+        # Update asset metadata
+        with workflow_db.session() as session:
+            update = {"size": content_length}
+            if digest:
+                alg, checksum = _extract_checksum(digest)
+                update["digest_alg"] = alg
+                update["digest"] = checksum
+                node.update_assets(updates={key: update}, session=session)
+            app_log.debug(f"Updated node asset {dispatch_id}:{node_id}:{key}")
+
+        # Copy the tempfile to object store
+        _copy_file_obj(asset_file.file, asset.internal_uri)
+
+        return f"Uploaded file to {asset.internal_uri}"
     except Exception as e:
         app_log.debug(e)
-        return JSONResponse(
-            status_code=404,
-            content={"message": f"Error retrieving metadata for asset {key}."},
-        )
-
-    # Update asset metadata
-    with workflow_db.session() as session:
-        update = {"size": content_length}
-        if digest:
-            alg, checksum = _extract_checksum(digest)
-            update["digest_alg"] = alg
-            update["digest"] = checksum
-            res_obj = get_result_object(dispatch_id, bare=True, session=session)
-            node = res_obj.lattice.transport_graph.get_node(node_id, session=session)
-            node.update_assets(updates={key: update}, session=session)
-        app_log.debug(f"Updated node asset {dispatch_id}:{node_id}:{key}")
-
-    # Copy the tempfile to object store
-    _copy_file_obj(asset_file.file, asset.internal_uri)
-
-    return f"Uploaded file to {asset.internal_uri}"
+        raise
 
 
 @router.post("/{dispatch_id}/dispatch/{key}")
@@ -287,41 +296,40 @@ def upload_dispatch_asset(
     content_length: int = Header(),
     digest: Union[str, None] = Header(default=None, regex=digest_regex),
 ):
-    with workflow_db.session() as session:
-        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-        status = lattice_record.status if lattice_record else None
-        if not lattice_record:
-            return JSONResponse(
-                status_code=404,
-                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-            )
-
     try:
         with workflow_db.session() as session:
-            result_object = get_result_object(dispatch_id, bare=True, session=session)
+            lattice_record = (
+                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+            )
+            status = lattice_record.status if lattice_record else None
+            if not lattice_record:
+                return JSONResponse(
+                    status_code=404,
+                    content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+                )
+
+        result_object = get_cached_result_object(dispatch_id)
+        app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
+        with workflow_db.session() as session:
             asset = result_object.get_asset(key=key.value, session=session)
-    except:
-        return JSONResponse(
-            status_code=404,
-            content={"message": f"Error retrieving metadata for asset {key}."},
-        )
 
-    # Update asset metadata
-    with workflow_db.session() as session:
-        update = {"size": content_length}
-        if digest:
-            alg, checksum = _extract_checksum(digest)
-            update["digest_alg"] = alg
-            update["digest"] = checksum
+        # Update asset metadata
+        with workflow_db.session() as session:
+            update = {"size": content_length}
+            if digest:
+                alg, checksum = _extract_checksum(digest)
+                update["digest_alg"] = alg
+                update["digest"] = checksum
+                result_object.update_assets(updates={key: update}, session=session)
+            app_log.debug(f"Updated size for dispatch asset {dispatch_id}:{key}")
 
-            res_obj = get_result_object(dispatch_id, bare=True, session=session)
-            res_obj.update_assets(updates={key: update}, session=session)
-        app_log.debug(f"Updated size for dispatch asset {dispatch_id}:{key}")
+        # Copy the tempfile to object store
+        _copy_file_obj(asset_file.file, asset.internal_uri)
 
-    # Copy the tempfile to object store
-    _copy_file_obj(asset_file.file, asset.internal_uri)
-
-    return f"Uploaded file to {asset.internal_uri}"
+        return f"Uploaded file to {asset.internal_uri}"
+    except Exception as e:
+        app_log.debug(e)
+        raise
 
 
 @router.post("/{dispatch_id}/lattice/{key}")
@@ -332,41 +340,40 @@ def upload_lattice_asset(
     content_length: int = Header(),
     digest: Union[str, None] = Header(default=None, regex=digest_regex),
 ):
-    with workflow_db.session() as session:
-        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-        status = lattice_record.status if lattice_record else None
-        if not lattice_record:
-            return JSONResponse(
-                status_code=404,
-                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-            )
-
     try:
         with workflow_db.session() as session:
-            result_object = get_result_object(dispatch_id, bare=True, session=session)
+            lattice_record = (
+                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
+            )
+            status = lattice_record.status if lattice_record else None
+            if not lattice_record:
+                return JSONResponse(
+                    status_code=404,
+                    content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+                )
+
+        result_object = get_cached_result_object(dispatch_id)
+        app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
+        with workflow_db.session() as session:
             asset = result_object.lattice.get_asset(key=key.value, session=session)
-    except:
-        return JSONResponse(
-            status_code=404,
-            content={"message": f"Error retrieving metadata for asset {key}."},
-        )
 
-    # Update asset metadata
-    with workflow_db.session() as session:
-        update = {"size": content_length}
-        if digest:
-            alg, checksum = _extract_checksum(digest)
-            update["digest_alg"] = alg
-            update["digest"] = checksum
+        # Update asset metadata
+        with workflow_db.session() as session:
+            update = {"size": content_length}
+            if digest:
+                alg, checksum = _extract_checksum(digest)
+                update["digest_alg"] = alg
+                update["digest"] = checksum
+                result_object.lattice.update_assets(updates={key: update}, session=session)
+            app_log.debug(f"Updated size for lattice asset {dispatch_id}:{key}")
 
-            res_obj = get_result_object(dispatch_id, bare=True, session=session)
-            res_obj.lattice.update_assets(updates={key: update}, session=session)
-        app_log.debug(f"Updated size for lattice asset {dispatch_id}:{key}")
+        # Copy the tempfile to object store
+        _copy_file_obj(asset_file.file, asset.internal_uri)
 
-    # Copy the tempfile to object store
-    _copy_file_obj(asset_file.file, asset.internal_uri)
-
-    return f"Uploaded file to {asset.internal_uri}"
+        return f"Uploaded file to {asset.internal_uri}"
+    except Exception as e:
+        app_log.debug(e)
+        raise
 
 
 def _copy_file_obj(src_fileobj: BinaryIO, dest_url: str):
@@ -463,3 +470,25 @@ def _get_tobj_pickle_offsets(file_url: str) -> Tuple[int, int]:
         with mmap.mmap(f.fileno(), filelen) as mm:
             # TOArchiveUtils operates on byte arrays
             return TOArchiveUtils.data_byte_range(mm)
+
+
+# This must only be used for static data as we don't have yet any
+# intelligent invalidation logic.
+@lru_cache(maxsize=LRU_CACHE_SIZE)
+def get_cached_result_object(dispatch_id: str):
+    with workflow_db.session() as session:
+        srv_res = get_result_object(dispatch_id, session=session)
+        app_log.debug(f"Caching result {dispatch_id}")
+
+        # Prepopulate asset maps to avoid DB lookups
+
+        srv_res.populate_asset_map(session)
+        srv_res.lattice.populate_asset_map(session)
+
+        tg = srv_res.lattice.transport_graph
+        g = tg.get_internal_graph_copy()
+        for node_id in g.nodes():
+            node = tg.get_node(node_id, session)
+            node.populate_asset_map(session)
+
+    return srv_res

@@ -132,6 +132,12 @@ class DispatchedObject(ABC):
 
         return self.assets[key]
 
+    def populate_asset_map(self, session: Session):
+        """Load and cache all asset records"""
+        asset_links = self.get_asset_ids(session=session, keys=[])
+        for key, asset_id in asset_links.items():
+            self.assets[key] = Asset.from_id(asset_id, session)
+
     def update_assets(self, updates: Dict[str, Dict], session: Session = None):
         """Bulk update associated assets"""
         if session:
