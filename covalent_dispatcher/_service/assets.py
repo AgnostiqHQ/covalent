@@ -21,14 +21,14 @@
 """Routes for uploading and downloading workflow assets"""
 
 import shutil
-from typing import Tuple, Union
+from typing import BinaryIO, Tuple, Union
 
 from fastapi import APIRouter, Header, HTTPException, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
+from furl import furl
 
 from covalent._shared_files import logger
 
-from .._dal.export import get_dispatch_asset_path, get_lattice_asset_path, get_node_asset_path
 from .._dal.result import get_result_object
 from .._db.datastore import workflow_db
 from .._db.models import Lattice
@@ -87,13 +87,15 @@ def get_node_asset(
 
     try:
         with workflow_db.session() as session:
-            path = get_node_asset_path(session, dispatch_id, node_id, key.value)
+            result_object = get_result_object(dispatch_id, bare=True, session=session)
+            node = result_object.lattice.transport_graph.get_node(node_id, session=session)
+            asset = node.get_asset(key=key.value, session=session)
     except:
         return JSONResponse(
             status_code=404,
             content={"message": f"Error retrieving asset {key.value}."},
         )
-    generator = _generate_file_slice(path, start_byte, end_byte)
+    generator = _generate_file_slice(asset.internal_uri, start_byte, end_byte)
     return StreamingResponse(generator)
 
 
@@ -128,15 +130,16 @@ def get_dispatch_asset(
 
     try:
         with workflow_db.session() as session:
-            path = get_dispatch_asset_path(session, dispatch_id, key.value)
-        app_log.debug(f"Dispatch result uri: {path}")
+            result_object = get_result_object(dispatch_id, bare=True, session=session)
+            asset = result_object.get_asset(key=key.value, session=session)
+        app_log.debug(f"Dispatch result uri: {asset.internal_uri}")
     except:
         return JSONResponse(
             status_code=404,
             content={"message": f"Error retrieving asset {key.value}."},
         )
 
-    generator = _generate_file_slice(path, start_byte, end_byte)
+    generator = _generate_file_slice(asset.internal_uri, start_byte, end_byte)
     return StreamingResponse(generator)
 
 
@@ -171,14 +174,15 @@ def get_lattice_asset(
 
     try:
         with workflow_db.session() as session:
-            path = get_lattice_asset_path(session, dispatch_id, key.value)
-        app_log.debug(f"Lattice asset uri: {path}")
+            result_object = get_result_object(dispatch_id, bare=True, session=session)
+            asset = result_object.lattice.get_asset(key=key.value, session=session)
+        app_log.debug(f"Lattice asset uri: {asset.internal_uri}")
     except:
         return JSONResponse(
             status_code=404,
             content={"message": f"Error retrieving asset {key.value}."},
         )
-    generator = _generate_file_slice(path, start_byte, end_byte)
+    generator = _generate_file_slice(asset.internal_uri, start_byte, end_byte)
     return StreamingResponse(generator)
 
 
@@ -186,7 +190,7 @@ def get_lattice_asset(
 def upload_node_asset(
     dispatch_id: str,
     node_id: int,
-    key: str,
+    key: ElectronAssetKey,
     asset_file: UploadFile,
     content_length: int = Header(),
     digest: Union[str, None] = Header(default=None, regex=digest_regex),
@@ -204,8 +208,12 @@ def upload_node_asset(
 
     try:
         with workflow_db.session() as session:
-            path = get_node_asset_path(session, dispatch_id, node_id, key)
-    except:
+            result_object = get_result_object(dispatch_id, bare=True, session=session)
+            node = result_object.lattice.transport_graph.get_node(node_id, session=session)
+            asset = node.get_asset(key=key.value, session=session)
+            app_log.debug(f"Asset uri {asset.internal_uri}")
+    except Exception as e:
+        app_log.debug(e)
         return JSONResponse(
             status_code=404,
             content={"message": f"Error retrieving metadata for asset {key}."},
@@ -224,9 +232,9 @@ def upload_node_asset(
         app_log.debug(f"Updated node asset {dispatch_id}:{node_id}:{key}")
 
     # Copy the tempfile to object store
-    _copy_file_obj(asset_file.file, path)
+    _copy_file_obj(asset_file.file, asset.internal_uri)
 
-    return f"Uploaded file to {path}"
+    return f"Uploaded file to {asset.internal_uri}"
 
 
 @router.post("/{dispatch_id}/dispatch/{key}")
@@ -248,7 +256,8 @@ def upload_dispatch_asset(
 
     try:
         with workflow_db.session() as session:
-            path = get_dispatch_asset_path(session, dispatch_id, key.value)
+            result_object = get_result_object(dispatch_id, bare=True, session=session)
+            asset = result_object.get_asset(key=key.value, session=session)
     except:
         return JSONResponse(
             status_code=404,
@@ -268,9 +277,9 @@ def upload_dispatch_asset(
         app_log.debug(f"Updated size for dispatch asset {dispatch_id}:{key}")
 
     # Copy the tempfile to object store
-    _copy_file_obj(asset_file.file, path)
+    _copy_file_obj(asset_file.file, asset.internal_uri)
 
-    return f"Uploaded file to {path}"
+    return f"Uploaded file to {asset.internal_uri}"
 
 
 @router.post("/{dispatch_id}/lattice/{key}")
@@ -292,7 +301,8 @@ def upload_lattice_asset(
 
     try:
         with workflow_db.session() as session:
-            path = get_lattice_asset_path(session, dispatch_id, key.value)
+            result_object = get_result_object(dispatch_id, bare=True, session=session)
+            asset = result_object.lattice.get_asset(key=key.value, session=session)
     except:
         return JSONResponse(
             status_code=404,
@@ -312,20 +322,21 @@ def upload_lattice_asset(
         app_log.debug(f"Updated size for lattice asset {dispatch_id}:{key}")
 
     # Copy the tempfile to object store
-    _copy_file_obj(asset_file.file, path)
+    _copy_file_obj(asset_file.file, asset.internal_uri)
 
-    return f"Uploaded file to {path}"
+    return f"Uploaded file to {asset.internal_uri}"
 
 
-def _copy_file_obj(src_fileobj, dest_path):
+def _copy_file_obj(src_fileobj: BinaryIO, dest_url: str):
+    dest_path = str(furl(dest_url).path)
     with open(dest_path, "wb") as dest_fileobj:
         shutil.copyfileobj(src_fileobj, dest_fileobj)
 
 
-def _generate_file_slice(file_path: str, start_byte: int, end_byte: int, chunk_size: int = 65536):
+def _generate_file_slice(file_url: str, start_byte: int, end_byte: int, chunk_size: int = 65536):
     """Generator of a byte slice from a file"""
     byte_pos = start_byte
-
+    file_path = str(furl(file_url).path)
     with open(file_path, "rb") as f:
         f.seek(start_byte)
         if end_byte < 0:
@@ -339,6 +350,7 @@ def _generate_file_slice(file_path: str, start_byte: int, end_byte: int, chunk_s
 
 
 def _extract_byte_range(byte_range_header: str) -> Tuple[int, int]:
+    """Extract the byte range from a range request header."""
     start_byte = 0
     end_byte = -1
     match = range_pattern.match(byte_range_header)
