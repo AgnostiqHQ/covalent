@@ -20,8 +20,9 @@
 
 """FastAPI models for /api/v1/resultv2 endpoints"""
 
+from typing import Dict, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from .asset import AssetSchema
 from .transport_graph import TransportGraphSchema
@@ -114,4 +115,13 @@ class LatticeMetadata(BaseModel):
 class LatticeSchema(BaseModel):
     metadata: LatticeMetadata
     assets: LatticeAssets
+    custom_assets: Optional[Dict[str, AssetSchema]]
+
     transport_graph: TransportGraphSchema
+
+    @validator("custom_assets")
+    def check_custom_asset_keys(cls, v):
+        if v is not None:
+            for key in v:
+                if key in ASSET_FILENAME_MAP:
+                    raise ValueError(f"Asset {key} conflicts with built-in key")

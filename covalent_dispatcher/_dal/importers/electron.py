@@ -150,4 +150,25 @@ def import_electron_assets(
         asset.digest = None
         asset.remote_uri = f"file://{local_uri}"
 
+    # Register custom assets
+    if e.custom_assets:
+        for asset_key, asset in e.custom_assets.items():
+            object_key = f"{asset_key}.data"
+            local_uri = os.path.join(node_storage_path, object_key)
+
+            asset_kwargs = {
+                "storage_type": StorageType.LOCAL.value,
+                "storage_path": node_storage_path,
+                "object_key": object_key,
+                "digest_alg": asset.digest_alg,
+                "digest": asset.digest,
+                "remote_uri": asset.uri,
+                "size": asset.size,
+            }
+            asset_recs[asset_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
+
+            # Send this back to the client
+            asset.remote_uri = f"file://{local_uri}" if asset.digest else ""
+            asset.digest = None
+
     return e.assets, asset_recs

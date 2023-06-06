@@ -33,7 +33,7 @@ class AssetSchema(BaseModel):
     remote_uri: Optional[str]
 
     # Size of the asset in bytes
-    size: Optional[int]
+    size: Optional[int] = 0
 
 
 @dataclass

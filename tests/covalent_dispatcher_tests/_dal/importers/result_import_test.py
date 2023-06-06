@@ -28,7 +28,7 @@ import pytest
 import covalent as ct
 from covalent._results_manager.result import Result as SDKResult
 from covalent._serialize.result import serialize_result
-from covalent._shared_files.schemas.result import ResultSchema
+from covalent._shared_files.schemas.result import AssetSchema, ResultSchema
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent_dispatcher._dal.importers.result import SERVER_URL, handle_redispatch, import_result
 from covalent_dispatcher._dal.result import get_result_object
@@ -223,3 +223,30 @@ def test_handle_redispatch_identical(mocker, test_db, parent_status, new_status)
         assert tg.get_node_value(n, "status") == new_status
 
     assert len(assets_to_copy) == n_workflow_assets + n_electron_assets
+
+
+def test_import_result_with_custom_assets(mocker, test_db):
+    dispatch_id = "test_import_result"
+
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+
+    with tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir, tempfile.TemporaryDirectory(
+        prefix="covalent-"
+    ) as srv_dir:
+        manifest = get_mock_result(dispatch_id, sdk_dir)
+        manifest.lattice.custom_assets = {"custom_lattice_asset": AssetSchema()}
+        manifest.lattice.transport_graph.nodes[0].custom_assets = {
+            "custom_electron_asset": AssetSchema()
+        }
+        filtered_res = import_result(manifest, srv_dir, None)
+
+    with test_db.session() as session:
+        result_object = get_result_object(dispatch_id, bare=True, session=session)
+        node_0 = result_object.lattice.transport_graph.get_node(0, session)
+        node_1 = result_object.lattice.transport_graph.get_node(1, session)
+        lat_asset_ids = result_object.lattice.get_asset_ids(session, [])
+        node_0_asset_ids = node_0.get_asset_ids(session, [])
+        node_1_asset_ids = node_1.get_asset_ids(session, [])
+    assert "custom_lattice_asset" in lat_asset_ids
+    assert "custom_electron_asset" in node_0_asset_ids
+    assert "custom_electron_asset" not in node_1_asset_ids

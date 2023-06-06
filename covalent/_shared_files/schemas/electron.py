@@ -21,9 +21,9 @@
 """FastAPI models for /api/v1/resultv2 endpoints"""
 
 from datetime import datetime
-from typing import Optional
+from typing import Dict, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from .asset import AssetSchema
 from .common import StatusEnum
@@ -116,3 +116,11 @@ class ElectronSchema(BaseModel):
     id: int
     metadata: ElectronMetadata
     assets: ElectronAssets
+    custom_assets: Optional[Dict[str, AssetSchema]]
+
+    @validator("custom_assets")
+    def check_custom_asset_keys(cls, v):
+        if v is not None:
+            for key in v:
+                if key in ASSET_FILENAME_MAP:
+                    raise ValueError(f"Asset {key} conflicts with built-in key")

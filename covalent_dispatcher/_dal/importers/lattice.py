@@ -99,6 +99,7 @@ def import_lattice_assets(
     """Insert asset records and populate the asset link table"""
     asset_ids = {}
 
+    # Register built-in assets
     for asset_key, asset in lat.assets:
         object_key = ASSET_FILENAME_MAP[asset_key]
 
@@ -118,6 +119,27 @@ def import_lattice_assets(
         # Send this back to the client
         asset.digest = None
         asset.remote_uri = f"file://{local_uri}"
+
+    # Register custom assets
+    if lat.custom_assets:
+        for asset_key, asset in lat.custom_assets.items():
+            object_key = f"{asset_key}.data"
+            local_uri = os.path.join(storage_path, object_key)
+
+            asset_kwargs = {
+                "storage_type": StorageType.LOCAL.value,
+                "storage_path": storage_path,
+                "object_key": object_key,
+                "digest_alg": asset.digest_alg,
+                "digest": asset.digest,
+                "remote_uri": asset.uri,
+                "size": asset.size,
+            }
+            asset_ids[asset_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
+
+            # Send this back to the client
+            asset.remote_uri = f"file://{local_uri}" if asset.digest else ""
+            asset.digest = None
 
     session.flush()
 
