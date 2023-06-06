@@ -104,11 +104,11 @@ class Result:
         if isinstance(self.inputs, TransportableObject):
             input_string = self.inputs.object_string
 
-            regex = r"^\{'args': \[(.*)\], 'kwargs': \{(.*)\}\}$"
+            regex = r"^\{'args': \((.*)\), 'kwargs': \{(.*)\}\}$"
             pattern = re.compile(regex)
             m = pattern.match(input_string)
             if m:
-                arg_str_repr = m.group(1)
+                arg_str_repr = m.group(1).rstrip(",")
                 kwarg_str_repr = m.group(2)
             else:
                 arg_str_repr = str(None)
