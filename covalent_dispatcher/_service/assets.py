@@ -28,8 +28,8 @@ from fastapi.responses import JSONResponse, StreamingResponse
 
 from covalent._shared_files import logger
 
-from .._dal.asset_update import update_dispatch_asset, update_lattice_asset, update_node_asset
 from .._dal.export import get_dispatch_asset_path, get_lattice_asset_path, get_node_asset_path
+from .._dal.result import get_result_object
 from .._db.datastore import workflow_db
 from .._db.models import Lattice
 from .models import (
@@ -211,22 +211,20 @@ def upload_node_asset(
             content={"message": f"Error retrieving metadata for asset {key}."},
         )
 
-    _copy_file_obj(asset_file.file, path)
-
+    # Update asset metadata
     with workflow_db.session() as session:
         update = {"size": content_length}
         if digest:
             alg, checksum = _extract_checksum(digest)
             update["digest_alg"] = alg
             update["digest"] = checksum
-        update_node_asset(
-            session,
-            dispatch_id,
-            node_id,
-            key,
-            values=update,
-        )
-        app_log.debug(f"Updated size for node asset {dispatch_id}:{node_id}:{key}")
+            res_obj = get_result_object(dispatch_id, bare=True, session=session)
+            node = res_obj.lattice.transport_graph.get_node(node_id, session=session)
+            node.update_assets(updates={key: update}, session=session)
+        app_log.debug(f"Updated node asset {dispatch_id}:{node_id}:{key}")
+
+    # Copy the tempfile to object store
+    _copy_file_obj(asset_file.file, path)
 
     return f"Uploaded file to {path}"
 
@@ -257,21 +255,20 @@ def upload_dispatch_asset(
             content={"message": f"Error retrieving metadata for asset {key}."},
         )
 
-    _copy_file_obj(asset_file.file, path)
-
+    # Update asset metadata
     with workflow_db.session() as session:
         update = {"size": content_length}
         if digest:
             alg, checksum = _extract_checksum(digest)
             update["digest_alg"] = alg
             update["digest"] = checksum
-        update_dispatch_asset(
-            session,
-            dispatch_id,
-            key,
-            values=update,
-        )
+
+            res_obj = get_result_object(dispatch_id, bare=True, session=session)
+            res_obj.update_assets(updates={key: update}, session=session)
         app_log.debug(f"Updated size for dispatch asset {dispatch_id}:{key}")
+
+    # Copy the tempfile to object store
+    _copy_file_obj(asset_file.file, path)
 
     return f"Uploaded file to {path}"
 
@@ -302,8 +299,7 @@ def upload_lattice_asset(
             content={"message": f"Error retrieving metadata for asset {key}."},
         )
 
-    _copy_file_obj(asset_file.file, path)
-
+    # Update asset metadata
     with workflow_db.session() as session:
         update = {"size": content_length}
         if digest:
@@ -311,13 +307,12 @@ def upload_lattice_asset(
             update["digest_alg"] = alg
             update["digest"] = checksum
 
-        update_lattice_asset(
-            session,
-            dispatch_id,
-            key,
-            values=update,
-        )
+            res_obj = get_result_object(dispatch_id, bare=True, session=session)
+            res_obj.lattice.update_assets(updates={key: update}, session=session)
         app_log.debug(f"Updated size for lattice asset {dispatch_id}:{key}")
+
+    # Copy the tempfile to object store
+    _copy_file_obj(asset_file.file, path)
 
     return f"Uploaded file to {path}"
 
