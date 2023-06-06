@@ -28,7 +28,7 @@ from sqlalchemy.orm import Session
 
 from covalent._shared_files.defaults import WAIT_EDGE_NAME
 from covalent_dispatcher._core.data_modules import graph as core_graph
-from covalent_dispatcher._dal.export import get_node_asset
+from covalent_dispatcher._dal.result import get_result_object
 from covalent_ui.api.v1.data_layer.electron_dal import Electrons
 from covalent_ui.api.v1.database.config.db import engine
 from covalent_ui.api.v1.models.electrons_model import (
@@ -132,21 +132,15 @@ def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
     input_assets = {"args": [], "kwargs": {}}
 
     with Session(engine) as session:
+        result_object = get_result_object(str(dispatch_id), bare=True)
+        tg = result_object.lattice.transport_graph
         for arg in abstract_inputs["args"]:
-            asset = get_node_asset(
-                session=session,
-                dispatch_id=str(dispatch_id),
-                node_id=arg,
-                key="output",
-            )
+            node = tg.get_node(node_id=arg, session=session)
+            asset = node.get_asset(key="output", session=session)
             input_assets["args"].append(asset)
         for k, v in abstract_inputs["kwargs"].items():
-            asset = get_node_asset(
-                session=session,
-                dispatch_id=str(dispatch_id),
-                node_id=v,
-                key="output",
-            )
+            node = tg.get_node(node_id=v, session=session)
+            asset = node.get_asset(key="output", session=session)
             input_assets["kwargs"][k] = asset
 
     # For now we load the picklefile from the object store into memory, but once
