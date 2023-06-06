@@ -847,6 +847,7 @@ def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kw
         # Attempt multistage sublattice dispatch. For now we require
         # the executor to reach the Covalent server
         parent_dispatch_id = os.environ["COVALENT_DISPATCH_ID"]
+        dispatcher_url = os.environ["COVALENT_DISPATCHER_URL"]
 
         with tempfile.TemporaryDirectory(prefix="covalent-") as staging_path:
             manifest = LocalDispatcher.prepare_manifest(sub, staging_path)
@@ -854,7 +855,10 @@ def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kw
             # Omit these two steps to return the manifest to Covalent and
             # request the assets be pulled
             recv_manifest = LocalDispatcher.register_manifest(
-                manifest, parent_dispatch_id=parent_dispatch_id, push_assets=True
+                manifest,
+                dispatcher_addr=dispatcher_url,
+                parent_dispatch_id=parent_dispatch_id,
+                push_assets=True,
             )
             LocalDispatcher.upload_assets(recv_manifest)
 

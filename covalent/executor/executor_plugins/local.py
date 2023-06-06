@@ -36,6 +36,7 @@ from pydantic import BaseModel
 from covalent._shared_files import TaskCancelledError, TaskRuntimeError, logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import RESULT_STATUS, Status
+from covalent._shared_files.utils import format_server_url
 from covalent.executor import BaseExecutor
 
 # Relative imports are not allowed in executor plugins
@@ -174,9 +175,7 @@ class LocalExecutor(BaseExecutor):
             output_uris.append((result_uri, stdout_uri, stderr_uri))
         # future = dask_client.submit(lambda x: x**3, 3)
 
-        dispatcher_addr = get_config("dispatcher.address")
-        dispatcher_port = get_config("dispatcher.port")
-        server_url = f"http://{dispatcher_addr}:{dispatcher_port}"
+        server_url = format_server_url()
 
         app_log.debug(f"Running task group {dispatch_id}:{task_ids}")
         future = proc_pool.submit(

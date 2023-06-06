@@ -41,6 +41,7 @@ from covalent._shared_files import TaskRuntimeError, logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._shared_files.util_classes import RESULT_STATUS, Status
+from covalent._shared_files.utils import format_server_url
 from covalent.executor.base import AsyncBaseExecutor
 from covalent.executor.schemas import ResourceMap, TaskSpec, TaskUpdate
 from covalent.executor.utils.wrappers import io_wrapper as dask_wrapper
@@ -233,9 +234,8 @@ class DaskExecutor(AsyncBaseExecutor):
             stderr_uri = os.path.join(self.cache_dir, f"stderr_{dispatch_id}-{node_id}.txt")
             output_uris.append((result_uri, stdout_uri, stderr_uri))
 
-        dispatcher_addr = get_config("dispatcher.address")
-        dispatcher_port = get_config("dispatcher.port")
-        server_url = f"http://{dispatcher_addr}:{dispatcher_port}"
+        server_url = format_server_url()
+
         key = f"dask_job_{dispatch_id}:{gid}"
 
         await self.set_job_handle(key)

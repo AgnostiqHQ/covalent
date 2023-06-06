@@ -174,6 +174,7 @@ def run_task_from_uris(
     gid = task_group_metadata["task_group_id"]
 
     os.environ["COVALENT_DISPATCH_ID"] = dispatch_id
+    os.environ["COVALENT_DISPATCHER_URL"] = server_url
 
     for i, task in enumerate(task_specs):
         result_uri, stdout_uri, stderr_uri = output_uris[i]
@@ -396,6 +397,7 @@ def run_task_from_uris_alt(
     gid = task_group_metadata["task_group_id"]
 
     os.environ["COVALENT_DISPATCH_ID"] = dispatch_id
+    os.environ["COVALENT_DISPATCHER_URL"] = server_url
 
     for i, task in enumerate(task_specs):
         result_uri, stdout_uri, stderr_uri = output_uris[i]
