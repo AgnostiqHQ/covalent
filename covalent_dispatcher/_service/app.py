@@ -62,7 +62,7 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    core_dispatcher._global_event.listener.cancel()
+    core_dispatcher._global_event_listener.cancel()
     core_runner._job_event_listener.cancel()
 
 
