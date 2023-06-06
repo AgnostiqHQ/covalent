@@ -22,7 +22,17 @@
 Models for the workflows db. Based on schema v9
 """
 
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import (
+    Boolean,
+    Column,
+    DateTime,
+    ForeignKey,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+)
 from sqlalchemy.orm import declarative_base
 
 from covalent._shared_files.util_classes import RESULT_STATUS
@@ -32,6 +42,8 @@ Base = declarative_base()
 
 class Lattice(Base):
     __tablename__ = "lattices"
+    __table_args__ = (UniqueConstraint("dispatch_id", name="u_dispatch_id"),)
+
     id = Column(Integer, primary_key=True)
     dispatch_id = Column(String(64), nullable=False)
 
