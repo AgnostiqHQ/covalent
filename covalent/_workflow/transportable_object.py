@@ -23,7 +23,7 @@
 import base64
 import json
 import platform
-from typing import Any, Callable
+from typing import Any, Callable, Tuple
 
 import cloudpickle
 
@@ -53,21 +53,21 @@ class _TOArchive:
         return string_offset + data_offset + self.header + self.object_string + self.data
 
     def load(serialized: bytes, header_only: bool, string_only: bool) -> "_TOArchive":
-        string_offset = _TOArchiveUtils.string_offset(serialized)
-        header = _TOArchiveUtils.parse_header(serialized, string_offset)
+        string_offset = TOArchiveUtils.string_offset(serialized)
+        header = TOArchiveUtils.parse_header(serialized, string_offset)
         object_string = b""
         data = b""
 
         if not header_only:
-            data_offset = _TOArchiveUtils.data_offset(serialized)
-            object_string = _TOArchiveUtils.parse_string(serialized, string_offset, data_offset)
+            data_offset = TOArchiveUtils.data_offset(serialized)
+            object_string = TOArchiveUtils.parse_string(serialized, string_offset, data_offset)
 
             if not string_only:
-                data = _TOArchiveUtils.parse_data(serialized, data_offset)
+                data = TOArchiveUtils.parse_data(serialized, data_offset)
         return _TOArchive(header, object_string, data)
 
 
-class _TOArchiveUtils:
+class TOArchiveUtils:
     @staticmethod
     def data_offset(serialized: bytes) -> int:
         size64 = serialized[STRING_OFFSET_BYTES : STRING_OFFSET_BYTES + DATA_OFFSET_BYTES]
@@ -77,6 +77,19 @@ class _TOArchiveUtils:
     def string_offset(serialized: bytes) -> int:
         size64 = serialized[:STRING_OFFSET_BYTES]
         return int.from_bytes(size64, BYTE_ORDER, signed=False)
+
+    @staticmethod
+    def string_byte_range(serialized: bytes) -> Tuple[int, int]:
+        """Return byte range for the string representation"""
+        start_byte = TOArchiveUtils.string_offset(serialized)
+        end_byte = TOArchiveUtils.data_offset(serialized)
+        return start_byte, end_byte
+
+    @staticmethod
+    def data_byte_range(serialized: bytes) -> Tuple[int, int]:
+        """Return byte range for the b64 picklebytes"""
+        start_byte = TOArchiveUtils.data_offset(serialized)
+        return start_byte, -1
 
     @staticmethod
     def parse_header(serialized: bytes, string_offset: int) -> bytes:

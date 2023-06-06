@@ -20,6 +20,8 @@
 
 """Routes for uploading and downloading workflow assets"""
 
+import mmap
+import os
 import shutil
 from typing import BinaryIO, Tuple, Union
 
@@ -27,12 +29,18 @@ from fastapi import APIRouter, Header, HTTPException, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 from furl import furl
 
+from covalent._serialize.electron import ASSET_TYPES as ELECTRON_ASSET_TYPES
+from covalent._serialize.lattice import ASSET_TYPES as LATTICE_ASSET_TYPES
+from covalent._serialize.result import ASSET_TYPES as RESULT_ASSET_TYPES
+from covalent._serialize.result import AssetType
 from covalent._shared_files import logger
+from covalent._workflow.transportable_object import TOArchiveUtils
 
 from .._dal.result import get_result_object
 from .._db.datastore import workflow_db
 from .._db.models import Lattice
 from .models import (
+    AssetRepresentation,
     DispatchAssetKey,
     ElectronAssetKey,
     LatticeAssetKey,
@@ -60,6 +68,7 @@ def get_node_asset(
     dispatch_id: str,
     node_id: int,
     key: ElectronAssetKey,
+    representation: Union[AssetRepresentation, None] = None,
     Range: Union[str, None] = Header(default=None, regex=range_regex),
 ):
     start_byte = 0
@@ -95,6 +104,17 @@ def get_node_asset(
             status_code=404,
             content={"message": f"Error retrieving asset {key.value}."},
         )
+
+    # Explicit representation overrides the byte range
+    if representation is None or ELECTRON_ASSET_TYPES[key.value] != AssetType.TRANSPORTABLE:
+        start_byte = start_byte
+        end_byte = end_byte
+    elif representation == AssetRepresentation.string:
+        start_byte, end_byte = _get_tobj_string_offsets(asset.internal_uri)
+    else:
+        start_byte, end_byte = _get_tobj_pickle_offsets(asset.internal_uri)
+
+    app_log.debug(f"Serving byte range {start_byte}:{end_byte} of {asset.internal_uri}")
     generator = _generate_file_slice(asset.internal_uri, start_byte, end_byte)
     return StreamingResponse(generator)
 
@@ -103,6 +123,7 @@ def get_node_asset(
 def get_dispatch_asset(
     dispatch_id: str,
     key: DispatchAssetKey,
+    representation: Union[AssetRepresentation, None] = None,
     Range: Union[str, None] = Header(default=None, regex=range_regex),
 ):
     start_byte = 0
@@ -139,6 +160,16 @@ def get_dispatch_asset(
             content={"message": f"Error retrieving asset {key.value}."},
         )
 
+    # Explicit representation overrides the byte range
+    if representation is None or RESULT_ASSET_TYPES[key.value] != AssetType.TRANSPORTABLE:
+        start_byte = start_byte
+        end_byte = end_byte
+    elif representation == AssetRepresentation.string:
+        start_byte, end_byte = _get_tobj_string_offsets(asset.internal_uri)
+    else:
+        start_byte, end_byte = _get_tobj_pickle_offsets(asset.internal_uri)
+
+    app_log.debug(f"Serving byte range {start_byte}:{end_byte} of {asset.internal_uri}")
     generator = _generate_file_slice(asset.internal_uri, start_byte, end_byte)
     return StreamingResponse(generator)
 
@@ -147,6 +178,7 @@ def get_dispatch_asset(
 def get_lattice_asset(
     dispatch_id: str,
     key: LatticeAssetKey,
+    representation: Union[AssetRepresentation, None] = None,
     Range: Union[str, None] = Header(default=None, regex=range_regex),
 ):
     start_byte = 0
@@ -182,6 +214,16 @@ def get_lattice_asset(
             status_code=404,
             content={"message": f"Error retrieving asset {key.value}."},
         )
+    # Explicit representation overrides the byte range
+    if representation is None or LATTICE_ASSET_TYPES[key.value] != AssetType.TRANSPORTABLE:
+        start_byte = start_byte
+        end_byte = end_byte
+    elif representation == AssetRepresentation.string:
+        start_byte, end_byte = _get_tobj_string_offsets(asset.internal_uri)
+    else:
+        start_byte, end_byte = _get_tobj_pickle_offsets(asset.internal_uri)
+
+    app_log.debug(f"Serving byte range {start_byte}:{end_byte} of {asset.internal_uri}")
     generator = _generate_file_slice(asset.internal_uri, start_byte, end_byte)
     return StreamingResponse(generator)
 
@@ -334,9 +376,20 @@ def _copy_file_obj(src_fileobj: BinaryIO, dest_url: str):
 
 
 def _generate_file_slice(file_url: str, start_byte: int, end_byte: int, chunk_size: int = 65536):
-    """Generator of a byte slice from a file"""
+    """Generator of a byte slice from a file.
+
+    Args:
+        file_url: A file:/// type URL pointing to the file
+        start_byte: The beginning of the byte range
+        end_byte: The end of the byte range, or -1 to select [start_byte:]
+        chunk_size: The size of each chunk
+
+    Returns:
+        Yields chunks of size <= chunk_size
+    """
     byte_pos = start_byte
     file_path = str(furl(file_url).path)
+    print("DEBUG: start_byte", type(start_byte), start_byte)
     with open(file_path, "rb") as f:
         f.seek(start_byte)
         if end_byte < 0:
@@ -368,3 +421,46 @@ def _extract_checksum(digest_header: str) -> Tuple[str, str]:
     alg = match.group(0)
     checksum = match.group(1)
     return alg, checksum
+
+
+# Helpers for TransportableObject
+
+
+def _get_tobj_string_offsets(file_url: str) -> Tuple[int, int]:
+    """Get the byte range for the str rep of a stored TObj.
+
+    For a first implementation we just query the filesystem directly.
+
+    Args:
+        file_url: A file:/// URL pointing to the TransportableObject
+
+    Returns:
+        (start_byte, end_byte)
+    """
+
+    file_path = str(furl(file_url).path)
+    filelen = os.path.getsize(file_path)
+    with open(file_path, "rb+") as f:
+        with mmap.mmap(f.fileno(), filelen) as mm:
+            # TOArchiveUtils operates on byte arrays
+            return TOArchiveUtils.string_byte_range(mm)
+
+
+def _get_tobj_pickle_offsets(file_url: str) -> Tuple[int, int]:
+    """Get the byte range for the picklebytes of a stored TObj.
+
+    For a first implementation we just query the filesystem directly.
+
+    Args:
+        file_url: A file:/// URL pointing to the TransportableObject
+
+    Returns:
+        (start_byte, end_byte)
+    """
+
+    file_path = str(furl(file_url).path)
+    filelen = os.path.getsize(file_path)
+    with open(file_path, "rb+") as f:
+        with mmap.mmap(f.fileno(), filelen) as mm:
+            # TOArchiveUtils operates on byte arrays
+            return TOArchiveUtils.data_byte_range(mm)

@@ -83,7 +83,6 @@ class LatticeAssetKey(str, Enum):
     workflow_function = "workflow_function"
     workflow_function_string = "workflow_function_string"
     doc = "doc"
-    doc_legacy = "__doc__"
     inputs = "inputs"
     named_args = "named_args"
     named_kwargs = "named_kwargs"
@@ -111,3 +110,8 @@ class ExportResponseSchema(BaseModel):
     id: str
     status: str
     result_export: Optional[ResultSchema]
+
+
+class AssetRepresentation(str, Enum):
+    string = "string"
+    b64pickle = "object"
