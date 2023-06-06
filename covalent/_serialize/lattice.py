@@ -20,8 +20,11 @@
 
 """Functions to convert lattice -> LatticeSchema"""
 
+from typing import Dict
+
 from .._shared_files.schemas.lattice import (
     ASSET_FILENAME_MAP,
+    AssetSchema,
     LatticeAssets,
     LatticeMetadata,
     LatticeSchema,
@@ -201,13 +204,20 @@ def _deserialize_lattice_assets(assets: LatticeAssets) -> dict:
     }
 
 
+def _get_lattice_custom_assets(lat: Lattice) -> Dict[str, AssetSchema]:
+    if "custom_asset_keys" in lat.metadata:
+        return {key: AssetSchema() for key in lat.metadata["custom_asset_keys"]}
+
+
 def serialize_lattice(lat, storage_path: str) -> LatticeSchema:
     meta = _serialize_lattice_metadata(lat)
     assets = _serialize_lattice_assets(lat, storage_path)
-
+    custom_assets = _get_lattice_custom_assets(lat)
     tg = serialize_transport_graph(lat.transport_graph, storage_path)
 
-    return LatticeSchema(metadata=meta, assets=assets, transport_graph=tg)
+    return LatticeSchema(
+        metadata=meta, assets=assets, custom_assets=custom_assets, transport_graph=tg
+    )
 
 
 def deserialize_lattice(model: LatticeSchema) -> Lattice:

@@ -20,9 +20,11 @@
 
 """Functions to convert node -> ElectronSchema"""
 
+from typing import Dict
 
 from .._shared_files.schemas.electron import (
     ASSET_FILENAME_MAP,
+    AssetSchema,
     ElectronAssets,
     ElectronMetadata,
     ElectronSchema,
@@ -208,10 +210,16 @@ def _deserialize_node_assets(ea: ElectronAssets) -> dict:
     }
 
 
+def _get_node_custom_assets(node_attrs: dict) -> Dict[str, AssetSchema]:
+    if "custom_asset_keys" in node_attrs["metadata"]:
+        return {key: AssetSchema() for key in node_attrs["metadata"]["custom_asset_keys"]}
+
+
 def serialize_node(node_id: int, node_attrs: dict, node_storage_path) -> ElectronSchema:
     meta = _serialize_node_metadata(node_attrs, node_storage_path)
     assets = _serialize_node_assets(node_attrs, node_storage_path)
-    return ElectronSchema(id=node_id, metadata=meta, assets=assets)
+    custom_assets = _get_node_custom_assets(node_attrs)
+    return ElectronSchema(id=node_id, metadata=meta, assets=assets, custom_assets=custom_assets)
 
 
 def deserialize_node(e: ElectronSchema, metadata_only: bool = False) -> dict:

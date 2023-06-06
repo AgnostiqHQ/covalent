@@ -68,3 +68,35 @@ def test_serialize_deserialize_lattice():
 
         for edge in tg1._graph.edges:
             assert tg1._graph.edges[edge].items() <= tg2._graph.edges[edge].items()
+
+
+def test_serialize_lattice_custom_assets():
+    @ct.electron
+    def identity(x):
+        return x
+
+    @ct.electron
+    def add(x, y):
+        return x + y
+
+    @ct.lattice
+    def workflow(x, y):
+        res1 = identity(x)
+        res2 = identity(y)
+        return add(res1, res2)
+
+    workflow.metadata["custom_asset_keys"] = ["custom_lat_asset"]
+
+    workflow.build_graph(2, 3)
+    node_metadata = workflow.transport_graph.get_node_value(0, "metadata")
+    node_metadata["custom_asset_keys"] = ["custom_electron_asset"]
+
+    with tempfile.TemporaryDirectory() as d:
+        manifest = serialize_lattice(workflow, d)
+        assert ["custom_lat_asset"] == list(manifest.custom_assets.keys())
+
+        node_0 = manifest.transport_graph.nodes[0]
+        assert "custom_electron_asset" in node_0.custom_assets
+
+        node_1 = manifest.transport_graph.nodes[1]
+        assert not node_1.custom_assets

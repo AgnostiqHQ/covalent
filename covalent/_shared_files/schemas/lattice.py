@@ -125,3 +125,4 @@ class LatticeSchema(BaseModel):
             for key in v:
                 if key in ASSET_FILENAME_MAP:
                     raise ValueError(f"Asset {key} conflicts with built-in key")
+        return v
