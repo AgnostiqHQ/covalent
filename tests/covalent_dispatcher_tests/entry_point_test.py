@@ -23,7 +23,7 @@
 
 import pytest
 
-from covalent_dispatcher.entry_point import cancel_running_dispatch, run_dispatcher, run_redispatch
+from covalent_dispatcher.entry_point import cancel_running_dispatch, run_dispatcher
 
 DISPATCH_ID = "f34671d1-48f2-41ce-89d9-9a8cb5c60e5d"
 
@@ -49,20 +49,6 @@ async def test_run_dispatcher(mocker):
     assert dispatch_id == DISPATCH_ID
     mock_make_dispatch.assert_awaited_with(json_lattice)
     mock_run_dispatch.assert_called_with(dispatch_id)
-
-
-@pytest.mark.asyncio
-async def test_run_redispatch(mocker):
-    """Test the run redispatch function."""
-    make_derived_dispatch_mock = mocker.patch(
-        "covalent_dispatcher._core.make_derived_dispatch", return_value="mock-redispatch-id"
-    )
-    run_dispatch_mock = mocker.patch("covalent_dispatcher._core.run_dispatch")
-    redispatch_id = await run_redispatch(DISPATCH_ID, "mock-json-lattice", {}, False)
-    run_dispatch_mock.assert_called_once_with(redispatch_id)
-    make_derived_dispatch_mock.assert_awaited_once_with(
-        DISPATCH_ID, "mock-json-lattice", {}, False
-    )
 
 
 @pytest.mark.asyncio

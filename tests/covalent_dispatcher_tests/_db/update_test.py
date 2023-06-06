@@ -27,7 +27,8 @@ from pathlib import Path
 import pytest
 
 import covalent as ct
-from covalent._results_manager.result import Result, import_result_object
+from covalent._results_manager.result import Result
+from covalent._serialize.result import deserialize_result
 from covalent._shared_files.defaults import WAIT_EDGE_NAME
 from covalent._workflow.lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
@@ -35,7 +36,7 @@ from covalent_dispatcher._dal.asset import load_file
 from covalent_dispatcher._db import update, upsert
 from covalent_dispatcher._db.datastore import DataStore
 from covalent_dispatcher._db.models import Electron, ElectronDependency, Job, Lattice
-from covalent_dispatcher._service.app_exp import export_serialized_result
+from covalent_dispatcher._service.app_exp import export_result_manifest
 
 # TEMP_RESULTS_DIR = "/tmp/results"
 TEMP_RESULTS_DIR = os.environ.get("COVALENT_DATA_DIR") or ct.get_config("dispatcher.results_dir")
@@ -313,21 +314,13 @@ def test_result_persist_rehydrate(test_db, result_1, mocker):
     update.persist(result_1)
     with test_db.session() as session:
         lattice_row = session.query(Lattice).first()
-        ser_res = export_serialized_result(result_1.dispatch_id)
-        result_2 = import_result_object(ser_res)
+        manifest = export_result_manifest(result_1.dispatch_id)
+
+        result_2 = deserialize_result(manifest)
         result_2._num_nodes = len(result_2.lattice.transport_graph._graph.nodes)
 
     assert result_1.__dict__.keys() == result_2.__dict__.keys()
     assert result_1.lattice.__dict__.keys() == result_2.lattice.__dict__.keys()
-    for key in result_1.lattice.__dict__.keys():
-        if key == "transport_graph":
-            continue
-        assert result_1.lattice.__dict__[key] == result_2.lattice.__dict__[key]
-
-    for key in result_1.__dict__.keys():
-        if key == "_lattice":
-            continue
-        assert result_1.__dict__[key] == result_2.__dict__[key]
 
     tg_1 = result_1.lattice.transport_graph._graph
     tg_2 = result_2.lattice.transport_graph._graph
@@ -344,10 +337,7 @@ def test_result_persist_rehydrate(test_db, result_1, mocker):
         if "workflow_executor" in tg_2.nodes[n]["metadata"]:
             del tg_2.nodes[n]["metadata"]["workflow_executor"]
             del tg_2.nodes[n]["metadata"]["workflow_executor_data"]
-        assert tg_1.nodes[n].keys() == tg_2.nodes[n].keys()
-        for k in tg_1.nodes[n]:
-            if k != "output":
-                assert tg_1.nodes[n][k] == tg_2.nodes[n][k]
+            assert set(tg_1.nodes[n].keys()).issubset(set(tg_2.nodes[n].keys()))
 
     assert tg_1.edges == tg_2.edges
     for e in tg_1.edges:

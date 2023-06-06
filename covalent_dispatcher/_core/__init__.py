@@ -18,6 +18,6 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .data_manager import make_derived_dispatch, make_dispatch
+from .data_manager import make_dispatch
 from .data_modules.importer import copy_futures
 from .dispatcher import cancel_dispatch, run_dispatch

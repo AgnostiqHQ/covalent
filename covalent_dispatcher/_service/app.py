@@ -91,30 +91,6 @@ async def submit(request: Request) -> UUID:
         ) from e
 
 
-@router.post("/redispatch")
-async def redispatch(request: Request) -> str:
-    """Endpoint to redispatch a workflow."""
-    try:
-        data = await request.json()
-        dispatch_id = data["dispatch_id"]
-        json_lattice = data["json_lattice"]
-        electron_updates = data["electron_updates"]
-        reuse_previous_results = data["reuse_previous_results"]
-        return await dispatcher.run_redispatch(
-            dispatch_id,
-            json_lattice,
-            electron_updates,
-            reuse_previous_results,
-        )
-
-    except Exception as e:
-        app_log.exception(f"Exception in redispatch handler: {e}")
-        raise HTTPException(
-            status_code=400,
-            detail=f"Failed to redispatch workflow: {e}",
-        ) from e
-
-
 @router.post("/cancel")
 async def cancel(request: Request) -> str:
     """

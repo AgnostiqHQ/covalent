@@ -141,19 +141,19 @@ class BaseTrigger:
             new_dispatch_id: Dispatch id of the newly dispatched workflow
         """
 
-        if self.use_internal_funcs:
-            from covalent_dispatcher.entry_point import run_redispatch, start_dispatch
+        # if self.use_internal_funcs:
+        #     from covalent_dispatcher.entry_point import run_redispatch, start_dispatch
 
-            if is_pending:
-                return asyncio.run_coroutine_threadsafe(
-                    start_dispatch(self.lattice_dispatch_id),
-                    self.event_loop,
-                ).result()
-            else:
-                return asyncio.run_coroutine_threadsafe(
-                    run_redispatch(self.lattice_dispatch_id, None, None, False),
-                    self.event_loop,
-                ).result()
+        #     if is_pending:
+        #         return asyncio.run_coroutine_threadsafe(
+        #             start_dispatch(self.lattice_dispatch_id),
+        #             self.event_loop,
+        #         ).result()
+        #     else:
+        #         return asyncio.run_coroutine_threadsafe(
+        #             run_redispatch(self.lattice_dispatch_id, None, None, False),
+        #             self.event_loop,
+        #         ).result()
 
         if is_pending:
             return local.LocalDispatcher.start(self.lattice_dispatch_id, self.dispatcher_addr)

@@ -32,13 +32,11 @@ from covalent._results_manager import Result
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.data_manager import (
-    _get_result_object_from_new_lattice,
     _make_sublattice_dispatch,
     _update_parent_electron,
     finalize_dispatch,
     get_result_object,
     initialize_result_object,
-    make_derived_dispatch,
     make_dispatch,
     persist_result,
     update_node_result,
@@ -296,136 +294,6 @@ async def test_make_dispatch(mocker):
     )
     json_lattice = '{"workflow_function": "asdf"}'
     assert dispatch_id == await make_dispatch(json_lattice)
-
-
-@pytest.mark.parametrize("reuse", [True, False])
-def test_get_result_object_from_new_lattice(mocker, reuse):
-    """Test the get result object from new lattice json function."""
-    lattice_mock = mocker.patch("covalent_dispatcher._core.data_manager.Lattice")
-    result_object_mock = mocker.patch("covalent_dispatcher._core.data_manager.Result")
-    update_mock = mocker.patch("covalent_dispatcher._core.data_manager.update")
-    old_result_mock = MagicMock()
-    get_result_mock = mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_result_object_from_db",
-        return_value=old_result_mock,
-    )
-    mock_get_reusable_nodes = MagicMock()
-    mock_copy_nodes_from = MagicMock()
-    mocker.patch(
-        "covalent_dispatcher._dal.tg_ops.TransportGraphOps.get_reusable_nodes",
-        mock_get_reusable_nodes,
-    )
-    mocker.patch(
-        "covalent_dispatcher._dal.tg_ops.TransportGraphOps.copy_nodes_from",
-        mock_copy_nodes_from,
-    )
-
-    res = _get_result_object_from_new_lattice(
-        json_lattice="mock-lattice",
-        old_result_object=old_result_mock,
-        reuse_previous_results=reuse,
-    )
-    lattice_mock.deserialize_from_json.assert_called_with("mock-lattice")
-    update_mock.persist.assert_called()
-
-    if reuse:
-        mock_get_reusable_nodes.assert_called()
-        mock_copy_nodes_from.assert_called()
-
-    else:
-        mock_get_reusable_nodes.assert_not_called()
-        mock_copy_nodes_from.assert_not_called()
-
-
-@pytest.mark.parametrize("reuse", [True, False])
-@pytest.mark.asyncio
-async def test_make_derived_dispatch_from_lattice(mocker, reuse):
-    """Test the make derived dispatch function."""
-
-    def mock_func():
-        pass
-
-    mock_old_result = MagicMock()
-    mock_new_result = MagicMock()
-    mock_apply_electron_updates = MagicMock()
-    mock_new_result.dispatch_id = "mock-redispatch-id"
-    mock_new_result.lattice.transport_graph._graph.nodes = ["mock-nodes"]
-
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.export_serialized_result",
-        return_value={"lattice": "lattice_json"},
-    )
-    get_result_mock = mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_result_object_from_db",
-        return_value=mock_old_result,
-    )
-    get_result_object_from_new_lattice_mock = mocker.patch(
-        "covalent_dispatcher._core.data_manager._get_result_object_from_new_lattice",
-        return_value=mock_new_result,
-    )
-
-    mocker.patch(
-        "covalent_dispatcher._dal.tg_ops.TransportGraphOps.apply_electron_updates",
-        mock_apply_electron_updates,
-    )
-    mock_electron_updates = {"mock-electron-id": mock_func}
-    redispatch_id = await make_derived_dispatch(
-        parent_dispatch_id="mock-dispatch-id",
-        json_lattice="mock-json-lattice",
-        electron_updates=mock_electron_updates,
-        reuse_previous_results=reuse,
-    )
-    get_result_mock.called_once_with(dispatch_id="mock-dispatch-id", bare=False)
-
-    get_result_object_from_new_lattice_mock.assert_called_once_with(
-        "mock-json-lattice", mock_old_result, reuse
-    )
-
-    mock_apply_electron_updates.assert_called_once_with(mock_electron_updates)
-    assert redispatch_id == "mock-redispatch-id"
-
-
-@pytest.mark.parametrize("reuse", [True, False])
-@pytest.mark.asyncio
-async def test_make_derived_dispatch_from_old_result(mocker, reuse):
-    """Test the make derived dispatch function."""
-    mock_old_result = MagicMock()
-    mock_new_result = MagicMock()
-    mock_apply_electron_updates = MagicMock()
-    mock_new_result.dispatch_id = "mock-redispatch-id"
-    mock_new_result.lattice.transport_graph._graph.nodes = ["mock-nodes"]
-
-    get_result_mock = mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_result_object_from_db",
-        return_value=mock_old_result,
-    )
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.export_serialized_result",
-        return_value={"lattice": "lattice_json"},
-    )
-
-    get_result_object_from_new_lattice_mock = mocker.patch(
-        "covalent_dispatcher._core.data_manager._get_result_object_from_new_lattice",
-        return_value=mock_new_result,
-    )
-    update_mock = mocker.patch("covalent_dispatcher._core.data_manager.update")
-    mocker.patch(
-        "covalent_dispatcher._dal.tg_ops.TransportGraphOps.apply_electron_updates",
-        mock_apply_electron_updates,
-    )
-
-    redispatch_id = await make_derived_dispatch(
-        parent_dispatch_id="mock-dispatch-id",
-        reuse_previous_results=reuse,
-    )
-    get_result_mock.called_once_with(dispatch_id="mock-dispatch-id", bare=False)
-    get_result_object_from_new_lattice_mock.assert_called_once_with(
-        "lattice_json", mock_old_result, reuse
-    )
-
-    mock_apply_electron_updates.assert_called_once_with({})
-    update_mock().persist.called_once_with(mock_new_result)
-    assert redispatch_id == "mock-redispatch-id"
 
 
 def test_get_result_object(mocker):

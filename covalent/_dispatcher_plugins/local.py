@@ -47,42 +47,6 @@ dispatch_cache_dir = Path(get_config("sdk.dispatch_cache_dir"))
 dispatch_cache_dir.mkdir(parents=True, exist_ok=True)
 
 
-def get_redispatch_request_body(
-    dispatch_id: str,
-    new_args: Optional[List] = None,
-    new_kwargs: Optional[Dict] = None,
-    replace_electrons: Optional[Dict[str, Callable]] = None,
-    reuse_previous_results: bool = False,
-) -> Dict:
-    """Get request body for re-dispatching a workflow."""
-    if new_args is None:
-        new_args = []
-    if new_kwargs is None:
-        new_kwargs = {}
-    if replace_electrons is None:
-        replace_electrons = {}
-    if new_args or new_kwargs:
-        res = get_result(
-            dispatch_id,
-            workflow_output=False,
-            intermediate_outputs=False,
-            sublattice_results=False,
-        )
-        lat = res.lattice
-        lat.build_graph(*new_args, **new_kwargs)
-        json_lattice = lat.serialize_to_json()
-    else:
-        json_lattice = None
-    updates = {k: v.electron_object.as_transportable_dict for k, v in replace_electrons.items()}
-
-    return {
-        "json_lattice": json_lattice,
-        "dispatch_id": dispatch_id,
-        "electron_updates": updates,
-        "reuse_previous_results": reuse_previous_results,
-    }
-
-
 def get_redispatch_request_body_v2(
     dispatch_id: str,
     staging_dir: str,
@@ -356,87 +320,12 @@ class LocalDispatcher(BaseDispatcher):
         if replace_electrons is None:
             replace_electrons = {}
 
-        multistage = get_config("sdk.multistage_dispatch") == "true"
-
-        if multistage:
-            return LocalDispatcher.register_redispatch(
-                dispatch_id=dispatch_id,
-                dispatcher_addr=dispatcher_addr,
-                replace_electrons=replace_electrons,
-                reuse_previous_results=reuse_previous_results,
-            )
-
-        def func(*new_args, **new_kwargs):
-            """
-            Prepare the redispatch request body and redispatch the workflow.
-
-            Args:
-                *args: The inputs of the workflow.
-                **kwargs: The keyword arguments of the workflow.
-
-            Returns:
-                The result of the executed workflow.
-            """
-
-            redispatch_id = LocalDispatcher.resubmit(
-                dispatch_id,
-                dispatcher_addr,
-                replace_electrons,
-                reuse_previous_results,
-            )(*new_args, **new_kwargs)
-
-            return LocalDispatcher.start(redispatch_id, dispatcher_addr)
-
-        return func
-
-    @staticmethod
-    def resubmit(
-        dispatch_id: str,
-        dispatcher_addr: str = None,
-        replace_electrons: Dict[str, Callable] = None,
-        reuse_previous_results: bool = False,
-    ) -> Callable:
-        """
-        Wrapping the dispatching functionality to allow input passing and server address specification.
-
-        Args:
-            dispatch_id: The dispatch id of the workflow to re-dispatch.
-            dispatcher_addr: The address of the dispatcher server. If None then then defaults to the address set in Covalent's config.
-            replace_electrons: A dictionary of electron names and the new electron to replace them with.
-            reuse_previous_results: Boolean value whether to reuse the results from the previous dispatch.
-
-        Returns:
-            Wrapper function which takes the inputs of the workflow as arguments.
-        """
-
-        if dispatcher_addr is None:
-            dispatcher_addr = format_server_url()
-
-        if replace_electrons is None:
-            replace_electrons = {}
-
-        def func(*new_args, **new_kwargs):
-            """
-            Prepare the redispatch request body and redispatch the workflow.
-
-            Args:
-                *args: The inputs of the workflow.
-                **kwargs: The keyword arguments of the workflow.
-
-            Returns:
-                The result of the executed workflow.
-            """
-
-            body = get_redispatch_request_body(
-                dispatch_id, new_args, new_kwargs, replace_electrons, reuse_previous_results
-            )
-
-            endpoint = "/api/v1/dispatchv2/resubmit"
-            r = APIClient(dispatcher_addr).post(endpoint, json=body)
-            r.raise_for_status()
-            return r.content.decode("utf-8").strip().replace('"', "")
-
-        return func
+        return LocalDispatcher.register_redispatch(
+            dispatch_id=dispatch_id,
+            dispatcher_addr=dispatcher_addr,
+            replace_electrons=replace_electrons,
+            reuse_previous_results=reuse_previous_results,
+        )
 
     @staticmethod
     def register_triggers(triggers_data: List[Dict], dispatch_id: str) -> None:

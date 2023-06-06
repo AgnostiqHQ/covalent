@@ -56,20 +56,6 @@ async def make_dispatch(json_lattice: str):
     return dispatch_id
 
 
-async def make_redispatch(
-    dispatch_id: str, json_lattice: str, electron_updates: dict, reuse_previous_results: bool
-):
-    from ._core import make_derived_dispatch, run_dispatch
-
-    redispatch_id = await make_derived_dispatch(
-        dispatch_id, json_lattice, electron_updates, reuse_previous_results
-    )
-
-    app_log.debug(f"Re-dispatching {dispatch_id} as {redispatch_id}")
-
-    return redispatch_id
-
-
 async def start_dispatch(dispatch_id: str):
     """
     Run the dispatcher from the lattice asynchronously using Dask.
@@ -116,21 +102,6 @@ async def run_dispatcher(json_lattice: str):
     app_log.debug("Submitted result object to run_workflow.")
 
     return dispatch_id
-
-
-async def run_redispatch(
-    dispatch_id: str, json_lattice: str, electron_updates: dict, reuse_previous_results: bool
-):
-    from ._core import make_derived_dispatch, run_dispatch
-
-    redispatch_id = await make_redispatch(
-        dispatch_id, json_lattice, electron_updates, reuse_previous_results
-    )
-    await start_dispatch(redispatch_id)
-
-    app_log.debug(f"Re-dispatching {dispatch_id} as {redispatch_id}")
-
-    return redispatch_id
 
 
 async def cancel_running_dispatch(dispatch_id: str, task_ids: List[int] = None) -> None:

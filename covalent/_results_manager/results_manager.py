@@ -24,14 +24,14 @@ from __future__ import annotations
 import contextlib
 import os
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import List, Optional, Union
 
 from furl import furl
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 
 from .._api.apiclient import CovalentAPIClient
-from .._serialize.common import deserialize_asset, load_asset
+from .._serialize.common import load_asset
 from .._serialize.electron import ASSET_FILENAME_MAP as ELECTRON_ASSET_FILENAMES
 from .._serialize.electron import ASSET_TYPES as ELECTRON_ASSET_TYPES
 from .._serialize.lattice import ASSET_FILENAME_MAP as LATTICE_ASSET_FILENAMES
@@ -45,13 +45,11 @@ from .._shared_files.exceptions import MissingLatticeRecordError
 from .._shared_files.schemas.asset import AssetSchema
 from .._shared_files.schemas.result import ResultSchema
 from .._shared_files.utils import copy_file_locally, format_server_url
-from .result import Result, import_result_object
+from .result import Result
 from .wait import EXTREME
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-multistage_get_result = get_config("sdk.multistage_dispatch") == "true"
 
 
 SDK_NODE_META_KEYS = {
@@ -187,214 +185,6 @@ def cancel(dispatch_id: str, task_ids: List[int] = None, dispatcher_addr: str = 
 
     r = api_client.post(endpoint, json={"dispatch_id": dispatch_id, "task_ids": task_ids})
     return r.content.decode("utf-8").strip().replace('"', "")
-
-
-def _get_result_single(
-    dispatch_id: str,
-    wait: bool = False,
-    dispatcher_addr: str = None,
-    status_only: bool = False,
-    *,
-    workflow_output: bool = True,
-    intermediate_outputs: bool = True,
-    sublattice_results: bool = True,
-) -> Result:
-    """
-    Get the results of a dispatch from a file.
-
-    Args:
-        dispatch_id: The dispatch id of the result.
-        wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
-
-    Returns:
-        The result from the file.
-
-    """
-
-    try:
-        result = _get_result_v2_from_dispatcher(
-            dispatch_id=dispatch_id,
-            wait=wait,
-            status_only=status_only,
-            dispatcher_addr=dispatcher_addr,
-        )
-
-        if status_only:
-            return result
-
-        result_export = result["result_export"]
-        result_object = import_result_object(result_export)
-
-        if workflow_output:
-            _download_workflow_output(result_object, dispatcher_addr)
-
-        if intermediate_outputs:
-            _download_intermediate_outputs(result_object, dispatcher_addr)
-
-        # Fetch sublattice result objects recursively
-        tg = result_object.lattice.transport_graph
-        for node_id in tg._graph.nodes:
-            sub_dispatch_id = tg.get_node_value(node_id, "sub_dispatch_id")
-            if sublattice_results and sub_dispatch_id:
-                sub_result = get_result(
-                    sub_dispatch_id,
-                    wait,
-                    dispatcher_addr,
-                    status_only,
-                    workflow_output=workflow_output,
-                    intermediate_outputs=intermediate_outputs,
-                    sublattice_results=sublattice_results,
-                )
-                tg.set_node_value(node_id, "sublattice_result", sub_result)
-            else:
-                tg.set_node_value(node_id, "sublattice_result", None)
-
-    except MissingLatticeRecordError as ex:
-        app_log.warning(
-            f"Dispatch ID {dispatch_id} was not found in the database. Incorrect dispatch id."
-        )
-
-        raise ex
-
-    return result_object
-
-
-def _get_result_v2_from_dispatcher(
-    dispatch_id: str,
-    wait: bool = False,
-    status_only: bool = False,
-    dispatcher_addr: str = None,
-) -> Dict:
-    """
-    Internal function to get the results of a dispatch from the server without checking if it is ready to read.
-
-    Args:
-        dispatch_id: The dispatch id of the result.
-        wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
-        status_only: If true, only returns result status, not the full result object, default is False.
-        dispatcher_addr: Dispatcher server address, defaults to the address set in covalent.config.
-
-    Returns:
-        The result object from the server.
-
-    Raises:
-        MissingLatticeRecordError: If the result is not found.
-    """
-
-    if dispatcher_addr is None:
-        dispatcher_addr = format_server_url()
-
-    retries = int(EXTREME) if wait else 5
-
-    adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
-    api_client = CovalentAPIClient(dispatcher_addr, adapter=adapter, auto_raise=False)
-
-    endpoint = f"/api/v1/resultv2/{dispatch_id}"
-
-    response = api_client.get(
-        endpoint,
-        params={"wait": bool(int(wait)), "status_only": status_only},
-    )
-    if response.status_code == 404:
-        raise MissingLatticeRecordError
-    response.raise_for_status()
-    result = response.json()
-    return result
-
-
-def get_node_output(
-    dispatch_id: str,
-    node_id: int,
-    dispatcher_addr: str = None,
-) -> Dict:
-    return _get_node_output_from_dispatcher(
-        dispatch_id,
-        node_id,
-        dispatcher_addr,
-    )
-
-
-def get_workflow_output(
-    dispatch_id: str,
-    dispatcher_addr: str = None,
-) -> Dict:
-    return _get_dispatch_result_from_dispatcher(
-        dispatch_id,
-        dispatcher_addr,
-    )
-
-
-def _get_node_output_from_dispatcher(
-    dispatch_id: str,
-    node_id: int,
-    dispatcher_addr: str = None,
-) -> Dict:
-    """
-    Internal function to get the results of a dispatch from the server without checking if it is ready to read.
-
-    Args:
-        dispatch_id: The dispatch id of the result.
-        wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
-        status_only: If true, only returns result status, not the full result object, default is False.
-        dispatcher: Dispatcher server address, defaults to the address set in covalent.config.
-
-    Returns:
-        The result object from the server.
-
-    Raises:
-        MissingLatticeRecordError: If the result is not found.
-    """
-
-    if dispatcher_addr is None:
-        dispatcher_addr = format_server_url()
-
-    api_client = CovalentAPIClient(dispatcher_addr, auto_raise=False)
-    endpoint = f"/api/v1/assets/{dispatch_id}/node/{node_id}/output"
-
-    response = api_client.get(endpoint, stream=True)
-
-    if response.status_code == 404:
-        raise MissingLatticeRecordError
-    response.raise_for_status()
-
-    return deserialize_asset(response.content, ELECTRON_ASSET_TYPES["output"])
-
-
-def _download_intermediate_outputs(result_object: Result, dispatcher_addr: str):
-    tg = result_object.lattice.transport_graph
-    for node_id in tg._graph.nodes:
-        output = _get_node_output_from_dispatcher(
-            result_object.dispatch_id, node_id, dispatcher_addr
-        )
-        tg.set_node_value(node_id, "output", output)
-    return result_object
-
-
-def _get_dispatch_result_from_dispatcher(
-    dispatch_id: str,
-    dispatcher_addr: str = None,
-) -> Dict:
-    if dispatcher_addr is None:
-        dispatcher_addr = format_server_url()
-
-    endpoint = f"/api/v1/assets/{dispatch_id}/dispatch/result"
-
-    api_client = CovalentAPIClient(dispatcher_addr, auto_raise=False)
-    response = api_client.get(endpoint, stream=True)
-
-    if response.status_code == 404:
-        raise MissingLatticeRecordError
-    response.raise_for_status()
-
-    return deserialize_asset(response.content, RESULT_ASSET_TYPES["result"])
-
-
-def _download_workflow_output(result_object: Result, dispatcher_addr: str):
-    result_object._result = _get_dispatch_result_from_dispatcher(
-        result_object.dispatch_id,
-        dispatcher_addr,
-    )
-    return result_object
 
 
 # Multi-part
@@ -707,25 +497,13 @@ def get_result(
     workflow_output: bool = True,
     intermediate_outputs: bool = True,
     sublattice_results: bool = True,
-    multistage: bool = multistage_get_result,
 ) -> Result:
-    if multistage:
-        return _get_result_multistage(
-            dispatch_id=dispatch_id,
-            wait=wait,
-            dispatcher_addr=dispatcher_addr,
-            status_only=status_only,
-            workflow_output=workflow_output,
-            intermediate_outputs=intermediate_outputs,
-            sublattice_results=sublattice_results,
-        )
-    else:
-        return _get_result_single(
-            dispatch_id=dispatch_id,
-            wait=wait,
-            dispatcher_addr=dispatcher_addr,
-            status_only=status_only,
-            workflow_output=workflow_output,
-            intermediate_outputs=intermediate_outputs,
-            sublattice_results=sublattice_results,
-        )
+    return _get_result_multistage(
+        dispatch_id=dispatch_id,
+        wait=wait,
+        dispatcher_addr=dispatcher_addr,
+        status_only=status_only,
+        workflow_output=workflow_output,
+        intermediate_outputs=intermediate_outputs,
+        sublattice_results=sublattice_results,
+    )

@@ -31,7 +31,7 @@ from covalent._results_manager.result import Result
 from covalent._shared_files import logger
 from covalent._shared_files.schemas.result import ResultSchema
 
-from .._dal.export import export_result_manifest, export_serialized_result
+from .._dal.export import export_result_manifest
 from .._db.datastore import workflow_db
 from .._db.models import Lattice
 from .models import ExportResponseSchema
@@ -50,7 +50,7 @@ _background_tasks = set()
 
 
 @router.post("/dispatchv2/submit")
-async def submitv0(request: Request) -> UUID:
+async def submit(request: Request) -> UUID:
     """
     Function to accept the submit request of
     new dispatch and return the dispatch id
@@ -108,30 +108,6 @@ async def register_redispatch(
         ) from e
 
 
-@router.post("/dispatchv2/resubmit")
-async def resubmit(request: Request) -> str:
-    """Endpoint to redispatch a workflow."""
-    try:
-        data = await request.json()
-        dispatch_id = data["dispatch_id"]
-        json_lattice = data["json_lattice"]
-        electron_updates = data["electron_updates"]
-        reuse_previous_results = data["reuse_previous_results"]
-        return await dispatcher.make_redispatch(
-            dispatch_id,
-            json_lattice,
-            electron_updates,
-            reuse_previous_results,
-        )
-
-    except Exception as e:
-        app_log.exception(f"Exception in redispatch handler: {e}")
-        raise HTTPException(
-            status_code=400,
-            detail=f"Failed to redispatch workflow: {e}",
-        ) from e
-
-
 @router.put("/dispatchv2/start/{dispatch_id}")
 async def start(dispatch_id: str):
     try:
@@ -145,57 +121,6 @@ async def start(dispatch_id: str):
             status_code=400,
             detail=f"Failed to start workflow: {e}",
         ) from e
-
-
-@router.get("/resultv2/{dispatch_id}")
-async def get_result_v2(
-    dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
-):
-    loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(
-        None,
-        _get_result_v2_sync,
-        dispatch_id,
-        wait,
-        status_only,
-    )
-
-
-def _get_result_v2_sync(
-    dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
-):
-    with workflow_db.session() as session:
-        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-        status = lattice_record.status if lattice_record else None
-        if not lattice_record:
-            return JSONResponse(
-                status_code=404,
-                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-            )
-        if not wait or status in [
-            str(Result.COMPLETED),
-            str(Result.FAILED),
-            str(Result.CANCELLED),
-            str(Result.POSTPROCESSING_FAILED),
-            str(Result.PENDING_POSTPROCESSING),
-        ]:
-            output = {
-                "id": dispatch_id,
-                "status": lattice_record.status,
-            }
-            if not status_only:
-                output["result_export"] = export_serialized_result(dispatch_id)
-
-            return output
-
-        response = JSONResponse(
-            status_code=503,
-            content={
-                "message": "Result not ready to read yet. Please wait for a couple of seconds."
-            },
-            headers={"Retry-After": "2"},
-        )
-        return response
 
 
 @router.get("/export/{dispatch_id}")
