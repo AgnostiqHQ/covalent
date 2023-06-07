@@ -159,6 +159,9 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         qscripts_list = [qscript, qscript]
         results       = [[SamplerResult[dist]], [SamplerResult[dist]]]
         """
+
+        # TODO: simplify this method -- follow custom plugin example
+
         pp_results = []
         metadatas = []
 
@@ -190,11 +193,11 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
 
             if all(len(c.measurements) == 1 for c in circuits):
                 results = [
-                    [r] if isinstance(r, dict) else np.asarray([r])
+                    [r] if isinstance(r, dict) else self._asarray([r])
                     for r in results
                 ]
 
             if len(circuits) > 1:
-                results = [r if isinstance(r, list) else r for r in results]
+                results = [self._asarray(r) if isinstance(r, list) else r for r in results]
 
         return results
