@@ -18,43 +18,35 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import enum
+import shutil
+
+from .. import File
+from .transfer_strategy_base import FileTransferStrategy
 
 
-class Order(str, enum.Enum):
-    BEFORE = "before"
-    AFTER = "after"
+class Shutil(FileTransferStrategy):
+    """
+    Implements Base FileTransferStrategy class to copy files locally
 
+    The copying is done in-process using shutil.copyfile.
+    """
 
-class FileSchemes(str, enum.Enum):
-    File = "file"
-    S3 = "s3"
-    Globus = "globus"
-    HTTP = "http"
-    HTTPS = "https"
-    FTP = "ftp"
+    def __init__(
+        self,
+    ):
+        pass
 
+    # return callable to copy files in the local file system
+    def cp(self, from_file: File, to_file: File = File()) -> None:
+        def callable():
+            shutil.copyfile(from_file.filepath, to_file.filepath)
 
-class FileTransferStrategyTypes(str, enum.Enum):
-    Shutil = "Shutil"
-    Rsync = "rsync"
-    HTTP = "http"
-    S3 = "s3"
-    FTP = "ftp"
-    GLOBUS = "globus"
+        return callable
 
+    # Local file operations only
+    def upload(self, from_file: File, to_file: File = File()) -> File:
+        raise NotImplementedError
 
-SchemeToStrategyMap = {
-    "file": FileTransferStrategyTypes.Shutil,
-    "http": FileTransferStrategyTypes.HTTP,
-    "https": FileTransferStrategyTypes.HTTP,
-    "s3": FileTransferStrategyTypes.S3,
-    "ftp": FileTransferStrategyTypes.FTP,
-    "globus": FileTransferStrategyTypes.GLOBUS,
-}
-
-
-class FtCallDepReturnValue(str, enum.Enum):
-    TO = "to"
-    FROM = "from"
-    FROM_TO = "from_to"
+    # Local file operations only
+    def download(self, from_file: File, to_file: File) -> File:
+        raise NotImplementedError

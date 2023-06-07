@@ -23,7 +23,7 @@ from typing import Optional, Union
 from .enums import FileTransferStrategyTypes, FtCallDepReturnValue, Order
 from .file import File
 from .strategies.http_strategy import HTTP
-from .strategies.rsync_strategy import Rsync
+from .strategies.shutil_strategy import Shutil
 from .strategies.transfer_strategy_base import FileTransferStrategy
 
 
@@ -63,10 +63,10 @@ class FileTransfer:
         if strategy:
             self.strategy = strategy
         elif (
-            from_file.mapped_strategy_type == FileTransferStrategyTypes.Rsync
-            and to_file.mapped_strategy_type == FileTransferStrategyTypes.Rsync
+            from_file.mapped_strategy_type == FileTransferStrategyTypes.Shutil
+            and to_file.mapped_strategy_type == FileTransferStrategyTypes.Shutil
         ):
-            self.strategy = Rsync()
+            self.strategy = Shutil()
         elif from_file.mapped_strategy_type == FileTransferStrategyTypes.HTTP:
             self.strategy = HTTP()
         else:
