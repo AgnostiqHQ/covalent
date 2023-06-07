@@ -74,7 +74,7 @@ _clients = {}
 _futures = {}
 
 
-MANAGED_EXECUTION = os.environ.get("COVALENT_USE_NEW_DASK") == "1"
+MANAGED_EXECUTION = os.environ.get("COVALENT_USE_OLD_DASK") != "1"
 
 # Dictionary to map Dask clients to their scheduler addresses
 _address_client_map = {}
