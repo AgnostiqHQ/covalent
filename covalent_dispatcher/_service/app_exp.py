@@ -18,22 +18,30 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+
+"""Endpoints for dispatch management"""
+
 import asyncio
 import json
+from contextlib import asynccontextmanager
 from typing import Optional, Union
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 import covalent_dispatcher.entry_point as dispatcher
 from covalent._results_manager.result import Result
 from covalent._shared_files import logger
 from covalent._shared_files.schemas.result import ResultSchema
+from covalent_dispatcher._core import dispatcher as core_dispatcher
+from covalent_dispatcher._core import runner_exp as core_runner
 
 from .._dal.export import export_result_manifest
 from .._db.datastore import workflow_db
+from .._db.dispatchdb import DispatchDB
 from .._db.models import Lattice
+from .heartbeat import Heartbeat
 from .models import ExportResponseSchema
 
 app_log = logger.app_log
@@ -49,7 +57,32 @@ router: APIRouter = APIRouter()
 _background_tasks = set()
 
 
-@router.post("/dispatchv2/submit")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize global variables"""
+
+    heartbeat = Heartbeat()
+    fut = asyncio.create_task(heartbeat.start())
+    _background_tasks.add(fut)
+    fut.add_done_callback(_background_tasks.discard)
+
+    # Runner event queue and listener
+    core_runner._job_events = asyncio.Queue()
+    core_runner._job_event_listener = asyncio.create_task(core_runner._listen_for_job_events())
+
+    # Dispatcher event queue and listener
+    core_dispatcher._global_status_queue = asyncio.Queue()
+    core_dispatcher._global_event_listener = asyncio.create_task(
+        core_dispatcher._node_event_listener()
+    )
+
+    yield
+
+    core_dispatcher._global_event_listener.cancel()
+    core_runner._job_event_listener.cancel()
+
+
+@router.post("/dispatch/submit")
 async def submit(request: Request) -> UUID:
     """
     Function to accept the submit request of
@@ -74,7 +107,39 @@ async def submit(request: Request) -> UUID:
         ) from e
 
 
-@router.post("/dispatchv2/register")
+@router.post("/dispatch/cancel")
+async def cancel(request: Request) -> str:
+    """
+    Function to accept the cancel request of
+    a dispatch.
+
+    Args:
+        None
+
+    Returns:
+        Fast API Response object confirming that the dispatch
+        has been cancelled.
+    """
+
+    data = await request.json()
+
+    dispatch_id = data["dispatch_id"]
+    task_ids = data["task_ids"]
+
+    await dispatcher.cancel_running_dispatch(dispatch_id, task_ids)
+    if task_ids:
+        return f"Cancelled tasks {task_ids} in dispatch {dispatch_id}."
+    else:
+        return f"Dispatch {dispatch_id} cancelled."
+
+
+@router.get("/db-path")
+def db_path() -> str:
+    db_path = DispatchDB()._dbpath
+    return json.dumps(db_path)
+
+
+@router.post("/dispatch/register")
 async def register(
     manifest: ResultSchema, parent_dispatch_id: Union[str, None] = None
 ) -> ResultSchema:
@@ -88,7 +153,7 @@ async def register(
         ) from e
 
 
-@router.post("/dispatchv2/register/{dispatch_id}")
+@router.post("/dispatch/register/{dispatch_id}")
 async def register_redispatch(
     manifest: ResultSchema,
     dispatch_id: str,
@@ -108,7 +173,7 @@ async def register_redispatch(
         ) from e
 
 
-@router.put("/dispatchv2/start/{dispatch_id}")
+@router.put("/dispatch/start/{dispatch_id}")
 async def start(dispatch_id: str):
     try:
         fut = asyncio.create_task(dispatcher.start_dispatch(dispatch_id))
@@ -123,7 +188,7 @@ async def start(dispatch_id: str):
         ) from e
 
 
-@router.get("/export/{dispatch_id}")
+@router.get("/dispatch/export/{dispatch_id}")
 async def export_result(
     dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
 ) -> ExportResponseSchema:

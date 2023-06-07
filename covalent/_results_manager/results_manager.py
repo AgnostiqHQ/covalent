@@ -178,7 +178,7 @@ def cancel(dispatch_id: str, task_ids: List[int] = None, dispatcher_addr: str = 
         task_ids = []
 
     api_client = CovalentAPIClient(dispatcher_addr)
-    endpoint = "/api/cancel"
+    endpoint = "/api/v1/dispatch/cancel"
 
     if isinstance(task_ids, int):
         task_ids = [task_ids]
@@ -220,7 +220,7 @@ def _get_result_export_from_dispatcher(
     adapter = HTTPAdapter(max_retries=Retry(total=retries, backoff_factor=1))
     api_client = CovalentAPIClient(dispatcher_addr, adapter=adapter, auto_raise=False)
 
-    endpoint = "/api/v1/export/" + dispatch_id
+    endpoint = "/api/v1/dispatch/export/" + dispatch_id
     response = api_client.get(
         endpoint,
         params={"wait": bool(int(wait)), "status_only": status_only},

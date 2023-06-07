@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Routes for uploading and downloading workflow assets"""
+"""Endpoints for uploading and downloading workflow assets"""
 
 import mmap
 import os

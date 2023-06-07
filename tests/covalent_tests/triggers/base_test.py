@@ -65,7 +65,7 @@ def test_get_status(mocker, use_internal_func, mock_status):
     base_trigger.use_internal_funcs = use_internal_func
 
     if use_internal_func:
-        mocker.patch("covalent_dispatcher._service.app_exp.get_result_v2")
+        mocker.patch("covalent_dispatcher._service.app_exp.export_result")
 
         mock_fut_res = mock.Mock()
         mock_fut_res.result.return_value = mock_status

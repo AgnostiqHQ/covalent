@@ -215,7 +215,7 @@ class LocalDispatcher(BaseDispatcher):
 
             # Serialize the transport graph to JSON
             json_lattice = lattice.serialize_to_json()
-            endpoint = "/api/v1/dispatchv2/submit"
+            endpoint = "/api/v1/dispatch/submit"
             r = APIClient(dispatcher_addr).post(endpoint, data=json_lattice)
             r.raise_for_status()
             return r.content.decode("utf-8").strip().replace('"', "")
@@ -245,7 +245,7 @@ class LocalDispatcher(BaseDispatcher):
         if dispatcher_addr is None:
             dispatcher_addr = format_server_url()
 
-        endpoint = f"/api/v1/dispatchv2/start/{dispatch_id}"
+        endpoint = f"/api/v1/dispatch/start/{dispatch_id}"
         r = APIClient(dispatcher_addr).put(endpoint)
         r.raise_for_status()
         return r.content.decode("utf-8").strip().replace('"', "")
@@ -542,7 +542,7 @@ class LocalDispatcher(BaseDispatcher):
         else:
             stripped = manifest
 
-        endpoint = "/api/v1/dispatchv2/register"
+        endpoint = "/api/v1/dispatch/register"
 
         if parent_dispatch_id:
             endpoint = f"{endpoint}?parent_dispatch_id={parent_dispatch_id}"
@@ -577,7 +577,7 @@ class LocalDispatcher(BaseDispatcher):
         else:
             stripped = manifest
 
-        endpoint = f"/api/v1/dispatchv2/register/{dispatch_id}"
+        endpoint = f"/api/v1/dispatch/register/{dispatch_id}"
 
         params = {"reuse_previous_results": reuse_previous_results}
         r = APIClient(dispatcher_addr).post(endpoint, data=stripped.json(), params=params)

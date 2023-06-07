@@ -54,7 +54,7 @@ def test_dispatch_when_no_server_is_running(mocker):
     # the test suite is using another port, thus, with the dummy address below
     # the covalent server is not running in some sense.
     dummy_dispatcher_addr = "http://localhost:12345"
-    endpoint = "/api/v1/dispatchv2/register"
+    endpoint = "/api/v1/dispatch/register"
     url = dummy_dispatcher_addr + endpoint
     message = f"The Covalent server cannot be reached at {url}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
 
