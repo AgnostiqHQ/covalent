@@ -75,6 +75,8 @@ LATTICE_COVA_IMPORTS_FILENAME = LATTICE_FILENAMES["cova_imports"]
 LATTICE_LATTICE_IMPORTS_FILENAME = LATTICE_FILENAMES["lattice_imports"]
 LATTICE_STORAGE_TYPE = "file"
 
+CUSTOM_ASSETS_FIELD = "custom_asset_keys"
+
 
 def _lattice_data(session: Session, result: Result, electron_id: int = None) -> int:
     """
@@ -145,6 +147,19 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         }
 
         assets[key] = Asset.insert(session, insert_kwargs=asset_record_kwargs, flush=True)
+
+    # Get custom asset declarations
+    lat_metadata = result.lattice.metadata
+    if CUSTOM_ASSETS_FIELD in lat_metadata:
+        for key in lat_metadata[CUSTOM_ASSETS_FIELD]:
+            asset_record_kwargs = {
+                "storage_type": LATTICE_STORAGE_TYPE,
+                "storage_path": str(data_storage_path),
+                "object_key": f"{key}.data",
+                "digest_alg": "",
+                "digest": "",
+            }
+            assets[key] = Asset.insert(session, insert_kwargs=asset_record_kwargs, flush=True)
 
     # Write lattice records to Database
 
@@ -313,6 +328,21 @@ def _electron_data(
                 }
 
                 assets[key] = Asset.insert(session, insert_kwargs=asset_record_kwargs, flush=True)
+
+            # Register custom assets
+            node_metadata = tg.get_node_value(node_id, "metadata")
+            if CUSTOM_ASSETS_FIELD in node_metadata:
+                for key in node_metadata[CUSTOM_ASSETS_FIELD]:
+                    asset_record_kwargs = {
+                        "storage_type": LATTICE_STORAGE_TYPE,
+                        "storage_path": str(node_path),
+                        "object_key": f"{key}.data",
+                        "digest_alg": "",
+                        "digest": "",
+                    }
+                    assets[key] = Asset.insert(
+                        session, insert_kwargs=asset_record_kwargs, flush=True
+                    )
 
             status = tg.get_node_value(node_key=node_id, value_key="status")
             executor_data = tg.get_node_value(node_id, "metadata")["executor_data"]
