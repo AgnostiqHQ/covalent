@@ -228,7 +228,7 @@ async def _get_task_result(task_group_metadata: Dict, data: Any):
         node_results = []
         for task_result in task_group_results:
             task_id = task_result.node_id
-            status = task_result.status.value
+            status = task_result.status
             await am.download_assets_for_node(dispatch_id, task_id, task_result.assets)
 
             node_result = datamgr.generate_node_result(

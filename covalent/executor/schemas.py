@@ -22,27 +22,26 @@
 Types defining the runner-executor interface
 """
 
-from enum import Enum
 from typing import Dict, List
 
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
 
 from covalent._shared_files.schemas.asset import AssetUpdate
-from covalent._shared_files.util_classes import RESULT_STATUS
-
-
-# Valid terminal statuses
-class TerminalStatus(str, Enum):
-    CANCELLED = RESULT_STATUS.CANCELLED
-    COMPLETED = RESULT_STATUS.COMPLETED
-    FAILED = RESULT_STATUS.FAILED
+from covalent._shared_files.util_classes import RESULT_STATUS, Status
 
 
 class TaskUpdate(BaseModel):
     dispatch_id: str
     node_id: int
-    status: TerminalStatus
+    status: Status
     assets: Dict[str, AssetUpdate]
+
+    @validator("status")
+    def validate_status(cls, v):
+        if RESULT_STATUS.is_terminal(v):
+            return v
+        else:
+            raise ValueError(f"Illegal status update {v}")
 
 
 class TaskSpec(BaseModel):
