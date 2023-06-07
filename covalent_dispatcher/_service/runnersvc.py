@@ -41,7 +41,7 @@ class ResultStatus(str, Enum):
 async def update_task_status(dispatch_id: str, node_id: int, request: Request):
     # Dummy impl for now
 
-    from .._core import runner_exp
+    from .._core import runner_ng
 
     task_metadata = {
         "dispatch_id": dispatch_id,
@@ -51,7 +51,7 @@ async def update_task_status(dispatch_id: str, node_id: int, request: Request):
         detail = await request.json()
         f"Task {task_metadata} marked ready with detail {detail}"
         # detail = {"status": Status(status.value.upper())}
-        await runner_exp.mark_task_ready(task_metadata, detail)
+        await runner_ng.mark_task_ready(task_metadata, detail)
         # app_log.debug(f"Marked task {dispatch_id}:{node_id} with status {status}")
         return f"Task {task_metadata} marked ready with detail {detail}"
     except Exception as e:

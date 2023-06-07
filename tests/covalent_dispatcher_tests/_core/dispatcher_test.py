@@ -555,7 +555,7 @@ async def test_submit_task_group(mocker):
     )
 
     mock_run_abs_task = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.runner_exp.run_abstract_task_group",
+        "covalent_dispatcher._core.dispatcher.runner_ng.run_abstract_task_group",
     )
 
     await _submit_task_group(dispatch_id, nodes, gid)
@@ -606,7 +606,7 @@ async def test_submit_task_group_skips_reusable(mocker):
     )
 
     mock_run_abs_task = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.runner_exp.run_abstract_task_group",
+        "covalent_dispatcher._core.dispatcher.runner_ng.run_abstract_task_group",
     )
 
     await _submit_task_group(dispatch_id, nodes, gid)
@@ -642,7 +642,7 @@ async def test_submit_parameter(mocker):
     )
 
     mock_run_abs_task = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.runner_exp.run_abstract_task_group",
+        "covalent_dispatcher._core.dispatcher.runner_ng.run_abstract_task_group",
     )
     await _submit_task_group(dispatch_id, [node_id], node_id)
 
@@ -693,7 +693,7 @@ async def test_cancel_dispatch(mocker):
         "covalent_dispatcher._core.dispatcher.jbmgr.set_cancel_requested"
     )
 
-    mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner_exp")
+    mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner_ng")
     mock_runner.cancel_tasks = AsyncMock()
 
     res._initialize_nodes()
@@ -759,7 +759,7 @@ async def test_cancel_dispatch_with_task_ids(mocker):
         "covalent_dispatcher._core.dispatcher.jbmgr.set_cancel_requested"
     )
 
-    mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner_exp")
+    mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner_ng")
     mock_runner.cancel_tasks = AsyncMock()
 
     async def mock_get_nodes(dispatch_id):

@@ -35,7 +35,7 @@ from covalent._shared_files.defaults import WAIT_EDGE_NAME, parameter_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS
 
 from . import data_manager as datasvc
-from . import runner_exp
+from . import runner_ng
 from .data_modules import job_manager as jbmgr
 from .dispatcher_modules.caches import _pending_parents, _sorted_task_groups, _unresolved_tasks
 
@@ -221,7 +221,7 @@ async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_gro
             app_log.debug(f"Using new runner for task group {task_group_id}")
 
             known_nodes = list(set(known_nodes))
-            coro = runner_exp.run_abstract_task_group(
+            coro = runner_ng.run_abstract_task_group(
                 dispatch_id=dispatch_id,
                 task_group_id=task_group_id,
                 task_seq=task_specs,
@@ -334,7 +334,7 @@ async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = []) -> None:
         app_log.debug(f"Cancelling dispatch {dispatch_id}")
 
     await jbmgr.set_cancel_requested(dispatch_id, task_ids)
-    await runner_exp.cancel_tasks(dispatch_id, task_ids)
+    await runner_ng.cancel_tasks(dispatch_id, task_ids)
 
     # Recursively cancel running sublattice dispatches
     attrs = await datasvc.get_attrs_for_electrons(dispatch_id, task_ids, ["sub_dispatch_id"])

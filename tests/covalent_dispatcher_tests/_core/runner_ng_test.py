@@ -36,7 +36,7 @@ from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 from covalent.executor.base import AsyncBaseExecutor
 from covalent.executor.schemas import ResourceMap, TaskSpec, TaskUpdate
-from covalent_dispatcher._core.runner_exp import (
+from covalent_dispatcher._core.runner_ng import (
     _get_task_result,
     _listen_for_job_events,
     _mark_failed,
@@ -120,12 +120,12 @@ async def test_submit_abstract_task_group(mocker):
     me.send = AsyncMock(return_value="42")
 
     mocker.patch(
-        "covalent_dispatcher._core.runner_exp.datamgr.get_electron_attribute",
+        "covalent_dispatcher._core.runner_ng.datamgr.get_electron_attribute",
         return_value="managed_dask",
     )
 
     mocker.patch(
-        "covalent_dispatcher._core.runner_exp.get_executor",
+        "covalent_dispatcher._core.runner_ng.get_executor",
         return_value=me,
     )
 
@@ -138,7 +138,7 @@ async def test_submit_abstract_task_group(mocker):
     }
 
     mocker.patch(
-        "covalent_dispatcher._core.runner_exp.datamgr.generate_node_result",
+        "covalent_dispatcher._core.runner_ng.datamgr.generate_node_result",
         return_value=node_result,
     )
 
@@ -264,12 +264,12 @@ async def test_submit_requires_opt_in(mocker):
     abstract_inputs = {"args": [1], "kwargs": {"key": 2}}
 
     mocker.patch(
-        "covalent_dispatcher._core.runner_exp.datamgr.get_electron_attribute",
+        "covalent_dispatcher._core.runner_ng.datamgr.get_electron_attribute",
         return_value="managed_dask",
     )
 
     mocker.patch(
-        "covalent_dispatcher._core.runner_exp.get_executor",
+        "covalent_dispatcher._core.runner_ng.get_executor",
         return_value=me,
     )
 
@@ -283,7 +283,7 @@ async def test_submit_requires_opt_in(mocker):
     }
 
     mocker.patch(
-        "covalent_dispatcher._core.runner_exp.datamgr.generate_node_result",
+        "covalent_dispatcher._core.runner_ng.datamgr.generate_node_result",
         return_value=node_result,
     )
     mock_function_id = task_id
@@ -327,12 +327,12 @@ async def test_get_task_result(mocker):
     me.receive = AsyncMock(return_value=[TaskUpdate(**mock_task_result)])
 
     mocker.patch(
-        "covalent_dispatcher._core.runner_exp.datamgr.get_electron_attribute",
+        "covalent_dispatcher._core.runner_ng.datamgr.get_electron_attribute",
         return_value="managed_dask",
     )
 
     mocker.patch(
-        "covalent_dispatcher._core.runner_exp.get_executor",
+        "covalent_dispatcher._core.runner_ng.get_executor",
         return_value=me,
     )
 
@@ -353,12 +353,12 @@ async def test_get_task_result(mocker):
     }
 
     mocker.patch(
-        "covalent_dispatcher._core.runner_exp.datamgr.generate_node_result",
+        "covalent_dispatcher._core.runner_ng.datamgr.generate_node_result",
         return_value=node_result,
     )
 
     mock_update = mocker.patch(
-        "covalent_dispatcher._core.runner_exp.datamgr.update_node_result",
+        "covalent_dispatcher._core.runner_ng.datamgr.update_node_result",
     )
     mock_download = mocker.patch(
         "covalent_dispatcher._core.data_modules.asset_manager.download_assets_for_node",
@@ -394,11 +394,11 @@ async def test_poll_status(mocker):
     me = MockManagedExecutor()
     me.poll = AsyncMock(return_value=0)
     mocker.patch(
-        "covalent_dispatcher._core.runner_exp.get_executor",
+        "covalent_dispatcher._core.runner_ng.get_executor",
         return_value=me,
     )
     mock_mark_ready = mocker.patch(
-        "covalent_dispatcher._core.runner_exp._mark_ready",
+        "covalent_dispatcher._core.runner_ng._mark_ready",
     )
 
     dispatch_id = "dispatch"
@@ -422,7 +422,7 @@ async def test_poll_status(mocker):
     me.poll = AsyncMock(side_effect=RuntimeError())
     mock_mark_ready.reset_mock()
     mock_mark_failed = mocker.patch(
-        "covalent_dispatcher._core.runner_exp._mark_failed",
+        "covalent_dispatcher._core.runner_ng._mark_failed",
     )
 
     await _poll_task_status(task_group_metadata, me, "42")
@@ -452,15 +452,15 @@ async def test_event_listener(mocker):
     }
 
     mocker.patch(
-        "covalent_dispatcher._core.runner_exp.datamgr.generate_node_result",
+        "covalent_dispatcher._core.runner_ng.datamgr.generate_node_result",
         return_value=node_result,
     )
 
     mock_update = mocker.patch(
-        "covalent_dispatcher._core.runner_exp.datamgr.update_node_result",
+        "covalent_dispatcher._core.runner_ng.datamgr.update_node_result",
     )
 
-    mock_get = mocker.patch("covalent_dispatcher._core.runner_exp._get_task_result")
+    mock_get = mocker.patch("covalent_dispatcher._core.runner_ng._get_task_result")
 
     task_group_metadata = {"dispatch_id": "dispatch", "task_group_id": 1, "task_ids": [1]}
 
@@ -469,7 +469,7 @@ async def test_event_listener(mocker):
     mock_event_queue = asyncio.Queue()
 
     mocker.patch(
-        "covalent_dispatcher._core.runner_exp._job_events",
+        "covalent_dispatcher._core.runner_ng._job_events",
         mock_event_queue,
     )
     fut = asyncio.create_task(_listen_for_job_events())
@@ -494,7 +494,7 @@ async def test_event_listener(mocker):
 
     await mock_event_queue.put({"BAD_EVENT": "asdf"})
     await mock_event_queue.put({"event": "BYE"})
-    mock_log = mocker.patch("covalent_dispatcher._core.runner_exp.app_log.exception")
+    mock_log = mocker.patch("covalent_dispatcher._core.runner_ng.app_log.exception")
 
     fut = asyncio.create_task(_listen_for_job_events())
 
@@ -512,7 +512,7 @@ async def test_run_abstract_task_group(mocker):
 
     me.poll = AsyncMock(return_value=0)
     mocker.patch(
-        "covalent_dispatcher._core.runner_exp.get_executor",
+        "covalent_dispatcher._core.runner_ng.get_executor",
         return_value=me,
     )
 
@@ -521,18 +521,18 @@ async def test_run_abstract_task_group(mocker):
     )
 
     mock_poll = mocker.patch(
-        "covalent_dispatcher._core.runner_exp._poll_task_status",
+        "covalent_dispatcher._core.runner_ng._poll_task_status",
     )
 
     node_result = {"node_id": 0, "status": RESULT_STATUS.RUNNING}
 
     mock_submit = mocker.patch(
-        "covalent_dispatcher._core.runner_exp._submit_abstract_task_group",
+        "covalent_dispatcher._core.runner_ng._submit_abstract_task_group",
         return_value=([node_result], 42),
     )
 
     mock_update = mocker.patch(
-        "covalent_dispatcher._core.runner_exp.datamgr.update_node_result",
+        "covalent_dispatcher._core.runner_ng.datamgr.update_node_result",
     )
 
     dispatch_id = "dispatch"
@@ -576,7 +576,7 @@ async def test_run_abstract_task_group_handles_old_execs(mocker):
     me._init_runtime()
 
     mocker.patch(
-        "covalent_dispatcher._core.runner_exp.get_executor",
+        "covalent_dispatcher._core.runner_ng.get_executor",
         return_value=me,
     )
     mocker.patch(
@@ -585,7 +585,7 @@ async def test_run_abstract_task_group_handles_old_execs(mocker):
 
     mock_legacy_run = mocker.patch("covalent_dispatcher._core.runner.run_abstract_task")
 
-    mock_submit = mocker.patch("covalent_dispatcher._core.runner_exp._submit_abstract_task_group")
+    mock_submit = mocker.patch("covalent_dispatcher._core.runner_ng._submit_abstract_task_group")
 
     dispatch_id = "dispatch"
     node_id = 0
@@ -622,10 +622,10 @@ async def test_run_abstract_task_group_handles_bad_executors(mocker):
 
     from covalent._shared_files.defaults import sublattice_prefix
 
-    mocker.patch("covalent_dispatcher._core.runner_exp.get_executor", side_effect=RuntimeError())
+    mocker.patch("covalent_dispatcher._core.runner_ng.get_executor", side_effect=RuntimeError())
 
     mock_update = mocker.patch(
-        "covalent_dispatcher._core.runner_exp.datamgr.update_node_result",
+        "covalent_dispatcher._core.runner_ng.datamgr.update_node_result",
     )
     dispatch_id = "dispatch"
     node_id = 0
@@ -673,14 +673,14 @@ async def test_run_abstract_task_group_handles_cancelled_tasks(mocker):
     )
 
     mock_submit = mocker.patch(
-        "covalent_dispatcher._core.runner_exp._submit_abstract_task_group",
+        "covalent_dispatcher._core.runner_ng._submit_abstract_task_group",
     )
 
     mock_update = mocker.patch(
-        "covalent_dispatcher._core.runner_exp.datamgr.update_node_result",
+        "covalent_dispatcher._core.runner_ng.datamgr.update_node_result",
     )
     mock_mark_ready = mocker.patch(
-        "covalent_dispatcher._core.runner_exp.mark_task_ready",
+        "covalent_dispatcher._core.runner_ng.mark_task_ready",
     )
 
     dispatch_id = "dispatch"

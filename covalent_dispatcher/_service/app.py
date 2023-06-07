@@ -35,7 +35,7 @@ from covalent._results_manager.result import Result
 from covalent._shared_files import logger
 from covalent._shared_files.schemas.result import ResultSchema
 from covalent_dispatcher._core import dispatcher as core_dispatcher
-from covalent_dispatcher._core import runner_exp as core_runner
+from covalent_dispatcher._core import runner_ng as core_runner
 
 from .._dal.export import export_result_manifest
 from .._db.datastore import workflow_db
