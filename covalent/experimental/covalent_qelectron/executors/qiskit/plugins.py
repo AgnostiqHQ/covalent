@@ -5,12 +5,27 @@ from typing import Any, List, Optional, Union
 import pennylane as qml
 
 from ..base import AsyncBaseQExecutor, QCResult, get_asyncio_event_loop
-from .devices import create_device, validate_device
+from .devices import QiskitLocalSampler, QiskitRuntimeSampler
 from .utils import RuntimeOptions
 
 __all__ = [
     "QiskitExecutor",
 ]
+
+_DEVICE_NAMES_MAP = {
+    "local_sampler": QiskitLocalSampler,
+    "sampler": QiskitRuntimeSampler,
+}
+
+
+def create_device(device_name: str, **kwargs):
+    """
+    Allows for the creation of a custom Pennylane-Qiskit device from a string name.
+    """
+    device_cls = _DEVICE_NAMES_MAP.get(device_name)
+    if not device_cls:
+        raise ValueError(f"Unsupported Qiskit primitive device '{device_name}'.")
+    return device_cls(**kwargs)
 
 
 class QiskitExecutor(AsyncBaseQExecutor):
@@ -43,13 +58,10 @@ class QiskitExecutor(AsyncBaseQExecutor):
 
         qscripts_list = list(qscripts_list)
 
-        # validate device against measurement type
-        wires, device_name = self._validate_qscripts(qscripts_list)
-
         # initialize a device: QiskitRuntimeEstimator, QiskitRuntimeSampler, etc.
         dev = create_device(
-            device_name,
-            wires=wires,
+            self.device,
+            wires=qscripts_list[0].wires,
             shots=self.shots,
             backend_name=self.backend_name,
             max_time=self.max_time,
@@ -95,31 +107,3 @@ class QiskitExecutor(AsyncBaseQExecutor):
         result_obj.metadata["execution_metadata"].extend(metadatas)
 
         return result_obj
-
-    def _validate_qscripts(self, qscripts_list):
-        """
-        run several checks on quantum scripts to enforce necessary assumptions
-        """
-
-        # these must be unique
-        device_names = set()
-        circuits_wires = set()
-
-        for qscript in qscripts_list:
-            for measurement in qscript.measurements:
-                meas_type = repr(measurement.return_type)
-                device_name = validate_device(self.device, meas_type)
-
-                circuits_wires.add(tuple(qscript.wires))
-                device_names.add(device_name)
-
-        # check uniqueness
-        if len(device_names) != 1:
-            raise RuntimeError("batch of circuits requires multiple device types")
-        if len(circuits_wires) != 1:
-            raise RuntimeError("wires differ in batch of circuits")
-
-        wires = circuits_wires.pop()
-        device_name = device_names.pop()
-
-        return wires, device_name
