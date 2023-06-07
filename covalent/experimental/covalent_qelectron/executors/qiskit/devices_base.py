@@ -74,6 +74,8 @@ class _PennylaneQiskitDevice(QiskitDevice):
     _sessions: Dict[SessionIdentifier, Session] = {}
 
     name = "Custom Plugin for Pennylane Circuits on Qiskit IBM Runtime"
+    version = "0.0.1"
+    author = "AQ"
 
     def __init__(
         self,
@@ -186,7 +188,6 @@ class _PennylaneQiskitDevice(QiskitDevice):
         """
         if not pennylane.active_return():
             res = self._statistics_legacy(qscript)
-            res = np.asarray(res)
         else:
             res = self.statistics(qscript)
 
@@ -264,6 +265,7 @@ class _SamplerDevice(_PennylaneQiskitDevice):
             else:
                 pp_results.extend(qs_conv_results)
 
+        pp_results = self._asarray(pp_results)
         return pp_results, metadatas
 
 
