@@ -49,6 +49,7 @@ jobs:
         run: >
           pip-missing-reqs
           --ignore-module=covalent_ui.*
+          --ignore-module=covalent.*
           --ignore-module=urllib3.*
           --ignore-module=pkg_resources
           --ignore-module=covalent/_dispatcher_plugins
@@ -63,7 +64,7 @@ jobs:
           pip-missing-reqs
           --ignore-module=covalent_ui.*
           --ignore-module=covalent.*
-          --ignore-module=covalent_dispatcher
+          --ignore-module=covalent_dispatcher.*
           --ignore-module=distributed.*
           covalent_dispatcher
 
