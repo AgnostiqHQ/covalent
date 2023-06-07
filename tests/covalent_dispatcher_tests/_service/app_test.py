@@ -89,7 +89,7 @@ async def test_submit(mocker, client):
     """Test the submit endpoint."""
     mock_data = json.dumps({}).encode("utf-8")
     run_dispatcher_mock = mocker.patch(
-        "covalent_dispatcher.run_dispatcher", return_value=DISPATCH_ID
+        "covalent_dispatcher.entry_point.make_dispatch", return_value=DISPATCH_ID
     )
     response = client.post("/api/v1/dispatch/submit", data=mock_data)
     assert response.json() == DISPATCH_ID
@@ -100,7 +100,7 @@ async def test_submit(mocker, client):
 async def test_submit_exception(mocker, client):
     """Test the submit endpoint."""
     mock_data = json.dumps({}).encode("utf-8")
-    mocker.patch("covalent_dispatcher.run_dispatcher", side_effect=Exception("mock"))
+    mocker.patch("covalent_dispatcher.entry_point.make_dispatch", side_effect=Exception("mock"))
     response = client.post("/api/v1/dispatch/submit", data=mock_data)
     assert response.status_code == 400
     assert response.json()["detail"] == "Failed to submit workflow: mock"
@@ -110,7 +110,7 @@ def test_cancel_dispatch(mocker, app, client):
     """
     Test cancelling dispatch
     """
-    mocker.patch("covalent_dispatcher.cancel_running_dispatch")
+    mocker.patch("covalent_dispatcher.entry_point.cancel_running_dispatch")
     response = client.post(
         "/api/v1/dispatch/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
     )
@@ -121,7 +121,7 @@ def test_cancel_tasks(mocker, app, client):
     """
     Test cancelling tasks within a lattice after dispatch
     """
-    mocker.patch("covalent_dispatcher.cancel_running_dispatch")
+    mocker.patch("covalent_dispatcher.entry_point.cancel_running_dispatch")
     response = client.post(
         "/api/v1/dispatch/cancel",
         data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": [0, 1]}),
@@ -133,7 +133,7 @@ def test_cancel_tasks(mocker, app, client):
 async def test_cancel(mocker, client):
     """Test the cancel endpoint."""
     cancel_running_dispatch_mock = mocker.patch(
-        "covalent_dispatcher.cancel_running_dispatch", return_value=DISPATCH_ID
+        "covalent_dispatcher.entry_point.cancel_running_dispatch", return_value=DISPATCH_ID
     )
     response = client.post(
         "/api/v1/dispatch/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
@@ -146,7 +146,7 @@ async def test_cancel(mocker, client):
 async def test_cancel_exception(mocker, client):
     """Test the cancel endpoint."""
     cancel_running_dispatch_mock = mocker.patch(
-        "covalent_dispatcher.cancel_running_dispatch", side_effect=Exception("mock")
+        "covalent_dispatcher.entry_point.cancel_running_dispatch", side_effect=Exception("mock")
     )
 
     with pytest.raises(Exception):
