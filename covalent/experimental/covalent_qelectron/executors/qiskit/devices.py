@@ -6,12 +6,12 @@ from qiskit.compiler import transpile
 from qiskit.primitives import Sampler as LocalSampler
 from qiskit_ibm_runtime import Sampler
 
-from .devices_base import _SamplerDevice
+from .devices_base import QiskitSamplerDevice
 from .sessions import get_cached_session
 from .utils import extract_options
 
 
-class QiskitLocalSampler(_SamplerDevice):
+class QiskitLocalSampler(QiskitSamplerDevice):
     """
     Pennylane device that runs circuits using the local `qiskit.primitives.Sampler`
     """
@@ -23,7 +23,7 @@ class QiskitLocalSampler(_SamplerDevice):
         self.circuit = None
         self.transpile_args = {}
 
-        _SamplerDevice.__init__(
+        QiskitSamplerDevice.__init__(
             self,
             wires=wires,
             shots=shots,
@@ -50,7 +50,7 @@ class QiskitLocalSampler(_SamplerDevice):
         return transpile(self._circuit, backend=None, **self.transpile_args)
 
 
-class QiskitRuntimeSampler(_SamplerDevice):
+class QiskitRuntimeSampler(QiskitSamplerDevice):
     """
     Pennylane device that runs circuits with Qiskit Runtime's `Sampler`
     """
@@ -72,7 +72,7 @@ class QiskitRuntimeSampler(_SamplerDevice):
         self.options = _options
         self.max_time = max_time
 
-        _SamplerDevice.__init__(
+        QiskitSamplerDevice.__init__(
             self,
             wires=wires,
             shots=shots,
@@ -103,7 +103,7 @@ class QiskitRuntimeSampler(_SamplerDevice):
 
     def post_process(self, qscripts_list, results) -> Tuple[List[Any], List[dict]]:
         results = [[self.request_result(job)] for job in results]
-        return _SamplerDevice.post_process(self, qscripts_list, results)
+        return QiskitSamplerDevice.post_process(self, qscripts_list, results)
 
     def request_result(self, job):
         """

@@ -126,7 +126,7 @@ class _PennylaneQiskitDevice(QiskitDevice):
         raise NotImplementedError()
 
 
-class _SamplerDevice(_PennylaneQiskitDevice):
+class QiskitSamplerDevice(_PennylaneQiskitDevice):
 
     def _samples_from_distribution(self, dist):
         """
