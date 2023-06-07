@@ -211,7 +211,10 @@ Node Outputs
         Final result of current dispatch.
         """
 
-        return self._result.get_deserialized()
+        if self._result is not None:
+            return self._result.get_deserialized()
+        else:
+            return None
 
     @property
     def inputs(self) -> dict:

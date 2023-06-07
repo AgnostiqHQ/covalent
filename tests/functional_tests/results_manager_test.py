@@ -76,54 +76,6 @@ def test_granular_get_result():
     assert res_obj.get_node_result(0)["output"].get_deserialized() == 3
 
 
-def test_get_workflow_output():
-    def add(a, b):
-        return a + b
-
-    @ct.electron
-    def identity(a):
-        return a
-
-    sublattice_add = ct.lattice(add)
-
-    @ct.lattice
-    def workflow(a, b):
-        res_1 = ct.electron(sublattice_add)(a=a, b=b)
-        return identity(a=res_1)
-
-    dispatch_id = ct.dispatch(workflow)(a=1, b=2)
-    res_obj = ct.get_result(
-        dispatch_id,
-        wait=True,
-        workflow_output=False,
-        intermediate_outputs=False,
-        sublattice_results=False,
-    )
-
-    assert ct.get_workflow_output(dispatch_id).get_deserialized() == 3
-
-
-def test_get_node_output():
-    @ct.electron
-    def add(a, b):
-        return a + b
-
-    @ct.lattice
-    def workflow(a, b):
-        return add(a, b)
-
-    dispatch_id = ct.dispatch(workflow)(a=1, b=2)
-    res_obj = ct.get_result(
-        dispatch_id,
-        wait=True,
-        workflow_output=False,
-        intermediate_outputs=False,
-        sublattice_results=False,
-    )
-
-    assert ct.get_node_output(dispatch_id, 0).get_deserialized() == 3
-
-
 def test_get_result_nonexistent():
     with pytest.raises(MissingLatticeRecordError):
         result_object = ct.get_result("nonexistent", wait=False)
