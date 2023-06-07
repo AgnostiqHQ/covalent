@@ -6,7 +6,7 @@ from qiskit.primitives import Sampler as LocalSampler
 from qiskit_ibm_runtime import Sampler
 
 from .utils import extract_options
-from .wrappers import _LocalQiskitDevice, _QiskitRuntimeDevice, _SamplerDevice
+from .devices_base import _LocalQiskitDevice, _QiskitRuntimeDevice, _SamplerDevice
 
 
 class QiskitLocalSampler(_LocalQiskitDevice, _SamplerDevice):
