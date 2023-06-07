@@ -103,7 +103,7 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
 
     def post_process(self, qscripts_list, results) -> Tuple[List[Any], List[dict]]:
         results = [[self.request_result(job)] for job in results]
-        return QiskitSamplerDevice.post_process(self, qscripts_list, results)
+        return super().post_process(qscripts_list, results)
 
     def request_result(self, job):
         """
