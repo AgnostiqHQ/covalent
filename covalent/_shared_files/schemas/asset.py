@@ -23,7 +23,6 @@
 from typing import Optional
 
 from pydantic import BaseModel
-from pydantic.dataclasses import dataclass
 
 
 class AssetSchema(BaseModel):
@@ -36,8 +35,7 @@ class AssetSchema(BaseModel):
     size: Optional[int] = 0
 
 
-@dataclass
-class AssetUpdate:
+class AssetUpdate(BaseModel):
     remote_uri: Optional[str] = None
     size: Optional[int] = None
     digest_alg: Optional[str] = None

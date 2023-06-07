@@ -25,7 +25,7 @@ Types defining the runner-executor interface
 from enum import Enum
 from typing import Dict, List
 
-from pydantic.dataclasses import dataclass
+from pydantic import BaseModel
 
 from covalent._shared_files.schemas.asset import AssetUpdate
 from covalent._shared_files.util_classes import RESULT_STATUS
@@ -38,16 +38,14 @@ class TerminalStatus(str, Enum):
     FAILED = RESULT_STATUS.FAILED
 
 
-@dataclass
-class TaskUpdate:
+class TaskUpdate(BaseModel):
     dispatch_id: str
     node_id: int
     status: TerminalStatus
     assets: Dict[str, AssetUpdate]
 
 
-@dataclass
-class TaskSpec:
+class TaskSpec(BaseModel):
     function_id: int
     args_ids: List[int]
     kwargs_ids: Dict[str, int]
@@ -56,8 +54,7 @@ class TaskSpec:
     call_after_id: str
 
 
-@dataclass
-class ResourceMap:
+class ResourceMap(BaseModel):
     """Map resource identifiers to URIs"""
 
     # Map node_id to URI

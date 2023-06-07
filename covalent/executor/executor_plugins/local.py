@@ -27,7 +27,6 @@ This is a plugin executor module; it is loaded if found and properly structured.
 import asyncio
 import os
 from concurrent.futures import ProcessPoolExecutor
-from dataclasses import asdict
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
@@ -180,8 +179,8 @@ class LocalExecutor(BaseExecutor):
         app_log.debug(f"Running task group {dispatch_id}:{task_ids}")
         future = proc_pool.submit(
             run_task_from_uris,
-            list(map(lambda t: asdict(t), task_specs)),
-            asdict(resources),
+            list(map(lambda t: t.dict(), task_specs)),
+            resources.dict(),
             output_uris,
             self.cache_dir,
             task_group_metadata,
