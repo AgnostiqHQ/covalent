@@ -112,7 +112,7 @@ class BaseTrigger:
         """
 
         if self.use_internal_funcs:
-            from covalent_dispatcher._service.app_exp import export_result
+            from covalent_dispatcher._service.app import export_result
 
             response = asyncio.run_coroutine_threadsafe(
                 export_result(self.lattice_dispatch_id, status_only=True),

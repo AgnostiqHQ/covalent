@@ -39,7 +39,7 @@ class TestFile:
         assert File("s3://file").mapped_strategy_type == FileTransferStrategyTypes.S3
         assert File("ftp://file").mapped_strategy_type == FileTransferStrategyTypes.FTP
         assert File("globus://file").mapped_strategy_type == FileTransferStrategyTypes.GLOBUS
-        assert File("file://file").mapped_strategy_type == FileTransferStrategyTypes.Rsync
+        assert File("file://file").mapped_strategy_type == FileTransferStrategyTypes.Shutil
         assert File("https://example.com").mapped_strategy_type == FileTransferStrategyTypes.HTTP
         assert File("http://example.com").mapped_strategy_type == FileTransferStrategyTypes.HTTP
 

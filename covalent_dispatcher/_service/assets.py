@@ -66,7 +66,7 @@ _background_tasks = set()
 LRU_CACHE_SIZE = 50
 
 
-@router.get("/{dispatch_id}/node/{node_id}/{key}")
+@router.get("/assets/{dispatch_id}/node/{node_id}/{key}")
 def get_node_asset(
     dispatch_id: str,
     node_id: int,
@@ -126,7 +126,7 @@ def get_node_asset(
         raise
 
 
-@router.get("/{dispatch_id}/dispatch/{key}")
+@router.get("/assets/{dispatch_id}/dispatch/{key}")
 def get_dispatch_asset(
     dispatch_id: str,
     key: DispatchAssetKey,
@@ -182,7 +182,7 @@ def get_dispatch_asset(
         raise
 
 
-@router.get("/{dispatch_id}/lattice/{key}")
+@router.get("/assets/{dispatch_id}/lattice/{key}")
 def get_lattice_asset(
     dispatch_id: str,
     key: LatticeAssetKey,
@@ -239,7 +239,7 @@ def get_lattice_asset(
         raise e
 
 
-@router.post("/{dispatch_id}/node/{node_id}/{key}")
+@router.post("/assets/{dispatch_id}/node/{node_id}/{key}")
 def upload_node_asset(
     dispatch_id: str,
     node_id: int,
@@ -288,7 +288,7 @@ def upload_node_asset(
         raise
 
 
-@router.post("/{dispatch_id}/dispatch/{key}")
+@router.post("/assets/{dispatch_id}/dispatch/{key}")
 def upload_dispatch_asset(
     dispatch_id: str,
     key: DispatchAssetKey,
@@ -332,7 +332,7 @@ def upload_dispatch_asset(
         raise
 
 
-@router.post("/{dispatch_id}/lattice/{key}")
+@router.post("/assets/{dispatch_id}/lattice/{key}")
 def upload_lattice_asset(
     dispatch_id: str,
     key: LatticeAssetKey,
