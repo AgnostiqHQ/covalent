@@ -221,7 +221,7 @@ class LocalExecutor(BaseExecutor):
                 terminal_status = RESULT_STATUS.CANCELLED
             else:
                 received = ReceiveModel.parse_obj(data)
-                terminal_status = Status(received.status)
+                terminal_status = Status(received.status.value)
 
             task_result = {
                 "dispatch_id": dispatch_id,

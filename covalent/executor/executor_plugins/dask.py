@@ -295,7 +295,7 @@ class DaskExecutor(AsyncBaseExecutor):
             terminal_status = RESULT_STATUS.CANCELLED
         else:
             received = ReceiveModel.parse_obj(data)
-            terminal_status = Status(received.status)
+            terminal_status = Status(received.status.value)
 
         for task_id in task_ids:
             # TODO: Handle the case where the job was cancelled before the task started running
