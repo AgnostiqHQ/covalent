@@ -2,7 +2,7 @@
 from abc import abstractmethod
 from dataclasses import dataclass
 from functools import lru_cache
-from typing import Any, Callable, Dict, List, Tuple, Union
+from typing import Any, Dict, List, Tuple, Union
 
 import numpy as np
 import pennylane
@@ -10,8 +10,6 @@ from pennylane.transforms import broadcast_expand, map_batch_transform
 from pennylane_qiskit.qiskit_device import QiskitDevice
 from qiskit.compiler import transpile
 from qiskit_ibm_runtime import QiskitRuntimeService, Session
-
-from .utils import Measurement
 
 
 @lru_cache
@@ -75,20 +73,7 @@ class _PennylaneQiskitDevice(QiskitDevice):
     """
     _sessions: Dict[SessionIdentifier, Session] = {}
 
-    _type_converters: Dict[Measurement, Callable] = {
-        Measurement.EXPVAL: pennylane.numpy.tensor,
-        Measurement.SAMPLE: np.asarray,
-        Measurement.PROBS: np.asarray,
-    }
-
     name = "Custom Plugin for Pennylane Circuits on Qiskit IBM Runtime"
-
-    @property
-    @abstractmethod
-    def supported_measurements(self) -> Tuple[Measurement, ...]:
-        """
-        List of supported Pennylane measurement types
-        """
 
     def __init__(
         self,
@@ -132,9 +117,10 @@ class _PennylaneQiskitDevice(QiskitDevice):
         Create session identifier from `Session` initialization arguments
         """
         return SessionIdentifier(
-            service_channel=service._account.channel,  # pylint: disable=protected-access
-            service_instance=service._account.instance,  # pylint: disable=protected-access
-            service_url=service._account.url,  # pylint: disable=protected-access
+            # pylint: disable=protected-access
+            service_channel=service._account.channel,
+            service_instance=service._account.instance,
+            service_url=service._account.url,
             backend_name=backend.name,
             max_time=max_time
         )
@@ -215,14 +201,6 @@ class _PennylaneQiskitDevice(QiskitDevice):
             "num_measurements": len(qscript.measurements),
         }
 
-    @classmethod
-    def get_type_converter(cls, qscript) -> Callable:
-        """
-        type conversion for the final result, ex. tensor, array, or dict
-        """
-        meas_types = [repr(m.return_type) for m in qscript.measurements]
-        return cls._type_converters.get(meas_types.pop(), lambda x: x)
-
     @abstractmethod
     def post_process(self, qscripts_list, results) -> Tuple[List[Any], List[dict]]:
         """
@@ -282,51 +260,9 @@ class _SamplerDevice(_PennylaneQiskitDevice):
             metadatas.extend(qs_metadatas)
 
             if len(qs_conv_results) > 1:
-                typ = self.get_type_converter(qscript)
-                res = typ([float(r) for r in qs_conv_results])
-                pp_results.append(res)
+                pp_results.append(qs_conv_results)
             else:
-                typ = self.get_type_converter(qscript)
-                res = typ(qs_conv_results)
-                pp_results.extend(res)
-
-        return pp_results, metadatas
-
-
-class _EstimatorDevice(_PennylaneQiskitDevice):
-
-    def post_process(self, qscripts_list, results):
-        """
-        - when the Qelectron is called with a single input:
-
-        qscripts_list = [qscript]
-        results       = [[EstimatorResult[values=[float]]]]
-
-        - when the Qelectron is called with a vector input:
-
-        qscripts_list = [qscript]
-        results       = [[EstimatorResult[values=[float, ..., float]]]]
-
-        - when the Qelectron is called through `qml.grad`:
-
-        qscripts_list = [qscript, qscript]
-        results       = [[EstimatorResult[values=[float]]]]]
-        """
-        pp_results = []
-        metadatas = []
-
-        for result in results:
-            est_result_obj = result.pop()
-            if len(est_result_obj.values) > 1:
-                typ = self.get_type_converter(qscripts_list.pop())
-                res = typ([float(r) for r in est_result_obj.values])
-                pp_results.append(res)
-            else:
-                typ = self.get_type_converter(qscripts_list.pop())
-                res = typ(est_result_obj.values)
-                pp_results.extend(res)
-
-            metadatas.extend(est_result_obj.metadata)
+                pp_results.extend(qs_conv_results)
 
         return pp_results, metadatas
 
