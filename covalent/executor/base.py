@@ -229,7 +229,7 @@ class BaseExecutor(_AbstractBaseExecutor):
             dispatch_id: Dispatch ID of the lattice
 
         Returns:
-            {"python": python_version, "covalent": sdk_version}
+            {"python": python_version, "covalent": covalent_version}
         """
         return self._notify_sync(Signals.GET, "version_info")
 
@@ -586,7 +586,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             dispatch_id: Dispatch ID of the lattice
 
         Returns:
-            {"python": python_version, "covalent": sdk_version}
+            {"python": python_version, "covalent": covalent_version}
         """
         return await self._notify_sync(Signals.GET, "version_info")
 

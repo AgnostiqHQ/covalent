@@ -58,7 +58,7 @@ def _get_lattice_meta(lat: LatticeSchema, storage_path) -> dict:
         "storage_type": LATTICE_STORAGE_TYPE,
         "name": lat.metadata.name,
         "python_version": lat.metadata.python_version,
-        "sdk_version": lat.metadata.sdk_version,
+        "covalent_version": lat.metadata.covalent_version,
         "executor": lat.metadata.executor,
         "executor_data": json.dumps(lat.metadata.executor_data),
         "workflow_executor": lat.metadata.workflow_executor,

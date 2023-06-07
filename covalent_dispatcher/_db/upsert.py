@@ -194,7 +194,7 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         "results_dir": results_dir,
         "root_dispatch_id": result.root_dispatch_id,
         "python_version": result.lattice.python_version,
-        "sdk_version": result.lattice.sdk_version,
+        "covalent_version": result.lattice.covalent_version,
         "created_at": datetime.now(timezone.utc),
         "updated_at": datetime.now(timezone.utc),
         "started_at": result.start_time,

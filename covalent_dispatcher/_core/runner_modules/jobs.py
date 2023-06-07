@@ -60,14 +60,16 @@ async def get_version_info(dispatch_id: str, task_id: int):
         task_id: ID of the task within the lattice
 
     Returns:
-        {"python": python_version, "covalent": sdk_version}
+        {"python": python_version, "covalent": covalent_version}
     """
 
-    data = await datamgr.get_lattice_attributes(dispatch_id, ["python_version", "sdk_version"])
+    data = await datamgr.get_lattice_attributes(
+        dispatch_id, ["python_version", "covalent_version"]
+    )
 
     return {
         "python": data["python_version"],
-        "covalent": data["sdk_version"],
+        "covalent": data["covalent_version"],
     }
 
 

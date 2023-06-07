@@ -55,11 +55,11 @@ def _serialize_lattice_metadata(lat) -> LatticeMetadata:
     workflow_executor = lat.metadata["workflow_executor"]
     workflow_executor_data = lat.metadata["workflow_executor_data"]
     python_version = lat.python_version
-    sdk_version = lat.sdk_version
+    covalent_version = lat.covalent_version
     return LatticeMetadata(
         name=name,
         python_version=python_version,
-        sdk_version=sdk_version,
+        covalent_version=covalent_version,
         executor=executor,
         executor_data=executor_data,
         workflow_executor=workflow_executor,
@@ -71,7 +71,7 @@ def _deserialize_lattice_metadata(meta: LatticeMetadata) -> dict:
     return {
         "__name__": meta.name,
         "python_version": meta.python_version,
-        "sdk_version": meta.sdk_version,
+        "covalent_version": meta.covalent_version,
         "metadata": {
             "executor": meta.executor,
             "executor_data": meta.executor_data,

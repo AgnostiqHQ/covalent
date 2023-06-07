@@ -132,7 +132,7 @@ class Lattice(Base):
     python_version = Column(Text)
 
     # Covalent SDK version
-    sdk_version = Column(Text)
+    covalent_version = Column(Text)
 
     # Timestamps
     created_at = Column(DateTime, nullable=False, server_default=func.now())

@@ -30,7 +30,7 @@ from .transport_graph import TransportGraphSchema
 LATTICE_METADATA_KEYS = {
     "__name__",
     "python_version",
-    "sdk_version",
+    "covalent_version",
     # metadata
     "executor",
     "workflow_executor",
@@ -109,7 +109,7 @@ class LatticeMetadata(BaseModel):
     workflow_executor: str
     workflow_executor_data: dict
     python_version: str
-    sdk_version: str
+    covalent_version: str
 
 
 class LatticeSchema(BaseModel):
