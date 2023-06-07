@@ -181,4 +181,20 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
                 pp_results.extend(qs_conv_results)
 
         pp_results = self._asarray(pp_results)
+        pp_results = self._handle_active_return(pp_results, qscripts_list)
+
         return pp_results, metadatas
+
+    def _handle_active_return(self, results, circuits):
+        if not pennylane.active_return():
+
+            if all(len(c.measurements) == 1 for c in circuits):
+                results = [
+                    [r] if isinstance(r, dict) else np.asarray([r])
+                    for r in results
+                ]
+
+            if len(circuits) > 1:
+                results = [r if isinstance(r, list) else r for r in results]
+
+        return results
