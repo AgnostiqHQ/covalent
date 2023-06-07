@@ -6,7 +6,6 @@ import numpy as np
 import pennylane
 from pennylane.transforms import broadcast_expand, map_batch_transform
 from pennylane_qiskit.qiskit_device import QiskitDevice
-from qiskit.compiler import transpile
 
 from .sessions import init_runtime_service
 
@@ -183,27 +182,3 @@ class _SamplerDevice(_PennylaneQiskitDevice):
 
         pp_results = self._asarray(pp_results)
         return pp_results, metadatas
-
-
-class _LocalQiskitDevice:
-
-    def __init__(self):
-        self._circuit = None
-        self.transpile_args = {}
-
-    def compile(self):
-        """
-        Used to override original method from `pennylane_qiskit.qiskit_device.QiskitDevice`
-        to always use a `None` compile backend
-        """
-        return transpile(self._circuit, backend=None, **self.transpile_args)
-
-
-class _QiskitRuntimeDevice:
-
-    @classmethod
-    def request_result(cls, job):
-        if not pennylane.active_return():
-            job = job.pop()
-
-        return job.result()
