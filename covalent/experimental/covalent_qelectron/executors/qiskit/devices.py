@@ -5,8 +5,9 @@ from pennylane import active_return
 from qiskit.primitives import Sampler as LocalSampler
 from qiskit_ibm_runtime import Sampler
 
-from .utils import extract_options
 from .devices_base import _LocalQiskitDevice, _QiskitRuntimeDevice, _SamplerDevice
+from .sessions import get_cached_session
+from .utils import extract_options
 
 
 class QiskitLocalSampler(_LocalQiskitDevice, _SamplerDevice):
@@ -71,7 +72,7 @@ class QiskitRuntimeSampler(_QiskitRuntimeDevice, _SamplerDevice):
 
     def batch_execute(self, circuits):
 
-        with super().session(  # pylint: disable=not-context-manager
+        with get_cached_session(  # pylint: disable=not-context-manager
             self.service,
             self.backend,
             self.max_time

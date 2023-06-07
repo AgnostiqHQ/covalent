@@ -1,77 +1,22 @@
 """Wrappers for the existing Pennylane-Qiskit interface"""
 from abc import abstractmethod
-from dataclasses import dataclass
-from functools import lru_cache
-from typing import Any, Dict, List, Tuple, Union
+from typing import Any, List, Tuple
 
 import numpy as np
 import pennylane
 from pennylane.transforms import broadcast_expand, map_batch_transform
 from pennylane_qiskit.qiskit_device import QiskitDevice
 from qiskit.compiler import transpile
-from qiskit_ibm_runtime import QiskitRuntimeService, Session
 
-
-@lru_cache
-def _init_runtime_service(
-    *,
-    ibmqx_token: str = None,
-    ibmqx_url: str = None,
-    channel: str = "",
-    instance: str = "",
-    cloud_instance: str = "",
-    hub: str = "",
-    group: str = "",
-    project: str = "",
-) -> QiskitRuntimeService:
-    """
-    Start `QiskitRuntimeService` with specified settings
-    """
-
-    if channel == "ibm_quantum":
-        if hub and group and project:
-            instance = "/".join([hub, group, project])
-        elif not instance:
-            instance = "ibm-q/open/main"
-    elif channel == "ibm_cloud":
-        instance = cloud_instance
-    else:
-        raise ValueError(
-            "Invalid `channel` argument, must be either 'ibm_quantum' or 'ibm_cloud'."
-        )
-
-    if not instance:
-        arg_name = "instance" if channel == "ibm_quantum" else "cloud_instance"
-        raise ValueError(
-            f"Missing required `{arg_name}` argument for channel type '{channel}'."
-        )
-
-    return QiskitRuntimeService(
-        channel=channel,
-        token=ibmqx_token,
-        url=ibmqx_url,
-        instance=instance
-    )
-
-
-@dataclass(frozen=True)
-class SessionIdentifier:
-    """
-    Proxy for defining a unique `Session` instance.
-    """
-    service_channel: str
-    service_instance: str
-    service_url: str
-    backend_name: str
-    max_time: Union[int, None]
+from .sessions import init_runtime_service
 
 
 class _PennylaneQiskitDevice(QiskitDevice):
+    # pylint: disable=too-many-instance-attributes
     """
     A replacement for Pennylane's `QiskitDevice` that uses `QiskitRuntimeService`
     instead of the older `qiskit.providers.provider.ProviderV1`
     """
-    _sessions: Dict[SessionIdentifier, Session] = {}
 
     name = "Custom Plugin for Pennylane Circuits on Qiskit IBM Runtime"
     version = "0.0.1"
@@ -98,35 +43,6 @@ class _PennylaneQiskitDevice(QiskitDevice):
         self.reset()
         self.process_kwargs(kwargs)
 
-    @staticmethod
-    def session(service, backend, max_time) -> Session:
-        """
-        Global Qiskit IBM Runtime sessions, unique up to fields in `SessionIdentifier`
-        """
-        session_id = _PennylaneQiskitDevice.session_id(service, backend, max_time)
-        if session_id not in _PennylaneQiskitDevice._sessions:
-            _PennylaneQiskitDevice._sessions[session_id] = Session(
-                service=service,
-                backend=backend,
-                max_time=max_time,
-            )
-
-        return _PennylaneQiskitDevice._sessions[session_id]
-
-    @staticmethod
-    def session_id(service, backend, max_time) -> SessionIdentifier:
-        """
-        Create session identifier from `Session` initialization arguments
-        """
-        return SessionIdentifier(
-            # pylint: disable=protected-access
-            service_channel=service._account.channel,
-            service_instance=service._account.instance,
-            service_url=service._account.url,
-            backend_name=backend.name,
-            max_time=max_time
-        )
-
     @classmethod
     def capabilities(cls):
         capabilities = super().capabilities().copy()
@@ -140,7 +56,7 @@ class _PennylaneQiskitDevice(QiskitDevice):
         """
         if self._service is None:
             # assign cached service instance
-            self._service = _init_runtime_service(**self.service_init_kwargs)
+            self._service = init_runtime_service(**self.service_init_kwargs)
         return self._service
 
     @property
