@@ -177,11 +177,11 @@ import covalent as ct
 def heavy_function(a):
     import time
 
-    time.sleep(3)
+    time.sleep(10)
     return a
 
 @ct.lattice
-def workflow(x=5):
+def workflow(x=2):
     for i in range(x):
         heavy_function(a=i)
     return x
