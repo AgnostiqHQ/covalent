@@ -80,7 +80,8 @@ async def test_run_abstract_task_exception_handling(mocker):
 
     mocker.patch("covalent_dispatcher._core.runner._gather_deps", side_effect=RuntimeError())
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_electron_attribute", return_value="function"
+        "covalent_dispatcher._core.data_manager.get_electron_attributes",
+        return_value={"function": "function"},
     )
 
     node_result = await _run_abstract_task(

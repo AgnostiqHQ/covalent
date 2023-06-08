@@ -84,6 +84,23 @@ class _TransportGraph:
     def get_values_for_nodes(
         self, node_ids: List[int], keys: List[str], session: Session = None, refresh: bool = True
     ) -> List[Dict]:
+        """Bulk query attributes for nodes.
+
+        Args:
+            node_ids: The list of nodes to query
+            keys: The list of attributes to query
+            session: An optional SQLalchemy session to use for the DB query
+            refresh: A boolean indicating whether to use cached attributes
+
+        If session is `None`, a temporary session will be created for
+        the query.
+
+        Returns:
+            A list of dictionaries {attr_key: attr_val}, one for
+            each node id, in the same order as `node_ids`.
+
+        """
+
         nodes = self.get_nodes(node_ids=node_ids, session=session)
         return list(map(lambda n: n.get_values(keys, session, refresh), nodes))
 

@@ -120,8 +120,10 @@ async def put_job_status(dispatch_id: str, task_id: int, status: Status) -> bool
         True
     """
     app_log.debug(f"Put cancel result for task {dispatch_id}:{task_id}")
-    executor_name = await datasvc.get_electron_attribute(dispatch_id, task_id, "executor")
-    selected_executor = [executor_name, {}]
+    executor_attrs = await datasvc.get_electron_attributes(
+        dispatch_id, task_id, ["executor", "executor_data"]
+    )
+    selected_executor = [executor_attrs["executor"], executor_attrs["executor_data"]]
     executor = get_executor(task_id, selected_executor, None, None)
     if executor.validate_status(status):
         await job_manager.set_job_status(dispatch_id, task_id, str(status))

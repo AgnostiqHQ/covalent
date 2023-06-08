@@ -242,6 +242,35 @@ def _get_attrs_for_electrons_sync(
 async def get_attrs_for_electrons(
     dispatch_id: str, node_ids: List[int], keys: List[str]
 ) -> List[Dict]:
+    """Query attributes for multiple electrons.
+
+    Args:
+        node_ids: The list of nodes to query
+        keys: The list of attributes to query for each electron
+
+    Returns:
+        A list of dictionaries {attr_key: attr_val}, one for
+        each node id, in the same order as `node_ids`
+
+    Example:
+    ```
+        await get_attrs_for_electrons(
+            "my_dispatch", [2, 4], ["name", "status"],
+        )
+    ```
+    will return
+    ```
+    [
+        {
+            "name": "task_2", "status": RESULT_STATUS.COMPLETED,
+        },
+        {
+            "name": "task_4, "status": RESULT_STATUS.FAILED,
+        },
+    ]
+    ```
+
+    """
     return await run_in_executor(
         _get_attrs_for_electrons_sync,
         dispatch_id,
@@ -250,12 +279,30 @@ async def get_attrs_for_electrons(
     )
 
 
-async def get_electron_attribute(dispatch_id: str, node_id: int, key: str) -> Any:
-    query_res = await get_electron_attributes(dispatch_id, node_id, [key])
-    return query_res[key]
+async def get_electron_attributes(dispatch_id: str, node_id: int, keys: List[str]) -> Dict:
+    """Convenience function to query attributes for an electron.
 
+    Args:
+        node_id: The node to query
+        keys: The list of attributes to query
 
-async def get_electron_attributes(dispatch_id: str, node_id: int, keys: str) -> Any:
+    Returns:
+        A dictionary {attr_key: attr_val}
+
+    Example:
+    ```
+        await get_electron_attributes(
+            "my_dispatch", 2, ["name", "status"],
+        )
+    ```
+    will return
+    ```
+        {
+            "name": "task_2", "status": RESULT_STATUS.COMPLETED,
+        }
+    ```
+
+    """
     attrs = await get_attrs_for_electrons(dispatch_id, [node_id], keys)
     return attrs[0]
 

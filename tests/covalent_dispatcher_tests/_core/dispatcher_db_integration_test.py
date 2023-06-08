@@ -253,8 +253,8 @@ async def test_handle_completed_node(mocker, test_db):
     async def get_node_successors(dispatch_id: str, node_id: int):
         return result_object.lattice.transport_graph.get_successors(node_id, ["task_group_id"])
 
-    async def get_electron_attribute(dispatch_id, node_id, key):
-        return node_id
+    async def get_electron_attributes(dispatch_id, node_id, keys):
+        return {keys[0]: node_id}
 
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_node_successors",
@@ -262,8 +262,8 @@ async def test_handle_completed_node(mocker, test_db):
     )
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_electron_attribute",
-        get_electron_attribute,
+        "covalent_dispatcher._core.data_manager.get_electron_attributes",
+        get_electron_attributes,
     )
 
     # tg edges are (1, 0), (0, 2)

@@ -89,7 +89,9 @@ async def _handle_completed_node(dispatch_id: str, node_id: int):
     next_task_groups = []
     app_log.debug(f"Node {node_id} completed")
 
-    parent_gid = await datasvc.get_electron_attribute(dispatch_id, node_id, "task_group_id")
+    parent_gid = (await datasvc.get_electron_attributes(dispatch_id, node_id, ["task_group_id"]))[
+        "task_group_id"
+    ]
     for child in await datasvc.get_node_successors(dispatch_id, node_id):
         node_id = child["node_id"]
         gid = child["task_group_id"]
@@ -160,7 +162,9 @@ async def _get_initial_tasks_and_deps(dispatch_id: str) -> Tuple[int, int, Dict]
 async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_group_id: int):
     # Handle parameter nodes
     # Get name of the node for the current task
-    node_name = await datasvc.get_electron_attribute(dispatch_id, sorted_nodes[0], "name")
+    node_name = (await datasvc.get_electron_attributes(dispatch_id, sorted_nodes[0], ["name"]))[
+        "name"
+    ]
     app_log.debug(f"7A: Node name: {node_name} (run_planned_workflow).")
 
     # Handle parameter nodes
@@ -199,12 +203,13 @@ async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_gro
 
                 abs_task_input = await _get_abstract_task_inputs(dispatch_id, node_id, node_name)
 
-                selected_executor = await datasvc.get_electron_attribute(
-                    dispatch_id, node_id, "executor"
+                executor_attrs = await datasvc.get_electron_attributes(
+                    dispatch_id,
+                    node_id,
+                    ["executor", "executor_data"],
                 )
-                selected_executor_data = await datasvc.get_electron_attribute(
-                    dispatch_id, node_id, "executor_data"
-                )
+                selected_executor = executor_attrs["executor"]
+                selected_executor_data = executor_attrs["executor_data"]
                 task_spec = {
                     "function_id": node_id,
                     "name": node_name,

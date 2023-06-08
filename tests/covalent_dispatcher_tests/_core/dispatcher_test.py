@@ -537,12 +537,12 @@ async def test_submit_task_group(mocker):
         {"status": Result.NEW_OBJ},
     ]
 
-    async def get_electron_attr(dispatch_id, node_id, key):
-        return mock_attrs[key]
+    async def get_electron_attrs(dispatch_id, node_id, keys):
+        return {key: mock_attrs[key] for key in keys}
 
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.get_electron_attribute",
-        get_electron_attr,
+        "covalent_dispatcher._core.dispatcher.datasvc.get_electron_attributes",
+        get_electron_attrs,
     )
 
     mocker.patch(
@@ -588,12 +588,12 @@ async def test_submit_task_group_skips_reusable(mocker):
         {"status": Result.PENDING_REUSE},
     ]
 
-    async def get_electron_attr(dispatch_id, node_id, key):
-        return mock_attrs[key]
+    async def get_electron_attrs(dispatch_id, node_id, keys):
+        return {key: mock_attrs[key] for key in keys}
 
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.get_electron_attribute",
-        get_electron_attr,
+        "covalent_dispatcher._core.dispatcher.datasvc.get_electron_attributes",
+        get_electron_attrs,
     )
 
     mocker.patch(
@@ -629,12 +629,12 @@ async def test_submit_parameter(mocker):
         "executor_data": {},
     }
 
-    async def get_electron_attr(dispatch_id, node_id, key):
-        return mock_attrs[key]
+    async def get_electron_attrs(dispatch_id, node_id, keys):
+        return {key: mock_attrs[key] for key in keys}
 
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.get_electron_attribute",
-        get_electron_attr,
+        "covalent_dispatcher._core.dispatcher.datasvc.get_electron_attributes",
+        get_electron_attrs,
     )
 
     mock_update = mocker.patch(

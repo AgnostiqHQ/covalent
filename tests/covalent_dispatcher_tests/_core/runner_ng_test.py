@@ -120,8 +120,8 @@ async def test_submit_abstract_task_group(mocker):
     me.send = AsyncMock(return_value="42")
 
     mocker.patch(
-        "covalent_dispatcher._core.runner_ng.datamgr.get_electron_attribute",
-        return_value="managed_dask",
+        "covalent_dispatcher._core.runner_ng.datamgr.get_electron_attributes",
+        return_value={"executor": "managed_dask", "executor_data": {}},
     )
 
     mocker.patch(
@@ -264,8 +264,8 @@ async def test_submit_requires_opt_in(mocker):
     abstract_inputs = {"args": [1], "kwargs": {"key": 2}}
 
     mocker.patch(
-        "covalent_dispatcher._core.runner_ng.datamgr.get_electron_attribute",
-        return_value="managed_dask",
+        "covalent_dispatcher._core.runner_ng.datamgr.get_electron_attributes",
+        return_value={"executor": "managed_dask", "executor_data": {}},
     )
 
     mocker.patch(
@@ -327,8 +327,8 @@ async def test_get_task_result(mocker):
     me.receive = AsyncMock(return_value=[TaskUpdate(**mock_task_result)])
 
     mocker.patch(
-        "covalent_dispatcher._core.runner_ng.datamgr.get_electron_attribute",
-        return_value="managed_dask",
+        "covalent_dispatcher._core.runner_ng.datamgr.get_electron_attributes",
+        return_value={"executor": "managed_dask", "executor_data": {}},
     )
 
     mocker.patch(

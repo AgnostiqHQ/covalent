@@ -112,12 +112,14 @@ async def test_gather_deps(mocker, test_db):
     sdkres = Result(received_workflow, "test_gather_deps")
     result_object = get_mock_srvresult(sdkres, test_db)
 
-    async def get_electron_attr(dispatch_id, node_id, key):
-        return result_object.lattice.transport_graph.get_node_value(node_id, key)
+    async def get_electron_attrs(dispatch_id, node_id, keys):
+        return {
+            key: result_object.lattice.transport_graph.get_node_value(node_id, key) for key in keys
+        }
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_electron_attribute",
-        get_electron_attr,
+        "covalent_dispatcher._core.data_manager.get_electron_attributes",
+        get_electron_attrs,
     )
 
     before, after = await _gather_deps(result_object.dispatch_id, 0)
