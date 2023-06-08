@@ -35,6 +35,7 @@ from covalent._serialize.lattice import ASSET_TYPES as LATTICE_ASSET_TYPES
 from covalent._serialize.result import ASSET_TYPES as RESULT_ASSET_TYPES
 from covalent._serialize.result import AssetType
 from covalent._shared_files import logger
+from covalent._shared_files.config import get_config
 from covalent._workflow.transportable_object import TOArchiveUtils
 
 from .._dal.result import get_result_object
@@ -63,7 +64,7 @@ router: APIRouter = APIRouter()
 
 _background_tasks = set()
 
-LRU_CACHE_SIZE = 50
+LRU_CACHE_SIZE = get_config("dispatcher.asset_cache_size")
 
 
 @router.get("/assets/{dispatch_id}/node/{node_id}/{key}")
