@@ -52,6 +52,10 @@ def test_cancel():
     ct.cancel(dispatch_id)
 
     result = ct.get_result(dispatch_id, wait=True)
+    print(result.error)
+    for node_id in result.lattice.transport_graph._graph.nodes:
+        print(result.get_node_result(node_id))
+
     assert result.status == ct.status.CANCELLED
     rm._delete_result(dispatch_id)
 
