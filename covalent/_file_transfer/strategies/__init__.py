@@ -25,3 +25,8 @@ try:
     from .s3_strategy import S3
 except:
     pass
+
+try:
+    from .blob_strategy import Blob
+except:
+    pass
