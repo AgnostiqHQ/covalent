@@ -273,14 +273,14 @@ class DaskExecutor(AsyncBaseExecutor):
     async def poll(self, task_group_metadata: Dict, poll_data: Any):
         fut = _futures.pop(poll_data)
         app_log.debug(f"Future {fut}")
-        await fut
+        try:
+            await fut
+        except CancelledError:
+            raise TaskCancelledError()
 
         _clients.pop(poll_data)
 
-        if fut.cancelled():
-            raise TaskCancelledError()
-        else:
-            return {"status": StatusEnum.READY.value}
+        return {"status": StatusEnum.READY.value}
 
         # raise NotImplementedError
 
