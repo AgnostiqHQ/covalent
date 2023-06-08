@@ -10,7 +10,7 @@ from ..executors.base import (
     SyncBaseQExecutor,
     get_thread_pool,
 )
-from .qiskit.plugins import QiskitExecutor
+from .qiskit.qiskit_executor import QiskitExecutor
 
 __all__ = [
     "QiskitExecutor",
