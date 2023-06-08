@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+
+### Changed
+
+- Reverting nightly frequency back to midnight basis
+
+
 ## [0.225.0-rc.0] - 2023-06-08
 
 ### Authors
