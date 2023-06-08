@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.225.0-rc.0] - 2023-06-08
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Madhur Tandon <20173739+madhur-tandon@users.noreply.github.com>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Andrew S. Rosen <asrosen93@gmail.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: sriranjani venkatesan <sriranjani.venkatesan@psiog.com>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+
+
 ### Changed
 
 - Temporarily changing the nightly frequency to every hour
