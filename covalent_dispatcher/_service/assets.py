@@ -276,7 +276,7 @@ def upload_node_asset(
                 alg, checksum = _extract_checksum(digest)
                 update["digest_alg"] = alg
                 update["digest"] = checksum
-                node.update_assets(updates={key: update}, session=session)
+            node.update_assets(updates={key: update}, session=session)
             app_log.debug(f"Updated node asset {dispatch_id}:{node_id}:{key}")
 
         # Copy the tempfile to object store
@@ -320,7 +320,7 @@ def upload_dispatch_asset(
                 alg, checksum = _extract_checksum(digest)
                 update["digest_alg"] = alg
                 update["digest"] = checksum
-                result_object.update_assets(updates={key: update}, session=session)
+            result_object.update_assets(updates={key: update}, session=session)
             app_log.debug(f"Updated size for dispatch asset {dispatch_id}:{key}")
 
         # Copy the tempfile to object store
@@ -364,7 +364,7 @@ def upload_lattice_asset(
                 alg, checksum = _extract_checksum(digest)
                 update["digest_alg"] = alg
                 update["digest"] = checksum
-                result_object.lattice.update_assets(updates={key: update}, session=session)
+            result_object.lattice.update_assets(updates={key: update}, session=session)
             app_log.debug(f"Updated size for lattice asset {dispatch_id}:{key}")
 
         # Copy the tempfile to object store
