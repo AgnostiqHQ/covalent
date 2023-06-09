@@ -88,6 +88,12 @@ class TestFileTransfer:
         assert result.order == Order.BEFORE
         assert result.strategy == strategy
 
+        # with pytest.raises(ValueError):
+        #    result = TransferFromRemote("file:///home/one", "file:///home/one/", strategy=strategy)
+
+        with pytest.raises(ValueError):
+            result = TransferFromRemote("file:///home/one/", "file:///home/one", strategy=strategy)
+
     def test_transfer_to_remote(self):
         strategy = Rsync()
         result = TransferToRemote(
@@ -107,3 +113,9 @@ class TestFileTransfer:
         assert result.to_file.is_dir
         assert result.order == Order.AFTER
         assert result.strategy == strategy
+
+        with pytest.raises(ValueError):
+            result = TransferToRemote("file:///home/one", "file:///home/one/", strategy=strategy)
+
+        with pytest.raises(ValueError):
+            result = TransferToRemote("file:///home/one/", "file:///home/one", strategy=strategy)
