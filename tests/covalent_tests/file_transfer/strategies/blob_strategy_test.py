@@ -67,3 +67,11 @@ def test_get_blob_client(mocker, blob_strategy):
     blob_service_client_mock.assert_called_once_with(
         account_url=MOCK_BLOB_STORAGE_ACCOUNT_URL, credential=credential_mock.return_value
     )
+
+    sys.modules["azure.storage.blob"] = None
+    with pytest.raises(ImportError):
+        blob_strategy._get_blob_service_client(MOCK_BLOB_STORAGE_ACCOUNT_URL)
+
+    sys.modules["azure.identity"] = None
+    with pytest.raises(ImportError):
+        blob_strategy._get_blob_service_client(MOCK_BLOB_STORAGE_ACCOUNT_URL)
