@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+from pathlib import Path
 from typing import Callable, Tuple
 
 from furl import furl
@@ -92,8 +93,14 @@ class Blob(FileTransferStrategy):
 
         return (storage_account_url, storage_container_name, base_path)
 
-    def _download_file(self, container_client, blob_name: str, destination_path: str):
-        """Downloads a single blob to the local filesystem."""
+    def _download_file(self, container_client, blob_name: str, destination_path: Path) -> None:
+        """Downloads a single blob to the local filesystem.
+
+        Args:
+            container_client: Azure Blob storage container client object
+            blob_name: Name of the blob object within the scope of the container
+            destination_path: Path on the local filesystem where the file will be saved
+        """
 
         blob_client = container_client.get_blob_client(blob=blob_name)
 
@@ -102,7 +109,15 @@ class Blob(FileTransferStrategy):
             f.write(stream.readall())
 
     def download(self, from_file: File, to_file: File = File()) -> Callable:
-        """Download files or the contents of folders from Azure Blob Storage."""
+        """Download files or the contents of folders from Azure Blob Storage.
+
+        Args:
+            from_file: File object referencing an object in Azure Blob storage
+            to_file: File object referencing a path in the local filesystem
+
+        Returns:
+            callable: Download function that is injected into wrapper_fn
+        """
 
         from_filepath = from_file.filepath
         to_filepath = to_file.filepath
@@ -139,42 +154,57 @@ class Blob(FileTransferStrategy):
 
         return callable
 
+    def _upload_file(self, container_client, file_path: str, dest_obj_path: Path) -> None:
+        """Uploads a single file to Azure Blob storage.
+
+        Args:
+            container_client: Azure Blob storage container client object
+            file_path: Path on the local filesystem to a file that is uploaded
+            dest_obj_path: Path in a blob storage container where the file will be saved
+        """
+
+        with open(file_path, "rb") as f:
+            container_client.upload_blob(name=str(dest_obj_path), data=f, overwrite=True)
+
     def upload(self, from_file: File, to_file: File = File()) -> Callable:
-        """Upload files or the contents of folders to Azure Blob Storage."""
+        """Upload files or the contents of folders to Azure Blob Storage.
+
+        Args:
+            from_file: File object referencing a path in the local filesystem
+            to_file: File object referencing an object in Azure Blob storage
+
+        Returns:
+            callable: Upload function that is injected into wrapper_fn
+        """
 
         from_filepath = from_file.filepath
         to_filepath = to_file.filepath
 
         storage_account_url, storage_container_name, base_path = self._parse_blob_uri(to_file.uri)
 
-        if from_file._is_dir:
+        app_log.debug(
+            f"Blob upload; storage account: {storage_account_url}, from_filepath: {from_filepath}, to_filepath {to_filepath}."
+        )
 
-            def callable():
-                """Upload directory to a storage container in Azure blob storage account."""
-                from pathlib import Path
+        def callable():
+            """Upload file or directory to an Azure Blob storage container."""
+            from pathlib import Path
 
-                blob_service_client = self._get_blob_service_client(storage_account_url)
-                container_client = blob_service_client.get_container_client(storage_container_name)
+            blob_service_client = self._get_blob_service_client(storage_account_url)
+            container_client = blob_service_client.get_container_client(storage_container_name)
 
-                files = [path for path in Path(from_filepath).rglob("*") if path.is_file()]
-                for file in files:
-                    dest_obj_path = Path(base_path) / Path(file).relative_to(from_filepath)
-
-                    with open(file, mode="rb") as f:
-                        container_client.upload_blob(
-                            name=str(dest_obj_path), data=f, overwrite=True
-                        )
-
-        else:
-
-            def callable():
-                """Upload a file to a storage container in Azure blob storage account."""
-
-                blob_service_client = self._get_blob_service_client(storage_account_url)
-                container_client = blob_service_client.get_container_client(storage_container_name)
-
-                with open(from_filepath, mode="rb") as f:
-                    container_client.upload_blob(name=to_filepath, data=f, overwrite=True)
+            files = (
+                [path for path in Path(from_filepath).rglob("*") if path.is_file()]
+                if from_file.is_dir
+                else [from_filepath]
+            )
+            for file in files:
+                dest_obj_path = (
+                    Path(base_path) / Path(file).relative_to(from_filepath)
+                    if to_file.is_dir
+                    else Path(base_path)
+                )
+                self._upload_file(container_client, file, dest_obj_path)
 
         return callable
 

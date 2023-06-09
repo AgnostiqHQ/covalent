@@ -141,3 +141,42 @@ def test_download(mocker, blob_strategy):
     download_file_mock.assert_any_call(
         container_client_mock.return_value, MOCK_BLOB_NAME, Path(MOCK_LOCAL_FILEPATH)
     )
+
+
+def test_upload_file(mocker, blob_strategy):
+    container_client_mock = MagicMock()
+    open_mock = mocker.patch("covalent._file_transfer.strategies.blob_strategy.open", mock_open())
+    upload_mock = container_client_mock.upload_blob
+
+    blob_strategy._upload_file(container_client_mock, MOCK_LOCAL_FILEPATH, MOCK_BLOB_NAME)
+
+    open_mock.assert_called_once_with(MOCK_LOCAL_FILEPATH, "rb")
+    upload_mock.assert_called_once_with(name=MOCK_BLOB_NAME, data=open_mock(), overwrite=True)
+
+
+def test_upload(mocker, blob_strategy):
+    from_file = File(MOCK_LOCAL_FILEPATH)
+    to_file = File(MOCK_REMOTE_FILEPATH)
+
+    mocker.patch("covalent._file_transfer.strategies.blob_strategy.app_log")
+
+    blob_service_client_mock = MagicMock()
+    mocker.patch(
+        "covalent._file_transfer.strategies.blob_strategy.Blob._get_blob_service_client",
+        blob_service_client_mock,
+    )
+    container_client_mock = blob_service_client_mock().get_container_client
+    container_client_mock.return_value = MagicMock()
+
+    upload_file_mock = MagicMock()
+    mocker.patch(
+        "covalent._file_transfer.strategies.blob_strategy.Blob._upload_file", upload_file_mock
+    )
+
+    blob_strategy.upload(from_file, to_file)()
+
+    blob_service_client_mock.assert_called_with(MOCK_BLOB_STORAGE_ACCOUNT_URL)
+    container_client_mock.assert_called_with(MOCK_BLOB_CONTAINER)
+    upload_file_mock.assert_any_call(
+        container_client_mock.return_value, MOCK_LOCAL_FILEPATH, Path(MOCK_BLOB_NAME)
+    )
