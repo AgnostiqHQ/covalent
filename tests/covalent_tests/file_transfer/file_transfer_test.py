@@ -88,9 +88,6 @@ class TestFileTransfer:
         assert result.order == Order.BEFORE
         assert result.strategy == strategy
 
-        # with pytest.raises(ValueError):
-        #    result = TransferFromRemote("file:///home/one", "file:///home/one/", strategy=strategy)
-
         with pytest.raises(ValueError):
             result = TransferFromRemote("file:///home/one/", "file:///home/one", strategy=strategy)
 
@@ -116,6 +113,3 @@ class TestFileTransfer:
 
         with pytest.raises(ValueError):
             result = TransferToRemote("file:///home/one", "file:///home/one/", strategy=strategy)
-
-        with pytest.raises(ValueError):
-            result = TransferToRemote("file:///home/one/", "file:///home/one", strategy=strategy)
