@@ -42,6 +42,7 @@ from ._workflow import (  # nopycln: import
     lattice,
 )
 from ._workflow.electron import wait  # nopycln: import
+from .executor.utils import get_context  # nopycln: import
 
 __all__ = [s for s in dir() if not s.startswith("_")]
 

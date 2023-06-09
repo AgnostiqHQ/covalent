@@ -59,10 +59,6 @@ class ConfigManager:
 
         Path(self.get("sdk.log_dir")).mkdir(parents=True, exist_ok=True)
         Path(self.get("sdk.executor_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("dispatcher.log_dir")).mkdir(parents=True, exist_ok=True)
-        Path(self.get("user_interface.log_dir")).mkdir(parents=True, exist_ok=True)
         Path(self.get("dispatcher.db_path")).parent.mkdir(parents=True, exist_ok=True)
 
     def generate_default_config(self) -> None:
@@ -283,7 +279,7 @@ def update_config(new_entries: Optional[Dict] = None, override_existing: bool = 
 
     Args:
         new_entries: Dictionary of new entries added or updated in the config
-        defaults: If False (which is the default), default values do not overwrite
+        override_existing: If True (which is the default), default values overwrite
             existing entries.
 
     Returns:

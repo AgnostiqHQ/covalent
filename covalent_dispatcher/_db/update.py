@@ -47,7 +47,7 @@ def persist(record: Union[Result, Lattice, _TransportGraph], electron_id: int = 
     """
     if isinstance(record, Result):
         _initialize_results_dir(record)
-        app_log.debug(f"Persisting {record}")
+        app_log.debug("Persisting record...")
         upsert.persist_result(record, electron_id)
         app_log.debug("persist complete")
     if isinstance(record, Lattice):
@@ -69,6 +69,7 @@ def _node(
     sublattice_result: "Result" = None,
     stdout: str = None,
     stderr: str = None,
+    qelectron_data_exists: bool = False,
 ) -> None:
     """
     Update the node result in the transport graph.
@@ -80,11 +81,12 @@ def _node(
         start_time: The start time of the node execution.
         end_time: The end time of the node execution.
         status: The status of the node execution.
-        output: The output of the node unless error occured in which case None.
-        error: The error of the node if occured else None.
+        output: The output of the node unless error occurred in which case None.
+        error: The error of the node if occurred else None.
         sublattice_result: The result of the sublattice if any.
         stdout: The stdout of the node execution.
         stderr: The stderr of the node execution.
+        qelectron_data_exists: Flag indicating presence of Qelectron(s) inside the task
 
     Returns:
         None
@@ -105,11 +107,13 @@ def _node(
         sublattice_result=sublattice_result,
         stdout=stdout,
         stderr=stderr,
+        qelectron_data_exists=qelectron_data_exists,
     )
 
     upsert.electron_data(result)
 
     if node_name.startswith(postprocess_prefix):
+        app_log.warning(f"Persisting postprocess result {output}, node_name: {node_name}")
         result._result = output
         result._status = status
         result._end_time = end_time

@@ -45,6 +45,7 @@ export function DispatchLayout() {
   const dispatch = useDispatch()
   const [openQelectronDrawer, setOpenQelectronDrawer] = useState(false)
   const graph_result = useSelector((state) => state.graphResults.graphList)
+  const [prettify, setPrettify] = useState(true)
   const latDetailError = useSelector(
     (state) => state.latticeResults.latticeDetailsResults.error
   )
@@ -112,6 +113,10 @@ export function DispatchLayout() {
             hasSelectedNode={!!selectedElectron}
             marginLeft={latticeDrawerWidth + navDrawerWidth}
             dispatchId={dispatchId}
+            togglePrettify={() => {
+              setPrettify(!prettify)
+            }}
+            prettify={prettify}
           />
         )}
       </Box>
@@ -131,6 +136,7 @@ export function DispatchLayout() {
           setOpenQelectronDrawer={setOpenQelectronDrawer}
           toggleQelectron={() => setOpenQelectronDrawer((prev) => !prev)}
           openQelectronDrawer={openQelectronDrawer}
+          prettify={prettify}
           node={selectedElectron}
           graph={graph_result}
           dispatchId={

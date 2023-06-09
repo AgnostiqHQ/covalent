@@ -21,6 +21,7 @@
 """Tests for Covalent local executor."""
 
 import io
+import os
 import tempfile
 from functools import partial
 from unittest.mock import MagicMock
@@ -32,7 +33,56 @@ from covalent._shared_files import TaskRuntimeError
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._workflow.transport import TransportableObject
 from covalent.executor.base import wrapper_fn
-from covalent.executor.executor_plugins.local import LocalExecutor
+from covalent.executor.executor_plugins.local import _EXECUTOR_PLUGIN_DEFAULTS, LocalExecutor
+
+
+def test_local_executor_init(mocker):
+    """Test local executor constructor"""
+
+    mocker.patch("covalent.executor.executor_plugins.local.get_config", side_effect=KeyError())
+    default_workdir_path = _EXECUTOR_PLUGIN_DEFAULTS["workdir"]
+
+    le = LocalExecutor()
+
+    assert le.workdir == default_workdir_path
+    assert le.create_unique_workdir is False
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        le = LocalExecutor(workdir=tmp_dir, create_unique_workdir=True)
+        assert le.workdir == tmp_dir
+        assert le.create_unique_workdir is True
+
+
+def test_local_executor_with_workdir(mocker):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        le = ct.executor.LocalExecutor(workdir=tmp_dir, create_unique_workdir=True)
+
+        @ct.lattice
+        @ct.electron(executor=le)
+        def simple_task(x, y):
+            with open("job.txt", "w") as w:
+                w.write(str(x + y))
+            return "Done!"
+
+        mock_set_job_handle = mocker.patch.object(le, "set_job_handle", MagicMock(return_value=42))
+        mock_get_cancel_requested = mocker.patch.object(
+            le, "get_cancel_requested", MagicMock(return_value=False)
+        )
+
+        args = [1, 2]
+        kwargs = {}
+        task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+        assert le.run(simple_task, args, kwargs, task_metadata)
+
+        target_dir = os.path.join(
+            tmp_dir, task_metadata["dispatch_id"], f"node_{task_metadata['node_id']}"
+        )
+
+        assert os.listdir(target_dir) == ["job.txt"]
+        assert open(os.path.join(target_dir, "job.txt")).read() == "3"
+
+        mock_set_job_handle.assert_called_once()
+        mock_get_cancel_requested.assert_called_once()
 
 
 def test_local_executor_passes_results_dir(mocker):

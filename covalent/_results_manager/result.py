@@ -249,8 +249,8 @@ Node Outputs
                             - start_time: The start time of the node execution.
                             - end_time: The end time of the node execution.
                             - status: The status of the node execution.
-                            - output: The output of the node unless error occured in which case None.
-                            - error: The error of the node if occured else None.
+                            - output: The output of the node unless error occurred in which case None.
+                            - error: The error of the node if occurred else None.
                             - sublattice_result: The result of the sublattice if any.
                             - stdout: The stdout of the node execution.
                             - stderr: The stderr of the node execution.
@@ -368,7 +368,7 @@ Node Outputs
             node_id: The node id.
 
         Returns:
-            The output of said node. Will return None if error occured in execution.
+            The output of said node. Will return None if error occurred in execution.
         """
         return self._lattice.transport_graph.get_node_value(node_id, "output")
 
@@ -380,7 +380,7 @@ Node Outputs
             node_id: The node id.
 
         Returns:
-            The error of said node. Will return None if no error occured in execution.
+            The error of said node. Will return None if no error occurred in execution.
         """
         return self._lattice.transport_graph.get_node_value(node_id, "error")
 
@@ -407,6 +407,7 @@ Node Outputs
         sublattice_result: "Result" = None,
         stdout: str = None,
         stderr: str = None,
+        qelectron_data_exists: bool = False,
     ) -> None:
         """
         Update the node result in the transport graph.
@@ -418,11 +419,12 @@ Node Outputs
             start_time: The start time of the node execution.
             end_time: The end time of the node execution.
             status: The status of the node execution.
-            output: The output of the node unless error occured in which case None.
-            error: The error of the node if occured else None.
+            output: The output of the node unless error occurred in which case None.
+            error: The error of the node if occurred else None.
             sublattice_result: The result of the sublattice if any.
             stdout: The stdout of the node execution.
             stderr: The stderr of the node execution.
+            qelectron_data_exists: Flag indicating presence of Qelectron(s) inside the task
 
         Returns:
             None
@@ -463,6 +465,9 @@ Node Outputs
 
         if stderr is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
+
+        if qelectron_data_exists:
+            self.lattice.transport_graph.set_node_value(node_id, "qelectron_data_exists", qelectron_data_exists)
 
         app_log.debug("Inside update node - SUCCESS")
 

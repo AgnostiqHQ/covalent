@@ -201,6 +201,7 @@ def transaction_insert_electrons_data(
     deps_filename: str,
     call_before_filename: str,
     call_after_filename: str,
+    qelectron_data_exists: bool,
     cancel_requested: bool,
     created_at: dt,
     updated_at: dt,
@@ -246,6 +247,7 @@ def transaction_insert_electrons_data(
         deps_filename=deps_filename,
         call_before_filename=call_before_filename,
         call_after_filename=call_after_filename,
+        qelectron_data_exists=qelectron_data_exists,
         is_active=True,
         job_id=job_row.id,
         created_at=created_at,
@@ -350,7 +352,6 @@ def transaction_upsert_electron_dependency_data(
         .first()
         is not None
     )
-    app_log.debug(f"electron_dependencies_exist is {electron_dependencies_exist}")
     if not electron_dependencies_exist:
         transaction_insert_electron_dependency_data(
             session=session, dispatch_id=dispatch_id, lattice=lattice
@@ -387,6 +388,7 @@ def update_electrons_data(
     started_at: dt,
     updated_at: dt,
     completed_at: dt,
+    qelectron_data_exists: bool,
 ) -> None:
     """This function updates the electrons record."""
 
@@ -418,6 +420,7 @@ def update_electrons_data(
                 started_at=started_at,
                 updated_at=updated_at,
                 completed_at=completed_at,
+                qelectron_data_exists=qelectron_data_exists,
             )
         )
 

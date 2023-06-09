@@ -107,7 +107,33 @@ export const truncateMiddle = (s, start, end, omission = '…') => {
 
 export const isParameter = (node) => _.startsWith(node.name, ':parameter:')
 
+export const isPostProcess = (node) => node?.name.startsWith(':postprocess:')
+
 export const displayStatus = (status) => _.startCase(_.lowerCase(status))
+
+export const Prettify = (inputString, type) => {
+  let stringWithoutUnderscores = inputString?.replace(/[_<>]/g, ' ')
+  stringWithoutUnderscores = stringWithoutUnderscores?.replace(/:/g, ' ')
+  if (type === 'sublattice') {
+    stringWithoutUnderscores = stringWithoutUnderscores?.replace(
+      /sublattice\s+/gi,
+      'Sublattice '
+    )
+  }
+  stringWithoutUnderscores = stringWithoutUnderscores?.replace(/parameter/g, '')
+
+  // Capitalize the strings
+  stringWithoutUnderscores = stringWithoutUnderscores
+    ?.toLowerCase()
+    .replace(/\b\w/g, (l) => l.toUpperCase())
+
+  // Add a gap before the return statement
+  if (stringWithoutUnderscores === inputString) {
+    return inputString
+  }
+
+  return stringWithoutUnderscores
+}
 
 export const statusColor = (status) => {
   return {
