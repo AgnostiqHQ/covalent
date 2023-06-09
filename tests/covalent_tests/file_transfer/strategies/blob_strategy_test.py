@@ -22,15 +22,15 @@ import sys
 from unittest.mock import MagicMock
 
 import pytest
-from furl import furl
 
-from covalent._file_transfer import File
 from covalent._file_transfer.strategies.blob_strategy import Blob
 
 MOCK_LOCAL_FILEPATH = "/Users/user/data.csv"
 MOCK_BLOB_STORAGE_ACCOUNT_URL = "mock-storage-acct.blob.core.windows.net"
 MOCK_BLOB_CONTAINER = "mock-container"
-MOCK_REMOTE_FILEPATH = f"https://{MOCK_BLOB_STORAGE_ACCOUNT_URL}/{MOCK_BLOB_CONTAINER}/covalent-tmp/data.csv"
+MOCK_REMOTE_FILEPATH = (
+    f"https://{MOCK_BLOB_STORAGE_ACCOUNT_URL}/{MOCK_BLOB_CONTAINER}/covalent-tmp/data.csv"
+)
 MOCK_CLIENT_ID = "mock-client-id"
 MOCK_CLIENT_SECRET = "mock-secret"
 MOCK_TENANT_ID = "mock-tenant-id"
@@ -64,4 +64,6 @@ def test_get_blob_client(mocker, blob_strategy):
     assert response == blob_service_client_mock.return_value
 
     credential_mock.assert_called_once_with(*blob_strategy.credentials)
-    blob_service_client_mock.assert_called_once_with(account_url=MOCK_BLOB_STORAGE_ACCOUNT_URL, credential=credential_mock.return_value)
+    blob_service_client_mock.assert_called_once_with(
+        account_url=MOCK_BLOB_STORAGE_ACCOUNT_URL, credential=credential_mock.return_value
+    )

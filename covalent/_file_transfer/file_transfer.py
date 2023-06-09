@@ -163,6 +163,4 @@ def TransferToRemote(
         raise ValueError("Please specify a directory path (ending with '/') as the destination.")
     to_file = File(to_filepath, is_remote=True, is_dir=is_dir)
 
-    return FileTransfer(
-        from_file=from_file, to_file=to_file, order=Order.AFTER, strategy=strategy
-    )
+    return FileTransfer(from_file=from_file, to_file=to_file, order=Order.AFTER, strategy=strategy)
