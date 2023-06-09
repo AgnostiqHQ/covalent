@@ -19,8 +19,8 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 """Wrappers for the existing Pennylane-Qiskit interface"""
-from abc import abstractmethod
-from typing import Any, List, Tuple
+from abc import ABC, abstractmethod
+from typing import Any, List
 
 import numpy as np
 import pennylane
@@ -30,7 +30,7 @@ from pennylane_qiskit.qiskit_device import QiskitDevice
 from .sessions import init_runtime_service
 
 
-class _PennylaneQiskitDevice(QiskitDevice):
+class _PennylaneQiskitDevice(QiskitDevice, ABC):
     # pylint: disable=too-many-instance-attributes
     """
     A replacement for Pennylane's `QiskitDevice` that uses `QiskitRuntimeService`
@@ -62,6 +62,8 @@ class _PennylaneQiskitDevice(QiskitDevice):
         self.reset()
         self.process_kwargs(kwargs)
 
+        self._state = None
+
     @classmethod
     def capabilities(cls):
         capabilities = super().capabilities().copy()
@@ -87,16 +89,6 @@ class _PennylaneQiskitDevice(QiskitDevice):
             self._backend = self.service.get_backend(self.backend_name)
         return self._backend
 
-    def broadcast_tapes(self, tapes):
-        """
-        Broadcast tapes for batch execution (if necessary)
-        """
-        if all(tape.batch_size for tape in tapes):
-            expanded_tapes, _ = map_batch_transform(broadcast_expand, tapes)
-            return expanded_tapes
-
-        return tapes
-
     def process_kwargs(self, kwargs):
         """
         Override original method from `pennylane_qiskit.qiskit_device.QiskitDevice`
@@ -107,53 +99,38 @@ class _PennylaneQiskitDevice(QiskitDevice):
         self.run_args = kwargs.copy()
 
     def map_wires(self, wires):
-        """
-        Override original method from `pennylane._device.Device`,
-        because produces incorrect results.
-
-        # TODO: why?
-
-        Using dummy method for now.
-        """
         return wires
 
-    def convert_result(self, qscript):
+    def broadcast_tapes(self, tapes):
         """
-        wraps native QiskitDevice return value conversion from `self._samples`
+        Broadcast tapes for batch execution (if necessary)
         """
-        if not pennylane.active_return():
-            res = self._statistics_legacy(qscript)
-        else:
-            res = self.statistics(qscript)
+        if all(tape.batch_size for tape in tapes):
+            expanded_tapes, _ = map_batch_transform(broadcast_expand, tapes)
+            return expanded_tapes
 
-        return res
-
-    def get_execution_metadata(self, result, qscript):
-        """
-        metadata corresponding to the given result-qscript pair
-        """
-        return {
-            "result_object": result,
-            "num_measurements": len(qscript.measurements),
-        }
+        return tapes
 
     @abstractmethod
-    def post_process(self, qscripts_list, results) -> Tuple[List[Any], List[dict]]:
+    def post_process(self, *args) -> List[dict]:
         """
-        Post process a primitive's result object into  the form expected
-        from an equivalent QNode.
+        Obtain metadata; make blocking API call to Qiskit Runtime
         """
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class QiskitSamplerDevice(_PennylaneQiskitDevice):
 
-    def _samples_from_distribution(self, dist):
+    """
+    A base class for devices that use the Sampler primitive.
+    """
+
+    def dist_generate_samples(self, quasi_dist):
         """
-        override QiskitDevice.generate_samples to work with primitive
+        Generate samples from a quasi-distribution
         """
 
-        dist_bin = dist.binary_probabilities()
+        dist_bin = quasi_dist.binary_probabilities()
 
         bit_strings = list(dist_bin)
         probs = [dist_bin[bs] for bs in bit_strings]
@@ -162,62 +139,37 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         bit_samples = np.random.choice(bit_strings, size=self.shots, p=probs)
         return np.vstack([np.array([int(i) for i in s[::-1]]) for s in bit_samples])
 
-    def post_process(self, qscripts_list, results) -> Tuple[List[Any], List[dict]]:
+    def dist_get_state(self, quasi_dist):
         """
-        - when the Qelectron is called with a single input:
-
-        qscripts_list = [qscript]
-        results       = [[SamplerResult[dist]]]
-
-        - when the Qelectron is called with a vector input:
-
-        qscripts_list = [qscript]
-        results       = [[SamplerResult[dist, ..., dist]]]
-
-        - when the Qelectron is called through `qml.grad`:
-
-        qscripts_list = [qscript, qscript]
-        results       = [[SamplerResult[dist]], [SamplerResult[dist]]]
+        Generate a state-vector from a quasi-distribution
         """
-
-        # TODO: simplify this method -- follow custom plugin example
-
-        pp_results = []
-        metadatas = []
-
-        for result, qscript in zip(results, qscripts_list):
-
-            spl_result_obj = result.pop()
-            qs_conv_results = []
-            qs_metadatas = []
-
-            for dist in spl_result_obj.quasi_dists:
-                self._samples = self._samples_from_distribution(dist)
-                qs_conv_results.extend(self.convert_result(qscript))
-                qs_metadatas.append(self.get_execution_metadata(spl_result_obj, qscript))
-
-            metadatas.extend(qs_metadatas)
-
-            if len(qs_conv_results) > 1:
-                pp_results.append(qs_conv_results)
+        probs = []
+        for i in range(2**len(self.wires)):
+            if prob := quasi_dist.get(i):
+                probs.append(prob)
             else:
-                pp_results.extend(qs_conv_results)
+                probs.append(0.)
 
-        pp_results = self._asarray(pp_results)
-        pp_results = self._handle_active_return(pp_results, qscripts_list)
+        return np.sqrt(probs)
 
-        return pp_results, metadatas
+    def _process_batch_execute_result(self, circuit, quasi_dist) -> Any:
+        # Update the tracker
+        if self.tracker.active:
+            self.tracker.update(executions=1, shots=self.shots)
+            self.tracker.record()
 
-    def _handle_active_return(self, results, circuits):
+        # Generate computational basis samples
+        if self.shots is not None or circuit.is_sampled:
+            self._samples = self.dist_generate_samples(quasi_dist)
+            self._state = self.dist_get_state(quasi_dist)
+
+        # Adjust for active return status
         if not pennylane.active_return():
+            res = self._statistics_legacy(circuit)
+            return np.asarray(res)
 
-            if all(len(c.measurements) == 1 for c in circuits):
-                results = [
-                    [r] if isinstance(r, dict) else self._asarray([r])
-                    for r in results
-                ]
+        res = self.statistics(circuit)
+        single_measurement = len(circuit.measurements) == 1
+        res = res[0] if single_measurement else tuple(res)
 
-            if len(circuits) > 1:
-                results = [self._asarray(r) if isinstance(r, list) else r for r in results]
-
-        return results
+        return pennylane.numpy.asarray(res)
