@@ -42,7 +42,7 @@ class Blob(FileTransferStrategy):
     """
 
     def __init__(
-        self, 
+        self,
         client_id: str = None,
         client_secret: str = None,
         tenant_id: str = None,
@@ -65,7 +65,7 @@ class Blob(FileTransferStrategy):
         except ImportError:
             print("Missing required dependency. Reinstall package as `pip install covalent[azure]`.")
             raise
-            
+
         return BlobServiceClient(account_url=storage_account_url, credential=ClientSecretCredential(*self.credentials))
 
     def _parse_blob_uri(self, blob_uri: str) -> Tuple[str, str, str]:
@@ -90,7 +90,7 @@ class Blob(FileTransferStrategy):
 
     def download(self, from_file: File, to_file: File = File()) -> Callable:
         """Download files or the contents of folders from Azure Blob Storage."""
-    
+
         from_filepath = from_file.filepath
         to_filepath = to_file.filepath
 
@@ -115,7 +115,7 @@ class Blob(FileTransferStrategy):
                 self._download_file(container_client, blob_name, dest_obj_path)
 
         return callable
-    
+
     def upload(self, from_file: File, to_file: File = File()) -> Callable:
         """Upload files or the contents of folders to Azure Blob Storage."""
 
@@ -150,6 +150,6 @@ class Blob(FileTransferStrategy):
                     container_client.upload_blob(name=to_filepath, data=f, overwrite=True)
 
         return callable
-    
+
     def cp(self, from_file: File, to_file: File = File()) -> File:
         raise NotImplementedError
