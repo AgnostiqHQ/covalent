@@ -86,6 +86,7 @@ class File:
     def is_remote(self):
         return self._is_remote or self.scheme in [
             FileSchemes.S3,
+            FileSchemes.Blob,
             FileSchemes.Globus,
             FileSchemes.HTTP,
             FileSchemes.HTTPS,
@@ -131,10 +132,13 @@ class File:
     @staticmethod
     def resolve_scheme(path: str) -> FileSchemes:
         scheme = furl(path).scheme
+        host = furl(path).host
         if scheme == FileSchemes.Globus:
             return FileSchemes.Globus
         if scheme == FileSchemes.S3:
             return FileSchemes.S3
+        if scheme == FileSchemes.Blob and "blob.core.windows.net" in host:
+            return FileSchemes.Blob
         if scheme == FileSchemes.FTP:
             return FileSchemes.FTP
         if scheme == FileSchemes.HTTP:
