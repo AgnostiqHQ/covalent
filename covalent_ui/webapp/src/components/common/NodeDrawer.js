@@ -63,6 +63,7 @@ import {
 import QElectronCard from './QElectronCard'
 import { ReactComponent as QelectronSvg } from '../../assets/qelectron/qelectron.svg'
 import CopyButton from './CopyButton'
+import { Prettify } from '../../utils/misc'
 
 export const nodeDrawerWidth = 360
 
@@ -78,6 +79,7 @@ const NodeDrawer = ({
   toggleQelectron,
   openQelectronDrawer,
   setOpenQelectronDrawer,
+  prettify
 }) => {
   const dispatch = useDispatch()
   const electronId = node !== undefined && node.node_id
@@ -216,7 +218,9 @@ const NodeDrawer = ({
                   alignItems: 'center',
                 }}
               >
-                {nodeLabel(electronDetail?.type, electronDetail?.name)}
+               {prettify
+                  ? Prettify(electronDetail?.name, electronDetail?.type || '')
+                  : nodeLabel(electronDetail?.type, electronDetail?.name)}
                 <span>
                   <SvgIcon
                     aria-label="view"
