@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import sys
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, mock_open
 
 import pytest
 
@@ -28,8 +28,9 @@ from covalent._file_transfer.strategies.blob_strategy import Blob
 MOCK_LOCAL_FILEPATH = "/Users/user/data.csv"
 MOCK_BLOB_STORAGE_ACCOUNT_URL = "mock-storage-acct.blob.core.windows.net"
 MOCK_BLOB_CONTAINER = "mock-container"
+MOCK_BLOB_NAME = "covalent-tmp/data.csv"
 MOCK_REMOTE_FILEPATH = (
-    f"https://{MOCK_BLOB_STORAGE_ACCOUNT_URL}/{MOCK_BLOB_CONTAINER}/covalent-tmp/data.csv"
+    f"https://{MOCK_BLOB_STORAGE_ACCOUNT_URL}/{MOCK_BLOB_CONTAINER}/{MOCK_BLOB_NAME}"
 )
 MOCK_CLIENT_ID = "mock-client-id"
 MOCK_CLIENT_SECRET = "mock-secret"
@@ -75,3 +76,35 @@ def test_get_blob_client(mocker, blob_strategy):
     sys.modules["azure.identity"] = None
     with pytest.raises(ImportError):
         blob_strategy._get_blob_service_client(MOCK_BLOB_STORAGE_ACCOUNT_URL)
+
+
+def test_parse_blob_uri(blob_strategy):
+    result = blob_strategy._parse_blob_uri(MOCK_REMOTE_FILEPATH)
+    print(result)
+
+    assert result[0] == MOCK_BLOB_STORAGE_ACCOUNT_URL
+    assert result[1] == MOCK_BLOB_CONTAINER
+    assert result[2] == MOCK_BLOB_NAME
+
+
+def test_download_file(mocker, blob_strategy):
+    container_client_mock = MagicMock()
+
+    blob_client_mock = container_client_mock.get_blob_client
+    blob_client_mock.return_value = MagicMock()
+
+    download_mock = blob_client_mock().download_blob
+    stream_mock = MagicMock()
+    download_mock.return_value = stream_mock
+
+    readall_mock = stream_mock.readall
+    readall_mock().return_value = MagicMock()
+
+    open_mock = mocker.patch("covalent._file_transfer.strategies.blob_strategy.open", mock_open())
+
+    blob_strategy._download_file(container_client_mock, MOCK_BLOB_NAME, MOCK_LOCAL_FILEPATH)
+
+    blob_client_mock.assert_called_with(blob=MOCK_BLOB_NAME)
+    open_mock.assert_called_once_with(MOCK_LOCAL_FILEPATH, "wb")
+    open_mock().write.assert_called_once_with(readall_mock.return_value)
+    download_mock.assert_called_once()

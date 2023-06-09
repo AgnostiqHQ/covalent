@@ -73,7 +73,14 @@ class Blob(FileTransferStrategy):
         )
 
     def _parse_blob_uri(self, blob_uri: str) -> Tuple[str, str, str]:
-        """ """
+        """Parses a blob URI and returns the account name, container name, and blob name.
+
+        Args:
+            blob_uri: A URI for an Azure Blob object in the form https://<storage_account_name>.blob.core.windows.net/<container_name>/<blob_name>
+
+        Returns:
+            parsed_uri: A tuple containing the storage account name, container name, and blob name
+        """
 
         blob_furl = furl(blob_uri)
 
@@ -83,7 +90,11 @@ class Blob(FileTransferStrategy):
         storage_container_name = blob_path.segments[0]
         base_path = "/".join(blob_path.segments[1:])
 
-    def _download_file(container_client, blob_name: str, destination_path: str):
+        return (storage_account_url, storage_container_name, base_path)
+
+    def _download_file(self, container_client, blob_name: str, destination_path: str):
+        """Downloads a single blob to the local filesystem."""
+
         blob_client = container_client.get_blob_client(blob=blob_name)
 
         with open(destination_path, "wb") as f:
