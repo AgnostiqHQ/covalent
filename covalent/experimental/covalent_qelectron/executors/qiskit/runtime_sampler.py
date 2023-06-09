@@ -103,10 +103,10 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
         vector_input = (n_original_circuits != len(circuits))
 
         # NOTE: the entries all point to the same object (see `self.batch_execute`)
-        # instead of predicting shape, recursive pop until nearest non-list element
-        job = jobs.pop()
+        # instead of predicting shape, recursive unpack until nearest non-list element
+        job = jobs[0]
         while isinstance(job, list):
-            job = job.pop()
+            job = job[0]
 
         job_result = job.result()  # blocking call
 
