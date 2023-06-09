@@ -26,6 +26,11 @@ from ..middleware.core import middleware
 
 
 class QEDevice(QubitDevice):
+
+    """
+    Custom Pennylane device that batch executes circuits by submitting them to the middleware
+    """
+
     name = "QEDevice"
     short_name = "qe_device"
     pennylane_requires = ">=0.29.1"
