@@ -25,14 +25,15 @@ from typing import Any, List, Optional, Union
 import pennylane as qml
 
 from ..base import AsyncBaseQExecutor, QCResult, get_asyncio_event_loop
-from .devices import QiskitLocalSampler, QiskitRuntimeSampler
+from .local_sampler import QiskitLocalSampler
+from .runtime_sampler import QiskitRuntimeSampler
 from .utils import RuntimeOptions
 
 __all__ = [
     "QiskitExecutor",
 ]
 
-_DEVICE_NAMES_MAP = {
+_DEVICE_MAP = {
     "local_sampler": QiskitLocalSampler,
     "sampler": QiskitRuntimeSampler,
 }
@@ -42,7 +43,7 @@ def create_device(device_name: str, **kwargs):
     """
     Allows for the creation of a custom Pennylane-Qiskit device from a string name.
     """
-    device_cls = _DEVICE_NAMES_MAP.get(device_name)
+    device_cls = _DEVICE_MAP.get(device_name)
     if not device_cls:
         raise ValueError(f"Unsupported Qiskit primitive device '{device_name}'.")
     return device_cls(**kwargs)
@@ -111,15 +112,16 @@ class QiskitExecutor(AsyncBaseQExecutor):
 
         return [task]
 
-    async def run_circuit(self, qscripts, device, result_obj: QCResult):  # pylint: disable=arguments-renamed
+    async def run_circuit(self, tapes, device, result_obj: QCResult):  # pylint: disable=arguments-renamed
         """
         Allows circuits to be submitted asynchronously using `.run_later()`.
-        Quantum scripts are executed
         """
         start_time = time.perf_counter()
-        results = qml.execute(qscripts, device, None)
+        results = qml.execute(tapes, device, None)
+
         await asyncio.sleep(0)
-        results, metadatas = device.post_process(qscripts, results)
+
+        results, metadatas = device.post_process(tapes, results)
         end_time = time.perf_counter()
 
         result_obj.results = results
