@@ -1,11 +1,3 @@
-/*
- * Copyright 2022 Agnostiq Inc.
- * Note: This file is subject to a proprietary license agreement entered into between
- * you (or the person or organization that you represent) and Agnostiq Inc. Your rights to
- * access and use this file is subject to the terms and conditions of such agreement.
- * Please ensure you carefully review such agreements and, if you have any questions
- * please reach out to Agnostiq at: [support@agnostiq.com].
- */
 /**
  * Copyright 2021 Agnostiq Inc.
  *
@@ -71,6 +63,7 @@ import {
 import QElectronCard from './QElectronCard'
 import { ReactComponent as QelectronSvg } from '../../assets/qelectron/qelectron.svg'
 import CopyButton from './CopyButton'
+import { Prettify } from '../../utils/misc'
 
 export const nodeDrawerWidth = 360
 
@@ -86,6 +79,7 @@ const NodeDrawer = ({
   toggleQelectron,
   openQelectronDrawer,
   setOpenQelectronDrawer,
+  prettify
 }) => {
   const dispatch = useDispatch()
   const electronId = node !== undefined && node.node_id
@@ -224,7 +218,9 @@ const NodeDrawer = ({
                   alignItems: 'center',
                 }}
               >
-                {nodeLabel(electronDetail?.type, electronDetail?.name)}
+               {prettify
+                  ? Prettify(electronDetail?.name, electronDetail?.type || '')
+                  : nodeLabel(electronDetail?.type, electronDetail?.name)}
                 <span>
                   <SvgIcon
                     aria-label="view"
