@@ -19,10 +19,12 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import sys
+from pathlib import Path
 from unittest.mock import MagicMock, mock_open
 
 import pytest
 
+from covalent._file_transfer import File
 from covalent._file_transfer.strategies.blob_strategy import Blob
 
 MOCK_LOCAL_FILEPATH = "/Users/user/data.csv"
@@ -108,3 +110,34 @@ def test_download_file(mocker, blob_strategy):
     open_mock.assert_called_once_with(MOCK_LOCAL_FILEPATH, "wb")
     open_mock().write.assert_called_once_with(readall_mock.return_value)
     download_mock.assert_called_once()
+
+
+def test_download(mocker, blob_strategy):
+    from_file = File(MOCK_REMOTE_FILEPATH)
+    to_file = File(MOCK_LOCAL_FILEPATH)
+
+    mocker.patch("covalent._file_transfer.strategies.blob_strategy.app_log")
+
+    blob_service_client_mock = MagicMock()
+    mocker.patch(
+        "covalent._file_transfer.strategies.blob_strategy.Blob._get_blob_service_client",
+        blob_service_client_mock,
+    )
+    container_client_mock = blob_service_client_mock().get_container_client
+    container_client_mock.return_value = MagicMock()
+
+    mkdir_mock = mocker.patch("pathlib.Path.mkdir")
+
+    download_file_mock = MagicMock()
+    mocker.patch(
+        "covalent._file_transfer.strategies.blob_strategy.Blob._download_file", download_file_mock
+    )
+
+    blob_strategy.download(from_file, to_file)()
+
+    blob_service_client_mock.assert_called_with(MOCK_BLOB_STORAGE_ACCOUNT_URL)
+    container_client_mock.assert_called_with(MOCK_BLOB_CONTAINER)
+    mkdir_mock.assert_any_call(parents=True, exist_ok=True)
+    download_file_mock.assert_any_call(
+        container_client_mock.return_value, MOCK_BLOB_NAME, Path(MOCK_LOCAL_FILEPATH)
+    )

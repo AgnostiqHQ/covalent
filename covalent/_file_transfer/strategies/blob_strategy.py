@@ -112,7 +112,7 @@ class Blob(FileTransferStrategy):
         )
 
         app_log.debug(
-            f"Blob download; storage account: {self.storage_account_url}, from_filepath: {from_filepath}, to_filepath {to_filepath}."
+            f"Blob download; storage account: {storage_account_url}, from_filepath: {from_filepath}, to_filepath {to_filepath}."
         )
 
         def callable():
@@ -132,7 +132,7 @@ class Blob(FileTransferStrategy):
                 dest_obj_path = (
                     Path(to_filepath) / Path(blob.name).relative_to(base_path)
                     if to_file.is_dir
-                    else to_filepath
+                    else Path(to_filepath)
                 )
                 dest_obj_path.parent.mkdir(parents=True, exist_ok=True)
                 self._download_file(container_client, blob_name, dest_obj_path)
