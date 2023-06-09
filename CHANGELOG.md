@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.226.0-rc.0] - 2023-06-09
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+
+
 
 ### Changed
 
