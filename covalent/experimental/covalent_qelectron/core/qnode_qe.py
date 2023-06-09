@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from contextlib import contextmanager
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 import pennylane as qml
 from pydantic import BaseModel
@@ -44,7 +44,7 @@ class QNodeSpecs(BaseModel):
     gradient_options: Dict[str, int]
     interface: Optional[str]
     gradient_fn: Optional[str]
-    num_gradient_executions: int = 0
+    num_gradient_executions: Any = 0
     num_parameter_shift_executions: int = None
 
 
