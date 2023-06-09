@@ -208,5 +208,5 @@ class Blob(FileTransferStrategy):
 
         return callable
 
-    def cp(self, from_file: File, to_file: File = File()) -> File:
+    def cp(self, from_file: File, to_file: File = File()) -> File:  # pragma: no cover
         raise NotImplementedError
