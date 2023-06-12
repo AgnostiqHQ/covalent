@@ -350,7 +350,7 @@ def lattice(
 
     Keyword Args:
         backend: DEPRECATED: Same as `executor`.
-        executor: Alternative executor object to be used in the execution of each node. If not passed, the local
+        executor: Alternative executor object to be used in the execution of each node. If not passed, the dask
             executor is used by default.
         workflow_executor: Executor for postprocessing the workflow. Defaults to the built-in dask executor or
             the local executor depending on whether Covalent is started with the `--no-cluster` option.
