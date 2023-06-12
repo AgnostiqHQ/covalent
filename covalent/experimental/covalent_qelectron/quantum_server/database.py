@@ -84,6 +84,13 @@ class Database:
         with self._open(dispatch_id, node_id) as db:
             return list(db.keys())
 
+    def get_avg_time(self, dispatch_id, node_id):
+        time = []
+        with self._open(dispatch_id, node_id) as db:
+            for i in db:
+                time.append(db[i]["execution_time"])
+        return sum(time) / len(time)
+
     def get_circuit_info(self, circuit_id, *, dispatch_id, node_id):
         with self._open(dispatch_id, node_id) as db:
             return CircuitInfo(**db.get(circuit_id, None))

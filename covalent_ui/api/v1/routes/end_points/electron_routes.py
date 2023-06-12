@@ -63,6 +63,14 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
                     }
                 ],
             )
+        total_quantum_calls = electron.get_total_quantum_calls(
+            dispatch_id, result["transport_graph_node_id"], result["qelectron_data_exists"]
+        )
+        avg_quantum_calls = electron.get_avg_quantum_calls(
+            dispatch_id=dispatch_id,
+            is_qa_electron=result["qelectron_data_exists"],
+            node_id=result["transport_graph_node_id"],
+        )
         return ElectronResponse(
             id=result["id"],
             node_id=result["transport_graph_node_id"],
@@ -75,6 +83,9 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
             ended_at=result["completed_at"],
             runtime=result["runtime"],
             description="",
+            qelectron_data_exists=bool(result["qelectron_data_exists"]),
+            quantum_calls=total_quantum_calls,
+            avg_time_call=avg_quantum_calls,
         )
 
 
