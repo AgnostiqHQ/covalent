@@ -20,10 +20,11 @@
 
 import asyncio
 import time
-from typing import Any, List, Optional, Union
+from typing import Any, Optional, Union
 
 import pennylane as qml
 
+from ...shared_utils import make_new_device_cls
 from ..base import AsyncBaseQExecutor, QCResult, get_asyncio_event_loop
 from .local_sampler import QiskitLocalSampler
 from .runtime_sampler import QiskitRuntimeSampler
@@ -39,14 +40,15 @@ _DEVICE_MAP = {
 }
 
 
-def create_device(device_name: str, **kwargs):
+def create_device(device_name: str, base_cls=qml.Device, **kwargs):
     """
     Allows for the creation of a custom Pennylane-Qiskit device from a string name.
     """
-    device_cls = _DEVICE_MAP.get(device_name)
-    if not device_cls:
+    custom_device_cls = _DEVICE_MAP.get(device_name)
+    if not custom_device_cls:
         raise ValueError(f"Unsupported Qiskit primitive device '{device_name}'.")
-    return device_cls(**kwargs)
+
+    return make_new_device_cls(custom_device_cls, base_cls, kwargs)
 
 
 class QiskitExecutor(AsyncBaseQExecutor):
@@ -75,7 +77,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
     # resilience_opts, execution_opts, environment_opts, simulator_opts
     options: RuntimeOptions = None
 
-    def batch_submit(self, qscripts_list: List[qml.tape.qscript.QuantumScript]):
+    def batch_submit(self, qscripts_list):
 
         qscripts_list = list(qscripts_list)
         self._validate(qscripts_list)
@@ -83,6 +85,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
         # initialize a device: QiskitRuntimeEstimator, QiskitRuntimeSampler, etc.
         dev = create_device(
             self.device,
+            base_cls=self.get_original_device_cls(),
             wires=qscripts_list[0].wires,
             shots=self.shots,
             backend_name=self.backend_name,

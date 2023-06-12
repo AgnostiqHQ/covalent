@@ -71,5 +71,10 @@ def qelectron(qnode=None, *, executors=None, name=None, description=None):
 
     qelectron_info = QElectronInfo(name=name, description=description)
 
+    # Inform executor of the original device class
+    _device_cls = type(qnode.device)
+    for executor in executors:
+        executor.set_original_device_cls(_device_cls)
+
     # Create a new QNodeQE instance for every qelectron call
     return QNodeQE(qnode, executors, qelectron_info)
