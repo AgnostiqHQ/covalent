@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+- Added a missing `,` to the Slurm docs.
+
 ### Operations
 
 - Update the PR template.
