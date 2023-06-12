@@ -29,6 +29,7 @@ class Order(str, enum.Enum):
 class FileSchemes(str, enum.Enum):
     File = "file"
     S3 = "s3"
+    Blob = "https"
     Globus = "globus"
     HTTP = "http"
     HTTPS = "https"
