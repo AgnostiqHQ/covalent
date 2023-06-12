@@ -20,7 +20,9 @@
 
 import json
 from pathlib import Path
-from typing import Callable
+from typing import Callable, Tuple
+
+from furl import furl
 
 from .. import File
 from .transfer_strategy_base import FileTransferStrategy
@@ -74,8 +76,22 @@ class GCloud(FileTransferStrategy):
             credentials=service_account.Credentials.from_service_account_info(self.credentials),
         ).bucket(bucket_name)
 
-    def _parse_uri(self, gcloud_uri: str):
-        raise NotImplementedError
+    def _parse_uri(self, gcloud_uri: str) -> Tuple[str, str]:
+        """Parses a GCloud object URI and returns the bucket name and the object path.
+
+        Args:
+            blob_uri: A URI for an Azure Blob object in the form https://<storage_account_name>.blob.core.windows.net/<container_name>/<blob_name>
+
+        Returns:
+            parsed_uri: A tuple containing the storage account name, container name, and blob name
+        """
+
+        object_furl = furl(gcloud_uri)
+
+        bucket_name = object_furl.host
+        object_path = object_furl.path
+
+        return (bucket_name, object_path)
 
     def _download_file(self, client, source_path: str, destination_path: str) -> None:
         raise NotImplementedError

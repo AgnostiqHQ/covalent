@@ -28,8 +28,8 @@ from covalent._file_transfer.strategies.gcloud_strategy import GCloud
 
 MOCK_LOCAL_FILEPATH = "/Users/user/data.csv"
 MOCK_STORAGE_BUCKET = "mock-bucket"
-MOCK_REMOTE_OBJECT_NAME = "covalent-tmp/data.csv"
-MOCK_REMOTE_FILEPATH = f"gs://{MOCK_STORAGE_BUCKET}/{MOCK_REMOTE_OBJECT_NAME}"
+MOCK_REMOTE_OBJECT_NAME = "/covalent-tmp/data.csv"
+MOCK_REMOTE_FILEPATH = f"gs://{MOCK_STORAGE_BUCKET}{MOCK_REMOTE_OBJECT_NAME}"
 MOCK_CREDENTIALS_PATH = "/path/to/mock/credentials"
 MOCK_PROJECT_ID = "mock-project-id"
 MOCK_CREDENTIALS = {
@@ -99,3 +99,10 @@ def test_get_service_client(mocker, gcloud_strategy):
     sys.modules["google.cloud"] = None
     with pytest.raises(ImportError):
         gcloud_strategy._get_service_client(MOCK_STORAGE_BUCKET)
+
+
+def test_parse_uri(gcloud_strategy):
+    result = gcloud_strategy._parse_uri(MOCK_REMOTE_FILEPATH)
+
+    assert result[0] == MOCK_STORAGE_BUCKET
+    assert result[1] == MOCK_REMOTE_OBJECT_NAME
