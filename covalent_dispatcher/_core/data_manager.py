@@ -227,6 +227,147 @@ async def _update_parent_electron(dispatch_id: str):
         await update_node_result(parent_result_obj.dispatch_id, node_result)
 
 
+async def _filter_sublattice_status(
+    dispatch_id, node_id, status, node_type, sub_dispatch_id, node_result
+):
+    if status == Result.COMPLETED and node_type == "sublattice" and not sub_dispatch_id:
+        node_result["status"] = RESULT_STATUS.DISPATCHING
+    return node_result
+
+
+async def _make_sublattice_dispatch(dispatch_id: str, node_result: dict):
+    try:
+        manifest, parent_electron_id = await run_in_executor(
+            _make_sublattice_dispatch_helper,
+            dispatch_id,
+            node_result,
+        )
+
+        imported_manifest = await manifest_importer.import_manifest(
+            manifest=manifest,
+            parent_dispatch_id=dispatch_id,
+            parent_electron_id=parent_electron_id,
+        )
+
+        return imported_manifest.metadata.dispatch_id
+
+    except ValidationError as ex:
+        # Fall back to legacy sublattice handling
+        # NB: this loads the JSON sublattice in memory
+        json_lattice, parent_electron_id = await run_in_executor(
+            _legacy_sublattice_dispatch_helper,
+            dispatch_id,
+            node_result,
+        )
+        return await make_dispatch(
+            json_lattice,
+            dispatch_id,
+            parent_electron_id,
+        )
+
+
+def _legacy_sublattice_dispatch_helper(dispatch_id: str, node_result: Dict):
+    app_log.debug("falling back to legacy sublattice dispatch")
+
+    result_object = get_result_object(dispatch_id, bare=True)
+    node_id = node_result["node_id"]
+    parent_node = result_object.lattice.transport_graph.get_node(node_id)
+    bg_output = parent_node.get_value("output")
+
+    parent_electron_id = parent_node._electron_id
+    json_lattice = bg_output.object_string
+    return json_lattice, parent_electron_id
+
+
+def _make_sublattice_dispatch_helper(dispatch_id: str, node_result: Dict):
+    """Helper function for performing DB queries"""
+    result_object = get_result_object(dispatch_id, bare=True)
+    node_id = node_result["node_id"]
+    parent_node = result_object.lattice.transport_graph.get_node(node_id)
+    bg_output = parent_node.get_value("output")
+
+    manifest = ResultSchema.parse_raw(bg_output.object_string)
+    parent_electron_id = parent_node._electron_id
+
+    return manifest, parent_electron_id
+
+
+# Common Result object queries
+
+
+def generate_dispatch_result(
+    dispatch_id,
+    start_time=None,
+    end_time=None,
+    status=None,
+    error=None,
+    result=None,
+):
+    return {
+        "start_time": start_time,
+        "end_time": end_time,
+        "status": status,
+        "error": error,
+        "result": result,
+    }
+
+
+def _update_dispatch_result_sync(dispatch_id, dispatch_result):
+    result_object = get_result_object(dispatch_id)
+    result_object._update_dispatch(**dispatch_result)
+
+
+async def update_dispatch_result(dispatch_id, dispatch_result):
+    await run_in_executor(_update_dispatch_result_sync, dispatch_id, dispatch_result)
+
+
+def _get_dispatch_attributes_sync(dispatch_id: str, keys: List[str]) -> Any:
+    refresh = False
+    result_object = get_result_object(dispatch_id)
+    return result_object.get_values(keys, refresh=refresh)
+
+
+def _get_lattice_attributes_sync(dispatch_id: str, keys: List[str]) -> Any:
+    refresh = False
+    result_object = get_result_object(dispatch_id)
+    return result_object.lattice.get_values(keys, refresh=refresh)
+
+
+async def get_dispatch_attributes(dispatch_id: str, keys: List[str]) -> Dict:
+    return await run_in_executor(
+        _get_dispatch_attributes_sync,
+        dispatch_id,
+        keys,
+    )
+
+
+# Ensure that a dispatch is only run once; in the future, also check
+# if all assets have been uploaded
+def _ensure_dispatch_sync(dispatch_id: str) -> bool:
+    return SRVResult.ensure_run_once(dispatch_id)
+
+
+async def ensure_dispatch(dispatch_id: str) -> bool:
+    """Check if a dispatch can be run.
+
+    The following criteria must be met:
+    * The dispatch has not been run before.
+    * (later) all assets have been uploaded
+    """
+    return await run_in_executor(
+        _ensure_dispatch_sync,
+        dispatch_id,
+    )
+
+
+async def get_lattice_attributes(dispatch_id: str, keys: List[str]) -> Dict:
+    return await run_in_executor(
+        _get_lattice_attributes_sync,
+        dispatch_id,
+        keys,
+    )
+
+
 def _get_attrs_for_electrons_sync(
     dispatch_id: str, node_ids: List[int], keys: List[str]
 ) -> List[Dict]:
@@ -307,161 +448,7 @@ async def get_electron_attributes(dispatch_id: str, node_id: int, keys: List[str
     return attrs[0]
 
 
-async def _filter_sublattice_status(
-    dispatch_id, node_id, status, node_type, sub_dispatch_id, node_result
-):
-    if status == Result.COMPLETED and node_type == "sublattice" and not sub_dispatch_id:
-        node_result["status"] = RESULT_STATUS.DISPATCHING
-    return node_result
-
-
-async def _make_sublattice_dispatch(dispatch_id: str, node_result: dict):
-    try:
-        manifest, parent_electron_id = await run_in_executor(
-            _make_sublattice_dispatch_helper,
-            dispatch_id,
-            node_result,
-        )
-
-        imported_manifest = await manifest_importer.import_manifest(
-            manifest=manifest,
-            parent_dispatch_id=dispatch_id,
-            parent_electron_id=parent_electron_id,
-        )
-
-        return imported_manifest.metadata.dispatch_id
-
-    except ValidationError as ex:
-        # Fall back to legacy sublattice handling
-        # NB: this loads the JSON sublattice in memory
-        json_lattice, parent_electron_id = await run_in_executor(
-            _legacy_sublattice_dispatch_helper,
-            dispatch_id,
-            node_result,
-        )
-        return await make_dispatch(
-            json_lattice,
-            dispatch_id,
-            parent_electron_id,
-        )
-
-
-def _legacy_sublattice_dispatch_helper(dispatch_id: str, node_result: Dict):
-    app_log.debug("falling back to legacy sublattice dispatch")
-
-    result_object = get_result_object(dispatch_id, bare=True)
-    node_id = node_result["node_id"]
-    parent_node = result_object.lattice.transport_graph.get_node(node_id)
-    bg_output = parent_node.get_value("output")
-
-    parent_electron_id = parent_node._electron_id
-    json_lattice = bg_output.object_string
-    return json_lattice, parent_electron_id
-
-
-def _make_sublattice_dispatch_helper(dispatch_id: str, node_result: Dict):
-    """Helper function for performing DB queries"""
-    result_object = get_result_object(dispatch_id, bare=True)
-    node_id = node_result["node_id"]
-    parent_node = result_object.lattice.transport_graph.get_node(node_id)
-    bg_output = parent_node.get_value("output")
-
-    manifest = ResultSchema.parse_raw(bg_output.object_string)
-    parent_electron_id = parent_node._electron_id
-
-    return manifest, parent_electron_id
-
-
-# Common Result object queries
-
-# Dispatch
-
-
-def generate_dispatch_result(
-    dispatch_id,
-    start_time=None,
-    end_time=None,
-    status=None,
-    error=None,
-    result=None,
-):
-    return {
-        "start_time": start_time,
-        "end_time": end_time,
-        "status": status,
-        "error": error,
-        "result": result,
-    }
-
-
-def _update_dispatch_result_sync(dispatch_id, dispatch_result):
-    result_object = get_result_object(dispatch_id)
-    result_object._update_dispatch(**dispatch_result)
-
-
-async def update_dispatch_result(dispatch_id, dispatch_result):
-    await run_in_executor(_update_dispatch_result_sync, dispatch_id, dispatch_result)
-
-
-def _get_dispatch_attributes_sync(dispatch_id: str, keys: List[str]) -> Any:
-    refresh = False
-    result_object = get_result_object(dispatch_id)
-    return result_object.get_values(keys, refresh=refresh)
-
-
-def _get_lattice_attributes_sync(dispatch_id: str, keys: List[str]) -> Any:
-    refresh = False
-    result_object = get_result_object(dispatch_id)
-    return result_object.lattice.get_values(keys, refresh=refresh)
-
-
-async def get_dispatch_attributes(dispatch_id: str, keys: List[str]) -> Dict:
-    return await run_in_executor(
-        _get_dispatch_attributes_sync,
-        dispatch_id,
-        keys,
-    )
-
-
-async def get_lattice_attributes(dispatch_id: str, keys: List[str]) -> Dict:
-    return await run_in_executor(
-        _get_lattice_attributes_sync,
-        dispatch_id,
-        keys,
-    )
-
-
-# Ensure that a dispatch is only run once; in the future, also check
-# if all assets have been uploaded
-def _ensure_dispatch_sync(dispatch_id: str) -> bool:
-    return SRVResult.ensure_run_once(dispatch_id)
-
-
-async def ensure_dispatch(dispatch_id: str) -> bool:
-    """Check if a dispatch can be run.
-
-    The following criteria must be met:
-    * The dispatch has not been run before.
-    * (later) all assets have been uploaded
-    """
-    return await run_in_executor(
-        _ensure_dispatch_sync,
-        dispatch_id,
-    )
-
-
 # Graph queries
-
-
-async def get_incomplete_tasks(dispatch_id: str):
-    # Need to filter all electrons in the latice
-    return await run_in_executor(_get_incomplete_tasks_sync, dispatch_id)
-
-
-def _get_incomplete_tasks_sync(dispatch_id: str):
-    result_object = get_result_object(dispatch_id, False)
-    refresh = False
-    return result_object._get_incomplete_nodes(refresh)
 
 
 async def get_incoming_edges(dispatch_id: str, node_id: int):
@@ -476,9 +463,20 @@ async def get_node_successors(
     return await run_in_executor(graph.get_node_successors, dispatch_id, node_id, attrs)
 
 
-async def get_graph_nodes_links(dispatch_id: str) -> dict:
+async def get_graph_nodes_links(dispatch_id: str) -> Dict:
     return await run_in_executor(graph.get_graph_nodes_links, dispatch_id)
 
 
 async def get_nodes(dispatch_id: str) -> List[int]:
     return await run_in_executor(graph.get_nodes, dispatch_id)
+
+
+async def get_incomplete_tasks(dispatch_id: str):
+    # Need to filter all electrons in the latice
+    return await run_in_executor(_get_incomplete_tasks_sync, dispatch_id)
+
+
+def _get_incomplete_tasks_sync(dispatch_id: str):
+    result_object = get_result_object(dispatch_id, False)
+    refresh = False
+    return result_object._get_incomplete_nodes(refresh)

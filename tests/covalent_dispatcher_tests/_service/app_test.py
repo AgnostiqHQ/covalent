@@ -21,17 +21,21 @@
 """Unit tests for the FastAPI app."""
 
 import json
-import os
+import tempfile
 from contextlib import contextmanager
 from typing import Generator
+from unittest.mock import MagicMock
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
-from covalent._results_manager.result import Result
+import covalent as ct
+from covalent._dispatcher_plugins.local import LocalDispatcher
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent_dispatcher._db.dispatchdb import DispatchDB
+from covalent_dispatcher._service.app import _try_get_result_object
 from covalent_ui.app import fastapi_app as fast_app
 
 DISPATCH_ID = "f34671d1-48f2-41ce-89d9-9a8cb5c60e5d"
@@ -76,6 +80,25 @@ def client():
 def test_db():
     """Instantiate and return an in-memory database."""
     return MockDataStore(db_URL="sqlite+pysqlite:///:memory:")
+
+
+@pytest.fixture
+def mock_manifest():
+    """Create a mock workflow manifest"""
+
+    @ct.electron
+    def task(x):
+        return x**2
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    workflow.build_graph(3)
+
+    with tempfile.TemporaryDirectory() as staging_dir:
+        manifest = LocalDispatcher.prepare_manifest(workflow, staging_dir)
+    return manifest
 
 
 @pytest.fixture
@@ -159,53 +182,6 @@ async def test_cancel_exception(mocker, client):
         cancel_running_dispatch_mock.assert_called_once_with(DISPATCH_ID, [])
 
 
-@pytest.mark.skip(reason="Hard to mock, covered by FT")
-def test_get_result(mocker, app, client, test_db_file, tmp_path):
-    lattice = MockLattice(
-        status=str(Result.COMPLETED),
-        dispatch_id=DISPATCH_ID,
-    )
-
-    with test_db_file.session() as session:
-        session.add(lattice)
-        session.commit()
-
-    mocker.patch("covalent_dispatcher._service.app._result_from", return_value={})
-    mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db_file)
-    mocker.patch("covalent_dispatcher._service.app.Lattice", MockLattice)
-    response = client.get(f"/api/result/{DISPATCH_ID}")
-    result = response.json()
-    assert result["id"] == DISPATCH_ID
-    assert result["status"] == str(Result.COMPLETED)
-    os.remove("/tmp/testdb.sqlite")
-
-
-@pytest.mark.skip(reason="Hard to mock, covered by FT")
-def test_get_result_503(mocker, app, client, test_db_file, tmp_path):
-    lattice = MockLattice(
-        status=str(Result.NEW_OBJ),
-        dispatch_id=DISPATCH_ID,
-    )
-    with test_db_file.session() as session:
-        session.add(lattice)
-        session.commit()
-    mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db_file)
-    mocker.patch("covalent_dispatcher._service.app.Lattice", MockLattice)
-    response = client.get(f"/api/resultv2/{DISPATCH_ID}?wait=True&status_only=True")
-
-    assert response.status_code == 503
-    os.remove("/tmp/testdb.sqlite")
-
-
-@pytest.mark.skip(reason="Hard to mock, covered by FT")
-def test_get_result_dispatch_id_not_found(mocker, test_db_file, client, tmp_path):
-    mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db_file)
-    mocker.patch("covalent_dispatcher._db.datastore.workflow_db", test_db_file)
-    mocker.patch("covalent_dispatcher._service.app.Lattice", MockLattice)
-    response = client.get(f"/api/resultv2/{DISPATCH_ID}")
-    assert response.status_code == 404
-
-
 def test_db_path_get_config(mocker):
     """Test that the db path is retrieved from the config.""" ""
     get_config_mock = mocker.patch("covalent_dispatcher._db.dispatchdb.get_config")
@@ -213,3 +189,135 @@ def test_db_path_get_config(mocker):
     DispatchDB()
 
     get_config_mock.assert_called_once()
+
+
+def test_register(mocker, app, client, mock_manifest):
+    mock_register_dispatch = mocker.patch(
+        "covalent_dispatcher._service.app.dispatcher.register_dispatch", return_value=mock_manifest
+    )
+    resp = client.post("/api/v1/dispatch/register", data=mock_manifest.json())
+
+    assert resp.json() == json.loads(mock_manifest.json())
+    mock_register_dispatch.assert_awaited_with(mock_manifest, None)
+
+
+def test_register_exception(mocker, app, client, mock_manifest):
+    mock_register_dispatch = mocker.patch(
+        "covalent_dispatcher._service.app.dispatcher.register_dispatch", side_effect=RuntimeError()
+    )
+    resp = client.post("/api/v1/dispatch/register", data=mock_manifest.json())
+    assert resp.status_code == 400
+
+
+def test_register_sublattice(mocker, app, client, mock_manifest):
+    mock_register_dispatch = mocker.patch(
+        "covalent_dispatcher._service.app.dispatcher.register_dispatch", return_value=mock_manifest
+    )
+    resp = client.post(
+        "/api/v1/dispatch/register",
+        data=mock_manifest.json(),
+        params={"parent_dispatch_id": "parent_dispatch"},
+    )
+
+    assert resp.json() == json.loads(mock_manifest.json())
+    mock_register_dispatch.assert_awaited_with(mock_manifest, "parent_dispatch")
+
+
+def test_register_redispatch(mocker, app, client, mock_manifest):
+    dispatch_id = "test_register_redispatch"
+    mock_register_redispatch = mocker.patch(
+        "covalent_dispatcher._service.app.dispatcher.register_redispatch",
+        return_value=mock_manifest,
+    )
+    resp = client.post(f"/api/v1/dispatch/register/{dispatch_id}", data=mock_manifest.json())
+    mock_register_redispatch.assert_awaited_with(mock_manifest, dispatch_id, False)
+    assert resp.json() == json.loads(mock_manifest.json())
+
+
+def test_register_redispatch_reuse(mocker, app, client, mock_manifest):
+    dispatch_id = "test_register_redispatch"
+    mock_register_redispatch = mocker.patch(
+        "covalent_dispatcher._service.app.dispatcher.register_redispatch",
+        return_value=mock_manifest,
+    )
+    resp = client.post(
+        f"/api/v1/dispatch/register/{dispatch_id}",
+        data=mock_manifest.json(),
+        params={"reuse_previous_results": True},
+    )
+    mock_register_redispatch.assert_awaited_with(mock_manifest, dispatch_id, True)
+    assert resp.json() == json.loads(mock_manifest.json())
+
+
+def test_register_redispatch_exception(mocker, app, client, mock_manifest):
+    dispatch_id = "test_register_redispatch"
+    mock_register_redispatch = mocker.patch(
+        "covalent_dispatcher._service.app.dispatcher.register_redispatch",
+        side_effect=RuntimeError(),
+    )
+    resp = client.post(f"/api/v1/dispatch/register/{dispatch_id}", data=mock_manifest.json())
+    assert resp.status_code == 400
+
+
+def test_start(mocker, app, client):
+    dispatch_id = "test_start"
+    mock_start = mocker.patch("covalent_dispatcher._service.app.dispatcher.start_dispatch")
+    mock_create_task = mocker.patch("asyncio.create_task")
+    resp = client.put(f"/api/v1/dispatch/start/{dispatch_id}")
+    assert resp.json() == dispatch_id
+
+
+def test_export_result_nowait(mocker, app, client, mock_manifest):
+    dispatch_id = "test_export_result"
+    mock_result_object = MagicMock()
+    mock_result_object.get_value = MagicMock(return_value=str(RESULT_STATUS.NEW_OBJECT))
+    mocker.patch(
+        "covalent_dispatcher._service.app._try_get_result_object", return_value=mock_result_object
+    )
+    mock_export = mocker.patch(
+        "covalent_dispatcher._service.app.export_result_manifest", return_value=mock_manifest
+    )
+    resp = client.get(f"/api/v1/dispatch/export/{dispatch_id}")
+    assert resp.status_code == 200
+    assert resp.json()["id"] == dispatch_id
+    assert resp.json()["status"] == str(RESULT_STATUS.NEW_OBJECT)
+    assert resp.json()["result_export"] == json.loads(mock_manifest.json())
+
+
+def test_export_result_wait_not_ready(mocker, app, client, mock_manifest):
+    dispatch_id = "test_export_result"
+    mock_result_object = MagicMock()
+    mock_result_object.get_value = MagicMock(return_value=str(RESULT_STATUS.RUNNING))
+    mocker.patch(
+        "covalent_dispatcher._service.app._try_get_result_object", return_value=mock_result_object
+    )
+    mock_export = mocker.patch(
+        "covalent_dispatcher._service.app.export_result_manifest", return_value=mock_manifest
+    )
+    resp = client.get(f"/api/v1/dispatch/export/{dispatch_id}", params={"wait": True})
+    assert resp.status_code == 503
+
+
+def test_export_result_bad_dispatch_id(mocker, app, client, mock_manifest):
+    dispatch_id = "test_export_result"
+    mock_result_object = MagicMock()
+    mock_result_object.get_value = MagicMock(return_value=str(RESULT_STATUS.NEW_OBJECT))
+    mocker.patch("covalent_dispatcher._service.app._try_get_result_object", return_value=None)
+    resp = client.get(f"/api/v1/dispatch/export/{dispatch_id}")
+    assert resp.status_code == 404
+
+
+def test_try_get_result_object(mocker, app, client, mock_manifest):
+    dispatch_id = "test_try_get_result_object"
+    mock_result_object = MagicMock()
+    mocker.patch(
+        "covalent_dispatcher._service.app.get_result_object", return_value=mock_result_object
+    )
+    assert _try_get_result_object(dispatch_id) == mock_result_object
+
+
+def test_try_get_result_object_not_found(mocker, app, client, mock_manifest):
+    dispatch_id = "test_try_get_result_object"
+    mock_result_object = MagicMock()
+    mocker.patch("covalent_dispatcher._service.app.get_result_object", side_effect=KeyError())
+    assert _try_get_result_object(dispatch_id) is None

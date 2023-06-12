@@ -40,7 +40,6 @@ from covalent._workflow.transportable_object import TOArchiveUtils
 
 from .._dal.result import get_result_object
 from .._db.datastore import workflow_db
-from .._db.models import Lattice
 from .models import (
     AssetRepresentation,
     DispatchAssetKey,
@@ -91,18 +90,13 @@ def get_node_asset(
             f"Requested asset {key.value} ([{start_byte}:{end_byte}]) for node {dispatch_id}:{node_id}"
         )
 
-        with workflow_db.session() as session:
-            lattice_record = (
-                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-            )
-            status = lattice_record.status if lattice_record else None
-            if not lattice_record:
-                return JSONResponse(
-                    status_code=404,
-                    content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-                )
-
         result_object = get_cached_result_object(dispatch_id)
+        if not result_object:
+            return JSONResponse(
+                status_code=404,
+                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+            )
+
         app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
 
         node = result_object.lattice.transport_graph.get_node(node_id)
@@ -150,18 +144,13 @@ def get_dispatch_asset(
             f"Requested asset {key.value} ([{start_byte}:{end_byte}]) for dispatch {dispatch_id}"
         )
 
-        with workflow_db.session() as session:
-            lattice_record = (
-                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-            )
-            status = lattice_record.status if lattice_record else None
-            if not lattice_record:
-                return JSONResponse(
-                    status_code=404,
-                    content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-                )
-
         result_object = get_cached_result_object(dispatch_id)
+        if not result_object:
+            return JSONResponse(
+                status_code=404,
+                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+            )
+
         app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
         with workflow_db.session() as session:
             asset = result_object.get_asset(key=key.value, session=session)
@@ -206,19 +195,14 @@ def get_lattice_asset(
             f"Requested lattice asset {key.value} ([{start_byte}:{end_byte}])for dispatch {dispatch_id}"
         )
 
-        with workflow_db.session() as session:
-            lattice_record = (
-                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-            )
-            status = lattice_record.status if lattice_record else None
-            if not lattice_record:
-                return JSONResponse(
-                    status_code=404,
-                    content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-                )
-
         result_object = get_cached_result_object(dispatch_id)
+        if not result_object:
+            return JSONResponse(
+                status_code=404,
+                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+            )
         app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
+
         with workflow_db.session() as session:
             asset = result_object.lattice.get_asset(key=key.value, session=session)
 
@@ -252,26 +236,20 @@ def upload_node_asset(
     app_log.debug(f"Requested asset {key} for node {dispatch_id}:{node_id}")
 
     try:
-        with workflow_db.session() as session:
-            lattice_record = (
-                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-            )
-            status = lattice_record.status if lattice_record else None
-            if not lattice_record:
-                return JSONResponse(
-                    status_code=404,
-                    content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-                )
-
         result_object = get_cached_result_object(dispatch_id)
+        if not result_object:
+            return JSONResponse(
+                status_code=404,
+                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+            )
+
         app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
         node = result_object.lattice.transport_graph.get_node(node_id)
         with workflow_db.session() as session:
             asset = node.get_asset(key=key.value, session=session)
-        app_log.debug(f"Asset uri {asset.internal_uri}")
+            app_log.debug(f"Asset uri {asset.internal_uri}")
 
-        # Update asset metadata
-        with workflow_db.session() as session:
+            # Update asset metadata
             update = {"size": content_length}
             if digest:
                 alg, checksum = _extract_checksum(digest)
@@ -298,24 +276,18 @@ def upload_dispatch_asset(
     digest: Union[str, None] = Header(default=None, regex=digest_regex),
 ):
     try:
-        with workflow_db.session() as session:
-            lattice_record = (
-                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-            )
-            status = lattice_record.status if lattice_record else None
-            if not lattice_record:
-                return JSONResponse(
-                    status_code=404,
-                    content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-                )
-
         result_object = get_cached_result_object(dispatch_id)
+        if not result_object:
+            return JSONResponse(
+                status_code=404,
+                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+            )
+
         app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
         with workflow_db.session() as session:
             asset = result_object.get_asset(key=key.value, session=session)
 
-        # Update asset metadata
-        with workflow_db.session() as session:
+            # Update asset metadata
             update = {"size": content_length}
             if digest:
                 alg, checksum = _extract_checksum(digest)
@@ -342,24 +314,19 @@ def upload_lattice_asset(
     digest: Union[str, None] = Header(default=None, regex=digest_regex),
 ):
     try:
-        with workflow_db.session() as session:
-            lattice_record = (
-                session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-            )
-            status = lattice_record.status if lattice_record else None
-            if not lattice_record:
-                return JSONResponse(
-                    status_code=404,
-                    content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-                )
-
         result_object = get_cached_result_object(dispatch_id)
+        if not result_object:
+            return JSONResponse(
+                status_code=404,
+                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+            )
+
         app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
+
         with workflow_db.session() as session:
             asset = result_object.lattice.get_asset(key=key.value, session=session)
 
-        # Update asset metadata
-        with workflow_db.session() as session:
+            # Update asset metadata
             update = {"size": content_length}
             if digest:
                 alg, checksum = _extract_checksum(digest)
@@ -477,19 +444,22 @@ def _get_tobj_pickle_offsets(file_url: str) -> Tuple[int, int]:
 # intelligent invalidation logic.
 @lru_cache(maxsize=LRU_CACHE_SIZE)
 def get_cached_result_object(dispatch_id: str):
-    with workflow_db.session() as session:
-        srv_res = get_result_object(dispatch_id, session=session)
-        app_log.debug(f"Caching result {dispatch_id}")
+    try:
+        with workflow_db.session() as session:
+            srv_res = get_result_object(dispatch_id, session=session)
+            app_log.debug(f"Caching result {dispatch_id}")
 
-        # Prepopulate asset maps to avoid DB lookups
+            # Prepopulate asset maps to avoid DB lookups
 
-        srv_res.populate_asset_map(session)
-        srv_res.lattice.populate_asset_map(session)
+            srv_res.populate_asset_map(session)
+            srv_res.lattice.populate_asset_map(session)
 
-        tg = srv_res.lattice.transport_graph
-        g = tg.get_internal_graph_copy()
-        for node_id in g.nodes():
-            node = tg.get_node(node_id, session)
-            node.populate_asset_map(session)
+            tg = srv_res.lattice.transport_graph
+            g = tg.get_internal_graph_copy()
+            for node_id in g.nodes():
+                node = tg.get_node(node_id, session)
+                node.populate_asset_map(session)
+    except KeyError:
+        srv_res = None
 
     return srv_res

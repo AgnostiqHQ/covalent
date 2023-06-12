@@ -31,16 +31,15 @@ from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 import covalent_dispatcher.entry_point as dispatcher
-from covalent._results_manager.result import Result
 from covalent._shared_files import logger
 from covalent._shared_files.schemas.result import ResultSchema
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent_dispatcher._core import dispatcher as core_dispatcher
 from covalent_dispatcher._core import runner_ng as core_runner
 
 from .._dal.export import export_result_manifest
-from .._db.datastore import workflow_db
+from .._dal.result import Result, get_result_object
 from .._db.dispatchdb import DispatchDB
-from .._db.models import Lattice
 from .heartbeat import Heartbeat
 from .models import ExportResponseSchema
 
@@ -205,35 +204,41 @@ async def export_result(
 def _export_result_sync(
     dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
 ) -> ExportResponseSchema:
-    with workflow_db.session() as session:
-        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-        status = lattice_record.status if lattice_record else None
-        if not lattice_record:
-            return JSONResponse(
-                status_code=404,
-                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-            )
-        if not wait or status in [
-            str(Result.COMPLETED),
-            str(Result.FAILED),
-            str(Result.CANCELLED),
-            str(Result.POSTPROCESSING_FAILED),
-            str(Result.PENDING_POSTPROCESSING),
-        ]:
-            output = {
-                "id": dispatch_id,
-                "status": lattice_record.status,
-            }
-            if not status_only:
-                output["result_export"] = export_result_manifest(dispatch_id)
-
-            return output
-
-        response = JSONResponse(
-            status_code=503,
-            content={
-                "message": "Result not ready to read yet. Please wait for a couple of seconds."
-            },
-            headers={"Retry-After": "2"},
+    result_object = _try_get_result_object(dispatch_id)
+    if not result_object:
+        return JSONResponse(
+            status_code=404,
+            content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
         )
-        return response
+    status = str(result_object.get_value("status", refresh=False))
+
+    if not wait or status in [
+        str(RESULT_STATUS.COMPLETED),
+        str(RESULT_STATUS.FAILED),
+        str(RESULT_STATUS.CANCELLED),
+    ]:
+        output = {
+            "id": dispatch_id,
+            "status": status,
+        }
+        if not status_only:
+            output["result_export"] = export_result_manifest(dispatch_id)
+
+        return output
+
+    response = JSONResponse(
+        status_code=503,
+        content={"message": "Result not ready to read yet. Please wait for a couple of seconds."},
+        headers={"Retry-After": "2"},
+    )
+    return response
+
+
+def _try_get_result_object(dispatch_id: str) -> Union[Result, None]:
+    try:
+        res = get_result_object(
+            dispatch_id, bare=True, keys=["id", "dispatch_id", "status"], lattice_keys=["id"]
+        )
+    except KeyError:
+        res = None
+    return res
