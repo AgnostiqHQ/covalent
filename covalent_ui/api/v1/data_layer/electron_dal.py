@@ -19,9 +19,11 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from datetime import timezone
+from uuid import UUID
 
 from sqlalchemy.sql import func
 
+from covalent.experimental.covalent_qelectron.quantum_server.database import Database
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.lattices import Lattice
 
@@ -31,6 +33,7 @@ class Electrons:
 
     def __init__(self, db_con) -> None:
         self.db_con = db_con
+        self.qdb = Database()
 
     def get_electrons_id(self, dispatch_id, electron_id) -> Electron:
         """
@@ -61,6 +64,8 @@ class Electrons:
                 Electron.error_filename,
                 Electron.name,
                 Electron.status,
+                Electron.job_id,
+                Electron.qelectron_data_exists,
                 Electron.started_at.label("started_at"),
                 Electron.completed_at.label("completed_at"),
                 (
@@ -82,3 +87,13 @@ class Electrons:
             .first()
         )
         return data
+
+    def get_total_quantum_calls(self, dispatch_id, node_id, is_qa_electron: bool):
+        if not is_qa_electron:
+            return None
+        return len(self.qdb.get_circuit_ids(dispatch_id=str(dispatch_id), node_id=node_id))
+
+    def get_avg_quantum_calls(self, dispatch_id, node_id, is_qa_electron: bool):
+        if not is_qa_electron:
+            return None
+        return self.qdb.get_avg_time(dispatch_id=str(dispatch_id), node_id=node_id)
