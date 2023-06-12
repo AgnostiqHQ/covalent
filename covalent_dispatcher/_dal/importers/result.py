@@ -29,12 +29,13 @@ from sqlalchemy.orm import Session
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas.lattice import LatticeSchema
-from covalent._shared_files.schemas.result import ASSET_FILENAME_MAP, ResultAssets, ResultSchema
+from covalent._shared_files.schemas.result import ResultAssets, ResultSchema
 from covalent._shared_files.utils import format_server_url
 from covalent_dispatcher._dal.asset import Asset, StorageType
 from covalent_dispatcher._dal.electron import ElectronMeta
 from covalent_dispatcher._dal.job import Job
 from covalent_dispatcher._dal.result import Result, ResultMeta
+from covalent_dispatcher._object_store.local import BaseProvider, local_store
 
 from ..asset import copy_asset_meta
 from ..tg_ops import TransportGraphOps
@@ -82,20 +83,22 @@ def import_result(
     with Result.session() as session:
         lattice_row = ResultMeta.insert(session, insert_kwargs=lattice_record_kwargs, flush=True)
         res_record = Result(session, lattice_row, True)
-        res_assets = import_result_assets(session, res, res_record, storage_path)
+        res_assets = import_result_assets(session, res, res_record, local_store)
 
         lat_assets = import_lattice_assets(
             session,
+            dispatch_id,
             res.lattice,
             res_record.lattice,
-            storage_path,
+            local_store,
         )
 
         tg = import_transport_graph(
             session,
+            dispatch_id,
             res.lattice.transport_graph,
             res_record.lattice,
-            storage_path,
+            local_store,
             electron_id,
         )
 
@@ -213,13 +216,17 @@ def import_result_assets(
     session: Session,
     manifest: ResultSchema,
     record: Result,
-    storage_path: str,
+    object_store: BaseProvider,
 ) -> ResultAssets:
     """Insert asset records and populate the asset link table"""
     asset_ids = {}
 
     for asset_key, asset in manifest.assets:
-        object_key = ASSET_FILENAME_MAP[asset_key]
+        storage_path, object_key = object_store.get_uri_components(
+            dispatch_id=manifest.metadata.dispatch_id,
+            node_id=None,
+            asset_key=asset_key,
+        )
         local_uri = os.path.join(storage_path, object_key)
 
         asset_kwargs = {

@@ -21,6 +21,7 @@
 """Base storage backend provider"""
 
 from dataclasses import dataclass
+from typing import Optional, Tuple
 
 
 @dataclass
@@ -31,4 +32,26 @@ class Digest:
 
 class BaseProvider:
     def digest(self, bucket_name: str, object_key: str) -> Digest:
+        raise NotImplementedError
+
+    def get_uri_components(
+        self, dispatch_id: str, node_id: Optional[int], asset_key: str
+    ) -> Tuple[str, str]:
+        """Compute storage_path and object_key for a workflow asset.
+
+        Args:
+            dispatch_id: The workflow dispatch id
+            node_id: The electron's node id or `None` if the asset has workflow scope.
+            asset_key: The key describing the asset.
+
+        Returns:
+            storage_path, object_key
+
+        The semantics `storage_path` and `object_key` may differ
+        slightly between backends but are constrained by the requirement that
+        `{scheme}://{storage_path}/{object_key}` is a valid URI for
+        the asset.
+
+        """
+
         raise NotImplementedError

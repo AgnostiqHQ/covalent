@@ -49,28 +49,34 @@ from covalent_dispatcher._dal.electron import ElectronMeta
 from covalent_dispatcher._dal.lattice import Lattice
 from covalent_dispatcher._db import models
 from covalent_dispatcher._db.write_result_to_db import get_electron_type
+from covalent_dispatcher._object_store.base import BaseProvider
 
 app_log = logger.app_log
 
 
 def import_electron(
     session: Session,
+    dispatch_id: str,
     e: ElectronSchema,
     lat: Lattice,
-    node_storage_path: str,
+    object_store: BaseProvider,
     job_id: int,
 ) -> Tuple[models.Electron, ElectronSchema]:
     """Returns (electron_id, ElectronSchema)"""
 
-    electron_kwargs = _get_electron_meta(e, lat, node_storage_path, job_id)
-
-    electron_row = ElectronMeta.insert(session, insert_kwargs=electron_kwargs, flush=False)
-
     electron_assets, asset_recs = import_electron_assets(
         session,
+        dispatch_id,
         e,
-        node_storage_path,
+        object_store,
     )
+
+    # Hack for legacy DB columns
+    node_storage_path = asset_recs["function"].storage_path
+
+    electron_kwargs = _get_electron_meta(e, lat, node_storage_path, job_id)
+    electron_row = ElectronMeta.insert(session, insert_kwargs=electron_kwargs, flush=False)
+
     return (
         electron_row,
         asset_recs,
@@ -118,8 +124,9 @@ def _get_electron_meta(
 
 def import_electron_assets(
     session: Session,
+    dispatch_id,
     e: ElectronSchema,
-    node_storage_path: str,
+    object_store: BaseProvider,
 ) -> Tuple[ElectronAssets, Dict[str, models.Asset]]:
     """Insert asset records
 
@@ -133,6 +140,12 @@ def import_electron_assets(
     asset_recs = {}
 
     for asset_key, asset in e.assets:
+        node_storage_path, object_key = object_store.get_uri_components(
+            dispatch_id,
+            e.id,
+            asset_key,
+        )
+
         object_key = ASSET_FILENAME_MAP[asset_key]
         local_uri = os.path.join(node_storage_path, object_key)
         asset_kwargs = {

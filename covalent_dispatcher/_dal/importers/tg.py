@@ -21,7 +21,6 @@
 
 """Functions to transform ResultSchema -> Result"""
 
-import os
 from typing import Dict, Optional
 
 from sqlalchemy.orm import Session
@@ -34,6 +33,7 @@ from covalent_dispatcher._dal.electron import Electron
 from covalent_dispatcher._dal.job import Job
 from covalent_dispatcher._dal.lattice import Lattice
 from covalent_dispatcher._db import models
+from covalent_dispatcher._object_store.base import BaseProvider
 
 from .electron import import_electron
 
@@ -42,9 +42,10 @@ app_log = logger.app_log
 
 def import_transport_graph(
     session: Session,
+    dispatch_id: str,
     tg: TransportGraphSchema,
     lat: Lattice,
-    storage_path: str,
+    object_store: BaseProvider,
     electron_id: Optional[int],
 ) -> TransportGraphSchema:
     electron_map = {}
@@ -84,14 +85,13 @@ def import_transport_graph(
 
     for gid, node_group in task_groups.items():
         for node in node_group:
-            node_storage_path = os.path.join(storage_path, f"node_{node.id}")
-            os.makedirs(node_storage_path)
             job_record = gid_job_record_map[gid]
             e_record, asset_records_by_key, node = import_electron(
                 session,
+                dispatch_id,
                 node,
                 lat,
-                node_storage_path,
+                object_store,
                 job_id=job_record.id,
             )
             output_nodes.append(node)

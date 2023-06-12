@@ -28,7 +28,6 @@ from sqlalchemy.orm import Session
 
 from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas.lattice import (
-    ASSET_FILENAME_MAP,
     LATTICE_CALL_AFTER_FILENAME,
     LATTICE_CALL_BEFORE_FILENAME,
     LATTICE_COVA_IMPORTS_FILENAME,
@@ -48,6 +47,7 @@ from covalent._shared_files.schemas.lattice import (
 )
 from covalent_dispatcher._dal.asset import Asset, StorageType
 from covalent_dispatcher._dal.lattice import Lattice
+from covalent_dispatcher._object_store.local import BaseProvider
 
 
 def _get_lattice_meta(lat: LatticeSchema, storage_path) -> dict:
@@ -92,16 +92,21 @@ def _get_lattice_meta(lat: LatticeSchema, storage_path) -> dict:
 
 def import_lattice_assets(
     session: Session,
+    dispatch_id: str,
     lat: LatticeSchema,
     record: Lattice,
-    storage_path: str,
+    object_store: BaseProvider,
 ) -> LatticeAssets:
     """Insert asset records and populate the asset link table"""
     asset_ids = {}
 
     # Register built-in assets
     for asset_key, asset in lat.assets:
-        object_key = ASSET_FILENAME_MAP[asset_key]
+        storage_path, object_key = object_store.get_uri_components(
+            dispatch_id=dispatch_id,
+            node_id=None,
+            asset_key=asset_key,
+        )
 
         local_uri = os.path.join(storage_path, object_key)
 
