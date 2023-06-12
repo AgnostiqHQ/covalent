@@ -1,7 +1,7 @@
 .. _azurebatch_executor:
 
-🔌 Azure Batch Executor
-""""""""""""""""""""""""
+Azure Batch Executor
+""""""""""""""""""""
 
 .. image:: Azure_Batch.png
 
@@ -207,16 +207,16 @@ In some cases, users may wish to specify a custom base image for Covalent tasks 
 
 To incorporate a custom container that can be used by Covalent tasks on Azure Batch, first locate the Dockerfile packaged with this plugin in `covalent_azurebatch_plugin/assets/infra/Dockerfile`.  Assuming the custom container already has a compatible version of Python installed (specifically, the same version used by the Covalent SDK), build this image using the command
 
-```
-# Login to ACR registry first
-acr login --name=<my_custom_registry_name>
-# Build the combined image used by tasks
-docker build --build-arg COVALENT_BASE_IMAGE=<my_custom_image_uri> -t <my_custom_registry_name>.azurecr.io/<my_custom_image_name>:latest .
-# Push to the registry
-docker push <my_custom_registry_name>.azurecr.io/<my_custom_image_name>:latest
-```
+.. code-block:: shell
 
-where `my_custom_image_uri` is the fully qualified URI to the user's image, `my_custom_registry_name` is the name of the ACR resource created during deployment of the resources below, and `my_custom_image_name` is the name of the output which contains both Covalent and the user's custom image dependencies. Users would then use `base_image_name=<my_custom_registry_name>.azurecr.io/<my_custom_image_name>:latest` in the Azure Batch executor or associated configuration.
+    # Login to ACR registry first
+    acr login --name=<my_custom_registry_name>
+    # Build the combined image used by tasks
+    docker build --build-arg COVALENT_BASE_IMAGE=<my_custom_image_uri> -t <my_custom_registry_name>.azurecr.io/<my_custom_image_name>:latest .
+    # Push to the registry
+    docker push <my_custom_registry_name>.azurecr.io/<my_custom_image_name>:latest
+
+where :code:`my_custom_image_uri` is the fully qualified URI to the user's image, :code:`my_custom_registry_name` is the name of the ACR resource created during deployment of the resources below, and :code:`my_custom_image_name` is the name of the output which contains both Covalent and the user's custom image dependencies. Users would then use :code:`base_image_name=<my_custom_registry_name>.azurecr.io/<my_custom_image_name>:latest` in the Azure Batch executor or associated configuration.
 
 ===========================
 4. Required Cloud Resources
