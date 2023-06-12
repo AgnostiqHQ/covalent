@@ -78,6 +78,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
     def batch_submit(self, qscripts_list: List[qml.tape.qscript.QuantumScript]):
 
         qscripts_list = list(qscripts_list)
+        self._validate(qscripts_list)
 
         # initialize a device: QiskitRuntimeEstimator, QiskitRuntimeSampler, etc.
         dev = create_device(
@@ -129,3 +130,11 @@ class QiskitExecutor(AsyncBaseQExecutor):
         result_obj.metadata["execution_metadata"].extend(metadatas)
 
         return result_obj
+
+    def _validate(self, qscripts):
+        """
+        Perform necessary checks on the qscripts.
+        """
+        # check that all qscripts have the same number of wires
+        if any(qs.wires != qscripts[0].wires for qs in qscripts[1:]):
+            raise RuntimeError("All qscripts must have the same wires.")
