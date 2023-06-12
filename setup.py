@@ -213,6 +213,7 @@ setup_info = {
     "install_requires": required,
     "extras_require": {
         "aws": ["boto3>=1.20.48"],
+        "azure": ["azure-identity>=1.13.0", "azure-storage-blob>=12.16.0"],
         "mysql": ["mysqlclient>=2.1.1"],
         "postgres": ["psycopg2-binary>=2.9.5"],
     },
