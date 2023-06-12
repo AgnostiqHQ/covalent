@@ -30,6 +30,8 @@ import pennylane as qml
 from mpire import WorkerPool
 from pydantic import BaseModel, Extra, Field, root_validator
 
+from ..shared_utils import get_import_path, import_from_path
+
 __all__ = [
     "BaseQExecutor",
     "BaseProcessPoolQExecutor",
@@ -68,6 +70,8 @@ class BaseQExecutor(ABC, BaseModel):
 
     persist_data: bool = True
 
+    _device_cls_import_path: Tuple[str, str] = None
+
     class Config:
         extra = Extra.allow
 
@@ -94,6 +98,12 @@ class BaseQExecutor(ABC, BaseModel):
         result_obj.execution_time = end_time - start_time
 
         return result_obj
+
+    def get_original_device_cls(self) -> Any:
+        return import_from_path(self._device_cls_import_path)
+
+    def set_original_device_cls(self, cls) -> None:
+        self._device_cls_import_path = get_import_path(cls)
 
 
 class QCResult(BaseModel):
