@@ -139,19 +139,6 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         bit_samples = np.random.choice(bit_strings, size=self.shots, p=probs)
         return np.vstack([np.array([int(i) for i in s[::-1]]) for s in bit_samples])
 
-    def dist_get_state(self, quasi_dist):
-        """
-        Generate a state-vector from a quasi-distribution
-        """
-        probs = []
-        for i in range(2**len(self.wires)):
-            if prob := quasi_dist.get(i):
-                probs.append(prob)
-            else:
-                probs.append(0.)
-
-        return np.sqrt(probs)
-
     def _process_batch_execute_result(self, circuit, quasi_dist) -> Any:
         # Update the tracker
         if self.tracker.active:
@@ -161,7 +148,6 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         # Generate computational basis samples
         if self.shots is not None or circuit.is_sampled:
             self._samples = self.dist_generate_samples(quasi_dist)
-            self._state = self.dist_get_state(quasi_dist)
 
         # Adjust for active return status
         if not pennylane.active_return():
