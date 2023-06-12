@@ -11,6 +11,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - File transfer strategy for Azure blob storage
 
+### Fixed
+
+- Read in `README.md` with `encoding="utf-8"` in `setup.py`
+
+### Docs
+
+- Fix `Lattice` docstring in RTD.
+- Added a missing `,` to the Slurm docs.
+
+
 ### Operations
 
 - Update the PR template.
