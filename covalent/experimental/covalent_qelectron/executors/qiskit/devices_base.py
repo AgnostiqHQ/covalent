@@ -152,10 +152,10 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         # Adjust for active return status
         if not pennylane.active_return():
             res = self._statistics_legacy(circuit)
-            return np.asarray(res)
+            return self._asarray(res)
 
         res = self.statistics(circuit)
         single_measurement = len(circuit.measurements) == 1
         res = res[0] if single_measurement else tuple(res)
 
-        return pennylane.numpy.asarray(res)
+        return self._asarray(res)
