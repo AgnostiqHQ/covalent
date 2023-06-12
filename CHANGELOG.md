@@ -15,6 +15,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Reduced memory consumption during workflow processing
 
+### Fixed
+
+- Read in `README.md` with `encoding="utf-8"` in `setup.py`
+
+### Docs
+
+- Fix `Lattice` docstring in RTD.
+- Added a missing `,` to the Slurm docs.
+
+
+### Operations
+
+- Update the PR template.
+
+## [0.226.0-rc.0] - 2023-06-09
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+
+
+
 ### Changed
 
 - Reverting nightly frequency back to midnight basis
