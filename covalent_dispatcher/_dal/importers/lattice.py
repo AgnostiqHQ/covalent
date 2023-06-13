@@ -45,7 +45,7 @@ from covalent._shared_files.schemas.lattice import (
     LatticeAssets,
     LatticeSchema,
 )
-from covalent_dispatcher._dal.asset import Asset, StorageType
+from covalent_dispatcher._dal.asset import Asset
 from covalent_dispatcher._dal.lattice import Lattice
 from covalent_dispatcher._object_store.local import BaseProvider
 
@@ -111,7 +111,7 @@ def import_lattice_assets(
         local_uri = os.path.join(storage_path, object_key)
 
         asset_kwargs = {
-            "storage_type": StorageType.LOCAL.value,
+            "storage_type": object_store.scheme,
             "storage_path": storage_path,
             "object_key": object_key,
             "digest_alg": asset.digest_alg,
@@ -132,7 +132,7 @@ def import_lattice_assets(
             local_uri = os.path.join(storage_path, object_key)
 
             asset_kwargs = {
-                "storage_type": StorageType.LOCAL.value,
+                "storage_type": object_store.scheme,
                 "storage_path": storage_path,
                 "object_key": object_key,
                 "digest_alg": asset.digest_alg,

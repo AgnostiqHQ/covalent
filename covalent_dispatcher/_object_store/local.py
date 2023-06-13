@@ -20,11 +20,16 @@
 
 
 import hashlib
+import json
 import os
-from typing import Optional, Tuple
+from pathlib import Path
+from typing import Any, Optional, Tuple
+
+import cloudpickle
 
 from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas import electron, lattice, result
+from covalent._workflow.transport import TransportableObject
 
 from .base import BaseProvider, Digest
 
@@ -36,7 +41,20 @@ WORKFLOW_ASSET_FILENAME_MAP.update(lattice.ASSET_FILENAME_MAP)
 ELECTRON_ASSET_FILENAME_MAP = electron.ASSET_FILENAME_MAP
 
 
+# Moved from write_result_to_db.py
+
+
+class InvalidFileExtension(Exception):
+    """
+    Exception to raise when an invalid file extension is encountered
+    """
+
+    pass
+
+
 class LocalProvider(BaseProvider):
+    scheme = "file"
+
     def __init__(self):
         self.base_path = get_config("dispatcher.results_dir")
 
@@ -89,6 +107,57 @@ class LocalProvider(BaseProvider):
         os.makedirs(storage_path, exist_ok=True)
 
         return storage_path, object_key
+
+    def store_file(self, storage_path: str, filename: str, data: Any = None) -> Digest:
+        """This function writes data corresponding to the filepaths in the DB."""
+
+        if filename.endswith(".pkl"):
+            with open(Path(storage_path) / filename, "wb") as f:
+                cloudpickle.dump(data, f)
+
+        elif filename.endswith(".log") or filename.endswith(".txt"):
+            if data is None:
+                data = ""
+
+            if not isinstance(data, str):
+                raise InvalidFileExtension("Data must be string type.")
+
+            with open(Path(storage_path) / filename, "w+") as f:
+                f.write(data)
+
+        elif filename.endswith(".tobj"):
+            with open(Path(storage_path) / filename, "wb") as f:
+                f.write(data.serialize())
+
+        elif filename.endswith(".json"):
+            with open(Path(storage_path) / filename, "w") as f:
+                json.dump(data, f)
+        else:
+            raise InvalidFileExtension("The file extension is not supported.")
+
+        digest = local_store.digest(bucket_name=storage_path, object_key=filename)
+        return digest
+
+    def load_file(self, storage_path: str, filename: str) -> Any:
+        """This function loads data for the filenames in the DB."""
+
+        if filename.endswith(".pkl"):
+            with open(Path(storage_path) / filename, "rb") as f:
+                data = cloudpickle.load(f)
+
+        elif filename.endswith(".log") or filename.endswith(".txt"):
+            with open(Path(storage_path) / filename, "r") as f:
+                data = f.read()
+
+        elif filename.endswith(".tobj"):
+            with open(Path(storage_path) / filename, "rb") as f:
+                data = TransportableObject.deserialize(f.read())
+
+        elif filename.endswith(".json"):
+            with open(Path(storage_path) / filename, "r") as f:
+                data = json.load(f)
+
+        return data
 
 
 local_store = LocalProvider()

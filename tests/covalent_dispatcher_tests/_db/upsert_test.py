@@ -87,7 +87,7 @@ def test_upsert_electron_data_handles_missing_keys(test_db, result_1, mocker):
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     mock_store_file = mocker.patch(
-        "covalent_dispatcher._db.upsert.store_file", return_value=mock_digest
+        "covalent_dispatcher._db.upsert.local_store.store_file", return_value=mock_digest
     )
     mocker.patch(
         "covalent_dispatcher._db.upsert.Electron.meta_type.insert",

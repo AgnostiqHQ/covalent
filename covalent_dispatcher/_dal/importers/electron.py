@@ -44,7 +44,7 @@ from covalent._shared_files.schemas.electron import (
     ElectronAssets,
     ElectronSchema,
 )
-from covalent_dispatcher._dal.asset import Asset, StorageType
+from covalent_dispatcher._dal.asset import Asset
 from covalent_dispatcher._dal.electron import ElectronMeta
 from covalent_dispatcher._dal.lattice import Lattice
 from covalent_dispatcher._db import models
@@ -149,7 +149,7 @@ def import_electron_assets(
         object_key = ASSET_FILENAME_MAP[asset_key]
         local_uri = os.path.join(node_storage_path, object_key)
         asset_kwargs = {
-            "storage_type": StorageType.LOCAL.value,
+            "storage_type": object_store.scheme,
             "storage_path": node_storage_path,
             "object_key": object_key,
             "digest_alg": asset.digest_alg,
@@ -170,7 +170,7 @@ def import_electron_assets(
             local_uri = os.path.join(node_storage_path, object_key)
 
             asset_kwargs = {
-                "storage_type": StorageType.LOCAL.value,
+                "storage_type": object_store.scheme,
                 "storage_path": node_storage_path,
                 "object_key": object_key,
                 "digest_alg": asset.digest_alg,

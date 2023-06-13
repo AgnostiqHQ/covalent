@@ -212,7 +212,7 @@ def test_result_update_node_2(test_db, mocker):
     import datetime
 
     from covalent._workflow.transport import TransportableObject
-    from covalent_dispatcher._dal.asset import load_file
+    from covalent_dispatcher._dal.asset import local_store
 
     res = get_mock_result()
     res._initialize_nodes()
@@ -255,12 +255,12 @@ def test_result_update_node_2(test_db, mocker):
         assert electron_record.status == "RUNNING"
         assert electron_record.started_at is not None
 
-        stdout = load_file(
+        stdout = local_store.load_file(
             storage_path=electron_record.storage_path, filename=electron_record.stdout_filename
         )
         assert stdout == "test_stdout"
 
-        stderr = load_file(
+        stderr = local_store.load_file(
             storage_path=electron_record.storage_path, filename=electron_record.stderr_filename
         )
         assert stderr == "test_stderr"
@@ -290,7 +290,7 @@ def test_result_update_node_2(test_db, mocker):
         assert electron_record.completed_at is not None
         assert electron_record.updated_at is not None
 
-        result = load_file(
+        result = local_store.load_file(
             storage_path=electron_record.storage_path, filename=electron_record.results_filename
         )
         assert result.get_deserialized() == 5

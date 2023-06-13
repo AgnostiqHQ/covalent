@@ -31,7 +31,7 @@ from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas.lattice import LatticeSchema
 from covalent._shared_files.schemas.result import ResultAssets, ResultSchema
 from covalent._shared_files.utils import format_server_url
-from covalent_dispatcher._dal.asset import Asset, StorageType
+from covalent_dispatcher._dal.asset import Asset
 from covalent_dispatcher._dal.electron import ElectronMeta
 from covalent_dispatcher._dal.job import Job
 from covalent_dispatcher._dal.result import Result, ResultMeta
@@ -230,7 +230,7 @@ def import_result_assets(
         local_uri = os.path.join(storage_path, object_key)
 
         asset_kwargs = {
-            "storage_type": StorageType.LOCAL.value,
+            "storage_type": object_store.scheme,
             "storage_path": storage_path,
             "object_key": object_key,
             "digest_alg": asset.digest_alg,

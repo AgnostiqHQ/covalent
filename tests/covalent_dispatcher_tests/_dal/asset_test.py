@@ -25,16 +25,7 @@ import tempfile
 
 import pytest
 
-from covalent_dispatcher._dal.asset import (
-    FIELDS,
-    Asset,
-    InvalidFileExtension,
-    StorageType,
-    copy_asset,
-    copy_asset_meta,
-    load_file,
-    store_file,
-)
+from covalent_dispatcher._dal.asset import FIELDS, Asset, StorageType, copy_asset, copy_asset_meta
 from covalent_dispatcher._db import models
 from covalent_dispatcher._db.datastore import DataStore
 
@@ -176,47 +167,3 @@ def test_copy_asset_metadata(test_db):
         assert dest_asset.digest_alg == "sha"
         assert dest_asset.digest == "srcdigest"
         assert dest_asset.size == 256
-
-
-# Moved from write_result_to_db_test.py
-
-
-def test_store_file_invalid_extension():
-    """Test the function used to write data corresponding to the filenames in the DB."""
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        with pytest.raises(InvalidFileExtension):
-            store_file(storage_path=temp_dir, filename="test.invalid", data="")
-
-        with pytest.raises(InvalidFileExtension):
-            store_file(storage_path=temp_dir, filename="test.txt", data={4})
-
-        with pytest.raises(InvalidFileExtension):
-            store_file(storage_path=temp_dir, filename="test.log", data={4})
-
-
-def test_store_file_valid_extension():
-    """Test the function used to write data corresponding to the filenames in the DB."""
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        with pytest.raises(InvalidFileExtension):
-            store_file(storage_path=temp_dir, filename="test.invalid", data="")
-
-        with pytest.raises(InvalidFileExtension):
-            store_file(storage_path=temp_dir, filename="test.txt", data={4})
-
-        with pytest.raises(InvalidFileExtension):
-            store_file(storage_path=temp_dir, filename="test.log", data={4})
-
-
-def test_store_and_load_file():
-    """Test the data storage and loading methods simultaneously."""
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        data = [1, 2, 3]
-        store_file(storage_path=temp_dir, filename="pickle.pkl", data=data)
-        assert load_file(storage_path=temp_dir, filename="pickle.pkl") == data
-
-        data = None
-        store_file(storage_path=temp_dir, filename="pickle.txt", data=data)
-        assert load_file(storage_path=temp_dir, filename="pickle.txt") == ""

@@ -31,10 +31,11 @@ from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas import electron, lattice, result
 from covalent._workflow.transportable_object import TransportableObject
 
-from .._dal.asset import Asset, store_file
+from .._dal.asset import Asset
 from .._dal.electron import Electron
 from .._dal.job import Job
 from .._dal.lattice import Lattice
+from .._object_store.local import local_store
 from . import models
 from .datastore import workflow_db
 from .write_result_to_db import get_electron_type, transaction_upsert_electron_dependency_data
@@ -137,7 +138,7 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         ("cova_imports", LATTICE_COVA_IMPORTS_FILENAME, result.lattice.cova_imports),
         ("lattice_imports", LATTICE_LATTICE_IMPORTS_FILENAME, result.lattice.lattice_imports),
     ]:
-        digest = store_file(data_storage_path, filename, data)
+        digest = local_store.store_file(data_storage_path, filename, data)
         asset_record_kwargs = {
             "storage_type": LATTICE_STORAGE_TYPE,
             "storage_path": str(data_storage_path),
@@ -318,7 +319,7 @@ def _electron_data(
                 ("error", ELECTRON_ERROR_FILENAME, node_error),
                 ("output", ELECTRON_RESULTS_FILENAME, node_output),
             ]:
-                digest = store_file(node_path, filename, data)
+                digest = local_store.store_file(node_path, filename, data)
                 asset_record_kwargs = {
                     "storage_type": ELECTRON_STORAGE_TYPE,
                     "storage_path": str(node_path),

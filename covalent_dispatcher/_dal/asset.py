@@ -20,20 +20,17 @@
 
 """Asset class and utility functions"""
 
-import json
 import os
 from enum import Enum
 from pathlib import Path
 from typing import Any
 
-import cloudpickle
 from sqlalchemy.orm import Session
 
 from covalent._shared_files import logger
-from covalent._workflow.transport import TransportableObject
 
 from .._db.models import Asset as AssetRecord
-from .._object_store.local import Digest, local_store
+from .._object_store.local import BaseProvider, local_store
 from .controller import Record
 from .utils.file_transfer import cp
 
@@ -43,6 +40,11 @@ app_log = logger.app_log
 class StorageType(Enum):
     LOCAL = "file"
     S3 = "s3"
+
+
+_storage_provider_map = {
+    StorageType.LOCAL: local_store,
+}
 
 
 FIELDS = {
@@ -66,6 +68,10 @@ class Asset(Record[AssetRecord]):
     def __init__(self, session: Session, record: AssetRecord, *, keys: list = FIELDS):
         self._id = record.id
         self._attrs = {k: getattr(record, k) for k in keys}
+
+    @property
+    def object_store(self) -> BaseProvider:
+        return _storage_provider_map[self.storage_type]
 
     @property
     def primary_key(self):
@@ -108,10 +114,10 @@ class Asset(Record[AssetRecord]):
         self.update(session, values={"remote_uri": uri})
 
     def store_data(self, data: Any) -> None:
-        store_file(self.storage_path, self.object_key, data)
+        self.object_store.store_file(self.storage_path, self.object_key, data)
 
     def load_data(self) -> Any:
-        return load_file(self.storage_path, self.object_key)
+        return self.object_store.load_file(self.storage_path, self.object_key)
 
     def download(self, src_uri: str):
         scheme = self.storage_type.value
@@ -133,70 +139,6 @@ class Asset(Record[AssetRecord]):
         )
         record = records[0]
         return Asset(session, record, keys=keys)
-
-
-# Moved from write_result_to_db.py
-
-
-class InvalidFileExtension(Exception):
-    """
-    Exception to raise when an invalid file extension is encountered
-    """
-
-    pass
-
-
-def store_file(storage_path: str, filename: str, data: Any = None) -> Digest:
-    """This function writes data corresponding to the filepaths in the DB."""
-
-    if filename.endswith(".pkl"):
-        with open(Path(storage_path) / filename, "wb") as f:
-            cloudpickle.dump(data, f)
-
-    elif filename.endswith(".log") or filename.endswith(".txt"):
-        if data is None:
-            data = ""
-
-        if not isinstance(data, str):
-            raise InvalidFileExtension("Data must be string type.")
-
-        with open(Path(storage_path) / filename, "w+") as f:
-            f.write(data)
-
-    elif filename.endswith(".tobj"):
-        with open(Path(storage_path) / filename, "wb") as f:
-            f.write(data.serialize())
-
-    elif filename.endswith(".json"):
-        with open(Path(storage_path) / filename, "w") as f:
-            json.dump(data, f)
-    else:
-        raise InvalidFileExtension("The file extension is not supported.")
-
-    digest = local_store.digest(bucket_name=storage_path, object_key=filename)
-    return digest
-
-
-def load_file(storage_path: str, filename: str) -> Any:
-    """This function loads data for the filenames in the DB."""
-
-    if filename.endswith(".pkl"):
-        with open(Path(storage_path) / filename, "rb") as f:
-            data = cloudpickle.load(f)
-
-    elif filename.endswith(".log") or filename.endswith(".txt"):
-        with open(Path(storage_path) / filename, "r") as f:
-            data = f.read()
-
-    elif filename.endswith(".tobj"):
-        with open(Path(storage_path) / filename, "rb") as f:
-            data = TransportableObject.deserialize(f.read())
-
-    elif filename.endswith(".json"):
-        with open(Path(storage_path) / filename, "r") as f:
-            data = json.load(f)
-
-    return data
 
 
 def copy_asset(src: Asset, dest: Asset):

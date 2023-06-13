@@ -31,6 +31,11 @@ class Digest:
 
 
 class BaseProvider:
+    @classmethod
+    @property
+    def scheme(cls) -> str:
+        raise NotImplementedError
+
     def digest(self, bucket_name: str, object_key: str) -> Digest:
         raise NotImplementedError
 

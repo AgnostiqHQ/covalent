@@ -32,7 +32,7 @@ from covalent._serialize.result import deserialize_result
 from covalent._shared_files.defaults import WAIT_EDGE_NAME
 from covalent._workflow.lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
-from covalent_dispatcher._dal.asset import load_file
+from covalent_dispatcher._dal.asset import local_store
 from covalent_dispatcher._db import update, upsert
 from covalent_dispatcher._db.datastore import DataStore
 from covalent_dispatcher._db.models import Electron, ElectronDependency, Job, Lattice
@@ -141,33 +141,36 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         lattice_storage_path = Path(lattice_row.storage_path)
         assert Path(lattice_row.storage_path) == Path(TEMP_RESULTS_DIR) / "dispatch_1"
 
-        workflow_function = load_file(
+        workflow_function = local_store.load_file(
             storage_path=lattice_storage_path, filename=lattice_row.function_filename
         ).get_deserialized()
         assert workflow_function(1, 2) == 4
         assert (
-            load_file(storage_path=lattice_storage_path, filename=lattice_row.error_filename) == ""
+            local_store.load_file(
+                storage_path=lattice_storage_path, filename=lattice_row.error_filename
+            )
+            == ""
         )
         assert (
-            load_file(
+            local_store.load_file(
                 storage_path=lattice_storage_path, filename=lattice_row.results_filename
             ).get_deserialized()
             is None
         )
 
         executor_data = json.loads(lattice_row.executor_data)
-        # executor_data = load_file(
+        # executor_data = local_store.load_file(
         #     storage_path=lattice_storage_path, filename=lattice_row.executor_data_filename
         # )
 
         assert executor_data["short_name"] == le.short_name()
         assert executor_data["attributes"] == le.__dict__
 
-        saved_named_args = load_file(
+        saved_named_args = local_store.load_file(
             storage_path=lattice_storage_path, filename=lattice_row.named_args_filename
         )
 
-        saved_named_kwargs = load_file(
+        saved_named_kwargs = local_store.load_file(
             storage_path=lattice_storage_path, filename=lattice_row.named_kwargs_filename
         )
         saved_named_args_raw = saved_named_args.get_deserialized()
@@ -185,24 +188,26 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
 
             if electron.transport_graph_node_id == 1:
                 assert (
-                    load_file(storage_path=electron.storage_path, filename=electron.deps_filename)
+                    local_store.load_file(
+                        storage_path=electron.storage_path, filename=electron.deps_filename
+                    )
                     == {}
                 )
                 assert (
-                    load_file(
+                    local_store.load_file(
                         storage_path=electron.storage_path, filename=electron.call_before_filename
                     )
                     == []
                 )
                 assert (
-                    load_file(
+                    local_store.load_file(
                         storage_path=electron.storage_path, filename=electron.call_after_filename
                     )
                     == []
                 )
             if electron.transport_graph_node_id == 3:
                 executor_data = json.loads(electron.executor_data)
-                # executor_data = load_file(
+                # executor_data = local_store.load_file(
                 #     storage_path=electron.storage_path, filename=electron.executor_data_filename
                 # )
 
@@ -242,7 +247,7 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
     #         "%Y-%m-%d %H:%M"
     #     )
     #     assert lattice_row.status == "COMPLETED"
-    #     result = load_file(
+    #     result = local_store.load_file(
     #         storage_path=lattice_storage_path, filename=lattice_row.results_filename
     #     )
     #     assert result_1.result == result.get_deserialized()
