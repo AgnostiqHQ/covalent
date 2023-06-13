@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
 - Add CLI status for zombie, stopped process.
+
+### Docs
+
+- Added documentation for Azure Blob Storage file transfers
 
 ## [0.227.0-rc.0] - 2023-06-13
 
