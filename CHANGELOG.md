@@ -9,8 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- File transfer strategy for Azure blob storage
 - Add CLI status for zombie, stopped process.
+
+### Docs
+
+- Added documentation for Azure Blob Storage file transfers
 
 ## [0.227.0-rc.0] - 2023-06-13
 
@@ -22,6 +25,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: Casey Jao <casey@agnostiq.ai>
 
+
+### Added
+
+- File transfer strategy for Azure blob storage
 
 ### Fixed
 
@@ -36,10 +43,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Update the PR template.
-
-### Docs
-
-- Added documentation for Azure Blob Storage file transfers
 
 ## [0.226.0-rc.0] - 2023-06-09
 
