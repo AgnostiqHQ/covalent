@@ -12,6 +12,7 @@ import { Button, Grid, Typography, SvgIcon } from '@mui/material'
 import React from 'react'
 import { ReactComponent as ViewSvg } from '../../assets/qelectron/view.svg'
 import { ReactComponent as QelectronSvg } from '../../assets/qelectron/qelectron.svg'
+import { formatQElectronTime } from '../../utils/misc'
 
 const QElectronCard = (props) => {
   const { qElectronDetails, toggleQelectron, openQelectronDrawer } = props
@@ -49,7 +50,7 @@ const QElectronCard = (props) => {
       >
         <Grid item container xs={6} direction="row" alignItems="center">
           <Typography sx={{ fontSize: '16px', mr: 1 }}>
-            {qElectronDetails.title}
+            qelectrons
           </Typography>
           <span style={{ flex: 'none' }}>
             <SvgIcon
@@ -115,7 +116,7 @@ const QElectronCard = (props) => {
         <Grid item sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography sx={{ fontSize: '12px' }}>Avg Time Of Call</Typography>
           <Typography sx={{ fontSize: '14px' }}>
-            {qElectronDetails.avg_time_ofcall}
+            {formatQElectronTime(qElectronDetails.avg_time_ofcall)}
           </Typography>
         </Grid>
       </Grid>
