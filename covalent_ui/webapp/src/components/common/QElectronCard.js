@@ -110,13 +110,13 @@ const QElectronCard = (props) => {
         <Grid item sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography sx={{ fontSize: '12px' }}>Quantum Calls</Typography>
           <Typography sx={{ fontSize: '14px' }}>
-            {qElectronDetails.quantam_calls}
+            {qElectronDetails.total_quantum_calls}
           </Typography>
         </Grid>
         <Grid item sx={{ display: 'flex', flexDirection: 'column' }}>
           <Typography sx={{ fontSize: '12px' }}>Avg Time Of Call</Typography>
           <Typography sx={{ fontSize: '14px' }}>
-            {formatQElectronTime(qElectronDetails.avg_time_ofcall)}
+            {formatQElectronTime(qElectronDetails.avg_quantum_calls)}
           </Typography>
         </Grid>
       </Grid>
