@@ -444,3 +444,22 @@ export const getLocalStartTime = (time) => {
   let startTimeToLocal = new Date((time = time + 'Z'))
   return startTimeToLocal.toISOString()
 }
+
+export const formatQElectronTime = (sec) => {
+  let time = ''
+  const days = Math.floor(sec / (3600 * 24))
+  const hours = Math.floor(sec / 3600)
+  const minutes = ('0' + (Math.floor(sec / 60) % 60)).slice(-2)
+  if (sec > 0 && sec < 60) {
+    time = '< 1min'
+  } else if (sec > 60 && sec < 3600) {
+    time = `${Math.round(minutes)}m`
+  } else if (sec > 3600 && sec < 86400) {
+    time = `${Math.round(hours)}h ${Math.round(minutes)}m`
+  } else if (sec > 86400 && sec < 172800) {
+    time = '> 1 day'
+  } else if (sec > 172800) {
+    time = `${Math.round(days)} days`
+  }
+  return time
+}
