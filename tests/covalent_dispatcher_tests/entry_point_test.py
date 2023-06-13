@@ -28,16 +28,6 @@ from covalent_dispatcher.entry_point import cancel_running_dispatch, run_dispatc
 DISPATCH_ID = "f34671d1-48f2-41ce-89d9-9a8cb5c60e5d"
 
 
-class MockObject:
-    pass
-
-
-def mock_initialize_result_object(lattice):
-    result = MockObject()
-    result.dispatch_id = lattice["dispatch_id"]
-    return result
-
-
 @pytest.mark.asyncio
 async def test_run_dispatcher(mocker):
     mock_run_dispatch = mocker.patch("covalent_dispatcher._core.run_dispatch")

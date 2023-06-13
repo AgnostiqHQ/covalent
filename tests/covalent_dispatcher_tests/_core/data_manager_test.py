@@ -36,7 +36,6 @@ from covalent_dispatcher._core.data_manager import (
     _update_parent_electron,
     finalize_dispatch,
     get_result_object,
-    initialize_result_object,
     make_dispatch,
     persist_result,
     update_node_result,
@@ -78,39 +77,6 @@ def get_mock_result() -> Result:
     result_object = Result(received_workflow, "pipeline_workflow")
 
     return result_object
-
-
-def test_initialize_result_object(mocker, test_db):
-    """Test the `initialize_result_object` function"""
-
-    @ct.electron
-    def task(x):
-        return x
-
-    @ct.lattice
-    def workflow(x):
-        return task(x)
-
-    dispatch_id = "test_initialize_result_object"
-    workflow.build_graph(1)
-    json_lattice = workflow.serialize_to_json()
-    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", return_value=test_db)
-    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", return_value=test_db)
-    parent_result_object = get_mock_result()
-    parent_result_object._dispatch_id = dispatch_id
-
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_result_object",
-        return_value=parent_result_object,
-    )
-
-    mock_persist = mocker.patch("covalent_dispatcher._db.update.persist")
-
-    sub_dispatch_id = initialize_result_object(
-        json_lattice=json_lattice, parent_dispatch_id=dispatch_id, parent_electron_id=5
-    )
-
-    mock_persist.assert_called()
 
 
 @pytest.mark.parametrize(
@@ -289,8 +255,8 @@ async def test_update_node_result_handles_db_exceptions(mocker):
 async def test_make_dispatch(mocker):
     res = MagicMock()
     dispatch_id = "test_make_dispatch"
-    mock_init_result = mocker.patch(
-        "covalent_dispatcher._core.data_manager.initialize_result_object", return_value=dispatch_id
+    mock_resubmit_lattice = mocker.patch(
+        "covalent_dispatcher._core.data_manager._redirect_lattice", return_value=dispatch_id
     )
     json_lattice = '{"workflow_function": "asdf"}'
     assert dispatch_id == await make_dispatch(json_lattice)

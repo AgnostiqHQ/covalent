@@ -22,12 +22,14 @@
 Defines the core functionality of the result service
 """
 
+import asyncio
+import tempfile
 import traceback
-import uuid
 from typing import Any, Dict, List
 
 from pydantic import ValidationError
 
+from covalent._dispatcher_plugins.local import LocalDispatcher
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.schemas.result import ResultSchema
@@ -36,7 +38,6 @@ from covalent._workflow.lattice import Lattice
 
 from .._dal.result import Result as SRVResult
 from .._dal.result import get_result_object as get_result_object_from_db
-from .._db import update
 from .._db.write_result_to_db import resolve_electron_id
 from . import dispatcher
 from .data_modules import graph
@@ -136,60 +137,49 @@ def _update_node(dispatch_id: str, node_result: Dict):
 
 
 # Domain: result
-def initialize_result_object(
-    json_lattice: str, parent_dispatch_id: str = None, parent_electron_id: int = None
-) -> Result:
-    """Convenience function for constructing a result object from a json-serialized lattice.
+def _redirect_lattice(
+    json_lattice: str,
+    parent_dispatch_id: str,
+    parent_electron_id: int,
+    loop: asyncio.AbstractEventLoop,
+) -> str:
+    """Redirect a JSON lattice through the new DAL.
 
     Args:
-        json_lattice: a JSON-serialized lattice
-        parent_dispatch_id: the parent dispatch id if json_lattice is a sublattice
-        parent_electron_id: the DB id of the parent electron (for sublattices)
+        json_lattice: A JSON-serialized lattice.
+        parent_dispatch_id:  The id of a sublattice's parent dispatch.
+
+    This will only be triggered from either the monolithic /submit
+    endpoint or a monolithic sublattice dispatch.
 
     Returns:
-        Result: result object
-    """
+        The dispatch manifest
 
-    dispatch_id = get_unique_id()
+    """
     lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice, dispatch_id)
-    if parent_dispatch_id:
-        parent_result_object = get_result_object(parent_dispatch_id, bare=True)
-        result_object._root_dispatch_id = parent_result_object.root_dispatch_id
+    with tempfile.TemporaryDirectory() as staging_dir:
+        manifest = LocalDispatcher.prepare_manifest(lattice, staging_dir)
 
-    result_object._electron_id = parent_electron_id
-    result_object._initialize_nodes()
-    app_log.debug("2: Constructed result object and initialized nodes.")
+        # Trigger an internal asset pull from /tmp to object store
+        coro = manifest_importer.import_manifest(
+            manifest,
+            parent_dispatch_id,
+            parent_electron_id,
+        )
+        filtered_manifest = asyncio.run_coroutine_threadsafe(coro, loop).result()
 
-    update.persist(result_object, electron_id=parent_electron_id)
-    app_log.debug("Result object persisted.")
-
-    return result_object.dispatch_id
-
-
-# Domain: result
-def get_unique_id() -> str:
-    """
-    Get a unique ID.
-
-    Args:
-        None
-
-    Returns:
-        str: Unique ID
-    """
-
-    return str(uuid.uuid4())
+    return filtered_manifest.metadata.dispatch_id
 
 
 async def make_dispatch(
     json_lattice: str, parent_dispatch_id: str = None, parent_electron_id: int = None
-) -> Result:
+) -> str:
     return await run_in_executor(
-        initialize_result_object,
+        _redirect_lattice,
         json_lattice,
         parent_dispatch_id,
         parent_electron_id,
+        asyncio.get_running_loop(),
     )
 
 
