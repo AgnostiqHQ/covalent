@@ -24,8 +24,11 @@ from typing import Callable, Tuple
 
 from furl import furl
 
+from ..._shared_files import logger
 from .. import File
 from .transfer_strategy_base import FileTransferStrategy
+
+app_log = logger.app_log
 
 
 class GCloud(FileTransferStrategy):
@@ -91,13 +94,44 @@ class GCloud(FileTransferStrategy):
         bucket_name = object_furl.host
         object_path = object_furl.path
 
+        if str(object_path).startswith("/"):
+            object_path = Path(str(object_path)[1:])
+
         return (bucket_name, object_path)
 
-    def _download_file(self, client, source_path: str, destination_path: str) -> None:
-        raise NotImplementedError
+    def _download_file(self, blob_client, destination_path: str) -> None:
+        blob_client.download_to_filename(destination_path)
 
     def download(self, from_file: File, to_file: File = File()) -> Callable:
-        raise NotImplementedError
+        from_filepath = from_file.filepath
+        to_filepath = to_file.filepath
+
+        bucket_name, object_path = self._parse_uri(from_file.uri)
+
+        app_log.debug(
+            f"GCloud download; bucket name: {bucket_name}, from_filepath: {from_filepath}, to_filepath {to_filepath}."
+        )
+
+        def callable():
+            """Download file or directory from a Google Cloud Storage bucket."""
+            from pathlib import Path
+
+            service_client = self._get_service_client(bucket_name)
+
+            blobs = service_client.list_blobs(prefix=object_path)
+            for blob in blobs:
+                if blob.name.endswith("/"):
+                    continue
+
+                dest_obj_path = (
+                    Path(to_filepath) / Path(blob.name).relative_to(object_path)
+                    if to_file.is_dir
+                    else Path(to_filepath)
+                )
+                dest_obj_path.parent.mkdir(parents=True, exist_ok=True)
+                self._download_file(blob, str(dest_obj_path))
+
+        return callable
 
     def _upload_file(self, client, source_path: str, destination_path: Path) -> None:
         raise NotImplementedError
