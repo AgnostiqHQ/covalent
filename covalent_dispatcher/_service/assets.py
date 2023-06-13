@@ -27,7 +27,7 @@ from functools import lru_cache
 from typing import BinaryIO, Tuple, Union
 
 from fastapi import APIRouter, Header, HTTPException, UploadFile
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import StreamingResponse
 from furl import furl
 
 from covalent._serialize.electron import ASSET_TYPES as ELECTRON_ASSET_TYPES
@@ -91,11 +91,6 @@ def get_node_asset(
         )
 
         result_object = get_cached_result_object(dispatch_id)
-        if not result_object:
-            return JSONResponse(
-                status_code=404,
-                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-            )
 
         app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
 
@@ -145,11 +140,6 @@ def get_dispatch_asset(
         )
 
         result_object = get_cached_result_object(dispatch_id)
-        if not result_object:
-            return JSONResponse(
-                status_code=404,
-                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-            )
 
         app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
         with workflow_db.session() as session:
@@ -196,11 +186,6 @@ def get_lattice_asset(
         )
 
         result_object = get_cached_result_object(dispatch_id)
-        if not result_object:
-            return JSONResponse(
-                status_code=404,
-                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-            )
         app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
 
         with workflow_db.session() as session:
@@ -237,11 +222,6 @@ def upload_node_asset(
 
     try:
         result_object = get_cached_result_object(dispatch_id)
-        if not result_object:
-            return JSONResponse(
-                status_code=404,
-                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-            )
 
         app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
         node = result_object.lattice.transport_graph.get_node(node_id)
@@ -250,11 +230,7 @@ def upload_node_asset(
             app_log.debug(f"Asset uri {asset.internal_uri}")
 
             # Update asset metadata
-            update = {"size": content_length}
-            if digest:
-                alg, checksum = _extract_checksum(digest)
-                update["digest_alg"] = alg
-                update["digest"] = checksum
+            update = _get_asset_metadata_update(content_length, digest)
             node.update_assets(updates={key: update}, session=session)
             app_log.debug(f"Updated node asset {dispatch_id}:{node_id}:{key}")
 
@@ -277,22 +253,13 @@ def upload_dispatch_asset(
 ):
     try:
         result_object = get_cached_result_object(dispatch_id)
-        if not result_object:
-            return JSONResponse(
-                status_code=404,
-                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-            )
 
         app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
         with workflow_db.session() as session:
             asset = result_object.get_asset(key=key.value, session=session)
 
             # Update asset metadata
-            update = {"size": content_length}
-            if digest:
-                alg, checksum = _extract_checksum(digest)
-                update["digest_alg"] = alg
-                update["digest"] = checksum
+            update = _get_asset_metadata_update(content_length, digest)
             result_object.update_assets(updates={key: update}, session=session)
             app_log.debug(f"Updated size for dispatch asset {dispatch_id}:{key}")
 
@@ -315,11 +282,6 @@ def upload_lattice_asset(
 ):
     try:
         result_object = get_cached_result_object(dispatch_id)
-        if not result_object:
-            return JSONResponse(
-                status_code=404,
-                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-            )
 
         app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
 
@@ -327,11 +289,7 @@ def upload_lattice_asset(
             asset = result_object.lattice.get_asset(key=key.value, session=session)
 
             # Update asset metadata
-            update = {"size": content_length}
-            if digest:
-                alg, checksum = _extract_checksum(digest)
-                update["digest_alg"] = alg
-                update["digest"] = checksum
+            update = _get_asset_metadata_update(content_length, digest)
             result_object.lattice.update_assets(updates={key: update}, session=session)
             app_log.debug(f"Updated size for lattice asset {dispatch_id}:{key}")
 
@@ -429,7 +387,7 @@ def _get_tobj_pickle_offsets(file_url: str) -> Tuple[int, int]:
         file_url: A file:/// URL pointing to the TransportableObject
 
     Returns:
-        (start_byte, end_byte)
+        (start_byte, -1)
     """
 
     file_path = str(furl(file_url).path)
@@ -460,6 +418,19 @@ def get_cached_result_object(dispatch_id: str):
                 node = tg.get_node(node_id, session)
                 node.populate_asset_map(session)
     except KeyError:
-        srv_res = None
+        raise HTTPException(
+            status_code=400,
+            detail=f"The requested dispatch ID {dispatch_id} was not found.",
+        )
 
     return srv_res
+
+
+def _get_asset_metadata_update(content_length, digest):
+    update = {"size": content_length}
+    if digest:
+        alg, checksum = _extract_checksum(digest)
+        update["digest_alg"] = alg
+        update["digest"] = checksum
+
+    return update
