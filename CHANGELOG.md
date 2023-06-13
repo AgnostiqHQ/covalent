@@ -7,6 +7,88 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.227.0-rc.0] - 2023-06-13
+
+### Authors
+
+- Andrew S. Rosen <asrosen93@gmail.com>
+- Co-authored-by: Sankalp Sanand <sankalp@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+
+
+### Added
+
+- File transfer strategy for Azure blob storage
+
+### Fixed
+
+- Read in `README.md` with `encoding="utf-8"` in `setup.py`
+
+### Docs
+
+- Fix `Lattice` docstring in RTD.
+- Added a missing `,` to the Slurm docs.
+
+
+### Operations
+
+- Update the PR template.
+
+## [0.226.0-rc.0] - 2023-06-09
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+
+
+
+### Changed
+
+- Reverting nightly frequency back to midnight basis
+
+
+## [0.225.0-rc.0] - 2023-06-08
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Madhur Tandon <20173739+madhur-tandon@users.noreply.github.com>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Andrew S. Rosen <asrosen93@gmail.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: sriranjani venkatesan <sriranjani.venkatesan@psiog.com>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+
+
+### Changed
+
+- Temporarily changing the nightly frequency to every hour
+
+## [0.224.0-rc.0] - 2023-06-04
+
+### Authors
+
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Madhur Tandon <20173739+madhur-tandon@users.noreply.github.com>
+- Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Andrew S. Rosen <asrosen93@gmail.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: sriranjani venkatesan <sriranjani.venkatesan@psiog.com>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: santoshkumarradha <santosh@agnostiq.ai>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+
+
 ### Changed
 
 - Error messages are propagated to stdout when the server is not started. These changes are applied to `dispatch`, `redispatch`, and `get_result`.
@@ -22,6 +104,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Resolving correct python executable
 - Error handling for random URLs/random dispatchId entered on the GUI
 - Fixed support for dynamically assigning `executor` to `Electron` class
+- Fixed nightly by activating environment before running tests in `tests.yml`
 
 ### Added
 

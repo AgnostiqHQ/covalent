@@ -109,7 +109,7 @@ More complex jobs can be crafted by using these optional parameters. For example
            "cpu-bind": "cores",
            "G": 4,
            "gpu-bind": "single:1"
-       }
+       },
        srun_append="nsys profile --stats=true -t cuda --gpu-metrics-device=all",
        postrun_commands=[
            "srun --ntasks-per-node 1 dcgmi profile --resume",
