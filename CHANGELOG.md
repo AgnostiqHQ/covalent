@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- File transfer strategy for GCP storage
 - Add CLI status for zombie, stopped process.
 
 ### Docs
@@ -38,7 +39,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix `Lattice` docstring in RTD.
 - Added a missing `,` to the Slurm docs.
-
 
 ### Operations
 

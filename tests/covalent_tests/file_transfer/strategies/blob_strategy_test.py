@@ -82,7 +82,6 @@ def test_get_blob_client(mocker, blob_strategy):
 
 def test_parse_blob_uri(blob_strategy):
     result = blob_strategy._parse_blob_uri(MOCK_REMOTE_FILEPATH)
-    print(result)
 
     assert result[0] == MOCK_BLOB_STORAGE_ACCOUNT_URL
     assert result[1] == MOCK_BLOB_CONTAINER
