@@ -84,18 +84,9 @@ const NodeDrawer = ({
   const qElectronExists = useSelector(
     (state) => state.electronResults.electronList?.qelectron_data_exists
   )
-  const qElectronQuantumCalls = useSelector(
-    (state) => state.electronResults.electronList?.quantum_calls
+  const qElectronDetails = useSelector(
+    (state) => state.electronResults.electronList?.qelectron
   )
-  const qElectronAvgTimeOfCall = useSelector(
-    (state) => state.electronResults.electronList?.avg_time_call
-  )
-
-  const qElectronDetails = {
-    quantam_calls: qElectronQuantumCalls,
-    avg_time_ofcall: qElectronAvgTimeOfCall,
-  }
-
   const electronInputResult = useSelector(
     (state) => state.electronResults.electronInput
   )
