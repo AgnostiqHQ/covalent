@@ -44,8 +44,7 @@ class ElectronResponse(BaseModel):
     runtime: Union[int, None] = None
     description: Union[str, None] = None
     qelectron_data_exists: bool = False
-    quantum_calls: Union[int, None] = None
-    avg_time_call: Union[float, None] = None
+    qelectron: dict = None
 
 
 class ElectronFileResponse(BaseModel):

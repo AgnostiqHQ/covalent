@@ -33,7 +33,6 @@ def set_serialization_strategy(strategy_name):
 
 
 class Database:
-
     # dash-separated names result in fallback strategy with try/except loops,
     # other valid strategy names uses the one strategy every time
     # see `covalent_qelectron/quantum_server/serialize.py`
@@ -63,9 +62,7 @@ class Database:
         db_path = self._get_db_path(dispatch_id, node_id)
 
         return JsonLmdb.open_with_strategy(
-            file=str(db_path.resolve().absolute()),
-            flag="c",
-            strategy_name=self.strategy_name
+            file=str(db_path.resolve().absolute()), flag="c", strategy_name=self.strategy_name
         )
 
     def set(self, keys, values, *, dispatch_id, node_id):
@@ -83,13 +80,6 @@ class Database:
     def get_circuit_ids(self, *, dispatch_id, node_id):
         with self._open(dispatch_id, node_id) as db:
             return list(db.keys())
-
-    def get_avg_time(self, dispatch_id, node_id):
-        time = []
-        with self._open(dispatch_id, node_id) as db:
-            for i in db:
-                time.append(db[i]["execution_time"])
-        return sum(time) / len(time)
 
     def get_circuit_info(self, circuit_id, *, dispatch_id, node_id):
         with self._open(dispatch_id, node_id) as db:

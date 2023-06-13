@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from datetime import timezone
+from datetime import timedelta, timezone
 from uuid import UUID
 
 from sqlalchemy.sql import func
@@ -26,6 +26,7 @@ from sqlalchemy.sql import func
 from covalent.experimental.covalent_qelectron.quantum_server.database import Database
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.lattices import Lattice
+from covalent_ui.api.v1.utils.models_helper import JobsSortBy, SortDirection
 
 
 class Electrons:
@@ -34,6 +35,69 @@ class Electrons:
     def __init__(self, db_con) -> None:
         self.db_con = db_con
         self.qdb = Database()
+
+    def get_jobs(
+        self,
+        dispatch_id: UUID,
+        electron_id: int,
+        sort_by: JobsSortBy,
+        sort_direction: SortDirection,
+        count,
+        offset,
+    ):
+        try:
+            jobs = self.qdb.get_db(dispatch_id=str(dispatch_id), node_id=electron_id)
+            jobs_list = [
+                {
+                    "job_id": circuit["circuit_id"],
+                    "start_time": circuit["save_time"],
+                    "executor": circuit["result_metadata"]["executor_name"],
+                    "status": "COMPLETED"
+                    if circuit["result"] and circuit["result_metadata"]
+                    else "RUNNING",
+                }
+                for _, circuit in jobs.items()
+            ]
+            jobs_list.sort(
+                reverse=sort_direction == SortDirection.DESCENDING, key=lambda d: d[sort_by.value]
+            )
+            result = (
+                jobs_list[offset : count + offset] if count is not None else jobs_list[offset:]
+            )
+            return result
+        except:
+            return None
+
+    def get_job_detail(self, dispatch_id, electron_id, job_id):
+        try:
+            selected_job = self.qdb.get_db(dispatch_id=str(dispatch_id), node_id=electron_id)[
+                job_id
+            ]
+            job_overview = {
+                "overview": {
+                    "job_name": selected_job["circuit_name"],
+                    "backend": selected_job["result_metadata"]["executor_backend_name"],
+                    "time_elapsed": selected_job["execution_time"],
+                    "result": selected_job["result"],
+                    "start_time": selected_job["save_time"],
+                    "end_time": selected_job["save_time"]
+                    + timedelta(seconds=selected_job["execution_time"]),
+                },
+                "circuit": {
+                    "total_qbits": selected_job["qnode_specs"]["num_used_wires"],
+                    "qbit1_gates": selected_job["qnode_specs"]["gate_sizes"]["1"],
+                    "qbit2_gates": selected_job["qnode_specs"]["gate_sizes"]["2"],
+                    "depth": selected_job["qnode_specs"]["depth"],
+                    "circuit": selected_job["qscript"],
+                },
+                "executor": {
+                    "name": selected_job["qexecutor"]["name"],
+                    "executor": selected_job["qexecutor"],
+                },
+            }
+            return job_overview
+        except:
+            return None
 
     def get_electrons_id(self, dispatch_id, electron_id) -> Electron:
         """
@@ -96,4 +160,6 @@ class Electrons:
     def get_avg_quantum_calls(self, dispatch_id, node_id, is_qa_electron: bool):
         if not is_qa_electron:
             return None
-        return self.qdb.get_avg_time(dispatch_id=str(dispatch_id), node_id=node_id)
+        jobs = self.qdb.get_db(dispatch_id=str(dispatch_id), node_id=node_id)
+        time = [jobs[value]["execution_time"] for value in jobs]
+        return sum(time) / len(time)
