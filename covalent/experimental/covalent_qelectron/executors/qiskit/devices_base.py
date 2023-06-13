@@ -125,6 +125,15 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
     A base class for devices that use the Sampler primitive.
     """
 
+    @property
+    def asarray(self):
+        """
+        Wrap to override NumPy `asarray` with Pennylane `asarray`
+        """
+        if self._asarray is np.asarray:
+            return pennylane.numpy.asarray
+        return self._asarray
+
     def dist_generate_samples(self, quasi_dist):
         """
         Generate samples from a quasi-distribution
@@ -152,10 +161,11 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         # Adjust for active return status
         if not pennylane.active_return():
             res = self._statistics_legacy(circuit)
-            return self._asarray(res)
+            return self.asarray(res)
 
         res = self.statistics(circuit)
-        single_measurement = len(circuit.measurements) == 1
-        res = res[0] if single_measurement else tuple(res)
 
-        return self._asarray(res)
+        if len(circuit.measurements) > 1:
+            return tuple(res)
+
+        return self.asarray(res[0])
