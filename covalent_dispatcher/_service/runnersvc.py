@@ -18,8 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""Endpoints to update status of running tasks."""
 
-from enum import Enum
 
 from fastapi import APIRouter, Request
 
@@ -31,15 +31,13 @@ log_stack_info = logger.log_stack_info
 router: APIRouter = APIRouter()
 
 
-class ResultStatus(str, Enum):
-    cancelled = "cancelled"
-    completed = "completed"
-    failed = "failed"
-
-
 @router.put("/update/task/{dispatch_id}/{node_id}")
 async def update_task_status(dispatch_id: str, node_id: int, request: Request):
-    # Dummy impl for now
+    """Updates the status of a running task.
+
+    The request JSON will be passed to the task executor plugin's
+    `receive()` method together with `dispatch_id` and `node_id`.
+    """
 
     from .._core import runner_ng
 
@@ -56,3 +54,4 @@ async def update_task_status(dispatch_id: str, node_id: int, request: Request):
         return f"Task {task_metadata} marked ready with detail {detail}"
     except Exception as e:
         app_log.debug(f"Exception in update_task_status: {e}")
+        raise
