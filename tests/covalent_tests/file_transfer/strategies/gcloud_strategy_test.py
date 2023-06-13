@@ -150,3 +150,43 @@ def test_download(mocker, gcloud_strategy):
     list_blobs_mock.assert_called_once_with(prefix=MOCK_REMOTE_OBJECT_NAME)
     mkdir_mock.assert_called_once_with(parents=True, exist_ok=True)
     download_file_mock.assert_called_once_with(blob_mock, MOCK_LOCAL_FILEPATH)
+
+
+def test_upload_file(gcloud_strategy):
+    service_client = MagicMock()
+    source_path = MOCK_LOCAL_FILEPATH
+    destination_path = MOCK_REMOTE_OBJECT_NAME
+
+    blob_mock = service_client.blob
+    upload_mock = blob_mock().upload_from_filename
+
+    gcloud_strategy._upload_file(service_client, source_path, destination_path)
+
+    blob_mock.assert_called_with(destination_path)
+    upload_mock.assert_called_once_with(source_path)
+
+
+def test_upload(mocker, gcloud_strategy):
+    from_file = File(MOCK_LOCAL_FILEPATH)
+    to_file = File(MOCK_REMOTE_FILEPATH)
+
+    parse_uri_mock = mocker.patch(
+        "covalent._file_transfer.strategies.gcloud_strategy.GCloud._parse_uri"
+    )
+    parse_uri_mock.return_value = (MOCK_STORAGE_BUCKET, MOCK_REMOTE_OBJECT_NAME)
+
+    mocker.patch("covalent._file_transfer.strategies.gcloud_strategy.app_log")
+    get_service_client_mock = mocker.patch(
+        "covalent._file_transfer.strategies.gcloud_strategy.GCloud._get_service_client"
+    )
+    upload_file_mock = mocker.patch(
+        "covalent._file_transfer.strategies.gcloud_strategy.GCloud._upload_file"
+    )
+
+    gcloud_strategy.upload(from_file, to_file)()
+
+    parse_uri_mock.assert_called_once_with(MOCK_REMOTE_FILEPATH)
+    get_service_client_mock.assert_called_with(MOCK_STORAGE_BUCKET)
+    upload_file_mock.assert_called_once_with(
+        get_service_client_mock.return_value, MOCK_LOCAL_FILEPATH, MOCK_REMOTE_OBJECT_NAME
+    )

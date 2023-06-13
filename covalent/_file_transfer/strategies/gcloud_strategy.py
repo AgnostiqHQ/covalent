@@ -133,11 +133,40 @@ class GCloud(FileTransferStrategy):
 
         return callable
 
-    def _upload_file(self, client, source_path: str, destination_path: Path) -> None:
-        raise NotImplementedError
+    def _upload_file(self, service_client, source_path: str, destination_path: Path) -> None:
+        blob = service_client.blob(destination_path)
+        blob.upload_from_filename(source_path)
 
     def upload(self, from_file: File, to_file: File = File()) -> Callable:
-        raise NotImplementedError
+        from_filepath = from_file.filepath
+        to_filepath = to_file.filepath
+
+        bucket_name, object_path = self._parse_uri(to_file.uri)
+
+        app_log.debug(
+            f"GCloud upload; bucket name: {bucket_name}, from_filepath: {from_filepath}, to_filepath {to_filepath}."
+        )
+
+        def callable():
+            """Upload file or directory to a Google Cloud Storage bucket."""
+            from pathlib import Path
+
+            service_client = self._get_service_client(bucket_name)
+
+            files = (
+                [path for path in Path(from_filepath).rglob("*") if path.is_file()]
+                if from_file.is_dir
+                else [from_filepath]
+            )
+            for file in files:
+                dest_obj_path = (
+                    Path(object_path) / Path(file).relative_to(from_filepath)
+                    if to_file.is_dir
+                    else Path(object_path)
+                )
+                self._upload_file(service_client, file, str(dest_obj_path))
+
+        return callable
 
     def cp(self, from_file: File, to_file: File = File()) -> File:  # pragma: no cover
         raise NotImplementedError
