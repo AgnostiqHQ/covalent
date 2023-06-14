@@ -1,6 +1,6 @@
-aiofiles>=0.8.0,<=22.1.0
+aiofiles>=0.8.0
 aiohttp>=3.8.1
-alembic>=1.8.0,<=1.8.1
+alembic>=1.8.0
 click
 cloudpickle>=2.0.0,<=2.2.0
 dask[distributed]>=2022.6.0,<=2022.9.0
