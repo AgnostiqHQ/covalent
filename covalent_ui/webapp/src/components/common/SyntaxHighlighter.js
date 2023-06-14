@@ -47,7 +47,7 @@ const SyntaxHighlighter = ({ src, preview, fullwidth, ...props }) => {
     outline: 'none',
     position: 'absolute',
     top: '50%',
-    left: '50%',
+    left: '49%',
     transform: 'translate(-50%, -50%)',
     p: 4,
     width: ' 95%',
@@ -62,7 +62,7 @@ const SyntaxHighlighter = ({ src, preview, fullwidth, ...props }) => {
       <Grid
         container
         sx={{
-          width: preview ? (preview && fullwidth ? '100%' : '20rem') : null,
+          width: preview ? (preview && fullwidth ? '100%' : '20.7rem') : null,
           height: preview ? (preview && fullwidth ? '100%' : '10rem') : null,
         }}
       >

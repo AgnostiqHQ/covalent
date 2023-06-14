@@ -107,7 +107,7 @@ const QElelctronAccordion = (props) => {
         <AccordionDetails sx={{ p: 0, margin: 'auto' }}>
           {value === '1' && <Overview details={overviewData?.overview} />}
           {value === '2' && <Circuit circuitDetails={overviewData?.circuit} />}
-          {value === '3' && <Executor code={code} />}
+          {value === '3' && <Executor code={JSON.stringify(overviewData?.executor, null, 4)} />}
         </AccordionDetails>
       </Accordion>
     </Grid>

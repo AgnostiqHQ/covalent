@@ -13,8 +13,9 @@ import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import { formatQElectronTime, getLocalStartTime, formatDate } from '../../utils/misc'
 
 const Overview = (props) => {
-  const code = `tensor([0.224,0.2213,.1214])`
   const { details } = props
+  const code = details?.result;
+
   return (
     <>
       {' '}

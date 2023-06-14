@@ -265,7 +265,7 @@ const StyledTable = styled(Table)(({ theme }) => ({
   },
 }))
 
-const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId }) => {
+const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setExpanded }) => {
   const dispatch = useDispatch()
   const [selected, setSelected] = useState([])
   const [searchKey, setSearchKey] = useState('')
@@ -452,7 +452,9 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId }) => 
                     data.map((result, index) => (
                       <>
                         <TableRow
-                          sx={{ height: '2.5rem' }}
+                          sx={{
+                            height: '2.5rem'
+                          }}
                           data-testid="copyMessage"
                           data-tip
                           data-for="logRow"
@@ -461,7 +463,10 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId }) => 
                           //   setCopied(true)
                           //   setTimeout(() => setCopied(false), 300)
                           // }}
-                          onClick={() => rowClick(result?.job_id)}
+                          onClick={() => {
+                            setExpanded(true);
+                            rowClick(result?.job_id)
+                          }}
                           hover
                           key={index}
                         >
