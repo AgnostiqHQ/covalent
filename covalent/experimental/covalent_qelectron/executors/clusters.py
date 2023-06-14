@@ -20,8 +20,6 @@
 
 import base64
 
-import orjson
-
 from ..executors.base import AsyncBaseQCluster
 from ..shared_utils import cloudpickle_deserialize, cloudpickle_serialize
 
@@ -34,12 +32,16 @@ class QCluster(AsyncBaseQCluster):
 
     _selector_serialized: bool = False
 
-    def batch_submit(self, qscripts):
+    def batch_submit(self, qscripts_list):
         if self._selector_serialized:
             self.deserialize_selector()
 
-        selected_executor = self.selector(qscripts, self.executors)
-        return selected_executor.batch_submit(qscripts)
+        selected_executor = self.selector(qscripts_list, self.executors)
+
+        # pylint: disable=protected-access
+        selected_executor._device_cls_import_path = self._device_cls_import_path
+
+        return selected_executor.batch_submit(qscripts_list)
 
     def serialize_selector(self) -> None:
         if self._selector_serialized:
