@@ -1,14 +1,14 @@
-aiofiles
+aiofiles==22.1.0
 aiohttp
-alembic
+alembic==1.8.1
 click
 cloudpickle
-dask[distributed]
-fastapi
+dask[distributed]==2022.9.0
+fastapi==0.94.1
 furl
 networkx
 psutil
-pydantic
+pydantic==1.10.2
 python-socketio
 requests
 simplejson
@@ -17,4 +17,4 @@ sqlalchemy_utils
 toml
 uvicorn[standard]
 watchdog
-werkzeug
+werkzeug==2.2.2
