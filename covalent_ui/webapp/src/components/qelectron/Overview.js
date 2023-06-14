@@ -10,6 +10,7 @@ import React from 'react'
 import { Grid, Typography, Paper } from '@mui/material'
 import theme from '../../utils/theme'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
+import { formatQElectronTime, getLocalStartTime, formatDate } from '../../utils/misc'
 
 const Overview = (props) => {
   const code = `tensor([0.224,0.2213,.1214])`
@@ -45,7 +46,7 @@ const Overview = (props) => {
               color: (theme) => theme.palette.text.primary,
             }}
           >
-            {details.backend}
+            {details?.backend}
           </Typography>
           <Typography
             sx={{
@@ -63,7 +64,7 @@ const Overview = (props) => {
               color: (theme) => theme.palette.text.primary,
             }}
           >
-            {details.time}
+            {formatQElectronTime(details?.time_elapsed)}
           </Typography>
           <Typography
             sx={{
@@ -74,15 +75,17 @@ const Overview = (props) => {
           >
             Start time - End time
           </Typography>
-          <Typography
-            sx={{
-              fontSize: theme.typography.sidebarh2,
-              mt: 1,
-              color: (theme) => theme.palette.text.primary,
-            }}
-          >
-            {details.start_time} -{details.end_time}
-          </Typography>
+          {details?.start_time && details?.end_time &&
+            <Typography
+              sx={{
+                fontSize: theme.typography.sidebarh2,
+                mt: 1,
+                color: (theme) => theme.palette.text.primary,
+              }}
+            >
+              {formatDate(getLocalStartTime(details?.start_time))}
+              {` - ${formatDate(getLocalStartTime(details?.end_time))}`}
+            </Typography>}
         </Grid>
         <Grid
           id="rightGrid"

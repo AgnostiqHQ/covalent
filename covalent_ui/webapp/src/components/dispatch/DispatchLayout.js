@@ -129,6 +129,8 @@ export function DispatchLayout() {
         <QElectronDrawer
           toggleQelectron={() => setOpenQelectronDrawer((prev) => !prev)}
           openQelectronDrawer={openQelectronDrawer}
+          dispatchId={dispatchId}
+          electronId={selectedElectron?.node_id}
         />
       }
       {Object.keys(graph_result).length !== 0 ? (

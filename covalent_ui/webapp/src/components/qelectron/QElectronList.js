@@ -60,11 +60,14 @@ import {
 } from '../../redux/logsSlice'
 import DownloadButton from '../common/DownloadButton'
 import { ReactComponent as closeIcon } from '../../assets/close.svg'
-import { statusColor, statusIcon } from '../../utils/misc'
+import { statusColor, statusIcon, getLocalStartTime, formatDate } from '../../utils/misc'
 import copy from 'copy-to-clipboard'
 import { ReactComponent as FilterSvg } from '../../assets/qelectron/filter.svg'
 import CopyButton from '../common/CopyButton'
 import useMediaQuery from '@mui/material/useMediaQuery'
+import {
+  qelectronJobs,
+} from '../../redux/electronSlice'
 
 const headers = [
   {
@@ -193,9 +196,9 @@ const StyledTable = styled(Table)(({ theme }) => ({
 
   // customize text
   [`& .${tableBodyClasses.root} .${tableCellClasses.root}, & .${tableCellClasses.head}`]:
-    {
-      fontSize: '1rem',
-    },
+  {
+    fontSize: '1rem',
+  },
 
   // subdue header text
   [`& .${tableCellClasses.head}, & .${tableSortLabelClasses.active}`]: {
@@ -262,13 +265,13 @@ const StyledTable = styled(Table)(({ theme }) => ({
   },
 }))
 
-const QElectronList = ({ expanded }) => {
+const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId }) => {
   const dispatch = useDispatch()
   const [selected, setSelected] = useState([])
   const [searchKey, setSearchKey] = useState('')
   const [searchValue] = useDebounce(searchKey, 1000)
-  const [sortColumn, setSortColumn] = useState('log_date')
-  const [sortOrder, setSortOrder] = useState('desc')
+  const [sortColumn, setSortColumn] = useState('start_time')
+  const [sortOrder, setSortOrder] = useState('DESC')
   const [offset, setOffset] = useState(0)
   const [page, setPage] = useState(1)
   const logFinalFile = useSelector((state) => state.logs.logFile)
@@ -276,169 +279,10 @@ const QElectronList = ({ expanded }) => {
   const [snackbarMessage, setSnackbarMessage] = useState(null)
   const [disableDownload, setDisableDownload] = useState(false)
   const [copied, setCopied] = useState(false)
-
   const isHeightAbove850px = useMediaQuery('(min-height: 850px)')
   const isHeightAbove940px = useMediaQuery('(min-height: 940px)')
   const isHeightAbove1040px = useMediaQuery('(min-height: 1040px)')
 
-  const data = [
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'COMPLETED',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'FAILED',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-    {
-      job_id: '123yrhe383u2h8ssdfsd...',
-      start_time: '03 Feb, 12:05:38 ',
-      executor: 'IBM Quantum',
-      status: 'RUNNING',
-    },
-  ]
   //   // reset store values to initial state when moved to another page
   //   useEffect(() => {
   //     return () => {
@@ -489,18 +333,6 @@ const QElectronList = ({ expanded }) => {
 
   //   const isFetching = useSelector((state) => state.logs.fetchLogList.isFetching)
 
-  //   const logListAPI = () => {
-  //     const bodyParams = {
-  //       count: 70,
-  //       offset,
-  //       sort_by: sortColumn,
-  //       search: searchKey,
-  //       direction: sortOrder,
-  //     }
-  //     if (searchValue?.length === 0 || searchValue?.length >= 3) {
-  //       dispatch(fetchLogsList(bodyParams))
-  //     }
-  //   }
 
   //   const handlePageChanges = (event, pageValue) => {
   //     setPage(pageValue)
@@ -514,18 +346,24 @@ const QElectronList = ({ expanded }) => {
   //     // eslint-disable-next-line react-hooks/exhaustive-deps
   //   }, [offset])
 
-  //   const onSearch = (e) => {
-  //     setSearchKey(e.target.value)
-  //     if (e.target.value.length > 3) {
-  //       setSelected([])
-  //       setOffset(0)
-  //     }
-  //   }
 
-  //   useEffect(() => {
-  //     logListAPI()
-  //     // eslint-disable-next-line react-hooks/exhaustive-deps
-  //   }, [sortColumn, sortOrder, searchValue, page])
+  useEffect(() => {
+    if (electronId) {
+      const bodyParams = {
+        sort_by: sortColumn,
+        direction: sortOrder,
+        offset: 0
+      }
+      dispatch(
+        qelectronJobs({
+          dispatchId,
+          electronId,
+          bodyParams
+        })
+      )
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sortColumn, sortOrder])
 
   const handleChangeSort = (column) => {
     setSelected([])
@@ -618,11 +456,12 @@ const QElectronList = ({ expanded }) => {
                           data-testid="copyMessage"
                           data-tip
                           data-for="logRow"
-                          onClick={() => {
-                            copy(result.job_id)
-                            setCopied(true)
-                            setTimeout(() => setCopied(false), 300)
-                          }}
+                          // onClick={() => {
+                          //   copy(result.job_id)
+                          //   setCopied(true)
+                          //   setTimeout(() => setCopied(false), 300)
+                          // }}
+                          onClick={() => rowClick(result?.job_id)}
                           hover
                           key={index}
                         >
@@ -655,7 +494,7 @@ const QElectronList = ({ expanded }) => {
                                 fontSize: '14px',
                               }}
                             >
-                              {result.start_time}
+                              {formatDate(getLocalStartTime(result?.start_time))}
                             </Box>
                           </TableCell>
                           <TableCell>
