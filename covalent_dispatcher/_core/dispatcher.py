@@ -66,7 +66,7 @@ async def _get_abstract_task_inputs(dispatch_id: str, node_id: int, node_name: s
 
     abstract_task_input = {"args": [], "kwargs": {}}
 
-    for edge in await datasvc.get_incoming_edges(dispatch_id, node_id):
+    for edge in await datasvc.graph.get_incoming_edges(dispatch_id, node_id):
         parent = edge["source"]
 
         d = edge["attrs"]
@@ -89,10 +89,10 @@ async def _handle_completed_node(dispatch_id: str, node_id: int):
     next_task_groups = []
     app_log.debug(f"Node {node_id} completed")
 
-    parent_gid = (await datasvc.get_electron_attributes(dispatch_id, node_id, ["task_group_id"]))[
+    parent_gid = (await datasvc.electron.get(dispatch_id, node_id, ["task_group_id"]))[
         "task_group_id"
     ]
-    for child in await datasvc.get_node_successors(dispatch_id, node_id):
+    for child in await datasvc.graph.get_node_successors(dispatch_id, node_id):
         node_id = child["node_id"]
         gid = child["task_group_id"]
         app_log.debug(f"dispatch {dispatch_id}: parent gid {parent_gid}, child gid {gid}")
@@ -132,7 +132,7 @@ async def _get_initial_tasks_and_deps(dispatch_id: str) -> Tuple[int, int, Dict]
     # Number of pending predecessor nodes for each task group
     pending_parents = {}
 
-    g_node_link = await datasvc.get_graph_nodes_links(dispatch_id)
+    g_node_link = await datasvc.graph.get_nodes_links(dispatch_id)
     g = nx.readwrite.node_link_graph(g_node_link)
 
     # Topologically sort each task group
@@ -162,9 +162,7 @@ async def _get_initial_tasks_and_deps(dispatch_id: str) -> Tuple[int, int, Dict]
 async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_group_id: int):
     # Handle parameter nodes
     # Get name of the node for the current task
-    node_name = (await datasvc.get_electron_attributes(dispatch_id, sorted_nodes[0], ["name"]))[
-        "name"
-    ]
+    node_name = (await datasvc.electron.get(dispatch_id, sorted_nodes[0], ["name"]))["name"]
     app_log.debug(f"7A: Node name: {node_name} (run_planned_workflow).")
 
     # Handle parameter nodes
@@ -192,7 +190,7 @@ async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_gro
 
         # Skip the group if all task outputs can be reused from a
         # previous dispatch (for redispatch).
-        statuses = await datasvc.get_attrs_for_electrons(dispatch_id, sorted_nodes, ["status"])
+        statuses = await datasvc.electron.get_bulk(dispatch_id, sorted_nodes, ["status"])
         incomplete = list(
             filter(lambda record: record["status"] != RESULT_STATUS.PENDING_REUSE, statuses)
         )
@@ -203,7 +201,7 @@ async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_gro
 
                 abs_task_input = await _get_abstract_task_inputs(dispatch_id, node_id, node_name)
 
-                executor_attrs = await datasvc.get_electron_attributes(
+                executor_attrs = await datasvc.electron.get(
                     dispatch_id,
                     node_id,
                     ["executor", "executor_data"],
@@ -286,7 +284,7 @@ async def run_workflow(dispatch_id: str, wait: bool = SYNC_DISPATCHES) -> RESULT
     can_run = await datasvc.ensure_dispatch(dispatch_id)
 
     if not can_run:
-        result_info = await datasvc.get_dispatch_attributes(dispatch_id, ["status"])
+        result_info = await datasvc.dispatch.get(dispatch_id, ["status"])
         dispatch_status = result_info["status"]
         app_log.debug(f"Cannot start dispatch {dispatch_id}: current status {dispatch_status}")
         return dispatch_status
@@ -334,7 +332,7 @@ async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = []) -> None:
     if task_ids:
         app_log.debug(f"Cancelling tasks {task_ids} in dispatch {dispatch_id}")
     else:
-        task_ids = await datasvc.get_nodes(dispatch_id)
+        task_ids = await datasvc.graph.get_nodes(dispatch_id)
 
         app_log.debug(f"Cancelling dispatch {dispatch_id}")
 
@@ -342,7 +340,7 @@ async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = []) -> None:
     await runner_ng.cancel_tasks(dispatch_id, task_ids)
 
     # Recursively cancel running sublattice dispatches
-    attrs = await datasvc.get_attrs_for_electrons(dispatch_id, task_ids, ["sub_dispatch_id"])
+    attrs = await datasvc.electron.get_bulk(dispatch_id, task_ids, ["sub_dispatch_id"])
     sub_ids = list(map(lambda x: x["sub_dispatch_id"], attrs))
     for sub_dispatch_id in sub_ids:
         await cancel_dispatch(sub_dispatch_id)
@@ -369,7 +367,7 @@ async def _finalize_dispatch(dispatch_id: str):
     await _clear_caches(dispatch_id)
     app_log.debug(f"Removed unresolved counter for {dispatch_id}")
 
-    incomplete_tasks = await datasvc.get_incomplete_tasks(dispatch_id)
+    incomplete_tasks = await datasvc.dispatch.get_incomplete_tasks(dispatch_id)
     failed = incomplete_tasks["failed"]
     cancelled = incomplete_tasks["cancelled"]
     if failed or cancelled:
@@ -386,13 +384,13 @@ async def _finalize_dispatch(dispatch_id: str):
             error=error_msg,
             end_time=ts,
         )
-        await datasvc.update_dispatch_result(dispatch_id, result_update)
+        await datasvc.dispatch.update(dispatch_id, result_update)
 
     app_log.debug("8: All tasks finished running (run_planned_workflow)")
 
     app_log.debug("Workflow already postprocessed")
 
-    result_info = await datasvc.get_dispatch_attributes(dispatch_id, ["status"])
+    result_info = await datasvc.dispatch.get(dispatch_id, ["status"])
     return result_info["status"]
 
 
@@ -411,7 +409,7 @@ async def _submit_initial_tasks(dispatch_id: str):
     dispatch_result = datasvc.generate_dispatch_result(
         dispatch_id, start_time=datetime.now(timezone.utc), status=RESULT_STATUS.RUNNING
     )
-    await datasvc.update_dispatch_result(dispatch_id, dispatch_result)
+    await datasvc.dispatch.update(dispatch_id, dispatch_result)
 
     app_log.debug(f"4: Workflow status changed to running {dispatch_id} (run_planned_workflow).")
     app_log.debug("5: Wrote lattice status to DB (run_planned_workflow).")
@@ -478,7 +476,7 @@ async def _handle_dispatch_exception(dispatch_id: str, ex: Exception) -> RESULT_
         error=error_msg,
     )
 
-    await datasvc.update_dispatch_result(dispatch_id, dispatch_result)
+    await datasvc.dispatch.update(dispatch_id, dispatch_result)
     return RESULT_STATUS.FAILED
 
 
@@ -534,7 +532,7 @@ async def _clear_caches(dispatch_id: str):
     """Clean up all keys in caches."""
     await _unresolved_tasks.remove(dispatch_id)
 
-    g_node_link = await datasvc.get_graph_nodes_links(dispatch_id)
+    g_node_link = await datasvc.graph.get_nodes_links(dispatch_id)
     g = nx.readwrite.node_link_graph(g_node_link)
     task_groups = set([g.nodes[i]["task_group_id"] for i in g.nodes])
     for gid in task_groups:

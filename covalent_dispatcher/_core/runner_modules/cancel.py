@@ -137,7 +137,7 @@ async def _get_metadata_for_nodes(dispatch_id: str, node_ids: list) -> List[Any]
         List of node metadata for the given `node_ids`
     """
 
-    attrs = await datasvc.get_attrs_for_electrons(
+    attrs = await datasvc.electron.get_bulk(
         dispatch_id,
         node_ids,
         ["executor", "executor_data"],

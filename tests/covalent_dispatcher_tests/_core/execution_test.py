@@ -279,7 +279,7 @@ async def test_run_workflow_with_failing_nonleaf(mocker, test_db):
     mock_status_queues = {result_object.dispatch_id: msg_queue}
     mocker.patch("covalent_dispatcher._core.dispatcher._status_queues", mock_status_queues)
     mock_get_incomplete_nodes = mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_incomplete_tasks",
+        "covalent_dispatcher._core.data_manager.dispatch.get_incomplete_tasks",
         return_value={"failed": [(0, "failing_task")], "cancelled": []},
     )
 

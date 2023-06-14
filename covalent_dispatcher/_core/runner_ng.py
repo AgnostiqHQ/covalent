@@ -212,7 +212,7 @@ async def _get_task_result(task_group_metadata: Dict, data: Any):
     gid = task_group_metadata["task_group_id"]
     app_log.debug(f"Pulling job artifacts for task group {dispatch_id}:{gid}")
     try:
-        executor_attrs = await datamgr.get_electron_attributes(
+        executor_attrs = await datamgr.electron.get(
             dispatch_id, gid, ["executor", "executor_data"]
         )
         executor_name = executor_attrs["executor"]
@@ -451,9 +451,7 @@ async def _poll_task_status(
 async def mark_task_ready(task_metadata: dict, detail: Any):
     dispatch_id = task_metadata["dispatch_id"]
     node_id = task_metadata["node_id"]
-    gid = (await datamgr.get_electron_attributes(dispatch_id, node_id, ["task_group_id"]))[
-        "task_group_id"
-    ]
+    gid = (await datamgr.electron.get(dispatch_id, node_id, ["task_group_id"]))["task_group_id"]
     task_group_metadata = {
         "dispatch_id": dispatch_id,
         "task_ids": [node_id],

@@ -25,7 +25,7 @@ Defines the core functionality of the result service
 import asyncio
 import tempfile
 import traceback
-from typing import Any, Dict, List
+from typing import Dict
 
 from pydantic import ValidationError
 
@@ -40,7 +40,8 @@ from .._dal.result import Result as SRVResult
 from .._dal.result import get_result_object as get_result_object_from_db
 from .._db.write_result_to_db import resolve_electron_id
 from . import dispatcher
-from .data_modules import graph
+from .data_modules import lattice  # nopycln: import
+from .data_modules import dispatch, electron, graph  # nopycln: import
 from .data_modules import importer as manifest_importer
 from .data_modules.utils import run_in_executor
 
@@ -79,19 +80,17 @@ async def update_node_result(dispatch_id, node_result):
     try:
         node_id = node_result["node_id"]
         node_status = node_result["status"]
-        node_info = await get_electron_attributes(
-            dispatch_id, node_id, ["type", "sub_dispatch_id"]
-        )
+        node_info = await electron.get(dispatch_id, node_id, ["type", "sub_dispatch_id"])
         node_type = node_info["type"]
         sub_dispatch_id = node_info["sub_dispatch_id"]
 
         # Handle returns from _build_sublattice_graph -- change
         # COMPLETED -> DISPATCHING
-        node_result = await _filter_sublattice_status(
+        node_result = _filter_sublattice_status(
             dispatch_id, node_id, node_status, node_type, sub_dispatch_id, node_result
         )
 
-        valid_update = await run_in_executor(_update_node, dispatch_id, node_result)
+        valid_update = await electron.update(dispatch_id, node_result)
         if not valid_update:
             app_log.warning(
                 f"Invalid status update {node_status} for node {dispatch_id}:{node_id}"
@@ -106,7 +105,7 @@ async def update_node_result(dispatch_id, node_result):
                 tb = "".join(traceback.TracebackException.from_exception(ex).format())
                 node_result["status"] = RESULT_STATUS.FAILED
                 node_result["error"] = tb
-                await run_in_executor(_update_node, dispatch_id, node_result)
+                await electron.update(dispatch_id, node_result)
 
     except KeyError as ex:
         valid_update = False
@@ -128,12 +127,6 @@ async def update_node_result(dispatch_id, node_result):
         detail = {"sub_dispatch_id": sub_dispatch_id} if sub_dispatch_id else {}
         if node_status and valid_update:
             await dispatcher.notify_node_status(dispatch_id, node_id, node_status, detail)
-
-
-# To be run in a threadpool; move this to a static method of Result
-def _update_node(dispatch_id: str, node_result: Dict):
-    result_object = get_result_object(dispatch_id, bare=True)
-    return result_object._update_node(**node_result)
 
 
 # Domain: result
@@ -197,9 +190,7 @@ async def persist_result(dispatch_id: str):
 
 
 async def _update_parent_electron(dispatch_id: str):
-    dispatch_attrs = await get_dispatch_attributes(
-        dispatch_id, ["electron_id", "status", "end_time"]
-    )
+    dispatch_attrs = await dispatch.get(dispatch_id, ["electron_id", "status", "end_time"])
     parent_eid = dispatch_attrs["electron_id"]
 
     if parent_eid:
@@ -217,7 +208,7 @@ async def _update_parent_electron(dispatch_id: str):
         await update_node_result(parent_result_obj.dispatch_id, node_result)
 
 
-async def _filter_sublattice_status(
+def _filter_sublattice_status(
     dispatch_id, node_id, status, node_type, sub_dispatch_id, node_result
 ):
     if status == Result.COMPLETED and node_type == "sublattice" and not sub_dispatch_id:
@@ -270,7 +261,7 @@ def _legacy_sublattice_dispatch_helper(dispatch_id: str, node_result: Dict):
 
 
 def _make_sublattice_dispatch_helper(dispatch_id: str, node_result: Dict):
-    """Helper function for performing DB queries"""
+    """Helper function for performing DB queries related to sublattices."""
     result_object = get_result_object(dispatch_id, bare=True)
     node_id = node_result["node_id"]
     parent_node = result_object.lattice.transport_graph.get_node(node_id)
@@ -302,39 +293,8 @@ def generate_dispatch_result(
     }
 
 
-def _update_dispatch_result_sync(dispatch_id, dispatch_result):
-    result_object = get_result_object(dispatch_id)
-    result_object._update_dispatch(**dispatch_result)
-
-
-async def update_dispatch_result(dispatch_id, dispatch_result):
-    await run_in_executor(_update_dispatch_result_sync, dispatch_id, dispatch_result)
-
-
-def _get_dispatch_attributes_sync(dispatch_id: str, keys: List[str]) -> Any:
-    refresh = False
-    result_object = get_result_object(dispatch_id)
-    return result_object.get_values(keys, refresh=refresh)
-
-
-def _get_lattice_attributes_sync(dispatch_id: str, keys: List[str]) -> Any:
-    refresh = False
-    result_object = get_result_object(dispatch_id)
-    return result_object.lattice.get_values(keys, refresh=refresh)
-
-
-async def get_dispatch_attributes(dispatch_id: str, keys: List[str]) -> Dict:
-    return await run_in_executor(
-        _get_dispatch_attributes_sync,
-        dispatch_id,
-        keys,
-    )
-
-
 # Ensure that a dispatch is only run once; in the future, also check
 # if all assets have been uploaded
-def _ensure_dispatch_sync(dispatch_id: str) -> bool:
-    return SRVResult.ensure_run_once(dispatch_id)
 
 
 async def ensure_dispatch(dispatch_id: str) -> bool:
@@ -345,128 +305,6 @@ async def ensure_dispatch(dispatch_id: str) -> bool:
     * (later) all assets have been uploaded
     """
     return await run_in_executor(
-        _ensure_dispatch_sync,
+        SRVResult.ensure_run_once,
         dispatch_id,
     )
-
-
-async def get_lattice_attributes(dispatch_id: str, keys: List[str]) -> Dict:
-    return await run_in_executor(
-        _get_lattice_attributes_sync,
-        dispatch_id,
-        keys,
-    )
-
-
-def _get_attrs_for_electrons_sync(
-    dispatch_id: str, node_ids: List[int], keys: List[str]
-) -> List[Dict]:
-    result_object = get_result_object(dispatch_id)
-    attrs = result_object.lattice.transport_graph.get_values_for_nodes(
-        node_ids=node_ids,
-        keys=keys,
-        refresh=False,
-    )
-    return attrs
-
-
-async def get_attrs_for_electrons(
-    dispatch_id: str, node_ids: List[int], keys: List[str]
-) -> List[Dict]:
-    """Query attributes for multiple electrons.
-
-    Args:
-        node_ids: The list of nodes to query
-        keys: The list of attributes to query for each electron
-
-    Returns:
-        A list of dictionaries {attr_key: attr_val}, one for
-        each node id, in the same order as `node_ids`
-
-    Example:
-    ```
-        await get_attrs_for_electrons(
-            "my_dispatch", [2, 4], ["name", "status"],
-        )
-    ```
-    will return
-    ```
-    [
-        {
-            "name": "task_2", "status": RESULT_STATUS.COMPLETED,
-        },
-        {
-            "name": "task_4, "status": RESULT_STATUS.FAILED,
-        },
-    ]
-    ```
-
-    """
-    return await run_in_executor(
-        _get_attrs_for_electrons_sync,
-        dispatch_id,
-        node_ids,
-        keys,
-    )
-
-
-async def get_electron_attributes(dispatch_id: str, node_id: int, keys: List[str]) -> Dict:
-    """Convenience function to query attributes for an electron.
-
-    Args:
-        node_id: The node to query
-        keys: The list of attributes to query
-
-    Returns:
-        A dictionary {attr_key: attr_val}
-
-    Example:
-    ```
-        await get_electron_attributes(
-            "my_dispatch", 2, ["name", "status"],
-        )
-    ```
-    will return
-    ```
-        {
-            "name": "task_2", "status": RESULT_STATUS.COMPLETED,
-        }
-    ```
-
-    """
-    attrs = await get_attrs_for_electrons(dispatch_id, [node_id], keys)
-    return attrs[0]
-
-
-# Graph queries
-
-
-async def get_incoming_edges(dispatch_id: str, node_id: int):
-    return await run_in_executor(graph.get_incoming_edges, dispatch_id, node_id)
-
-
-async def get_node_successors(
-    dispatch_id: str,
-    node_id: int,
-    attrs: List[str] = ["task_group_id"],
-) -> List[Dict]:
-    return await run_in_executor(graph.get_node_successors, dispatch_id, node_id, attrs)
-
-
-async def get_graph_nodes_links(dispatch_id: str) -> Dict:
-    return await run_in_executor(graph.get_graph_nodes_links, dispatch_id)
-
-
-async def get_nodes(dispatch_id: str) -> List[int]:
-    return await run_in_executor(graph.get_nodes, dispatch_id)
-
-
-async def get_incomplete_tasks(dispatch_id: str):
-    # Need to filter all electrons in the latice
-    return await run_in_executor(_get_incomplete_tasks_sync, dispatch_id)
-
-
-def _get_incomplete_tasks_sync(dispatch_id: str):
-    result_object = get_result_object(dispatch_id, False)
-    refresh = False
-    return result_object._get_incomplete_nodes(refresh)

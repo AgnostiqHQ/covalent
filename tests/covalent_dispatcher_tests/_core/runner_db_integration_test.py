@@ -118,7 +118,7 @@ async def test_gather_deps(mocker, test_db):
         }
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_electron_attributes",
+        "covalent_dispatcher._core.data_manager.electron.get",
         get_electron_attrs,
     )
 

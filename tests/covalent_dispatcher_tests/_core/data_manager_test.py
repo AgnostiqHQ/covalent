@@ -103,16 +103,15 @@ async def test_update_node_result(mocker, node_status, node_type, output_status,
         "covalent_dispatcher._dal.result.Result._update_node", return_value=True
     )
     node_info = {"type": node_type, "sub_dispatch_id": sub_id, "status": Result.NEW_OBJ}
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_electron_attributes", return_value=node_info
-    )
+    mocker.patch("covalent_dispatcher._core.data_manager.electron.get", return_value=node_info)
 
     mock_notify = mocker.patch(
         "covalent_dispatcher._core.dispatcher.notify_node_status",
     )
 
     mock_get_result = mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
+        "covalent_dispatcher._core.data_modules.electron.get_result_object",
+        return_value=result_object,
     )
 
     mock_make_dispatch = mocker.patch(
@@ -149,16 +148,15 @@ async def test_update_node_result_filters_illegal_updates(
     result_object._update_node = MagicMock(return_value=valid_update)
     node_result = {"node_id": 0, "status": node_status}
     node_info = {"type": "function", "sub_dispatch_id": "", "status": old_status}
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_electron_attributes", return_value=node_info
-    )
+    mocker.patch("covalent_dispatcher._core.data_manager.electron.get", return_value=node_info)
 
     mock_notify = mocker.patch(
         "covalent_dispatcher._core.dispatcher.notify_node_status",
     )
 
     mock_get_result = mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
+        "covalent_dispatcher._core.data_modules.electron.get_result_object",
+        return_value=result_object,
     )
 
     mocker.patch(
@@ -182,9 +180,7 @@ async def test_update_node_result_handles_keyerrors(mocker):
     node_result = {"node_id": -5, "status": RESULT_STATUS.COMPLETED}
     mock_update_node = mocker.patch("covalent_dispatcher._dal.result.Result._update_node")
     node_info = {"type": "function", "sub_dispatch_id": "", "status": RESULT_STATUS.RUNNING}
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_electron_attributes", side_effect=KeyError()
-    )
+    mocker.patch("covalent_dispatcher._core.data_manager.electron.get", side_effect=KeyError())
 
     mock_notify = mocker.patch(
         "covalent_dispatcher._core.dispatcher.notify_node_status",
@@ -207,15 +203,14 @@ async def test_update_node_result_handles_subl_exceptions(mocker):
     node_result = {"node_id": 0, "status": Result.COMPLETED}
     mock_update_node = mocker.patch("covalent_dispatcher._dal.result.Result._update_node")
     node_info = {"type": node_type, "sub_dispatch_id": sub_id, "status": Result.NEW_OBJ}
-    mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_electron_attributes", return_value=node_info
-    )
+    mocker.patch("covalent_dispatcher._core.data_manager.electron.get", return_value=node_info)
     mock_notify = mocker.patch(
         "covalent_dispatcher._core.dispatcher.notify_node_status",
     )
 
     mock_get_result = mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
+        "covalent_dispatcher._core.data_modules.electron.get_result_object",
+        return_value=result_object,
     )
 
     mock_make_dispatch = mocker.patch(
@@ -239,7 +234,8 @@ async def test_update_node_result_handles_db_exceptions(mocker):
     result_object.dispatch_id = "test_update_node_result_handles_db_exceptions"
     result_object._update_node = MagicMock(side_effect=RuntimeError())
     mock_get_result = mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
+        "covalent_dispatcher._core.data_modules.electron.get_result_object",
+        return_value=result_object,
     )
     mock_notify = mocker.patch(
         "covalent_dispatcher._core.dispatcher.notify_node_status",
@@ -334,6 +330,11 @@ async def test_update_parent_electron(mocker, sub_status, mapped_status):
         "covalent_dispatcher._core.data_manager.resolve_electron_id",
         return_value=(parent_dispatch_id, parent_node_id),
     )
+    mock_get_res = mocker.patch(
+        "covalent_dispatcher._core.data_modules.dispatch.get_result_object",
+        return_value=parent_result_obj,
+    )
+
     mock_get_res = mocker.patch(
         "covalent_dispatcher._core.data_manager.get_result_object",
         return_value=parent_result_obj,

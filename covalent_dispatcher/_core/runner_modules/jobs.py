@@ -63,9 +63,7 @@ async def get_version_info(dispatch_id: str, task_id: int):
         {"python": python_version, "covalent": covalent_version}
     """
 
-    data = await datamgr.get_lattice_attributes(
-        dispatch_id, ["python_version", "covalent_version"]
-    )
+    data = await datamgr.lattice.get(dispatch_id, ["python_version", "covalent_version"])
 
     return {
         "python": data["python_version"],
@@ -120,7 +118,7 @@ async def put_job_status(dispatch_id: str, task_id: int, status: Status) -> bool
         True
     """
     app_log.debug(f"Put cancel result for task {dispatch_id}:{task_id}")
-    executor_attrs = await datasvc.get_electron_attributes(
+    executor_attrs = await datasvc.electron.get(
         dispatch_id, task_id, ["executor", "executor_data"]
     )
     selected_executor = [executor_attrs["executor"], executor_attrs["executor_data"]]

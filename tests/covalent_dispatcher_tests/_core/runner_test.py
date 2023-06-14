@@ -80,7 +80,7 @@ async def test_run_abstract_task_exception_handling(mocker):
 
     mocker.patch("covalent_dispatcher._core.runner._gather_deps", side_effect=RuntimeError())
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_electron_attributes",
+        "covalent_dispatcher._core.data_manager.electron.get",
         return_value={"function": "function"},
     )
 
@@ -107,7 +107,7 @@ async def test_run_task_runtime_exception_handling(mocker):
 
     dispatch_id = "mock_dispatch"
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_dispatch_attributes",
+        "covalent_dispatcher._core.data_manager.dispatch.get",
         return_value={"results_dir": "/tmp/result"},
     )
 
@@ -141,7 +141,7 @@ async def test_run_task_exception_handling(mocker):
     )
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_dispatch_attributes",
+        "covalent_dispatcher._core.data_manager.dispatch.get",
         return_value={"results_dir": "/tmp/result"},
     )
     mocker.patch("traceback.TracebackException.from_exception", return_value="error")
@@ -174,7 +174,7 @@ async def test_run_task_executor_exception_handling(mocker):
     )
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_dispatch_attributes",
+        "covalent_dispatcher._core.data_manager.dispatch.get",
         return_value={"results_dir": "/tmp/result"},
     )
 

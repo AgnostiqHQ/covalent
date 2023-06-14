@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -30,9 +30,10 @@ from typing import Dict, List
 import networkx as nx
 
 from ..._dal.result import get_result_object
+from .utils import run_in_executor
 
 
-def get_incoming_edges(dispatch_id: str, node_id: int):
+def get_incoming_edges_sync(dispatch_id: str, node_id: int):
     """Query in-edges of a node.
 
     Returns:
@@ -48,7 +49,7 @@ def get_incoming_edges(dispatch_id: str, node_id: int):
     return result_object.lattice.transport_graph.get_incoming_edges(node_id)
 
 
-def get_node_successors(
+def get_node_successors_sync(
     dispatch_id: str,
     node_id: int,
     attrs: List[str],
@@ -69,7 +70,7 @@ def get_node_successors(
     return result_object.lattice.transport_graph.get_successors(node_id, attrs)
 
 
-def get_graph_nodes_links(dispatch_id: str) -> dict:
+def get_nodes_links_sync(dispatch_id: str) -> dict:
     """Return the internal transport graph in NX node-link form"""
 
     # Need the whole NX graph here
@@ -78,8 +79,28 @@ def get_graph_nodes_links(dispatch_id: str) -> dict:
     return nx.readwrite.node_link_data(g)
 
 
-def get_nodes(dispatch_id: str) -> List[int]:
-    # Read the whole NX graph
+def get_nodes_sync(dispatch_id: str) -> List[int]:
+    """Return a list of all node ids in the graph."""
     result_object = get_result_object(dispatch_id, False)
     g = result_object.lattice.transport_graph.get_internal_graph_copy()
     return list(g.nodes)
+
+
+async def get_incoming_edges(dispatch_id: str, node_id: int):
+    return await run_in_executor(get_incoming_edges_sync, dispatch_id, node_id)
+
+
+async def get_node_successors(
+    dispatch_id: str,
+    node_id: int,
+    attrs: List[str] = ["task_group_id"],
+) -> List[Dict]:
+    return await run_in_executor(get_node_successors_sync, dispatch_id, node_id, attrs)
+
+
+async def get_nodes_links(dispatch_id: str) -> Dict:
+    return await run_in_executor(get_nodes_links_sync, dispatch_id)
+
+
+async def get_nodes(dispatch_id: str) -> List[int]:
+    return await run_in_executor(get_nodes_sync, dispatch_id)

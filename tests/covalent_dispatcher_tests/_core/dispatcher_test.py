@@ -112,7 +112,7 @@ async def test_run_workflow_normal(mocker, wait, expected_status):
     mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.ensure_dispatch", return_value=True)
 
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.get_dispatch_attributes",
+        "covalent_dispatcher._core.dispatcher.datasvc.dispatch.get",
         return_value={"status": Result.NEW_OBJ},
     )
     _futures = {dispatch_id: asyncio.Future()}
@@ -145,7 +145,7 @@ async def test_run_completed_workflow(mocker, wait):
     )
 
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.get_dispatch_attributes",
+        "covalent_dispatcher._core.dispatcher.datasvc.dispatch.get",
         return_value={"status": Result.COMPLETED},
     )
 
@@ -153,7 +153,7 @@ async def test_run_completed_workflow(mocker, wait):
         "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.get_dispatch_attributes",
+        "covalent_dispatcher._core.dispatcher.datasvc.dispatch.get",
         return_value={"status": Result.COMPLETED},
     )
     mock_plan = mocker.patch("covalent_dispatcher._core.dispatcher._plan_workflow")
@@ -179,13 +179,13 @@ async def test_run_workflow_exception(mocker, wait):
         side_effect=RuntimeError("Error"),
     )
 
-    mock_update_dispatch_result = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.update_dispatch_result",
+    mock_dispatch_update = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.dispatch.update",
     )
     mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.ensure_dispatch", return_value=True)
 
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.get_dispatch_attributes",
+        "covalent_dispatcher._core.dispatcher.datasvc.dispatch.get",
         return_value={"status": Result.NEW_OBJ},
     )
 
@@ -449,7 +449,7 @@ async def test_finalize_dispatch(mocker, failed, cancelled, final_status):
 
     query_result = {"failed": failed_tasks, "cancelled": cancelled_tasks}
     mock_incomplete = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.get_incomplete_tasks",
+        "covalent_dispatcher._core.dispatcher.datasvc.dispatch.get_incomplete_tasks",
         return_value=query_result,
     )
 
@@ -458,7 +458,7 @@ async def test_finalize_dispatch(mocker, failed, cancelled, final_status):
     def mock_gen_dispatch_result(dispatch_id, **kwargs):
         return {"status": kwargs["status"]}
 
-    async def mock_update_dispatch_result(dispatch_id, dispatch_result):
+    async def mock_dispatch_update(dispatch_id, dispatch_result):
         mock_dispatch_info["status"] = dispatch_result["status"]
 
     mocker.patch(
@@ -467,12 +467,12 @@ async def test_finalize_dispatch(mocker, failed, cancelled, final_status):
     )
 
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.update_dispatch_result",
-        mock_update_dispatch_result,
+        "covalent_dispatcher._core.dispatcher.datasvc.dispatch.update",
+        mock_dispatch_update,
     )
 
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.get_dispatch_attributes",
+        "covalent_dispatcher._core.dispatcher.datasvc.dispatch.get",
         return_value=mock_dispatch_info,
     )
 
@@ -504,7 +504,7 @@ async def test_submit_initial_tasks(mocker):
         "covalent_dispatcher._core.dispatcher._submit_task_group",
     )
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.update_dispatch_result",
+        "covalent_dispatcher._core.dispatcher.datasvc.dispatch.update",
     )
 
     assert await _submit_initial_tasks(dispatch_id) == Result.RUNNING
@@ -541,12 +541,12 @@ async def test_submit_task_group(mocker):
         return {key: mock_attrs[key] for key in keys}
 
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.get_electron_attributes",
+        "covalent_dispatcher._core.dispatcher.datasvc.electron.get",
         get_electron_attrs,
     )
 
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.get_attrs_for_electrons",
+        "covalent_dispatcher._core.dispatcher.datasvc.electron.get_bulk",
         return_value=mock_statuses,
     )
 
@@ -592,12 +592,12 @@ async def test_submit_task_group_skips_reusable(mocker):
         return {key: mock_attrs[key] for key in keys}
 
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.get_electron_attributes",
+        "covalent_dispatcher._core.dispatcher.datasvc.electron.get",
         get_electron_attrs,
     )
 
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.get_attrs_for_electrons",
+        "covalent_dispatcher._core.dispatcher.datasvc.electron.get_bulk",
         return_value=mock_statuses,
     )
 
@@ -633,7 +633,7 @@ async def test_submit_parameter(mocker):
         return {key: mock_attrs[key] for key in keys}
 
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.get_electron_attributes",
+        "covalent_dispatcher._core.dispatcher.datasvc.electron.get",
         get_electron_attrs,
     )
 
@@ -660,7 +660,7 @@ async def test_clear_caches(mocker):
     g.add_node(2, task_group_id=0)
     g.add_node(3, task_group_id=3)
 
-    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.get_graph_nodes_links")
+    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.graph.get_nodes_links")
     mocker.patch("networkx.readwrite.node_link_graph", return_value=g)
     mock_unresolved_remove = mocker.patch(
         "covalent_dispatcher._core.dispatcher._unresolved_tasks.remove"
@@ -709,7 +709,7 @@ async def test_cancel_dispatch(mocker):
         else:
             return list(sub_tg._graph.nodes)
 
-    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.get_nodes", mock_get_nodes)
+    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.graph.get_nodes", mock_get_nodes)
 
     node_attrs = [
         {"sub_dispatch_id": tg.get_node_value(i, "sub_dispatch_id")} for i in tg._graph.nodes
@@ -719,15 +719,15 @@ async def test_cancel_dispatch(mocker):
         for i in sub_tg._graph.nodes
     ]
 
-    async def mock_get_attrs(dispatch_id, task_ids, keys):
+    async def mock_get(dispatch_id, task_ids, keys):
         if dispatch_id == res.dispatch_id:
             return node_attrs
         else:
             return sub_node_attrs
 
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.get_attrs_for_electrons",
-        mock_get_attrs,
+        "covalent_dispatcher._core.dispatcher.datasvc.electron.get_bulk",
+        mock_get,
     )
 
     await cancel_dispatch("pipeline_workflow")
@@ -768,7 +768,7 @@ async def test_cancel_dispatch_with_task_ids(mocker):
         else:
             return list(sub_tg._graph.nodes)
 
-    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.get_nodes", mock_get_nodes)
+    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.graph.get_nodes", mock_get_nodes)
 
     node_attrs = [
         {"sub_dispatch_id": tg.get_node_value(i, "sub_dispatch_id")} for i in tg._graph.nodes
@@ -778,15 +778,15 @@ async def test_cancel_dispatch_with_task_ids(mocker):
         for i in sub_tg._graph.nodes
     ]
 
-    async def mock_get_attrs(dispatch_id, task_ids, keys):
+    async def mock_get(dispatch_id, task_ids, keys):
         if dispatch_id == res.dispatch_id:
             return node_attrs
         else:
             return sub_node_attrs
 
     mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.get_attrs_for_electrons",
-        mock_get_attrs,
+        "covalent_dispatcher._core.dispatcher.datasvc.electron.get_bulk",
+        mock_get,
     )
 
     mock_app_log = mocker.patch("covalent_dispatcher._core.dispatcher.app_log.debug")

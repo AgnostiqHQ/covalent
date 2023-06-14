@@ -50,12 +50,12 @@ async def _get_task_input_values(dispatch_id: str, abs_task_inputs: dict) -> dic
     node_values = {}
     args = abs_task_inputs["args"]
     for node_id in args:
-        value = (await datasvc.get_electron_attributes(dispatch_id, node_id, ["output"]))["output"]
+        value = (await datasvc.electron.get(dispatch_id, node_id, ["output"]))["output"]
         node_values[node_id] = value
 
     kwargs = abs_task_inputs["kwargs"]
     for key, node_id in kwargs.items():
-        value = (await datasvc.get_electron_attributes(dispatch_id, node_id, ["output"]))["output"]
+        value = (await datasvc.electron.get(dispatch_id, node_id, ["output"]))["output"]
         node_values[node_id] = value
 
     return node_values
@@ -73,9 +73,9 @@ async def _run_abstract_task(
     timestamp = datetime.now(timezone.utc)
 
     try:
-        serialized_callable = (
-            await datasvc.get_electron_attributes(dispatch_id, node_id, ["function"])
-        )["function"]
+        serialized_callable = (await datasvc.electron.get(dispatch_id, node_id, ["function"]))[
+            "function"
+        ]
 
         input_values = await _get_task_input_values(dispatch_id, abstract_inputs)
 
@@ -148,7 +148,7 @@ async def _run_task(
         None
     """
 
-    dispatch_info = await datasvc.get_dispatch_attributes(dispatch_id, ["results_dir"])
+    dispatch_info = await datasvc.dispatch.get(dispatch_id, ["results_dir"])
     results_dir = dispatch_info["results_dir"]
 
     # Instantiate the executor from JSON
@@ -227,7 +227,7 @@ async def _run_task(
 async def _gather_deps(dispatch_id: str, node_id: int) -> Tuple[List, List]:
     """Assemble deps for a node into the final call_before and call_after"""
 
-    deps_attrs = await datasvc.get_electron_attributes(
+    deps_attrs = await datasvc.electron.get(
         dispatch_id, node_id, ["deps", "call_before", "call_after"]
     )
 
