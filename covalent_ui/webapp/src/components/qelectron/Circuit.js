@@ -45,7 +45,7 @@ const SingleGrid = ({ title, value }) => {
           color: (theme) => theme.palette.text.primary,
         }}
       >
-        {value}
+        {value ? value : '-'}
       </Typography>
     </Grid>
   )

@@ -47,7 +47,7 @@ const Overview = (props) => {
               color: (theme) => theme.palette.text.primary,
             }}
           >
-            {details?.backend}
+            {(details?.backend) ? (details?.backend) : '-'}
           </Typography>
           <Typography
             sx={{
@@ -65,7 +65,7 @@ const Overview = (props) => {
               color: (theme) => theme.palette.text.primary,
             }}
           >
-            {formatQElectronTime(details?.time_elapsed)}
+            {(details?.time_elapsed) ? (formatQElectronTime(details?.time_elapsed)) : '-'}
           </Typography>
           <Typography
             sx={{
