@@ -23,17 +23,14 @@ const nodeDrawerWidth = 1110
 const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, electronId }) => {
   const dispatch = useDispatch()
   const [expanded, setExpanded] = React.useState(true)
+  const [currentJob, setCurrentJob] = React.useState('');
   const handleDrawerClose = () => {
     toggleQelectron()
   }
 
   const rowClickHandler = (job_id) => {
+    setCurrentJob(job_id)
     dispatch(qelectronJobOverview({ dispatchId, electronId, jobId: job_id }))
-  }
-
-  const details = {
-    title: 'Quantum Qaoa',
-    status: 'RUNNING',
   }
 
   const listData = useSelector(
@@ -43,6 +40,12 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, ele
   const overviewData = useSelector(
     (state) => state.electronResults.qelectronJobOverview
   );
+
+  const details = {
+    title: overviewData?.overview?.job_name,
+    status: overviewData?.overview?.status,
+    id: currentJob
+  }
 
   useEffect(() => {
     if (electronId && openQelectronDrawer) {
@@ -59,6 +62,7 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, ele
         })
       ).then((res) => {
         const job_id = res.payload[0].job_id
+        setCurrentJob(job_id)
         dispatch(qelectronJobOverview({ dispatchId, electronId, jobId: job_id }))
       })
     }
@@ -124,7 +128,7 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, ele
             toggleQelectron={toggleQelectron}
           />
           <QElelctronAccordion expanded={expanded} setExpanded={setExpanded} overviewData={overviewData} />
-          <QElectronList expanded={expanded} data={listData} rowClick={rowClickHandler} dispatchId={dispatchId} electronId={electronId} />
+          <QElectronList expanded={expanded} data={listData} rowClick={rowClickHandler} dispatchId={dispatchId} electronId={electronId} setExpanded={setExpanded} />
         </Grid>
       </Grid>
     </Drawer>
