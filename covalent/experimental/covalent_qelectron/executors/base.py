@@ -21,13 +21,14 @@
 import asyncio
 import time
 from abc import ABC, abstractmethod
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor
 from functools import lru_cache
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import orjson
 import pennylane as qml
 from mpire import WorkerPool
+from mpire.async_result import AsyncResult
 from pydantic import BaseModel, Extra, Field, root_validator
 
 from ..shared_utils import get_import_path, import_from_path
@@ -279,3 +280,21 @@ class AsyncBaseQCluster(AsyncBaseQExecutor):
     @abstractmethod
     def dict(self, *args, **kwargs) -> dict:
         raise NotImplementedError
+
+    async def _get_result_and_time(self, futures_list: List) -> List[QCResult]:
+        """
+        Override the base method to handle the case where the `futures_list`
+        contains a mix of object types from various executors.
+        """
+        results_and_times = []
+        for fut in futures_list:
+            if isinstance(fut, asyncio.Task):
+                results_and_times.append(await fut)
+            elif isinstance(fut, Future):
+                results_and_times.append(fut.result())
+            elif isinstance(fut, AsyncResult):
+                results_and_times.append(fut.get())
+            else:
+                results_and_times.append(fut)
+
+        return results_and_times
