@@ -3,11 +3,11 @@ aiohttp>=3.8.1
 alembic>=1.8.0
 click
 cloudpickle>=2.0.0
-dask[distributed]>=2022.6.0,<=2022.9.0
+dask[distributed]>=2022.6.0
 fastapi>=0.93.0
 furl
 networkx
-psutil>=5.9.0,<=5.9.2
+psutil>=5.9.0
 pydantic>=1.10.1
 python-socketio
 requests>=2.24.0,<=2.28.1
