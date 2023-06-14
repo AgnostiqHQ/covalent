@@ -27,42 +27,6 @@ const QElelctronAccordion = (props) => {
     setExpanded(!expanded)
   }
 
-  const details = {
-    backend: 'IBM Quantum',
-    time: '1h 22m',
-    start_time: 'Dec 12, 14:44:32',
-    end_time: 'Dec 13, 16:00:22',
-  }
-
-  const circuitDetails = {
-    no_of_qbits: 20,
-    no1_gates: 1001,
-    no2_gates: 2234,
-    depth: 543,
-  }
-
-  const code = `// Imports
-  import mongoose, { Schema } from 'mongoose'
-  
-  // Collection name
-  export const collection = 'Product'|
-  
-  // Schema
-  const schema = new Schema({
-    name: {
-      type: String,
-      required: true
-    },
-  
-    description: {
-      type: String
-    }
-  }, {timestamps: true})
-  
-  // Model
-  export default mongoose.model(collection, schema, collection)
-  `
-
   const handleChange = (event, newValue) => {
     setValue(newValue)
     setExpanded(true)
@@ -107,7 +71,7 @@ const QElelctronAccordion = (props) => {
         <AccordionDetails sx={{ p: 0, margin: 'auto' }}>
           {value === '1' && <Overview details={overviewData?.overview} />}
           {value === '2' && <Circuit circuitDetails={overviewData?.circuit} />}
-          {value === '3' && <Executor code={JSON.stringify(overviewData?.executor, null, 4)} />}
+          {value === '3' && <Executor code={JSON.stringify(overviewData?.executor?.executor, null, 4)} />}
         </AccordionDetails>
       </Accordion>
     </Grid>

@@ -24,14 +24,7 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, ele
   const dispatch = useDispatch()
   const [expanded, setExpanded] = React.useState(true)
   const [currentJob, setCurrentJob] = React.useState('');
-  const handleDrawerClose = () => {
-    toggleQelectron()
-  }
-
-  const rowClickHandler = (job_id) => {
-    setCurrentJob(job_id)
-    dispatch(qelectronJobOverview({ dispatchId, electronId, jobId: job_id }))
-  }
+  const [defaultId, setDefaultId] = React.useState('');
 
   const listData = useSelector(
     (state) => state.electronResults.qelectronJobs
@@ -40,6 +33,15 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, ele
   const overviewData = useSelector(
     (state) => state.electronResults.qelectronJobOverview
   );
+
+  const handleDrawerClose = () => {
+    toggleQelectron()
+  }
+
+  const rowClickHandler = (job_id) => {
+    setCurrentJob(job_id)
+    dispatch(qelectronJobOverview({ dispatchId, electronId, jobId: job_id }))
+  }
 
   const details = {
     title: overviewData?.overview?.job_name,
@@ -61,8 +63,10 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, ele
           bodyParams
         })
       ).then((res) => {
-        const job_id = res.payload[0].job_id
+        let job_id = ''
+        if (res?.payload && res?.payload.length > 0 && res?.payload[0]?.job_id) job_id = res?.payload[0]?.job_id
         setCurrentJob(job_id)
+        setDefaultId(job_id)
         dispatch(qelectronJobOverview({ dispatchId, electronId, jobId: job_id }))
       })
     }
@@ -128,7 +132,13 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, ele
             toggleQelectron={toggleQelectron}
           />
           <QElelctronAccordion expanded={expanded} setExpanded={setExpanded} overviewData={overviewData} />
-          <QElectronList expanded={expanded} data={listData} rowClick={rowClickHandler} dispatchId={dispatchId} electronId={electronId} setExpanded={setExpanded} />
+          <QElectronList expanded={expanded}
+            data={listData}
+            rowClick={rowClickHandler}
+            dispatchId={dispatchId}
+            electronId={electronId}
+            setExpanded={setExpanded}
+            defaultId={defaultId} />
         </Grid>
       </Grid>
     </Drawer>

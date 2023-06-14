@@ -7,9 +7,9 @@
  * please reach out to Agnostiq at: [support@agnostiq.com].
  */
 
-import { Grid, IconButton, Typography, Box } from '@mui/material'
+import { Grid, IconButton, Typography, Box, Tooltip } from '@mui/material'
 import React from 'react'
-import { ChevronRight } from '@mui/icons-material'
+import { ChevronRight, } from '@mui/icons-material'
 import { statusIcon, statusColor, statusLabel } from '../../utils/misc'
 import CopyButton from './CopyButton'
 
@@ -47,22 +47,37 @@ const QElectronTopBar = (props) => {
           <ChevronRight />
         </IconButton>
         <Typography fontSize="sidebarh2" mr={2}>
-          {details.title}
+          {details?.title}
         </Typography>
         <Grid
           sx={{
-            width: '32px',
+            width: '70px',
             height: '32px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             border: '1px solid',
+            pl: '3px',
             borderColor: (theme) => theme.palette.background.coveBlack02,
             borderRadius: '8px 0px 0px 8px',
             backgroundColor: (theme) => theme.palette.background.buttonBg,
           }}
         >
-          id
+          <Tooltip
+            data-testid="toolTip"
+            title={details?.id}
+            style={{ fontSize: '2em' }}
+          >
+            <div
+              style={{
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+              }}
+            >
+              {details?.id}
+            </div>
+          </Tooltip>
         </Grid>
         <Grid
           sx={{
@@ -77,22 +92,22 @@ const QElectronTopBar = (props) => {
             backgroundColor: (theme) => theme.palette.background.buttonBg,
           }}
         >
-          <CopyButton content={details.title} />
+          <CopyButton content={details?.id} />
         </Grid>
       </Grid>
       <Grid id="status Container">
         <Box
           sx={{
-            color: statusColor(details.status),
+            color: statusColor(details?.status),
             display: 'flex',
             fontSize: '1.125rem',
             alignItems: 'center',
             justifySelf: 'center',
           }}
         >
-          {statusIcon(details.status)}
+          {statusIcon(details?.status)}
           &nbsp;
-          {statusLabel(details.status)}
+          {statusLabel(details?.status)}
         </Box>
       </Grid>
     </Grid>
