@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added documentation for Azure Blob Storage file transfers
 
+### Operations
+
+- Reduce the number of pins in the `setup.py`
+
 ## [0.227.0-rc.0] - 2023-06-13
 
 ### Authors
@@ -43,7 +47,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Update the PR template.
-- Reduce the number of pins in the `setup.py`
 
 ## [0.226.0-rc.0] - 2023-06-09
 
