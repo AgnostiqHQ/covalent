@@ -18,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
-- Reduce the number of pins in the `setup.py`
+- Reduce the number of pinned version numbers in the `setup.py`
 
 ## [0.227.0-rc.0] - 2023-06-13
 
