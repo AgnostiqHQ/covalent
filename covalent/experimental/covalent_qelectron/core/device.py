@@ -1,4 +1,24 @@
-from pennylane import QubitDevice, active_return
+# Copyright 2023 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
+from pennylane import QubitDevice
 from pennylane import numpy as np
 from pennylane.devices.default_qubit import DefaultQubit
 
@@ -6,6 +26,11 @@ from ..middleware.core import middleware
 
 
 class QEDevice(QubitDevice):
+
+    """
+    Custom Pennylane device that batch executes circuits by submitting them to the middleware
+    """
+
     name = "QEDevice"
     short_name = "qe_device"
     pennylane_requires = ">=0.29.1"
@@ -56,17 +81,6 @@ class QEDevice(QubitDevice):
 
         # Otherwise, get the results from the middleware
         results = middleware.get_results(batch_id)
-
-        if not active_return():
-
-            if all(len(c.measurements) == 1 for c in circuits):
-                results = [
-                    [r] if isinstance(r, dict) else np.asarray([r])
-                    for r in results
-                ]
-
-            if len(circuits) > 1:
-                results = [r if isinstance(r, list) else r for r in results]
 
         return results
 
