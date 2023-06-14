@@ -23,5 +23,15 @@ from .rsync_strategy import Rsync
 
 try:
     from .s3_strategy import S3
-except:
+except:  # pragma: no cover
+    pass
+
+try:
+    from .blob_strategy import Blob
+except:  # pragma: no cover
+    pass
+
+try:
+    from .gcloud_strategy import GCloud
+except:  # pragma: no cover
     pass
