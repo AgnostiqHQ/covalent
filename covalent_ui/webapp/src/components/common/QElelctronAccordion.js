@@ -20,7 +20,7 @@ import Circuit from '../qelectron/Circuit'
 import Executor from '../qelectron/Executor'
 
 const QElelctronAccordion = (props) => {
-  const { expanded, setExpanded } = props
+  const { expanded, setExpanded, overviewData } = props
   const [value, setValue] = React.useState('1')
 
   const handleAccordChange = () => {
@@ -105,8 +105,8 @@ const QElelctronAccordion = (props) => {
           <QElectronTab value={value} handleChange={handleChange} />
         </AccordionSummary>
         <AccordionDetails sx={{ p: 0, margin: 'auto' }}>
-          {value === '1' && <Overview details={details} />}
-          {value === '2' && <Circuit circuitDetails={circuitDetails} />}
+          {value === '1' && <Overview details={overviewData?.overview} />}
+          {value === '2' && <Circuit circuitDetails={overviewData?.circuit} />}
           {value === '3' && <Executor code={code} />}
         </AccordionDetails>
       </Accordion>

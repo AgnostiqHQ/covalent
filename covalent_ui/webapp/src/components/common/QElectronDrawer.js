@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   Grid,
   Divider,
@@ -12,19 +13,57 @@ import { alpha } from '@mui/material/styles'
 import QElectronTopBar from './QElectronTopBar'
 import QElelctronAccordion from './QElelctronAccordion'
 import QElectronList from '../qelectron/QElectronList'
+import {
+  qelectronJobs,
+  qelectronJobOverview
+} from '../../redux/electronSlice'
 
 const nodeDrawerWidth = 1110
 
-const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer }) => {
+const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, electronId }) => {
+  const dispatch = useDispatch()
   const [expanded, setExpanded] = React.useState(true)
   const handleDrawerClose = () => {
     toggleQelectron()
+  }
+
+  const rowClickHandler = (job_id) => {
+    dispatch(qelectronJobOverview({ dispatchId, electronId, jobId: job_id }))
   }
 
   const details = {
     title: 'Quantum Qaoa',
     status: 'RUNNING',
   }
+
+  const listData = useSelector(
+    (state) => state.electronResults.qelectronJobs
+  );
+
+  const overviewData = useSelector(
+    (state) => state.electronResults.qelectronJobOverview
+  );
+
+  useEffect(() => {
+    if (electronId && openQelectronDrawer) {
+      const bodyParams = {
+        sort_by: 'start_time',
+        direction: 'DESC',
+        offset: 0
+      }
+      dispatch(
+        qelectronJobs({
+          dispatchId,
+          electronId,
+          bodyParams
+        })
+      ).then((res) => {
+        const job_id = res.payload[0].job_id
+        dispatch(qelectronJobOverview({ dispatchId, electronId, jobId: job_id }))
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [openQelectronDrawer])
 
   // useEffect(() => {
   //   const handleOutsideClick = (event) => {
@@ -84,8 +123,8 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer }) => {
             details={details}
             toggleQelectron={toggleQelectron}
           />
-          <QElelctronAccordion expanded={expanded} setExpanded={setExpanded} />
-          <QElectronList expanded={expanded} />
+          <QElelctronAccordion expanded={expanded} setExpanded={setExpanded} overviewData={overviewData} />
+          <QElectronList expanded={expanded} data={listData} rowClick={rowClickHandler} dispatchId={dispatchId} electronId={electronId} />
         </Grid>
       </Grid>
     </Drawer>

@@ -73,10 +73,10 @@ const Circuit = ({ circuitDetails }) => {
         xs={11.85}
         justifyContent="space-between"
       >
-        <SingleGrid title="No. of Qbits" value={circuitDetails.no_of_qbits} />
-        <SingleGrid title="No.1 Qbit Gates" value={circuitDetails.no1_gates} />
-        <SingleGrid title="No.2 Qbit Gates" value={circuitDetails.no2_gates} />
-        <SingleGrid title="Depth" value={circuitDetails.depth} />
+        <SingleGrid title="No. of Qbits" value={circuitDetails?.total_qbits} />
+        <SingleGrid title="No.1 Qbit Gates" value={circuitDetails?.qbit1_gates} />
+        <SingleGrid title="No.2 Qbit Gates" value={circuitDetails?.qbit2_gates} />
+        <SingleGrid title="Depth" value={circuitDetails?.depth} />
       </Grid>
       <Grid id="bottomGrid" mt={3}>
         <Typography
