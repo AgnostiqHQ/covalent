@@ -1,3 +1,23 @@
+# Copyright 2023 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the GNU Affero General Public License 3.0 (the "License").
+# A copy of the License may be obtained with this software package or at
+#
+#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#
+# Use of this file is prohibited except in compliance with the License. Any
+# modifications or derivative works of this file must retain this copyright
+# notice, and modified files must contain a notice indicating that they have
+# been altered from the originals.
+#
+# Covalent is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+#
+# Relief from the License may be granted by purchasing a commercial license.
+
 import asyncio
 import time
 from typing import Any, List, Optional, Union
@@ -5,12 +25,28 @@ from typing import Any, List, Optional, Union
 import pennylane as qml
 
 from ..base import AsyncBaseQExecutor, QCResult, get_asyncio_event_loop
-from .devices import create_device, validate_device
+from .local_sampler import QiskitLocalSampler
+from .runtime_sampler import QiskitRuntimeSampler
 from .utils import RuntimeOptions
 
 __all__ = [
     "QiskitExecutor",
 ]
+
+_DEVICE_MAP = {
+    "local_sampler": QiskitLocalSampler,
+    "sampler": QiskitRuntimeSampler,
+}
+
+
+def create_device(device_name: str, **kwargs):
+    """
+    Allows for the creation of a custom Pennylane-Qiskit device from a string name.
+    """
+    device_cls = _DEVICE_MAP.get(device_name)
+    if not device_cls:
+        raise ValueError(f"Unsupported Qiskit primitive device '{device_name}'.")
+    return device_cls(**kwargs)
 
 
 class QiskitExecutor(AsyncBaseQExecutor):
@@ -42,14 +78,12 @@ class QiskitExecutor(AsyncBaseQExecutor):
     def batch_submit(self, qscripts_list: List[qml.tape.qscript.QuantumScript]):
 
         qscripts_list = list(qscripts_list)
-
-        # validate device against measurement type
-        wires, device_name = self._validate_qscripts(qscripts_list)
+        self._validate(qscripts_list)
 
         # initialize a device: QiskitRuntimeEstimator, QiskitRuntimeSampler, etc.
         dev = create_device(
-            device_name,
-            wires=wires,
+            self.device,
+            wires=qscripts_list[0].wires,
             shots=self.shots,
             backend_name=self.backend_name,
             max_time=self.max_time,
@@ -79,15 +113,16 @@ class QiskitExecutor(AsyncBaseQExecutor):
 
         return [task]
 
-    async def run_circuit(self, qscripts, device, result_obj: QCResult):  # pylint: disable=arguments-renamed
+    async def run_circuit(self, tapes, device, result_obj: QCResult):  # pylint: disable=arguments-renamed
         """
         Allows circuits to be submitted asynchronously using `.run_later()`.
-        Quantum scripts are executed
         """
         start_time = time.perf_counter()
-        results = qml.execute(qscripts, device, None)
+        results = qml.execute(tapes, device, None)
+
         await asyncio.sleep(0)
-        results, metadatas = device.post_process(qscripts, results)
+
+        results, metadatas = device.post_process(tapes, results)
         end_time = time.perf_counter()
 
         result_obj.results = results
@@ -96,30 +131,10 @@ class QiskitExecutor(AsyncBaseQExecutor):
 
         return result_obj
 
-    def _validate_qscripts(self, qscripts_list):
+    def _validate(self, qscripts):
         """
-        run several checks on quantum scripts to enforce necessary assumptions
+        Perform necessary checks on the qscripts.
         """
-
-        # these must be unique
-        device_names = set()
-        circuits_wires = set()
-
-        for qscript in qscripts_list:
-            for measurement in qscript.measurements:
-                meas_type = repr(measurement.return_type)
-                device_name = validate_device(self.device, meas_type)
-
-                circuits_wires.add(tuple(qscript.wires))
-                device_names.add(device_name)
-
-        # check uniqueness
-        if len(device_names) != 1:
-            raise RuntimeError("batch of circuits requires multiple device types")
-        if len(circuits_wires) != 1:
-            raise RuntimeError("wires differ in batch of circuits")
-
-        wires = circuits_wires.pop()
-        device_name = device_names.pop()
-
-        return wires, device_name
+        # check that all qscripts have the same number of wires
+        if any(qs.wires != qscripts[0].wires for qs in qscripts[1:]):
+            raise RuntimeError("All qscripts must have the same wires.")
