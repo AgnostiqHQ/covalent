@@ -62,7 +62,7 @@ class Electrons:
                 reverse=sort_direction == SortDirection.DESCENDING, key=lambda d: d[sort_by.value]
             )
             result = (
-                jobs_list[offset : count + offset] if count is not None else jobs_list[offset:]
+                jobs_list[offset: count + offset] if count is not None else jobs_list[offset:]
             )
             return result
         except:
@@ -73,12 +73,20 @@ class Electrons:
             selected_job = self.qdb.get_db(dispatch_id=str(dispatch_id), node_id=electron_id)[
                 job_id
             ]
+            # print(selected_job)
+            selected_job["result"] = str(selected_job["result"])[1:-1]
+            print(selected_job["result"])
+            for i in selected_job["result"]:
+                print("type - i ", type(i), " i ", i)
             job_overview = {
                 "overview": {
                     "job_name": selected_job["circuit_name"],
                     "backend": selected_job["result_metadata"]["executor_backend_name"],
                     "time_elapsed": selected_job["execution_time"],
                     "result": selected_job["result"],
+                    "status": "COMPLETED"
+                    if selected_job["result"] and selected_job["result_metadata"]
+                    else "RUNNING",
                     "start_time": selected_job["save_time"],
                     "end_time": selected_job["save_time"]
                     + timedelta(seconds=selected_job["execution_time"]),
