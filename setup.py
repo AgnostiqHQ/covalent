@@ -56,9 +56,6 @@ else:
         ],
     }
 
-with open(requirements_file) as f:
-    required = f.read().splitlines()
-
 
 def recursively_append_files(directory: str):
     """
@@ -210,7 +207,28 @@ setup_info = {
     "long_description_content_type": "text/markdown",
     "include_package_data": True,
     "zip_safe": False,
-    "install_requires": required,
+    "install_requires": [
+        "aiofiles>=0.8.0,<=22.1.0",
+        "aiohttp>=3.8.1",
+        "alembic>=1.8.0,<=1.8.1",
+        "click",
+        "cloudpickle>=2.0.0,<=2.2.0",
+        "dask[distributed]>=2022.6.0,<=2022.9.0",
+        "fastapi>=0.93.0,<=0.94.1",
+        "furl",
+        "networkx",
+        "psutil>=5.9.0,<=5.9.2",
+        "pydantic>=1.10.1,<=1.10.2",
+        "python-socketio",
+        "requests>=2.24.0,<=2.28.1",
+        "simplejson",
+        "sqlalchemy>=1.4.37,<=1.4.41",
+        "sqlalchemy_utils",
+        "toml",
+        "uvicorn[standard]>=0.18.2,<=0.18.3",
+        "watchdog",
+        "werkzeug>=2.0.3,<=2.2.2",
+    ],
     "extras_require": {
         "aws": ["boto3>=1.20.48"],
         "mysql": ["mysqlclient>=2.1.1"],
