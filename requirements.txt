@@ -10,9 +10,9 @@ networkx
 psutil>=5.9.0
 pydantic>=1.10.1
 python-socketio
-requests>=2.24.0,<=2.28.1
+requests>=2.24.0
 simplejson
-sqlalchemy>=1.4.37,<=1.4.41
+sqlalchemy>=1.4.37
 sqlalchemy_utils
 toml
 uvicorn[standard]>=0.18.2,<=0.18.3
