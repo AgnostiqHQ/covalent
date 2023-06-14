@@ -264,7 +264,7 @@ class QServer:
         # ids of (e)xecutor_(f)uture_(p)airs, hence `idx_efp`
         for idx_efp, (executor, futures_sub_batch) in enumerate(executor_future_pairs):
 
-            result_objs = executor.batch_get_result_and_time(
+            result_objs = executor.batch_get_results(
                 futures_sub_batch.values()
             )
 

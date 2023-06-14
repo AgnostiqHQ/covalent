@@ -87,7 +87,7 @@ class BaseQExecutor(ABC, BaseModel):
         raise NotImplementedError
 
     @abstractmethod
-    def batch_get_result_and_time(self, futures_list):
+    def batch_get_results(self, futures_list):
         raise NotImplementedError
 
     def run_circuit(self, qscript, device, result_obj: 'QCResult') -> 'QCResult':
@@ -163,7 +163,7 @@ class SyncBaseQExecutor(BaseQExecutor):
         dummy_futures = [fut] * len(qscripts_list)
         return dummy_futures
 
-    def batch_get_result_and_time(self, futures_list):
+    def batch_get_results(self, futures_list):
         return futures_list[0].result()
 
 
@@ -192,14 +192,14 @@ class AsyncBaseQExecutor(BaseQExecutor):
 
         return futures
 
-    def batch_get_result_and_time(self, futures_list: List):
+    def batch_get_results(self, futures_list: List):
 
         loop = get_asyncio_event_loop()
         return loop.run_until_complete(
-            self._get_result_and_time(futures_list)
+            self._get_result(futures_list)
         )
 
-    async def _get_result_and_time(self, futures_list: List) -> List[QCResult]:
+    async def _get_result(self, futures_list: List) -> List[QCResult]:
         return [await fut for fut in futures_list]
 
     async def run_circuit(self, qscript, device, result_obj) -> QCResult:
@@ -235,7 +235,7 @@ class BaseProcessPoolQExecutor(BaseQExecutor):
 
         return futures
 
-    def batch_get_result_and_time(self, futures_list: List) -> List[QCResult]:
+    def batch_get_results(self, futures_list: List) -> List[QCResult]:
         return [fut.get() for fut in futures_list]
 
 
@@ -260,7 +260,7 @@ class BaseThreadPoolQExecutor(BaseQExecutor):
 
         return futures
 
-    def batch_get_result_and_time(self, futures_list: List) -> List[QCResult]:
+    def batch_get_results(self, futures_list: List) -> List[QCResult]:
         return [fut.result() for fut in futures_list]
 
 
@@ -281,7 +281,7 @@ class AsyncBaseQCluster(AsyncBaseQExecutor):
     def dict(self, *args, **kwargs) -> dict:
         raise NotImplementedError
 
-    async def _get_result_and_time(self, futures_list: List) -> List[QCResult]:
+    async def _get_result(self, futures_list: List) -> List[QCResult]:
         """
         Override the base method to handle the case where the `futures_list`
         contains a mix of object types from various executors.

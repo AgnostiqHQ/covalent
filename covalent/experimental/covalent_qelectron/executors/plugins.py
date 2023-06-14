@@ -91,5 +91,5 @@ class Simulator(BaseQExecutor):
 
         return self.backend.batch_submit(qscripts_list)
 
-    def batch_get_result_and_time(self, futures_list):
-        return self.backend.batch_get_result_and_time(futures_list)
+    def batch_get_results(self, futures_list):
+        return self.backend.batch_get_results(futures_list)
