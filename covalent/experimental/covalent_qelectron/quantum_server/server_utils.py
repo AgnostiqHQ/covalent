@@ -37,6 +37,7 @@ class CircuitInfo(BaseModel):
     dispatch_id: str = None
     circuit_name: str = None
     circuit_description: str = None
+    circuit_diagram: str = None
     qnode_specs: Dict[str, Any] = None
     qexecutor: BaseQExecutor = None
     save_time: datetime.datetime
