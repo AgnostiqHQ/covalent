@@ -30,7 +30,12 @@ from .._api.apiclient import CovalentAPIClient as APIClient
 from .._results_manager import wait
 from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result, get_result_manager
-from .._serialize.result import merge_response_manifest, serialize_result, strip_local_uris
+from .._serialize.result import (
+    extract_assets,
+    merge_response_manifest,
+    serialize_result,
+    strip_local_uris,
+)
 from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.schemas.asset import AssetSchema
@@ -589,31 +594,8 @@ class LocalDispatcher(BaseDispatcher):
 
     @staticmethod
     def upload_assets(manifest: ResultSchema):
-        assets = LocalDispatcher._extract_assets(manifest)
+        assets = extract_assets(manifest)
         LocalDispatcher._upload(assets)
-
-    @staticmethod
-    def _extract_assets(manifest: ResultSchema) -> List[AssetSchema]:
-        assets = []
-
-        # workflow-level assets
-        dispatch_assets = manifest.assets
-        for key, asset in dispatch_assets:
-            assets.append(asset)
-
-        lattice = manifest.lattice
-        lattice_assets = lattice.assets
-        for key, asset in lattice_assets:
-            assets.append(asset)
-
-        # Node assets
-        tg = lattice.transport_graph
-        nodes = tg.nodes
-        for node in nodes:
-            node_assets = node.assets
-            for key, asset in node_assets:
-                assets.append(asset)
-        return assets
 
     @staticmethod
     def _upload(assets: List[AssetSchema]):

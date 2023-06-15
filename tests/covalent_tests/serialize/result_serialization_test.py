@@ -20,12 +20,18 @@
 
 """Unit tests for result serializer"""
 
+import copy
 import tempfile
 from datetime import datetime, timezone
 
 import covalent as ct
 from covalent._results_manager.result import Result
-from covalent._serialize.result import deserialize_result, serialize_result
+from covalent._serialize.result import (
+    deserialize_result,
+    extract_assets,
+    merge_response_manifest,
+    serialize_result,
+)
 
 
 def test_serialize_deserialize_result():
@@ -74,7 +80,7 @@ def test_serialize_deserialize_result():
             assert tg1._graph.edges[edge].items() <= tg2._graph.edges[edge].items()
 
 
-def reset_metadata():
+def test_reset_metadata():
     @ct.electron
     def identity(x):
         return x
@@ -106,7 +112,86 @@ def reset_metadata():
         assert manifest.metadata.end_time is None
 
         tg = manifest.lattice.transport_graph
-        for i in tg.nodes:
-            assert tg.nodes[i].metadata.status == str(Result.NEW_OBJ)
-            assert tg.nodes[i].metadata.start_time is None
-            assert tg.nodes[i].metadata.end_time is None
+        for node in tg.nodes:
+            assert node.metadata.status == str(Result.NEW_OBJ)
+            assert node.metadata.start_time is None
+            assert node.metadata.end_time is None
+
+
+def test_merge_dispatcher_response():
+    @ct.electron
+    def identity(x):
+        return x
+
+    @ct.electron
+    def add(x, y):
+        return x + y
+
+    @ct.lattice
+    def workflow(x, y):
+        res1 = identity(x)
+        res2 = identity(y)
+        return add(res1, res2)
+
+    workflow.build_graph(2, 3)
+    result_object = Result(workflow)
+    ts = datetime.now(timezone.utc)
+    result_object._start_time = ts
+    result_object._end_time = ts
+    with tempfile.TemporaryDirectory() as d:
+        manifest = serialize_result(result_object, d)
+    returned_manifest = copy.deepcopy(manifest)
+
+    result_asset = returned_manifest.assets.result
+    result_asset.remote_uri = "result_asset_upload_url"
+
+    tg = returned_manifest.lattice.transport_graph
+    for node in tg.nodes:
+        function_asset = node.assets.function
+        function_asset.remote_uri = "node_asset_upload_url"
+
+    merged = merge_response_manifest(manifest, returned_manifest)
+
+    assert merged.assets.result.remote_uri == "result_asset_upload_url"
+
+    for node in merged.lattice.transport_graph.nodes:
+        assert node.assets.function.remote_uri == "node_asset_upload_url"
+
+
+def test_extract_assets():
+    @ct.electron
+    def identity(x):
+        return x
+
+    @ct.electron
+    def add(x, y):
+        return x + y
+
+    @ct.lattice
+    def workflow(x, y):
+        res1 = identity(x)
+        res2 = identity(y)
+        return add(res1, res2)
+
+    workflow.build_graph(2, 3)
+    result_object = Result(workflow)
+    ts = datetime.now(timezone.utc)
+    result_object._start_time = ts
+    result_object._end_time = ts
+    with tempfile.TemporaryDirectory() as d:
+        manifest = serialize_result(result_object, d)
+
+    all_assets = extract_assets(manifest)
+
+    asset_count = 0
+    for key, asset in manifest.assets:
+        asset_count += 1
+
+    for key, asset in manifest.lattice.assets:
+        asset_count += 1
+
+    for node in manifest.lattice.transport_graph.nodes:
+        for key, asset in node.assets:
+            asset_count += 1
+
+    assert len(all_assets) == asset_count

@@ -20,10 +20,12 @@
 
 """Functions to convert lattice -> LatticeSchema"""
 
+from typing import List
 
 from .._results_manager.result import Result
 from .._shared_files.schemas.result import (
     ASSET_FILENAME_MAP,
+    AssetSchema,
     ResultAssets,
     ResultMetadata,
     ResultSchema,
@@ -127,31 +129,40 @@ def strip_local_uris(res: ResultSchema) -> ResultSchema:
     return ResultSchema.parse_obj(manifest)
 
 
-# Functions to postprocess response
+# Functions to postprocess response from dispatcher
 
 
-def merge_response_manifest(res: ResultSchema, response: ResultSchema) -> ResultSchema:
-    res.metadata.dispatch_id = response.metadata.dispatch_id
-    res.metadata.root_dispatch_id = response.metadata.root_dispatch_id
+def merge_response_manifest(manifest: ResultSchema, response: ResultSchema) -> ResultSchema:
+    """Merge the dispatcher's response with the submitted manifest.
 
-    # Strip workflow asset uris:
+    Args:
+        manifest: The manifest submitted to the `/register` endpoint.
+        response: The manifest returned from `/register`.
+    Returns:
+        A combined manifest with asset `remote_uri`s populated.
+    """
+
+    manifest.metadata.dispatch_id = response.metadata.dispatch_id
+    manifest.metadata.root_dispatch_id = response.metadata.root_dispatch_id
+
+    # Workflow asset uris
     dispatch_assets = response.assets
-    for key, asset in res.assets:
+    for key, asset in manifest.assets:
         remote_asset = getattr(dispatch_assets, key)
         asset.remote_uri = remote_asset.remote_uri
 
     lattice = response.lattice
     lattice_assets = lattice.assets
-    for key, asset in res.lattice.assets:
+    for key, asset in manifest.lattice.assets:
         remote_asset = getattr(lattice_assets, key)
         asset.remote_uri = remote_asset.remote_uri
 
-    # Node assets
+    # Node asset uris
     tg = lattice.transport_graph
 
     # Sort returned nodes b/c task packing may reorder nodes
     tg.nodes.sort(key=lambda x: x.id)
-    nodes = res.lattice.transport_graph.nodes
+    nodes = manifest.lattice.transport_graph.nodes
 
     for i, node in enumerate(nodes):
         returned_node = tg.nodes[i]
@@ -159,28 +170,36 @@ def merge_response_manifest(res: ResultSchema, response: ResultSchema) -> Result
         for key, asset in node.assets:
             remote_asset = getattr(returned_node_assets, key)
             asset.remote_uri = remote_asset.remote_uri
-    return res
+    return manifest
 
 
-def extract_assets(manifest: dict) -> list:
+def extract_assets(manifest: ResultSchema) -> List[AssetSchema]:
+    """Extract all of the asset metadata from a manifest dictionary.
+
+    Args:
+        manifest: A result manifest
+
+    Returns:
+        A list of assets
+    """
+
     assets = []
 
     # workflow-level assets
-    dispatch_assets = manifest["assets"]
-    for key, asset in dispatch_assets.items():
+    dispatch_assets = manifest.assets
+    for key, asset in dispatch_assets:
         assets.append(asset)
 
-    lattice = manifest["lattice"]
-    lattice_assets = lattice["assets"]
-    for key, asset in lattice_assets.items():
+    lattice = manifest.lattice
+    lattice_assets = lattice.assets
+    for key, asset in lattice_assets:
         assets.append(asset)
 
     # Node assets
-    tg = lattice["transport_graph"]
-
-    nodes = tg["nodes"]
+    tg = lattice.transport_graph
+    nodes = tg.nodes
     for node in nodes:
-        node_assets = node["assets"]
-        for key, asset in node_assets.items():
+        node_assets = node.assets
+        for key, asset in node_assets:
             assets.append(asset)
     return assets
