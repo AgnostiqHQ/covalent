@@ -112,7 +112,7 @@ async def put_job_status(dispatch_id: str, task_id: int, status: Status) -> bool
     Arg(s)
         dispatch_id: Dispatch ID of the lattice
         task_id: ID of the task within the lattice
-        job_handle: Unique identifier of the task returned by the execution backend
+        job_status: A `Status` type representing the job status
 
     Return(s)
         True

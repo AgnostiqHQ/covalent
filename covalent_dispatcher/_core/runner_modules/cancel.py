@@ -39,6 +39,9 @@ app_log = logger.app_log
 # Dedicated thread pool for invoking non-async Executor.cancel()
 _cancel_threadpool = ThreadPoolExecutor()
 
+# Collects asyncio task futures
+_background_tasks = set()
+
 
 async def _cancel_task(
     dispatch_id: str, task_id: int, selected_executor: List, job_handle: str
@@ -122,7 +125,9 @@ async def cancel_tasks(dispatch_id: str, task_ids: List[int]) -> None:
     ]
 
     for kwargs in cancel_task_kwargs:
-        asyncio.create_task(_cancel_task(dispatch_id, **kwargs))
+        fut = asyncio.create_task(_cancel_task(dispatch_id, **kwargs))
+        _background_tasks.add(fut)
+        fut.add_done_callback(_background_tasks.discard)
 
 
 async def _get_metadata_for_nodes(dispatch_id: str, node_ids: list) -> List[Any]:
@@ -143,18 +148,3 @@ async def _get_metadata_for_nodes(dispatch_id: str, node_ids: list) -> List[Any]
         ["executor", "executor_data"],
     )
     return attrs
-
-
-async def _get_cancel_requested(dispatch_id: str, task_id: int) -> Any:
-    """
-    Query if a specific task has been requested to be cancelled
-
-    Arg(s)
-        dispatch_id: Dispatch ID of the workflow
-        task_id: ID of the node to be cancelled
-
-    Return(s)
-        Whether the task has been requested to be cancelled or not
-    """
-    records = await job_manager.get_jobs_metadata(dispatch_id, [task_id])
-    return records[0]["cancel_requested"]
