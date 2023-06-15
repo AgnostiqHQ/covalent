@@ -16,6 +16,8 @@ psutil>=5.9.0,<=5.9.2
 pydantic>=1.10.3
 python-socketio==5.7.1
 qiskit==0.43.1
+qiskit-ibm-provider==0.6.0
+qiskit-ibm-runtime==0.10.0
 requests>=2.24.0,<=2.28.1
 simplejson==3.17.6
 sqlalchemy>=1.4.37,<=1.4.41
