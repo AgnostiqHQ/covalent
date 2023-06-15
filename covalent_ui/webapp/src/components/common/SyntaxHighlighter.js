@@ -28,7 +28,7 @@ import python from 'react-syntax-highlighter/dist/cjs/languages/hljs/python'
 import yaml from 'react-syntax-highlighter/dist/cjs/languages/hljs/yaml'
 import json from 'react-syntax-highlighter/dist/cjs/languages/hljs/json'
 import style from 'react-syntax-highlighter/dist/cjs/styles/hljs/androidstudio'
-import { Grid, SvgIcon } from '@mui/material'
+import { Grid, SvgIcon, Tooltip } from '@mui/material'
 import { ReactComponent as ViewSvg } from '../../assets/codeview.svg'
 import { ReactComponent as CloseSvg } from '../../assets/close.svg'
 
@@ -94,20 +94,26 @@ const SyntaxHighlighter = ({ src, preview, fullwidth, ...props }) => {
           }}
         >
           {preview && (
-            <SvgIcon
-              aria-label="view"
-              sx={{
-                display: 'flex',
-                justifyContent: 'flex-end',
-                mr: 0,
-                mt: 1,
-                pr: 0,
-                cursor: 'pointer',
-              }}
-              onClick={handleOpen}
+            <Tooltip
+              title="Expand view"
+              placement="bottom"
+              data-testid="expandbutton"
             >
-              <ViewSvg />
-            </SvgIcon>
+              <SvgIcon
+                aria-label="view"
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'flex-end',
+                  mr: 0,
+                  mt: 1,
+                  pr: 0,
+                  cursor: 'pointer',
+                }}
+                onClick={handleOpen}
+              >
+                <ViewSvg />
+              </SvgIcon>
+            </Tooltip>
           )}
         </Grid>
       </Grid>

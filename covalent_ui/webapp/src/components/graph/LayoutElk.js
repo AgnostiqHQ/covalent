@@ -75,8 +75,8 @@ const mapGraphToElements = (
     const name = isParam
       ? node?.name?.replace(':parameter:', '')
       : prettify
-      ? Prettify(node.name, node.type)
-      : nodeLabel(node?.type, node.name)
+        ? Prettify(node.name, node.type)
+        : nodeLabel(node?.type, node.name)
     return {
       id: String(node.id),
       type: isParam ? 'parameter' : 'electron',
@@ -94,6 +94,7 @@ const mapGraphToElements = (
         sublattices_id: node.sublattice_dispatch_id
           ? node.sublattice_dispatch_id
           : null,
+        isQelectron: node?.qelectron_data_exists
       },
       targetPosition: handlePositions.target,
       sourcePosition: handlePositions.source,
