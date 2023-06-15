@@ -7,12 +7,13 @@
  * please reach out to Agnostiq at: [support@agnostiq.com].
  */
 
-import { Grid, Typography, SvgIcon, Box, Modal } from '@mui/material'
+import { Grid, Typography, SvgIcon, Box, Modal, Paper } from '@mui/material'
 import React, { useState } from 'react'
 import theme from '../../utils/theme'
 import { ReactComponent as QelectronSvg } from '../../assets/qelectron/circuit.svg'
 import { ReactComponent as CircuitLarge } from '../../assets/qelectron/circuit-large.svg'
 import { ReactComponent as CloseSvg } from '../../assets/close.svg'
+import SyntaxHighlighter from '../common/SyntaxHighlighter'
 
 const styles = {
   outline: 'none',
@@ -87,32 +88,17 @@ const Circuit = ({ circuitDetails }) => {
         >
           Circuit
         </Typography>
-        <Grid
-          mt={2}
-          container
-          justifyContent="center"
-          sx={{ width: '750px', height: '120px', cursor: 'pointer' }}
-          onClick={() => setOpenModal(true)}
-        >
-          <span
-            style={{
-              width: '100%',
-              height: '100%',
-              display: 'flex',
-              justifyContent: 'flex-end',
-            }}
+
+        <Grid sx={{ width: '80%', height: '100%' }}>
+          <Paper
+            elevation={0}
+            sx={(theme) => ({
+              bgcolor: theme.palette.background.outRunBg,
+            })}
           >
-            <SvgIcon
-              aria-label="view"
-              sx={{
-                width: '100%',
-                height: '100%',
-                color: (theme) => theme.palette.text.primary,
-              }}
-              component={QelectronSvg}
-              viewBox="0 0 750 120" // Specify the viewBox to match the desired container size
-            />
-          </span>
+            {' '}
+            <SyntaxHighlighter src={circuitDetails?.circuit_diagram} preview fullwidth />
+          </Paper>
         </Grid>
       </Grid>
       <Modal
