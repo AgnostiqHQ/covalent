@@ -28,7 +28,7 @@ import { ReactComponent as ActivitySvg } from '../assets/status/pending.svg'
 import { ReactComponent as CheckSvg } from '../assets/status/checkmark.svg'
 import { ReactComponent as ErrorSvg } from '../assets/status/error.svg'
 import { ReactComponent as CancelSvg } from '../assets/status/stop.svg'
-import { ReactComponent as LoaderSvg } from '../assets/loader.svg'
+import { ReactComponent as LoaderSvg } from '../assets/status/running.svg'
 import { ReactComponent as FunctionSvg } from '../assets/nodeType/fuction.svg'
 import { ReactComponent as ParameterSvg } from '../assets/nodeType/parameter.svg'
 import { ReactComponent as SubLattice } from '../assets/nodeType/sublattice.svg'
@@ -49,6 +49,8 @@ import { ReactComponent as CompletingSvg } from '../assets/status/completing.svg
 import { ReactComponent as RunningTopBarSvg } from '../assets/sublattice/runningTopBar.svg'
 import { ReactComponent as FailedTopBarSvg } from '../assets/sublattice/failedTopBar.svg'
 import { ReactComponent as SuccessTopBarSvg } from '../assets/sublattice/successTopBar.svg'
+import './style.css'
+
 export const secondsToHms = (ms) => {
   let time = ''
   const sec = Math.floor(ms / 1000)
@@ -249,9 +251,7 @@ export const statusIcon = (status) => {
     case 'RUNNING':
     case 'STARTING':
       return (
-        <SvgIcon aria-label={status} sx={{ mr: 0.5 }}>
-          <LoaderSvg />
-        </SvgIcon>
+        <LoaderSvg className='circleRunningStatus' />
       )
     case 'NEW_OBJECT':
     case 'PENDING':

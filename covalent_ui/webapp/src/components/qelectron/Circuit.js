@@ -10,7 +10,6 @@
 import { Grid, Typography, SvgIcon, Box, Modal, Paper } from '@mui/material'
 import React, { useState } from 'react'
 import theme from '../../utils/theme'
-import { ReactComponent as QelectronSvg } from '../../assets/qelectron/circuit.svg'
 import { ReactComponent as CircuitLarge } from '../../assets/qelectron/circuit-large.svg'
 import { ReactComponent as CloseSvg } from '../../assets/close.svg'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'

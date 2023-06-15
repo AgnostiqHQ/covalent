@@ -22,7 +22,7 @@
 
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import {
   Table,
   TableRow,
@@ -30,12 +30,8 @@ import {
   TableCell,
   TableBody,
   Typography,
-  IconButton,
-  Input,
-  InputAdornment,
   TableContainer,
   TableSortLabel,
-  Toolbar,
   Box,
   styled,
   tableCellClasses,
@@ -44,16 +40,10 @@ import {
   tableSortLabelClasses,
   linkClasses,
   Grid,
-  Skeleton,
-  Snackbar,
   SvgIcon,
-  Pagination,
   Tooltip,
 } from '@mui/material'
-import { Clear as ClearIcon, Search as SearchIcon } from '@mui/icons-material'
 
-import DownloadButton from '../common/DownloadButton'
-import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import { statusIcon, getLocalStartTime, formatDate, truncateMiddle } from '../../utils/misc'
 
 import { ReactComponent as FilterSvg } from '../../assets/qelectron/filter.svg'
@@ -265,8 +255,6 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
   const [selectedId, setSelectedId] = useState(defaultId)
   const [sortColumn, setSortColumn] = useState('start_time')
   const [sortOrder, setSortOrder] = useState('DESC')
-  const [offset, setOffset] = useState(0)
-  const [openSnackbar, setOpenSnackbar] = useState(false)
   const isHeightAbove850px = useMediaQuery('(min-height: 850px)')
   const isHeightAbove940px = useMediaQuery('(min-height: 940px)')
   const isHeightAbove1040px = useMediaQuery('(min-height: 1040px)')
@@ -295,7 +283,6 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
 
   const handleChangeSort = (column) => {
     setSelected([])
-    setOffset(0)
     const isAsc = sortColumn === column && sortOrder === 'asc'
     setSortOrder(isAsc ? 'desc' : 'asc')
     setSortColumn(column)
@@ -333,30 +320,6 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
       }}
     >
       <Box data-testid="logsTable">
-        <Snackbar
-          open={openSnackbar}
-          autoHideDuration={3000}
-          message=""
-          onClose={() => setOpenSnackbar(false)}
-          action={
-            <SvgIcon
-              sx={{
-                mt: 2,
-                zIndex: 2,
-                cursor: 'pointer',
-              }}
-              component={closeIcon}
-              onClick={() => setOpenSnackbar(false)}
-            />
-          }
-        />
-        {/* <ResultsTableToolbar
-        //   totalRecords={totalRecords}
-          query={searchKey}
-          onSearch={onSearch}
-          setQuery={setSearchKey}
-        /> */}
-
         {data && (
           <Grid>
             <TableContainer
@@ -409,7 +372,7 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
                               }}
                             >
                               {statusIcon(result?.status)}
-                              <Tooltip title={result?.job_id} placement="top">
+                              <Tooltip title={result?.job_id} placement="left">
                                 <Typography
                                   component="span"
                                   sx={{
