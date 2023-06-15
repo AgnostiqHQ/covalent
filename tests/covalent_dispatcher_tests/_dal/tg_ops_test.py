@@ -417,3 +417,13 @@ def test_get_diff_nodes_integration_test(tg, tg_2):
 
     reusable_nodes = tg_ops.get_reusable_nodes(tg_2)
     assert reusable_nodes == [1, 2]
+
+
+def test_reset_node(tg):
+    tg.set_node_value(0, "status", RESULT_STATUS.PENDING_REPLACEMENT)
+
+    tg_ops = TransportGraphOps(tg)
+    tg_ops.reset_nodes()
+    assert tg.get_node_value(0, "status") == RESULT_STATUS.NEW_OBJECT
+    assert tg.get_node_value(0, "start_time") is None
+    assert tg.get_node_value(0, "end_time") is None

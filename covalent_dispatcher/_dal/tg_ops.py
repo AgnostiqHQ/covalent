@@ -26,7 +26,6 @@ from typing import Callable, List
 import networkx as nx
 
 from covalent._shared_files import logger
-from covalent._shared_files.defaults import parameter_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS
 
 from .asset import copy_asset, copy_asset_meta
@@ -307,8 +306,4 @@ class TransportGraphOps:
         node_name = self.tg.get_node_value(node_id, "name")
 
         for node_attr, default_val in self._default_node_attrs.items():
-            # Don't clear precomputed parameter outputs.
-            if node_attr == "output" and node_name.startswith(parameter_prefix):
-                continue
-
             self.tg.set_node_value(node_id, node_attr, default_val)

@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""DB-backed electron"""
+"""DB-backed transport graph"""
 
 from __future__ import annotations
 
