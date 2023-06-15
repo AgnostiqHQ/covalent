@@ -196,8 +196,6 @@ async def _update_parent_electron(dispatch_id: str):
     if parent_eid:
         dispatch_id, node_id = resolve_electron_id(parent_eid)
         status = dispatch_attrs["status"]
-        if status == Result.POSTPROCESSING_FAILED:
-            status = Result.FAILED
         node_result = generate_node_result(
             node_id=node_id,
             end_time=dispatch_attrs["end_time"],

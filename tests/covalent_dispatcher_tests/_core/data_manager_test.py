@@ -32,8 +32,12 @@ from covalent._results_manager import Result
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 from covalent_dispatcher._core.data_manager import (
+    ResultSchema,
+    _legacy_sublattice_dispatch_helper,
     _make_sublattice_dispatch,
+    _redirect_lattice,
     _update_parent_electron,
+    ensure_dispatch,
     finalize_dispatch,
     get_result_object,
     make_dispatch,
@@ -274,7 +278,6 @@ def test_get_result_object(mocker):
 def test_unregister_result_object(mocker, stateless):
     dispatch_id = "test_unregister_result_object"
     finalize_dispatch(dispatch_id)
-    pass
 
 
 @pytest.mark.asyncio
@@ -380,3 +383,93 @@ async def test_make_sublattice_dispatch(mocker):
 
     # mock_make_dispatch.assert_awaited_with("lattice_json", result_object, mock_node._electron_id)
     assert sub_dispatch_id == mock_manifest.metadata.dispatch_id
+
+
+@pytest.mark.asyncio
+async def test_make_monolithic_sublattice_dispatch(mocker):
+    """Check that JSON sublattices are handled correctly"""
+
+    dispatch_id = "test_make_monolithic_sublattice_dispatch"
+
+    def _mock_helper(dispatch_id, node_result):
+        return ResultSchema.parse_raw("invalid_input")
+
+    mocker.patch(
+        "covalent_dispatcher._core.data_manager._make_sublattice_dispatch_helper", _mock_helper
+    )
+
+    json_lattice = "json_lattice"
+    parent_electron_id = 5
+    mock_legacy_subl_helper = mocker.patch(
+        "covalent_dispatcher._core.data_manager._legacy_sublattice_dispatch_helper",
+        return_value=(json_lattice, parent_electron_id),
+    )
+    sub_dispatch_id = "sub_dispatch"
+    mock_make_dispatch = mocker.patch(
+        "covalent_dispatcher._core.data_manager.make_dispatch", return_value=sub_dispatch_id
+    )
+
+    assert sub_dispatch_id == await _make_sublattice_dispatch(dispatch_id, {})
+
+    mock_make_dispatch.assert_awaited_with(json_lattice, dispatch_id, parent_electron_id)
+
+
+def test_legacy_sublattice_dispatch_helper(mocker):
+    dispatch_id = "test_legacy_sublattice_dispatch_helper"
+    res_obj = MagicMock()
+    bg_output = MagicMock()
+    bg_output.object_string = "json_sublattice"
+    parent_node = MagicMock()
+    parent_node._electron_id = 2
+    parent_node.get_value = MagicMock(return_value=bg_output)
+    res_obj.lattice.transport_graph.get_node = MagicMock(return_value=parent_node)
+    node_result = {"node_id": 0}
+
+    mocker.patch("covalent_dispatcher._core.data_manager.get_result_object", return_value=res_obj)
+
+    assert _legacy_sublattice_dispatch_helper(dispatch_id, node_result) == ("json_sublattice", 2)
+
+
+def test_redirect_lattice(mocker):
+    """Test redirecting JSON lattices to new DAL."""
+
+    dispatch_id = "test_redirect_lattice"
+    mock_manifest = MagicMock()
+    mock_manifest.metadata.dispatch_id = dispatch_id
+    mock_prepare_manifest = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.prepare_manifest",
+        return_value=mock_manifest,
+    )
+    mock_import_manifest = mocker.patch(
+        "covalent_dispatcher._core.data_manager.manifest_importer.import_manifest",
+    )
+
+    mock_fut = MagicMock()
+    mock_fut.result = MagicMock(return_value=mock_manifest)
+    mocker.patch("asyncio.run_coroutine_threadsafe", return_value=mock_fut)
+
+    mock_lat_deserialize = mocker.patch(
+        "covalent_dispatcher._core.data_manager.Lattice.deserialize_from_json"
+    )
+
+    json_lattice = "json_lattice"
+
+    parent_dispatch_id = "parent_dispatch"
+    parent_electron_id = 3
+
+    assert (
+        _redirect_lattice(json_lattice, parent_dispatch_id, parent_electron_id, None)
+        == dispatch_id
+    )
+
+    mock_import_manifest.assert_called_with(mock_manifest, parent_dispatch_id, parent_electron_id)
+
+
+@pytest.mark.asyncio
+async def test_ensure_dispatch(mocker):
+    mock_ensure_run_once = mocker.patch(
+        "covalent_dispatcher._core.data_manager.SRVResult.ensure_run_once",
+        return_value=True,
+    )
+    assert await ensure_dispatch("test_ensure_dispatch") is True
+    mock_ensure_run_once.assert_called_with("test_ensure_dispatch")
