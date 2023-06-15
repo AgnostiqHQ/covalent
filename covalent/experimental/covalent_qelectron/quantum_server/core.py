@@ -202,6 +202,7 @@ class QServer:
                 circuit_name=qelectron_info.name,
                 circuit_description=qelectron_info.description,
                 circuit_diagram=qscript.draw(),
+                qnode_specs=qnode_specs,
                 qexecutor=linked_executors[i],
                 save_time=batch_time,
                 circuit_id=circuit_id,
