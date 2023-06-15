@@ -62,7 +62,7 @@ class Electrons:
                 reverse=sort_direction == SortDirection.DESCENDING, key=lambda d: d[sort_by.value]
             )
             result = (
-                jobs_list[offset : count + offset] if count is not None else jobs_list[offset:]
+                jobs_list[offset: count + offset] if count is not None else jobs_list[offset:]
             )
             return result
         except:
@@ -70,36 +70,44 @@ class Electrons:
 
     def get_job_detail(self, dispatch_id, electron_id, job_id):
         try:
-            selected_job = self.qdb.get_db(dispatch_id=str(dispatch_id), node_id=electron_id)[
-                job_id
-            ]
+            selected_job = self.qdb.get_db(
+                dispatch_id=str(dispatch_id),
+                node_id=electron_id)[job_id]
             selected_job["result"] = str(selected_job["result"])[1:-1]
             job_overview = {
                 "overview": {
-                    "job_name": selected_job["circuit_name"],
-                    "backend": selected_job["result_metadata"]["executor_backend_name"],
-                    "time_elapsed": selected_job["execution_time"],
-                    "result": selected_job["result"],
+                    "job_name": selected_job["circuit_name"] if "circuit_name" in selected_job else None,
+                    "backend": selected_job["result_metadata"]["executor_backend_name"]
+                    if "result_metadata" in selected_job and "executor_backend_name" in selected_job["result_metadata"] else None,
+                    "time_elapsed": selected_job["execution_time"] if "execution_time" in selected_job else None,
+                    "result": selected_job["result"] if "result" in selected_job else None,
                     "status": "COMPLETED"
                     if len(selected_job["result"]) != 0
                     and len(selected_job["result_metadata"]) != 0
                     else "RUNNING",
-                    "start_time": selected_job["save_time"],
+                    "start_time": selected_job["save_time"]if "save_time" in selected_job else None,
                     "end_time": selected_job["save_time"]
                     + timedelta(seconds=selected_job["execution_time"]),
                 },
                 "circuit": {
-                    "total_qbits": selected_job["qnode_specs"]["num_used_wires"],
-                    "qbit1_gates": selected_job["qnode_specs"]["gate_sizes"]["1"],
-                    "qbit2_gates": selected_job["qnode_specs"]["gate_sizes"]["2"],
-                    "depth": selected_job["qnode_specs"]["depth"],
-                    "circuit": selected_job["qscript"],
+                    "total_qbits": None,
+                    "qbit1_gates": None,
+                    "qbit2_gates": None,
+                    "depth": None,
+                    "circuit_diagram": selected_job["circuit_diagram"],
                 },
                 "executor": {
-                    "name": selected_job["qexecutor"]["name"],
-                    "executor": selected_job["qexecutor"],
+                    "name": selected_job["qexecutor"]["name"] if "qexecutor" in selected_job and "name" in selected_job["qexecutor"] else None,
+                    "executor": selected_job["qexecutor"] if "qexecutor" in selected_job else None,
                 },
             }
+            if selected_job["qnode_specs"] != None:
+                job_overview["circuit"]["total_qbits"] = selected_job["qnode_specs"]["num_used_wires"]
+                job_overview["circuit"]["depth"] = selected_job["qnode_specs"]["depth"]
+                gate_sizes = selected_job["qnode_specs"]["gate_sizes"]
+                if gate_sizes != None:
+                    job_overview["circuit"]["qbit1_gates"] = gate_sizes["1"]
+                    job_overview["circuit"]["qbit2_gates"] = gate_sizes["2"]
             return job_overview
         except:
             return None
