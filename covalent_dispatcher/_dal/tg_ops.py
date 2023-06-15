@@ -21,14 +21,13 @@
 """Module for transport graph operations."""
 
 from collections import deque
-from typing import Any, Callable, Dict, List
+from typing import Callable, List
 
 import networkx as nx
 
 from covalent._shared_files import logger
 from covalent._shared_files.defaults import parameter_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS
-from covalent._workflow.transport import TransportableObject
 
 from .asset import copy_asset, copy_asset_meta
 from .electron import ASSET_KEYS, METADATA_KEYS
@@ -313,43 +312,3 @@ class TransportGraphOps:
                 continue
 
             self.tg.set_node_value(node_id, node_attr, default_val)
-
-    def _reset_descendants(self, node_id: int) -> None:
-        """Reset node and all its descendants to starting state."""
-        tg = self.tg
-        try:
-            if tg.get_node_value(node_id, "status") == RESULT_STATUS.NEW_OBJECT:
-                return
-        except Exception:
-            return
-        self._reset_node(node_id)
-        for successor in self.tg._graph.neighbors(node_id):
-            self._reset_descendants(successor)
-
-    def _replace_node(self, node_id: int, new_attrs: Dict[str, Any]) -> None:
-        """Replace node data with new attribute values and flag descendants (used in re-dispatching)."""
-
-        new_metadata = new_attrs["metadata"]
-        tg = self.tg
-        # SRVTransportGraph stores all attributes in a flat hierarchy
-        for k, v in new_metadata.items():
-            tg.set_node_value(node_id, k, v)
-
-        serialized_callable = TransportableObject.from_dict(new_attrs["function"])
-
-        # TODO: fix this hack when we stop double-pickling to object store
-        tg.set_node_value(node_id, "function", serialized_callable)
-
-        tg.set_node_value(node_id, "function_string", new_attrs["function_string"])
-        tg.set_node_value(node_id, "name", new_attrs["name"])
-        self._reset_descendants(node_id)
-
-    def apply_electron_updates(self, electron_updates: Dict[str, Callable]) -> None:
-        """Replace transport graph node data based on the electrons that need to be updated during re-dispatching."""
-
-        tg = self.tg
-        for n in tg._graph.nodes:
-            name = tg.get_node_value(n, "name")
-            if name in electron_updates:
-                app_log.debug(f"replacing electron {name}")
-                self._replace_node(n, electron_updates[name])
