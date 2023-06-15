@@ -73,6 +73,7 @@ const QElectronTopBar = (props) => {
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
+                fontSize: '0.75rem'
               }}
             >
               {details?.id}

@@ -239,7 +239,7 @@ const StyledTable = styled(Table)(({ theme }) => ({
     backgroundColor: theme.palette.background.coveBlack02,
   },
   [`& .${tableBodyClasses.root} .${tableRowClasses.root}.Mui-selected:hover`]: {
-    backgroundColor: theme.palette.background.coveBlack02,
+    backgroundColor: theme.palette.background.default,
   },
 
   // customize border
