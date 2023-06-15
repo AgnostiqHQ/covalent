@@ -201,7 +201,7 @@ class QServer:
                 dispatch_id=context.dispatch_id,
                 circuit_name=qelectron_info.name,
                 circuit_description=qelectron_info.description,
-                qnode_specs=qnode_specs,
+                circuit_diagram=qscript.draw(),
                 qexecutor=linked_executors[i],
                 save_time=batch_time,
                 circuit_id=circuit_id,
