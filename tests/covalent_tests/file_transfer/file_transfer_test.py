@@ -23,7 +23,13 @@ from unittest.mock import Mock
 import pytest
 
 from covalent._file_transfer import File
-from covalent._file_transfer.file_transfer import FileTransfer
+from covalent._file_transfer.enums import Order
+from covalent._file_transfer.file_transfer import (
+    FileTransfer,
+    TransferFromRemote,
+    TransferToRemote,
+)
+from covalent._file_transfer.strategies.rsync_strategy import Rsync
 
 
 class TestFileTransfer:
@@ -61,3 +67,49 @@ class TestFileTransfer:
             mock_strategy.download.assert_called_once()
         elif not is_from_file_remote and is_to_file_remote:
             mock_strategy.upload.assert_called_once()
+
+    def test_transfer_from_remote(self):
+        strategy = Rsync()
+        result = TransferFromRemote(
+            "file:///home/one.csv", "file:///home/one.csv", strategy=strategy
+        )
+        assert result.from_file.is_remote
+        assert not result.from_file.is_dir
+        assert not result.to_file.is_remote
+        assert not result.to_file.is_dir
+        assert result.order == Order.BEFORE
+        assert result.strategy == strategy
+
+        result = TransferFromRemote("file:///home/one/", "file:///home/one/", strategy=strategy)
+        assert result.from_file.is_remote
+        assert result.from_file.is_dir
+        assert not result.to_file.is_remote
+        assert result.to_file.is_dir
+        assert result.order == Order.BEFORE
+        assert result.strategy == strategy
+
+        with pytest.raises(ValueError):
+            result = TransferFromRemote("file:///home/one/", "file:///home/one", strategy=strategy)
+
+    def test_transfer_to_remote(self):
+        strategy = Rsync()
+        result = TransferToRemote(
+            "file:///home/one.csv", "file:///home/one.csv", strategy=strategy
+        )
+        assert not result.from_file.is_remote
+        assert not result.from_file.is_dir
+        assert result.to_file.is_remote
+        assert not result.to_file.is_dir
+        assert result.order == Order.AFTER
+        assert result.strategy == strategy
+
+        result = TransferToRemote("file:///home/one/", "file:///home/one/", strategy=strategy)
+        assert not result.from_file.is_remote
+        assert result.from_file.is_dir
+        assert result.to_file.is_remote
+        assert result.to_file.is_dir
+        assert result.order == Order.AFTER
+        assert result.strategy == strategy
+
+        with pytest.raises(ValueError):
+            result = TransferToRemote("file:///home/one", "file:///home/one/", strategy=strategy)

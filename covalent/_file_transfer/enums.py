@@ -29,6 +29,8 @@ class Order(str, enum.Enum):
 class FileSchemes(str, enum.Enum):
     File = "file"
     S3 = "s3"
+    Blob = "https"
+    GCloud = "gs"
     Globus = "globus"
     HTTP = "http"
     HTTPS = "https"
@@ -40,6 +42,7 @@ class FileTransferStrategyTypes(str, enum.Enum):
     Rsync = "rsync"
     HTTP = "http"
     S3 = "s3"
+    GCloud = "gs"
     FTP = "ftp"
     GLOBUS = "globus"
 
@@ -49,6 +52,7 @@ SchemeToStrategyMap = {
     "http": FileTransferStrategyTypes.HTTP,
     "https": FileTransferStrategyTypes.HTTP,
     "s3": FileTransferStrategyTypes.S3,
+    "gs": FileTransferStrategyTypes.GCloud,
     "ftp": FileTransferStrategyTypes.FTP,
     "globus": FileTransferStrategyTypes.GLOBUS,
 }

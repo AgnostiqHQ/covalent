@@ -9,11 +9,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- New runner-executor interface for memory-efficient task processing
+- File transfer strategy for GCP storage
+- Add CLI status for zombie, stopped process.
 
 ### Fixed
 
 - Reduced memory consumption during workflow processing
+
+### Docs
+
+- Added documentation for Azure Blob Storage file transfers
+
+## [0.227.0-rc.0] - 2023-06-13
+
+### Authors
+
+- Andrew S. Rosen <asrosen93@gmail.com>
+- Co-authored-by: Sankalp Sanand <sankalp@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+
+
+### Added
+
+- File transfer strategy for Azure blob storage
 
 ### Fixed
 
@@ -23,7 +43,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix `Lattice` docstring in RTD.
 - Added a missing `,` to the Slurm docs.
-
 
 ### Operations
 
@@ -85,6 +104,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Error messages are propagated to stdout when the server is not started. These changes are applied to `dispatch`, `redispatch`, and `get_result`.
+
 
 ### Docs
 
