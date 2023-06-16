@@ -66,7 +66,6 @@ def get_default_sdk_config():
         ),
         "no_cluster": "true" if os.environ.get("COVALENT_DISABLE_DASK") == "1" else "false",
         "exhaustive_postprocess": "false",
-        "eager_postprocess": "false",
         "dispatch_cache_dir": os.environ.get("COVALENT_DISPATCH_CACHE_DIR")
         or (
             (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))

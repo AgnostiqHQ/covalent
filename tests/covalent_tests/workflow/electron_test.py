@@ -21,12 +21,13 @@
 """Unit tests for electron"""
 
 import json
-
-import pytest
+from unittest.mock import MagicMock
 
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import WAIT_EDGE_NAME, sublattice_prefix
+from covalent._shared_files.schemas.result import ResultSchema
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.electron import (
     TASK_PACKING,
     Electron,
@@ -77,11 +78,76 @@ def workflow_2():
     return res_3
 
 
-@pytest.mark.skip(reason="disabled temporarily")
-def test_build_sublattice_graph():
+def test_build_sublattice_graph(mocker):
     """
     Test building a sublattice graph
     """
+    dispatch_id = "test_build_sublattice_graph"
+
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    parent_metadata = {
+        "executor": "parent_executor",
+        "executor_data": {},
+        "workflow_executor": "my_postprocessor",
+        "workflow_executor_data": {},
+        "deps": {"bash": None, "pip": None},
+        "call_before": [],
+        "call_after": [],
+        "triggers": "mock-trigger",
+        "results_dir": None,
+    }
+    mock_environ = {
+        "COVALENT_DISPATCH_ID": dispatch_id,
+        "COVALENT_DISPATCHER_URL": "http://localhost:48008",
+    }
+
+    mock_manifest = MagicMock()
+    mock_manifest.json = MagicMock(return_value=dispatch_id)
+
+    def mock_register(manifest, *args, **kwargs):
+        return manifest
+
+    mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.register_manifest",
+        mock_register,
+    )
+
+    mock_upload_assets = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.upload_assets",
+    )
+
+    mocker.patch("os.environ", mock_environ)
+
+    json_manifest = _build_sublattice_graph(workflow, json.dumps(parent_metadata), 1)
+
+    manifest = ResultSchema.parse_raw(json_manifest)
+
+    mock_upload_assets.assert_called()
+
+    assert len(manifest.lattice.transport_graph.nodes) == 3
+
+    lat = manifest.lattice
+    assert lat.metadata.executor == parent_metadata["executor"]
+    assert lat.metadata.executor_data == parent_metadata["executor_data"]
+
+    assert lat.metadata.workflow_executor == parent_metadata["workflow_executor"]
+    assert lat.metadata.workflow_executor_data == parent_metadata["workflow_executor_data"]
+
+    # lattice = Lattice.deserialize_from_json(json_lattice)
+
+
+def test_build_sublattice_graph_fallback(mocker):
+    """
+    Test falling back to monolithic sublattice dispatch
+    """
+    dispatch_id = "test_build_sublattice_graph"
 
     @ct.electron
     def task(x):
@@ -103,8 +169,25 @@ def test_build_sublattice_graph():
         "results_dir": None,
     }
 
+    # Omit the required environment variables
+    mock_environ = {}
+
+    mock_reg = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.register_manifest",
+    )
+
+    mock_upload_assets = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.upload_assets",
+    )
+
+    mocker.patch("os.environ", mock_environ)
+
     json_lattice = _build_sublattice_graph(workflow, json.dumps(parent_metadata), 1)
+
     lattice = Lattice.deserialize_from_json(json_lattice)
+
+    mock_reg.assert_not_called()
+    mock_upload_assets.assert_not_called()
 
     assert list(lattice.transport_graph._graph.nodes) == list(range(3))
     for k in lattice.metadata.keys():
@@ -527,3 +610,29 @@ def test_electron_executor_property():
     mock_task_electron.executor = LocalExecutor()
     assert mock_task_electron.metadata["executor"] == mock_encoded_metadata["executor"]
     assert mock_task_electron.metadata["executor_data"] == mock_encoded_metadata["executor_data"]
+
+
+def test_replace_electrons():
+    """Test the logic in __call__ to replace electrons."""
+
+    @ct.electron
+    def task(x):
+        return x**2
+
+    @ct.electron
+    def replacement_task(x):
+        return x**3
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    workflow._replace_electrons = {"task": replacement_task}
+    workflow.build_graph(3)
+    del workflow.__dict__["_replace_electrons"]
+
+    func = workflow.transport_graph.get_node_value(0, "function")
+    assert func.get_deserialized()(3) == 27
+    assert (
+        workflow.transport_graph.get_node_value(0, "status") == RESULT_STATUS.PENDING_REPLACEMENT
+    )

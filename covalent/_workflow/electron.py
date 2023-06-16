@@ -23,8 +23,6 @@
 import inspect
 import json
 import operator
-
-# imports for multistage sublattices
 import tempfile
 from builtins import list
 from dataclasses import asdict
@@ -400,7 +398,7 @@ class Electron:
                 meta = active_lattice.get_metadata(k) or DEFAULT_METADATA_VALUES[k]
                 self.set_metadata(k, meta)
 
-        # Handle replace_electrons
+        # Handle replace_electrons for redispatch
         name = self.function.__name__
         if name in active_lattice.replace_electrons:
             # Temporarily pop the replacement to avoid infinite
