@@ -87,9 +87,6 @@ def test_lattice_attributes(test_db, mocker):
     workflow_function = lat.get_value("workflow_function").get_deserialized()
     assert workflow_function(42) == 42
 
-    workflow_function = lat.workflow_function.get_deserialized()
-    assert workflow_function(42) == 42
-
     res.lattice.lattice_imports == lat.get_value("lattice_imports")
     res.lattice.cova_imports == lat.get_value("cova_imports")
 
@@ -139,7 +136,9 @@ def test_lattice_get_set_value(test_db, mocker):
 
     assert lat.get_value("name") == "workflow"
     lat.set_value("executor", "awsbatch")
+    lat.set_value("executor_data", {"attributes": {"time_limit": 60}})
     assert lat.get_value("executor") == "awsbatch"
+    assert lat.get_value("executor_data") == {"attributes": {"time_limit": 60}}
 
 
 def test_lattice_get_metadata(test_db, mocker):

@@ -34,7 +34,6 @@ from covalent._dispatcher_plugins.local import LocalDispatcher
 from .._file_transfer.enums import Order
 from .._file_transfer.file_transfer import FileTransfer
 from .._shared_files import logger
-from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import (
     WAIT_EDGE_NAME,
@@ -67,9 +66,6 @@ if TYPE_CHECKING:
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-# Task packing is not currently supported by legacy executors
-TASK_PACKING = get_config("sdk.task_packing") == "true"
 
 
 class Electron:
@@ -271,6 +267,8 @@ class Electron:
             Electron object with task packing enabled.
 
         """
+
+        active_lattice = active_lattice_manager.get_active_lattice()
         return (
             Electron(function=func, metadata=self.metadata.copy())
             if name.startswith(sublattice_prefix)
@@ -278,7 +276,7 @@ class Electron:
                 function=func,
                 metadata=metadata,
                 task_group_id=self.task_group_id,
-                packing_tasks=True and TASK_PACKING,
+                packing_tasks=True and active_lattice.task_packing,
             )
         )
 
@@ -522,6 +520,8 @@ class Electron:
         """
 
         collection_metadata = encode_metadata(DEFAULT_METADATA_VALUES.copy())
+        active_lattice = active_lattice_manager.get_active_lattice()
+
         if "executor" in self.metadata:
             collection_metadata["executor"] = self.metadata["executor"]
             collection_metadata["executor_data"] = self.metadata["executor_data"]
@@ -544,7 +544,7 @@ class Electron:
                 function=_auto_list_node,
                 metadata=collection_metadata,
                 task_group_id=self.task_group_id,
-                packing_tasks=True and TASK_PACKING,
+                packing_tasks=True and active_lattice.task_packing,
             )  # Group the auto-generated node with the main node.
             bound_electron = list_electron(*param_value)
             transport_graph.set_node_value(bound_electron.node_id, "name", electron_list_prefix)
@@ -565,7 +565,7 @@ class Electron:
                 function=_auto_dict_node,
                 metadata=collection_metadata,
                 task_group_id=self.task_group_id,
-                packing_tasks=True and TASK_PACKING,
+                packing_tasks=True and active_lattice.task_packing,
             )  # Group the auto-generated node with the main node.
             bound_electron = dict_electron(**param_value)
             transport_graph.set_node_value(bound_electron.node_id, "name", electron_dict_prefix)

@@ -240,3 +240,37 @@ def test_electron_asset_digest(test_db, mocker):
 
         value = e.get_asset("value", session)
         assert "digest" in value._attrs
+
+
+def test_electron_update_assets(test_db, mocker):
+    res = get_mock_result()
+    res._initialize_nodes()
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+
+    update.persist(res)
+
+    with test_db.session() as session:
+        record = (
+            session.query(models.Electron)
+            .where(models.Electron.transport_graph_node_id == 1)
+            .first()
+        )
+        e = Electron(session, record)
+
+        updates = {"output": {"size": 1024}}
+        e.update_assets(updates, session)
+
+        output = e.get_asset("output", session)
+        output.refresh(session, fields={"size"}, for_update=False)
+        assert output.size == 1024
+
+        updates = {"output": {"size": 2048}}
+
+        e.update_assets(updates)
+
+        output = e.get_asset("output", session)
+        output.refresh(session, fields={"size"}, for_update=False)
+        assert output.size == 2048

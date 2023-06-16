@@ -135,7 +135,7 @@ class LocalProvider(BaseProvider):
         else:
             raise InvalidFileExtension("The file extension is not supported.")
 
-        digest = local_store.digest(bucket_name=storage_path, object_key=filename)
+        digest = self.digest(bucket_name=storage_path, object_key=filename)
         return digest
 
     def load_file(self, storage_path: str, filename: str) -> Any:

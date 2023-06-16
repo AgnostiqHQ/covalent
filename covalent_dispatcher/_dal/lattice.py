@@ -86,14 +86,6 @@ class Lattice(DispatchedObject):
     def meta_record_map(cls: DispatchedObject, key: str) -> str:
         return _meta_record_map[key]
 
-    @property
-    def __name__(self):
-        return self.get_value("__name__")
-
-    @property
-    def workflow_function(self):
-        return self.get_value("workflow_function")
-
     def get_value(self, key: str, session: Session = None, refresh: bool = True):
         return get_filters[key](super().get_value(key, session, refresh))
 

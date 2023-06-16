@@ -21,13 +21,8 @@
 """Mappings between lattice attributes and DB records"""
 
 import json
-from typing import Dict, List
-
-from sqlalchemy.orm import Session
 
 from covalent._shared_files.schemas import lattice
-
-from ..._db import models
 
 ATTRIBUTES = {
     "workflow_function",
@@ -117,8 +112,3 @@ set_filters = {key: identity for key in METADATA_KEYS.union(ASSET_KEYS)}
 
 get_filters.update(custom_get_filters)
 set_filters.update(custom_set_filters)
-
-
-def _to_meta(session: Session, record: models.Lattice, keys: List) -> Dict:
-    metadata = {k: getattr(record, _meta_record_map[k]) for k in keys}
-    return metadata

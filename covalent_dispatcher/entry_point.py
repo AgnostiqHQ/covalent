@@ -78,7 +78,8 @@ async def start_dispatch(dispatch_id: str):
         # an asyncio.Future
         app_log.debug(f"Waiting on asset transfers for dispatch {dispatch_id}")
         await asyncio.wrap_future(_fut)
-    # TODO: must be idempotent
+
+    # Idempotent
     run_dispatch(dispatch_id)
     app_log.debug(f"Running dispatch {dispatch_id}")
 

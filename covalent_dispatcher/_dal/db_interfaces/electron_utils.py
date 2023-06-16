@@ -21,14 +21,9 @@
 """Mappings between electron attributes and DB records"""
 
 import json
-from typing import List
-
-from sqlalchemy.orm import Session
 
 from covalent._shared_files.schemas.electron import ELECTRON_ASSET_KEYS, ELECTRON_METADATA_KEYS
 from covalent._shared_files.util_classes import Status
-
-from ..._db import models
 
 ATTRIBUTES = {
     "name",
@@ -125,9 +120,3 @@ set_filters = {key: identity for key in METADATA_KEYS.union(ASSET_KEYS)}
 
 get_filters.update(custom_get_filters)
 set_filters.update(custom_set_filters)
-
-
-def _to_meta(session: Session, record: models.Electron, keys: List):
-    metadata = {k: getattr(record, _meta_record_map[k]) for k in keys}
-
-    return metadata

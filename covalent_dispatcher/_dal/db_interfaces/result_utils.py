@@ -20,14 +20,10 @@
 
 """Mappings between result attributes and DB records"""
 
-from typing import List
-
-from sqlalchemy.orm import Session
 
 from covalent._shared_files.schemas import result
 from covalent._shared_files.util_classes import Status
 
-from ..._db import models
 from . import lattice_utils
 
 ATTRIBUTES = {
@@ -100,9 +96,3 @@ custom_set_filters = {"status": set_status_filter, "completed_electron_num": lam
 
 get_filters.update(custom_get_filters)
 set_filters.update(custom_set_filters)
-
-
-def _to_meta(session: Session, record: models.Lattice, keys: List):
-    metadata = {k: getattr(record, _meta_record_map[k]) for k in keys}
-
-    return metadata

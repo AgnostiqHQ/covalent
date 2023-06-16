@@ -180,6 +180,10 @@ class Lattice:
     def replace_electrons(self) -> Dict[str, Callable]:
         return self.__dict__.get("_replace_electrons", {})
 
+    @property
+    def task_packing(self) -> bool:
+        return self.__dict__.get("_task_packing", False)
+
     def build_graph(self, *args, **kwargs) -> None:
         """
         Builds the transport graph for the lattice by executing the workflow
@@ -224,6 +228,9 @@ class Lattice:
         for k, v in new_metadata.items():
             self.metadata[k] = v
 
+        # Check whether task packing is enabled
+        self._task_packing = get_config("sdk.task_packing") == "true"
+
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
                 try:
@@ -242,6 +249,9 @@ class Lattice:
             pp.add_reconstruct_postprocess_node(retval, self._bound_electrons.copy())
 
         self._bound_electrons = {}  # Reset bound electrons
+
+        # Clear this temporary attribute
+        del self.__dict__["_task_packing"]
 
     def draw(self, *args, **kwargs) -> None:
         """

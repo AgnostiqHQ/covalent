@@ -23,13 +23,14 @@
 import json
 from unittest.mock import MagicMock
 
+import pytest
+
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import WAIT_EDGE_NAME, sublattice_prefix
 from covalent._shared_files.schemas.result import ResultSchema
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.electron import (
-    TASK_PACKING,
     Electron,
     _build_sublattice_graph,
     filter_null_metadata,
@@ -440,7 +441,8 @@ def test_call_sublattice():
                 )
 
 
-def test_electron_auto_task_groups():
+@pytest.mark.parametrize("task_packing", ["true", "false"])
+def test_electron_auto_task_groups(task_packing):
     @ct.electron
     def task(arr: list):
         return sum(arr)
@@ -454,17 +456,19 @@ def test_electron_auto_task_groups():
     def workflow(x):
         return sublattice(x)
 
+    ct.set_config("sdk.task_packing", task_packing)
     workflow.build_graph([[1, 2], 3])
     tg = workflow.transport_graph
 
-    if TASK_PACKING:
+    if task_packing == "true":
         assert all(tg.get_node_value(i, "task_group_id") == 0 for i in [0, 3, 4])
         assert all(tg.get_node_value(i, "task_group_id") == i for i in [1, 2, 5, 6, 7, 8])
     else:
         assert all(tg.get_node_value(i, "task_group_id") == i for i in range(0, 9))
 
 
-def test_electron_get_attr():
+@pytest.mark.parametrize("task_packing", ["true", "false"])
+def test_electron_get_attr(task_packing):
     class Point:
         def __init__(self, x, y):
             self.x = x
@@ -483,6 +487,7 @@ def test_electron_get_attr():
         point = create_point()
         return add(point.x, point.y)
 
+    ct.set_config("sdk.task_packing", task_packing)
     workflow.build_graph()
     tg = workflow.transport_graph
 
@@ -495,7 +500,7 @@ def test_electron_get_attr():
     # 5: add
     # 6: "postprocess"
 
-    if TASK_PACKING:
+    if task_packing == "true":
         point_electron_gid = tg.get_node_value(0, "task_group_id")
         getitem_x_gid = tg.get_node_value(1, "task_group_id")
         getitem_y_gid = tg.get_node_value(3, "task_group_id")
@@ -507,7 +512,8 @@ def test_electron_get_attr():
         assert all(tg.get_node_value(i, "task_group_id") == i for i in range(0, 7))
 
 
-def test_electron_auto_task_groups_getitem():
+@pytest.mark.parametrize("task_packing", ["true", "false"])
+def test_electron_auto_task_groups_getitem(task_packing):
     """Test task packing with __getitem__"""
 
     @ct.electron
@@ -523,6 +529,7 @@ def test_electron_auto_task_groups_getitem():
         arr = create_array()
         return add(arr[0], arr[1])
 
+    ct.set_config("sdk.task_packing", task_packing)
     workflow.build_graph()
     tg = workflow.transport_graph
 
@@ -535,7 +542,7 @@ def test_electron_auto_task_groups_getitem():
     # 5: add
     # 6: "postprocess"
 
-    if TASK_PACKING:
+    if task_packing == "true":
         arr_electron_gid = tg.get_node_value(0, "task_group_id")
         getitem_x_gid = tg.get_node_value(1, "task_group_id")
         getitem_y_gid = tg.get_node_value(3, "task_group_id")
@@ -547,7 +554,8 @@ def test_electron_auto_task_groups_getitem():
         assert all(tg.get_node_value(i, "task_group_id") == i for i in range(0, 7))
 
 
-def test_electron_auto_task_groups_iter():
+@pytest.mark.parametrize("task_packing", ["true", "false"])
+def test_electron_auto_task_groups_iter(task_packing):
     """Test task packing with __iter__"""
 
     @ct.electron
@@ -564,6 +572,7 @@ def test_electron_auto_task_groups_iter():
         x, y = tup
         return add(x, y)
 
+    ct.set_config("sdk.task_packing", task_packing)
     workflow.build_graph()
     tg = workflow.transport_graph
 
@@ -576,7 +585,7 @@ def test_electron_auto_task_groups_iter():
     # 5: add
     # 6: "postprocess"
 
-    if TASK_PACKING:
+    if task_packing == "true":
         tup_electron_gid = tg.get_node_value(0, "task_group_id")
         getitem_x_gid = tg.get_node_value(1, "task_group_id")
         getitem_y_gid = tg.get_node_value(3, "task_group_id")
