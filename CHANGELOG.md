@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added documentation for Azure Blob Storage file transfers
 - Added documentation for Google Cloud Storage file transfers
 
+
+### Changed
+
+- Updated the `dask` and `distributed` packages to include upto `2023.6.0` versions
+
+
 ## [0.227.0-rc.0] - 2023-06-13
 
 ### Authors
