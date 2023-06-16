@@ -15,6 +15,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Added documentation for Azure Blob Storage file transfers
+- Added documentation for Google Cloud Storage file transfers
+
+### Changed
+
+- Removed the upper limit from `dask` and `distributed` packages' versions until we find a version which is incompatible with Covalent.
+
+### Tests
+
+- Skipping functional tests for azure blob storage and gcp storage how to guides since they require credentials to run.
 
 ### Operations
 
