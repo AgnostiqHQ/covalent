@@ -24,7 +24,7 @@ from __future__ import annotations
 import contextlib
 import os
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import Dict, List, Optional
 
 from furl import furl
 from requests.adapters import HTTPAdapter
@@ -114,50 +114,6 @@ def _delete_result(
         shutil.rmtree(results_dir, ignore_errors=True)
 
 
-def redispatch_result(result_object: Result, dispatcher: str = None) -> str:
-    """
-    Function to redispatch the result as a new dispatch.
-
-    Args:
-        result_object: The result object to be redispatched.
-        dispatcher: The address to the dispatcher in the form of hostname:port, e.g. "localhost:8080".
-    Returns:
-        dispatch_id: The dispatch id of the new dispatch.
-    """
-
-    result_object._lattice.metadata["dispatcher"] = (
-        dispatcher or result_object.lattice.metadata["dispatcher"]
-    )
-
-    return result_object.lattice._server_dispatch(result_object)
-
-
-def sync(
-    dispatch_id: Optional[Union[List[str], str]] = None,
-) -> None:
-    """
-    Synchronization call. Returns when one or more dispatches have completed.
-
-    Args:
-        dispatch_id: One or more dispatch IDs to wait for before returning.
-
-    Returns:
-        None
-    """
-
-    # if isinstance(dispatch_id, str):
-    #     _get_result_from_dispatcher(dispatch_id, wait=True, status_only=True)
-    # elif isinstance(dispatch_id, list):
-    #     for d in dispatch_id:
-    #         _get_result_from_dispatcher(d, wait=True, status_only=True)
-    # else:
-    #     raise Exception(
-    #         f"dispatch_id must be a string or a list. You passed a {type(dispatch_id)}."
-    #     )
-
-    pass
-
-
 def cancel(dispatch_id: str, task_ids: List[int] = None, dispatcher_addr: str = None) -> str:
     """
     Cancel a running dispatch.
@@ -195,7 +151,7 @@ def _get_result_export_from_dispatcher(
     wait: bool = False,
     status_only: bool = False,
     dispatcher_addr: str = None,
-) -> ResultSchema:
+) -> Dict:
     """
     Internal function to get the results of a dispatch from the server without checking if it is ready to read.
 
@@ -223,7 +179,7 @@ def _get_result_export_from_dispatcher(
     endpoint = "/api/v1/dispatch/export/" + dispatch_id
     response = api_client.get(
         endpoint,
-        params={"wait": bool(int(wait)), "status_only": status_only},
+        params={"wait": wait, "status_only": status_only},
     )
     if response.status_code == 404:
         raise MissingLatticeRecordError
@@ -421,6 +377,7 @@ def _get_result_multistage(
     wait: bool = False,
     dispatcher_addr: str = None,
     status_only: bool = False,
+    results_dir: Optional[str] = None,
     *,
     workflow_output: bool = True,
     intermediate_outputs: bool = True,
@@ -447,7 +404,7 @@ def _get_result_multistage(
                 dispatcher_addr=dispatcher_addr,
             )
         else:
-            rm = get_result_manager(dispatch_id, None, wait, dispatcher_addr)
+            rm = get_result_manager(dispatch_id, results_dir, wait, dispatcher_addr)
             _get_default_assets(rm)
 
         if workflow_output:
@@ -470,6 +427,7 @@ def _get_result_multistage(
                     wait,
                     dispatcher_addr,
                     status_only,
+                    results_dir=results_dir,
                     workflow_output=workflow_output,
                     intermediate_outputs=intermediate_outputs,
                     sublattice_results=sublattice_results,
@@ -493,16 +451,35 @@ def get_result(
     wait: bool = False,
     dispatcher_addr: str = None,
     status_only: bool = False,
+    results_dir: Optional[str] = None,
     *,
     workflow_output: bool = True,
     intermediate_outputs: bool = True,
     sublattice_results: bool = True,
 ) -> Result:
+    """
+    Get the results of a dispatch.
+
+    Args:
+        dispatch_id: The dispatch id of the result.
+        wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
+        dispatcher_addr: Dispatcher server address. Defaults to the address set in Covalent's config.
+        status_only: If true, only returns result status, not the full result object. Default is False.
+        workflow_output: Whether to return the workflow output. Defaults to True.
+        intermediate_outputs: Whether to return all intermediate outputs in the compute graph. Defaults to True.
+        sublattice_results: Whether to recursively retrieve sublattice results. Default is True.
+
+    Returns:
+        The Result object from the Covalent server
+
+    """
+
     return _get_result_multistage(
         dispatch_id=dispatch_id,
         wait=wait,
         dispatcher_addr=dispatcher_addr,
         status_only=status_only,
+        results_dir=results_dir,
         workflow_output=workflow_output,
         intermediate_outputs=intermediate_outputs,
         sublattice_results=sublattice_results,

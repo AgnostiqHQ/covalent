@@ -33,7 +33,6 @@ from ._results_manager.results_manager import (  # nopycln: import
     cancel,
     get_result,
     get_result_manager,
-    sync,
 )
 from ._shared_files.config import get_config, reload_config, set_config  # nopycln: import
 from ._shared_files.util_classes import RESULT_STATUS as status  # nopycln: import
