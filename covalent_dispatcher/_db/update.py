@@ -34,7 +34,7 @@ app_log = logger.app_log
 
 
 def persist(record: Union[Result, Lattice, _TransportGraph], electron_id: int = None) -> None:
-    """Save Result object to a DataStoreSession. Changes are queued until
+    """Save Result object to a DataStore. Changes are queued until
     committed by the caller.
 
     Args:

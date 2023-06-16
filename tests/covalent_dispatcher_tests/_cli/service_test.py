@@ -76,7 +76,6 @@ def conda_test(f):
     return mark(skip(f))
 
 
-@pytest.mark.skip
 @conda_test
 def test_python_path_in_conda_env():
     with tempfile.TemporaryDirectory() as tmp_dir:

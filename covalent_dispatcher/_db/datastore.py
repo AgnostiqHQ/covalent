@@ -21,7 +21,7 @@
 from contextlib import contextmanager
 from os import environ, path
 from pathlib import Path
-from typing import BinaryIO, Generator, Optional
+from typing import Generator, Optional
 
 from alembic import command
 from alembic.config import Config
@@ -101,28 +101,6 @@ class DataStore:
     def session(self) -> Generator[Session, None, None]:
         with self.Session.begin() as session:
             yield session
-
-
-class DataStoreSession:
-    def __init__(self, session: Session, metadata={}):
-        self.db_session = session
-        self.metadata = metadata
-        self.pending_uploads = []
-        self.pending_deletes = []
-
-    def queue_upload(self, data: BinaryIO, storage_type: str, storage_path: str, file_name: str):
-        self.pending_uploads.append((data, storage_type, storage_path, file_name))
-
-    def queue_delete(self, storage_type: str, storage_path: str, file_name: str):
-        self.pending_deletes.append((storage_type, storage_path, file_name))
-
-
-class DataStoreNotInitializedError(Exception):
-    """Exception raised when a database action is attempted before the database is initialized."""
-
-    def __init__(self, message="Database is not initialized."):
-        self.message = message
-        super().__init__(self.message)
 
 
 workflow_db = DataStore.factory()
