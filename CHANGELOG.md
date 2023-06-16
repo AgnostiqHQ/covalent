@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Updated the `dask` and `distributed` packages to include upto `2023.6.0` versions
+- Removed the upper limit from `dask` and `distributed` packages' versions until we find a version which is incompatible with Covalent.
 
 
 ## [0.227.0-rc.0] - 2023-06-13
