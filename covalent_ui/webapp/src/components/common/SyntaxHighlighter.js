@@ -22,6 +22,7 @@
 import * as React from 'react'
 import Box from '@mui/material/Box'
 import Modal from '@mui/material/Modal'
+import Skeleton from '@mui/material/Skeleton'
 import _ from 'lodash'
 import { Light } from 'react-syntax-highlighter'
 import python from 'react-syntax-highlighter/dist/cjs/languages/hljs/python'
@@ -39,6 +40,7 @@ Light.registerLanguage('yaml', yaml)
 Light.registerLanguage('json', json)
 
 const SyntaxHighlighter = ({ src, preview, fullwidth, ...props }) => {
+  const { isFetching } = props;
   const [open, setOpen] = useState(false)
   const handleOpen = () => setOpen(true)
   const handleClose = () => setOpen(false)
@@ -67,21 +69,24 @@ const SyntaxHighlighter = ({ src, preview, fullwidth, ...props }) => {
         }}
       >
         <Grid item xs={11}>
-          <Light
-            data-testid="syntax"
-            language="python"
-            style={style}
-            customStyle={{
-              margin: 0,
-              padding: 10,
-              maxHeight: 240,
-              fontSize: 12,
-              backgroundColor: 'transparent',
-            }}
-            {...props}
-          >
-            {_.trim(_.truncate(src, { length: 200 }), '"" \n')}
-          </Light>
+          {isFetching && !src ?
+            <Box sx={{ height: '5rem' }}>
+              <Skeleton data-testid="syntax__box_skl" width={150} sx={{ ml: "5px", mt: '7px' }} /></Box> : <>
+              <Light
+                data-testid="syntax"
+                language="python"
+                style={style}
+                customStyle={{
+                  margin: 0,
+                  padding: 10,
+                  maxHeight: 240,
+                  fontSize: 12,
+                  backgroundColor: 'transparent',
+                }}
+                {...props}
+              >
+                {_.trim(_.truncate(src, { length: 200 }), '"" \n')}
+              </Light></>}
         </Grid>
         <Grid
           item
@@ -93,7 +98,7 @@ const SyntaxHighlighter = ({ src, preview, fullwidth, ...props }) => {
             justifyContent: 'flex-end',
           }}
         >
-          {preview && (
+          {preview && (!isFetching || src) && (
             <Tooltip
               title="Expand view"
               placement="bottom"

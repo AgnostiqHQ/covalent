@@ -22,7 +22,7 @@
 
 import _ from 'lodash'
 import { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import {
   Table,
   TableRow,
@@ -42,6 +42,7 @@ import {
   Grid,
   SvgIcon,
   Tooltip,
+  Skeleton
 } from '@mui/material'
 
 import { statusIcon, getLocalStartTime, formatDate, truncateMiddle } from '../../utils/misc'
@@ -258,6 +259,9 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
   const isHeightAbove850px = useMediaQuery('(min-height: 850px)')
   const isHeightAbove940px = useMediaQuery('(min-height: 940px)')
   const isHeightAbove1040px = useMediaQuery('(min-height: 1040px)')
+  const isFetching = useSelector(
+    (state) => state.electronResults.qelectronJobsList.isFetching
+  )
 
   useEffect(() => {
     setSelectedId(defaultId)
@@ -320,11 +324,10 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
       }}
     >
       <Box data-testid="logsTable">
-        {data && (
+        {!isFetching && data && (
           <Grid>
             <TableContainer
               sx={{
-
                 borderRadius: _.isEmpty(data) && !data ? '0px' : '8px',
               }}
             >
@@ -429,7 +432,7 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
               </StyledTable>
             </TableContainer>
 
-            {_.isEmpty(data) && (
+            {_.isEmpty(data) && !isFetching && (
               <Typography
                 sx={{
                   textAlign: 'center',
@@ -445,7 +448,36 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
           </Grid>
         )}
       </Box>
-    </Grid>
+      {isFetching && _.isEmpty(data) && (
+        <>
+          {/*  */}
+          {/* <Skeleton variant="rectangular" height={50} /> */}
+          <TableContainer>
+            <StyledTable>
+              <TableBody>
+                {[...Array(3)].map(() => (
+                  <TableRow key={Math.random()} sx={{
+                    height: '2.5rem',
+                  }}
+                  >
+                    <TableCell>
+                      <Skeleton sx={{ my: 1, mx: 1 }} />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton sx={{ my: 1, mx: 1 }} />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton sx={{ my: 1, mx: 1 }} />
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </StyledTable>
+          </TableContainer>
+        </>
+      )
+      }
+    </Grid >
   )
 }
 

@@ -7,12 +7,13 @@
  * please reach out to Agnostiq at: [support@agnostiq.com].
  */
 
-import { Grid, Typography, SvgIcon, Box, Modal, Paper } from '@mui/material'
+import { Grid, Typography, SvgIcon, Box, Modal, Paper, Skeleton } from '@mui/material'
 import React, { useState } from 'react'
 import theme from '../../utils/theme'
 import { ReactComponent as CircuitLarge } from '../../assets/qelectron/circuit-large.svg'
 import { ReactComponent as CloseSvg } from '../../assets/close.svg'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
+import { useSelector } from 'react-redux';
 
 const styles = {
   outline: 'none',
@@ -29,6 +30,11 @@ const styles = {
 }
 
 const SingleGrid = ({ title, value }) => {
+
+  const qelectronJobOverviewIsFetching = useSelector(
+    (state) => state.electronResults.qelectronJobOverviewList.isFetching
+  );
+
   return (
     <Grid>
       <Typography
@@ -39,14 +45,17 @@ const SingleGrid = ({ title, value }) => {
       >
         {title}
       </Typography>
-      <Typography
-        sx={{
-          fontSize: theme.typography.sidebarh2,
-          color: (theme) => theme.palette.text.primary,
-        }}
-      >
-        {value ? value : '-'}
-      </Typography>
+      {qelectronJobOverviewIsFetching && !value ?
+        <Skeleton data-testid="node__box_skl" width={30} /> : <>
+          <Typography
+            sx={{
+              fontSize: theme.typography.sidebarh2,
+              color: (theme) => theme.palette.text.primary,
+            }}
+          >
+            {value ? value : '-'}
+          </Typography>
+        </>}
     </Grid>
   )
 }
@@ -57,6 +66,9 @@ const Circuit = ({ circuitDetails }) => {
   const handleClose = () => {
     setOpenModal(false)
   }
+  const qelectronJobOverviewIsFetching = useSelector(
+    (state) => state.electronResults.qelectronJobOverviewList.isFetching
+  );
 
   return (
     <Grid
@@ -96,7 +108,7 @@ const Circuit = ({ circuitDetails }) => {
             })}
           >
             {' '}
-            <SyntaxHighlighter src={circuitDetails?.circuit_diagram} preview fullwidth />
+            <SyntaxHighlighter src={circuitDetails?.circuit_diagram} preview fullwidth isFetching={qelectronJobOverviewIsFetching} />
           </Paper>
         </Grid>
       </Grid>
