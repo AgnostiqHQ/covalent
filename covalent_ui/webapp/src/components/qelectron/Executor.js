@@ -9,9 +9,13 @@
 import { Grid, Paper } from '@mui/material'
 import React from 'react'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
+import { useSelector } from 'react-redux';
 
 const Executor = (props) => {
   const { code } = props
+  const qelectronJobOverviewIsFetching = useSelector(
+    (state) => state.electronResults.qelectronJobOverviewList.isFetching
+  )
   return (
     <Grid px={2}>
       <Paper
@@ -21,7 +25,7 @@ const Executor = (props) => {
         })}
       >
         {' '}
-        <SyntaxHighlighter src={code} preview fullwidth />
+        <SyntaxHighlighter src={code} preview fullwidth isFetching={qelectronJobOverviewIsFetching} />
       </Paper>
     </Grid>
   )

@@ -7,14 +7,18 @@
  * please reach out to Agnostiq at: [support@agnostiq.com].
  */
 
-import { Grid, IconButton, Typography, Box, Tooltip } from '@mui/material'
+import { Grid, IconButton, Typography, Box, Tooltip, Skeleton } from '@mui/material'
 import React from 'react'
 import { ChevronRight, } from '@mui/icons-material'
 import { statusIcon, statusColor, statusLabel } from '../../utils/misc'
 import CopyButton from './CopyButton'
+import { useSelector } from 'react-redux';
 
 const QElectronTopBar = (props) => {
   const { details, toggleQelectron } = props
+  const qelectronJobOverviewIsFetching = useSelector(
+    (state) => state.electronResults.qelectronJobOverviewList.isFetching
+  )
   return (
     <Grid
       container
@@ -46,9 +50,12 @@ const QElectronTopBar = (props) => {
         >
           <ChevronRight />
         </IconButton>
-        <Typography fontSize="sidebarh2" mr={2}>
-          {details?.title}
-        </Typography>
+        {qelectronJobOverviewIsFetching && !details ?
+          <Skeleton data-testid="qelectron_top__bar_skl" width={100} sx={{ mr: '5px' }} /> : <>
+            <Typography fontSize="sidebarh2" mr={2}>
+              {details?.title}
+            </Typography>
+          </>}
         <Grid
           sx={{
             width: '70px',
@@ -63,22 +70,25 @@ const QElectronTopBar = (props) => {
             backgroundColor: (theme) => theme.palette.background.buttonBg,
           }}
         >
-          <Tooltip
-            data-testid="toolTip"
-            title={details?.id}
-            style={{ fontSize: '2em' }}
-          >
-            <div
-              style={{
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                fontSize: '0.75rem'
-              }}
-            >
-              {details?.id}
-            </div>
-          </Tooltip>
+          {qelectronJobOverviewIsFetching && !details ?
+            <Skeleton data-testid="qelectron_top__bar_skl" width={100} sx={{ mr: '5px' }} /> : <>
+              <Tooltip
+                data-testid="toolTip"
+                title={details?.id}
+                style={{ fontSize: '2em' }}
+              >
+                <div
+                  style={{
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    fontSize: '0.75rem'
+                  }}
+                >
+                  {details?.id}
+                </div>
+              </Tooltip>
+            </>}
         </Grid>
         <Grid
           sx={{
@@ -97,19 +107,22 @@ const QElectronTopBar = (props) => {
         </Grid>
       </Grid>
       <Grid id="status Container">
-        <Box
-          sx={{
-            color: statusColor(details?.status),
-            display: 'flex',
-            fontSize: '1.125rem',
-            alignItems: 'center',
-            justifySelf: 'center',
-          }}
-        >
-          {statusIcon(details?.status)}
-          &nbsp;
-          {statusLabel(details?.status)}
-        </Box>
+        {qelectronJobOverviewIsFetching && !details ?
+          <Skeleton data-testid="qelectron_top__bar_skl" width={100} sx={{ mr: '5px' }} /> : <>
+            <Box
+              sx={{
+                color: statusColor(details?.status),
+                display: 'flex',
+                fontSize: '1.125rem',
+                alignItems: 'center',
+                justifySelf: 'center',
+              }}
+            >
+              {statusIcon(details?.status)}
+              &nbsp;
+              {statusLabel(details?.status)}
+            </Box>
+          </>}
       </Grid>
     </Grid>
   )

@@ -7,14 +7,19 @@
  * please reach out to Agnostiq at: [support@agnostiq.com].
  */
 import React from 'react'
-import { Grid, Typography, Paper } from '@mui/material'
+import { Grid, Typography, Paper, Skeleton } from '@mui/material'
 import theme from '../../utils/theme'
 import SyntaxHighlighter from '../common/SyntaxHighlighter'
 import { formatQElectronTime, getLocalStartTime, formatDate } from '../../utils/misc'
+import { useSelector } from 'react-redux';
 
 const Overview = (props) => {
   const { details } = props
   const code = details?.result;
+
+  const qelectronJobOverviewIsFetching = useSelector(
+    (state) => state.electronResults.qelectronJobOverviewList.isFetching
+  )
 
   return (
     <>
@@ -47,7 +52,9 @@ const Overview = (props) => {
               color: (theme) => theme.palette.text.primary,
             }}
           >
-            {(details?.backend) ? (details?.backend) : '-'}
+            {qelectronJobOverviewIsFetching && !details ?
+              <Skeleton data-testid="node__box_skl" width={150} />
+              : <>{(details?.backend) ? (details?.backend) : '-'}</>}
           </Typography>
           <Typography
             sx={{
@@ -65,7 +72,10 @@ const Overview = (props) => {
               color: (theme) => theme.palette.text.primary,
             }}
           >
-            {(details?.time_elapsed) ? (formatQElectronTime(details?.time_elapsed)) : '-'}
+            {qelectronJobOverviewIsFetching && !details ?
+              <Skeleton data-testid="node__box_skl" width={150} /> : <>
+                {(details?.time_elapsed) ? (formatQElectronTime(details?.time_elapsed)) : '-'}
+              </>}
           </Typography>
           <Typography
             sx={{
@@ -84,8 +94,11 @@ const Overview = (props) => {
                 color: (theme) => theme.palette.text.primary,
               }}
             >
-              {formatDate(getLocalStartTime(details?.start_time))}
-              {` - ${formatDate(getLocalStartTime(details?.end_time))}`}
+              {qelectronJobOverviewIsFetching && !details ?
+                <Skeleton data-testid="node__box_skl" width={150} /> : <>
+                  {formatDate(getLocalStartTime(details?.start_time))}
+                  {` - ${formatDate(getLocalStartTime(details?.end_time))}`}
+                </>}
             </Typography>}
         </Grid>
         <Grid
@@ -101,7 +114,7 @@ const Overview = (props) => {
               bgcolor: theme.palette.background.outRunBg,
             })}
           >
-            <SyntaxHighlighter src={code} preview />
+            <SyntaxHighlighter src={code} preview isFetching={qelectronJobOverviewIsFetching} />
           </Paper>
         </Grid>
       </Grid>
