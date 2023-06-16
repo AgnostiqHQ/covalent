@@ -27,7 +27,6 @@ from typing import Callable, Dict, List, Optional, Union
 from furl import furl
 
 from .._api.apiclient import CovalentAPIClient as APIClient
-from .._results_manager import wait
 from .._results_manager.result import Result
 from .._results_manager.results_manager import get_result, get_result_manager
 from .._serialize.result import (
@@ -294,7 +293,7 @@ class LocalDispatcher(BaseDispatcher):
 
             return get_result(
                 LocalDispatcher.dispatch(lattice, dispatcher_addr)(*args, **kwargs),
-                wait=wait.EXTREME,
+                wait=True,
             )
 
         return wrapper
