@@ -31,8 +31,6 @@ from mpire import WorkerPool
 from mpire.async_result import AsyncResult
 from pydantic import BaseModel, Extra, Field, root_validator
 
-from ..shared_utils import get_import_path, import_from_path
-
 __all__ = [
     "BaseQExecutor",
     "BaseProcessPoolQExecutor",
@@ -71,8 +69,6 @@ class BaseQExecutor(ABC, BaseModel):
 
     persist_data: bool = True
 
-    _device_cls_import_path: Tuple[str, str] = None
-
     class Config:
         extra = Extra.allow
 
@@ -100,11 +96,11 @@ class BaseQExecutor(ABC, BaseModel):
 
         return result_obj
 
-    def get_original_device_cls(self) -> Any:
-        return import_from_path(self._device_cls_import_path)
-
-    def set_original_device_cls(self, cls) -> None:
-        self._device_cls_import_path = get_import_path(cls)
+    # To make executor instances re-usable, these attributes are set
+    # server-side, after reconstruction.
+    qnode_device_import_path: Tuple[str, str] = None
+    qnode_device_shots: Optional[int] = None
+    qnode_device_wires: int = None
 
 
 class QCResult(BaseModel):
