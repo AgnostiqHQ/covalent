@@ -38,9 +38,10 @@ class QCluster(AsyncBaseQCluster):
 
         selected_executor = self.selector(qscripts_list, self.executors)
 
-        # pylint: disable=protected-access
-        selected_executor._device_cls_import_path = self._device_cls_import_path
-
+        # copy server-side set attributes into selector executor
+        selected_executor.qnode_device_import_path = self.qnode_device_import_path
+        selected_executor.qnode_device_shots = self.qnode_device_shots
+        selected_executor.qnode_device_wires = self.qnode_device_wires
         return selected_executor.batch_submit(qscripts_list)
 
     def serialize_selector(self) -> None:
