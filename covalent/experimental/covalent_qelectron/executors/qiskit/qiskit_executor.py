@@ -155,4 +155,4 @@ class QiskitExecutor(AsyncBaseQExecutor):
         """
         # check that all qscripts have the same number of wires
         if any(qs.wires != qscripts[0].wires for qs in qscripts[1:]):
-            raise RuntimeError("All qscripts must have the same wires.")
+            raise RuntimeError("All qscripts must use the same wires.")
