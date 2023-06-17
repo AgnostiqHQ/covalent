@@ -72,11 +72,3 @@ def import_from_path(path: str) -> Any:
     module_path, class_name = path.split(":")
     module = importlib.import_module(module_path)
     return getattr(module, class_name)
-
-
-def make_new_device_cls(dev_cls, base_cls, kwargs):
-    class _Device(dev_cls, base_cls):
-        # pylint: disable=too-few-public-methods
-        pass
-
-    return _Device(**kwargs)  # pylint: disable=abstract-class-instantiated

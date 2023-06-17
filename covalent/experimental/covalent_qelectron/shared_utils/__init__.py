@@ -26,5 +26,4 @@ from .utils import (
     select_first_executor,
     get_import_path,
     import_from_path,
-    make_new_device_cls,
 )
