@@ -222,6 +222,7 @@ class Result(DispatchedObject):
 
         app_log.debug("Inside update node")
 
+        _start_ts = datetime.now()
         with self.session() as session:
             if status is not None:
                 # This acquires a lock on the electron's row to achieve atomic RMW
@@ -272,6 +273,9 @@ class Result(DispatchedObject):
 
             self._update_dispatch(status=status, end_time=end_time)
 
+        _end_ts = datetime.now()
+        dt = (_end_ts - _start_ts).total_seconds()
+        app_log.debug(f"_update_node took {dt} seconds")
         return True
 
     def _can_update_node_status(self, session: Session, node_id: int, new_status: Status) -> bool:
@@ -451,7 +455,11 @@ class Result(DispatchedObject):
                 electron_keys=electron_keys,
             )
         else:
+            _start_ts = datetime.now()
             with Result.session() as session:
+                _lock_ts = datetime.now()
+                _lock_dt = (_lock_ts - _start_ts).total_seconds()
+                app_log.debug(f"Acquiring db session took {_lock_dt} seconds")
                 records = Result.get_db_records(
                     session,
                     keys=keys + lattice_keys,
@@ -463,7 +471,7 @@ class Result(DispatchedObject):
 
                 record = records[0]
 
-                return Result(
+                res = Result(
                     session,
                     record,
                     bare,
@@ -472,10 +480,16 @@ class Result(DispatchedObject):
                     electron_keys=electron_keys,
                 )
 
+                _end_ts = datetime.now()
+
+                dt = (_end_ts - _start_ts).total_seconds()
+                app_log.debug(f"get_result_object (bare={bare}) took {dt} seconds")
+                return res
+
 
 def get_result_object(
     dispatch_id: str,
-    bare: bool = False,
+    bare: bool = True,
     *,
     session: Session = None,
     keys: list = RESULT_KEYS,

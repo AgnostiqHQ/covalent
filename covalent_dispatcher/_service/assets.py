@@ -404,7 +404,7 @@ def _get_tobj_pickle_offsets(file_url: str) -> Tuple[int, int]:
 def get_cached_result_object(dispatch_id: str):
     try:
         with workflow_db.session() as session:
-            srv_res = get_result_object(dispatch_id, session=session)
+            srv_res = get_result_object(dispatch_id, bare=False, session=session)
             app_log.debug(f"Caching result {dispatch_id}")
 
             # Prepopulate asset maps to avoid DB lookups

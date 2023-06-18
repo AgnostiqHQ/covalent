@@ -27,6 +27,7 @@ from sqlalchemy import (
     Column,
     DateTime,
     ForeignKey,
+    Index,
     Integer,
     String,
     Text,
@@ -143,6 +144,7 @@ class Lattice(Base):
 
 class Electron(Base):
     __tablename__ = "electrons"
+    __table_args__ = (Index("latid_nodeid_idx", "parent_lattice_id", "transport_graph_node_id"),)
     id = Column(Integer, primary_key=True)
 
     # id of the lattice containing this electron
