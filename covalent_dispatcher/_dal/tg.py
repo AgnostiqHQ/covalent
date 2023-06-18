@@ -22,6 +22,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Any, Dict, List, Tuple
 
 import networkx as nx
@@ -66,11 +67,16 @@ class _TransportGraph:
             return [self._nodes[node_id] for node_id in node_ids]
 
         # Construct node from db
+        start = datetime.now()
         if session:
             nodes = _nodes(session, self.lattice_id, node_ids, keys=self._keys)
         else:
             with Node.session() as session:
                 nodes = _nodes(session, self.lattice_id, node_ids, keys=self._keys)
+
+        end = datetime.now()
+        dt = (end - start).total_seconds()
+        app_log.debug(f"get_nodes {node_ids} took {dt} seconds")
         return nodes
 
     def get_node_value(
