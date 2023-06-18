@@ -57,7 +57,6 @@ def _incoming_edge_records(
     if len(keys) > 0:
         fields = list(map(electron.Electron.meta_record_map, keys))
         stmt = stmt.options(Load(ElectronRecord).load_only(*fields))
-        print("DEBUG: fields", fields)
 
     records = session.execute(stmt).all()
     return list(map(lambda r: (r.Electron, r.ElectronDependency), records))
@@ -72,7 +71,6 @@ def _child_records(session: Session, electron_id: int, *, keys: List) -> List[El
     if len(keys) > 0:
         fields = list(map(electron.Electron.meta_record_map, keys))
         stmt = stmt.options(Load(ElectronRecord).load_only(*fields))
-        print("DEBUG: fields", fields)
 
     records = session.execute(stmt).all()
     return list(map(lambda r: r.Electron, records))

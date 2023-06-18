@@ -223,7 +223,7 @@ class Electron(Base):
 class ElectronDependency(Base):
     __tablename__ = "electron_dependency"
     id = Column(Integer, primary_key=True)
-
+    __table_args__ = (Index("cnode_idx", "electron_id"), Index("pnode_idx", "parent_electron_id"))
     # Unique ID of electron
     electron_id = Column(
         Integer, ForeignKey("electrons.id", name="child_electron_link"), nullable=False
