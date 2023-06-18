@@ -94,7 +94,7 @@ def get_mock_srvresult(sdkres, test_db) -> SRVResult:
 
     update.persist(sdkres)
 
-    return get_result_object(sdkres.dispatch_id)
+    return get_result_object(sdkres.dispatch_id, bare=False)
 
 
 @pytest.mark.asyncio
