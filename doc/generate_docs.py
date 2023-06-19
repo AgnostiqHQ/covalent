@@ -26,10 +26,15 @@ import sys
 def install_autoclass_doc_dependencies() -> None:
     """Install the packages required to build the documentation from plugin
     autoclass."""
-    packages = ["covalent-ssh-plugin", "covalent-slurm-plugin",
-                "covalent-braket-plugin", "covalent-awslambda-plugin",
-                "covalent-ec2-plugin", "covalent-awsbatch-plugin",
-                "covalent-gcpbatch-plugin"]
+    packages = [
+        "covalent-ssh-plugin",
+        "covalent-slurm-plugin",
+        "covalent-braket-plugin",
+        "covalent-awslambda-plugin",
+        "covalent-ec2-plugin",
+        "covalent-awsbatch-plugin",
+        "covalent-gcpbatch-plugin",
+    ]
 
     try:
         subprocess.check_call([sys.executable, "-m", "pip", "install"] + packages)
