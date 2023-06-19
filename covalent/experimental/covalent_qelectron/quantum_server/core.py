@@ -104,7 +104,8 @@ class QServer:
 
     def submit_to_executors(
         self, qscripts: List[QuantumScript],
-        linked_executors: List[BaseQExecutor]
+        linked_executors: List[BaseQExecutor],
+        qelectron_info: "QElectronInfo",
     ):
         """
         Generates futures for scheduled execution
@@ -137,6 +138,10 @@ class QServer:
         # Generating futures from each executor:
         executor_future_pairs = []
         for executor, qscript_sub_batch in executor_qscript_sub_batch_pairs:
+
+            executor.qnode_device_import_path = qelectron_info.qnode_device_import_path
+            executor.qnode_device_shots = qelectron_info.qnode_device_shots
+            executor.qnode_device_wires = qelectron_info.num_device_wires
             qscript_futures = executor.batch_submit(qscript_sub_batch.values())
 
             futures_dict = dict(zip(qscript_sub_batch.keys(), qscript_futures))
@@ -185,7 +190,11 @@ class QServer:
         executors = reconstruct_executors(deconstructed_executors)
 
         linked_executors = self.select_executors(qscripts, executors)
-        executor_future_pairs = self.submit_to_executors(qscripts, linked_executors)
+        executor_future_pairs = self.submit_to_executors(
+            qscripts,
+            linked_executors,
+            qelectron_info,
+        )
 
         batch_id = self.futures_table.add_executor_future_pairs(executor_future_pairs)
 
@@ -265,7 +274,7 @@ class QServer:
         # ids of (e)xecutor_(f)uture_(p)airs, hence `idx_efp`
         for idx_efp, (executor, futures_sub_batch) in enumerate(executor_future_pairs):
 
-            result_objs = executor.batch_get_result_and_time(
+            result_objs = executor.batch_get_results(
                 futures_sub_batch.values()
             )
 
