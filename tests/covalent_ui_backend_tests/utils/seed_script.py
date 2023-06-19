@@ -119,6 +119,7 @@ def seed(engine):
                     updated_at=convert_to_date(item["updated_at"]),
                     started_at=convert_to_date(item["started_at"]),
                     completed_at=convert_to_date(item["completed_at"]),
+                    job_id=item["job_id"],
                 )
             )
 

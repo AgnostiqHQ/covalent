@@ -32,6 +32,7 @@ from tests.covalent_ui_backend_tests.utils.assert_data.sample_result_webhook imp
     result_mock_data,
 )
 
+pytest_plugins = ("pytest_asyncio",)
 mock_data = result_mock_data()
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 
@@ -70,6 +71,7 @@ async def test_send_update():
     """Test send update"""
     result_object = get_mock_result()
     response = await send_update(result_object)
+    print(response)
     assert response is None
 
 
