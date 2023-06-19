@@ -158,6 +158,17 @@ def get_default_executor() -> dict:
     )
 
 
+def get_qelectron_config() -> dict:
+    return {
+        "persist_data": True,
+        "device": os.environ.get("QE_QML_DEVICE") or "default.qubit",
+        "num_processes": os.environ.get("QE_NUM_PROCESSES"),
+        "num_threads": os.environ.get("QE_NUM_THREADS"),
+        "num_jobs": os.environ.get("QE_NUM_JOBS"),
+        "num_workers": os.environ.get("QE_NUM_WORKERS"),
+    }
+
+
 # Default configuration settings
 @dataclass
 class DefaultConfig:
@@ -166,6 +177,7 @@ class DefaultConfig:
     dask: Dict = field(default_factory=get_default_dask_config)
     workflow_data: Dict = field(default_factory=get_default_workflow_data_config)
     user_interface: Dict = field(default_factory=get_default_ui_config)
+    qelectron: Dict = field(default_factory=get_qelectron_config)
 
 
 @dataclass

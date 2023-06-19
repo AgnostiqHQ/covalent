@@ -31,6 +31,8 @@ from mpire import WorkerPool
 from mpire.async_result import AsyncResult
 from pydantic import BaseModel, Extra, Field, root_validator
 
+from covalent._shared_files.config import get_config
+
 __all__ = [
     "BaseQExecutor",
     "BaseProcessPoolQExecutor",
@@ -45,8 +47,8 @@ def orjson_dumps(v, *, default):
 
 
 @lru_cache
-def get_process_pool(n_jobs=None):
-    return WorkerPool(n_jobs=n_jobs)
+def get_process_pool(num_processes=None):
+    return WorkerPool(n_jobs=num_processes)
 
 
 @lru_cache
@@ -67,13 +69,16 @@ def get_asyncio_event_loop():
 
 class BaseQExecutor(ABC, BaseModel):
 
-    persist_data: bool = True
+    persist_data: bool = Field(
+        default_factory=lambda: get_config("qelectron")["persist_data"]
+    )
 
     class Config:
         extra = Extra.allow
 
     @root_validator(pre=True)
     def set_name(cls, values):
+        # pylint: disable=no-self-argument
         # Set the `name` attribute to the class name
         values["name"] = cls.__name__
         return values
@@ -133,7 +138,9 @@ class QCResult(BaseModel):
 
 class SyncBaseQExecutor(BaseQExecutor):
 
-    device: str = "default.qubit"
+    device: str = Field(
+        default_factory=lambda: get_config("qelectron")["device"]
+    )
 
     def run_all_circuits(self, qscripts_list) -> List[QCResult]:
 
@@ -170,7 +177,9 @@ class AsyncBaseQExecutor(BaseQExecutor):
 
     # pylint: disable=invalid-overridden-method
 
-    device: str = "default.qubit"
+    device: str = Field(
+        default_factory=lambda: get_config("qelectron")["device"]
+    )
 
     def batch_submit(self, qscripts_list):
 
@@ -212,11 +221,15 @@ class AsyncBaseQExecutor(BaseQExecutor):
 
 class BaseProcessPoolQExecutor(BaseQExecutor):
 
-    device: str = "default.qubit"
-    n_jobs: int = None
+    device: str = Field(
+        default_factory=lambda: get_config("qelectron")["device"]
+    )
+    num_processes: int = Field(
+        default_factory=lambda: get_config("qelectron")["num_processes"]
+    )
 
     def batch_submit(self, qscripts_list):
-        pool = get_process_pool(self.n_jobs)
+        pool = get_process_pool(self.num_processes)
 
         futures = []
         for qscript in qscripts_list:
@@ -237,11 +250,15 @@ class BaseProcessPoolQExecutor(BaseQExecutor):
 
 class BaseThreadPoolQExecutor(BaseQExecutor):
 
-    device: str = "default.qubit"
-    max_workers: int = None
+    device: str = Field(
+        default_factory=lambda: get_config("qelectron")["device"]
+    )
+    num_threads: int = Field(
+        default_factory=lambda: get_config("qelectron")["num_threads"]
+    )
 
     def batch_submit(self, qscripts_list):
-        pool = get_thread_pool(self.max_workers)
+        pool = get_thread_pool(self.num_threads)
 
         futures = []
         for qscript in qscripts_list:
