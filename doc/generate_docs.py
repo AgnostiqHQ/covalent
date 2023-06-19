@@ -20,6 +20,21 @@
 
 import os
 import subprocess
+import sys
+
+def install_autoclass_doc_dependencies() -> None:
+    """Install the packages required to build the documentation from plugin 
+    autoclass."""
+    packages = ["covalent-ssh-plugin", "covalent-slurm-plugin",
+                "covalent-braket-plugin", "covalent-awslambda-plugin",
+                "covalent-ec2-plugin", "covalent-awsbatch-plugin",
+                "covalent-gcpbatch-plugin"]
+
+    try:
+        subprocess.check_call([sys.executable, "-m", "pip", "install"] + packages)
+    except subprocess.CalledProcessError as e:
+        print(f"Error installing depency with error: {e}")
+        sys.exit(1)
 
 
 def run(clean_dir: bool = False) -> None:
@@ -39,6 +54,7 @@ def run(clean_dir: bool = False) -> None:
         print("Removing old build")
         cmd = subprocess.Popen(["make", "clean"])
     else:
+        install_autoclass_doc_dependencies()
         cmd = subprocess.Popen(["make", "html"])
     cmd.communicate()
 
