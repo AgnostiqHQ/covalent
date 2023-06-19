@@ -25,7 +25,7 @@ from typing import TYPE_CHECKING, Callable, List
 from pennylane.tape import QuantumScript
 
 from ....executor.utils import get_context
-from ..executors import BaseQExecutor
+from ..executors.base import BaseQExecutor
 from ..quantum_server.database import Database
 from ..quantum_server.server_utils import (
     CircuitInfo,
