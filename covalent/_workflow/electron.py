@@ -386,9 +386,7 @@ class Electron:
                 and k in DEFAULT_METADATA_VALUES
                 and not self.get_metadata(k)
             ):
-                meta = active_lattice.get_metadata(k)
-                if not meta:
-                    meta = DEFAULT_METADATA_VALUES[k]
+                meta = active_lattice.get_metadata(k) or DEFAULT_METADATA_VALUES[k]
                 self.set_metadata(k, meta)
 
         # Handle sublattices by injecting _build_sublattice_graph node
@@ -637,6 +635,16 @@ class Electron:
         }
 
 
+# Dynamically adding properties to the Electron class
+# This is being done this way so that it's easier to add
+# or remove properties in the future without having to
+# edit the class definition itself.
+Electron.executor = property(lambda self: self.get_metadata("executor"))
+Electron.executor = Electron.executor.setter(
+    lambda self, value: self.metadata.update(encode_metadata({"executor": value}))
+)
+
+
 def electron(
     _func: Optional[Callable] = None,
     *,
@@ -648,8 +656,9 @@ def electron(
     deps_pip: Union[DepsPip, list] = None,
     call_before: Union[List[DepsCall], DepsCall] = [],
     call_after: Union[List[DepsCall], DepsCall] = [],
-) -> Callable:
-    """Electron decorator to be called upon a function. Returns the wrapper function with the same functionality as `_func`.
+) -> Callable:  # sourcery skip: assign-if-exp
+    """
+    Electron decorator to be called upon a function. Returns the wrapper function with the same functionality as `_func`.
 
     Args:
         _func: function to be decorated
@@ -666,6 +675,7 @@ def electron(
 
     Returns:
         :obj:`Electron <covalent._workflow.electron.Electron>` : Electron object inside which the decorated function exists.
+
     """
 
     if backend:
@@ -727,7 +737,13 @@ def electron(
     constraints = encode_metadata(constraints)
 
     def decorator_electron(func=None):
-        """Electron decorator function. Note that the electron_object defined below is an example of an unbound electron, i.e. electron without a node id."""
+        """
+        Electron decorator function. Note that the electron_object
+        defined below is an example of an unbound electron, i.e.
+        electron without a node id.
+
+        """
+
         electron_object = Electron(func)
         for k, v in constraints.items():
             electron_object.set_metadata(k, v)

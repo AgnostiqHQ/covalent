@@ -20,10 +20,15 @@
 
 """Tests for Covalent command line interface (CLI) Tool."""
 
+import os
+import subprocess
+import sys
 import tempfile
+import venv
 from unittest import mock
 from unittest.mock import MagicMock, Mock
 
+import psutil
 import pytest
 import requests
 from click.testing import CliRunner
@@ -31,7 +36,8 @@ from click.testing import CliRunner
 from covalent_dispatcher._cli.service import (
     MIGRATION_COMMAND_MSG,
     MIGRATION_WARNING_MSG,
-    UI_LOGFILE,
+    STOPPED_PROCESS_STATUS_MSG,
+    ZOMBIE_PROCESS_STATUS_MSG,
     _graceful_shutdown,
     _graceful_start,
     _is_server_running,
@@ -52,6 +58,55 @@ from covalent_dispatcher._db.datastore import DataStore
 
 STOPPED_SERVER_STATUS_ECHO = "Covalent server is stopped.\n"
 RUNNING_SERVER_STATUS_ECHO = "Covalent server is running at http://localhost:42.\n"
+STOPPED_PROCESS_STATUS_ECHO = STOPPED_PROCESS_STATUS_MSG + "\n"
+ZOMBIE_PROCESS_STATUS_ECHO = ZOMBIE_PROCESS_STATUS_MSG + "\n"
+
+
+def has_conda():
+    try:
+        ret = subprocess.run(["conda"], check=True)
+        return ret.returncode == 0
+    except FileNotFoundError:
+        return False
+
+
+def conda_test(f):
+    mark = pytest.mark.conda
+    skip = pytest.mark.skipif(not has_conda(), reason="conda is unavailable")
+    return mark(skip(f))
+
+
+@conda_test
+def test_python_path_in_conda_env():
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        create_cmd = ["conda", "create", "-y", "--prefix", tmp_dir, "python=3.9.12"]
+        subprocess.run(create_cmd, check=True)
+        check_path_cmd = [
+            "conda",
+            "run",
+            "--prefix",
+            tmp_dir,
+            "python",
+            "-c",
+            "import sys; print(sys.executable)",
+        ]
+        res = subprocess.run(check_path_cmd, check=True, capture_output=True)
+        assert res.stdout.decode().startswith(tmp_dir)
+        check_version_cmd = ["conda", "run", "--prefix", tmp_dir, "python", "--version"]
+        res = subprocess.run(check_version_cmd, check=True, capture_output=True)
+        assert res.stdout.decode().strip() == "Python 3.9.12"
+
+
+def test_python_path_in_venv():
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        venv.create(tmp_dir, with_pip=False)
+        custom_env = os.environ.copy()
+        # equivalent of source venv/bin/activate
+        custom_env["VIRTUAL_ENV"] = tmp_dir
+        custom_env["PATH"] = f"{tmp_dir}/bin:$PATH"
+        check_path_cmd = ["python", "-c", "import sys; print(sys.executable)"]
+        res = subprocess.run(check_path_cmd, check=True, capture_output=True, env=custom_env)
+        assert res.stdout.decode().startswith(tmp_dir)
 
 
 def test_read_pid_nonexistent_file():
@@ -169,9 +224,7 @@ def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_
     no_triggers_str = "--no-triggers" if no_triggers_flag else ""
     triggers_only_str = "--triggers-only" if triggers_only_flag else ""
 
-    launch_str = (
-        f" python app.py  --port 1984  {no_triggers_str} {triggers_only_str}>> output.log 2>&1"
-    )
+    launch_str = f" {sys.executable} app.py  --port 1984  {no_triggers_str} {triggers_only_str}>> output.log 2>&1"
 
     with mock.patch("covalent_dispatcher._cli.service.open", mock.mock_open()):
         if no_triggers_flag and triggers_only_flag:
@@ -399,26 +452,31 @@ def test_restart_preserves_nocluster(mocker, port_tag, port, pid, server, no_clu
 
 
 @pytest.mark.parametrize(
-    "port_val,pid,echo_output,file_removed,pid_exists",
+    "port_val,pid,echo_output,file_removed,pid_exists,process_status",
     [
-        (None, -1, STOPPED_SERVER_STATUS_ECHO, True, False),
-        (42, 42, RUNNING_SERVER_STATUS_ECHO, False, True),
-        (42, 42, STOPPED_SERVER_STATUS_ECHO, True, False),
+        (None, -1, STOPPED_SERVER_STATUS_ECHO, True, False, None),
+        (42, 42, RUNNING_SERVER_STATUS_ECHO, False, True, psutil.STATUS_RUNNING),
+        (42, 42, STOPPED_SERVER_STATUS_ECHO, True, False, None),
+        (42, 42, ZOMBIE_PROCESS_STATUS_ECHO, False, True, psutil.STATUS_ZOMBIE),
+        (42, 42, STOPPED_PROCESS_STATUS_ECHO, False, True, psutil.STATUS_STOPPED),
     ],
 )
-def test_status(mocker, port_val, pid, echo_output, file_removed, pid_exists):
+def test_status(mocker, port_val, pid, echo_output, file_removed, pid_exists, process_status):
     """Test covalent status command."""
 
     mocker.patch("covalent_dispatcher._cli.service.get_config", return_value=port_val)
     mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=pid)
     mocker.patch("psutil.pid_exists", return_value=pid_exists)
+    mocker.patch("psutil.Process.status", return_value=process_status)
     rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
+    process_mock = Mock(spec=psutil.Process)
+    process_mock.status.return_value = process_status
+    with mocker.patch("psutil.Process", return_value=process_mock):
+        runner = CliRunner()
+        res = runner.invoke(status)
 
-    runner = CliRunner()
-    res = runner.invoke(status)
-
-    assert res.output == echo_output
-    assert rm_pid_file_mock.called is file_removed
+        assert res.output == echo_output
+        assert rm_pid_file_mock.called is file_removed
 
 
 def test_is_server_running(mocker):
@@ -1086,3 +1144,18 @@ def test_terminate_child_processes(mocker):
     _terminate_child_processes(1)
 
     psutil_process_mock.assert_called_with(1)
+
+
+def test_graceful_start_permission_exception(mocker):
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start",
+        side_effect=PermissionError("Permission denied"),
+    )
+    click_secho_mock = mocker.patch("covalent_dispatcher._cli.service.click.secho")
+
+    runner = CliRunner()
+    result = runner.invoke(start)
+    assert result.exit_code == 1
+
+    assert graceful_start_mock.called_once()
+    assert click_secho_mock.call_count == 3

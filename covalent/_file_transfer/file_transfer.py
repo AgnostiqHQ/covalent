@@ -128,9 +128,13 @@ def TransferFromRemote(
         FileTransfer instance with implicit Order.BEFORE enum set and from (source) file marked as remote
     """
     # override is_remote for the case where from_filepath is of a file:// scheme where the file is remote (rsync ssh)
-    from_file = File(from_filepath, is_remote=True)
+    is_dir = from_filepath.endswith("/")
+    from_file = File(from_filepath, is_remote=True, is_dir=is_dir)
+    if is_dir and not to_filepath.endswith("/"):
+        raise ValueError("Please specify a directory path (ending with '/') as the destination.")
+    to_file = File(to_filepath, is_dir=is_dir)
     return FileTransfer(
-        from_file=from_file, to_file=to_filepath, order=Order.BEFORE, strategy=strategy
+        from_file=from_file, to_file=to_file, order=Order.BEFORE, strategy=strategy
     )
 
 
@@ -153,7 +157,10 @@ def TransferToRemote(
         FileTransfer instance with implicit Order.AFTER enum set and to (destination) file marked as remote
     """
     # override is_remote for the case where to_filepath is of a file:// scheme where the file is remote (rsync ssh)
-    to_file = File(to_filepath, is_remote=True)
-    return FileTransfer(
-        from_file=from_filepath, to_file=to_file, order=Order.AFTER, strategy=strategy
-    )
+    is_dir = from_filepath and from_filepath.endswith("/")
+    from_file = File(from_filepath, is_dir=is_dir)
+    if is_dir and not to_filepath.endswith("/"):
+        raise ValueError("Please specify a directory path (ending with '/') as the destination.")
+    to_file = File(to_filepath, is_remote=True, is_dir=is_dir)
+
+    return FileTransfer(from_file=from_file, to_file=to_file, order=Order.AFTER, strategy=strategy)
