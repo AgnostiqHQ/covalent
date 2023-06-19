@@ -22,6 +22,7 @@ import os
 import subprocess
 import sys
 
+
 def install_autoclass_doc_dependencies() -> None:
     """Install the packages required to build the documentation from plugin
     autoclass."""
