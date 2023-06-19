@@ -392,6 +392,7 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
                               <CopyButton
                                 isBorderPresent
                                 content={result?.job_id}
+                                backgroundColor='#08081A'
                               />
                             </Grid>
                           </TableCell>
