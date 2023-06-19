@@ -355,6 +355,6 @@ In order to run your workflows with covalent there are a few notable AWS resourc
 .. 5. Source
 .. ===========================================
 
-.. autoclass:: covalent.executor.AWSBatchExecutor
+.. autoclass:: covalent_awsbatch_plugin.awsbatch.AWSBatchExecutor
     :members:
     :inherited-members:
