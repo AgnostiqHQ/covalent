@@ -18,10 +18,14 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from ..executors.base import *
-from ..executors.plugins import *
-from ..executors.clusters import *
+from covalent.executor import _qexecutor_manager
 
+from ..executors.base import *
+from ..executors.clusters import *
+from ..executors.plugins import *
+
+for qexecutor_cls in _qexecutor_manager.executor_plugins_map.values():
+    globals()[qexecutor_cls.__name__] = qexecutor_cls
 
 # Ways to add new methods/attributes to the executor classes:
 
