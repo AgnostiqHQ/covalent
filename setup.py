@@ -79,6 +79,7 @@ install_requires = [
     "werkzeug>=2.0.3",
 ]
 
+
 def recursively_append_files(directory: str):
     """
     Append files recursively in a given directory
