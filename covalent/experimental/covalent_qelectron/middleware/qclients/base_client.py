@@ -23,13 +23,13 @@ from abc import ABC, abstractmethod, abstractproperty
 
 class BaseQClient(ABC):
     @abstractmethod
-    def submit(self, qscripts, executors):
+    def submit(self, qscripts, executors, qelectron_info, qnode_specs):
         raise NotImplementedError
-    
+
     @abstractmethod
     def get_results(self, future_ids):
         raise NotImplementedError
-    
+
     @abstractproperty
     def selector(self):
         raise NotImplementedError
@@ -37,7 +37,7 @@ class BaseQClient(ABC):
     @abstractproperty
     def database(self):
         raise NotImplementedError
-    
+
     # The following methods are abstract because the qserver
     # is expecting serialized inputs and will be sending
     # back serialized outputs, thus even if these methods
@@ -48,7 +48,7 @@ class BaseQClient(ABC):
     @abstractmethod
     def serialize(self, obj):
         raise NotImplementedError
-    
+
     @abstractmethod
     def deserialize(self, ser_obj):
         raise NotImplementedError
