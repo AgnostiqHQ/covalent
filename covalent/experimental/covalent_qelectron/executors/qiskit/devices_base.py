@@ -19,7 +19,10 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 """Wrappers for the existing Pennylane-Qiskit interface"""
+import warnings
 from abc import ABC, abstractmethod
+from contextlib import contextmanager
+from math import sqrt
 from typing import Any, List
 
 import numpy as np
@@ -125,6 +128,81 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
     A base class for devices that use the Sampler primitive.
     """
 
+    default_shots = 1024
+
+    def __init__(
+        self,
+        wires: int,
+        shots: int,
+        backend_name: str,
+        service_init_kwargs: dict,
+        **kwargs
+    ):
+
+        super().__init__(
+            wires=wires,
+            shots=shots,
+            backend_name=backend_name,
+            service_init_kwargs=service_init_kwargs,
+            **kwargs
+        )
+
+        self._default_shots = QiskitSamplerDevice.default_shots
+
+        if self.shots is None:
+            warnings.warn(
+                "The Qiskit Sampler device does not support analytic expectation values. "
+                "The number of shots can not be None. "
+                f"{self._default_shots} shots will be used."
+            )
+
+        self._current_quasi_dist = None
+        self._dummy_state = None
+
+    @property
+    def asarray(self):
+        """
+        Wrap to override NumPy `asarray` with Pennylane `asarray`
+        """
+        if self._asarray is np.asarray:
+            return pennylane.numpy.asarray
+        return self._asarray
+
+    @property
+    def _state(self):
+        """
+        Override `self._state` to avoid unnecessary state reconstruction for
+        every execution result.
+        """
+        if self._dummy_state is None:
+            return self.dist_get_state()
+        return self._dummy_state
+
+    @_state.setter
+    def _state(self, state):
+        """
+        Allows `self._state` to be set as if instance attribute
+        """
+        self._dummy_state = state
+
+    def dist_get_state(self):
+        """
+        Generate a state-vector from a quasi-distribution
+        """
+        N = 2**len(self.wires)
+
+        state = np.zeros(N)
+        for i in range(N):
+            # invert bit string representation of i
+            probs_idx = int(bin(i)[2:].zfill(len(self.wires))[::-1], base=2)
+
+            if prob := self._current_quasi_dist.get(i):
+                state[probs_idx] = sqrt(prob)
+            else:
+                state[probs_idx] = 0
+
+        return self.asarray(state, dtype=self.C_DTYPE)
+
     def dist_generate_samples(self, quasi_dist):
         """
         Generate samples from a quasi-distribution
@@ -136,8 +214,17 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         probs = [dist_bin[bs] for bs in bit_strings]
 
         # generate artificial samples from quasi-distribution probabilities
-        bit_samples = np.random.choice(bit_strings, size=self.shots, p=probs)
+        size = self.shots if self.shots else self._default_shots
+        bit_samples = np.random.choice(bit_strings, size=size, p=probs)
         return np.vstack([np.array([int(i) for i in s[::-1]]) for s in bit_samples])
+
+    @contextmanager
+    def set_distribution(self, quasi_dist):
+        self._current_quasi_dist = quasi_dist
+        try:
+            yield
+        finally:
+            self._current_quasi_dist = None
 
     def _process_batch_execute_result(self, circuit, quasi_dist) -> Any:
         # Update the tracker
@@ -146,16 +233,16 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
             self.tracker.record()
 
         # Generate computational basis samples
-        if self.shots is not None or circuit.is_sampled:
-            self._samples = self.dist_generate_samples(quasi_dist)
+        self._samples = self.dist_generate_samples(quasi_dist)
 
-        # Adjust for active return status
-        if not pennylane.active_return():
-            res = self._statistics_legacy(circuit)
-            return np.asarray(res)
+        with self.set_distribution(quasi_dist):
 
-        res = self.statistics(circuit)
-        single_measurement = len(circuit.measurements) == 1
-        res = res[0] if single_measurement else tuple(res)
+            if not pennylane.active_return():
+                res = self._statistics_legacy(circuit)
+                return self.asarray(res)
+            res = self.statistics(circuit)
 
-        return pennylane.numpy.asarray(res)
+        if len(circuit.measurements) > 1:
+            return tuple(res)
+
+        return self.asarray(res[0])

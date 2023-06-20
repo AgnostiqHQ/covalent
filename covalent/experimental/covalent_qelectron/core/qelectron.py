@@ -19,12 +19,14 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import functools
+from typing import Optional
 
 from pydantic import BaseModel
 
 from ..core.qnode_qe import QNodeQE
 from ..executors import Simulator
 from ..executors.base import AsyncBaseQCluster
+from ..shared_utils.utils import get_import_path
 
 
 class QElectronInfo(BaseModel):
@@ -33,6 +35,9 @@ class QElectronInfo(BaseModel):
     # see: covalent_qelectron/shared_utils/utils.py
     name: str
     description: str = None
+    qnode_device_import_path: str  # used to inherit type converters and other methods
+    qnode_device_shots: Optional[int]  # optional default for execution devices
+    num_device_wires: int  # this can not be reliably inferred from tapes alone
 
 
 def qelectron(qnode=None, *, executors=None, name=None, description=None):
@@ -69,7 +74,13 @@ def qelectron(qnode=None, *, executors=None, name=None, description=None):
     if description is None:
         description = qnode.func.__doc__
 
-    qelectron_info = QElectronInfo(name=name, description=description)
+    qelectron_info = QElectronInfo(
+        name=name,
+        description=description,
+        qnode_device_import_path=get_import_path(type(qnode.device)),
+        qnode_device_shots=qnode.device.shots,
+        num_device_wires=qnode.device.num_wires,
+    )
 
     # Create a new QNodeQE instance for every qelectron call
     return QNodeQE(qnode, executors, qelectron_info)

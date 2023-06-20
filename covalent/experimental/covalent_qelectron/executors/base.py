@@ -21,13 +21,14 @@
 import asyncio
 import time
 from abc import ABC, abstractmethod
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Future, ThreadPoolExecutor
 from functools import lru_cache
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import orjson
 import pennylane as qml
 from mpire import WorkerPool
+from mpire.async_result import AsyncResult
 from pydantic import BaseModel, Extra, Field, root_validator
 
 __all__ = [
@@ -82,7 +83,7 @@ class BaseQExecutor(ABC, BaseModel):
         raise NotImplementedError
 
     @abstractmethod
-    def batch_get_result_and_time(self, futures_list):
+    def batch_get_results(self, futures_list):
         raise NotImplementedError
 
     def run_circuit(self, qscript, device, result_obj: 'QCResult') -> 'QCResult':
@@ -94,6 +95,12 @@ class BaseQExecutor(ABC, BaseModel):
         result_obj.execution_time = end_time - start_time
 
         return result_obj
+
+    # To make executor instances re-usable, these attributes are set
+    # server-side, after reconstruction.
+    qnode_device_import_path: Tuple[str, str] = None
+    qnode_device_shots: Optional[int] = None
+    qnode_device_wires: int = None
 
 
 class QCResult(BaseModel):
@@ -152,7 +159,7 @@ class SyncBaseQExecutor(BaseQExecutor):
         dummy_futures = [fut] * len(qscripts_list)
         return dummy_futures
 
-    def batch_get_result_and_time(self, futures_list):
+    def batch_get_results(self, futures_list):
         return futures_list[0].result()
 
 
@@ -181,14 +188,14 @@ class AsyncBaseQExecutor(BaseQExecutor):
 
         return futures
 
-    def batch_get_result_and_time(self, futures_list: List):
+    def batch_get_results(self, futures_list: List):
 
         loop = get_asyncio_event_loop()
         return loop.run_until_complete(
-            self._get_result_and_time(futures_list)
+            self._get_result(futures_list)
         )
 
-    async def _get_result_and_time(self, futures_list: List) -> List[QCResult]:
+    async def _get_result(self, futures_list: List) -> List[QCResult]:
         return [await fut for fut in futures_list]
 
     async def run_circuit(self, qscript, device, result_obj) -> QCResult:
@@ -224,7 +231,7 @@ class BaseProcessPoolQExecutor(BaseQExecutor):
 
         return futures
 
-    def batch_get_result_and_time(self, futures_list: List) -> List[QCResult]:
+    def batch_get_results(self, futures_list: List) -> List[QCResult]:
         return [fut.get() for fut in futures_list]
 
 
@@ -249,7 +256,7 @@ class BaseThreadPoolQExecutor(BaseQExecutor):
 
         return futures
 
-    def batch_get_result_and_time(self, futures_list: List) -> List[QCResult]:
+    def batch_get_results(self, futures_list: List) -> List[QCResult]:
         return [fut.result() for fut in futures_list]
 
 
@@ -269,3 +276,21 @@ class AsyncBaseQCluster(AsyncBaseQExecutor):
     @abstractmethod
     def dict(self, *args, **kwargs) -> dict:
         raise NotImplementedError
+
+    async def _get_result(self, futures_list: List) -> List[QCResult]:
+        """
+        Override the base method to handle the case where the `futures_list`
+        contains a mix of object types from various executors.
+        """
+        results_and_times = []
+        for fut in futures_list:
+            if isinstance(fut, asyncio.Task):
+                results_and_times.append(await fut)
+            elif isinstance(fut, Future):
+                results_and_times.append(fut.result())
+            elif isinstance(fut, AsyncResult):
+                results_and_times.append(fut.get())
+            else:
+                results_and_times.append(fut)
+
+        return results_and_times

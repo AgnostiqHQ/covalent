@@ -18,6 +18,10 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import importlib
+import inspect
+from typing import Any, Tuple
+
 import cloudpickle
 import orjson as json
 
@@ -47,3 +51,24 @@ def dummy_deserialize(ser_obj):
 def select_first_executor(qnode, executors):
     """Selects the first executor to run the qnode"""
     return executors[0]
+
+
+def get_import_path(obj) -> Tuple[str, str]:
+    """
+    Determine the import path of an object.
+    """
+    module = inspect.getmodule(obj)
+    if module:
+        module_path = module.__name__
+        class_name = obj.__name__
+        return f"{module_path}:{class_name}"
+    raise RuntimeError(f"Unable to determine import path for {obj}.")
+
+
+def import_from_path(path: str) -> Any:
+    """
+    Import a class from a path.
+    """
+    module_path, class_name = path.split(":")
+    module = importlib.import_module(module_path)
+    return getattr(module, class_name)
