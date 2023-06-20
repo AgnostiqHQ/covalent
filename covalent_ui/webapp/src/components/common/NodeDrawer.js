@@ -123,17 +123,16 @@ const NodeDrawer = ({
     if (!!node) {
       dispatch(electronDetails({ electronId, dispatchId }))
         .then(() => {
-          dispatch(electronInput({ dispatchId, electronId, params: 'inputs' }))
+          dispatch(electronInput({ dispatchId, electronId, params: 'inputs' })).then(() => {
+            dispatch(electronResult({ dispatchId, electronId, params: 'result' })).then(() => {
+              dispatch(electronExecutor({ dispatchId, electronId, params: 'executor' })).then((() => {
+                dispatch(electronFunctionString({ dispatchId, electronId, params: 'function_string' })).then(() => {
+                  dispatch(electronError({ dispatchId, electronId, params: 'error' }))
+                })
+              }))
+            })
+          })
         })
-        .then(() => {
-          dispatch(electronResult({ dispatchId, electronId, params: 'result' }))
-        }).then(() => {
-          dispatch(electronExecutor({ dispatchId, electronId, params: 'executor' }))
-        }).then(() => {
-          dispatch(electronFunctionString({ dispatchId, electronId, params: 'function_string' }))
-        }).then(() => {
-          dispatch(electronError({ dispatchId, electronId, params: 'error' }))
-        })        
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node, callSocketApi])
@@ -251,7 +250,7 @@ const NodeDrawer = ({
                     data-testid="node__dra_close"
                     sx={{ position: 'absolute', top: 0, right: 1.5 }}
                   >
-                    <Close onClick={handleClose} fontSize='small' sx={{cursor:'pointer'}}/>
+                    <Close onClick={handleClose} fontSize='small' sx={{ cursor: 'pointer' }} />
                   </Box>
                 </Grid>
               </Grid>
@@ -311,7 +310,7 @@ const NodeDrawer = ({
                   {electronDetail.node_id}
                 </Typography>
                 <Grid>
-                  <CopyButton content={electronDetail.node_id}/>
+                  <CopyButton content={electronDetail.node_id} />
                 </Grid>
               </Box>
             </Grid>
