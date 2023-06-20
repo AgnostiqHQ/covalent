@@ -300,6 +300,50 @@ def test_result_update_node_2(test_db, mocker):
         assert lattice_record.updated_at is not None
 
 
+def test_result_update_node_handles_postprocessing(test_db, mocker):
+    """Check postprocessing node updates."""
+
+    import datetime
+
+    from covalent._workflow.transport import TransportableObject
+
+    res = get_mock_result()
+    res._initialize_nodes()
+
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+
+    update.persist(res)
+
+    with test_db.session() as session:
+        record = (
+            session.query(models.Lattice)
+            .where(models.Lattice.dispatch_id == "mock_dispatch")
+            .first()
+        )
+
+        srvres = Result(session, record)
+
+    timestamp = datetime.datetime.now()
+
+    node_result = {
+        "node_id": 2,
+        "start_time": timestamp,
+        "end_time": timestamp,
+        "output": TransportableObject(1),
+        "status": SDKResult.COMPLETED,
+        "stdout": "Hello\n",
+        "stderr": "Bye\n",
+    }
+
+    srvres._update_node(**node_result)
+
+    # Output of postprocessing electron should be set as the dispatch
+    # output.
+    assert srvres.get_value("status") == SDKResult.COMPLETED
+    assert srvres.get_value("result").get_deserialized() == 1
+
+
 def test_get_result_object(test_db, mocker):
     res = get_mock_result()
     res._initialize_nodes()
@@ -490,16 +534,24 @@ def test_result_filters_parent_electron_updates(test_db, mocker):
 
         sub_srvres = Result(session, sub_record)
         sub_srvres.set_value("electron_id", subl_node._electron_id, session)
+        sub_srvres._electron_id = subl_node._electron_id
 
     sub_srvres._update_dispatch(status=RESULT_STATUS.RUNNING)
 
     assert subl_node.get_value("sub_dispatch_id") == sub_res._dispatch_id
 
     first_update = srvres._update_node(0, status=RESULT_STATUS.RUNNING)
+
+    # This should fail because the electron status doesn't match the subdispatch
     second_update = srvres._update_node(0, status=RESULT_STATUS.COMPLETED)
+    sub_srvres.set_value("result", TransportableObject(42))
     sub_srvres._update_dispatch(status=RESULT_STATUS.COMPLETED)
+
+    # This should now succeed.
     third_update = srvres._update_node(0, status=RESULT_STATUS.COMPLETED)
 
     assert first_update
     assert not second_update
     assert third_update
+
+    assert subl_node.get_value("output").get_deserialized() == 42

@@ -44,9 +44,8 @@ async def get(dispatch_id: str, keys: List[str]) -> Dict:
 
 def get_incomplete_tasks_sync(dispatch_id: str) -> Dict:
     """Query all cancelled or failed tasks"""
-    result_object = get_result_object(dispatch_id, False)
-    refresh = False
-    return result_object._get_incomplete_nodes(refresh)
+    result_object = get_result_object(dispatch_id)
+    return result_object._get_incomplete_nodes()
 
 
 async def get_incomplete_tasks(dispatch_id: str) -> Dict:

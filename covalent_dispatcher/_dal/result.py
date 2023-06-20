@@ -150,6 +150,18 @@ class Result(DispatchedObject):
         error: str = None,
         result: Any = None,
     ):
+        """
+        Update the dispatch metadata.
+
+        Args:
+            start_time: The start time of the lattice execution.
+            end_time: The end time of the lattice execution.
+            status: The status of the lattice execution.
+            result: The lattice output unless error occured in which case None.
+            error: Any error that occurred
+
+        """
+
         with self.session() as session:
             if start_time is not None:
                 self.set_value("start_time", start_time, session)
@@ -322,7 +334,13 @@ class Result(DispatchedObject):
         """
         return self._get_incomplete_nodes()["failed"]
 
-    def _get_incomplete_nodes(self, refresh: bool = True):
+    def _get_incomplete_nodes(self):
+        """
+        Get all nodes that did not complete.
+
+        Returns:
+            A dictionary {"failed": [node_ids], "cancelled": [node_ids]}
+        """
         with self.session() as session:
             query_keys = {"parent_lattice_id", "node_id", "name", "status"}
             records = Electron.get_db_records(
