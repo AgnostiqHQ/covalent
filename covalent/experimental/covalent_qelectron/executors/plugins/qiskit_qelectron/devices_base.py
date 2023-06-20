@@ -163,15 +163,6 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         self._dummy_state = None
 
     @property
-    def asarray(self):
-        """
-        Wrap to override NumPy `asarray` with Pennylane `asarray`
-        """
-        if self._asarray is np.asarray:
-            return pennylane.numpy.asarray
-        return self._asarray
-
-    @property
     def _state(self):
         """
         Override `self._state` to avoid unnecessary state reconstruction for
@@ -204,7 +195,7 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
             else:
                 state[probs_idx] = 0
 
-        return self.asarray(state, dtype=self.C_DTYPE)
+        return self._asarray(state, dtype=self.C_DTYPE)
 
     def dist_generate_samples(self, quasi_dist):
         """
@@ -242,10 +233,10 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
 
             if not self.pennylane_active_return:
                 res = self._statistics_legacy(circuit)
-                return self.asarray(res)
+                return self._asarray(res)
             res = self.statistics(circuit)
 
         if len(circuit.measurements) > 1:
             return tuple(res)
 
-        return self.asarray(res[0])
+        return self._asarray(res[0])

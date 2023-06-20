@@ -137,6 +137,6 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
 
         # Wrap in outer list for vector inputs
         if vector_input:
-            return [self.asarray(results)], metadatas
+            return [self._asarray(results)], metadatas
 
         return results, metadatas

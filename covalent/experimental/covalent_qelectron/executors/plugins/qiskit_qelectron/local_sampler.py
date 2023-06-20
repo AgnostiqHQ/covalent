@@ -103,7 +103,7 @@ class QiskitLocalSampler(QiskitSamplerDevice):
 
         # Wrap in outer list for vector inputs
         if vector_input:
-            return [self.asarray(results)]
+            return [self._asarray(results)]
 
         return results
 
