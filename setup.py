@@ -74,7 +74,7 @@ install_requires = [
     "sqlalchemy>=1.4.37",
     "sqlalchemy_utils",
     "toml",
-    "uvicorn[standard]>=0.18.2,<=0.18.3",
+    "uvicorn[standard]==0.18.3",
     "watchdog",
     "werkzeug>=2.0.3",
 ]
