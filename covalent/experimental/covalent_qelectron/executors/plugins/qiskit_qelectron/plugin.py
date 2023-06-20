@@ -146,7 +146,9 @@ class QiskitExecutor(AsyncBaseQExecutor):
     )
     options: RuntimeOptions = Field(
         # pylint: disable=unnecessary-lambda
-        default_factory=lambda: RuntimeOptions(**get_config("qelectron")["QiskitExecutor"]["options"])
+        default_factory=lambda: RuntimeOptions(
+            **get_config("qelectron")["QiskitExecutor"]["options"]
+        )
     )
 
     def batch_submit(self, qscripts_list):
@@ -181,7 +183,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
         )
 
         # set `pennylane.active_return()` status
-        dev.pennylane_active_return = self.pennylane_active_return
+        dev.pennylane_active_return = self.pennylane_active_return  # pylint: disable=attribute-defined-outside-init
 
         # initialize a result object
         result_obj = QCResult.with_metadata(
@@ -245,6 +247,5 @@ def _create_subclassed_device(device_name: str, qnode_device_cls, **kwargs):
         Wrapper that inherits from a Pennylane device class to extend the custom
         Pennylane-Qiskit device with any device-specific overridden methods.
         """
-        pass
 
     return _QiskitExecutionDevice(**kwargs)
