@@ -49,6 +49,10 @@ Constructing Workflows
 
 :doc:`Transferring Files To and From an S3 Bucket<./coding/file_transfers_to_from_s3>`
 
+:doc:`Transferring Files To and From Azure Blob Storage<./coding/file_transfers_to_from_azure_blob>`
+
+:doc:`Transferring Files To and From Google Cloud Storage<./coding/file_transfers_to_from_gcp_storage>`
+
 :doc:`Constructing a Lepton <./coding/construct_lepton>`
 
 :doc:`Using C Code (Leptons)<./coding/construct_c_task>`

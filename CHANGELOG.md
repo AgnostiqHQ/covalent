@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- File transfer strategy for GCP storage
+- Add CLI status for zombie, stopped process.
+
+### Docs
+
+- Added documentation for Azure Blob Storage file transfers
+- Added documentation for Google Cloud Storage file transfers
+
+### Changed
+
+- Removed the upper limit from `dask` and `distributed` packages' versions until we find a version which is incompatible with Covalent.
+
+### Tests
+
+- Skipping functional tests for azure blob storage and gcp storage how to guides since they require credentials to run.
+
 ## [0.227.0-rc.0] - 2023-06-13
 
 ### Authors
@@ -30,7 +48,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix `Lattice` docstring in RTD.
 - Added a missing `,` to the Slurm docs.
-
 
 ### Operations
 
@@ -92,6 +109,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Error messages are propagated to stdout when the server is not started. These changes are applied to `dispatch`, `redispatch`, and `get_result`.
+
 
 ### Docs
 

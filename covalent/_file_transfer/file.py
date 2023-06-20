@@ -87,6 +87,7 @@ class File:
         return self._is_remote or self.scheme in [
             FileSchemes.S3,
             FileSchemes.Blob,
+            FileSchemes.GCloud,
             FileSchemes.Globus,
             FileSchemes.HTTP,
             FileSchemes.HTTPS,
@@ -139,6 +140,8 @@ class File:
             return FileSchemes.S3
         if scheme == FileSchemes.Blob and "blob.core.windows.net" in host:
             return FileSchemes.Blob
+        if scheme == FileSchemes.GCloud:
+            return FileSchemes.GCloud
         if scheme == FileSchemes.FTP:
             return FileSchemes.FTP
         if scheme == FileSchemes.HTTP:

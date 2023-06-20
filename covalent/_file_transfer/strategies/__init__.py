@@ -30,3 +30,8 @@ try:
     from .blob_strategy import Blob
 except:  # pragma: no cover
     pass
+
+try:
+    from .gcloud_strategy import GCloud
+except:  # pragma: no cover
+    pass
