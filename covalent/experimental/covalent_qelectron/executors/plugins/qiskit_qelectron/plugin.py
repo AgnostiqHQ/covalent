@@ -120,13 +120,11 @@ class QiskitExecutor(AsyncBaseQExecutor):
     """
 
     shots: Optional[int] = None
-    service: Any = None
     max_time: Union[int, str] = None
     ibmqx_url: str = None
     channel: str = "ibm_quantum"
     instance: str = ""
     cloud_instance: str = ""
-    max_jobs: int = 20
 
     device: str = Field(
         default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["device"]
