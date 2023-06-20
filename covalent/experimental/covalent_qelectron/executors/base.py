@@ -106,6 +106,7 @@ class BaseQExecutor(ABC, BaseModel):
     qnode_device_import_path: Tuple[str, str] = None
     qnode_device_shots: Optional[int] = None
     qnode_device_wires: int = None
+    pennylane_active_return: bool = None
 
 
 class QCResult(BaseModel):

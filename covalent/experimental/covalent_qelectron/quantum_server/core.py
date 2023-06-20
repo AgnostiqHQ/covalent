@@ -142,6 +142,7 @@ class QServer:
             executor.qnode_device_import_path = qelectron_info.qnode_device_import_path
             executor.qnode_device_shots = qelectron_info.qnode_device_shots
             executor.qnode_device_wires = qelectron_info.num_device_wires
+            executor.pennylane_active_return = qelectron_info.pennylane_active_return
             qscript_futures = executor.batch_submit(qscript_sub_batch.values())
 
             futures_dict = dict(zip(qscript_sub_batch.keys(), qscript_futures))

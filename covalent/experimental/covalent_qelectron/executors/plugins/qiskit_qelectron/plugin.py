@@ -182,6 +182,9 @@ class QiskitExecutor(AsyncBaseQExecutor):
             **device_init_kwargs,
         )
 
+        # set `pennylane.active_return()` status
+        dev.pennylane_active_return = self.pennylane_active_return
+
         # initialize a result object
         result_obj = QCResult.with_metadata(
             device_name=dev.short_name,

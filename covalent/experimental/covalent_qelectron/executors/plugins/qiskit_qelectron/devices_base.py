@@ -52,6 +52,9 @@ class _PennylaneQiskitDevice(QiskitDevice, ABC):
         service_init_kwargs: dict,
         **kwargs
     ):
+        # proxy for client-side `pennylane.active_return()` status
+        self.pennylane_active_return = True
+
         super(QiskitDevice, self).__init__(wires=wires, shots=shots)
 
         self.shots = shots
@@ -237,7 +240,7 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
 
         with self.set_distribution(quasi_dist):
 
-            if not pennylane.active_return():
+            if not self.pennylane_active_return:
                 res = self._statistics_legacy(circuit)
                 return self.asarray(res)
             res = self.statistics(circuit)

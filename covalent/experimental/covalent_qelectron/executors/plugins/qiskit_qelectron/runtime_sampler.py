@@ -84,7 +84,7 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
 
         # Adjust for active return status
         # Pack as list to satisfy expected `qml.execute` output in usual pipeline
-        if not pennylane.active_return():
+        if not self.pennylane_active_return:
             jobs = [[job] for _ in circuits]
         else:
             jobs = [job] * len(circuits)

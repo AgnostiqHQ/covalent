@@ -21,6 +21,7 @@
 import functools
 from typing import Optional
 
+import pennylane
 from pydantic import BaseModel
 
 from ..core.qnode_qe import QNodeQE
@@ -38,6 +39,7 @@ class QElectronInfo(BaseModel):
     qnode_device_import_path: str  # used to inherit type converters and other methods
     qnode_device_shots: Optional[int]  # optional default for execution devices
     num_device_wires: int  # this can not be reliably inferred from tapes alone
+    pennylane_active_return: bool  # client-sde status of `pennylane.active_return()
 
 
 def qelectron(qnode=None, *, executors=None, name=None, description=None):
@@ -80,6 +82,7 @@ def qelectron(qnode=None, *, executors=None, name=None, description=None):
         qnode_device_import_path=get_import_path(type(qnode.device)),
         qnode_device_shots=qnode.device.shots,
         num_device_wires=qnode.device.num_wires,
+        pennylane_active_return=pennylane.active_return(),
     )
 
     # Create a new QNodeQE instance for every qelectron call
