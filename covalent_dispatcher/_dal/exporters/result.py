@@ -34,7 +34,7 @@ from covalent._shared_files.schemas.result import (
 )
 from covalent._shared_files.utils import format_server_url
 from covalent_dispatcher._dal.electron import Electron
-from covalent_dispatcher._dal.result import Result
+from covalent_dispatcher._dal.result import Result, get_result_object
 
 from ..utils.uri_filters import AssetScope, URIFilterPolicy, filter_asset_uri
 from .lattice import export_lattice
@@ -113,6 +113,7 @@ def _export_result_assets(res: Result) -> ResultAssets:
 
 
 def export_result(res: Result) -> ResultSchema:
+    """Export a Result object"""
     dispatch_id = res.dispatch_id
     metadata = _export_result_meta(res)
 
@@ -152,3 +153,8 @@ def _filter_remote_uris(manifest: ResultSchema) -> ResultSchema:
             asset.remote_uri = filtered_uri
 
     return manifest
+
+
+def export_result_manifest(dispatch_id: str) -> ResultSchema:
+    srv_res = get_result_object(dispatch_id, bare=False)
+    return export_result(srv_res)

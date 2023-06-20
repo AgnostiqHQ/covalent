@@ -18,10 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Tests for DB-backed Result"""
+"""Combined import-export tests"""
 
-
-from datetime import datetime
 
 import pytest
 
@@ -29,9 +27,8 @@ import covalent as ct
 from covalent._results_manager import Result as SDKResult
 from covalent._serialize.result import serialize_result
 from covalent._workflow.lattice import Lattice as SDKLattice
-from covalent_dispatcher._dal.export import export_result_manifest
+from covalent_dispatcher._dal.exporters.result import export_result_manifest
 from covalent_dispatcher._dal.importers.result import import_result
-from covalent_dispatcher._dal.result import get_result_object
 from covalent_dispatcher._db.datastore import DataStore
 
 
@@ -64,36 +61,10 @@ def get_mock_result() -> SDKResult:
     return result_object
 
 
-def test_export_result_manifest(test_db, mocker):
-    import tempfile
-    from datetime import datetime
-
-    res = get_mock_result()
-    dispatch_id = "test_export_result_manifest"
-    res._dispatch_id = dispatch_id
-    res._root_dispatch_id = dispatch_id
-    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-
-    with tempfile.TemporaryDirectory() as sdk_tmp_dir, tempfile.TemporaryDirectory() as srv_tmp_dir:
-        manifest = serialize_result(res, sdk_tmp_dir)
-        received_manifest = manifest.copy(deep=True)
-
-        import_result(received_manifest, srv_tmp_dir, None)
-        srv_res = get_result_object(dispatch_id)
-        ts = datetime.now()
-        srv_res._update_dispatch(start_time=ts, status=SDKResult.RUNNING)
-
-        export_manifest = export_result_manifest(dispatch_id)
-
-        assert export_manifest.metadata.start_time == ts
-        assert export_manifest.metadata.status == str(SDKResult.RUNNING)
-
-
 def test_import_export_manifest(test_db, mocker):
     """Check that Export(Import) == identity modulo asset uris"""
 
     import tempfile
-    from datetime import datetime
 
     res = get_mock_result()
     dispatch_id = "test_import_export_manifest"

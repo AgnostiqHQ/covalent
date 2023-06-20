@@ -37,7 +37,7 @@ from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent_dispatcher._core import dispatcher as core_dispatcher
 from covalent_dispatcher._core import runner_ng as core_runner
 
-from .._dal.export import export_result_manifest
+from .._dal.exporters.result import export_result_manifest
 from .._dal.result import Result, get_result_object
 from .._db.dispatchdb import DispatchDB
 from .heartbeat import Heartbeat
