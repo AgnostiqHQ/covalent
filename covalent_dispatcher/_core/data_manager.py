@@ -159,7 +159,13 @@ def _redirect_lattice(
             parent_dispatch_id,
             parent_electron_id,
         )
-        filtered_manifest = asyncio.run_coroutine_threadsafe(coro, loop).result()
+        filtered_manifest = manifest_importer._import_manifest(
+            manifest,
+            parent_dispatch_id,
+            parent_electron_id,
+        )
+
+        manifest_importer._pull_assets(filtered_manifest)
 
     return filtered_manifest.metadata.dispatch_id
 

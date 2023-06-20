@@ -25,8 +25,9 @@ Utils for the data service
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
-# Thread pool for Datastore I/O
-dm_pool = ThreadPoolExecutor()
+# Worker thread for Datastore I/O Clamp this threadpool to one
+# thread because Sqlite only supports a single writer.
+dm_pool = ThreadPoolExecutor(max_workers=1)
 
 
 def run_in_executor(func, *args) -> asyncio.Future:

@@ -22,7 +22,6 @@
 Functionality for importing dispatch submissions
 """
 
-import asyncio
 import uuid
 from typing import Optional
 
@@ -84,19 +83,17 @@ def _get_all_assets(dispatch_id: str):
     return result_object.get_all_assets()
 
 
-async def _pull_assets(manifest: ResultSchema) -> None:
+def _pull_assets(manifest: ResultSchema) -> None:
     dispatch_id = manifest.metadata.dispatch_id
-    assets = await run_in_executor(_get_all_assets, dispatch_id)
+    assets = _get_all_assets(dispatch_id)
     futs = []
     for asset in assets["lattice"]:
         if asset.remote_uri:
-            futs.append(run_in_executor(asset.download, asset.remote_uri))
+            asset.download(asset.remote_uri)
 
     for asset in assets["nodes"]:
         if asset.remote_uri:
-            futs.append(run_in_executor(asset.download, asset.remote_uri))
-
-    await asyncio.gather(*futs)
+            asset.download(asset.remote_uri)
 
     app_log.debug(f"imported {len(futs)} assets for dispatch {dispatch_id}")
 
@@ -109,7 +106,7 @@ async def import_manifest(
     filtered_manifest = await run_in_executor(
         _import_manifest, manifest, parent_dispatch_id, parent_electron_id
     )
-    await _pull_assets(filtered_manifest)
+    await run_in_executor(_pull_assets, filtered_manifest)
 
     return filtered_manifest
 
@@ -150,6 +147,6 @@ async def import_derived_manifest(
         reuse_previous_results,
     )
 
-    await _pull_assets(filtered_manifest)
+    await run_in_executor(_pull_assets, filtered_manifest)
 
     return filtered_manifest

@@ -441,12 +441,13 @@ def test_redirect_lattice(mocker):
         return_value=mock_manifest,
     )
     mock_import_manifest = mocker.patch(
-        "covalent_dispatcher._core.data_manager.manifest_importer.import_manifest",
+        "covalent_dispatcher._core.data_manager.manifest_importer._import_manifest",
+        return_value=mock_manifest,
     )
 
-    mock_fut = MagicMock()
-    mock_fut.result = MagicMock(return_value=mock_manifest)
-    mocker.patch("asyncio.run_coroutine_threadsafe", return_value=mock_fut)
+    mock_pull = mocker.patch(
+        "covalent_dispatcher._core.data_manager.manifest_importer._pull_assets",
+    )
 
     mock_lat_deserialize = mocker.patch(
         "covalent_dispatcher._core.data_manager.Lattice.deserialize_from_json"
@@ -463,6 +464,7 @@ def test_redirect_lattice(mocker):
     )
 
     mock_import_manifest.assert_called_with(mock_manifest, parent_dispatch_id, parent_electron_id)
+    mock_pull.assert_called_with(mock_manifest)
 
 
 @pytest.mark.asyncio

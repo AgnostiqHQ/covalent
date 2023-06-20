@@ -30,6 +30,7 @@ from covalent._shared_files import logger
 from covalent._shared_files.schemas.asset import AssetUpdate
 
 from ..._dal.result import get_result_object as get_result_object
+from .utils import run_in_executor
 
 app_log = logger.app_log
 am_pool = ThreadPoolExecutor()
@@ -82,10 +83,11 @@ async def download_assets_for_node(
         if update:
             db_updates[key] = update
 
-    # Update metadata
-    await loop.run_in_executor(am_pool, node.update_assets, db_updates)
+    # Update metadata using the designated DB worker thread
+    await run_in_executor(node.update_assets, db_updates)
 
     for key, remote_uri in assets_to_download.items():
         asset = node.get_asset(key, session=None)
+        # Download assets concurrently.
         futs.append(loop.run_in_executor(am_pool, asset.download, remote_uri))
     await asyncio.gather(*futs)

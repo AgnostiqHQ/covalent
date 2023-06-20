@@ -112,7 +112,7 @@ async def test_import_derived_manifest(mocker):
     await import_derived_manifest(mock_manifest, "parent_dispatch", True)
 
     mock_import_manifest.assert_called()
-    mock_pull.assert_awaited()
+    mock_pull.assert_called()
     mock_handle_redispatch.assert_called()
     mock_copy.assert_called_with([])
 
