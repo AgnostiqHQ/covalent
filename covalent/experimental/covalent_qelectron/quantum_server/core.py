@@ -33,7 +33,7 @@ from ..quantum_server.server_utils import (
     get_circuit_id,
     reconstruct_executors,
 )
-from ..shared_utils import dummy_deserialize, dummy_serialize, select_first_executor
+from ..shared_utils import cloudpickle_deserialize, cloudpickle_serialize, select_first_executor
 
 if TYPE_CHECKING:
     from covalent_qelectron.core.qelectron import QElectronInfo
@@ -179,16 +179,17 @@ class QServer:
         # Get current electron's context
         context = get_context()
 
-        # Get qelectron info
+        # Get qelectron info, qnode specs, quantum scripts, and executors
         qelectron_info = self.deserialize(qelectron_info)
-
-        # Get qnode specs
         qnode_specs = self.deserialize(qnode_specs)
-
         qscripts = self.deserialize(qscripts)
+        executors = self.deserialize(executors)
 
-        deconstructed_executors = self.deserialize(executors)
-        executors = reconstruct_executors(deconstructed_executors)
+        # Reconstruct executors using cashed objects
+        # TODO:
+        # - this is disabled so `cloudpickle` can be used throughout
+        # - reenable once `orjson` or other serialization method is used
+        # executors = reconstruct_executors(deconstructed_executors)
 
         linked_executors = self.select_executors(qscripts, executors)
         executor_future_pairs = self.submit_to_executors(
@@ -338,7 +339,7 @@ class QServer:
         return self.serialize(batch_results)
 
     def serialize(self, obj):
-        return dummy_serialize(obj)
+        return cloudpickle_serialize(obj)
 
     def deserialize(self, obj):
-        return dummy_deserialize(obj)
+        return cloudpickle_deserialize(obj)
