@@ -88,7 +88,7 @@ To quickly install Covalent and run a short demo, follow the four steps below.
 Commonly Used Features
 ######################
 
-The following code snippets show the syntax for some of the most popular features within Covalent.  Use this as a quick reference, or navigate to further examples in the :doc:`How-To Guide <../../how_toi/index`.
+The following code snippets show the syntax for some of the most popular features within Covalent.  Use this as a quick reference, or navigate to further examples in the :doc:`How-To Guide <../../how_to/index>`.
 
 Executors
 *********
@@ -114,6 +114,61 @@ Executors are included in Electron and Lattice decorators to denote where tasks 
               "constraint": "cpu",
           },
       )
+
+      @ct.electron(executor=slurm)
+      def task():
+          ...
+
+.. card:: Azure Batch Executor
+
+   The Azure Batch Executor containerizes and submits a task to a compute pool in an Azure Batch account.
+
+   .. code:: python
+
+      azure = ct.executor.AzureBatchExecutor(
+          tenant_id="aad-tenant-id",
+          client_id="service-principal-client-id",
+          client_secret="service-principal-client-secret",
+          batch_account_url="https://myaccount.az-region.batch.azure.com"
+          storage_account_name="mystorage",
+          pool_id="my-compute-pool-name",
+          time_limit=300,
+      )
+
+      @ct.electron(executor=azure)
+      def task():
+          ...
+
+.. card:: Amazon Braket Executor
+
+   The Amazon Braket executor containerizes a hybrid quantum task and submits it to Amazon Braket Hybrid Jobs.
+
+   .. code:: python
+
+      braket = ct.executor.BraketExecutor(
+          credentials="~/.aws/credentials",
+          region="us-east-1",
+          s3_bucket_name="my-bucket-name",
+          ecr_repo_name="my-container-repository",
+          braket_job_execution_role_name="my-iam-role-name",
+          quantum_device="arn:aws:braket:::device/quantum-simulator/amazon/sv1",
+          classical_device="ml.m5.large",
+          storage=30,
+          time_limit=900,
+      )
+
+      @ct.electron(executor=braket)
+      def task():
+          ...
+
+File Transfers
+**************
+
+File transfers are often used to keep large data files close to the compute where they are used. Covalent supports transferring files to/from arbitrary servers using a generic `rsync` strategy, as well as to/from all of the major cloud storage options.
+
+.. card:: rsync transfers
+
+   rsync is a generic transfer strategy which uses SSH to authenticate to a remote server. Typically this is used to interact with NAS (Network Attached Storage) systems.
 
 
 What to Do Next
