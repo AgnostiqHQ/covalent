@@ -77,34 +77,44 @@ def _check_device_type(device):
         pytest.skip("QElectrons don't support shot vectors.")
 
 
-def get_wrapped_QNode(cls):  # pylint: disable=invalid-name
+def get_wrapped_QNode(cls, use_run_later=False):  # pylint: disable=invalid-name
     """
     Patches `qml.QNode` to return a QElectron instead.
     """
 
-    def _patched_QNode(*args, **kwargs):  # pylint: disable=invalid-name
+    class _PatchedQNode(cls):
+        # pylint: disable=too-few-public-methods
+
         """
-        This function replaces `qml.QNode`
+        This class replaces `qml.QNode`
         """
 
-        func, device = args
-        _check_return_type(func)
-        _check_device_type(device)
+        def __init__(self, *args, **kwargs):
+            super().__init__(*args, **kwargs)
+            self._init_qelectron(*args, **kwargs)
 
-        qnode = cls(func, device, **kwargs)
+        def _init_qelectron(self, *args, **kwargs):
+            func, device = args
+            _check_return_type(func)
+            _check_device_type(device)
 
-        # QElectron that wraps the normal QNode
-        qe = cq.qelectron(
-            qnode=qnode,
-            executors=ct.executor.QiskitExecutor(  # pylint: disable=no-member
-                device="local_sampler",
-                shots=qnode.device.shots,
+            qnode = cls(func, device, **kwargs)
+
+            # QElectron that wraps the normal QNode
+            self.qelectron = cq.qelectron(
+                qnode=qnode,
+                executors=ct.executor.QiskitExecutor(  # pylint: disable=no-member
+                    device="local_sampler",
+                    shots=qnode.device.shots,
+                )
             )
-        )
 
-        return qe
+        def __call__(self, *args, **kwargs):
+            if use_run_later:
+                return self.qelectron.run_later(*args, **kwargs).result()
+            return self.qelectron(*args, **kwargs)
 
-    return _patched_QNode
+    return _PatchedQNode
 
 
 @pytest.fixture(autouse=True)
@@ -113,7 +123,7 @@ def patch_qnode_creation():
     Wraps the `pennylane.QNode` class such that the `qml.qnode()` decorator
     instead creates QElectrons that wrap a QNode.
     """
-    with patch("pennylane.QNode", new=get_wrapped_QNode(qml.QNode)):
+    with patch("pennylane.QNode", new=get_wrapped_QNode(qml.QNode, use_run_later=False)):
         yield
 
 
