@@ -22,7 +22,7 @@ from contextlib import contextmanager
 from typing import Any, Dict, Optional
 
 import pennylane as qml
-from pydantic import BaseModel
+from pydantic import BaseModel  # pylint: disable=no-name-in-module
 
 from ..core.device import QEDevice
 from ..core.future_result import QNodeFutureResult
@@ -61,22 +61,26 @@ class QNodeQE(qml.QNode):
         self.original_qnode = qnode
 
         # Create a new device for every QNodeQE instance
+        qe_device = QEDevice(
+            wires=qnode.device.num_wires,
+            shots=qnode.device.shots,
+            executors=executors,
+            qelectron_info=qelectron_info,
+        )
+        qe_device.parent_qnode = self
+
         super().__init__(
-            func=self.original_qnode.func,
-            device=QEDevice(
-                wires=self.original_qnode.device.num_wires,
-                shots=self.original_qnode.device.shots,
-                executors=executors,
-                qelectron_info=qelectron_info,
-            ),
-            interface=self.original_qnode.interface,
-            diff_method=self.original_qnode.diff_method,
-            expansion_strategy=self.original_qnode.expansion_strategy,
-            max_expansion=self.original_qnode.max_expansion,
+            func=qnode.func,
+            device=qe_device,
+            interface=qnode.interface,
+            diff_method=qnode.diff_method,
+            expansion_strategy=qnode.expansion_strategy,
+            max_expansion=qnode.max_expansion,
         )
 
     @contextmanager
     def mark_call_async(self):
+        # pylint: disable=protected-access
         self.device._async_run = True
         try:
             yield
@@ -95,12 +99,13 @@ class QNodeQE(qml.QNode):
         Returns:
             FutureResult: A wrapper object for the async result of running the QNode.
         """
-
+        # pylint: disable=protected-access
         with self.mark_call_async():
             self(*args, **kwargs)
+            dummy_result = self.device._dummy_result
             batch_id = self.device._batch_id
 
-        return QNodeFutureResult(batch_id)
+        return QNodeFutureResult(batch_id, dummy_result)
 
     def __call__(self, *args, **kwargs):
 

@@ -18,13 +18,17 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import pennylane as qml
+
 from ..middleware.core import middleware
 
 
 class QNodeFutureResult:
 
-    def __init__(self, batch_id):
+    def __init__(self, batch_id, dummy_result):
         self.batch_id = batch_id
+        self.dummy_result = dummy_result
+
         self._result = None
 
     def result(self):
@@ -40,5 +44,5 @@ class QNodeFutureResult:
 
         results = middleware.get_results(self.batch_id)
 
-        self._result = results[0].squeeze()
+        self._result = qml.math.convert_like(results[0], self.dummy_result)
         return self._result

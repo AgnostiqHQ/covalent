@@ -18,6 +18,9 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+from typing import Callable
+
+import pennylane as qml
 from pennylane import QubitDevice
 from pennylane import numpy as np
 from pennylane.devices.default_qubit import DefaultQubit
@@ -45,8 +48,8 @@ class QEDevice(QubitDevice):
         wires=1,
         shots=None,
         *,
-        r_dtype=np.float64,
-        c_dtype=np.complex128,
+        r_dtype=np.float64,  # pylint: disable=no-member
+        c_dtype=np.complex128,  # pylint: disable=no-member
         analytic=None,
         executors=None,
         qelectron_info=None,
@@ -55,6 +58,8 @@ class QEDevice(QubitDevice):
 
         self._async_run = False
         self._batch_id = None
+        self._dummy_qnode = None
+        self._dummy_result = None
         self.executors = executors
         self.qelectron_info = qelectron_info
 
@@ -62,8 +67,26 @@ class QEDevice(QubitDevice):
         # is called with args and kwargs
         self.qnode_specs = None
 
-    def apply(self, *args, **kwargs):
-        pass
+        # Set by the `QNodeQE` instance that created this device
+        self.parent_qnode = None
+
+    @property
+    def dummy_qnode(self) -> Callable:
+        """
+        Minimal dummy tape. Used for type inference.
+        """
+        if self._dummy_qnode is None:
+
+            dev = self.parent_qnode.original_qnode.device
+            interface = self.parent_qnode.original_qnode.interface
+
+            @qml.qnode(dev, interface=interface)
+            def _dummy_circuit():
+                return qml.expval(qml.PauliZ(0))
+
+            self._dummy_qnode = _dummy_circuit
+
+        return self._dummy_qnode
 
     def batch_execute(self, circuits):
 
@@ -77,12 +100,16 @@ class QEDevice(QubitDevice):
         if self._async_run:
             self._batch_id = batch_id
             # Return a dummy result
-            return [np.asarray([1]) for _ in circuits]
+            self._dummy_result = self.dummy_qnode()
+            return [self._dummy_result] * len(circuits)
 
         # Otherwise, get the results from the middleware
         results = middleware.get_results(batch_id)
 
         return results
+
+    def apply(self, *args, **kwargs):
+        pass
 
     @classmethod
     def capabilities(cls):
