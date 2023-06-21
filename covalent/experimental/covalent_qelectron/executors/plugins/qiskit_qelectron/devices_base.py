@@ -26,7 +26,6 @@ from math import sqrt
 from typing import Any, List
 
 import numpy as np
-import pennylane
 from pennylane.transforms import broadcast_expand, map_batch_transform
 from pennylane_qiskit.qiskit_device import QiskitDevice
 
