@@ -273,7 +273,7 @@ Dynamic workflows allow users to construct dynamic execution patterns based on t
    .. code:: python
 
       @ct.electron
-      def determine_max_nodes():
+      def determine_num_nodes():
           ...
 
       @ct.electron
@@ -282,14 +282,57 @@ Dynamic workflows allow users to construct dynamic execution patterns based on t
 
       @ct.electron
       @ct.lattice
-      def dynamic_sublattice(max_nodes):
+      def dynamic_sublattice(num_nodes):
           data = [task() for node in range(num_nodes)]
           return data
 
       @ct.lattice
       def workflow():
-          max_nodes = determine_max_nodes()
-          return dynamic_sublattice(max_nodes)
+          num_nodes = determine_num_nodes()
+          return dynamic_sublattice(num_nodes)
+
+.. card:: Dynamic Hardware Selection
+
+   Queue selection at runtime allows users to pick resources within a compute backend at runtime. This can be useful when dynamically deciding between hardware types.
+
+   .. code:: python
+
+      def get_problem_size():
+          ...
+
+      def task():
+          ...
+
+      @ct.electron
+      def schedule(problem_size, threshold):
+          executor_args = {
+              username="user",
+              ...
+              options={
+                  "time": "01:00:00",
+              }
+          }
+
+          if problem_size > threshold:
+              executor_args["options"]["gres"] = "gpu:v100:1"
+          else
+              executor_args["options"]["cpus-per-task"] = 4
+
+          return ct.executor.SlurmExecutor(\*\*executor_args)
+
+      @ct.electron
+      @ct.lattice
+      def dynamic_sublattice(problem_size):
+          threshold = 10 ** 6
+          return ct.electron(
+              task,
+              executor=schedule(problem_size, threshold)
+          )()
+
+      @ct.lattice
+      def workflow():
+          problem_size = get_problem_size()
+          return dynamic_sublattice(problem_size)
 
 .. card:: Cloudbursting
 
