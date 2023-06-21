@@ -234,6 +234,93 @@ Workflow triggers are used to run workflows on schedules or when various upstrea
       def task():
           ...
 
+Dynamic Workflows
+*****************
+
+Dynamic workflows allow users to construct dynamic execution patterns based on the outputs of upstream tasks. Advanced users can use these to include conditional logic, to control the degree of parallelism, and to perform real-time scheduling.
+
+.. card:: Conditional Workflow Logic
+
+   Conditional logic includes if/else, for, and while statements.
+
+   .. code:: python
+
+      @ct.electron
+      def is_odd(number):
+          return number % 2
+
+      @ct.electron
+      def f():
+          ...
+
+      @ct.electron
+      @ct.lattice
+      def dynamic_sublattice(condition):
+          x = 0
+          if condition:
+              x += f()
+          return x
+
+      @ct.lattice
+      def workflow(input):
+          return dynamic_sublattice(is_odd(input))
+
+
+.. card:: Dynamic Parallelism
+
+   Dynamic parallelism allows users to determine the number of parallel tasks in a workflow at runtime.
+
+   .. code:: python
+
+      @ct.electron
+      def determine_max_nodes():
+          ...
+
+      @ct.electron
+      def task():
+          ...
+
+      @ct.electron
+      @ct.lattice
+      def dynamic_sublattice(max_nodes):
+          data = [task() for node in range(num_nodes)]
+          return data
+
+      @ct.lattice
+      def workflow():
+          max_nodes = determine_max_nodes()
+          return dynamic_sublattice(max_nodes)
+
+.. card:: Cloudbursting
+
+   Cloudbursting is a form of dynamic workflow used in conjunction with multiple executors, where the scheduling decision is made at runtime.
+
+   .. code:: python
+
+      def task():
+          ...
+
+      electrons = {
+          "slurm": ct.electron(task, executor=slurm),
+          "azure": ct.electron(task, executor=azure),
+      }
+
+      @ct.electron
+      def schedule(num_cpu):
+          # Query remote backends for availability
+          # Return either "slurm" or "azure"
+          ...
+
+      @ct.electron
+      @ct.lattice
+      def dynamic_sublattice(backend):
+          return electrons[backend]()
+
+      @ct.lattice
+      def workflow(num_cpu):
+          backend = schedule(num_cpu)
+          return dynamic_sublattice(backend)
+
 
 What to Do Next
 ###############
