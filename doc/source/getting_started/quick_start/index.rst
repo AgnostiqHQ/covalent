@@ -38,7 +38,7 @@ To quickly install Covalent and run a short demo, follow the four steps below.
       import covalent as ct
 
       # Construct manageable tasks out of functions
-      # by adding the @covalent.electron decorator
+      # by adding the @ct.electron decorator
       @ct.electron
       def add(x, y):
          return x + y
@@ -47,15 +47,16 @@ To quickly install Covalent and run a short demo, follow the four steps below.
       def multiply(x, y):
          return x*y
 
-      # Note that electrons can be shipped to variety
-      # of executors, for example, "local" computer
+      # Note that electrons can be shipped to variety of compute
+      # backends using executors, for example, "local" computer.
+      # See below for other common executors.
       @ct.electron(executor="local")
       def divide(x, y):
          return x/y
 
       # Construct the workflow by stitching together
       # the electrons defined earlier in a function with
-      # the @covalent.lattice decorator
+      # the @ct.lattice decorator
       @ct.lattice
       def workflow(x, y):
          r1 = add(x, y)
@@ -82,6 +83,37 @@ To quickly install Covalent and run a short demo, follow the four steps below.
         :align: center
 
     Note that the computed result is displayed in the Overview.
+
+
+Commonly Used Features
+######################
+
+The following code snippets show the syntax for some of the most popular features within Covalent.  Use this as a quick reference, or navigate to further examples in the :doc:`How-To Guide <../../how_toi/index`.
+
+Executors
+*********
+
+Executors are included in Electron and Lattice decorators to denote where tasks should run. Note that most plugins must be installed as separate Python packages.
+
+.. card:: Slurm Executor
+
+   The Slurm executor generates a batch submission script and interacts with the Slurm scheduler on the user's behalf.
+
+   .. code:: python
+
+      slurm = ct.executor.SlurmExecutor(
+          username="user",
+          address="cluster.hostname.net",
+          ssh_key_file="~/.ssh/id_rsa",
+          remote_workdir="/scratch/user",
+          conda_env="covalent",
+          options={
+              "cpus-per-task": 32,
+              "qos": "regular",
+              "time": "00:30:00",
+              "constraint": "cpu",
+          },
+      )
 
 
 What to Do Next
