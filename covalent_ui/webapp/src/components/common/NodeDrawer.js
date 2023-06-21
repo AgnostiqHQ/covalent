@@ -122,17 +122,17 @@ const NodeDrawer = ({
   useEffect(() => {
     if (!!node) {
       dispatch(electronDetails({ electronId, dispatchId }))
-        .then(() => {
-          dispatch(electronInput({ dispatchId, electronId, params: 'inputs' })).then(() => {
-            dispatch(electronResult({ dispatchId, electronId, params: 'result' })).then(() => {
-              dispatch(electronExecutor({ dispatchId, electronId, params: 'executor' })).then((() => {
-                dispatch(electronFunctionString({ dispatchId, electronId, params: 'function_string' })).then(() => {
-                  dispatch(electronError({ dispatchId, electronId, params: 'error' }))
-                })
-              }))
-            })
-          })
+      dispatch(electronInput({ dispatchId, electronId, params: 'inputs' }))
+      dispatch(electronResult({ dispatchId, electronId, params: 'result' }))
+      dispatch(electronExecutor({ dispatchId, electronId, params: 'executor' }))
+      dispatch(
+        electronFunctionString({
+          dispatchId,
+          electronId,
+          params: 'function_string',
         })
+      )
+      dispatch(electronError({ dispatchId, electronId, params: 'error' }))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node, callSocketApi])
