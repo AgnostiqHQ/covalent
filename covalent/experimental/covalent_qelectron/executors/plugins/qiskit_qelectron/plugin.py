@@ -20,7 +20,7 @@
 
 import asyncio
 import time
-from typing import Any, Optional, Union
+from typing import Optional, Union
 
 import pennylane as qml
 from pydantic import Field
