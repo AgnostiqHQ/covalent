@@ -37,9 +37,11 @@ def install_autoclass_doc_dependencies() -> None:
     ]
 
     try:
+        # Install covalent from branch source which includes this branch's changes to docs.
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "../"] + packages)
         subprocess.check_call([sys.executable, "-m", "pip", "install"] + packages)
     except subprocess.CalledProcessError as e:
-        print(f"Error installing depency with error: {e}")
+        print(f"Error handling dependency with error: {e}")
         sys.exit(1)
 
 
