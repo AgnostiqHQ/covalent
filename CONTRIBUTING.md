@@ -632,4 +632,3 @@ Contributor License Agreement
 =============================
 
 All contributors to Covalent must agree to the terms in the [Contributor License Agreement](https://gist.github.com/wjcunningham7/3f21c684fc60c7598e0fe711caeb9ac1). Individual contributors should sign on their own behalf, while corporate contributors should sign on behalf of their employer. If you have any questions, direct them to the [support team](mailto:support@agnostiq.ai).
-
