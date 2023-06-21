@@ -293,10 +293,11 @@ Dynamic workflows allow users to construct dynamic execution patterns based on t
 
 .. card:: Dynamic Hardware Selection
 
-   Queue selection at runtime allows users to pick resources within a compute backend at runtime. This can be useful when dynamically deciding between hardware types.
+   Hardware selection at runtime allows users to pick resources within a compute backend at runtime. This can be useful when dynamically deciding to add hardware accelerators such as GPUs.
 
    .. code:: python
 
+      @ct.electron
       def get_problem_size():
           ...
 
@@ -306,19 +307,17 @@ Dynamic workflows allow users to construct dynamic execution patterns based on t
       @ct.electron
       def schedule(problem_size, threshold):
           executor_args = {
-              username="user",
               ...
-              options={
-                  "time": "01:00:00",
-              }
+              options={"time": "01:00:00"}
           }
 
+          # Request a GPU for large computational problems
           if problem_size > threshold:
               executor_args["options"]["gres"] = "gpu:v100:1"
-          else
+          else:
               executor_args["options"]["cpus-per-task"] = 4
 
-          return ct.executor.SlurmExecutor(\*\*executor_args)
+          return ct.executor.SlurmExecutor(**executor_args)
 
       @ct.electron
       @ct.lattice
