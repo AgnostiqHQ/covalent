@@ -164,11 +164,75 @@ Executors are included in Electron and Lattice decorators to denote where tasks 
 File Transfers
 **************
 
-File transfers are often used to keep large data files close to the compute where they are used. Covalent supports transferring files to/from arbitrary servers using a generic `rsync` strategy, as well as to/from all of the major cloud storage options.
+File transfers are often used to keep large data files close to the compute where they are used. Covalent supports transferring files to/from arbitrary servers using a generic `Rsync` strategy, as well as to/from all of the major cloud storage options.
 
-.. card:: rsync transfers
+.. card:: Rsync transfers
 
-   rsync is a generic transfer strategy which uses SSH to authenticate to a remote server. Typically this is used to interact with NAS (Network Attached Storage) systems.
+   Rsync is a generic transfer strategy which uses SSH to authenticate to a remote server. Typically this is used to interact with NAS (Network Attached Storage) systems.
+
+   .. code:: python
+
+      rsync = ct.fs_strategies.Rsync(
+          username="user",
+          host="storage.address.com",
+          private_key_path="~/.ssh/id_rsa",
+      )
+
+      input_file = ct.fs.TransferFromRemote(
+          "file:///path/to/remote/input",
+          "file:///path/to/local/input",
+          strategy=rsync,
+      )
+
+      output_file = ct.fs.TransferToRemote(
+          "file:///path/to/remote/output",
+          "file:///path/to/local/output",
+          strategy=rsync,
+      )
+
+      @ct.electron(files=[input_file, output_file])
+      def task(files):
+          # input_file can be accessed at /path/to/local/input
+          # output_file should be written to /path/to/local/output
+          ...
+
+Software Dependencies
+*********************
+
+Covalent allows task dependencies to be specified in the task metadata. When a task runs, it first validates these dependencies are installed, or attempts to install them if they are missing.
+
+.. card:: Pip Dependencies
+
+   Pip dependencies allow users to specify Python packages which are managed by the Pip package-management system.
+
+   .. code:: python
+
+      deps = ct.DepsPip(packages=["numpy==1.25.0"])
+
+      @ct.electron(deps_pip=deps)
+      def task():
+          import numpy
+          ...
+
+Workflow Triggers
+*****************
+
+Workflow triggers are used to run workflows on schedules or when various upstream events occur. These are popular for stream-based processing.
+
+.. card:: Directory Triggers
+
+   Directory triggers run workflows whenever files in a directory are created, deleted, modified, or moved.
+
+   .. code:: python
+
+      trigger = ct.triggers.DirTrigger(
+          dir_path="/path/to/watch",
+          event_names=["created", "modified"],
+      )
+
+      @ct.lattice(triggers=trigger)
+      def task():
+          ...
 
 
 What to Do Next
