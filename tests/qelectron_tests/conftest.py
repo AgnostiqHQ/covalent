@@ -18,12 +18,16 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+# pylint: disable=redefined-outer-name
+# pylint: disable=invalid-name
+
 """
 Configuration that enables easy adoption of Pennylane tests to QElectrons.
 
 NOTE: ONLY USE this configuration file with Pennylane tests.
 """
 import inspect
+import random
 from unittest.mock import patch
 
 import pennylane as qml
@@ -47,6 +51,9 @@ XFAIL_TEST_NAMES = [
     "test_array_multiple"  # NOTE: produces array with inhomogeneous shape
 ]
 
+
+# VALIDATION FUNCTIONS
+# ------------------------------------------------------------------------------
 
 def _check_return_type(func):
     """
@@ -77,10 +84,46 @@ def _check_device_type(device):
         pytest.skip("QElectrons don't support shot vectors.")
 
 
-def get_wrapped_QNode(cls, use_run_later=False):  # pylint: disable=invalid-name
+# UTILITIES
+# ------------------------------------------------------------------------------
+
+def _init_QiskitExecutor_local_sampler(qnode):
+    """
+    Creates a QiskitExecutor instance that uses the `"local_sampler"` device.
+    """
+    return ct.executor.QiskitExecutor(  # pylint: disable=no-member
+        device="local_sampler",
+        shots=qnode.device.shots,
+    )
+
+
+def _init_QiskitExecutor_local_sampler_cluster(qnode):
+    """
+    Creates a QCluster made of 2 QiskitExecutor instances that use the `"local_sampler"` device.
+    """
+    executors = [
+        ct.executor.QiskitExecutor(  # pylint: disable=no-member
+            device="local_sampler",
+            shots=qnode.device.shots,
+        ),
+        ct.executor.QiskitExecutor(  # pylint: disable=no-member
+            device="local_sampler",
+            shots=qnode.device.shots,
+        ),
+    ]
+
+    return ct.executor.QCluster(  # pylint: disable=no-member
+        executors=executors,
+        selector=lambda *args: random.choice(executors)
+    )
+
+
+def _get_wrapped_QNode(cls, use_run_later, qexecutor_name):  # pylint: disable=invalid-name
     """
     Patches `qml.QNode` to return a QElectron instead.
     """
+
+    executor_init_func = QEXECUTORS_MAP.get(qexecutor_name)
 
     class _PatchedQNode(cls):
         # pylint: disable=too-few-public-methods
@@ -99,10 +142,7 @@ def get_wrapped_QNode(cls, use_run_later=False):  # pylint: disable=invalid-name
             # QElectron that wraps the normal QNode
             self.qelectron = cq.qelectron(
                 qnode=qnode,
-                executors=ct.executor.QiskitExecutor(  # pylint: disable=no-member
-                    device="local_sampler",
-                    shots=qnode.device.shots,
-                )
+                executors=executor_init_func(qnode)
             )
 
         def __call__(self, *args, **kwargs):
@@ -113,19 +153,8 @@ def get_wrapped_QNode(cls, use_run_later=False):  # pylint: disable=invalid-name
     return _PatchedQNode
 
 
-@pytest.fixture(autouse=True, params=[True, False])
-def patch_qnode_creation(request):
-    """
-    Wraps the `pennylane.QNode` class such that the `qml.qnode()` decorator
-    instead creates QElectrons that wrap a QNode.
-
-    The parameter `use_run_later` determines if `qelectron` or `qelectron.run_later`
-    is called instead of the original QNode.
-    """
-    use_run_later = request.param
-    with patch("pennylane.QNode", new=get_wrapped_QNode(qml.QNode, use_run_later)):
-        yield
-
+# HOOKS
+# ------------------------------------------------------------------------------
 
 def pytest_collection_modifyitems(config, items):  # pylint: disable=unused-argument
     """
@@ -136,3 +165,42 @@ def pytest_collection_modifyitems(config, items):  # pylint: disable=unused-argu
             item.add_marker(
                 pytest.mark.xfail(reason="XFailing test also failed by normal QNode.")
             )
+
+
+# FIXTURES
+# ------------------------------------------------------------------------------
+
+QEXECUTORS_MAP = {
+    "QiskitExecutor-local_sampler": _init_QiskitExecutor_local_sampler,
+    "QIskitExecutor-local_sampler-cluster": _init_QiskitExecutor_local_sampler_cluster,
+}
+
+
+@pytest.fixture(params=[True, False])
+def use_run_later(request):
+    """
+    Determines whether QElectron is called normally or through `run_later`.
+    """
+    return request.param
+
+
+@pytest.fixture(params=QEXECUTORS_MAP.keys())
+def qexecutor_name(request):
+    """
+    Determines the QExecutor that is used.
+    """
+    return request.param
+
+
+@pytest.fixture(autouse=True)
+def patch_qnode_creation(use_run_later, qexecutor_name):
+    """
+    Wraps the `pennylane.QNode` class such that the `qml.qnode()` decorator
+    instead creates QElectrons that wrap a QNode.
+
+    The parameter `use_run_later` determines if `qelectron` or `qelectron.run_later`
+    is called instead of the original QNode.
+    """
+    patched_cls = _get_wrapped_QNode(qml.QNode, use_run_later, qexecutor_name)
+    with patch("pennylane.QNode", new=patched_cls):
+        yield
