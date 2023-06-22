@@ -54,6 +54,7 @@ jobs:
           --ignore-file=covalent/executor/**
           --ignore-file=covalent/triggers/**
           --ignore-file=covalent/cloud_resource_manager/**
+          --ignore-file=covalent/experimental/**
           covalent
 
       - name: Check missing dispatcher requirements
