@@ -42,12 +42,12 @@ def config_manager():
         ("HOME", ".config/covalent/covalent.conf"),
     ],
 )
-def test_config_manager_init_directory_setting(monkeypatch, dir_env, conf_dir, config_manager):
+def test_config_manager_init_directory_setting(monkeypatch, dir_env, conf_dir):
     """Test the init method for the config manager."""
 
     with tempfile.TemporaryDirectory() as tmp_dir:
         monkeypatch.setenv(dir_env, tmp_dir)
-        cm = config_manager
+        cm = ConfigManager()
         assert cm.config_file == f"{tmp_dir}/{conf_dir}"
 
 
@@ -56,7 +56,7 @@ def test_config_manager_init_directory_setting(monkeypatch, dir_env, conf_dir, c
     [(False, True, False), (True, False, True)],
 )
 def test_config_manager_init_write_update_config(
-    mocker, monkeypatch, path_exists, write_config_called, update_config_called, config_manager
+    mocker, monkeypatch, path_exists, write_config_called, update_config_called
 ):
     """Test the init method for the config manager."""
 
@@ -88,7 +88,7 @@ def test_config_manager_init_write_update_config(
         side_effect = None if path_exists else FileNotFoundError
         open_mock = mocker.patch("covalent._shared_files.config.open", side_effect=side_effect)
 
-        cm = config_manager
+        cm = ConfigManager()
         assert hasattr(cm, "config_data")
         assert write_config_mock.called is write_config_called
         assert update_config_mock.called is update_config_called
