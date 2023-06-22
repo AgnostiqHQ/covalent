@@ -21,8 +21,9 @@
 """Electrons Route"""
 
 import uuid
+from typing import Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from covalent._results_manager.results_manager import get_result
@@ -35,6 +36,7 @@ from covalent_ui.api.v1.models.electrons_model import (
     ElectronResponse,
 )
 from covalent_ui.api.v1.utils.file_handle import FileHandler, validate_data
+from covalent_ui.api.v1.utils.models_helper import JobsSortBy, SortDirection
 
 routes: APIRouter = APIRouter()
 
@@ -63,6 +65,16 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
                     }
                 ],
             )
+        qelectron = {
+            "total_quantum_calls": electron.get_total_quantum_calls(
+                dispatch_id, result["transport_graph_node_id"], result["qelectron_data_exists"]
+            ),
+            "avg_quantum_calls": electron.get_avg_quantum_calls(
+                dispatch_id=dispatch_id,
+                is_qa_electron=result["qelectron_data_exists"],
+                node_id=result["transport_graph_node_id"],
+            ),
+        }
         return ElectronResponse(
             id=result["id"],
             node_id=result["transport_graph_node_id"],
@@ -75,6 +87,8 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
             ended_at=result["completed_at"],
             runtime=result["runtime"],
             description="",
+            qelectron_data_exists=bool(result["qelectron_data_exists"]),
+            qelectron=qelectron if bool(result["qelectron_data_exists"]) else None,
         )
 
 
@@ -173,3 +187,74 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
                     }
                 ],
             )
+
+
+@routes.get("/{dispatch_id}/electron/{electron_id}/jobs")
+def get_electron_jobs(
+    dispatch_id: uuid.UUID,
+    electron_id: int,
+    sort_by: Optional[JobsSortBy] = JobsSortBy.START_TIME,
+    sort_direction: Optional[SortDirection] = SortDirection.DESCENDING,
+    count: Optional[int] = None,
+    offset: Optional[int] = Query(0),
+) -> dict:
+    """Get Electron Jobs List
+
+    Args:
+        dispatch_id: To fetch electron data with dispatch id
+        electron_id: To fetch electron data with the provided electron id.
+
+    Returns:
+        Returns the list of electron jobs
+    """
+    with Session(engine) as session:
+        electron = Electrons(session)
+        jobs = electron.get_jobs(
+            dispatch_id=dispatch_id,
+            electron_id=electron_id,
+            sort_by=sort_by,
+            sort_direction=sort_direction,
+            count=count,
+            offset=offset,
+        )
+        if jobs is None:
+            raise HTTPException(
+                status_code=400,
+                detail=[
+                    {
+                        "loc": ["path", "dispatch_id"],
+                        "msg": f"Dispatch ID {dispatch_id} or Electron ID does not exist",
+                        "type": None,
+                    }
+                ],
+            )
+        return jobs
+
+
+@routes.get("/{dispatch_id}/electron/{electron_id}/jobs/{job_id}")
+def get_electron_job_overview(dispatch_id: uuid.UUID, electron_id: int, job_id: str):
+    """Get Electron Job Detail
+
+    Args:
+        dispatch_id: To fetch electron data with dispatch id
+        electron_id: To fetch electron data with the provided electron id.
+        job_id: To fetch appropriate job details with job id
+
+    Returns:
+        Returns the electron job details
+    """
+    with Session(engine) as session:
+        electron = Electrons(session)
+        job_overview = electron.get_job_detail(dispatch_id, electron_id, job_id)
+        if job_overview is None:
+            raise HTTPException(
+                status_code=400,
+                detail=[
+                    {
+                        "loc": ["path", "dispatch_id"],
+                        "msg": "One of the values does not exist. Dispatch ID, Electron ID, Job ID",
+                        "type": None,
+                    }
+                ],
+            )
+        return job_overview

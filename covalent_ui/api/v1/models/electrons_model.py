@@ -43,6 +43,8 @@ class ElectronResponse(BaseModel):
     ended_at: Union[datetime, None] = None
     runtime: Union[int, None] = None
     description: Union[str, None] = None
+    qelectron_data_exists: bool = False
+    qelectron: dict = None
 
 
 class ElectronFileResponse(BaseModel):

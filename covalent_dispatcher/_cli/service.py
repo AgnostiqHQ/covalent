@@ -40,12 +40,10 @@ import requests
 from distributed.comm import unparse_address
 from distributed.core import connect, rpc
 
-from covalent._shared_files.config import ConfigManager, get_config, set_config
+from covalent._shared_files.config import get_config_manager, get_config, set_config
 
 from .._db.datastore import DataStore
 from .migrate import migrate_pickled_result_object
-
-cm = ConfigManager()
 
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
@@ -473,6 +471,8 @@ def purge(hard: bool, yes: bool, hell_yeah: bool) -> None:
     Purge Covalent from this system. This command is for developers.
     """
 
+    cm = get_config_manager()
+
     removal_list = {
         get_config("sdk.log_dir"),
         get_config("dispatcher.cache_dir"),
@@ -700,5 +700,6 @@ def cluster(
 @click.command()
 def config() -> None:
     """Print Covalent's configuration to stdout"""
+    cm = get_config_manager()
     cm.read_config()
     click.echo(json.dumps(cm.config_data, sort_keys=True, indent=4))
