@@ -197,9 +197,6 @@ def patch_qnode_creation(use_run_later, qexecutor_name):
     """
     Wraps the `pennylane.QNode` class such that the `qml.qnode()` decorator
     instead creates QElectrons that wrap a QNode.
-
-    The parameter `use_run_later` determines if `qelectron` or `qelectron.run_later`
-    is called instead of the original QNode.
     """
     patched_cls = _get_wrapped_QNode(qml.QNode, use_run_later, qexecutor_name)
     with patch("pennylane.QNode", new=patched_cls):
