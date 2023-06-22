@@ -62,9 +62,6 @@ class QEDevice(QubitDevice):
         # is called with args and kwargs
         self.qnode_specs = None
 
-        # Set by the `QNodeQE` instance that created this device
-        self.parent_qnode = None
-
     def batch_execute(self, circuits):
 
         # Async submit all circuits to middleware which will then submit to the quantum server

@@ -67,7 +67,6 @@ class QNodeQE(qml.QNode):
             executors=executors,
             qelectron_info=qelectron_info,
         )
-        qe_device.parent_qnode = self
 
         super().__init__(
             func=qnode.func,
