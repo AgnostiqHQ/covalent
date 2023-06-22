@@ -176,7 +176,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
         }
 
         # initialize a custom Pennylane device
-        dev = _create_subclassed_device(
+        dev = _qiskit_execution_device(
             self.device,
             qnode_device_cls=import_from_path(self.qnode_device_import_path),
             **device_init_kwargs,
@@ -232,15 +232,15 @@ _DEVICE_MAP = {
 }
 
 
-def _create_subclassed_device(device_name: str, qnode_device_cls, **kwargs):
+def _qiskit_execution_device(device_name: str, qnode_device_cls, **kwargs):
     """
     Allows for the creation of a custom Pennylane-Qiskit device from a string name.
     """
-    qiskit_device_cls = _DEVICE_MAP.get(device_name)
-    if not qiskit_device_cls:
+    custom_device_cls = _DEVICE_MAP.get(device_name)
+    if not custom_device_cls:
         raise ValueError(f"Unsupported Qiskit primitive device '{device_name}'.")
 
-    class _QiskitExecutionDevice(qiskit_device_cls, qnode_device_cls):
+    class _QiskitExecutionDevice(custom_device_cls, qnode_device_cls):
         # pylint: disable=too-few-public-methods
 
         """
