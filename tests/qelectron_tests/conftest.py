@@ -91,14 +91,10 @@ def get_wrapped_QNode(cls, use_run_later=False):  # pylint: disable=invalid-name
 
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
-            self._init_qelectron(*args, **kwargs)
 
-        def _init_qelectron(self, *args, **kwargs):
-            func, device = args
-            _check_return_type(func)
-            _check_device_type(device)
-
-            qnode = cls(func, device, **kwargs)
+            qnode = self
+            _check_return_type(qnode.func)
+            _check_device_type(qnode.device)
 
             # QElectron that wraps the normal QNode
             self.qelectron = cq.qelectron(
@@ -117,13 +113,17 @@ def get_wrapped_QNode(cls, use_run_later=False):  # pylint: disable=invalid-name
     return _PatchedQNode
 
 
-@pytest.fixture(autouse=True)
-def patch_qnode_creation():
+@pytest.fixture(autouse=True, params=[True, False])
+def patch_qnode_creation(request):
     """
     Wraps the `pennylane.QNode` class such that the `qml.qnode()` decorator
     instead creates QElectrons that wrap a QNode.
+
+    The parameter `use_run_later` determines if `qelectron` or `qelectron.run_later`
+    is called instead of the original QNode.
     """
-    with patch("pennylane.QNode", new=get_wrapped_QNode(qml.QNode, use_run_later=False)):
+    use_run_later = request.param
+    with patch("pennylane.QNode", new=get_wrapped_QNode(qml.QNode, use_run_later)):
         yield
 
 
