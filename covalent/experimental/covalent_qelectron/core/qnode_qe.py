@@ -102,10 +102,17 @@ class QNodeQE(qml.QNode):
         # pylint: disable=protected-access
         with self.mark_call_async():
             self(*args, **kwargs)
-            dummy_result = self.device._dummy_result
             batch_id = self.device._batch_id
 
-        return QNodeFutureResult(batch_id, dummy_result)
+        future_result = QNodeFutureResult(batch_id)
+
+        # Required for correct output types.
+        future_result.device = self.original_qnode.device
+        future_result.interface = self.interface
+        future_result.diff_method = self.diff_method
+        future_result.qfunc_output = self.tape._qfunc_output
+
+        return future_result
 
     def __call__(self, *args, **kwargs):
 

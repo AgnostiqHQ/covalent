@@ -23,11 +23,34 @@ import pennylane as qml
 from ..middleware.core import middleware
 
 
+def _run_later_device(results, original_device):
+
+    qml_device_cls = type(original_device)
+
+    class _RunLaterDevice(qml_device_cls):
+        # pylint: disable=too-few-public-methods
+
+        def batch_execute(self, _):
+            """
+            Override to return expected result.
+            """
+            return results
+
+    wires = original_device.num_wires
+    shots = original_device.shots
+    return _RunLaterDevice(wires=wires, shots=shots)
+
+
+
 class QNodeFutureResult:
 
-    def __init__(self, batch_id, dummy_result):
+    def __init__(self, batch_id):
         self.batch_id = batch_id
-        self.dummy_result = dummy_result
+
+        self.device = None
+        self.interface = None
+        self.diff_method = None
+        self.qfunc_output = None
 
         self._result = None
 
@@ -35,14 +58,21 @@ class QNodeFutureResult:
         """
         Retrieve the results from middleware for the given batch_id.
 
+        Run the results through a dummy QNode to get the expected result type.
+
         Returns:
             Any: The results of the circuit execution.
         """
 
-        if self._result is not None:
-            return self._result
+        if self._result is None:
 
-        results = middleware.get_results(self.batch_id)
+            results = middleware.get_results(self.batch_id)
+            dev = _run_later_device(results, self.device)
 
-        self._result = qml.math.convert_like(results[0], self.dummy_result)
+            @qml.qnode(dev, interface=self.interface, diff_method=self.diff_method)
+            def _dummy_circuit():
+                return self.qfunc_output
+
+            self._result = _dummy_circuit()
+
         return self._result
