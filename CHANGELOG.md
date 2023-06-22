@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added documentation for Google Cloud Storage file transfers
 - Enhanced the quickstart with a set of commonly used features
 - Removed duplicate "stop server" warning in the First Experimemnt page
+- Fixed typo in quickstart
 
 ### Changed
 

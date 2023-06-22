@@ -129,7 +129,7 @@ Executors are included in Electron and Lattice decorators to denote where tasks 
           tenant_id="aad-tenant-id",
           client_id="service-principal-client-id",
           client_secret="service-principal-client-secret",
-          batch_account_url="https://myaccount.az-region.batch.azure.com"
+          batch_account_url="https://myaccount.az-region.batch.azure.com",
           storage_account_name="mystorage",
           pool_id="my-compute-pool-name",
           time_limit=300,
