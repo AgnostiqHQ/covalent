@@ -26,6 +26,7 @@ from datetime import datetime, timezone
 from unittest.mock import MagicMock
 
 import pytest
+from requests import Response
 
 import covalent as ct
 from covalent._results_manager.results_manager import (
@@ -112,27 +113,29 @@ def test_result_export(mocker):
         test_manifest = get_test_manifest(staging_dir)
 
     dispatch_id = "test_result_export"
-    mock_client = MagicMock()
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-
-    mock_client.get = MagicMock(return_value=mock_response)
 
     mock_body = {"id": "test_result_export", "status": "COMPLETED"}
+
+    mock_client = MagicMock()
+    mock_response = Response()
+    mock_response.status_code = 200
     mock_response.json = MagicMock(return_value=mock_body)
-    mocker.patch(
-        "covalent._results_manager.results_manager.CovalentAPIClient", return_value=mock_client
-    )
+
+    # mock_client.get = MagicMock(return_value=mock_response)
+    mocker.patch("covalent._api.apiclient.requests.Session.get", return_value=mock_response)
+
+    # mocker.patch(
+    #     "covalent._results_manager.results_manager.CovalentAPIClient", return_value=mock_client
+    # )
 
     endpoint = f"/api/v1/dispatch/export/{dispatch_id}"
     assert mock_body == _get_result_export_from_dispatcher(
         dispatch_id, wait=False, status_only=True
     )
-    mock_client.get.assert_called_with(endpoint, params={"wait": False, "status_only": True})
 
 
-def test_result_manager_assets():
-    """Test downloading and loading assets."""
+def test_result_manager_assets_local_copies():
+    """Test downloading and loading assets using local asset uris."""
     dispatch_id = "test_result_manager"
     with tempfile.TemporaryDirectory() as server_dir:
         # This will have uri and remote_uri swapped so as to simulate

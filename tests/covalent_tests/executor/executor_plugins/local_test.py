@@ -21,6 +21,7 @@
 """Tests for Covalent local executor."""
 
 import io
+import json
 import os
 import tempfile
 from functools import partial
@@ -32,7 +33,13 @@ import covalent as ct
 from covalent._shared_files import TaskRuntimeError
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._workflow.transport import TransportableObject
-from covalent.executor.executor_plugins.local import _EXECUTOR_PLUGIN_DEFAULTS, LocalExecutor
+from covalent.executor.executor_plugins.local import (
+    _EXECUTOR_PLUGIN_DEFAULTS,
+    LocalExecutor,
+    TaskSpec,
+    run_task_from_uris,
+)
+from covalent.executor.utils.serialize import serialize_node_asset
 from covalent.executor.utils.wrappers import wrapper_fn
 
 
@@ -231,3 +238,251 @@ def test_local_executor_get_cancel_requested(mocker):
         le.run(local_executor_run__mock_task, args, kwargs, task_metadata)
         le.get_cancel_requested.assert_called_once()
         assert mock_app_log.call_count == 2
+
+
+def test_run_task_from_uris(mocker):
+    """Test the wrapper submitted to local"""
+
+    def task(x, y):
+        return x + y
+
+    dispatch_id = "test_dask_send_receive"
+    node_id = 0
+    task_group_id = 0
+    server_url = "http://localhost:48008"
+
+    x = TransportableObject(1)
+    y = TransportableObject(2)
+    deps = {}
+
+    cb_tmpfile = tempfile.NamedTemporaryFile()
+    ca_tmpfile = tempfile.NamedTemporaryFile()
+
+    deps = {
+        "bash": ct.DepsBash([f"echo Hello > {cb_tmpfile.name}"]).to_dict(),
+        "pip": ct.DepsBash(f"echo Bye > {ca_tmpfile.name}").to_dict(),
+    }
+
+    call_before = []
+    call_after = []
+
+    ser_task = serialize_node_asset(TransportableObject(task), "function")
+    ser_deps = serialize_node_asset(deps, "deps")
+    ser_cb = serialize_node_asset(call_before, "call_before")
+    ser_ca = serialize_node_asset(call_after, "call_after")
+    ser_x = serialize_node_asset(x, "output")
+    ser_y = serialize_node_asset(y, "output")
+
+    node_0_file = tempfile.NamedTemporaryFile("wb")
+    node_0_file.write(ser_task)
+    node_0_file.flush()
+    node_0_function_url = f"{server_url}/api/v1/assets/{dispatch_id}/node/0/function"
+
+    deps_file = tempfile.NamedTemporaryFile("wb")
+    deps_file.write(ser_deps)
+    deps_file.flush()
+    deps_url = f"{server_url}/api/v1/assets/{dispatch_id}/node/0/deps"
+
+    cb_file = tempfile.NamedTemporaryFile("wb")
+    cb_file.write(ser_cb)
+    cb_file.flush()
+    cb_url = f"{server_url}/api/v1/assets/{dispatch_id}/node/0/call_before"
+
+    ca_file = tempfile.NamedTemporaryFile("wb")
+    ca_file.write(ser_ca)
+    ca_file.flush()
+    ca_url = f"{server_url}/api/v1/assets/{dispatch_id}/node/0/call_after"
+
+    node_1_file = tempfile.NamedTemporaryFile("wb")
+    node_1_file.write(ser_x)
+    node_1_file.flush()
+    node_1_output_url = f"{server_url}/api/v1/assets/{dispatch_id}/node/1/output"
+
+    node_2_file = tempfile.NamedTemporaryFile("wb")
+    node_2_file.write(ser_y)
+    node_2_file.flush()
+    node_2_output_url = f"{server_url}/api/v1/assets/{dispatch_id}/node/2/output"
+
+    task_spec = TaskSpec(
+        function_id=0,
+        args_ids=[1, 2],
+        kwargs_ids={},
+        deps_id="deps",
+        call_before_id="call_before",
+        call_after_id="call_after",
+    )
+
+    resources = {
+        node_0_function_url: ser_task,
+        node_1_output_url: ser_x,
+        node_2_output_url: ser_y,
+        deps_url: ser_deps,
+        cb_url: ser_cb,
+        ca_url: ser_ca,
+    }
+
+    def mock_req_get(url, stream):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.content = resources[url]
+        return mock_resp
+
+    def mock_req_post(url, files):
+        resources[url] = files["asset_file"].read()
+
+    mocker.patch("requests.get", mock_req_get)
+    mocker.patch("requests.post", mock_req_post)
+    mock_put = mocker.patch("requests.put")
+    task_group_metadata = {
+        "dispatch_id": dispatch_id,
+        "task_ids": [node_id],
+        "task_group_id": task_group_id,
+    }
+
+    result_file = tempfile.NamedTemporaryFile()
+    stdout_file = tempfile.NamedTemporaryFile()
+    stderr_file = tempfile.NamedTemporaryFile()
+
+    results_dir = tempfile.TemporaryDirectory()
+
+    run_task_from_uris(
+        task_specs=[task_spec.dict()],
+        resources={},
+        output_uris=[(result_file.name, stdout_file.name, stderr_file.name)],
+        results_dir=results_dir.name,
+        task_group_metadata=task_group_metadata,
+        server_url=server_url,
+    )
+
+    with open(result_file.name, "rb") as f:
+        output = TransportableObject.deserialize(f.read())
+    assert output.get_deserialized() == 3
+
+    with open(cb_tmpfile.name, "r") as f:
+        assert f.read() == "Hello\n"
+
+    with open(ca_tmpfile.name, "r") as f:
+        assert f.read() == "Bye\n"
+
+    mock_put.assert_called()
+
+
+def test_run_task_from_uris_exception(mocker):
+    """Test the wrapper submitted to local"""
+
+    def task(x, y):
+        assert False
+
+    dispatch_id = "test_dask_send_receive"
+    node_id = 0
+    task_group_id = 0
+    server_url = "http://localhost:48008"
+
+    x = TransportableObject(1)
+    y = TransportableObject(2)
+    deps = {}
+
+    cb_tmpfile = tempfile.NamedTemporaryFile()
+    ca_tmpfile = tempfile.NamedTemporaryFile()
+
+    deps = {
+        "bash": ct.DepsBash([f"echo Hello > {cb_tmpfile.name}"]).to_dict(),
+        "pip": ct.DepsBash(f"echo Bye > {ca_tmpfile.name}").to_dict(),
+    }
+
+    call_before = []
+    call_after = []
+
+    ser_task = serialize_node_asset(TransportableObject(task), "function")
+    ser_deps = serialize_node_asset(deps, "deps")
+    ser_cb = serialize_node_asset(call_before, "call_before")
+    ser_ca = serialize_node_asset(call_after, "call_after")
+    ser_x = serialize_node_asset(x, "output")
+    ser_y = serialize_node_asset(y, "output")
+
+    node_0_file = tempfile.NamedTemporaryFile("wb")
+    node_0_file.write(ser_task)
+    node_0_file.flush()
+    node_0_function_url = f"{server_url}/api/v1/assets/{dispatch_id}/node/0/function"
+
+    deps_file = tempfile.NamedTemporaryFile("wb")
+    deps_file.write(ser_deps)
+    deps_file.flush()
+    deps_url = f"{server_url}/api/v1/assets/{dispatch_id}/node/0/deps"
+
+    cb_file = tempfile.NamedTemporaryFile("wb")
+    cb_file.write(ser_cb)
+    cb_file.flush()
+    cb_url = f"{server_url}/api/v1/assets/{dispatch_id}/node/0/call_before"
+
+    ca_file = tempfile.NamedTemporaryFile("wb")
+    ca_file.write(ser_ca)
+    ca_file.flush()
+    ca_url = f"{server_url}/api/v1/assets/{dispatch_id}/node/0/call_after"
+
+    node_1_file = tempfile.NamedTemporaryFile("wb")
+    node_1_file.write(ser_x)
+    node_1_file.flush()
+    node_1_output_url = f"{server_url}/api/v1/assets/{dispatch_id}/node/1/output"
+
+    node_2_file = tempfile.NamedTemporaryFile("wb")
+    node_2_file.write(ser_y)
+    node_2_file.flush()
+    node_2_output_url = f"{server_url}/api/v1/assets/{dispatch_id}/node/2/output"
+
+    task_spec = TaskSpec(
+        function_id=0,
+        args_ids=[1],
+        kwargs_ids={"y": 2},
+        deps_id="deps",
+        call_before_id="call_before",
+        call_after_id="call_after",
+    )
+
+    resources = {
+        node_0_function_url: ser_task,
+        node_1_output_url: ser_x,
+        node_2_output_url: ser_y,
+        deps_url: ser_deps,
+        cb_url: ser_cb,
+        ca_url: ser_ca,
+    }
+
+    def mock_req_get(url, stream):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.content = resources[url]
+        return mock_resp
+
+    def mock_req_post(url, files):
+        resources[url] = files["asset_file"].read()
+
+    mocker.patch("requests.get", mock_req_get)
+    mocker.patch("requests.post", mock_req_post)
+    mocker.patch("requests.put")
+    task_group_metadata = {
+        "dispatch_id": dispatch_id,
+        "task_ids": [node_id],
+        "task_group_id": task_group_id,
+    }
+
+    result_file = tempfile.NamedTemporaryFile()
+    stdout_file = tempfile.NamedTemporaryFile()
+    stderr_file = tempfile.NamedTemporaryFile()
+
+    results_dir = tempfile.TemporaryDirectory()
+
+    run_task_from_uris(
+        task_specs=[task_spec.dict()],
+        resources={},
+        output_uris=[(result_file.name, stdout_file.name, stderr_file.name)],
+        results_dir=results_dir.name,
+        task_group_metadata=task_group_metadata,
+        server_url=server_url,
+    )
+
+    summary_file_path = f"{results_dir.name}/result-{dispatch_id}:{node_id}.json"
+
+    with open(summary_file_path, "r") as f:
+        summary = json.load(f)
+        assert summary["exception_occurred"] is True
