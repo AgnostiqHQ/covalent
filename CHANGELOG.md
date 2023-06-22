@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added documentation for Azure Blob Storage file transfers
 - Added documentation for Google Cloud Storage file transfers
+- Removed duplicate "stop server" warning in the First Experimemnt page
 
 ### Changed
 
