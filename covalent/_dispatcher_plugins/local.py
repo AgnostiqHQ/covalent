@@ -564,7 +564,6 @@ class LocalDispatcher(BaseDispatcher):
         dispatch_id: str,
         reuse_previous_results: bool = False,
         dispatcher_addr: Optional[str] = None,
-        push_assets: bool = True,
     ) -> ResultSchema:
         """Submits a derived manifest for registration.
 
@@ -576,10 +575,8 @@ class LocalDispatcher(BaseDispatcher):
         if dispatcher_addr is None:
             dispatcher_addr = format_server_url()
 
-        if push_assets:
-            stripped = strip_local_uris(manifest)
-        else:
-            stripped = manifest
+        # We don't yet support pulling assets for redispatch
+        stripped = strip_local_uris(manifest)
 
         endpoint = f"/api/v1/dispatch/register/{dispatch_id}"
 
