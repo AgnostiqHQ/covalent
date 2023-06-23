@@ -75,7 +75,8 @@ class Record(Generic[T]):
         for attr, vals in membership_filters.items():
             stmt = stmt.where(getattr(cls.model, attr).in_(vals))
         if len(fields) > 0:
-            stmt = stmt.options(load_only(*fields))
+            attrs = [getattr(cls.model, f) for f in fields]
+            stmt = stmt.options(load_only(*attrs))
         if for_update:
             stmt = stmt.with_for_update()
 

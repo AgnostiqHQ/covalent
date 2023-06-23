@@ -28,7 +28,7 @@ from sqlalchemy.orm import Session, load_only
 
 from .._db.datastore import workflow_db
 from . import controller
-from .asset import Asset
+from .asset import FIELDS, Asset
 
 
 class DispatchedObject(ABC):
@@ -222,17 +222,19 @@ class DispatchedObject(ABC):
             .join(link_model)
             .join(cls.meta_type.model)
         )
-
+        if len(fields) == 0:
+            fields = FIELDS
         for attr, val in equality_filters.items():
             stmt = stmt.where(getattr(cls.meta_type.model, attr) == val)
         for attr, vals in membership_filters.items():
             stmt = stmt.where(getattr(cls.meta_type.model, attr).in_(vals))
-        if len(fields) > 0:
-            stmt = stmt.options(load_only(*fields))
+
+        attrs = [getattr(Asset.model, f) for f in fields]
+        stmt = stmt.options(load_only(*attrs))
 
         records = session.execute(stmt)
 
         return [
-            {"meta_id": row.meta_id, "key": row.key, "asset": Asset(session, row[2])}
+            {"meta_id": row.meta_id, "key": row.key, "asset": Asset(session, row[2], keys=fields)}
             for row in records
         ]
