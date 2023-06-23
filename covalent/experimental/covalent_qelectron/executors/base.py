@@ -23,13 +23,14 @@ import time
 from abc import ABC, abstractmethod
 from concurrent.futures import Future, ThreadPoolExecutor
 from functools import lru_cache
+from threading import Thread
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import orjson
 import pennylane as qml
 from mpire import WorkerPool
 from mpire.async_result import AsyncResult
-from pydantic import BaseModel, Extra, Field, root_validator
+from pydantic import BaseModel, Extra, Field, root_validator  # pylint: disable=no-name-in-module
 
 from covalent._shared_files.config import get_config
 
@@ -58,12 +59,15 @@ def get_thread_pool(max_workers=None):
 
 @lru_cache
 def get_asyncio_event_loop():
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
 
-    asyncio.set_event_loop(loop)
+    loop = asyncio.new_event_loop()
+
+    def _start_background_loop(loop):
+        asyncio.set_event_loop(loop)
+        loop.run_forever()
+
+    Thread(target=_start_background_loop, args=(loop,), daemon=True).start()
+
     return loop
 
 
@@ -201,12 +205,11 @@ class AsyncBaseQExecutor(BaseQExecutor):
     def batch_get_results(self, futures_list: List):
 
         loop = get_asyncio_event_loop()
-        return loop.run_until_complete(
-            self._get_result(futures_list)
-        )
+        task = asyncio.run_coroutine_threadsafe(self._get_result(futures_list), loop)
+        return task.result()
 
     async def _get_result(self, futures_list: List) -> List[QCResult]:
-        return [await fut for fut in futures_list]
+        return await asyncio.gather(*futures_list)
 
     async def run_circuit(self, qscript, device, result_obj) -> QCResult:
         await asyncio.sleep(0)
