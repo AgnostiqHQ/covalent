@@ -1,0 +1,7 @@
+covalent-ssh-plugin
+covalent-slurm-plugin
+covalent-braket-plugin
+covalent-awslambda-plugin
+covalent-ec2-plugin
+covalent-awsbatch-plugin
+covalent-gcpbatch-plugin
