@@ -33,8 +33,11 @@ sphinx:
 python:
   version: 3.8
   install:
+    - requriements: doc/autodoc_executor_plugins_requirements.txt
     - requirements: requirements.txt
     - requirements: doc/requirements.txt
+    - method: pip
+      path: .
     - method: pip
       path: .
     - method: pip
