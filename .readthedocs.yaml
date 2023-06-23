@@ -44,4 +44,10 @@ python:
       path: .
 
 build:
-  image: latest
+  os: "ubuntu-22.04"
+  tools:
+    python: "3.9"
+  jobs:
+    post_install:
+      # Botocore from AWS executors requrires urllib3<1.27,>=1.25.4
+      - pip install urllib3==1.26.6

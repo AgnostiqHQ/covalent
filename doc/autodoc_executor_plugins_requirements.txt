@@ -5,5 +5,3 @@ covalent-ec2-plugin
 covalent-gcpbatch-plugin
 covalent-slurm-plugin
 covalent-ssh-plugin
-# Botocore from AWS executors requrires urllib3<1.27,>=1.25.4
-urllib3==1.26.6
