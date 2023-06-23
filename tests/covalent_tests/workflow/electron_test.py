@@ -79,7 +79,6 @@ def workflow_2():
     return res_3
 
 
-@pytest.mark.skip(reason="Will be re-enabled next PR")
 def test_build_sublattice_graph(mocker):
     """
     Test building a sublattice graph
@@ -145,7 +144,6 @@ def test_build_sublattice_graph(mocker):
     # lattice = Lattice.deserialize_from_json(json_lattice)
 
 
-@pytest.mark.skip(reason="Will be re-enabled next PR")
 def test_build_sublattice_graph_fallback(mocker):
     """
     Test falling back to monolithic sublattice dispatch
