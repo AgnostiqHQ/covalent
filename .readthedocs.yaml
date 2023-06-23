@@ -31,7 +31,7 @@ sphinx:
 
 # Optionally set the version of Python and requirements required to build your docs
 python:
-  version: "3.8"
+  version: 3.8
   install:
     - requirements: requirements.txt
     - requirements: doc/autodoc_executor_plugins_requirements.txt
@@ -44,11 +44,4 @@ python:
       path: .
 
 build:
-  os: ubuntu-22.04
   image: latest
-  tools:
-    python: "3.8"
-  jobs:
-    post_create_environment:
-      # Botocore from AWS executors requrires urllib3<1.27,>=1.25.4
-      - pip install urllib3==1.26.6
