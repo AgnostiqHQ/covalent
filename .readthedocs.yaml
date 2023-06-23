@@ -36,6 +36,8 @@ python:
     - requirements: requirements.txt
     - requirements: doc/autodoc_executor_plugins_requirements.txt
     - requirements: doc/requirements.txt
+    # Botocore from AWS executors requrires urllib3<1.27,>=1.25.4
+    - requirements: urllib3==1.26.6
     - method: pip
       path: .
     - method: pip
