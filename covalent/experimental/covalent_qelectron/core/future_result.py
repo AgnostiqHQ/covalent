@@ -37,8 +37,7 @@ def _run_later_device(results, original_device):
             return results
 
     wires = original_device.num_wires
-    shots = original_device.shots
-    return _RunLaterDevice(wires=wires, shots=shots)
+    return _RunLaterDevice(wires=wires, shots=1)
 
 
 
