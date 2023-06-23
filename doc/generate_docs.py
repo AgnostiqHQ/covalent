@@ -30,8 +30,16 @@ def install_autoclass_doc_dependencies() -> None:
     try:
         # Install covalent from branch source which includes this branch's changes to docs.
         subprocess.check_call([sys.executable, "-m", "pip", "install", "../"])
-        subprocess.check_call([sys.executable, "-m", "pip", "install", "-r",
-                              "autodoc_executor_plugins_requirements.txt"])
+        subprocess.check_call(
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "-r",
+                "autodoc_executor_plugins_requirements.txt",
+            ]
+        )
     except subprocess.CalledProcessError as e:
         print(f"Error handling dependency with error: {e}")
         sys.exit(1)
