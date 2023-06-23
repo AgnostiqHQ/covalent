@@ -33,6 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Skipping functional tests for azure blob storage and gcp storage how to guides since they require credentials to run.
 
+### Operations
+
+- Reduce the number of pinned version numbers in the `setup.py`, `requirements.txt`, and `requirements-client.txt`
+
 ## [0.227.0-rc.0] - 2023-06-13
 
 ### Authors
