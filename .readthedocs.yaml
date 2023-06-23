@@ -50,3 +50,5 @@ build:
     post_install:
       # Botocore from AWS executors requrires urllib3<1.27,>=1.25.4
       - pip install urllib3==1.26.6
+      # For covalent slurm plugin
+      - pip install aiofiles==0.8.0
