@@ -32,8 +32,8 @@ mock_db_path = os.path.join("tests/covalent_ui_backend_tests/utils/data", "mock_
 def init():
     mock_path = f"sqlite+pysqlite:///{mock_db_path}"
     config.db.init_db(db_path=mock_path)
-    seed(config.db.engine)
     seed_files()
+    seed(config.db.engine)
 
 
 @fastapi_app.on_event("shutdown")
