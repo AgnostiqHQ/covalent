@@ -52,6 +52,7 @@ class RESULT_STATUS:
     NEW_OBJECT = Status("NEW_OBJECT")
     STARTING = Status("STARTING")  # Dispatch level
     PENDING_REUSE = Status("PENDING_REUSE")  # For redispatch
+    PENDING_REPLACEMENT = Status("PENDING_REPLACEMENT")  # For redispatch
     COMPLETED = Status("COMPLETED")
     POSTPROCESSING = Status("POSTPROCESSING")
     PENDING_POSTPROCESSING = Status("PENDING_POSTPROCESSING")
@@ -59,7 +60,18 @@ class RESULT_STATUS:
     FAILED = Status("FAILED")
     RUNNING = Status("RUNNING")
     CANCELLED = Status("CANCELLED")
-    DISPATCHING_SUBLATTICE = Status("DISPATCHING_SUBLATTICE")  # Sublattice dispatch status
+    DISPATCHING = Status("DISPATCHING")
+
+    @staticmethod
+    def is_terminal(status):
+        return str(status) in TERMINAL_STATUSES
+
+
+TERMINAL_STATUSES = {
+    str(RESULT_STATUS.COMPLETED),
+    str(RESULT_STATUS.FAILED),
+    str(RESULT_STATUS.CANCELLED),
+}
 
 
 class DispatchInfo(NamedTuple):

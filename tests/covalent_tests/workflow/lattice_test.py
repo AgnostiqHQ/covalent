@@ -154,3 +154,23 @@ def test_lattice_build_graph_with_extra_args(mocker):
     # fewer arguments handled internally by function call
     with pytest.raises(TypeError, match="missing 1 required positional argument: 'y'"):
         workflow.build_graph(1)
+
+
+def test_replace_electrons_property():
+    @ct.electron
+    def task(x):
+        return x**2
+
+    @ct.electron
+    def replacement_task(x):
+        return x**3
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    assert workflow.replace_electrons == {}
+
+    workflow._replace_electrons = {"task": replacement_task}
+    assert workflow.replace_electrons["task"](3) == 27
+    del workflow.__dict__["_replace_electrons"]

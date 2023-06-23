@@ -21,6 +21,7 @@
 """General utils for Covalent."""
 
 import inspect
+import shutil
 import socket
 from datetime import timedelta
 from typing import Callable, Dict, Set, Tuple
@@ -221,5 +222,39 @@ def get_named_params(func, args, kwargs):
     return (named_args, named_kwargs)
 
 
-# Dictionary to map Dask clients to their scheduler addresses
-_address_client_mapper = {}
+def format_server_url(hostname: str = None, port: int = None) -> str:
+    if hostname is None:
+        hostname = get_config("dispatcher.address")
+    if port is None:
+        port = int(get_config("dispatcher.port"))
+
+    url = hostname
+    if not url.startswith("http"):
+        if port == 443:
+            url = f"https://{url}"
+        else:
+            url = f"http://{url}"
+
+    # Inject port
+    if port not in [80, 443]:
+        parts = url.split("/")
+        url = "".join(["/".join(parts[:3])] + [f":{port}/"] + ["/".join(parts[3:])])
+
+    return url.strip("/")
+
+
+# For use by LocalDispatcher and ResultsManager when running Covalent
+# server locally
+def copy_file_locally(src_uri, dest_uri):
+    scheme_prefix = "file://"
+    if src_uri.startswith(scheme_prefix):
+        src_path = src_uri[len(scheme_prefix) :]
+    else:
+        raise TypeError(f"{src_uri} is not a valid URI")
+        # src_path = src_uri
+    if dest_uri.startswith(scheme_prefix):
+        dest_path = dest_uri[len(scheme_prefix) :]
+    else:
+        raise TypeError(f"{dest_uri} is not a valid URI")
+
+    shutil.copyfile(src_path, dest_path)

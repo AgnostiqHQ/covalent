@@ -141,16 +141,14 @@ def process_lattice(lattice: Lattice) -> Lattice:
 
     workflow_function = lattice.workflow_function
     lattice.workflow_function = TransportableObject.make_transportable(workflow_function)
-    args = [TransportableObject.make_transportable(arg) for arg in lattice.args]
-    kwargs = {k: TransportableObject.make_transportable(v) for k, v in lattice.kwargs.items()}
-    lattice.args = args
-    lattice.kwargs = kwargs
+    inputs = {"args": lattice.args, "kwargs": lattice.kwargs}
+    lattice.inputs = TransportableObject(inputs)
 
     workflow_function = lattice.workflow_function.get_deserialized()
 
     named_args, named_kwargs = get_named_params(workflow_function, lattice.args, lattice.kwargs)
-    lattice.named_args = named_args
-    lattice.named_kwargs = named_kwargs
+    lattice.named_args = TransportableObject(named_args)
+    lattice.named_kwargs = TransportableObject(named_kwargs)
 
     metadata = lattice.metadata
 
@@ -166,6 +164,10 @@ def process_lattice(lattice: Lattice) -> Lattice:
     lattice.transport_graph = process_transport_graph(lattice.transport_graph)
     lattice.transport_graph.lattice_metadata = lattice.metadata
     app_log.debug("Processed transport graph")
+
+    # Delete raw inputs
+    del lattice.__dict__["args"]
+    del lattice.__dict__["kwargs"]
 
     return lattice
 
@@ -183,16 +185,13 @@ def process_result_object(result_object: Result) -> Result:
     app_log.debug(f"Processing result object for dispatch {result_object.dispatch_id}")
     process_lattice(result_object._lattice)
     app_log.debug("Processed lattice")
-    if result_object.lattice.args:
-        result_object._inputs["args"] = result_object.lattice.args
-    if result_object.lattice.kwargs:
-        result_object._inputs["kwargs"] = result_object.lattice.kwargs
 
     result_object._result = TransportableObject.make_transportable(result_object._result)
     tg = result_object.lattice.transport_graph
     for n in tg._graph.nodes:
         tg.dirty_nodes.append(n)
 
+    del result_object.__dict__["_inputs"]
     return result_object
 
 

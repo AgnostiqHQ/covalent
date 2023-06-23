@@ -209,22 +209,14 @@ def test_process_transport_graph():
     assert "dirty_nodes" in tg_new.__dict__
 
 
-def test_process_transport_graph_is_idempotent():
-    ro = get_sample_result_object()
-    tg = ro.lattice.transport_graph
-    tg_new = process_transport_graph(tg)
-    compare_nodes_and_edges(tg, tg_new)
-
-    tg_new_2 = process_transport_graph(tg_new)
-    compare_nodes_and_edges(tg, tg_new_2)
-
-
 def test_process_lattice():
     """Test process_lattice"""
 
     ro = get_sample_result_object()
     ro_orig = get_sample_result_object()
     lattice = process_lattice(ro._lattice)
+    lattice.named_args = lattice.named_args.get_deserialized()
+    lattice.named_kwargs = lattice.named_kwargs.get_deserialized()
 
     assert isinstance(lattice.workflow_function, TransportableObject)
     assert list(lattice.named_args.keys()) == ["z"]
@@ -241,9 +233,11 @@ def test_process_result_object():
     """Test process_result_object"""
 
     ro = get_sample_result_object()
+    old_inputs = ro._inputs
     ro_new = process_result_object(ro)
-    assert ro_new._inputs["args"] == ro_new.lattice.args
-    assert ro_new._inputs["kwargs"] == ro_new.lattice.kwargs
+    inputs = ro_new.inputs.get_deserialized()
+    assert old_inputs["args"] == inputs["args"]
+    assert old_inputs["kwargs"] == inputs["kwargs"]
     assert isinstance(ro_new._result, TransportableObject)
     assert "dirty_nodes" in ro_new.lattice.transport_graph.__dict__
 
