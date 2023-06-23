@@ -56,28 +56,8 @@ else:
         ],
     }
 
-install_requires = [
-    "aiofiles>=0.8.0",
-    "aiohttp>=3.8.1",
-    "alembic>=1.8.0",
-    "click",
-    "cloudpickle>=2.0.0",
-    "dask[distributed]>=2022.6.0",
-    "fastapi>=0.93.0",
-    "furl",
-    "networkx",
-    "psutil>=5.9.0",
-    "pydantic>=1.10.1",
-    "python-socketio",
-    "requests>=2.24.0",
-    "simplejson",
-    "sqlalchemy>=1.4.37",
-    "sqlalchemy_utils",
-    "toml",
-    "uvicorn[standard]==0.18.3",
-    "watchdog",
-    "werkzeug>=2.0.3",
-]
+with open(requirements_file) as f:
+    required = f.read().splitlines()
 
 
 def recursively_append_files(directory: str):
@@ -230,7 +210,7 @@ setup_info = {
     "long_description_content_type": "text/markdown",
     "include_package_data": True,
     "zip_safe": False,
-    "install_requires": install_requires,
+    "install_requires": required,
     "extras_require": {
         "aws": ["boto3>=1.20.48"],
         "azure": ["azure-identity>=1.13.0", "azure-storage-blob>=12.16.0"],
