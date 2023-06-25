@@ -340,3 +340,6 @@ class AsyncBaseQCluster(AsyncBaseQExecutor):
                 results_and_times.append(fut)
 
         return results_and_times
+
+    def get_selector(self) -> Callable:
+        raise NotImplementedError

@@ -19,8 +19,10 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import base64
+from typing import Callable, Union
 
 from ..executors.base import AsyncBaseQCluster
+from ..executors.executor_selectors import DefaultSelector
 from ..shared_utils import cloudpickle_deserialize, cloudpickle_serialize
 
 __all__ = [
@@ -29,6 +31,9 @@ __all__ = [
 
 
 class QCluster(AsyncBaseQCluster):
+
+    selector: Union[str, Callable] = "cycle"
+    _selector_serialized: bool = False
 
     def batch_submit(self, qscripts_list):
         if self._selector_serialized:
@@ -71,3 +76,18 @@ class QCluster(AsyncBaseQCluster):
         dict_ = super(AsyncBaseQCluster, self).dict(*args, **kwargs)
         dict_.update(executors=tuple(ex.json() for ex in self.executors))
         return dict_
+
+    def get_selector(self) -> Callable:
+        """
+        Wraps `self.selector` to return defaults corresponding to string values.
+
+        This method is called inside `batch_submit`.
+        """
+        if self._selector_serialized:
+            raise RuntimeError("QClusters selector is serialized. Call `deserialize_selector` first.")
+
+        if isinstance(self.selector, str):
+            self.selector = DefaultSelector(self.selector)
+
+        return self.selector
+
