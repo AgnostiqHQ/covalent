@@ -59,14 +59,20 @@ def get_thread_pool(max_workers=None):
 
 @lru_cache
 def get_asyncio_event_loop():
+    """
+    Returns an asyncio event loop running in a separate thread.
+    """
+
+    def _run_loop(_loop):
+        asyncio.set_event_loop(_loop)
+        _loop.run_forever()
 
     loop = asyncio.new_event_loop()
+    thread = Thread(target=_run_loop, args=(loop,), daemon=True)
+    thread.start()
 
-    def _start_background_loop(loop):
-        asyncio.set_event_loop(loop)
-        loop.run_forever()
-
-    Thread(target=_start_background_loop, args=(loop,), daemon=True).start()
+    # Create function attribute so reference to thread is not lost.
+    get_asyncio_event_loop.thread = thread
 
     return loop
 
