@@ -34,7 +34,6 @@ import pennylane as qml
 import pytest
 
 import covalent as ct
-from covalent.experimental import covalent_qelectron as cq
 
 SKIP_RETURN_TYPES = [
     "qml.apply",
@@ -140,7 +139,7 @@ def _get_wrapped_QNode(cls, use_run_later, qexecutor_name):  # pylint: disable=i
             _check_device_type(qnode.device)
 
             # QElectron that wraps the normal QNode
-            self.qelectron = cq.qelectron(
+            self.qelectron = ct.qelectron(
                 qnode=qnode,
                 executors=executor_init_func(qnode)
             )
