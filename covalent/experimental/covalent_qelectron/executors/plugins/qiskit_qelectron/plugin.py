@@ -72,7 +72,7 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
 
     max_jobs: int = 20
 
-    backend_name: str = Field(
+    backend: str = Field(
         default_factory=lambda: get_config("qelectron")["IBMQExecutor"]["backend"]
     )
     ibmqx_token: str = Field(
@@ -96,7 +96,7 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
             dev = qml.device(
                 "qiskit.ibmq",
                 wires=qscript.wires,
-                backend=self.backend_name,
+                backend=self.backend,
                 ibmqx_token=self.ibmqx_token,
                 hub=self.hub,
                 group=self.group,
@@ -129,7 +129,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
     device: str = Field(
         default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["device"]
     )
-    backend_name: str = Field(
+    backend: str = Field(
         default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["backend"]
     )
     ibmqx_token: str = Field(
@@ -160,7 +160,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
         device_init_kwargs = {
             "wires": self.qnode_device_wires,
             "shots": self.qnode_device_shots or self.shots,
-            "backend_name": self.backend_name,
+            "backend_name": self.backend,
             "max_time": self.max_time,
             "options": self.options or {},
             "service_init_kwargs": {
