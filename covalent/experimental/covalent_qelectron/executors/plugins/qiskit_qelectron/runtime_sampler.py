@@ -24,7 +24,6 @@ Pennylane-Qiskit device that uses the Qiskit Runtime `Sampler` primitive
 
 from typing import List, Union
 
-import pennylane
 from qiskit_ibm_runtime import Sampler
 
 from .devices_base import QiskitSamplerDevice
