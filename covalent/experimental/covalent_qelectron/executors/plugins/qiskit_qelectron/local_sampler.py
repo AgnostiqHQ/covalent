@@ -42,8 +42,7 @@ class QiskitLocalSampler(QiskitSamplerDevice):
         self.circuit = None
         self.transpile_args = {}
 
-        QiskitSamplerDevice.__init__(
-            self,
+        super().__init__(
             wires=wires,
             shots=shots,
             backend_name="None",
@@ -64,9 +63,6 @@ class QiskitLocalSampler(QiskitSamplerDevice):
 
         n_original_circuits = len(circuits)
         circuits = self.broadcast_tapes(circuits)
-
-        # This flag distinguishes vector inputs from gradient computations
-        vector_input = (n_original_circuits != len(circuits))
 
         # Create circuit objects and apply diagonalizing gates
         compiled_circuits = self.compile_circuits(circuits)
@@ -100,6 +96,9 @@ class QiskitLocalSampler(QiskitSamplerDevice):
         if self.tracker.active:
             self.tracker.update(batches=1, batch_len=len(circuits))
             self.tracker.record()
+
+        # This flag distinguishes vector inputs from gradient computations
+        vector_input = (n_original_circuits != len(circuits))
 
         # Wrap in outer list for vector inputs
         if vector_input:
