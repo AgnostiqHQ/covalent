@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bumped versions in pre-commit config
 - Added prettier for markdown files.
+- Reduce the number of pinned version numbers in the `setup.py`, `requirements.txt`, and `requirements-client.txt`
+
 
 ### Added
 
@@ -28,14 +30,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Removed the upper limit from `dask` and `distributed` packages' versions until we find a version which is incompatible with Covalent.
+- When the server is stopped, any workflows in a non-terminal state are first cancelled
 
 ### Tests
 
 - Skipping functional tests for azure blob storage and gcp storage how to guides since they require credentials to run.
 
-### Operations
+### Fixed
 
-- Reduce the number of pinned version numbers in the `setup.py`, `requirements.txt`, and `requirements-client.txt`
+- When stopping the server, we send the proper `SIGINT` signal to uvicorn instead of `SIGKILL` which allows the second part of the FastAPI `lifespan` to execute properly.
 
 ## [0.227.0-rc.0] - 2023-06-13
 
