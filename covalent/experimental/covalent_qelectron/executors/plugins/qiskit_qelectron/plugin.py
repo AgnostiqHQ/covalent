@@ -47,7 +47,7 @@ _QEXECUTOR_PLUGINS_DEFAULTS = {
 
     "IBMQExecutor": {
         "backend": "ibmq_qasm_simulator",
-        "token": "",
+        "ibmqx_token": "",
         "hub": "ibm-q",
         "group": "open",
         "project": "main",
@@ -56,7 +56,7 @@ _QEXECUTOR_PLUGINS_DEFAULTS = {
     "QiskitExecutor": {
         "device": "local_sampler",
         "backend": "ibmq_qasm_simulator",
-        "token": "",
+        "ibmqx_token": "",
         "hub": "ibm-q",
         "group": "open",
         "project": "main",
@@ -76,7 +76,7 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
         default_factory=lambda: get_config("qelectron")["IBMQExecutor"]["backend"]
     )
     ibmqx_token: str = Field(
-        default_factory=lambda: get_config("qelectron")["IBMQExecutor"]["token"]
+        default_factory=lambda: get_config("qelectron")["IBMQExecutor"]["ibmqx_token"]
     )
     hub: str = Field(
         default_factory=lambda: get_config("qelectron")["IBMQExecutor"]["hub"]
@@ -119,7 +119,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
     Executor that submits Pennylane Circuits to Qiskit Runtime
     """
 
-    shots: Optional[int] = None
+    shots: Optional[int] = 1024
     max_time: Union[int, str] = None
     ibmqx_url: str = None
     channel: str = "ibm_quantum"
@@ -133,7 +133,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
         default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["backend"]
     )
     ibmqx_token: str = Field(
-        default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["token"]
+        default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["ibmqx_token"]
     )
     hub: str = Field(
         default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["hub"]
