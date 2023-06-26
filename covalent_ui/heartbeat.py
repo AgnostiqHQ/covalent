@@ -75,9 +75,9 @@ async def cancel_all_with_status(status: Status) -> List[str]:
             status_filter=status,
         )
 
-        dispatch_ids += [dispatch.dispatch_id for dispatch in dispatches["items"]]
+        dispatch_ids += [dispatch.dispatch_id for dispatch in dispatches.items]
 
-        if dispatches["total_count"] == page * count + len(dispatches["items"]):
+        if dispatches.total_count == page * count + len(dispatches.items):
             break
 
         page += 1
