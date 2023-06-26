@@ -24,11 +24,35 @@ Pennylane-Qiskit device that uses the Qiskit Runtime `Sampler` primitive
 
 from typing import List, Union
 
+import pennylane as qml
 from qiskit_ibm_runtime import Sampler
 
 from .devices_base import QiskitSamplerDevice
 from .sessions import get_cached_session
 from .utils import extract_options
+
+
+def _post_process_device(wires):
+
+    class _PostProcessDevice(QiskitRuntimeSampler):
+        # pylint: disable=too-few-public-methods
+
+        results = None
+
+        def batch_execute(self, *_, **__):
+            """
+            Override to return expected result.
+            """
+            return self.results
+
+    return _PostProcessDevice(
+        wires=wires,
+        shots=1,
+        backend_name="",
+        max_time=1,
+        options={},
+        service_init_kwargs={}
+    )
 
 
 class QiskitRuntimeSampler(QiskitSamplerDevice):
@@ -48,10 +72,19 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
         service_init_kwargs: dict,
     ):
 
-        _options = extract_options(options)
-        _options.execution.shots = shots
+        if options:
+            _options = extract_options(options)
+            _options.execution.shots = shots
+        else:
+            _options = None
+
         self.options = _options
         self.max_time = max_time
+
+        self._active_job = None
+        self._active_circuits = None
+        self._vector_input = False
+        self._post_process_device = None
 
         super().__init__(
             wires=wires,
@@ -66,48 +99,47 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
         n_original_circuits = len(circuits)
         circuits = self.broadcast_tapes(circuits)
 
-        # This flag distinguishes vector inputs
-        vector_input = (n_original_circuits != len(circuits))
-
         # Create circuit objects and apply diagonalizing gates
         compiled_circuits = self.compile_circuits(circuits)
+        self._active_circuits = [circuit.copy() for circuit in circuits]
 
         # Send the batch of circuit objects to Qiskit Runtime using sampler.run
         max_time = timeout or self.max_time
         with get_cached_session(self.service, self.backend, max_time) as session:
             sampler = Sampler(session=session, options=self.options)
             job = sampler.run(compiled_circuits)
-
-        # Increment counter for number of executions of qubit device
-        self._num_executions += 1
+        self._active_job = job
 
         # Adjust for active return status
         # Pack as list to satisfy expected `qml.execute` output in usual pipeline
         if not self.pennylane_active_return:
-            jobs = [[job] for _ in circuits]
+            dummy_result = [[self._asarray(0.)]] * len(circuits)
         else:
-            jobs = [job] * len(circuits)
+            dummy_result = [self._asarray(0.)] * len(circuits)
+
+        # This flag distinguishes vector inputs from gradient computations
+        self._vector_input = (n_original_circuits != len(circuits))
 
         # Add another "dimension" for unpacking in Pennylane `cache_execute`
-        return [jobs] if vector_input else jobs
+        results = [dummy_result] if self._vector_input else dummy_result
+        return results
 
     def post_process(self, *args) -> List[dict]:
         # pylint: disable=too-many-locals
 
-        circuits, jobs = args[:2]
-        n_original_circuits = len(circuits)
-        circuits = self.broadcast_tapes(circuits)  # also necessary for the `for` loop below
+        # Unpack args, ignore dummy result
+        circuits = self._active_circuits
+        self._active_circuits = None
 
-        # This flag distinguishes vector inputs
-        vector_input = (n_original_circuits != len(circuits))
+        # Get active jobs from attribute and reset
+        job = self._active_job
+        self._active_job = None
 
-        # NOTE: the entries all point to the same object (see `self.batch_execute`)
-        # instead of predicting shape, recursive unpack until nearest non-list element
-        job = jobs[0]
-        while isinstance(job, list):
-            job = job[0]
+        # Blocking call to retrieve job result
+        job_result = job.result()
 
-        job_result = job.result()  # blocking call
+        # Increment counter for number of executions of qubit device
+        self._num_executions += 1
 
         # Compute statistics using the state and/or samples
         results = []
@@ -135,7 +167,21 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
             self.tracker.record()
 
         # Wrap in outer list for vector inputs
-        if vector_input:
+        if self._vector_input:
             return [self._asarray(results)], metadatas
 
+        # Re-execute with a dummy device to get correct result
+        results = self.re_execute(args[0], results)
+
         return results, metadatas
+
+    def re_execute(self, circuits, results):
+        """
+        Executes circuits on a dummy device that returns the provided result.
+
+        This is necessary for the raw output from `post_process` to be handled
+        as if it came from `batch_execute`.
+        """
+        dev = _post_process_device(self.wires)
+        dev.results = results
+        return qml.execute(circuits, dev, None)
