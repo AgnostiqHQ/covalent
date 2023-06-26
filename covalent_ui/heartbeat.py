@@ -61,7 +61,7 @@ class Heartbeat:
             )
 
 
-def cancel_all_with_status(status: Status) -> List[str]:
+async def cancel_all_with_status(status: Status) -> List[str]:
     from covalent_dispatcher._core.dispatcher import cancel_dispatch
 
     dispatch_ids = []
@@ -83,7 +83,7 @@ def cancel_all_with_status(status: Status) -> List[str]:
         page += 1
 
     for dispatch in dispatch_ids:
-        cancel_dispatch(dispatch.dispatch_id)
+        await cancel_dispatch(dispatch.dispatch_id)
 
     return dispatch_ids
 
@@ -101,6 +101,6 @@ async def lifespan(app: FastAPI):
         Status.PENDING_POSTPROCESSING,
         Status.RUNNING,
     ]:
-        cancel_all_with_status(status)
+        await cancel_all_with_status(status)
 
     Heartbeat.stop()
