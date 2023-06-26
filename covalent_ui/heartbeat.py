@@ -26,6 +26,9 @@ import aiofiles
 from fastapi import FastAPI
 
 from covalent._shared_files.config import get_config
+from covalent_dispatcher import cancel_running_dispatch
+from covalent_ui.api.v1.routes.end_points.summary_routes import get_all_dispatches
+from covalent_ui.api.v1.utils.status import Status
 
 
 class Heartbeat:
@@ -58,9 +61,36 @@ class Heartbeat:
             )
 
 
+def cancel_all_with_status(status: Status) -> None:
+    page = 0
+    count = 100
+    while True:
+        dispatches = get_all_dispatches(
+            count=count,
+            offset=page * count,
+            status_filter=status,
+        )
+
+        for dispatch in dispatches["items"]:
+            cancel_running_dispatch(dispatch.dispatch_id)
+
+        if dispatches["total_count"] == page * count + len(dispatches["items"]):
+            break
+
+        page += 1
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     heartbeat = Heartbeat()
     asyncio.create_task(heartbeat.start())
 
     yield
+
+    for status in [
+        Status.NEW_OBJECT,
+        Status.POSTPROCESSING,
+        Status.PENDING_POSTPROCESSING,
+        Status.RUNNING,
+    ]:
+        cancel_all_with_status(status)
