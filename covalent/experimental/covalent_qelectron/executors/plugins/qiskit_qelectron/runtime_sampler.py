@@ -81,6 +81,7 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
         self.options = _options
         self.max_time = max_time
 
+        # These attributes are shared across `batch_execute` and `post_process`
         self._active_job = None
         self._active_circuits = None
         self._vector_input = False
