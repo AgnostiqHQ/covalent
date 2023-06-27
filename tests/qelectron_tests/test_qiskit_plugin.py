@@ -20,6 +20,7 @@
 
 # pylint: disable=no-member
 
+import numpy as np
 import pennylane as qml
 import pytest
 
@@ -32,6 +33,14 @@ EXECUTOR_CLASSES = [
     ct.executor.QiskitExecutor,
     ct.executor.IBMQExecutor,
 ]
+
+
+def _arg_vector(size):
+    return qml.numpy.random.uniform(0, 2 * np.pi, size=(size,))
+
+
+def _weight_vector(size):
+    return [_arg_vector(2 * size) for _ in range(size)]
 
 
 @pytest.mark.parametrize("executor_class", EXECUTOR_CLASSES)
@@ -81,3 +90,49 @@ def test_qiskit_exec_shots_is_none():
         val_2 = qelectron(0.5)
 
     assert isinstance(val_2, type(val_1))
+
+
+_TEMPLATES = [
+    (qml.AngleEmbedding, (_arg_vector(6),), {"wires": range(6)}),
+    (qml.IQPEmbedding, (_arg_vector(6),), {"wires": range(6)}),
+    (qml.QAOAEmbedding, (_arg_vector(6),), {"wires": range(6), "weights": _weight_vector(6)}),
+    (qml.DoubleExcitation, (_arg_vector(4),), {"wires": range(4)}),
+    (qml.SingleExcitation, (_arg_vector(2),), {"wires": range(2)})
+]
+
+
+@pytest.mark.parametrize("executor_class", EXECUTOR_CLASSES[:1])
+@pytest.mark.parametrize("template", _TEMPLATES)
+def test_template_circuits(template, executor_class):
+    """
+    Check that above Pennylane templates are working.
+    """
+
+    _template, args, kwargs = template
+    num_wires = len(list(kwargs["wires"]))
+
+    retval = _template(*args, **kwargs)
+
+    # Define a circuit that uses the template. Also call the adjoint if allowed.
+    dev = qml.device("default.qubit", wires=num_wires, shots=10_000)
+
+    @qml.qnode(dev, interface="numpy")
+    def _template_circuit():
+        _template(*args, **kwargs)
+
+        for i in range(num_wires):
+            # Do this so later adjoint does not invert.
+            qml.Hadamard(wires=i)
+
+        if not isinstance(retval, qml.DoubleExcitation):
+            qml.adjoint(_template)(*args, **kwargs)
+        return qml.probs(wires=range(num_wires))
+
+    qexecutor = executor_class(device="local_sampler")  # QiskitExecutor
+    qelectron = ct.qelectron(_template_circuit, executors=qexecutor)
+
+    val_1 = _template_circuit()
+    val_2 = qelectron()
+
+    assert isinstance(val_2, type(val_1))
+    assert np.isclose(val_1, val_2, atol=0.1).all()
