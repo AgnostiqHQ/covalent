@@ -84,7 +84,6 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
         self._active_job = None
         self._active_circuits = None
         self._vector_input = False
-        self._post_process_device = None
 
         super().__init__(
             wires=wires,
