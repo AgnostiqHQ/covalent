@@ -117,14 +117,14 @@ def _init_QiskitExecutor_local_sampler_cluster(qnode):
     )
 
 
-def _get_wrapped_QNode(cls, use_run_later, qexecutor_name):  # pylint: disable=invalid-name
+def _get_wrapped_QNode(use_run_later, qexecutor_name):  # pylint: disable=invalid-name
     """
     Patches `qml.QNode` to return a QElectron instead.
     """
 
     executor_init_func = QEXECUTORS_MAP.get(qexecutor_name)
 
-    class _PatchedQNode(cls):
+    class _PatchedQNode(qml.QNode):
         # pylint: disable=too-few-public-methods
 
         """
@@ -197,6 +197,6 @@ def patch_qnode_creation(use_run_later, qexecutor_name):
     Wraps the `pennylane.QNode` class such that the `qml.qnode()` decorator
     instead creates QElectrons that wrap a QNode.
     """
-    patched_cls = _get_wrapped_QNode(qml.QNode, use_run_later, qexecutor_name)
+    patched_cls = _get_wrapped_QNode(use_run_later, qexecutor_name)
     with patch("pennylane.QNode", new=patched_cls):
         yield
