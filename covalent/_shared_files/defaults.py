@@ -161,11 +161,11 @@ def get_default_executor() -> dict:
 def get_qelectron_config() -> dict:
     return {
         "persist_data": True,
-        "device": os.environ.get("QE_QML_DEVICE") or "default.qubit",
-        "num_processes": os.environ.get("QE_NUM_PROCESSES"),
-        "num_threads": os.environ.get("QE_NUM_THREADS"),
-        "num_jobs": os.environ.get("QE_NUM_JOBS"),
-        "num_workers": os.environ.get("QE_NUM_WORKERS"),
+        "device": os.environ.get("COVALENT_QE_QML_DEVICE") or "default.qubit",
+        "num_processes": os.environ.get("COVALENT_QE_NUM_PROCESSES"),
+        "num_threads": os.environ.get("COVALENT_QE_NUM_THREADS"),
+        "num_jobs": os.environ.get("COVALENT_QE_NUM_JOBS"),
+        "num_workers": os.environ.get("COVALENT_QE_NUM_WORKERS"),
     }
 
 
