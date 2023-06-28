@@ -50,8 +50,8 @@ class LocalQClient(BaseQClient):
 
         return self.qserver.submit(ser_qscripts, ser_executors, ser_qelectron_info, ser_qnode_specs)
 
-    def get_results(self, future_ids):
-        ser_results = self.qserver.get_results(future_ids)
+    def get_results(self, batch_id):
+        ser_results = self.qserver.get_results(batch_id)
         return self.deserialize(ser_results)
 
     def serialize(self, obj):

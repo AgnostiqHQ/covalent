@@ -27,7 +27,7 @@ class BaseQClient(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def get_results(self, future_ids):
+    def get_results(self, batch_id):
         raise NotImplementedError
 
     @abstractproperty
