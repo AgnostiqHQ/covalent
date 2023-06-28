@@ -35,7 +35,7 @@ def _run_later_device_factory(results, original_device):
     class _RunLaterDevice(qml_device_cls):
         # pylint: disable=too-few-public-methods
 
-        def batch_execute(self, _):
+        def batch_execute(self, *_, **__):
             """
             Override to return expected result.
             """
