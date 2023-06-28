@@ -23,7 +23,12 @@ import pennylane as qml
 from ..middleware.core import middleware
 
 
-def _run_later_device(results, original_device):
+def _run_later_device_factory(results, original_device):
+    """
+    Returns an instance of a new class that inherits from the original QNode's
+    device class. Inheriting ensures the correct return type, while overriding
+    `batch_execute` returns the expected `results` without actually running circuits.
+    """
 
     qml_device_cls = type(original_device)
 
@@ -38,7 +43,6 @@ def _run_later_device(results, original_device):
 
     wires = original_device.num_wires
     return _RunLaterDevice(wires=wires, shots=1)
-
 
 
 class QNodeFutureResult:
@@ -66,7 +70,7 @@ class QNodeFutureResult:
         if self._result is None:
 
             results = middleware.get_results(self.batch_id)
-            dev = _run_later_device(results, self.device)
+            dev = _run_later_device_factory(results, self.device)
 
             @qml.qnode(dev, interface=self.interface, diff_method=self.diff_method)
             def _dummy_circuit():
