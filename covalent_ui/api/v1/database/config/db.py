@@ -20,9 +20,11 @@
 
 """DB Config"""
 
-from sqlalchemy.ext.declarative import declarative_base
-
+# from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import DeclarativeBase
 from covalent_dispatcher._db.datastore import DataStore
 
 engine = DataStore.factory().engine
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    pass

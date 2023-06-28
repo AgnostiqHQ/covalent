@@ -20,6 +20,7 @@
 
 """Lattices schema"""
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, func
+from sqlalchemy.orm import Mapped, mapped_column
 
 from covalent_ui.api.v1.database.config.db import Base
 
@@ -52,95 +53,95 @@ class Lattice(Base):
     """
 
     __tablename__ = "lattices"
-    id = Column(Integer, primary_key=True)
-    dispatch_id = Column(String(64), nullable=False)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    dispatch_id: Mapped[str] = mapped_column(String(64), nullable=False)
 
     # id of node if the lattice is actually a sublattice
-    electron_id = Column(Integer)
+    electron_id: Mapped[int] = mapped_column(Integer)
 
     # name of the lattice function
-    name = Column(Text, nullable=False)
+    name: Mapped[str] = mapped_column(Text, nullable=False)
 
     # name of the file containing the lattice function's docstring
-    docstring_filename = Column(Text)
+    docstring_filename: Mapped[str] = mapped_column(Text)
 
     # Workflow status
-    status = Column(String(24), nullable=False)
+    status: Mapped[str] = mapped_column(String(24), nullable=False)
 
     # Number of nodes in the lattice
-    electron_num = Column(Integer, nullable=False)
+    electron_num: Mapped[int] = mapped_column(Integer, nullable=False)
 
     # Number of completed nodes in the lattice
-    completed_electron_num = Column(Integer, nullable=False)
+    completed_electron_num: Mapped[int] = mapped_column(Integer, nullable=False)
 
     # Storage backend type for data files ("local", "s3")
-    storage_type = Column(Text)
+    storage_type: Mapped[str] = mapped_column(Text)
 
     # Bucket name (dispatch_id)
-    storage_path = Column(Text)
+    storage_path: Mapped[str] = mapped_column(Text)
 
     # Name of the file containing the serialized function
-    function_filename = Column(Text)
+    function_filename: Mapped[str] = mapped_column(Text)
 
     # Name of the file containing the function string
-    function_string_filename = Column(Text)
+    function_string_filename: Mapped[str] = mapped_column(Text)
 
     # Short name describing the executor ("local", "dask", etc)
-    executor = Column(Text)
+    executor: Mapped[str] = mapped_column(Text)
 
     # Name of the file containing the serialized executor data
-    executor_data_filename = Column(Text)
+    executor_data_filename: Mapped[str] = mapped_column(Text)
 
     # Short name describing the workflow executor ("local", "dask", etc)
-    workflow_executor = Column(Text)
+    workflow_executor: Mapped[str] = mapped_column(Text)
 
     # Name of the file containing the serialized workflow executor data
-    workflow_executor_data_filename = Column(Text)
+    workflow_executor_data_filename: Mapped[str] = mapped_column(Text)
 
     # Name of the file containing an error message for the workflow
-    error_filename = Column(Text)
+    error_filename: Mapped[str] = mapped_column(Text)
 
     # Name of the file containing the serialized input data
-    inputs_filename = Column(Text)
+    inputs_filename: Mapped[str] = mapped_column(Text)
 
     # Name of the file containing the serialized named args
-    named_args_filename = Column(Text)
+    named_args_filename: Mapped[str] = mapped_column(Text)
 
     # Name of the file containing the serialized named kwargs
-    named_kwargs_filename = Column(Text)
+    named_kwargs_filename: Mapped[str] = mapped_column(Text)
 
     # name of the file containing the serialized output
-    results_filename = Column(Text)
+    results_filename: Mapped[str] = mapped_column(Text)
 
     # Name of the file containing the transport graph
-    transport_graph_filename = Column(Text)
+    transport_graph_filename: Mapped[str] = mapped_column(Text)
 
     # Name of the file containing the default electron dependencies
-    deps_filename = Column(Text)
+    deps_filename: Mapped[str] = mapped_column(Text)
 
     # Name of the file containing the default list of callables before electrons are executed
-    call_before_filename = Column(Text)
+    call_before_filename: Mapped[str] = mapped_column(Text)
 
     # Name of the file containing the default list of callables after electrons are executed
-    call_after_filename = Column(Text)
+    call_after_filename: Mapped[str] = mapped_column(Text)
 
     # Name of the file containing the set of cova imports
-    cova_imports_filename = Column(Text)
+    cova_imports_filename: Mapped[str] = mapped_column(Text)
 
     # Name of the file containing the set of lattice imports
-    lattice_imports_filename = Column(Text)
+    lattice_imports_filename: Mapped[str] = mapped_column(Text)
 
     # Results directory (will be deprecated soon)
-    results_dir = Column(Text)
+    results_dir: Mapped[str] = mapped_column(Text)
 
     # Dispatch id of the root lattice in a hierarchy of sublattices
-    root_dispatch_id = Column(String(64), nullable=True)
+    root_dispatch_id: Mapped[str] = mapped_column(String(64), nullable=True)
 
-    # Name of the column which signifies soft deletion of a lattice
-    is_active = Column(Boolean, nullable=False, default=True)
+    # Name of the mapped_column which signifies soft deletion of a lattice
+    is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
 
     # Timestamps
-    created_at = Column(DateTime, nullable=False, server_default=func.now())
-    updated_at = Column(DateTime, nullable=False, onupdate=func.now(), server_default=func.now())
-    started_at = Column(DateTime)
-    completed_at = Column(DateTime)
+    created_at: Mapped[DateTime] = mapped_column(DateTime, nullable=False, server_default=func.now())
+    updated_at: Mapped[DateTime] = mapped_column(DateTime, nullable=False, onupdate=func.now(), server_default=func.now())
+    started_at: Mapped[DateTime] = mapped_column(DateTime)
+    completed_at: Mapped[DateTime] = mapped_column(DateTime)
