@@ -43,7 +43,7 @@ __all__ = [
     "QiskitExecutor",
 ]
 
-_QEXECUTOR_PLUGINS_DEFAULTS = {
+_QEXECUTOR_PLUGIN_DEFAULTS = {
 
     "IBMQExecutor": {
         "backend": "ibmq_qasm_simulator",

@@ -33,7 +33,7 @@ from .clusters import QCluster
 from .plugins import Simulator
 
 _PARENT = Path(__file__).parent
-_DEFAULTS_VARNAME = "_QEXECUTOR_PLUGINS_DEFAULTS"
+_DEFAULTS_VARNAME = "_QEXECUTOR_PLUGIN_DEFAULTS"
 
 
 class _QExecutorManager:
