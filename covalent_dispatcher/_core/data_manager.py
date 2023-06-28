@@ -35,7 +35,7 @@ from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport_graph_ops import TransportGraphOps
 
-from .._db import load, update, upsert
+from .._db import load, update
 from .._db.write_result_to_db import resolve_electron_id
 
 app_log = logger.app_log
@@ -359,7 +359,7 @@ def get_status_queue(dispatch_id: str):
 
 async def persist_result(dispatch_id: str):
     result_object = get_result_object(dispatch_id)
-    update.persist(result_object)
+    upsert_lattice_data(result_object.dispatch_id)
     await _update_parent_electron(result_object)
 
 
@@ -387,4 +387,6 @@ async def _update_parent_electron(result_object: Result):
 
 def upsert_lattice_data(dispatch_id: str):
     result_object = get_result_object(dispatch_id)
-    upsert.lattice_data(result_object)
+    # Redirect to new DAL -- this is a temporary fix as
+    # upsert_lattice_data will be obsoleted next by the next patch.
+    update.lattice_data(result_object)
