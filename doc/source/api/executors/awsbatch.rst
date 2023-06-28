@@ -209,11 +209,6 @@ The following shows an example of how a user might modify their `covalent config
     ...
 
 
-.. autoclass:: covalent.executor.EC2Executor
-    :members:
-    :inherited-members:
-
-
 ===========================================
 4. Required Cloud Resources
 ===========================================
