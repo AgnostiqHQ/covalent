@@ -176,7 +176,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
         }
 
         # initialize a custom Pennylane device
-        dev = _qiskit_execution_device(
+        dev = _execution_device_factory(
             self.device,
             qnode_device_cls=import_from_path(self.qnode_device_import_path),
             **device_init_kwargs,
@@ -232,7 +232,7 @@ _DEVICE_MAP = {
 }
 
 
-def _qiskit_execution_device(device_name: str, qnode_device_cls, **kwargs):
+def _execution_device_factory(device_name: str, qnode_device_cls, **kwargs):
     """
     Allows for the creation of a custom Pennylane-Qiskit device from a string name.
     """
