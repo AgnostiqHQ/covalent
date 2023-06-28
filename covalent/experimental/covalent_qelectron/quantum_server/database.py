@@ -50,23 +50,29 @@ class Database:
         else:
             self.db_dir = Path(get_config("dispatcher")["qelectron_db_path"])
 
-    def _get_db_path(self, dispatch_id, node_id):
+    def _get_db_path(self, dispatch_id, node_id, *, mkdir=False):
         dispatch_id = "default-dispatch" if dispatch_id is None else dispatch_id
         node_id = "default-node" if node_id is None else node_id
         db_path = self.db_dir.joinpath(dispatch_id, f"node-{node_id}")
-        db_path.mkdir(parents=True, exist_ok=True)
+        if mkdir:
+            db_path.mkdir(parents=True, exist_ok=True)
 
         return db_path.resolve().absolute()
 
-    def _open(self, dispatch_id, node_id):
-        db_path = self._get_db_path(dispatch_id, node_id)
+    def _open(self, dispatch_id, node_id, mkdir=False):
+        db_path = self._get_db_path(dispatch_id, node_id, mkdir=mkdir)
+
+        if not db_path.exists():
+            raise FileNotFoundError(f"Missing database directory {db_path!s}.")
 
         return JsonLmdb.open_with_strategy(
-            file=str(db_path.resolve().absolute()), flag="c", strategy_name=self.strategy_name
+            file=str(db_path),
+            flag="c",
+            strategy_name=self.strategy_name
         )
 
     def set(self, keys, values, *, dispatch_id, node_id):
-        with self._open(dispatch_id, node_id) as db:
+        with self._open(dispatch_id, node_id, mkdir=True) as db:
             for i, circuit_id in enumerate(keys):
                 stored_val: dict = db.get(circuit_id, None)
                 if stored_val is None:
