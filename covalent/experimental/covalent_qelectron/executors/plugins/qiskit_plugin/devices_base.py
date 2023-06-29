@@ -23,7 +23,7 @@ import warnings
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from math import sqrt
-from typing import Any, List
+from typing import Any, List, Tuple
 
 import numpy as np
 from pennylane.transforms import broadcast_expand, map_batch_transform
@@ -117,9 +117,16 @@ class _PennylaneQiskitDevice(QiskitDevice, ABC):
         return tapes
 
     @abstractmethod
-    def post_process(self, *args) -> List[dict]:
+    def post_process(self, *args) -> Tuple[Any, List[dict]]:
         """
-        Obtain metadata; make blocking API call to Qiskit Runtime
+        Obtain metadata; make blocking API call to Qiskit Runtime.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def post_process_all(self, *args) -> Tuple[Any, List[dict]]:
+        """
+        Single job version of `post_process`.
         """
         raise NotImplementedError
 
@@ -213,6 +220,9 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
 
     @contextmanager
     def set_distribution(self, quasi_dist):
+        """
+        Set the current quasi-distribution for statistics computations.
+        """
         self._current_quasi_dist = quasi_dist
         try:
             yield
