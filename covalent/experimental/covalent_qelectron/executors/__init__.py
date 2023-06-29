@@ -23,14 +23,14 @@ Defines QExecutors and provides a "manager" to get all available QExecutors
 """
 
 import importlib
+import sys
 from pathlib import Path
 from typing import Any, Dict
-import sys
 
 from covalent._shared_files.config import update_config
 
 from .clusters import QCluster
-from .plugins import Simulator
+from .simulator import Simulator
 
 _PARENT = Path(__file__).parent
 _DEFAULTS_VARNAME = "_QEXECUTOR_PLUGIN_DEFAULTS"
