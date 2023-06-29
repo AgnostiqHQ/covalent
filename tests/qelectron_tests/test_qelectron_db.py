@@ -28,7 +28,7 @@ def test_db_exposed_in_result():
     Check that the QElectron database is correctly exposed in the result object.
     """
 
-    # Define a QEletcron circuit.
+    # Define a QElectron circuit.
     qexecutor = ct.executor.QiskitExecutor(device="local_sampler")  # pylint: disable=no-member
 
     @ct.qelectron(executors=qexecutor)
