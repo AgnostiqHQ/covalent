@@ -12,7 +12,7 @@ pydantic>=1.10.1
 python-socketio>=5.7.1
 requests>=2.24.0
 simplejson>=3.17.6
-sqlalchemy>=1.4.37
+sqlalchemy>=1.4.37,<=1.4.41
 sqlalchemy_utils>=0.38.3
 toml>=0.10.2
 uvicorn[standard]==0.18.3
