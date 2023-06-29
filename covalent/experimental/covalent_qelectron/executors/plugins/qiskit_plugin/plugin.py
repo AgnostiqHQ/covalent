@@ -33,9 +33,9 @@ from covalent.experimental.covalent_qelectron.executors.base import (
     get_asyncio_event_loop,
     get_thread_pool,
 )
-from covalent.experimental.covalent_qelectron.executors.plugins.qiskit_qelectron.local_sampler import QiskitLocalSampler
-from covalent.experimental.covalent_qelectron.executors.plugins.qiskit_qelectron.runtime_sampler import QiskitRuntimeSampler
-from covalent.experimental.covalent_qelectron.executors.plugins.qiskit_qelectron.utils import RuntimeOptions
+from covalent.experimental.covalent_qelectron.executors.plugins.qiskit_plugin.local_sampler import QiskitLocalSampler
+from covalent.experimental.covalent_qelectron.executors.plugins.qiskit_plugin.runtime_sampler import QiskitRuntimeSampler
+from covalent.experimental.covalent_qelectron.executors.plugins.qiskit_plugin.utils import RuntimeOptions
 from covalent.experimental.covalent_qelectron.shared_utils import import_from_path
 
 __all__ = [
