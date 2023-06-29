@@ -67,6 +67,11 @@ _QEXECUTOR_PLUGIN_DEFAULTS = {
     },
 }
 
+_DEVICE_MAP = {
+    "local_sampler": QiskitLocalSampler,
+    "sampler": QiskitRuntimeSampler,
+}
+
 
 class IBMQExecutor(BaseThreadPoolQExecutor):
 
@@ -120,6 +125,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
     """
 
     shots: Optional[int] = 1024
+    single_job: bool = False
     max_time: Union[int, str] = None
     ibmqx_url: str = None
     channel: str = "ibm_quantum"
@@ -151,17 +157,17 @@ class QiskitExecutor(AsyncBaseQExecutor):
         )
     )
 
-    def batch_submit(self, qscripts_list):
-
-        qscripts_list = list(qscripts_list)
-        self._validate(qscripts_list)
-
-        # keyword argument for compatible custom devices
-        device_init_kwargs = {
+    @property
+    def device_init_kwargs(self):
+        """
+        Keyword arguments to pass to the device constructor.
+        """
+        return {
             "wires": self.qnode_device_wires,
             "shots": self.qnode_device_shots or self.shots,
             "backend_name": self.backend,
             "max_time": self.max_time,
+            "single_job": self.single_job,
             "options": self.options or {},
             "service_init_kwargs": {
                 'ibmqx_token': self.ibmqx_token,
@@ -175,40 +181,67 @@ class QiskitExecutor(AsyncBaseQExecutor):
             },
         }
 
-        # initialize a custom Pennylane device
+    def execution_device(self) -> qml.QubitDevice:
+        """
+        Create a subclasses execution device that ensure correct output typing.
+        """
+
+        # Initialize a custom Pennylane device
         dev = _execution_device_factory(
             self.device,
             qnode_device_cls=import_from_path(self.qnode_device_import_path),
-            **device_init_kwargs,
+            **self.device_init_kwargs,
         )
 
-        # set `pennylane.active_return()` status
-        dev.pennylane_active_return = self.pennylane_active_return  # pylint: disable=attribute-defined-outside-init
+        # Set `pennylane.active_return()` status
+        dev.pennylane_active_return = self.pennylane_active_return
+        return dev
 
-        # initialize a result object
-        result_obj = QCResult.with_metadata(
-            device_name=dev.short_name,
-            executor=self,
-        )
+    def batch_submit(self, qscripts_list):
 
-        # run qscripts asynchronously
+        qscripts_list = list(qscripts_list)
+
         loop = get_asyncio_event_loop()
-        task = loop.create_task(
-            self.run_circuit(qscripts_list, dev, result_obj)
-        )
+        tasks = []
 
-        return [task]
+        if self.single_job:
+            # All QScripts are submitted as a single job
 
-    async def run_circuit(self, tapes, device, result_obj: QCResult):  # pylint: disable=arguments-renamed
+            # initialize a custom Pennylane device
+            dev = self.execution_device()
+
+            # initialize a result object
+            result_obj = QCResult.with_metadata(device_name=dev.short_name, executor=self)
+
+            # run qscripts asynchronously
+            task = loop.create_task(self.run_all_circuits(qscripts_list, dev, result_obj))
+            tasks.append(task)
+        else:
+            # Each QScript is submitted as a separate job
+            for qscript in qscripts_list:
+                # initialize a custom Pennylane device
+                dev = self.execution_device()
+
+                # initialize a result object
+                result_obj = QCResult.with_metadata(device_name=dev.short_name, executor=self)
+
+                # run qscripts asynchronously
+                task = loop.create_task(self.run_circuit(qscript, dev, result_obj))
+                tasks.append(task)
+
+        return tasks
+
+    async def run_circuit(self, tape, device, result_obj: QCResult):  # pylint: disable=arguments-renamed
         """
-        Allows circuits to be submitted asynchronously using `.run_later()`.
+        Allows a circuit to be submitted asynchronously.
         """
+
         start_time = time.perf_counter()
-        results = qml.execute(tapes, device, None)
+        results = qml.execute([tape], device, None)
 
         await asyncio.sleep(0)
 
-        results, metadatas = device.post_process(tapes, results)
+        results, metadatas = device.post_process(tape, results)
         end_time = time.perf_counter()
 
         result_obj.results = results
@@ -217,24 +250,30 @@ class QiskitExecutor(AsyncBaseQExecutor):
 
         return result_obj
 
-    def _validate(self, qscripts):
+    async def run_all_circuits(self, tapes, device, result_obj: QCResult):  # pylint: disable=arguments-renamed
         """
-        Perform necessary checks on the qscripts.
+        Allows multiple circuits to be submitted asynchronously into a single
+        IBM Qiskit Runtime Job.
         """
-        # check that all qscripts have the same number of wires
-        if any(qs.wires != qscripts[0].wires for qs in qscripts[1:]):
-            raise RuntimeError("All qscripts must use the same wires.")
 
+        start_time = time.perf_counter()
+        results = qml.execute(tapes, device, None)
 
-_DEVICE_MAP = {
-    "local_sampler": QiskitLocalSampler,
-    "sampler": QiskitRuntimeSampler,
-}
+        await asyncio.sleep(0)
+
+        results, metadatas = device.post_process_all(tapes, results)
+        end_time = time.perf_counter()
+
+        result_obj.results = results
+        result_obj.execution_time = end_time - start_time
+        result_obj.metadata["execution_metadata"].extend(metadatas)
+
+        return result_obj
 
 
 def _execution_device_factory(device_name: str, qnode_device_cls, **kwargs):
     """
-    Allows for the creation of a custom Pennylane-Qiskit device from a string name.
+    Creates a subclassed Pennylane device to ensure correct output typing.
     """
     custom_device_cls = _DEVICE_MAP.get(device_name)
     if not custom_device_cls:
@@ -242,6 +281,8 @@ def _execution_device_factory(device_name: str, qnode_device_cls, **kwargs):
 
     class _QiskitExecutionDevice(custom_device_cls, qnode_device_cls):
         # pylint: disable=too-few-public-methods
+
+        pennylane_active_return: bool = True
 
         """
         Wrapper that inherits from a Pennylane device class to extend the custom
