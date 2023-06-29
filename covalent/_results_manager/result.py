@@ -30,6 +30,8 @@ from .._shared_files.defaults import postprocess_prefix, prefix_separator, subla
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.lattice import Lattice
 from .._workflow.transport import TransportableObject
+from ..experimental.covalent_qelectron.quantum_server import database as qe_db
+from ..experimental.qelectron_utils import QE_DB_DIRNAME
 
 if TYPE_CHECKING:
     from .._shared_files.util_classes import Status
@@ -263,6 +265,7 @@ Node Outputs
             "end_time": self.lattice.transport_graph.get_node_value(node_id, "end_time"),
             "status": self._get_node_status(node_id),
             "output": self._get_node_output(node_id),
+            "qelectron": self._get_node_qelectron(node_id),
             "error": self.lattice.transport_graph.get_node_value(node_id, "error"),
             "sublattice_result": self.lattice.transport_graph.get_node_value(
                 node_id, "sublattice_result"
@@ -371,6 +374,27 @@ Node Outputs
             The output of said node. Will return None if error occurred in execution.
         """
         return self._lattice.transport_graph.get_node_value(node_id, "output")
+
+    def _get_node_qelectron(self, node_id: int) -> dict:
+        """
+        Return any QElectron data of a node.
+
+        Args:
+            node_id: The node id.
+
+        Returns:
+            The QElectron data of said node. Will return None if no data exists.
+        """
+        try:
+            # Checks existence of QElectron data.
+            self._lattice.transport_graph.get_node_value(node_id, "qelectron_data_exists")
+        except KeyError:
+            return None
+
+        results_dir = get_config("dispatcher")["results_dir"]
+        db_dir = os.path.join(results_dir, self.dispatch_id, QE_DB_DIRNAME)
+
+        return qe_db.Database(db_dir).get_db(dispatch_id=self.dispatch_id, node_id=node_id)
 
     def _get_node_error(self, node_id: int) -> Union[None, str]:
         """
