@@ -25,13 +25,13 @@ from typing import TYPE_CHECKING, Callable, List
 from pennylane.tape import QuantumScript
 
 from ....executor.utils import get_context
-from ..executors.base import BaseQExecutor
+from ..executors.base import BaseQExecutor, AsyncBaseQCluster
 from ..quantum_server.database import Database
 from ..quantum_server.server_utils import (
     CircuitInfo,
     get_cached_executor,
     get_circuit_id,
-    reconstruct_executors,
+    # reconstruct_executors,
 )
 from ..shared_utils import cloudpickle_deserialize, cloudpickle_serialize, select_first_executor
 
@@ -94,6 +94,11 @@ class QServer:
         linked_executors = []
         for qscript in qscripts:
             selected_executor = self.selector(qscript, executors)
+            if isinstance(selected_executor, AsyncBaseQCluster):
+                qcluster = selected_executor
+                _executors = selected_executor.executors
+                selected_executor = qcluster.get_selector()(qscript, _executors)
+
             linked_executors.append(get_cached_executor(**selected_executor.dict()))
 
         # An example `linked_executors` will look like:
@@ -103,7 +108,8 @@ class QServer:
         return linked_executors
 
     def submit_to_executors(
-        self, qscripts: List[QuantumScript],
+        self,
+        qscripts: List[QuantumScript],
         linked_executors: List[BaseQExecutor],
         qelectron_info: "QElectronInfo",
     ):
