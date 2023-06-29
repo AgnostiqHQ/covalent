@@ -114,10 +114,13 @@ class _QExecutorManager:
         plugin_defaults = getattr(module_obj, _DEFAULTS_VARNAME)
 
         if set(module_obj.__all__).difference(set(plugin_defaults)):
-            raise RuntimeError(f"module missing default parameters in {module_obj.__file__}")
+            raise RuntimeError(
+                f"Module missing default parameters in {module_obj.__file__}"
+            )
         if set(plugin_defaults).difference(set(module_obj.__all__)):
             raise RuntimeError(
-                f"non-exported qexecutor class in default parameters in {module_obj.__file__}")
+                f"Non-exported QExecutor class in default parameters in {module_obj.__file__}"
+            )
 
 
 _qexecutor_manager = _QExecutorManager()
