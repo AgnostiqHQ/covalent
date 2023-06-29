@@ -21,6 +21,7 @@
 """Tests for Covalent dask executor."""
 
 import asyncio
+import json
 import os
 import tempfile
 from unittest.mock import AsyncMock
@@ -30,7 +31,15 @@ import pytest
 import covalent as ct
 from covalent._shared_files import TaskRuntimeError
 from covalent._shared_files.exceptions import TaskCancelledError
-from covalent.executor.executor_plugins.dask import _EXECUTOR_PLUGIN_DEFAULTS, DaskExecutor
+from covalent._workflow.transportable_object import TransportableObject
+from covalent.executor.executor_plugins.dask import (
+    _EXECUTOR_PLUGIN_DEFAULTS,
+    DaskExecutor,
+    ResourceMap,
+    TaskSpec,
+    run_task_from_uris_alt,
+)
+from covalent.executor.utils.serialize import serialize_node_asset
 
 
 def test_dask_executor_init(mocker):
@@ -288,3 +297,320 @@ def test_dask_task_cancel(mocker):
     result = asyncio.run(dask_exec.cancel(task_metadata, job_handle))
     mock_app_log.assert_called_with(f"Cancelled future with key {job_handle}")
     assert result is True
+
+
+def test_dask_send_poll_receive(mocker):
+    """Test running a task using send + poll + receive."""
+    from dask.distributed import LocalCluster
+
+    from covalent.executor import DaskExecutor
+
+    cluster = LocalCluster()
+    dask_exec = DaskExecutor(cluster.scheduler_address)
+    mock_get_cancel_requested = mocker.patch.object(
+        dask_exec, "get_cancel_requested", AsyncMock(return_value=False)
+    )
+    mock_set_job_handle = mocker.patch.object(dask_exec, "set_job_handle", AsyncMock())
+
+    def task(x, y):
+        return x + y
+
+    dispatch_id = "test_dask_send_receive"
+    node_id = 0
+    task_group_id = 0
+
+    x = TransportableObject(1)
+    y = TransportableObject(2)
+    deps = {}
+    call_before = []
+    call_after = []
+
+    ser_task = serialize_node_asset(TransportableObject(task), "function")
+    ser_deps = serialize_node_asset(deps, "deps")
+    ser_cb = serialize_node_asset(deps, "call_before")
+    ser_ca = serialize_node_asset(deps, "call_after")
+    ser_x = serialize_node_asset(x, "output")
+    ser_y = serialize_node_asset(y, "output")
+
+    node_0_file = tempfile.NamedTemporaryFile("wb")
+    node_0_file.write(ser_task)
+    node_0_file.flush()
+
+    deps_file = tempfile.NamedTemporaryFile("wb")
+    deps_file.write(ser_deps)
+    deps_file.flush()
+
+    cb_file = tempfile.NamedTemporaryFile("wb")
+    cb_file.write(ser_cb)
+    cb_file.flush()
+
+    ca_file = tempfile.NamedTemporaryFile("wb")
+    ca_file.write(ser_ca)
+    ca_file.flush()
+
+    node_1_file = tempfile.NamedTemporaryFile("wb")
+    node_1_file.write(ser_x)
+    node_1_file.flush()
+
+    node_2_file = tempfile.NamedTemporaryFile("wb")
+    node_2_file.write(ser_y)
+    node_2_file.flush()
+
+    task_spec = TaskSpec(
+        function_id=0,
+        args_ids=[1, 2],
+        kwargs_ids={},
+        deps_id="deps",
+        call_before_id="call_before",
+        call_after_id="call_after",
+    )
+
+    resources = ResourceMap(
+        functions={
+            0: node_0_file.name,
+        },
+        inputs={
+            1: node_1_file.name,
+            2: node_2_file.name,
+        },
+        deps={
+            "deps": deps_file.name,
+            "call_before": cb_file.name,
+            "call_after": ca_file.name,
+        },
+    )
+
+    task_group_metadata = {
+        "dispatch_id": dispatch_id,
+        "node_ids": [node_id],
+        "task_group_id": task_group_id,
+    }
+
+    async def run_dask_job(task_specs, resources, task_group_metadata):
+        job_id = await dask_exec.send(task_specs, resources, task_group_metadata)
+        job_status = await dask_exec.poll(task_group_metadata, job_id)
+        task_updates = await dask_exec.receive(task_group_metadata, job_status)
+        return job_status, task_updates
+
+    job_status, task_updates = asyncio.run(
+        run_dask_job([task_spec], resources, task_group_metadata)
+    )
+
+    assert job_status["status"] == "READY"
+    assert len(task_updates) == 1
+    task_update = task_updates[0]
+    assert str(task_update.status) == (ct.status.COMPLETED)
+    output_uri = task_update.assets["output"].remote_uri
+
+    with open(output_uri, "rb") as f:
+        output = TransportableObject.deserialize(f.read())
+    assert output.get_deserialized() == 3
+
+
+def test_run_task_from_uris_alt():
+    """Test the wrapper submitted to dask"""
+
+    def task(x, y):
+        return x + y
+
+    dispatch_id = "test_dask_send_receive"
+    node_id = 0
+    task_group_id = 0
+
+    x = TransportableObject(1)
+    y = TransportableObject(2)
+    deps = {}
+
+    cb_tmpfile = tempfile.NamedTemporaryFile()
+    ca_tmpfile = tempfile.NamedTemporaryFile()
+
+    call_before = [ct.DepsBash([f"echo Hello > {cb_tmpfile.name}"]).to_dict()]
+    call_after = [ct.DepsBash(f"echo Bye > {ca_tmpfile.name}").to_dict()]
+
+    ser_task = serialize_node_asset(TransportableObject(task), "function")
+    ser_deps = serialize_node_asset(deps, "deps")
+    ser_cb = serialize_node_asset(call_before, "call_before")
+    ser_ca = serialize_node_asset(call_after, "call_after")
+    ser_x = serialize_node_asset(x, "output")
+    ser_y = serialize_node_asset(y, "output")
+
+    node_0_file = tempfile.NamedTemporaryFile("wb")
+    node_0_file.write(ser_task)
+    node_0_file.flush()
+
+    deps_file = tempfile.NamedTemporaryFile("wb")
+    deps_file.write(ser_deps)
+    deps_file.flush()
+
+    cb_file = tempfile.NamedTemporaryFile("wb")
+    cb_file.write(ser_cb)
+    cb_file.flush()
+
+    ca_file = tempfile.NamedTemporaryFile("wb")
+    ca_file.write(ser_ca)
+    ca_file.flush()
+
+    node_1_file = tempfile.NamedTemporaryFile("wb")
+    node_1_file.write(ser_x)
+    node_1_file.flush()
+
+    node_2_file = tempfile.NamedTemporaryFile("wb")
+    node_2_file.write(ser_y)
+    node_2_file.flush()
+
+    task_spec = TaskSpec(
+        function_id=0,
+        args_ids=[1, 2],
+        kwargs_ids={},
+        deps_id="deps",
+        call_before_id="call_before",
+        call_after_id="call_after",
+    )
+
+    resources = ResourceMap(
+        functions={
+            0: node_0_file.name,
+        },
+        inputs={
+            1: node_1_file.name,
+            2: node_2_file.name,
+        },
+        deps={
+            "deps": deps_file.name,
+            "call_before": cb_file.name,
+            "call_after": ca_file.name,
+        },
+    )
+
+    task_group_metadata = {
+        "dispatch_id": dispatch_id,
+        "node_ids": [node_id],
+        "task_group_id": task_group_id,
+    }
+
+    result_file = tempfile.NamedTemporaryFile()
+    stdout_file = tempfile.NamedTemporaryFile()
+    stderr_file = tempfile.NamedTemporaryFile()
+
+    results_dir = tempfile.TemporaryDirectory()
+
+    run_task_from_uris_alt(
+        task_specs=[task_spec.dict()],
+        resources=resources.dict(),
+        output_uris=[(result_file.name, stdout_file.name, stderr_file.name)],
+        results_dir=results_dir.name,
+        task_group_metadata=task_group_metadata,
+        server_url="http://localhost:48008",
+    )
+
+    with open(result_file.name, "rb") as f:
+        output = TransportableObject.deserialize(f.read())
+    assert output.get_deserialized() == 3
+
+    with open(cb_tmpfile.name, "r") as f:
+        assert f.read() == "Hello\n"
+
+    with open(ca_tmpfile.name, "r") as f:
+        assert f.read() == "Bye\n"
+
+
+def test_run_task_from_uris_alt_exception():
+    """Test the wrapper submitted to dask"""
+
+    def task(x, y):
+        assert False
+
+    dispatch_id = "test_dask_send_receive"
+    node_id = 0
+    task_group_id = 0
+
+    x = TransportableObject(1)
+    y = TransportableObject(2)
+    deps = {}
+
+    cb_tmpfile = tempfile.NamedTemporaryFile()
+    ca_tmpfile = tempfile.NamedTemporaryFile()
+
+    call_before = [ct.DepsBash([f"echo Hello > {cb_tmpfile.name}"]).to_dict()]
+    call_after = [ct.DepsBash(f"echo Bye > {ca_tmpfile.name}").to_dict()]
+
+    ser_task = serialize_node_asset(TransportableObject(task), "function")
+    ser_deps = serialize_node_asset(deps, "deps")
+    ser_cb = serialize_node_asset(call_before, "call_before")
+    ser_ca = serialize_node_asset(call_after, "call_after")
+    ser_x = serialize_node_asset(x, "output")
+    ser_y = serialize_node_asset(y, "output")
+
+    node_0_file = tempfile.NamedTemporaryFile("wb")
+    node_0_file.write(ser_task)
+    node_0_file.flush()
+
+    deps_file = tempfile.NamedTemporaryFile("wb")
+    deps_file.write(ser_deps)
+    deps_file.flush()
+
+    cb_file = tempfile.NamedTemporaryFile("wb")
+    cb_file.write(ser_cb)
+    cb_file.flush()
+
+    ca_file = tempfile.NamedTemporaryFile("wb")
+    ca_file.write(ser_ca)
+    ca_file.flush()
+
+    node_1_file = tempfile.NamedTemporaryFile("wb")
+    node_1_file.write(ser_x)
+    node_1_file.flush()
+
+    node_2_file = tempfile.NamedTemporaryFile("wb")
+    node_2_file.write(ser_y)
+    node_2_file.flush()
+
+    task_spec = TaskSpec(
+        function_id=0,
+        args_ids=[1],
+        kwargs_ids={"y": 2},
+        deps_id="deps",
+        call_before_id="call_before",
+        call_after_id="call_after",
+    )
+
+    resources = ResourceMap(
+        functions={
+            0: f"file://{node_0_file.name}",
+        },
+        inputs={
+            1: f"file://{node_1_file.name}",
+            2: f"file://{node_2_file.name}",
+        },
+        deps={
+            "deps": f"file://{deps_file.name}",
+            "call_before": f"file://{cb_file.name}",
+            "call_after": f"file://{ca_file.name}",
+        },
+    )
+
+    task_group_metadata = {
+        "dispatch_id": dispatch_id,
+        "node_ids": [node_id],
+        "task_group_id": task_group_id,
+    }
+
+    result_file = tempfile.NamedTemporaryFile()
+    stdout_file = tempfile.NamedTemporaryFile()
+    stderr_file = tempfile.NamedTemporaryFile()
+
+    results_dir = tempfile.TemporaryDirectory()
+
+    run_task_from_uris_alt(
+        task_specs=[task_spec.dict()],
+        resources=resources.dict(),
+        output_uris=[(result_file.name, stdout_file.name, stderr_file.name)],
+        results_dir=results_dir.name,
+        task_group_metadata=task_group_metadata,
+        server_url="http://localhost:48008",
+    )
+    summary_file_path = f"{results_dir.name}/result-{dispatch_id}:{node_id}.json"
+
+    with open(summary_file_path, "r") as f:
+        summary = json.load(f)
+        assert summary["exception_occurred"] is True

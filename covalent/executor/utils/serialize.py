@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -18,4 +18,20 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .enums import Signals
+"""
+Functions for serializing and deserializing assets
+"""
+
+from typing import Any
+
+from ..._serialize.common import deserialize_asset, serialize_asset
+from ..._serialize.electron import ASSET_TYPES
+
+
+# Convenience functions for executor plugins
+def serialize_node_asset(data: Any, key: str) -> bytes:
+    return serialize_asset(data, ASSET_TYPES[key])
+
+
+def deserialize_node_asset(data: bytes, key: str) -> Any:
+    return deserialize_asset(data, ASSET_TYPES[key])

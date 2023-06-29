@@ -18,4 +18,18 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .enums import Signals
+"""
+Helper functions for the local executor
+"""
+
+from enum import Enum
+
+
+class Signals(Enum):
+    """
+    Signals to enable communication between the executors and Covalent dispatcher
+    """
+
+    GET = 0
+    PUT = 1
+    EXIT = 2
