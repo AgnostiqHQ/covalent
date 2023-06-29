@@ -39,7 +39,7 @@ class Simulator(BaseQExecutor):
 
     parallel: Union[bool, str] = "thread"
     workers: int = 10
-    backend: BaseQExecutor
+    backend: BaseQExecutor = None
 
     def batch_submit(self, qscripts_list):
 
@@ -53,4 +53,4 @@ class Simulator(BaseQExecutor):
         return self.backend.batch_submit(qscripts_list)
 
     def batch_get_results(self, futures_list):
-        return self.backend.batch_get_result(futures_list)
+        return self.backend.batch_get_results(futures_list)
