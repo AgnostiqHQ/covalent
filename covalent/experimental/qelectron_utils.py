@@ -29,7 +29,8 @@ from ..executor.utils.context import get_context
 
 _QE_DB_DATA_MARKER = "<====QELECTRON_DB_DATA====>"
 _DATA_FILENAME = "data.mdb"
-_QE_DB_DIRNAME = ".database"
+
+QE_DB_DIRNAME = ".database"
 
 app_log = logger.app_log
 
@@ -123,7 +124,7 @@ def write_qelectron_db(
     results_dir = Path(get_config("dispatcher")["results_dir"]).resolve()
 
     # create the database directory if it does not exist
-    qelectron_db_dir = results_dir / dispatch_id / _QE_DB_DIRNAME
+    qelectron_db_dir = results_dir / dispatch_id / QE_DB_DIRNAME
     if not qelectron_db_dir.exists():
         qelectron_db_dir.mkdir()
 
