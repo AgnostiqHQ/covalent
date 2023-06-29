@@ -292,17 +292,36 @@ class AsyncBaseQCluster(AsyncBaseQExecutor):
     executors: Tuple[BaseQExecutor, ...]
     selector: Union[str, Callable]
 
+    _selector_serialized: bool = False
+
     @abstractmethod
     def serialize_selector(self) -> None:
+        """
+        Serializes the cluster's selector function.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def deserialize_selector(self) -> None:
+        """
+        Deserializes the cluster's selector function.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def dict(self, *args, **kwargs) -> dict:
+        """
+        Custom dict method to create a hashable `executors` attribute.
+        """
         raise NotImplementedError
+
+    def get_selector(self):
+        """
+        Returns the deserialized selector function.
+        """
+        if self._selector_serialized:
+            self.deserialize_selector()
+        return self.selector
 
     async def _get_result(self, futures_list: List) -> List[QCResult]:
         """

@@ -30,13 +30,12 @@ __all__ = [
 
 class QCluster(AsyncBaseQCluster):
 
-    _selector_serialized: bool = False
-
     def batch_submit(self, qscripts_list):
         if self._selector_serialized:
             self.deserialize_selector()
 
-        selected_executor = self.selector(qscripts_list, self.executors)
+        selector = self.get_selector()
+        selected_executor = selector(qscripts_list, self.executors)
 
         # copy server-side set attributes into selector executor
         selected_executor.qnode_device_import_path = self.qnode_device_import_path
@@ -69,6 +68,6 @@ class QCluster(AsyncBaseQCluster):
 
     def dict(self, *args, **kwargs) -> dict:
         # override `dict` method to convert dict attributes to JSON strings
-        d = super(AsyncBaseQCluster, self).dict(*args, **kwargs)
-        d.update(executors=tuple(ex.json() for ex in self.executors))
-        return d
+        dict_ = super(AsyncBaseQCluster, self).dict(*args, **kwargs)
+        dict_.update(executors=tuple(ex.json() for ex in self.executors))
+        return dict_
