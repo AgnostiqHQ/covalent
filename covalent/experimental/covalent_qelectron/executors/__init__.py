@@ -32,7 +32,7 @@ from covalent._shared_files.config import update_config
 from .clusters import QCluster
 from .simulator import Simulator
 
-_PARENT = Path(__file__).parent
+_PLUGINS_PATH = Path(__file__).parent / "plugins"
 _DEFAULTS_VARNAME = "_QEXECUTOR_PLUGIN_DEFAULTS"
 
 
@@ -50,7 +50,7 @@ class _QExecutorManager:
             "QCluster": QCluster,
             "Simulator": Simulator,
         }
-        self.load_executors(_PARENT / "plugins")
+        self.load_executors()
 
     def __new__(cls):
         # Singleton pattern for this class
@@ -58,14 +58,14 @@ class _QExecutorManager:
             cls._instance = super().__new__(cls)
         return cls._instance
 
-    def load_executors(self, plugins_path: Path) -> None:
+    def load_executors(self) -> None:
         """
         Looks for `plugin.py` modules in the subdirectories of the given path and
         loads QExecutor classes from them.
         """
-        for plugin_dir in filter(lambda _p: _p.is_dir(), plugins_path.iterdir()):
+        for plugin_dir in filter(lambda _p: _p.is_dir(), _PLUGINS_PATH.iterdir()):
 
-            plugin_module_path = plugin_dir / "plugin.py"
+            plugin_module_path = plugin_dir / f"{plugin_dir.name}.py"
 
             if plugin_module_path.exists():
 
