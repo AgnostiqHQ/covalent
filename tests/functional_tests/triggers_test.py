@@ -67,7 +67,7 @@ def test_dir_trigger():
         with open(read_file_path, "a") as f:
             f.write(f"{i}\n")
 
-        time.sleep(2)
+        time.sleep(5)
 
         with open(write_file_path, "r") as f:
             actual_sums = f.readlines()

@@ -26,6 +26,7 @@ import json
 import cloudpickle as pickle
 
 from covalent._workflow.transport import TransportableObject, _TransportGraph
+from covalent_dispatcher._dal.asset import local_store
 
 
 def transportable_object(obj):
@@ -104,6 +105,14 @@ class FileHandler:
         try:
             unpickled_object = self.__unpickle_file(path)
             return validate_data(unpickled_object)
+        except Exception as e:
+            return None
+
+    def read_from_serialized(self, path):
+        """Return data from serialized object"""
+        try:
+            deserialized_obj = local_store.load_file(self.location, path)
+            return validate_data(deserialized_obj)
         except Exception as e:
             return None
 

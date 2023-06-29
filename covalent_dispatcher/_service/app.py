@@ -18,48 +18,87 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import codecs
+
+"""Endpoints for dispatch management"""
+
+import asyncio
 import json
-from typing import Optional
+from contextlib import asynccontextmanager
+from typing import Optional, Union
 from uuid import UUID
 
-import cloudpickle as pickle
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
 
-import covalent_dispatcher as dispatcher
-from covalent._results_manager.result import Result
+import covalent_dispatcher.entry_point as dispatcher
 from covalent._shared_files import logger
+from covalent._shared_files.schemas.result import ResultSchema
+from covalent._shared_files.util_classes import RESULT_STATUS
+from covalent_dispatcher._core import dispatcher as core_dispatcher
+from covalent_dispatcher._core import runner_ng as core_runner
 
-from .._db.datastore import workflow_db
-from .._db.load import _result_from
-from .._db.models import Lattice
+from .._dal.exporters.result import export_result_manifest
+from .._dal.result import Result, get_result_object
+from .._db.dispatchdb import DispatchDB
+from .heartbeat import Heartbeat
+from .models import ExportResponseSchema
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 router: APIRouter = APIRouter()
 
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
 
-@router.post("/submit")
-async def submit(request: Request, disable_run: bool = False) -> UUID:
+router: APIRouter = APIRouter()
+
+_background_tasks = set()
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Initialize global variables"""
+
+    heartbeat = Heartbeat()
+    fut = asyncio.create_task(heartbeat.start())
+    _background_tasks.add(fut)
+    fut.add_done_callback(_background_tasks.discard)
+
+    # Runner event queue and listener
+    core_runner._job_events = asyncio.Queue()
+    core_runner._job_event_listener = asyncio.create_task(core_runner._listen_for_job_events())
+
+    # Dispatcher event queue and listener
+    core_dispatcher._global_status_queue = asyncio.Queue()
+    core_dispatcher._global_event_listener = asyncio.create_task(
+        core_dispatcher._node_event_listener()
+    )
+
+    yield
+
+    core_dispatcher._global_event_listener.cancel()
+    core_runner._job_event_listener.cancel()
+
+
+@router.post("/dispatches/submit")
+async def submit(request: Request) -> UUID:
     """
     Function to accept the submit request of
     new dispatch and return the dispatch id
     back to the client.
 
     Args:
-        disable_run: Whether to disable the execution of this lattice
+        None
 
     Returns:
         dispatch_id: The dispatch id in a json format
-                     returned as a Fast API Response object
+                     returned as a Fast API Response object.
     """
     try:
         data = await request.json()
         data = json.dumps(data).encode("utf-8")
-
-        return await dispatcher.run_dispatcher(data, disable_run)
+        return await dispatcher.make_dispatch(data)
     except Exception as e:
         raise HTTPException(
             status_code=400,
@@ -67,30 +106,7 @@ async def submit(request: Request, disable_run: bool = False) -> UUID:
         ) from e
 
 
-@router.post("/redispatch")
-async def redispatch(request: Request, is_pending: bool = False) -> str:
-    """Endpoint to redispatch a workflow."""
-    try:
-        data = await request.json()
-        dispatch_id = data["dispatch_id"]
-        json_lattice = data["json_lattice"]
-        electron_updates = data["electron_updates"]
-        reuse_previous_results = data["reuse_previous_results"]
-        app_log.debug(
-            f"Unpacked redispatch request for {dispatch_id}. reuse_previous_results: {reuse_previous_results}, electron_updates: {electron_updates}"
-        )
-        return await dispatcher.run_redispatch(
-            dispatch_id, json_lattice, electron_updates, reuse_previous_results, is_pending
-        )
-
-    except Exception as e:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Failed to redispatch workflow: {e}",
-        ) from e
-
-
-@router.post("/cancel")
+@router.post("/dispatches/cancel")
 async def cancel(request: Request) -> str:
     """
     Function to accept the cancel request of
@@ -116,39 +132,113 @@ async def cancel(request: Request) -> str:
         return f"Dispatch {dispatch_id} cancelled."
 
 
-@router.get("/result/{dispatch_id}")
-async def get_result(
-    dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
-):
-    with workflow_db.session() as session:
-        lattice_record = session.query(Lattice).where(Lattice.dispatch_id == dispatch_id).first()
-        status = lattice_record.status if lattice_record else None
-        if not lattice_record:
-            return JSONResponse(
-                status_code=404,
-                content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
-            )
-        if not wait or status in [
-            str(Result.COMPLETED),
-            str(Result.FAILED),
-            str(Result.CANCELLED),
-            str(Result.POSTPROCESSING_FAILED),
-            str(Result.PENDING_POSTPROCESSING),
-        ]:
-            output = {
-                "id": dispatch_id,
-                "status": lattice_record.status,
-            }
-            if not status_only:
-                output["result"] = codecs.encode(
-                    pickle.dumps(_result_from(lattice_record)), "base64"
-                ).decode()
-            return output
+@router.get("/db-path")
+def db_path() -> str:
+    db_path = DispatchDB()._dbpath
+    return json.dumps(db_path)
 
-        return JSONResponse(
-            status_code=503,
-            content={
-                "message": "Result not ready to read yet. Please wait for a couple of seconds."
-            },
-            headers={"Retry-After": "2"},
+
+@router.post("/dispatches/register")
+async def register(
+    manifest: ResultSchema, parent_dispatch_id: Union[str, None] = None
+) -> ResultSchema:
+    try:
+        return await dispatcher.register_dispatch(manifest, parent_dispatch_id)
+    except Exception as e:
+        app_log.debug(f"Exception in register: {e}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to submit workflow: {e}",
+        ) from e
+
+
+@router.post("/dispatches/register/{dispatch_id}")
+async def register_redispatch(
+    manifest: ResultSchema,
+    dispatch_id: str,
+    reuse_previous_results: bool = False,
+):
+    try:
+        return await dispatcher.register_redispatch(
+            manifest,
+            dispatch_id,
+            reuse_previous_results,
         )
+    except Exception as e:
+        app_log.debug(f"Exception in register_redispatch: {e}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to submit workflow: {e}",
+        ) from e
+
+
+@router.put("/dispatches/start/{dispatch_id}")
+async def start(dispatch_id: str):
+    try:
+        fut = asyncio.create_task(dispatcher.start_dispatch(dispatch_id))
+        _background_tasks.add(fut)
+        fut.add_done_callback(_background_tasks.discard)
+
+        return dispatch_id
+    except Exception as e:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Failed to start workflow: {e}",
+        ) from e
+
+
+@router.get("/dispatches/export/{dispatch_id}")
+async def export_result(
+    dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
+) -> ExportResponseSchema:
+    loop = asyncio.get_running_loop()
+    return await loop.run_in_executor(
+        None,
+        _export_result_sync,
+        dispatch_id,
+        wait,
+        status_only,
+    )
+
+
+def _export_result_sync(
+    dispatch_id: str, wait: Optional[bool] = False, status_only: Optional[bool] = False
+) -> ExportResponseSchema:
+    result_object = _try_get_result_object(dispatch_id)
+    if not result_object:
+        return JSONResponse(
+            status_code=404,
+            content={"message": f"The requested dispatch ID {dispatch_id} was not found."},
+        )
+    status = str(result_object.get_value("status", refresh=False))
+
+    if not wait or status in [
+        str(RESULT_STATUS.COMPLETED),
+        str(RESULT_STATUS.FAILED),
+        str(RESULT_STATUS.CANCELLED),
+    ]:
+        output = {
+            "id": dispatch_id,
+            "status": status,
+        }
+        if not status_only:
+            output["result_export"] = export_result_manifest(dispatch_id)
+
+        return output
+
+    response = JSONResponse(
+        status_code=503,
+        content={"message": "Result not ready to read yet. Please wait for a couple of seconds."},
+        headers={"Retry-After": "2"},
+    )
+    return response
+
+
+def _try_get_result_object(dispatch_id: str) -> Union[Result, None]:
+    try:
+        res = get_result_object(
+            dispatch_id, bare=True, keys=["id", "dispatch_id", "status"], lattice_keys=["id"]
+        )
+    except KeyError:
+        res = None
+    return res

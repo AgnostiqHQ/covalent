@@ -206,7 +206,7 @@ def test_local_file_transfer_transfer_from(tmp_path: Path, mocker):
     Popen.returncode = 0
     mocker.patch("covalent._file_transfer.strategies.rsync_strategy.Popen", return_value=Popen)
 
-    ft = ct.fs.TransferFromRemote(str(source_file))
+    ft = ct.fs.TransferFromRemote(str(source_file), strategy=ct.fs_strategies.Rsync())
 
     @ct.electron(files=[ft])
     def test_transfer(files=[]):
@@ -243,7 +243,7 @@ def test_local_file_transfer_transfer_to(tmp_path: Path, mocker):
     Popen.returncode = 0
     mocker.patch("covalent._file_transfer.strategies.rsync_strategy.Popen", return_value=Popen)
 
-    ft = ct.fs.TransferToRemote(str(dest_file))
+    ft = ct.fs.TransferToRemote(str(dest_file), strategy=ct.fs_strategies.Rsync())
 
     @ct.electron(files=[ft])
     def test_transfer(files=[]):

@@ -88,14 +88,14 @@ class Lattice(Base):
     # Short name describing the executor ("local", "dask", etc)
     executor = Column(Text)
 
-    # Name of the file containing the serialized executor data
-    executor_data_filename = Column(Text)
+    # JSONified executor attributes
+    executor_data = Column(Text)
 
     # Short name describing the workflow executor ("local", "dask", etc)
     workflow_executor = Column(Text)
 
-    # Name of the file containing the serialized workflow executor data
-    workflow_executor_data_filename = Column(Text)
+    # JSONified executor attributes
+    workflow_executor_data = Column(Text)
 
     # Name of the file containing an error message for the workflow
     error_filename = Column(Text)
@@ -113,7 +113,7 @@ class Lattice(Base):
     results_filename = Column(Text)
 
     # Name of the file containing the transport graph
-    transport_graph_filename = Column(Text)
+    # transport_graph_filename = Column(Text)
 
     # Name of the file containing the default electron dependencies
     deps_filename = Column(Text)

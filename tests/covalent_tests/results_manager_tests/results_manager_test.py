@@ -20,123 +20,286 @@
 
 """Tests for results manager."""
 
-from http.client import HTTPMessage
-from unittest.mock import ANY, MagicMock, Mock, call
+import os
+import tempfile
+from datetime import datetime, timezone
+from unittest.mock import MagicMock
 
 import pytest
-import requests
+from requests import Response
 
-from covalent._results_manager import wait
+import covalent as ct
 from covalent._results_manager.results_manager import (
-    _get_result_from_dispatcher,
+    MissingLatticeRecordError,
+    Result,
+    ResultManager,
+    _get_result_export_from_dispatcher,
     cancel,
+    download_asset,
     get_result,
 )
-from covalent._shared_files.config import get_config
+from covalent._serialize.result import serialize_result
+from covalent._workflow.transportable_object import TransportableObject
 
 
-def test_get_result_unreachable_dispatcher(mocker):
-    """
-    Test that get_result returns None when
-    the dispatcher server is unreachable.
-    """
-    mock_dispatch_id = "mock_dispatch_id"
+def get_test_manifest(staging_dir):
+    @ct.electron
+    def identity(x):
+        return x
 
-    mocker.patch(
-        "covalent._results_manager.results_manager._get_result_from_dispatcher",
-        side_effect=requests.exceptions.ConnectionError,
-    )
+    @ct.electron
+    def add(x, y):
+        return x + y
 
-    assert get_result(mock_dispatch_id) is None
+    @ct.lattice
+    def workflow(x, y):
+        res1 = identity(x)
+        res2 = identity(y)
+        return add(res1, res2)
 
+    workflow.build_graph(2, 3)
+    result_object = Result(workflow)
+    ts = datetime.now(timezone.utc)
+    result_object._start_time = ts
+    result_object._end_time = ts
+    result_object._result = TransportableObject(42)
+    result_object.lattice.transport_graph.set_node_value(0, "status", Result.COMPLETED)
+    result_object.lattice.transport_graph.set_node_value(0, "output", TransportableObject(2))
+    manifest = serialize_result(result_object, staging_dir)
 
-@pytest.mark.parametrize(
-    "dispatcher_addr",
-    [
-        "http://" + get_config("dispatcher.address") + ":" + str(get_config("dispatcher.port")),
-        "http://localhost:48008",
-    ],
-)
-def test_get_result_from_dispatcher(mocker, dispatcher_addr):
-    retries = 10
-    getconn_mock = mocker.patch("urllib3.connectionpool.HTTPConnectionPool._get_conn")
-    mocker.patch("requests.Response.json", return_value=True)
-    headers = HTTPMessage()
-    headers.add_header("Retry-After", "2")
+    # Swap asset uri and remote_uri to simulate an exported manifest
+    for key, asset in manifest.assets:
+        asset.remote_uri = asset.uri
+        asset.uri = None
 
-    mock_response = [Mock(status=503, msg=headers)] * (retries - 1)
-    mock_response.append(Mock(status=200, msg=HTTPMessage()))
-    getconn_mock.return_value.getresponse.side_effect = mock_response
-    dispatch_id = "9d1b308b-4763-4990-ae7f-6a6e36d35893"
-    _get_result_from_dispatcher(
-        dispatch_id, wait=wait.LONG, dispatcher_addr=dispatcher_addr, status_only=False
-    )
-    assert (
-        getconn_mock.return_value.request.mock_calls
-        == [
-            call(
-                "GET",
-                f"/api/result/{dispatch_id}?wait=True&status_only=False",
-                body=None,
-                headers=ANY,
-            ),
-        ]
-        * retries
-    )
+    for key, asset in manifest.lattice.assets:
+        asset.remote_uri = asset.uri
+        asset.uri = None
 
+    for node in manifest.lattice.transport_graph.nodes:
+        for key, asset in node.assets:
+            asset.remote_uri = asset.uri
+            asset.uri = None
 
-def test_get_result_from_dispatcher_unreachable(mocker):
-    """
-    Test that _get_result_from_dispatcher raises an exception when
-    the dispatcher server is unreachable.
-    """
-
-    # TODO: Will need to edit this once `_get_result_from_dispatcher` is fixed
-    # to actually throw an exception when the dispatcher server is unreachable
-    # instead of just hanging.
-
-    mock_dispatcher_addr = "mock_dispatcher_addr"
-    mock_dispatch_id = "mock_dispatch_id"
-
-    message = f"The Covalent server cannot be reached at {mock_dispatcher_addr}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
-
-    mocker.patch("covalent._results_manager.results_manager.HTTPAdapter")
-    mock_session = mocker.patch("covalent._results_manager.results_manager.requests.Session")
-    mock_session.return_value.get.side_effect = requests.exceptions.ConnectionError
-
-    mock_print = mocker.patch("covalent._results_manager.results_manager.print")
-
-    with pytest.raises(requests.exceptions.ConnectionError):
-        _get_result_from_dispatcher(
-            mock_dispatch_id, wait=wait.LONG, dispatcher_addr=mock_dispatcher_addr
-        )
-
-    mock_print.assert_called_once_with(message)
+    return manifest
 
 
 def test_cancel_with_single_task_id(mocker):
-    mock_get_config = mocker.patch("covalent._results_manager.results_manager.get_config")
     mock_request_post = mocker.patch(
-        "covalent._results_manager.results_manager.requests.post", MagicMock()
+        "covalent._api.apiclient.requests.Session.post",
     )
 
     cancel(dispatch_id="dispatch", task_ids=1)
 
-    assert mock_get_config.call_count == 2
     mock_request_post.assert_called_once()
     mock_request_post.return_value.raise_for_status.assert_called_once()
 
 
 def test_cancel_with_multiple_task_ids(mocker):
-    mock_get_config = mocker.patch("covalent._results_manager.results_manager.get_config")
     mock_task_ids = [0, 1]
 
     mock_request_post = mocker.patch(
-        "covalent._results_manager.results_manager.requests.post", MagicMock()
+        "covalent._api.apiclient.requests.Session.post",
     )
 
     cancel(dispatch_id="dispatch", task_ids=[1, 2, 3])
 
-    assert mock_get_config.call_count == 2
     mock_request_post.assert_called_once()
     mock_request_post.return_value.raise_for_status.assert_called_once()
+
+
+def test_result_export(mocker):
+    with tempfile.TemporaryDirectory() as staging_dir:
+        test_manifest = get_test_manifest(staging_dir)
+
+    dispatch_id = "test_result_export"
+
+    mock_body = {"id": "test_result_export", "status": "COMPLETED"}
+
+    mock_client = MagicMock()
+    mock_response = Response()
+    mock_response.status_code = 200
+    mock_response.json = MagicMock(return_value=mock_body)
+
+    # mock_client.get = MagicMock(return_value=mock_response)
+    mocker.patch("covalent._api.apiclient.requests.Session.get", return_value=mock_response)
+
+    # mocker.patch(
+    #     "covalent._results_manager.results_manager.CovalentAPIClient", return_value=mock_client
+    # )
+
+    endpoint = f"/api/v2/dispatches/export/{dispatch_id}"
+    assert mock_body == _get_result_export_from_dispatcher(
+        dispatch_id, wait=False, status_only=True
+    )
+
+
+def test_result_manager_assets_local_copies():
+    """Test downloading and loading assets using local asset uris."""
+    dispatch_id = "test_result_manager"
+    with tempfile.TemporaryDirectory() as server_dir:
+        # This will have uri and remote_uri swapped so as to simulate
+        # a manifest exported from the server. All "downloads" will be
+        # local file copies from server_dir to results_dir.
+        manifest = get_test_manifest(server_dir)
+        with tempfile.TemporaryDirectory() as results_dir:
+            rm = ResultManager(manifest, results_dir)
+            rm.download_lattice_asset("workflow_function")
+            rm.load_lattice_asset("workflow_function")
+            rm.download_result_asset("result")
+            rm.load_result_asset("result")
+            os.makedirs(f"{results_dir}/node_0")
+            rm.download_node_asset(0, "output")
+            rm.load_node_asset(0, "output")
+
+        res_obj = rm.result_object
+        assert res_obj.lattice(3, 5) == 8
+        assert res_obj.result == 42
+
+        output = res_obj.lattice.transport_graph.get_node_value(0, "output")
+        assert output.get_deserialized() == 2
+
+
+def test_result_manager_save_manifest():
+    """Test saving and loading manifests"""
+    dispatch_id = "test_result_manager_save_load"
+    with tempfile.TemporaryDirectory() as server_dir:
+        # This will have uri and remote_uri swapped so as to simulate
+        # a manifest exported from the server. All "downloads" will be
+        # local file copies from server_dir to results_dir.
+        manifest = get_test_manifest(server_dir)
+        with tempfile.TemporaryDirectory() as results_dir:
+            rm = ResultManager(manifest, results_dir)
+            rm.save()
+            path = os.path.join(results_dir, "manifest.json")
+            rm2 = ResultManager.load(path, results_dir)
+        assert rm2._results_dir == results_dir
+        assert rm2._manifest == rm._manifest
+
+
+def test_get_result(mocker):
+    dispatch_id = "test_result_manager"
+    with tempfile.TemporaryDirectory() as server_dir:
+        # This will have uri and remote_uri swapped so as to simulate
+        # a manifest exported from the server. All "downloads" will be
+        # local file copies from server_dir to results_dir.
+        manifest = get_test_manifest(server_dir)
+
+        mock_result_export = {
+            "id": dispatch_id,
+            "status": "COMPLETED",
+            "result_export": manifest.dict(),
+        }
+        mocker.patch(
+            "covalent._results_manager.results_manager._get_result_export_from_dispatcher",
+            return_value=mock_result_export,
+        )
+        with tempfile.TemporaryDirectory() as results_dir:
+            res_obj = get_result(dispatch_id, results_dir=results_dir)
+
+            assert res_obj.result == 42
+
+
+def test_get_result_sublattice(mocker):
+    dispatch_id = "test_result_manager_sublattice"
+    sub_dispatch_id = "test_result_manager_sublattice_sub"
+
+    with tempfile.TemporaryDirectory() as server_dir:
+        # This will have uri and remote_uri swapped so as to simulate
+        # a manifest exported from the server. All "downloads" will be
+        # local file copies from server_dir to results_dir.
+        manifest = get_test_manifest(server_dir)
+
+        node = manifest.lattice.transport_graph.nodes[0]
+        node.metadata.sub_dispatch_id = sub_dispatch_id
+
+        with tempfile.TemporaryDirectory() as server_dir_sub:
+            # Sublattice manifest
+            sub_manifest = get_test_manifest(server_dir_sub)
+
+            mock_result_export = {
+                "id": dispatch_id,
+                "status": "COMPLETED",
+                "result_export": manifest.dict(),
+            }
+
+            mock_subresult_export = {
+                "id": sub_dispatch_id,
+                "status": "COMPLETED",
+                "result_export": sub_manifest.dict(),
+            }
+
+            exports = {dispatch_id: mock_result_export, sub_dispatch_id: mock_subresult_export}
+
+            def mock_get_export(dispatch_id, *args, **kwargs):
+                return exports[dispatch_id]
+
+            mocker.patch(
+                "covalent._results_manager.results_manager._get_result_export_from_dispatcher",
+                mock_get_export,
+            )
+            with tempfile.TemporaryDirectory() as results_dir:
+                res_obj = get_result(dispatch_id, results_dir=results_dir)
+
+                assert res_obj.result == 42
+                tg = res_obj.lattice.transport_graph
+                for node_id in tg._graph.nodes:
+                    if node_id == 0:
+                        assert tg.get_node_value(node_id, "sub_dispatch_id") == sub_dispatch_id
+                        assert tg.get_node_value(node_id, "sublattice_result") is not None
+
+                    else:
+                        assert tg.get_node_value(1, "sublattice_result") is None
+
+
+def test_get_result_404(mocker):
+    """Check exception handing for invalid dispatch ids."""
+
+    dispatch_id = "test_get_result_404"
+    mock_client = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status_code = 404
+
+    mock_client.get = MagicMock(return_value=mock_response)
+
+    mocker.patch(
+        "covalent._results_manager.results_manager.CovalentAPIClient", return_value=mock_client
+    )
+
+    with pytest.raises(MissingLatticeRecordError):
+        get_result(dispatch_id)
+
+
+def test_get_status_only(mocker):
+    """Check get_result when status_only=True"""
+
+    dispatch_id = "test_get_result_st"
+    mock_get_result_export = mocker.patch(
+        "covalent._results_manager.results_manager._get_result_export_from_dispatcher",
+        return_value={"id": dispatch_id, "status": "RUNNING"},
+    )
+
+    status_report = get_result(dispatch_id, status_only=True)
+    assert status_report["status"] == "RUNNING"
+
+
+def test_download_asset(mocker):
+    dispatch_id = "test_download_asset"
+    remote_uri = f"http://localhost:48008/api/v1/assets/dispatch/{dispatch_id}/result"
+    mock_client = MagicMock()
+    mock_response = MagicMock()
+    mock_response.status_code = 200
+
+    mock_client.get = MagicMock(return_value=mock_response)
+    mocker.patch(
+        "covalent._results_manager.results_manager.CovalentAPIClient", return_value=mock_client
+    )
+
+    def mock_generator():
+        yield "Hello".encode("utf-8")
+
+    mock_response.iter_content = MagicMock(return_value=mock_generator())
+
+    with tempfile.NamedTemporaryFile() as local_file:
+        download_asset(remote_uri, local_file.name)
+        assert local_file.read().decode("utf-8") == "Hello"

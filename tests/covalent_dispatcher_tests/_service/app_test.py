@@ -21,17 +21,21 @@
 """Unit tests for the FastAPI app."""
 
 import json
-import os
+import tempfile
 from contextlib import contextmanager
 from typing import Generator
+from unittest.mock import MagicMock
 
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import Column, Integer, String, create_engine
 from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
-from covalent._results_manager.result import Result
+import covalent as ct
+from covalent._dispatcher_plugins.local import LocalDispatcher
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent_dispatcher._db.dispatchdb import DispatchDB
+from covalent_dispatcher._service.app import _try_get_result_object
 from covalent_ui.app import fastapi_app as fast_app
 
 DISPATCH_ID = "f34671d1-48f2-41ce-89d9-9a8cb5c60e5d"
@@ -79,67 +83,59 @@ def test_db():
 
 
 @pytest.fixture
+def mock_manifest():
+    """Create a mock workflow manifest"""
+
+    @ct.electron
+    def task(x):
+        return x**2
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    workflow.build_graph(3)
+
+    with tempfile.TemporaryDirectory() as staging_dir:
+        manifest = LocalDispatcher.prepare_manifest(workflow, staging_dir)
+    return manifest
+
+
+@pytest.fixture
 def test_db_file():
     """Instantiate and return a database."""
     return MockDataStore(db_URL="sqlite+pysqlite:////tmp/testdb.sqlite")
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize("disable_run", [True, False])
-async def test_submit(mocker, client, disable_run):
+async def test_submit(mocker, client):
     """Test the submit endpoint."""
     mock_data = json.dumps({}).encode("utf-8")
     run_dispatcher_mock = mocker.patch(
-        "covalent_dispatcher.run_dispatcher", return_value=DISPATCH_ID
+        "covalent_dispatcher.entry_point.make_dispatch", return_value=DISPATCH_ID
     )
-    response = client.post("/api/submit", data=mock_data, params={"disable_run": disable_run})
+    response = client.post("/api/v2/dispatches/submit", data=mock_data)
     assert response.json() == DISPATCH_ID
-    run_dispatcher_mock.assert_called_once_with(mock_data, disable_run)
+    run_dispatcher_mock.assert_called_once_with(mock_data)
 
 
 @pytest.mark.asyncio
 async def test_submit_exception(mocker, client):
     """Test the submit endpoint."""
     mock_data = json.dumps({}).encode("utf-8")
-    mocker.patch("covalent_dispatcher.run_dispatcher", side_effect=Exception("mock"))
-    response = client.post("/api/submit", data=mock_data)
+    mocker.patch("covalent_dispatcher.entry_point.make_dispatch", side_effect=Exception("mock"))
+    response = client.post("/api/v2/dispatches/submit", data=mock_data)
     assert response.status_code == 400
     assert response.json()["detail"] == "Failed to submit workflow: mock"
-
-
-@pytest.mark.asyncio
-@pytest.mark.parametrize("is_pending", [True, False])
-async def test_redispatch(mocker, client, is_pending):
-    """Test the redispatch endpoint."""
-    json_lattice = None
-    electron_updates = None
-    reuse_previous_results = False
-    mock_data = json.dumps(
-        {
-            "dispatch_id": DISPATCH_ID,
-            "json_lattice": json_lattice,
-            "electron_updates": electron_updates,
-            "reuse_previous_results": reuse_previous_results,
-        }
-    ).encode("utf-8")
-    run_redispatch_mock = mocker.patch(
-        "covalent_dispatcher.run_redispatch", return_value=DISPATCH_ID
-    )
-
-    response = client.post("/api/redispatch", data=mock_data, params={"is_pending": is_pending})
-    assert response.json() == DISPATCH_ID
-    run_redispatch_mock.assert_called_once_with(
-        DISPATCH_ID, json_lattice, electron_updates, reuse_previous_results, is_pending
-    )
 
 
 def test_cancel_dispatch(mocker, app, client):
     """
     Test cancelling dispatch
     """
-    mocker.patch("covalent_dispatcher.cancel_running_dispatch")
+    mocker.patch("covalent_dispatcher.entry_point.cancel_running_dispatch")
     response = client.post(
-        "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
+        "/api/v2/dispatches/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
     )
     assert response.json() == f"Dispatch {DISPATCH_ID} cancelled."
 
@@ -148,32 +144,22 @@ def test_cancel_tasks(mocker, app, client):
     """
     Test cancelling tasks within a lattice after dispatch
     """
-    mocker.patch("covalent_dispatcher.cancel_running_dispatch")
+    mocker.patch("covalent_dispatcher.entry_point.cancel_running_dispatch")
     response = client.post(
-        "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": [0, 1]})
+        "/api/v2/dispatches/cancel",
+        data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": [0, 1]}),
     )
     assert response.json() == f"Cancelled tasks [0, 1] in dispatch {DISPATCH_ID}."
-
-
-@pytest.mark.asyncio
-async def test_redispatch_exception(mocker, client):
-    """Test the redispatch endpoint."""
-    response = client.post("/api/redispatch", data="bad data")
-    assert response.status_code == 400
-    assert (
-        response.json()["detail"]
-        == "Failed to redispatch workflow: Expecting value: line 1 column 1 (char 0)"
-    )
 
 
 @pytest.mark.asyncio
 async def test_cancel(mocker, client):
     """Test the cancel endpoint."""
     cancel_running_dispatch_mock = mocker.patch(
-        "covalent_dispatcher.cancel_running_dispatch", return_value=DISPATCH_ID
+        "covalent_dispatcher.entry_point.cancel_running_dispatch", return_value=DISPATCH_ID
     )
     response = client.post(
-        "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
+        "/api/v2/dispatches/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
     )
     assert response.json() == f"Dispatch {DISPATCH_ID} cancelled."
     cancel_running_dispatch_mock.assert_called_once_with(DISPATCH_ID, [])
@@ -183,63 +169,17 @@ async def test_cancel(mocker, client):
 async def test_cancel_exception(mocker, client):
     """Test the cancel endpoint."""
     cancel_running_dispatch_mock = mocker.patch(
-        "covalent_dispatcher.cancel_running_dispatch", side_effect=Exception("mock")
+        "covalent_dispatcher.entry_point.cancel_running_dispatch", side_effect=Exception("mock")
     )
 
     with pytest.raises(Exception):
         response = client.post(
-            "/api/cancel", data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []})
+            "/api/v2/dispatches/cancel",
+            data=json.dumps({"dispatch_id": DISPATCH_ID, "task_ids": []}),
         )
         assert response.status_code == 400
         assert response.json()["detail"] == "Failed to cancel workflow: mock"
         cancel_running_dispatch_mock.assert_called_once_with(DISPATCH_ID, [])
-
-
-def test_get_result(mocker, client, test_db_file):
-    """Test the get-result endpoint."""
-    lattice = MockLattice(
-        status=str(Result.COMPLETED),
-        dispatch_id=DISPATCH_ID,
-    )
-
-    with test_db_file.session() as session:
-        session.add(lattice)
-        session.commit()
-
-    mocker.patch("covalent_dispatcher._service.app._result_from", return_value={})
-    mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db_file)
-    mocker.patch("covalent_dispatcher._service.app.Lattice", MockLattice)
-    response = client.get(f"/api/result/{DISPATCH_ID}")
-    result = response.json()
-    assert result["id"] == DISPATCH_ID
-    assert result["status"] == Result.COMPLETED
-    os.remove("/tmp/testdb.sqlite")
-
-
-def test_get_result_503(mocker, client, test_db_file):
-    """Test the get-result endpoint."""
-    lattice = MockLattice(
-        status=str(Result.NEW_OBJ),
-        dispatch_id=DISPATCH_ID,
-    )
-    with test_db_file.session() as session:
-        session.add(lattice)
-        session.commit()
-    mocker.patch("covalent_dispatcher._service.app._result_from", side_effect=FileNotFoundError())
-    mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db_file)
-    mocker.patch("covalent_dispatcher._service.app.Lattice", MockLattice)
-    response = client.get(f"/api/result/{DISPATCH_ID}?wait=True&status_only=True")
-    assert response.status_code == 503
-    os.remove("/tmp/testdb.sqlite")
-
-
-def test_get_result_dispatch_id_not_found(mocker, test_db_file, client):
-    """Test the get-result endpoint and that 404 is returned if the dispatch ID is not found in the database."""
-    mocker.patch("covalent_dispatcher._service.app._result_from", return_value={})
-    mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db_file)
-    mocker.patch("covalent_dispatcher._service.app.Lattice", MockLattice)
-    response = client.get(f"/api/result/{DISPATCH_ID}")
-    assert response.status_code == 404
 
 
 def test_db_path_get_config(mocker):
@@ -249,3 +189,135 @@ def test_db_path_get_config(mocker):
     DispatchDB()
 
     get_config_mock.assert_called_once()
+
+
+def test_register(mocker, app, client, mock_manifest):
+    mock_register_dispatch = mocker.patch(
+        "covalent_dispatcher._service.app.dispatcher.register_dispatch", return_value=mock_manifest
+    )
+    resp = client.post("/api/v2/dispatches/register", data=mock_manifest.json())
+
+    assert resp.json() == json.loads(mock_manifest.json())
+    mock_register_dispatch.assert_awaited_with(mock_manifest, None)
+
+
+def test_register_exception(mocker, app, client, mock_manifest):
+    mock_register_dispatch = mocker.patch(
+        "covalent_dispatcher._service.app.dispatcher.register_dispatch", side_effect=RuntimeError()
+    )
+    resp = client.post("/api/v2/dispatches/register", data=mock_manifest.json())
+    assert resp.status_code == 400
+
+
+def test_register_sublattice(mocker, app, client, mock_manifest):
+    mock_register_dispatch = mocker.patch(
+        "covalent_dispatcher._service.app.dispatcher.register_dispatch", return_value=mock_manifest
+    )
+    resp = client.post(
+        "/api/v2/dispatches/register",
+        data=mock_manifest.json(),
+        params={"parent_dispatch_id": "parent_dispatch"},
+    )
+
+    assert resp.json() == json.loads(mock_manifest.json())
+    mock_register_dispatch.assert_awaited_with(mock_manifest, "parent_dispatch")
+
+
+def test_register_redispatch(mocker, app, client, mock_manifest):
+    dispatch_id = "test_register_redispatch"
+    mock_register_redispatch = mocker.patch(
+        "covalent_dispatcher._service.app.dispatcher.register_redispatch",
+        return_value=mock_manifest,
+    )
+    resp = client.post(f"/api/v2/dispatches/register/{dispatch_id}", data=mock_manifest.json())
+    mock_register_redispatch.assert_awaited_with(mock_manifest, dispatch_id, False)
+    assert resp.json() == json.loads(mock_manifest.json())
+
+
+def test_register_redispatch_reuse(mocker, app, client, mock_manifest):
+    dispatch_id = "test_register_redispatch"
+    mock_register_redispatch = mocker.patch(
+        "covalent_dispatcher._service.app.dispatcher.register_redispatch",
+        return_value=mock_manifest,
+    )
+    resp = client.post(
+        f"/api/v2/dispatches/register/{dispatch_id}",
+        data=mock_manifest.json(),
+        params={"reuse_previous_results": True},
+    )
+    mock_register_redispatch.assert_awaited_with(mock_manifest, dispatch_id, True)
+    assert resp.json() == json.loads(mock_manifest.json())
+
+
+def test_register_redispatch_exception(mocker, app, client, mock_manifest):
+    dispatch_id = "test_register_redispatch"
+    mock_register_redispatch = mocker.patch(
+        "covalent_dispatcher._service.app.dispatcher.register_redispatch",
+        side_effect=RuntimeError(),
+    )
+    resp = client.post(f"/api/v2/dispatches/register/{dispatch_id}", data=mock_manifest.json())
+    assert resp.status_code == 400
+
+
+def test_start(mocker, app, client):
+    dispatch_id = "test_start"
+    mock_start = mocker.patch("covalent_dispatcher._service.app.dispatcher.start_dispatch")
+    mock_create_task = mocker.patch("asyncio.create_task")
+    resp = client.put(f"/api/v2/dispatches/start/{dispatch_id}")
+    assert resp.json() == dispatch_id
+
+
+def test_export_result_nowait(mocker, app, client, mock_manifest):
+    dispatch_id = "test_export_result"
+    mock_result_object = MagicMock()
+    mock_result_object.get_value = MagicMock(return_value=str(RESULT_STATUS.NEW_OBJECT))
+    mocker.patch(
+        "covalent_dispatcher._service.app._try_get_result_object", return_value=mock_result_object
+    )
+    mock_export = mocker.patch(
+        "covalent_dispatcher._service.app.export_result_manifest", return_value=mock_manifest
+    )
+    resp = client.get(f"/api/v2/dispatches/export/{dispatch_id}")
+    assert resp.status_code == 200
+    assert resp.json()["id"] == dispatch_id
+    assert resp.json()["status"] == str(RESULT_STATUS.NEW_OBJECT)
+    assert resp.json()["result_export"] == json.loads(mock_manifest.json())
+
+
+def test_export_result_wait_not_ready(mocker, app, client, mock_manifest):
+    dispatch_id = "test_export_result"
+    mock_result_object = MagicMock()
+    mock_result_object.get_value = MagicMock(return_value=str(RESULT_STATUS.RUNNING))
+    mocker.patch(
+        "covalent_dispatcher._service.app._try_get_result_object", return_value=mock_result_object
+    )
+    mock_export = mocker.patch(
+        "covalent_dispatcher._service.app.export_result_manifest", return_value=mock_manifest
+    )
+    resp = client.get(f"/api/v2/dispatches/export/{dispatch_id}", params={"wait": True})
+    assert resp.status_code == 503
+
+
+def test_export_result_bad_dispatch_id(mocker, app, client, mock_manifest):
+    dispatch_id = "test_export_result"
+    mock_result_object = MagicMock()
+    mock_result_object.get_value = MagicMock(return_value=str(RESULT_STATUS.NEW_OBJECT))
+    mocker.patch("covalent_dispatcher._service.app._try_get_result_object", return_value=None)
+    resp = client.get(f"/api/v2/dispatches/export/{dispatch_id}")
+    assert resp.status_code == 404
+
+
+def test_try_get_result_object(mocker, app, client, mock_manifest):
+    dispatch_id = "test_try_get_result_object"
+    mock_result_object = MagicMock()
+    mocker.patch(
+        "covalent_dispatcher._service.app.get_result_object", return_value=mock_result_object
+    )
+    assert _try_get_result_object(dispatch_id) == mock_result_object
+
+
+def test_try_get_result_object_not_found(mocker, app, client, mock_manifest):
+    dispatch_id = "test_try_get_result_object"
+    mock_result_object = MagicMock()
+    mocker.patch("covalent_dispatcher._service.app.get_result_object", side_effect=KeyError())
+    assert _try_get_result_object(dispatch_id) is None

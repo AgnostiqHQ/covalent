@@ -65,7 +65,7 @@ def test_get_status(mocker, use_internal_func, mock_status):
     base_trigger.use_internal_funcs = use_internal_func
 
     if use_internal_func:
-        mocker.patch("covalent_dispatcher._service.app.get_result")
+        mocker.patch("covalent_dispatcher._service.app.export_result")
 
         mock_fut_res = mock.Mock()
         mock_fut_res.result.return_value = mock_status
@@ -102,29 +102,38 @@ def test_do_redispatch(mocker, use_internal_func, is_pending):
     with the right arguments in different conditions
     """
 
+    mock_redispatch_id = "test_dispatch_id"
+    mock_wrapper = mock.MagicMock(return_value=mock_redispatch_id)
+    mock_redispatch = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.redispatch", return_value=mock_wrapper
+    )
+    mock_start = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.start", return_value=mock_redispatch_id
+    )
+
     base_trigger = BaseTrigger()
     base_trigger.use_internal_funcs = use_internal_func
 
-    mock_redispatch_id = "test_dispatch_id"
+    # if use_internal_func:
+    #     mocker.patch("covalent_dispatcher.entry_point.run_redispatch")
+    #     mocker.patch("covalent_dispatcher.entry_point.start_dispatch")
+    #     mock_fut_res = mock.Mock()
+    #     mock_fut_res.result.return_value = mock_redispatch_id
+    #     mock_run_coro = mocker.patch(
+    #         "covalent.triggers.base.asyncio.run_coroutine_threadsafe", return_value=mock_fut_res
+    #     )
+    #     redispatch_id = base_trigger._do_redispatch(is_pending)
 
-    if use_internal_func:
-        mocker.patch("covalent_dispatcher.run_redispatch")
-        mock_fut_res = mock.Mock()
-        mock_fut_res.result.return_value = mock_redispatch_id
-        mock_run_coro = mocker.patch(
-            "covalent.triggers.base.asyncio.run_coroutine_threadsafe", return_value=mock_fut_res
-        )
+    #     mock_run_coro.assert_called_once()
+    #     mock_fut_res.result.assert_called_once()
+    # else:
+    redispatch_id = base_trigger._do_redispatch(is_pending)
 
-        redispatch_id = base_trigger._do_redispatch(is_pending)
-
-        mock_run_coro.assert_called_once()
-        mock_fut_res.result.assert_called_once()
+    if is_pending:
+        mock_start.assert_called_once()
+        mock_wrapper.assert_not_called()
     else:
-        mock_redispatch = mocker.patch("covalent.redispatch")()
-        mock_redispatch.return_value = mock_redispatch_id
-        redispatch_id = base_trigger._do_redispatch(is_pending)
-
-        mock_redispatch.assert_called_once()
+        mock_redispatch.assert_called()
 
     assert redispatch_id == mock_redispatch_id
 

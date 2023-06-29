@@ -1,3 +1,5 @@
+# Copyright 2021 Agnostiq Inc.
+#
 # This file is part of Covalent.
 #
 # Licensed under the GNU Affero General Public License 3.0 (the "License").

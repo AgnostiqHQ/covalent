@@ -48,18 +48,20 @@ class BasicUser(HttpUser):
 
     @task
     def submit_identity_workflow(self):
-        self.client.post("/api/submit", data=self.serialize_workflow(identity_workflow, [1]))
+        self.client.post(
+            "/api/v2/dispatches/submit", data=self.serialize_workflow(identity_workflow, [1])
+        )
 
     @task
     def submit_horizontal_workflow(self):
         self.client.post(
-            "/api/submit",
+            "/api/v2/dispatches/submit",
             data=self.serialize_workflow(horizontal_workflow, [random.randint(5, 10)]),
         )
 
     @task
     def submit_add_multiply_workflow(self):
         self.client.post(
-            "/api/submit",
+            "/api/v2/dispatches/submit",
             data=self.serialize_workflow(add_multiply_workflow, [1, 2]),
         )
