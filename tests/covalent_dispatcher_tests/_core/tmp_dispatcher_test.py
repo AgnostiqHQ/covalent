@@ -305,16 +305,13 @@ async def test_run_workflow_normal(mocker):
     mocker.patch(
         "covalent_dispatcher._core.dispatcher._run_planned_workflow", return_value=result_object
     )
-    mock_get_result_object = mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
-    )
-    mock_upsert = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data")
+    mock_persist = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data")
     mock_unregister = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
     await run_workflow(result_object)
 
-    mock_upsert.assert_called_with(result_object.dispatch_id)
+    mock_persist.assert_called_with(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
 
 
@@ -369,15 +366,12 @@ async def test_run_workflow_exception(mocker):
         return_value=result_object,
         side_effect=RuntimeError("Error"),
     )
-    mock_get_result_object = mocker.patch(
-        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
-    )
-    mock_upsert = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data")
+    mock_persist = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data")
 
     result = await run_workflow(result_object)
 
     assert result.status == Result.FAILED
-    mock_upsert.assert_called_with(result_object.dispatch_id)
+    mock_persist.assert_called_with(result_object)
     mock_unregister.assert_called_with(result_object.dispatch_id)
 
 

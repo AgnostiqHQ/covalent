@@ -29,7 +29,7 @@ from typing import Dict, List, Tuple
 
 from covalent._results_manager import Result
 from covalent._shared_files import logger
-from covalent._shared_files.defaults import WAIT_EDGE_NAME, parameter_prefix
+from covalent._shared_files.defaults import parameter_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent_ui import result_webhook
 
@@ -72,7 +72,7 @@ def _get_abstract_task_inputs(node_id: int, node_name: str, result_object: Resul
         edge_data = result_object.lattice.transport_graph.get_edge_data(parent, node_id)
 
         for _, d in edge_data.items():
-            if d["edge_name"] != WAIT_EDGE_NAME:
+            if not d.get("wait_for"):
                 if d["param_type"] == "arg":
                     abstract_task_input["args"].append((parent, d["arg_index"]))
                 elif d["param_type"] == "kwarg":
@@ -248,9 +248,7 @@ async def _run_planned_workflow(result_object: Result, status_queue: asyncio.Que
 
     while unresolved_tasks > 0:
         app_log.debug(f"{tasks_left} tasks left to complete.")
-        app_log.debug(
-            f"{result_object.dispatch_id}: Waiting to hear from {unresolved_tasks} tasks."
-        )
+        app_log.debug(f"Waiting to hear from {unresolved_tasks} tasks.")
 
         node_id, node_status, detail = await status_queue.get()
 

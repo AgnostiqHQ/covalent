@@ -61,7 +61,6 @@ class RESULT_STATUS:
     RUNNING = Status("RUNNING")
     CANCELLED = Status("CANCELLED")
     DISPATCHING = Status("DISPATCHING")
-    DISPATCHING_SUBLATTICE = Status("DISPATCHING")
 
     @staticmethod
     def is_terminal(status):
