@@ -20,10 +20,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - File transfer strategy for GCP storage
 - Add CLI status for zombie, stopped process.
 - Fix for double locking file in configurations.
+- Introduced new data access layer
+- Introduced Shutil file transfer strategy for local file transfers
 
 ### Fixed
 
-- Reduced memory consumption during workflow processing
 
 ### Docs
 
