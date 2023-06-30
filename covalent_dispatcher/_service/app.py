@@ -35,6 +35,7 @@ from covalent._shared_files import logger
 from covalent._shared_files.schemas.result import ResultSchema
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent_dispatcher._core import dispatcher as core_dispatcher
+from covalent_dispatcher._core import runner_ng as core_runner
 
 from .._dal.exporters.result import export_result_manifest
 from .._dal.result import Result, get_result_object
@@ -42,9 +43,6 @@ from .._db.datastore import workflow_db
 from .._db.dispatchdb import DispatchDB
 from .heartbeat import Heartbeat
 from .models import DispatchStatusSetSchema, ExportResponseSchema, TargetDispatchStatus
-
-# from covalent_dispatcher._core import runner_ng as core_runner
-
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -63,9 +61,9 @@ async def lifespan(app: FastAPI):
     _background_tasks.add(fut)
     fut.add_done_callback(_background_tasks.discard)
 
-    # # Runner event queue and listener
-    # core_runner._job_events = asyncio.Queue()
-    # core_runner._job_event_listener = asyncio.create_task(core_runner._listen_for_job_events())
+    # Runner event queue and listener
+    core_runner._job_events = asyncio.Queue()
+    core_runner._job_event_listener = asyncio.create_task(core_runner._listen_for_job_events())
 
     # Dispatcher event queue and listener
     core_dispatcher._global_status_queue = asyncio.Queue()
@@ -83,7 +81,7 @@ async def lifespan(app: FastAPI):
         await cancel_all_with_status(status)
 
     core_dispatcher._global_event_listener.cancel()
-    # core_runner._job_event_listener.cancel()
+    core_runner._job_event_listener.cancel()
 
     Heartbeat.stop()
 

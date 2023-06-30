@@ -32,7 +32,7 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow import DepsBash, DepsCall, DepsPip
-from covalent.executor.base import wrapper_fn
+from covalent.executor.utils.wrappers import wrapper_fn
 
 from . import data_manager as datasvc
 from .runner_modules import executor_proxy
