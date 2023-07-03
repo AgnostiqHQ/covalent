@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Removed the upper limit from `dask` and `distributed` packages' versions until we find a version which is incompatible with Covalent.
-- Pinned sqlalchemy version with upper and lower limit.
+- Pinned sqlalchemy version with upper limit <2.0.0.
 
 ### Tests
 
