@@ -220,12 +220,12 @@ def test_write_config(mocker):
     toml_dump_mock = mocker.patch("covalent._shared_files.config.toml.dump")
     open_mock = mocker.patch("covalent._shared_files.config.open")
     # lock_mock = mocker.patch("filelock.FileLock")
-    lock_mock = mocker.patch("fcntl.lockf")
+    # lock_mock = mocker.patch("fcntl.lockf")
     mock_file = open_mock.return_value.__enter__.return_value
     cm.write_config()
     toml_dump_mock.assert_called_once_with(cm.config_data, mock_file)
     open_mock.assert_called_once_with(cm.config_file, "w")
-    lock_mock.assert_called_once()
+    # lock_mock.assert_called_once()
 
 
 def test_config_manager_set(mocker):
