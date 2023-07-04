@@ -65,7 +65,8 @@ class _QExecutorManager:
         """
         for plugin_dir in filter(lambda _p: _p.is_dir(), _PLUGINS_PATH.iterdir()):
 
-            plugin_module_path = plugin_dir / f"{plugin_dir.name}.py"
+            # Get the Path of the plugin module
+            plugin_module_path = plugin_dir.glob("*_plugin.py")[0]
 
             if plugin_module_path.exists():
 
@@ -123,4 +124,4 @@ class _QExecutorManager:
             )
 
 
-_qexecutor_manager = _QExecutorManager()
+qexecutor_manager = _QExecutorManager()
