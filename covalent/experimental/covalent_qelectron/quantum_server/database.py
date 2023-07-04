@@ -63,7 +63,7 @@ class Database:
         db_path = self._get_db_path(dispatch_id, node_id, mkdir=mkdir)
 
         if not db_path.exists():
-            raise FileNotFoundError(f"Missing database directory {db_path!s}.")
+            raise FileNotFoundError(f"Missing database directory {db_path}.")
 
         return JsonLmdb.open_with_strategy(
             file=str(db_path),
