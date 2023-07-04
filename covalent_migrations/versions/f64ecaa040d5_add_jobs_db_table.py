@@ -49,7 +49,7 @@ def upgrade() -> None:
     )
     with op.batch_alter_table("electron_dependency", schema=None) as batch_op:
         batch_op.create_foreign_key("electron_link", "electrons", ["parent_electron_id"], ["id"])
-        batch_op.create_foreign_key("electron_link", "electrons", ["electron_id"], ["id"])
+        # batch_op.create_foreign_key("electron_link", "electrons", ["electron_id"], ["id"])
 
     with op.batch_alter_table("electrons", schema=None) as batch_op:
         batch_op.add_column(sa.Column("job_id", sa.Integer(), nullable=False))
@@ -66,7 +66,7 @@ def downgrade() -> None:
 
     with op.batch_alter_table("electron_dependency", schema=None) as batch_op:
         batch_op.drop_constraint("electron_link", type_="foreignkey")
-        batch_op.drop_constraint("electron_link", type_="foreignkey")
+        # batch_op.drop_constraint("electron_link", type_="foreignkey")
 
     op.drop_table("jobs")
     # ### end Alembic commands ###
