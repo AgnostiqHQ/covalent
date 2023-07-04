@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import fcntl
 import os
 import shutil
 from dataclasses import asdict
@@ -27,7 +28,6 @@ from operator import getitem
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-import filelock
 import toml
 
 """Configuration manager."""
@@ -110,7 +110,8 @@ class ConfigManager:
                         else:
                             old_dict.setdefault(key, value)
 
-        with open(self.config_file, "r") as f:
+        with open(self.config_file, "r+") as f:
+            fcntl.lockf(f, fcntl.LOCK_EX)
             file_config = toml.load(f)
 
             update_nested_dict(self.config_data, file_config)
@@ -144,9 +145,10 @@ class ConfigManager:
             None
         """
 
-        with filelock.FileLock(f"{self.config_file}.lock"):
-            with open(self.config_file, "w") as f:
-                toml.dump(self.config_data, f)
+        # with filelock.FileLock(f"{self.config_file}.lock"):
+        with open(self.config_file, "w") as f:
+            fcntl.lockf(f, fcntl.LOCK_EX)
+            toml.dump(self.config_data, f)
 
     def purge_config(self) -> None:
         """
