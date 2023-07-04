@@ -113,12 +113,12 @@ class ConfigManager:
         with open(self.config_file, "r") as f:
             file_config = toml.load(f)
 
-        update_nested_dict(self.config_data, file_config)
-        if new_entries:
-            update_nested_dict(self.config_data, new_entries, override_existing)
+            update_nested_dict(self.config_data, file_config)
+            if new_entries:
+                update_nested_dict(self.config_data, new_entries, override_existing)
 
-        # Writing it back to the file
-        self.write_config()
+            # Writing it back to the file
+            self.write_config()
 
     def read_config(self) -> None:
         """
