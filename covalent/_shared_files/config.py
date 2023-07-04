@@ -111,7 +111,6 @@ class ConfigManager:
                             old_dict.setdefault(key, value)
 
         with open(self.config_file, "r+") as f:
-            fcntl.lockf(f, fcntl.LOCK_EX)
             file_config = toml.load(f)
 
             update_nested_dict(self.config_data, file_config)
