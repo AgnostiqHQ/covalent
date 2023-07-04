@@ -27,8 +27,8 @@ from operator import getitem
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-import toml
 import filelock
+import toml
 
 """Configuration manager."""
 
