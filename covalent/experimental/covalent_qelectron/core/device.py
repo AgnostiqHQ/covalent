@@ -45,8 +45,8 @@ class QEDevice(QubitDevice):
         wires=1,
         shots=None,
         *,
-        r_dtype=np.float64,
-        c_dtype=np.complex128,
+        r_dtype=np.float64,  # pylint: disable=no-member
+        c_dtype=np.complex128,  # pylint: disable=no-member
         analytic=None,
         executors=None,
         qelectron_info=None,
@@ -62,9 +62,6 @@ class QEDevice(QubitDevice):
         # is called with args and kwargs
         self.qnode_specs = None
 
-    def apply(self, *args, **kwargs):
-        pass
-
     def batch_execute(self, circuits):
 
         # Async submit all circuits to middleware which will then submit to the quantum server
@@ -77,12 +74,16 @@ class QEDevice(QubitDevice):
         if self._async_run:
             self._batch_id = batch_id
             # Return a dummy result
-            return [np.asarray([1]) for _ in circuits]
+            return [self._asarray([1])] * len(circuits)
 
         # Otherwise, get the results from the middleware
         results = middleware.get_results(batch_id)
 
         return results
+
+    def apply(self, *args, **kwargs):
+        # Dummy implementation of abstractmethod on `QubitDevice`
+        pass
 
     @classmethod
     def capabilities(cls):

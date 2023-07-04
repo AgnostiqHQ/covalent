@@ -23,13 +23,16 @@ import time
 from abc import ABC, abstractmethod
 from concurrent.futures import Future, ThreadPoolExecutor
 from functools import lru_cache
+from threading import Thread
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import orjson
 import pennylane as qml
 from mpire import WorkerPool
 from mpire.async_result import AsyncResult
-from pydantic import BaseModel, Extra, Field, root_validator
+from pydantic import BaseModel, Extra, Field, root_validator  # pylint: disable=no-name-in-module
+
+from covalent._shared_files.config import get_config
 
 __all__ = [
     "BaseQExecutor",
@@ -45,8 +48,8 @@ def orjson_dumps(v, *, default):
 
 
 @lru_cache
-def get_process_pool(n_jobs=None):
-    return WorkerPool(n_jobs=n_jobs)
+def get_process_pool(num_processes=None):
+    return WorkerPool(n_jobs=num_processes)
 
 
 @lru_cache
@@ -56,24 +59,36 @@ def get_thread_pool(max_workers=None):
 
 @lru_cache
 def get_asyncio_event_loop():
-    try:
-        loop = asyncio.get_running_loop()
-    except RuntimeError:
-        loop = asyncio.new_event_loop()
+    """
+    Returns an asyncio event loop running in a separate thread.
+    """
 
-    asyncio.set_event_loop(loop)
+    def _run_loop(_loop):
+        asyncio.set_event_loop(_loop)
+        _loop.run_forever()
+
+    loop = asyncio.new_event_loop()
+    thread = Thread(target=_run_loop, args=(loop,), daemon=True)
+    thread.start()
+
+    # Create function attribute so reference to thread is not lost.
+    get_asyncio_event_loop.thread = thread
+
     return loop
 
 
 class BaseQExecutor(ABC, BaseModel):
 
-    persist_data: bool = True
+    persist_data: bool = Field(
+        default_factory=lambda: get_config("qelectron")["persist_data"]
+    )
 
     class Config:
         extra = Extra.allow
 
     @root_validator(pre=True)
     def set_name(cls, values):
+        # pylint: disable=no-self-argument
         # Set the `name` attribute to the class name
         values["name"] = cls.__name__
         return values
@@ -101,6 +116,7 @@ class BaseQExecutor(ABC, BaseModel):
     qnode_device_import_path: Tuple[str, str] = None
     qnode_device_shots: Optional[int] = None
     qnode_device_wires: int = None
+    pennylane_active_return: bool = None
 
 
 class QCResult(BaseModel):
@@ -133,7 +149,9 @@ class QCResult(BaseModel):
 
 class SyncBaseQExecutor(BaseQExecutor):
 
-    device: str = "default.qubit"
+    device: str = Field(
+        default_factory=lambda: get_config("qelectron")["device"]
+    )
 
     def run_all_circuits(self, qscripts_list) -> List[QCResult]:
 
@@ -170,7 +188,9 @@ class AsyncBaseQExecutor(BaseQExecutor):
 
     # pylint: disable=invalid-overridden-method
 
-    device: str = "default.qubit"
+    device: str = Field(
+        default_factory=lambda: get_config("qelectron")["device"]
+    )
 
     def batch_submit(self, qscripts_list):
 
@@ -191,12 +211,11 @@ class AsyncBaseQExecutor(BaseQExecutor):
     def batch_get_results(self, futures_list: List):
 
         loop = get_asyncio_event_loop()
-        return loop.run_until_complete(
-            self._get_result(futures_list)
-        )
+        task = asyncio.run_coroutine_threadsafe(self._get_result(futures_list), loop)
+        return task.result()
 
     async def _get_result(self, futures_list: List) -> List[QCResult]:
-        return [await fut for fut in futures_list]
+        return await asyncio.gather(*futures_list)
 
     async def run_circuit(self, qscript, device, result_obj) -> QCResult:
         await asyncio.sleep(0)
@@ -212,11 +231,15 @@ class AsyncBaseQExecutor(BaseQExecutor):
 
 class BaseProcessPoolQExecutor(BaseQExecutor):
 
-    device: str = "default.qubit"
-    n_jobs: int = None
+    device: str = Field(
+        default_factory=lambda: get_config("qelectron")["device"]
+    )
+    num_processes: int = Field(
+        default_factory=lambda: get_config("qelectron")["num_processes"]
+    )
 
     def batch_submit(self, qscripts_list):
-        pool = get_process_pool(self.n_jobs)
+        pool = get_process_pool(self.num_processes)
 
         futures = []
         for qscript in qscripts_list:
@@ -237,11 +260,15 @@ class BaseProcessPoolQExecutor(BaseQExecutor):
 
 class BaseThreadPoolQExecutor(BaseQExecutor):
 
-    device: str = "default.qubit"
-    max_workers: int = None
+    device: str = Field(
+        default_factory=lambda: get_config("qelectron")["device"]
+    )
+    num_threads: int = Field(
+        default_factory=lambda: get_config("qelectron")["num_threads"]
+    )
 
     def batch_submit(self, qscripts_list):
-        pool = get_thread_pool(self.max_workers)
+        pool = get_thread_pool(self.num_threads)
 
         futures = []
         for qscript in qscripts_list:

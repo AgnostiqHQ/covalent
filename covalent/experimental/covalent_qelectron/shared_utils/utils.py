@@ -23,7 +23,9 @@ import inspect
 from typing import Any, Tuple
 
 import cloudpickle
-import orjson as json
+
+
+_IMPORT_PATH_SEPARATOR = ":"
 
 
 def cloudpickle_serialize(obj):
@@ -32,20 +34,6 @@ def cloudpickle_serialize(obj):
 
 def cloudpickle_deserialize(obj):
     return cloudpickle.loads(obj)
-
-
-def dummy_serialize(obj):
-    try:
-        return [o.json() for o in obj]
-    except (AttributeError, TypeError):
-        return obj
-
-
-def dummy_deserialize(ser_obj):
-    try:
-        return [json.loads(ser_o) for ser_o in ser_obj]
-    except (json.JSONDecodeError, TypeError):
-        return ser_obj
 
 
 def select_first_executor(qnode, executors):
@@ -61,7 +49,7 @@ def get_import_path(obj) -> Tuple[str, str]:
     if module:
         module_path = module.__name__
         class_name = obj.__name__
-        return f"{module_path}:{class_name}"
+        return f"{module_path}{_IMPORT_PATH_SEPARATOR}{class_name}"
     raise RuntimeError(f"Unable to determine import path for {obj}.")
 
 
@@ -69,6 +57,6 @@ def import_from_path(path: str) -> Any:
     """
     Import a class from a path.
     """
-    module_path, class_name = path.split(":")
+    module_path, class_name = path.split(_IMPORT_PATH_SEPARATOR)
     module = importlib.import_module(module_path)
     return getattr(module, class_name)

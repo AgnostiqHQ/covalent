@@ -18,27 +18,64 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import pennylane as qml
+
 from ..middleware.core import middleware
+
+
+def _run_later_device_factory(results, original_device):
+    """
+    Returns an instance of a new class that inherits from the original QNode's
+    device class. Inheriting ensures the correct return type, while overriding
+    `batch_execute` returns the expected `results` without actually running circuits.
+    """
+
+    qml_device_cls = type(original_device)
+
+    class _RunLaterDevice(qml_device_cls):
+        # pylint: disable=too-few-public-methods
+
+        def batch_execute(self, *_, **__):
+            """
+            Override to return expected result.
+            """
+            return results
+
+    wires = original_device.num_wires
+    return _RunLaterDevice(wires=wires, shots=1)
 
 
 class QNodeFutureResult:
 
     def __init__(self, batch_id):
         self.batch_id = batch_id
+
+        self.device = None
+        self.interface = None
+        self.diff_method = None
+        self.qfunc_output = None
+
         self._result = None
 
     def result(self):
         """
         Retrieve the results from middleware for the given batch_id.
 
+        Run the results through a dummy QNode to get the expected result type.
+
         Returns:
             Any: The results of the circuit execution.
         """
 
-        if self._result is not None:
-            return self._result
+        if self._result is None:
 
-        results = middleware.get_results(self.batch_id)
+            results = middleware.get_results(self.batch_id)
+            dev = _run_later_device_factory(results, self.device)
 
-        self._result = results[0].squeeze()
+            @qml.qnode(dev, interface=self.interface, diff_method=self.diff_method)
+            def _dummy_circuit():
+                return self.qfunc_output
+
+            self._result = _dummy_circuit()
+
         return self._result

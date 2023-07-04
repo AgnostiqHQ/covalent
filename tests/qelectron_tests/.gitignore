@@ -1,0 +1,3 @@
+pennylane_tests-*
+.pytest_cache/
+

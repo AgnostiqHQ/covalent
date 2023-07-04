@@ -19,7 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from .core.qelectron import qelectron
-from .executors import QCluster, QiskitExecutor
+from .executors import QCluster
 from .middleware import middleware
 from .quantum_server.database import set_serialization_strategy
 from .shared_utils import select_first_executor

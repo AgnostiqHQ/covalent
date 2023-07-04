@@ -18,7 +18,10 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .base import (BaseProcessPoolQExecutor, AsyncBaseQCluster, BaseQExecutor,
-                   BaseThreadPoolQExecutor)
+"""
+Defines QExecutors and provides a "manager" to get all available QExecutors
+"""
+
+from .manager import qexecutor_manager
 from .clusters import QCluster
-from .plugins import QiskitExecutor, Simulator
+from .simulator import Simulator

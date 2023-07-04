@@ -42,6 +42,7 @@ class QCluster(AsyncBaseQCluster):
         selected_executor.qnode_device_import_path = self.qnode_device_import_path
         selected_executor.qnode_device_shots = self.qnode_device_shots
         selected_executor.qnode_device_wires = self.qnode_device_wires
+        selected_executor.pennylane_active_return = self.pennylane_active_return
         return selected_executor.batch_submit(qscripts_list)
 
     def serialize_selector(self) -> None:

@@ -20,7 +20,7 @@
 
 from ...middleware.qclients import BaseQClient
 from ...quantum_server.qservers import LocalQServer
-from ...shared_utils import dummy_deserialize, dummy_serialize
+from ...shared_utils import cloudpickle_deserialize, cloudpickle_serialize
 
 # Since in the local case, the server and client are the same
 # thus the "server" class's functions are directly accessed
@@ -55,7 +55,7 @@ class LocalQClient(BaseQClient):
         return self.deserialize(ser_results)
 
     def serialize(self, obj):
-        return dummy_serialize(obj)
+        return cloudpickle_serialize(obj)
 
     def deserialize(self, ser_obj):
-        return dummy_deserialize(ser_obj)
+        return cloudpickle_deserialize(ser_obj)

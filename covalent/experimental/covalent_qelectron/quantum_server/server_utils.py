@@ -26,7 +26,7 @@ from typing import Any, Dict, List
 import orjson
 from pydantic import BaseModel
 
-from ..executors import BaseQExecutor
+from ..executors.base import BaseQExecutor
 
 BATCH_ID_SEPARATOR = "@"
 MAX_DIFFERENT_EXECUTORS = 10

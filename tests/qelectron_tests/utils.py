@@ -1,4 +1,4 @@
-# Copyright 2023 Agnostiq Inc.
+# Copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -18,10 +18,14 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .utils import (
-    cloudpickle_serialize,
-    cloudpickle_deserialize,
-    select_first_executor,
-    get_import_path,
-    import_from_path,
-)
+import pennylane as qml
+
+
+def simple_circuit(param):
+    """
+    A tiny, reusable Pennylane circuit.
+    """
+    qml.RX(param, wires=0)
+    qml.Hadamard(wires=1)
+    qml.CNOT(wires=[0, 1])
+    return qml.expval(qml.operation.Tensor(*(qml.PauliY(0), qml.PauliX(1))))
