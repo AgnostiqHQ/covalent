@@ -63,9 +63,15 @@ class _QExecutorManager:
         Looks for `plugin.py` modules in the subdirectories of the given path and
         loads QExecutor classes from them.
         """
-        for plugin_dir in filter(lambda _p: _p.is_dir(), _PLUGINS_PATH.iterdir()):
 
-            plugin_module_path = plugin_dir / f"{plugin_dir.name}.py"
+        # Iterate over all subdirectories of the plugins path except for those starting with "_" like "__pycache__"
+        for plugin_dir in filter(lambda _p: _p.is_dir() and not _p.name.startswith("_"), _PLUGINS_PATH.iterdir()):
+
+            # Get the Path of the plugin module
+            plugin_module_path = list(plugin_dir.glob("*_plugin.py"))
+            if not plugin_module_path:
+                continue
+            plugin_module_path = plugin_module_path[0]
 
             if plugin_module_path.exists():
 
@@ -123,4 +129,4 @@ class _QExecutorManager:
             )
 
 
-_qexecutor_manager = _QExecutorManager()
+qexecutor_manager = _QExecutorManager()

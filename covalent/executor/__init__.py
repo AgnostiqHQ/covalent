@@ -32,7 +32,7 @@ import pkg_resources
 
 from .._shared_files import logger
 from .._shared_files.config import get_config, update_config
-from ..experimental.covalent_qelectron.executors import _qexecutor_manager
+from ..experimental.covalent_qelectron.executors import qexecutor_manager
 from .base import BaseExecutor, wrapper_fn
 
 app_log = logger.app_log
@@ -280,5 +280,5 @@ for name in _executor_manager.executor_plugins_map:
     globals()[plugin_class.__name__] = plugin_class
 
 
-for qexecutor_cls in _qexecutor_manager.executor_plugins_map.values():
+for qexecutor_cls in qexecutor_manager.executor_plugins_map.values():
     globals()[qexecutor_cls.__name__] = qexecutor_cls

@@ -22,6 +22,6 @@
 Defines QExecutors and provides a "manager" to get all available QExecutors
 """
 
-from ._manager import _qexecutor_manager
+from .manager import qexecutor_manager
 from .clusters import QCluster
 from .simulator import Simulator
