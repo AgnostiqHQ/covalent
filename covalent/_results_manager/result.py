@@ -377,7 +377,7 @@ Node Outputs
 
     def _get_node_qelectron(self, node_id: int) -> dict:
         """
-        Return any QElectron data of a node.
+        Return all QElectron data associated with a node.
 
         Args:
             node_id: The node id.
