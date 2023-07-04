@@ -265,7 +265,7 @@ Node Outputs
             "end_time": self.lattice.transport_graph.get_node_value(node_id, "end_time"),
             "status": self._get_node_status(node_id),
             "output": self._get_node_output(node_id),
-            "qelectron": self._get_node_qelectron(node_id),
+            "qelectron": self._get_node_qelectron_data(node_id),
             "error": self.lattice.transport_graph.get_node_value(node_id, "error"),
             "sublattice_result": self.lattice.transport_graph.get_node_value(
                 node_id, "sublattice_result"
@@ -375,7 +375,7 @@ Node Outputs
         """
         return self._lattice.transport_graph.get_node_value(node_id, "output")
 
-    def _get_node_qelectron(self, node_id: int) -> dict:
+    def _get_node_qelectron_data(self, node_id: int) -> dict:
         """
         Return all QElectron data associated with a node.
 
