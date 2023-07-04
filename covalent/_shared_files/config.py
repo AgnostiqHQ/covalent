@@ -111,6 +111,7 @@ class ConfigManager:
                             old_dict.setdefault(key, value)
 
         with open(self.config_file, "r+") as f:
+            fcntl.lockf(f, fcntl.LOCK_EX)
             file_config = toml.load(f)
 
             update_nested_dict(self.config_data, file_config)
@@ -146,7 +147,7 @@ class ConfigManager:
 
         # with filelock.FileLock(f"{self.config_file}.lock"):
         with open(self.config_file, "w") as f:
-            fcntl.lockf(f, fcntl.LOCK_EX)
+            # fcntl.lockf(f, fcntl.LOCK_EX)
             toml.dump(self.config_data, f)
 
     def purge_config(self) -> None:
