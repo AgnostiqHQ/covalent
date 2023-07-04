@@ -64,12 +64,14 @@ class _QExecutorManager:
         loads QExecutor classes from them.
         """
 
-        # Iterate over all subdirectories of the plugins path except for those starting with "_"
+        # Iterate over all subdirectories of the plugins path except for those starting with "_" like "__pycache__"
         for plugin_dir in filter(lambda _p: _p.is_dir() and not _p.name.startswith("_"), _PLUGINS_PATH.iterdir()):
 
             # Get the Path of the plugin module
-            print(plugin_dir)
-            plugin_module_path = list(plugin_dir.glob("*_plugin.py"))[0]
+            plugin_module_path = list(plugin_dir.glob("*_plugin.py"))
+            if not plugin_module_path:
+                continue
+            plugin_module_path = plugin_module_path[0]
 
             if plugin_module_path.exists():
 
