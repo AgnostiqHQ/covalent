@@ -21,16 +21,15 @@
 """Electron test"""
 import pytest
 
-import tests.covalent_ui_backend_tests.utils.main as main
 from covalent_dispatcher._db.datastore import DataStore
 from tests.covalent_ui_backend_tests.utils.assert_data.electrons import seed_electron_data
 from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
+from tests.covalent_ui_backend_tests.utils.trigger_events import app, shutdown_event, startup_event
 
 object_test_template = TestClientTemplate()
 output_data = seed_electron_data()
 
 
-@pytest.fixture
 def mock_db():
     """Instantiate and return an in-memory database."""
     import pathlib
@@ -44,12 +43,20 @@ def mock_db():
     )
 
 
+@pytest.fixture(scope="module", autouse=True)
+def env_setup():
+    startup_event()
+    mock_db()
+    yield
+    shutdown_event()
+
+
 def test_electrons():
     """Test electrons API"""
     test_data = output_data["test_electrons"]["case1"]
     response = object_test_template(
         api_path=output_data["test_electrons"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -63,7 +70,7 @@ def test_electrons_bad_request():
     test_data = output_data["test_electrons"]["case_invalid"]
     response = object_test_template(
         api_path=output_data["test_electrons"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -78,7 +85,7 @@ def test_electrons_details_function_string():
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
         path=test_data["path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
     )
     assert response.status_code == test_data["status_code"]
@@ -92,7 +99,7 @@ def test_electrons_details_function():
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
         path=test_data["path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
     )
     assert response.status_code == test_data["status_code"]
@@ -105,7 +112,7 @@ def test_electrons_details_executor():
     test_data = output_data["test_electrons_details"]["case_executor_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -119,7 +126,7 @@ def test_electrons_details_result():
     test_data = output_data["test_electrons_details"]["case_result_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -133,7 +140,7 @@ def test_electrons_details_value():
     test_data = output_data["test_electrons_details"]["case_value_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -147,7 +154,7 @@ def test_electrons_details_stdout():
     test_data = output_data["test_electrons_details"]["case_stdout_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -161,7 +168,7 @@ def test_electrons_details_deps():
     test_data = output_data["test_electrons_details"]["case_deps_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -175,7 +182,7 @@ def test_electrons_details_call_before():
     test_data = output_data["test_electrons_details"]["case_call_before_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -189,7 +196,7 @@ def test_electrons_details_call_after():
     test_data = output_data["test_electrons_details"]["case_call_after_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -203,7 +210,7 @@ def test_electrons_details_call_error():
     test_data = output_data["test_electrons_details"]["case_error_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -217,7 +224,7 @@ def test_electrons_details_info():
     test_data = output_data["test_electrons_details"]["case_info_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -231,7 +238,7 @@ def test_electrons_details_info():
 #     test_data = output_data["test_electrons_details"]["case_inputs_1"]
 #     response = object_test_template(
 #         api_path=output_data["test_electrons_details"]["api_path"],
-#         app=main.fastapi_app,
+#         app=app(),
 #         method_type=MethodType.GET,
 #         path=test_data["path"],
 #     )
@@ -246,7 +253,7 @@ def test_electrons_details_info():
 #     test_data = output_data["test_electrons_details"]["case_error_2"]
 #     response = object_test_template(
 #         api_path=output_data["test_electrons_details"]["api_path"],
-#         app=main.fastapi_app,
+#         app=app(),
 #         method_type=MethodType.GET,
 #         path=test_data["path"],
 #     )
@@ -260,7 +267,7 @@ def test_electrons_file_bad_request():
     test_data = output_data["test_electrons_details"]["case_bad_request"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -274,7 +281,7 @@ def test_electrons_inputs_bad_request():
     test_data = output_data["test_electrons_details"]["case_invalid"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
         path=test_data["path"],
     )

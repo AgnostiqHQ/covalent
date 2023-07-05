@@ -30,15 +30,17 @@ mock_db_path = str(Path(__file__).parent.parent.absolute()) + "/utils/data/mock_
 mock_path = f"sqlite+pysqlite:///{mock_db_path}"
 
 
-@fastapi_app.on_event("startup")
-def init():
+def app():
+    return fastapi_app
+
+
+def startup_event():
     config.db.init_db(db_path=mock_path)
     seed(config.db.engine)
     seed_files()
 
 
-@fastapi_app.on_event("shutdown")
-def de_init():
+def shutdown_event():
     os.remove(mock_db_path)
     shutil.rmtree(log_output_data["lattice_files"]["path"])
     shutil.rmtree(log_output_data["log_files"]["path"])

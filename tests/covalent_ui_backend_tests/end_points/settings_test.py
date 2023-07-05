@@ -21,9 +21,9 @@
 """Settings API"""
 
 
-import tests.covalent_ui_backend_tests.utils.main as main
 from tests.covalent_ui_backend_tests.utils.assert_data.settings import seed_settings_data
 from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
+from tests.covalent_ui_backend_tests.utils.trigger_events import app
 
 object_test_template = TestClientTemplate()
 output_data = seed_settings_data()
@@ -34,7 +34,7 @@ def test_fetch_settings():
     test_data = output_data["test_settings"]["case1"]
     response = object_test_template(
         api_path=output_data["test_settings"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
     )
     assert response.status_code == test_data["status_code"]
@@ -46,7 +46,7 @@ def test_post_settings():
     test_data = output_data["test_settings"]["case2"]
     response = object_test_template(
         api_path=output_data["test_settings"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.POST,
         body_data=test_data["request_body"],
     )
@@ -61,7 +61,7 @@ def test_post_settings_with_params():
 
     response = object_test_template(
         api_path=output_data["test_settings"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.POST,
         body_data=test_data["request_body"],
         query_data=test_data["request_params"],
@@ -76,7 +76,7 @@ def test_settings_bad_request():
     test_data = output_data["test_settings"]["case3"]
     response = object_test_template(
         api_path=output_data["test_settings"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.POST,
         body_data=test_data["request_body"],
     )
@@ -90,7 +90,7 @@ def test_settings_update_field():
     test_data = output_data["test_settings"]["case4"]
     response = object_test_template(
         api_path=output_data["test_settings"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.POST,
         body_data=test_data["request_body"],
     )

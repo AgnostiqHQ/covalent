@@ -20,12 +20,21 @@
 
 """Graph test"""
 
-import tests.covalent_ui_backend_tests.utils.main as main
+import pytest
+
 from tests.covalent_ui_backend_tests.utils.assert_data.graph import seed_graph_data
 from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
+from tests.covalent_ui_backend_tests.utils.trigger_events import app, shutdown_event, startup_event
 
 object_test_template = TestClientTemplate()
 output_data = seed_graph_data()
+
+
+@pytest.fixture(scope="module", autouse=True)
+def env_setup():
+    startup_event()
+    yield
+    shutdown_event()
 
 
 def test_get_graph():
@@ -33,7 +42,7 @@ def test_get_graph():
     test_data = output_data["test_graph"]["case_test_get_graph"]
     response = object_test_template(
         api_path=output_data["test_graph"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -47,7 +56,7 @@ def test_graph_invalid_dispatch_id():
     test_data = output_data["test_graph"]["case_test_graph_invalid_dispatch_id"]
     response = object_test_template(
         api_path=output_data["test_graph"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
         path=test_data["path"],
     )

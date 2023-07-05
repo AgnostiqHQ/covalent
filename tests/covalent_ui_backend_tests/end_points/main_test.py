@@ -24,9 +24,9 @@ from pathlib import Path
 
 from fastapi.templating import Jinja2Templates
 
-import tests.covalent_ui_backend_tests.utils.main as main
 from tests.covalent_ui_backend_tests.utils.assert_data.main import main_mock_data
 from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
+from tests.covalent_ui_backend_tests.utils.trigger_events import app
 
 object_test_template = TestClientTemplate()
 output_data = main_mock_data()
@@ -37,7 +37,7 @@ def test_webhook():
     test_data = output_data["test_webhook"]["case1"]
     response = object_test_template(
         api_path=output_data["test_webhook"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.POST,
         body_data={},
     )
@@ -51,7 +51,7 @@ def test_draw(mocker):
     test_data = output_data["test_draw"]["case1"]
     response = object_test_template(
         api_path=output_data["test_draw"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.POST,
         body_data={},
     )
@@ -67,7 +67,7 @@ def test_root(mocker):
     test_data = output_data["test_misc"]["case1"]
     response = object_test_template(
         api_path=output_data["test_misc"]["api_path"],
-        app=main.fastapi_app,
+        app=app(),
         method_type=MethodType.GET,
         path=test_data["path"],
     )
