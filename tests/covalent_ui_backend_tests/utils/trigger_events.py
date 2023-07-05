@@ -23,15 +23,10 @@ import shutil
 from pathlib import Path
 
 import covalent_ui.api.v1.database.config as config
-from covalent_ui.app import fastapi_app
 from tests.covalent_ui_backend_tests.utils.seed_script import log_output_data, seed, seed_files
 
 mock_db_path = str(Path(__file__).parent.parent.absolute()) + "/utils/data/mock_db.sqlite"
 mock_path = f"sqlite+pysqlite:///{mock_db_path}"
-
-
-def app():
-    return fastapi_app
 
 
 def startup_event():

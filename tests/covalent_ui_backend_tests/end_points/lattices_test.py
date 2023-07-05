@@ -23,9 +23,10 @@ from os.path import abspath, dirname
 
 import pytest
 
+from tests.covalent_ui_backend_tests import fastapi_app
 from tests.covalent_ui_backend_tests.utils.assert_data.lattices import seed_lattice_data
 from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
-from tests.covalent_ui_backend_tests.utils.trigger_events import app, shutdown_event, startup_event
+from tests.covalent_ui_backend_tests.utils.trigger_events import shutdown_event, startup_event
 
 object_test_template = TestClientTemplate()
 output_path = dirname(abspath(__file__)) + "/utils/assert_data/lattices_data.json"
@@ -44,7 +45,7 @@ def test_lattices():
     test_data = output_data["test_lattices"]["case1"]
     response = object_test_template(
         api_path=output_data["test_lattices"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -58,7 +59,7 @@ def test_lattices_bad_request():
     test_data = output_data["test_lattices"]["case_invalid_1"]
     response = object_test_template(
         api_path=output_data["test_lattices"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -73,7 +74,7 @@ def test_lattices_results():
     test_data = output_data["test_lattices_file"]["case_results_1"]
     response = object_test_template(
         api_path=output_data["test_lattices_file"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -87,7 +88,7 @@ def test_lattices_function_string():
     test_data = output_data["test_lattices_file"]["case_function_string_1"]
     response = object_test_template(
         api_path=output_data["test_lattices_file"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -101,7 +102,7 @@ def test_lattices_function():
     test_data = output_data["test_lattices_file"]["case_function_1"]
     response = object_test_template(
         api_path=output_data["test_lattices_file"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -115,7 +116,7 @@ def test_lattices_inputs():
     test_data = output_data["test_lattices_file"]["case_inputs_1"]
     response = object_test_template(
         api_path=output_data["test_lattices_file"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -129,7 +130,7 @@ def test_lattices_function_errors():
     test_data = output_data["test_lattices_file"]["case_error_1"]
     response = object_test_template(
         api_path=output_data["test_lattices_file"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -143,7 +144,7 @@ def test_lattices_function_executor():
     test_data = output_data["test_lattices_file"]["case_executor_1"]
     response = object_test_template(
         api_path=output_data["test_lattices_file"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -157,7 +158,7 @@ def test_lattices_function_workflow_executor():
     test_data = output_data["test_lattices_file"]["case_workflow_executor_1"]
     response = object_test_template(
         api_path=output_data["test_lattices_file"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -171,7 +172,7 @@ def test_lattices_transport_graph():
     test_data = output_data["test_lattices_file"]["case_transport_graph_1"]
     response = object_test_template(
         api_path=output_data["test_lattices_file"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -185,7 +186,7 @@ def test_lattices_invalid_name():
     test_data = output_data["test_lattices_file"]["case_invalid_1"]
     response = object_test_template(
         api_path=output_data["test_lattices_file"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -200,7 +201,7 @@ def test_lattices_file_bad_request():
     test_data = output_data["test_lattices_file"]["case_bad_request"]
     response = object_test_template(
         api_path=output_data["test_lattices_file"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -215,7 +216,7 @@ def test_sublattices():
     test_data = output_data["test_sublattices"]["case1"]
     response = object_test_template(
         api_path=output_data["test_sublattices"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
         path=test_data["path"],
     )
@@ -229,7 +230,7 @@ def test_sublattices_queries():
     test_data = output_data["test_sublattices"]["case2"]
     response = object_test_template(
         api_path=output_data["test_sublattices"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
         path=test_data["path"],
         query_data=test_data["query_data"],

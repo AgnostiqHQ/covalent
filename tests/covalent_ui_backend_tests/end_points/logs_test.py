@@ -21,9 +21,10 @@
 
 import pytest
 
+from tests.covalent_ui_backend_tests import fastapi_app
 from tests.covalent_ui_backend_tests.utils.assert_data.logs import seed_logs_data
 from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
-from tests.covalent_ui_backend_tests.utils.trigger_events import app, shutdown_event, startup_event
+from tests.covalent_ui_backend_tests.utils.trigger_events import shutdown_event, startup_event
 
 object_test_template = TestClientTemplate()
 output_data = seed_logs_data()
@@ -44,7 +45,7 @@ def __get_custom_response(case: str):
     request = test_data["request_data"]["query"]
     response = object_test_template(
         api_path=output_data["test_logs"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
         query_data=request,
     )
@@ -60,7 +61,7 @@ def test_logs(mocker):
     test_data = output_data["test_logs"]["case1"]
     response = object_test_template(
         api_path=output_data["test_logs"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
     )
     assert response.status_code == test_data["status_code"]
@@ -77,7 +78,7 @@ def test_logs_case2(mocker):
     test_data = output_data["test_logs"]["case1_1"]
     response = object_test_template(
         api_path=output_data["test_logs"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
     )
     assert response.status_code == test_data["status_code"]
@@ -118,7 +119,7 @@ def test_non_existing_logs(mocker):
     test_data = output_data["test_logs"]["case5"]
     response = object_test_template(
         api_path=output_data["test_logs"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
     )
     assert response.status_code == test_data["status_code"]
@@ -135,7 +136,7 @@ def test_download_log(mocker):
     test_data = output_data["test_download_logs"]["case1"]
     response = object_test_template(
         api_path=output_data["test_download_logs"]["api_path"],
-        app=app(),
+        app=fastapi_app,
         method_type=MethodType.GET,
     )
     assert response.status_code == test_data["status_code"]
