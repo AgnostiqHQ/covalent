@@ -56,7 +56,7 @@ class FuturesTable:
 
     def add_executor_future_pairs(
         self,
-        executor_future_pairs: List[List[BaseQExecutor, Task]],
+        executor_future_pairs: List[Tuple[BaseQExecutor, Task]],
         submission_order: List[int],
     ) -> str:
         """
@@ -69,7 +69,7 @@ class FuturesTable:
     def pop_executor_future_pairs(
         self,
         batch_id: str,
-    ) -> Tuple[List[List[BaseQExecutor, Task]], List[int]]:
+    ) -> Tuple[List[Tuple[BaseQExecutor, Task]], List[int]]:
         """
         Retrieve a list of futures from the table using a UUID.
         """
@@ -182,7 +182,7 @@ class QServer:
             # An example `futures_dict` will look like:
             # {0: future_1, 3: future_4}
 
-            executor_future_pairs.append([executor, futures_dict])
+            executor_future_pairs.append((executor, futures_dict))
 
         # An example `executor_future_pairs` will look like:
         # [[exec_4, {0: future_1, 3: future_4}], [exec_2, {2: future_3}], [exec_3, {4: future_5}]]
@@ -372,8 +372,10 @@ class QServer:
             #          "result_metadata": [{}, ...]},
             #     ],
             # ]
+
             # Deleting the futures once their results have been retrieved
-            del executor_future_pairs[idx_efp][1]
+            executor_future_pairs[idx_efp] = (executor_future_pairs[idx_efp][0],)
+
             # After deletion of one `future_sub_batch`, the `executor_future_pairs` will look like:
             # [[exec_4], [exec_2, {2: future_3}], [exec_3, {4: future_5}]]
 
