@@ -18,14 +18,19 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""
+Quantum Server Implementation: Handles the async execution of quantum circuits.
+"""
+
 import datetime
 import uuid
-from typing import TYPE_CHECKING, Callable, List
+from asyncio import Task
+from typing import TYPE_CHECKING, Callable, List, Tuple
 
 from pennylane.tape import QuantumScript
 
 from ....executor.utils import get_context
-from ..executors.base import BaseQExecutor, AsyncBaseQCluster
+from ..executors.base import AsyncBaseQCluster, BaseQExecutor
 from ..quantum_server.database import Database
 from ..quantum_server.server_utils import (
     CircuitInfo,
@@ -41,18 +46,30 @@ if TYPE_CHECKING:
 
 
 class FuturesTable:
+    """
+    Container for async task futures corresponding to a sub-batch of executing
+    qscripts, as identified by a batch UUID.
+    """
+
     def __init__(self):
         self._ef_pairs = {}
 
-    def add_executor_future_pairs(self, executor_future_pairs):
+    def add_executor_future_pairs(
+        self,
+        executor_future_pairs: List[List[BaseQExecutor, Task]],
+        submission_order: List[int],
+    ) -> str:
         """
         Add a list of futures to the table and return a corresponding UUID.
         """
         batch_id = str(uuid.uuid4())
-        self._ef_pairs[batch_id] = executor_future_pairs
+        self._ef_pairs[batch_id] = (executor_future_pairs, submission_order)
         return batch_id
 
-    def pop_executor_future_pairs(self, batch_id):
+    def pop_executor_future_pairs(
+        self,
+        batch_id: str,
+    ) -> Tuple[List[List[BaseQExecutor, Task]], List[int]]:
         """
         Retrieve a list of futures from the table using a UUID.
         """
@@ -74,6 +91,9 @@ class QServer:
 
     @property
     def selector(self):
+        """
+        Executor selector function for the Quantum server.
+        """
         return self._selector
 
     @selector.setter
@@ -121,6 +141,7 @@ class QServer:
         # Since we will be modifying the qscripts list
         qscripts = qscripts.copy()
 
+        submission_order = []
         executor_qscript_sub_batch_pairs = []
         for i, qscript in enumerate(qscripts):
             if qscript is None:
@@ -128,10 +149,12 @@ class QServer:
 
             # Generate a sub batch of qscripts to be executed on the same executor
             qscript_sub_batch = [linked_executors[i], {i: qscript}]
+            submission_order.append(i)
             for j in range(i + 1, len(qscripts)):
                 if linked_executors[i] == linked_executors[j]:
                     qscript_sub_batch[1][j] = qscripts[j]
                     qscripts[j] = None
+                    submission_order.append(j)
 
             # An example `qscript_sub_batch` will look like:
             # [exec_4, {0: qscript_1, 3: qscript_4}]
@@ -139,7 +162,11 @@ class QServer:
             executor_qscript_sub_batch_pairs.append(qscript_sub_batch)
 
         # An example `executor_qscript_sub_batch_pairs` will look like:
-        # [[exec_4, {0: qscript_1, 3: qscript_4}], [exec_2, {2: qscript_3}], [exec_3, {4: qscript_5}]]
+        # [
+        #    [exec_4, {0: qscript_1, 3: qscript_4}],
+        #    [exec_2, {2: qscript_3}],
+        #    [exec_3, {4: qscript_5}],
+        # ]
 
         # Generating futures from each executor:
         executor_future_pairs = []
@@ -160,7 +187,7 @@ class QServer:
         # An example `executor_future_pairs` will look like:
         # [[exec_4, {0: future_1, 3: future_4}], [exec_2, {2: future_3}], [exec_3, {4: future_5}]]
 
-        return executor_future_pairs
+        return executor_future_pairs, submission_order
 
     def submit(
         self,
@@ -169,6 +196,8 @@ class QServer:
         qelectron_info: "QElectronInfo",
         qnode_specs: "QNodeSpecs"
     ):
+        # pylint: disable=too-many-locals
+
         """
         Submit a list of QuantumScripts to the server for execution.
 
@@ -197,14 +226,18 @@ class QServer:
         # - reenable once `orjson` or other serialization method is used
         # executors = reconstruct_executors(deconstructed_executors)
 
+        # Generate a list of executors for each qscript.
         linked_executors = self.select_executors(qscripts, executors)
-        executor_future_pairs = self.submit_to_executors(
-            qscripts,
-            linked_executors,
-            qelectron_info,
+
+        # Assign qscript sub-batches to unique executors.
+        executor_future_pairs, submission_order = self.submit_to_executors(
+            qscripts, linked_executors, qelectron_info
         )
 
-        batch_id = self.futures_table.add_executor_future_pairs(executor_future_pairs)
+        # Get batch ID for N qscripts being async-executed on M <= N executors.
+        batch_id = self.futures_table.add_executor_future_pairs(
+            executor_future_pairs, submission_order
+        )
 
         # Storing the qscripts, executors, and metadata in the database
         batch_time = str(datetime.datetime.now())
@@ -233,23 +266,31 @@ class QServer:
         #     [
         #         "circuit_0-uuid",
         #         "circuit_1-uuid",
-        #         "circuit_2-uuid"
+        #
+        #         ...
         #     ],
         #     [
-        #         {"electron_node_id": "node_1", "dispatch_id": "uuid", "circuit_name": "qscript_name",
-        #          "circuit_description": "qscript_description", "qnode_specs": {"qnode_specs": "specs"},
-        #          "qexecutor": "executor_1", "save_time": "2021-01-01 00:00:00", "circuit_id": "circuit_0-uuid",
+        #         {"electron_node_id": "node_1",
+        #          "dispatch_id": "uuid",
+        #          "circuit_name": "qscript_name",
+        #          "circuit_description": "qscript_description",
+        #          "qnode_specs": {"qnode_specs": "specs"},
+        #          "qexecutor": "executor_1",
+        #          "save_time": "2021-01-01 00:00:00",
+        #          "circuit_id": "circuit_0-uuid",
         #          "qscript": "qscript_1"},
 
-        #         {"electron_node_id": "node_1", "dispatch_id": "uuid", "circuit_name": "qscript_name",
-        #          "circuit_description": "qscript_description", "qnode_specs": {"qnode_specs": "specs"},
-        #          "qexecutor": "executor_2", "save_time": "2021-01-01 00:00:00", "circuit_id": "circuit_1-uuid",
+        #         {"electron_node_id": "node_1",
+        #          "dispatch_id": "uuid",
+        #          "circuit_name": "qscript_name",
+        #          "circuit_description": "qscript_description",
+        #          "qnode_specs": {"qnode_specs": "specs"},
+        #          "qexecutor": "executor_2",
+        #          "save_time": "2021-01-01 00:00:00",
+        #          "circuit_id": "circuit_1-uuid",
         #          "qscript": "qscript_2"},
-
-        #         {"electron_node_id": "node_1", "dispatch_id": "uuid", "circuit_name": "qscript_name",
-        #          "circuit_description": "qscript_description", "qnode_specs": {"qnode_specs": "specs"},
-        #          "qexecutor": "executor_3", "save_time": "2021-01-01 00:00:00", "circuit_id": "circuit_2-uuid",
-        #          "qscript": "qscript_3"}
+        #
+        #         ...
         #     ],
         # ]
 
@@ -262,6 +303,8 @@ class QServer:
         return batch_id
 
     def get_results(self, batch_id):
+        # pylint: disable=too-many-locals
+
         """
         Retrieve the results of previously submitted QuantumScripts from the server.
 
@@ -277,9 +320,11 @@ class QServer:
 
         results_dict = {}
         key_value_pairs = [[], []]
-        executor_future_pairs = self.futures_table.pop_executor_future_pairs(batch_id)
+        executor_future_pairs, submission_order \
+            = self.futures_table.pop_executor_future_pairs(batch_id)
 
         # ids of (e)xecutor_(f)uture_(p)airs, hence `idx_efp`
+        qscript_submission_index = 0
         for idx_efp, (executor, futures_sub_batch) in enumerate(executor_future_pairs):
 
             result_objs = executor.batch_get_results(
@@ -293,7 +338,11 @@ class QServer:
                 # loop over result, in case contains multiple circuits
                 result_obj = result_objs[idx_fsb]
                 for result_number, sub_result in enumerate(result_obj.results):
-                    results_dict[(circuit_number, result_number)] = sub_result
+                    qscript_number = submission_order[qscript_submission_index]
+
+                    # Use tuple of integers for key to enable later multi-factor sort.
+                    results_dict[(qscript_number, circuit_number, result_number)] = sub_result
+                    qscript_submission_index += 1
 
                 # To store the results in the database
                 circuit_id = get_circuit_id(batch_id, circuit_number)
@@ -337,6 +386,7 @@ class QServer:
         # An example `results_dict` will look like:
         # {0: result_1, 3: result_4, 2: result_3, 4: result_5}
 
+        # Perform multi-factor sort on `results_dict`.
         batch_results = list(dict(sorted(results_dict.items())).values())
 
         # An example `batch_results` will look like:
@@ -345,7 +395,13 @@ class QServer:
         return self.serialize(batch_results)
 
     def serialize(self, obj):
+        """
+        Serialize an object.
+        """
         return cloudpickle_serialize(obj)
 
     def deserialize(self, obj):
+        """
+        Deserialize an object.
+        """
         return cloudpickle_deserialize(obj)
