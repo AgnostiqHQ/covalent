@@ -156,8 +156,6 @@ class Lattices:
                 Lattice.started_at.label("started_at"),
                 func.coalesce((Lattice.completed_at), None).label("ended_at"),
                 Lattice.updated_at.label("updated_at"),
-                Lattice.updated_at.label("updated_at"),
-                Lattice.updated_at.label("updated_at"),
             )
             .filter(
                 Lattice.is_active.is_not(False),
