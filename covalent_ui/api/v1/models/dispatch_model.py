@@ -55,6 +55,9 @@ class DispatchModule(BaseModel):
     status: Status
     updated_at: Optional[Union[datetime, None]]
 
+    class Config:
+        orm_mode = True
+
 
 class DispatchResponse(BaseModel):
     """Dispatch Response Model"""
