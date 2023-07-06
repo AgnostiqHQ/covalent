@@ -1,0 +1,400 @@
+# # Copyright 2021 Agnostiq Inc.
+# #
+# # This file is part of Covalent.
+# #
+# # Licensed under the GNU Affero General Public License 3.0 (the "License").
+# # A copy of the License may be obtained with this software package or at
+# #
+# #      https://www.gnu.org/licenses/agpl-3.0.en.html
+# #
+# # Use of this file is prohibited except in compliance with the License. Any
+# # modifications or derivative works of this file must retain this copyright
+# # notice, and modified files must contain a notice indicating that they have
+# # been altered from the originals.
+# #
+# # Covalent is distributed in the hope that it will be useful, but WITHOUT
+# # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
+# #
+# # Relief from the License may be granted by purchasing a commercial license.
+
+# name: tests
+
+# on:
+#   pull_request:
+#   workflow_call:
+#   push:
+#     branches:
+#       - develop
+#     paths-ignore:
+#       - CHANGELOG.md
+#       - VERSION
+#   workflow_dispatch:
+#     inputs:
+#       commit_sha:
+#         description: "Commit SHA used for testing"
+#         type: string
+#         required: true
+
+# jobs:
+#   build_test_matrix:
+#     name: Build Test Matrix
+#     runs-on: ubuntu-latest
+#     outputs:
+#       matrix: ${{ steps.filter-matrix.outputs.matrix }}
+#     steps:
+#       - name: Check out head
+#         uses: actions/checkout@v3
+#         with:
+#           persist-credentials: false
+
+#       - name: Filter test matrix
+#         id: filter-matrix
+#         run: |
+#           matrix=$(jq --arg trigger "${{ github.event_name }}" 'map(. | select(.trigger | index($trigger)))' .github/workflows/test_matrix.json)
+#           echo "Test matrix:"
+#           echo "$matrix" | jq
+#           echo ::set-output name=matrix::{\"include\":$(echo $matrix)}
+
+#   tests:
+#     needs: build_test_matrix
+#     name: ${{ matrix.name }}
+#     strategy:
+#       matrix: ${{fromJson(needs.build_test_matrix.outputs.matrix)}}
+#       fail-fast: false
+#     runs-on: ${{ matrix.os }}
+#     env:
+#       COVALENT_SERVER_IFACE_ANY: true
+#     container: ${{ matrix.container }}
+#     continue-on-error: ${{ matrix.experimental }}
+#     outputs:
+#       codecov: ${{ steps.local-codecov.outputs.local_codecov }}
+#     steps:
+#       - name: Check out head
+#         if: github.event_name != 'workflow_dispatch'
+#         uses: actions/checkout@v3
+#         with:
+#           persist-credentials: false
+
+#       - name: Check out SHA
+#         if: >
+#           github.event_name == 'workflow_dispatch'
+#           && github.event.inputs.commit_sha
+#         uses: actions/checkout@v3
+#         with:
+#           persist-credentials: false
+#           fetch-depth: 0
+#           ref: github.event.inputs.commit_sha
+
+#       - uses: dorny/paths-filter@v2
+#         if: github.event_name == 'pull_request'
+#         id: modified-files
+#         with:
+#           filters: |
+#             sdk:
+#             - 'covalent/**'
+#             - 'tests/covalent_tests/**'
+#             dispatcher:
+#             - 'covalent_dispatcher/**'
+#             - 'tests/covalent_dispatcher_tests/**'
+#             ui_backend:
+#             - 'covalent_ui/*.py'
+#             ui_frontend:
+#             - 'covalent_ui/webapp/**'
+#             functional_tests:
+#             - 'tests/functional_tests/**'
+#             build:
+#             - 'MANIFEST.in'
+#             - '**/requirements.txt'
+#             - 'requirements-client.txt'
+#             - 'setup.py'
+#             actions:
+#             - '.github/workflows/*'
+#             - '.github/actions/**'
+
+#       - name: Generate environment variables
+#         run: |
+#           if ${{ matrix.os == 'ubuntu-latest'
+#             && contains(matrix.container, 'debian11-py38')
+#             && matrix.backend == 'dask' }} ; then
+#             RECOMMENDED_PLATFORM=true
+#           fi
+#           if [ ${{ steps.modified-files.outputs.sdk }} = 'true' ] \
+#             || [ ${{ steps.modified-files.outputs.dispatcher }} = 'true' ] \
+#             || [ ${{ steps.modified-files.outputs.ui_backend }} = 'true' ] ; then
+#             NEED_PYTHON=true
+#           fi
+#           if [ ${{ steps.modified-files.outputs.ui_frontend }} = 'true' ] ; then
+#             NEED_FRONTEND=true
+#           fi
+#           if [ ${{ github.event_name }} != 'pull_request' ] \
+#             || [ ${{ steps.modified-files.outputs.functional_tests }} = 'true' ] \
+#             || [ ${{ steps.modified-files.outputs.build }} = 'true' ] \
+#             || [ ${{ steps.modified-files.outputs.actions }} = 'true' ] ; then
+#             BUILD_AND_RUN_ALL=true
+#           fi
+#           echo "RECOMMENDED_PLATFORM=$RECOMMENDED_PLATFORM" >> $GITHUB_ENV
+#           echo "NEED_PYTHON=$NEED_PYTHON" >> $GITHUB_ENV
+#           echo "NEED_FRONTEND=$NEED_FRONTEND" >> $GITHUB_ENV
+#           echo "BUILD_AND_RUN_ALL=$BUILD_AND_RUN_ALL" >> $GITHUB_ENV
+
+#       - name: Set up Python
+#         if: >
+#           contains(matrix.os, 'macos')
+#           && (env.NEED_PYTHON || env.BUILD_AND_RUN_ALL)
+#         uses: actions/setup-python@v2
+#         with:
+#           python-version: ${{ matrix.python-version }}
+
+#       - name: Set up Conda
+#         id: install-conda
+#         if: env.NEED_PYTHON || env.BUILD_AND_RUN_ALL
+#         uses: conda-incubator/setup-miniconda@v2
+#         with:
+#           miniconda-version: "latest"
+#           python-version: ${{ matrix.python-version }}
+#           auto-activate-base: true
+#           activate-environment: true
+
+#       - name: Install Python dependencies
+#         id: install-python-deps
+#         if: env.NEED_PYTHON || env.BUILD_AND_RUN_ALL
+#         run: |
+#           pip install --no-cache-dir -r ./requirements.txt
+#           pip install --no-cache-dir -r ./tests/requirements.txt
+
+#       - name: Build webapp
+#         if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
+#         uses: nick-fields/retry@v2
+#         with:
+#           timeout_minutes: 10
+#           max_attempts: 2
+#           command: |
+#             cd ./covalent_ui/webapp
+#             yarn install
+#             yarn build
+
+#       - name: Transform semver version to pep440
+#         id: version-transform
+#         uses: ./.github/actions/version-transform
+#         with:
+#           version-path: VERSION
+#       - name: Build distribution
+#         id: build-dist
+#         if: env.NEED_PYTHON || env.BUILD_AND_RUN_ALL
+#         run: python setup.py sdist
+
+#       - name: Validate distribution
+#         if: env.BUILD_AND_RUN_ALL
+#         run: |
+#           VERSION="${{ steps.version-transform.outputs.version }}"
+#           echo "Using transformed VERSION: $VERSION"
+#           cd dist
+#           tar xzf covalent-${VERSION}.tar.gz
+#           diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
+#           diff -x .gitignore -r covalent-${VERSION}/covalent_dispatcher ../covalent_dispatcher
+#           diff -x README.md -r covalent-${VERSION}/covalent_migrations ../covalent_migrations
+#           diff -x .gitignore -x README.md -x webapp covalent-${VERSION}/covalent_ui ../covalent_ui
+#           diff -r covalent-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
+#           rm -rf covalent-${VERSION}/
+
+#       - name: Install Covalent
+#         if: steps.build-dist.outcome == 'success'
+#         run: pip install dist/covalent-*.tar.gz
+
+#       - name: Start Covalent dispatcher server
+#         if: env.BUILD_AND_RUN_ALL
+#         id: covalent_start
+#         run: |
+#           covalent db migrate
+#           if [ "${{ matrix.backend }}" = 'dask' ] ; then
+#             covalent start
+#           elif [ "${{ matrix.backend }}" = 'local' ] ; then
+#             covalent start --no-cluster
+#           else
+#             echo "Invalid backend specified in test matrix."
+#             exit 1
+#           fi
+#         env:
+#           COVALENT_EXECUTOR_DIR: doc/source/how_to/execution/custom_executors
+
+#       - name: Run SDK tests and measure coverage
+#         id: sdk-tests
+#         if: >
+#           steps.modified-files.outputs.sdk == 'true'
+#           || env.BUILD_AND_RUN_ALL
+#         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_tests --cov=covalent --cov-config=.coveragerc
+
+#       - name: Generate SDK coverage report
+#         id: sdk-coverage
+#         if: steps.sdk-tests.outcome == 'success'
+#         run: coverage xml -o sdk_coverage.xml
+
+#       - name: Run dispatcher tests and measure coverage
+#         id: dispatcher-tests
+#         if: >
+#           steps.modified-files.outputs.dispatcher == 'true'
+#           || env.BUILD_AND_RUN_ALL
+#         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
+
+#       - name: Generate dispatcher coverage report
+#         id: dispatcher-coverage
+#         if: steps.dispatcher-tests.outcome == 'success'
+#         run: coverage xml -o dispatcher_coverage.xml
+
+#       - name: Run functional tests and measure coverage
+#         id: functional-tests
+#         if: env.BUILD_AND_RUN_ALL
+#         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
+
+#       - name: Generate functional test coverage report
+#         id: functional-coverage
+#         if: steps.functional-tests.outcome == 'success'
+#         run: coverage xml -o functional_tests_coverage.xml
+
+#       - name: Run UI backend tests and measure coverage
+#         id: ui-backend-tests
+#         if: >
+#           false
+#           && (steps.modified-files.outputs.ui_backend == 'true'
+#           || env.BUILD_AND_RUN_ALL)
+#         run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc
+
+#       - name: Generate UI backend coverage report
+#         id: ui-backend-coverage
+#         if: steps.ui-backend-tests.outcome == 'success'
+#         run: coverage xml -o ui_backend_coverage.xml
+
+#       - name: Run UI frontend tests and measure coverage
+#         id: ui-frontend-tests
+#         if: >
+#           steps.modified-files.outputs.ui_frontend == 'true'
+#           || env.BUILD_AND_RUN_ALL
+#         run: |
+#           cd covalent_ui/webapp
+#           npm test -- --coverage --watchAll=false --maxWorkers=50%
+
+#       - name: Dump Covalent logs
+#         if: >
+#           steps.covalent_start.outcome == 'success'
+#           && (steps.sdk-tests.outcome == 'failed'
+#           || steps.dispatcher-tests.outcome == 'failed'
+#           || steps.functional-tests.outcome == 'failed'
+#           || steps.ui-backend-tests.outcome == 'failed'
+#           || steps.ui-frontend-tests.outcome == 'failed')
+#         run: covalent logs
+
+#       - name: Upload SDK report to Codecov
+#         id: upload-sdk-report
+#         if: >
+#           env.RECOMMENDED_PLATFORM
+#           && github.event_name != 'workflow_dispatch'
+#           && (github.event_name == 'schedule'
+#           || steps.sdk-coverage.outcome == 'success')
+#         uses: codecov/codecov-action@v3
+#         with:
+#           files: ./sdk_coverage.xml
+#           flags: SDK
+#           name: "SDK Unit Tests"
+#           fail_ci_if_error: true
+
+#       - name: Upload Dispatcher report to Codecov
+#         id: upload-dispatcher-report
+#         if: >
+#           env.RECOMMENDED_PLATFORM
+#           && github.event_name != 'workflow_dispatch'
+#           && (github.event_name == 'schedule'
+#           || steps.dispatcher-coverage.outcome == 'success')
+#         uses: codecov/codecov-action@v3
+#         with:
+#           files: ./dispatcher_coverage.xml
+#           flags: Dispatcher
+#           name: "Dispatcher Unit Tests"
+#           fail_ci_if_error: true
+
+#       - name: Upload Functional report to Codecov
+#         id: upload-functional-report
+#         if: >
+#           env.RECOMMENDED_PLATFORM
+#           && github.event_name != 'workflow_dispatch'
+#           && steps.functional-coverage.outcome == 'success'
+#         uses: codecov/codecov-action@v3
+#         with:
+#           files: ./functional_tests_coverage.xml
+#           flags: Functional_Tests
+#           name: "Functional Tests"
+#           fail_ci_if_error: true
+
+#       - name: Upload UI backend report to Codecov
+#         id: upload-ui-backend-report
+#         if: >
+#           false
+#           && env.RECOMMENDED_PLATFORM
+#           && github.event_name != 'workflow_dispatch'
+#           && (github.event_name == 'schedule'
+#           || steps.ui-backend-coverage.outcome == 'success')
+#         uses: codecov/codecov-action@v3
+#         with:
+#           files: ./ui_backend_coverage.xml
+#           flags: UI_Backend
+#           name: "UI Backend Unit Tests"
+#           fail_ci_if_error: true
+
+#       - name: Upload UI frontend report to Codecov
+#         id: upload-ui-frontend-report
+#         if: >
+#           env.RECOMMENDED_PLATFORM
+#           && github.event_name != 'workflow_dispatch'
+#           && (github.event_name == 'schedule'
+#           || steps.ui-frontend-tests.outcome == 'success')
+#         uses: codecov/codecov-action@v3
+#         with:
+#           files: ./covalent_ui/webapp/coverage/clover.xml
+#           flags: UI_Frontend
+#           name: "UI Frontend Unit Tests"
+#           fail_ci_if_error: true
+
+#       - name: Local Codecov
+#         id: local-codecov
+#         if: >
+#           env.RECOMMENDED_PLATFORM
+#           && github.event_name != 'workflow_dispatch'
+#           && github.event_name != 'schedule'
+#         run: |
+#           if ${{ steps.upload-sdk-report.outcome == 'skipped'
+#             && steps.upload-dispatcher-report.outcome == 'skipped'
+#             && steps.upload-functional-report.outcome == 'skipped'
+#             && steps.upload-ui-backend-report.outcome == 'skipped'
+#             && steps.upload-ui-frontend-report.outcome  == 'skipped' }} ; then
+#             local_codecov=true
+#           fi
+#           echo "::set-output name=local_codecov::${local_codecov}"
+
+#       - name: Alert Slack
+#         if: >
+#           github.event_name == 'schedule'
+#           && failure()
+#         uses: rtCamp/action-slack-notify@v2
+#         env:
+#           SLACK_CHANNEL: "covalent-ci"
+#           SLACK_USERNAME: "CovalentOpsBot"
+#           SLACK_MESSAGE: "The tests.yml workflow is failing in develop!"
+#           SLACK_COLOR: ${{ job.status }}
+#           SLACK_TITLE: ":warning:  Attention Required  :warning:"
+#           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+
+#   codecov_patch:
+#     needs: tests
+#     name: "codecov/patch"
+#     if: needs.tests.outputs.codecov == 'true'
+#     runs-on: ubuntu-latest
+#     steps:
+#       - run: echo "No report needed."
+
+#   codecov_project:
+#     needs: tests
+#     name: "codecov/project"
+#     if: needs.tests.outputs.codecov == 'true'
+#     runs-on: ubuntu-latest
+#     steps:
+#       - run: echo "No report needed."
