@@ -27,7 +27,6 @@ from operator import getitem
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
-# import fcntl
 import filelock
 import toml
 
@@ -111,8 +110,7 @@ class ConfigManager:
                         else:
                             old_dict.setdefault(key, value)
 
-        lock = filelock.FileLock(f"{self.config_file}.lock", timeout=1)
-        with lock:
+        with filelock.FileLock(f"{self.config_file}.lock", timeout=1):
             with open(self.config_file, "r+") as f:
                 file_config = toml.load(f)
 
