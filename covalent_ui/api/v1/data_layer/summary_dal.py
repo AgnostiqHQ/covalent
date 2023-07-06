@@ -35,6 +35,7 @@ from covalent_ui.api.v1.models.dispatch_model import (
     DeleteDispatchesRequest,
     DeleteDispatchesResponse,
     DispatchDashBoardResponse,
+    DispatchModule,
     DispatchResponse,
     SortDirection,
 )
@@ -81,7 +82,7 @@ class Summary:
             Lattice.electron_num.label("total_electrons"),
             Lattice.completed_electron_num.label("total_electrons_completed"),
             Lattice.started_at.label("started_at"),
-            func.IFNULL(Lattice.completed_at, None).label("ended_at"),
+            func.coalesce(Lattice.completed_at, None).label("ended_at"),
             Lattice.status.label("status"),
             Lattice.updated_at.label("updated_at"),
         ).filter(
@@ -117,7 +118,7 @@ class Summary:
                 else sort_by.value
             )
 
-        result = data.offset(offset).limit(count).all()
+        results = data.offset(offset).limit(count).all()
 
         counter = (
             self.db_con.query(func.count(Lattice.id))
@@ -132,7 +133,9 @@ class Summary:
             )
             .first()
         )
-        return DispatchResponse(items=result, total_count=counter[0])
+        return DispatchResponse(
+            items=[DispatchModule.from_orm(result) for result in results], total_count=counter[0]
+        )
 
     def get_summary_overview(self) -> Lattice:
         """

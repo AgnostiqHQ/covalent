@@ -19,9 +19,9 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import uuid
-from datetime import timezone
 
 from fastapi import HTTPException
+from sqlalchemy import extract
 from sqlalchemy.sql import func
 
 from covalent._results_manager.results_manager import get_result
@@ -69,11 +69,11 @@ class Electrons:
                 Electron.completed_at.label("completed_at"),
                 (
                     (
-                        func.strftime(
-                            "%s",
-                            func.IFNULL(Electron.completed_at, func.datetime.now(timezone.utc)),
+                        func.coalesce(
+                            extract("epoch", Electron.completed_at),
+                            extract("epoch", func.now()),
                         )
-                        - func.strftime("%s", Electron.started_at)
+                        - extract("epoch", Electron.started_at)
                     )
                     * 1000
                 ).label("runtime"),
