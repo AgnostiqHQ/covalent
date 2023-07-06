@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Docs
+
+- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
+
 ### Operations
 
 - Bumped versions in pre-commit config
@@ -16,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - File transfer strategy for GCP storage
 - Add CLI status for zombie, stopped process.
-- Added testcases for GUI backend.
+- Fix for double locking file in configurations.
 
 ### Docs
 
@@ -29,14 +33,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Removed the upper limit from `dask` and `distributed` packages' versions until we find a version which is incompatible with Covalent.
+- Pinned sqlalchemy version with upper limit <2.0.0.
 
 ### Tests
 
 - Skipping functional tests for azure blob storage and gcp storage how to guides since they require credentials to run.
+- Added testcases for GUI backend.
 
 ### Operations
 
 - Reduce the number of pinned version numbers in the `setup.py`, `requirements.txt`, and `requirements-client.txt`
+- Updated the `wci.yml` file with new features
+
+### Fixed
+
+- Fixed the outstanding incompatibities between front-end data layer and a postgres database
+- Reverted file-lock changes
 
 ## [0.227.0-rc.0] - 2023-06-13
 
