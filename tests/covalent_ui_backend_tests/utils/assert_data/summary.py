@@ -178,7 +178,7 @@ def seed_summary_data():
                 "request_data": {
                     "body": {
                         "dispatches": [
-                            "78525234-72ec-42dc-94a0-f4751707f9cd",
+                            "a95d84ad-c441-446d-83ae-46380dcdf38e",
                             "f7eeb4ad-5262-49a5-aabc-cea10c6c1071",
                             "f7eeb4ad-5262-49a5-aabc-cea10c6c1071",
                             "f7eeb4ad-5262-49a5-aabc-cea10c6c1071",
@@ -186,7 +186,7 @@ def seed_summary_data():
                     }
                 },
                 "response_data": {
-                    "success_items": ["78525234-72ec-42dc-94a0-f4751707f9cd"],
+                    "success_items": ["a95d84ad-c441-446d-83ae-46380dcdf38e"],
                     "failure_items": [
                         "f7eeb4ad-5262-49a5-aabc-cea10c6c1071",
                         "f7eeb4ad-5262-49a5-aabc-cea10c6c1071",
@@ -238,13 +238,13 @@ def seed_summary_data():
                 "request_data": {
                     "body": {
                         "dispatches": [
-                            "78525234-72ec-42dc-94a0-f4751707f9cd",
+                            "89be0bcf-95dd-40a6-947e-6af6c56f147d",
                             "78525234-72ec-42dc-94a0-f4751707f9c1",
                         ]
                     }
                 },
                 "response_data": {
-                    "success_items": ["78525234-72ec-42dc-94a0-f4751707f9cd"],
+                    "success_items": ["89be0bcf-95dd-40a6-947e-6af6c56f147d"],
                     "failure_items": ["78525234-72ec-42dc-94a0-f4751707f9c1"],
                     "message": "Some of the dispatches could not be deleted",
                 },
@@ -257,9 +257,6 @@ def seed_summary_data():
                 "request_data": {"body": {"status_filter": "ALL", "search_string": ""}},
                 "response_data": {
                     "success_items": [
-                        "78525234-72ec-42dc-94a0-f4751707f9cd",
-                        "a95d84ad-c441-446d-83ae-46380dcdf38e",
-                        "89be0bcf-95dd-40a6-947e-6af6c56f147d",
                         "69dec597-79d9-4c99-96de-8d5f06f3d4dd",
                     ],
                     "failure_items": [],
