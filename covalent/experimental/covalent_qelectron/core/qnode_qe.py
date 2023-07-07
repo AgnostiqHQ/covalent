@@ -77,6 +77,10 @@ class QNodeQE(qml.QNode):
             max_expansion=qnode.max_expansion,
         )
 
+        self._gradient_fn = None
+        self._override_gradient_fn = None
+        self._gradient_access_counter = 0
+
     @contextmanager
     def mark_call_async(self):
         # pylint: disable=protected-access
@@ -116,13 +120,37 @@ class QNodeQE(qml.QNode):
     def __call__(self, *args, **kwargs):
 
         self.device.qnode_specs = QNodeSpecs(**qml.specs(self)(*args, **kwargs))
-        return super().__call__(*args, **kwargs)
+        with self.override_gradient_fn("device"):
+            return super().__call__(*args, **kwargs)
 
-    def _update_gradient_fn(self):
+    @contextmanager
+    def override_gradient_fn(self, gradient_fn):
         """
-        Override this method to fix `self.gradient_fn` to be `"device"`.
+        Set the `_override_gradient_fn` attribute to enable custom `gradient_fn`
+        property behavior.
         """
-        super()._update_gradient_fn()
-        # TODO: consider conditional override
-        # NOTE: this override causes interface type errors in Pennylane tests
-        self.gradient_fn = "device"
+        self._override_gradient_fn = gradient_fn
+        try:
+            yield
+        finally:
+            self._override_gradient_fn = None
+
+    @property
+    def gradient_fn(self):
+        """
+        Override the `gradient_fn` attribute to return custom value (as set by
+        `override_gradient_fn`) every second time the property is accessed.
+        """
+        if self._override_gradient_fn and self._gradient_access_counter > 1:
+            self._gradient_access_counter = 0
+            return self._override_gradient_fn
+
+        # Increment access counter.
+        self._gradient_access_counter += 1
+        return self._gradient_fn
+
+    @gradient_fn.setter
+    def gradient_fn(self, fn):
+        # Set attribute and reset access counter.
+        self._gradient_fn = fn
+        self._gradient_access_counter = 0
