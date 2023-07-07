@@ -53,6 +53,7 @@ def test_electrons():
         method_type=MethodType.GET,
         path=test_data["path"],
     )
+    print(response.json())
     assert response.status_code == test_data["status_code"]
     if "response_data" in test_data:
         assert response.json() == test_data["response_data"]
