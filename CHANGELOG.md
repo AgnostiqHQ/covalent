@@ -7,16 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Docs
-
-- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
-
 ### Operations
 
 - Bumped versions in pre-commit config
 - Added prettier for markdown files.
 - Reduce the number of pinned version numbers in the `setup.py`, `requirements.txt`, and `requirements-client.txt`
-
+- Updated the `wci.yml` file with new features
 
 ### Added
 
@@ -31,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced the quickstart with a set of commonly used features
 - Removed duplicate "stop server" warning in the First Experimemnt page
 - Fixed typo in quickstart
+- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
 
 ### Changed
 
@@ -45,8 +42,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - When stopping the server, we send the proper `SIGINT` signal to uvicorn instead of `SIGKILL` which allows the second part of the FastAPI `lifespan` to execute properly.
-- Reduce the number of pinned version numbers in the `setup.py`, `requirements.txt`, and `requirements-client.txt`
-- Updated the `wci.yml` file with new features
 - Fixed the outstanding incompatibities between front-end data layer and a postgres database
 - Reverted file-lock changes
 
