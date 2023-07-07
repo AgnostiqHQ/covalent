@@ -138,8 +138,8 @@ class QServer:
         of qscripts on respective executors
         """
 
-        # Since we will be modifying the qscripts list
-        qscripts = qscripts.copy()
+        # Since we will be modifying the qscripts list (or sometimes tuple).
+        qscripts = list(qscripts).copy()
 
         submission_order = []
         executor_qscript_sub_batch_pairs = []
