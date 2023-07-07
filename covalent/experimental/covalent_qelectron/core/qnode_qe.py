@@ -124,4 +124,5 @@ class QNodeQE(qml.QNode):
         """
         super()._update_gradient_fn()
         # TODO: consider conditional override
+        # NOTE: this override causes interface type errors in Pennylane tests
         self.gradient_fn = "device"
