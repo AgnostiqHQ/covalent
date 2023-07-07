@@ -117,3 +117,11 @@ class QNodeQE(qml.QNode):
 
         self.device.qnode_specs = QNodeSpecs(**qml.specs(self)(*args, **kwargs))
         return super().__call__(*args, **kwargs)
+
+    def _update_gradient_fn(self):
+        """
+        Override this method to fix `self.gradient_fn` to be `"device"`.
+        """
+        super()._update_gradient_fn()
+        # TODO: consider conditional override
+        self.gradient_fn = "device"
