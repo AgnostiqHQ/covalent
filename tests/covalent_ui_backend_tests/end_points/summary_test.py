@@ -22,17 +22,26 @@
 
 from os.path import abspath, dirname
 
+import pytest
 from sqlalchemy import Boolean, Column, Integer, String
 from sqlalchemy.orm import declarative_base
 
-import tests.covalent_ui_backend_tests.utils.main as main
+from tests.covalent_ui_backend_tests import fastapi_app
 from tests.covalent_ui_backend_tests.utils.assert_data.summary import seed_summary_data
 from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
+from tests.covalent_ui_backend_tests.utils.trigger_events import shutdown_event, startup_event
 
 object_test_template = TestClientTemplate()
 MockBase = declarative_base()
 output_path = dirname(abspath(__file__)) + "/utils/assert_data/summary_data.json"
 output_data = seed_summary_data()
+
+
+@pytest.fixture(scope="module", autouse=True)
+def env_setup():
+    startup_event()
+    yield
+    shutdown_event()
 
 
 class MockLattice(MockBase):
@@ -51,7 +60,7 @@ def test_overview():
     test_data = output_data["test_overview"]["case1"]
     response = object_test_template(
         api_path=output_data["test_overview"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.GET,
     )
     assert response.status_code == test_data["status_code"]
@@ -64,7 +73,7 @@ def test_overview_invalid_method():
     test_data = output_data["test_overview"]["case2"]
     response = object_test_template(
         api_path=output_data["test_overview"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.POST,
     )
     assert response.status_code == test_data["status_code"]
@@ -77,7 +86,7 @@ def test_list():
     test_data = output_data["test_list"]["case1"]
     response = object_test_template(
         api_path=output_data["test_list"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.GET,
         query_data=test_data["request_data"]["query"],
     )
@@ -91,7 +100,7 @@ def test_list_count():
     test_data = output_data["test_list"]["case2"]
     response = object_test_template(
         api_path=output_data["test_list"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.GET,
         query_data=test_data["request_data"]["query"],
     )
@@ -105,7 +114,7 @@ def test_list_invalid_count():
     test_data = output_data["test_list"]["case4"]
     response = object_test_template(
         api_path=output_data["test_list"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.GET,
         query_data=test_data["request_data"]["query"],
     )
@@ -119,7 +128,7 @@ def test_list_search():
     test_data = output_data["test_list"]["case2"]
     response = object_test_template(
         api_path=output_data["test_list"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.GET,
         query_data=test_data["request_data"]["query"],
     )
@@ -133,7 +142,7 @@ def test_list_invalid_offset():
     test_data = output_data["test_list"]["case3"]
     response = object_test_template(
         api_path=output_data["test_list"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.GET,
         query_data=test_data["request_data"]["query"],
     )
@@ -147,7 +156,7 @@ def test_delete():
     test_data = output_data["test_delete"]["case1"]
     response = object_test_template(
         api_path=output_data["test_delete"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.POST,
         body_data=test_data["request_data"]["body"],
     )
@@ -161,7 +170,7 @@ def test_delete_invalid_dispatch_id():
     test_data = output_data["test_delete"]["case2"]
     response = object_test_template(
         api_path=output_data["test_delete"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.POST,
         body_data=test_data["request_data"]["body"],
     )
@@ -175,7 +184,7 @@ def test_delete_dispatch_multiple_times():
     test_data = output_data["test_delete"]["case3"]
     response = object_test_template(
         api_path=output_data["test_delete"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.POST,
         body_data=test_data["request_data"]["body"],
     )
@@ -189,7 +198,7 @@ def test_delete_invalid_uuid():
     test_data = output_data["test_delete"]["case4"]
     response = object_test_template(
         api_path=output_data["test_delete"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.GET,
     )
     assert response.status_code == test_data["status_code"]
@@ -202,7 +211,7 @@ def test_delete_empty():
     test_data = output_data["test_delete"]["case5"]
     response = object_test_template(
         api_path=output_data["test_delete"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.POST,
         body_data=test_data["request_data"]["body"],
     )
@@ -216,7 +225,7 @@ def test_delete_none():
     test_data = output_data["test_delete"]["case6"]
     response = object_test_template(
         api_path=output_data["test_delete"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.POST,
         body_data=test_data["request_data"]["body"],
     )
@@ -230,7 +239,7 @@ def test_partial_delete():
     test_data = output_data["test_delete"]["case8"]
     response = object_test_template(
         api_path=output_data["test_delete"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.POST,
         body_data=test_data["request_data"]["body"],
     )
@@ -245,7 +254,7 @@ def test_delete_bad_request(mocker):
     mocker.patch("covalent_ui.api.v1.data_layer.summary_dal.Lattice", MockLattice)
     response = object_test_template(
         api_path=output_data["test_delete"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.POST,
         body_data=test_data["request_data"]["body"],
     )
@@ -259,12 +268,13 @@ def test_delete_all():
     test_data = output_data["test_delete_all"]["case1"]
     response = object_test_template(
         api_path=output_data["test_delete_all"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.POST,
         body_data=test_data["request_data"]["body"],
     )
     assert response.status_code == test_data["status_code"]
     if "response_data" in test_data:
+        print(response.json())
         assert response.json() == test_data["response_data"]
 
 
@@ -273,7 +283,7 @@ def test_delete_all_with_search():
     test_data = output_data["test_delete_all"]["case3"]
     response = object_test_template(
         api_path=output_data["test_delete_all"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.POST,
         body_data=test_data["request_data"]["body"],
     )
@@ -287,7 +297,7 @@ def test_delete_all_with_filter():
     test_data = output_data["test_delete_all"]["case2"]
     response = object_test_template(
         api_path=output_data["test_delete_all"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.POST,
         body_data=test_data["request_data"]["body"],
     )
@@ -299,7 +309,7 @@ def test_delete_all_with_filter_case2():
     test_data = output_data["test_delete_all"]["case4"]
     response = object_test_template(
         api_path=output_data["test_delete_all"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.POST,
         body_data=test_data["request_data"]["body"],
     )
@@ -311,7 +321,7 @@ def test_delete_all_invalid_filter():
     test_data = output_data["test_delete_all"]["case5"]
     response = object_test_template(
         api_path=output_data["test_delete_all"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.POST,
         body_data=test_data["request_data"]["body"],
     )
@@ -326,7 +336,7 @@ def test_delete_all_bad_request(mocker):
     mocker.patch("covalent_ui.api.v1.data_layer.summary_dal.Lattice", MockLattice)
     response = object_test_template(
         api_path=output_data["test_delete_all"]["api_path"],
-        app=main.fastapi_app,
+        app=fastapi_app,
         method_type=MethodType.POST,
         body_data=test_data["request_data"]["body"],
     )

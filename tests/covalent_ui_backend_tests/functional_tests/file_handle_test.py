@@ -26,7 +26,7 @@ from covalent_ui.api.v1.utils.file_handle import FileHandler, transportable_obje
 from tests.covalent_ui_backend_tests.utils.assert_data.file_handle import mock_file_data
 from tests.covalent_ui_backend_tests.utils.assert_data.lattices import seed_lattice_data
 from tests.covalent_ui_backend_tests.utils.client_template import TestClientTemplate
-from tests.covalent_ui_backend_tests.utils.main import log_output_data, seed_files
+from tests.covalent_ui_backend_tests.utils.trigger_events import log_output_data, seed_files
 
 object_test_template = TestClientTemplate()
 output_data = seed_lattice_data()
