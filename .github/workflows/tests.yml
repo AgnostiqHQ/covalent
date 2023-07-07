@@ -328,8 +328,7 @@ jobs:
       - name: Upload UI backend report to Codecov
         id: upload-ui-backend-report
         if: >
-          false
-          && env.RECOMMENDED_PLATFORM
+          env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
           && (github.event_name == 'schedule'
           || steps.ui-backend-coverage.outcome == 'success')
