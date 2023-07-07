@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Removed the upper limit from `dask` and `distributed` packages' versions until we find a version which is incompatible with Covalent.
+- Pinned sqlalchemy version with upper limit <2.0.0.
 
 ### Tests
 
@@ -41,6 +42,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Operations
 
 - Reduce the number of pinned version numbers in the `setup.py`, `requirements.txt`, and `requirements-client.txt`
+- Updated the `wci.yml` file with new features
+
+### Fixed
+
+- Fixed the outstanding incompatibities between front-end data layer and a postgres database
+- Reverted file-lock changes
 
 ## [0.227.0-rc.0] - 2023-06-13
 
