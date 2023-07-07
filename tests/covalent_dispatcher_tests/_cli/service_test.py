@@ -1142,11 +1142,6 @@ def test_terminate_child_processes(mocker):
         "covalent_dispatcher._cli.service.psutil.Process", return_value=MagicMock()
     )
     children_mock = MagicMock()
-    # children_mock.pid = MagicMock()
-    # children_mock.send_signal = MagicMock()
-    # children_mock.kill = MagicMock()
-    # children_mock.wait = MagicMock()
-    # psutil_process_mock.return_value.children = MagicMock()
     psutil_process_mock.return_value.children.return_value = [children_mock]
     wait_procs_mock = mocker.patch("covalent_dispatcher._cli.service.psutil.wait_procs")
 
