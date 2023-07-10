@@ -48,6 +48,11 @@ class QNodeSpecs(BaseModel):
     num_parameter_shift_executions: int = None
 
 
+GRADIENT_ACCESS_MAXES = {
+    "parameter-shift": 2,
+}
+
+
 class QNodeQE(qml.QNode):
     """
         Initialize a QElectron instance from a given QNode and Executor.
@@ -136,13 +141,24 @@ class QNodeQE(qml.QNode):
             self._override_gradient_fn = None
 
     @property
+    def gradient_access_max(self):
+        """
+        Return the maximum number of times the `gradient_fn` property can be
+        accessed before the overridden value is returned and the counter is reset.
+        """
+        return GRADIENT_ACCESS_MAXES.get(self.diff_method, -1)
+
+    @property
     def gradient_fn(self):
         """
         Override the `gradient_fn` attribute to return custom value (as set by
         `override_gradient_fn`) every second time the property is accessed.
         """
-        if self._override_gradient_fn and self._gradient_access_counter > 1:
-            self._gradient_access_counter = 0
+        if (
+            self._override_gradient_fn and
+            self._gradient_access_counter >= self.gradient_access_max
+        ):
+            self.reset_gradient_counter()
             return self._override_gradient_fn
 
         # Increment access counter.
@@ -153,4 +169,10 @@ class QNodeQE(qml.QNode):
     def gradient_fn(self, fn):
         # Set attribute and reset access counter.
         self._gradient_fn = fn
+        self.reset_gradient_counter()
+
+    def reset_gradient_counter(self):
+        """
+        Reset the gradient access counter to 0.
+        """
         self._gradient_access_counter = 0
