@@ -29,7 +29,8 @@ from ..executor.utils.context import get_context
 
 _QE_DB_DATA_MARKER = "<====QELECTRON_DB_DATA====>"
 _DATA_FILENAME = "data.mdb"
-_QE_DB_DIRNAME = ".database"
+
+QE_DB_DIRNAME = ".database"
 
 app_log = logger.app_log
 
@@ -57,6 +58,7 @@ def print_qelectron_db() -> None:
         data_bytes = base64.b64encode(data_mdb_file.read())
 
     output_string = "".join([_QE_DB_DATA_MARKER, data_bytes.decode(), _QE_DB_DATA_MARKER])
+    app_log.debug(f"Printing Qelectron data for node_id {node_id}")
     print(output_string)
 
 
@@ -72,13 +74,14 @@ def extract_qelectron_db(s: str) -> Tuple[str, bytes]:
         bytes_data: bytes representing the `data.mdb` file
     """
     # do nothing if string is empty or no database bytes found in the `s`
-    if not s or not (_match := re.match(f".*{_QE_DB_DATA_MARKER}(.*){_QE_DB_DATA_MARKER}.*", s)):
+    data_pattern = f".*{_QE_DB_DATA_MARKER}(.*){_QE_DB_DATA_MARKER}.*"
+    if not s or not (_matches := re.findall(data_pattern, s)):
         app_log.debug("No Qelectron data detected")
         return s, b''
 
     # load qelectron data and convert back to bytes
     app_log.debug("Detected Qelectron output data")
-    bytes_data = base64.b64decode(_match.groups()[0])
+    bytes_data = base64.b64decode(_matches.pop())
 
     # remove decoded database bytes from `s`
     s_without_db = remove_qelectron_db(s)
@@ -121,7 +124,7 @@ def write_qelectron_db(
     results_dir = Path(get_config("dispatcher")["results_dir"]).resolve()
 
     # create the database directory if it does not exist
-    qelectron_db_dir = results_dir / dispatch_id / _QE_DB_DIRNAME
+    qelectron_db_dir = results_dir / dispatch_id / QE_DB_DIRNAME
     if not qelectron_db_dir.exists():
         qelectron_db_dir.mkdir()
 

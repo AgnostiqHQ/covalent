@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Exposed qelectron db in sdk result object
+- UI changes added for qelectrons and fix for related config file corruption
+
 ### Fixed
 
 - Resolving correct python executable

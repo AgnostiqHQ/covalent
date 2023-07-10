@@ -20,11 +20,12 @@
  * Relief from the License may be granted by purchasing a commercial license.
  */
 
-import { Grid, Paper, Tooltip, tooltipClasses, Typography } from '@mui/material'
+import { Grid, Paper, Tooltip, tooltipClasses, Typography, SvgIcon } from '@mui/material'
 import { styled } from '@mui/material/styles'
 import { Handle } from 'react-flow-renderer'
 import CopyButton from '../common/CopyButton'
 import { truncateMiddle, nodeLabelIcon, statusIcon } from '../../utils/misc'
+import { ReactComponent as QelectronSvg } from '../../assets/qelectron/qelectron.svg'
 
 export const NODE_TEXT_COLOR = 'rgba(250, 250, 250, 0.6)'
 
@@ -145,6 +146,7 @@ export const ElectronNode = ({
               data-testid="handleelectronNode"
             />
             {nodeLabelIcon(data.nodeType)}
+            {data?.isQelectron ? <SvgIcon sx={{ mt: 0.5, ml: -0.3 }}><QelectronSvg /></SvgIcon> : <></>}
             {statusIcon(data.status)}
             <Typography sx={{ fontSize: 14, mb: 0.3, mt: 0.3 }}>
               {data.label}

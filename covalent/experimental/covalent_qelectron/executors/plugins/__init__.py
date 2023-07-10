@@ -17,39 +17,3 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
-
-from typing import Union
-
-from covalent._shared_files.config import get_config
-from covalent.experimental.covalent_qelectron.executors.base import (
-    BaseProcessPoolQExecutor,
-    BaseQExecutor,
-    BaseThreadPoolQExecutor,
-    SyncBaseQExecutor,
-)
-
-__all__ = [
-    "Simulator",
-]
-
-
-class Simulator(BaseQExecutor):
-
-    device: str = get_config("qelectron")["device"]
-
-    parallel: Union[bool, str] = "thread"
-    workers: int = 10
-
-    def batch_submit(self, qscripts_list):
-
-        if self.parallel == "process":
-            self.backend = BaseProcessPoolQExecutor(num_processes=self.workers, device=self.device)
-        elif self.parallel == "thread":
-            self.backend = BaseThreadPoolQExecutor(num_threads=self.workers, device=self.device)
-        else:
-            self.backend = SyncBaseQExecutor(device=self.device)
-
-        return self.backend.batch_submit(qscripts_list)
-
-    def batch_get_results(self, futures_list):
-        return self.backend.batch_get_result(futures_list)

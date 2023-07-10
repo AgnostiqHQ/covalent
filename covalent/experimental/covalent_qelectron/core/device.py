@@ -82,6 +82,7 @@ class QEDevice(QubitDevice):
         return results
 
     def apply(self, *args, **kwargs):
+        # Dummy implementation of abstractmethod on `QubitDevice`
         pass
 
     @classmethod

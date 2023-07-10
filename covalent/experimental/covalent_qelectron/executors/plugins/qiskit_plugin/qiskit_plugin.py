@@ -34,9 +34,9 @@ from covalent.experimental.covalent_qelectron.executors.base import (
     get_asyncio_event_loop,
     get_thread_pool,
 )
-from covalent.experimental.covalent_qelectron.executors.plugins.qiskit_qelectron.local_sampler import QiskitLocalSampler
-from covalent.experimental.covalent_qelectron.executors.plugins.qiskit_qelectron.runtime_sampler import QiskitRuntimeSampler
-from covalent.experimental.covalent_qelectron.executors.plugins.qiskit_qelectron.utils import RuntimeOptions
+from covalent.experimental.covalent_qelectron.executors.plugins.qiskit_plugin.local_sampler import QiskitLocalSampler
+from covalent.experimental.covalent_qelectron.executors.plugins.qiskit_plugin.runtime_sampler import QiskitRuntimeSampler
+from covalent.experimental.covalent_qelectron.executors.plugins.qiskit_plugin.utils import RuntimeOptions
 from covalent.experimental.covalent_qelectron.shared_utils import import_from_path
 
 __all__ = [
@@ -44,7 +44,7 @@ __all__ = [
     "QiskitExecutor",
 ]
 
-_QEXECUTOR_PLUGINS_DEFAULTS = {
+_QEXECUTOR_PLUGIN_DEFAULTS = {
 
     "IBMQExecutor": {
         "backend": "ibmq_qasm_simulator",
@@ -177,7 +177,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
         }
 
         # initialize a custom Pennylane device
-        dev = _qiskit_execution_device(
+        dev = _execution_device_factory(
             self.device,
             qnode_device_cls=import_from_path(self.qnode_device_import_path),
             **device_init_kwargs,
@@ -233,7 +233,7 @@ _DEVICE_MAP = {
 }
 
 
-def _qiskit_execution_device(device_name: str, qnode_device_cls, **kwargs):
+def _execution_device_factory(device_name: str, qnode_device_cls, **kwargs):
     """
     Allows for the creation of a custom Pennylane-Qiskit device from a string name.
     """

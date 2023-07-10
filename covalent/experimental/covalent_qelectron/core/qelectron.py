@@ -31,15 +31,15 @@ from ..shared_utils.utils import get_import_path
 
 
 class QElectronInfo(BaseModel):
-    # TODO: fix serialization/deserialization
-    # iterating returns name-value tuples, which have no `.json()`
-    # see: covalent_qelectron/shared_utils/utils.py
+    """
+    A container for QNode and Pennylane settings used by the wrapping QElectron.
+    """
     name: str
     description: str = None
     qnode_device_import_path: str  # used to inherit type converters and other methods
     qnode_device_shots: Optional[int]  # optional default for execution devices
     num_device_wires: int  # this can not be reliably inferred from tapes alone
-    pennylane_active_return: bool  # client-sde status of `pennylane.active_return()
+    pennylane_active_return: bool  # client-side status of `pennylane.active_return()`
 
 
 def qelectron(qnode=None, *, executors=None, name=None, description=None):

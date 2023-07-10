@@ -24,7 +24,6 @@ from typing import Any, Tuple
 
 import cloudpickle
 
-# import orjson as json
 
 _IMPORT_PATH_SEPARATOR = ":"
 
@@ -35,20 +34,6 @@ def cloudpickle_serialize(obj):
 
 def cloudpickle_deserialize(obj):
     return cloudpickle.loads(obj)
-
-
-# def dummy_serialize(obj):
-#     try:
-#         return [o.json() for o in obj]
-#     except (AttributeError, TypeError):
-#         return obj
-
-
-# def dummy_deserialize(ser_obj):
-#     try:
-#         return [json.loads(ser_o) for ser_o in ser_obj]
-#     except (json.JSONDecodeError, TypeError):
-#         return ser_obj
 
 
 def select_first_executor(qnode, executors):

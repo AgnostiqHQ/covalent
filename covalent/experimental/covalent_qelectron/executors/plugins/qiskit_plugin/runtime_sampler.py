@@ -22,7 +22,7 @@
 Pennylane-Qiskit device that uses the Qiskit Runtime `Sampler` primitive
 """
 
-from typing import List, Union
+from typing import Any, List, Union
 
 import pennylane as qml
 from qiskit_ibm_runtime import Sampler
@@ -30,29 +30,6 @@ from qiskit_ibm_runtime import Sampler
 from .devices_base import QiskitSamplerDevice
 from .sessions import get_cached_session
 from .utils import extract_options
-
-
-def _post_process_device(wires):
-
-    class _PostProcessDevice(QiskitRuntimeSampler):
-        # pylint: disable=too-few-public-methods
-
-        results = None
-
-        def batch_execute(self, *_, **__):
-            """
-            Override to return expected result.
-            """
-            return self.results
-
-    return _PostProcessDevice(
-        wires=wires,
-        shots=1,
-        backend_name="",
-        max_time=1,
-        options={},
-        service_init_kwargs={}
-    )
 
 
 class QiskitRuntimeSampler(QiskitSamplerDevice):
@@ -182,6 +159,31 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
         This is necessary for the raw output from `post_process` to be handled
         as if it came from `batch_execute`.
         """
-        dev = _post_process_device(self.wires)
-        dev.results = results
+        dev = _PostProcessDevice(self.wires, results)
         return qml.execute(circuits, dev, None)
+
+
+class _PostProcessDevice(QiskitRuntimeSampler):
+    """
+    A copy of the QiskitRuntimeSampler class with a dummy `batch_execute` method
+    that returns the assigned `results`.
+    """
+
+    def __init__(self, wires, results: Any):
+
+        super().__init__(
+            wires=wires,
+            shots=1,
+            backend_name="",
+            max_time=1,
+            options={},
+            service_init_kwargs={}
+        )
+
+        self._results = results
+
+    def batch_execute(self, *_, **__):
+        """
+        Override to return expected result.
+        """
+        return self._results
