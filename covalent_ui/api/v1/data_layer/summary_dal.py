@@ -23,7 +23,7 @@ from datetime import datetime, timezone
 from sqlite3 import InterfaceError
 from typing import List
 
-from sqlalchemy import case, extract, update
+from sqlalchemy import case, extract, select, update
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import desc, func, or_
 from sqlalchemy.util import immutabledict
@@ -49,7 +49,7 @@ class Summary:
     def __init__(self, db_con: Session) -> None:
         self.db_con = db_con
 
-    def get_summary(
+    async def get_summary(
         self, count, offset, sort_by, search, sort_direction, status_filter
     ) -> List[Lattice]:
         """
@@ -63,11 +63,8 @@ class Summary:
         Return:
             List of top most Lattices and count
         """
-        result = None
-
         status_filters = self.get_filters(status_filter)
-
-        data = self.db_con.query(
+        select_query = [
             Lattice.dispatch_id.label("dispatch_id"),
             Lattice.name.label("lattice_name"),
             (
@@ -86,7 +83,8 @@ class Summary:
             func.coalesce(Lattice.completed_at, None).label("ended_at"),
             Lattice.status.label("status"),
             Lattice.updated_at.label("updated_at"),
-        ).filter(
+        ]
+        where_query = [
             or_(
                 Lattice.name.ilike(f"%{search}%"),
                 Lattice.dispatch_id.ilike(f"%{search}%"),
@@ -94,48 +92,39 @@ class Summary:
             Lattice.status.in_(status_filters),
             Lattice.is_active.is_not(False),
             Lattice.electron_id.is_(None),
-        )
-
+        ]
+        order_by_query = []
         if sort_by.value == "status":
             case_status = case(
-                [
-                    (Lattice.status == Status.NEW_OBJECT.value, 0),
-                    (Lattice.status == Status.RUNNING.value, 1),
-                    (Lattice.status == Status.COMPLETED.value, 2),
-                    (Lattice.status == Status.POSTPROCESSING.value, 3),
-                    (Lattice.status == Status.POSTPROCESSING_FAILED.value, 4),
-                    (Lattice.status == Status.PENDING_POSTPROCESSING.value, 5),
-                    (Lattice.status == Status.FAILED.value, 6),
-                    (Lattice.status == Status.CANCELLED.value, 7),
-                ]
+                (Lattice.status == Status.NEW_OBJECT.value, 0),
+                (Lattice.status == Status.RUNNING.value, 1),
+                (Lattice.status == Status.COMPLETED.value, 2),
+                (Lattice.status == Status.POSTPROCESSING.value, 3),
+                (Lattice.status == Status.POSTPROCESSING_FAILED.value, 4),
+                (Lattice.status == Status.PENDING_POSTPROCESSING.value, 5),
+                (Lattice.status == Status.FAILED.value, 6),
+                (Lattice.status == Status.CANCELLED.value, 7),
             )
-            data = data.order_by(
+            order_by_query = [
                 desc(case_status) if sort_direction == SortDirection.DESCENDING else case_status
-            )
+            ]
         else:
-            data = data.order_by(
+            order_by_query = [
                 desc(sort_by.value)
                 if sort_direction == SortDirection.DESCENDING
                 else sort_by.value
-            )
-
-        results = data.offset(offset).limit(count).all()
-
-        counter = (
-            self.db_con.query(func.count(Lattice.id))
-            .filter(
-                or_(
-                    Lattice.name.ilike(f"%{search}%"),
-                    Lattice.dispatch_id.ilike(f"%{search}%"),
-                ),
-                Lattice.status.in_(status_filters),
-                Lattice.is_active.is_not(False),
-                Lattice.electron_id.is_(None),
-            )
-            .first()
+            ]
+        orm_query = (
+            select(*select_query)
+            .where(*where_query)
+            .order_by(*order_by_query)
+            .slice(offset, count)
         )
+        orm_query_counter = select(func.count()).where(*where_query)
+        results = await self.db_con.execute(orm_query)
+        counter = await self.db_con.scalar(orm_query_counter)
         return DispatchResponse(
-            items=[DispatchModule.from_orm(result) for result in results], total_count=counter[0]
+            items=[DispatchModule.from_orm(result) for result in results], total_count=counter
         )
 
     def get_summary_overview(self) -> Lattice:

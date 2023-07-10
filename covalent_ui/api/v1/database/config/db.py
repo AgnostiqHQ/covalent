@@ -20,11 +20,16 @@
 
 """DB Config"""
 
+from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker
+
 # from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import DeclarativeBase
+
 from covalent_dispatcher._db.datastore import DataStore
 
 engine = DataStore.factory().engine
+async_session = async_sessionmaker(DataStore.factory().async_engine, expire_on_commit=False)
 
-class Base(DeclarativeBase):
+
+class Base(AsyncAttrs, DeclarativeBase):
     pass

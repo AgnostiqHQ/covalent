@@ -29,6 +29,7 @@ from alembic.environment import EnvironmentContext
 from alembic.migration import MigrationContext
 from alembic.script import ScriptDirectory
 from sqlalchemy import create_engine
+from sqlalchemy.ext.asyncio import create_async_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy_utils import create_database, database_exists
 
@@ -48,8 +49,11 @@ class DataStore:
             self.db_URL = db_URL
         else:
             self.db_URL = "sqlite+pysqlite:///" + get_config("dispatcher.db_path")
+            self.async_db_URL = "sqlite+aiosqlite:///" + get_config("dispatcher.db_path")
 
         self.engine = create_engine(self.db_URL, **kwargs)
+        self.async_engine = create_async_engine(self.async_db_URL, **kwargs)
+
         if not database_exists(self.engine.url):
             create_database(self.engine.url)
         self.Session = sessionmaker(self.engine)

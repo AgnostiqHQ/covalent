@@ -27,7 +27,7 @@ from pydantic import conint
 from sqlalchemy.orm import Session
 
 from covalent_ui.api.v1.data_layer.summary_dal import Summary
-from covalent_ui.api.v1.database.config.db import engine
+from covalent_ui.api.v1.database.config.db import async_session, engine
 from covalent_ui.api.v1.models.dispatch_model import (
     DeleteAllDispatchesRequest,
     DeleteDispatchesRequest,
@@ -42,7 +42,7 @@ routes: APIRouter = APIRouter()
 
 
 @routes.get("/list")
-def get_all_dispatches(
+async def get_all_dispatches(
     count: Optional[conint(gt=0, lt=100)] = Query(10),
     offset: Optional[conint(gt=-1)] = 0,
     sort_by: Optional[SortBy] = SortBy.RUNTIME,
@@ -58,9 +58,11 @@ def get_all_dispatches(
     Returns:
         List of Dispatch Summary
     """
-    with Session(engine) as session:
+    async with async_session() as session:
         summary = Summary(session)
-        return summary.get_summary(count, offset, sort_by, search, sort_direction, status_filter)
+        return await summary.get_summary(
+            count, offset, sort_by, search, sort_direction, status_filter
+        )
 
 
 @routes.get("/overview", response_model=DispatchDashBoardResponse)
