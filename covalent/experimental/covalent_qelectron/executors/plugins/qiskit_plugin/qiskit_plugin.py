@@ -23,6 +23,7 @@ import time
 from typing import Optional, Union
 
 import pennylane as qml
+from pennylane.tape.qscript import QuantumScript
 from pydantic import Field
 
 from covalent._shared_files.config import get_config
@@ -247,5 +248,15 @@ def _execution_device_factory(device_name: str, qnode_device_cls, **kwargs):
         Wrapper that inherits from a Pennylane device class to extend the custom
         Pennylane-Qiskit device with any device-specific overridden methods.
         """
+        @property
+        def stopping_condition(self):
+            """
+            Needed to target `support_operation` method of `custom_device_cls`.
+
+            NOTE: is identical to `pennylane._device.Device.stopping_condition`.
+            """
+            return qml.BooleanFn(
+                lambda obj: not isinstance(obj, QuantumScript) and self.supports_operation(obj.name)
+            )
 
     return _QiskitExecutionDevice(**kwargs)
