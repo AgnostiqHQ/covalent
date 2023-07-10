@@ -21,12 +21,13 @@
 """Tests for Covalent command line interface (CLI) Tool."""
 
 import os
+import signal
 import subprocess
 import sys
 import tempfile
 import venv
 from unittest import mock
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock, Mock, call
 
 import psutil
 import pytest
@@ -1140,10 +1141,28 @@ def test_terminate_child_processes(mocker):
     psutil_process_mock = mocker.patch(
         "covalent_dispatcher._cli.service.psutil.Process", return_value=MagicMock()
     )
+    children_mock = MagicMock()
+    psutil_process_mock.return_value.children.return_value = [children_mock]
+    wait_procs_mock = mocker.patch("covalent_dispatcher._cli.service.psutil.wait_procs")
 
     _terminate_child_processes(1)
 
-    psutil_process_mock.assert_called_with(1)
+    psutil_process_mock.assert_has_calls(
+        [
+            call(1),
+            call(children_mock.pid),
+        ]
+    )
+    psutil_process_mock.return_value.children.assert_has_calls(
+        [
+            call(),
+            call(recursive=True),
+        ]
+    )
+    children_mock.send_signal.assert_called_once_with(signal.SIGINT)
+    children_mock.kill.assert_called_once_with()
+    wait_procs_mock.assert_called_once_with([children_mock])
+    children_mock.wait.assert_called_once_with()
 
 
 def test_graceful_start_permission_exception(mocker):
