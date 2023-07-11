@@ -36,7 +36,6 @@ from ..quantum_server.server_utils import (
     CircuitInfo,
     get_cached_executor,
     get_circuit_id,
-    # reconstruct_executors,
 )
 from ..shared_utils import cloudpickle_deserialize, cloudpickle_serialize, select_first_executor
 
