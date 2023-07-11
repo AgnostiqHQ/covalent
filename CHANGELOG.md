@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Tests
 
-- Changed the method for startup and shutdown events for pytest to work with fastapi     version 0.93.0
+- Changed the method for startup and shutdown events for pytest to work with fastapi version 0.93.0
 
 ### Docs
 
@@ -19,6 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bumped versions in pre-commit config
 - Added prettier for markdown files.
+- Reduce the number of pinned version numbers in the `setup.py`, `requirements.txt`, and `requirements-client.txt`
+- Updated the `wci.yml` file with new features
+- Bumped pre-commit prettier version
 
 ### Added
 
@@ -33,10 +36,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced the quickstart with a set of commonly used features
 - Removed duplicate "stop server" warning in the First Experimemnt page
 - Fixed typo in quickstart
+- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
 
 ### Changed
 
 - Removed the upper limit from `dask` and `distributed` packages' versions until we find a version which is incompatible with Covalent.
+- When the server is stopped, any workflows in a non-terminal state are first cancelled
 - Pinned sqlalchemy version with upper limit <2.0.0.
 
 ### Tests
@@ -44,13 +49,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Skipping functional tests for azure blob storage and gcp storage how to guides since they require credentials to run.
 - Added testcases for GUI backend.
 
-### Operations
-
-- Reduce the number of pinned version numbers in the `setup.py`, `requirements.txt`, and `requirements-client.txt`
-- Updated the `wci.yml` file with new features
-
 ### Fixed
 
+- When stopping the server, we send the proper `SIGINT` signal to uvicorn instead of `SIGKILL` which allows the second part of the FastAPI `lifespan` to execute properly.
 - Fixed the outstanding incompatibities between front-end data layer and a postgres database
 - Reverted file-lock changes
 
