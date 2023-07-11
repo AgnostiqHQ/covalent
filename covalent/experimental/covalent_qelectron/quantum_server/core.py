@@ -181,7 +181,7 @@ class QServer:
             # An example `futures_dict` will look like:
             # {0: future_1, 3: future_4}
 
-            executor_future_pairs.append((executor, futures_dict))
+            executor_future_pairs.append([executor, futures_dict])
 
         # An example `executor_future_pairs` will look like:
         # [[exec_4, {0: future_1, 3: future_4}], [exec_2, {2: future_3}], [exec_3, {4: future_5}]]
@@ -365,7 +365,7 @@ class QServer:
             #         {"execution_time": "2021-01-01 00:00:00",
             #          "result": [result_11, ...],
             #          "result_metadata": [{}, ...]},
-
+            #
             #         {"execution_time": "2021-01-01 00:00:00",
             #          "result": [result_21, ...],
             #          "result_metadata": [{}, ...]},
@@ -373,7 +373,7 @@ class QServer:
             # ]
 
             # Deleting the futures once their results have been retrieved
-            executor_future_pairs[idx_efp] = (executor_future_pairs[idx_efp][0],)
+            del executor_future_pairs[idx_efp][1]
 
             # After deletion of one `future_sub_batch`, the `executor_future_pairs` will look like:
             # [[exec_4], [exec_2, {2: future_3}], [exec_3, {4: future_5}]]
