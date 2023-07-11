@@ -115,7 +115,7 @@ class LatticeMetadata(BaseModel):
 class LatticeSchema(BaseModel):
     metadata: LatticeMetadata
     assets: LatticeAssets
-    custom_assets: Optional[Dict[str, AssetSchema]]
+    custom_assets: Optional[Dict[str, AssetSchema]] = None
 
     transport_graph: TransportGraphSchema
 

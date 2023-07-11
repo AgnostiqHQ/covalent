@@ -55,8 +55,8 @@ class ResultMetadata(BaseModel):
     dispatch_id: str
     root_dispatch_id: str
     status: StatusEnum
-    start_time: Optional[datetime]
-    end_time: Optional[datetime]
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
 
     # For use by redispatch
     def reset(self):

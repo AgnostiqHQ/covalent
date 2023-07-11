@@ -26,10 +26,10 @@ from pydantic import BaseModel
 
 
 class AssetSchema(BaseModel):
-    digest_alg: Optional[str]
-    digest: Optional[str]
-    uri: Optional[str]
-    remote_uri: Optional[str]
+    digest_alg: Optional[str] = None
+    digest: Optional[str] = None
+    uri: Optional[str] = None
+    remote_uri: Optional[str] = None
 
     # Size of the asset in bytes
     size: Optional[int] = 0

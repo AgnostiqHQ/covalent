@@ -85,9 +85,9 @@ class ElectronAssets(BaseModel):
     function_string: AssetSchema
     value: AssetSchema
     output: AssetSchema
-    error: Optional[AssetSchema]
-    stdout: Optional[AssetSchema]
-    stderr: Optional[AssetSchema]
+    error: Optional[AssetSchema] = None
+    stdout: Optional[AssetSchema] = None
+    stderr: Optional[AssetSchema] = None
 
     # electron_metadata
     deps: AssetSchema
@@ -100,10 +100,10 @@ class ElectronMetadata(BaseModel):
     name: str
     executor: str
     executor_data: dict
-    sub_dispatch_id: Optional[str]
+    sub_dispatch_id: Optional[str] = None
     status: StatusEnum
-    start_time: Optional[datetime]
-    end_time: Optional[datetime]
+    start_time: Optional[datetime] = None
+    end_time: Optional[datetime] = None
 
     # For use by redispatch
     def reset(self):
@@ -116,7 +116,7 @@ class ElectronSchema(BaseModel):
     id: int
     metadata: ElectronMetadata
     assets: ElectronAssets
-    custom_assets: Optional[Dict[str, AssetSchema]]
+    custom_assets: Optional[Dict[str, AssetSchema]] = None
 
     @validator("custom_assets")
     def check_custom_asset_keys(cls, v):
