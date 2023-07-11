@@ -11,10 +11,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Using `filelock` package now for platform independent file locking of config file. This should fix the failing tests as well as improve compatiblity with Windows.
 
-### Docs
-
-- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch
-
 ### Operations
 
 - Bumped versions in pre-commit config
