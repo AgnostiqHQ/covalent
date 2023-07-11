@@ -138,6 +138,7 @@ export function DispatchLayout() {
           setOpenQelectronDrawer={setOpenQelectronDrawer}
           toggleQelectron={() => setOpenQelectronDrawer((prev) => !prev)}
           openQelectronDrawer={openQelectronDrawer}
+          prettify={prettify}
           node={selectedElectron}
           graph={graph_result}
           dispatchId={
