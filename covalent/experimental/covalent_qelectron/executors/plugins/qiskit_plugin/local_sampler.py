@@ -111,3 +111,7 @@ class QiskitLocalSampler(QiskitSamplerDevice):
         metadatas = self._metadatas.copy()
         self._metadatas = None
         return results, metadatas
+
+    def post_process_all(self, *args) -> Tuple[Any, List[dict]]:
+        # Dummy method for local Sampler, redirects to `post_process`
+        return self.post_process(*args)
