@@ -45,6 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - When stopping the server, we send the proper `SIGINT` signal to uvicorn instead of `SIGKILL` which allows the second part of the FastAPI `lifespan` to execute properly.
 - Fixed the outstanding incompatibities between front-end data layer and a postgres database
 - Reverted file-lock changes
+- Fixed dispatches list UI api caused by pydantic config.
+- Fixed graph API.
 
 ## [0.227.0-rc.0] - 2023-06-13
 
