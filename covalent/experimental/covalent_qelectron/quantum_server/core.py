@@ -148,7 +148,12 @@ class QServer:
 
             # Generate a sub batch of qscripts to be executed on the same executor
             qscript_sub_batch = [linked_executors[i], {i: qscript}]
+
+            # The qscript submission order is stored in this list to ensure that
+            # the final result is recombined correctly, even if task-circuit
+            # correspondence is not one-to-one. See, for example, PR #13.
             submission_order.append(i)
+
             for j in range(i + 1, len(qscripts)):
                 if linked_executors[i] == linked_executors[j]:
                     qscript_sub_batch[1][j] = qscripts[j]
