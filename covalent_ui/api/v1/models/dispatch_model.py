@@ -68,7 +68,7 @@ class DispatchResponse(BaseModel):
     class Config:
         """Configure example for openAPI"""
 
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "dispatches": [
                     {
@@ -121,7 +121,7 @@ class DispatchDashBoardResponse(BaseModel):
     class Config:
         """Configure example for openAPI"""
 
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "total_jobs": 5,
                 "total_jobs_running": 5,
