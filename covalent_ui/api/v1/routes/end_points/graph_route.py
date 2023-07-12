@@ -23,6 +23,7 @@
 import uuid
 
 from fastapi import APIRouter, HTTPException, status
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
 
 from covalent_ui.api.v1.data_layer.graph_dal import Graph
@@ -49,7 +50,10 @@ def get_graph(dispatch_id: uuid.UUID):
         if graph_data is not None:
             return GraphResponse(
                 dispatch_id=graph_data["dispatch_id"],
-                graph={"nodes": graph_data["nodes"], "links": graph_data["links"]},
+                graph={
+                    "nodes": jsonable_encoder(graph_data["nodes"]),
+                    "links": jsonable_encoder(graph_data["links"]),
+                },
             )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
