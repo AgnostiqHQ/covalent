@@ -84,7 +84,7 @@ def seed_summary_data():
                             "started_at": "2022-09-23T10:01:11.155428",
                             "ended_at": "2022-09-23T10:01:11.717064",
                             "status": "COMPLETED",
-                            "updated_at": "2022-09-23T10:01:11.720140",
+                            "updated_at": "2022-09-23T10:01:11.72014",
                         },
                     ],
                     "total_count": 2,
@@ -111,7 +111,7 @@ def seed_summary_data():
                             "started_at": "2022-09-23T10:01:11.155428",
                             "ended_at": "2022-09-23T10:01:11.717064",
                             "status": "COMPLETED",
-                            "updated_at": "2022-09-23T10:01:11.720140",
+                            "updated_at": "2022-09-23T10:01:11.72014",
                         }
                     ],
                     "total_count": 2,
@@ -129,6 +129,7 @@ def seed_summary_data():
                         "status_filter": "ALL",
                     }
                 },
+                "response_message": "Input should be greater than -1",
             },
             "case4": {
                 "status_code": 422,
@@ -144,10 +145,12 @@ def seed_summary_data():
                 "response_data": {
                     "detail": [
                         {
+                            "type": "greater_than",
                             "loc": ["query", "count"],
-                            "msg": "ensure this value is greater than 0",
-                            "type": "value_error.number.not_gt",
-                            "ctx": {"limit_value": 0},
+                            "msg": "Input should be greater than 0",
+                            "input": "0",
+                            "ctx": {"gt": 0},
+                            "url": "https://errors.pydantic.dev/2.1.2/v/greater_than",
                         }
                     ]
                 },
@@ -205,6 +208,7 @@ def seed_summary_data():
                         ]
                     }
                 },
+                "response_message": "Input should be an instance of UUID",
             },
             "case5": {
                 "status_code": 200,
@@ -290,7 +294,11 @@ def seed_summary_data():
                     "message": messages["none"],
                 },
             },
-            "case5": {"status_code": 422, "request_data": {"body": {"status_filter": "failed"}}},
+            "case5": {
+                "status_code": 422,
+                "request_data": {"body": {"status_filter": "failed"}},
+                "response_message": "Input should be 'ALL','NEW_OBJECT','COMPLETED','POSTPROCESSING','PENDING_POSTPROCESSING','POSTPROCESSING_FAILED','FAILED','RUNNING' or 'CANCELLED'",
+            },
             "case6": {
                 "status_code": 200,
                 "request_data": {"body": {"status_filter": "FAILED", "search_string": "random"}},
