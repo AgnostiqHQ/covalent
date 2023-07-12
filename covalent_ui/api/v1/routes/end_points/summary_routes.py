@@ -24,10 +24,9 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 from pydantic import conint
-from sqlalchemy.orm import Session
 
 from covalent_ui.api.v1.data_layer.summary_dal import Summary
-from covalent_ui.api.v1.database.config.db import async_session, engine
+from covalent_ui.api.v1.database.config.db import async_session
 from covalent_ui.api.v1.models.dispatch_model import (
     DeleteAllDispatchesRequest,
     DeleteDispatchesRequest,
@@ -98,7 +97,7 @@ async def delete_dispatches(req: Optional[DeleteDispatchesRequest]):
 
 
 @routes.post("/delete-all", response_model=DeleteDispatchesResponse)
-def delete_all_dispatches(req: Optional[DeleteAllDispatchesRequest]):
+async def delete_all_dispatches(req: Optional[DeleteAllDispatchesRequest]):
     """Delete one or more Dispatches
 
     Args:
@@ -109,6 +108,6 @@ def delete_all_dispatches(req: Optional[DeleteAllDispatchesRequest]):
         List of deleted dispatches if fails
     """
 
-    with Session(engine) as session:
+    async with async_session() as session:
         summary = Summary(session)
-        return summary.delete_all_dispatches(req)
+        return await summary.delete_all_dispatches(req)

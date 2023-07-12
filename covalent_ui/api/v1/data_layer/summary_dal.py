@@ -63,7 +63,7 @@ class Summary:
         Return:
             List of top most Lattices and count
         """
-        status_filters = self.get_filters(status_filter)
+        status_filters = await self.get_filters(status_filter)
         select_query = [
             Lattice.dispatch_id.label("dispatch_id"),
             Lattice.name.label("lattice_name"),
@@ -286,7 +286,7 @@ class Summary:
             message=message,
         )
 
-    def delete_all_dispatches(self, data: DeleteAllDispatchesRequest):
+    async def delete_all_dispatches(self, data: DeleteAllDispatchesRequest):
         """
         Delete dispatches
         Args:
@@ -296,10 +296,9 @@ class Summary:
         """
         success = []
         failure = []
-        status_filters = self.get_filters(data.status_filter)
-        filter_dispatches = (
-            self.db_con.query(Lattice.id, Lattice.dispatch_id)
-            .filter(
+        status_filters = await self.get_filters(data.status_filter)
+        filter_dispatches = await self.db_con.execute(
+            select(Lattice.id, Lattice.dispatch_id).where(
                 or_(
                     Lattice.name.ilike(f"%{data.search_string}%"),
                     Lattice.dispatch_id.ilike(f"%{data.search_string}%"),
@@ -307,21 +306,15 @@ class Summary:
                 Lattice.status.in_(status_filters),
                 Lattice.is_active.is_not(False),
             )
-            .all()
         )
-        dispatch_ids = [o.id for o in filter_dispatches]
-        dispatches = [uuid.UUID(o.dispatch_id) for o in filter_dispatches]
+        dispatch_ids, dispatches = zip(
+            *[(dispatch[0], uuid.UUID(dispatch[1])) for dispatch in filter_dispatches.all()]
+        )
         if len(dispatches) >= 1:
             try:
-                electron_ids = (
-                    self.db_con.query(Electron.id)
-                    .filter(
-                        Electron.parent_lattice_id.in_(dispatch_ids),
-                        Electron.is_active.is_not(False),
-                    )
-                    .scalar_subquery()
+                electron_ids = select(Electron.id).where(
+                    Electron.parent_lattice_id.in_(dispatch_ids), Electron.is_active.is_not(False)
                 )
-
                 update_electron_dependency = (
                     update(ElectronDependency)
                     .where(ElectronDependency.parent_electron_id.in_(electron_ids))
@@ -352,19 +345,19 @@ class Summary:
                         }
                     )
                 )
-                self.db_con.execute(
+                await self.db_con.execute(
                     update_electron_dependency,
-                    execution_options=immutabledict({"synchronize_session": "fetch"}),
+                    execution_options=immutabledict({"synchronize_session": False}),
                 )
-                self.db_con.execute(
+                await self.db_con.execute(
                     update_electron,
-                    execution_options=immutabledict({"synchronize_session": "fetch"}),
+                    execution_options=immutabledict({"synchronize_session": False}),
                 )
-                self.db_con.execute(
+                await self.db_con.execute(
                     update_lattice,
-                    execution_options=immutabledict({"synchronize_session": "fetch"}),
+                    execution_options=immutabledict({"synchronize_session": False}),
                 )
-                self.db_con.commit()
+                await self.db_con.commit()
                 success = dispatches
             except InterfaceError:
                 failure = dispatches
@@ -374,13 +367,14 @@ class Summary:
             message = "Some of the dispatches could not be deleted"
         else:
             message = "Dispatch(es) have been deleted successfully!"
+
         return DeleteDispatchesResponse(
             success_items=success,
             failure_items=failure,
             message=message,
         )
 
-    def get_filters(self, status_filter: Status):
+    async def get_filters(self, status_filter: Status):
         filters = []
         if status_filter == Status.ALL:
             filters = [status.value for status in Status]
