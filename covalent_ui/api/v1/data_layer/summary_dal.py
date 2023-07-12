@@ -127,7 +127,25 @@ class Summary:
             items=[DispatchModule.from_orm(result) for result in results], total_count=counter
         )
 
-    def get_summary_overview(self) -> Lattice:
+    async def get_dispatch_count_by_status(
+        self, status: str = "", is_active: bool = False, filter_by_job_done: bool = False
+    ) -> int:
+        filter_by = (
+            [Lattice.status == status]
+            if not filter_by_job_done
+            else [
+                or_(
+                    Lattice.status == "COMPLETED",
+                    Lattice.status == "POSTPROCESSING",
+                    Lattice.status == "POSTPROCESSING_FAILED",
+                    Lattice.status == "PENDING_POSTPROCESSING",
+                )
+            ]
+        )
+        filter_by.extend([Lattice.is_active.is_not(is_active), Lattice.electron_id.is_(None)])
+        return await self.db_con.scalar(select(func.count()).where(*filter_by))
+
+    async def get_summary_overview(self) -> DispatchDashBoardResponse:
         """
         Get summary overview
         Args:
@@ -138,104 +156,53 @@ class Summary:
             Latest running task status,
             Total dispatcher duration
         """
+        total_jobs_running = await self.get_dispatch_count_by_status(status="RUNNING")
 
-        total_jobs_running = self.db_con.query(
-            (func.count(Lattice.id))
-            .filter(
-                Lattice.status == "RUNNING",
-                Lattice.is_active.is_not(False),
-                Lattice.electron_id.is_(None),
-            )
-            .label("total_jobs_running")
-        ).first()
+        total_jobs_done = await self.get_dispatch_count_by_status(filter_by_job_done=True)
 
-        total_jobs_done = self.db_con.query(
-            (func.count(Lattice.id))
-            .filter(
-                or_(
-                    Lattice.status == "COMPLETED",
-                    Lattice.status == "POSTPROCESSING",
-                    Lattice.status == "POSTPROCESSING_FAILED",
-                    Lattice.status == "PENDING_POSTPROCESSING",
-                ),
-                Lattice.is_active.is_not(False),
-                Lattice.electron_id.is_(None),
-            )
-            .label("total_jobs_done")
-        ).first()
-
-        last_ran_job_status = (
-            self.db_con.query(Lattice.status)
+        last_ran_job_status = await self.db_con.scalar(
+            select(Lattice.status)
             .filter(Lattice.is_active.is_not(False), Lattice.electron_id.is_(None))
             .order_by(Lattice.updated_at.desc())
-            .first()
         )
 
-        run_time = (
-            self.db_con.query(
-                (
-                    func.sum(
-                        extract("epoch", Lattice.completed_at)
-                        - extract("epoch", Lattice.started_at)
+        run_time = await self.db_con.scalar(
+            select(
+                func.sum(
+                    func.coalesce(
+                        extract("epoch", Lattice.completed_at),
+                        extract("epoch", func.now()),
                     )
-                    * 1000
-                ).label("run_time")
-            )
-            .filter(Lattice.is_active.is_not(False), Lattice.electron_id.is_(None))
-            .first()
+                    - extract("epoch", Lattice.started_at)
+                )
+                * 1000
+            ).filter(Lattice.is_active.is_not(False), Lattice.electron_id.is_(None))
         )
 
-        total_failed = self.db_con.query(
-            (func.count(Lattice.id))
-            .filter(
-                Lattice.status == "FAILED",
-                Lattice.is_active.is_not(False),
-                Lattice.electron_id.is_(None),
+        total_jobs = await self.db_con.scalar(
+            select(func.count(Lattice.id)).filter(
+                Lattice.is_active.is_not(False), Lattice.electron_id.is_(None)
             )
-            .label("total_jobs_failed")
-        ).first()
-
-        total_jobs = self.db_con.query(
-            (func.count(Lattice.id))
-            .filter(Lattice.is_active.is_not(False), Lattice.electron_id.is_(None))
-            .label("total_jobs")
-        ).first()
-
-        total_jobs_cancelled = self.db_con.query(
-            (func.count(Lattice.id))
-            .filter(
-                Lattice.status == "CANCELLED",
-                Lattice.is_active.is_not(False),
-                Lattice.electron_id.is_(None),
-            )
-            .label("total_jobs_cancelled")
-        ).first()
-
-        total_jobs_new_object = self.db_con.query(
-            (func.count(Lattice.id))
-            .filter(
-                Lattice.status == "NEW_OBJECT",
-                Lattice.is_active.is_not(False),
-                Lattice.electron_id.is_(None),
-            )
-            .label("total_jobs_new_object")
-        ).first()
+        )
+        total_failed = await self.get_dispatch_count_by_status(status="FAILED")
+        total_jobs_cancelled = await self.get_dispatch_count_by_status(status="CANCELLED")
+        total_jobs_new_object = await self.get_dispatch_count_by_status(status="NEW_OBJECT")
 
         run_time = 0 if run_time is None else run_time
         return DispatchDashBoardResponse(
-            total_jobs_running=total_jobs_running[0],
-            total_jobs_completed=total_jobs_done[0],
-            latest_running_task_status=last_ran_job_status[0]
+            total_jobs_running=total_jobs_running,
+            total_jobs_completed=total_jobs_done,
+            latest_running_task_status=last_ran_job_status
             if last_ran_job_status is not None
             else None,
-            total_dispatcher_duration=run_time[0] if run_time is not None else 0,
-            total_jobs_failed=total_failed[0],
-            total_jobs_cancelled=total_jobs_cancelled[0],
-            total_jobs_new_object=total_jobs_new_object[0],
-            total_jobs=total_jobs[0],
+            total_dispatcher_duration=run_time if run_time is not None else 0,
+            total_jobs_failed=total_failed,
+            total_jobs_cancelled=total_jobs_cancelled,
+            total_jobs_new_object=total_jobs_new_object,
+            total_jobs=total_jobs,
         )
 
-    def delete_dispatches(self, data: DeleteDispatchesRequest):
+    async def delete_dispatches(self, data: DeleteDispatchesRequest) -> DeleteDispatchesResponse:
         """
         Delete dispatches
         Args:
@@ -254,24 +221,17 @@ class Summary:
             )
         for dispatch_id in data.dispatches:
             try:
-                lattice_id = (
-                    self.db_con.query(Lattice.id)
-                    .filter(
-                        Lattice.dispatch_id == str(dispatch_id),
-                        Lattice.is_active.is_not(False),
+                lattice_id = await self.db_con.scalar(
+                    select(Lattice.id).where(
+                        Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False)
                     )
-                    .first()
                 )
                 if lattice_id is None:
                     failure.append(dispatch_id)
                     continue
-                electron_ids = (
-                    self.db_con.query(Electron.id)
-                    .filter(
-                        Electron.parent_lattice_id == lattice_id[0],
-                        Electron.is_active.is_not(False),
-                    )
-                    .scalar_subquery()
+                electron_ids = select(Electron.id).where(
+                    Electron.parent_lattice_id == lattice_id,
+                    Electron.is_active.is_not(False),
                 )
 
                 update_electron_dependency = (
@@ -284,13 +244,13 @@ class Summary:
                         }
                     )
                 )
-                self.db_con.execute(
+                await self.db_con.execute(
                     update_electron_dependency,
-                    execution_options=immutabledict({"synchronize_session": "fetch"}),
+                    execution_options=immutabledict({"synchronize_session": False}),
                 )
                 update_electron = (
                     update(Electron)
-                    .where(Electron.parent_lattice_id == lattice_id[0])
+                    .where(Electron.parent_lattice_id == lattice_id)
                     .values(
                         {
                             Electron.updated_at: datetime.now(timezone.utc),
@@ -298,11 +258,11 @@ class Summary:
                         }
                     )
                 )
-                self.db_con.execute(update_electron)
+                await self.db_con.execute(update_electron)
 
                 update_lattice = (
                     update(Lattice)
-                    .where(Lattice.id == lattice_id[0])
+                    .where(Lattice.id == lattice_id)
                     .values(
                         {
                             Lattice.updated_at: datetime.now(timezone.utc),
@@ -310,8 +270,8 @@ class Summary:
                         }
                     )
                 )
-                self.db_con.execute(update_lattice)
-                self.db_con.commit()
+                await self.db_con.execute(update_lattice)
+                await self.db_con.commit()
                 success.append(dispatch_id)
             except InterfaceError:
                 failure.append(dispatch_id)

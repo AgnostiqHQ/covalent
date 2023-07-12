@@ -69,7 +69,7 @@ async def cancel_all_with_status(status: Status) -> List[str]:
     count = 100
 
     while True:
-        dispatches = get_all_dispatches(
+        dispatches = await get_all_dispatches(
             count=count,
             offset=page * count,
             status_filter=status,

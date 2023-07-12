@@ -66,7 +66,7 @@ async def get_all_dispatches(
 
 
 @routes.get("/overview", response_model=DispatchDashBoardResponse)
-def get_dashboard_details():
+async def get_dashboard_details():
     """Overview of Dispatches
 
     Args:
@@ -75,13 +75,13 @@ def get_dashboard_details():
     Returns:
         An Overview of dispatches as object
     """
-    with Session(engine) as session:
+    async with async_session() as session:
         summary = Summary(session)
-        return summary.get_summary_overview()
+        return await summary.get_summary_overview()
 
 
 @routes.post("/delete", response_model=DeleteDispatchesResponse)
-def delete_dispatches(req: Optional[DeleteDispatchesRequest]):
+async def delete_dispatches(req: Optional[DeleteDispatchesRequest]):
     """Delete one or more Dispatches
 
     Args:
@@ -92,9 +92,9 @@ def delete_dispatches(req: Optional[DeleteDispatchesRequest]):
         List of deleted dispatches if fails
     """
 
-    with Session(engine) as session:
+    async with async_session() as session:
         summary = Summary(session)
-        return summary.delete_dispatches(req)
+        return await summary.delete_dispatches(req)
 
 
 @routes.post("/delete-all", response_model=DeleteDispatchesResponse)
