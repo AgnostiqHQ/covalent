@@ -273,7 +273,6 @@ def test_electrons_file_bad_request():
         path=test_data["path"],
     )
     assert response.status_code == test_data["status_code"]
-    response_detail = response.json()["detail"][0]
     if "response_message" in test_data:
         response_detail = response.json()["detail"][0]
         assert response_detail["msg"] == test_data["response_message"]
