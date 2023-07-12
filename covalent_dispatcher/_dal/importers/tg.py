@@ -28,13 +28,13 @@ from sqlalchemy.orm import Session
 from covalent._shared_files import logger
 from covalent._shared_files.schemas.edge import EdgeSchema
 from covalent._shared_files.schemas.transport_graph import TransportGraphSchema
-from covalent_dispatcher._dal.edge import ElectronDependency
-from covalent_dispatcher._dal.electron import Electron
-from covalent_dispatcher._dal.job import Job
-from covalent_dispatcher._dal.lattice import Lattice
-from covalent_dispatcher._db import models
-from covalent_dispatcher._object_store.base import BaseProvider
 
+from ..._db import models
+from ..._object_store.base import BaseProvider
+from ..edge import ElectronDependency
+from ..electron import Electron
+from ..job import Job
+from ..lattice import Lattice
 from .electron import import_electron
 
 app_log = logger.app_log

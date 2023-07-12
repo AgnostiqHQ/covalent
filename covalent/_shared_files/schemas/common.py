@@ -22,7 +22,7 @@
 
 from enum import Enum
 
-from covalent._shared_files.util_classes import RESULT_STATUS
+from ..util_classes import RESULT_STATUS
 
 
 class StatusEnum(str, Enum):

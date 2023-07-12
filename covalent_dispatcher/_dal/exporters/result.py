@@ -33,9 +33,9 @@ from covalent._shared_files.schemas.result import (
     ResultSchema,
 )
 from covalent._shared_files.utils import format_server_url
-from covalent_dispatcher._dal.electron import Electron
-from covalent_dispatcher._dal.result import Result, get_result_object
 
+from ..electron import Electron
+from ..result import Result, get_result_object
 from ..utils.uri_filters import AssetScope, URIFilterPolicy, filter_asset_uri
 from .lattice import export_lattice
 

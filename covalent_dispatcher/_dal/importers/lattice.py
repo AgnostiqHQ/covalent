@@ -45,9 +45,10 @@ from covalent._shared_files.schemas.lattice import (
     LatticeAssets,
     LatticeSchema,
 )
-from covalent_dispatcher._dal.asset import Asset
-from covalent_dispatcher._dal.lattice import Lattice
-from covalent_dispatcher._object_store.local import BaseProvider
+
+from ..._object_store.local import BaseProvider
+from ..asset import Asset
+from ..lattice import Lattice
 
 
 def _get_lattice_meta(lat: LatticeSchema, storage_path) -> dict:

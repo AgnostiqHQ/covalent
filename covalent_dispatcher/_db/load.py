@@ -29,12 +29,12 @@ from covalent._shared_files import logger
 from covalent._shared_files.util_classes import Status
 from covalent._workflow.transport import TransportableObject
 from covalent._workflow.transport import _TransportGraph as SDKGraph
-from covalent_dispatcher._dal.electron import ASSET_KEYS as ELECTRON_ASSETS
-from covalent_dispatcher._dal.electron import METADATA_KEYS as ELECTRON_META
-from covalent_dispatcher._dal.result import get_result_object
-from covalent_dispatcher._dal.tg import _TransportGraph as SRVGraph
-from covalent_dispatcher._object_store.local import local_store
 
+from .._dal.electron import ASSET_KEYS as ELECTRON_ASSETS
+from .._dal.electron import METADATA_KEYS as ELECTRON_META
+from .._dal.result import get_result_object
+from .._dal.tg import _TransportGraph as SRVGraph
+from .._object_store.local import local_store
 from .datastore import workflow_db
 from .models import Electron, Lattice
 
