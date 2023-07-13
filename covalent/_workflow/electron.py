@@ -29,7 +29,8 @@ from dataclasses import asdict
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
 
-from .._dispatcher_plugins.local import LocalDispatcher
+from covalent._dispatcher_plugins.local import LocalDispatcher
+
 from .._file_transfer.enums import Order
 from .._file_transfer.file_transfer import FileTransfer
 from .._shared_files import logger

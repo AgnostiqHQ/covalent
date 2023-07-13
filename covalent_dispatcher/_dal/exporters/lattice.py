@@ -24,8 +24,8 @@
 
 from covalent._shared_files.schemas.asset import AssetSchema
 from covalent._shared_files.schemas.lattice import LatticeAssets, LatticeMetadata, LatticeSchema
+from covalent_dispatcher._dal.lattice import ASSET_KEYS, METADATA_KEYS, Lattice
 
-from ..lattice import ASSET_KEYS, METADATA_KEYS, Lattice
 from .tg import export_transport_graph
 
 

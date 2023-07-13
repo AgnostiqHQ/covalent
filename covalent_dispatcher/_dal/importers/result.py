@@ -32,12 +32,13 @@ from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas.lattice import LatticeSchema
 from covalent._shared_files.schemas.result import ResultAssets, ResultSchema
 from covalent._shared_files.utils import format_server_url
+from covalent_dispatcher._dal.asset import Asset
+from covalent_dispatcher._dal.electron import ElectronMeta
+from covalent_dispatcher._dal.job import Job
+from covalent_dispatcher._dal.result import Result, ResultMeta
+from covalent_dispatcher._object_store.local import BaseProvider, local_store
 
-from ..._object_store.local import BaseProvider, local_store
-from ..asset import Asset, copy_asset_meta
-from ..electron import ElectronMeta
-from ..job import Job
-from ..result import Result, ResultMeta
+from ..asset import copy_asset_meta
 from ..tg_ops import TransportGraphOps
 from ..utils.uri_filters import AssetScope, URIFilterPolicy, filter_asset_uri
 from .lattice import _get_lattice_meta, import_lattice_assets
