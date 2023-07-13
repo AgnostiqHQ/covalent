@@ -213,6 +213,7 @@ def seed_electron_data():
                     "electron_id": VALID_NODE_ID,
                     "name": "results",
                 },
+                "response_message": "Input should be 'function_string','function','executor','result','value','stdout','deps','call_before','call_after','error','info' or 'inputs'",
             },
             "case_invalid": {
                 "status_code": 400,

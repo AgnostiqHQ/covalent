@@ -21,17 +21,32 @@
 """Logs functional test"""
 
 
+import pytest
+
 from covalent_ui.api.v1.data_layer.logs_dal import Logs
 from covalent_ui.api.v1.utils.log_handler import log_config
 from tests.covalent_ui_backend_tests.utils.assert_data.logs import seed_logs_data
+from tests.covalent_ui_backend_tests.utils.trigger_events import shutdown_event, startup_event
 
 output_data = seed_logs_data()
+UI_LOGFILE = "covalent_ui.api.v1.data_layer.logs_dal.UI_LOGFILE"
 
 
-def test_download_logs():
+@pytest.fixture(scope="module", autouse=True)
+def env_setup():
+    startup_event()
+    yield
+    shutdown_event()
+
+
+def test_download_logs(mocker):
     """Test Download Logs"""
     logs = Logs()
     test_data = output_data["test_download_logs"]["case_functional_1"]
+    mocker.patch(
+        UI_LOGFILE,
+        "tests/covalent_ui_backend_tests/utils/mock_files/log_files/case_3.log",
+    )
     response = logs.download_logs()
     if test_data["response_type"]:
         assert type(response).__name__ == test_data["response_type"]

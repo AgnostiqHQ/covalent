@@ -21,12 +21,22 @@
 """Settings API"""
 
 
+import pytest
+
 from tests.covalent_ui_backend_tests import fastapi_app
 from tests.covalent_ui_backend_tests.utils.assert_data.settings import seed_settings_data
 from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
+from tests.covalent_ui_backend_tests.utils.trigger_events import shutdown_event, startup_event
 
 object_test_template = TestClientTemplate()
 output_data = seed_settings_data()
+
+
+@pytest.fixture(scope="module", autouse=True)
+def env_setup():
+    startup_event()
+    yield
+    shutdown_event()
 
 
 def test_fetch_settings():

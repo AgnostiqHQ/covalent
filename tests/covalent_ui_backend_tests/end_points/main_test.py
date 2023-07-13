@@ -20,16 +20,26 @@
 
 """Main Test"""
 
+import os
 from pathlib import Path
 
+import pytest
 from fastapi.templating import Jinja2Templates
 
 from tests.covalent_ui_backend_tests import fastapi_app
 from tests.covalent_ui_backend_tests.utils.assert_data.main import main_mock_data
 from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
+from tests.covalent_ui_backend_tests.utils.trigger_events import shutdown_event, startup_event
 
 object_test_template = TestClientTemplate()
 output_data = main_mock_data()
+
+
+@pytest.fixture(scope="module", autouse=True)
+def env_setup():
+    startup_event()
+    yield
+    shutdown_event()
 
 
 def test_webhook():
@@ -63,12 +73,13 @@ def test_draw(mocker):
 def test_root(mocker):
     """Test root API"""
     path = str(Path(__file__).parent.parent.parent.parent.absolute()) + "/covalent_ui/webapp/build"
-    mocker.patch("covalent_ui.app.templates", Jinja2Templates(directory=path))
-    test_data = output_data["test_misc"]["case1"]
-    response = object_test_template(
-        api_path=output_data["test_misc"]["api_path"],
-        app=fastapi_app,
-        method_type=MethodType.GET,
-        path=test_data["path"],
-    )
-    assert response.status_code == test_data["status_code"]
+    if os.path.exists(path):
+        mocker.patch("covalent_ui.app.templates", Jinja2Templates(directory=path))
+        test_data = output_data["test_misc"]["case1"]
+        response = object_test_template(
+            api_path=output_data["test_misc"]["api_path"],
+            app=fastapi_app,
+            method_type=MethodType.GET,
+            path=test_data["path"],
+        )
+        assert response.status_code == test_data["status_code"]

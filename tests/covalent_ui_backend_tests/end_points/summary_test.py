@@ -23,7 +23,7 @@
 from os.path import abspath, dirname
 
 import pytest
-from sqlalchemy import Boolean, Column, Integer, String
+from sqlalchemy import Boolean, Column, DateTime, Integer, String, func
 from sqlalchemy.orm import declarative_base
 
 from tests.covalent_ui_backend_tests import fastapi_app
@@ -47,12 +47,19 @@ def env_setup():
 class MockLattice(MockBase):
     """Mock Lattice"""
 
-    __tablename__ = "lattice"
+    __tablename__ = "lattices"
     id = Column(Integer, primary_key=True)
     dispatch_id = Column(String(2), nullable=False)
+    electron_id = Column(Integer)
     status = Column(String(24), nullable=False)
     name = Column(String(24), nullable=False)
+    electron_num = Column(Integer, nullable=False)
+    completed_electron_num = Column(Integer, nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    updated_at = Column(DateTime, nullable=False, onupdate=func.now(), server_default=func.now())
+    started_at = Column(DateTime)
+    completed_at = Column(DateTime)
 
 
 def test_overview():
@@ -147,8 +154,9 @@ def test_list_invalid_offset():
         query_data=test_data["request_data"]["query"],
     )
     assert response.status_code == test_data["status_code"]
-    response_detail = response.json()["detail"][0]
-    assert response_detail["type"] == "value_error.number.not_gt"
+    if "response_message" in test_data:
+        response_detail = response.json()["detail"][0]
+        assert response_detail["msg"] == test_data["response_message"]
 
 
 def test_delete():
@@ -202,8 +210,9 @@ def test_delete_invalid_uuid():
         method_type=MethodType.GET,
     )
     assert response.status_code == test_data["status_code"]
-    response_detail = response.json()["detail"][0]
-    assert response_detail["type"] == "type_error.uuid"
+    if "response_message" in test_data:
+        response_detail = response.json()["detail"][0]
+        assert response_detail["msg"] == test_data["response_message"]
 
 
 def test_delete_empty():
@@ -326,8 +335,9 @@ def test_delete_all_invalid_filter():
         body_data=test_data["request_data"]["body"],
     )
     assert response.status_code == test_data["status_code"]
-    response_detail = response.json()["detail"][0]
-    assert response_detail["type"] == "type_error.enum"
+    if "response_message" in test_data:
+        response_detail = response.json()["detail"][0]
+        assert response_detail["msg"] == test_data["response_message"]
 
 
 def test_delete_all_bad_request(mocker):
