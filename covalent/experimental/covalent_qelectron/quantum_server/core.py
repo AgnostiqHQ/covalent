@@ -113,12 +113,20 @@ class QServer:
         linked_executors = []
         for qscript in qscripts:
             selected_executor = self.selector(qscript, executors)
-            if isinstance(selected_executor, AsyncBaseQCluster):
-                qcluster = selected_executor
-                _executors = selected_executor.executors
-                selected_executor = qcluster.get_selector()(qscript, _executors)
 
-            linked_executors.append(get_cached_executor(**selected_executor.dict()))
+            # Use cached executor.
+            selected_executor = get_cached_executor(**selected_executor.dict())
+
+            if isinstance(selected_executor, AsyncBaseQCluster):
+
+                # Apply QCluster's selector as well.
+                qcluster = selected_executor
+                selected_executor = qcluster.get_selector()(qscript, qcluster.executors)
+
+                # Use cached executor.
+                selected_executor = get_cached_executor(**selected_executor.dict())
+
+            linked_executors.append(selected_executor)
 
         # An example `linked_executors` will look like:
         # [exec_4, exec_4, exec_2, exec_3]
