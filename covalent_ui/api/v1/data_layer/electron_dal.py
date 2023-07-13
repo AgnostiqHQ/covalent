@@ -18,13 +18,18 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import codecs
+import pickle
 import uuid
 
 from fastapi import HTTPException
+from fastapi.responses import JSONResponse
 from sqlalchemy import extract
 from sqlalchemy.sql import func
 
 from covalent._results_manager.results_manager import get_result
+from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
+from covalent_dispatcher._service.app import get_result
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.lattices import Lattice
 from covalent_ui.api.v1.utils.file_handle import validate_data
@@ -96,13 +101,6 @@ class Electrons:
         Returns:
             Returns the inputs data from Result object
         """
-        import codecs
-        import pickle
-
-        from fastapi.responses import JSONResponse
-
-        from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
-        from covalent_dispatcher._service.app import get_result
 
         result = get_result(dispatch_id=str(dispatch_id), wait=False)
         if isinstance(result, JSONResponse) and result.status_code == 404:
