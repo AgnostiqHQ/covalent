@@ -81,7 +81,14 @@ class QEDevice(QubitDevice):
         if self._async_run:
             self._batch_id = batch_id
             # Return a dummy result
-            return [self._asarray([1])] * len(circuits)
+            dummy_retval = [self._asarray([1])] * len(circuits)
+
+            if grad_circuits:
+                # Also include dummy gradient results to avoid unpack errors.
+                dummy_grad_retval = [self._asarray([1])] * len(grad_circuits)
+                return dummy_retval, dummy_grad_retval
+
+            return dummy_retval
 
         # Otherwise, get the results from the middleware
         results = middleware.get_results(batch_id)
