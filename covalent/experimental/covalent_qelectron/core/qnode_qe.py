@@ -86,6 +86,14 @@ class QNodeQE(qml.QNode):
         self._override_gradient_fn = None
         self._gradient_access_counter = 0
 
+        # Update `execute_kwargs` such that `qe_device.batch_execute` will be called
+        # to obtain the circuits result, and `qe_device.gradients` will be called
+        # to obtain the gradients.
+        if self.device.qelectron_info.pennylane_active_return:
+            self.execute_kwargs.update(grad_on_execution=False)
+        else:
+            self.execute_kwargs.update(mode="backward")
+
     @contextmanager
     def mark_call_async(self):
         # pylint: disable=protected-access
