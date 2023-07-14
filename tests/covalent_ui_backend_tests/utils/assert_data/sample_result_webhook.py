@@ -18,33 +18,17 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Model helper to handle sort by and sort direction"""
-
-from enum import Enum
+"Result Webhook mock data"
 
 
-class CaseInsensitiveEnum(Enum):
-    """Enum overriden to support case insensitive keys"""
-
-    @classmethod
-    def _missing_(cls, value):
-        for member in cls:
-            if member.value.upper() == value.upper():
-                return member
-
-
-class SortBy(CaseInsensitiveEnum):
-    """Values to filter data by"""
-
-    RUNTIME = "runtime"
-    STATUS = "status"
-    STARTED = "started_at"
-    LATTICE_NAME = "lattice_name"
-    ENDED = "ended_at"
-
-
-class SortDirection(CaseInsensitiveEnum):
-    """Values to decide sort direction"""
-
-    ASCENDING = "ASC"
-    DESCENDING = "DESC"
+def result_mock_data():
+    """Mock data for result webhook"""
+    return {
+        "test_result_webhooks": {
+            "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
+            "case1": {
+                "test_path": "/api/draw",
+                "response_data": "http://localhost:48008/api/draw",
+            },
+        }
+    }

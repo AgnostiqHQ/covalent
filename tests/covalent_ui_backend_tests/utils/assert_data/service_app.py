@@ -18,33 +18,25 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Model helper to handle sort by and sort direction"""
-
-from enum import Enum
+"Service app mock data"
 
 
-class CaseInsensitiveEnum(Enum):
-    """Enum overriden to support case insensitive keys"""
-
-    @classmethod
-    def _missing_(cls, value):
-        for member in cls:
-            if member.value.upper() == value.upper():
-                return member
-
-
-class SortBy(CaseInsensitiveEnum):
-    """Values to filter data by"""
-
-    RUNTIME = "runtime"
-    STATUS = "status"
-    STARTED = "started_at"
-    LATTICE_NAME = "lattice_name"
-    ENDED = "ended_at"
-
-
-class SortDirection(CaseInsensitiveEnum):
-    """Values to decide sort direction"""
-
-    ASCENDING = "ASC"
-    DESCENDING = "DESC"
+def seed_service_app_data():
+    return {
+        "test_result": {
+            "api_path": "/api/result/83568425-5565-4543-ab6f-7afb88e50458?wait=false&status_only=false",
+            "case1": {
+                "status_code": 404,
+                "response_data": {
+                    "message": "The requested dispatch ID 78525234-72ec-42dc-94a0-f4751707f9cd was not found."
+                },
+            },
+        },
+        "test_db_path": {
+            "api_path": "/api/db-path",
+            "case1": {
+                "status_code": 200,
+                "response_data": '"/home/arunmukesh/.local/share/covalent/dispatcher_db.sqlite"',
+            },
+        },
+    }

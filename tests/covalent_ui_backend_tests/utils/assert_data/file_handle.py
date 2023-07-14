@@ -18,33 +18,28 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Model helper to handle sort by and sort direction"""
-
-from enum import Enum
+"File Handler mock data"
 
 
-class CaseInsensitiveEnum(Enum):
-    """Enum overriden to support case insensitive keys"""
-
-    @classmethod
-    def _missing_(cls, value):
-        for member in cls:
-            if member.value.upper() == value.upper():
-                return member
-
-
-class SortBy(CaseInsensitiveEnum):
-    """Values to filter data by"""
-
-    RUNTIME = "runtime"
-    STATUS = "status"
-    STARTED = "started_at"
-    LATTICE_NAME = "lattice_name"
-    ENDED = "ended_at"
-
-
-class SortDirection(CaseInsensitiveEnum):
-    """Values to decide sort direction"""
-
-    ASCENDING = "ASC"
-    DESCENDING = "DESC"
+def mock_file_data():
+    """Mock main data"""
+    return {
+        "test_read_text": {
+            "file_path": "tests/covalent_ui_backend_tests/utils/mock_files/78525234-72ec-42dc-94a0-f4751707f9cd",
+            "case1": {
+                "file_name": "function_string.txt",
+                "response_data": """@ct.lattice
+def workflow(name):
+\tresult=join(hello(),moniker(name))
+\treturn result+" !!\"""",
+            },
+            "case2": {"file_name": "function_strings.txt", "response_data": None},
+        },
+        "test_unpickle": {
+            "file_path": "tests/covalent_ui_backend_tests/utils/mock_files/78525234-72ec-42dc-94a0-f4751707f9cd",
+            "case1": {
+                "file_name": "result.pkl",
+                "response_data": (None, None),
+            },
+        },
+    }
