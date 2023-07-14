@@ -26,6 +26,11 @@ from ..executors.base import BaseQExecutor
 
 
 class DefaultSelector:
+    # pylint: disable=too-few-public-methods
+
+    """
+    Implements default selection strategies for `QCluster` instances.
+    """
 
     def __init__(self, name: str = "cycle"):
         self.name = name
@@ -41,7 +46,7 @@ class DefaultSelector:
 
     def _cycle(
         self,
-        qscripts_list: List[QuantumScript],
+        qscript: QuantumScript,  # pylint: disable=unused-argument
         executors: List[BaseQExecutor]
     ) -> BaseQExecutor:
 
@@ -52,7 +57,7 @@ class DefaultSelector:
 
     def _random(
         self,
-        qscripts_list: List[QuantumScript],
+        qscript: QuantumScript,  # pylint: disable=unused-argument
         executors: List[BaseQExecutor]
     ) -> BaseQExecutor:
 
