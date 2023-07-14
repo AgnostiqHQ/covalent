@@ -63,45 +63,26 @@ class QEDevice(QubitDevice):
         # is called with args and kwargs
         self.qnode_specs = None
 
-    def batch_execute(self, circuits, grad_circuits=None):
+    def batch_execute(self, circuits):
 
-        # Async submit all circuits to middleware which will then submit to the quantum server.
+        # Async submit all circuits to middleware.
         batch_id = middleware.run_circuits_async(
             circuits, self.executors, self.qelectron_info, self.qnode_specs
         )
-
-        if grad_circuits:
-            # Async submit all gradient circuits...
-            batch_id_grad = middleware.run_circuits_async(
-                grad_circuits, self.executors, self.qelectron_info, self.qnode_specs
-            )
 
         # Relevant when `run_later` is used to run the circuit.
         # We will retrieve the result later using the future object and the batch_id.
         if self._async_run:
             self._batch_id = batch_id
             # Return a dummy result
-            dummy_retval = [self._asarray([1])] * len(circuits)
-
-            if grad_circuits:
-                # Also include dummy gradient results to avoid unpack errors.
-                dummy_grad_retval = [self._asarray([1])] * len(grad_circuits)
-                return dummy_retval, dummy_grad_retval
-
-            return dummy_retval
+            return [self._asarray([1])] * len(circuits)
 
         # Otherwise, get the results from the middleware
         results = middleware.get_results(batch_id)
 
-        if grad_circuits:
-            # Also get the gradient results from the middleware
-            grad_results = middleware.get_results(batch_id_grad)
-            return results, grad_results
-
         return results
 
-    def execute_and_gradients(self, circuits, method="jacobian", **kwargs):
-
+    def gradients(self, circuits, method="jacobian", **kwargs):
         # Obtain gradient tapes and processing functions.
         grad_tapes_tuple, processing_fns = zip(
             *(param_shift(circuit, **kwargs) for circuit in circuits)
@@ -116,12 +97,10 @@ class QEDevice(QubitDevice):
         # Also require nonempty list of gradient tapes.
         scalar_input = all(not circuit.batch_size for circuit in circuits)
         if not (scalar_input and nonempty_grad_tapes_list):
-            res = self.batch_execute(circuits)
-            jacs = []
-            return res, jacs
+            return []
 
-        # Submit both main and gradient circuits in single `batch_execute` call.
-        res, nonempty_grad_res = self.batch_execute(circuits, nonempty_grad_tapes_list)
+        # Submit gradient circuits to middleware.
+        nonempty_grad_res = self.batch_execute(nonempty_grad_tapes_list)
 
         # Unpack the nonempty gradient result into the expected shape.
         grad_res = self._unpack_gradient_result(nonempty_grad_res, grad_tapes_tuple)
@@ -129,7 +108,7 @@ class QEDevice(QubitDevice):
         # Compute parameter-shift jacobians.
         jacs = [fn(r) for r, fn in zip(grad_res, processing_fns)]
 
-        return res, jacs
+        return jacs
 
     def _unpack_gradient_result(self, nonzero_grads, grad_tapes_tuple):
         """
