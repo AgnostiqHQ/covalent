@@ -57,6 +57,24 @@ class LatticeDetailResponse(BaseModel):
     updated_at: Union[datetime, None] = None
 
 
+class LatticeDetail(BaseModel):
+    dispatch_id: str
+    status: str
+    directory: str
+    error_filename: str
+    results_filename: str
+    docstring_filename: str
+    start_time: datetime
+    end_time: datetime
+    total_electrons: int
+    total_electrons_completed: int
+    runtime: int
+    updated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
 class LatticeFileResponse(BaseModel):
     """Lattices File Response Model"""
 

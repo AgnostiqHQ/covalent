@@ -27,7 +27,7 @@ from fastapi import APIRouter, HTTPException, Path, Query
 from sqlalchemy.orm import Session
 
 from covalent_ui.api.v1.data_layer.lattice_dal import Lattices
-from covalent_ui.api.v1.database.config.db import engine
+from covalent_ui.api.v1.database.config.db import async_session, engine
 from covalent_ui.api.v1.models.dispatch_model import SortDirection
 from covalent_ui.api.v1.models.lattices_model import (
     LatticeDetailResponse,
@@ -44,7 +44,7 @@ routes: APIRouter = APIRouter()
 
 
 @routes.get("/{dispatch_id}", response_model=LatticeDetailResponse)
-def get_lattice_details(dispatch_id: uuid.UUID):
+async def get_lattice_details(dispatch_id: uuid.UUID):
     """Get lattice details
 
     Args:
@@ -54,11 +54,12 @@ def get_lattice_details(dispatch_id: uuid.UUID):
         Returns the lattice data with the dispatch id provided
     """
 
-    with Session(engine) as session:
+    async with async_session() as session:
         lattice = Lattices(session)
-        data = lattice.get_lattices_id(dispatch_id)
+        data = await lattice.get_lattices_id(dispatch_id)
         if data is not None:
-            handler = FileHandler(data["directory"])
+            handler = FileHandler(data.directory)
+            description = await handler.read_from_text(data.docstring_filename)
             return LatticeDetailResponse(
                 dispatch_id=data.dispatch_id,
                 status=data.status,
@@ -67,7 +68,7 @@ def get_lattice_details(dispatch_id: uuid.UUID):
                 started_at=data.start_time,
                 ended_at=data.end_time,
                 directory=data.directory,
-                description=handler.read_from_text(data.docstring_filename),
+                description=description,
                 runtime=data.runtime,
             )
         raise HTTPException(
@@ -83,7 +84,7 @@ def get_lattice_details(dispatch_id: uuid.UUID):
 
 
 @routes.get("/{dispatch_id}/details/{name}")
-def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
+async def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
     """Get lattice file data
 
     Args:
@@ -93,9 +94,9 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
     Returns:
         Returns the lattice file data with the dispatch id and file_module provided provided
     """
-    with Session(engine) as session:
+    async with async_session() as session:
         lattice = Lattices(session)
-        lattice_data = lattice.get_lattices_id_storage_file(dispatch_id)
+        lattice_data = await lattice.get_lattices_id_storage_file(dispatch_id)
         if lattice_data is not None:
             handler = FileHandler(lattice_data["directory"])
             if name == "result":

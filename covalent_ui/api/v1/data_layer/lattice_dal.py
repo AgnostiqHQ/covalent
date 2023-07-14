@@ -23,13 +23,13 @@
 from typing import List
 from uuid import UUID
 
-from sqlalchemy import extract
+from sqlalchemy import extract, select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import desc, func
 
 from covalent_ui.api.v1.database.schema.lattices import Lattice
 from covalent_ui.api.v1.models.dispatch_model import SortDirection
-from covalent_ui.api.v1.models.lattices_model import LatticeDetailResponse
+from covalent_ui.api.v1.models.lattices_model import LatticeDetail
 
 
 class Lattices:
@@ -38,7 +38,7 @@ class Lattices:
     def __init__(self, db_con: Session) -> None:
         self.db_con = db_con
 
-    def get_lattices_id(self, dispatch_id: UUID) -> LatticeDetailResponse:
+    async def get_lattices_id(self, dispatch_id: UUID) -> LatticeDetail:
         """
         Get lattices from dispatch id
         Args:
@@ -47,36 +47,33 @@ class Lattices:
             Top most lattice with the given dispatch_id
             (i.e lattice with the same dispatch_id, but electron_id as null)
         """
-
-        return (
-            self.db_con.query(
-                Lattice.dispatch_id,
-                Lattice.status,
-                Lattice.storage_path.label("directory"),
-                Lattice.error_filename,
-                Lattice.results_filename,
-                Lattice.docstring_filename,
-                Lattice.started_at.label("start_time"),
-                func.coalesce((Lattice.completed_at), None).label("end_time"),
-                Lattice.electron_num.label("total_electrons"),
-                Lattice.completed_electron_num.label("total_electrons_completed"),
+        query = select(
+            Lattice.dispatch_id,
+            Lattice.status,
+            Lattice.storage_path.label("directory"),
+            Lattice.error_filename,
+            Lattice.results_filename,
+            Lattice.docstring_filename,
+            Lattice.started_at.label("start_time"),
+            func.coalesce((Lattice.completed_at), None).label("end_time"),
+            Lattice.electron_num.label("total_electrons"),
+            Lattice.completed_electron_num.label("total_electrons_completed"),
+            (
                 (
-                    (
-                        func.coalesce(
-                            extract("epoch", Lattice.completed_at),
-                            extract("epoch", func.now()),
-                        )
-                        - extract("epoch", Lattice.started_at)
+                    func.coalesce(
+                        extract("epoch", Lattice.completed_at),
+                        extract("epoch", func.now()),
                     )
-                    * 1000
-                ).label("runtime"),
-                func.coalesce((Lattice.updated_at), None).label("updated_at"),
-            )
-            .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
-            .first()
-        )
+                    - extract("epoch", Lattice.started_at)
+                )
+                * 1000
+            ).label("runtime"),
+            func.coalesce((Lattice.updated_at), None).label("updated_at"),
+        ).where(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
+        lattice = await self.db_con.execute(query)
+        return lattice.first()
 
-    def get_lattices_id_storage_file(self, dispatch_id: UUID):
+    async def get_lattices_id_storage_file(self, dispatch_id: UUID):
         """
         Get storage file name
         Args:
@@ -86,31 +83,29 @@ class Lattices:
             (i.e lattice with the same dispatch_id, but electron_id as null)
         """
 
-        return (
-            self.db_con.query(
-                Lattice.dispatch_id,
-                Lattice.status,
-                Lattice.storage_path.label("directory"),
-                Lattice.error_filename,
-                Lattice.function_string_filename,
-                Lattice.executor,
-                Lattice.executor_data_filename,
-                Lattice.workflow_executor,
-                Lattice.workflow_executor_data_filename,
-                Lattice.error_filename,
-                Lattice.inputs_filename,
-                Lattice.results_filename,
-                Lattice.storage_type,
-                Lattice.function_filename,
-                Lattice.transport_graph_filename,
-                Lattice.started_at.label("started_at"),
-                Lattice.completed_at.label("ended_at"),
-                Lattice.electron_num.label("total_electrons"),
-                Lattice.completed_electron_num.label("total_electrons_completed"),
-            )
-            .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
-            .first()
-        )
+        query = select(
+            Lattice.dispatch_id,
+            Lattice.status,
+            Lattice.storage_path.label("directory"),
+            Lattice.error_filename,
+            Lattice.function_string_filename,
+            Lattice.executor,
+            Lattice.executor_data_filename,
+            Lattice.workflow_executor,
+            Lattice.workflow_executor_data_filename,
+            Lattice.error_filename,
+            Lattice.inputs_filename,
+            Lattice.results_filename,
+            Lattice.storage_type,
+            Lattice.function_filename,
+            Lattice.transport_graph_filename,
+            Lattice.started_at.label("started_at"),
+            Lattice.completed_at.label("ended_at"),
+            Lattice.electron_num.label("total_electrons"),
+            Lattice.completed_electron_num.label("total_electrons_completed"),
+        ).where(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
+        lattice = await self.db_con.execute(query)
+        return lattice
 
     def get_lattice_id_by_dispatch_id(self, dispatch_id: UUID):
         """

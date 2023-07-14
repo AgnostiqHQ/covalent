@@ -23,6 +23,7 @@
 import base64
 import json
 
+import aiofiles
 import cloudpickle as pickle
 
 from covalent._workflow.transport import TransportableObject, _TransportGraph
@@ -107,22 +108,30 @@ class FileHandler:
         except Exception as e:
             return None
 
-    def read_from_text(self, path):
+    async def read_from_text(self, path):
         """Return data from text file"""
         try:
-            with open(self.location + "/" + path, "r", encoding="utf-8") as read_file:
-                text_object = read_file.readlines()
+            # print("file read")
+            async with aiofiles.open(
+                self.location + "/" + path, "r", encoding="utf-8"
+            ) as read_file:
+                text_object = await read_file.readlines()
                 list_str = ""
                 read_file.close()
+                # print(text_object)
                 if isinstance(text_object, list):
                     for i in text_object:
                         list_str += i
+                    print("list ", list_str)
                     return list_str if (list_str != "" or list_str is not None) else None
                 else:
+                    print("text ", text_object)
                     return text_object if (text_object != "" or text_object is not None) else None
         except EOFError:
+            print("eof")
             return None
         except Exception:
+            print("exception")
             return None
 
     def __unpickle_file(self, path):
