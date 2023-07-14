@@ -32,7 +32,7 @@ __all__ = [
 
 class QCluster(AsyncBaseQCluster):
 
-    selector: Union[str, Callable] = "cycle"
+    selector: Union[str, Callable] = "cyclic"
     _selector_serialized: bool = False
 
     def batch_submit(self, qscripts_list):

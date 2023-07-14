@@ -32,7 +32,7 @@ class DefaultSelector:
     Implements default selection strategies for `QCluster` instances.
     """
 
-    def __init__(self, name: str = "cycle"):
+    def __init__(self, name: str = "cyclic"):
         self.name = name
         self.func = getattr(self, f"_{name}")
 
@@ -44,7 +44,7 @@ class DefaultSelector:
     def __call__(self, qscripts_list, executors):
         return self.func(qscripts_list, executors)
 
-    def _cycle(
+    def _cyclic(
         self,
         qscript: QuantumScript,  # pylint: disable=unused-argument
         executors: List[BaseQExecutor]
