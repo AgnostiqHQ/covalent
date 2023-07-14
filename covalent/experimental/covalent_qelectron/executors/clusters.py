@@ -22,7 +22,7 @@ import base64
 from typing import Callable, Union
 
 from ..executors.base import AsyncBaseQCluster
-from ..executors.executor_selectors import DefaultSelector
+from .cluster_selectors import DefaultSelector
 from ..shared_utils import cloudpickle_deserialize, cloudpickle_serialize
 
 __all__ = [
