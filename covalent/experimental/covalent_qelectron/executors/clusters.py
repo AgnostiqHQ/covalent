@@ -84,10 +84,9 @@ class QCluster(AsyncBaseQCluster):
         This method is called inside `batch_submit`.
         """
         if self._selector_serialized:
-            raise RuntimeError("QClusters selector is serialized. Call `deserialize_selector` first.")
+            self.deserialize_selector()
 
         if isinstance(self.selector, str):
             self.selector = DefaultSelector(self.selector)
 
         return self.selector
-
