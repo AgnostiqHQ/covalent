@@ -80,9 +80,9 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
 
         # Pack as list to satisfy expected `qml.execute` output in usual pipeline
         if not self.pennylane_active_return:
-            dummy_result = [[self._asarray(0.)]] * n_circuits
+            dummy_result = [[self.asarray(0.)]] * n_circuits
         else:
-            dummy_result = [self._asarray(0.)] * n_circuits
+            dummy_result = [self.asarray(0.)] * n_circuits
 
         # Add another "dimension" for unpacking in Pennylane `cache_execute`
         return [dummy_result] if self._vector_input else dummy_result
@@ -169,7 +169,7 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
 
         # Wrap in outer list for vector inputs
         if self._vector_input:
-            return [self._asarray(post_processed_results)], metadatas
+            return [self.asarray(post_processed_results)], metadatas
 
         return post_processed_results, metadatas
 
@@ -220,7 +220,7 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
 
         # Wrap in outer list for vector inputs
         if self._vector_input:
-            return [self._asarray(post_processed_results)], metadatas
+            return [self.asarray(post_processed_results)], metadatas
 
         return post_processed_results, metadatas
 
