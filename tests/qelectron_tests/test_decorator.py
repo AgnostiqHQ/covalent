@@ -32,9 +32,9 @@ EXECUTORS = [
 
 
 @pytest.mark.parametrize("executor", EXECUTORS)
-def test_argument_types_single_qexecutor(executor):
+def test_decorator_vs_explicit_wrapper(executor):
     """
-    Test that `ct.qelectron` accepts a variety of argument combinations.
+    Test that `ct.qelectron` works as decorator and as explicit wrapper.
     """
 
     results = []
