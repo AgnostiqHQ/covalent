@@ -43,7 +43,14 @@ class QElectronInfo(BaseModel):
     pennylane_active_return: bool  # client-side status of `pennylane.active_return()`
 
 
-def qelectron(qnode=None, *, executors=None, name=None, description=None):
+def qelectron(
+    qnode=None,
+    *,
+    executors=None,
+    name=None,
+    description=None,
+    cluster_selector="cyclic",
+):
     """
     Decorator for extending a given QNode.
 
@@ -65,7 +72,7 @@ def qelectron(qnode=None, *, executors=None, name=None, description=None):
         if not all(isinstance(ex, BaseQExecutor) for ex in executors):
             raise ValueError("Invalid executor in executors list.")
         if len(executors) > 1:
-            executors = QCluster(executors=executors)
+            executors = QCluster(executors=executors, selector=cluster_selector)
 
     # check is executor is a QCluster and serialize the selector
     if isinstance(executors, AsyncBaseQCluster):
