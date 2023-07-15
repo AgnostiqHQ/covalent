@@ -34,10 +34,11 @@ class DefaultSelector:
 
     def __init__(self, name: str = "cyclic"):
         self.name = name
-        self.func = getattr(self, f"_{name}")
 
-        if not self.func:
-            raise ValueError(f"Invalid selector name {name!r}.")
+        try:
+            self.func = getattr(self, f"_{name}")
+        except AttributeError as err:
+            raise ValueError(f"Invalid cluster selector {name!r}.") from err
 
         self._iteration = 0
 
