@@ -111,7 +111,7 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
         Post-process a single circuit result.
         """
 
-        post_processed_results = []
+        results = []
         metadatas = []
         for i, circuit in enumerate(self._active_circuits):
 
@@ -130,7 +130,7 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
 
             # Post process the quasi-distribution into expected result
             res = self._process_batch_execute_result(circuit, quasi_dist)
-            post_processed_results.append(res)
+            results.append(res)
 
             # Update metadata
             job_metadata = job_result.metadata[0]
@@ -152,13 +152,13 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
 
         # Re-execute original tape with a dummy device to get correct result
         tape = args[0]
-        post_processed_results = self.re_execute([tape], post_processed_results)
+        results = self._re_execute(self.broadcast_tapes([tape]), results)
 
         # Wrap in outer list for vector inputs
         if self._vector_input:
-            post_processed_results = self._vector_results(post_processed_results)
+            results = self._vector_results(results)
 
-        return post_processed_results, metadatas
+        return results, metadatas
 
     def post_process_all(self, *args):
         """
@@ -173,7 +173,7 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
         self._num_executions += 1
 
         # Compute statistics using the state and/or samples
-        post_processed_results = []
+        results = []
         metadatas = []
 
         for i, circuit in enumerate(self._active_circuits):
@@ -181,7 +181,7 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
 
             # Update tracker and process quasi-distribution into expected result
             res = self._process_batch_execute_result(circuit, quasi_dist)
-            post_processed_results.append(res)
+            results.append(res)
 
             # Construct metadata
             job_metadata = job_result.metadata[i]
@@ -203,15 +203,15 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
 
         # Re-execute with a dummy device to get correct result
         tapes = args[0]
-        post_processed_results = self.re_execute(tapes, post_processed_results)
+        results = self._re_execute(self.broadcast_tapes(tapes), results)
 
         # Wrap in outer list for vector inputs
         if self._vector_input:
-            post_processed_results = self._vector_results(post_processed_results)
+            results = self._vector_results(results)
 
-        return post_processed_results, metadatas
+        return results, metadatas
 
-    def re_execute(self, tapes, results):
+    def _re_execute(self, tapes, results):
         """
         Executes circuits on a dummy device that returns the provided result.
 
