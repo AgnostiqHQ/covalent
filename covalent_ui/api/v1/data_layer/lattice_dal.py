@@ -29,7 +29,7 @@ from sqlalchemy.sql import desc, func
 
 from covalent_ui.api.v1.database.schema.lattices import Lattice
 from covalent_ui.api.v1.models.dispatch_model import SortDirection
-from covalent_ui.api.v1.models.lattices_model import LatticeDetail
+from covalent_ui.api.v1.models.lattices_model import LatticeDetail, LatticeDetailsFile
 
 
 class Lattices:
@@ -105,7 +105,7 @@ class Lattices:
             Lattice.completed_electron_num.label("total_electrons_completed"),
         ).where(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
         lattice = await self.db_con.execute(query)
-        return lattice
+        return LatticeDetailsFile.from_orm(lattice)
 
     def get_lattice_id_by_dispatch_id(self, dispatch_id: UUID):
         """
@@ -122,7 +122,7 @@ class Lattices:
         )
         return data[0]
 
-    def get_sub_lattice_details(self, sort_by, sort_direction, dispatch_id) -> List[Lattice]:
+    async def get_sub_lattice_details(self, sort_by, sort_direction, dispatch_id) -> List[Lattice]:
         """
         Get summary of sub lattices
         Args:
@@ -131,9 +131,8 @@ class Lattices:
         Return:
             List of sub Lattices
         """
-
-        data = (
-            self.db_con.query(
+        query = (
+            select(
                 Lattice.dispatch_id.label("dispatch_id"),
                 Lattice.name.label("lattice_name"),
                 (
@@ -162,7 +161,8 @@ class Lattices:
                 if sort_direction == SortDirection.DESCENDING
                 else sort_by.value
             )
-            .all()
         )
 
-        return data
+        data = await self.db_con.execute(query)
+
+        return data.all()

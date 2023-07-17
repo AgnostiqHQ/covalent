@@ -75,6 +75,31 @@ class LatticeDetail(BaseModel):
         from_attributes = True
 
 
+class LatticeDetailsFile(BaseModel):
+    dispatch_id: str
+    status: str
+    directory: str
+    error_filename: str
+    function_string_filename: str
+    executor: str
+    executor_data_filename: str
+    workflow_executor: str
+    workflow_executor_data_filename: str
+    error_filename: str
+    inputs_filename: str
+    results_filename: str
+    storage_type: str
+    function_filename: str
+    transport_graph_filename: str
+    started_at: str
+    ended_at: str
+    total_electrons: str
+    total_electrons_completed: str
+
+    class Config:
+        from_attributes = True
+
+
 class LatticeFileResponse(BaseModel):
     """Lattices File Response Model"""
 

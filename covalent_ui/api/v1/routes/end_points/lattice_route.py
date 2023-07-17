@@ -24,10 +24,9 @@ import uuid
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Path, Query
-from sqlalchemy.orm import Session
 
 from covalent_ui.api.v1.data_layer.lattice_dal import Lattices
-from covalent_ui.api.v1.database.config.db import async_session, engine
+from covalent_ui.api.v1.database.config.db import async_session
 from covalent_ui.api.v1.models.dispatch_model import SortDirection
 from covalent_ui.api.v1.models.lattices_model import (
     LatticeDetailResponse,
@@ -151,7 +150,7 @@ async def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
 
 
 @routes.get("/{dispatch_id}/sublattices", response_model=SubLatticeDetailResponse)
-def get_sub_lattice(
+async def get_sub_lattice(
     sort_by: Optional[SubLatticeSortBy] = Query(default=SubLatticeSortBy.RUNTIME),
     sort_direction: Optional[SortDirection] = Query(default=SortDirection.DESCENDING),
     dispatch_id: uuid.UUID = Path(title="dispatch id"),
@@ -164,9 +163,9 @@ def get_sub_lattice(
     Returns:
         List of Sub Lattices details
     """
-    with Session(engine) as session:
+    async with async_session() as session:
         lattice = Lattices(session)
-        data = lattice.get_sub_lattice_details(
+        data = await lattice.get_sub_lattice_details(
             dispatch_id=dispatch_id, sort_by=sort_by, sort_direction=sort_direction
         )
         return SubLatticeDetailResponse(sub_lattices=data)
