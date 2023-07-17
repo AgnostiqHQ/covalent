@@ -168,6 +168,21 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         self._current_quasi_dist = None
         self._dummy_state = None
 
+    def compile_circuits(self, circuits):
+        """
+        Override `QiskitDevice.compile_circuits` to include `unwrap` context.
+        This step avoids potential parameter type errors during compilation.
+        """
+        compiled_circuits = []
+        for circuit in circuits:
+
+            # Unwraps a quantum script with tensor-like parameters to numpy arrays.
+            with circuit.unwrap():
+                qiskit_circuit = super().compile_circuits([circuit]).pop()
+                compiled_circuits.append(qiskit_circuit)
+
+        return compiled_circuits
+
     @property
     def _state(self):
         """
