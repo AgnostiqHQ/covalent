@@ -49,7 +49,7 @@ def qelectron(
     executors=None,
     name=None,
     description=None,
-    cluster_selector="cyclic",
+    selector="cyclic",
 ):
     """
     Decorator for extending a given QNode.
@@ -72,7 +72,7 @@ def qelectron(
         if not all(isinstance(ex, BaseQExecutor) for ex in executors):
             raise ValueError("Invalid executor in executors list.")
         if len(executors) > 1:
-            executors = QCluster(executors=executors, selector=cluster_selector)
+            executors = QCluster(executors=executors, selector=selector)
 
     # check is executor is a QCluster and serialize the selector
     if isinstance(executors, AsyncBaseQCluster):
