@@ -29,7 +29,7 @@ from pennylane import numpy as np
 import covalent as ct
 from covalent._shared_files.config import get_config
 
-from .utils import get_hamiltonian_circuit, cyclic_selector
+from .utils import arg_vector, cyclic_selector, get_hamiltonian_circuit, weight_vector
 
 EXECUTOR_CLASSES = [
     ct.executor.QiskitExecutor,
@@ -44,6 +44,31 @@ QISKIT_RUNTIME_BACKENDS = [
 SHOTS = 10_000
 
 
+@pytest.fixture(autouse=True, scope="module")
+def ensure_ibmqx_token():
+    """
+    Ensure that the IBMQX token is set in the config file.
+    """
+    token_name = "ibmqx_token"
+    tokens = {}
+    qelectron_config = get_config("qelectron")
+    for k, val in qelectron_config.items():
+
+        # Exit if a global `ibmqx_token` is set.
+        if k == "ibmqx_token" and val:
+            return
+
+        # Here, `k` is the name of an executor class.
+        # Check if executors class config includes `"ibmqx_token"`.
+        if isinstance(val, dict) and token_name in val:
+            tokens[k] = val[token_name]
+
+    for cls in EXECUTOR_CLASSES:
+        k = cls.__name__
+        if not tokens[k]:
+            pytest.skip(f"Missing '{token_name}' for {k} in covalent config.")
+
+
 @pytest.mark.parametrize("single_job", [True, False])
 @pytest.mark.parametrize("executor_class", EXECUTOR_CLASSES)
 @pytest.mark.parametrize("backend", QISKIT_RUNTIME_BACKENDS)
@@ -51,12 +76,6 @@ def test_qiskit_runtime_hamiltonian(backend, executor_class, single_job):
     """
     Check correctness of runtime executor result against normal QNode.
     """
-    name = executor_class.__name__
-
-    # Skip runtime test if no IBMQ token.
-    if not get_config("qelectron")[name]["ibmqx_token"]:
-        pytest.skip("IBMQ token not set in covalent config file.")
-
     ham_circuit, doubles, num_qubits = get_hamiltonian_circuit()
 
     dev = qml.device("default.qubit", wires=num_qubits, shots=SHOTS)
@@ -85,19 +104,15 @@ def test_qiskit_runtime_hamiltonian(backend, executor_class, single_job):
     assert np.isclose(val_1, val_2, rtol=0.10), msg
 
 
-@pytest.mark.parametrize("single_job_tuple", list(itertools.product([True, False], repeat=3)))
-@pytest.mark.parametrize("executor_class", EXECUTOR_CLASSES)
-def test_qiskit_runtime_hamiltonian_cluster(single_job_tuple, executor_class):
+SINGLE_JOB_TRIPLETS = list(itertools.product([True, False], repeat=3))
+
+
+@pytest.mark.parametrize("single_job_triplet", SINGLE_JOB_TRIPLETS)
+def test_qiskit_runtime_hamiltonian_cluster(single_job_triplet):
     # pylint: disable=too-many-locals
     """
     Check correctness of runtime CLUSTER executor result against normal QNode.
     """
-    name = executor_class.__name__
-
-    # Skip runtime test if no IBMQ token.
-    if not get_config("qelectron")[name]["ibmqx_token"]:
-        pytest.skip("IBMQ token not set in covalent config file.")
-
     ham_circuit, doubles, num_qubits = get_hamiltonian_circuit()
 
     dev = qml.device("default.qubit", wires=num_qubits, shots=SHOTS)
@@ -111,7 +126,7 @@ def test_qiskit_runtime_hamiltonian_cluster(single_job_tuple, executor_class):
     cyclic_selector.i = 0
 
     # Define the quantum executors cluster.
-    p_1, p_2, p_3 = single_job_tuple
+    p_1, p_2, p_3 = single_job_triplet
     qcluster = ct.executor.QCluster(
         executors=[
             ct.executor.QiskitExecutor(
@@ -149,3 +164,50 @@ def test_qiskit_runtime_hamiltonian_cluster(single_job_tuple, executor_class):
     msg = (f"QElectron output ({val_2!r}) differs from "
            f"QNode output ({val_1!r}) by >10% (shots={SHOTS}).")
     assert np.isclose(val_1, val_2, rtol=0.1), msg
+
+
+TEMPLATES = [
+    (qml.AngleEmbedding, (arg_vector(6),), {"wires": range(6)}),
+    (qml.IQPEmbedding, (arg_vector(6),), {"wires": range(6)}),
+    (qml.QAOAEmbedding, (arg_vector(6),), {"wires": range(6), "weights": weight_vector(6)}),
+    (qml.DoubleExcitation, (arg_vector(4),), {"wires": range(4)}),
+    (qml.SingleExcitation, (arg_vector(2),), {"wires": range(2)})
+]
+
+
+@pytest.mark.parametrize("single_job", [True, False])
+@pytest.mark.parametrize("executor_class", EXECUTOR_CLASSES[:1])
+@pytest.mark.parametrize("template", TEMPLATES)
+def test_template_circuits(template, executor_class, single_job):
+    """
+    Check that above Pennylane templates are working.
+    """
+
+    _template, args, kwargs = template
+    num_wires = len(list(kwargs["wires"]))
+
+    retval = _template(*args, **kwargs)
+
+    # Define a circuit that uses the template. Also call the adjoint if allowed.
+    dev = qml.device("default.qubit", wires=num_wires, shots=10_000)
+
+    @qml.qnode(dev, interface="numpy")
+    def _template_circuit():
+        _template(*args, **kwargs)
+
+        for i in range(num_wires):
+            # Do this so later adjoint does not invert.
+            qml.Hadamard(wires=i)
+
+        if not isinstance(retval, qml.DoubleExcitation):
+            qml.adjoint(_template)(*args, **kwargs)
+        return qml.probs(wires=range(num_wires))
+
+    qexecutor = executor_class(device="sampler", single_job=single_job)  # QiskitExecutor
+    qelectron = ct.qelectron(_template_circuit, executors=qexecutor)
+
+    val_1 = _template_circuit()
+    val_2 = qelectron()
+
+    assert isinstance(val_2, type(val_1))
+    assert np.isclose(val_1, val_2, atol=0.1).all()
