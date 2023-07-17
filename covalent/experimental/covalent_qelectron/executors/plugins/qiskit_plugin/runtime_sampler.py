@@ -74,29 +74,14 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
             service_init_kwargs=service_init_kwargs,
         )
 
-    def dummy_result(self, n_circuits: int) -> Union[Any, List[Any]]:
-        """
-        Returns a dummy result to satisfy the expected `qml.execute` output.
-        This allows async submission to proceed without waiting for the job result.
-        """
-
-        # Pack as list to satisfy expected `qml.execute` output in usual pipeline
-        if not self.pennylane_active_return:
-            dummy_result = [[self.asarray(0.)]] * n_circuits
-        else:
-            dummy_result = [self.asarray(0.)] * n_circuits
-
-        # Add another "dimension" for unpacking in Pennylane `cache_execute`
-        return [dummy_result] if self._vector_input else dummy_result
-
     def batch_execute(self, circuits, timeout: int = None):
         """
         Submit a batch of circuits to IBM Qiskit Runtime for execution.
         """
 
-        n_original_circuits = len(circuits)
+        self._n_original_circuits = len(circuits)
         circuits = self.broadcast_tapes(circuits)
-        n_broadcasted_circuits = len(circuits)
+        self._n_circuits = len(circuits)
 
         # Create circuit objects and apply diagonalizing gates
         compiled_circuits = self.compile_circuits(circuits)
@@ -116,10 +101,10 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
                     self._active_jobs.append(job)
 
         # This flag distinguishes vector inputs from gradient computations
-        self._vector_input = n_original_circuits != n_broadcasted_circuits
+        self._vector_input = self._n_original_circuits != self._n_circuits
 
         # Return a dummy result and proceed to subsequent submissions.
-        return self.dummy_result(n_broadcasted_circuits)
+        return self._dummy_result()
 
     def post_process(self, *args):
         """
@@ -171,7 +156,7 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
 
         # Wrap in outer list for vector inputs
         if self._vector_input:
-            return [self.asarray(post_processed_results)], metadatas
+            post_processed_results = self._vector_results(post_processed_results)
 
         return post_processed_results, metadatas
 
@@ -222,7 +207,7 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
 
         # Wrap in outer list for vector inputs
         if self._vector_input:
-            return [self.asarray(post_processed_results)], metadatas
+            post_processed_results = self._vector_results(post_processed_results)
 
         return post_processed_results, metadatas
 
@@ -235,6 +220,26 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
         """
         dev = _PostProcessDevice(self.wires, results)
         return qml.execute(tapes, dev, None)
+
+    def _dummy_result(self) -> Union[Any, List[Any]]:
+        """
+        Returns a dummy result to satisfy the expected `qml.execute` output.
+        This allows async submission to proceed without waiting for the job result.
+        """
+
+        dummy_results = qml.numpy.zeros(self.vector_shape)
+
+        if self.pennylane_active_return:
+            dummy_results = list(dummy_results)
+
+        if self.single_job and self._vector_input:
+            if self.pennylane_active_return:
+                return [[d] for d in dummy_results]
+            return [[d] for d in list(dummy_results)]
+
+        if self._vector_input:
+            return [dummy_results]
+        return [[d] for d in dummy_results]
 
 
 class _PostProcessDevice(QiskitRuntimeSampler):

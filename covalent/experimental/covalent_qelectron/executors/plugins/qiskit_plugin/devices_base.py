@@ -174,6 +174,10 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         self._current_quasi_dist = None
         self._dummy_state = None
 
+        # Used for reshaping results.
+        self._n_original_circuits = None
+        self._n_circuits = None
+
     def compile_circuits(self, circuits):
         """
         Override `QiskitDevice.compile_circuits` to include `unwrap` context.
@@ -215,6 +219,15 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         if self._dummy_state is None:
             return self.dist_get_state()
         return self._dummy_state
+
+    @property
+    def vector_shape(self):
+        """
+        Used to reshape results in case of vector inputs.
+        """
+        n = self._n_original_circuits
+        m = self._n_circuits // n
+        return (n, m)
 
     @_state.setter
     def _state(self, state):
@@ -287,3 +300,16 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
             return tuple(res)
 
         return self.asarray(res[0])
+
+    def _vector_results(self, res):
+        """
+        Process the result of a vectorized QElectron call.
+        """
+
+        res = pnp.asarray(res)
+
+        if self.pennylane_active_return:
+            return [res] if res.ndim > 1 else list(res.reshape(self.vector_shape))
+
+        res = res.reshape(-1)
+        return [res] if res.ndim > 1 else [res.reshape(self.vector_shape)]

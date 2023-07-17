@@ -39,7 +39,7 @@ def _run_later_device_factory(results, original_device):
             """
             Override to return expected result.
             """
-            if (n_circuits := len(circuits)) > 1:
+            if (n_circuits := len(circuits)) > 1 or len(results) > 1:
                 return [results] * n_circuits
             return results
 
