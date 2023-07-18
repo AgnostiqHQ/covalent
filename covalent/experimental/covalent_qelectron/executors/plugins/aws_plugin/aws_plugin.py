@@ -49,7 +49,11 @@ _QEXECUTOR_PLUGIN_DEFAULTS = {
         "s3_destination_folder": "",
         # Need AWS session for region etc.
     },
-}
+
+    "LocalBraketQubitExecutor": {
+        "backend": "default",
+    },
+} 
 
 class BraketQubitExecutor(BaseThreadPoolQExecutor):
 
