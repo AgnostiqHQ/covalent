@@ -57,6 +57,8 @@ _QEXECUTOR_PLUGIN_DEFAULTS = {
 
 class BraketQubitExecutor(BaseThreadPoolQExecutor):
 
+    max_jobs: int = 20
+
     device_arn: str = Field(
         default_factory=lambda: get_config("qelectron")["BraketQubitExecutor"]["device_arn"]
     )
@@ -86,6 +88,9 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
         return jobs
     
 class LocalBraketQubitExecutor(BaseThreadPoolQExecutor):
+    
+    max_jobs: int = 20
+    shots: int = 1024
 
     backend: str = Field(
         default_factory=lambda: get_config("qelectron")["LocalBraketQubitExecutor"]["backend"]
