@@ -30,6 +30,7 @@ from covalent._shared_files.config import get_config
 from covalent.experimental.covalent_qelectron.executors.base import (
     AsyncBaseQExecutor,
     BaseThreadPoolQExecutor,
+    BaseQExecutor,
     QCResult,
     get_asyncio_event_loop,
     get_thread_pool,
@@ -38,6 +39,7 @@ from covalent.experimental.covalent_qelectron.shared_utils import import_from_pa
 
 __all__ = [
     "BraketQubitExecutor",
+    "LocalBraketQubitExecutor"
 ]
 
 _QEXECUTOR_PLUGIN_DEFAULTS = {
@@ -68,6 +70,33 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
                 wires=qscript.wires,
                 device_arn=self.device_arn,
                 s3_destination_folder=self.s3_destination_folder
+            )
+
+            result_obj = QCResult.with_metadata(
+                device_name=dev.short_name,
+                executor=self,
+            )
+
+            jobs.append(p.submit(self.run_circuit, qscript, dev, result_obj))
+
+        return jobs
+    
+class LocalBraketQubitExecutor(BaseThreadPoolQExecutor):
+
+    backend: str = Field(
+        default_factory=lambda: get_config("qelectron")["LocalBraketQubitExecutor"]["backend"]
+    )
+     # Need AWS session for region etc.
+    def batch_submit(self, qscripts_list):
+
+        p = get_thread_pool(self.max_jobs)
+        jobs = []
+        for qscript in qscripts_list:
+            dev = qml.device(
+                "braket.local.qubit",
+                wires=qscript.wires,
+                backend=self.backend,
+                shots=self.shots,
             )
 
             result_obj = QCResult.with_metadata(
