@@ -83,3 +83,19 @@ def reconstruct_executors(deconstructed_executors: List[Dict]):
 
 def get_circuit_id(batch_id, circuit_number):
     return f"circuit_{circuit_number}{BATCH_ID_SEPARATOR}{batch_id}"
+
+
+def make_selector_args_hashable(selected_executor_dict: dict):
+    # the selected_executor_dict cannot contain unhashable types like dicts.
+    # This can happen if **kwargs was passed at any point. We must collapse this dict
+    keys_to_remove = []  # To store keys that need to be removed after merging nested dictionaries
+
+    for key, value in selected_executor_dict.items():
+        if isinstance(value, dict):
+            selected_executor_dict.update(value)
+            keys_to_remove.append(key)
+
+    # Remove the keys that were merged from nested dictionaries
+    for key in keys_to_remove:
+        selected_executor_dict.pop(key)
+    return selected_executor_dict

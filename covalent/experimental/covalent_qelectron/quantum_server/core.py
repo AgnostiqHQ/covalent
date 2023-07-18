@@ -36,6 +36,7 @@ from ..quantum_server.server_utils import (
     CircuitInfo,
     get_cached_executor,
     get_circuit_id,
+    make_selector_args_hashable
 )
 from ..shared_utils import cloudpickle_deserialize, cloudpickle_serialize, select_first_executor
 
@@ -113,9 +114,12 @@ class QServer:
         linked_executors = []
         for qscript in qscripts:
             selected_executor = self.selector(qscript, executors)
-
+            
+            # Check if selected_executor.dict() carries a dictionary entry. If it does,
+            # this will be collapsed into the higher level dict
+            selected_executor_dict = make_selector_args_hashable(selected_executor.dict())
             # Use cached executor.
-            selected_executor = get_cached_executor(**selected_executor.dict())
+            selected_executor = get_cached_executor(**selected_executor_dict)
 
             if isinstance(selected_executor, AsyncBaseQCluster):
 
