@@ -25,9 +25,10 @@ import uuid
 from fastapi import APIRouter, HTTPException
 from sqlalchemy.orm import Session
 
+import covalent_ui.api.v1.database.config.db as db
 from covalent._results_manager.results_manager import get_result
+from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
 from covalent_ui.api.v1.data_layer.electron_dal import Electrons
-from covalent_ui.api.v1.database.config.db import engine
 from covalent_ui.api.v1.models.electrons_model import (
     ElectronExecutorResponse,
     ElectronFileOutput,
@@ -49,7 +50,7 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
     Returns:
         Returns the electron details
     """
-    with Session(engine) as session:
+    with Session(db.engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
         if result is None:
@@ -87,11 +88,10 @@ def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
     Returns:
         Returns the inputs data from Result object
     """
-    from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
 
     result_object = get_result(dispatch_id=str(dispatch_id), wait=False)
 
-    with Session(engine) as session:
+    with Session(db.engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
         inputs = get_task_inputs(
@@ -113,7 +113,7 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
         Returns electron details based on the given name
     """
 
-    with Session(engine) as session:
+    with Session(db.engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
         if result is not None:

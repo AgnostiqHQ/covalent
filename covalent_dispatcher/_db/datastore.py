@@ -47,6 +47,7 @@ class DataStore:
     ):
         if db_URL:
             self.db_URL = db_URL
+            self.async_db_URL = db_URL
         else:
             self.db_URL = "sqlite+pysqlite:///" + get_config("dispatcher.db_path")
             self.async_db_URL = "sqlite+aiosqlite:///" + get_config("dispatcher.db_path")

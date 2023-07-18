@@ -133,3 +133,21 @@ class Electron(Base):
     )
     started_at: Mapped[DateTime] = mapped_column(DateTime)
     completed_at: Mapped[DateTime] = mapped_column(DateTime)
+    job_id: Mapped[int] = mapped_column(
+        Integer, ForeignKey("jobs.id", name="job_id_link"), nullable=False
+    )
+
+
+class Job(Base):
+    __tablename__ = "jobs"
+    id = mapped_column(Integer, primary_key=True)
+
+    # Indicates whether the job has been requested to be cancelled
+    cancel_requested = mapped_column(Boolean, nullable=False, default=False)
+
+    # Indicates whether the task cancellation succeeded (return value
+    # of Executor.cancel())
+    cancel_successful = mapped_column(Boolean, nullable=False, default=False)
+
+    # JSON-serialized identifier for job
+    job_handle = mapped_column(Text, nullable=False, default="null")

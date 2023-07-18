@@ -39,7 +39,7 @@ class SubLatticeSortBy(CaseInsensitiveEnum):
 
 
 class SubLatticeDetailResponse(BaseModel):
-    sub_lattices: List[DispatchModule] = None
+    sub_lattices: Union[List[DispatchModule], None] = None
 
 
 class LatticeDetailResponse(BaseModel):
@@ -139,16 +139,16 @@ class GraphNodes(BaseModel):
     executor: str = None
 
     # Immediate parent electron id
-    parent_electron_id: int = None
+    parent_electron_id: Union[None, int] = None
 
     # Is_parent field introduced to for graph box
-    is_parent: int = None
+    is_parent: Union[None, int] = None
 
     # Immediate parent dispatch id, to get electrons details
-    parent_dispatch_id: str = None
+    parent_dispatch_id: Union[None, str] = None
 
     # Allow users to copy dispatch id a sublattice
-    sublattice_dispatch_id: str = None
+    sublattice_dispatch_id: Union[None, str] = None
 
 
 class GraphResponseData(BaseModel):

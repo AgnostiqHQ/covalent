@@ -25,8 +25,8 @@ from typing import Optional
 from fastapi import APIRouter, Query
 from pydantic import conint
 
+import covalent_ui.api.v1.database.config.db as db
 from covalent_ui.api.v1.data_layer.summary_dal import Summary
-from covalent_ui.api.v1.database.config.db import async_session
 from covalent_ui.api.v1.models.dispatch_model import (
     DeleteAllDispatchesRequest,
     DeleteDispatchesRequest,
@@ -57,7 +57,7 @@ async def get_all_dispatches(
     Returns:
         List of Dispatch Summary
     """
-    async with async_session() as session:
+    async with db.async_session() as session:
         summary = Summary(session)
         return await summary.get_summary(
             count, offset, sort_by, search, sort_direction, status_filter
@@ -74,7 +74,7 @@ async def get_dashboard_details():
     Returns:
         An Overview of dispatches as object
     """
-    async with async_session() as session:
+    async with db.async_session() as session:
         summary = Summary(session)
         return await summary.get_summary_overview()
 
@@ -91,7 +91,7 @@ async def delete_dispatches(req: Optional[DeleteDispatchesRequest]):
         List of deleted dispatches if fails
     """
 
-    async with async_session() as session:
+    async with db.async_session() as session:
         summary = Summary(session)
         return await summary.delete_dispatches(req)
 
@@ -108,6 +108,6 @@ async def delete_all_dispatches(req: Optional[DeleteAllDispatchesRequest]):
         List of deleted dispatches if fails
     """
 
-    async with async_session() as session:
+    async with db.async_session() as session:
         summary = Summary(session)
         return await summary.delete_all_dispatches(req)

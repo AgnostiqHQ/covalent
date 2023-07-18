@@ -20,7 +20,6 @@
 
 import uuid
 from datetime import datetime, timezone
-from sqlite3 import InterfaceError
 from typing import List
 
 from sqlalchemy import case, extract, select, update
@@ -213,7 +212,7 @@ class Summary:
         success = []
         failure = []
         message = "No dispatches were deleted"
-        if len(data.dispatches) == 0:
+        if data.dispatches is None or len(data.dispatches) == 0:
             return DeleteDispatchesResponse(
                 success_items=success,
                 failure_items=failure,
@@ -273,7 +272,7 @@ class Summary:
                 await self.db_con.execute(update_lattice)
                 await self.db_con.commit()
                 success.append(dispatch_id)
-            except InterfaceError:
+            except Exception:
                 failure.append(dispatch_id)
         if len(success) > 0:
             message = "Dispatch(es) have been deleted successfully!"
@@ -359,7 +358,7 @@ class Summary:
                 )
                 await self.db_con.commit()
                 success = dispatches
-            except InterfaceError:
+            except Exception:
                 failure = dispatches
         if (len(failure) == 0 and len(success) == 0) or (len(failure) > 0 and len(success) == 0):
             message = "No dispatches were deleted"

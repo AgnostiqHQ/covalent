@@ -34,10 +34,10 @@ class GraphResponse(BaseModel):
 
 
 class GetDispatchLinks(BaseModel):
-    edge_name: str
-    parameter_type: str
-    target: int
-    source: int
+    edge_name: Union[str, None]
+    parameter_type: Union[str, None]
+    target: Union[int, None]
+    source: Union[int, None]
     arg_index: Union[int, None]
 
     class Config:
@@ -48,11 +48,11 @@ class GetDispatchNotes(BaseModel):
     id: int
     name: str
     node_id: int
-    started_at: datetime
-    completed_at: datetime
-    status: str
-    type: str
-    executor_label: str
+    started_at: Union[datetime, None]
+    completed_at: Union[datetime, None]
+    status: Union[str, None]
+    type: Union[str, None]
+    executor_label: Union[str, None]
     sublattice_dispatch_id: Union[str, None]
 
     class Config:

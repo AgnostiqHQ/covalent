@@ -25,8 +25,8 @@ import uuid
 from fastapi import APIRouter, HTTPException, status
 from fastapi.encoders import jsonable_encoder
 
+import covalent_ui.api.v1.database.config.db as db
 from covalent_ui.api.v1.data_layer.graph_dal import Graph
-from covalent_ui.api.v1.database.config.db import async_session
 from covalent_ui.api.v1.models.graph_model import GraphResponse
 
 routes: APIRouter = APIRouter()
@@ -43,7 +43,7 @@ async def get_graph(dispatch_id: uuid.UUID):
         Returns the lattice data with the dispatch id provided
     """
 
-    async with async_session() as session:
+    async with db.async_session() as session:
         graph = Graph(session)
         graph_data = await graph.get_graph(dispatch_id)
         if graph_data is not None:
