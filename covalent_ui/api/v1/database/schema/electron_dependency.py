@@ -20,7 +20,8 @@
 
 """Electron dependency schema"""
 
-from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, func
+from sqlalchemy import Boolean, DateTime, Integer, String, Text, func
+from sqlalchemy.orm import Mapped, mapped_column
 
 from covalent_ui.api.v1.database.config.db import Base
 
@@ -40,24 +41,28 @@ class ElectronDependency(Base):
     """
 
     __tablename__ = "electron_dependency"
-    id = Column(Integer, primary_key=True)
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
 
     # Unique ID of electron
-    electron_id = Column(Integer, nullable=False)
+    electron_id: Mapped[int] = mapped_column(Integer, nullable=False)
 
     # Unique ID of the electron's parent
-    parent_electron_id = Column(Integer, nullable=False)
+    parent_electron_id: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    edge_name = Column(Text, nullable=False)
+    edge_name: Mapped[str] = mapped_column(Text, nullable=False)
 
     # arg, kwarg, null
-    parameter_type = Column(String(24), nullable=True)
+    parameter_type: Mapped[str] = mapped_column(String(24), nullable=True)
 
     # Argument position - this value is null unless parameter_type is arg
-    arg_index = Column(Integer, nullable=True)
+    arg_index: Mapped[int] = mapped_column(Integer, nullable=True)
 
     # Name of the column which signifies soft deletion of the electron dependencies corresponding to a lattice
-    is_active = Column(Boolean, nullable=False, default=True)
+    is_active: Mapped[Boolean] = mapped_column(Boolean, nullable=False, default=True)
 
-    updated_at = Column(DateTime, nullable=True, onupdate=func.now(), server_default=func.now())
-    created_at = Column(DateTime, nullable=False, server_default=func.now())
+    updated_at: Mapped[DateTime] = mapped_column(
+        DateTime, nullable=True, onupdate=func.now(), server_default=func.now()
+    )
+    created_at: Mapped[DateTime] = mapped_column(
+        DateTime, nullable=False, server_default=func.now()
+    )

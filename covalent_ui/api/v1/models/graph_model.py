@@ -20,6 +20,7 @@
 
 """Graph request and response model"""
 
+from datetime import datetime
 from typing import Union
 
 from pydantic import BaseModel
@@ -30,3 +31,29 @@ class GraphResponse(BaseModel):
 
     dispatch_id: Union[str, None] = None
     graph: Union[dict, None] = None
+
+
+class GetDispatchLinks(BaseModel):
+    edge_name: str
+    parameter_type: str
+    target: int
+    source: int
+    arg_index: Union[int, None]
+
+    class Config:
+        from_attributes = True
+
+
+class GetDispatchNotes(BaseModel):
+    id: int
+    name: str
+    node_id: int
+    started_at: datetime
+    completed_at: datetime
+    status: str
+    type: str
+    executor_label: str
+    sublattice_dispatch_id: Union[str, None]
+
+    class Config:
+        from_attributes = True

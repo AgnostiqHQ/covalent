@@ -22,12 +22,13 @@
 from uuid import UUID
 
 from fastapi import HTTPException
-from sqlalchemy import text
+from sqlalchemy import select, text
 from sqlalchemy.orm import Session
 
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.electron_dependency import ElectronDependency
 from covalent_ui.api.v1.database.schema.lattices import Lattice
+from covalent_ui.api.v1.models.graph_model import GetDispatchLinks, GetDispatchNotes
 
 
 class Graph:
@@ -36,7 +37,7 @@ class Graph:
     def __init__(self, db_con: Session) -> None:
         self.db_con = db_con
 
-    def get_nodes(self, parent_lattice_id: int):
+    async def get_nodes(self, parent_lattice_id: int) -> GetDispatchNotes:
         """
         Get nodes from parent_lattice_id
         Args:
@@ -65,10 +66,10 @@ class Graph:
             where lattices.id = :a
         """
         )
-        result = self.db_con.execute(sql, {"a": parent_lattice_id}).fetchall()
-        return result
+        result = await self.db_con.execute(sql, {"a": parent_lattice_id})
+        return [GetDispatchNotes.from_orm(node) for node in result.fetchall()]
 
-    def get_links(self, parent_lattice_id: int):
+    async def get_links(self, parent_lattice_id: int) -> GetDispatchLinks:
         """
         Get links from parent_lattice_id
         When parent_lattice_id passed to get links
@@ -78,8 +79,8 @@ class Graph:
         Return:
             graph data with list of links
         """
-        return (
-            self.db_con.query(
+        links = await self.db_con.execute(
+            select(
                 ElectronDependency.edge_name,
                 ElectronDependency.parameter_type,
                 ElectronDependency.electron_id.label("target"),
@@ -88,10 +89,10 @@ class Graph:
             )
             .join(Electron, Electron.id == ElectronDependency.electron_id)
             .filter(Electron.parent_lattice_id == parent_lattice_id)
-            .all()
         )
+        return [GetDispatchLinks.from_orm(link) for link in links.all()]
 
-    def check_error(self, data):
+    async def check_error(self, data):
         """
         Helper method to rise exception if data is None
 
@@ -106,7 +107,7 @@ class Graph:
             raise HTTPException(status_code=400, detail=["Something went wrong"])
         return data
 
-    def get_graph(self, dispatch_id: UUID):
+    async def get_graph(self, dispatch_id: UUID):
         """
         Get graph data from parent lattice id
         When dispatch id passed to get graph
@@ -117,12 +118,12 @@ class Graph:
         Return:
             graph data with list of nodes and links
         """
-        parent_lattice_id = (
-            self.db_con.query(Lattice.id).where(Lattice.dispatch_id == str(dispatch_id)).first()
+        parent_lattice_id = await self.db_con.scalar(
+            select(Lattice.id).where(Lattice.dispatch_id == str(dispatch_id))
         )
         if parent_lattice_id is not None:
-            parrent_id = parent_lattice_id[0]
-            nodes = self.check_error(self.get_nodes(parrent_id))
-            links = self.check_error(self.get_links(parrent_id))
+            parrent_id = parent_lattice_id
+            nodes = await self.check_error(await self.get_nodes(parrent_id))
+            links = await self.check_error(await self.get_links(parrent_id))
             return {"dispatch_id": str(dispatch_id), "nodes": nodes, "links": links}
         return None

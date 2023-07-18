@@ -24,17 +24,16 @@ import uuid
 
 from fastapi import APIRouter, HTTPException, status
 from fastapi.encoders import jsonable_encoder
-from sqlalchemy.orm import Session
 
 from covalent_ui.api.v1.data_layer.graph_dal import Graph
-from covalent_ui.api.v1.database.config.db import engine
+from covalent_ui.api.v1.database.config.db import async_session
 from covalent_ui.api.v1.models.graph_model import GraphResponse
 
 routes: APIRouter = APIRouter()
 
 
 @routes.get("/{dispatch_id}/graph", response_model=GraphResponse)
-def get_graph(dispatch_id: uuid.UUID):
+async def get_graph(dispatch_id: uuid.UUID):
     """Get Graph
 
     Args:
@@ -44,9 +43,9 @@ def get_graph(dispatch_id: uuid.UUID):
         Returns the lattice data with the dispatch id provided
     """
 
-    with Session(engine) as session:
+    async with async_session() as session:
         graph = Graph(session)
-        graph_data = graph.get_graph(dispatch_id)
+        graph_data = await graph.get_graph(dispatch_id)
         if graph_data is not None:
             return GraphResponse(
                 dispatch_id=graph_data["dispatch_id"],
