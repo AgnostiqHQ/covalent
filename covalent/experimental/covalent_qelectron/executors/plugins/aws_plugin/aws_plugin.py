@@ -90,12 +90,12 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
 class LocalBraketQubitExecutor(BaseThreadPoolQExecutor):
     
     max_jobs: int = 20
-    shots: int = 1024
-
+    shots: int = None
+    run_kwargs: dict = {}
     backend: str = Field(
         default_factory=lambda: get_config("qelectron")["LocalBraketQubitExecutor"]["backend"]
     )
-     # Need AWS session for region etc.
+
     def batch_submit(self, qscripts_list):
 
         p = get_thread_pool(self.max_jobs)
@@ -106,6 +106,7 @@ class LocalBraketQubitExecutor(BaseThreadPoolQExecutor):
                 wires=qscript.wires,
                 backend=self.backend,
                 shots=self.shots,
+                **self.run_kwargs
             )
 
             result_obj = QCResult.with_metadata(
