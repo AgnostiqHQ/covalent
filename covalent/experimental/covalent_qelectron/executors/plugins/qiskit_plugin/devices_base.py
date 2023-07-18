@@ -26,6 +26,7 @@ from math import sqrt
 from typing import Any, List, Tuple
 
 import numpy as np
+import pennylane.numpy as pnp
 from pennylane.transforms import broadcast_expand, map_batch_transform
 from pennylane_qiskit.qiskit_device import QiskitDevice
 
@@ -184,6 +185,15 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         return compiled_circuits
 
     @property
+    def asarray(self):
+        """
+        Array function property to return Pennylane tensors instead of NumPy arrays.
+        """
+        if self._asarray is np.asarray:
+            return pnp.asarray
+        return self._asarray
+
+    @property
     def _state(self):
         """
         Override `self._state` to avoid unnecessary state reconstruction for
@@ -257,10 +267,10 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
 
             if not self.pennylane_active_return:
                 res = self._statistics_legacy(circuit)
-                return self._asarray(res)
+                return self.asarray(res)
             res = self.statistics(circuit)
 
         if len(circuit.measurements) > 1:
             return tuple(res)
 
-        return self._asarray(res[0])
+        return self.asarray(res[0])
