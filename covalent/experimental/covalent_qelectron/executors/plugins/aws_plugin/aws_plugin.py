@@ -26,7 +26,7 @@ import pennylane as qml
 from pennylane.tape.qscript import QuantumScript
 from pydantic import Field
 
-from braket.aws import AwsQuantumTask, AwsQuantumTaskBatch, AwsSession
+from braket.aws import AwsQuantumTask, AwsQuantumTaskBatch
 
 from covalent._shared_files.config import get_config
 from covalent.experimental.covalent_qelectron.executors.base import (
@@ -67,7 +67,7 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
     max_parallel: Optional[int] = None
     max_connections: int = AwsQuantumTaskBatch.MAX_CONNECTIONS_DEFAULT
     max_retries: int = AwsQuantumTaskBatch.MAX_RETRIES
-    run_kwargs: dict = None
+    run_kwargs: dict = {}
     s3_destination_folder: str = Field(
         default_factory=lambda: get_config("qelectron")["BraketQubitExecutor"]["s3_destination_folder"]
     )
