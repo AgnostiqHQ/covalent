@@ -247,6 +247,7 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         """
 
         dist_bin = quasi_dist.binary_probabilities()
+        dist_bin = self.normalize_probability(dist_bin)
 
         bit_strings = list(dist_bin)
         probs = [dist_bin[bs] for bs in bit_strings]
@@ -266,6 +267,53 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
             yield
         finally:
             self._current_quasi_dist = None
+
+    @staticmethod
+    def normalize_probability(distribution: dict) -> dict:
+        """
+        Some IBMQ backends may return small NEGATIVE quasi-probabilities
+        instead of ~0, when using `Sampler`.
+
+        Below is an example of this, as observed with "ibmq_lima":
+
+        # quasi-probabilities list
+        [
+            ...
+            {
+                "10": 0.0026338769545423205,
+                "11": 0.5150691505205544,
+                "00": 0.4867495783187873,
+                "01": -0.004452605793883964
+            },
+            ...
+        ]
+
+        To avoid errors due to negative probability, this function zeros any
+        negative values, then re-normalizes the quasi probabilities.
+        """
+
+        dist = distribution.copy()
+
+        # Negative probabilities are presumed to be zero.
+        delete_keys = []
+        for bit_string, quasi_prob in dist.items():
+            if quasi_prob <= 0:
+                delete_keys.append(bit_string)
+
+        # Zero probabilities should be omitted from the dict.
+        for key in delete_keys:
+            del dist[key]
+
+        if len(dist) == 0:
+            # This should never happen.
+            raise RuntimeError(f"No positive probabilities exist in {distribution}.")
+
+        # Re-normalize the remaining quasi-probabilities.
+        total_prob = sum(dist.values())
+        for bit_string, quasi_prob in dist.items():
+            dist[bit_string] = quasi_prob / total_prob
+
+        return dist
 
     def _process_batch_execute_result(self, circuit, quasi_dist) -> Any:
         # Update the tracker
