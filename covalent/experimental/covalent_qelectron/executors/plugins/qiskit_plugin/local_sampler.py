@@ -24,7 +24,6 @@ Pennylane-Qiskit device that uses the local Qiskit `Sampler` primitive
 
 from typing import Any, List, Tuple
 
-from qiskit.compiler import transpile
 from qiskit.primitives import Sampler as LocalSampler
 
 from .devices_base import QiskitSamplerDevice
@@ -52,13 +51,6 @@ class QiskitLocalSampler(QiskitSamplerDevice):
         )
 
         self._metadatas = []
-
-    def compile(self):
-        """
-        Override original method from `pennylane_qiskit.qiskit_device.QiskitDevice`
-        to always use a `None` compile backend.
-        """
-        return transpile(self._circuit, backend=None, **self.transpile_args)
 
     def batch_execute(self, circuits, timeout: int = None):
         # pylint: disable=missing-function-docstring
