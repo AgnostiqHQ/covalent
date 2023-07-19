@@ -19,5 +19,5 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 """
-Utilities for Qiskit-based QElectron executors and devices
+Utilities for Braket-based QElectron executors and devices
 """
