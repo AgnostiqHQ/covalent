@@ -128,6 +128,8 @@ class QiskitExecutor(AsyncBaseQExecutor):
     shots: Optional[int] = 1024
     single_job: bool = False
     max_time: Union[int, str] = None
+    local_transpile: bool = False
+
     ibmqx_url: str = None
     channel: str = "ibm_quantum"
     instance: str = ""
@@ -167,6 +169,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
             "wires": self.qnode_device_wires,
             "shots": self.qnode_device_shots or self.shots,
             "backend_name": self.backend,
+            "local_transpile": self.local_transpile,
             "max_time": self.max_time,
             "single_job": self.single_job,
             "options": self.options or {},

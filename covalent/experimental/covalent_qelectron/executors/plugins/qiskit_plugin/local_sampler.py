@@ -46,6 +46,8 @@ class QiskitLocalSampler(QiskitSamplerDevice):
             wires=wires,
             shots=shots,
             backend_name="None",
+            local_transpile=False,
+            transpile_backend=None,
             service_init_kwargs={},
         )
 

@@ -44,6 +44,7 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
         wires: int,
         shots: int,
         backend_name: str,
+        local_transpile: bool,
         max_time: Union[int, str],
         single_job: bool,
         options: dict,
@@ -69,6 +70,7 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
             wires=wires,
             shots=shots,
             backend_name=backend_name,
+            local_transpile=local_transpile,
             service_init_kwargs=service_init_kwargs,
         )
 
@@ -247,6 +249,7 @@ class _PostProcessDevice(QiskitRuntimeSampler):
             wires=wires,
             shots=1,
             backend_name="",
+            local_transpile=False,
             max_time=1,
             single_job=False,
             options={},
