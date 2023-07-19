@@ -68,7 +68,7 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, ele
 
   useEffect(() => {
     setDefaultId('');
-    if (electronId && openQelectronDrawer) {
+    if (!(electronId === null || electronId === undefined) && openQelectronDrawer) {
       const bodyParams = {
         sort_by: 'start_time',
         direction: 'DESC',
