@@ -35,7 +35,7 @@ from covalent.experimental.covalent_qelectron.executors.base import (
     BaseQExecutor,
     QCResult,
     get_asyncio_event_loop,
-    get_thread_pool,
+    get_thread_pool
 )
 from covalent.experimental.covalent_qelectron.shared_utils import import_from_path
 
@@ -48,31 +48,29 @@ _QEXECUTOR_PLUGIN_DEFAULTS = {
 
     "BraketQubitExecutor": {
         "device_arn": "",
-        "s3_destination_folder": "",
-        # Need AWS session for region etc.
+        "s3_destination_folder": ""
     },
 
     "LocalBraketQubitExecutor": {
-        "backend": "default",
-    },
+        "backend": "default"
+    }
 } 
 
 class BraketQubitExecutor(BaseThreadPoolQExecutor):
 
     max_jobs: int = 20
     device_arn: str = None
-    poll_timeout_seconds: float = AwsQuantumTask.DEFAULT_RESULTS_POLL_TIMEOUT,
-    poll_interval_seconds: float = AwsQuantumTask.DEFAULT_RESULTS_POLL_INTERVAL,
-    aws_session: Optional[AwsSession] = None,
-    parallel: bool = False,
-    max_parallel: Optional[int] = None,
-    max_connections: int = AwsQuantumTaskBatch.MAX_CONNECTIONS_DEFAULT,
-    max_retries: int = AwsQuantumTaskBatch.MAX_RETRIES,
+    poll_timeout_seconds: float = AwsQuantumTask.DEFAULT_RESULTS_POLL_TIMEOUT
+    poll_interval_seconds: float = AwsQuantumTask.DEFAULT_RESULTS_POLL_INTERVAL
+    aws_session: Optional[str] = None # not actually a str. Fix.
+    parallel: bool = False
+    max_parallel: Optional[int] = None
+    max_connections: int = AwsQuantumTaskBatch.MAX_CONNECTIONS_DEFAULT
+    max_retries: int = AwsQuantumTaskBatch.MAX_RETRIES
     run_kwargs: dict = None
     s3_destination_folder: str = Field(
         default_factory=lambda: get_config("qelectron")["BraketQubitExecutor"]["s3_destination_folder"]
     )
-
     def batch_submit(self, qscripts_list):
 
         p = get_thread_pool(self.max_jobs)
