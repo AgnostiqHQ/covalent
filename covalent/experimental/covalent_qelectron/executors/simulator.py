@@ -34,8 +34,9 @@ class Simulator(BaseQExecutor):
     A quantum executor that uses the specified Pennylane device to execute circuits.
 
     Keyword Args:
-        device: A valid string corresponding to a Pennylane device. Defaults to
-            "default.qubit".
+        device: A valid string corresponding to a Pennylane device. Simulation-based 
+            devices (e.g. "default.qubit" and "lightning.qubit") are recommended.
+            Defaults to "default.qubit".
         parallel: The type of parallelism to use. Valid values are "thread" and
             "process". Passing any other value will result in synchronous execution.
             Defaults to "thread".
