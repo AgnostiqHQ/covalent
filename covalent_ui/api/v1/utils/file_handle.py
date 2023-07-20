@@ -107,7 +107,7 @@ class FileHandler:
         except Exception:
             return None
 
-    async def read_from_text(self, path):
+    def read_from_text(self, path):
         """Return data from text file"""
         try:
             with open(self.location + "/" + path, "r", encoding="utf-8") as read_file:

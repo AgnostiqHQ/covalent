@@ -65,16 +65,16 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
                 ],
             )
         return ElectronResponse(
-            id=result["id"],
-            node_id=result["transport_graph_node_id"],
-            parent_lattice_id=result["parent_lattice_id"],
-            type=result["type"],
-            storage_path=result["storage_path"],
-            name=result["name"],
-            status=result["status"],
-            started_at=result["started_at"],
-            ended_at=result["completed_at"],
-            runtime=result["runtime"],
+            id=result.id,
+            node_id=result.transport_graph_node_id,
+            parent_lattice_id=result.parent_lattice_id,
+            type=result.type,
+            storage_path=result.storage_path,
+            name=result.name,
+            status=result.status,
+            started_at=result.started_at,
+            ended_at=result.completed_at,
+            runtime=result.runtime,
             description="",
         )
 
@@ -117,47 +117,47 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
         if result is not None:
-            handler = FileHandler(result["storage_path"])
+            handler = FileHandler(result.storage_path)
             if name == "inputs":
                 response, python_object = get_electron_inputs(
                     dispatch_id=dispatch_id, electron_id=electron_id
                 )
                 return ElectronFileResponse(data=str(response), python_object=str(python_object))
             elif name == "function_string":
-                response = handler.read_from_text(result["function_string_filename"])
+                response = handler.read_from_text(result.function_string_filename)
                 return ElectronFileResponse(data=response)
             elif name == "function":
-                response, python_object = handler.read_from_pickle(result["function_filename"])
+                response, python_object = handler.read_from_pickle(result.function_filename)
                 return ElectronFileResponse(data=response, python_object=python_object)
             elif name == "executor":
-                executor_name = result["executor"]
-                executor_data = handler.read_from_pickle(result["executor_data_filename"])
+                executor_name = result.executor
+                executor_data = handler.read_from_pickle(result.executor_data_filename)
                 return ElectronExecutorResponse(
                     executor_name=executor_name, executor_details=executor_data
                 )
             elif name == "result":
-                response, python_object = handler.read_from_pickle(result["results_filename"])
+                response, python_object = handler.read_from_pickle(result.results_filename)
                 return ElectronFileResponse(data=str(response), python_object=python_object)
             elif name == "value":
-                response = handler.read_from_pickle(result["value_filename"])
+                response = handler.read_from_pickle(result.value_filename)
                 return ElectronFileResponse(data=str(response))
             elif name == "stdout":
-                response = handler.read_from_text(result["stdout_filename"])
+                response = handler.read_from_text(result.stdout_filename)
                 return ElectronFileResponse(data=response)
             elif name == "deps":
-                response = handler.read_from_pickle(result["deps_filename"])
+                response = handler.read_from_pickle(result.deps_filename)
                 return ElectronFileResponse(data=response)
             elif name == "call_before":
-                response = handler.read_from_pickle(result["call_before_filename"])
+                response = handler.read_from_pickle(result.call_before_filename)
                 return ElectronFileResponse(data=response)
             elif name == "call_after":
-                response = handler.read_from_pickle(result["call_after_filename"])
+                response = handler.read_from_pickle(result.call_after_filename)
                 return ElectronFileResponse(data=response)
             elif name == "error":
                 # Error and stderr won't be both populated if `error`
                 # is only used for fatal dispatcher-executor interaction errors
-                error_response = handler.read_from_text(result["error_filename"])
-                stderr_response = handler.read_from_text(result["stderr_filename"])
+                error_response = handler.read_from_text(result.error_filename)
+                stderr_response = handler.read_from_text(result.stderr_filename)
                 response = stderr_response + error_response
                 return ElectronFileResponse(data=response)
             else:

@@ -24,6 +24,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 from pydantic import conint
+from sqlalchemy.orm import Session
 
 import covalent_ui.api.v1.database.config.db as db
 from covalent_ui.api.v1.data_layer.summary_dal import Summary
@@ -57,11 +58,9 @@ async def get_all_dispatches(
     Returns:
         List of Dispatch Summary
     """
-    async with db.async_session() as session:
+    with Session(db.engine) as session:
         summary = Summary(session)
-        return await summary.get_summary(
-            count, offset, sort_by, search, sort_direction, status_filter
-        )
+        return summary.get_summary(count, offset, sort_by, search, sort_direction, status_filter)
 
 
 @routes.get("/overview", response_model=DispatchDashBoardResponse)
@@ -74,9 +73,9 @@ async def get_dashboard_details():
     Returns:
         An Overview of dispatches as object
     """
-    async with db.async_session() as session:
+    with Session(db.engine) as session:
         summary = Summary(session)
-        return await summary.get_summary_overview()
+        return summary.get_summary_overview()
 
 
 @routes.post("/delete", response_model=DeleteDispatchesResponse)
@@ -91,9 +90,9 @@ async def delete_dispatches(req: Optional[DeleteDispatchesRequest]):
         List of deleted dispatches if fails
     """
 
-    async with db.async_session() as session:
+    with Session(db.engine) as session:
         summary = Summary(session)
-        return await summary.delete_dispatches(req)
+        return summary.delete_dispatches(req)
 
 
 @routes.post("/delete-all", response_model=DeleteDispatchesResponse)
@@ -108,6 +107,6 @@ async def delete_all_dispatches(req: Optional[DeleteAllDispatchesRequest]):
         List of deleted dispatches if fails
     """
 
-    async with db.async_session() as session:
+    with Session(db.engine) as session:
         summary = Summary(session)
-        return await summary.delete_all_dispatches(req)
+        return summary.delete_all_dispatches(req)

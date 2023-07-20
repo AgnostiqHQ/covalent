@@ -38,7 +38,7 @@ class Lattices:
     def __init__(self, db_con: Session) -> None:
         self.db_con = db_con
 
-    async def get_lattices_id(self, dispatch_id: UUID) -> LatticeDetail:
+    def get_lattices_id(self, dispatch_id: UUID) -> LatticeDetail:
         """
         Get lattices from dispatch id
         Args:
@@ -70,10 +70,11 @@ class Lattices:
             ).label("runtime"),
             func.coalesce((Lattice.updated_at), None).label("updated_at"),
         ).where(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
-        lattice = await self.db_con.execute(query)
-        return lattice.first()
+        lattice = self.db_con.execute(query).first()
 
-    async def get_lattices_id_storage_file(self, dispatch_id: UUID):
+        return lattice
+
+    def get_lattices_id_storage_file(self, dispatch_id: UUID):
         """
         Get storage file name
         Args:
@@ -104,25 +105,25 @@ class Lattices:
             Lattice.electron_num.label("total_electrons"),
             Lattice.completed_electron_num.label("total_electrons_completed"),
         ).where(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
-        lattice = await self.db_con.execute(query)
-        return LatticeDetailsFile.from_orm(lattice)
+        lattice = self.db_con.execute(query).first()
+        return LatticeDetailsFile.model_validate(lattice)
 
-    def get_lattice_id_by_dispatch_id(self, dispatch_id: UUID):
-        """
-        Get top lattice id from dispatch id
-        Args:
-            dispatch_id: UUID of dispatch
-        Returns:
-            Top most lattice id
-        """
-        data = (
-            self.db_con.query(Lattice.id)
-            .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.electron_id.is_(None))
-            .first()
-        )
-        return data[0]
+    # def get_lattice_id_by_dispatch_id(self, dispatch_id: UUID):
+    #     """
+    #     Get top lattice id from dispatch id
+    #     Args:
+    #         dispatch_id: UUID of dispatch
+    #     Returns:
+    #         Top most lattice id
+    #     """
+    #     data = (
+    #         self.db_con.query(Lattice.id)
+    #         .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.electron_id.is_(None))
+    #         .first()
+    #     )
+    #     return data[0]
 
-    async def get_sub_lattice_details(self, sort_by, sort_direction, dispatch_id) -> List[Lattice]:
+    def get_sub_lattice_details(self, sort_by, sort_direction, dispatch_id) -> List[Lattice]:
         """
         Get summary of sub lattices
         Args:
@@ -163,6 +164,6 @@ class Lattices:
             )
         )
 
-        data = await self.db_con.execute(query)
+        data = self.db_con.execute(query).all()
 
-        return data.all()
+        return data

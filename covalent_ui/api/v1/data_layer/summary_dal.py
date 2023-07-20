@@ -48,7 +48,7 @@ class Summary:
     def __init__(self, db_con: Session) -> None:
         self.db_con = db_con
 
-    async def get_summary(
+    def get_summary(
         self, count, offset, sort_by, search, sort_direction, status_filter
     ) -> List[Lattice]:
         """
@@ -62,7 +62,7 @@ class Summary:
         Return:
             List of top most Lattices and count
         """
-        status_filters = await self.get_filters(status_filter)
+        status_filters = self.get_filters(status_filter)
         select_query = [
             Lattice.dispatch_id.label("dispatch_id"),
             Lattice.name.label("lattice_name"),
@@ -120,14 +120,14 @@ class Summary:
             .slice(offset, count)
         )
         orm_query_counter = select(func.count()).where(*where_query)
-        results = await self.db_con.execute(orm_query)
-        counter = await self.db_con.scalar(orm_query_counter)
+        results = self.db_con.execute(orm_query)
+        counter = self.db_con.scalar(orm_query_counter)
         return DispatchResponse(
             items=[DispatchModule.model_validate(result) for result in results],
             total_count=counter,
         )
 
-    async def get_dispatch_count_by_status(
+    def get_dispatch_count_by_status(
         self, status: str = "", is_active: bool = False, filter_by_job_done: bool = False
     ) -> int:
         filter_by = (
@@ -143,9 +143,9 @@ class Summary:
             ]
         )
         filter_by.extend([Lattice.is_active.is_not(is_active), Lattice.electron_id.is_(None)])
-        return await self.db_con.scalar(select(func.count()).where(*filter_by))
+        return self.db_con.scalar(select(func.count()).where(*filter_by))
 
-    async def get_summary_overview(self) -> DispatchDashBoardResponse:
+    def get_summary_overview(self) -> DispatchDashBoardResponse:
         """
         Get summary overview
         Args:
@@ -156,17 +156,17 @@ class Summary:
             Latest running task status,
             Total dispatcher duration
         """
-        total_jobs_running = await self.get_dispatch_count_by_status(status="RUNNING")
+        total_jobs_running = self.get_dispatch_count_by_status(status="RUNNING")
 
-        total_jobs_done = await self.get_dispatch_count_by_status(filter_by_job_done=True)
+        total_jobs_done = self.get_dispatch_count_by_status(filter_by_job_done=True)
 
-        last_ran_job_status = await self.db_con.scalar(
+        last_ran_job_status = self.db_con.scalar(
             select(Lattice.status)
             .filter(Lattice.is_active.is_not(False), Lattice.electron_id.is_(None))
             .order_by(Lattice.updated_at.desc())
         )
 
-        run_time = await self.db_con.scalar(
+        run_time = self.db_con.scalar(
             select(
                 func.sum(
                     func.coalesce(
@@ -179,14 +179,14 @@ class Summary:
             ).filter(Lattice.is_active.is_not(False), Lattice.electron_id.is_(None))
         )
 
-        total_jobs = await self.db_con.scalar(
+        total_jobs = self.db_con.scalar(
             select(func.count(Lattice.id)).filter(
                 Lattice.is_active.is_not(False), Lattice.electron_id.is_(None)
             )
         )
-        total_failed = await self.get_dispatch_count_by_status(status="FAILED")
-        total_jobs_cancelled = await self.get_dispatch_count_by_status(status="CANCELLED")
-        total_jobs_new_object = await self.get_dispatch_count_by_status(status="NEW_OBJECT")
+        total_failed = self.get_dispatch_count_by_status(status="FAILED")
+        total_jobs_cancelled = self.get_dispatch_count_by_status(status="CANCELLED")
+        total_jobs_new_object = self.get_dispatch_count_by_status(status="NEW_OBJECT")
 
         run_time = 0 if run_time is None else run_time
         return DispatchDashBoardResponse(
@@ -202,7 +202,7 @@ class Summary:
             total_jobs=total_jobs,
         )
 
-    async def delete_dispatches(self, data: DeleteDispatchesRequest) -> DeleteDispatchesResponse:
+    def delete_dispatches(self, data: DeleteDispatchesRequest) -> DeleteDispatchesResponse:
         """
         Delete dispatches
         Args:
@@ -221,7 +221,7 @@ class Summary:
             )
         for dispatch_id in data.dispatches:
             try:
-                lattice_id = await self.db_con.scalar(
+                lattice_id = self.db_con.scalar(
                     select(Lattice.id).where(
                         Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False)
                     )
@@ -244,7 +244,7 @@ class Summary:
                         }
                     )
                 )
-                await self.db_con.execute(
+                self.db_con.execute(
                     update_electron_dependency,
                     execution_options=immutabledict({"synchronize_session": False}),
                 )
@@ -258,7 +258,7 @@ class Summary:
                         }
                     )
                 )
-                await self.db_con.execute(update_electron)
+                self.db_con.execute(update_electron)
 
                 update_lattice = (
                     update(Lattice)
@@ -270,8 +270,8 @@ class Summary:
                         }
                     )
                 )
-                await self.db_con.execute(update_lattice)
-                await self.db_con.commit()
+                self.db_con.execute(update_lattice)
+                self.db_con.commit()
                 success.append(dispatch_id)
             except Exception:
                 failure.append(dispatch_id)
@@ -286,7 +286,7 @@ class Summary:
             message=message,
         )
 
-    async def delete_all_dispatches(self, data: DeleteAllDispatchesRequest):
+    def delete_all_dispatches(self, data: DeleteAllDispatchesRequest):
         """
         Delete dispatches
         Args:
@@ -296,8 +296,8 @@ class Summary:
         """
         success = []
         failure = []
-        status_filters = await self.get_filters(data.status_filter)
-        filter_dispatches = await self.db_con.execute(
+        status_filters = self.get_filters(data.status_filter)
+        filter_dispatches = self.db_con.execute(
             select(Lattice.id, Lattice.dispatch_id).where(
                 or_(
                     Lattice.name.ilike(f"%{data.search_string}%"),
@@ -345,19 +345,19 @@ class Summary:
                         }
                     )
                 )
-                await self.db_con.execute(
+                self.db_con.execute(
                     update_electron_dependency,
                     execution_options=immutabledict({"synchronize_session": False}),
                 )
-                await self.db_con.execute(
+                self.db_con.execute(
                     update_electron,
                     execution_options=immutabledict({"synchronize_session": False}),
                 )
-                await self.db_con.execute(
+                self.db_con.execute(
                     update_lattice,
                     execution_options=immutabledict({"synchronize_session": False}),
                 )
-                await self.db_con.commit()
+                self.db_con.commit()
                 success = dispatches
             except Exception:
                 failure = dispatches
@@ -374,7 +374,7 @@ class Summary:
             message=message,
         )
 
-    async def get_filters(self, status_filter: Status):
+    def get_filters(self, status_filter: Status):
         filters = []
         if status_filter == Status.ALL:
             filters = [status.value for status in Status]

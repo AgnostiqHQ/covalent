@@ -20,7 +20,7 @@
 
 """DB Config"""
 
-from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase
 
 from covalent_dispatcher._db.datastore import DataStore
@@ -32,21 +32,12 @@ class Base(AsyncAttrs, DeclarativeBase):
 
 
 engine = DataStore.factory().engine
-async_session = async_sessionmaker(DataStore.factory().async_engine, expire_on_commit=False)
 
 
 def init_db(db_path: str = None):
     global engine
-    global async_session
     engine = (
         DataStore(db_URL=db_path, initialize_db=True).engine
         if db_path is not None
         else DataStore().engine
-    )
-    async_session = (
-        async_sessionmaker(
-            DataStore(db_URL=db_path, initialize_db=True).async_engine, expire_on_commit=False
-        )
-        if db_path
-        else async_sessionmaker(DataStore().async_engine, expire_on_commit=False)
     )

@@ -58,18 +58,18 @@ class LatticeDetailResponse(BaseModel):
 
 
 class LatticeDetail(BaseModel):
-    dispatch_id: str
-    status: str
-    directory: str
-    error_filename: str
-    results_filename: str
-    docstring_filename: str
-    start_time: datetime
-    end_time: datetime
-    total_electrons: int
-    total_electrons_completed: int
-    runtime: int
-    updated_at: datetime
+    dispatch_id: Union[str, None]
+    status: Union[str, None]
+    directory: Union[str, None]
+    error_filename: Union[str, None]
+    results_filename: Union[str, None]
+    docstring_filename: Union[str, None]
+    start_time: Union[datetime, None]
+    end_time: Union[datetime, None]
+    total_electrons: Union[int, None]
+    total_electrons_completed: Union[int, None]
+    runtime: Union[int, None]
+    updated_at: Union[datetime, None]
 
     # class Config:
     #     from_attributes = True
@@ -77,25 +77,25 @@ class LatticeDetail(BaseModel):
 
 
 class LatticeDetailsFile(BaseModel):
-    dispatch_id: str
-    status: str
-    directory: str
-    error_filename: str
-    function_string_filename: str
-    executor: str
-    executor_data_filename: str
-    workflow_executor: str
-    workflow_executor_data_filename: str
-    error_filename: str
-    inputs_filename: str
-    results_filename: str
-    storage_type: str
-    function_filename: str
-    transport_graph_filename: str
-    started_at: str
-    ended_at: str
-    total_electrons: str
-    total_electrons_completed: str
+    dispatch_id: Union[str, None]
+    status: Union[str, None]
+    directory: Union[str, None]
+    error_filename: Union[str, None]
+    function_string_filename: Union[str, None]
+    executor: Union[str, None]
+    executor_data_filename: Union[str, None]
+    workflow_executor: Union[str, None]
+    workflow_executor_data_filename: Union[str, None]
+    error_filename: Union[str, None]
+    inputs_filename: Union[str, None]
+    results_filename: Union[str, None]
+    storage_type: Union[str, None]
+    function_filename: Union[str, None]
+    transport_graph_filename: Union[str, None]
+    started_at: Union[datetime, None]
+    ended_at: Union[datetime, None]
+    total_electrons: Union[int, None]
+    total_electrons_completed: Union[int, None]
 
     # class Config:
     #     from_attributes = True

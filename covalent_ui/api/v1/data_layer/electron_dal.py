@@ -24,7 +24,7 @@ import uuid
 
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
-from sqlalchemy import extract
+from sqlalchemy import extract, select
 from sqlalchemy.sql import func
 
 from covalent._results_manager.results_manager import get_result
@@ -49,8 +49,8 @@ class Electrons:
         Return:
             Electron with PK as electron_id
         """
-        data = (
-            self.db_con.query(
+        data = self.db_con.execute(
+            select(
                 Electron.id,
                 Electron.transport_graph_node_id,
                 Electron.parent_lattice_id,
@@ -88,8 +88,7 @@ class Electrons:
                 Lattice.dispatch_id == str(dispatch_id),
                 Electron.transport_graph_node_id == electron_id,
             )
-            .first()
-        )
+        ).first()
         return data
 
     def get_electron_inputs(self, dispatch_id: uuid.UUID, electron_id: int) -> str:

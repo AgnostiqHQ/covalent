@@ -37,7 +37,7 @@ class Graph:
     def __init__(self, db_con: Session) -> None:
         self.db_con = db_con
 
-    async def get_nodes(self, parent_lattice_id: int) -> GetDispatchNotes:
+    def get_nodes(self, parent_lattice_id: int) -> GetDispatchNotes:
         """
         Get nodes from parent_lattice_id
         Args:
@@ -66,10 +66,10 @@ class Graph:
             where lattices.id = :a
         """
         )
-        result = await self.db_con.execute(sql, {"a": parent_lattice_id})
+        result = self.db_con.execute(sql, {"a": parent_lattice_id})
         return [GetDispatchNotes.from_orm(node) for node in result.fetchall()]
 
-    async def get_links(self, parent_lattice_id: int) -> GetDispatchLinks:
+    def get_links(self, parent_lattice_id: int) -> GetDispatchLinks:
         """
         Get links from parent_lattice_id
         When parent_lattice_id passed to get links
@@ -79,7 +79,7 @@ class Graph:
         Return:
             graph data with list of links
         """
-        links = await self.db_con.execute(
+        links = self.db_con.execute(
             select(
                 ElectronDependency.edge_name,
                 ElectronDependency.parameter_type,
@@ -92,7 +92,7 @@ class Graph:
         )
         return [GetDispatchLinks.from_orm(link) for link in links.all()]
 
-    async def check_error(self, data):
+    def check_error(self, data):
         """
         Helper method to rise exception if data is None
 
@@ -107,7 +107,7 @@ class Graph:
             raise HTTPException(status_code=400, detail=["Something went wrong"])
         return data
 
-    async def get_graph(self, dispatch_id: UUID):
+    def get_graph(self, dispatch_id: UUID):
         """
         Get graph data from parent lattice id
         When dispatch id passed to get graph
@@ -118,12 +118,12 @@ class Graph:
         Return:
             graph data with list of nodes and links
         """
-        parent_lattice_id = await self.db_con.scalar(
+        parent_lattice_id = self.db_con.scalar(
             select(Lattice.id).where(Lattice.dispatch_id == str(dispatch_id))
         )
         if parent_lattice_id is not None:
             parrent_id = parent_lattice_id
-            nodes = await self.check_error(await self.get_nodes(parrent_id))
-            links = await self.check_error(await self.get_links(parrent_id))
+            nodes = self.check_error(self.get_nodes(parrent_id))
+            links = self.check_error(self.get_links(parrent_id))
             return {"dispatch_id": str(dispatch_id), "nodes": nodes, "links": links}
         return None

@@ -24,6 +24,7 @@ import uuid
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Path, Query
+from sqlalchemy.orm import Session
 
 import covalent_ui.api.v1.database.config.db as db
 from covalent_ui.api.v1.data_layer.lattice_dal import Lattices
@@ -43,7 +44,7 @@ routes: APIRouter = APIRouter()
 
 
 @routes.get("/{dispatch_id}", response_model=LatticeDetailResponse)
-async def get_lattice_details(dispatch_id: uuid.UUID):
+def get_lattice_details(dispatch_id: uuid.UUID):
     """Get lattice details
 
     Args:
@@ -53,12 +54,12 @@ async def get_lattice_details(dispatch_id: uuid.UUID):
         Returns the lattice data with the dispatch id provided
     """
 
-    async with db.async_session() as session:
+    with Session(db.engine) as session:
         lattice = Lattices(session)
-        data = await lattice.get_lattices_id(dispatch_id)
+        data = lattice.get_lattices_id(dispatch_id)
         if data is not None:
             handler = FileHandler(data.directory)
-            description = await handler.read_from_text(data.docstring_filename)
+            description = handler.read_from_text(data.docstring_filename)
             return LatticeDetailResponse(
                 dispatch_id=data.dispatch_id,
                 status=data.status,
@@ -83,7 +84,7 @@ async def get_lattice_details(dispatch_id: uuid.UUID):
 
 
 @routes.get("/{dispatch_id}/details/{name}")
-async def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
+def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
     """Get lattice file data
 
     Args:
@@ -93,46 +94,42 @@ async def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
     Returns:
         Returns the lattice file data with the dispatch id and file_module provided provided
     """
-    async with db.async_session() as session:
+    with Session(db.engine) as session:
         lattice = Lattices(session)
-        lattice_data = await lattice.get_lattices_id_storage_file(dispatch_id)
+        lattice_data = lattice.get_lattices_id_storage_file(dispatch_id)
         if lattice_data is not None:
-            handler = FileHandler(lattice_data["directory"])
+            handler = FileHandler(lattice_data.directory)
             if name == "result":
-                response, python_object = handler.read_from_pickle(
-                    lattice_data["results_filename"]
-                )
+                response, python_object = handler.read_from_pickle(lattice_data.results_filename)
                 return LatticeFileResponse(data=str(response), python_object=python_object)
             if name == "inputs":
-                response, python_object = handler.read_from_pickle(lattice_data["inputs_filename"])
+                response, python_object = handler.read_from_pickle(lattice_data.inputs_filename)
                 return LatticeFileResponse(data=response, python_object=python_object)
             elif name == "function_string":
-                response = handler.read_from_text(lattice_data["function_string_filename"])
+                response = handler.read_from_text(lattice_data.function_string_filename)
                 return LatticeFileResponse(data=response)
             elif name == "executor":
-                executor_name = lattice_data["executor"]
-                executor_data = handler.read_from_pickle(lattice_data["executor_data_filename"])
+                executor_name = lattice_data.executor
+                executor_data = handler.read_from_pickle(lattice_data.executor_data_filename)
                 return LatticeExecutorResponse(
                     executor_name=executor_name, executor_details=executor_data
                 )
             elif name == "workflow_executor":
-                executor_name = lattice_data["workflow_executor"]
+                executor_name = lattice_data.workflow_executor
                 executor_data = handler.read_from_pickle(
-                    lattice_data["workflow_executor_data_filename"]
+                    lattice_data.workflow_executor_data_filename
                 )
                 return LatticeWorkflowExecutorResponse(
                     workflow_executor_name=executor_name, workflow_executor_details=executor_data
                 )
             elif name == "error":
-                response = handler.read_from_text(lattice_data["error_filename"])
+                response = handler.read_from_text(lattice_data.error_filename)
                 return LatticeFileResponse(data=response)
             elif name == "function":
-                response, python_object = handler.read_from_pickle(
-                    lattice_data["function_filename"]
-                )
+                response, python_object = handler.read_from_pickle(lattice_data.function_filename)
                 return LatticeFileResponse(data=response, python_object=python_object)
             elif name == "transport_graph":
-                response = handler.read_from_pickle(lattice_data["transport_graph_filename"])
+                response = handler.read_from_pickle(lattice_data.transport_graph_filename)
                 return LatticeFileResponse(data=response)
         else:
             raise HTTPException(
@@ -148,7 +145,7 @@ async def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
 
 
 @routes.get("/{dispatch_id}/sublattices", response_model=SubLatticeDetailResponse)
-async def get_sub_lattice(
+def get_sub_lattice(
     sort_by: Optional[SubLatticeSortBy] = Query(default=SubLatticeSortBy.RUNTIME),
     sort_direction: Optional[SortDirection] = Query(default=SortDirection.DESCENDING),
     dispatch_id: uuid.UUID = Path(title="dispatch id"),
@@ -161,9 +158,9 @@ async def get_sub_lattice(
     Returns:
         List of Sub Lattices details
     """
-    async with db.async_session() as session:
+    with Session(db.engine) as session:
         lattice = Lattices(session)
-        data = await lattice.get_sub_lattice_details(
+        data = lattice.get_sub_lattice_details(
             dispatch_id=dispatch_id, sort_by=sort_by, sort_direction=sort_direction
         )
         return SubLatticeDetailResponse(sub_lattices=data)
