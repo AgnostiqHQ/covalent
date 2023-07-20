@@ -1,9 +1,7 @@
 .. _covalent_api_main:
 
 Covalent
-==============
-
-
+========
 
 
 .. automodule:: covalent

@@ -1,5 +1,3 @@
-.. _basesync_executor:
-
 Synchronous Base Executor Class
 """""""""""""""""""""""""""
 

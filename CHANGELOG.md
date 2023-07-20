@@ -43,6 +43,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed duplicate "stop server" warning in the First Experimemnt page
 - Fixed typo in quickstart
 - Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
+- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
+- Updated documentation links in README
+- Updating and reorganizing RTD API documentation
+- Adding example links in API documentation
 
 ### Changed
 
@@ -54,6 +58,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Skipping functional tests for azure blob storage and gcp storage how to guides since they require credentials to run.
 - Added testcases for GUI backend.
+- Changed the method for startup and shutdown events for pytest to work with fastapi version 0.93.0
+- Fixed test cases to adapt changes to SQLAlchemy version 1.4.49
 
 ### Fixed
 
@@ -354,14 +360,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
-- Adding Google Batch executor plugin RTD
-
-### Docs
-
 - Updated How-to documents.
 - Port of Pennylane's Univariate QVR tutorial using Covalent to this repo.
 - Adding troubleshooting guide to RTD's
 - Added a note to First Experiment offering initial intro to executors.
+- Adding Google Batch executor plugin RTD
 
 ## [0.219.0-rc.0] - 2023-03-01
 
