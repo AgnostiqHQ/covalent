@@ -18,33 +18,24 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Model helper to handle sort by and sort direction"""
+import os
+import shutil
+from pathlib import Path
 
-from enum import Enum
+import covalent_ui.api.v1.database.config as config
+from tests.covalent_ui_backend_tests.utils.seed_script import log_output_data, seed, seed_files
 
-
-class CaseInsensitiveEnum(Enum):
-    """Enum overriden to support case insensitive keys"""
-
-    @classmethod
-    def _missing_(cls, value):
-        for member in cls:
-            if member.value.upper() == value.upper():
-                return member
+mock_db_path = str(Path(__file__).parent.parent.absolute()) + "/utils/data/mock_db.sqlite"
+mock_path = f"sqlite+pysqlite:///{mock_db_path}"
 
 
-class SortBy(CaseInsensitiveEnum):
-    """Values to filter data by"""
-
-    RUNTIME = "runtime"
-    STATUS = "status"
-    STARTED = "started_at"
-    LATTICE_NAME = "lattice_name"
-    ENDED = "ended_at"
+def startup_event():
+    config.db.init_db(db_path=mock_path)
+    seed(config.db.engine)
+    seed_files()
 
 
-class SortDirection(CaseInsensitiveEnum):
-    """Values to decide sort direction"""
-
-    ASCENDING = "ASC"
-    DESCENDING = "DESC"
+def shutdown_event():
+    os.remove(mock_db_path)
+    shutil.rmtree(log_output_data["lattice_files"]["path"])
+    shutil.rmtree(log_output_data["log_files"]["path"])

@@ -18,33 +18,20 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Model helper to handle sort by and sort direction"""
+"""Config data"""
 
-from enum import Enum
+import os
 
+from covalent._shared_files.config import get_config
 
-class CaseInsensitiveEnum(Enum):
-    """Enum overriden to support case insensitive keys"""
-
-    @classmethod
-    def _missing_(cls, value):
-        for member in cls:
-            if member.value.upper() == value.upper():
-                return member
-
-
-class SortBy(CaseInsensitiveEnum):
-    """Values to filter data by"""
-
-    RUNTIME = "runtime"
-    STATUS = "status"
-    STARTED = "started_at"
-    LATTICE_NAME = "lattice_name"
-    ENDED = "ended_at"
-
-
-class SortDirection(CaseInsensitiveEnum):
-    """Values to decide sort direction"""
-
-    ASCENDING = "ASC"
-    DESCENDING = "DESC"
+VALID_DISPATCH_ID = "78525234-72ec-42dc-94a0-f4751707f9cd"
+INVALID_DISPATCH_ID = "78525234-72ec-42dc-94a0-f4751707f9ef"
+VALID_NODE_ID = 0
+INVALID_NODE_ID = 8
+CONFIG_PATH = os.environ.get("COVALENT_CONFIG_DIR")
+LOG_DIR = os.environ.get("COVALENT_LOGDIR")
+EXECUTOR_DIR = os.environ.get("COVALENT_EXECUTOR_DIR")
+BASE_DIR = os.environ.get("COVALENT_DATA_DIR")
+LOG_FORMAT = "[%(asctime)s,%(msecs)03d] [%(levelname)s] %(message)s"
+LOG_LEVEL = get_config("sdk.log_level").upper()
+LOG_TO_FILE = get_config("sdk.enable_logging").upper() == "TRUE"
