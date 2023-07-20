@@ -302,7 +302,7 @@ class AsyncBaseQCluster(AsyncBaseQExecutor):
         raise NotImplementedError
 
     @abstractmethod
-    def deserialize_selector(self) -> None:
+    def deserialize_selector(self) -> Union[str, Callable]:
         """
         Deserializes the cluster's selector function.
         """

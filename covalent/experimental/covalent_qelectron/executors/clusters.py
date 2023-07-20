@@ -37,7 +37,7 @@ class QCluster(AsyncBaseQCluster):
 
     def batch_submit(self, qscripts_list):
         if self._selector_serialized:
-            self.deserialize_selector()
+            self.selector = self.deserialize_selector()
 
         selector = self.get_selector()
         selected_executor = selector(qscripts_list, self.executors)
@@ -60,16 +60,17 @@ class QCluster(AsyncBaseQCluster):
         self.selector = base64.b64encode(self.selector).decode("utf-8")
         self._selector_serialized = True
 
-    def deserialize_selector(self) -> None:
+    def deserialize_selector(self) -> Union[str, Callable]:
         if not self._selector_serialized:
-            return
+            return self.selector
 
-        # convert JSON-able string back to bytes
-        self.selector = base64.b64decode(self.selector.encode("utf-8"))
+        # Deserialize the selector function (or string).
+        selector = cloudpickle_deserialize(
+            base64.b64decode(self.selector.encode("utf-8"))
+        )
 
-        # deserialize to function
-        self.selector = cloudpickle_deserialize(self.selector)
         self._selector_serialized = False
+        return selector
 
     def dict(self, *args, **kwargs) -> dict:
         # override `dict` method to convert dict attributes to JSON strings
@@ -83,8 +84,7 @@ class QCluster(AsyncBaseQCluster):
 
         This method is called inside `batch_submit`.
         """
-        if self._selector_serialized:
-            self.deserialize_selector()
+        self.selector = self.deserialize_selector()
 
         if isinstance(self.selector, str):
             # use default selector
