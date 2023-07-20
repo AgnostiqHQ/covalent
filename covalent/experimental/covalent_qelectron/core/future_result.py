@@ -35,10 +35,14 @@ def _run_later_device_factory(results, original_device):
     class _RunLaterDevice(qml_device_cls):
         # pylint: disable=too-few-public-methods
 
-        def batch_execute(self, *_, **__):
+        def batch_execute(self, circuits):
             """
             Override to return expected result.
             """
+            n_circuits = len(circuits)
+
+            if n_circuits > 1 or len(results) > 1:
+                return [results] * n_circuits
             return results
 
     wires = original_device.num_wires
