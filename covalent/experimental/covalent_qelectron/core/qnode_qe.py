@@ -19,13 +19,14 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from contextlib import contextmanager
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 import pennylane as qml
 from pydantic import BaseModel  # pylint: disable=no-name-in-module
 
 from ..core.device import QEDevice
 from ..core.future_result import QNodeFutureResult
+from ..executors.base import BaseQExecutor
 
 
 class QNodeSpecs(BaseModel):
@@ -70,14 +71,29 @@ _GRADIENT_ACCESS_MAXES = {
 
 class QNodeQE(qml.QNode):
     """
-        Initialize a QElectron instance from a given QNode and Executor.
+    A sub-type of Pennylane's QNode that integrates Covalent QElectrons.
 
-        Args:
-            qnode (qml.QNode): The QNode to wrap.
-            executors (Executor): The executors to choose from to use for running the QNode.
+    Attributes:
+        original_qnode: The original QNode that was wrapped.
+        device: The `QEDevice` instance used for circuit execution instead of the
+            original QNode's device.
     """
 
-    def __init__(self, qnode: qml.QNode, executors, qelectron_info):
+    def __init__(
+        self,
+        qnode: qml.QNode,
+        executors: List[BaseQExecutor],
+        qelectron_info: QElectronInfo,
+    ):
+        """
+        Initialize a `QNodeQE` instance.
+
+        Args:
+            qnode: The Pennylane QNode replaced by this object.
+            executors: A list of executors to use for circuit execution.
+            qelectron_info: Settings related to the original QNode.
+        """
+
         self.original_qnode = qnode
 
         # Create a new device for every QNodeQE instance
@@ -111,6 +127,9 @@ class QNodeQE(qml.QNode):
 
     @contextmanager
     def mark_call_async(self):
+        """
+        Activates async execution mode for this instance.
+        """
         # pylint: disable=protected-access
         self.device._async_run = True
         try:
@@ -119,17 +138,15 @@ class QNodeQE(qml.QNode):
             self.device._async_run = False
             self.device._batch_id = None
 
-    def run_later(self, *args, **kwargs):
+    def run_later(self, *args, **kwargs) -> QNodeFutureResult:
         """
-        Run the QNode asynchronously.
-
-        Args:
-            *args: Positional arguments to pass to the QNode.
-            **kwargs: Keyword arguments to pass to the QNode.
+        Calls this QNode asynchronously. This method returns immediately, without
+        waiting for the circuit to finish executing.
 
         Returns:
-            FutureResult: A wrapper object for the async result of running the QNode.
+            future_result: An object that can be queried for the execution result.
         """
+
         # pylint: disable=protected-access
         with self.mark_call_async():
             self(*args, **kwargs)
