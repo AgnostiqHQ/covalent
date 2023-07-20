@@ -74,7 +74,6 @@ _DEVICE_MAP = {
 }
 
 
-# TODO:
 class IBMQExecutor(BaseThreadPoolQExecutor):
     """
     A quantum executor that uses the Pennylane native "qiskit.ibmq" device to run
@@ -138,13 +137,12 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
         return jobs
 
 
-# TODO:
 class QiskitExecutor(AsyncBaseQExecutor):
     """
-    A quantum executor that uses custom Pennylane-Qiskit devices to run circuits
-    on IBM Quantum backends using runtime sessions and Qiskit primitives. The
-    attributes `device`, `backend`, `ibmqx_token`, `hub`, `group`, and `project`
-    are taken from the Covalent configuration file by default, if available.
+    A quantum executor that lets the user run circuits on IBM Quantum backends,
+    using runtime sessions and Qiskit primitives. The attributes `device`, `backend`,
+    `ibmqx_token`, `hub`, `group`, and `project` are taken from the Covalent
+    configuration file by default, if available.
 
     Keyword Args:
         device: The Qiskit primitive used to execute circuits. Valid values are
