@@ -18,4 +18,4 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .aws_plugin import BraketQubitExecutor
+from .aws_plugin import BraketQubitExecutor, LocalBraketQubitExecutor
