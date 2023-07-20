@@ -32,8 +32,6 @@ from mpire import WorkerPool
 from mpire.async_result import AsyncResult
 from pydantic import BaseModel, Extra, Field, root_validator  # pylint: disable=no-name-in-module
 
-from covalent._shared_files.config import get_config
-
 __all__ = [
     "BaseQExecutor",
     "BaseProcessPoolQExecutor",
@@ -79,9 +77,7 @@ def get_asyncio_event_loop():
 
 class BaseQExecutor(ABC, BaseModel):
 
-    persist_data: bool = Field(
-        default_factory=lambda: get_config("qelectron")["persist_data"]
-    )
+    persist_data: bool = True
 
     class Config:
         extra = Extra.allow
@@ -149,9 +145,7 @@ class QCResult(BaseModel):
 
 class SyncBaseQExecutor(BaseQExecutor):
 
-    device: str = Field(
-        default_factory=lambda: get_config("qelectron")["device"]
-    )
+    device: str = "default.qubit"
 
     def run_all_circuits(self, qscripts_list) -> List[QCResult]:
 
@@ -188,9 +182,7 @@ class AsyncBaseQExecutor(BaseQExecutor):
 
     # pylint: disable=invalid-overridden-method
 
-    device: str = Field(
-        default_factory=lambda: get_config("qelectron")["device"]
-    )
+    device: str = "default.qubit"
 
     def batch_submit(self, qscripts_list):
 
@@ -231,12 +223,8 @@ class AsyncBaseQExecutor(BaseQExecutor):
 
 class BaseProcessPoolQExecutor(BaseQExecutor):
 
-    device: str = Field(
-        default_factory=lambda: get_config("qelectron")["device"]
-    )
-    num_processes: int = Field(
-        default_factory=lambda: get_config("qelectron")["num_processes"]
-    )
+    device: str = "default.qubit"
+    num_processes: int = 10
 
     def batch_submit(self, qscripts_list):
         pool = get_process_pool(self.num_processes)
@@ -260,12 +248,8 @@ class BaseProcessPoolQExecutor(BaseQExecutor):
 
 class BaseThreadPoolQExecutor(BaseQExecutor):
 
-    device: str = Field(
-        default_factory=lambda: get_config("qelectron")["device"]
-    )
-    num_threads: int = Field(
-        default_factory=lambda: get_config("qelectron")["num_threads"]
-    )
+    device: str = "default.qubit"
+    num_threads: int = 10
 
     def batch_submit(self, qscripts_list):
         pool = get_thread_pool(self.num_threads)
