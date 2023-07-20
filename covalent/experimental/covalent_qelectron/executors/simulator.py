@@ -32,6 +32,8 @@ from covalent.experimental.covalent_qelectron.executors.base import (
 class Simulator(BaseQExecutor):
     """
     A quantum executor that uses the specified Pennylane device to execute circuits.
+    Parallelizes circuit execution on the specified `device` using either threads
+    or processes.
 
     Keyword Args:
         device: A valid string corresponding to a Pennylane device. Simulation-based 
