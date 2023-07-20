@@ -1,4 +1,4 @@
-# Copyright 2023 Agnostiq Inc.
+# Copyright 2021 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -18,37 +18,24 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""CPU stress test."""
+import os
+import shutil
+from pathlib import Path
 
-import covalent as ct
+import covalent_ui.api.v1.database.config as config
+from tests.covalent_ui_backend_tests.utils.seed_script import log_output_data, seed, seed_files
 
-N = 8
-STALL = 1e6
-X = 50
+mock_db_path = str(Path(__file__).parent.parent.absolute()) + "/utils/data/mock_db.sqlite"
+mock_path = f"sqlite+pysqlite:///{mock_db_path}"
 
 
-def test_cpu_stress():
-    """Stress test the CPU."""
+def startup_event():
+    config.db.init_db(db_path=mock_path)
+    seed(config.db.engine)
+    seed_files()
 
-    @ct.electron
-    def cpu_workload(stall, x):
-        i = 0
-        while i < stall:
-            x * x
-            i += 1
 
-    @ct.lattice
-    def workflow(iterations, stall, x):
-        for _ in range(iterations):
-            cpu_workload(stall, x)
-
-    n_electrons = [2**i for i in range(N)]
-    execution_time_taken = []
-    dispatch_ids = [ct.dispatch(workflow)(it, STALL, X) for it in n_electrons]
-
-    for d_id in dispatch_ids:
-        result = ct.get_result(d_id, wait=True)
-        execution_time_taken.append((result.end_time - result.start_time).total_seconds())
-
-    for time_taken in execution_time_taken:
-        assert time_taken < 120
+def shutdown_event():
+    os.remove(mock_db_path)
+    shutil.rmtree(log_output_data["lattice_files"]["path"])
+    shutil.rmtree(log_output_data["log_files"]["path"])

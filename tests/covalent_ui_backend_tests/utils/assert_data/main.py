@@ -18,5 +18,32 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .localstoragebackend import LocalStorageBackend
-from .storagebackend import StorageBackend
+"Main app mock data"
+
+
+def main_mock_data():
+    """Mock main data"""
+    return {
+        "test_webhook": {
+            "api_path": "/api/webhook",
+            "case1": {
+                "status_code": 200,
+                "response_data": {"ok": True},
+            },
+        },
+        "test_draw": {
+            "api_path": "/api/draw",
+            "case1": {
+                "status_code": 200,
+                "response_data": {"ok": True},
+            },
+        },
+        "test_misc": {
+            "api_path": "/{}",
+            "case1": {
+                "path": {"rest_of_path": "logs"},
+                "status_code": 200,
+                "response_data": {"ok": True},
+            },
+        },
+    }

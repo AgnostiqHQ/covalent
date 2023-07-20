@@ -17,28 +17,4 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
-
-from abc import ABC
-from typing import BinaryIO, Generator, List, Union
-
-
-class StorageBackend(ABC):
-    def __init__(self):
-        pass
-
-    def get(self, bucket_name: str, object_name: str) -> Union[Generator[bytes, None, None], None]:
-        raise NotImplementedError
-
-    def put(
-        self,
-        data: BinaryIO,
-        bucket_name: str,
-        object_name: str,
-        length: int,
-        metadata: dict = None,
-        overwrite: bool = False,
-    ) -> (str, str):
-        raise NotImplementedError
-
-    def delete(self, bucket_name: str, object_names: List[str]):
-        raise NotImplementedError
+from covalent_ui.app import fastapi_app
