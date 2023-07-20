@@ -2,41 +2,55 @@
 
 # Automate Repetitive Tasks with Triggers
 
-Triggers are a powerful feature in Covalent that allow you to automate repetitive tasks and streamline your workflow. With these, you can define a pre-defined set of steps that will run automatically every time a specific event occurs.
+Triggers are a powerful feature in Covalent that enable you to automate repetitive tasks and streamline your workflow. With triggers, you configure a workflow to run automatically every time a specific event occurs.
 
-To use Triggers, you simply need to attach a {doc}`Trigger <../api/triggers>` object to a lattice. Then, every time the event described in the trigger occurs, the connected lattice will perform a trigger action and dispatch the connected workflow. This makes it easy to automate processes, reducing the risk of human error and ensuring that your pipeline runs smoothly and efficiently.
+To use triggers, attach a {doc}`trigger <../api/triggers>` object to a workflow (`../api/lattice`). Then, every time the event described in the trigger occurs, the trigger dispatches the lattice.
 
-For example, if you want to plot a graph of a CSV file every time it gets modified, you can use these Triggers to automate this process. The trigger will be watching the CSV file for changes, and every time the file is modified, it will run the workflow to plot a graph of the data.
+For example, if you want to plot a graph of a CSV file every time the file is modified, you can use a trigger to automate that process. The trigger watches the CSV file for changes and runs the workflow to plot a graph of the data whenever it detects a change.
 
-Triggers are especially useful if you're using Covalent as part of a larger pipeline, rather than as a user-facing tool. By automating these tasks, you can save time, reduce the risk of error, and ensure that your pipeline runs smoothly and efficiently.
-
-
+Triggers are especially useful if you're using Covalent as part of a larger pipeline, rather than as (or in addition to) a user-facing tool. By automating tasks, you can save time, reduce the risk of error, and ensure that your pipeline runs smoothly and efficiently.
 
 
-## Using Triggers
+## Starting the Trigger Server
 
-Covalent offers multiple options to start the server with regards to triggers. The default way starts the Covalent server with the triggers server endpoints included.
+The Covalent server can be run with or without the trigger server endpoints included, or as a standalone trigger server for remote workflows. The following Bash commands illustrate the three different start methods.
 
-```{note}
-It is also *possible* to start the Covalent server without the triggers endpoints and manage the `observe()` method manually, or start the standalone triggers server without Covalent.
-```
-
-The following code block showcases the three different start options:
+(triggers_default)=
+By default, Covalent server runs the trigger server along with the dispatch service. To start the server, use the `covalent start` command on the command line (in a Bash shell, for example):
 
 ```{code-block} bash
-# Starting the default way which starts with the triggers server endpoints as part of Covalent server
+# Default method: Start with the trigger server endpoints as part of the Covalent server.
 covalent start
-# Starting the Covalent server without the trigger endpoints, thus in order to use triggers you will have
-# either have to start the triggers server independently or manage the observe() method of triggers manually
+```
+
+To start the Covalent server without the trigger server, for example if you know you're only going to trigger events remotely, use the `--no-triggers` option on the command line:
+
+```{code-block} bash
+# Start the Covalent server without the trigger endpoints. In this case, to use triggers you
+# must start the trigger server independently or manage the trigger observe() method manually.
 covalent start --no-triggers
-# Starting the standalone triggers server without Covalent, this is useful if your Covalent server
-# is running on a different machine than the triggers server
+```
+
+Conversely, run the trigger server without the dispatch server with the `--triggers-only` option. This is the other half of a remote trigger setup:
+
+```{code-block} bash
+# Start the standalone trigger server without Covalent. Use when a Covalent server
+# is running on a different machine than the trigger server.
 covalent start --triggers-only
 ```
 
-For the purpose of this example, let's assume you started Covalent the default way.
+## Using Triggers
 
-You can attach a {doc}`Trigger <../api/triggers>` object to a lattice quite simply as shown below:
+The rest of this page describes how invoke triggers under different trigger and dispatch server configurations.
+
+### Using a Local Trigger
+
+The simplest way to use a trigger is to call it on a combined dispatch/trigger server. The {ref}`default server configuration <triggers_default>` and default setting of the trigger's {ref}`internal functions flag<triggers_remote>` support this option, as demonstrated in the following two scenarios.
+
+
+#### Attaching a Trigger at Workflow Creation
+
+The following example implements a trigger on a combined Covalent dispatch and trigger server. Attach a {doc}`Trigger <../api/triggers>` object to a lattice as shown below:
 
 ```{code-block} python
 ...
@@ -45,21 +59,23 @@ tr_object = TimeTrigger(5)
 def my_workflow():
     ...
 ```
+When you dispatch the `my_workflow` lattice defined above using `ct.dispatch`, the following events occur:
 
-Under the hood, once this is done and when you dispatch the lattice using `ct.dispatch`, the following events occur:
+1. The initial run of the lattice is disabled.
+2. Covalent saves the lattice and generates a `dispatch_id` for later use.
+3. The {doc}`Trigger <../api/triggers>` objects specified in the `triggers` parameter are registered on the trigger server (running on the Covalent server).
 
-- The first run of the lattice is disabled, and Covalent only saves the lattice and generates a `dispatch_id` for reference later.
-- The {doc}`Trigger <../api/triggers>` object is registered on the triggers server, which is the same as the Covalent server by default.
-- Upon registration, the `observe()` method of the trigger is called, which starts observing for the desired condition to be met in an unblocking manner. In the example above, the {doc}`TimeTrigger <../api/triggers>` with a time gap of 5 seconds will call the `trigger()` method every 5 seconds.
-- At this point, `ct.dispatch` now returns with the earlier generate `dispatch_id`.
-- The `trigger()` method, whenever it's called, performs an automatic dispatch of the connected lattice using the `dispatch_id` obtained earlier, and stores the newly obtained `dispatch_id`s for connections between the "parent" and subsequent "child" `dispatch_id`s.
+    ```{note}
+    You can supply a single `trigger` object or a list of `trigger` objects to the `triggers` parameter.
+    ```
+4. Upon registration, the `observe()` method of the trigger is called. This starts an asynchronous observer waiting for the condition to be met. In this example, a {doc}`TimeTrigger <../api/triggers>` object with an interval of 5 seconds calls the `trigger()` method every 5 seconds.
+5. `ct.dispatch` returns with the generated `dispatch_id`.
+6. The `trigger()` method, when it is called, dispatches the associated lattice using the previously generated (parent) `dispatch_id`, and obtains a new (child) `dispatch_id`.
 
-Once a trigger is started, to stop the automatic dispatching when an event happens, you can call {doc}`ct.stop_triggers(dispatch_id) <../api/dispatcher>` with the parent dispatch id `dispatch_id`.
 
+#### Attaching a Trigger to a Dispatched Workflow
 
-## Attaching a Trigger to a Dispatched Workflow
-
-Another case which might be useful here is let's say you want to attach a trigger to a workflow which has already been dispatched, and you only have access to its dispatch_id, then in that case you can do the following:
+Now assume you want to attach a trigger to a workflow that has already been dispatched, and that you know the workflow's `dispatch_id`. Create a trigger as shown below.
 
 ```{code-block} python
 tr_object = TimeTrigger(10)
@@ -67,60 +83,128 @@ tr_object.lattice_dispatch_id = dispatch_id
 tr_object.register()
 ```
 
-This way of attaching a trigger is equivalent to the one mentioned before, but gives more degrees of freedom. For example, you can register the same trigger to multiple workflows by just repeating the last two lines for each of them. This method also eliminates the need to design workflows with the trigger in mind, disentangling the trigger creation code from the actual workflow code. And in fact, since a trigger can be set post the workflow creation, this method can be used to attach a trigger from an entirely different Python process than the one where the workflow was created
+This method of attaching a trigger is equivalent to the previous, but provides more flexibility. For example, you can register the same trigger to multiple workflows by just repeating the last two lines with each workflow's `dispatch_id`.
+
+This method also eliminates the need to consider triggers when designing a workflow, decoupling the trigger creation code from the workflow code. And in fact, since a trigger can be set after workflow creation, this method can be used to attach a trigger from an entirely different Python process than the one where the workflow was created.
 
 ```{note}
-In case you already know that you're gonna be attaching a trigger to a workflow post-dispatch and don't wish to run it the first time or until a trigger event takes place, then while dispatching it you can do `ct.dispatch(my_workflow, disable_run=True)()` and it won't start running but will still generate a `dispatch_id` which you can later use.
+If you know that you're going to attach a trigger to a workflow after it is dispatched and don't want to run the workflow on the first pass or until a trigger event takes place, then dispatch the workflow with:
+
+`ct.dispatch(my_workflow, disable_run=True)()`
+
+The dispatch won't run the workflow but will return a `dispatch_id` that you can use later.
 ```
 
+### Using a Remote Trigger
 
-## Attaching Triggers to Workflow on Remote Servers
+When a trigger fires, it dispatches a workflow either by directly accessing the required Covalent server function or by calling the REST API endpoint at the server IP adress and port. Which of these two methods it uses is controlled by a flag, `use_internal_funcs`, in the `trigger` object.
 
-Another way to attach triggers to workflows that have already been dispatched is by utilizing the `dispatch_id` and the address of both the Covalent server and the triggers server. This is useful in scenarios where the trigger should be managed from a separate machine.
+(triggers_remote)=
 
-For example, let's consider a scenario where there are 3 machines: 2 remote servers and 1 client machine. `ServerA` is the one where Covalent is running without triggers support, `ServerB` where only the triggers server is running, and `Client` is the one where you are working from.
+In the default case, with the trigger running in the dispatch server process, the trigger directly accesses the internal dispatch function directly. In this case, `trigger.use_internal_funcs` is set to `True`. This is its default value.
 
-Let's say our workflow `my_workflow` has been dispatched to `ServerA` without any triggers. To attach triggers to that workflow and register it with the triggers server, you can follow the steps given below:
+When deployed remotely, a trigger must use the Covalent server's REST API endpoint to dispatch a workflow. In such cases (the two scenarios below), set `trigger.use_internal_funcs = False` to force the trigger to interact with the dispatch server through the API endpoints.
 
-```{note}
-When using triggers remotely, make sure to do `trigger.use_internal_funcs = False` this will ensure that the trigger interacts with the Covalent server through the API endpoints instead of directly accessing the required internal functions.
-```
+#### Attaching a Trigger to a Workflow on a Remote Server
+
+To trigger a dispatched workflow from a separate host, provide the `dispatch_id` and the address of both the Covalent server and the trigger server.
+
+For example, consider a scenario where there are three hosts: two remote servers and one client. Covalent is running on `ServerA` without trigger support; the trigger server (only) is running on`ServerB`; and `Client` is a client node.
+
+Assume a workflow `my_workflow` has been dispatched on `ServerA` without any triggers. To attach triggers to the workflow and register it with the trigger server, follow the steps illustrated in the Python code below:
 
 ```{code-block} python
+# 1. Create the trigger
 trigger = TimeTrigger(30)
-# Interacting with dispatcher server through API endpoints
+
+# 2. Set the trigger to interact with the dispatcher server through API endpoints
 trigger.use_internal_funcs = False
-# Attaching dispatch id of `my_workflow` to the trigger
+
+# 3. Attach the dispatch ID of `my_workflow` to the trigger
 trigger.lattice_dispatch_id = dispatch_id
-# Specifying the address of the dispatcher server
+
+# 4. Specify the address of the dispatcher server
 trigger.dispatcher_addr = "<ServerA_addr>"
-# Specifying the address of the triggers server
+
+# 5. Specify the address of the trigger server
 trigger.triggers_server_addr = "<ServerB_addr>"
-# Registering it to the triggers server
+
+# 6. Register the trigger with the trigger server
 trigger.register()
 ```
 
-And this will be sufficient for your workflow to get dispatched every 30 seconds due to this trigger.
+Once this setup is complete, the trigger dispatches the workflow to the dispatch server every 30 seconds.
 
 
-## Adding a Trigger without Registering it to the Triggers Server
+#### Adding a Trigger without Registering it to the Trigger Server
 
-You can also run the observation component of a trigger as part of your own server, without registering it with the triggers server. For example, if you have a long-running process on a server, you can call the `trigger.observe()` function to start observing, as follows:
+You can run the `observation` component of a trigger as part of your own server or application code, without registering it on the trigger server. For example, if you have a long-running process on a server, you can call the `trigger.observe()` function to activate the trigger:
 
 ```{code-block} python
 trigger = TimeTrigger(2)
 trigger.use_internal_funcs = False
 trigger.lattice_dispatch_id = dispatch_id
 trigger.dispatcher_addr = `<ServerA_addr>`
-# And now start observing
+
+# Start observing
 trigger.observe()
 ```
 
-Keep in mind that it's important to handle the blocking/non-blocking nature of the `trigger.observe()` function correctly. If it's a blocking call, it's recommended to offload `trigger.observe()` to a separate thread so it doesn't block the execution of other components of your server. You can check if `trigger.observe()` is blocking by accessing the `trigger.observe_blocks` attribute of any trigger.
+The `trigger.observe()` function can be called synchronously (blocking) or asynchronously (non-blocking). If you use `trigger.observe()` as a blocking call, we recommend that you run it on a separate thread so it doesn't block other components of your server. You can check if `trigger.observe()` is blocking by querying the trigger's `trigger.observe_blocks` attribute. The `trigger.observe()` funciton is especially useful when writing custom triggers, for example to trigger workflows on email or Slack messages.
 
-This becomes extremely useful when writing custom triggers, for example to trigger workflows off of email/slack messages. The ability to run `trigger.observe()` as part of your own server or process opens up a world of possibilities to integrate triggers into your workflow in a way that best suits your use case.
+For further examples of how to use triggers, see these articles in the How-to Guide:
 
+## Types of Triggers in Covalent
+
+Covalent offers an array of triggers designed to cater to diverse use cases, simplifying the automation of tasks based on a range of conditions. It's important to note that this list represents the currently available triggers, with more to be added in the future. If you find these triggers valuable and have suggestions for new ones, we encourage you to contribute to Covalent's GitHub repository.
+
+Here are the currently available triggers in Covalent:
+
+1. `DirTrigger`: This trigger observes a specified directory or file for events such as creation, deletion, modification, or movement. It performs the trigger action when these events occur. For example:
+
+```{code-block} python
+from covalent.triggers import DirTrigger
+import covalent as ct
+
+dir_trigger = DirTrigger(dir_path='path/to/your/directory', event_names=['modified'])
+
+@ct.lattice(triggers=dir_trigger)
+def my_workflow():
+    ...
+```
+
+2. `TimeTrigger`: This trigger performs the trigger action after a specified time interval. It is useful for recurring tasks or periodic data processing. For example:
+
+```{code-block} python
+from covalent.triggers import TimeTrigger
+import covalent as ct
+
+time_trigger = TimeTrigger(time_gap=5)  # Trigger action every 5 seconds
+
+@ct.lattice(triggers=time_trigger)
+def my_workflow():
+    ...
+```
+
+
+3. `SQLiteTrigger`: This trigger monitors an SQLite database for changes and performs the trigger action when changes occur. It is helpful for automating tasks in response to database updates. For example:
+
+```{code-block} python
+from covalent.triggers import SQLiteTrigger
+import covalent as ct
+
+sqlite_trigger = SQLiteTrigger(db_path='path/to/your/database.sqlite',table_name='your_table)
+
+@ct.lattice(triggers=sqlite_trigger)
+def my_workflow():
+    ...
+
+```
+
+These triggers can be easily integrated into your Covalent workflows to automate various tasks based on the desired conditions.
+
+## Trigger How-to Guides
 
 For further examples on how to use triggers, check out the Trigger how to guides:
-- {doc}`How to add a directory trigger to a lattice <../how_to/orchestration/dir_trigger>`
-- {doc}`How to add a time trigger to a lattice <../how_to/orchestration/time_trigger>`
+- {doc}`How to add a directory trigger to a lattice <../how_to/coding/dir_trigger>`
+- {doc}`How to add a time trigger to a lattice <../how_to/coding/time_trigger>`

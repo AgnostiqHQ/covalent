@@ -32,7 +32,7 @@ suffix = "*.ipynb"
 files = glob.glob(rootdir + how_to_dir + suffix, recursive=True)
 expected_return_values = [0] * len(files)
 
-# Skip these since they require graphviz and/or gcc
+# Skip these since they cannot be tested in this way
 ignore_files = [
     "construct_c_task.ipynb",
     "query_electron_execution_status.ipynb",
@@ -40,10 +40,14 @@ ignore_files = [
     "visualize_lattice.ipynb",
     "cancel_dispatch.ipynb",
     "construct_bash_task.ipynb",
+    "file_transfers_to_from_remote.ipynb",
+    "creating_custom_executors.ipynb",
+    "file_transfers_to_from_azure_blob.ipynb",
+    "file_transfers_to_from_gcp_storage.ipynb",
 ]
 
 
-@pytest.mark.parametrize("file,expected_return_value", zip(files, expected_return_values))
+@pytest.mark.parametrize("file, expected_return_value", zip(files, expected_return_values))
 def test_how_to_file(file, expected_return_value):
     if os.path.basename(file) not in ignore_files:
         proc = Popen(

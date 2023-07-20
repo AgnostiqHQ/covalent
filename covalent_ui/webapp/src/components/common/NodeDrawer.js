@@ -58,10 +58,11 @@ import {
   electronError,
   electronInput,
 } from '../../redux/electronSlice'
+import { Prettify } from '../../utils/misc'
 
 export const nodeDrawerWidth = 360
 
-const NodeDrawer = ({ node, dispatchId }) => {
+const NodeDrawer = ({ node, dispatchId, prettify }) => {
   const dispatch = useDispatch()
   const electronId = node !== undefined && node.node_id
   const electronDetail = useSelector(
@@ -183,7 +184,9 @@ const NodeDrawer = ({ node, dispatchId }) => {
               <Skeleton data-testid="node__box_skl" width={150} />
             ) : (
               <Typography sx={{ color: '#A5A6F6', overflowWrap: 'anywhere' }}>
-                {nodeLabel(electronDetail?.type, electronDetail?.name)}
+                {prettify
+                  ? Prettify(electronDetail?.name, electronDetail?.type || '')
+                  : nodeLabel(electronDetail?.type, electronDetail?.name)}
               </Typography>
             )}
 

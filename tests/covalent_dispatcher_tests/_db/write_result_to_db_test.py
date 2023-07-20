@@ -406,6 +406,12 @@ def test_insert_electron_dependency_data(test_db, workflow_lattice, mocker):
         (":parameter:2", 2),
         (":sublattice:task_2", 3),
         (":parameter:2", 4),
+        ("task_1", 5),
+        (":parameter:1", 6),
+        (":parameter:2", 7),
+        (":sublattice:task_2", 8),
+        (":parameter:2", 9),
+        (":postprocess:", 10),
     ]:
         electron_kwargs = get_electron_kwargs(
             name=name,
@@ -425,8 +431,8 @@ def test_insert_electron_dependency_data(test_db, workflow_lattice, mocker):
                 electron_dependency.electron_id == 4
                 and electron_dependency.parent_electron_id == 1
             ):
-                assert electron_dependency.edge_name == "arg[0]"
-                assert electron_dependency.arg_index == 0
+                assert electron_dependency.edge_name == "arg[2]"
+                assert electron_dependency.arg_index == 2
                 assert electron_dependency.parameter_type == "arg"
 
             elif (
@@ -449,8 +455,8 @@ def test_insert_electron_dependency_data(test_db, workflow_lattice, mocker):
                 electron_dependency.electron_id == 4
                 and electron_dependency.parent_electron_id == 5
             ):
-                assert electron_dependency.edge_name == "arg[1]"
-                assert electron_dependency.arg_index == 1
+                assert electron_dependency.edge_name == "sub"
+                assert electron_dependency.arg_index == 0
                 assert electron_dependency.parameter_type == "arg"
 
             assert electron_dependency.is_active
@@ -514,6 +520,12 @@ def test_upsert_electron_dependency_data_idempotent(test_db, workflow_lattice, m
         (":parameter:2", 2),
         (":sublattice:task_2", 3),
         (":parameter:2", 4),
+        ("task_1", 5),
+        (":parameter:1", 6),
+        (":parameter:2", 7),
+        (":sublattice:task_2", 8),
+        (":parameter:2", 9),
+        (":postprocess:", 10),
     ]:
         electron_kwargs = get_electron_kwargs(
             name=name,

@@ -23,7 +23,7 @@
 import _ from 'lodash'
 import ELK from 'elkjs/lib/elk.bundled.js'
 import { isNode } from 'react-flow-renderer'
-import { isParameter } from '../../utils/misc'
+import { isParameter, isPostProcess, Prettify } from '../../utils/misc'
 
 const nodeLabel = (type, name) => {
   switch (type) {
@@ -42,9 +42,11 @@ const nodeLabel = (type, name) => {
  * Filter graph by node type.
  */
 const filterGraph = (graph, nodePredicate) => {
-  const nodes = _.filter(graph.nodes, nodePredicate)
-  const nodeSet = new Set(_.map(nodes, 'id'))
-  const links = _.filter(graph.links, ({ source }) => nodeSet.has(source))
+  const nodes = graph?.nodes?.filter(nodePredicate)
+  const nodeSet = new Set(nodes?.map((i) => i.id))
+  const links = graph?.links?.filter(
+    ({ source, target }) => nodeSet.has(source) && nodeSet.has(target)
+  )
   return { nodes, links }
 }
 
@@ -56,8 +58,13 @@ const mapGraphToElements = (
   direction,
   showParams,
   hideLabels,
-  preview
+  preview,
+  showPostProcess,
+  prettify
 ) => {
+  if (!showPostProcess) {
+    graph = filterGraph(graph, (node) => !isPostProcess(node))
+  }
   if (!showParams) {
     graph = filterGraph(graph, (node) => !isParameter(node))
   }
@@ -65,15 +72,19 @@ const mapGraphToElements = (
   const nodes = _.map(graph.nodes, (node) => {
     const handlePositions = getHandlePositions(direction)
     const isParam = isParameter(node)
-    const name = isParam ?  node?.name?.replace(':parameter:', '') : nodeLabel(node?.type, node.name)
+    const name = isParam
+      ? node?.name?.replace(':parameter:', '')
+      : prettify
+      ? Prettify(node.name, node.type)
+      : nodeLabel(node?.type, node.name)
     return {
       id: String(node.id),
       type: isParam ? 'parameter' : 'electron',
       data: {
-        fullName: name||'parameter',
+        fullName: name || 'parameter',
         label: hideLabels
-          ? _.truncate(name||'parameter', { length: 0 })
-          : _.truncate(name||'parameter', { length: 70 }),
+          ? _.truncate(name || 'parameter', { length: 0 })
+          : _.truncate(name || 'parameter', { length: 70 }),
         status: node.status,
         executor: preview ? node?.metadata.executor_name : node.executor_label,
         node_id: preview ? node.id : node.node_id,
@@ -109,9 +120,19 @@ const assignNodePositions = async (
   showParams,
   algorithm,
   hideLabels,
-  preview
+  preview,
+  showPostProcess,
+  prettify
 ) => {
-  const elements = mapGraphToElements(graph, direction, showParams, hideLabels, preview)
+  const elements = mapGraphToElements(
+    graph,
+    direction,
+    showParams,
+    hideLabels,
+    preview,
+    showPostProcess,
+    prettify
+  )
   const nodes = []
   const edges = []
   const DEFAULT_HEIGHT = 75

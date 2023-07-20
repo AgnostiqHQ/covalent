@@ -20,6 +20,29 @@
 
 import os
 import subprocess
+import sys
+
+
+def install_autoclass_doc_dependencies() -> None:
+    """Install the packages required to build the documentation from plugin
+    autoclass."""
+
+    try:
+        # Install covalent from branch source which includes this branch's changes to docs.
+        subprocess.check_call([sys.executable, "-m", "pip", "install", "../"])
+        subprocess.check_call(
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "-r",
+                "autodoc_executor_plugins_requirements.txt",
+            ]
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"Error handling dependency with error: {e}")
+        sys.exit(1)
 
 
 def run(clean_dir: bool = False) -> None:
@@ -39,6 +62,7 @@ def run(clean_dir: bool = False) -> None:
         print("Removing old build")
         cmd = subprocess.Popen(["make", "clean"])
     else:
+        install_autoclass_doc_dependencies()
         cmd = subprocess.Popen(["make", "html"])
     cmd.communicate()
 

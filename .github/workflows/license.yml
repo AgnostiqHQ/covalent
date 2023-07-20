@@ -68,8 +68,8 @@ jobs:
           fail: "Copyleft,Error,Other"
           exclude: "^(pylint|aio[-_]*).*"
           exclude-license: 'Mozilla Public License 2.0 \(MPL 2.0\)'
-          with-totals: true
-          table-headers: true
+          totals: true
+          headers: true
       - name: Print report
         if: ${{ always() }}
         run: echo "${{ steps.license_check_report.outputs.report }}"

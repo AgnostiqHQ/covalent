@@ -23,6 +23,7 @@
 import json
 import os
 import warnings
+import webbrowser
 from builtins import list
 from contextlib import redirect_stdout
 from copy import deepcopy
@@ -31,12 +32,14 @@ from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
 
 from .._shared_files import logger
+from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import DefaultMetadataValues
-from .._shared_files.utils import get_named_params, get_serialized_function_str
+from .._shared_files.utils import get_named_params, get_serialized_function_str, get_ui_url
 from .depsbash import DepsBash
 from .depscall import DepsCall
 from .depspip import DepsPip
+from .postprocessing import Postprocessor
 from .transport import TransportableObject, _TransportGraph, encode_metadata
 
 if TYPE_CHECKING:
@@ -87,6 +90,9 @@ class Lattice:
 
         self.workflow_function = TransportableObject.make_transportable(self.workflow_function)
 
+        # Bound electrons are defined as electrons with a valid node_id, since it means they are bound to a TransportGraph.
+        self._bound_electrons = {}  # Clear before serializing
+
     # To be called after build_graph
     def serialize_to_json(self) -> str:
         attributes = deepcopy(self.__dict__)
@@ -115,15 +121,11 @@ class Lattice:
             attributes["electron_outputs"][node_name] = output.to_dict()
 
         attributes["cova_imports"] = list(self.cova_imports)
-        # for k, v in attributes.items():
-        #     print(k, type(v))
-
         return json.dumps(attributes)
 
     @staticmethod
     def deserialize_from_json(json_data: str) -> None:
         attributes = json.loads(json_data)
-
         attributes["cova_imports"] = set(attributes["cova_imports"])
 
         for node_name, object_dict in attributes["electron_outputs"].items():
@@ -205,8 +207,8 @@ class Lattice:
 
         Returns:
             None
-        """
 
+        """
         self.args = [TransportableObject.make_transportable(arg) for arg in args]
         self.kwargs = {k: TransportableObject.make_transportable(v) for k, v in kwargs.items()}
 
@@ -236,12 +238,21 @@ class Lattice:
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
                 try:
-                    workflow_function(*new_args, **new_kwargs)
+                    retval = workflow_function(*new_args, **new_kwargs)
                 except Exception:
                     warnings.warn(
                         "Please make sure you are not manipulating an object inside the lattice."
                     )
                     raise
+
+        pp = Postprocessor(lattice=self)
+
+        if get_config("sdk.exhaustive_postprocess") == "true":
+            pp.add_exhaustive_postprocess_node(self._bound_electrons.copy())
+        else:
+            pp.add_reconstruct_postprocess_node(retval, self._bound_electrons.copy())
+
+        self._bound_electrons = {}  # Reset bound electrons
 
     def draw(self, *args, **kwargs) -> None:
         """
@@ -260,6 +271,11 @@ class Lattice:
 
         self.build_graph(*args, **kwargs)
         result_webhook.send_draw_request(self)
+        draw_preview_url = get_ui_url("/preview")
+        message = f"To preview the transport graph of the lattice, visit {draw_preview_url}"
+        app_log.info(message)
+        print(message)
+        webbrowser.open(draw_preview_url)
 
     def __call__(self, *args, **kwargs):
         """Execute lattice as an ordinary function for testing purposes."""
@@ -334,7 +350,7 @@ def lattice(
 
     Keyword Args:
         backend: DEPRECATED: Same as `executor`.
-        executor: Alternative executor object to be used in the execution of each node. If not passed, the local
+        executor: Alternative executor object to be used in the execution of each node. If not passed, the dask
             executor is used by default.
         workflow_executor: Executor for postprocessing the workflow. Defaults to the built-in dask executor or
             the local executor depending on whether Covalent is started with the `--no-cluster` option.
@@ -400,6 +416,7 @@ def lattice(
 
         return wrapper_lattice()
 
+    # Don't change the snippet below. This a subtle piece of logic that's best understood as is written.
     if _func is None:  # decorator is called with arguments
         return decorator_lattice
     else:  # decorator is called without arguments

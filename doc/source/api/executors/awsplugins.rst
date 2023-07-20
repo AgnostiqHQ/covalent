@@ -3,7 +3,7 @@
 AWS Plugins
 """""""""""""""""""""""""""
 
-.. image:: AWS_Plugins.png
+.. image:: executors/AWS_Plugins.png
 
 
 `Covalent <https://github.com/AgnostiqHQ/covalent>`_  is a python based workflow orchestration tool used to execute HPC and quantum tasks in heterogenous environments.
@@ -14,7 +14,7 @@ By installing Covalent AWS Plugins users can leverage a broad plugin ecosystem t
 .. .. raw:: html
 
 ..     <div style="text-align: left; margin-top: 2rem">
-..         <img style="display: inline-block" src="./../../_images/covalent-ec2-code-example.png"/>
+..         <img style="display: inline-block" src="./../_images/covalent-ec2-code-example.png"/>
 ..     </div>
 
 
@@ -29,12 +29,12 @@ By installing Covalent AWS Plugins users can leverage a broad plugin ecosystem t
     ---
     :column: col-lg-7 p-0 mt-3 mb-2
 
-    .. image:: covalent-ec2-code-example.png
+    .. image:: executors/covalent-ec2-code-example.png
 
 ..
 
 
-If you're new to covalent visit our :doc:`Getting Started Guide. <../../getting_started/index>`
+If you're new to Covalent see the :doc:`Getting Started Guide. <../../getting_started/index>`
 
 ===========================================
 1. Installation
@@ -69,31 +69,31 @@ While each plugin can be seperately installed installing the above pip package i
      - Plugin Name
      - Use Case
    * -
-        .. image:: ./Batch.png
+        .. image:: executors/Batch.png
             :width: 48
             :align: center
      - AWS Batch Executor
      - **Useful for heavy compute workloads (high CPU/memory).** Tasks are queued to execute in the user defined Batch compute environment.
    * -
-        .. image:: ./EC2.png
+        .. image:: executors/EC2.png
             :width: 48
             :align: center
      - AWS EC2 Executor
      - **General purpose compute workloads where users can select compute resources.** An EC2 instance is auto-provisioned using terraform with selected compute settings to execute tasks.
    * -
-        .. image:: ./Braket.png
+        .. image:: executors/Braket.png
             :width: 48
             :align: center
      - AWS Braket Executor
      - **Suitable for Quantum/Classical hybrid workflows.** Tasks are executed using a combination of classical and quantum devices.
    * -
-        .. image:: ./ECS.png
+        .. image:: executors/ECS.png
             :width: 48
             :align: center
      - AWS ECS Executor
      - **Useful for moderate to heavy workloads (low memory requirements).** Tasks are executed in an AWS ECS cluster as containers.
    * -
-        .. image:: ./Lambda.png
+        .. image:: executors/Lambda.png
             :width: 48
             :align: center
      - AWS Lambda Executor

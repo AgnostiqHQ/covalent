@@ -26,9 +26,18 @@ from datetime import timedelta
 from typing import Callable, Dict, Set, Tuple
 
 from . import logger
+from .config import get_config
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+DEFAULT_UI_ADDRESS = get_config("user_interface.address")
+DEFAULT_UI_PORT = get_config("user_interface.port")
+
+
+def get_ui_url(path):
+    baseUrl = f"http://{DEFAULT_UI_ADDRESS}:{DEFAULT_UI_PORT}"
+    return f"{baseUrl}{path}"
 
 
 def get_random_available_port() -> int:
@@ -180,6 +189,7 @@ def required_params_passed(func: Callable, kwargs: Dict) -> bool:
 
 def get_named_params(func, args, kwargs):
     ordered_params_dict = inspect.signature(func).parameters
+
     named_args = {}
     named_kwargs = {}
 
@@ -194,11 +204,19 @@ def get_named_params(func, args, kwargs):
         elif param.kind == param.VAR_POSITIONAL:
             for i in range(ind, len(args)):
                 named_args[f"arg[{i}]"] = args[i]
-
         elif param.kind in [param.KEYWORD_ONLY, param.VAR_KEYWORD]:
             for key, value in kwargs.items():
                 if key != param_name:
                     named_kwargs[key] = value
+
+    if len(args) > len(named_args):
+        raise ValueError(
+            f"Too many positional arguments given, expected {len(named_args)}, received {len(args)}"
+        )
+
+    if len(kwargs) > len(named_kwargs):
+        extra_supplied_kwargs = ", ".join(sorted(set(kwargs.keys()) - set(named_kwargs.keys())))
+        raise ValueError(f"Unexpected keyword arguments: {extra_supplied_kwargs}")
 
     return (named_args, named_kwargs)
 

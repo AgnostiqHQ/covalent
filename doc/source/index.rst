@@ -159,7 +159,7 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    Tutorials <tutorials/tutorials>
    How-To Guide <how_to/index>
    User Interface <webapp_ui/index>
-   API Reference <api/index>
+   API Reference <api/api>
    Server Deployment <deployment/index>
    Best Practices <developer/index>
    Credentials <credentials>
@@ -174,6 +174,7 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    Executor plugins <plugins>
    Triggers <features/triggers>
    Cancellation <features/cancel>
+   Redispatch <features/redispatch>
 
 .. toctree::
    :maxdepth: 1

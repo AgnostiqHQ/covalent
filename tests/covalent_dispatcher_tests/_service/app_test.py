@@ -212,7 +212,7 @@ def test_get_result(mocker, client, test_db_file):
     response = client.get(f"/api/result/{DISPATCH_ID}")
     result = response.json()
     assert result["id"] == DISPATCH_ID
-    assert result["status"] == str(Result.COMPLETED)
+    assert result["status"] == Result.COMPLETED
     os.remove("/tmp/testdb.sqlite")
 
 
