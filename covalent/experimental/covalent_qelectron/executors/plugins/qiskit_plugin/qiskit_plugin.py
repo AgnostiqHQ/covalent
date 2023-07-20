@@ -170,8 +170,9 @@ class QiskitExecutor(AsyncBaseQExecutor):
         instance: An alternate means to specify `hub`, `group`, and `project`,
             formatted as "{hub}/{group}/{project}".
         cloud_instance: Same as `instance` but for the case `channel="ibm_cloud"`.
-        options: A dictionary of options to pass to Qiskit Runtime. These
-            correspond to fields defined on `qiskit_ibm_runtime.Options`.
+        options: A dictionary of options to pass to Qiskit Runtime. See:
+            https://qiskit.org/ecosystem/ibm-runtime/stubs/qiskit_ibm_runtime.options.Options.html
+            for valid fields.
     """
 
     device: str = Field(
