@@ -20,7 +20,6 @@
 
 from typing import Union
 
-from covalent._shared_files.config import get_config
 from covalent.experimental.covalent_qelectron.executors.base import (
     BaseProcessPoolQExecutor,
     BaseQExecutor,
@@ -35,8 +34,7 @@ class Simulator(BaseQExecutor):
     Local executor that uses process or thread-based parallelism to execute circuits.
     """
 
-    device: str = get_config("qelectron")["device"]
-
+    device: str = "default.qubit"
     parallel: Union[bool, str] = "thread"
     workers: int = 10
     backend: BaseQExecutor = None
