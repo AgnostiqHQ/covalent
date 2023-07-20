@@ -18,12 +18,9 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import asyncio
-import time
-from typing import Optional, Union
+from typing import Optional
 
 import pennylane as qml
-from pennylane.tape.qscript import QuantumScript
 from pydantic import Field
 
 from braket.aws import AwsQuantumTask, AwsQuantumTaskBatch
@@ -36,7 +33,6 @@ from covalent.experimental.covalent_qelectron.executors.base import (
     get_thread_pool, 
     get_process_pool
 )
-from covalent.experimental.covalent_qelectron.shared_utils import import_from_path
 
 __all__ = [
     "BraketQubitExecutor",
