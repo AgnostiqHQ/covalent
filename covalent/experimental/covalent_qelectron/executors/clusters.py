@@ -36,9 +36,15 @@ class QCluster(AsyncBaseQCluster):
     a custom selection algorithm for choosing executors on a per-qscript basis.
 
     Args:
-        selector: A callable that selects an executor from the list of executors.
-            The string values "cyclic" and "random" are also accepted. These values
-            correspond to default selectors.
+        executors: The list (or sequence) of quantum executors comprising the
+            cluster.
+        selector: A callable that selects an executor. The strings "cyclic" and
+            "random" are also accepted. The default "cyclic" selector returns
+            elements of `executors` in order, restarting from the first element
+            upon reaching the last. The "random" selector chooses from `executors`
+            at random, for each circuit. Any user-defined selector must be callable
+            with two arguments (a circuit and a list of executors), and must always
+            return only one executor.
     """
 
     selector: Union[str, Callable] = "cyclic"
