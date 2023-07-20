@@ -30,9 +30,17 @@ from covalent.experimental.covalent_qelectron.executors.base import (
 
 
 class Simulator(BaseQExecutor):
-
     """
-    Local executor that uses process or thread-based parallelism to execute circuits.
+    A quantum executor that uses the specified Pennylane device to execute circuits.
+
+    Keyword Args:
+        device: A valid string corresponding to a Pennylane device. Defaults to
+            "default.qubit".
+        parallel: The type of parallelism to use. Valid values are "thread" and
+            "process". Passing any other value will result in synchronous execution.
+            Defaults to "thread".
+        workers: The number of threads or processes to use. Defaults to 10.
+        backend: The quantum executor to use as a backend. Defaults to `BaseQExecutor`.
     """
 
     device: str = get_config("qelectron")["device"]
