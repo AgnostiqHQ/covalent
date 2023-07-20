@@ -339,3 +339,25 @@ class AsyncBaseQCluster(AsyncBaseQExecutor):
                 results_and_times.append(fut)
 
         return results_and_times
+
+
+class BaseQSelector(ABC, BaseModel):
+
+    name: str = "base_qselector"
+
+    def __call__(self, qscript, executors):
+        """"
+        Interface used by the quantum server.
+        """
+        return self.selector_function(qscript, executors)
+
+    @abstractmethod
+    def selector_function(self, qscript, executors):
+        """
+        Implement selection logic here.
+        """
+        raise NotImplementedError
+
+    class Config:
+        # Allows defining extra state fields in subclasses.
+        extra = Extra.allow
