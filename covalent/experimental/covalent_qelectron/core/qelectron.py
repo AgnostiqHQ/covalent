@@ -22,26 +22,12 @@ import functools
 from typing import Callable, List, Optional, Union
 
 import pennylane as qml
-from pydantic import BaseModel
 
-from ..core.qnode_qe import QNodeQE
+from ..core.qnode_qe import QElectronInfo, QNodeQE
 from ..executors import Simulator
 from ..executors.base import AsyncBaseQCluster, BaseQExecutor
 from ..executors.clusters import QCluster
 from ..shared_utils.utils import get_import_path
-
-
-class QElectronInfo(BaseModel):
-    """
-    A container for QNode and Pennylane settings used by the wrapping QElectron.
-    """
-    name: str
-    description: str = None
-    qnode_device_import_path: str  # used to inherit type converters and other methods
-    qnode_device_shots: Optional[int]  # optional default for execution devices
-    num_device_wires: int  # this can not be reliably inferred from tapes alone
-    pennylane_active_return: bool  # client-side status of `pennylane.active_return()`
-
 
 Selector = Union[str, Callable[[qml.tape.QuantumScript, List[BaseQExecutor]], BaseQExecutor]]
 

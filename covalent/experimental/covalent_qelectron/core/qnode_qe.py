@@ -29,6 +29,9 @@ from ..core.future_result import QNodeFutureResult
 
 
 class QNodeSpecs(BaseModel):
+    """
+    A container for the specifications of a QNode.
+    """
     gate_sizes: Dict[str, int]
     gate_types: Dict[str, int]
     num_operations: int
@@ -48,7 +51,19 @@ class QNodeSpecs(BaseModel):
     num_parameter_shift_executions: int = None
 
 
-GRADIENT_ACCESS_MAXES = {
+class QElectronInfo(BaseModel):
+    """
+    A container for related settings used by the wrapping QElectron.
+    """
+    name: str
+    description: str = None
+    qnode_device_import_path: str  # used to inherit type converters and other methods
+    qnode_device_shots: Optional[int]  # optional default for execution devices
+    num_device_wires: int  # this can not be reliably inferred from tapes alone
+    pennylane_active_return: bool  # client-side status of `pennylane.active_return()`
+
+
+_GRADIENT_ACCESS_MAXES = {
     "parameter-shift": 2,
 }
 
@@ -154,7 +169,7 @@ class QNodeQE(qml.QNode):
         Return the maximum number of times the `gradient_fn` property can be
         accessed before the overridden value is returned and the counter is reset.
         """
-        return GRADIENT_ACCESS_MAXES.get(self.diff_method, -1)
+        return _GRADIENT_ACCESS_MAXES.get(self.diff_method, -1)
 
     @property
     def gradient_fn(self):
