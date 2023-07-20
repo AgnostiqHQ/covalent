@@ -21,9 +21,9 @@
 import base64
 from typing import Callable, Union
 
-from ..executors.base import AsyncBaseQCluster
-from .cluster_selectors import DefaultSelector
 from ..shared_utils import cloudpickle_deserialize, cloudpickle_serialize
+from .base import AsyncBaseQCluster
+from .default_selectors import selector_map
 
 __all__ = [
     "QCluster",
@@ -87,6 +87,8 @@ class QCluster(AsyncBaseQCluster):
             self.deserialize_selector()
 
         if isinstance(self.selector, str):
-            self.selector = DefaultSelector(self.selector)
+            # use default selector
+            selector_cls = selector_map[self.selector]
+            self.selector = selector_cls()
 
         return self.selector
