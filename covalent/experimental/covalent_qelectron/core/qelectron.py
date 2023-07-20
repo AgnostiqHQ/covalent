@@ -74,7 +74,7 @@ def qelectron(
         if len(executors) > 1:
             executors = QCluster(executors=executors, selector=selector)
 
-    # check is executor is a QCluster and serialize the selector
+    # check if executor is a QCluster and serialize the selector
     if isinstance(executors, AsyncBaseQCluster):
         executors.serialize_selector()
 
