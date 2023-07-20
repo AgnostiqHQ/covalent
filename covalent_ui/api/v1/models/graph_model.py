@@ -23,7 +23,7 @@
 from datetime import datetime
 from typing import Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 
 class GraphResponse(BaseModel):
@@ -40,8 +40,9 @@ class GetDispatchLinks(BaseModel):
     source: Union[int, None]
     arg_index: Union[int, None]
 
-    class Config:
-        from_attributes = True
+    # class Config:
+    #     from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class GetDispatchNotes(BaseModel):
@@ -55,5 +56,6 @@ class GetDispatchNotes(BaseModel):
     executor_label: Union[str, None]
     sublattice_dispatch_id: Union[str, None]
 
-    class Config:
-        from_attributes = True
+    # class Config:
+    #     from_attributes = True
+    model_config = ConfigDict(from_attributes=True)

@@ -23,7 +23,7 @@
 
 from typing import List, Optional, Union
 
-from pydantic import BaseModel, conint
+from pydantic import BaseModel, ConfigDict, conint
 
 from covalent_ui.api.v1.utils.models_helper import CaseInsensitiveEnum, SortDirection
 
@@ -59,10 +59,9 @@ class LogsResponse(BaseModel):
     items: List[LogsModule]
     total_count: Union[int, None] = None
 
-    class Config:
-        """Configure example for openAPI"""
-
-        json_schema_extra = {
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
             "example": {
                 "data": [
                     {
@@ -73,4 +72,5 @@ class LogsResponse(BaseModel):
                 ],
                 "total_count": 1,
             }
-        }
+        },
+    )

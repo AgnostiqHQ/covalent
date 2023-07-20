@@ -24,7 +24,7 @@ from datetime import datetime
 from enum import Enum
 from typing import List, Union
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from covalent_ui.api.v1.models.dispatch_model import DispatchModule
 from covalent_ui.api.v1.utils.models_helper import CaseInsensitiveEnum
@@ -71,8 +71,9 @@ class LatticeDetail(BaseModel):
     runtime: int
     updated_at: datetime
 
-    class Config:
-        from_attributes = True
+    # class Config:
+    #     from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LatticeDetailsFile(BaseModel):
@@ -96,8 +97,9 @@ class LatticeDetailsFile(BaseModel):
     total_electrons: str
     total_electrons_completed: str
 
-    class Config:
-        from_attributes = True
+    # class Config:
+    #     from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class LatticeFileResponse(BaseModel):

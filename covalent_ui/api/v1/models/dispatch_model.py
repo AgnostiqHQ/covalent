@@ -25,7 +25,7 @@ from datetime import datetime
 from typing import List, Optional, Union
 from uuid import UUID
 
-from pydantic import BaseModel, conint
+from pydantic import BaseModel, ConfigDict, conint
 
 from covalent_ui.api.v1.utils.models_helper import SortBy, SortDirection
 from covalent_ui.api.v1.utils.status import Status
@@ -55,8 +55,8 @@ class DispatchModule(BaseModel):
     status: Status
     updated_at: Optional[Union[datetime, None]]
 
-    class Config:
-        from_attributes = True
+    # class Config:
+    model_config = ConfigDict(from_attributes=True)
 
 
 class DispatchResponse(BaseModel):
@@ -65,10 +65,9 @@ class DispatchResponse(BaseModel):
     items: List[DispatchModule]
     total_count: int
 
-    class Config:
-        """Configure example for openAPI"""
-
-        json_schema_extra = {
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
             "example": {
                 "dispatches": [
                     {
@@ -82,7 +81,8 @@ class DispatchResponse(BaseModel):
                 ],
                 "total_count": 10,
             }
-        }
+        },
+    )
 
 
 class DeleteDispatchesRequest(BaseModel):
@@ -118,10 +118,9 @@ class DispatchDashBoardResponse(BaseModel):
     latest_running_task_status: Union[Status, None] = None
     total_dispatcher_duration: Union[int, None] = None
 
-    class Config:
-        """Configure example for openAPI"""
-
-        json_schema_extra = {
+    model_config = ConfigDict(
+        from_attributes=True,
+        json_schema_extra={
             "example": {
                 "total_jobs": 5,
                 "total_jobs_running": 5,
@@ -132,4 +131,5 @@ class DispatchDashBoardResponse(BaseModel):
                 "latest_running_task_status": "COMPLETED",
                 "total_dispatcher_duration": 90,
             }
-        }
+        },
+    )

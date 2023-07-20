@@ -123,7 +123,8 @@ class Summary:
         results = await self.db_con.execute(orm_query)
         counter = await self.db_con.scalar(orm_query_counter)
         return DispatchResponse(
-            items=[DispatchModule.from_orm(result) for result in results], total_count=counter
+            items=[DispatchModule.model_validate(result) for result in results],
+            total_count=counter,
         )
 
     async def get_dispatch_count_by_status(
