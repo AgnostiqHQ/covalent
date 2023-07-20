@@ -43,25 +43,24 @@ class Simulator(BaseQExecutor):
             "process". Passing any other value will result in synchronous execution.
             Defaults to "thread".
         workers: The number of threads or processes to use. Defaults to 10.
-        backend: The quantum executor to use as a backend. Defaults to `BaseQExecutor`.
     """
 
     device: str = get_config("qelectron")["device"]
-
     parallel: Union[bool, str] = "thread"
     workers: int = 10
-    backend: BaseQExecutor = None
+
+    _backend: BaseQExecutor = None
 
     def batch_submit(self, qscripts_list):
 
         if self.parallel == "process":
-            self.backend = BaseProcessPoolQExecutor(num_processes=self.workers, device=self.device)
+            self._backend = BaseProcessPoolQExecutor(num_processes=self.workers, device=self.device)
         elif self.parallel == "thread":
-            self.backend = BaseThreadPoolQExecutor(num_threads=self.workers, device=self.device)
+            self._backend = BaseThreadPoolQExecutor(num_threads=self.workers, device=self.device)
         else:
-            self.backend = SyncBaseQExecutor(device=self.device)
+            self._backend = SyncBaseQExecutor(device=self.device)
 
-        return self.backend.batch_submit(qscripts_list)
+        return self._backend.batch_submit(qscripts_list)
 
     def batch_get_results(self, futures_list):
-        return self.backend.batch_get_results(futures_list)
+        return self._backend.batch_get_results(futures_list)
