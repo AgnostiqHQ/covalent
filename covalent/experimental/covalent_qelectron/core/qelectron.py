@@ -19,9 +19,9 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import functools
-from typing import Optional
+from typing import Callable, List, Optional, Union
 
-import pennylane
+import pennylane as qml
 from pydantic import BaseModel
 
 from ..core.qnode_qe import QNodeQE
@@ -43,48 +43,76 @@ class QElectronInfo(BaseModel):
     pennylane_active_return: bool  # client-side status of `pennylane.active_return()`
 
 
+Selector = Union[str, Callable[[qml.tape.QuantumScript, List[BaseQExecutor]], BaseQExecutor]]
+
+
 def qelectron(
-    qnode=None,
+    qnode: qml.QNode = None,
     *,
-    executors=None,
-    name=None,
-    description=None,
-    selector="cyclic",
-):
+    executors: Union[BaseQExecutor, AsyncBaseQCluster, List[BaseQExecutor]] = None,
+    name: Optional[str] = None,
+    description: Optional[str] = None,
+    selector: Union[str, Selector] = "cyclic",
+) -> QNodeQE:
     """
-    Decorator for extending a given QNode.
+    QElectron decorator to be called upon a Pennylane QNode. Returns an instance
+    of `QNodeQE`, a custom sub-type of `qml.QNode`.
 
     Args:
-        qnode: The QNode to wrap.
-        executors: The executors to choose from to use for running the QNode.
-        name: The name of the QElectron. Defaults to the name of the function.
-        description: A description of the QElectron. Defaults to the docstring of the function.
+        qnode: The Pennylane QNode to wrap.
+
+    Keyword Args:
+        executors: The quantum executor(s) to use for running the QNode. A single
+            executor, list of executors, or a `QCluster` instance are accepted.
+            If a list of multiple executors is passed, a quantum cluster will be
+            initialized from this list automatically, using `selector` as the
+            cluster's selector. Defaults to a `Simulator` instance if not specified.
+        name: An optional name for the QElectron. Defaults to name of the circuit
+            function.
+        description: An optional description of the QElectron. Defaults to the
+            circuit function's docstring.
+        selector: The selection method used by auto-initialized quantum clusters.
+            This argument is ignored unless the `executors` is a list of multiple
+            quantum executors. String values supported for default selectors are
+            "cyclic" and "random". Defaults to "cyclic".
+
+    Raises:
+        ValueError: If any invalid executors are passed.
 
     Returns:
-        QNodeQE: A QNodeQE instance.
+        `QNodeQE`: A sub-type of QNode that integrates QElectrons.
     """
 
     if executors is None:
         executors = Simulator()
 
-    # check if executor is a list of executors, convert to cluster if more than one
+    # Check if executor is a list of executors.
     if isinstance(executors, list):
         if not all(isinstance(ex, BaseQExecutor) for ex in executors):
             raise ValueError("Invalid executor in executors list.")
         if len(executors) > 1:
+            # Convert to cluster if more than one executor in list.
             executors = QCluster(executors=executors, selector=selector)
 
-    # check if executor is a QCluster and serialize the selector
+    # Check if executor is a QCluster.
     if isinstance(executors, AsyncBaseQCluster):
+        # Serialize the cluster's selector function.
         executors.serialize_selector()
 
-    # check if executor is a list of executors
+    # Check if a single executor instance was passed.
     if not isinstance(executors, list):
         executors = [executors]
 
     if qnode is None:
-        return functools.partial(qelectron, executors=executors, name=name, description=description)
+        # This only happens when `qelectron()` is not used as a decorator.
+        return functools.partial(
+            qelectron,
+            executors=executors,
+            name=name,
+            description=description
+        )
 
+    # Set default name and description.
     if name is None:
         name = qnode.func.__name__
 
@@ -97,8 +125,8 @@ def qelectron(
         qnode_device_import_path=get_import_path(type(qnode.device)),
         qnode_device_shots=qnode.device.shots,
         num_device_wires=qnode.device.num_wires,
-        pennylane_active_return=pennylane.active_return(),
+        pennylane_active_return=qml.active_return(),
     )
 
-    # Create a new QNodeQE instance for every qelectron call
+    # Create and return a new `QNodeQE` instance.
     return QNodeQE(qnode, executors, qelectron_info)
