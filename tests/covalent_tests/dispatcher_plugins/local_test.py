@@ -24,6 +24,8 @@
 from unittest.mock import MagicMock
 
 import pytest
+from requests import Response
+from requests.exceptions import HTTPError
 
 import covalent as ct
 from covalent._dispatcher_plugins.local import LocalDispatcher, get_redispatch_request_body
@@ -74,7 +76,7 @@ def test_get_redispatch_request_body_args_kwargs(mocker):
 
 @pytest.mark.parametrize("is_pending", [True, False])
 @pytest.mark.parametrize(
-    "replace_electrons,expected_arg",
+    "replace_electrons, expected_arg",
     [(None, {}), ({"mock-electron-1": "mock-electron-2"}, {"mock-electron-1": "mock-electron-2"})],
 )
 def test_redispatch(mocker, replace_electrons, expected_arg, is_pending):
@@ -96,8 +98,101 @@ def test_redispatch(mocker, replace_electrons, expected_arg, is_pending):
         "http://mock-config:mock-config/api/redispatch",
         json={"mock-request-body"},
         params={"is_pending": is_pending},
+        timeout=5,
     )
     requests_mock.post().raise_for_status.assert_called_once()
     requests_mock.post().content.decode().strip().replace.assert_called_once_with('"', "")
 
     get_request_body_mock.assert_called_once_with("mock-dispatch-id", (), {}, expected_arg, False)
+
+
+def test_redispatch_unreachable(mocker):
+    """Test the local re-dispatch function when the server is unreachable."""
+
+    mock_dispatch_id = "mock-dispatch-id"
+    dummy_dispatcher_addr = "http://localhost:12345"
+
+    message = f"The Covalent server cannot be reached at {dummy_dispatcher_addr}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
+
+    mock_print = mocker.patch("covalent._dispatcher_plugins.local.print")
+
+    LocalDispatcher.redispatch(mock_dispatch_id, dispatcher_addr=dummy_dispatcher_addr)()
+
+    mock_print.assert_called_once_with(message)
+
+
+def test_dispatching_a_non_lattice():
+    """test dispatching a non-lattice"""
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.electron
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    with pytest.raises(
+        TypeError, match="Dispatcher expected a Lattice, received <class 'function'> instead."
+    ):
+        LocalDispatcher.dispatch(workflow)(1, 2)
+
+
+def test_dispatch_when_no_server_is_running(mocker):
+    """test dispatching a lattice when no server is running"""
+
+    # the test suite is using another port, thus, with the dummy address below
+    # the covalent server is not running in some sense.
+    dummy_dispatcher_addr = "http://localhost:12345"
+
+    message = f"The Covalent server cannot be reached at {dummy_dispatcher_addr}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    mock_print = mocker.patch("covalent._dispatcher_plugins.local.print")
+
+    LocalDispatcher.dispatch(workflow, dispatcher_addr=dummy_dispatcher_addr)(1, 2)
+
+    mock_print.assert_called_once_with(message)
+
+
+def test_dispatcher_submit_api(mocker):
+    """test dispatching a lattice with submit api"""
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    # test when api raises an implicit error
+    r = Response()
+    r.status_code = 404
+    r.url = "http://dummy"
+    r.reason = "dummy reason"
+
+    mocker.patch("covalent._dispatcher_plugins.local.requests.post", return_value=r)
+
+    with pytest.raises(HTTPError, match="404 Client Error: dummy reason for url: http://dummy"):
+        dispatch_id = LocalDispatcher.dispatch(workflow)(1, 2)
+        assert dispatch_id is None
+
+    # test when api doesn't raise an implicit error
+    r = Response()
+    r.status_code = 201
+    r.url = "http://dummy"
+    r._content = b"abcde"
+
+    mocker.patch("covalent._dispatcher_plugins.local.requests.post", return_value=r)
+
+    dispatch_id = LocalDispatcher.dispatch(workflow)(1, 2)
+    assert dispatch_id == "abcde"

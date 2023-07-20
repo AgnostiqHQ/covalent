@@ -154,9 +154,57 @@ The `trigger.observe()` function can be called synchronously (blocking) or async
 
 For further examples of how to use triggers, see these articles in the How-to Guide:
 
+## Types of Triggers in Covalent
+
+Covalent offers an array of triggers designed to cater to diverse use cases, simplifying the automation of tasks based on a range of conditions. It's important to note that this list represents the currently available triggers, with more to be added in the future. If you find these triggers valuable and have suggestions for new ones, we encourage you to contribute to Covalent's GitHub repository.
+
+Here are the currently available triggers in Covalent:
+
+1. `DirTrigger`: This trigger observes a specified directory or file for events such as creation, deletion, modification, or movement. It performs the trigger action when these events occur. For example:
+
+```{code-block} python
+from covalent.triggers import DirTrigger
+import covalent as ct
+
+dir_trigger = DirTrigger(dir_path='path/to/your/directory', event_names=['modified'])
+
+@ct.lattice(triggers=dir_trigger)
+def my_workflow():
+    ...
+```
+
+2. `TimeTrigger`: This trigger performs the trigger action after a specified time interval. It is useful for recurring tasks or periodic data processing. For example:
+
+```{code-block} python
+from covalent.triggers import TimeTrigger
+import covalent as ct
+
+time_trigger = TimeTrigger(time_gap=5)  # Trigger action every 5 seconds
+
+@ct.lattice(triggers=time_trigger)
+def my_workflow():
+    ...
+```
+
+
+3. `SQLiteTrigger`: This trigger monitors an SQLite database for changes and performs the trigger action when changes occur. It is helpful for automating tasks in response to database updates. For example:
+
+```{code-block} python
+from covalent.triggers import SQLiteTrigger
+import covalent as ct
+
+sqlite_trigger = SQLiteTrigger(db_path='path/to/your/database.sqlite',table_name='your_table)
+
+@ct.lattice(triggers=sqlite_trigger)
+def my_workflow():
+    ...
+
+```
+
+These triggers can be easily integrated into your Covalent workflows to automate various tasks based on the desired conditions.
+
+## Trigger How-to Guides
+
+For further examples on how to use triggers, check out the Trigger how to guides:
 - {doc}`How to add a directory trigger to a lattice <../how_to/coding/dir_trigger>`
 - {doc}`How to add a time trigger to a lattice <../how_to/coding/time_trigger>`
-
-### Disabling a Trigger
-
-To prevent a particular workflow from being dispatched each time a triggering event happens, call {doc}`ct.stop_triggers(dispatch_id) <../api/dispatcher>` with the parent `dispatch_id`, where `dispatch_id` is the dispatch ID of the workflow attached to the trigger.

@@ -454,3 +454,7 @@ Once the derived image has been built and pushed to ECR, users need to create a 
         --timeout 900
 
 The above CLI command will register a new AWS lambda function that will use the user's custom derived image ``my-custom-lambda-executor:latest`` with a memory size of  ``512 MB`` and a timeout values of ``900`` seconds. The ``role`` argument is used to specify the ARN of the IAM role the AWS Lambda can assume during execution. The necessary permissions for the IAM role have been provided in ``Required AWS resources`` section. More details about creating and updating AWS lambda functions can be found `here <https://docs.aws.amazon.com/lambda/latest/dg/gettingstarted-images.html>`_.
+
+.. autoclass:: covalent_awslambda_plugin.AWSLambdaExecutor
+    :members:
+    :inherited-members:

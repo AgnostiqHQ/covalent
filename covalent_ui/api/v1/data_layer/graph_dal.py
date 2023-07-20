@@ -21,7 +21,6 @@
 """Graph Data Layer"""
 from uuid import UUID
 
-from fastapi import HTTPException
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -54,15 +53,15 @@ class Graph:
             electrons.status,
             electrons.type,
             electrons.executor as executor_label,
-            (case when electrons.type == 'sublattice'
+            (case when electrons.type = 'sublattice'
             then
             (select lattices.dispatch_id from lattices
-            where lattices.electron_id == electrons.id)
+            where lattices.electron_id = electrons.id)
             else Null
             END
             ) as sublattice_dispatch_id
-            from electrons join lattices on electrons.parent_lattice_id == lattices.id
-            where lattices.id == :a
+            from electrons join lattices on electrons.parent_lattice_id = lattices.id
+            where lattices.id = :a
         """
         )
         result = self.db_con.execute(sql, {"a": parent_lattice_id}).fetchall()
@@ -91,21 +90,6 @@ class Graph:
             .all()
         )
 
-    def check_error(self, data):
-        """
-        Helper method to rise exception if data is None
-
-        Args:
-            data: list of queried data
-        Return:
-            data
-        Rise:
-            Http Exception with status code 400 and details
-        """
-        if data is None:
-            raise HTTPException(status_code=400, detail=["Something went wrong"])
-        return data
-
     def get_graph(self, dispatch_id: UUID):
         """
         Get graph data from parent lattice id
@@ -122,7 +106,7 @@ class Graph:
         )
         if parent_lattice_id is not None:
             parrent_id = parent_lattice_id[0]
-            nodes = self.check_error(self.get_nodes(parrent_id))
-            links = self.check_error(self.get_links(parrent_id))
+            nodes = self.get_nodes(parrent_id)
+            links = self.get_links(parrent_id)
             return {"dispatch_id": str(dispatch_id), "nodes": nodes, "links": links}
         return None

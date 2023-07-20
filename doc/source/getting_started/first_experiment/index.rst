@@ -217,8 +217,6 @@ Do the following to view your workflow in the GUI.
 
 While the workflow is being processed by the dispatch server, you can terminate the Jupyter kernel or Python console process without losing access to the results.
 
-.. warning:: Do not stop the Covalent server while you have running workflows. Stopping the server will kill the workflows.
-
 
 What to Do Next
 ###############

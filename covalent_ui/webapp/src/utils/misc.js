@@ -107,7 +107,33 @@ export const truncateMiddle = (s, start, end, omission = '…') => {
 
 export const isParameter = (node) => _.startsWith(node.name, ':parameter:')
 
+export const isPostProcess = (node) => node?.name.startsWith(':postprocess:')
+
 export const displayStatus = (status) => _.startCase(_.lowerCase(status))
+
+export const Prettify = (inputString, type) => {
+  let stringWithoutUnderscores = inputString?.replace(/[_<>]/g, ' ')
+  stringWithoutUnderscores = stringWithoutUnderscores?.replace(/:/g, ' ')
+  if (type === 'sublattice') {
+    stringWithoutUnderscores = stringWithoutUnderscores?.replace(
+      /sublattice\s+/gi,
+      'Sublattice '
+    )
+  }
+  stringWithoutUnderscores = stringWithoutUnderscores?.replace(/parameter/g, '')
+
+  // Capitalize the strings
+  stringWithoutUnderscores = stringWithoutUnderscores
+    ?.toLowerCase()
+    .replace(/\b\w/g, (l) => l.toUpperCase())
+
+  // Add a gap before the return statement
+  if (stringWithoutUnderscores === inputString) {
+    return inputString
+  }
+
+  return stringWithoutUnderscores
+}
 
 export const statusColor = (status) => {
   return {
@@ -189,7 +215,10 @@ export const logStatusIcon = (status) => {
     case 'WARNING':
     case 'WARN':
       return (
-        <SvgIcon aria-label={status} sx={{ mt: 0.6, mr: 0.7, fontSize: '18px' }}>
+        <SvgIcon
+          aria-label={status}
+          sx={{ mt: 0.6, mr: 0.7, fontSize: '18px' }}
+        >
           <WarningSvg />
         </SvgIcon>
       )
@@ -203,7 +232,10 @@ export const logStatusIcon = (status) => {
     case 'ERROR':
     case 'CRITICAL':
       return (
-        <SvgIcon aria-label={status} sx={{ mt: 0.6, mr: 0.7, fontSize: '18px' }}>
+        <SvgIcon
+          aria-label={status}
+          sx={{ mt: 0.6, mr: 0.7, fontSize: '18px' }}
+        >
           <ErrorSvg />
         </SvgIcon>
       )
@@ -377,19 +409,28 @@ export const sublatticeIconTopBar = (type, sub) => {
   switch (type) {
     case 'COMPLETED':
       return (
-        <SvgIcon aria-label="COMPLETED" sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}>
+        <SvgIcon
+          aria-label="COMPLETED"
+          sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}
+        >
           <SuccessTopBarSvg />
         </SvgIcon>
       )
     case 'FAILED':
       return (
-        <SvgIcon aria-label="FAILED" sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}>
+        <SvgIcon
+          aria-label="FAILED"
+          sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}
+        >
           <FailedTopBarSvg />
         </SvgIcon>
       )
     case 'RUNNING':
       return (
-        <SvgIcon aria-label="RUNNING" sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}>
+        <SvgIcon
+          aria-label="RUNNING"
+          sx={{ mr: 1, mt: 1, ml: 1, fontSize: '28px' }}
+        >
           <RunningTopBarSvg />
         </SvgIcon>
       )

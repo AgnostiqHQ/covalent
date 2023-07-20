@@ -49,6 +49,10 @@ Constructing Workflows
 
 :doc:`Transferring Files To and From an S3 Bucket<./coding/file_transfers_to_from_s3>`
 
+:doc:`Transferring Files To and From Azure Blob Storage<./coding/file_transfers_to_from_azure_blob>`
+
+:doc:`Transferring Files To and From Google Cloud Storage<./coding/file_transfers_to_from_gcp_storage>`
+
 :doc:`Constructing a Lepton <./coding/construct_lepton>`
 
 :doc:`Using C Code (Leptons)<./coding/construct_c_task>`
@@ -60,6 +64,10 @@ Constructing Workflows
 :doc:`Adding Callable Function Dependencies to an Electron <./coding/add_callable_dependencies_to_electron>`
 
 :doc:`Constructing a Task from Bash Scripts <./coding/construct_bash_task>`
+
+:doc:`How to add a directory trigger to a lattice <./coding/dir_trigger>`
+
+:doc:`How to add a time trigger to a lattice <./coding/time_trigger>`
 
 .. _howto_executing:
 
@@ -82,7 +90,9 @@ Executing a Workflow
 
 :doc:`Choosing an Executor For a Task <./execution/choosing_executors>`
 
-:doc:`Executing an Electron in a Conda Environment <./execution/choosing_conda_environments>`
+:doc:`Canceling a Workflow <./execution/cancel_dispatch>`
+
+.. :doc:`Executing an Electron in a Conda Environment <./execution/choosing_conda_environments>`
 
 :doc:`Adding a Time Trigger to a Lattice <./execution/trigger_time>`
 

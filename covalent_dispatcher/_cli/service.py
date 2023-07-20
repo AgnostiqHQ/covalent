@@ -26,8 +26,12 @@ import contextlib
 import json
 import os
 import shutil
+import signal
 import socket
+import sys
 import time
+import traceback
+from pathlib import Path
 from subprocess import DEVNULL, Popen
 from typing import Optional
 
@@ -53,6 +57,8 @@ MIGRATION_WARNING_MSG = "Covalent not started. The database needs to be upgraded
 MIGRATION_COMMAND_MSG = (
     '   (use "covalent db migrate" to run database migrations and then retry "covalent start")'
 )
+ZOMBIE_PROCESS_STATUS_MSG = "Covalent server is unhealthy: Process is in zombie status"
+STOPPED_PROCESS_STATUS_MSG = "Covalent server is unhealthy: Process is in stopped status"
 
 
 def _read_pid(filename: str) -> int:
@@ -197,7 +203,7 @@ def _graceful_start(
     no_cluster_flag = "--no-cluster" if no_cluster else ""
 
     port = _next_available_port(port)
-    launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} {no_cluster_flag} {no_triggers_flag} {triggers_only_flag}>> {logfile} 2>&1"
+    launch_str = f"{pypath} {sys.executable} app.py {dev_mode_flag} --port {port} {no_cluster_flag} {no_triggers_flag} {triggers_only_flag}>> {logfile} 2>&1"
 
     proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
     pid = proc.pid
@@ -219,6 +225,12 @@ def _graceful_start(
         click.echo(f"Covalent Triggers server has started at {dispatcher_addr}")
     else:
         click.echo(f"Covalent server has started at {dispatcher_addr}")
+
+    Path(get_config("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
+    Path(get_config("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
+    Path(get_config("dispatcher.log_dir")).mkdir(parents=True, exist_ok=True)
+    Path(get_config("user_interface.log_dir")).mkdir(parents=True, exist_ok=True)
+
     return port
 
 
@@ -231,10 +243,22 @@ def _terminate_child_processes(pid: int) -> None:
     Returns:
         None
     """
-    for child_proc in psutil.Process(pid).children(recursive=True):
+
+    # Uvicorn
+    leader = psutil.Process(pid).children()[0]
+
+    # Dask
+    children = psutil.Process(leader.pid).children(recursive=True)
+
+    with contextlib.suppress(psutil.NoSuchProcess):
+        leader.send_signal(signal.SIGINT)
+
+    for child_proc in children:
         with contextlib.suppress(psutil.NoSuchProcess):
             child_proc.kill()
-            child_proc.wait()
+
+    psutil.wait_procs(children)
+    leader.wait()
 
 
 def _graceful_shutdown(pidfile: str) -> None:
@@ -390,9 +414,24 @@ def start(
     else:
         set_config("sdk.no_cluster", "true")
 
-    port = _graceful_start(
-        UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop, no_triggers, triggers_only
-    )
+    try:
+        port = _graceful_start(
+            UI_SRVDIR,
+            UI_PIDFILE,
+            UI_LOGFILE,
+            port,
+            no_cluster,
+            develop,
+            no_triggers,
+            triggers_only,
+        )
+    except Exception:
+        click.secho("Error: ", fg="red")
+        click.secho(
+            "Covalent was unable to start due to the following error: ", fg="red", bold=True
+        )
+        click.secho(traceback.format_exc(), fg="lightgrey")
+        return ctx.exit(1)
     set_config("user_interface.port", port)
     set_config("dispatcher.port", port)
 
@@ -441,7 +480,11 @@ def status() -> None:
     """
 
     pid = _read_pid(UI_PIDFILE)
-    if _read_pid(UI_PIDFILE) != -1 and psutil.pid_exists(pid):
+    if psutil.pid_exists(pid) and psutil.Process(pid).status() == psutil.STATUS_ZOMBIE:
+        click.echo(ZOMBIE_PROCESS_STATUS_MSG)
+    elif psutil.pid_exists(pid) and psutil.Process(pid).status() == psutil.STATUS_STOPPED:
+        click.echo(STOPPED_PROCESS_STATUS_MSG)
+    elif _read_pid(UI_PIDFILE) != -1 and psutil.pid_exists(pid):
         ui_port = get_config("user_interface.port")
         click.echo(f"Covalent server is running at http://localhost:{ui_port}.")
     else:

@@ -19,9 +19,21 @@ social:
 execution_environment:
   interfaces:
     - Python API
+    - REST API
+    - Browser UI
   resource_managers:
     - Slurm
+    - NERSC Superfacility
+    - AWS Batch
+    - Amazon ECS
+    - AWS Lambda
+    - Amazon Braket
+    - Azure Batch
+    - Google Batch
+    - Kubernetes
   transfer_protocols:
     - rsync
     - HTTP
-    - S3
+    - Amazon S3
+    - Azure Blob Storage
+    - Google Cloud Storage
