@@ -58,10 +58,13 @@ def qelectron(
             function.
         description: An optional description of the QElectron. Defaults to the
             circuit function's docstring.
-        selector: The selection method used by auto-initialized quantum clusters.
-            This argument is ignored unless the `executors` is a list of multiple
-            quantum executors. String values supported for default selectors are
-            "cyclic" and "random". Defaults to "cyclic".
+        selector: A callable that selects an executor. The strings "cyclic" and
+            "random" are also accepted. The default "cyclic" selector returns
+            elements of `executors` in order, restarting from the first element
+            upon reaching the last. The "random" selector chooses from `executors`
+            at random, for each circuit. Any user-defined selector must be callable
+            with two arguments (a circuit and a list of executors), and must always
+            return only one executor.
 
     Raises:
         ValueError: If any invalid executors are passed.
