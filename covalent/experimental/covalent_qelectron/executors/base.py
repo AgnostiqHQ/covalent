@@ -302,7 +302,7 @@ class AsyncBaseQCluster(AsyncBaseQExecutor):
         raise NotImplementedError
 
     @abstractmethod
-    def deserialize_selector(self) -> None:
+    def deserialize_selector(self) -> Union[str, Callable]:
         """
         Deserializes the cluster's selector function.
         """
@@ -315,13 +315,12 @@ class AsyncBaseQCluster(AsyncBaseQExecutor):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_selector(self):
         """
         Returns the deserialized selector function.
         """
-        if self._selector_serialized:
-            self.deserialize_selector()
-        return self.selector
+        raise NotImplementedError
 
     async def _get_result(self, futures_list: List) -> List[QCResult]:
         """
@@ -340,3 +339,25 @@ class AsyncBaseQCluster(AsyncBaseQExecutor):
                 results_and_times.append(fut)
 
         return results_and_times
+
+
+class BaseQSelector(ABC, BaseModel):
+
+    name: str = "base_qselector"
+
+    def __call__(self, qscript, executors):
+        """"
+        Interface used by the quantum server.
+        """
+        return self.selector_function(qscript, executors)
+
+    @abstractmethod
+    def selector_function(self, qscript, executors):
+        """
+        Implement selection logic here.
+        """
+        raise NotImplementedError
+
+    class Config:
+        # Allows defining extra state fields in subclasses.
+        extra = Extra.allow

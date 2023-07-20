@@ -26,7 +26,8 @@ from pydantic import BaseModel
 
 from ..core.qnode_qe import QNodeQE
 from ..executors import Simulator
-from ..executors.base import AsyncBaseQCluster
+from ..executors.base import AsyncBaseQCluster, BaseQExecutor
+from ..executors.clusters import QCluster
 from ..shared_utils.utils import get_import_path
 
 
@@ -42,7 +43,14 @@ class QElectronInfo(BaseModel):
     pennylane_active_return: bool  # client-side status of `pennylane.active_return()`
 
 
-def qelectron(qnode=None, *, executors=None, name=None, description=None):
+def qelectron(
+    qnode=None,
+    *,
+    executors=None,
+    name=None,
+    description=None,
+    selector="cyclic",
+):
     """
     Decorator for extending a given QNode.
 
@@ -59,7 +67,14 @@ def qelectron(qnode=None, *, executors=None, name=None, description=None):
     if executors is None:
         executors = Simulator()
 
-    # check is executor is a QCluster
+    # check if executor is a list of executors, convert to cluster if more than one
+    if isinstance(executors, list):
+        if not all(isinstance(ex, BaseQExecutor) for ex in executors):
+            raise ValueError("Invalid executor in executors list.")
+        if len(executors) > 1:
+            executors = QCluster(executors=executors, selector=selector)
+
+    # check if executor is a QCluster and serialize the selector
     if isinstance(executors, AsyncBaseQCluster):
         executors.serialize_selector()
 
