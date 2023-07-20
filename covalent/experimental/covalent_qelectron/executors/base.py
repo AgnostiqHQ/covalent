@@ -315,13 +315,12 @@ class AsyncBaseQCluster(AsyncBaseQExecutor):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_selector(self):
         """
         Returns the deserialized selector function.
         """
-        if self._selector_serialized:
-            self.deserialize_selector()
-        return self.selector
+        raise NotImplementedError
 
     async def _get_result(self, futures_list: List) -> List[QCResult]:
         """
@@ -340,6 +339,3 @@ class AsyncBaseQCluster(AsyncBaseQExecutor):
                 results_and_times.append(fut)
 
         return results_and_times
-
-    def get_selector(self) -> Callable:
-        raise NotImplementedError
