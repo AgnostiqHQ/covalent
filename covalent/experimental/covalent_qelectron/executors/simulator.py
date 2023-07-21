@@ -20,7 +20,6 @@
 
 from typing import Union
 
-from covalent._shared_files.config import get_config
 from covalent.experimental.covalent_qelectron.executors.base import (
     BaseProcessPoolQExecutor,
     BaseQExecutor,
@@ -45,7 +44,7 @@ class Simulator(BaseQExecutor):
         workers: The number of threads or processes to use. Defaults to 10.
     """
 
-    device: str = get_config("qelectron")["device"]
+    device: str = "default.qubit"
     parallel: Union[bool, str] = "thread"
     workers: int = 10
 
