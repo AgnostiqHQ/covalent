@@ -41,9 +41,8 @@ def qelectron(
     selector: Union[str, Selector] = "cyclic",
 ) -> QNodeQE:
     """
-    QElectron decorator to be called upon a Pennylane QNode. Enables parallelized,
-    asynchronous execution of circuits on one or more quantum backends, as specified
-    by the `executors` argument.
+    QElectron decorator to be called upon a Pennylane QNode. Adds multi-backend
+    execution functionality to the original QNode.
 
     Args:
         qnode: The Pennylane QNode to wrap.
