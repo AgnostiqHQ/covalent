@@ -621,7 +621,16 @@ def status() -> None:
     elif not exists or psutil.Process(pid).status() == psutil.STATUS_STOPPED:
         _rm_pid_file(UI_PIDFILE)
         status_table.add_row("Covalent Server", "[red]Stopped[/red]")
-
+    if exists and pid != -1:
+        if Path(get_config("dispatcher.heartbeat_file")).is_file():
+            with open(get_config("dispatcher.heartbeat_file")) as f:
+                last_seen = f.read().split(" ", 1)[1]
+            status_table.add_row("", f"Last seen {last_seen}")
+        response = requests.get(
+            f"http://localhost:{port}/api/v1/dispatches/list?status_filter=RUNNING", timeout=1
+        )
+        running_workflows = response.json()["total_count"]
+        status_table.add_row("", f"There are {running_workflows} workflows currently running.")
     admin_address = _get_cluster_admin_address()
     loop = asyncio.get_event_loop()
     cluster_status = loop.run_until_complete(_get_cluster_status(admin_address))
@@ -648,7 +657,7 @@ def status() -> None:
             url = db.db_URL
             if os.environ.get("COVALENT_DATABASE_URL"):
                 url = furl(url).origin
-            status_table.add_row("Database", f"[green]Connected at {url}[/green]")
+            status_table.add_row("Database", f"[green]Connected[/green] at {url}")
 
     except sqlalchemy.exc.OperationalError:
         status_table.add_row("Database", "[red]Disconnected[/red]")
