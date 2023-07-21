@@ -43,7 +43,7 @@ jobs:
         run: python -m pip install pip-check-reqs
 
       - name: Check extra core requirements
-        run: pip-extra-reqs -r werkzeug covalent covalent_dispatcher covalent_ui --ignore-requirement=qiskit --ignore-requirement=qiskit-ibm-provider
+        run: pip-extra-reqs -r werkzeug covalent covalent_dispatcher covalent_ui --ignore-requirement=qiskit --ignore-requirement=qiskit-ibm-provider --ignore-requirement=amazon-braket-pennylane-plugin
 
       - name: Check missing SDK requirements
         run: >
