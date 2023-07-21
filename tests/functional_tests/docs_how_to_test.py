@@ -44,6 +44,8 @@ ignore_files = [
     "creating_custom_executors.ipynb",
     "file_transfers_to_from_azure_blob.ipynb",
     "file_transfers_to_from_gcp_storage.ipynb",
+    "file_transfers_for_workflows_to_remote.ipynb",
+    "file_transfers_to_remote.ipynb",
 ]
 
 

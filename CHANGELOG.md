@@ -7,20 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Fixed
-
-- Using `filelock` package now for platform independent file locking of config file. This should fix the failing tests as well as improve compatiblity with Windows.
-
-## Tests
-
-- Changed the method for startup and shutdown events for pytest to work with fastapi version 0.93.0
-- Fixed test cases to adapt changes to SQLAlchemy version 1.4.49
-
-### Docs
-
-- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
-- Updated documentation links in README
-
 ### Operations
 
 - Bumped versions in pre-commit config
@@ -63,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Using `filelock` package now for platform independent file locking of config file. This should fix the failing tests as well as improve compatibility with Windows.
 - When stopping the server, we send the proper `SIGINT` signal to uvicorn instead of `SIGKILL` which allows the second part of the FastAPI `lifespan` to execute properly.
 - Fixed the outstanding incompatibities between front-end data layer and a postgres database
 - Reverted file-lock changes
