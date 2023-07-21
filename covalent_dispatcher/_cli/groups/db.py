@@ -32,7 +32,7 @@ MIGRATION_WARNING_MSG = "There was an issue running migrations.\nPlease read htt
 @click.pass_context
 def db(ctx: click.Context):
     """
-    Group of utility commands to manage dispatcher database
+    Manage server's dispatch database
     """
     if ctx.invoked_subcommand is None:
         click.echo(ctx.get_help())
@@ -42,7 +42,7 @@ def db(ctx: click.Context):
 @click.pass_context
 def migrate(ctx: click.Context) -> None:
     """
-    Run DB Migrations programatically
+    Run database migrations
     """
     try:
         db = DataStore.factory()
@@ -63,7 +63,7 @@ def migrate(ctx: click.Context) -> None:
 @click.argument("alembic_args", nargs=-1, type=click.UNPROCESSED)
 def alembic(ctx: click.Context, alembic_args) -> None:
     """
-    Expose alembic CLI to be used via covalent CLI
+    Alembic CLI
     """
     try:
         alembic_args = list(alembic_args)

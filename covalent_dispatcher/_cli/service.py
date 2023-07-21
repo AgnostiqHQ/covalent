@@ -32,22 +32,22 @@ from subprocess import DEVNULL, Popen
 from typing import Optional
 
 import click
-from rich.console import Console
-from rich.panel import Panel
-from rich.table import Table
-from rich.syntax import Syntax
-from rich.status import Status
-from rich.box import ROUNDED
-from rich.text import Text
-from rich.panel import Panel
-from rich.prompt import Prompt
-
-
 import dask.system
 import psutil
 import requests
+import sqlalchemy
 from distributed.comm import unparse_address
 from distributed.core import connect, rpc
+from furl import furl
+from natsort import natsorted
+from rich.box import ROUNDED
+from rich.console import Console
+from rich.panel import Panel
+from rich.prompt import Prompt
+from rich.status import Status
+from rich.syntax import Syntax
+from rich.table import Table
+from rich.text import Text
 
 from covalent._shared_files.config import ConfigManager, get_config, set_config
 
@@ -69,11 +69,15 @@ MIGRATION_COMMAND_MSG = (
 def print_header(console):
     branding_title = Text("Covalent", style="bold blue")
     github_link = Text("GitHub: https://github.com/AgnostiqHQ/covalent", style="cyan")
-    docs_link = Text("Docs: http://docs.covalent.xyz", style="cyan")
+    docs_link = Text("Docs:   https://docs.covalent.xyz", style="cyan")
     console.print(Panel.fit(branding_title, padding=(1, 20)))
     console.print(github_link)
     console.print(docs_link)
     console.print()
+
+
+def print_footer(console):
+    console.print("\nFor additional help, use 'covalent --help'")
 
 
 def _read_pid(filename: str) -> int:
@@ -199,15 +203,15 @@ def _graceful_start(
 
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
-        port = get_config("user_interface.port")
-        click.echo(f"Covalent server is already running at http://localhost:{port}.")
+        port = get_config("dispatcher.port")
+        # click.echo(f"Covalent server is already running at http://localhost:{port}.")
         return port
 
     _rm_pid_file(pidfile)
 
     if no_triggers and triggers_only:
         raise ValueError(
-            "Options '--no-triggers' and '--triggers-only' are mutually exclusive, please chose one at most."
+            "Options '--no-triggers' and '--triggers-only' are mutually exclusive, please choose one at most."
         )
 
     no_triggers_flag = "--no-triggers" if no_triggers else ""
@@ -236,10 +240,10 @@ def _graceful_start(
         except requests.exceptions.ConnectionError as err:
             time.sleep(1)
 
-    if triggers_only:
-        click.echo(f"Covalent Triggers server has started at {dispatcher_addr}")
-    else:
-        click.echo(f"Covalent server has started at {dispatcher_addr}")
+    # if triggers_only:
+    #    click.echo(f"Covalent Triggers server has started at {dispatcher_addr}")
+    # else:
+    #    click.echo(f"Covalent server has started at {dispatcher_addr}")
     return port
 
 
@@ -277,22 +281,21 @@ def _graceful_shutdown(pidfile: str) -> None:
         with contextlib.suppress(psutil.NoSuchProcess):
             proc.terminate()
             proc.wait()
-        console.print("[green]Covalent server has stopped.[/green]")
 
     else:
-        console.print("[yellow]Covalent server was not running.[/yellow]")
+        console.print("[yellow]Covalent server was not running.[/yellow]\n")
 
     _rm_pid_file(pidfile)
 
 
 @click.command()
-@click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
+@click.option("-d", "--develop", is_flag=True, help="Start local server in developer mode")
 @click.option(
     "-p",
     "--port",
-    default=get_config("user_interface.port"),
+    default=get_config("dispatcher.port"),
     show_default=True,
-    help="Server port number.",
+    help="Local server port number",
 )
 @click.option(
     "-m",
@@ -300,7 +303,7 @@ def _graceful_shutdown(pidfile: str) -> None:
     required=False,
     is_flag=False,
     type=str,
-    help="""Memory limit per worker in (GB).
+    help="""Memory limit per worker in GB.
               Provide strings like 1gb/1GB or 0 for no limits""".replace(
         "\n", ""
     ),
@@ -311,7 +314,7 @@ def _graceful_shutdown(pidfile: str) -> None:
     required=False,
     is_flag=False,
     type=int,
-    help="Number of workers to start covalent with.",
+    help="Number of Dask workers",
 )
 @click.option(
     "-t",
@@ -319,7 +322,7 @@ def _graceful_shutdown(pidfile: str) -> None:
     required=False,
     is_flag=False,
     type=int,
-    help="Number of CPU threads per worker.",
+    help="Number of threads per Dask worker",
 )
 @click.option(
     "--ignore-migrations",
@@ -327,7 +330,7 @@ def _graceful_shutdown(pidfile: str) -> None:
     required=False,
     show_default=True,
     default=False,
-    help="Start the server without requiring migrations",
+    help="Start server without database migrations",
 )
 @click.option(
     "--no-cluster",
@@ -335,7 +338,7 @@ def _graceful_shutdown(pidfile: str) -> None:
     required=False,
     show_default=True,
     default=False,
-    help="Start the server without Dask",
+    help="Start server without Dask cluster",
 )
 @click.option(
     "--no-triggers",
@@ -343,7 +346,7 @@ def _graceful_shutdown(pidfile: str) -> None:
     required=False,
     show_default=True,
     default=False,
-    help="Start Covalent server without the Triggers server",
+    help="Start server without a triggers server",
 )
 @click.option(
     "--triggers-only",
@@ -351,8 +354,10 @@ def _graceful_shutdown(pidfile: str) -> None:
     required=False,
     show_default=True,
     default=False,
-    help="Start only the Triggers server",
+    help="Start only the triggers server",
 )
+@click.option("--no-header", is_flag=True, default=False, hidden=True)
+@click.option("--no-footer", is_flag=True, default=False, hidden=True)
 @click.pass_context
 def start(
     ctx: click.Context,
@@ -365,16 +370,20 @@ def start(
     ignore_migrations: bool,
     no_triggers: bool,
     triggers_only: bool,
+    no_header: bool,
+    no_footer: bool,
 ) -> None:
     """
-    Start the Covalent server.
+    Start a local server
     """
 
     console = Console()
-    print_header(console)
+
+    if not no_header:
+        print_header(console)
 
     # Display a header with a border
-    console.print(Panel("Starting Covalent Server", expand=False, border_style="blue"))
+    console.print(Panel("Starting Local Server", expand=False, border_style="blue"))
     console.print()
 
     if os.environ.get("COVALENT_DEBUG_MODE") == "1":
@@ -437,16 +446,17 @@ def start(
     set_config("dispatcher.port", port)
 
     # Display server configuration in a table
-    console.print()
     config_table = Table(title="Covalent Server Configuration", box=ROUNDED, show_header=False)
     config_table.add_column("Option", style="bold", no_wrap=True)
     config_table.add_column("Value")
 
-    config_table.add_row("Dispatcher Address", str(get_config("dispatcher.address")))
-    config_table.add_row("Port", Text(str(port), style="green"))
-    config_table.add_row("Develop", Text(str(develop), style="blue" if develop else "red"))
     config_table.add_row(
-        "No Cluster", Text(str(no_cluster), style="blue" if no_cluster else "red")
+        "Dispatcher Address", Text(str(get_config("dispatcher.address")), style="green")
+    )
+    config_table.add_row("Port", Text(str(port), style="green"))
+    config_table.add_row("Develop", Text(str(develop), style="blue" if develop else "green"))
+    config_table.add_row(
+        "Disable Dask", Text(str(no_cluster), style="blue" if no_cluster else "green")
     )
     config_table.add_row("Memory per Worker", Text(str(mem_per_worker), style="magenta"))
     config_table.add_row("Threads per Worker", Text(str(threads_per_worker), style="magenta"))
@@ -456,65 +466,87 @@ def start(
         Text(str(ignore_migrations), style="yellow" if ignore_migrations else "green"),
     )
     config_table.add_row(
-        "No Triggers", Text(str(no_triggers), style="blue" if no_triggers else "red")
+        "Disable Triggers", Text(str(no_triggers), style="blue" if no_triggers else "green")
     )
     config_table.add_row(
-        "Triggers Only", Text(str(triggers_only), style="blue" if triggers_only else "red")
+        "Triggers Only", Text(str(triggers_only), style="blue" if triggers_only else "green")
     )
 
     console.print(config_table)
-    console.print("Server Status: [green]:heavy_check_mark:[/green] Running", style="bold")
-    console.print("For additional help, use 'covalent --help'")
+    console.print("\nServer Status: [green]:heavy_check_mark:[/green] Running", style="bold")
+
+    if not no_footer:
+        print_footer(console)
 
 
 @click.command()
-def stop() -> None:
+@click.option("--no-header", is_flag=True, default=False, hidden=True)
+@click.option("--no-footer", is_flag=True, default=False, hidden=True)
+def stop(no_header: bool, no_footer: bool) -> None:
     """
-    Stop the Covalent server.
+    Stop a local server
     """
+
     console = Console()
-    print_header(console)
-    with Status("Stopping Covalent server...", console=console):
+    if not no_header:
+        print_header(console)
+
+    console.print(Panel("Stopping Local Server", expand=False, border_style="blue"))
+    console.print()
+
+    with Status("Stopping server...", console=console):
         _graceful_shutdown(UI_PIDFILE)
+
+    console.print("Server status: [red]:heavy_multiplication_x:[/red] Stopped", style="bold")
+
+    if not no_footer:
+        print_footer(console)
 
 
 @click.command()
 @click.option(
-    "-p", "--port", default=None, type=int, help="Restart Covalent server on a different port.",
+    "-p",
+    "--port",
+    default=None,
+    type=int,
+    help="Restart local server on given port",
 )
-@click.option("-d", "--develop", is_flag=True, help="Start the server in developer mode.")
+@click.option("-d", "--develop", is_flag=True, help="Start local server in developer mode")
 @click.pass_context
 def restart(ctx, port: bool, develop: bool) -> None:
     """
-    Restart the server.
+    Restart a local server
     """
 
     no_cluster_map = {"true": True, "false": False}
     configuration = {
-        "port": port or get_config("user_interface.port"),
+        "port": port or get_config("dispatcher.port"),
         "develop": develop or (get_config("sdk.log_level") == "debug"),
         "no_cluster": no_cluster_map[get_config("sdk.no_cluster")],
         "mem_per_worker": get_config("dask.mem_per_worker"),
         "threads_per_worker": get_config("dask.threads_per_worker"),
         "workers": get_config("dask.num_workers"),
+        "no_header": True,
     }
 
-    ctx.invoke(stop)
+    ctx.invoke(stop, no_footer=True)
     ctx.invoke(start, **configuration)
 
 
 @click.command()
 def status() -> None:
     """
-    Query the status of the Covalent server.
+    Display local server status
     """
     console = Console()
     print_header(console)
-    # Status table
+
+    console.print(Panel("Service Status", expand=False, border_style="blue"))
+    console.print()
 
     with Status("Checking Covalent's Process ID...", console=console):
         pid = _read_pid(UI_PIDFILE)
-        ui_port = get_config("user_interface.port")
+        port = get_config("dispatcher.port")
         exists = psutil.pid_exists(pid)
 
     status_table = Table()
@@ -522,13 +554,45 @@ def status() -> None:
     status_table.add_column("Status", style="bold")
     if pid != -1 and exists:
         status_table.add_row(
-            "Covalent Server", f"[green]Running[/green] at http://localhost:{ui_port}"
+            "Covalent Server", f"[green]Running[/green] at http://localhost:{port}"
         )
     else:
         _rm_pid_file(UI_PIDFILE)
         status_table.add_row("Covalent Server", "[red]Stopped[/red]")
+    if _is_server_running():
+        admin_address = _get_cluster_admin_address()
+        loop = asyncio.get_event_loop()
+        console.print(loop.run_until_complete(_cluster_ping(admin_address)))
+        status_table.add_row("Dask Cluster", f"[green]Running[/green] at {admin_address}")
+    else:
+        status_table.add_row("Dask Cluster", "[red]Stopped[/red]")
+    try:
+        response = requests.get(f"http://localhost:{port}/api/triggers/status", timeout=1)
+        trigger_status = response.json()["status"]
+    except requests.exceptions.ConnectionError as err:
+        trigger_status = "stopped"
 
-    console.print(status_table)
+    if trigger_status == "running":
+        status_table.add_row("Triggers Server", "[green]Running[/green]")
+    else:
+        status_table.add_row("Triggers Server", "[red]Stopped[/red]")
+    try:
+        db = DataStore.factory()
+
+        if db.is_migration_pending:
+            status_table.add_row("Database", "[yellow]Migration pending[/yellow]")
+        else:
+            url = db.db_URL
+            if os.environ.get("COVALENT_DATABASE_URL"):
+                url = furl(url).origin
+            status_table.add_row("Database", f"[green]Connected at {url}[/green]")
+
+    except sqlalchemy.exc.OperationalError:
+        status_table.add_row("Database", "[red]Disconnected[/red]")
+
+    console.print(status_table, width=80)
+
+    print_footer(console)
 
 
 @click.command()
@@ -536,15 +600,16 @@ def status() -> None:
     "-H",
     "--hard",
     is_flag=True,
-    help="Perform a hard purge, deleting the DB as well. [default: False]",
+    help="Delete Covalent and workflow data. [default: False]",
 )
 @click.option(
     "-y", "--yes", is_flag=True, help="Approve without showing the warning. [default: False]"
 )
 @click.option("--hell-yeah", is_flag=True, hidden=True)
-def purge(hard: bool, yes: bool, hell_yeah: bool) -> None:
+@click.pass_context
+def purge(ctx, hard: bool, yes: bool, hell_yeah: bool) -> None:
     """
-    Purge Covalent from this system. This command is for developers.
+    Purge Covalent from this system
     """
     console = Console()
     removal_list = {
@@ -567,28 +632,31 @@ def purge(hard: bool, yes: bool, hell_yeah: bool) -> None:
         warning_panel = Panel(warning_text, style="yellow", expand=False, padding=(0, 10))
         console.print(warning_panel)
 
-        console.print("Purging will perform the following operations: ")
+        console.print("\nPurging will perform the following operations: ")
 
-        console.print("1. Stop the covalent server if running.")
+        console.print("0. Cancel all running workflows")
+        console.print("1. Stop all services")
 
         for i, rem_path in enumerate(removal_list, start=2):
             if os.path.isdir(rem_path):
-                console.print(f"{i}. {rem_path} directory will be deleted.", style="red")
+                console.print(f"{i}. {rem_path} directory will be deleted", style="red")
             else:
-                console.print(f"{i}. {rem_path} file will be deleted.", style="red")
+                console.print(f"{i}. {rem_path} file will be deleted", style="red")
 
         if hard:
-            console.print("WARNING: All user data will be deleted.", style="bold red")
+            console.print("WARNING: All user data will be deleted", style="bold red")
 
         ans = Prompt.ask(  # Use Prompt.ask instead of console.Prompt.ask
-            "Are you sure you want to continue?", choices=["y", "n"], default="n"
+            "\nAre you sure you want to continue?", choices=["y", "n"], default="n"
         )
         if ans == "n":
             console.print("Purge aborted.")
+            print_footer(console)
             return
 
     # Shutdown covalent server
-    _graceful_shutdown(UI_PIDFILE)
+    console.print()
+    ctx.invoke(stop, no_header=True, no_footer=True)
 
     # Remove all directories and files
     for rem_path in removal_list:
@@ -598,15 +666,15 @@ def purge(hard: bool, yes: bool, hell_yeah: bool) -> None:
             with contextlib.suppress(FileNotFoundError):
                 os.remove(rem_path)
 
-        console.print(f"Removed {rem_path}.")
+        console.print(f"Removed {rem_path}")
 
-    console.print("Covalent server files have been purged.")
+    print_footer(console)
 
 
 @click.command()
 def logs() -> None:
     """
-    Show Covalent server logs.
+    Display local server logs
     """
     console = Console()
     if os.path.exists(UI_LOGFILE):
@@ -624,7 +692,7 @@ def logs() -> None:
 @click.command()
 @click.argument("result_pickle_path")
 def migrate_legacy_result_object(result_pickle_path) -> None:
-    """Migrate a legacy pickled Result object to the DataStore
+    """Migrate a legacy result object
 
     Example: `covalent migrate-legacy-result-object result.pkl`
     """
@@ -638,8 +706,12 @@ async def _get_cluster_status(uri: str):
     """
     Returns status of all workers and scheduler in the cluster
     """
-    async with rpc(uri, timeout=2) as r:
-        cluster_status = await r.cluster_status()
+
+    try:
+        async with rpc(uri, timeout=2) as r:
+            cluster_status = await r.cluster_status()
+    except ConnectionRefusedError:
+        return False
     return cluster_status
 
 
@@ -658,6 +730,14 @@ async def _get_cluster_info(uri):
     """
     async with rpc(uri, timeout=2) as r:
         return await r.cluster_info()
+
+
+async def _cluster_ping(uri):
+    comm = await connect(uri, timeout=2)
+    await comm.write({"op": "ping"})
+    response = await comm.read()
+    comm.close()
+    return response
 
 
 async def _cluster_restart(uri):
@@ -696,9 +776,16 @@ async def _get_cluster_logs(uri):
     return cluster_logs
 
 
+def _get_cluster_admin_address():
+    admin_host = get_config("dask.admin_host")
+    admin_port = get_config("dask.admin_port")
+    admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
+    return admin_server_addr
+
+
 @click.command()
-@click.option("--status", is_flag=True, help="Show Dask cluster status")
-@click.option("--info", is_flag=True, help="Retrieve Dask cluster info")
+@click.option("--status", is_flag=True, help="Display Dask cluster status")
+@click.option("--info", is_flag=True, help="Display Dask cluster info")
 @click.option(
     "--address", is_flag=True, help="Fetch connection information of the cluster scheduler/workers"
 )
@@ -718,17 +805,17 @@ def cluster(
     status: bool, info: bool, address: bool, size: bool, restart: bool, scale: int, logs: bool
 ):
     """
-    Inspect and manage the Dask cluster's configuration.
+    Manage local server's Dask cluster
     """
-    assert _is_server_running()
-    # addr of the admin server for the Dask cluster process
-    # started with covalent
+
     loop = asyncio.get_event_loop()
-    admin_host = get_config("dask.admin_host")
-    admin_port = get_config("dask.admin_port")
-    admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
+    admin_server_addr = _get_cluster_admin_address()
+    diagnostics_dashboard_addr = get_config("dask.dashboard_link")
 
     console = Console()
+    print_header(console)
+    console.print(Panel("Covalent Dask Cluster", expand=False, border_style="blue"))
+    console.print()
 
     def print_json(data):
         table = Table()
@@ -746,50 +833,77 @@ def cluster(
 
         console.print(table)
 
-    if status:
-        print_json(loop.run_until_complete(_get_cluster_status(admin_server_addr)))
-    elif info:
-        print_json(loop.run_until_complete(_get_cluster_info(admin_server_addr)))
-    elif address:
-        print_json(loop.run_until_complete(_get_cluster_address(admin_server_addr)))
-    elif size:
-        print_json(loop.run_until_complete(_get_cluster_size(admin_server_addr)))
-    elif restart:
-        with Status("Restarting the cluster...", spinner="dots") as status:
+    if _is_server_running():
+        if status:
+            cluster_status = loop.run_until_complete(_get_cluster_status(admin_server_addr))
+            print_json(dict(natsorted(cluster_status.items())))
+            degraded = {k: v for k, v in cluster_status.items() if v != "running"}
+            if degraded:
+                console.print(
+                    "\nDask Cluster Status: :face_with_thermometer: Running - Degraded",
+                    style="bold",
+                )
+            else:
+                console.print(
+                    "\nDask Cluster Status: [green]:heavy_check_mark:[/green] Running - Healthy",
+                    style="bold",
+                )
+            console.print(f"Diagnostics Dashboard: {diagnostics_dashboard_addr} (requires bokeh)")
 
-            loop.run_until_complete(_cluster_restart(admin_server_addr))
-            console.print()
-            status.update("Cluster restarted")
+        elif info:
+            print_json(loop.run_until_complete(_get_cluster_info(admin_server_addr)))
+        elif address:
+            print_json(loop.run_until_complete(_get_cluster_address(admin_server_addr)))
+        elif size:
+            print_json(loop.run_until_complete(_get_cluster_size(admin_server_addr)))
+        elif restart:
+            with Status("Restarting the cluster...", spinner="dots") as status:
+                loop.run_until_complete(_cluster_restart(admin_server_addr))
+                status.update("Cluster restarted")
+                console.print("\n")
+                console.print(
+                    Panel("Cluster restarted", box=ROUNDED, expand=False, border_style="green")
+                )
+        elif logs:
             console.print(
-                Panel("Cluster restarted", box=ROUNDED, expand=False, border_style="green")
-            )
-    elif logs:
-        print_json(loop.run_until_complete(_get_cluster_logs(admin_server_addr)))
-    elif scale:
-        with Status("Scaling the cluster...", spinner="dots") as status:
-            loop.run_until_complete(_cluster_scale(admin_server_addr, nworkers=scale))
-            console.print()
-            status.update(f"Cluster scaled to have {scale} workers")
-            console.print(
-                Panel(
-                    f"Cluster scaled to have {scale} workers",
-                    box=ROUNDED,
-                    expand=False,
-                    border_style="green",
+                "\n".join(
+                    [
+                        " ".join(x)
+                        for x in loop.run_until_complete(_get_cluster_logs(admin_server_addr))[0]
+                    ]
                 )
             )
+        elif scale:
+            with Status("Scaling the cluster...", spinner="dots") as status:
+                loop.run_until_complete(_cluster_scale(admin_server_addr, nworkers=scale))
+                status.update(f"Cluster scaled to {scale} workers")
+                console.print(
+                    Panel(
+                        f"Cluster scaled to {scale} workers",
+                        box=ROUNDED,
+                        expand=False,
+                        border_style="green",
+                    )
+                )
+    else:
+        console.print("Dask Cluster Status: [red]:heavy_multiplication_x:[/red] Stopped")
+
+    print_footer(console)
 
 
 @click.command()
 def config() -> None:
-    """Print Covalent's configuration to stdout"""
+    """Display the Covalent configuration"""
     console = Console()
     print_header(console)
+    console.print(Panel("Covalent Configuration", expand=False, border_style="blue"))
+    console.print()
 
     cm.read_config()
     config_data = json.loads(json.dumps(cm.config_data, sort_keys=True))
+    sorted_sections = ["sdk", "dispatcher", "dask", "executors"]
 
-    for section in config_data:
+    for section in sorted_sections:
         keys = config_data[section]
 
         # Create a table for each section
@@ -801,7 +915,10 @@ def config() -> None:
             section_table.add_row(key, str(config_data[section][key]))
 
         # Wrap the table in a panel
-        section_panel = Panel(section_table, expand=False, border_style="blue", padding=(0, 1))
+        section_panel = Panel(
+            section_table, expand=False, border_style="blue", padding=(0, 1), width=80
+        )
 
         console.print(section_panel)
-        console.print("\n")
+
+    print_footer(console)
