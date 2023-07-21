@@ -51,20 +51,20 @@ def qelectron(
     Keyword Args:
         executors: The quantum executor(s) to use for running the QNode. A single
             executor, list of executors, or a `QCluster` instance are accepted.
-            If a list of multiple executors is passed, a quantum cluster will be
-            initialized from this list automatically, using `selector` as the
-            cluster's selector. Defaults to a `Simulator` instance if not specified.
-        name: An optional name for the QElectron. Defaults to name of the circuit
-            function.
-        description: An optional description of the QElectron. Defaults to the
+            If a list of multiple executors is passed, a quantum cluster is
+            initialized from this list automatically and `selector` is used as the
+            cluster's selector. Defaults to a thread-based `Simulator`.
+        name: An optional name for the QElectron. Defaults to the circuit function's
+            name.
+        description: An optional description for the QElectron. Defaults to the
             circuit function's docstring.
-        selector: A callable that selects an executor. The strings "cyclic" and
-            "random" are also accepted. The default "cyclic" selector returns
-            elements of `executors` in order, restarting from the first element
-            upon reaching the last. The "random" selector chooses from `executors`
-            at random, for each circuit. Any user-defined selector must be callable
-            with two arguments (a circuit and a list of executors), and must always
-            return only one executor.
+        selector: A callable that selects an executor, or one of the strings "cyclic"
+            or "random". The "cyclic" selector (default) cycles through `executors`
+            and returns the next executor for each circuit. The "random" selector
+            chooses an executor from `executors` at random for each circuit. Any
+            user-defined selector must be callable with two positional arguments,
+            a circuit and a list of executors. A selector must also return exactly
+            one executor.
 
     Raises:
         ValueError: If any invalid executors are passed.
