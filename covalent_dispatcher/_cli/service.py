@@ -40,6 +40,7 @@ import dask.system
 import psutil
 import requests
 import sqlalchemy
+from dask.distributed import Client
 from distributed.comm import unparse_address
 from distributed.comm.core import CommClosedError
 from distributed.core import connect, rpc
@@ -633,9 +634,14 @@ def status() -> None:
         status_table.add_row("", f"There are {running_workflows} workflows currently running.")
     admin_address = _get_cluster_admin_address()
     loop = asyncio.get_event_loop()
-    cluster_status = loop.run_until_complete(_get_cluster_status(admin_address))
+    cluster_status = (
+        loop.run_until_complete(_get_cluster_status(admin_address)) if admin_address else None
+    )
     if _is_server_running() and cluster_status:
         status_table.add_row("Dask Cluster", f"[green]Running[/green] at {admin_address}")
+        client = Client(get_config("dask.scheduler_address"))
+        running_tasks = len([task for k, v in client.processing().items() for task in v])
+        status_table.add_row("", f"There are {running_tasks} tasks currently running.")
     else:
         status_table.add_row("Dask Cluster", "[red]Stopped[/red]")
     try:
@@ -846,10 +852,13 @@ async def _get_cluster_logs(uri):
 
 
 def _get_cluster_admin_address():
-    admin_host = get_config("dask.admin_host")
-    admin_port = get_config("dask.admin_port")
-    admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
-    return admin_server_addr
+    try:
+        admin_host = get_config("dask.admin_host")
+        admin_port = get_config("dask.admin_port")
+        admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
+        return admin_server_addr
+    except KeyError:
+        return
 
 
 @click.command()
@@ -879,7 +888,6 @@ def cluster(
 
     loop = asyncio.get_event_loop()
     admin_server_addr = _get_cluster_admin_address()
-    diagnostics_dashboard_addr = get_config("dask.dashboard_link")
 
     console = Console()
     print_header(console)
@@ -902,7 +910,11 @@ def cluster(
 
         console.print(table)
 
-    cluster_status = loop.run_until_complete(_get_cluster_status(admin_server_addr))
+    cluster_status = (
+        loop.run_until_complete(_get_cluster_status(admin_server_addr))
+        if admin_server_addr
+        else None
+    )
     if _is_server_running() and cluster_status:
         if status:
             print_json(dict(natsorted(cluster_status.items())))
@@ -917,6 +929,7 @@ def cluster(
                     "\nDask Cluster Status: [green]:heavy_check_mark:[/green] Running - Healthy",
                     style="bold",
                 )
+            diagnostics_dashboard_addr = get_config("dask.dashboard_link")
             console.print(f"Diagnostics Dashboard: {diagnostics_dashboard_addr} (requires bokeh)")
 
         elif info:
