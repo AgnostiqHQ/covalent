@@ -33,7 +33,7 @@ Selector = Union[str, Callable[[qml.tape.QuantumScript, List[BaseQExecutor]], Ba
 
 
 def qelectron(
-    qnode: qml.QNode = None,
+    qnode: Optional[qml.QNode] = None,
     *,
     executors: Union[BaseQExecutor, AsyncBaseQCluster, List[BaseQExecutor]] = None,
     name: Optional[str] = None,
