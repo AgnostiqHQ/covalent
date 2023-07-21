@@ -18,18 +18,23 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-"""Unit tests for electron"""
+"""Unit tests for lattice"""
 
 from dataclasses import asdict
 
+import pytest
+
 import covalent as ct
 from covalent._shared_files.defaults import DefaultMetadataValues, postprocess_prefix
+from covalent._shared_files.utils import get_ui_url
 
 DEFAULT_METADATA_VALUES = asdict(DefaultMetadataValues())
 
 
-def test_lattice_draw(mocker):
+def test_lattice_draw(mocker, capsys):
+    draw_preview_url = get_ui_url("/preview")
     mock_send_draw_req = mocker.patch("covalent_ui.result_webhook.send_draw_request")
+    mock_webbrowser_open = mocker.patch("webbrowser.open")
 
     @ct.electron
     def task(x):
@@ -41,7 +46,14 @@ def test_lattice_draw(mocker):
 
     workflow.draw(2)
 
+    captured = capsys.readouterr()
+    assert (
+        captured.out
+        == f"To preview the transport graph of the lattice, visit {draw_preview_url}\n"
+    )
+
     mock_send_draw_req.assert_called_once()
+    mock_webbrowser_open.assert_called_once()
 
 
 def test_lattice_workflow_executor_settings():
@@ -107,3 +119,38 @@ def test_lattice_build_graph(mocker):
     workflow.build_graph(1)
     assert workflow.transport_graph.get_node_value(2, "name") == postprocess_prefix
     ct._shared_files.config.set_config("sdk.exhaustive_postprocess", original_exhaustive_value)
+
+
+def test_lattice_build_graph_with_extra_args(mocker):
+    """Test the build graph method in lattice with extra args / kwargs."""
+
+    @ct.electron
+    def task(x, y):
+        return x + y
+
+    @ct.lattice
+    def workflow(x, y):
+        return task(x, y)
+
+    with pytest.raises(
+        ValueError, match="Too many positional arguments given, expected 2, received 3"
+    ):
+        workflow.build_graph(1, 2, 3)
+
+    with pytest.raises(
+        ValueError, match="Too many positional arguments given, expected 0, received 1"
+    ):
+        workflow.build_graph(1, x=2)
+
+    # no issues here
+    workflow.build_graph(1, y=2)
+
+    with pytest.raises(ValueError, match="Unexpected keyword arguments: a, b"):
+        workflow.build_graph(1, a=2, b=3)
+
+    with pytest.raises(ValueError, match="Unexpected keyword arguments: a"):
+        workflow.build_graph(a=1)
+
+    # fewer arguments handled internally by function call
+    with pytest.raises(TypeError, match="missing 1 required positional argument: 'y'"):
+        workflow.build_graph(1)

@@ -23,6 +23,7 @@
 import json
 import os
 import warnings
+import webbrowser
 from builtins import list
 from contextlib import redirect_stdout
 from copy import deepcopy
@@ -34,7 +35,7 @@ from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import DefaultMetadataValues
-from .._shared_files.utils import get_named_params, get_serialized_function_str
+from .._shared_files.utils import get_named_params, get_serialized_function_str, get_ui_url
 from .depsbash import DepsBash
 from .depscall import DepsCall
 from .depspip import DepsPip
@@ -270,6 +271,11 @@ class Lattice:
 
         self.build_graph(*args, **kwargs)
         result_webhook.send_draw_request(self)
+        draw_preview_url = get_ui_url("/preview")
+        message = f"To preview the transport graph of the lattice, visit {draw_preview_url}"
+        app_log.info(message)
+        print(message)
+        webbrowser.open(draw_preview_url)
 
     def __call__(self, *args, **kwargs):
         """Execute lattice as an ordinary function for testing purposes."""
@@ -344,7 +350,7 @@ def lattice(
 
     Keyword Args:
         backend: DEPRECATED: Same as `executor`.
-        executor: Alternative executor object to be used in the execution of each node. If not passed, the local
+        executor: Alternative executor object to be used in the execution of each node. If not passed, the dask
             executor is used by default.
         workflow_executor: Executor for postprocessing the workflow. Defaults to the built-in dask executor or
             the local executor depending on whether Covalent is started with the `--no-cluster` option.

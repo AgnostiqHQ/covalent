@@ -122,6 +122,11 @@ class LocalDispatcher(BaseDispatcher):
             # To access the disable_run passed to the dispatch function
             nonlocal disable_run
 
+            if not isinstance(orig_lattice, Lattice):
+                message = f"Dispatcher expected a Lattice, received {type(orig_lattice)} instead."
+                app_log.error(message)
+                raise TypeError(message)
+
             lattice = deepcopy(orig_lattice)
 
             lattice.build_graph(*args, **kwargs)
@@ -141,12 +146,20 @@ class LocalDispatcher(BaseDispatcher):
 
             submit_dispatch_url = f"{dispatcher_addr}/api/submit"
 
-            r = requests.post(
-                submit_dispatch_url, data=json_lattice, params={"disable_run": disable_run}
-            )
-            r.raise_for_status()
-
-            lattice_dispatch_id = r.content.decode("utf-8").strip().replace('"', "")
+            lattice_dispatch_id = None
+            try:
+                r = requests.post(
+                    submit_dispatch_url,
+                    data=json_lattice,
+                    params={"disable_run": disable_run},
+                    timeout=5,
+                )
+                r.raise_for_status()
+                lattice_dispatch_id = r.content.decode("utf-8").strip().replace('"', "")
+            except requests.exceptions.ConnectionError:
+                message = f"The Covalent server cannot be reached at {dispatcher_addr}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
+                print(message)
+                return
 
             if not disable_run or triggers_data is None:
                 return lattice_dispatch_id
@@ -254,8 +267,16 @@ class LocalDispatcher(BaseDispatcher):
                 dispatch_id, new_args, new_kwargs, replace_electrons, reuse_previous_results
             )
             redispatch_url = f"{dispatcher_addr}/api/redispatch"
-            r = requests.post(redispatch_url, json=body, params={"is_pending": is_pending})
-            r.raise_for_status()
+            try:
+                r = requests.post(
+                    redispatch_url, json=body, params={"is_pending": is_pending}, timeout=5
+                )
+                r.raise_for_status()
+            except requests.exceptions.ConnectionError:
+                message = f"The Covalent server cannot be reached at {dispatcher_addr}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
+                print(message)
+                return
+
             return r.content.decode("utf-8").strip().replace('"', "")
 
         return func

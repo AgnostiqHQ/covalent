@@ -484,3 +484,27 @@ def test_electron_auto_task_groups_iter():
     assert getitem_x_gid == tup_electron_gid
     assert getitem_y_gid == tup_electron_gid
     assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
+
+
+def test_electron_executor_property():
+    """
+    Test that the executor property assignment
+    of an electron works as expected.
+    """
+
+    @ct.electron
+    def mock_task():
+        pass
+
+    mock_encoded_metadata = encode_metadata({"executor": LocalExecutor()})
+
+    mock_task_electron = mock_task.electron_object
+
+    # If string is passed
+    mock_task_electron.executor = "mock"
+    assert mock_task_electron.metadata["executor"] == "mock"
+
+    # If executor object is passed
+    mock_task_electron.executor = LocalExecutor()
+    assert mock_task_electron.metadata["executor"] == mock_encoded_metadata["executor"]
+    assert mock_task_electron.metadata["executor_data"] == mock_encoded_metadata["executor_data"]

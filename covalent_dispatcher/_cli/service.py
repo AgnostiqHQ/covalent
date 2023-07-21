@@ -26,8 +26,12 @@ import contextlib
 import json
 import os
 import shutil
+import signal
 import socket
+import sys
 import time
+import traceback
+from pathlib import Path
 from subprocess import DEVNULL, Popen
 from typing import Optional
 
@@ -64,6 +68,8 @@ MIGRATION_WARNING_MSG = "Covalent not started. The database needs to be upgraded
 MIGRATION_COMMAND_MSG = (
     '   (use "covalent db migrate" to run database migrations and then retry "covalent start")'
 )
+ZOMBIE_PROCESS_STATUS_MSG = "Covalent server is unhealthy: Process is in zombie status"
+STOPPED_PROCESS_STATUS_MSG = "Covalent server is unhealthy: Process is in stopped status"
 
 
 def print_header(console):
@@ -222,7 +228,7 @@ def _graceful_start(
     no_cluster_flag = "--no-cluster" if no_cluster else ""
 
     port = _next_available_port(port)
-    launch_str = f"{pypath} python app.py {dev_mode_flag} --port {port} {no_cluster_flag} {no_triggers_flag} {triggers_only_flag}>> {logfile} 2>&1"
+    launch_str = f"{pypath} {sys.executable} app.py {dev_mode_flag} --port {port} {no_cluster_flag} {no_triggers_flag} {triggers_only_flag}>> {logfile} 2>&1"
 
     proc = Popen(launch_str, shell=True, stdout=DEVNULL, stderr=DEVNULL, cwd=server_root)
     pid = proc.pid
@@ -240,10 +246,16 @@ def _graceful_start(
         except requests.exceptions.ConnectionError as err:
             time.sleep(1)
 
-    # if triggers_only:
-    #    click.echo(f"Covalent Triggers server has started at {dispatcher_addr}")
-    # else:
-    #    click.echo(f"Covalent server has started at {dispatcher_addr}")
+    if triggers_only:
+        click.echo(f"Covalent Triggers server has started at {dispatcher_addr}")
+    else:
+        click.echo(f"Covalent server has started at {dispatcher_addr}")
+
+    Path(get_config("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
+    Path(get_config("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
+    Path(get_config("dispatcher.log_dir")).mkdir(parents=True, exist_ok=True)
+    Path(get_config("user_interface.log_dir")).mkdir(parents=True, exist_ok=True)
+
     return port
 
 
@@ -256,10 +268,22 @@ def _terminate_child_processes(pid: int) -> None:
     Returns:
         None
     """
-    for child_proc in psutil.Process(pid).children(recursive=True):
+
+    # Uvicorn
+    leader = psutil.Process(pid).children()[0]
+
+    # Dask
+    children = psutil.Process(leader.pid).children(recursive=True)
+
+    with contextlib.suppress(psutil.NoSuchProcess):
+        leader.send_signal(signal.SIGINT)
+
+    for child_proc in children:
         with contextlib.suppress(psutil.NoSuchProcess):
             child_proc.kill()
-            child_proc.wait()
+
+    psutil.wait_procs(children)
+    leader.wait()
 
 
 def _graceful_shutdown(pidfile: str) -> None:
@@ -430,17 +454,25 @@ def start(
     else:
         set_config("sdk.no_cluster", "true")
 
-    with Status("Starting server...", console=console):
-        port = _graceful_start(
-            UI_SRVDIR,
-            UI_PIDFILE,
-            UI_LOGFILE,
-            port,
-            no_cluster,
-            develop,
-            no_triggers,
-            triggers_only,
+    try:
+        with Status("Starting server...", console=console):
+            port = _graceful_start(
+                UI_SRVDIR,
+                UI_PIDFILE,
+                UI_LOGFILE,
+                port,
+                no_cluster,
+                develop,
+                no_triggers,
+                triggers_only,
+            )
+    except Exception:
+        click.secho("Error: ", fg="red")
+        click.secho(
+            "Covalent was unable to start due to the following error: ", fg="red", bold=True
         )
+        click.secho(traceback.format_exc(), fg="lightgrey")
+        return ctx.exit(1)
 
     set_config("user_interface.port", port)
     set_config("dispatcher.port", port)
@@ -552,13 +584,19 @@ def status() -> None:
     status_table = Table()
     status_table.add_column("Component", style="bold")
     status_table.add_column("Status", style="bold")
-    if pid != -1 and exists:
+
+    if exists and pid != -1:
         status_table.add_row(
             "Covalent Server", f"[green]Running[/green] at http://localhost:{port}"
         )
-    else:
+    elif exists and psutil.Process(pid).status() == psutil.STATUS_ZOMBIE:
+        status_table.add_row(
+            "Covalent Server", "[yellow]Zombie process :zombie:[/yellow] - Recommend restart"
+        )
+    elif not exists or psutil.Process(pid).status() == psutil.STATUS_STOPPED:
         _rm_pid_file(UI_PIDFILE)
         status_table.add_row("Covalent Server", "[red]Stopped[/red]")
+
     if _is_server_running():
         admin_address = _get_cluster_admin_address()
         loop = asyncio.get_event_loop()

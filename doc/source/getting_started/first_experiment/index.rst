@@ -217,8 +217,6 @@ Do the following to view your workflow in the GUI.
 
 While the workflow is being processed by the dispatch server, you can terminate the Jupyter kernel or Python console process without losing access to the results.
 
-.. warning:: Do not stop the Covalent server while you have running workflows. Stopping the server will kill the workflows.
-
 
 What to Do Next
 ###############
@@ -227,6 +225,6 @@ Read :doc:`Concepts <../../concepts/concepts>` gain a deeper understanding of ho
 
 See the :doc:`Tutorials <../../tutorials/tutorials>` to see how to apply Covalent to real-world machine learning problems in a variety of subject domains.
 
-See the :doc:`API Reference <../../api/index>` for usage information on ``electron``, ``lattice``, and ready-to-use executors.
+See the :doc:`API Reference <../../api/api>` for usage information on ``electron``, ``lattice``, and ready-to-use executors.
 
 See :doc:`AWS Plugins <../../api/executors/awsplugins>` to see how you can specify an executor to run this example on an AWS node using only two more lines of code.
