@@ -31,8 +31,25 @@ __all__ = [
 
 
 class QCluster(AsyncBaseQCluster):
+    """
+    A class that abstracts a collection of individual quantum executors and provides
+    a custom selection algorithm for choosing executors on a per-qscript basis.
+
+    Args:
+        executors: The list (or sequence) of quantum executors comprising the
+            cluster.
+        selector: A callable that selects an executor. The strings "cyclic" and
+            "random" are also accepted. The default "cyclic" selector returns
+            elements of `executors` in order, restarting from the first element
+            upon reaching the last. The "random" selector chooses from `executors`
+            at random, for each circuit. Any user-defined selector must be callable
+            with two arguments (a circuit and a list of executors), and must always
+            return only one executor.
+    """
 
     selector: Union[str, Callable] = "cyclic"
+
+    # Flag used to indicate whether `self.selector` is currently serialized.
     _selector_serialized: bool = False
 
     def batch_submit(self, qscripts_list):
