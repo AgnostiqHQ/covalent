@@ -32,19 +32,17 @@ __all__ = [
 
 class QCluster(AsyncBaseQCluster):
     """
-    A class that abstracts a collection of individual quantum executors and provides
-    a custom selection algorithm for choosing executors on a per-qscript basis.
+    A cluster of quantum executors.
 
     Args:
-        executors: The list (or sequence) of quantum executors comprising the
-            cluster.
-        selector: A callable that selects an executor. The strings "cyclic" and
-            "random" are also accepted. The default "cyclic" selector returns
-            elements of `executors` in order, restarting from the first element
-            upon reaching the last. The "random" selector chooses from `executors`
-            at random, for each circuit. Any user-defined selector must be callable
-            with two arguments (a circuit and a list of executors), and must always
-            return only one executor.
+        executors: A sequence of quantum executors.
+        selector: A callable that selects an executor, or one of the strings "cyclic"
+            or "random". The "cyclic" selector (default) cycles through `executors`
+            and returns the next executor for each circuit. The "random" selector
+            chooses an executor from `executors` at random for each circuit. Any
+            user-defined selector must be callable with two positional arguments,
+            a circuit and a list of executors. A selector must also return exactly
+            one executor.
     """
 
     selector: Union[str, Callable] = "cyclic"
