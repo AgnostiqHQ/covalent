@@ -41,6 +41,7 @@ import psutil
 import requests
 import sqlalchemy
 from distributed.comm import unparse_address
+from distributed.comm.core import CommClosedError
 from distributed.core import connect, rpc
 from furl import furl
 from natsort import natsorted
@@ -210,7 +211,6 @@ def _graceful_start(
     pid = _read_pid(pidfile)
     if psutil.pid_exists(pid):
         port = get_config("dispatcher.port")
-        # click.echo(f"Covalent server is already running at http://localhost:{port}.")
         return port
 
     _rm_pid_file(pidfile)
@@ -245,11 +245,6 @@ def _graceful_start(
             up = True
         except requests.exceptions.ConnectionError as err:
             time.sleep(1)
-
-    if triggers_only:
-        click.echo(f"Covalent Triggers server has started at {dispatcher_addr}")
-    else:
-        click.echo(f"Covalent server has started at {dispatcher_addr}")
 
     Path(get_config("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
     Path(get_config("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
@@ -508,6 +503,7 @@ def start(
     console.print("\nServer Status: [green]:heavy_check_mark:[/green] Running", style="bold")
 
     if not no_footer:
+        console.print("\nFor a summary of the system status, use 'covalent status'")
         print_footer(console)
 
 
@@ -544,11 +540,38 @@ def stop(no_header: bool, no_footer: bool) -> None:
     help="Restart local server on given port",
 )
 @click.option("-d", "--develop", is_flag=True, help="Start local server in developer mode")
+@click.option(
+    "--no-cluster",
+    is_flag=True,
+    required=False,
+    show_default=True,
+    default=False,
+    help="Restart server without Dask cluster",
+)
+@click.option(
+    "--with-cluster",
+    is_flag=True,
+    required=False,
+    show_default=True,
+    default=False,
+    help="Restart server with Dask cluster",
+)
 @click.pass_context
-def restart(ctx, port: bool, develop: bool) -> None:
+def restart(ctx, port: bool, develop: bool, no_cluster: bool, with_cluster: bool) -> None:
     """
     Restart a local server
     """
+
+    if no_cluster and with_cluster:
+        raise ValueError(
+            "Options '--no-cluster' and '--with-cluster' are mutually exclusive, please choose one at most."
+        )
+
+    if no_cluster:
+        set_config("sdk.no_cluster", "true")
+
+    if with_cluster:
+        set_config("sdk.no_cluster", "false")
 
     no_cluster_map = {"true": True, "false": False}
     configuration = {
@@ -562,6 +585,8 @@ def restart(ctx, port: bool, develop: bool) -> None:
     }
 
     ctx.invoke(stop, no_footer=True)
+    console = Console()
+    console.print()
     ctx.invoke(start, **configuration)
 
 
@@ -597,10 +622,10 @@ def status() -> None:
         _rm_pid_file(UI_PIDFILE)
         status_table.add_row("Covalent Server", "[red]Stopped[/red]")
 
-    if _is_server_running():
-        admin_address = _get_cluster_admin_address()
-        loop = asyncio.get_event_loop()
-        console.print(loop.run_until_complete(_cluster_ping(admin_address)))
+    admin_address = _get_cluster_admin_address()
+    loop = asyncio.get_event_loop()
+    cluster_status = loop.run_until_complete(_get_cluster_status(admin_address))
+    if _is_server_running() and cluster_status:
         status_table.add_row("Dask Cluster", f"[green]Running[/green] at {admin_address}")
     else:
         status_table.add_row("Dask Cluster", "[red]Stopped[/red]")
@@ -629,6 +654,11 @@ def status() -> None:
         status_table.add_row("Database", "[red]Disconnected[/red]")
 
     console.print(status_table, width=80)
+
+    if cluster_status:
+        console.print(
+            "\nFor additional information about the Dask cluster, use 'covalent cluster --status'"
+        )
 
     print_footer(console)
 
@@ -748,7 +778,7 @@ async def _get_cluster_status(uri: str):
     try:
         async with rpc(uri, timeout=2) as r:
             cluster_status = await r.cluster_status()
-    except ConnectionRefusedError:
+    except (ConnectionRefusedError, CommClosedError, asyncio.exceptions.TimeoutError, OSError):
         return False
     return cluster_status
 
@@ -768,14 +798,6 @@ async def _get_cluster_info(uri):
     """
     async with rpc(uri, timeout=2) as r:
         return await r.cluster_info()
-
-
-async def _cluster_ping(uri):
-    comm = await connect(uri, timeout=2)
-    await comm.write({"op": "ping"})
-    response = await comm.read()
-    comm.close()
-    return response
 
 
 async def _cluster_restart(uri):
@@ -871,9 +893,9 @@ def cluster(
 
         console.print(table)
 
-    if _is_server_running():
+    cluster_status = loop.run_until_complete(_get_cluster_status(admin_server_addr))
+    if _is_server_running() and cluster_status:
         if status:
-            cluster_status = loop.run_until_complete(_get_cluster_status(admin_server_addr))
             print_json(dict(natsorted(cluster_status.items())))
             degraded = {k: v for k, v in cluster_status.items() if v != "running"}
             if degraded:
