@@ -75,6 +75,24 @@ _DEVICE_MAP = {
 
 
 class IBMQExecutor(BaseThreadPoolQExecutor):
+    """
+    A quantum executor that uses the Pennylane native "qiskit.ibmq" device to run
+    circuits on IBM Quantum backends. The attributes `backend`, `ibmqx_token`,
+    `hub`, `group`, and `project` are taken from the Covalent configuration file
+    by default, if available.
+
+    Keyword Args:
+        max_jobs: The maximum number of jobs that can be submitted to the backend
+            concurrently. This number corresponds to the number of threads utilized
+            by this executor. Defaults to 20.
+        backend: The name of the IBM Quantum backend device. Defaults to
+            "ibmq_qasm_simulator".
+        ibmqx_token: The IBM Quantum API token.
+        hub: An IBM Quantum hub name. Defaults to "ibm-q".
+        group: An IBM Quantum group name. Defaults to "open".
+        project: An IBM Quantum project name. Defaults to "main".
+
+    """
 
     max_jobs: int = 20
 
@@ -120,20 +138,40 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
 
 
 class QiskitExecutor(AsyncBaseQExecutor):
-
     """
-    Executor that submits Pennylane Circuits to Qiskit Runtime
+    A quantum executor that lets the user run circuits on IBM Quantum backends,
+    using runtime sessions and Qiskit primitives. The attributes `device`, `backend`,
+    `ibmqx_token`, `hub`, `group`, and `project` are taken from the Covalent
+    configuration file by default, if available.
+
+    Keyword Args:
+        device: The Qiskit primitive used to execute circuits. Valid values are
+            "sampler" and "local_sampler". The value "sampler" corresponds to the
+            Qiskit Runtime `Sampler` primitive. The value "local_sampler"
+            corresponds to the Qiskit `Sampler` primitive, which is entirely local.
+        backend: The name of the IBM Quantum backend device. Defaults to
+            "ibmq_qasm_simulator".
+        ibmqx_token: The IBM Quantum API token.
+        hub: An IBM Quantum hub name. Defaults to "ibm-q".
+        group: An IBM Quantum group name. Defaults to "open".
+        project: An IBM Quantum project name. Defaults to "main".
+        shots: The number of shots to run per circuit. Defaults to 1024.
+        single_job: Indicates whether or not all circuits are submitted
+            to a single job or as separate jobs. Defaults to True.
+        max_time: An optional time limit for circuit execution on the IBM Quantum
+            backend. Defaults to `None`, i.e. no time limit.
+        local_transpile: Indicates whether or not to transpile circuits before
+            submitting to IBM Quantum. Defaults to False.
+        ibmqx_url: An optional URL for the Qiskit Runtime API.
+        channel: An optional channel for the Qiskit Runtime API. Defaults to
+            "ibm_quantum".
+        instance: An alternate means to specify `hub`, `group`, and `project`,
+            formatted as "{hub}/{group}/{project}".
+        cloud_instance: Same as `instance` but for the case `channel="ibm_cloud"`.
+        options: A dictionary of options to pass to Qiskit Runtime. See:
+            https://qiskit.org/ecosystem/ibm-runtime/stubs/qiskit_ibm_runtime.options.Options.html
+            for valid fields.
     """
-
-    shots: Optional[int] = 1024
-    single_job: bool = False
-    max_time: Union[int, str] = None
-    local_transpile: bool = False
-
-    ibmqx_url: str = None
-    channel: str = "ibm_quantum"
-    instance: str = ""
-    cloud_instance: str = ""
 
     device: str = Field(
         default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["device"]
@@ -153,6 +191,18 @@ class QiskitExecutor(AsyncBaseQExecutor):
     project: str = Field(
         default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["project"]
     )
+
+    shots: Optional[int] = 1024
+    single_job: bool = False
+    local_transpile: bool = False
+
+    max_time: Union[int, str] = None
+
+    ibmqx_url: str = None
+    channel: str = "ibm_quantum"
+    instance: str = ""
+    cloud_instance: str = ""
+
     options: RuntimeOptions = Field(
         # pylint: disable=unnecessary-lambda
         default_factory=lambda: RuntimeOptions(

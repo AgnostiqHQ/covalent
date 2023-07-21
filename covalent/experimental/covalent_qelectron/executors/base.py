@@ -24,7 +24,7 @@ from abc import ABC, abstractmethod
 from concurrent.futures import Future, ThreadPoolExecutor
 from functools import lru_cache
 from threading import Thread
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import orjson
 import pennylane as qml
@@ -273,7 +273,7 @@ class BaseThreadPoolQExecutor(BaseQExecutor):
 
 class AsyncBaseQCluster(AsyncBaseQExecutor):
 
-    executors: Tuple[BaseQExecutor, ...]
+    executors: Sequence[BaseQExecutor]
     selector: Union[str, Callable]
 
     _selector_serialized: bool = False
