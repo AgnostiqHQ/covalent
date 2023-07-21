@@ -41,27 +41,33 @@ def init_runtime_service(
     project: str = "",
 ) -> QiskitRuntimeService:
     """
-    Start `QiskitRuntimeService` with specified settings
+    Start `QiskitRuntimeService` with specified settings.
     """
 
     if channel == "ibm_quantum":
-        if hub and group and project:
-            instance = "/".join([hub, group, project])
-        elif not instance:
-            instance = "ibm-q/open/main"
+        if not instance:
+            # Combine hub, group, and project to produce the instance.
+            hgp = [hub, group, project]
+            if all(hgp):
+                instance = "/".join(hgp)
+            else:
+                instance = "ibm-q/open/main"
+
     elif channel == "ibm_cloud":
+        # Require `cloud_instance` to be specified in this case.
+        if not cloud_instance:
+            raise ValueError(
+                "The `cloud_instance` is required for the 'ibm_cloud' channel."
+            )
+
         instance = cloud_instance
+
     else:
         raise ValueError(
             "Invalid `channel` argument, must be either 'ibm_quantum' or 'ibm_cloud'."
         )
 
-    if not instance:
-        arg_name = "instance" if channel == "ibm_quantum" else "cloud_instance"
-        raise ValueError(
-            f"Missing required `{arg_name}` argument for channel type '{channel}'."
-        )
-
+    # Initialize the runtime service instance.
     return QiskitRuntimeService(
         channel=channel,
         token=ibmqx_token,
