@@ -171,8 +171,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
             :code:`project`, formatted as :code:`"my-hub/my-group/my-project"`.
         cloud_instance: Same as :code:`instance` but for the case :code:`channel="ibm_cloud"`.
         options: A dictionary of options to pass to Qiskit Runtime. See
-            https://qiskit.org/ecosystem/ibm-runtime/stubs/qiskit_ibm_runtime.options.Options.html
-            for valid fields.
+            :code:`qiskit_ibm_runtime.options.Options` for valid fields.
     """
 
     device: str = Field(
