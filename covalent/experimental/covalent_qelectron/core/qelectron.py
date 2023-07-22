@@ -45,31 +45,31 @@ def qelectron(
     execution functionality to the original QNode.
 
     Args:
-        qnode: The Pennylane QNode to wrap.
+        qnode: The Pennylane :code:`QNode` to wrap.
 
     Keyword Args:
         executors: The quantum executor(s) to use for running the QNode. A single
-            executor, list of executors, or a `QCluster` instance are accepted.
+            executor, list of executors, or a :code:`QCluster` instance are accepted.
             If a list of multiple executors is passed, a quantum cluster is
-            initialized from this list automatically and `selector` is used as the
-            cluster's selector. Defaults to a thread-based `Simulator`.
+            initialized from this list automatically and :code:`selector` is used as the
+            cluster's selector. Defaults to a thread-based :code:`Simulator`.
         name: An optional name for the QElectron. Defaults to the circuit function's
             name.
         description: An optional description for the QElectron. Defaults to the
             circuit function's docstring.
-        selector: A callable that selects an executor, or one of the strings "cyclic"
-            or "random". The "cyclic" selector (default) cycles through `executors`
-            and returns the next executor for each circuit. The "random" selector
-            chooses an executor from `executors` at random for each circuit. Any
-            user-defined selector must be callable with two positional arguments,
-            a circuit and a list of executors. A selector must also return exactly
-            one executor.
+        selector: A callable that selects an executor, or one of the strings :code:`"cyclic"`
+            or :code:`"random"`. The :code:`"cyclic"` selector (default) cycles through
+            :code:`executors` and returns the next executor for each circuit. The
+            :code:`"random"` selector chooses an executor from :code:`executors`
+            at random for each circuit. Any user-defined selector must be callable
+            with two positional arguments, a circuit and a list of executors.
+            A selector must also return exactly one executor.
 
     Raises:
         ValueError: If any invalid executors are passed.
 
     Returns:
-        `QNodeQE`: A sub-type of QNode that integrates QElectrons.
+        :code:`QNodeQE`: A sub-type of :code:`QNode` that integrates QElectrons.
     """
 
     if executors is None:

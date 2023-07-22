@@ -76,21 +76,21 @@ _DEVICE_MAP = {
 
 class IBMQExecutor(BaseThreadPoolQExecutor):
     """
-    A quantum executor that uses the Pennylane native "qiskit.ibmq" device to run
-    circuits on IBM Quantum backends. The attributes `backend`, `ibmqx_token`,
-    `hub`, `group`, and `project` are taken from the Covalent configuration file
-    by default, if available.
+    A quantum executor that uses the Pennylane native :code:`"qiskit.ibmq"` device to run
+    circuits on IBM Quantum backends. The attributes :code:`backend`, :code:`ibmqx_token`,
+    :code:`hub`, :code:`group`, and :code:`project` are taken from the Covalent
+    configuration file by default, if available.
 
     Keyword Args:
         max_jobs: The maximum number of jobs that can be submitted to the backend
             concurrently. This number corresponds to the number of threads utilized
             by this executor. Defaults to 20.
         backend: The name of the IBM Quantum backend device. Defaults to
-            "ibmq_qasm_simulator".
+            :code:`"ibmq_qasm_simulator"`.
         ibmqx_token: The IBM Quantum API token.
-        hub: An IBM Quantum hub name. Defaults to "ibm-q".
-        group: An IBM Quantum group name. Defaults to "open".
-        project: An IBM Quantum project name. Defaults to "main".
+        hub: An IBM Quantum hub name. Defaults to :code:`"ibm-q"`.
+        group: An IBM Quantum group name. Defaults to :code:`"open"`.
+        project: An IBM Quantum project name. Defaults to :code:`"main"`.
 
     """
 
@@ -140,35 +140,37 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
 class QiskitExecutor(AsyncBaseQExecutor):
     """
     A quantum executor that lets the user run circuits on IBM Quantum backends,
-    using runtime sessions and Qiskit primitives. The attributes `device`, `backend`,
-    `ibmqx_token`, `hub`, `group`, and `project` are taken from the Covalent
-    configuration file by default, if available.
+    using runtime sessions and Qiskit primitives. The attributes :code:`device`,
+    :code:`backend`, :code:`ibmqx_token`, :code:`hub`, :code:`group`, and
+    :code:`project` are taken from the Covalent configuration file by default, if
+    available.
 
     Keyword Args:
         device: The Qiskit primitive used to execute circuits. Valid values are
-            "sampler" and "local_sampler". The value "sampler" corresponds to the
-            Qiskit Runtime `Sampler` primitive. The value "local_sampler"
-            corresponds to the Qiskit `Sampler` primitive, which is entirely local.
+            :code:`"sampler"` and :code:`"local_sampler"`. The value :code:`"sampler"`
+            corresponds to the Qiskit Runtime :code:`Sampler` primitive. The value
+            :code:`"local_sampler"` corresponds to the Qiskit :code:`Sampler` primitive,
+            which is entirely local.
         backend: The name of the IBM Quantum backend device. Defaults to
-            "ibmq_qasm_simulator".
+            :code:`"ibmq_qasm_simulator"`.
         ibmqx_token: The IBM Quantum API token.
-        hub: An IBM Quantum hub name. Defaults to "ibm-q".
-        group: An IBM Quantum group name. Defaults to "open".
-        project: An IBM Quantum project name. Defaults to "main".
+        hub: An IBM Quantum hub name. Defaults to :code:`"ibm-q"`.
+        group: An IBM Quantum group name. Defaults to :code:`"open"`.
+        project: An IBM Quantum project name. Defaults to :code:`"main"`.
         shots: The number of shots to run per circuit. Defaults to 1024.
         single_job: Indicates whether or not all circuits are submitted
-            to a single job or as separate jobs. Defaults to True.
+            to a single job or as separate jobs. Defaults to :code:`True`.
         max_time: An optional time limit for circuit execution on the IBM Quantum
-            backend. Defaults to `None`, i.e. no time limit.
+            backend. Defaults to :code:`None`, i.e. no time limit.
         local_transpile: Indicates whether or not to transpile circuits before
-            submitting to IBM Quantum. Defaults to False.
+            submitting to IBM Quantum. Defaults to :code:`False`.
         ibmqx_url: An optional URL for the Qiskit Runtime API.
         channel: An optional channel for the Qiskit Runtime API. Defaults to
-            "ibm_quantum".
-        instance: An alternate means to specify `hub`, `group`, and `project`,
-            formatted as "{hub}/{group}/{project}".
-        cloud_instance: Same as `instance` but for the case `channel="ibm_cloud"`.
-        options: A dictionary of options to pass to Qiskit Runtime. See:
+            :code:`"ibm_quantum"`.
+        instance: An alternate means to specify :code:`hub`, :code:`group`, and
+            :code:`project`, formatted as :code:`"my-hub/my-group/my-project"`.
+        cloud_instance: Same as :code:`instance` but for the case :code:`channel="ibm_cloud"`.
+        options: A dictionary of options to pass to Qiskit Runtime. See
             https://qiskit.org/ecosystem/ibm-runtime/stubs/qiskit_ibm_runtime.options.Options.html
             for valid fields.
     """
@@ -345,7 +347,7 @@ def _execution_device_factory(device_name: str, qnode_device_cls, **kwargs):
         @property
         def stopping_condition(self):
             """
-            Needed to target `support_operation` method of `custom_device_cls`.
+            Needed to target :code:`support_operation` method of :code:`custom_device_cls`.
 
             NOTE: is identical to `pennylane._device.Device.stopping_condition`.
             """
