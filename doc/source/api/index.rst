@@ -15,6 +15,7 @@ Covalent API
    dispatcher
    results
    leptons
+   qelectrons
    executors/index
    deps
    data_transfers
@@ -25,6 +26,7 @@ Covalent API
 The following API documentation describes how to use Covalent.
 
 - :ref:`electrons_api` and :ref:`lattices_api` are used for constructing workflows
+- :ref:`qelectrons_api` are used to customize and track quantum circuit execution
 - :ref:`local_executor` is used to execute electrons locally
 - :ref:`file_transfer` is used to queue remote or local file transfer operations prior or post electron execution.
 - :ref:`file_transfer_strategies` are used to perform download/upload/copy operations over various protocols.
