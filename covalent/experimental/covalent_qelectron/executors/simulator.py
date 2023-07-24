@@ -64,7 +64,7 @@ class Simulator(BaseQExecutor):
         else:
             self._backend = SyncBaseQExecutor(device=self.device)
 
-        # Check `self.shots` against 0 to allows override with `None`.
+        # Check `self.shots` against 0 to allow override with `None`.
         device_shots = self.shots if self.shots != 0 else self.qnode_device_shots
 
         # Pass on server-set settings from original device.

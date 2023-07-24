@@ -119,7 +119,7 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
 
     def batch_submit(self, qscripts_list):
 
-        # Check `self.shots` against 0 to allows override with `None`.
+        # Check `self.shots` against 0 to allow override with `None`.
         device_shots = self.shots if self.shots != 0 else self.qnode_device_shots
 
         p = get_thread_pool(self.max_jobs)
