@@ -33,7 +33,7 @@ Selector = Union[str, Callable[[qml.tape.QuantumScript, List[BaseQExecutor]], Ba
 
 
 def qelectron(
-    qnode: qml.QNode = None,
+    qnode: Optional[qml.QNode] = None,
     *,
     executors: Union[BaseQExecutor, AsyncBaseQCluster, List[BaseQExecutor]] = None,
     name: Optional[str] = None,
@@ -41,36 +41,35 @@ def qelectron(
     selector: Union[str, Selector] = "cyclic",
 ) -> QNodeQE:
     """
-    QElectron decorator to be called upon a Pennylane QNode. Enables parallelized,
-    asynchronous execution of circuits on one or more quantum backends, as specified
-    by the `executors` argument.
+    QElectron decorator to be called upon a Pennylane QNode. Adds multi-backend
+    execution functionality to the original QNode.
 
     Args:
-        qnode: The Pennylane QNode to wrap.
+        qnode: The Pennylane :code:`QNode` to wrap.
 
     Keyword Args:
         executors: The quantum executor(s) to use for running the QNode. A single
-            executor, list of executors, or a `QCluster` instance are accepted.
-            If a list of multiple executors is passed, a quantum cluster will be
-            initialized from this list automatically, using `selector` as the
-            cluster's selector. Defaults to a `Simulator` instance if not specified.
-        name: An optional name for the QElectron. Defaults to name of the circuit
-            function.
-        description: An optional description of the QElectron. Defaults to the
+            executor, list of executors, or a :code:`QCluster` instance are accepted.
+            If a list of multiple executors is passed, a quantum cluster is
+            initialized from this list automatically and :code:`selector` is used as the
+            cluster's selector. Defaults to a thread-based :code:`Simulator`.
+        name: An optional name for the QElectron. Defaults to the circuit function's
+            name.
+        description: An optional description for the QElectron. Defaults to the
             circuit function's docstring.
-        selector: A callable that selects an executor. The strings "cyclic" and
-            "random" are also accepted. The default "cyclic" selector returns
-            elements of `executors` in order, restarting from the first element
-            upon reaching the last. The "random" selector chooses from `executors`
-            at random, for each circuit. Any user-defined selector must be callable
-            with two arguments (a circuit and a list of executors), and must always
-            return only one executor.
+        selector: A callable that selects an executor, or one of the strings :code:`"cyclic"`
+            or :code:`"random"`. The :code:`"cyclic"` selector (default) cycles through
+            :code:`executors` and returns the next executor for each circuit. The
+            :code:`"random"` selector chooses an executor from :code:`executors`
+            at random for each circuit. Any user-defined selector must be callable
+            with two positional arguments, a circuit and a list of executors.
+            A selector must also return exactly one executor.
 
     Raises:
         ValueError: If any invalid executors are passed.
 
     Returns:
-        `QNodeQE`: A sub-type of QNode that integrates QElectrons.
+        :code:`QNodeQE`: A sub-type of :code:`QNode` that integrates QElectrons.
     """
 
     if executors is None:
