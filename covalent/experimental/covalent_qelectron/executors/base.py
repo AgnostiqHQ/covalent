@@ -152,7 +152,11 @@ class SyncBaseQExecutor(BaseQExecutor):
         result_objs: List[QCResult] = []
 
         for qscript in qscripts_list:
-            dev = qml.device(self.device, wires=qscript.wires)
+            dev = qml.device(
+                self.device,
+                wires=self.qnode_device_wires,
+                shots=self.qnode_device_shots,
+            )
 
             result_obj = QCResult.with_metadata(
                 device_name=dev.short_name,
@@ -189,7 +193,11 @@ class AsyncBaseQExecutor(BaseQExecutor):
         futures = []
         loop = get_asyncio_event_loop()
         for qscript in qscripts_list:
-            dev = qml.device(self.device, wires=qscript.wires)
+            dev = qml.device(
+                self.device,
+                wires=self.qnode_device_wires,
+                shots=self.qnode_device_shots,
+            )
 
             result_obj = QCResult.with_metadata(
                 device_name=dev.short_name,
@@ -231,7 +239,11 @@ class BaseProcessPoolQExecutor(BaseQExecutor):
 
         futures = []
         for qscript in qscripts_list:
-            dev = qml.device(self.device, wires=qscript.wires)
+            dev = qml.device(
+                self.device,
+                wires=self.qnode_device_wires,
+                shots=self.qnode_device_shots,
+            )
 
             result_obj = QCResult.with_metadata(
                 device_name=dev.short_name,
@@ -256,7 +268,11 @@ class BaseThreadPoolQExecutor(BaseQExecutor):
 
         futures = []
         for qscript in qscripts_list:
-            dev = qml.device(self.device, wires=qscript.wires)
+            dev = qml.device(
+                self.device,
+                wires=self.qnode_device_wires,
+                shots=self.qnode_device_shots,
+            )
 
             result_obj = QCResult.with_metadata(
                 device_name=dev.short_name,

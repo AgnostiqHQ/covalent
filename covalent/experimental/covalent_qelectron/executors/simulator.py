@@ -42,11 +42,16 @@ class Simulator(BaseQExecutor):
             "process". Passing any other value will result in synchronous execution.
             Defaults to "thread".
         workers: The number of threads or processes to use. Defaults to 10.
+        shots: The number of shots to use for the execution device. Overrides the
+            :code:`shots` value from the original device if set to :code:`None` or
+            a positive :code:`int`. The shots setting from the original device is
+            is used by default, when this argument is 0.
     """
 
     device: str = "default.qubit"
     parallel: Union[bool, str] = "thread"
     workers: int = 10
+    shots: int = 0
 
     _backend: BaseQExecutor = None
 
@@ -58,6 +63,15 @@ class Simulator(BaseQExecutor):
             self._backend = BaseThreadPoolQExecutor(num_threads=self.workers, device=self.device)
         else:
             self._backend = SyncBaseQExecutor(device=self.device)
+
+        # Check `self.shots` against 0 to allow override with `None`.
+        device_shots = self.shots if self.shots != 0 else self.qnode_device_shots
+
+        # Pass on server-set settings from original device.
+        self._backend.qnode_device_import_path = self.qnode_device_import_path
+        self._backend.qnode_device_shots = device_shots
+        self._backend.qnode_device_wires = self.qnode_device_wires
+        self._backend.pennylane_active_return = self.pennylane_active_return
 
         return self._backend.batch_submit(qscripts_list)
 
