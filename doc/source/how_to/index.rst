@@ -94,6 +94,12 @@ Executing a Workflow
 
 .. :doc:`Executing an Electron in a Conda Environment <./execution/choosing_conda_environments>`
 
+:doc:`Adding a Time Trigger to a Lattice <./execution/trigger_time>`
+
+:doc:`Adding a Directory Trigger to a Lattice <./execution/dir>`
+
+:doc:`Canceling a Running Workflow <./execution/cancel_dispatch>`
+
 .. _howto_querying:
 
 Querying and Viewing

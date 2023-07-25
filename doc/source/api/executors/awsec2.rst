@@ -3,7 +3,7 @@
 AWS EC2 Executor
 """""""""""""""""""""""""""
 
-.. image:: AWS_EC2.jpg
+.. image:: executors/AWS_EC2.jpg
 
 
 Covalent is a Pythonic workflow tool used to execute tasks on advanced computing hardware.
