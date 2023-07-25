@@ -30,7 +30,7 @@ from covalent.experimental.covalent_qelectron.executors.base import (
     BaseProcessPoolQExecutor,
     BaseThreadPoolQExecutor,
     QCResult,
-    get_thread_pool, 
+    get_thread_pool,
     get_process_pool
 )
 from covalent.experimental.covalent_qelectron.executors.plugins.aws_plugin.utils import (
@@ -65,28 +65,29 @@ _QEXECUTOR_PLUGIN_DEFAULTS = {
         "run_kwargs": {},
         "max_jobs": 20
     }
-} 
+}
+
 
 class BraketQubitExecutor(BaseThreadPoolQExecutor):
     """
     The remote Braket executor based on the existing Pennylane Braket
-    qubit device. Usage of this device requires valid AWS credentials as 
-    set up following the instructions at 
+    qubit device. Usage of this device requires valid AWS credentials as
+    set up following the instructions at
     https://github.com/aws/amazon-braket-sdk-python#prerequisites.
 
     Attributes:
-        max_jobs: 
+        max_jobs:
             maximum number of parallel jobs sent by threads on batch_submit
         shots: number of shots used to estimate quantum observables
-        device_arn: 
+        device_arn:
             an alpha-numeric code (arn=Amazon Resource Name) specifying a quantum device
-        poll_timeout_seconds: 
+        poll_timeout_seconds:
             number of seconds before a poll to remote device is considered timed-out
-        poll_interval_seconds: 
+        poll_interval_seconds:
             number of seconds between polling of a remote device's status
-        aws_session: 
-            an An AwsSession object created to manage interactions with AWS services, 
-            to be supplied if extra control is desired. 
+        aws_session:
+            an An AwsSession object created to manage interactions with AWS services,
+            to be supplied if extra control is desired.
         parallel: turn parallel execution on or off
         max_parallel: the maximum number of circuits to be executed in parallel
         max_connections: the maximum number of connections in the Boto3 connection pool.
@@ -107,8 +108,7 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
     max_connections: int = AwsQuantumTaskBatch.MAX_CONNECTIONS_DEFAULT
     max_retries: int = AwsQuantumTaskBatch.MAX_RETRIES
     s3_destination_folder: tuple = Field(
-        default_factory=lambda:\
-              get_config("qelectron")["BraketQubitExecutor"]["s3_destination_folder"]
+        default_factory=lambda: get_config("qelectron")["BraketQubitExecutor"]["s3_destination_folder"]
     )
     run_kwargs: dict = {}
 
@@ -168,12 +168,12 @@ class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
     Attributes:
         max_jobs: maximum number of parallel jobs sent by proccesses on batch_submit
         shots: number of shots used to estimate quantum observables
-        backend: 
-            The name of the simulator backend. Defaults to the ``default`` 
+        backend:
+            The name of the simulator backend. Defaults to the ``default``
             simulator backend name.
         run_kwargs: Variable length keyword arguments for ``braket.devices.Device.run()``
     """
-    
+
     max_jobs: int = 20
     shots: int = None
     backend: str = Field(
