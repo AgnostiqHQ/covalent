@@ -33,9 +33,6 @@ from covalent.experimental.covalent_qelectron.executors.base import (
     get_thread_pool,
     get_process_pool
 )
-from covalent.experimental.covalent_qelectron.executors.plugins.aws_plugin.utils import (
-    HashableKwargs
-)
 
 
 __all__ = [
