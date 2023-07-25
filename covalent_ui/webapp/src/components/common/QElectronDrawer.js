@@ -57,7 +57,7 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, ele
 
   const rowClickHandler = (job_id) => {
     setCurrentJob(job_id)
-    dispatch(qelectronJobOverview({ dispatchId, electronId, jobId: job_id }))
+    if(job_id!==currentJob) dispatch(qelectronJobOverview({ dispatchId, electronId, jobId: job_id }))
   }
 
   const details = {
@@ -68,7 +68,7 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, ele
 
   useEffect(() => {
     setDefaultId('');
-    if (electronId && openQelectronDrawer) {
+    if (!(electronId === null || electronId === undefined) && openQelectronDrawer) {
       const bodyParams = {
         sort_by: 'start_time',
         direction: 'DESC',

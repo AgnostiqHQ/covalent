@@ -24,15 +24,13 @@ from abc import ABC, abstractmethod
 from concurrent.futures import Future, ThreadPoolExecutor
 from functools import lru_cache
 from threading import Thread
-from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
 
 import orjson
 import pennylane as qml
 from mpire import WorkerPool
 from mpire.async_result import AsyncResult
 from pydantic import BaseModel, Extra, Field, root_validator  # pylint: disable=no-name-in-module
-
-from covalent._shared_files.config import get_config
 
 __all__ = [
     "BaseQExecutor",
@@ -79,9 +77,7 @@ def get_asyncio_event_loop():
 
 class BaseQExecutor(ABC, BaseModel):
 
-    persist_data: bool = Field(
-        default_factory=lambda: get_config("qelectron")["persist_data"]
-    )
+    persist_data: bool = True
 
     class Config:
         extra = Extra.allow
@@ -149,16 +145,18 @@ class QCResult(BaseModel):
 
 class SyncBaseQExecutor(BaseQExecutor):
 
-    device: str = Field(
-        default_factory=lambda: get_config("qelectron")["device"]
-    )
+    device: str = "default.qubit"
 
     def run_all_circuits(self, qscripts_list) -> List[QCResult]:
 
         result_objs: List[QCResult] = []
 
         for qscript in qscripts_list:
-            dev = qml.device(self.device, wires=qscript.wires)
+            dev = qml.device(
+                self.device,
+                wires=self.qnode_device_wires,
+                shots=self.qnode_device_shots,
+            )
 
             result_obj = QCResult.with_metadata(
                 device_name=dev.short_name,
@@ -188,16 +186,18 @@ class AsyncBaseQExecutor(BaseQExecutor):
 
     # pylint: disable=invalid-overridden-method
 
-    device: str = Field(
-        default_factory=lambda: get_config("qelectron")["device"]
-    )
+    device: str = "default.qubit"
 
     def batch_submit(self, qscripts_list):
 
         futures = []
         loop = get_asyncio_event_loop()
         for qscript in qscripts_list:
-            dev = qml.device(self.device, wires=qscript.wires)
+            dev = qml.device(
+                self.device,
+                wires=self.qnode_device_wires,
+                shots=self.qnode_device_shots,
+            )
 
             result_obj = QCResult.with_metadata(
                 device_name=dev.short_name,
@@ -231,19 +231,19 @@ class AsyncBaseQExecutor(BaseQExecutor):
 
 class BaseProcessPoolQExecutor(BaseQExecutor):
 
-    device: str = Field(
-        default_factory=lambda: get_config("qelectron")["device"]
-    )
-    num_processes: int = Field(
-        default_factory=lambda: get_config("qelectron")["num_processes"]
-    )
+    device: str = "default.qubit"
+    num_processes: int = 10
 
     def batch_submit(self, qscripts_list):
         pool = get_process_pool(self.num_processes)
 
         futures = []
         for qscript in qscripts_list:
-            dev = qml.device(self.device, wires=qscript.wires)
+            dev = qml.device(
+                self.device,
+                wires=self.qnode_device_wires,
+                shots=self.qnode_device_shots,
+            )
 
             result_obj = QCResult.with_metadata(
                 device_name=dev.short_name,
@@ -260,19 +260,19 @@ class BaseProcessPoolQExecutor(BaseQExecutor):
 
 class BaseThreadPoolQExecutor(BaseQExecutor):
 
-    device: str = Field(
-        default_factory=lambda: get_config("qelectron")["device"]
-    )
-    num_threads: int = Field(
-        default_factory=lambda: get_config("qelectron")["num_threads"]
-    )
+    device: str = "default.qubit"
+    num_threads: int = 10
 
     def batch_submit(self, qscripts_list):
         pool = get_thread_pool(self.num_threads)
 
         futures = []
         for qscript in qscripts_list:
-            dev = qml.device(self.device, wires=qscript.wires)
+            dev = qml.device(
+                self.device,
+                wires=self.qnode_device_wires,
+                shots=self.qnode_device_shots,
+            )
 
             result_obj = QCResult.with_metadata(
                 device_name=dev.short_name,
@@ -289,7 +289,7 @@ class BaseThreadPoolQExecutor(BaseQExecutor):
 
 class AsyncBaseQCluster(AsyncBaseQExecutor):
 
-    executors: Tuple[BaseQExecutor, ...]
+    executors: Sequence[BaseQExecutor]
     selector: Union[str, Callable]
 
     _selector_serialized: bool = False
@@ -302,7 +302,7 @@ class AsyncBaseQCluster(AsyncBaseQExecutor):
         raise NotImplementedError
 
     @abstractmethod
-    def deserialize_selector(self) -> None:
+    def deserialize_selector(self) -> Union[str, Callable]:
         """
         Deserializes the cluster's selector function.
         """
@@ -315,13 +315,12 @@ class AsyncBaseQCluster(AsyncBaseQExecutor):
         """
         raise NotImplementedError
 
+    @abstractmethod
     def get_selector(self):
         """
         Returns the deserialized selector function.
         """
-        if self._selector_serialized:
-            self.deserialize_selector()
-        return self.selector
+        raise NotImplementedError
 
     async def _get_result(self, futures_list: List) -> List[QCResult]:
         """
@@ -340,3 +339,25 @@ class AsyncBaseQCluster(AsyncBaseQExecutor):
                 results_and_times.append(fut)
 
         return results_and_times
+
+
+class BaseQSelector(ABC, BaseModel):
+
+    name: str = "base_qselector"
+
+    def __call__(self, qscript, executors):
+        """"
+        Interface used by the quantum server.
+        """
+        return self.selector_function(qscript, executors)
+
+    @abstractmethod
+    def selector_function(self, qscript, executors):
+        """
+        Implement selection logic here.
+        """
+        raise NotImplementedError
+
+    class Config:
+        # Allows defining extra state fields in subclasses.
+        extra = Extra.allow

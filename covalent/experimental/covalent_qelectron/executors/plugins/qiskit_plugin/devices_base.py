@@ -23,11 +23,13 @@ import warnings
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from math import sqrt
-from typing import Any, List, Tuple
+from typing import Any, List, Tuple, Union
 
 import numpy as np
+import pennylane.numpy as pnp
 from pennylane.transforms import broadcast_expand, map_batch_transform
 from pennylane_qiskit.qiskit_device import QiskitDevice
+from qiskit.compiler import transpile
 
 from .sessions import init_runtime_service
 
@@ -48,6 +50,7 @@ class _PennylaneQiskitDevice(QiskitDevice, ABC):
         wires: int,
         shots: int,
         backend_name: str,
+        local_transpile: bool,
         service_init_kwargs: dict,
         **kwargs
     ):
@@ -58,6 +61,7 @@ class _PennylaneQiskitDevice(QiskitDevice, ABC):
 
         self.shots = shots
         self.backend_name = backend_name
+        self.local_transpile = local_transpile
         self.service_init_kwargs = service_init_kwargs
         self.device_kwargs = kwargs
 
@@ -144,6 +148,7 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         wires: int,
         shots: int,
         backend_name: str,
+        local_transpile: bool,
         service_init_kwargs: dict,
         **kwargs
     ):
@@ -152,6 +157,7 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
             wires=wires,
             shots=shots,
             backend_name=backend_name,
+            local_transpile=local_transpile,
             service_init_kwargs=service_init_kwargs,
             **kwargs
         )
@@ -168,6 +174,10 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         self._current_quasi_dist = None
         self._dummy_state = None
 
+        # Used for reshaping results.
+        self._n_original_circuits = None
+        self._n_circuits = None
+
     def compile_circuits(self, circuits):
         """
         Override `QiskitDevice.compile_circuits` to include `unwrap` context.
@@ -183,6 +193,23 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
 
         return compiled_circuits
 
+    def compile(self):
+        """
+        Overrides `QiskitDevice.compile` with custom choice logic for the `backend`
+        argument during transpilation.
+        """
+        backend = self.backend if self.local_transpile else None
+        return transpile(self._circuit, backend=backend, **self.transpile_args)
+
+    @property
+    def asarray(self):
+        """
+        Array function property to return Pennylane tensors instead of NumPy arrays.
+        """
+        if self._asarray is np.asarray:
+            return pnp.asarray
+        return self._asarray
+
     @property
     def _state(self):
         """
@@ -192,6 +219,15 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         if self._dummy_state is None:
             return self.dist_get_state()
         return self._dummy_state
+
+    @property
+    def vector_shape(self):
+        """
+        Used to reshape results in case of vector inputs.
+        """
+        n = self._n_original_circuits
+        m = self._n_circuits // n
+        return (n, m)
 
     @_state.setter
     def _state(self, state):
@@ -224,6 +260,7 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         """
 
         dist_bin = quasi_dist.binary_probabilities()
+        dist_bin = self.normalize_probability(dist_bin)
 
         bit_strings = list(dist_bin)
         probs = [dist_bin[bs] for bs in bit_strings]
@@ -244,6 +281,53 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         finally:
             self._current_quasi_dist = None
 
+    @staticmethod
+    def normalize_probability(distribution: dict) -> dict:
+        """
+        Some IBMQ backends may return small NEGATIVE quasi-probabilities
+        instead of ~0, when using `Sampler`.
+
+        Below is an example of this, as observed with "ibmq_lima":
+
+        # quasi-probabilities list
+        [
+            ...
+            {
+                "10": 0.0026338769545423205,
+                "11": 0.5150691505205544,
+                "00": 0.4867495783187873,
+                "01": -0.004452605793883964
+            },
+            ...
+        ]
+
+        To avoid errors due to negative probability, this function zeros any
+        negative values, then re-normalizes the quasi probabilities.
+        """
+
+        dist = distribution.copy()
+
+        # Negative probabilities are presumed to be zero.
+        delete_keys = []
+        for bit_string, quasi_prob in dist.items():
+            if quasi_prob <= 0:
+                delete_keys.append(bit_string)
+
+        # Zero probabilities should be omitted from the dict.
+        for key in delete_keys:
+            del dist[key]
+
+        if len(dist) == 0:
+            # This should never happen.
+            raise RuntimeError(f"No positive probabilities exist in {distribution}.")
+
+        # Re-normalize the remaining quasi-probabilities.
+        total_prob = sum(dist.values())
+        for bit_string, quasi_prob in dist.items():
+            dist[bit_string] = quasi_prob / total_prob
+
+        return dist
+
     def _process_batch_execute_result(self, circuit, quasi_dist) -> Any:
         # Update the tracker
         if self.tracker.active:
@@ -257,10 +341,23 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
 
             if not self.pennylane_active_return:
                 res = self._statistics_legacy(circuit)
-                return self._asarray(res)
+                return self.asarray(res)
             res = self.statistics(circuit)
 
         if len(circuit.measurements) > 1:
             return tuple(res)
 
-        return self._asarray(res[0])
+        return self.asarray(res[0])
+
+    def _vector_results(self, res):
+        """
+        Process the result of a vectorized QElectron call.
+        """
+
+        res = pnp.asarray(res)
+
+        if self.pennylane_active_return:
+            return [res] if res.ndim > 1 else list(res.reshape(self.vector_shape))
+
+        res = res.reshape(-1)
+        return [res] if res.ndim > 1 else [res.reshape(self.vector_shape)]

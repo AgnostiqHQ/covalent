@@ -75,8 +75,31 @@ _DEVICE_MAP = {
 
 
 class IBMQExecutor(BaseThreadPoolQExecutor):
+    """
+    A quantum executor that uses the Pennylane native :code:`"qiskit.ibmq"` device to run
+    circuits on IBM Quantum backends. The attributes :code:`backend`, :code:`ibmqx_token`,
+    :code:`hub`, :code:`group`, and :code:`project` are taken from the Covalent
+    configuration file by default, if available.
+
+    Keyword Args:
+        max_jobs: The maximum number of jobs that can be submitted to the backend
+            concurrently. This number corresponds to the number of threads utilized
+            by this executor. Defaults to 20.
+       shots: The number of shots to use for the execution device. Overrides the
+            :code:`shots` value from the original device if set to :code:`None` or
+            a positive :code:`int`. The shots setting from the original device is
+            is used by default, when this argument is 0.
+        backend: The name of the IBM Quantum backend device. Defaults to
+            :code:`"ibmq_qasm_simulator"`.
+        ibmqx_token: The IBM Quantum API token.
+        hub: An IBM Quantum hub name. Defaults to :code:`"ibm-q"`.
+        group: An IBM Quantum group name. Defaults to :code:`"open"`.
+        project: An IBM Quantum project name. Defaults to :code:`"main"`.
+
+    """
 
     max_jobs: int = 20
+    shots: int = 0
 
     backend: str = Field(
         default_factory=lambda: get_config("qelectron")["IBMQExecutor"]["backend"]
@@ -96,12 +119,16 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
 
     def batch_submit(self, qscripts_list):
 
+        # Check `self.shots` against 0 to allow override with `None`.
+        device_shots = self.shots if self.shots != 0 else self.qnode_device_shots
+
         p = get_thread_pool(self.max_jobs)
         jobs = []
         for qscript in qscripts_list:
             dev = qml.device(
                 "qiskit.ibmq",
-                wires=qscript.wires,
+                wires=self.qnode_device_wires,
+                shots=device_shots,
                 backend=self.backend,
                 ibmqx_token=self.ibmqx_token,
                 hub=self.hub,
@@ -120,18 +147,41 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
 
 
 class QiskitExecutor(AsyncBaseQExecutor):
-
     """
-    Executor that submits Pennylane Circuits to Qiskit Runtime
-    """
+    A quantum executor that lets the user run circuits on IBM Quantum backends,
+    using runtime sessions and Qiskit primitives. The attributes :code:`device`,
+    :code:`backend`, :code:`ibmqx_token`, :code:`hub`, :code:`group`, and
+    :code:`project` are taken from the Covalent configuration file by default, if
+    available.
 
-    shots: Optional[int] = 1024
-    single_job: bool = False
-    max_time: Union[int, str] = None
-    ibmqx_url: str = None
-    channel: str = "ibm_quantum"
-    instance: str = ""
-    cloud_instance: str = ""
+    Keyword Args:
+        device: The Qiskit primitive used to execute circuits. Valid values are
+            :code:`"sampler"` and :code:`"local_sampler"`. The value :code:`"sampler"`
+            corresponds to the Qiskit Runtime :code:`Sampler` primitive. The value
+            :code:`"local_sampler"` corresponds to the Qiskit :code:`Sampler` primitive,
+            which is entirely local.
+        backend: The name of the IBM Quantum backend device. Defaults to
+            :code:`"ibmq_qasm_simulator"`.
+        ibmqx_token: The IBM Quantum API token.
+        hub: An IBM Quantum hub name. Defaults to :code:`"ibm-q"`.
+        group: An IBM Quantum group name. Defaults to :code:`"open"`.
+        project: An IBM Quantum project name. Defaults to :code:`"main"`.
+        shots: The number of shots to run per circuit. Defaults to 1024.
+        single_job: Indicates whether or not all circuits are submitted
+            to a single job or as separate jobs. Defaults to :code:`True`.
+        max_time: An optional time limit for circuit execution on the IBM Quantum
+            backend. Defaults to :code:`None`, i.e. no time limit.
+        local_transpile: Indicates whether or not to transpile circuits before
+            submitting to IBM Quantum. Defaults to :code:`False`.
+        ibmqx_url: An optional URL for the Qiskit Runtime API.
+        channel: An optional channel for the Qiskit Runtime API. Defaults to
+            :code:`"ibm_quantum"`.
+        instance: An alternate means to specify :code:`hub`, :code:`group`, and
+            :code:`project`, formatted as :code:`"my-hub/my-group/my-project"`.
+        cloud_instance: Same as :code:`instance` but for the case :code:`channel="ibm_cloud"`.
+        options: A dictionary of options to pass to Qiskit Runtime. See
+            :code:`qiskit_ibm_runtime.options.Options` for valid fields.
+    """
 
     device: str = Field(
         default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["device"]
@@ -151,6 +201,18 @@ class QiskitExecutor(AsyncBaseQExecutor):
     project: str = Field(
         default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["project"]
     )
+
+    shots: Optional[int] = 1024
+    single_job: bool = False
+    local_transpile: bool = False
+
+    max_time: Union[int, str] = None
+
+    ibmqx_url: str = None
+    channel: str = "ibm_quantum"
+    instance: str = ""
+    cloud_instance: str = ""
+
     options: RuntimeOptions = Field(
         # pylint: disable=unnecessary-lambda
         default_factory=lambda: RuntimeOptions(
@@ -167,6 +229,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
             "wires": self.qnode_device_wires,
             "shots": self.qnode_device_shots or self.shots,
             "backend_name": self.backend,
+            "local_transpile": self.local_transpile,
             "max_time": self.max_time,
             "single_job": self.single_job,
             "options": self.options or {},
@@ -292,7 +355,7 @@ def _execution_device_factory(device_name: str, qnode_device_cls, **kwargs):
         @property
         def stopping_condition(self):
             """
-            Needed to target `support_operation` method of `custom_device_cls`.
+            Needed to target :code:`support_operation` method of :code:`custom_device_cls`.
 
             NOTE: is identical to `pennylane._device.Device.stopping_condition`.
             """

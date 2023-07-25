@@ -27,20 +27,12 @@ import pytest
 import covalent as ct
 from covalent._shared_files.config import get_config
 
-from .utils import simple_circuit
+from .utils import arg_vector, simple_circuit, weight_vector
 
 EXECUTOR_CLASSES = [
     ct.executor.QiskitExecutor,
     ct.executor.IBMQExecutor,
 ]
-
-
-def _arg_vector(size):
-    return qml.numpy.random.uniform(0, 2 * np.pi, size=(size,))
-
-
-def _weight_vector(size):
-    return [_arg_vector(2 * size) for _ in range(size)]
 
 
 @pytest.mark.parametrize("executor_class", EXECUTOR_CLASSES)
@@ -92,12 +84,44 @@ def test_qiskit_exec_shots_is_none():
     assert isinstance(val_2, type(val_1))
 
 
+def test_default_return_type():
+    """
+    Test that a QElectron with the default QNode interface returns the correct type.
+    """
+
+    executor = ct.executor.QiskitExecutor(device="local_sampler", shots=1024)
+
+    dev = qml.device("default.qubit", wires=2)
+
+    # QElectron definition.
+    @ct.qelectron(executors=executor)
+    @qml.qnode(device=dev)
+    def qelectron_circuit(param):
+        qml.RX(param, wires=0)
+        qml.Hadamard(wires=1)
+        qml.CNOT(wires=[0, 1])
+        return qml.expval(qml.operation.Tensor(*(qml.PauliY(0), qml.PauliX(1))))
+
+    # Equivalent QNode definition (for comparison).
+    @qml.qnode(device=dev)
+    def normal_circuit(param):
+        qml.RX(param, wires=0)
+        qml.Hadamard(wires=1)
+        qml.CNOT(wires=[0, 1])
+        return qml.expval(qml.operation.Tensor(*(qml.PauliY(0), qml.PauliX(1))))
+
+    res = normal_circuit(0.5)
+    qres = qelectron_circuit(0.5)
+
+    assert isinstance(qres, type(res)), f"Results {res!r} and {qres!r} are not the same type"
+
+
 _TEMPLATES = [
-    (qml.AngleEmbedding, (_arg_vector(6),), {"wires": range(6)}),
-    (qml.IQPEmbedding, (_arg_vector(6),), {"wires": range(6)}),
-    (qml.QAOAEmbedding, (_arg_vector(6),), {"wires": range(6), "weights": _weight_vector(6)}),
-    (qml.DoubleExcitation, (_arg_vector(4),), {"wires": range(4)}),
-    (qml.SingleExcitation, (_arg_vector(2),), {"wires": range(2)})
+    (qml.AngleEmbedding, (arg_vector(6),), {"wires": range(6)}),
+    (qml.IQPEmbedding, (arg_vector(6),), {"wires": range(6)}),
+    (qml.QAOAEmbedding, (arg_vector(6),), {"wires": range(6), "weights": weight_vector(6)}),
+    (qml.DoubleExcitation, (arg_vector(4),), {"wires": range(4)}),
+    (qml.SingleExcitation, (arg_vector(2),), {"wires": range(2)})
 ]
 
 

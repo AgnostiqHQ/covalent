@@ -20,7 +20,6 @@
 
 from typing import Union
 
-from covalent._shared_files.config import get_config
 from covalent.experimental.covalent_qelectron.executors.base import (
     BaseProcessPoolQExecutor,
     BaseQExecutor,
@@ -30,27 +29,51 @@ from covalent.experimental.covalent_qelectron.executors.base import (
 
 
 class Simulator(BaseQExecutor):
-
     """
-    Local executor that uses process or thread-based parallelism to execute circuits.
+    A quantum executor that uses the specified Pennylane device to execute circuits.
+    Parallelizes circuit execution on the specified `device` using either threads
+    or processes.
+
+    Keyword Args:
+        device: A valid string corresponding to a Pennylane device. Simulation-based 
+            devices (e.g. "default.qubit" and "lightning.qubit") are recommended.
+            Defaults to "default.qubit".
+        parallel: The type of parallelism to use. Valid values are "thread" and
+            "process". Passing any other value will result in synchronous execution.
+            Defaults to "thread".
+        workers: The number of threads or processes to use. Defaults to 10.
+        shots: The number of shots to use for the execution device. Overrides the
+            :code:`shots` value from the original device if set to :code:`None` or
+            a positive :code:`int`. The shots setting from the original device is
+            is used by default, when this argument is 0.
     """
 
-    device: str = get_config("qelectron")["device"]
-
+    device: str = "default.qubit"
     parallel: Union[bool, str] = "thread"
     workers: int = 10
-    backend: BaseQExecutor = None
+    shots: int = 0
+
+    _backend: BaseQExecutor = None
 
     def batch_submit(self, qscripts_list):
 
         if self.parallel == "process":
-            self.backend = BaseProcessPoolQExecutor(num_processes=self.workers, device=self.device)
+            self._backend = BaseProcessPoolQExecutor(num_processes=self.workers, device=self.device)
         elif self.parallel == "thread":
-            self.backend = BaseThreadPoolQExecutor(num_threads=self.workers, device=self.device)
+            self._backend = BaseThreadPoolQExecutor(num_threads=self.workers, device=self.device)
         else:
-            self.backend = SyncBaseQExecutor(device=self.device)
+            self._backend = SyncBaseQExecutor(device=self.device)
 
-        return self.backend.batch_submit(qscripts_list)
+        # Check `self.shots` against 0 to allow override with `None`.
+        device_shots = self.shots if self.shots != 0 else self.qnode_device_shots
+
+        # Pass on server-set settings from original device.
+        self._backend.qnode_device_import_path = self.qnode_device_import_path
+        self._backend.qnode_device_shots = device_shots
+        self._backend.qnode_device_wires = self.qnode_device_wires
+        self._backend.pennylane_active_return = self.pennylane_active_return
+
+        return self._backend.batch_submit(qscripts_list)
 
     def batch_get_results(self, futures_list):
-        return self.backend.batch_get_results(futures_list)
+        return self._backend.batch_get_results(futures_list)

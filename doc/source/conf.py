@@ -47,13 +47,13 @@ extensions = [
     "sphinx_design",
     "autodocsumm",
     "nbsphinx",
-    "sphinx_autodoc_typehints",
     "sphinx-prompt",
     "sphinx_inline_tabs",
     "sphinx_execute_code",
     "sphinx_click.ext",
     "sphinx_autodoc_typehints",
     "myst_parser",
+    "sphinxcontrib.autodoc_pydantic",
 ]
 
 # Sphinx variables
@@ -102,3 +102,8 @@ myst_enable_extensions = [
     "deflist",
 ]
 myst_heading_anchors = 3
+
+
+# Options for Pydantic models
+autodoc_pydantic_model_show_field_summary = False
+autodoc_pydantic_model_show_validator_summary = False

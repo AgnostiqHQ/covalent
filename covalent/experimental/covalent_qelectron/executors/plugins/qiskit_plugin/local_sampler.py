@@ -24,7 +24,6 @@ Pennylane-Qiskit device that uses the local Qiskit `Sampler` primitive
 
 from typing import Any, List, Tuple
 
-from qiskit.compiler import transpile
 from qiskit.primitives import Sampler as LocalSampler
 
 from .devices_base import QiskitSamplerDevice
@@ -46,23 +45,19 @@ class QiskitLocalSampler(QiskitSamplerDevice):
             wires=wires,
             shots=shots,
             backend_name="None",
+            local_transpile=False,
+            transpile_backend=None,
             service_init_kwargs={},
         )
 
         self._metadatas = []
-
-    def compile(self):
-        """
-        Override original method from `pennylane_qiskit.qiskit_device.QiskitDevice`
-        to always use a `None` compile backend.
-        """
-        return transpile(self._circuit, backend=None, **self.transpile_args)
 
     def batch_execute(self, circuits, timeout: int = None):
         # pylint: disable=missing-function-docstring
 
         n_original_circuits = len(circuits)
         circuits = self.broadcast_tapes(circuits)
+        n_circuits = len(circuits)
 
         # Create circuit objects and apply diagonalizing gates
         compiled_circuits = self.compile_circuits(circuits)
@@ -94,15 +89,13 @@ class QiskitLocalSampler(QiskitSamplerDevice):
 
         # Update tracker
         if self.tracker.active:
-            self.tracker.update(batches=1, batch_len=len(circuits))
+            self.tracker.update(batches=1, batch_len=n_circuits)
             self.tracker.record()
 
-        # This flag distinguishes vector inputs from gradient computations
-        vector_input = (n_original_circuits != len(circuits))
-
-        # Wrap in outer list for vector inputs
-        if vector_input:
-            return [self._asarray(results)]
+        if n_original_circuits != n_circuits:
+            self._n_circuits = n_circuits
+            self._n_original_circuits = n_original_circuits
+            results = self._vector_results(results)
 
         return results
 
