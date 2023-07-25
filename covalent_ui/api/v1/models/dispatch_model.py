@@ -47,7 +47,7 @@ class DispatchModule(BaseModel):
 
     dispatch_id: str
     lattice_name: str
-    runtime: Optional[Union[int, None]]
+    runtime: Optional[Union[int, float, None]]
     total_electrons: Optional[Union[int, None]]
     total_electrons_completed: Optional[Union[int, None]]
     started_at: Optional[Union[datetime, None]]

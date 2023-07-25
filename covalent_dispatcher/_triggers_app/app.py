@@ -80,6 +80,11 @@ def get_threadpool():
     return ThreadPoolExecutor()
 
 
+@router.get("/triggers/healthcheck")
+async def healthcheck(request: Request):
+    return {"status": "ok"}
+
+
 @router.post("/triggers/register")
 async def register_and_observe(request: Request):
     """

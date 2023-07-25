@@ -19,6 +19,7 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from .base import BaseTrigger  # nopycln: import
+from .database_trigger import DatabaseTrigger  # nopycln: import
 from .dir_trigger import DirTrigger  # nopycln: import
 from .sqlite_trigger import SQLiteTrigger  # nopycln: import
 from .time_trigger import TimeTrigger  # nopycln: import

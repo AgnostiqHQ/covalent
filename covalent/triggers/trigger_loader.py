@@ -19,13 +19,14 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
-from covalent.triggers import BaseTrigger, DirTrigger, SQLiteTrigger, TimeTrigger
+from covalent.triggers import BaseTrigger, DatabaseTrigger, DirTrigger, SQLiteTrigger, TimeTrigger
 
 
 class TriggerLoader:
     def __init__(self):
         self.available_triggers = {
             BaseTrigger.__name__: BaseTrigger,
+            DatabaseTrigger.__name__: DatabaseTrigger,
             DirTrigger.__name__: DirTrigger,
             TimeTrigger.__name__: TimeTrigger,
             SQLiteTrigger.__name__: SQLiteTrigger,
