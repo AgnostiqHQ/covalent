@@ -33,6 +33,10 @@ from covalent.experimental.covalent_qelectron.executors.base import (
     get_thread_pool, 
     get_process_pool
 )
+from covalent.experimental.covalent_qelectron.executors.plugins.aws_plugin.utils import (
+    HashableKwargs
+)
+
 
 __all__ = [
     "BraketQubitExecutor",
@@ -119,6 +123,9 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
             jobs: a list of tasks subitted by threads.
         """
 
+        # Check `self.shots` against 0 to allow override with `None`.
+        device_shots = self.shots if self.shots != 0 else self.qnode_device_shots
+
         p = get_thread_pool(self.max_jobs)
         jobs = []
         for qscript in qscripts_list:
@@ -127,7 +134,7 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
                 wires=qscript.wires,
                 device_arn=self.device_arn,
                 s3_destination_folder=self.s3_destination_folder,
-                shots=self.shots,
+                shots=device_shots,
                 poll_timeout_seconds=self.poll_timeout_seconds,
                 poll_interval_seconds=self.poll_interval_seconds,
                 aws_session=self.aws_session,
@@ -146,6 +153,12 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
             jobs.append(p.submit(self.run_circuit, qscript, dev, result_obj))
 
         return jobs
+    
+    def dict(self, *args, **kwargs):
+        dict_ = vars(self)
+        dict_["run_kwargs"] = tuple(dict_["run_kwargs"].items())
+        return dict_
+
 
 
 class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
@@ -179,6 +192,9 @@ class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
             jobs: a list of futures subitted by processes
         """
 
+        # Check `self.shots` against 0 to allow override with `None`.
+        device_shots = self.shots if self.shots != 0 else self.qnode_device_shots
+
         pool = get_process_pool(self.num_processes)
         futures = []
         for qscript in qscripts_list:
@@ -186,7 +202,7 @@ class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
                 "braket.local.qubit",
                 wires=qscript.wires,
                 backend=self.backend,
-                shots=self.shots,
+                shots=device_shots,
                 **self.run_kwargs
             )
 
@@ -199,3 +215,8 @@ class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
             futures.append(fut)
 
         return futures
+    
+    def dict(self, *args, **kwargs):
+        dict_ = vars(self)
+        dict_["run_kwargs"] = tuple(dict_["run_kwargs"].items())
+        return dict_
