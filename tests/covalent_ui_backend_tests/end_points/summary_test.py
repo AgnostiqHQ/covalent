@@ -127,7 +127,11 @@ def test_list_invalid_count():
     )
     assert response.status_code == test_data["status_code"]
     if "response_data" in test_data:
-        assert response.json() == test_data["response_data"]
+        print(response.json()["detail"])
+        api_response = response.json()
+        mock_response = test_data["response_data"]
+        del api_response["detail"][0]["url"]
+        assert api_response == mock_response
 
 
 def test_list_search():
