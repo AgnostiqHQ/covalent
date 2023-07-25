@@ -74,23 +74,23 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
 
     Attributes:
         max_jobs:
-            maximum number of parallel jobs sent by threads on batch_submit
-        shots: number of shots used to estimate quantum observables
+            maximum number of parallel jobs sent by threads on :code:`batch_submit`.
+        shots: number of shots used to estimate quantum observables.
         device_arn:
-            an alpha-numeric code (arn=Amazon Resource Name) specifying a quantum device
+            an alpha-numeric code (arn=Amazon Resource Name) specifying a quantum device.
         poll_timeout_seconds:
-            number of seconds before a poll to remote device is considered timed-out
+            number of seconds before a poll to remote device is considered timed-out.
         poll_interval_seconds:
-            number of seconds between polling of a remote device's status
+            number of seconds between polling of a remote device's status.
         aws_session:
-            an An AwsSession object created to manage interactions with AWS services,
+            An :code:`AwsSession` object created to manage interactions with AWS services,
             to be supplied if extra control is desired.
-        parallel: turn parallel execution on or off
-        max_parallel: the maximum number of circuits to be executed in parallel
-        max_connections: the maximum number of connections in the Boto3 connection pool.
+        parallel: turn parallel execution on or off.
+        max_parallel: the maximum number of circuits to be executed in parallel.
+        max_connections: the maximum number of connections in the :code:`Boto3` connection pool.
         max_retries: the maximum number of time a job will be re-sent if it failed
         s3_destination_folder: Name of the S3 bucket and folder, specified as a tuple.
-        run_kwargs: Variable length keyword arguments for ``braket.devices.Device.run()``
+        run_kwargs: Variable length keyword arguments for :code:`braket.devices.Device.run()`
 
     """
 
@@ -111,13 +111,13 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
 
     def batch_submit(self, qscripts_list):
         """
-        Submit qscripts for execution using max_jobs-many threads.
+        Submit qscripts for execution using :code:`max_jobs`-many threads.
 
         Args:
-            qscripts_list: a list of Pennylane style QuantumScripts
+            qscripts_list: a list of Pennylane style :code:`QuantumScripts`
 
         Returns:
-            jobs: a list of tasks subitted by threads.
+            jobs: a :code:`list` of tasks subitted by threads.
         """
 
         # Check `self.shots` against 0 to allow override with `None`.
@@ -153,6 +153,7 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
     
     def dict(self, *args, **kwargs):
         dict_ = vars(self)
+        # needed to make the dict method hashable and jsonable
         dict_["run_kwargs"] = tuple(dict_["run_kwargs"].items())
         return dict_
 
@@ -163,12 +164,12 @@ class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
     The local Braket executor based on the existing Pennylane local Braket qubit device.
 
     Attributes:
-        max_jobs: maximum number of parallel jobs sent by proccesses on batch_submit
-        shots: number of shots used to estimate quantum observables
+        max_jobs: maximum number of parallel jobs sent by proccesses on :code:`batch_submit`.
+        shots: number of shots used to estimate quantum observables.
         backend:
-            The name of the simulator backend. Defaults to the ``default``
+            The name of the simulator backend. Defaults to the :code:`"default"`
             simulator backend name.
-        run_kwargs: Variable length keyword arguments for ``braket.devices.Device.run()``
+        run_kwargs: Variable length keyword arguments for :code:`braket.devices.Device.run()`.
     """
 
     max_jobs: int = 20
@@ -180,13 +181,13 @@ class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
 
     def batch_submit(self, qscripts_list):
         """
-        Submit qscripts for execution using num_processes-many processes.
+        Submit qscripts for execution using :code:`num_processes`-many processes.
 
         Args:
-            qscripts_list: a list of Pennylane style QuantumScripts
+            qscripts_list: a list of Pennylane style :code:`QuantumScripts`.
 
         Returns:
-            jobs: a list of futures subitted by processes
+            jobs: a :code:`list` of :code:`futures` subitted by processes.
         """
 
         # Check `self.shots` against 0 to allow override with `None`.
@@ -215,5 +216,6 @@ class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
     
     def dict(self, *args, **kwargs):
         dict_ = vars(self)
+        # needed to make the dict method hashable and jsonable
         dict_["run_kwargs"] = tuple(dict_["run_kwargs"].items())
         return dict_
