@@ -164,7 +164,7 @@ class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
     The local Braket executor based on the existing Pennylane local Braket qubit device.
 
     Attributes:
-        max_jobs: maximum number of parallel jobs sent by proccesses on :code:`batch_submit`.
+        max_jobs: maximum number of parallel jobs sent by processes on :code:`batch_submit`.
         shots: number of shots used to estimate quantum observables.
         backend:
             The name of the simulator backend. Defaults to the :code:`"default"`
