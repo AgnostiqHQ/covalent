@@ -99,13 +99,14 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
     device_arn: str = None
     poll_timeout_seconds: float = AwsQuantumTask.DEFAULT_RESULTS_POLL_TIMEOUT
     poll_interval_seconds: float = AwsQuantumTask.DEFAULT_RESULTS_POLL_INTERVAL
-    aws_session: Optional[str] = None # not actually a str. Fix.
+    aws_session: Optional[str] = None  # not actually a str. Fix.
     parallel: bool = False
     max_parallel: Optional[int] = None
     max_connections: int = AwsQuantumTaskBatch.MAX_CONNECTIONS_DEFAULT
     max_retries: int = AwsQuantumTaskBatch.MAX_RETRIES
     s3_destination_folder: tuple = Field(
-        default_factory=lambda: get_config("qelectron")["BraketQubitExecutor"]["s3_destination_folder"]
+        default_factory=lambda: get_config(
+            "qelectron")["BraketQubitExecutor"]["s3_destination_folder"]
     )
     run_kwargs: dict = {}
 
@@ -150,13 +151,12 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
             jobs.append(p.submit(self.run_circuit, qscript, dev, result_obj))
 
         return jobs
-    
+
     def dict(self, *args, **kwargs):
         dict_ = vars(self)
         # needed to make the dict method hashable and jsonable
         dict_["run_kwargs"] = tuple(dict_["run_kwargs"].items())
         return dict_
-
 
 
 class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
@@ -213,7 +213,7 @@ class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
             futures.append(fut)
 
         return futures
-    
+
     def dict(self, *args, **kwargs):
         dict_ = vars(self)
         # needed to make the dict method hashable and jsonable

@@ -36,7 +36,7 @@ from ..quantum_server.server_utils import (
     CircuitInfo,
     get_cached_executor,
     get_circuit_id,
-) 
+)
 from ..shared_utils import cloudpickle_deserialize, cloudpickle_serialize, select_first_executor
 
 if TYPE_CHECKING:
@@ -113,7 +113,7 @@ class QServer:
         linked_executors = []
         for qscript in qscripts:
             selected_executor = self.selector(qscript, executors)
-            
+
             # Use cached executor.
             selected_executor = get_cached_executor(**selected_executor.dict())
 
@@ -209,7 +209,6 @@ class QServer:
         qnode_specs: "QNodeSpecs"
     ):
         # pylint: disable=too-many-locals
-
         """
         Submit a list of QuantumScripts to the server for execution.
 
@@ -316,7 +315,6 @@ class QServer:
 
     def get_results(self, batch_id):
         # pylint: disable=too-many-locals
-
         """
         Retrieve the results of previously submitted QuantumScripts from the server.
 
