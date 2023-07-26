@@ -76,7 +76,7 @@ class QNodeFutureResult:
             results = middleware.get_results(self.batch_id)
 
             # Create a device from the original QNode's device class for correct typing.
-            dev = _run_later_device_factory(results, self.device)
+            dev = _run_later_device_factory(results, self.device, self.tape)
 
             # Define a dummy circuit that returns the original QNode's return value.
             @qml.qnode(dev, interface=self.interface, diff_method=self.diff_method)
@@ -91,6 +91,7 @@ class QNodeFutureResult:
 def _run_later_device_factory(
     results: Any,
     original_device: qml.Device,
+    original_tape: QuantumTape,
 ) -> qml.Device:
     """
     Returns an instance of a new class that inherits from the original QNode's
@@ -112,6 +113,17 @@ def _run_later_device_factory(
             if n_circuits > 1 or len(results) > 1:
                 return [results] * n_circuits
             return results
+
+        def batch_transform(self, circuit):
+            """
+            Override circuit with original measurements for correct `batch_fn`
+            choice during execution.
+            """
+            circuit = QuantumTape(
+                ops=circuit.operations,
+                measurements=original_tape.measurements,
+            )
+            return original_device.batch_transform(circuit)
 
     wires = original_device.num_wires
     return _RunLaterDevice(wires=wires, shots=1)
