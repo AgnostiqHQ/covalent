@@ -54,7 +54,4 @@ build:
       - pip install urllib3==1.26.6
       # For covalent slurm plugin
       - pip install aiofiles==0.8.0
-
-    # Add an "after_success" hook to print the version of "rich" package
-    after_success:
-      - echo "The final version of the 'rich' package is: $(python -c 'import rich; print(rich.__version__)')"
+      - pip list | grep rich
