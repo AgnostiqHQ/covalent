@@ -27,3 +27,4 @@ Covalent offers various plugins, starting with executor plugins. Executors are u
 
    api/executors/qiskit.rst
    api/executors/ibmq.rst
+   api/executors/braketqubit.rst

@@ -51,3 +51,4 @@ Quantum executors are special executors designed for quantum circuits. Together 
    qiskit
    ibmq
    simulator
+   braketqubit
