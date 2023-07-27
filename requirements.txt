@@ -12,8 +12,7 @@ psutil>=5.9.0
 pydantic>=1.10.1
 python-socketio>=5.7.1
 requests>=2.24.0
-rich~=13.3.4
-# rich>=11.2.0
+rich>=12.0.0,<=13.3.5
 simplejson>=3.17.6
 sqlalchemy>=1.4.37,<2.0.0
 sqlalchemy_utils>=0.38.3
