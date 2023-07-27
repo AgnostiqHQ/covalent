@@ -96,10 +96,7 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
     max_parallel: Optional[int] = None
     max_connections: int = AwsQuantumTaskBatch.MAX_CONNECTIONS_DEFAULT
     max_retries: int = AwsQuantumTaskBatch.MAX_RETRIES
-    s3_destination_folder: tuple = Field(
-        default_factory=lambda: get_config(
-            "qelectron")["BraketQubitExecutor"]["s3_destination_folder"]
-    )
+    s3_destination_folder: tuple = ()
     run_kwargs: dict = {}
 
     def batch_submit(self, qscripts_list):
