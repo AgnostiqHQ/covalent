@@ -16,16 +16,16 @@ It utilizes the Pennylane plugin found `here <https://amazon-braket-pennylane-pl
 To use it, however, you will need to install the `amazon-braket-pennylane-plugin <https://github.com/aws/amazon-braket-pennylane-plugin-python>`_:
 
 .. code:: console
-  
+
     pip install amazon-braket-pennylane-plugin
 
 and have valid AWS credentials as specified `here <https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html>`_.
 
-================
+================g
 2. Usage Example
 ================
 
-Using `BraketQubitExecutor` requires specifying an AWS Quantum backend through the :code:`device_arn` argument. 
+Using :code:`BraketQubitExecutor` requires specifying an AWS Quantum backend through the :code:`device_arn` argument. 
 
 .. code:: python
 

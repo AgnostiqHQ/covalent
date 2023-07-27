@@ -22,7 +22,7 @@ To use it, however, you will need to install the `amazon-braket-pennylane-plugin
 2. Usage Example
 ================
 
-Using `LocalBraketQubitExecutor` is simple: 
+Using :code:`LocalBraketQubitExecutor` is simple: 
 
 .. code:: python
 
@@ -58,7 +58,6 @@ and asynchronously:
     >>> x = [0.6, -1.57]
 
     >>> # Queue jobs for all three circuit calls simultaneously on.
-    >>> # Uses same executor order as above (sv1, tn1, ...).
     >>> futs = [circuit.run_later(x) for _ in range(3)]
 
     >>> # Wait for all circuits to finish.
