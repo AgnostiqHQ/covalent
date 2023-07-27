@@ -153,7 +153,7 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
         return jobs
 
     def dict(self, *args, **kwargs):
-        dict_ = vars(self)
+        dict_ = super().dict(*args, **kwargs)
         # needed to make the dict method hashable and jsonable
         dict_["run_kwargs"] = tuple(dict_["run_kwargs"].items())
         return dict_
@@ -215,7 +215,7 @@ class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
         return futures
 
     def dict(self, *args, **kwargs):
-        dict_ = vars(self)
+        dict_ = super().dict(*args, **kwargs)
         # needed to make the dict method hashable and jsonable
         dict_["run_kwargs"] = tuple(dict_["run_kwargs"].items())
         return dict_
