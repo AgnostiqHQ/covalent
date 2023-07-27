@@ -43,22 +43,15 @@ _QEXECUTOR_PLUGIN_DEFAULTS = {
 
     "BraketQubitExecutor": {
         "device_arn": "",
-        "s3_destination_folder": "",
         "poll_timeout_seconds": AwsQuantumTask.DEFAULT_RESULTS_POLL_TIMEOUT,
         "poll_interval_seconds": AwsQuantumTask.DEFAULT_RESULTS_POLL_INTERVAL,
-        "aws_session": "",
-        "parallel": False,
-        "max_parallel": None,
         "max_connections": AwsQuantumTaskBatch.MAX_CONNECTIONS_DEFAULT,
         "max_retries": AwsQuantumTaskBatch.MAX_RETRIES,
-        "run_kwargs": {},
         "max_jobs": 20
     },
 
     "LocalBraketQubitExecutor": {
         "backend": "default",
-        "shots": None,
-        "run_kwargs": {},
         "max_jobs": 20
     }
 }
