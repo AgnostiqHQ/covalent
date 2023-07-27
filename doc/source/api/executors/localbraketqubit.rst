@@ -40,7 +40,7 @@ Using `LocalBraketQubitExecutor` is simple:
         qml.Hadamard(wires=1)
         return [qml.expval(qml.PauliZ(0)), qml.expval(qml.PauliZ(1))]
 
-As a QElectron, the circuit can be called either normally or asynchronously using :code:`circuit.run_later()`. With the default :code:`"cyclic"` selector, circuit calls will `alternate` between the executors, :code:`[sv1, tn1]`.
+As a QElectron, the circuit can be called either normally or asynchronously using :code:`circuit.run_later()`.
 
 Synchronous example output is below
 
