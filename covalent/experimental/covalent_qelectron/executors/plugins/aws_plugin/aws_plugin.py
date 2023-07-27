@@ -27,7 +27,6 @@ from braket.aws import AwsQuantumTask, AwsQuantumTaskBatch
 
 from covalent._shared_files.config import get_config
 from covalent.experimental.covalent_qelectron.executors.base import (
-    BaseProcessPoolQExecutor,
     BaseThreadPoolQExecutor,
     QCResult,
     get_thread_pool,
@@ -159,7 +158,7 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
         return dict_
 
 
-class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
+class LocalBraketQubitExecutor(BaseThreadPoolQExecutor):
     """
     The local Braket executor based on the existing Pennylane local Braket qubit device.
 
@@ -181,20 +180,20 @@ class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
 
     def batch_submit(self, qscripts_list):
         """
-        Submit qscripts for execution using :code:`num_processes`-many processes.
+        Submit qscripts for execution using :code:`num_threads`-many threads.
 
         Args:
             qscripts_list: a list of Pennylane style :code:`QuantumScripts`.
 
         Returns:
-            jobs: a :code:`list` of :code:`futures` subitted by processes.
+            jobs: a :code:`list` of tasks subitted by threads.
         """
 
         # Check `self.shots` against 0 to allow override with `None`.
         device_shots = self.shots if self.shots != 0 else self.qnode_device_shots
 
-        pool = get_process_pool(self.num_processes)
-        futures = []
+        p = get_thread_pool(self.max_jobs)
+        jobs = []
         for qscript in qscripts_list:
             dev = qml.device(
                 "braket.local.qubit",
@@ -209,10 +208,9 @@ class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
                 executor=self,
             )
 
-            fut = pool.apply_async(self.run_circuit, args=(qscript, dev, result_obj))
-            futures.append(fut)
+            jobs.append(p.submit(self.run_circuit, qscript, dev, result_obj))
 
-        return futures
+        return jobs
 
     def dict(self, *args, **kwargs):
         dict_ = vars(self)
