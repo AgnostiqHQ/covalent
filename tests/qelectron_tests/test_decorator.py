@@ -21,7 +21,6 @@
 # pylint: disable=no-member
 
 import copy
-import random
 
 import pennylane as qml
 import pytest

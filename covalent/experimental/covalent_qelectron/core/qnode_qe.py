@@ -152,15 +152,7 @@ class QNodeQE(qml.QNode):
             self(*args, **kwargs)
             batch_id = self.device._batch_id
 
-        future_result = QNodeFutureResult(batch_id)
-
-        # Required for correct output types.
-        future_result.device = self.original_qnode.device
-        future_result.interface = self.interface
-        future_result.diff_method = self.diff_method
-        future_result.qfunc_output = self.tape._qfunc_output
-
-        return future_result
+        return QNodeFutureResult(batch_id, self.original_qnode, self.tape)
 
     def __call__(self, *args, **kwargs):
 
