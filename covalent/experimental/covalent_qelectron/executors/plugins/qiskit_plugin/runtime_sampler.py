@@ -74,29 +74,14 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
             service_init_kwargs=service_init_kwargs,
         )
 
-    def dummy_result(self, n_circuits: int) -> Union[Any, List[Any]]:
-        """
-        Returns a dummy result to satisfy the expected `qml.execute` output.
-        This allows async submission to proceed without waiting for the job result.
-        """
-
-        # Pack as list to satisfy expected `qml.execute` output in usual pipeline
-        if not self.pennylane_active_return:
-            dummy_result = [[self.asarray(0.)]] * n_circuits
-        else:
-            dummy_result = [self.asarray(0.)] * n_circuits
-
-        # Add another "dimension" for unpacking in Pennylane `cache_execute`
-        return [dummy_result] if self._vector_input else dummy_result
-
     def batch_execute(self, circuits, timeout: int = None):
         """
         Submit a batch of circuits to IBM Qiskit Runtime for execution.
         """
 
-        n_original_circuits = len(circuits)
+        self._n_original_circuits = len(circuits)
         circuits = self.broadcast_tapes(circuits)
-        n_broadcasted_circuits = len(circuits)
+        self._n_circuits = len(circuits)
 
         # Create circuit objects and apply diagonalizing gates
         compiled_circuits = self.compile_circuits(circuits)
@@ -116,17 +101,17 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
                     self._active_jobs.append(job)
 
         # This flag distinguishes vector inputs from gradient computations
-        self._vector_input = n_original_circuits != n_broadcasted_circuits
+        self._vector_input = self._n_original_circuits != self._n_circuits
 
         # Return a dummy result and proceed to subsequent submissions.
-        return self.dummy_result(n_broadcasted_circuits)
+        return self._dummy_result()
 
     def post_process(self, *args):
         """
         Post-process a single circuit result.
         """
 
-        post_processed_results = []
+        results = []
         metadatas = []
         for i, circuit in enumerate(self._active_circuits):
 
@@ -145,7 +130,7 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
 
             # Post process the quasi-distribution into expected result
             res = self._process_batch_execute_result(circuit, quasi_dist)
-            post_processed_results.append(res)
+            results.append(res)
 
             # Update metadata
             job_metadata = job_result.metadata[0]
@@ -167,13 +152,13 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
 
         # Re-execute original tape with a dummy device to get correct result
         tape = args[0]
-        post_processed_results = self.re_execute([tape], post_processed_results)
+        results = self._re_execute(self.broadcast_tapes([tape]), results)
 
         # Wrap in outer list for vector inputs
         if self._vector_input:
-            return [self.asarray(post_processed_results)], metadatas
+            results = self._vector_results(results)
 
-        return post_processed_results, metadatas
+        return results, metadatas
 
     def post_process_all(self, *args):
         """
@@ -188,7 +173,7 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
         self._num_executions += 1
 
         # Compute statistics using the state and/or samples
-        post_processed_results = []
+        results = []
         metadatas = []
 
         for i, circuit in enumerate(self._active_circuits):
@@ -196,7 +181,7 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
 
             # Update tracker and process quasi-distribution into expected result
             res = self._process_batch_execute_result(circuit, quasi_dist)
-            post_processed_results.append(res)
+            results.append(res)
 
             # Construct metadata
             job_metadata = job_result.metadata[i]
@@ -218,15 +203,15 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
 
         # Re-execute with a dummy device to get correct result
         tapes = args[0]
-        post_processed_results = self.re_execute(tapes, post_processed_results)
+        results = self._re_execute(self.broadcast_tapes(tapes), results)
 
         # Wrap in outer list for vector inputs
         if self._vector_input:
-            return [self.asarray(post_processed_results)], metadatas
+            results = self._vector_results(results)
 
-        return post_processed_results, metadatas
+        return results, metadatas
 
-    def re_execute(self, tapes, results):
+    def _re_execute(self, tapes, results):
         """
         Executes circuits on a dummy device that returns the provided result.
 
@@ -235,6 +220,26 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
         """
         dev = _PostProcessDevice(self.wires, results)
         return qml.execute(tapes, dev, None)
+
+    def _dummy_result(self) -> Union[Any, List[Any]]:
+        """
+        Returns a dummy result to satisfy the expected `qml.execute` output.
+        This allows async submission to proceed without waiting for the job result.
+        """
+
+        dummy_results = qml.numpy.zeros(self.vector_shape)
+
+        if self.pennylane_active_return:
+            dummy_results = list(dummy_results)
+
+        if self.single_job and self._vector_input:
+            if self.pennylane_active_return:
+                return [[d] for d in dummy_results]
+            return [[d] for d in list(dummy_results)]
+
+        if self._vector_input:
+            return [dummy_results]
+        return [[d] for d in dummy_results]
 
 
 class _PostProcessDevice(QiskitRuntimeSampler):

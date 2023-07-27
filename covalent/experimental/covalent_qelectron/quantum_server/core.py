@@ -209,7 +209,6 @@ class QServer:
         qnode_specs: "QNodeSpecs"
     ):
         # pylint: disable=too-many-locals
-
         """
         Submit a list of QuantumScripts to the server for execution.
 
@@ -316,7 +315,6 @@ class QServer:
 
     def get_results(self, batch_id):
         # pylint: disable=too-many-locals
-
         """
         Retrieve the results of previously submitted QuantumScripts from the server.
 

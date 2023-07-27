@@ -27,20 +27,12 @@ import pytest
 import covalent as ct
 from covalent._shared_files.config import get_config
 
-from .utils import simple_circuit
+from .utils import arg_vector, simple_circuit, weight_vector
 
 EXECUTOR_CLASSES = [
     ct.executor.QiskitExecutor,
     ct.executor.IBMQExecutor,
 ]
-
-
-def _arg_vector(size):
-    return qml.numpy.random.uniform(0, 2 * np.pi, size=(size,))
-
-
-def _weight_vector(size):
-    return [_arg_vector(2 * size) for _ in range(size)]
 
 
 @pytest.mark.parametrize("executor_class", EXECUTOR_CLASSES)
@@ -125,11 +117,11 @@ def test_default_return_type():
 
 
 _TEMPLATES = [
-    (qml.AngleEmbedding, (_arg_vector(6),), {"wires": range(6)}),
-    (qml.IQPEmbedding, (_arg_vector(6),), {"wires": range(6)}),
-    (qml.QAOAEmbedding, (_arg_vector(6),), {"wires": range(6), "weights": _weight_vector(6)}),
-    (qml.DoubleExcitation, (_arg_vector(4),), {"wires": range(4)}),
-    (qml.SingleExcitation, (_arg_vector(2),), {"wires": range(2)})
+    (qml.AngleEmbedding, (arg_vector(6),), {"wires": range(6)}),
+    (qml.IQPEmbedding, (arg_vector(6),), {"wires": range(6)}),
+    (qml.QAOAEmbedding, (arg_vector(6),), {"wires": range(6), "weights": weight_vector(6)}),
+    (qml.DoubleExcitation, (arg_vector(4),), {"wires": range(4)}),
+    (qml.SingleExcitation, (arg_vector(2),), {"wires": range(2)})
 ]
 
 

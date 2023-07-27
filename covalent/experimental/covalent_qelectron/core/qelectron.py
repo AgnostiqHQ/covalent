@@ -19,72 +19,89 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 import functools
-from typing import Optional
+from typing import Callable, List, Optional, Union
 
-import pennylane
-from pydantic import BaseModel
+import pennylane as qml
 
-from ..core.qnode_qe import QNodeQE
+from ..core.qnode_qe import QElectronInfo, QNodeQE
 from ..executors import Simulator
 from ..executors.base import AsyncBaseQCluster, BaseQExecutor
 from ..executors.clusters import QCluster
 from ..shared_utils.utils import get_import_path
 
-
-class QElectronInfo(BaseModel):
-    """
-    A container for QNode and Pennylane settings used by the wrapping QElectron.
-    """
-    name: str
-    description: str = None
-    qnode_device_import_path: str  # used to inherit type converters and other methods
-    qnode_device_shots: Optional[int]  # optional default for execution devices
-    num_device_wires: int  # this can not be reliably inferred from tapes alone
-    pennylane_active_return: bool  # client-side status of `pennylane.active_return()`
+Selector = Union[str, Callable[[qml.tape.QuantumScript, List[BaseQExecutor]], BaseQExecutor]]
 
 
 def qelectron(
-    qnode=None,
+    qnode: Optional[qml.QNode] = None,
     *,
-    executors=None,
-    name=None,
-    description=None,
-    selector="cyclic",
-):
+    executors: Union[BaseQExecutor, AsyncBaseQCluster, List[BaseQExecutor]] = None,
+    name: Optional[str] = None,
+    description: Optional[str] = None,
+    selector: Union[str, Selector] = "cyclic",
+) -> QNodeQE:
     """
-    Decorator for extending a given QNode.
+    QElectron decorator to be called upon a Pennylane QNode. Adds multi-backend
+    execution functionality to the original QNode.
 
     Args:
-        qnode: The QNode to wrap.
-        executors: The executors to choose from to use for running the QNode.
-        name: The name of the QElectron. Defaults to the name of the function.
-        description: A description of the QElectron. Defaults to the docstring of the function.
+        qnode: The Pennylane :code:`QNode` to wrap.
+
+    Keyword Args:
+        executors: The quantum executor(s) to use for running the QNode. A single
+            executor, list of executors, or a :code:`QCluster` instance are accepted.
+            If a list of multiple executors is passed, a quantum cluster is
+            initialized from this list automatically and :code:`selector` is used as the
+            cluster's selector. Defaults to a thread-based :code:`Simulator`.
+        name: An optional name for the QElectron. Defaults to the circuit function's
+            name.
+        description: An optional description for the QElectron. Defaults to the
+            circuit function's docstring.
+        selector: A callable that selects an executor, or one of the strings :code:`"cyclic"`
+            or :code:`"random"`. The :code:`"cyclic"` selector (default) cycles through
+            :code:`executors` and returns the next executor for each circuit. The
+            :code:`"random"` selector chooses an executor from :code:`executors`
+            at random for each circuit. Any user-defined selector must be callable
+            with two positional arguments, a circuit and a list of executors.
+            A selector must also return exactly one executor.
+
+    Raises:
+        ValueError: If any invalid executors are passed.
 
     Returns:
-        QNodeQE: A QNodeQE instance.
+        :code:`QNodeQE`: A sub-type of :code:`QNode` that integrates QElectrons.
     """
 
     if executors is None:
         executors = Simulator()
 
-    # check if executor is a list of executors, convert to cluster if more than one
+    # Check if executor is a list of executors.
     if isinstance(executors, list):
         if not all(isinstance(ex, BaseQExecutor) for ex in executors):
             raise ValueError("Invalid executor in executors list.")
         if len(executors) > 1:
+            # Convert to cluster if more than one executor in list.
             executors = QCluster(executors=executors, selector=selector)
 
-    # check if executor is a QCluster and serialize the selector
+    # Check if executor is a QCluster.
     if isinstance(executors, AsyncBaseQCluster):
+        # Serialize the cluster's selector function.
         executors.serialize_selector()
 
-    # check if executor is a list of executors
+    # Check if a single executor instance was passed.
     if not isinstance(executors, list):
         executors = [executors]
 
     if qnode is None:
-        return functools.partial(qelectron, executors=executors, name=name, description=description)
+        # This only happens when `qelectron()` is not used as a decorator.
+        return functools.partial(
+            qelectron,
+            executors=executors,
+            name=name,
+            description=description
+        )
 
+    # Set default name and description.
     if name is None:
         name = qnode.func.__name__
 
@@ -97,8 +114,8 @@ def qelectron(
         qnode_device_import_path=get_import_path(type(qnode.device)),
         qnode_device_shots=qnode.device.shots,
         num_device_wires=qnode.device.num_wires,
-        pennylane_active_return=pennylane.active_return(),
+        pennylane_active_return=qml.active_return(),
     )
 
-    # Create a new QNodeQE instance for every qelectron call
+    # Create and return a new `QNodeQE` instance.
     return QNodeQE(qnode, executors, qelectron_info)

@@ -75,7 +75,7 @@ class QEDevice(QubitDevice):
         if self._async_run:
             self._batch_id = batch_id
             # Return a dummy result
-            return [self._asarray([1])] * len(circuits)
+            return [self._asarray([1] * c.output_dim) for c in circuits]
 
         # Otherwise, get the results from the middleware
         results = middleware.get_results(batch_id)

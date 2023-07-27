@@ -109,3 +109,17 @@ def cyclic_selector(qscript, executors):
     ex = executors[cyclic_selector.i % len(executors)]
     cyclic_selector.i += 1
     return ex
+
+
+def arg_vector(size):
+    """
+    A random `tensor` of size `(size,)` with values in `[0, 2 * pi]`.
+    """
+    return qml.numpy.random.uniform(0, 2 * np.pi, size=(size,))
+
+
+def weight_vector(size):
+    """
+    A QAOA weights vector that matches args from `arg_vector(size)`.
+    """
+    return [arg_vector(2 * size) for _ in range(size)]
