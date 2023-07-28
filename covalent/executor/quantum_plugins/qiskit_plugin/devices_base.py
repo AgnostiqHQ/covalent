@@ -31,7 +31,7 @@ from pennylane.transforms import broadcast_expand, map_batch_transform
 from pennylane_qiskit.qiskit_device import QiskitDevice
 from qiskit.compiler import transpile
 
-from .sessions import init_runtime_service
+from sessions import init_runtime_service
 
 
 class _PennylaneQiskitDevice(QiskitDevice, ABC):

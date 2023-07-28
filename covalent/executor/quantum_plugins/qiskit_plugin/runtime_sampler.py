@@ -27,9 +27,9 @@ from typing import Any, List, Union
 import pennylane as qml
 from qiskit_ibm_runtime import Sampler
 
-from .devices_base import QiskitSamplerDevice
-from .sessions import get_cached_session
-from .utils import extract_options
+from devices_base import QiskitSamplerDevice
+from sessions import get_cached_session
+from utils import extract_options
 
 
 class QiskitRuntimeSampler(QiskitSamplerDevice):

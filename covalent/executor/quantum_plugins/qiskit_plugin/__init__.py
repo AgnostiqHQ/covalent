@@ -18,4 +18,4 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .qiskit_plugin import QiskitExecutor, IBMQExecutor
+from qiskit_plugin import QiskitExecutor, IBMQExecutor

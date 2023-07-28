@@ -27,6 +27,7 @@ from pennylane.tape.qscript import QuantumScript
 from pydantic import Field
 
 from covalent._shared_files.config import get_config
+from covalent._shared_files.utils import import_from_path
 from covalent.executor.qbase import (
     AsyncBaseQExecutor,
     BaseThreadPoolQExecutor,
@@ -34,10 +35,9 @@ from covalent.executor.qbase import (
     get_asyncio_event_loop,
     get_thread_pool,
 )
-from .local_sampler import QiskitLocalSampler
-from .runtime_sampler import QiskitRuntimeSampler
-from .utils import RuntimeOptions
-from ....shared_files.utils import import_from_path
+from local_sampler import QiskitLocalSampler
+from runtime_sampler import QiskitRuntimeSampler
+from utils import RuntimeOptions
 
 __all__ = [
     "IBMQExecutor",

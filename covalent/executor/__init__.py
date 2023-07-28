@@ -320,6 +320,7 @@ class _QExecutorManager:
                 print(f"PLUGIN MODULE PATH: {plugin_module_path}")
 
                 with contextlib.suppress(RuntimeError):
+                    sys.path.append(str(plugin_module_path.parent))
                     plugin_module_spec = importlib.util.spec_from_file_location(
                         plugin_module_path.stem,
                         plugin_module_path

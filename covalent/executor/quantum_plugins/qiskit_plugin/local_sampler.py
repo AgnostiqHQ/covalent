@@ -26,7 +26,7 @@ from typing import Any, List, Tuple
 
 from qiskit.primitives import Sampler as LocalSampler
 
-from .devices_base import QiskitSamplerDevice
+from devices_base import QiskitSamplerDevice
 
 
 class QiskitLocalSampler(QiskitSamplerDevice):
