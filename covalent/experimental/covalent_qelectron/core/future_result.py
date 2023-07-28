@@ -108,10 +108,8 @@ def _run_later_device_factory(
             """
             Override to return expected result.
             """
-            n_circuits = len(circuits)
-
-            if n_circuits > 1 or len(results) > 1:
-                return [results] * n_circuits
+            if len(circuits) > 1 or len(results) > 1:
+                return [[r] for r in results]
             return results
 
         def batch_transform(self, _):
