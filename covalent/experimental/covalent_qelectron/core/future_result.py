@@ -114,16 +114,11 @@ def _run_later_device_factory(
                 return [results] * n_circuits
             return results
 
-        def batch_transform(self, circuit):
+        def batch_transform(self, _):
             """
-            Override circuit with original measurements for correct `batch_fn`
-            choice during execution.
+            Ignore blank circuit and run batch transform on original tape.
             """
-            circuit = QuantumTape(
-                ops=circuit.operations,
-                measurements=original_tape.measurements,
-            )
-            return original_device.batch_transform(circuit)
+            return original_device.batch_transform(original_tape)
 
     wires = original_device.num_wires
     return _RunLaterDevice(wires=wires, shots=1)
