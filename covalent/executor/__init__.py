@@ -316,18 +316,17 @@ class _QExecutorManager:
             plugin_module_path = plugin_module_path[0]
 
             if plugin_module_path.exists():
+                print(f"PLUGIN MODULE STEM: {plugin_module_path.stem}")
+                print(f"PLUGIN MODULE PATH: {plugin_module_path}")
 
-                with contextlib.suppress(ImportError):
+                with contextlib.suppress(RuntimeError):
                     plugin_module_spec = importlib.util.spec_from_file_location(
                         plugin_module_path.stem,
                         plugin_module_path
                     )
                     plugin_module = importlib.util.module_from_spec(plugin_module_spec)
-
                     sys.modules[plugin_module_path.stem] = plugin_module
-
                     plugin_module_spec.loader.exec_module(plugin_module)
-
                     self.populate_executors_map(plugin_module)
 
     def populate_executors_map(self, module_obj) -> None:

@@ -48,6 +48,35 @@ class CircuitInfo(BaseModel):
     result_metadata: List[Dict[str, Any]] = None
 
 
+@lru_cache
+def get_cached_module():
+    return importlib.import_module(
+        ".executor",
+        package="covalent"
+    )
+
+
+def executor_from_dict(executor_dict: Dict):
+
+    if "executors" in executor_dict:
+        executors = [executor_from_dict(ed) for ed in executor_dict["executors"]]
+        executor_dict["executors"] = executors
+
+    name = executor_dict["name"]
+    executor_class = getattr(get_cached_module(), name)
+    return executor_class(**executor_dict)
+
+
+@lru_cache(maxsize=MAX_DIFFERENT_EXECUTORS)
+def get_cached_executor(**executor_dict):
+
+    if "executors" in executor_dict:
+        executors = tuple(orjson.loads(ex) for ex in executor_dict["executors"])
+        executor_dict["executors"] = executors
+
+    return executor_from_dict(executor_dict)
+
+
 def reconstruct_executors(deconstructed_executors: List[Dict]):
     return [executor_from_dict(de) for de in deconstructed_executors]
 

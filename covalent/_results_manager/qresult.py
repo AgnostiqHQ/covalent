@@ -23,7 +23,7 @@ from typing import Any
 import pennylane as qml
 from pennylane.tape import QuantumTape
 
-from ..middleware.core import middleware
+from ..quantum.qclient.core import middleware
 
 
 class QNodeFutureResult:

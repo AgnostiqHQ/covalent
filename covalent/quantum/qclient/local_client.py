@@ -20,7 +20,7 @@
 
 from .base_client import BaseQClient
 from ..qserver import LocalQServer
-from ...shared_files.utils import cloudpickle_deserialize, cloudpickle_serialize
+from ..._shared_files.utils import cloudpickle_deserialize, cloudpickle_serialize
 
 # Since in the local case, the server and client are the same
 # thus the "server" class's functions are directly accessed

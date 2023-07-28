@@ -37,7 +37,7 @@ from .utils import (
     get_cached_executor,
     get_circuit_id,
 )
-from ...shared_files.utils import cloudpickle_deserialize, cloudpickle_serialize, select_first_executor
+from ..._shared_files.utils import cloudpickle_deserialize, cloudpickle_serialize, select_first_executor
 
 if TYPE_CHECKING:
     from ..._workflow.qelectron import QElectronInfo

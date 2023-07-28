@@ -23,11 +23,11 @@ from typing import Callable, List, Optional, Union
 
 import pennylane as qml
 
-from ..core.qnode_qe import QElectronInfo, QNodeQE
-from ..executor.qbase import AsyncBaseQCluster, BaseQExecutor
+from .qnode import QElectronInfo, QNodeQE
+from ..quantum.qcluster.base import AsyncBaseQCluster, BaseQExecutor
 from ..quantum.qcluster import QCluster
 from ..quantum.qcluster.simulator import Simulator
-from ..shared_utils.utils import get_import_path
+from .._shared_files.utils import get_import_path
 
 Selector = Union[str, Callable[[qml.tape.QuantumScript, List[BaseQExecutor]], BaseQExecutor]]
 
