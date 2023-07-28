@@ -80,6 +80,14 @@ def get_threadpool():
     return ThreadPoolExecutor()
 
 
+@router.get("/triggers/status")
+def trigger_server_status(request: Request):
+    if disable_triggers:
+        return {"status": "disabled"}
+    else:
+        return {"status": "running"}
+
+
 @router.post("/triggers/register")
 async def register_and_observe(request: Request):
     """
