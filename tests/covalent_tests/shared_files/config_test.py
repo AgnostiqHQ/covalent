@@ -225,6 +225,30 @@ def test_write_config(mocker):
     open_mock.assert_called_once_with(cm.config_file, "w")
 
 
+def test_update_config(mocker):
+    """Test the update_config method for config manager."""
+
+    cm = ConfigManager()
+
+    cm.config_file = "mock_config_file"
+    cm.config_data = {"mock_section": {"mock_dir": "initial_value"}}
+    # Cannot mock `update_nested_dict`` since it's defined within the function
+
+    mock_filelock = mocker.patch("covalent._shared_files.config.filelock.FileLock")
+    mock_open = mocker.patch("covalent._shared_files.config.open")
+    mock_toml_load = mocker.patch("covalent._shared_files.config.toml.load")
+
+    cm.write_config = mocker.Mock()
+
+    cm.update_config()
+
+    mock_filelock.assert_called_once_with("mock_config_file.lock")
+    mock_open.assert_called_once_with("mock_config_file", "r+")
+    mock_toml_load.assert_called_once_with(mock_open.return_value.__enter__.return_value)
+
+    cm.write_config.assert_called_once()
+
+
 def test_config_manager_set(mocker):
     """Test the set method in config manager."""
 
