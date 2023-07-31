@@ -32,7 +32,7 @@ from sqlalchemy.sql import func
 from covalent._results_manager.results_manager import get_result
 from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
 from covalent_dispatcher._service.app import get_result
-from covalent.experimental.covalent_qelectron.quantum_server.database import Database
+from covalent.quantum.qserver.database import Database
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.lattices import Lattice
 from covalent_ui.api.v1.utils.models_helper import JobsSortBy, SortDirection

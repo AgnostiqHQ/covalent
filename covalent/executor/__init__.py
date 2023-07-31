@@ -330,6 +330,8 @@ class _QExecutorManager:
                     plugin_module_spec.loader.exec_module(plugin_module)
                     self.populate_executors_map(plugin_module)
 
+        # print("Loaded QExecutor plugins: ", self.executor_plugins_map.keys())
+
     def populate_executors_map(self, module_obj) -> None:
         """
         Validates modules containing potential QExecutor classes.
