@@ -21,16 +21,15 @@
 import asyncio
 import time
 from abc import ABC, abstractmethod
-from concurrent.futures import Future, ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from threading import Thread
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple
 
 import orjson
 import pennylane as qml
 from mpire import WorkerPool
-from mpire.async_result import AsyncResult
-from pydantic import BaseModel, Extra, Field, root_validator  # pylint: disable=no-name-in-module
+from pydantic import BaseModel, Extra, Field, root_validator
 
 __all__ = [
     "BaseQExecutor",
@@ -183,8 +182,6 @@ class AsyncBaseQExecutor(BaseQExecutor):
     """
     Executor that uses `asyncio` to handle multiple job submissions
     """
-
-    # pylint: disable=invalid-overridden-method
 
     device: str = "default.qubit"
 

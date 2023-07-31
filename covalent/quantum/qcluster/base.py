@@ -22,6 +22,9 @@ from abc import ABC, abstractmethod
 from typing import Callable, List, Sequence, Union
 
 from pydantic import BaseModel, Extra
+import asyncio
+from mpire.async_result import AsyncResult
+from concurrent.futures import Future
 
 from ...executor.qbase import AsyncBaseQExecutor, BaseQExecutor, QCResult
 

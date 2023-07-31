@@ -44,6 +44,7 @@ log_stack_info = logger.log_stack_info
 _QUANTUM_PLUGINS_PATH = Path(__file__).parent / "quantum_plugins"
 _QUANTUM_DEFAULTS_VARNAME = "_QEXECUTOR_PLUGIN_DEFAULTS"
 
+
 class _ExecutorManager:
     """
     Executor manager to return a valid executor which can be
@@ -316,10 +317,9 @@ class _QExecutorManager:
             plugin_module_path = plugin_module_path[0]
 
             if plugin_module_path.exists():
-                print(f"PLUGIN MODULE STEM: {plugin_module_path.stem}")
-                print(f"PLUGIN MODULE PATH: {plugin_module_path}")
-
-                with contextlib.suppress(RuntimeError):
+                # Suppress any exceptions that may occur while importing the plugin module
+                # This is to prevent the plugin module from crashing the application
+                with contextlib.suppress(Exception):
                     sys.path.append(str(plugin_module_path.parent))
                     plugin_module_spec = importlib.util.spec_from_file_location(
                         plugin_module_path.stem,

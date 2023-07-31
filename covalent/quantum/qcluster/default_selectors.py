@@ -29,7 +29,7 @@ class RandomSelector(BaseQSelector):
     """
     A selector that randomly selects an executor.
     """
-    name = "random"
+    name: str = "random"
 
     def selector_function(self, qscript, executors):
         return random.choice(executors)
@@ -39,7 +39,7 @@ class CyclicSelector(BaseQSelector):
     """
     A selector that cycles in order through the available executors.
     """
-    name = "cyclic"
+    name: str = "cyclic"
 
     _counter: int = 0
 

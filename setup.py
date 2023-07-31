@@ -219,10 +219,12 @@ setup_info = {
         "mysql": ["mysqlclient>=2.1.1"],
         "postgres": ["psycopg2-binary>=2.9.5"],
         "qiskit": [
-            "pennylane-qiskit>=0.30.1", 
-            "qiskit>=0.43.1", 
-            "qiskit-ibm-provider>=0.6.1", 
+            "pennylane-qiskit>=0.30.1",
+            "qiskit>=0.43.1",
+            "qiskit-ibm-provider>=0.6.1",
             "qiskit-ibm-runtime>=0.10.0",
+            "qiskit-aer>=0.12.2",
+            "pydantic==2.1.1",
         ],
     },
     "classifiers": [
