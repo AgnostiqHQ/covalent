@@ -150,7 +150,6 @@ def seed_summary_data():
                             "msg": "Input should be greater than 0",
                             "input": "0",
                             "ctx": {"gt": 0},
-                            "url": "https://errors.pydantic.dev/2.0.3/v/greater_than",
                         }
                     ]
                 },

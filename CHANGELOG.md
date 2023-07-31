@@ -57,6 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reverted file-lock changes
 - Fixed dispatches list UI api caused by pydantic config.
 - Fixed graph API.
+- Fixed UI backend unit test case.
 - Executor and workflow executor data dictionaries are passed to sublattices
 
 ## [0.227.0-rc.0] - 2023-06-13
