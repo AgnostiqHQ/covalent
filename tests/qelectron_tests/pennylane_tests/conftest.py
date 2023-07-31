@@ -18,8 +18,10 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-# pylint: disable=redefined-outer-name
+# pylint: disable=no-member
+# pylint: disable=missing-function-docstring
 # pylint: disable=invalid-name
+# pylint: disable=redefined-outer-name
 
 """
 Configuration that enables easy adoption of Pennylane tests to QElectrons.
@@ -86,43 +88,52 @@ def _check_device_type(device):
 # UTILITIES
 # ------------------------------------------------------------------------------
 
-def _init_QiskitExecutor_local_sampler(qnode):
-    """
-    Creates a QiskitExecutor instance that uses the `"local_sampler"` device.
-    """
-    return ct.executor.QiskitExecutor(  # pylint: disable=no-member
+def _init_Simulator(shots):
+    return ct.executor.Simulator(parallel="thread", shots=shots)
+
+
+def _init_Simulator_cluster(shots):
+    return [
+        ct.executor.Simulator(parallel="thread", shots=shots),
+        ct.executor.Simulator(parallel="thread", shots=shots),
+    ]
+
+
+def _init_QiskitExecutor_local_sampler(shots):
+    return ct.executor.QiskitExecutor(
         device="local_sampler",
-        shots=qnode.device.shots,
+        shots=shots,
     )
 
 
-def _init_QiskitExecutor_local_sampler_cluster(qnode):
-    """
-    Creates a QCluster made of 2 QiskitExecutor instances that use the `"local_sampler"` device.
-    """
-    executors = [
-        ct.executor.QiskitExecutor(  # pylint: disable=no-member
+def _init_QiskitExecutor_local_sampler_cluster(shots):
+    return [
+        ct.executor.QiskitExecutor(
             device="local_sampler",
-            shots=qnode.device.shots,
+            shots=shots,
         ),
-        ct.executor.QiskitExecutor(  # pylint: disable=no-member
+        ct.executor.QiskitExecutor(
             device="local_sampler",
-            shots=qnode.device.shots,
+            shots=shots,
         ),
     ]
 
-    return ct.executor.QCluster(  # pylint: disable=no-member
-        executors=executors,
-        selector=lambda *args: random.choice(executors)
-    )
+
+def _init_LocalBraketQubitExecutor(shots):
+    return ct.executor.LocalBraketQubitExecutor(shots=shots)
 
 
-def _get_wrapped_QNode(use_run_later, qexecutor_name):  # pylint: disable=invalid-name
+def _init_LocalBraketQubitExecutor_cluster(shots):
+    return [
+        ct.executor.LocalBraketQubitExecutor(shots=shots),
+        ct.executor.LocalBraketQubitExecutor(shots=shots),
+    ]
+
+
+def _get_wrapped_QNode(use_run_later, get_executors):  # pylint: disable=invalid-name
     """
     Patches `qml.QNode` to return a QElectron instead.
     """
-
-    executor_init_func = QEXECUTORS_MAP.get(qexecutor_name)
 
     class _PatchedQNode(qml.QNode):
         # pylint: disable=too-few-public-methods
@@ -141,7 +152,7 @@ def _get_wrapped_QNode(use_run_later, qexecutor_name):  # pylint: disable=invali
             # QElectron that wraps the normal QNode
             self.qelectron = ct.qelectron(
                 qnode=qnode,
-                executors=executor_init_func(qnode)
+                executors=get_executors(shots=qnode.device.shots)
             )
 
         def __call__(self, *args, **kwargs):
@@ -169,12 +180,6 @@ def pytest_collection_modifyitems(config, items):  # pylint: disable=unused-argu
 # FIXTURES
 # ------------------------------------------------------------------------------
 
-QEXECUTORS_MAP = {
-    "QiskitExecutor-local_sampler": _init_QiskitExecutor_local_sampler,
-    "QIskitExecutor-local_sampler-cluster": _init_QiskitExecutor_local_sampler_cluster,
-}
-
-
 @pytest.fixture(params=[True, False])
 def use_run_later(request):
     """
@@ -183,20 +188,31 @@ def use_run_later(request):
     return request.param
 
 
-@pytest.fixture(params=QEXECUTORS_MAP.keys())
-def qexecutor_name(request):
+QEXECUTORS = [
+    _init_Simulator,
+    _init_Simulator_cluster,
+    _init_QiskitExecutor_local_sampler,
+    _init_QiskitExecutor_local_sampler_cluster,
+    _init_LocalBraketQubitExecutor,
+    _init_LocalBraketQubitExecutor_cluster,
+]
+
+
+@pytest.fixture(params=QEXECUTORS)
+def get_executors(request):
     """
     Determines the QExecutor that is used.
     """
     return request.param
 
 
+
 @pytest.fixture(autouse=True)
-def patch_qnode_creation(use_run_later, qexecutor_name):
+def patch_qnode_creation(use_run_later, get_executors):
     """
     Wraps the `pennylane.QNode` class such that the `qml.qnode()` decorator
     instead creates QElectrons that wrap a QNode.
     """
-    patched_cls = _get_wrapped_QNode(use_run_later, qexecutor_name)
+    patched_cls = _get_wrapped_QNode(use_run_later, get_executors)
     with patch("pennylane.QNode", new=patched_cls):
         yield

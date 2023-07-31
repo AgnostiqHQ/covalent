@@ -27,11 +27,9 @@ from braket.aws import AwsQuantumTask, AwsQuantumTaskBatch
 
 from covalent._shared_files.config import get_config
 from covalent.executor.qbase import (
-    BaseProcessPoolQExecutor,
     BaseThreadPoolQExecutor,
     QCResult,
     get_thread_pool,
-    get_process_pool
 )
 
 
@@ -44,22 +42,15 @@ _QEXECUTOR_PLUGIN_DEFAULTS = {
 
     "BraketQubitExecutor": {
         "device_arn": "",
-        "s3_destination_folder": "",
         "poll_timeout_seconds": AwsQuantumTask.DEFAULT_RESULTS_POLL_TIMEOUT,
         "poll_interval_seconds": AwsQuantumTask.DEFAULT_RESULTS_POLL_INTERVAL,
-        "aws_session": "",
-        "parallel": False,
-        "max_parallel": None,
         "max_connections": AwsQuantumTaskBatch.MAX_CONNECTIONS_DEFAULT,
         "max_retries": AwsQuantumTaskBatch.MAX_RETRIES,
-        "run_kwargs": {},
         "max_jobs": 20
     },
 
     "LocalBraketQubitExecutor": {
         "backend": "default",
-        "shots": None,
-        "run_kwargs": {},
         "max_jobs": 20
     }
 }
@@ -95,7 +86,7 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
     """
 
     max_jobs: int = 20
-    shots: int = None,
+    shots: Optional[int] = 0
     device_arn: str = None
     poll_timeout_seconds: float = AwsQuantumTask.DEFAULT_RESULTS_POLL_TIMEOUT
     poll_interval_seconds: float = AwsQuantumTask.DEFAULT_RESULTS_POLL_INTERVAL
@@ -104,10 +95,7 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
     max_parallel: Optional[int] = None
     max_connections: int = AwsQuantumTaskBatch.MAX_CONNECTIONS_DEFAULT
     max_retries: int = AwsQuantumTaskBatch.MAX_RETRIES
-    s3_destination_folder: tuple = Field(
-        default_factory=lambda: get_config(
-            "qelectron")["BraketQubitExecutor"]["s3_destination_folder"]
-    )
+    s3_destination_folder: tuple = ()
     run_kwargs: dict = {}
 
     def batch_submit(self, qscripts_list):
@@ -159,7 +147,7 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
         return dict_
 
 
-class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
+class LocalBraketQubitExecutor(BaseThreadPoolQExecutor):
     """
     The local Braket executor based on the existing Pennylane local Braket qubit device.
 
@@ -173,7 +161,7 @@ class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
     """
 
     max_jobs: int = 20
-    shots: int = None
+    shots: Optional[int] = 0
     backend: str = Field(
         default_factory=lambda: get_config("qelectron")["LocalBraketQubitExecutor"]["backend"]
     )
@@ -181,20 +169,20 @@ class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
 
     def batch_submit(self, qscripts_list):
         """
-        Submit qscripts for execution using :code:`num_processes`-many processes.
+        Submit qscripts for execution using :code:`num_threads`-many threads.
 
         Args:
             qscripts_list: a list of Pennylane style :code:`QuantumScripts`.
 
         Returns:
-            jobs: a :code:`list` of :code:`futures` subitted by processes.
+            jobs: a :code:`list` of tasks subitted by threads.
         """
 
         # Check `self.shots` against 0 to allow override with `None`.
         device_shots = self.shots if self.shots != 0 else self.qnode_device_shots
 
-        pool = get_process_pool(self.num_processes)
-        futures = []
+        p = get_thread_pool(self.max_jobs)
+        jobs = []
         for qscript in qscripts_list:
             dev = qml.device(
                 "braket.local.qubit",
@@ -209,10 +197,9 @@ class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
                 executor=self,
             )
 
-            fut = pool.apply_async(self.run_circuit, args=(qscript, dev, result_obj))
-            futures.append(fut)
+            jobs.append(p.submit(self.run_circuit, qscript, dev, result_obj))
 
-        return futures
+        return jobs
 
     def dict(self, *args, **kwargs):
         dict_ = super().dict(*args, **kwargs)

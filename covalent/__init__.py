@@ -40,11 +40,11 @@ from ._workflow import (  # nopycln: import
     TransportableObject,
     electron,
     lattice,
-    qelectron,
 )
 from ._workflow.electron import wait  # nopycln: import
+from ._workflow.qelectron import qelectron  # nopycln: import
 from .executor.utils import get_context  # nopycln: import
-from .quantum import QCluster  #nopycln: import
+from .quantum import QCluster  # nopycln: import
 
 __all__ = [s for s in dir() if not s.startswith("_")]
 
