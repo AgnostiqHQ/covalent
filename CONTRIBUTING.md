@@ -45,6 +45,48 @@ Check the [writing tests](#writing-tests) section for more details on installing
 ```shell
 pytest -v
 ```
+Contribution for Covalent UI
+========================================
+
+## Setup
+
+- Install `node` (v16 or later) and `npm`:
+
+```shell
+# Linux
+curl -sL https://deb.nodesource.com/setup_16.x | bash -
+apt-get install -y nodejs
+
+# macOS
+brew install node
+```
+
+- Install `yarn`:
+
+```shell
+npm install --global yarn
+```
+
+## Build web app
+
+```
+cd covalent_ui/webapp
+yarn install
+yarn build
+```
+
+- The optimized production build of the UI web app lives under `covalent_ui/webapp/build`. It is statically served by the server by default.
+
+## Run web app
+
+```shell
+cd covalent_ui/webapp
+yarn install
+yarn start
+```
+
+- Open `http://localhost:<port>` in your browser.
+- Dispatch workflows to explore them in the UI.
 
 Getting started with feature development
 ========================================
