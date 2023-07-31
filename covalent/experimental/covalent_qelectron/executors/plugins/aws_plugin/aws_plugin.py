@@ -95,7 +95,7 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
     """
 
     max_jobs: int = 20
-    shots: int = None,
+    shots: Optional[int] = 0,
     device_arn: str = None
     poll_timeout_seconds: float = AwsQuantumTask.DEFAULT_RESULTS_POLL_TIMEOUT
     poll_interval_seconds: float = AwsQuantumTask.DEFAULT_RESULTS_POLL_INTERVAL
@@ -173,7 +173,7 @@ class LocalBraketQubitExecutor(BaseProcessPoolQExecutor):
     """
 
     max_jobs: int = 20
-    shots: int = None
+    shots: Optional[int] = 0
     backend: str = Field(
         default_factory=lambda: get_config("qelectron")["LocalBraketQubitExecutor"]["backend"]
     )
