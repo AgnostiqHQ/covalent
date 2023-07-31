@@ -242,7 +242,7 @@ def test_update_config(mocker):
 
     cm.update_config()
 
-    mock_filelock.assert_called_once_with("mock_config_file.lock")
+    mock_filelock.assert_called_once_with("mock_config_file.lock", timeout=1)
     mock_open.assert_called_once_with("mock_config_file", "r+")
     mock_toml_load.assert_called_once_with(mock_open.return_value.__enter__.return_value)
 
