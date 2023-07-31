@@ -67,7 +67,7 @@ class Graph:
         """
         )
         result = self.db_con.execute(sql, {"a": parent_lattice_id})
-        return [GetDispatchNotes.from_orm(node) for node in result.fetchall()]
+        return [GetDispatchNotes.model_validate(node) for node in result.fetchall()]
 
     def get_links(self, parent_lattice_id: int) -> GetDispatchLinks:
         """
@@ -90,7 +90,7 @@ class Graph:
             .join(Electron, Electron.id == ElectronDependency.electron_id)
             .filter(Electron.parent_lattice_id == parent_lattice_id)
         )
-        return [GetDispatchLinks.from_orm(link) for link in links.all()]
+        return [GetDispatchLinks.model_validate(link) for link in links.all()]
 
     def check_error(self, data):
         """
