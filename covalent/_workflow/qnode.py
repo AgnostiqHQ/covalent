@@ -156,7 +156,9 @@ class QNodeQE(qml.QNode):
 
     def __call__(self, *args, **kwargs):
 
-        self.device.qnode_specs = QNodeSpecs(**qml.specs(self)(*args, **kwargs))
+        with self.override_gradient_fn("none"):
+            self.device.qnode_specs = QNodeSpecs(**qml.specs(self)(*args, **kwargs))
+
         with self.override_gradient_fn("device"):
             return super().__call__(*args, **kwargs)
 
