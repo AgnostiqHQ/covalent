@@ -21,7 +21,7 @@ To use it, however, you will need to install the `amazon-braket-pennylane-plugin
 
 and have valid AWS credentials as specified `here <https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html>`_.
 
-================g
+================
 2. Usage Example
 ================
 
@@ -91,11 +91,26 @@ The :code:`BraketQubitExecutor` configuration is found under :code:`[qelectron.B
       - Is Required
       - Default
       - Description
-    * - s3_destination_folder
+    * - device_arn
+      - Yes
+      - "" (blank string)
+      - A unique identifier used to represent and reference AWS resources. Stands for "Amazon Resource Name".
+    * - poll_timeout_seconds
       - No
-      - () an empty tuple
-      - The location of the s3 bucket that simulation data will be stored in. I.e, you can set :code:`s3 = ("my-bucket", "my-prefix")`.
-
+      - 432000
+      - Number of seconds before a poll to remote device is considered timed-out.
+    * - poll_interval_seconds
+      - No
+      - 1
+      - Number of seconds between polling of a remote device's status.
+    * - max_connections
+      - No
+      - 100
+      - the maximum number of connections in the :code:`Boto3` connection pool.
+    * - max_retries
+      - No
+      - 3
+      - The maximum number of times a job will be re-sent if it failed.
 ===========================
 4. Required Cloud Resources
 ===========================
