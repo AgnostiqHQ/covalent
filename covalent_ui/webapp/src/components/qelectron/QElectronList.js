@@ -310,11 +310,15 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
           sx={{
             height: '1rem',
             width: "1480px",
-            '&  .MuiTableRow-root.Mui-selected': {
-              backgroundColor: '#ffffff',
+            backgroundColor: 'transparent',
+            '&.MuiTableRow-root:hover': {
+              backgroundColor: (theme) => theme.palette.background.coveBlack02
             },
-            '& .MuiTableRow-root.Mui-selected:hover': {
-              backgroundColor: (theme) => theme.palette.background.default + '!important',
+            '&.MuiTableRow-root.Mui-selected': {
+              backgroundColor: (theme) => theme.palette.background.coveBlack02
+            },
+            '&.MuiTableRow-root.Mui-selected:hover': {
+              backgroundColor: (theme) => theme.palette.background.default,
             },
             '& .MuiTableCell-root': {
               borderColor: 'transparent',
@@ -362,7 +366,7 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
                   sx={{
                     mx: 1,
                     verticalAlign: 'middle',
-                    fontSize: '1 rem',
+                    fontSize: '0.875 rem',
                     color: (theme) => theme.palette.text.secondary,
                   }}
                   width="13rem"
