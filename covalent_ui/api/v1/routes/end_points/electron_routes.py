@@ -207,7 +207,7 @@ def get_electron_jobs(
     Returns:
         Returns the list of electron jobs
     """
-    with Session(engine) as session:
+    with Session(db.engine) as session:
         electron = Electrons(session)
         jobs = electron.get_jobs(
             dispatch_id=dispatch_id,
@@ -243,7 +243,7 @@ def get_electron_job_overview(dispatch_id: uuid.UUID, electron_id: int, job_id: 
     Returns:
         Returns the electron job details
     """
-    with Session(engine) as session:
+    with Session(db.engine) as session:
         electron = Electrons(session)
         job_overview = electron.get_job_detail(dispatch_id, electron_id, job_id)
         if job_overview is None:
