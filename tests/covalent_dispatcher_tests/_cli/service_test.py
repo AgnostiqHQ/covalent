@@ -21,13 +21,15 @@
 """Tests for Covalent command line interface (CLI) Tool."""
 
 import os
+import signal
 import subprocess
 import sys
 import tempfile
 import venv
 from unittest import mock
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock, Mock, call
 
+import psutil
 import pytest
 import requests
 from click.testing import CliRunner
@@ -35,6 +37,8 @@ from click.testing import CliRunner
 from covalent_dispatcher._cli.service import (
     MIGRATION_COMMAND_MSG,
     MIGRATION_WARNING_MSG,
+    STOPPED_PROCESS_STATUS_MSG,
+    ZOMBIE_PROCESS_STATUS_MSG,
     _graceful_shutdown,
     _graceful_start,
     _is_server_running,
@@ -55,6 +59,8 @@ from covalent_dispatcher._db.datastore import DataStore
 
 STOPPED_SERVER_STATUS_ECHO = "Covalent server is stopped.\n"
 RUNNING_SERVER_STATUS_ECHO = "Covalent server is running at http://localhost:42.\n"
+STOPPED_PROCESS_STATUS_ECHO = STOPPED_PROCESS_STATUS_MSG + "\n"
+ZOMBIE_PROCESS_STATUS_ECHO = ZOMBIE_PROCESS_STATUS_MSG + "\n"
 
 
 def has_conda():
@@ -447,26 +453,31 @@ def test_restart_preserves_nocluster(mocker, port_tag, port, pid, server, no_clu
 
 
 @pytest.mark.parametrize(
-    "port_val,pid,echo_output,file_removed,pid_exists",
+    "port_val,pid,echo_output,file_removed,pid_exists,process_status",
     [
-        (None, -1, STOPPED_SERVER_STATUS_ECHO, True, False),
-        (42, 42, RUNNING_SERVER_STATUS_ECHO, False, True),
-        (42, 42, STOPPED_SERVER_STATUS_ECHO, True, False),
+        (None, -1, STOPPED_SERVER_STATUS_ECHO, True, False, None),
+        (42, 42, RUNNING_SERVER_STATUS_ECHO, False, True, psutil.STATUS_RUNNING),
+        (42, 42, STOPPED_SERVER_STATUS_ECHO, True, False, None),
+        (42, 42, ZOMBIE_PROCESS_STATUS_ECHO, False, True, psutil.STATUS_ZOMBIE),
+        (42, 42, STOPPED_PROCESS_STATUS_ECHO, False, True, psutil.STATUS_STOPPED),
     ],
 )
-def test_status(mocker, port_val, pid, echo_output, file_removed, pid_exists):
+def test_status(mocker, port_val, pid, echo_output, file_removed, pid_exists, process_status):
     """Test covalent status command."""
 
     mocker.patch("covalent_dispatcher._cli.service.get_config", return_value=port_val)
     mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=pid)
     mocker.patch("psutil.pid_exists", return_value=pid_exists)
+    mocker.patch("psutil.Process.status", return_value=process_status)
     rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
+    process_mock = Mock(spec=psutil.Process)
+    process_mock.status.return_value = process_status
+    with mocker.patch("psutil.Process", return_value=process_mock):
+        runner = CliRunner()
+        res = runner.invoke(status)
 
-    runner = CliRunner()
-    res = runner.invoke(status)
-
-    assert res.output == echo_output
-    assert rm_pid_file_mock.called is file_removed
+        assert res.output == echo_output
+        assert rm_pid_file_mock.called is file_removed
 
 
 def test_is_server_running(mocker):
@@ -1130,7 +1141,40 @@ def test_terminate_child_processes(mocker):
     psutil_process_mock = mocker.patch(
         "covalent_dispatcher._cli.service.psutil.Process", return_value=MagicMock()
     )
+    children_mock = MagicMock()
+    psutil_process_mock.return_value.children.return_value = [children_mock]
+    wait_procs_mock = mocker.patch("covalent_dispatcher._cli.service.psutil.wait_procs")
 
     _terminate_child_processes(1)
 
-    psutil_process_mock.assert_called_with(1)
+    psutil_process_mock.assert_has_calls(
+        [
+            call(1),
+            call(children_mock.pid),
+        ]
+    )
+    psutil_process_mock.return_value.children.assert_has_calls(
+        [
+            call(),
+            call(recursive=True),
+        ]
+    )
+    children_mock.send_signal.assert_called_once_with(signal.SIGINT)
+    children_mock.kill.assert_called_once_with()
+    wait_procs_mock.assert_called_once_with([children_mock])
+    children_mock.wait.assert_called_once_with()
+
+
+def test_graceful_start_permission_exception(mocker):
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start",
+        side_effect=PermissionError("Permission denied"),
+    )
+    click_secho_mock = mocker.patch("covalent_dispatcher._cli.service.click.secho")
+
+    runner = CliRunner()
+    result = runner.invoke(start)
+    assert result.exit_code == 1
+
+    assert graceful_start_mock.called_once()
+    assert click_secho_mock.call_count == 3

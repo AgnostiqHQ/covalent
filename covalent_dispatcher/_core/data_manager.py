@@ -34,7 +34,7 @@ from covalent._shared_files.defaults import sublattice_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport_graph_ops import TransportGraphOps
-from covalent.experimental.qelectron_utils import extract_qelectron_db, write_qelectron_db
+from covalent._shared_files.qelectron_utils import extract_qelectron_db, write_qelectron_db
 
 from .._db import load, update, upsert
 from .._db.write_result_to_db import resolve_electron_id

@@ -20,10 +20,10 @@
 
 """Lattice Data Layer"""
 
-from datetime import timezone
 from typing import List
 from uuid import UUID
 
+from sqlalchemy import extract
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import desc, func
 
@@ -57,20 +57,20 @@ class Lattices:
                 Lattice.results_filename,
                 Lattice.docstring_filename,
                 Lattice.started_at.label("start_time"),
-                func.IFNULL((Lattice.completed_at), None).label("end_time"),
+                func.coalesce((Lattice.completed_at), None).label("end_time"),
                 Lattice.electron_num.label("total_electrons"),
                 Lattice.completed_electron_num.label("total_electrons_completed"),
                 (
                     (
-                        func.strftime(
-                            "%s",
-                            func.IFNULL(Lattice.completed_at, func.datetime.now(timezone.utc)),
+                        func.coalesce(
+                            extract("epoch", Lattice.completed_at),
+                            extract("epoch", func.now()),
                         )
-                        - func.strftime("%s", Lattice.started_at)
+                        - extract("epoch", Lattice.started_at)
                     )
                     * 1000
                 ).label("runtime"),
-                func.IFNULL((Lattice.updated_at), None).label("updated_at"),
+                func.coalesce((Lattice.updated_at), None).label("updated_at"),
             )
             .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
             .first()
@@ -112,21 +112,6 @@ class Lattices:
             .first()
         )
 
-    def get_lattice_id_by_dispatch_id(self, dispatch_id: UUID):
-        """
-        Get top lattice id from dispatch id
-        Args:
-            dispatch_id: UUID of dispatch
-        Returns:
-            Top most lattice id
-        """
-        data = (
-            self.db_con.query(Lattice.id)
-            .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.electron_id.is_(None))
-            .first()
-        )
-        return data[0]
-
     def get_sub_lattice_details(self, sort_by, sort_direction, dispatch_id) -> List[Lattice]:
         """
         Get summary of sub lattices
@@ -143,11 +128,10 @@ class Lattices:
                 Lattice.name.label("lattice_name"),
                 (
                     (
-                        func.strftime(
-                            "%s",
-                            func.IFNULL(Lattice.completed_at, func.datetime.now(timezone.utc)),
+                        func.coalesce(
+                            extract("epoch", Lattice.completed_at), extract("epoch", func.now())
                         )
-                        - func.strftime("%s", Lattice.started_at)
+                        - extract("epoch", Lattice.started_at)
                     )
                     * 1000
                 ).label("runtime"),
@@ -155,9 +139,7 @@ class Lattices:
                 Lattice.completed_electron_num.label("total_electrons_completed"),
                 Lattice.status.label("status"),
                 Lattice.started_at.label("started_at"),
-                func.IFNULL((Lattice.completed_at), None).label("ended_at"),
-                Lattice.updated_at.label("updated_at"),
-                Lattice.updated_at.label("updated_at"),
+                func.coalesce((Lattice.completed_at), None).label("ended_at"),
                 Lattice.updated_at.label("updated_at"),
             )
             .filter(

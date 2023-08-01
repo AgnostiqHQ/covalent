@@ -131,3 +131,19 @@ class Electron(Base):
     updated_at = Column(DateTime, nullable=False, onupdate=func.now(), server_default=func.now())
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
+    job_id = Column(Integer, ForeignKey("jobs.id", name="job_id_link"), nullable=False)
+
+
+class Job(Base):
+    __tablename__ = "jobs"
+    id = Column(Integer, primary_key=True)
+
+    # Indicates whether the job has been requested to be cancelled
+    cancel_requested = Column(Boolean, nullable=False, default=False)
+
+    # Indicates whether the task cancellation succeeded (return value
+    # of Executor.cancel())
+    cancel_successful = Column(Boolean, nullable=False, default=False)
+
+    # JSON-serialized identifier for job
+    job_handle = Column(Text, nullable=False, default="null")
