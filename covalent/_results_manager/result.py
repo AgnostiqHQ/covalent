@@ -27,11 +27,11 @@ from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import postprocess_prefix, prefix_separator, sublattice_prefix
+from .._shared_files.qelectron_utils import QE_DB_DIRNAME
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.lattice import Lattice
 from .._workflow.transport import TransportableObject
-from ..experimental.covalent_qelectron.quantum_server import database as qe_db
-from ..experimental.qelectron_utils import QE_DB_DIRNAME
+from ..quantum.qserver import database as qe_db
 
 if TYPE_CHECKING:
     from .._shared_files.util_classes import Status
