@@ -87,7 +87,7 @@ const ResultsTableHead = ({ order, orderBy, onSort }) => {
                 border: 'none',
                 borderColor:
                   theme.palette.background.coveBlack03 + '!important',
-                paddingLeft: header?.id === 'executor' ? '2.3rem' : header?.id === 'start_time' ? '1.3rem' : ''
+                paddingLeft: header?.id === 'executor' ? '2.3rem' : header?.id === 'start_time' ? '0.5rem' : ''
               })}
             >
               {header.sortable ? (
@@ -367,10 +367,10 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
                   sx={{
                     mx: 1,
                     verticalAlign: 'middle',
-                    fontSize: '0.875 rem',
+                    fontSize: '0.875rem',
                     color: (theme) => theme.palette.text.secondary,
                   }}
-                  width="13rem"
+                  width="12rem"
                 >
                   {truncateMiddle(result?.job_id, 8, 13)}
                 </Typography>
@@ -387,7 +387,7 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
               sx={{
                 display: 'flex',
                 fontSize: '14px',
-                width: '6.5rem'
+                width: '7rem'
               }}
             >
               {formatDate(getLocalStartTime(result?.start_time))}
