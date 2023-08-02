@@ -171,8 +171,7 @@ class QNodeQE(qml.QNode):
 
         # Some args or some kwargs are trainable. No warning expected.
         if (
-            any(qml.math.get_trainable_indices(args)) or
-            any(qml.math.get_trainable_indices(kwargs.values()))
+            any(qml.math.get_trainable_indices(args)) or any(qml.math.get_trainable_indices(kwargs.values()))
         ):
             return QNodeSpecs(**qml.specs(self)(*args, **kwargs))
 
@@ -207,8 +206,7 @@ class QNodeQE(qml.QNode):
         `override_gradient_fn`) every second time the property is accessed.
         """
         if (
-            self._override_gradient_fn and
-            self._gradient_access_counter >= self.gradient_access_max
+            self._override_gradient_fn and self._gradient_access_counter >= self.gradient_access_max
         ):
             self.reset_gradient_counter()
             return self._override_gradient_fn
