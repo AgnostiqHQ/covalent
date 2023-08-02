@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from typing import Union
+from typing import Optional, Union
 
 from ...executor.qbase import (
     BaseProcessPoolQExecutor,
@@ -51,7 +51,7 @@ class Simulator(BaseQExecutor):
     device: str = "default.qubit"
     parallel: Union[bool, str] = "thread"
     workers: int = 10
-    shots: int = 0
+    shots: Optional[int] = 0
 
     _backend: BaseQExecutor = None
 

@@ -99,7 +99,7 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
     """
 
     max_jobs: int = 20
-    shots: int = 0
+    shots: Optional[int] = 0
 
     backend: str = Field(
         default_factory=lambda: get_config("qelectron")["IBMQExecutor"]["backend"]
