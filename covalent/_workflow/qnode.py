@@ -24,9 +24,9 @@ from typing import Any, Dict, List, Optional
 import pennylane as qml
 from pydantic import BaseModel  # pylint: disable=no-name-in-module
 
-from .qdevice import QEDevice
 from .._results_manager.qresult import QNodeFutureResult
 from ..executor.qbase import BaseQExecutor
+from .qdevice import QEDevice
 
 
 class QNodeSpecs(BaseModel):
@@ -156,11 +156,29 @@ class QNodeQE(qml.QNode):
 
     def __call__(self, *args, **kwargs):
 
-        with self.override_gradient_fn("none"):
-            self.device.qnode_specs = QNodeSpecs(**qml.specs(self)(*args, **kwargs))
-
+        self.device.qnode_specs = self._specs(*args, **kwargs)
         with self.override_gradient_fn("device"):
             return super().__call__(*args, **kwargs)
+
+    def _specs(self, *args, **kwargs) -> QNodeSpecs:
+        """
+        Check args and kwargs to avoid computing gradients on non-trainable parameters.
+        """
+
+        # No args or kwargs to worry about.
+        if not args and not kwargs:
+            return QNodeSpecs(**qml.specs(self)(*args, **kwargs))
+
+        # Some args or some kwargs are trainable. No warning expected.
+        if (
+            any(qml.math.get_trainable_indices(args)) or
+            any(qml.math.get_trainable_indices(kwargs.values()))
+        ):
+            return QNodeSpecs(**qml.specs(self)(*args, **kwargs))
+
+        # No trainable params. Avoid warning.
+        with self.override_gradient_fn("none"):
+            return QNodeSpecs(**qml.specs(self)(*args, **kwargs))
 
     @contextmanager
     def override_gradient_fn(self, gradient_fn):
