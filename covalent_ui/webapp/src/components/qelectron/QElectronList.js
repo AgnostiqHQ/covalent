@@ -87,6 +87,7 @@ const ResultsTableHead = ({ order, orderBy, onSort }) => {
                 border: 'none',
                 borderColor:
                   theme.palette.background.coveBlack03 + '!important',
+                paddingLeft: header?.id === 'executor' ? '2.3rem' : header?.id === 'start_time' ? '1.3rem' : ''
               })}
             >
               {header.sortable ? (
@@ -386,6 +387,7 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
               sx={{
                 display: 'flex',
                 fontSize: '14px',
+                width: '6.5rem'
               }}
             >
               {formatDate(getLocalStartTime(result?.start_time))}
