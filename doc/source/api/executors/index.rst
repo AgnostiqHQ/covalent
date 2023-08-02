@@ -25,6 +25,7 @@ Plugins
    awsec2
    awsecs
    awsbatch
+   azurebatch
    gcpbatch
 
 Base executor
@@ -50,4 +51,6 @@ Quantum executors are special executors designed for quantum circuits. Together 
 
    qiskit
    ibmq
+   braketqubit
+   localbraketqubit
    simulator

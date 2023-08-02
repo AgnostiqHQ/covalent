@@ -256,7 +256,7 @@ async def _run_task(
             user_fn = ser_user_fn.get_deserialized()
             
             try:
-                mod_qe_utils = importlib.import_module("covalent.experimental.qelectron_utils")
+                mod_qe_utils = importlib.import_module("covalent._shared_files.qelectron_utils")
 
                 with set_context(node_id, dispatch_id):
                     res = user_fn(*args, **kwargs)
