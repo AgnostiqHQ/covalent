@@ -21,7 +21,7 @@
 """Electrons Route"""
 
 import uuid
-from typing import Optional
+from typing import List, Optional
 
 from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy.orm import Session
@@ -35,6 +35,8 @@ from covalent_ui.api.v1.models.electrons_model import (
     ElectronFileOutput,
     ElectronFileResponse,
     ElectronResponse,
+    JobDetailsResponse,
+    JobsResponse,
 )
 from covalent_ui.api.v1.utils.file_handle import FileHandler, validate_data
 from covalent_ui.api.v1.utils.models_helper import JobsSortBy, SortDirection
@@ -189,7 +191,7 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
             )
 
 
-@routes.get("/{dispatch_id}/electron/{electron_id}/jobs")
+@routes.get("/{dispatch_id}/electron/{electron_id}/jobs", response_model=List[JobsResponse])
 def get_electron_jobs(
     dispatch_id: uuid.UUID,
     electron_id: int,
@@ -197,7 +199,7 @@ def get_electron_jobs(
     sort_direction: Optional[SortDirection] = SortDirection.DESCENDING,
     count: Optional[int] = None,
     offset: Optional[int] = Query(0),
-) -> dict:
+) -> List[JobsResponse]:
     """Get Electron Jobs List
 
     Args:
@@ -209,7 +211,7 @@ def get_electron_jobs(
     """
     with Session(db.engine) as session:
         electron = Electrons(session)
-        jobs = electron.get_jobs(
+        jobs: List[JobsResponse] = electron.get_jobs(
             dispatch_id=dispatch_id,
             electron_id=electron_id,
             sort_by=sort_by,
@@ -231,8 +233,12 @@ def get_electron_jobs(
         return jobs
 
 
-@routes.get("/{dispatch_id}/electron/{electron_id}/jobs/{job_id}")
-def get_electron_job_overview(dispatch_id: uuid.UUID, electron_id: int, job_id: str):
+@routes.get(
+    "/{dispatch_id}/electron/{electron_id}/jobs/{job_id}", response_model=JobDetailsResponse
+)
+def get_electron_job_overview(
+    dispatch_id: uuid.UUID, electron_id: int, job_id: str
+) -> JobDetailsResponse:
     """Get Electron Job Detail
 
     Args:

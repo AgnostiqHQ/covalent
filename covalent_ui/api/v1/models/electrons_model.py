@@ -29,6 +29,19 @@ from pydantic import BaseModel
 from covalent_ui.api.v1.utils.status import Status
 
 
+class JobsResponse(BaseModel):
+    job_id: Union[str, None]
+    start_time: Union[datetime, None]
+    executor: Union[str, None]
+    status: Union[str, None]
+
+
+class JobDetailsResponse(BaseModel):
+    overview: Union[dict, None]
+    circuit: Union[dict, None]
+    executor: Union[dict, None]
+
+
 class ElectronResponse(BaseModel):
     """Electron Response Model"""
 
