@@ -35,7 +35,7 @@ EXECUTORS = [
 @pytest.mark.parametrize("executor", EXECUTORS)
 def test_qaoa(executor):
     """
-    Test that the `run_later` produces the same result as the normal call for
+    Test that `run_later` produces the same result as the normal call.
     """
     from pennylane import qaoa
     from networkx import Graph
@@ -61,3 +61,36 @@ def test_qaoa(executor):
     output_2 = circuit.run_later(inputs.copy()).result()
 
     assert isclose(output_1, output_2, rtol=0.1), "Call and run later results are different"
+
+
+@pytest.mark.parametrize("executor", EXECUTORS)
+def test_multi_return_async(executor):
+    """
+    Test that `run_later` produces the same result as the normal call.
+    """
+
+    @qml.qnode(qml.device("default.qubit", wires=2, shots=4096))
+    def circuit(theta):
+        qml.Hadamard(wires=0)
+        qml.CNOT(wires=[0, 1])
+        qml.RY(theta, wires=0)
+
+        return [
+            qml.expval(qml.PauliZ(0) @ qml.PauliZ(1)),
+            qml.expval(qml.PauliZ(0) @ qml.PauliX(1)),
+            qml.expval(qml.PauliX(0) @ qml.PauliZ(1)),
+            qml.expval(qml.PauliX(0) @ qml.PauliX(1)),
+        ]
+
+    qe_circuit = ct.qelectron(circuit, executors=executor)
+
+    thetas = [0.1, 0.9]
+
+    output_1 = [circuit(theta) for theta in thetas]
+
+    futures = [qe_circuit.run_later(theta) for theta in thetas]
+    output_2 = [future.result() for future in futures]
+
+    msg = "Call and run later results are different"
+    for o1, o2 in zip(output_1, output_2):
+        assert isclose(o1, o2, atol=0.1).all(), msg
