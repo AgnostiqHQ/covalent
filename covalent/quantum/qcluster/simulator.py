@@ -35,6 +35,7 @@ SIMULATOR_DEVICES = [
     'default.qubit.jax',
     'default.qubit.tf',
     'default.qubit.torch',
+    'default.gaussian',
     'lightning.qubit',
 ]
 
@@ -48,7 +49,8 @@ class Simulator(BaseQExecutor):
     Keyword Args:
         device: A valid string corresponding to a Pennylane device. Simulation-based
             devices (e.g. "default.qubit" and "lightning.qubit") are recommended.
-            Defaults to "default.qubit".
+            Defaults to "default.qubit" or "default.gaussian" depending on the
+            decorated QNode's device.
         parallel: The type of parallelism to use. Valid values are "thread" and
             "process". Passing any other value will result in synchronous execution.
             Defaults to "thread".
@@ -73,12 +75,18 @@ class Simulator(BaseQExecutor):
 
     def batch_submit(self, qscripts_list):
 
-        if self.parallel == "process":
-            self._backend = BaseProcessPoolQExecutor(num_processes=self.workers, device=self.device)
-        elif self.parallel == "thread":
-            self._backend = BaseThreadPoolQExecutor(num_threads=self.workers, device=self.device)
+        # Defer to original QNode's device type in special cases.
+        if self.qnode_device_name in ["default.gaussian"]:
+            device = self.qnode_device_name
         else:
-            self._backend = SyncBaseQExecutor(device=self.device)
+            device = self.device
+
+        if self.parallel == "process":
+            self._backend = BaseProcessPoolQExecutor(num_processes=self.workers, device=device)
+        elif self.parallel == "thread":
+            self._backend = BaseThreadPoolQExecutor(num_threads=self.workers, device=device)
+        else:
+            self._backend = SyncBaseQExecutor(device=device)
 
         # Check `self.shots` against 0 to allow override with `None`.
         device_shots = self.shots if self.shots != 0 else self.qnode_device_shots
