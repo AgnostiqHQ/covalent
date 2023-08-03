@@ -124,6 +124,32 @@ class QCResult(BaseModel):
     execution_time: float = None
     metadata: Dict[str, Any] = Field(default_factory=lambda: {"execution_metadata": []})
 
+    def expand(self) -> List['QCResult']:
+        """
+        Expand result object into a list of result objects, one for each execution.
+        """
+        result_objs = []
+        for i, result in enumerate(self.results):
+
+            # Copy other non-execution metadata.
+            _result_obj = QCResult(
+                results=[result],
+                execution_time=self.execution_time,
+                metadata={}
+            )
+
+            # Populate corresponding metadata.
+            _result_obj.metadata.update(
+                execution_metadata=[self.metadata["execution_metadata"][i]],
+                device_name=self.metadata["device_name"],
+                executor_name=self.metadata["executor_name"],
+                executor_backend_name=self.metadata["executor_backend_name"],
+            )
+
+            result_objs.append(_result_obj)
+
+        return result_objs
+
     @classmethod
     def with_metadata(cls, *, device_name: str, executor: BaseQExecutor):
         """
