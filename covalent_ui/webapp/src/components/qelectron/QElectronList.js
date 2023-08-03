@@ -46,7 +46,7 @@ import {
 } from '@mui/material'
 
 import { statusIcon, getLocalStartTime, formatDate, truncateMiddle } from '../../utils/misc'
-
+import { Table as RTable } from 'react-virtualized';
 import { ReactComponent as FilterSvg } from '../../assets/qelectron/filter.svg'
 import CopyButton from '../common/CopyButton'
 import useMediaQuery from '@mui/material/useMediaQuery'
@@ -75,46 +75,6 @@ const headers = [
   },
 ]
 
-// const ResultsTableToolbar = ({ query, onSearch, setQuery }) => {
-//   return (
-//     <Toolbar disableGutters sx={{ mb: 1, width: '260px', height: '32px' }}>
-//       <Input
-//         fullWidth
-//         sx={{
-//           px: 1,
-//           py: 0.5,
-//           height: '32px',
-//           border: '1px solid #303067',
-//           borderRadius: '60px',
-//         }}
-//         disableUnderline
-//         placeholder="Search in logs"
-//         value={query}
-//         onChange={(e) => onSearch(e)}
-//         startAdornment={
-//           <InputAdornment position="start">
-//             <SearchIcon sx={{ color: 'text.secondary', fontSize: 16 }} />
-//           </InputAdornment>
-//         }
-//         endAdornment={
-//           <InputAdornment
-//             position="end"
-//             sx={{ visibility: !!query ? 'visible' : 'hidden' }}
-//           >
-//             <IconButton
-//               size="small"
-//               onClick={() => setQuery('')}
-//               data-testid="clear"
-//             >
-//               <ClearIcon fontSize="inherit" sx={{ color: 'text.secondary' }} />
-//             </IconButton>
-//           </InputAdornment>
-//         }
-//       />
-//     </Toolbar>
-//   )
-// }
-
 const ResultsTableHead = ({ order, orderBy, onSort }) => {
   return (
     <TableHead sx={{ position: 'sticky', zIndex: 19 }}>
@@ -124,8 +84,10 @@ const ResultsTableHead = ({ order, orderBy, onSort }) => {
             <TableCell
               key={header.id}
               sx={(theme) => ({
+                border: 'none',
                 borderColor:
                   theme.palette.background.coveBlack03 + '!important',
+                paddingLeft: header?.id === 'executor' ? '2.3rem' : header?.id === 'start_time' ? '0.5rem' : ''
               })}
             >
               {header.sortable ? (
@@ -304,6 +266,148 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
   //   }
   // }
 
+  const renderHeader = () => {
+    return (<>
+      {!(_.isEmpty(data)) &&
+        <ResultsTableHead
+          //   totalRecords={totalRecords}
+          order={sortOrder}
+          orderBy={sortColumn}
+          numSelected={_.size(selected)}
+          total={_.size(data)}
+          onSort={handleChangeSort}
+        />}
+    </>
+    )
+  }
+
+  const getReactVirHeight = () => {
+    let height = !expanded ? 450 : 200
+    if (isHeightAbove940px) {
+      height = !expanded ? 600 : 400
+    }
+    if (isHeightAbove1040px) {
+      height = !expanded ? 750 : 500
+    }
+    return height;
+  }
+
+  const getReactVirCount = () => {
+    let count = expanded ? 3 : 5;
+    if (isHeightAbove940px) {
+      count = !expanded ? 5 : 8
+    }
+    if (isHeightAbove1040px) {
+      count = !expanded ? 8 : 11;
+    }
+    return count;
+  }
+
+  function renderRow({ index, key, style }) {
+    const result = data[index]
+    return (
+      <div key={key} className="row" style={style}>
+        <TableRow
+          sx={{
+            height: '1rem',
+            width: "1480px",
+            backgroundColor: 'transparent',
+            '&.MuiTableRow-root:hover': {
+              backgroundColor: (theme) => theme.palette.background.coveBlack02
+            },
+            '&.MuiTableRow-root.Mui-selected': {
+              backgroundColor: (theme) => theme.palette.background.coveBlack02
+            },
+            '&.MuiTableRow-root.Mui-selected:hover': {
+              backgroundColor: (theme) => theme.palette.background.default,
+            },
+            '& .MuiTableCell-root': {
+              borderColor: 'transparent',
+              paddingTop: 0.2,
+              paddingBottom: 0.1,
+              cursor: 'pointer'
+            },
+            '& .MuiTableCell-root:first-of-type': {
+              borderTopLeftRadius: 8,
+              borderBottomLeftRadius: 8,
+            },
+            '& .MuiTableCell-root:last-of-type': {
+              borderTopRightRadius: 8,
+              borderBottomRightRadius: 8,
+            }
+          }}
+          data-testid="copyMessage"
+          data-tip
+          data-for="logRow"
+          onClick={() => {
+            setExpanded(true);
+            setSelectedId(result?.job_id)
+            rowClick(result?.job_id)
+          }}
+          hover
+          selected={result?.job_id === selectedId}
+          key={key}
+        >
+          <TableCell
+            sx={{
+              fontFamily: (theme) => theme.typography.logsFont,
+            }}
+          >
+            <Grid
+              sx={{
+                fontSize: '14px',
+                display: 'flex',
+                alignItems: 'center',
+              }}
+            >
+              {statusIcon(result?.status)}
+              <Tooltip title={result?.job_id} placement="left">
+                <Typography
+                  component="span"
+                  sx={{
+                    mx: 1,
+                    verticalAlign: 'middle',
+                    fontSize: '0.875rem',
+                    color: (theme) => theme.palette.text.secondary,
+                  }}
+                  width="12rem"
+                >
+                  {truncateMiddle(result?.job_id, 8, 13)}
+                </Typography>
+              </Tooltip>
+              <CopyButton
+                isBorderPresent
+                content={result?.job_id}
+                backgroundColor='#08081A'
+              />
+            </Grid>
+          </TableCell>
+          <TableCell>
+            <Box
+              sx={{
+                display: 'flex',
+                fontSize: '14px',
+                width: '7rem'
+              }}
+            >
+              {formatDate(getLocalStartTime(result?.start_time))}
+            </Box>
+          </TableCell>
+          <TableCell>
+            <Box
+              sx={{
+                display: 'flex',
+                fontSize: '14px',
+              }}
+            >
+              {result.executor}
+            </Box>
+          </TableCell>
+        </TableRow>
+      </div >
+    );
+  }
+
   return (
     <Grid
       mt={3}
@@ -319,119 +423,38 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
         ...(isHeightAbove1040px && {
           height: expanded ? '36rem' : '51.5rem',
         }),
-        overflow: 'auto',
         background: (theme) => theme.palette.background.qListBg,
       }}
     >
       <Box data-testid="logsTable">
         {!isFetching && data && (
-          <Grid>
-            <TableContainer
-              sx={{
-                borderRadius: _.isEmpty(data) && !data ? '0px' : '8px',
-              }}
-            >
-              <StyledTable stickyHeader>
-                {!(_.isEmpty(data)) &&
-                  <ResultsTableHead
-                    //   totalRecords={totalRecords}
-                    order={sortOrder}
-                    orderBy={sortColumn}
-                    numSelected={_.size(selected)}
-                    total={_.size(data)}
-                    onSort={handleChangeSort}
-                  />}
+          <Grid sx={{
+            height: expanded ? '17rem' : '33rem',
+            ...(isHeightAbove850px && {
+              height: expanded ? '23.5rem' : '39.25rem',
+            }),
+            ...(isHeightAbove940px && {
+              height: expanded ? '29rem' : '44.75rem',
+            }),
+            ...(isHeightAbove1040px && {
+              height: expanded ? '36rem' : '51.5rem',
+            })
+          }}
+            ml={1} >
 
-                <TableBody>
-                  {data &&
-                    data.map((result, index) => (
-                      <>
-                        <TableRow
-                          sx={{
-                            height: '2.5rem'
-                          }}
-                          data-testid="copyMessage"
-                          data-tip
-                          data-for="logRow"
-                          onClick={() => {
-                            setExpanded(true);
-                            setSelectedId(result?.job_id)
-                            rowClick(result?.job_id)
-                          }}
-                          hover
-                          selected={result?.job_id === selectedId}
-                          key={index}
-                        >
-                          <TableCell
-                            sx={{
-                              fontFamily: (theme) => theme.typography.logsFont,
-                            }}
-                          >
-                            <Grid
-                              sx={{
-                                fontSize: '14px',
-                                display: 'flex',
-                                alignItems: 'center',
-                              }}
-                            >
-                              {statusIcon(result?.status)}
-                              <Tooltip title={result?.job_id} placement="left">
-                                <Typography
-                                  component="span"
-                                  sx={{
-                                    mx: 1,
-                                    verticalAlign: 'middle',
-                                    fontSize: '1 rem',
-                                    color: (theme) => theme.palette.text.secondary,
-                                  }}
-                                  width="13rem"
-                                >
-                                  {truncateMiddle(result?.job_id, 8, 13)}
-                                </Typography>
-                              </Tooltip>
-                              <CopyButton
-                                isBorderPresent
-                                content={result?.job_id}
-                                backgroundColor='#08081A'
-                              />
-                            </Grid>
-                          </TableCell>
-                          <TableCell>
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                fontSize: '14px',
-                              }}
-                            >
-                              {formatDate(getLocalStartTime(result?.start_time))}
-                            </Box>
-                          </TableCell>
-                          <TableCell>
-                            <Box
-                              sx={{
-                                display: 'flex',
-                                fontSize: '14px',
-                              }}
-                            >
-                              {result.executor}
-                            </Box>
-                          </TableCell>
-                        </TableRow>
-                        {/* <ReactTooltip
-                          id="logRow"
-                          place="top"
-                          effect="float"
-                          arrowColor="#1C1C46"
-                          backgroundColor="#1C1C46"
-                          delayShow={300}
-                        >
-                          {!copied ? 'Click to copy log message' : 'Copied'}
-                        </ReactTooltip> */}
-                      </>
-                    ))}
-                </TableBody>
-              </StyledTable>
-            </TableContainer>
+            {!_.isEmpty(data) && !isFetching &&
+              <RTable
+                width={680}
+                height={getReactVirHeight()}
+                rowHeight={50}
+                // eslint-disable-next-line react/jsx-no-bind
+                headerRowRenderer={renderHeader}
+                // eslint-disable-next-line react/jsx-no-bind
+                rowRenderer={renderRow}
+                rowCount={data?.length}
+                overscanRowCount={getReactVirCount()}
+                rowGetter={({ index }) => data[index]}
+              />}
 
             {_.isEmpty(data) && !isFetching && (
               <Typography
@@ -447,8 +470,9 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
               </Typography>
             )}
           </Grid>
-        )}
-      </Box>
+        )
+        }
+      </Box >
       {isFetching && _.isEmpty(data) && (
         <>
           {/*  */}

@@ -18,11 +18,11 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from datetime import timedelta, timezone
-
 import codecs
 import pickle
 import uuid
+from datetime import timedelta
+from typing import List
 
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
@@ -30,13 +30,14 @@ from sqlalchemy import extract
 from sqlalchemy.sql import func
 
 from covalent._results_manager.results_manager import get_result
+from covalent.quantum.qserver.database import Database
 from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
 from covalent_dispatcher._service.app import get_result
-from covalent.quantum.qserver.database import Database
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.lattices import Lattice
-from covalent_ui.api.v1.utils.models_helper import JobsSortBy, SortDirection
+from covalent_ui.api.v1.models.electrons_model import JobDetailsResponse, JobsResponse
 from covalent_ui.api.v1.utils.file_handle import validate_data
+from covalent_ui.api.v1.utils.models_helper import JobsSortBy, SortDirection
 
 
 class Electrons:
@@ -54,7 +55,7 @@ class Electrons:
         sort_direction: SortDirection,
         count,
         offset,
-    ):
+    ) -> List[JobsResponse]:
         try:
             jobs = self.qdb.get_db(dispatch_id=str(dispatch_id), node_id=electron_id)
             jobs_list = [
@@ -72,30 +73,38 @@ class Electrons:
                 reverse=sort_direction == SortDirection.DESCENDING, key=lambda d: d[sort_by.value]
             )
             result = (
-                jobs_list[offset: count + offset] if count is not None else jobs_list[offset:]
+                jobs_list[offset : count + offset] if count is not None else jobs_list[offset:]
             )
             return result
         except:
             return None
 
-    def get_job_detail(self, dispatch_id, electron_id, job_id):
+    def get_job_detail(self, dispatch_id, electron_id, job_id) -> JobDetailsResponse:
         try:
-            selected_job = self.qdb.get_db(
-                dispatch_id=str(dispatch_id),
-                node_id=electron_id)[job_id]
+            selected_job = self.qdb.get_db(dispatch_id=str(dispatch_id), node_id=electron_id)[
+                job_id
+            ]
             selected_job["result"] = str(selected_job["result"])[1:-1]
             job_overview = {
                 "overview": {
-                    "job_name": selected_job["circuit_name"] if "circuit_name" in selected_job else None,
+                    "job_name": selected_job["circuit_name"]
+                    if "circuit_name" in selected_job
+                    else None,
                     "backend": selected_job["result_metadata"]["executor_backend_name"]
-                    if "result_metadata" in selected_job and "executor_backend_name" in selected_job["result_metadata"] else None,
-                    "time_elapsed": selected_job["execution_time"] if "execution_time" in selected_job else None,
+                    if "result_metadata" in selected_job
+                    and "executor_backend_name" in selected_job["result_metadata"]
+                    else None,
+                    "time_elapsed": selected_job["execution_time"]
+                    if "execution_time" in selected_job
+                    else None,
                     "result": selected_job["result"] if "result" in selected_job else None,
                     "status": "COMPLETED"
                     if len(selected_job["result"]) != 0
                     and len(selected_job["result_metadata"]) != 0
                     else "RUNNING",
-                    "start_time": selected_job["save_time"]if "save_time" in selected_job else None,
+                    "start_time": selected_job["save_time"]
+                    if "save_time" in selected_job
+                    else None,
                     "end_time": selected_job["save_time"]
                     + timedelta(seconds=selected_job["execution_time"]),
                 },
@@ -107,15 +116,19 @@ class Electrons:
                     "circuit_diagram": selected_job["circuit_diagram"],
                 },
                 "executor": {
-                    "name": selected_job["qexecutor"]["name"] if "qexecutor" in selected_job and "name" in selected_job["qexecutor"] else None,
+                    "name": selected_job["qexecutor"]["name"]
+                    if "qexecutor" in selected_job and "name" in selected_job["qexecutor"]
+                    else None,
                     "executor": selected_job["qexecutor"] if "qexecutor" in selected_job else None,
                 },
             }
-            if selected_job["qnode_specs"] != None:
-                job_overview["circuit"]["total_qbits"] = selected_job["qnode_specs"]["num_used_wires"]
+            if selected_job["qnode_specs"] is not None:
+                job_overview["circuit"]["total_qbits"] = selected_job["qnode_specs"][
+                    "num_used_wires"
+                ]
                 job_overview["circuit"]["depth"] = selected_job["qnode_specs"]["depth"]
                 gate_sizes = selected_job["qnode_specs"]["gate_sizes"]
-                if gate_sizes != None:
+                if gate_sizes is not None:
                     job_overview["circuit"]["qbit1_gates"] = gate_sizes["1"]
                     job_overview["circuit"]["qbit2_gates"] = gate_sizes["2"]
             return job_overview
@@ -186,7 +199,7 @@ class Electrons:
         jobs = self.qdb.get_db(dispatch_id=str(dispatch_id), node_id=node_id)
         time = [jobs[value]["execution_time"] for value in jobs]
         return sum(time) / len(time)
-    
+
     def get_electron_inputs(self, dispatch_id: uuid.UUID, electron_id: int) -> str:
         """
         Get Electron Inputs
