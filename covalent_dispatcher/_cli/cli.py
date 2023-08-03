@@ -23,8 +23,10 @@
 """Covalent CLI Tool."""
 
 from importlib import metadata
+from platform import machine, python_version, system
 
 import click
+from rich.console import Console
 
 from .groups import db
 from .service import (
@@ -32,6 +34,7 @@ from .service import (
     config,
     logs,
     migrate_legacy_result_object,
+    print_header,
     purge,
     restart,
     start,
@@ -46,17 +49,22 @@ from .service import (
 @click.pass_context
 def cli(ctx: click.Context, version: bool) -> None:
     """
-    Covalent CLI tool used to manage the servers.
+    The Covalent CLI is used to manage and configure Covalent servers.
     """
+
+    console = Console()
+
     if version:
-        click.echo("covalent:  Covalent Workflow CLI Tool")
-        click.echo("Copyright (C) 2021 Agnostiq Inc.")
-        click.echo("Built using Python 3.8 (Platform: x86_64-linux)")
-        click.echo(f"Release version {metadata.version('covalent')}")
+        print_header(console)
+        console.print("Copyright (C) 2021 Agnostiq Inc.", highlight=False)
+        console.print(
+            f"Using Python {python_version()} on {system()}-{machine()}", highlight=False
+        )
+        console.print(f"Release version {metadata.version('covalent')}", highlight=False)
     elif ctx.invoked_subcommand is None:
         # Display the help menu if no command was provided
         ctx = click.get_current_context()
-        click.echo(ctx.get_help())
+        console.print(ctx.get_help())
 
 
 # Server management

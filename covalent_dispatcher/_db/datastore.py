@@ -52,7 +52,10 @@ class DataStore:
         self.engine = create_engine(self.db_URL, **kwargs)
 
         if not database_exists(self.engine.url):
-            create_database(self.engine.url)
+            try:
+                create_database(self.engine.url)
+            except Exception:
+                pass
         self.Session = sessionmaker(self.engine)
 
         # flag should only be used in pytest - tables should be generated using migrations

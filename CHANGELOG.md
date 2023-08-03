@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed the upper limit from `dask` and `distributed` packages' versions until we find a version which is incompatible with Covalent.
 - When the server is stopped, any workflows in a non-terminal state are first cancelled
 - Pinned sqlalchemy version with upper limit <2.0.0.
+- Added rich support to cli for better printing statements. 
 
 ### Tests
 
@@ -46,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added testcases for GUI backend.
 - Changed the method for startup and shutdown events for pytest to work with fastapi version 0.93.0
 - Fixed test cases to adapt changes to SQLAlchemy version 1.4.49
+- Ignored remote file transfer how-to functional tests.
 
 ### Fixed
 
@@ -54,6 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reverted file-lock changes
 - Fixed dispatches list UI api caused by pydantic config.
 - Fixed graph API.
+- Fixed UI backend unit test case.
+- Executor and workflow executor data dictionaries are passed to sublattices
 
 ## [0.227.0-rc.0] - 2023-06-13
 
