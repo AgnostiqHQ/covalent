@@ -29,15 +29,15 @@ from typing import TYPE_CHECKING, Callable, List, Tuple
 
 from pennylane.tape import QuantumScript
 
+from ..._shared_files.utils import (
+    cloudpickle_deserialize,
+    cloudpickle_serialize,
+    select_first_executor,
+)
 from ...executor.utils import get_context
 from ..qcluster.base import AsyncBaseQCluster, BaseQExecutor
 from .database import Database
-from .utils import (
-    CircuitInfo,
-    get_cached_executor,
-    get_circuit_id,
-)
-from ..._shared_files.utils import cloudpickle_deserialize, cloudpickle_serialize, select_first_executor
+from .utils import CircuitInfo, get_cached_executor, get_circuit_id
 
 if TYPE_CHECKING:
     from ..._workflow.qelectron import QElectronInfo
