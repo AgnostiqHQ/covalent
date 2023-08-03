@@ -153,12 +153,12 @@ class QCResult(BaseModel):
     @classmethod
     def with_metadata(cls, *, device_name: str, executor: BaseQExecutor):
         """
-        create an blank instance with pre-set metadata
+        Create an blank instance with pre-set metadata.
         """
         result_obj = cls()
         backend_name = ""
-        if hasattr(executor, "backend_name"):
-            backend_name = executor.backend_name
+        if hasattr(executor, "backend"):
+            backend_name = executor.backend
 
         result_obj.metadata.update(
             device_name=device_name,
