@@ -138,9 +138,14 @@ class QCResult(BaseModel):
                 metadata={}
             )
 
+            # Handle single and multi-component metadata.
+            execution_metadata = self.metadata["execution_metadata"]
+            if len(self.metadata["execution_metadata"]) > 0:
+                execution_metadata = execution_metadata[i]
+
             # Populate corresponding metadata.
             _result_obj.metadata.update(
-                execution_metadata=[self.metadata["execution_metadata"][i]],
+                execution_metadata=[execution_metadata],
                 device_name=self.metadata["device_name"],
                 executor_name=self.metadata["executor_name"],
                 executor_backend_name=self.metadata["executor_backend_name"],
