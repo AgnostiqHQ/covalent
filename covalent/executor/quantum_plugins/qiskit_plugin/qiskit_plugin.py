@@ -217,7 +217,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
         default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["options"]
     )
 
-    @ property
+    @property
     def device_init_kwargs(self):
         """
         Keyword arguments to pass to the device constructor.
