@@ -58,6 +58,7 @@ class QElectronInfo(BaseModel):
     """
     name: str
     description: str = None
+    qnode_device_name: str  # name of the original device, e.g. "default.qubit"
     qnode_device_import_path: str  # used to inherit type converters and other methods
     qnode_device_shots: Optional[int]  # optional default for execution devices
     num_device_wires: int  # this can not be reliably inferred from tapes alone

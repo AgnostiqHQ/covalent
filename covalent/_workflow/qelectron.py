@@ -111,6 +111,7 @@ def qelectron(
     qelectron_info = QElectronInfo(
         name=name,
         description=description,
+        qnode_device_name=qnode.device.short_name,
         qnode_device_import_path=get_import_path(type(qnode.device)),
         qnode_device_shots=qnode.device.shots,
         num_device_wires=qnode.device.num_wires,

@@ -108,6 +108,7 @@ class BaseQExecutor(ABC, BaseModel):
 
     # To make executor instances re-usable, these attributes are set
     # server-side, after reconstruction.
+    qnode_device_name: Optional[str] = None
     qnode_device_import_path: Tuple[str, str] = None
     qnode_device_shots: Optional[int] = None
     qnode_device_wires: int = None
@@ -175,7 +176,7 @@ class QCResult(BaseModel):
 
 class SyncBaseQExecutor(BaseQExecutor):
 
-    device: str = "default.qubit"
+    device: Optional[str] = "default.qubit"
 
     def run_all_circuits(self, qscripts_list) -> List[QCResult]:
 
@@ -214,7 +215,7 @@ class AsyncBaseQExecutor(BaseQExecutor):
     Executor that uses `asyncio` to handle multiple job submissions
     """
 
-    device: str = "default.qubit"
+    device: Optional[str] = "default.qubit"
 
     def batch_submit(self, qscripts_list):
 
@@ -259,7 +260,7 @@ class AsyncBaseQExecutor(BaseQExecutor):
 
 class BaseProcessPoolQExecutor(BaseQExecutor):
 
-    device: str = "default.qubit"
+    device: Optional[str] = "default.qubit"
     num_processes: int = 10
 
     def batch_submit(self, qscripts_list):
@@ -288,7 +289,7 @@ class BaseProcessPoolQExecutor(BaseQExecutor):
 
 class BaseThreadPoolQExecutor(BaseQExecutor):
 
-    device: str = "default.qubit"
+    device: Optional[str] = "default.qubit"
     num_threads: int = 10
 
     def batch_submit(self, qscripts_list):
