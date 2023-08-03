@@ -20,12 +20,23 @@
 
 from typing import Optional, Union
 
+from pydantic import validator
+
 from ...executor.qbase import (
     BaseProcessPoolQExecutor,
     BaseQExecutor,
     BaseThreadPoolQExecutor,
     SyncBaseQExecutor,
 )
+
+SIMULATOR_DEVICES = [
+    'default.qubit',
+    'default.qubit.autograd',
+    'default.qubit.jax',
+    'default.qubit.tf',
+    'default.qubit.torch',
+    'lightning.qubit',
+]
 
 
 class Simulator(BaseQExecutor):
@@ -35,7 +46,7 @@ class Simulator(BaseQExecutor):
     or processes.
 
     Keyword Args:
-        device: A valid string corresponding to a Pennylane device. Simulation-based 
+        device: A valid string corresponding to a Pennylane device. Simulation-based
             devices (e.g. "default.qubit" and "lightning.qubit") are recommended.
             Defaults to "default.qubit".
         parallel: The type of parallelism to use. Valid values are "thread" and
@@ -53,7 +64,12 @@ class Simulator(BaseQExecutor):
     workers: int = 10
     shots: Optional[int] = 0
 
-    _backend: BaseQExecutor = None
+    @validator("device")
+    def validate_device(cls, v):
+        if v not in SIMULATOR_DEVICES:
+            devices = ", ".join(SIMULATOR_DEVICES)
+            raise ValueError(f"Simulator device must be one of {devices}")
+        return v
 
     def batch_submit(self, qscripts_list):
 
@@ -77,3 +93,5 @@ class Simulator(BaseQExecutor):
 
     def batch_get_results(self, futures_list):
         return self._backend.batch_get_results(futures_list)
+
+    _backend: BaseQExecutor = None
