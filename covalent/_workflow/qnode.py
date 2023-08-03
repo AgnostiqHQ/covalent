@@ -159,7 +159,13 @@ class QNodeQE(qml.QNode):
 
         self.device.qnode_specs = self._specs(*args, **kwargs)
         with self.override_gradient_fn("device"):
-            return super().__call__(*args, **kwargs)
+            retval = super().__call__(*args, **kwargs)
+
+        # Increment number of executions on original and custom device.
+        self.device._num_executions += 1
+        self.original_qnode.device._num_executions += 1
+
+        return retval
 
     def _specs(self, *args, **kwargs) -> QNodeSpecs:
         """
@@ -172,7 +178,8 @@ class QNodeQE(qml.QNode):
 
         # Some args or some kwargs are trainable. No warning expected.
         if (
-            any(qml.math.get_trainable_indices(args)) or any(qml.math.get_trainable_indices(kwargs.values()))
+            any(qml.math.get_trainable_indices(args)) or
+            any(qml.math.get_trainable_indices(kwargs.values()))
         ):
             return QNodeSpecs(**qml.specs(self)(*args, **kwargs))
 
