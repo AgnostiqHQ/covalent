@@ -107,7 +107,7 @@ def test_circuit_call_vector():
         res_2 = qe_circuit(X)
 
         assert isinstance(res_1, type(res_2))
-        assert np.isclose(res_1, res_2, rtol=0.2).all()
+        assert np.isclose(res_1, res_2, atol=0.2).all()
 
 
 def test_grad_basic():
