@@ -158,7 +158,7 @@ class QCResult(BaseModel):
     @classmethod
     def with_metadata(cls, *, device_name: str, executor: BaseQExecutor):
         """
-        Create an blank instance with pre-set metadata.
+        Create a blank instance with pre-set metadata.
         """
         result_obj = cls()
         backend_name = ""
