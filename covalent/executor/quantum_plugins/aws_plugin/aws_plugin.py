@@ -124,7 +124,7 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
         for qscript in qscripts_list:
             dev = qml.device(
                 "braket.aws.qubit",
-                wires=qscript.wires,
+                wires=self.qnode_device_wires,
                 device_arn=self.device_arn,
                 s3_destination_folder=self.s3_destination_folder,
                 shots=device_shots,
@@ -193,7 +193,7 @@ class LocalBraketQubitExecutor(BaseThreadPoolQExecutor):
         for qscript in qscripts_list:
             dev = qml.device(
                 "braket.local.qubit",
-                wires=qscript.wires,
+                wires=self.qnode_device_wires,
                 backend=self.backend,
                 shots=device_shots,
                 **self.run_kwargs
