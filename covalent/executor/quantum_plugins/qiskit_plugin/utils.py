@@ -21,35 +21,8 @@
 """
 Utilities for Qiskit-based QElectron executors and devices
 """
-from dataclasses import dataclass
-from typing import Optional
 
-from qiskit_ibm_runtime import Options, options
-
-
-@dataclass(frozen=True)
-class RuntimeOptions:
-    # pylint: disable=too-many-instance-attributes
-    """
-    Execution options of Qiskit Runtime
-    """
-    optimization_level: int = 3
-    resilience_level: int = 1
-    max_execution_time: Optional[int] = None
-    transpilation: Optional[options.TranspilationOptions] = None
-    resilience: Optional[options.ResilienceOptions] = None
-    execution: Optional[options.ExecutionOptions] = None
-    environment: Optional[options.EnvironmentOptions] = None
-    simulator: Optional[options.SimulatorOptions] = None
-
-    def get(self, k, default=None):
-        """
-        mimics a `dict` object's `get` method using instance's `__dict__`,
-        defaults when the value is None
-        """
-        if k in self.__dict__ and self.__dict__[k]:
-            return self.__dict__[k]
-        return default
+from qiskit_ibm_runtime import Options
 
 
 def extract_options(opts: dict) -> Options:

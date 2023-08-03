@@ -37,7 +37,6 @@ from covalent.executor.qbase import (
 )
 from local_sampler import QiskitLocalSampler
 from runtime_sampler import QiskitRuntimeSampler
-from utils import RuntimeOptions
 
 __all__ = [
     "IBMQExecutor",
@@ -213,14 +212,12 @@ class QiskitExecutor(AsyncBaseQExecutor):
     instance: str = ""
     cloud_instance: str = ""
 
-    options: RuntimeOptions = Field(
+    options: dict = Field(
         # pylint: disable=unnecessary-lambda
-        default_factory=lambda: RuntimeOptions(
-            **get_config("qelectron")["QiskitExecutor"]["options"]
-        )
+        default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["options"]
     )
 
-    @property
+    @ property
     def device_init_kwargs(self):
         """
         Keyword arguments to pass to the device constructor.
@@ -333,6 +330,12 @@ class QiskitExecutor(AsyncBaseQExecutor):
         result_obj.metadata["execution_metadata"].extend(metadatas)
 
         return result_obj
+
+    def dict(self, *args, **kwargs):
+        dict_ = super().dict(*args, **kwargs)
+        # Needed to make the dict method hashable and JSON-able.
+        dict_["options"] = tuple(dict_["options"].items())
+        return dict_
 
 
 def _execution_device_factory(device_name: str, qnode_device_cls, **kwargs):
