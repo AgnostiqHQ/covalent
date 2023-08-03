@@ -343,27 +343,27 @@ class QServer:
             # Adding results according to the order of the qscripts
             # ids of (f)utures_(s)ub_(b)atch, hence `idx_fsb`
             for idx_fsb, circuit_number in enumerate(futures_sub_batch.keys()):
-
-                # loop over result, in case contains multiple circuits
                 result_obj = result_objs[idx_fsb]
-                for result_number, sub_result in enumerate(result_obj.results):
+
+                # Expand `result_obj` in case contains multiple circuits.
+                # Loop through sub-results to store separately in db.
+                for result_number, sub_result_obj in enumerate(result_obj.expand()):
                     qscript_number = submission_order[qscript_submission_index]
 
                     # Use tuple of integers for key to enable later multi-factor sort.
-                    results_dict[(qscript_number, circuit_number, result_number)] = sub_result
+                    results_dict[(qscript_number, circuit_number, result_number)] = sub_result_obj.results[0]
                     qscript_submission_index += 1
 
-                # To store the results in the database
-                circuit_id = get_circuit_id(batch_id, circuit_number)
-                key_value_pairs[0].append(circuit_id)
-
-                key_value_pairs[1].append(
-                    {
-                        "execution_time": result_obj.execution_time,
-                        "result": result_obj.results if executor.persist_data else None,
-                        "result_metadata": result_obj.metadata if executor.persist_data else None,
-                    }
-                )
+                    # To store the results in the database
+                    circuit_id = get_circuit_id(batch_id, circuit_number + result_number)
+                    key_value_pairs[0].append(circuit_id)
+                    key_value_pairs[1].append(
+                        {
+                            "execution_time": sub_result_obj.execution_time,
+                            "result": sub_result_obj.results if executor.persist_data else None,
+                            "result_metadata": sub_result_obj.metadata if executor.persist_data else None,
+                        }
+                    )
 
             # An example `key_value_pairs` will look like:
             # [
