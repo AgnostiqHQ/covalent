@@ -106,7 +106,7 @@ class Lattices:
             Lattice.completed_electron_num.label("total_electrons_completed"),
         ).where(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
         lattice = self.db_con.execute(query).first()
-        return LatticeDetailsFile.model_validate(lattice)
+        return LatticeDetailsFile.model_validate(lattice) if lattice is not None else None
 
     # def get_lattice_id_by_dispatch_id(self, dispatch_id: UUID):
     #     """

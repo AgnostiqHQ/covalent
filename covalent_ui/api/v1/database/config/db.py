@@ -20,14 +20,12 @@
 
 """DB Config"""
 
-from sqlalchemy.ext.asyncio import AsyncAttrs
 from sqlalchemy.orm import DeclarativeBase
 
 from covalent_dispatcher._db.datastore import DataStore
 
 
-# Base = declarative_base()
-class Base(AsyncAttrs, DeclarativeBase):
+class Base(DeclarativeBase):
     pass
 
 

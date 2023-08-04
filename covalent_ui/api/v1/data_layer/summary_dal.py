@@ -18,7 +18,6 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import uuid
 from datetime import datetime, timezone
 from typing import List
 
@@ -306,10 +305,10 @@ class Summary:
                 Lattice.status.in_(status_filters),
                 Lattice.is_active.is_not(False),
             )
-        )
-        dispatch_ids, dispatches = zip(
-            *[(dispatch[0], uuid.UUID(dispatch[1])) for dispatch in filter_dispatches.all()]
-        )
+        ).all()
+        dispatch_ids, dispatches = [], []
+        if filter_dispatches is not None and len(filter_dispatches) > 0:
+            dispatch_ids, dispatches = zip(*filter_dispatches)
         if len(dispatches) >= 1:
             try:
                 electron_ids = select(Electron.id).where(
