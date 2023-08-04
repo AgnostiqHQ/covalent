@@ -27,7 +27,6 @@ from local_sampler import QiskitLocalSampler
 from pennylane.tape.qscript import QuantumScript
 from pydantic import Field
 from runtime_sampler import QiskitRuntimeSampler
-from utils import RuntimeOptions
 
 from covalent._shared_files.config import get_config
 from covalent._shared_files.utils import import_from_path
