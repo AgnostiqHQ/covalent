@@ -76,8 +76,8 @@ class Simulator(BaseQExecutor):
     def batch_submit(self, qscripts_list):
 
         # Defer to original QNode's device type in special cases.
-        if self.qnode_device_name in ["default.gaussian"]:
-            device = self.qnode_device_name
+        if self.qelectron_info.device_name in ["default.gaussian"]:
+            device = self.qelectron_info.device_name
         else:
             device = self.device
 
@@ -89,13 +89,11 @@ class Simulator(BaseQExecutor):
             self._backend = SyncBaseQExecutor(device=device)
 
         # Check `self.shots` against 0 to allow override with `None`.
-        device_shots = self.shots if self.shots != 0 else self.qnode_device_shots
+        device_shots = self.shots if self.shots != 0 else self.qelectron_info.device_shots
 
         # Pass on server-set settings from original device.
-        self._backend.qnode_device_import_path = self.qnode_device_import_path
-        self._backend.qnode_device_shots = device_shots
-        self._backend.qnode_device_wires = self.qnode_device_wires
-        self._backend.pennylane_active_return = self.pennylane_active_return
+        updates = {"device_name": device, "device_shots": device_shots}
+        self._backend.qelectron_info = self.qelectron_info.copy(update=updates)
 
         return self._backend.batch_submit(qscripts_list)
 

@@ -119,14 +119,14 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
     def batch_submit(self, qscripts_list):
 
         # Check `self.shots` against 0 to allow override with `None`.
-        device_shots = self.shots if self.shots != 0 else self.qnode_device_shots
+        device_shots = self.shots if self.shots != 0 else self.qelectron_info.device_shots
 
         p = get_thread_pool(self.max_jobs)
         jobs = []
         for qscript in qscripts_list:
             dev = qml.device(
                 "qiskit.ibmq",
-                wires=self.qnode_device_wires,
+                wires=self.qelectron_info.device_wires,
                 shots=device_shots,
                 backend=self.backend,
                 ibmqx_token=self.ibmqx_token,
@@ -223,8 +223,8 @@ class QiskitExecutor(AsyncBaseQExecutor):
         Keyword arguments to pass to the device constructor.
         """
         return {
-            "wires": self.qnode_device_wires,
-            "shots": self.qnode_device_shots or self.shots,
+            "wires": self.qelectron_info.device_wires,
+            "shots": self.qelectron_info.device_shots or self.shots,
             "backend_name": self.backend,
             "local_transpile": self.local_transpile,
             "max_time": self.max_time,
@@ -250,12 +250,12 @@ class QiskitExecutor(AsyncBaseQExecutor):
         # Initialize a custom Pennylane device
         dev = _execution_device_factory(
             self.device,
-            qnode_device_cls=import_from_path(self.qnode_device_import_path),
+            qnode_device_cls=import_from_path(self.qelectron_info.device_import_path),
             **self.device_init_kwargs,
         )
 
         # Set `pennylane.active_return()` status
-        dev.pennylane_active_return = self.pennylane_active_return
+        dev.pennylane_active_return = self.qelectron_info.pennylane_active_return
         return dev
 
     def batch_submit(self, qscripts_list):

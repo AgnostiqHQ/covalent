@@ -117,14 +117,14 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
         """
 
         # Check `self.shots` against 0 to allow override with `None`.
-        device_shots = self.shots if self.shots != 0 else self.qnode_device_shots
+        device_shots = self.shots if self.shots != 0 else self.qelectron_info.device_shots
 
         p = get_thread_pool(self.max_jobs)
         jobs = []
         for qscript in qscripts_list:
             dev = qml.device(
                 "braket.aws.qubit",
-                wires=self.qnode_device_wires,
+                wires=self.qelectron_info.device_wires,
                 device_arn=self.device_arn,
                 s3_destination_folder=self.s3_destination_folder,
                 shots=device_shots,
@@ -186,14 +186,14 @@ class LocalBraketQubitExecutor(BaseThreadPoolQExecutor):
         """
 
         # Check `self.shots` against 0 to allow override with `None`.
-        device_shots = self.shots if self.shots != 0 else self.qnode_device_shots
+        device_shots = self.shots if self.shots != 0 else self.qelectron_info.device_shots
 
         p = get_thread_pool(self.max_jobs)
         jobs = []
         for qscript in qscripts_list:
             dev = qml.device(
                 "braket.local.qubit",
-                wires=self.qnode_device_wires,
+                wires=self.qelectron_info.device_wires,
                 backend=self.backend,
                 shots=device_shots,
                 **self.run_kwargs

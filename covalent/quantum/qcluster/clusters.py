@@ -22,7 +22,7 @@ import base64
 from typing import Callable, Union
 
 from ..._shared_files.utils import cloudpickle_deserialize, cloudpickle_serialize
-from .base import AsyncBaseQCluster
+from .base import AsyncBaseQCluster, BaseQExecutor
 from .default_selectors import selector_map
 
 __all__ = [
@@ -55,13 +55,10 @@ class QCluster(AsyncBaseQCluster):
             self.selector = self.deserialize_selector()
 
         selector = self.get_selector()
-        selected_executor = selector(qscripts_list, self.executors)
+        selected_executor: BaseQExecutor = selector(qscripts_list, self.executors)
 
-        # copy server-side set attributes into selector executor
-        selected_executor.qnode_device_import_path = self.qnode_device_import_path
-        selected_executor.qnode_device_shots = self.qnode_device_shots
-        selected_executor.qnode_device_wires = self.qnode_device_wires
-        selected_executor.pennylane_active_return = self.pennylane_active_return
+        # Copy server-side set attributes into selector executor.
+        selected_executor.qelectron_info = self.qelectron_info.copy()
         return selected_executor.batch_submit(qscripts_list)
 
     def serialize_selector(self) -> None:

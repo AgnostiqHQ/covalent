@@ -184,11 +184,7 @@ class QServer:
         executor_future_pairs = []
         for executor, qscript_sub_batch in executor_qscript_sub_batch_pairs:
 
-            executor.qnode_device_name = qelectron_info.qnode_device_name
-            executor.qnode_device_import_path = qelectron_info.qnode_device_import_path
-            executor.qnode_device_shots = qelectron_info.qnode_device_shots
-            executor.qnode_device_wires = qelectron_info.num_device_wires
-            executor.pennylane_active_return = qelectron_info.pennylane_active_return
+            executor.qelectron_info = qelectron_info.copy()
             qscript_futures = executor.batch_submit(qscript_sub_batch.values())
 
             futures_dict = dict(zip(qscript_sub_batch.keys(), qscript_futures))

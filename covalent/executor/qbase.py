@@ -24,24 +24,25 @@ from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from threading import Thread
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import orjson
 import pennylane as qml
 from mpire import WorkerPool
-from pydantic import BaseModel, Extra, Field, root_validator
+from pydantic import BaseModel, Extra, Field, root_validator  # pylint: disable=no-name-in-module
+
+from .._shared_files.qinfo import QElectronInfo
 
 __all__ = [
     "BaseQExecutor",
     "BaseProcessPoolQExecutor",
     "AsyncBaseQExecutor",
     "BaseThreadPoolQExecutor",
-    "AsyncBaseQCluster"
 ]
 
 
 def orjson_dumps(v, *, default):
-    return orjson.dumps(v, default=default).decode()
+    return orjson.dumps(v, default=default).decode()  # pylint: disable=no-member
 
 
 @lru_cache
@@ -78,6 +79,12 @@ class BaseQExecutor(ABC, BaseModel):
 
     persist_data: bool = True
 
+    # Executors need to container certain information about original QNode wrapped
+    # by the QElectron, in order to produce correct results. This attribute contains
+    # that information. The `QServer` receives the original QElectron information
+    # and copies it here for each executor to use.
+    qelectron_info: QElectronInfo = None
+
     class Config:
         extra = Extra.allow
 
@@ -105,14 +112,6 @@ class BaseQExecutor(ABC, BaseModel):
         result_obj.execution_time = end_time - start_time
 
         return result_obj
-
-    # To make executor instances re-usable, these attributes are set
-    # server-side, after reconstruction.
-    qnode_device_name: Optional[str] = None
-    qnode_device_import_path: Tuple[str, str] = None
-    qnode_device_shots: Optional[int] = None
-    qnode_device_wires: int = None
-    pennylane_active_return: bool = None
 
 
 class QCResult(BaseModel):
@@ -185,8 +184,8 @@ class SyncBaseQExecutor(BaseQExecutor):
         for qscript in qscripts_list:
             dev = qml.device(
                 self.device,
-                wires=self.qnode_device_wires,
-                shots=self.qnode_device_shots,
+                wires=self.qelectron_info.device_wires,
+                shots=self.qelectron_info.device_shots,
             )
 
             result_obj = QCResult.with_metadata(
@@ -224,8 +223,8 @@ class AsyncBaseQExecutor(BaseQExecutor):
         for qscript in qscripts_list:
             dev = qml.device(
                 self.device,
-                wires=self.qnode_device_wires,
-                shots=self.qnode_device_shots,
+                wires=self.qelectron_info.device_wires,
+                shots=self.qelectron_info.device_shots,
             )
 
             result_obj = QCResult.with_metadata(
@@ -270,8 +269,8 @@ class BaseProcessPoolQExecutor(BaseQExecutor):
         for qscript in qscripts_list:
             dev = qml.device(
                 self.device,
-                wires=self.qnode_device_wires,
-                shots=self.qnode_device_shots,
+                wires=self.qelectron_info.device_wires,
+                shots=self.qelectron_info.device_shots,
             )
 
             result_obj = QCResult.with_metadata(
@@ -299,8 +298,8 @@ class BaseThreadPoolQExecutor(BaseQExecutor):
         for qscript in qscripts_list:
             dev = qml.device(
                 self.device,
-                wires=self.qnode_device_wires,
-                shots=self.qnode_device_shots,
+                wires=self.qelectron_info.device_wires,
+                shots=self.qelectron_info.device_shots,
             )
 
             result_obj = QCResult.with_metadata(

@@ -19,51 +19,14 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 from contextlib import contextmanager
-from typing import Any, Dict, List, Optional
+from typing import List
 
 import pennylane as qml
-from pydantic import BaseModel  # pylint: disable=no-name-in-module
 
 from .._results_manager.qresult import QNodeFutureResult
+from .._shared_files.qinfo import QElectronInfo, QNodeSpecs
 from ..executor.qbase import BaseQExecutor
 from .qdevice import QEDevice
-
-
-class QNodeSpecs(BaseModel):
-    """
-    A container for the specifications of a QNode.
-    """
-    gate_sizes: Dict[str, int]
-    gate_types: Dict[str, int]
-    num_operations: int
-    num_observables: int
-    num_diagonalizing_gates: int
-    num_used_wires: int
-    depth: int
-    num_trainable_params: int = None
-    num_device_wires: int
-    device_name: str
-    diff_method: Optional[str]
-    expansion_strategy: str
-    gradient_options: Dict[str, int]
-    interface: Optional[str]
-    gradient_fn: Optional[str]
-    num_gradient_executions: Any = 0
-    num_parameter_shift_executions: int = None
-
-
-class QElectronInfo(BaseModel):
-    """
-    A container for related settings used by the wrapping QElectron.
-    """
-    name: str
-    description: str = None
-    qnode_device_name: str  # name of the original device, e.g. "default.qubit"
-    qnode_device_import_path: str  # used to inherit type converters and other methods
-    qnode_device_shots: Optional[int]  # optional default for execution devices
-    num_device_wires: int  # this can not be reliably inferred from tapes alone
-    pennylane_active_return: bool  # client-side status of `pennylane.active_return()`
-
 
 _GRADIENT_ACCESS_MAXES = {
     "parameter-shift": 2,
