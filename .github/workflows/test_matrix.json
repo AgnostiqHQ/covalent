@@ -364,5 +364,16 @@
       "schedule",
       "workflow_dispatch"
     ]
-  }
+  },
+  {
+    "name": "MacOS 12 / Python 3.11 / Dask",
+    "os": "macos-12",
+    "python-version": "3.11",
+    "backend": "dask",
+    "experimental": false,
+    "trigger": [
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
 ]
