@@ -124,15 +124,46 @@ class QCResult(BaseModel):
     execution_time: float = None
     metadata: Dict[str, Any] = Field(default_factory=lambda: {"execution_metadata": []})
 
+    def expand(self) -> List['QCResult']:
+        """
+        Expand result object into a list of result objects, one for each execution.
+        """
+        result_objs = []
+        for i, result in enumerate(self.results):
+
+            # Copy other non-execution metadata.
+            _result_obj = QCResult(
+                results=[result],
+                execution_time=self.execution_time,
+                metadata={}
+            )
+
+            # Handle single and multi-component metadata.
+            execution_metadata = self.metadata["execution_metadata"]
+            if len(self.metadata["execution_metadata"]) > 0:
+                execution_metadata = execution_metadata[i]
+
+            # Populate corresponding metadata.
+            _result_obj.metadata.update(
+                execution_metadata=[execution_metadata],
+                device_name=self.metadata["device_name"],
+                executor_name=self.metadata["executor_name"],
+                executor_backend_name=self.metadata["executor_backend_name"],
+            )
+
+            result_objs.append(_result_obj)
+
+        return result_objs
+
     @classmethod
     def with_metadata(cls, *, device_name: str, executor: BaseQExecutor):
         """
-        create an blank instance with pre-set metadata
+        Create a blank instance with pre-set metadata.
         """
         result_obj = cls()
         backend_name = ""
-        if hasattr(executor, "backend_name"):
-            backend_name = executor.backend_name
+        if hasattr(executor, "backend"):
+            backend_name = executor.backend
 
         result_obj.metadata.update(
             device_name=device_name,

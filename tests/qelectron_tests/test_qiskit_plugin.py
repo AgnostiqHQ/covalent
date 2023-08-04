@@ -60,7 +60,8 @@ def test_defaults_copied_from_config(executor_class):
             assert exec_config[k] == val
 
         for k, val in config_options.items():
-            assert getattr(exec_config["options"], k) == val
+            exec_options = dict(exec_config["options"])
+            assert exec_options[k] == val
     else:
         for k, val in default_config.items():
             assert exec_config[k] == val
