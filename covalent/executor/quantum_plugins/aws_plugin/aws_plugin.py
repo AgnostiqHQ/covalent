@@ -92,7 +92,7 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
         default_factory=lambda: get_config("qelectron")["BraketQubitExecutor"]["max_retries"]
     )
     max_jobs: int = 20
-    shots: Optional[int] = 0
+    shots: Optional[int] = -1
     aws_session: Optional[str] = None  # not actually a str. Fix.
     parallel: bool = False
     max_parallel: Optional[int] = None
@@ -110,9 +110,6 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
             jobs: a :code:`list` of tasks subitted by threads.
         """
 
-        # Check `self.shots` against 0 to allow override with `None`.
-        device_shots = self.shots if self.shots != 0 else self.qelectron_info.device_shots
-
         p = get_thread_pool(self.max_jobs)
         jobs = []
         for qscript in qscripts_list:
@@ -121,7 +118,7 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
                 wires=self.qelectron_info.device_wires,
                 device_arn=self.device_arn,
                 s3_destination_folder=self.s3_destination_folder,
-                shots=device_shots,
+                shots=self.override_shots,
                 poll_timeout_seconds=self.poll_timeout_seconds,
                 poll_interval_seconds=self.poll_interval_seconds,
                 aws_session=self.aws_session,
@@ -164,7 +161,7 @@ class LocalBraketQubitExecutor(BaseThreadPoolQExecutor):
         default_factory=lambda: get_config("qelectron")["LocalBraketQubitExecutor"]["backend"]
     )
     max_jobs: int = 20
-    shots: Optional[int] = 0
+    shots: Optional[int] = -1
     run_kwargs: dict = {}
 
     def batch_submit(self, qscripts_list):
@@ -178,9 +175,6 @@ class LocalBraketQubitExecutor(BaseThreadPoolQExecutor):
             jobs: a :code:`list` of tasks subitted by threads.
         """
 
-        # Check `self.shots` against 0 to allow override with `None`.
-        device_shots = self.shots if self.shots != 0 else self.qelectron_info.device_shots
-
         p = get_thread_pool(self.max_jobs)
         jobs = []
         for qscript in qscripts_list:
@@ -188,7 +182,7 @@ class LocalBraketQubitExecutor(BaseThreadPoolQExecutor):
                 "braket.local.qubit",
                 wires=self.qelectron_info.device_wires,
                 backend=self.backend,
-                shots=device_shots,
+                shots=self.override_shots,
                 **self.run_kwargs
             )
 

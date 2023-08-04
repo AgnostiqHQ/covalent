@@ -90,7 +90,7 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
        shots: The number of shots to use for the execution device. Overrides the
             :code:`shots` value from the original device if set to :code:`None` or
             a positive :code:`int`. The shots setting from the original device is
-            is used by default, when this argument is 0.
+            is used by default.
         backend: The name of the IBM Quantum backend device. Defaults to
             :code:`"ibmq_qasm_simulator"`.
         ibmqx_token: The IBM Quantum API token.
@@ -101,7 +101,7 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
     """
 
     max_jobs: int = 20
-    shots: Optional[int] = 0
+    shots: Optional[int] = -1
 
     backend: str = Field(
         default_factory=lambda: get_config("qelectron")["IBMQExecutor"]["backend"]
@@ -121,16 +121,13 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
 
     def batch_submit(self, qscripts_list):
 
-        # Check `self.shots` against 0 to allow override with `None`.
-        device_shots = self.shots if self.shots != 0 else self.qelectron_info.device_shots
-
         p = get_thread_pool(self.max_jobs)
         jobs = []
         for qscript in qscripts_list:
             dev = qml.device(
                 "qiskit.ibmq",
                 wires=self.qelectron_info.device_wires,
-                shots=device_shots,
+                shots=self.override_shots,
                 backend=self.backend,
                 ibmqx_token=self.ibmqx_token,
                 hub=self.hub,

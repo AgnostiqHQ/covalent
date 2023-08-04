@@ -24,7 +24,7 @@ from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from threading import Thread
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import orjson
 import pennylane as qml
@@ -84,6 +84,14 @@ class BaseQExecutor(ABC, BaseModel):
     # that information. The `QServer` receives the original QElectron information
     # and copies it here for each executor to use.
     qelectron_info: QElectronInfo = None
+
+    @property
+    def override_shots(self) -> Union[int, None]:
+        """
+        Enables fallback to the QNode device's shots on concrete QExecutors by
+        setting `self.shots` to -1 by default.
+        """
+        return self.qelectron_info.device_shots if self.shots == -1 else self.shots
 
     class Config:
         extra = Extra.allow

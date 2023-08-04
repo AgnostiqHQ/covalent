@@ -58,13 +58,13 @@ class Simulator(BaseQExecutor):
         shots: The number of shots to use for the execution device. Overrides the
             :code:`shots` value from the original device if set to :code:`None` or
             a positive :code:`int`. The shots setting from the original device is
-            is used by default, when this argument is 0.
+            is used by default.
     """
 
     device: str = "default.qubit"
     parallel: Union[bool, str] = "thread"
     workers: int = 10
-    shots: Optional[int] = 0
+    shots: Optional[int] = -1
 
     @validator("device")
     def validate_device(cls, v):
@@ -81,6 +81,7 @@ class Simulator(BaseQExecutor):
         else:
             device = self.device
 
+        # Select backend batching the chosen method of parallelism.
         if self.parallel == "process":
             self._backend = BaseProcessPoolQExecutor(num_processes=self.workers, device=device)
         elif self.parallel == "thread":
@@ -88,11 +89,8 @@ class Simulator(BaseQExecutor):
         else:
             self._backend = SyncBaseQExecutor(device=device)
 
-        # Check `self.shots` against 0 to allow override with `None`.
-        device_shots = self.shots if self.shots != 0 else self.qelectron_info.device_shots
-
         # Pass on server-set settings from original device.
-        updates = {"device_name": device, "device_shots": device_shots}
+        updates = {"device_name": device, "device_shots": self.override_shots}
         self._backend.qelectron_info = self.qelectron_info.copy(update=updates)
 
         return self._backend.batch_submit(qscripts_list)
