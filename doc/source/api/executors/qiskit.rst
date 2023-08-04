@@ -7,7 +7,11 @@ This quantum executor provides efficient access to IBM Quantum backends by using
 1. Installation
 ===============
 
-The Qiskit Runtime executor is included with Covalent. No additional installation is required.
+The Qiskit Runtime executor is not included with base Covalent. To install it, run
+
+.. code:: console
+
+    pip install covalent[qiskit]
 
 ================
 2. Usage Example
