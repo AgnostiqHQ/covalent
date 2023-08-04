@@ -376,4 +376,15 @@
       "workflow_dispatch"
     ]
   },
+  {
+    "name": "MacOS 12 / Python 3.11 / Local",
+    "os": "macos-12",
+    "python-version": "3.11",
+    "backend": "local",
+    "experimental": false,
+    "trigger": [
+      "schedule",
+      "workflow_dispatch"
+    ]
+  },
 ]
