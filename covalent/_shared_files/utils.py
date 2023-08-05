@@ -30,6 +30,7 @@ import cloudpickle
 
 from . import logger
 from .config import get_config
+from .pickling import _qml_mods_pickle
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -228,6 +229,7 @@ def get_named_params(func, args, kwargs):
 _address_client_mapper = {}
 
 
+@_qml_mods_pickle
 def cloudpickle_serialize(obj):
     return cloudpickle.dumps(obj)
 
