@@ -98,9 +98,9 @@ const Circuit = ({ circuitDetails }) => {
         xs={11.85}
         justifyContent="space-between"
       >
-        <SingleGrid title="No. of Qbits" value={circuitDetails?.total_qbits} />
-        <SingleGrid title="No.1 Qbit Gates" value={circuitDetails?.qbit1_gates} />
-        <SingleGrid title="No.2 Qbit Gates" value={circuitDetails?.qbit2_gates} />
+        <SingleGrid title="No. of Qubits" value={circuitDetails?.total_qbits} />
+        <SingleGrid title="No.1 Qubit Gates" value={circuitDetails?.qbit1_gates} />
+        <SingleGrid title="No.2 Qubit Gates" value={circuitDetails?.qbit2_gates} />
         <SingleGrid title="Depth" value={circuitDetails?.depth} />
       </Grid>
       <Grid id="bottomGrid" mt={3}>

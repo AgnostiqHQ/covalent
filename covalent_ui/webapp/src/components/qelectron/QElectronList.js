@@ -283,6 +283,9 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
 
   const getReactVirHeight = () => {
     let height = !expanded ? 450 : 200
+    if (isHeightAbove850px) {
+      height = !expanded ? 550 : 310
+    }
     if (isHeightAbove940px) {
       height = !expanded ? 600 : 400
     }
