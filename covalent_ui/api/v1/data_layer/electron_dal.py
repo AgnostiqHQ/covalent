@@ -58,17 +58,19 @@ class Electrons:
     ) -> List[JobsResponse]:
         try:
             jobs = self.qdb.get_db(dispatch_id=str(dispatch_id), node_id=electron_id)
-            jobs_list = [
-                {
-                    "job_id": circuit["circuit_id"],
-                    "start_time": circuit["save_time"],
-                    "executor": circuit["result_metadata"]["executor_name"],
-                    "status": "COMPLETED"
-                    if len(circuit["result"]) != 0 and len(circuit["result_metadata"]) != 0
-                    else "RUNNING",
-                }
-                for _, circuit in jobs.items()
-            ]
+            jobs_list = list(
+                map(
+                    lambda circuit: {
+                        "job_id": circuit["circuit_id"],
+                        "start_time": circuit["save_time"],
+                        "executor": circuit["result_metadata"]["executor_name"],
+                        "status": "COMPLETED"
+                        if len(circuit["result"]) != 0 and len(circuit["result_metadata"]) != 0
+                        else "RUNNING",
+                    },
+                    jobs.values(),
+                )
+            )
             jobs_list.sort(
                 reverse=sort_direction == SortDirection.DESCENDING, key=lambda d: d[sort_by.value]
             )
@@ -128,9 +130,10 @@ class Electrons:
                 ]
                 job_overview["circuit"]["depth"] = selected_job["qnode_specs"]["depth"]
                 gate_sizes = selected_job["qnode_specs"]["gate_sizes"]
-                if gate_sizes is not None:
-                    job_overview["circuit"]["qbit1_gates"] = gate_sizes["1"]
-                    job_overview["circuit"]["qbit2_gates"] = gate_sizes["2"]
+                if not gate_sizes:
+                    for i in range(1, len(gate_sizes) + 1):
+                        job_overview["circuit"][f"qbit{i}_gates"] = gate_sizes[str(i)]
+
             return job_overview
         except:
             return None
