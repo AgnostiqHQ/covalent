@@ -220,6 +220,8 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
   const [sortOrder, setSortOrder] = useState('DESC')
   const isHeightAbove850px = useMediaQuery('(min-height: 850px)')
   const isHeightAbove940px = useMediaQuery('(min-height: 940px)')
+  const isHeightAbove945px = useMediaQuery('(min-height: 945px)')
+  const isHeightAbove1024px = useMediaQuery('(min-height: 1024px)')
   const isHeightAbove1040px = useMediaQuery('(min-height: 1040px)')
   const isFetching = useSelector(
     (state) => state.electronResults.qelectronJobsList.isFetching
@@ -288,6 +290,12 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
     }
     if (isHeightAbove940px) {
       height = !expanded ? 600 : 400
+    }
+    if (isHeightAbove945px) {
+      height = !expanded ? 660 : 400
+    }
+    if (isHeightAbove1024px) {
+      height = !expanded ? 700 : 480
     }
     if (isHeightAbove1040px) {
       height = !expanded ? 750 : 500
@@ -423,6 +431,12 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
         ...(isHeightAbove940px && {
           height: expanded ? '29rem' : '44.75rem',
         }),
+        ...(isHeightAbove945px && {
+          height: expanded ? '32rem' : '48rem',
+        }),
+        ...(isHeightAbove1024px && {
+          height: expanded ? '34rem' : '50rem',
+        }),
         ...(isHeightAbove1040px && {
           height: expanded ? '36rem' : '51.5rem',
         }),
@@ -438,6 +452,12 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
             }),
             ...(isHeightAbove940px && {
               height: expanded ? '29rem' : '44.75rem',
+            }),
+            ...(isHeightAbove945px && {
+              height: expanded ? '29rem' : '48rem',
+            }),
+            ...(isHeightAbove1024px && {
+              height: expanded ? '34rem' : '50rem',
             }),
             ...(isHeightAbove1040px && {
               height: expanded ? '36rem' : '51.5rem',
