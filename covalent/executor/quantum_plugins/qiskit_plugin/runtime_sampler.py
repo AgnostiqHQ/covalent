@@ -22,14 +22,14 @@
 Pennylane-Qiskit device that uses the Qiskit Runtime `Sampler` primitive
 """
 
-from typing import Any, List, Union
+from typing import Any, List, Sequence, Union
 
 import pennylane as qml
 from qiskit_ibm_runtime import Sampler
 
 from devices_base import QiskitSamplerDevice
 from sessions import get_cached_session
-from utils import extract_options
+from qiskit_utils import extract_options
 
 
 class QiskitRuntimeSampler(QiskitSamplerDevice):
@@ -42,7 +42,7 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
     def __init__(  # pylint: disable=too-many-arguments
         self,
         wires: int,
-        shots: int,
+        shots: Union[None, int, Sequence[int], Sequence[Union[int, Sequence[int]]]],
         backend_name: str,
         local_transpile: bool,
         max_time: Union[int, str],

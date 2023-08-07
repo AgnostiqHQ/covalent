@@ -20,7 +20,7 @@
 
 import asyncio
 import time
-from typing import Optional, Union
+from typing import Sequence, Union
 
 import pennylane as qml
 from local_sampler import QiskitLocalSampler
@@ -100,7 +100,6 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
     """
 
     max_jobs: int = 20
-    shots: Optional[int] = -1
 
     backend: str = Field(
         default_factory=lambda: get_config("qelectron")["IBMQExecutor"]["backend"]
@@ -200,7 +199,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
         default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["project"]
     )
 
-    shots: Optional[int] = 1024
+    shots: Union[None, int, Sequence[int], Sequence[Union[int, Sequence[int]]]] = 1024
     single_job: bool = False
     local_transpile: bool = False
 
@@ -223,7 +222,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
         """
         return {
             "wires": self.qelectron_info.device_wires,
-            "shots": self.qelectron_info.device_shots or self.shots,
+            "shots": self.qelectron_info.device_shots or self.override_shots,
             "backend_name": self.backend,
             "local_transpile": self.local_transpile,
             "max_time": self.max_time,

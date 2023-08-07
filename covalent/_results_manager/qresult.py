@@ -23,6 +23,8 @@ from typing import Any
 import pennylane as qml
 from pennylane.tape import QuantumTape
 
+from covalent._shared_files.utils import get_original_shots
+
 from ..quantum.qclient.core import middleware
 
 
@@ -119,4 +121,9 @@ def _run_later_device_factory(
             return original_device.batch_transform(original_tape)
 
     wires = original_device.num_wires
-    return _RunLaterDevice(wires=wires, shots=1)
+    dev = _RunLaterDevice(wires=wires, shots=1)
+
+    # Use the `shots` property setter on `qml.Device` to set the shots or shot vector.
+    dev.shots = get_original_shots(original_device)
+
+    return dev

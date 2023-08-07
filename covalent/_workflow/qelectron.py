@@ -23,7 +23,7 @@ from typing import Callable, List, Optional, Union
 
 import pennylane as qml
 
-from .._shared_files.utils import get_import_path
+from .._shared_files.utils import get_import_path, get_original_shots
 from ..quantum.qcluster import QCluster
 from ..quantum.qcluster.base import AsyncBaseQCluster, BaseQExecutor
 from ..quantum.qcluster.simulator import Simulator
@@ -116,14 +116,20 @@ def qelectron(
 
 def get_qinfo(name: str, description: str, qnode: qml.QNode) -> QElectronInfo:
     """
-    Extract useful information about the QNode, its device, and `active_return` status.
+    Extract useful information about the original QNode.
     """
+
+    device_import_path = get_import_path(type(qnode.device))
+    device_shots = get_original_shots(qnode.device)
+    device_shots_type = None if device_shots is None else type(device_shots)
+
     return QElectronInfo(
         name=name,
         description=description,
         device_name=qnode.device.short_name,
-        device_import_path=get_import_path(type(qnode.device)),
-        device_shots=qnode.device.shots,
+        device_import_path=device_import_path,
+        device_shots=device_shots,
+        device_shots_type=device_shots_type,
         device_wires=qnode.device.num_wires,
         pennylane_active_return=qml.active_return(),
     )

@@ -29,13 +29,13 @@ Configuration that enables easy adoption of Pennylane tests to QElectrons.
 NOTE: ONLY USE this configuration file with Pennylane tests.
 """
 import inspect
-import random
 from unittest.mock import patch
 
 import pennylane as qml
 import pytest
 
 import covalent as ct
+from covalent._shared_files.utils import get_original_shots
 
 SKIP_RETURN_TYPES = [
     "qml.apply",
@@ -56,7 +56,7 @@ XFAIL_TEST_NAMES = [
 # VALIDATION FUNCTIONS
 # ------------------------------------------------------------------------------
 
-def _check_return_type(func):
+def _check_return_type(executors, func):
     """
     Checks whether a function returns a type that is not supported by QElectrons.
     """
@@ -74,7 +74,7 @@ def _check_return_type(func):
                     pytest.skip(f"QElectrons don't support `{ret_typ}` measurements.")
 
 
-def _check_device_type(device):
+def _check_device_type(executors, device):
     """
     Checks whether a device is supported by QElectrons.
     """
@@ -82,7 +82,11 @@ def _check_device_type(device):
     if device.short_name in SKIP_DEVICES:
         pytest.skip(f"QElectrons don't support the `{device}` device.")
     if device.shot_vector:
-        pytest.skip("QElectrons don't support shot vectors.")
+        if (
+            isinstance(executors, ct.executor.LocalBraketQubitExecutor) or
+            any(isinstance(ex, ct.executor.LocalBraketQubitExecutor) for ex in executors)
+        ):
+            pytest.skip("Braket executor does not support shot vectors")
 
 
 # UTILITIES
@@ -146,13 +150,16 @@ def _get_wrapped_QNode(use_run_later, get_executors):  # pylint: disable=invalid
             super().__init__(*args, **kwargs)
 
             qnode = self
-            _check_return_type(qnode.func)
-            _check_device_type(qnode.device)
+            shots = get_original_shots(qnode.device)
+            executors = get_executors(shots=shots)
+
+            _check_return_type(executors, qnode.func)
+            _check_device_type(executors, qnode.device)
 
             # QElectron that wraps the normal QNode
             self.qelectron = ct.qelectron(
                 qnode=qnode,
-                executors=get_executors(shots=qnode.device.shots)
+                executors=get_executors(shots=get_original_shots(self.device))
             )
 
         def __call__(self, *args, **kwargs):
@@ -204,7 +211,6 @@ def get_executors(request):
     Determines the QExecutor that is used.
     """
     return request.param
-
 
 
 @pytest.fixture(autouse=True)

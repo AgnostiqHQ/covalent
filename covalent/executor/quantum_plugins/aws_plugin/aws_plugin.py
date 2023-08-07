@@ -92,7 +92,6 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
         default_factory=lambda: get_config("qelectron")["BraketQubitExecutor"]["max_retries"]
     )
     max_jobs: int = 20
-    shots: Optional[int] = -1
     aws_session: Optional[str] = None  # not actually a str. Fix.
     parallel: bool = False
     max_parallel: Optional[int] = None
@@ -161,7 +160,6 @@ class LocalBraketQubitExecutor(BaseThreadPoolQExecutor):
         default_factory=lambda: get_config("qelectron")["LocalBraketQubitExecutor"]["backend"]
     )
     max_jobs: int = 20
-    shots: Optional[int] = -1
     run_kwargs: dict = {}
 
     def batch_submit(self, qscripts_list):

@@ -18,6 +18,8 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+from typing import Sequence
+
 from pennylane import QubitDevice
 from pennylane import numpy as np
 from pennylane.devices.default_qubit import DefaultQubit
@@ -74,8 +76,13 @@ class QEDevice(QubitDevice):
         # We will retrieve the result later using the future object and the batch_id.
         if self._async_run:
             self._batch_id = batch_id
-            # Return a dummy result
-            return [self._asarray([1] * c.output_dim) for c in circuits]
+
+            # Return a (recognizable) dummy result
+            res = [self._asarray([-123.456] * c.output_dim) for c in circuits]
+            if isinstance(self.qelectron_info.device_shots, Sequence):
+                # Replicate the list for shot vector case.
+                return [[res]] * len(self.qelectron_info.device_shots)
+            return res
 
         # Otherwise, get the results from the middleware
         results = middleware.get_results(batch_id)

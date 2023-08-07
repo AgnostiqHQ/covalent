@@ -18,7 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from typing import Optional, Union
+from typing import Union
 
 from pydantic import validator
 
@@ -64,7 +64,6 @@ class Simulator(BaseQExecutor):
     device: str = "default.qubit"
     parallel: Union[bool, str] = "thread"
     workers: int = 10
-    shots: Optional[int] = -1
 
     @validator("device")
     def validate_device(cls, device):  # pylint: disable=no-self-argument

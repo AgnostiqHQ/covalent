@@ -25,6 +25,7 @@ import pennylane as qml
 
 from .._results_manager.qresult import QNodeFutureResult
 from .._shared_files.qinfo import QElectronInfo, QNodeSpecs
+from .._shared_files.utils import get_original_shots
 from ..executor.qbase import BaseQExecutor
 from .qdevice import QEDevice
 
@@ -63,7 +64,7 @@ class QNodeQE(qml.QNode):
         # Create a new device for every QNodeQE instance
         qe_device = QEDevice(
             wires=qnode.device.num_wires,
-            shots=qnode.device.shots,
+            shots=get_original_shots(qnode.device),
             executors=executors,
             qelectron_info=qelectron_info,
         )

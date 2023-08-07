@@ -27,6 +27,7 @@ from datetime import timedelta
 from typing import Any, Callable, Dict, Set, Tuple
 
 import cloudpickle
+from pennylane._device import Device
 
 from . import logger
 from .config import get_config
@@ -265,3 +266,16 @@ def import_from_path(path: str) -> Any:
     module_path, class_name = path.split(_IMPORT_PATH_SEPARATOR)
     module = importlib.import_module(module_path)
     return getattr(module, class_name)
+
+
+def get_original_shots(dev: Device):
+    """
+    Recreate vector of shots if device has a shot vector.
+    """
+    if not dev.shot_vector:
+        return dev.shots
+
+    shot_sequence = []
+    for shots in dev.shot_vector:
+        shot_sequence.extend([shots.shots] * shots.copies)
+    return type(dev.shot_vector)(shot_sequence)
