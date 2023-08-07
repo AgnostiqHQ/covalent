@@ -67,11 +67,16 @@ class Simulator(BaseQExecutor):
     shots: Optional[int] = -1
 
     @validator("device")
-    def validate_device(cls, v):
-        if v not in SIMULATOR_DEVICES:
-            devices = ", ".join(SIMULATOR_DEVICES)
-            raise ValueError(f"Simulator device must be one of {devices}")
-        return v
+    def validate_device(cls, device):  # pylint: disable=no-self-argument
+        """
+        Check that the `device` attribute is NOT a provider or hardware device.
+        """
+        if device not in SIMULATOR_DEVICES:
+            valid_devices = ", ".join(
+                SIMULATOR_DEVICES[::-1] + [f"or {SIMULATOR_DEVICES[-1]}"]
+            )
+            raise ValueError(f"Simulator device must be {valid_devices}.")
+        return device
 
     def batch_submit(self, qscripts_list):
 
