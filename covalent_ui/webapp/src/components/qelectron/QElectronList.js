@@ -219,6 +219,8 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
   const [sortColumn, setSortColumn] = useState('start_time')
   const [sortOrder, setSortOrder] = useState('DESC')
   const isHeightAbove850px = useMediaQuery('(min-height: 850px)')
+  const isHeight900920px = useMediaQuery('(min-height: 900px) and (max-height: 920px)')
+  const isHeight920940px = useMediaQuery('(min-height: 920px) and (max-height: 940px)')
   const isHeightAbove940px = useMediaQuery('(min-height: 940px)')
   const isHeightAbove945px = useMediaQuery('(min-height: 945px)')
   const isHeightAbove1024px = useMediaQuery('(min-height: 1024px)')
@@ -288,11 +290,17 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
     if (isHeightAbove850px) {
       height = !expanded ? 550 : 310
     }
+    if (isHeight900920px) {
+      height = !expanded ? 583 : 360
+    }
+    if (isHeight920940px) {
+      height = !expanded ? 610 : 360
+    }
     if (isHeightAbove940px) {
       height = !expanded ? 600 : 400
     }
     if (isHeightAbove945px) {
-      height = !expanded ? 660 : 400
+      height = !expanded ? 660 : 410
     }
     if (isHeightAbove1024px) {
       height = !expanded ? 700 : 480
@@ -428,6 +436,12 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
         ...(isHeightAbove850px && {
           height: expanded ? '23.5rem' : '39.25rem',
         }),
+        ...(isHeight900920px && {
+          height: expanded ? '27rem' : '42rem',
+        }),
+        ...(isHeight920940px && {
+          height: expanded ? '27rem' : '44rem',
+        }),
         ...(isHeightAbove940px && {
           height: expanded ? '29rem' : '44.75rem',
         }),
@@ -449,6 +463,12 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
             height: expanded ? '17rem' : '33rem',
             ...(isHeightAbove850px && {
               height: expanded ? '23.5rem' : '39.25rem',
+            }),
+            ...(isHeight900920px && {
+              height: expanded ? '27rem' : '42rem',
+            }),
+            ...(isHeight920940px && {
+              height: expanded ? '27rem' : '44rem',
             }),
             ...(isHeightAbove940px && {
               height: expanded ? '29rem' : '44.75rem',
