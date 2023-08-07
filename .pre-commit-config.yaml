@@ -40,12 +40,12 @@ repos:
         args: ["--profile", "black"]
 
   - repo: https://github.com/psf/black
-    rev: 23.3.0
+    rev: 23.7.0
     hooks:
       - id: black
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
+    rev: 6.1.0
     hooks:
       - id: flake8
         args:
@@ -56,7 +56,7 @@ repos:
           )$
 
   - repo: https://github.com/pre-commit/mirrors-prettier
-    rev: v3.0.0
+    rev: v3.0.1
     hooks:
       - id: prettier
         types: [yaml, markdown]
@@ -65,7 +65,7 @@ repos:
               meta.yaml|
           )$
   - repo: https://github.com/hadialqattan/pycln
-    rev: v2.1.5
+    rev: v2.2.1
     hooks:
       - id: pycln
         args: [--config=pyproject.toml]
