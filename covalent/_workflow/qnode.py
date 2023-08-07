@@ -135,12 +135,8 @@ class QNodeQE(qml.QNode):
         Check args and kwargs to avoid computing gradients on non-trainable parameters.
         """
 
-        # No args or kwargs to worry about.
-        if not args and not kwargs:
-            return QNodeSpecs(**qml.specs(self)(*args, **kwargs))
-
         # Some args or some kwargs are trainable. No warning expected.
-        if (
+        if (args or kwargs) and (
             any(qml.math.get_trainable_indices(args)) or
             any(qml.math.get_trainable_indices(kwargs.values()))
         ):
