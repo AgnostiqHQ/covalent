@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added prettier for markdown files.
 - Reduce the number of pinned version numbers in the `setup.py`, `requirements.txt`, and `requirements-client.txt`
 - Updated the `wci.yml` file with new features
-- Bumped pre-commit prettier version
+- Bumped pre-commit versions
 
 ### Added
 
@@ -48,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed the method for startup and shutdown events for pytest to work with fastapi version 0.93.0
 - Fixed test cases to adapt changes to SQLAlchemy version 1.4.49
 - Ignored remote file transfer how-to functional tests.
+- Skipping a UI backend test for now
 
 ### Fixed
 
