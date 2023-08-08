@@ -25,9 +25,11 @@ import { useDispatch, useSelector } from 'react-redux'
 import {
   Grid,
   Drawer,
-
+  Snackbar,
+  SvgIcon
 } from '@mui/material'
 import QElectronTopBar from './QElectronTopBar'
+import { ReactComponent as closeIcon } from '../../assets/close.svg'
 import QElelctronAccordion from './QElelctronAccordion'
 import QElectronList from '../qelectron/QElectronList'
 import {
@@ -43,6 +45,43 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, ele
   const [currentJob, setCurrentJob] = React.useState('');
   const [defaultId, setDefaultId] = React.useState('');
 
+  const isErrorJobs = useSelector(
+    (state) => state.electronResults.qelectronJobsList.error
+  );
+
+  const isErrorOverview = useSelector(
+    (state) => state.electronResults.qelectronJobOverviewList.error
+  );
+  const [openSnackbar, setOpenSnackbar] = React.useState(Boolean(isErrorOverview) || Boolean(isErrorJobs));
+  const [snackbarMessage, setSnackbarMessage] = React.useState(null);
+
+  // check if there are any API errors and show a sncakbar
+  useEffect(() => {
+    if (isErrorOverview) {
+      setOpenSnackbar(true)
+      if (isErrorOverview?.detail && isErrorOverview?.detail?.length > 0 && isErrorOverview?.detail[0] && isErrorOverview?.detail[0]?.msg) {
+        setSnackbarMessage(isErrorOverview?.detail[0]?.msg)
+      }
+      else {
+        setSnackbarMessage(
+          'Something went wrong,please contact the administrator!'
+        )
+      }
+    }
+    if (isErrorJobs) {
+      setOpenSnackbar(true)
+      if (isErrorJobs?.detail && isErrorJobs?.detail?.length > 0 && isErrorJobs?.detail[0] && isErrorJobs?.detail[0]?.msg) {
+        setSnackbarMessage(isErrorJobs?.detail[0]?.msg)
+      }
+      else {
+        setSnackbarMessage(
+          'Something went wrong,please contact the administrator!'
+        )
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isErrorOverview, isErrorJobs]);
+
   const listData = useSelector(
     (state) => state.electronResults.qelectronJobs
   );
@@ -57,7 +96,7 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, ele
 
   const rowClickHandler = (job_id) => {
     setCurrentJob(job_id)
-    if(job_id!==currentJob) dispatch(qelectronJobOverview({ dispatchId, electronId, jobId: job_id }))
+    if (job_id !== currentJob) dispatch(qelectronJobOverview({ dispatchId, electronId, jobId: job_id }))
   }
 
   const details = {
@@ -91,75 +130,79 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, ele
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [openQelectronDrawer])
 
-  // useEffect(() => {
-  //   const handleOutsideClick = (event) => {
-  //     if (
-  //       openQelectronDrawer &&
-  //       !event.target.closest('.q-electron-card') &&
-  //       !event.target.closest('#nodeDrawer')
-  //     ) {
-  //       handleDrawerClose()
-  //     }
-  //   }
-
-  //   document.addEventListener('mousedown', handleOutsideClick)
-
-  //   return () => {
-  //     document.removeEventListener('mousedown', handleOutsideClick)
-  //   }
-  // }, [openQelectronDrawer])
-
   return (
-    <Drawer
-      transitionDuration={600}
-      id="nodeDrawer"
-      sx={(theme) => ({
-        position: 'relative',
-        width: nodeDrawerWidth,
-        '& .MuiDrawer-paper': {
-          width: nodeDrawerWidth,
-          boxSizing: 'border-box',
-          border: 'none',
-          p: 3,
-          marginRight: '10px',
-          marginTop: '22px',
-          maxHeight: '95vh',
-          bgcolor: (theme) => theme.palette.background.qelectronDrawerbg,
-          boxShadow: '0px 16px 50px rgba(0, 0, 0, 0.9)',
-          backdropFilter: 'blur(8px)',
-          borderRadius: '16px',
-          '@media (max-width: 1290px)': {
-            height: '92vh',
-            marginTop: '70px',
-          },
-        },
-      })}
-      anchor="right"
-      variant="persistent"
-      open={openQelectronDrawer}
-      onClose={handleDrawerClose}
-      data-testid="nodeDrawer"
-    >
-      <Grid
-        container
-        sx={{ position: 'relative', maxHeight: '100%', overflow: 'auto' }}
-      >
-        <Grid item xs={7.9}>
-          <QElectronTopBar
-            details={details}
-            toggleQelectron={toggleQelectron}
+    <>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={3000}
+        message={snackbarMessage}
+        onClose={() => setOpenSnackbar(false)}
+        action={
+          <SvgIcon
+            sx={{
+              mt: 2,
+              zIndex: 2,
+              cursor: 'pointer',
+            }}
+            component={closeIcon}
+            onClick={() => setOpenSnackbar(false)}
           />
-          <QElelctronAccordion expanded={expanded} setExpanded={setExpanded} overviewData={overviewData} />
-          <QElectronList expanded={expanded}
-            data={listData}
-            rowClick={rowClickHandler}
-            dispatchId={dispatchId}
-            electronId={electronId}
-            setExpanded={setExpanded}
-            defaultId={defaultId} />
+        }
+      />
+      <Drawer
+        transitionDuration={600}
+        id="nodeDrawer"
+        sx={(theme) => ({
+          position: 'relative',
+          width: nodeDrawerWidth,
+          '& .MuiDrawer-paper': {
+            width: nodeDrawerWidth,
+            boxSizing: 'border-box',
+            border: 'none',
+            p: 3,
+            marginRight: '10px',
+            marginTop: '22px',
+            maxHeight: '95vh',
+            bgcolor: (theme) => theme.palette.background.qelectronDrawerbg,
+            boxShadow: '0px 16px 50px rgba(0, 0, 0, 0.9)',
+            backdropFilter: 'blur(8px)',
+            borderRadius: '16px',
+            '@media (max-width: 1290px)': {
+              height: '92vh',
+              marginTop: '70px',
+            },
+          },
+        })}
+        anchor="right"
+        variant="persistent"
+        open={openQelectronDrawer}
+        onClose={handleDrawerClose}
+        data-testid="nodeDrawer"
+      >
+        <Grid
+          container
+          sx={{ position: 'relative', maxHeight: '100%', overflow: 'auto' }}
+        >
+          <Grid item xs={7.9}>
+            <QElectronTopBar
+              details={details}
+              toggleQelectron={toggleQelectron}
+            />
+            <QElelctronAccordion expanded={expanded} setExpanded={setExpanded} overviewData={overviewData} />
+            <QElectronList expanded={expanded}
+              data={listData}
+              rowClick={rowClickHandler}
+              dispatchId={dispatchId}
+              electronId={electronId}
+              setExpanded={setExpanded}
+              defaultId={defaultId}
+              setOpenSnackbar={setOpenSnackbar}
+              setSnackbarMessage={setSnackbarMessage}
+            />
+          </Grid>
         </Grid>
-      </Grid>
-    </Drawer>
+      </Drawer>
+    </>
   )
 }
 

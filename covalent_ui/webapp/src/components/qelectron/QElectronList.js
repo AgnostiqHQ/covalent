@@ -212,7 +212,7 @@ const StyledTable = styled(Table)(({ theme }) => ({
   },
 }))
 
-const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setExpanded, defaultId }) => {
+const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setExpanded, defaultId, setOpenSnackbar, setSnackbarMessage }) => {
   const dispatch = useDispatch()
   const [selected, setSelected] = useState([])
   const [selectedId, setSelectedId] = useState(defaultId)
@@ -232,6 +232,26 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
   useEffect(() => {
     setSelectedId(defaultId)
   }, [defaultId])
+
+  const isError = useSelector(
+    (state) => state.electronResults.qelectronJobsList.error
+  );
+
+  // check if there are any API errors and show a sncakbar
+  useEffect(() => {
+    if (isError) {
+      setOpenSnackbar(true)
+      if (isError?.detail && isError?.detail?.length > 0 && isError?.detail[0] && isError?.detail[0]?.msg) {
+        setSnackbarMessage(isError?.detail[0]?.msg)
+      }
+      else {
+        setSnackbarMessage(
+          'Something went wrong,please contact the administrator!'
+        )
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isError]);
 
   useEffect(() => {
     if (electronId) {
