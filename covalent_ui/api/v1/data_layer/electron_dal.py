@@ -211,7 +211,6 @@ class Electrons:
                 and job_overview["overview"]["time_elapsed"]
                 else None
             )
-
             if selected_job["qnode_specs"] is not None:
                 job_overview["circuit"]["total_qbits"] = (
                     selected_job["qnode_specs"]["num_used_wires"]
@@ -228,9 +227,10 @@ class Electrons:
                     if "gate_sizes" in selected_job["qnode_specs"]
                     else None
                 )
-                if not gate_sizes:
-                    for i in range(1, len(gate_sizes) + 1):
-                        job_overview["circuit"][f"qbit{i}_gates"] = gate_sizes[str(i)]
+                if gate_sizes:
+                    for gate_wires, gate_count in gate_sizes.items():
+                        job_overview["circuit"][f"qbit{gate_wires}_gates"] = gate_count
+
             job_detail_response.data = job_overview
             job_detail_response.msg = ""
             return job_detail_response
