@@ -185,13 +185,9 @@ class Electrons:
                     "start_time": selected_job["save_time"]
                     if "save_time" in selected_job
                     else None,
-                    # "end_time": selected_job["save_time"]
-                    # + timedelta(seconds=selected_job["execution_time"]),
                 },
                 "circuit": {
                     "total_qbits": None,
-                    "qbit1_gates": None,
-                    "qbit2_gates": None,
                     "depth": None,
                     "circuit_diagram": selected_job["circuit_diagram"]
                     if "circuit_diagram" in selected_job
