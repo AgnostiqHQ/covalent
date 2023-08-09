@@ -251,7 +251,7 @@ export const statusIcon = (status) => {
     case 'RUNNING':
     case 'STARTING':
       return (
-        <LoaderSvg className='circleRunningStatus' />
+        <LoaderSvg className='circleRunningStatus' aria-label={status} />
       )
     case 'NEW_OBJECT':
     case 'PENDING':
