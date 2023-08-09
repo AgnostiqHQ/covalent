@@ -8,7 +8,11 @@ This quantum executor accesses IBM Quantum backends through Pennylane's :code:`"
 1. Installation
 ===============
 
-The IBMQ executor is included with Covalent. No additional installation is required.
+The IBMQ executor is not included with base Covalent. To install it, run
+
+.. code:: console
+
+    pip install covalent[qiskit]
 
 ================
 2. Usage Example

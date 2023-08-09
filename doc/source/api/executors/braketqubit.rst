@@ -12,12 +12,12 @@ It utilizes the Pennylane plugin found `here <https://amazon-braket-pennylane-pl
 1. Installation
 ===============
 
-:code:`BraketQubitExecutor` is included in Covalent. 
-To use it, however, you will need to install the `amazon-braket-pennylane-plugin <https://github.com/aws/amazon-braket-pennylane-plugin-python>`_:
+:code:`BraketQubitExecutor` is not included in base Covalent. 
+To use it, you will need to install the Covalent with:
 
 .. code:: console
 
-    pip install amazon-braket-pennylane-plugin
+    pip install covalent[braket]
 
 and have valid AWS credentials as specified `here <https://boto3.amazonaws.com/v1/documentation/api/latest/guide/quickstart.html>`_.
 
