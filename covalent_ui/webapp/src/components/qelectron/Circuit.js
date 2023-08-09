@@ -89,9 +89,10 @@ const Circuit = ({ circuitDetails }) => {
     const gatesArray = [];
     Object?.keys(details)?.forEach((item, index) => {
       const obj = {};
-      if (item === `qbit${index}_gates`) {
+      if (/qbit[0-9]+_gates/.test(item)) {
         obj['value'] = details[item];
-        obj['title'] = `No.${index} Qubit Gates`
+        const i = item?.substring(4, item?.indexOf('_'))
+        obj['title'] = `No.${i} Qubit Gates`
         gatesArray?.push(obj);
       }
     })
@@ -136,7 +137,7 @@ const Circuit = ({ circuitDetails }) => {
           Circuit
         </Typography>
 
-        <Grid sx={{ width: '15rem', height: '5rem' }}>
+        <Grid sx={{ width: '17rem', height: '5rem' }}>
           <Paper
             elevation={0}
             sx={(theme) => ({
