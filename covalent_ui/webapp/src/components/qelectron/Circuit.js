@@ -49,7 +49,7 @@ const SingleGrid = ({ title, value }) => {
   );
 
   return (
-    <Grid>
+    <Grid item sx={{ width: '10.4rem' }}>
       <Typography
         sx={{
           fontSize: theme.typography.sidebarh3,
@@ -66,7 +66,7 @@ const SingleGrid = ({ title, value }) => {
               color: (theme) => theme.palette.text.primary,
             }}
           >
-            {value ? value : '-'}
+            {value || value === 0 ? value : '-'}
           </Typography>
         </>}
     </Grid>
@@ -75,6 +75,7 @@ const SingleGrid = ({ title, value }) => {
 
 const Circuit = ({ circuitDetails }) => {
   const [openModal, setOpenModal] = useState(false)
+  const [circuitData, setCircuitData] = useState(circuitDetails);
 
   const handleClose = () => {
     setOpenModal(false)
@@ -83,25 +84,47 @@ const Circuit = ({ circuitDetails }) => {
     (state) => state.electronResults.qelectronJobOverviewList.isFetching
   );
 
+  React.useEffect(() => {
+    const details = { ...circuitData };
+    const gatesArray = [];
+    Object?.keys(details)?.forEach((item, index) => {
+      const obj = {};
+      if (item === `qbit${index}_gates`) {
+        obj['value'] = details[item];
+        obj['title'] = `No.${index} Qubit Gates`
+        gatesArray?.push(obj);
+      }
+    })
+    details['gates'] = [...gatesArray];
+    setCircuitData({ ...details });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [circuitDetails])
+
+  const renderQubitgates = () => {
+    return circuitData?.gates?.map((detail, index) => (
+      <SingleGrid title={detail?.title} value={detail?.value} />
+    ));
+  }
+
   return (
     <Grid
       px={4}
       pt={2}
       container
-      flexDirection="column
-    "
+      maxHeight="14rem"
+      sx={{ overflow: 'auto' }}
     >
       <Grid
         id="topGrid"
         item
         container
         xs={11.85}
-        justifyContent="space-between"
+        columnSpacing={7.4}
+        rowSpacing={4}
       >
-        <SingleGrid title="No. of Qubits" value={circuitDetails?.total_qbits} />
-        <SingleGrid title="No.1 Qubit Gates" value={circuitDetails?.qbit1_gates} />
-        <SingleGrid title="No.2 Qubit Gates" value={circuitDetails?.qbit2_gates} />
-        <SingleGrid title="Depth" value={circuitDetails?.depth} />
+        <SingleGrid title="No. of Qubits" value={circuitData?.total_qbits} />
+        {renderQubitgates()}
+        <SingleGrid title="Depth" value={circuitData?.depth} />
       </Grid>
       <Grid id="bottomGrid" mt={3}>
         <Typography
@@ -113,7 +136,7 @@ const Circuit = ({ circuitDetails }) => {
           Circuit
         </Typography>
 
-        <Grid sx={{ width: '80%', height: '100%' }}>
+        <Grid sx={{ width: '15rem', height: '5rem' }}>
           <Paper
             elevation={0}
             sx={(theme) => ({
