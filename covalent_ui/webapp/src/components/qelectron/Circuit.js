@@ -92,7 +92,7 @@ const Circuit = ({ circuitDetails }) => {
       if (/qbit[0-9]+_gates/.test(item)) {
         obj['value'] = details[item];
         const i = item?.substring(4, item?.indexOf('_'))
-        obj['title'] = `No.${i} Qubit Gates`
+        obj['title'] = `No. ${i}-Qubit Gates`
         gatesArray?.push(obj);
       }
     })
@@ -112,7 +112,7 @@ const Circuit = ({ circuitDetails }) => {
       px={4}
       pt={2}
       container
-      maxHeight="14rem"
+      height="14rem"
       sx={{ overflow: 'auto' }}
     >
       <Grid
