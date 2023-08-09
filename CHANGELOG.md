@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
+- Respecting node version as specified in `.nvmrc` file for tests workflow
 - Bumped versions in pre-commit config
 - Added prettier for markdown files.
 - Reduce the number of pinned version numbers in the `setup.py`, `requirements.txt`, and `requirements-client.txt`
