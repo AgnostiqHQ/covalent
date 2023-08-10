@@ -40,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - When the server is stopped, any workflows in a non-terminal state are first cancelled
 - Pinned sqlalchemy version with upper limit <2.0.0.
 - Added rich support to cli for better printing statements. 
+- Changed semver from 5.7.1 to 5.7.2 in package.json
 
 ### Tests
 
