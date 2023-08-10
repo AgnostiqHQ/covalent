@@ -22,24 +22,34 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import Union
+from typing import Dict, List, Union
 
 from pydantic import BaseModel
 
 from covalent_ui.api.v1.utils.status import Status
 
 
-class JobsResponse(BaseModel):
+class Job(BaseModel):
     job_id: Union[str, None]
     start_time: Union[datetime, None]
     executor: Union[str, None]
     status: Union[str, None]
 
 
-class JobDetailsResponse(BaseModel):
+class JobsResponse(BaseModel):
+    data: Union[List[Job], None] = None
+    msg: Union[str, None] = None
+
+
+class JobDetails(BaseModel):
     overview: Union[dict, None]
     circuit: Union[dict, None]
     executor: Union[dict, None]
+
+
+class JobDetailsResponse(BaseModel):
+    data: Union[JobDetails, None, Dict] = None
+    msg: Union[str, None] = None
 
 
 class ElectronResponse(BaseModel):

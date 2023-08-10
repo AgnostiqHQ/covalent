@@ -212,14 +212,18 @@ const StyledTable = styled(Table)(({ theme }) => ({
   },
 }))
 
-const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setExpanded, defaultId }) => {
+const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setExpanded, defaultId, setOpenSnackbar, setSnackbarMessage }) => {
   const dispatch = useDispatch()
   const [selected, setSelected] = useState([])
   const [selectedId, setSelectedId] = useState(defaultId)
   const [sortColumn, setSortColumn] = useState('start_time')
   const [sortOrder, setSortOrder] = useState('DESC')
   const isHeightAbove850px = useMediaQuery('(min-height: 850px)')
+  const isHeight900920px = useMediaQuery('(min-height: 900px) and (max-height: 920px)')
+  const isHeight920940px = useMediaQuery('(min-height: 920px) and (max-height: 940px)')
   const isHeightAbove940px = useMediaQuery('(min-height: 940px)')
+  const isHeightAbove945px = useMediaQuery('(min-height: 945px)')
+  const isHeightAbove1024px = useMediaQuery('(min-height: 1024px)')
   const isHeightAbove1040px = useMediaQuery('(min-height: 1040px)')
   const isFetching = useSelector(
     (state) => state.electronResults.qelectronJobsList.isFetching
@@ -228,6 +232,26 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
   useEffect(() => {
     setSelectedId(defaultId)
   }, [defaultId])
+
+  const isError = useSelector(
+    (state) => state.electronResults.qelectronJobsList.error
+  );
+
+  // check if there are any API errors and show a sncakbar
+  useEffect(() => {
+    if (isError) {
+      setOpenSnackbar(true)
+      if (isError?.detail && isError?.detail?.length > 0 && isError?.detail[0] && isError?.detail[0]?.msg) {
+        setSnackbarMessage(isError?.detail[0]?.msg)
+      }
+      else {
+        setSnackbarMessage(
+          'Something went wrong,please contact the administrator!'
+        )
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isError]);
 
   useEffect(() => {
     if (electronId) {
@@ -283,8 +307,23 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
 
   const getReactVirHeight = () => {
     let height = !expanded ? 450 : 200
+    if (isHeightAbove850px) {
+      height = !expanded ? 550 : 310
+    }
+    if (isHeight900920px) {
+      height = !expanded ? 583 : 360
+    }
+    if (isHeight920940px) {
+      height = !expanded ? 610 : 360
+    }
     if (isHeightAbove940px) {
       height = !expanded ? 600 : 400
+    }
+    if (isHeightAbove945px) {
+      height = !expanded ? 660 : 410
+    }
+    if (isHeightAbove1024px) {
+      height = !expanded ? 700 : 480
     }
     if (isHeightAbove1040px) {
       height = !expanded ? 750 : 500
@@ -417,8 +456,20 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
         ...(isHeightAbove850px && {
           height: expanded ? '23.5rem' : '39.25rem',
         }),
+        ...(isHeight900920px && {
+          height: expanded ? '27rem' : '42rem',
+        }),
+        ...(isHeight920940px && {
+          height: expanded ? '27rem' : '44rem',
+        }),
         ...(isHeightAbove940px && {
           height: expanded ? '29rem' : '44.75rem',
+        }),
+        ...(isHeightAbove945px && {
+          height: expanded ? '32rem' : '48rem',
+        }),
+        ...(isHeightAbove1024px && {
+          height: expanded ? '34rem' : '50rem',
         }),
         ...(isHeightAbove1040px && {
           height: expanded ? '36rem' : '51.5rem',
@@ -433,8 +484,20 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
             ...(isHeightAbove850px && {
               height: expanded ? '23.5rem' : '39.25rem',
             }),
+            ...(isHeight900920px && {
+              height: expanded ? '27rem' : '42rem',
+            }),
+            ...(isHeight920940px && {
+              height: expanded ? '27rem' : '44rem',
+            }),
             ...(isHeightAbove940px && {
               height: expanded ? '29rem' : '44.75rem',
+            }),
+            ...(isHeightAbove945px && {
+              height: expanded ? '29rem' : '48rem',
+            }),
+            ...(isHeightAbove1024px && {
+              height: expanded ? '34rem' : '50rem',
             }),
             ...(isHeightAbove1040px && {
               height: expanded ? '36rem' : '51.5rem',

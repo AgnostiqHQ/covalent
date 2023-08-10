@@ -35,6 +35,8 @@ from covalent_ui.api.v1.models.electrons_model import (
     ElectronFileOutput,
     ElectronFileResponse,
     ElectronResponse,
+    Job,
+    JobDetails,
     JobDetailsResponse,
     JobsResponse,
 )
@@ -191,7 +193,7 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
             )
 
 
-@routes.get("/{dispatch_id}/electron/{electron_id}/jobs", response_model=List[JobsResponse])
+@routes.get("/{dispatch_id}/electron/{electron_id}/jobs", response_model=List[Job])
 def get_electron_jobs(
     dispatch_id: uuid.UUID,
     electron_id: int,
@@ -199,7 +201,7 @@ def get_electron_jobs(
     sort_direction: Optional[SortDirection] = SortDirection.DESCENDING,
     count: Optional[int] = None,
     offset: Optional[int] = Query(0),
-) -> List[JobsResponse]:
+) -> List[Job]:
     """Get Electron Jobs List
 
     Args:
@@ -211,7 +213,7 @@ def get_electron_jobs(
     """
     with Session(db.engine) as session:
         electron = Electrons(session)
-        jobs: List[JobsResponse] = electron.get_jobs(
+        jobs_response: JobsResponse = electron.get_jobs(
             dispatch_id=dispatch_id,
             electron_id=electron_id,
             sort_by=sort_by,
@@ -219,26 +221,16 @@ def get_electron_jobs(
             count=count,
             offset=offset,
         )
-        if jobs is None:
+        if jobs_response.data is None:
             raise HTTPException(
-                status_code=400,
-                detail=[
-                    {
-                        "loc": ["path", "dispatch_id"],
-                        "msg": f"Dispatch ID {dispatch_id} or Electron ID does not exist",
-                        "type": None,
-                    }
-                ],
+                status_code=422,
+                detail=[{"msg": jobs_response.msg}],
             )
-        return jobs
+        return jobs_response.data
 
 
-@routes.get(
-    "/{dispatch_id}/electron/{electron_id}/jobs/{job_id}", response_model=JobDetailsResponse
-)
-def get_electron_job_overview(
-    dispatch_id: uuid.UUID, electron_id: int, job_id: str
-) -> JobDetailsResponse:
+@routes.get("/{dispatch_id}/electron/{electron_id}/jobs/{job_id}", response_model=JobDetails)
+def get_electron_job_overview(dispatch_id: uuid.UUID, electron_id: int, job_id: str) -> JobDetails:
     """Get Electron Job Detail
 
     Args:
@@ -251,16 +243,13 @@ def get_electron_job_overview(
     """
     with Session(db.engine) as session:
         electron = Electrons(session)
-        job_overview = electron.get_job_detail(dispatch_id, electron_id, job_id)
-        if job_overview is None:
+        job_response: JobDetailsResponse = electron.get_job_detail(
+            dispatch_id, electron_id, job_id
+        )
+        if job_response.data is None:
             raise HTTPException(
-                status_code=400,
-                detail=[
-                    {
-                        "loc": ["path", "dispatch_id"],
-                        "msg": "One of the values does not exist. Dispatch ID, Electron ID, Job ID",
-                        "type": None,
-                    }
-                ],
+                status_code=422,
+                detail=[{"msg": job_response.msg}],
             )
-        return job_overview
+
+        return job_response.data
