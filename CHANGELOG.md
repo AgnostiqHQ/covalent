@@ -7,23 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-## Tests
-
-- Changed the method for startup and shutdown events for pytest to work with fastapi version 0.93.0
-- Fixed test cases to adapt changes to SQLAlchemy version 1.4.49
-
-### Docs
-
-- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
-- Updated documentation links in README
-
 ### Operations
 
 - Bumped versions in pre-commit config
 - Added prettier for markdown files.
 - Reduce the number of pinned version numbers in the `setup.py`, `requirements.txt`, and `requirements-client.txt`
 - Updated the `wci.yml` file with new features
-- Bumped pre-commit prettier version
+- Bumped pre-commit versions
 
 ### Added
 
@@ -39,25 +29,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed duplicate "stop server" warning in the First Experimemnt page
 - Fixed typo in quickstart
 - Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
+- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
+- Updated documentation links in README
+- Updating and reorganizing RTD API documentation
+- Adding example links in API documentation
 
 ### Changed
 
 - Removed the upper limit from `dask` and `distributed` packages' versions until we find a version which is incompatible with Covalent.
 - When the server is stopped, any workflows in a non-terminal state are first cancelled
 - Pinned sqlalchemy version with upper limit <2.0.0.
+- Added rich support to cli for better printing statements. 
 
 ### Tests
 
 - Skipping functional tests for azure blob storage and gcp storage how to guides since they require credentials to run.
 - Added testcases for GUI backend.
+- Changed the method for startup and shutdown events for pytest to work with fastapi version 0.93.0
+- Fixed test cases to adapt changes to SQLAlchemy version 1.4.49
+- Ignored remote file transfer how-to functional tests.
+- Skipping a UI backend test for now
 
 ### Fixed
 
+- Using `filelock` package now for platform independent file locking of config file. This should fix the failing tests as well as improve compatibility with Windows.
 - When stopping the server, we send the proper `SIGINT` signal to uvicorn instead of `SIGKILL` which allows the second part of the FastAPI `lifespan` to execute properly.
 - Fixed the outstanding incompatibities between front-end data layer and a postgres database
 - Reverted file-lock changes
 - Fixed dispatches list UI api caused by pydantic config.
 - Fixed graph API.
+- Fixed UI backend unit test case.
+- Executor and workflow executor data dictionaries are passed to sublattices
 
 ## [0.227.0-rc.0] - 2023-06-13
 
@@ -350,14 +352,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
-- Adding Google Batch executor plugin RTD
-
-### Docs
-
 - Updated How-to documents.
 - Port of Pennylane's Univariate QVR tutorial using Covalent to this repo.
 - Adding troubleshooting guide to RTD's
 - Added a note to First Experiment offering initial intro to executors.
+- Adding Google Batch executor plugin RTD
 
 ## [0.219.0-rc.0] - 2023-03-01
 

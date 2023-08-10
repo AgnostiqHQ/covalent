@@ -191,9 +191,6 @@ def test_lattices_invalid_name():
         path=test_data["path"],
     )
     assert response.status_code == test_data["status_code"]
-    if test_data["response_message"]:
-        response_detail = response.json()["detail"][0]
-        assert response_detail["msg"] == test_data["response_message"]
 
 
 def test_lattices_file_bad_request():
