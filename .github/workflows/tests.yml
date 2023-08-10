@@ -164,6 +164,12 @@ jobs:
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
 
+      - name: Set up Node
+        if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: 'covalent_ui/webapp/.nvmrc'
+
       - name: Build webapp
         if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
         uses: nick-fields/retry@v2
