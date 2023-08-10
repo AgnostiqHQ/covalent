@@ -39,7 +39,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed the upper limit from `dask` and `distributed` packages' versions until we find a version which is incompatible with Covalent.
 - When the server is stopped, any workflows in a non-terminal state are first cancelled
 - Pinned sqlalchemy version with upper limit <2.0.0.
-- Added rich support to cli for better printing statements. 
+- Added rich support to cli for better printing statements.
+- Update tough-cookie to 4.1.3 version
 
 ### Tests
 
