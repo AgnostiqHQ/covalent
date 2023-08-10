@@ -3,7 +3,7 @@
 AWS Braket Executor
 """""""""""""""""""""""""""
 
-.. image:: AWS_Braket.jpg
+.. image:: executors/AWS_Braket.jpg
 
 
 Covalent is a Pythonic workflow tool used to execute tasks on advanced computing hardware.

@@ -1,5 +1,3 @@
-.. _local_executor:
-
 Local Executor
 """""""""""""""""""""""""""
 

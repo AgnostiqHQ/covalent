@@ -2,107 +2,114 @@
 
 # Cancel with Confidence: Efficiently Manage Workflows in Covalent
 
-Covalent's cancellation feature is an indispensable tool that empowers users to manage their workflows effectively, enabling them to stop any task or workflow from consuming excessive resources or taking too long to complete, thereby optimizing the use of their computing resources. While other tools focus solely on production workflows, Covalent supports research-based and production workflows, which require more flexibility and adaptability to accommodate modifications. The workflow cancellation feature is often missing in most ETL and workflow orchestrators due to their design focus on automating and managing business processes, ensuring the smooth and uninterrupted operation of predetermined workflows. However, research-based workflows require more adaptability and flexibility, making canceling workflows and tasks an essential feature. With Covalent's cancellation feature, users can take complete control of their workflows, maintain efficient workflow management, and avoid wasteful consumption of resources.
+Covalent offers the unique ability to cancel a workflow or any task in a workflow at any point before or during execution.
 
-Covalent enables users to execute computation tasks on cutting-edge hardware platforms such as quantum computers, HPC clusters, GPU arrays, and cloud services, which may be costly or have limited availability. Users may have a predefined budget or a specific timeframe to complete their experiments, making it crucial to have the ability to cancel a workflow or a task to prevent unnecessary resource utilization or exceeding the allocated budget. Without the cancellation feature, users would have to wait for the computation to finish or manually terminate it, resulting in wasteful consumption of resources and time. Moreover, the ability to cancel workflows or tasks empowers researchers and developers to modify their workflows to suit their changing needs, such as adjusting the computation pipeline or input data. By offering the cancellation feature, Covalent lets users control their workflows, optimizing the use of valuable resources.
+## Why Cancel?
 
+Most ETL and workflow orchestrators focus solely on production workflows, with emphasis on automation, performance, and efficient management of business processes. Covalent was designed to support research-based as well as production workflows. Research workflows require the flexibility to accommodate modifications, including cancellation of running tasks.
 
-Given that Covalent supports multi-cloud execution with its executor plugins, canceling a task involves the following actions
+Covalent's cancellation feature is indispensable in research workflow management, enabling you to stop any task or workflow that is taking too long to complete from consuming further resources. Covalent empowers you to confidently execute computation tasks on cutting-edge hardware platforms with high cost or limited availability, such as quantum computers, HPC clusters, GPU arrays, and cloud services, preventing budget and schedule overruns.
 
-- Canceling tasks
-  - Canceling a task may imply canceling the job being executed by a executor using remote cloud/on-prem resources
-  - Interrupt the executor processing the job immediately. For instance, if a job's dependencies such as pickle callable, arguments and keyword arguments are uploaded but the backend has not yet started executing it, abort right away and do not provision any compute resources
+Besides stopping unneeded, over-long, and unnecessary jobs, the ability to cancel workflows or tasks encourages researchers and developers to modify their workflows to suit their changing needs, such as adjusting the computation pipeline or input data.
 
-- Canceling dispatches
-    - When a dispatch is canceled, cancel all tasks that are part of the dispatch immediately. Any tasks currently being processed will be killed immediately and any unprocessed tasks will be abandoned.
-    - Cancel all post-processing task
+## How To Cancel a Task or Workflow
 
-To cancel a dispatch, the UX is quite straightforward. To cancel an entire workflow, users only need to know the ``dispatch_id``. The following code snippet well illustrates the Covalent cancel API
+To cancel a dispatched workflow from a Python notebook or interactive environment, you issue a ``cancel`` directive with the ``dispatch_id`` of the workflow.
+
+The following code illustrates how to use the Covalent ``cancel`` API.
 
 ```{code-block} python
-   import covalent as ct
 
-   dispatch_id = ct.dispatch(workflow)(args, kwargs)
+ # In the notebook where you've dispatched the workflow ...
+ import covalent as ct
+ dispatch_id = ct.dispatch(workflow)(args, kwargs)
 
-   # cancel the workflow
-   ct.cancel(dispatch_id)
+ # ... Do the following to cancel the workflow:
+ ct.cancel(dispatch_id)
 ```
 
-Similarly to cancel a specific set of tasks within a single dispatch, users can invoke the `cancel` command as follows
+Similarly, to cancel a single task or a set of tasks within a single dispatch, use the same  `cancel` command, but  as follows:
 
 ```{code-block} python
+
+# In the notebook where you've dispatched the workflow ...
 import covalent as ct
+dispatch_id = ct.dispatch(workflow)(args, kwargs)
 
-# dispatch_id = ct.dispatch(workflow)(args, kwargs)
-
-# Cancel tasks 1, 3, 5 from the above dispatch
+# ... to cancel tasks 1, 3, and 5, for example:
 ct.cancel(dispatch_id, task_ids=[1, 3, 5])
 ```
 
-The effect of the above `cancel` command would be that it will interrupt or prevent tasks 1, 3 and 5 from running and all resources (local or remote) being consumed by these tasks will be released. Moreover, all subsequent electrons dependent on the outcomes of tasks 1, 3 and 5 will also not be executed.
+The `cancel` command interrupts or prevents tasks 1, 3, and 5. All resources (local and remote) being consumed by these tasks are released. Subsequent electrons dependent on the outcomes of tasks 1, 3, and 5 (that is, downstream in the transport graph) are also canceled and will not execute.
 
 ```{note}
-It is to be noted that if a node in a lattice is a **sub-lattice** then cancelling that particular node will recursively cancel all the sub tasks within that sub-lattice. Cancelling individual nodes from within a sub-lattice is not supported in Covalent since the transport graphs associated with sub-lattices are dynamically built at runtime
+If a node in a lattice is a *sublattice*, then cancelling that node recursively cancels all the tasks within the sublattice. Cancelling individual nodes within a sublattice is not supported in Covalent because the transport graphs associated with sublattices are dynamically built at runtime.
 ```
 
-## Basic cancellation strategy
+For complete examples of cancelling a task or workflow, see the {doc}`How-to guides <../how_to/index>`.
 
-Covalent follows a very simple strategy to implement task/dispatch cancellation. Given that Covalent tasks are executed by various {doc}`executors <../api/executors/index>` canceling a node implies stopping the executor from executing the task any further if already running. Moreover, for Covalent to cancel a task a unique **job handle** assigned to that task by the executor is needed.
+## How Task Cancellation Works
 
-A **job handle** is typically assigned to the task when an executor beings processing it. Examples of unique **job handles** are as follows
+Recall that Covalent tasks (``@electrons``) are executed by various {doc}`executors <../api/executors/index>`. If the task is already running, cancelling it involves stopping the task's process, thread, or program on the resource fronted by the executor.
 
-- A `SLURM JOB ID` when the task is executed using the {doc}`SlurmExecutor <../api/executors/slurm>`
-- A `AWS Batch` job id when the task is being executed by the {doc}`AWSBatchExecutor <../api/executors/awsbatch>`
-- Job ARN when the {doc}`AWS Braket <../api/executors/awsbraket>` is used
-- The Linux process ID when the task is executed using the {doc}`SSHExecutor <../api/executors/ssh>`
+An executor assigns a unique **job handle** to a task when the executor begins processing it. The **job handle** identifies the compute resource and the ID assigned by the compute resource. Some examples are:
 
-There is a convenient one to one mapping between tasks and their job handles that get uniquely assigned by the corresponding backends.
+| Covalent Executor    | Compute Resource ID |
+|----                  |----            |
+| `SlurmExecutor`      | `SLURM JOB ID` |
+| `AWSBatchExecutor`   | `AWS Batch` Job ID |
+|  AWS `BraketExecutor`| Job Amazon Resource Name (ARN) |
+| `SSHExecutor`        | Linux process ID |
+
+Using the compute resource and resource-specific ID, the job handle uniquely identifies each task. Of course, tasks that have not yet been started do not yet have a job handle.
 
 ```{note}
-In case of task packing when multiple electrons that use the same executor are packed and executed as a single task, this analogy gets modified from one-to-one to one-to-many
+In case of task packing when multiple electrons that use the same executor are packed and executed as a single task, the job handle-to-task relationship is not one-to-one but one-to-many.
 ```
 
-Once a unique `job handle` gets assigned by the remote backend for the task at hand, Covalent stores it in its local database for later retrieval and processing. Generally speaking the Covalent task ids i.e. electron id's in the transport graph map to a corresponding job handle that gets persisted in the database.
-
-It is this `job handle` that gets used by Covalent when canceling individual tasks from a workflow. Executor plugins implement the necessary APIs to store the job handles and to cancel a task using it properly.
+Once a unique job handle is assigned to a task, Covalent stores it in its local database for later retrieval and processing. Covalent uses this job handle to cancel the individual task in a workflow. The executor plugin implements the necessary APIs to map the job handle to a process on a compute resource and use that information to stop the task process.
 
 
-## Implications of canceling a task
+### How It Works in Even More Detail
 
-Given that Covalent now supports cancellation of tasks at a node or at the lattice level, there are few caveats to be mindful off. A task decorated with a remote executor such as {doc}`AWSBatch <../api/executors/awsbatch>`, {doc}`Slurm <../api/executors/slurm>` etc carry out several steps prior to actually executing the electron code such as pickling the electron's `function`, `args` and `kwargs`, uploading the resulting pickle files to the remote destination be it an S3 bucket or the SLURM cluster's login node, provision compute resources, fetch the remote files etc. These are a few steps that generally speaking each remote executor in Covalent performs before successfully executing the dispatched task.
+A task decorated with a remote executor such as {doc}`AWSBatch <../api/executors/awsbatch>` or {doc}`Slurm <../api/executors/slurm>` carries out several steps before executing the electron code, including:
 
-Now once a workflow is dispatched, Covalent starts processing it immediately. If a user then requests a particular node to be canceled, Covalent might be performing any of the aforementioned actions at the time the cancellation requests came in. Thus canceling a particular task implies the following in Covalent
+1. pickling the electron's `function`, `args`, and `kwargs`
+2. uploading the resulting pickle files to the remote destination
+3. provisioning compute resources
+4. fetching remote files
 
-- If the node has already started executing i.e the executor has already started running the electron's code, kill the job (SIGKILL/SIGTERM)
-- If Covalent is yet to start processing a node, abort and do not attempt to process it
-- If a node's function, args and kwargs are not pickled, do not pickle them and abort immediately
-- If the required compute resources for the node have not yet been provisioned, do not provision them and abort immediately
-- If Covalent has not instantiated the executor, do not instantiate an instance and abort immediately
+Once a workflow is dispatched, if you then request a particular node be canceled, Covalent might be performing any of these preliminary actions when the cancellation request comes in. In general, Covalent stops at the earliest possible point in the process, doing no more processing of any kind on the task once it receives the cancellation request.
 
-```{note}
-Cancelling a task in Covalent is treated as a hard **abort** and instructs Covalent to abandon processing the task any further
+| If ... | Then Covalent ... |
+|---- |---- |
+| The node has already started executing (the executor has already started running the electron's code)| Kills the job (using SIGKILL/SIGTERM, for example) |
+| Covalent has not yet begun executing the task | Aborts and does not attempt to process it |
+| A node's function, `args` and `kwargs` are not pickled | Does not pickle them; aborts immediately |
+| The required compute resources for the node have not yet been provisioned | Does not provision them; aborts immediately |
+| Covalent has not instantiated the executor | Does not instantiate an instance; aborts immediately |
+
+```{warning}
+Cancelling a task in Covalent is treated as a hard **abort** and instructs Covalent to abandon processing the task any further.
 ```
 
-To support aborting a task prior to any of the above stages Covalent needs to check whether the task has been requested to be canceled. When a cancellation request arrives, Covalent asynchronously updates its database records corresponding to that particular task by labeling it with `cancel_requested=True`. This is a boolean flag tracked by Covalent for all tasks and it defaults to `False` for each node in the lattice.
+To abort a task as early as possible, Covalent needs to poll for cancellation requests. When a cancellation is requested, Covalent asynchronously updates its database record for the canceled task, setting its Boolean `cancel_requested` flag to `True`. (This flag defaults to `False` for each node when it is created.)
 
-Covalent's logic for executing the task has now been updated to check this flag prior to proceeding with any of the aforementioned steps.
+Covalent's task execution process checks this flag before each of the steps named above.
 
-### Executors
+### Implications for Custom Executors
 
-Executor plugin developers can also make use of this flag prior to attempting to execute their various steps such as uploading pickled object to remote object stores, provisioning compute resources, executing the task etc. At any point in time when an executor finds that the `cancel_requested` flag has been set to `True` for the task at hand, it can raise a `TaskCancelledError` exception which Covalent then handles properly to abort processing the task any further.
+Executor plugin developers can check the `cancel_requested` flag before each step, such as uploading pickled object to remote object stores, provisioning compute resources, executing the task, and so on. If an executor finds that the `cancel_requested` flag has been set to `True` for a task, it should raise a `TaskCancelledError` exception, which Covalent then handles to abort processing the task any further.
 
-```{note}
-If an executor plugin needs to support task cancellation, it then must override the `cancel` method provided in the base executor class
-```
 
-The `cancel` method provided in the base executor class has the following function signature
+ To support task cancellation, an executor plugin must override the `cancel` method provided in the base executor class. This method has the following function signature:
 
 ```{code-block} python
 def cancel(self, task_metadata: Dict, job_handle: str):
 	...
 ```
 
-From the above function signature it can be seen that the metadata associated with a task (`dispatch_id` and `node_id`) and its corresponding job handle are provided as inputs to the cancel method. The executor plugin developer can then make uses of these inputs to implement the necessary logic and backend specific API calls to properly cancel the running task.
+The metadata associated with a task, `dispatch_id` and `node_id`, and the task's job handle are provided as inputs to the `cancel()` method. Use these inputs to implement the logic and backend-specific API calls to cancel the running task.
 
 
-For a walk through guide on canceling workflows and individual tasks in a workflow, please refer to our how to guides {doc}`here <../how_to/index>`
+For examples of how to cancel workflows and individual tasks, refer to the {doc}`How-to guides <../how_to/index>`.
