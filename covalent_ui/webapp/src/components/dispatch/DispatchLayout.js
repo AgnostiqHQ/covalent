@@ -129,7 +129,11 @@ export function DispatchLayout() {
         <QElectronDrawer
           toggleQelectron={() => setOpenQelectronDrawer((prev) => !prev)}
           openQelectronDrawer={openQelectronDrawer}
-          dispatchId={dispatchId}
+          dispatchId={
+            sublatticesDispatchId
+              ? sublatticesDispatchId?.dispatchId
+              : dispatchId
+          }
           electronId={selectedElectron?.node_id}
         />
       }
