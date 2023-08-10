@@ -18,12 +18,21 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import codecs
+import pickle
+import uuid
 
+from fastapi import HTTPException
+from fastapi.responses import JSONResponse
 from sqlalchemy import extract
 from sqlalchemy.sql import func
 
+from covalent._results_manager.results_manager import get_result
+from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
+from covalent_dispatcher._service.app import get_result
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.lattices import Lattice
+from covalent_ui.api.v1.utils.file_handle import validate_data
 
 
 class Electrons:
@@ -82,3 +91,23 @@ class Electrons:
             .first()
         )
         return data
+
+    def get_electron_inputs(self, dispatch_id: uuid.UUID, electron_id: int) -> str:
+        """
+        Get Electron Inputs
+        Args:
+            dispatch_id: Dispatch id of lattice/sublattice
+            electron_id: Transport graph node id of a electron
+        Returns:
+            Returns the inputs data from Result object
+        """
+
+        result = get_result(dispatch_id=str(dispatch_id), wait=False)
+        if isinstance(result, JSONResponse) and result.status_code == 404:
+            raise HTTPException(status_code=400, detail=result)
+        result_object = pickle.loads(codecs.decode(result["result"].encode(), "base64"))
+        electron_result = self.get_electrons_id(dispatch_id, electron_id)
+        inputs = get_task_inputs(
+            node_id=electron_id, node_name=electron_result.name, result_object=result_object
+        )
+        return validate_data(inputs)

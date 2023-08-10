@@ -30,7 +30,6 @@ from covalent._workflow.transport import TransportableObject, _TransportGraph
 
 def transportable_object(obj):
     """Decode transportable object
-
     Args:
         obj: Covalent transportable object
     Returns:
@@ -103,25 +102,18 @@ class FileHandler:
         """Return data from pickle file"""
         try:
             unpickled_object = self.__unpickle_file(path)
-            return validate_data(unpickled_object)
-        except Exception as e:
+            res = validate_data(unpickled_object)
+            return res
+        except Exception:
             return None
 
     def read_from_text(self, path):
         """Return data from text file"""
         try:
             with open(self.location + "/" + path, "r", encoding="utf-8") as read_file:
-                text_object = read_file.readlines()
-                list_str = ""
+                text_object = read_file.read()
                 read_file.close()
-                if isinstance(text_object, list):
-                    for i in text_object:
-                        list_str += i
-                    return list_str if (list_str != "" or list_str is not None) else None
-                else:
-                    return text_object if (text_object != "" or text_object is not None) else None
-        except EOFError:
-            return None
+                return text_object if text_object is not None else ""
         except Exception:
             return None
 
@@ -131,5 +123,5 @@ class FileHandler:
                 unpickled_object = pickle.load(read_file)
                 read_file.close()
                 return unpickled_object
-        except EOFError:
+        except Exception:
             return None

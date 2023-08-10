@@ -47,10 +47,11 @@ build:
   tools:
     python: "3.8"
   jobs:
-    # This for dependency pinning because readthedocs.yml automically updates all libraries despite being pinned.
+    # This for dependency pinning because readthedocs.yml automatically updates all libraries despite being pinned.
     # See: https://github.com/readthedocs/readthedocs.org/issues/9752#issuecomment-1324778813
     post_install:
       # Botocore from AWS executors requrires urllib3<1.27,>=1.25.4
       - pip install urllib3==1.26.6
       # For covalent slurm plugin
       - pip install aiofiles==0.8.0
+      - pip list | grep rich
