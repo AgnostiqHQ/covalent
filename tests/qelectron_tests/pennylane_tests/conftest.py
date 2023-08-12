@@ -29,6 +29,7 @@ Configuration that enables easy adoption of Pennylane tests to QElectrons.
 NOTE: ONLY USE this configuration file with Pennylane tests.
 """
 import inspect
+from typing import List
 from unittest.mock import patch
 
 import pennylane as qml
@@ -37,59 +38,7 @@ import pytest
 import covalent as ct
 from covalent._shared_files.utils import get_original_shots
 
-SKIP_RETURN_TYPES = [
-    "qml.apply",
-    "qml.vn_entropy",
-    "qml.mutual_info"
-]
-
-SKIP_DEVICES = [
-    "default.qutrit",
-    "default.mixed",
-]
-
-XFAIL_TEST_NAMES = [
-    "test_array_multiple"  # NOTE: produces array with inhomogeneous shape
-]
-
-
-# VALIDATION FUNCTIONS
-# ------------------------------------------------------------------------------
-
-def _check_return_type(executors, func):
-    """
-    Checks whether a function returns a type that is not supported by QElectrons.
-    """
-
-    func_lines = inspect.getsourcelines(func)[0]
-    reached_return = False
-    for line in func_lines:
-
-        if line.strip().startswith("return"):
-            reached_return = True
-
-        if reached_return:
-            for ret_typ in SKIP_RETURN_TYPES:
-                if ret_typ in line or ret_typ.split(".", maxsplit=1)[-1] in line:
-                    pytest.skip(f"QElectrons don't support `{ret_typ}` measurements.")
-
-
-def _check_device_type(executors, device):
-    """
-    Checks whether a device is supported by QElectrons.
-    """
-
-    if device.short_name in SKIP_DEVICES:
-        pytest.skip(f"QElectrons don't support the `{device}` device.")
-    if device.shot_vector:
-        if (
-            isinstance(executors, ct.executor.LocalBraketQubitExecutor) or
-            any(isinstance(ex, ct.executor.LocalBraketQubitExecutor) for ex in executors)
-        ):
-            pytest.skip("Braket executor does not support shot vectors")
-
-
-# UTILITIES
+# QEXECUTOR CREATORS
 # ------------------------------------------------------------------------------
 
 def _init_Simulator(shots):
@@ -134,6 +83,9 @@ def _init_LocalBraketQubitExecutor_cluster(shots):
     ]
 
 
+# QNODE PATCH THAT SUBSTITUTES IN QELECTRON
+# ------------------------------------------------------------------------------
+
 def _get_wrapped_QNode(use_run_later, get_executors):  # pylint: disable=invalid-name
     """
     Patches `qml.QNode` to return a QElectron instead.
@@ -170,18 +122,116 @@ def _get_wrapped_QNode(use_run_later, get_executors):  # pylint: disable=invalid
     return _PatchedQNode
 
 
+# VALIDATION FUNCTIONS
+# ------------------------------------------------------------------------------
+
+def _check_return_type(executors, func):
+    """
+    Checks whether a function returns a type that is not supported by QElectrons.
+    """
+
+    func_lines = inspect.getsourcelines(func)[0]
+    reached_return = False
+    for line in func_lines:
+
+        if line.strip().startswith("return"):
+            reached_return = True
+
+        if reached_return:
+            for ret_typ in SKIP_RETURN_TYPES:
+                if ret_typ in line or ret_typ.split(".", maxsplit=1)[-1] in line:
+                    pytest.skip(f"QElectrons don't support `{ret_typ}` measurements.")
+
+
+def _check_device_type(executors, device):
+    """
+    Checks whether a device is supported by QElectrons.
+    """
+
+    if device.short_name in SKIP_DEVICES:
+        pytest.skip(f"QElectrons don't support the `{device}` device.")
+    if device.shot_vector:
+        if (
+            isinstance(executors, ct.executor.LocalBraketQubitExecutor) or
+            any(isinstance(ex, ct.executor.LocalBraketQubitExecutor) for ex in executors)
+        ):
+            pytest.skip("Braket executor does not support shot vectors")
+
+
+# SKIP SETTINGS
+# ------------------------------------------------------------------------------
+
+SKIP_RETURN_TYPES = [
+    "qml.apply",
+    "qml.vn_entropy",
+    "qml.mutual_info"
+]
+
+SKIP_DEVICES = [
+    "default.qutrit",
+    "default.mixed",
+]
+
+SKIP_FOR_RUN_LATER = [
+    # NOTE: calls qml.jacobian(qe_circuit.run_later(input).result())
+    "test_numerical_analytic_diff_agree",
+]
+
+XFAIL_TEST_NAMES = [
+    "test_array_multiple"  # NOTE: produces array with inhomogeneous shape
+]
+
+XFAIL_TEST_NAMES_CONDITIONAL = {
+
+    # NOTE: mocker.spy(qml.QubitDevice, "probability") working incorrectly for Braket executor.
+    "test_numerical_analytic_diff_agree": lambda item: (
+        item.callspec.params.get('get_executors') is _init_LocalBraketQubitExecutor or
+        item.callspec.params.get('get_executors') is _init_LocalBraketQubitExecutor_cluster
+    ),
+
+}
+
+
+# TEST UTILITIES
+# ------------------------------------------------------------------------------
+
+def _get_test_name(nodeid: str):
+    """
+    Returns the name of a test.
+    """
+    return nodeid.split("::")[-1].split("[")[0]
+
+
 # HOOKS
 # ------------------------------------------------------------------------------
 
-def pytest_collection_modifyitems(config, items):  # pylint: disable=unused-argument
+def pytest_collection_modifyitems(config: pytest.Config, items: List[pytest.Item]):  # pylint: disable=unused-argument
     """
     Using Pytest hook to xfail selected tests.
     """
     for item in items:
+
+        # XFail tests expected to fail in general.
         if any(name in item.nodeid for name in XFAIL_TEST_NAMES):
             item.add_marker(
                 pytest.mark.xfail(reason="XFailing test also failed by normal QNode.")
             )
+
+        # XFail tests expected to fail with `QElectron.run_later`
+        if 'use_run_later' in item.fixturenames and item.callspec.params.get('use_run_later'):
+            if any(name in item.nodeid for name in SKIP_FOR_RUN_LATER):
+                item.add_marker(
+                    pytest.mark.skip(
+                        reason=f"{item.nodeid} expected to fail with `QElectron.run_later`")
+                )
+
+        # XFail tests expected to fail in certain conditions.
+        if any(name in item.nodeid for name in XFAIL_TEST_NAMES_CONDITIONAL):
+            condition = XFAIL_TEST_NAMES_CONDITIONAL[_get_test_name(item.nodeid)]
+            if condition(item):
+                item.add_marker(
+                    pytest.mark.xfail(reason="XFailing test also failed by normal QNode.")
+                )
 
 
 # FIXTURES
