@@ -61,8 +61,7 @@ class QEDevice(QubitDevice):
         self.executors = executors
         self.qelectron_info = qelectron_info
 
-        # This will be set when the QNodeQE
-        # is called with args and kwargs
+        # This will be set when the QNodeQE is called with args and kwargs.
         self.qnode_specs = None
 
     def batch_execute(self, circuits):
