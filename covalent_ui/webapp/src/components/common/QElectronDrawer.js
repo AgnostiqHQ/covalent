@@ -177,7 +177,7 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, ele
         variant="persistent"
         open={openQelectronDrawer}
         onClose={handleDrawerClose}
-        data-testid="nodeDrawer"
+        data-testid="qElectronDrawer"
       >
         <Grid
           container

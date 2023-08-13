@@ -44,7 +44,7 @@ const QElelctronAccordion = (props) => {
     setExpanded(true)
   }
   return (
-    <Grid mt={2}>
+    <Grid mt={2} data-testid="Accordion-grid">
       <Accordion
         TransitionProps={{ timeout: 400 }}
         expanded={expanded}

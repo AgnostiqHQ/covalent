@@ -46,6 +46,7 @@ const QElectronTopBar = (props) => {
         border: '1px solid',
         borderColor: (theme) => theme.palette.background.coveBlack02,
       }}
+      data-testid="QelectronTopBar-grid"
     >
       <Grid item xs={6} container flexDirection="row" alignItems="center">
         <IconButton

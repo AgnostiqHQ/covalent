@@ -29,7 +29,7 @@ import Divider from '@mui/material/Divider'
 const QElectronTab = (props) => {
   const { handleChange, value } = props
   return (
-    <Box sx={{ width: '100%', typography: 'body1' }}>
+    <Box sx={{ width: '100%', typography: 'body1' }} data-testid="QelectronTab-box">
       <TabContext value={value}>
         <TabList
           onChange={handleChange}
