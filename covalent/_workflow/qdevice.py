@@ -99,10 +99,8 @@ class QEDevice(QubitDevice):
         for grad_tapes in grad_tapes_tuple:
             nonempty_grad_tapes_list.extend(grad_tapes)
 
-        # Skip gradient computation for vectorized calls.
         # Also require nonempty list of gradient tapes.
-        scalar_input = all(not circuit.batch_size for circuit in circuits)
-        if not (scalar_input and nonempty_grad_tapes_list):
+        if not nonempty_grad_tapes_list:
             return []
 
         # Submit gradient circuits to middleware.
