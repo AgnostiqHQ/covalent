@@ -117,7 +117,7 @@ class QNodeQE(qml.QNode):
             self(*args, **kwargs)
             batch_id = self.device._batch_id
 
-        return QNodeFutureResult(batch_id, self.original_qnode, self.tape)
+        return QNodeFutureResult(batch_id, self.original_qnode, self.tape)(*args, **kwargs)
 
     def __call__(self, *args, **kwargs):
 

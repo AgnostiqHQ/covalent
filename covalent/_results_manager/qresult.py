@@ -61,7 +61,17 @@ class QNodeFutureResult:
         self.diff_method = original_qnode.diff_method
         self.tape = original_tape
 
+        self._original_args = None
+        self._original_kwargs = None
         self._result = None
+
+    def __call__(self, *args, **kwargs):
+        """
+        Store the arguments and keyword arguments of the original QNode call.
+        """
+        self._original_args = args
+        self._original_kwargs = kwargs
+        return self
 
     def result(self) -> Any:
         """
@@ -82,10 +92,10 @@ class QNodeFutureResult:
 
             # Define a dummy circuit that returns the original QNode's return value.
             @qml.qnode(dev, interface=self.interface, diff_method=self.diff_method)
-            def _dummy_circuit():
+            def _dummy_circuit(*_, **__):
                 return self.tape._qfunc_output  # pylint: disable=protected-access
 
-            self._result = _dummy_circuit()
+            self._result = _dummy_circuit(*self._original_args, **self._original_kwargs)
 
         return self._result
 
