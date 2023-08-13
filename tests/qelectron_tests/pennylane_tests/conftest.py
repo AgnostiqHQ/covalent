@@ -37,8 +37,90 @@ import pytest
 
 import covalent as ct
 from covalent._shared_files.utils import get_original_shots
+from covalent.quantum.qcluster.simulator import SIMULATOR_DEVICES
 
-# QEXECUTOR CREATORS
+SKIP_RETURN_TYPES = [
+    "qml.apply",
+    "qml.vn_entropy",
+    "qml.mutual_info"
+]
+
+SKIP_DEVICES = [
+    "default.qutrit",
+    "default.mixed",
+    "default.gaussian",  # TODO: allow for Simulator
+]
+
+# XFAIL NOTES LEGEND
+# (1) configuration issue; test passes manually
+# (2) incompatible; requires manual test
+# -----------------
+XFAIL_TEST_NAMES = [
+    # "test_array_multiple"  # NOTE: produces array with inhomogeneous shape
+
+    # Case 0 #
+    # fails and support not planned
+    "test_qutrit_device::test_device_executions",
+
+    # Case 1 #
+    # configuration issue, test passes manually
+    "test_qaoa::test_partial_cycle_mixer",
+    "test_qaoa::test_self_loop_raises_error",
+    "test_qaoa::test_inner_out_flow_constraint_hamiltonian_non_complete",
+    "test_qaoa::test_inner_net_flow_constraint_hamiltonian_non_complete",
+
+    # Case 2 #
+    # incompatible test, needs manual equivalent
+    "test_qnode::test_diff_method",
+    "test_qnode::test_jacobian",
+]
+
+
+# VALIDATION FUNCTIONS
+# ------------------------------------------------------------------------------
+
+def _check_return_type(func):
+    """
+    Checks whether a function returns a type that is not supported by QElectrons.
+    """
+
+    func_lines = inspect.getsourcelines(func)[0]
+    reached_return = False
+    for line in func_lines:
+
+        if line.strip().startswith("return"):
+            reached_return = True
+
+        if reached_return:
+            for ret_typ in SKIP_RETURN_TYPES:
+                if ret_typ in line or ret_typ.split(".", maxsplit=1)[-1] in line:
+                    pytest.skip(f"QElectrons don't support `{ret_typ}` measurements.")
+
+
+def _check_device_type(executors, device):
+    """
+    Checks whether a device is supported by QElectrons.
+    """
+
+    if not isinstance(executors, list):
+        # Always handle as list.
+        executors = [executors]
+
+    if device.short_name in SKIP_DEVICES:
+        simulator_in_execs = any(isinstance(ex, ct.executor.Simulator) for ex in executors)
+        if not (simulator_in_execs and device.short_name == "default.gaussian"):
+            pytest.skip(f"QElectrons do not support the '{device.short_name}' device.")
+    # if device.shot_vector:
+    #     pytest.skip("QElectrons don't support shot vectors.")
+
+
+    # Simulator
+    if any(isinstance(ex, ct.executor.Simulator) for ex in executors):
+        if device.short_name not in SIMULATOR_DEVICES:
+            pytest.skip(f"Simulator does not support the '{device.short_name}' device.")
+
+
+# UTILITIES
 # ------------------------------------------------------------------------------
 
 def _init_Simulator(shots):
@@ -101,6 +183,8 @@ def _get_wrapped_QNode(use_run_later, get_executors):  # pylint: disable=invalid
         def __init__(self, *args, **kwargs):
             super().__init__(*args, **kwargs)
 
+            shots = get_original_shots(self.device)
+            executors = get_executors(shots)
             qnode = self
             shots = get_original_shots(qnode.device)
             executors = get_executors(shots=shots)
