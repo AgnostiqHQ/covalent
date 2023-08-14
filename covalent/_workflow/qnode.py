@@ -134,6 +134,7 @@ class QNodeQE(qml.QNode):
     def _specs(self, *args, **kwargs) -> QNodeSpecs:
         """
         Check args and kwargs to avoid computing gradients on non-trainable parameters.
+        Update the interface if it is set to "auto".
         """
 
         # Some args or some kwargs are trainable. No warning expected.
@@ -141,11 +142,18 @@ class QNodeQE(qml.QNode):
             any(qml.math.get_trainable_indices(args)) or
             any(qml.math.get_trainable_indices(kwargs.values()))
         ):
-            return QNodeSpecs(**qml.specs(self)(*args, **kwargs))
+            specs = QNodeSpecs(**qml.specs(self)(*args, **kwargs))
+        else:
+            # No trainable params. Avoid warning.
+            with self.override_gradient_fn("none"):
+                specs = QNodeSpecs(**qml.specs(self)(*args, **kwargs))
 
-        # No trainable params. Avoid warning.
-        with self.override_gradient_fn("none"):
-            return QNodeSpecs(**qml.specs(self)(*args, **kwargs))
+        if specs.interface == "auto":
+            # This will be done inside QNode.__call__() to update `self.interface`.
+            # Here, we anticipate that change and update the specs as well.
+            specs.interface = qml.math.get_interface(*args, *list(kwargs.values()))
+
+        return specs
 
     @contextmanager
     def override_gradient_fn(self, gradient_fn):

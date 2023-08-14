@@ -18,12 +18,13 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import warnings
 from typing import Sequence
 
+import numpy as np
 from pennylane import QubitDevice
-from pennylane import numpy as np
 from pennylane.devices.default_qubit import DefaultQubit
-from pennylane.gradients import param_shift
+from pennylane.gradients import finite_diff, param_shift, spsa_grad
 
 from ..quantum.qclient.core import middleware
 
@@ -42,6 +43,12 @@ class QEDevice(QubitDevice):
 
     operations = DefaultQubit.operations
     observables = DefaultQubit.observables
+
+    _supported_diff_methods = {
+        "parameter-shift": param_shift,
+        "finite-diff": finite_diff,
+        "spsa": spsa_grad,
+    }
 
     def __init__(
         self,
@@ -88,10 +95,17 @@ class QEDevice(QubitDevice):
 
         return results
 
-    def gradients(self, circuits, method="jacobian", **kwargs):
+    def gradients(self, circuits, **kwargs):  # pylint: disable=arguments-differ
+
+        # Try same `diff_method` as original QNode.
+        diff_method = self.qnode_specs.diff_method
+
+        # Obtain gradient transform e.g.`qml.gradients.param_shift`.
+        grad_transform = self._get_gradient_transform(diff_method)
+
         # Obtain gradient tapes and processing functions.
         grad_tapes_tuple, processing_fns = zip(
-            *(param_shift(circuit, **kwargs) for circuit in circuits)
+            *(grad_transform(circuit, **kwargs) for circuit in circuits)
         )
 
         # Flatten the list of gradient tapes.
@@ -99,7 +113,7 @@ class QEDevice(QubitDevice):
         for grad_tapes in grad_tapes_tuple:
             nonempty_grad_tapes_list.extend(grad_tapes)
 
-        # Also require nonempty list of gradient tapes.
+        # No gradients to compute.
         if not nonempty_grad_tapes_list:
             return []
 
@@ -112,7 +126,47 @@ class QEDevice(QubitDevice):
         # Compute parameter-shift jacobians.
         jacs = [fn(r) for r, fn in zip(grad_res, processing_fns)]
 
+        # Permute shape of Jacobians in case of batch inputs.
+        if any(c.batch_size for c in circuits):
+            jacs = self._reshape_batch(jacs)
+
         return jacs
+
+    def _reshape_batch(self, jacs):
+        """
+        Reshape the list of Jacobians to match the interface.
+        """
+        interface = self.qnode_specs.interface
+
+        if interface == "torch":
+            return [tuple(np.einsum('ijk->jik', jacs))]
+
+        if interface == "tf":
+            raise NotImplementedError("tf jacobian on batches is not yet.")
+
+        if interface == "jax":
+            raise NotImplementedError("jax jacobian on batches is not yet.")
+
+        # autograd
+        return jacs
+
+    def _get_gradient_transform(self, diff_method):
+        """
+        Select from the supported gradient transforms. Return a default (supported)
+        transform if the provided `diff_method` is not supported.
+        """
+        if gradient_transform := self._supported_diff_methods.get(diff_method):
+            return gradient_transform
+
+        default_gradient_transform = finite_diff
+        if diff_method == "best":
+            return default_gradient_transform
+
+        warnings.warn(
+            f"QElectrons do not currently support the diff method '{diff_method}'. "
+            f"Using gradient transform `{default_gradient_transform.__name__}` instead."
+        )
+        return default_gradient_transform
 
     def _unpack_gradient_result(self, nonzero_grads, grad_tapes_tuple):
         """
