@@ -43,6 +43,28 @@ function reduxRender(renderedComponent) {
     )
 }
 
+function reduxRenderMock(renderedComponent) {
+    const initialState = {
+        electronResults: {
+            qelectronJobsList: {
+                isFetching: true
+            }
+        }
+    }
+    const store = configureStore({
+        reducer: reducers,
+        preloadedState: initialState,
+    })
+
+    return render(
+        <Provider store={store}>
+            <ThemeProvider theme={theme}>
+                <BrowserRouter>{renderedComponent}</BrowserRouter>
+            </ThemeProvider>
+        </Provider>
+    )
+}
+
 describe('Qelectron List', () => {
     test('Qelectron List Grid is rendered', () => {
         reduxRender(<App />)
@@ -77,15 +99,27 @@ describe('Qelectron List', () => {
         }
     ];
     test('Qelectron List data is rendered', () => {
-        reduxRender(<App data={data} />)
+        reduxRender(<App data={data} setExpanded={jest.fn()} rowClick={jest.fn()} />)
         const linkElement = screen.getByTestId('QelectronList-table')
         expect(linkElement).toBeInTheDocument()
+        const ele = screen.queryAllByTestId('tableHeader');
+        expect(ele[0]).toBeInTheDocument()
+        fireEvent.click(ele[0])
+        const ele1 = screen.queryAllByTestId('copyMessage');
+        expect(ele1[0]).toBeInTheDocument()
+        fireEvent.click(ele1[0])
     })
 
     test('Qelectron List empty data is rendered', () => {
         reduxRender(<App data={[]} />)
         const linkElement = screen.queryByText('No results found.')
         expect(linkElement).toBeInTheDocument()
+    })
+
+    test('Qelectron List empty data with isFetching', () => {
+        reduxRenderMock(<App data={[]} electronId={1} />)
+        const linkElement = screen.queryByText('No results found.')
+        expect(linkElement).not.toBeInTheDocument()
     })
 
 })

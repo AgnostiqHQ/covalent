@@ -54,12 +54,51 @@ function reduxRender(renderedComponent) {
     )
 }
 
+
+function reduxRenderMock(renderedComponent) {
+    const initialState = {
+        electronResults: {
+            qelectronJobsList: {
+                error: {
+                    detail: [{ 'msg': 'Something went wrong' }]
+                }
+            },
+            qelectronJobOverviewList: {
+                error: {
+                    detail: [{ 'msg': 'Something went wrong' }]
+                }
+            }
+        }
+    }
+    const store = configureStore({
+        reducer: reducers,
+        preloadedState: initialState,
+    })
+
+    return render(
+        <Provider store={store}>
+            <ThemeProvider theme={theme}>
+                <BrowserRouter>{renderedComponent}</BrowserRouter>
+            </ThemeProvider>
+        </Provider>
+    )
+}
+
 describe('Qelectron drawer', () => {
 
     test('Qelectron Drawer is rendered', () => {
-        reduxRender(<App />)
+        reduxRender(<App openQelectronDrawer={true} electronId={1} toggleQelectron={jest.fn()} />)
         const linkElement = screen.getByTestId('qElectronDrawer')
         expect(linkElement).toBeInTheDocument()
+    })
+
+    test('Qelectron Drawer is rendered with error detail', () => {
+        reduxRenderMock(<App />)
+        const linkElement = screen.getByTestId('qElectronDrawer')
+        expect(linkElement).toBeInTheDocument()
+        const ele = screen.getByTestId('qElectronDrawerSnackbar')
+        expect(ele).toBeInTheDocument()
+        fireEvent.click(ele)
     })
 
 })

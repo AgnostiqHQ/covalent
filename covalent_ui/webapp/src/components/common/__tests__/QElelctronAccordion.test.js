@@ -51,4 +51,11 @@ describe('Qelectron accordion', () => {
         expect(linkElement).toBeInTheDocument()
     })
 
+    test('Qelectron accordion click events', () => {
+        reduxRender(<App setExpanded={jest.fn()} />)
+        const ele = screen.getByLabelText('Toggle accordion')
+        expect(ele).toBeInTheDocument()
+        fireEvent.click(ele)
+    })
+
 })

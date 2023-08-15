@@ -145,6 +145,7 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, ele
               cursor: 'pointer',
             }}
             component={closeIcon}
+            data-testid="qElectronDrawerSnackbar"
             onClick={() => setOpenSnackbar(false)}
           />
         }
