@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
+- Temporarily enable mac os test on push
 - Respecting node version as specified in `.nvmrc` file for tests workflow
 - Bumped versions in pre-commit config
 - Added prettier for markdown files.

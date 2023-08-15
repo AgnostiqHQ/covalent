@@ -496,6 +496,7 @@ def test_decorated_function():
 
     rm._delete_result(dispatch_id)
 
+    assert workflow_result.error == ""
     assert workflow_result.status == Result.COMPLETED
 
 
