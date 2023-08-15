@@ -514,7 +514,65 @@ async def test_submit_initial_tasks(mocker):
 
 
 @pytest.mark.asyncio
-async def test_submit_task_group(mocker):
+async def test_submit_task_group_single(mocker):
+    """Test submitting a singleton task groups"""
+    dispatch_id = "dispatch_1"
+    gid = 2
+    nodes = [2]
+
+    mock_get_abs_input = mocker.patch(
+        "covalent_dispatcher._core.dispatcher._get_abstract_task_inputs",
+        return_value={"args": [], "kwargs": {}},
+    )
+
+    mock_attrs = {
+        "name": "task",
+        "value": 5,
+        "executor": "local",
+        "executor_data": {},
+    }
+
+    mock_statuses = [
+        {"status": Result.NEW_OBJ},
+        {"status": Result.NEW_OBJ},
+        {"status": Result.NEW_OBJ},
+    ]
+
+    async def get_electron_attrs(dispatch_id, node_id, keys):
+        return {key: mock_attrs[key] for key in keys}
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.electron.get",
+        get_electron_attrs,
+    )
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.electron.get_bulk",
+        return_value=mock_statuses,
+    )
+
+    mocker.patch(
+        "covalent_dispatcher._core.dispatcher.datasvc.update_node_result",
+    )
+
+    # This will be removed in the next patch
+    mock_run_abs_task = mocker.patch(
+        "covalent_dispatcher._core.dispatcher.runner.run_abstract_task",
+    )
+    # mock_run_abs_task = mocker.patch(
+    #     "covalent_dispatcher._core.dispatcher.runner_ng.run_abstract_task_group",
+    # )
+
+    await _submit_task_group(dispatch_id, nodes, gid)
+    mock_run_abs_task.assert_called()
+    assert mock_get_abs_input.await_count == len(nodes)
+
+
+# Temporary only because the current runner does not support
+# nontrivial task groups.
+@pytest.mark.asyncio
+async def test_submit_task_group_multiple(mocker):
+    """Check that submitting multiple tasks errors out"""
     dispatch_id = "dispatch_1"
     gid = 2
     nodes = [4, 3, 2]
@@ -554,13 +612,16 @@ async def test_submit_task_group(mocker):
         "covalent_dispatcher._core.dispatcher.datasvc.update_node_result",
     )
 
+    # This will be removed in the next patch
     mock_run_abs_task = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.runner_ng.run_abstract_task_group",
+        "covalent_dispatcher._core.dispatcher.runner.run_abstract_task",
     )
+    # mock_run_abs_task = mocker.patch(
+    #     "covalent_dispatcher._core.dispatcher.runner_ng.run_abstract_task_group",
+    # )
 
-    await _submit_task_group(dispatch_id, nodes, gid)
-    mock_run_abs_task.assert_called()
-    assert mock_get_abs_input.await_count == len(nodes)
+    with pytest.raises(RuntimeError):
+        await _submit_task_group(dispatch_id, nodes, gid)
 
 
 @pytest.mark.asyncio
@@ -605,9 +666,13 @@ async def test_submit_task_group_skips_reusable(mocker):
         "covalent_dispatcher._core.dispatcher.datasvc.update_node_result",
     )
 
+    # Will be removed next patch
     mock_run_abs_task = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.runner_ng.run_abstract_task_group",
+        "covalent_dispatcher._core.dispatcher.runner.run_abstract_task",
     )
+    # mock_run_abs_task = mocker.patch(
+    #     "covalent_dispatcher._core.dispatcher.runner_ng.run_abstract_task_group",
+    # )
 
     await _submit_task_group(dispatch_id, nodes, gid)
     mock_run_abs_task.assert_not_called()
@@ -641,9 +706,14 @@ async def test_submit_parameter(mocker):
         "covalent_dispatcher._core.dispatcher.datasvc.update_node_result",
     )
 
+    # Will be removed next patch
     mock_run_abs_task = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.runner_ng.run_abstract_task_group",
+        "covalent_dispatcher._core.dispatcher.runner.run_abstract_task",
     )
+    # mock_run_abs_task = mocker.patch(
+    #     "covalent_dispatcher._core.dispatcher.runner_ng.run_abstract_task_group",
+    # )
+
     await _submit_task_group(dispatch_id, [node_id], node_id)
 
     mock_run_abs_task.assert_not_called()
@@ -693,7 +763,8 @@ async def test_cancel_dispatch(mocker):
         "covalent_dispatcher._core.dispatcher.jbmgr.set_cancel_requested"
     )
 
-    mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner_ng")
+    mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner")
+    # mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner_ng")
     mock_runner.cancel_tasks = AsyncMock()
 
     res._initialize_nodes()
@@ -759,7 +830,8 @@ async def test_cancel_dispatch_with_task_ids(mocker):
         "covalent_dispatcher._core.dispatcher.jbmgr.set_cancel_requested"
     )
 
-    mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner_ng")
+    mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner")
+    # mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner_ng")
     mock_runner.cancel_tasks = AsyncMock()
 
     async def mock_get_nodes(dispatch_id):

@@ -37,8 +37,16 @@ class CovalentAPIClient:
         self.adapter = adapter
         self.auto_raise = auto_raise
 
+    def prepare_headers(self, **kwargs):
+        extra_headers = CovalentAPIClient.get_extra_headers()
+        headers = kwargs.get("headers", {})
+        if headers:
+            kwargs.pop("headers")
+        headers.update(extra_headers)
+        return headers
+
     def get(self, endpoint: str, **kwargs):
-        headers = CovalentAPIClient.get_extra_headers()
+        headers = self.prepare_headers(**kwargs)
         url = self.dispatcher_addr + endpoint
         try:
             with requests.Session() as session:
@@ -58,7 +66,7 @@ class CovalentAPIClient:
         return r
 
     def put(self, endpoint: str, **kwargs):
-        headers = CovalentAPIClient.get_extra_headers()
+        headers = self.prepare_headers()
         url = self.dispatcher_addr + endpoint
         try:
             with requests.Session() as session:
@@ -77,7 +85,7 @@ class CovalentAPIClient:
         return r
 
     def post(self, endpoint: str, **kwargs):
-        headers = CovalentAPIClient.get_extra_headers()
+        headers = self.prepare_headers()
         url = self.dispatcher_addr + endpoint
         try:
             with requests.Session() as session:
@@ -85,6 +93,25 @@ class CovalentAPIClient:
                     session.mount("http://", self.adapter)
 
                 r = session.post(url, headers=headers, **kwargs)
+
+            if self.auto_raise:
+                r.raise_for_status()
+        except requests.exceptions.ConnectionError:
+            message = f"The Covalent server cannot be reached at {url}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
+            print(message)
+            raise
+
+        return r
+
+    def delete(self, endpoint: str, **kwargs):
+        headers = self.prepare_headers()
+        url = self.dispatcher_addr + endpoint
+        try:
+            with requests.Session() as session:
+                if self.adapter:
+                    session.mount("http://", self.adapter)
+
+                r = session.delete(url, headers=headers, **kwargs)
 
             if self.auto_raise:
                 r.raise_for_status()

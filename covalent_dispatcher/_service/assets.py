@@ -20,13 +20,15 @@
 
 """Endpoints for uploading and downloading workflow assets"""
 
+import asyncio
 import mmap
 import os
-import shutil
 from functools import lru_cache
-from typing import BinaryIO, Tuple, Union
+from typing import Tuple, Union
 
-from fastapi import APIRouter, Header, HTTPException, UploadFile
+import aiofiles
+import aiofiles.os
+from fastapi import APIRouter, Header, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from furl import furl
 
@@ -45,8 +47,6 @@ from .models import (
     DispatchAssetKey,
     ElectronAssetKey,
     LatticeAssetKey,
-    digest_pattern,
-    digest_regex,
     range_pattern,
     range_regex,
 )
@@ -66,7 +66,7 @@ _background_tasks = set()
 LRU_CACHE_SIZE = get_config("dispatcher.asset_cache_size")
 
 
-@router.get("/assets/{dispatch_id}/node/{node_id}/{key}")
+@router.get("/dispatches/{dispatch_id}/electrons/{node_id}/assets/{key}")
 def get_node_asset(
     dispatch_id: str,
     node_id: int,
@@ -74,6 +74,17 @@ def get_node_asset(
     representation: Union[AssetRepresentation, None] = None,
     Range: Union[str, None] = Header(default=None, regex=range_regex),
 ):
+    """Returns an asset for an electron.
+
+    Args:
+        dispatch_id: The dispatch's unique id.
+        node_id: The id of the electron.
+        key: The name of the asset
+        representation: (optional) the representation ("string" or "pickle") of a `TransportableObject`
+        range: (optional) range request header
+
+    If `representation` is specified, it will override the range request.
+    """
     start_byte = 0
     end_byte = -1
 
@@ -116,13 +127,23 @@ def get_node_asset(
         raise
 
 
-@router.get("/assets/{dispatch_id}/dispatch/{key}")
+@router.get("/dispatches/{dispatch_id}/assets/{key}")
 def get_dispatch_asset(
     dispatch_id: str,
     key: DispatchAssetKey,
     representation: Union[AssetRepresentation, None] = None,
     Range: Union[str, None] = Header(default=None, regex=range_regex),
 ):
+    """Returns a dynamic asset for a workflow
+
+    Args:
+        dispatch_id: The dispatch's unique id.
+        key: The name of the asset
+        representation: (optional) the representation ("string" or "pickle") of a `TransportableObject`
+        range: (optional) range request header
+
+    If `representation` is specified, it will override the range request.
+    """
     start_byte = 0
     end_byte = -1
 
@@ -162,13 +183,23 @@ def get_dispatch_asset(
         raise
 
 
-@router.get("/assets/{dispatch_id}/lattice/{key}")
+@router.get("/dispatches/{dispatch_id}/lattice/assets/{key}")
 def get_lattice_asset(
     dispatch_id: str,
     key: LatticeAssetKey,
     representation: Union[AssetRepresentation, None] = None,
     Range: Union[str, None] = Header(default=None, regex=range_regex),
 ):
+    """Returns a static asset for a workflow
+
+    Args:
+        dispatch_id: The dispatch's unique id.
+        key: The name of the asset
+        representation: (optional) the representation ("string" or "pickle") of a `TransportableObject`
+        range: (optional) range request header
+
+    If `representation` is specified, it will override the range request.
+    """
     start_byte = 0
     end_byte = -1
 
@@ -209,103 +240,112 @@ def get_lattice_asset(
         raise e
 
 
-@router.post("/assets/{dispatch_id}/node/{node_id}/{key}")
-def upload_node_asset(
+@router.put("/dispatches/{dispatch_id}/electrons/{node_id}/assets/{key}")
+async def upload_node_asset(
+    req: Request,
     dispatch_id: str,
     node_id: int,
     key: ElectronAssetKey,
-    asset_file: UploadFile,
-    content_length: int = Header(),
-    digest: Union[str, None] = Header(default=None, regex=digest_regex),
+    content_length: int = Header(default=0),
+    digest_alg: Union[str, None] = Header(default=None),
+    digest: Union[str, None] = Header(default=None),
 ):
+    """Upload an electron asset.
+
+    Args:
+        dispatch_id: The dispatch's unique id.
+        node_id: The electron id.
+        key: The name of the asset
+        asset_file: (body) The file to be uploaded
+        content_length: (header)
+        digest: (header)
+    """
     app_log.debug(f"Requested asset {key} for node {dispatch_id}:{node_id}")
 
     try:
-        result_object = get_cached_result_object(dispatch_id)
+        metadata = {"size": content_length, "digest_alg": digest_alg, "digest": digest}
+        internal_uri = await _run_in_executor(
+            _update_node_asset_metadata,
+            dispatch_id,
+            node_id,
+            key,
+            metadata,
+        )
+        # Stream the request body to object store
+        await _transfer_data(req, internal_uri)
 
-        app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
-        node = result_object.lattice.transport_graph.get_node(node_id)
-        with workflow_db.session() as session:
-            asset = node.get_asset(key=key.value, session=session)
-            app_log.debug(f"Asset uri {asset.internal_uri}")
-
-            # Update asset metadata
-            update = _get_asset_metadata_update(content_length, digest)
-            node.update_assets(updates={key: update}, session=session)
-            app_log.debug(f"Updated node asset {dispatch_id}:{node_id}:{key}")
-
-        # Copy the tempfile to object store
-        _copy_file_obj(asset_file.file, asset.internal_uri)
-
-        return f"Uploaded file to {asset.internal_uri}"
+        return f"Uploaded file to {internal_uri}"
     except Exception as e:
         app_log.debug(e)
         raise
 
 
-@router.post("/assets/{dispatch_id}/dispatch/{key}")
-def upload_dispatch_asset(
+@router.put("/dispatches/{dispatch_id}/assets/{key}")
+async def upload_dispatch_asset(
+    req: Request,
     dispatch_id: str,
     key: DispatchAssetKey,
-    asset_file: UploadFile,
-    content_length: int = Header(),
-    digest: Union[str, None] = Header(default=None, regex=digest_regex),
+    content_length: int = Header(default=0),
+    digest_alg: Union[str, None] = Header(default=None),
+    digest: Union[str, None] = Header(default=None),
 ):
+    """Upload a dispatch asset.
+
+    Args:
+        dispatch_id: The dispatch's unique id.
+        key: The name of the asset
+        asset_file: (body) The file to be uploaded
+        content_length: (header)
+        digest: (header)
+    """
     try:
-        result_object = get_cached_result_object(dispatch_id)
-
-        app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
-        with workflow_db.session() as session:
-            asset = result_object.get_asset(key=key.value, session=session)
-
-            # Update asset metadata
-            update = _get_asset_metadata_update(content_length, digest)
-            result_object.update_assets(updates={key: update}, session=session)
-            app_log.debug(f"Updated size for dispatch asset {dispatch_id}:{key}")
-
-        # Copy the tempfile to object store
-        _copy_file_obj(asset_file.file, asset.internal_uri)
-
-        return f"Uploaded file to {asset.internal_uri}"
+        metadata = {"size": content_length, "digest_alg": digest_alg, "digest": digest}
+        internal_uri = await _run_in_executor(
+            _update_dispatch_asset_metadata,
+            dispatch_id,
+            key,
+            metadata,
+        )
+        # Stream the request body to object store
+        await _transfer_data(req, internal_uri)
+        return f"Uploaded file to {internal_uri}"
     except Exception as e:
         app_log.debug(e)
         raise
 
 
-@router.post("/assets/{dispatch_id}/lattice/{key}")
-def upload_lattice_asset(
+@router.put("/dispatches/{dispatch_id}/lattice/assets/{key}")
+async def upload_lattice_asset(
+    req: Request,
     dispatch_id: str,
     key: LatticeAssetKey,
-    asset_file: UploadFile,
-    content_length: int = Header(),
-    digest: Union[str, None] = Header(default=None, regex=digest_regex),
+    content_length: int = Header(default=0),
+    digest_alg: Union[str, None] = Header(default=None),
+    digest: Union[str, None] = Header(default=None),
 ):
+    """Upload a lattice asset.
+
+    Args:
+        dispatch_id: The dispatch's unique id.
+        key: The name of the asset
+        asset_file: (body) The file to be uploaded
+        content_length: (header)
+        digest: (header)
+    """
     try:
-        result_object = get_cached_result_object(dispatch_id)
-
-        app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
-
-        with workflow_db.session() as session:
-            asset = result_object.lattice.get_asset(key=key.value, session=session)
-
-            # Update asset metadata
-            update = _get_asset_metadata_update(content_length, digest)
-            result_object.lattice.update_assets(updates={key: update}, session=session)
-            app_log.debug(f"Updated size for lattice asset {dispatch_id}:{key}")
-
-        # Copy the tempfile to object store
-        _copy_file_obj(asset_file.file, asset.internal_uri)
-
-        return f"Uploaded file to {asset.internal_uri}"
+        metadata = {"size": content_length, "digest_alg": digest_alg, "digest": digest}
+        internal_uri = await _run_in_executor(
+            _update_lattice_asset_metadata,
+            dispatch_id,
+            key,
+            metadata,
+        )
+        # Stream the request body to object store
+        await _transfer_data(req, internal_uri)
+        return f"Uploaded file to {internal_uri}"
     except Exception as e:
         app_log.debug(e)
         raise
-
-
-def _copy_file_obj(src_fileobj: BinaryIO, dest_url: str):
-    dest_path = str(furl(dest_url).path)
-    with open(dest_path, "wb") as dest_fileobj:
-        shutil.copyfileobj(src_fileobj, dest_fileobj)
 
 
 def _generate_file_slice(file_url: str, start_byte: int, end_byte: int, chunk_size: int = 65536):
@@ -346,13 +386,6 @@ def _extract_byte_range(byte_range_header: str) -> Tuple[int, int]:
         end_byte = int(end)
 
     return start_byte, end_byte
-
-
-def _extract_checksum(digest_header: str) -> Tuple[str, str]:
-    match = digest_pattern.match(digest_header)
-    alg = match.group(0)
-    checksum = match.group(1)
-    return alg, checksum
 
 
 # Helpers for TransportableObject
@@ -419,18 +452,79 @@ def get_cached_result_object(dispatch_id: str):
                 node.populate_asset_map(session)
     except KeyError:
         raise HTTPException(
-            status_code=400,
+            status_code=404,
             detail=f"The requested dispatch ID {dispatch_id} was not found.",
         )
 
     return srv_res
 
 
-def _get_asset_metadata_update(content_length, digest):
-    update = {"size": content_length}
-    if digest:
-        alg, checksum = _extract_checksum(digest)
-        update["digest_alg"] = alg
-        update["digest"] = checksum
+def _filter_null_metadata(metadata):
+    # Filter out null updates
+    return {k: v for k, v in metadata.items() if v is not None}
 
-    return update
+
+def _update_node_asset_metadata(dispatch_id, node_id, key, metadata) -> str:
+    result_object = get_cached_result_object(dispatch_id)
+
+    app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
+    node = result_object.lattice.transport_graph.get_node(node_id)
+    with workflow_db.session() as session:
+        asset = node.get_asset(key=key.value, session=session)
+        app_log.debug(f"Asset uri {asset.internal_uri}")
+
+        # Update asset metadata
+        update = _filter_null_metadata(metadata)
+        node.update_assets(updates={key: update}, session=session)
+        app_log.debug(f"Updated node asset {dispatch_id}:{node_id}:{key}")
+
+        return asset.internal_uri
+
+
+def _update_lattice_asset_metadata(dispatch_id, key, metadata) -> str:
+    result_object = get_cached_result_object(dispatch_id)
+
+    app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
+    with workflow_db.session() as session:
+        asset = result_object.lattice.get_asset(key=key.value, session=session)
+
+        # Update asset metadata
+        update = _filter_null_metadata(metadata)
+        result_object.lattice.update_assets(updates={key: update}, session=session)
+        app_log.debug(f"Updated size for lattice asset {dispatch_id}:{key}")
+
+        return asset.internal_uri
+
+
+def _update_dispatch_asset_metadata(dispatch_id, key, metadata) -> str:
+    result_object = get_cached_result_object(dispatch_id)
+
+    app_log.debug(f"LRU cache info: {get_cached_result_object.cache_info()}")
+    with workflow_db.session() as session:
+        asset = result_object.get_asset(key=key.value, session=session)
+
+        # Update asset metadata
+        update = _filter_null_metadata(metadata)
+        result_object.update_assets(updates={key: update}, session=session)
+        app_log.debug(f"Updated size for dispatch asset {dispatch_id}:{key}")
+        return asset.internal_uri
+
+
+async def _transfer_data(req: Request, destination_url: str):
+    dest_url = furl(destination_url)
+    dest_path = str(dest_url.path)
+
+    # Stream data to a temporary file, then replace the destination
+    # file atomically
+    tmp_path = f"{dest_path}.tmp"
+
+    async with aiofiles.open(tmp_path, "wb") as f:
+        async for chunk in req.stream():
+            await f.write(chunk)
+
+    await aiofiles.os.replace(tmp_path, dest_path)
+
+
+def _run_in_executor(function, *args) -> asyncio.Future:
+    loop = asyncio.get_running_loop()
+    return loop.run_in_executor(None, function, *args)

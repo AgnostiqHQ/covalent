@@ -249,8 +249,9 @@ class LocalDispatcher(BaseDispatcher):
         if dispatcher_addr is None:
             dispatcher_addr = format_server_url()
 
-        endpoint = f"/api/v2/dispatches/start/{dispatch_id}"
-        r = APIClient(dispatcher_addr).put(endpoint)
+        endpoint = f"/api/v2/dispatches/{dispatch_id}/status"
+        body = {"status": "RUNNING"}
+        r = APIClient(dispatcher_addr).put(endpoint, json=body)
         r.raise_for_status()
         return r.content.decode("utf-8").strip().replace('"', "")
 
@@ -546,10 +547,10 @@ class LocalDispatcher(BaseDispatcher):
         else:
             stripped = manifest
 
-        endpoint = "/api/v2/dispatches/register"
+        endpoint = "/api/v2/dispatches"
 
         if parent_dispatch_id:
-            endpoint = f"{endpoint}?parent_dispatch_id={parent_dispatch_id}"
+            endpoint = f"{endpoint}/{parent_dispatch_id}/subdispatches"
 
         r = APIClient(dispatcher_addr).post(endpoint, data=stripped.json())
         r.raise_for_status()
@@ -578,7 +579,7 @@ class LocalDispatcher(BaseDispatcher):
         # We don't yet support pulling assets for redispatch
         stripped = strip_local_uris(manifest)
 
-        endpoint = f"/api/v2/dispatches/register/{dispatch_id}"
+        endpoint = f"/api/v2/dispatches/{dispatch_id}/redispatches"
 
         params = {"reuse_previous_results": reuse_previous_results}
         r = APIClient(dispatcher_addr).post(endpoint, data=stripped.json(), params=params)
@@ -615,8 +616,7 @@ def _upload_asset(local_uri, remote_uri):
     else:
         local_path = local_uri
 
-    with open(local_path, "rb") as f:
-        files = {"asset_file": f}
+    with open(local_path, "rb") as reader:
         app_log.debug(f"uploading to {remote_uri}")
         f = furl(remote_uri)
         scheme = f.scheme
@@ -625,5 +625,6 @@ def _upload_asset(local_uri, remote_uri):
         dispatcher_addr = f"{scheme}://{host}:{port}"
         endpoint = str(f.path)
         api_client = APIClient(dispatcher_addr)
-        r = api_client.post(endpoint, files=files)
+
+        r = api_client.put(endpoint, data=reader)
         r.raise_for_status()

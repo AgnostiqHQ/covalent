@@ -46,12 +46,14 @@ class URIFilterPolicy(enum.Enum):
 def _srv_asset_uri(
     uri: str, attrs: dict, scope: AssetScope, dispatch_id: str, node_id: Optional[int], key: str
 ) -> str:
-    base_uri = SERVER_URL + f"/api/v1/assets/{dispatch_id}/{scope.value}"
+    base_uri = SERVER_URL + f"/api/v2/dispatches/{dispatch_id}"
 
-    if scope == AssetScope.DISPATCH or scope == AssetScope.LATTICE:
-        uri = base_uri + f"/{key}"
+    if scope == AssetScope.DISPATCH:
+        uri = f"{base_uri}/assets/{key}"
+    elif scope == AssetScope.LATTICE:
+        uri = f"{base_uri}/lattice/assets/{key}"
     else:
-        uri = base_uri + f"/{node_id}/{key}"
+        uri = f"{base_uri}/electrons/{node_id}/assets/{key}"
     return uri
 
 

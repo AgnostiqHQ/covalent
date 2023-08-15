@@ -85,27 +85,27 @@ def get_test_manifest(staging_dir):
 
 
 def test_cancel_with_single_task_id(mocker):
-    mock_request_post = mocker.patch(
-        "covalent._api.apiclient.requests.Session.post",
+    mock_request_put = mocker.patch(
+        "covalent._api.apiclient.requests.Session.put",
     )
 
     cancel(dispatch_id="dispatch", task_ids=1)
 
-    mock_request_post.assert_called_once()
-    mock_request_post.return_value.raise_for_status.assert_called_once()
+    mock_request_put.assert_called_once()
+    mock_request_put.return_value.raise_for_status.assert_called_once()
 
 
 def test_cancel_with_multiple_task_ids(mocker):
     mock_task_ids = [0, 1]
 
-    mock_request_post = mocker.patch(
-        "covalent._api.apiclient.requests.Session.post",
+    mock_request_put = mocker.patch(
+        "covalent._api.apiclient.requests.Session.put",
     )
 
     cancel(dispatch_id="dispatch", task_ids=[1, 2, 3])
 
-    mock_request_post.assert_called_once()
-    mock_request_post.return_value.raise_for_status.assert_called_once()
+    mock_request_put.assert_called_once()
+    mock_request_put.return_value.raise_for_status.assert_called_once()
 
 
 def test_result_export(mocker):
@@ -128,7 +128,7 @@ def test_result_export(mocker):
     #     "covalent._results_manager.results_manager.CovalentAPIClient", return_value=mock_client
     # )
 
-    endpoint = f"/api/v2/dispatches/export/{dispatch_id}"
+    endpoint = f"/api/v2/dispatches/{dispatch_id}"
     assert mock_body == _get_result_export_from_dispatcher(
         dispatch_id, wait=False, status_only=True
     )
@@ -285,7 +285,7 @@ def test_get_status_only(mocker):
 
 def test_download_asset(mocker):
     dispatch_id = "test_download_asset"
-    remote_uri = f"http://localhost:48008/api/v1/assets/dispatch/{dispatch_id}/result"
+    remote_uri = f"http://localhost:48008/api/v2/dispatches/{dispatch_id}/assets/result"
     mock_client = MagicMock()
     mock_response = MagicMock()
     mock_response.status_code = 200

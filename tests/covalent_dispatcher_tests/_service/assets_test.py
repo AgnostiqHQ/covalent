@@ -33,7 +33,6 @@ from sqlalchemy.orm import Session, declarative_base, sessionmaker
 
 from covalent._workflow.transportable_object import TransportableObject
 from covalent_dispatcher._service.assets import (
-    _copy_file_obj,
     _generate_file_slice,
     _get_tobj_pickle_offsets,
     _get_tobj_string_offsets,
@@ -133,8 +132,9 @@ def test_get_node_asset(mocker, client, test_db, mock_result_object):
     mock_generate_file_slice = mocker.patch(
         "covalent_dispatcher._service.assets._generate_file_slice", mock_generator
     )
+    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
-    resp = client.get(f"/api/v1/assets/{dispatch_id}/node/{node_id}/{key}")
+    resp = client.get(f"/api/v2/dispatches/{dispatch_id}/electrons/{node_id}/assets/{key}")
 
     assert resp.text == "Hi"
     assert (INTERNAL_URI, 0, -1, 65536) == mock_generator.calls[0]
@@ -173,8 +173,11 @@ def test_get_node_asset_byte_range(mocker, client, test_db, mock_result_object):
     )
 
     headers = {"Range": "bytes=0-6"}
+    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
-    resp = client.get(f"/api/v1/assets/{dispatch_id}/node/{node_id}/{key}", headers=headers)
+    resp = client.get(
+        f"/api/v2/dispatches/{dispatch_id}/electrons/{node_id}/assets/{key}", headers=headers
+    )
 
     assert resp.text == test_str[0:6]
     assert (INTERNAL_URI, 0, 6, 65536) == mock_generator.calls[0]
@@ -222,8 +225,11 @@ def test_get_node_asset_rep(
     )
 
     params = {"representation": rep}
+    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
-    resp = client.get(f"/api/v1/assets/{dispatch_id}/node/{node_id}/{key}", params=params)
+    resp = client.get(
+        f"/api/v2/dispatches/{dispatch_id}/electrons/{node_id}/assets/{key}", params=params
+    )
 
     assert resp.text == test_str[start_byte:end_byte]
     assert (INTERNAL_URI, start_byte, end_byte, 65536) == mock_generator.calls[0]
@@ -236,12 +242,12 @@ def test_get_node_asset_bad_dispatch_id(mocker, client):
     key = "output"
     node_id = 0
     dispatch_id = "test_get_node_asset"
-
+    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
     mocker.patch(
         "covalent_dispatcher._service.assets.get_cached_result_object",
         side_effect=HTTPException(status_code=400),
     )
-    resp = client.get(f"/api/v1/assets/{dispatch_id}/node/{node_id}/{key}")
+    resp = client.get(f"/api/v2/dispatches/{dispatch_id}/electrons/{node_id}/assets/{key}")
     assert resp.status_code == 400
 
 
@@ -270,8 +276,9 @@ def test_get_lattice_asset(mocker, client, test_db, mock_result_object):
     mock_generate_file_slice = mocker.patch(
         "covalent_dispatcher._service.assets._generate_file_slice", mock_generator
     )
+    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
-    resp = client.get(f"/api/v1/assets/{dispatch_id}/lattice/{key}")
+    resp = client.get(f"/api/v2/dispatches/{dispatch_id}/lattice/assets/{key}")
 
     assert resp.text == "Hi"
     assert (INTERNAL_URI, 0, -1, 65536) == mock_generator.calls[0]
@@ -307,9 +314,10 @@ def test_get_lattice_asset_byte_range(mocker, client, test_db, mock_result_objec
     mock_generate_file_slice = mocker.patch(
         "covalent_dispatcher._service.assets._generate_file_slice", mock_generator
     )
+    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
     headers = {"Range": "bytes=0-6"}
-    resp = client.get(f"/api/v1/assets/{dispatch_id}/lattice/{key}", headers=headers)
+    resp = client.get(f"/api/v2/dispatches/{dispatch_id}/lattice/assets/{key}", headers=headers)
 
     assert resp.text == test_str[0:6]
     assert (INTERNAL_URI, 0, 6, 65536) == mock_generator.calls[0]
@@ -354,10 +362,11 @@ def test_get_lattice_asset_rep(
     mocker.patch(
         "covalent_dispatcher._service.assets._get_tobj_pickle_offsets", return_value=(6, 12)
     )
+    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
     params = {"representation": rep}
 
-    resp = client.get(f"/api/v1/assets/{dispatch_id}/lattice/{key}", params=params)
+    resp = client.get(f"/api/v2/dispatches/{dispatch_id}/lattice/assets/{key}", params=params)
 
     assert resp.text == test_str[start_byte:end_byte]
     assert (INTERNAL_URI, start_byte, end_byte, 65536) == mock_generator.calls[0]
@@ -375,8 +384,9 @@ def test_get_lattice_asset_bad_dispatch_id(mocker, client):
         "covalent_dispatcher._service.assets.get_cached_result_object",
         side_effect=HTTPException(status_code=400),
     )
+    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
-    resp = client.get(f"/api/v1/assets/{dispatch_id}/lattice/{key}")
+    resp = client.get(f"/api/v2/dispatches/{dispatch_id}/lattice/assets/{key}")
     assert resp.status_code == 400
 
 
@@ -405,8 +415,9 @@ def test_get_dispatch_asset(mocker, client, test_db, mock_result_object):
     mock_generate_file_slice = mocker.patch(
         "covalent_dispatcher._service.assets._generate_file_slice", mock_generator
     )
+    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
-    resp = client.get(f"/api/v1/assets/{dispatch_id}/dispatch/{key}")
+    resp = client.get(f"/api/v2/dispatches/{dispatch_id}/assets/{key}")
 
     assert resp.text == "Hi"
     assert (INTERNAL_URI, 0, -1, 65536) == mock_generator.calls[0]
@@ -439,12 +450,13 @@ def test_get_dispatch_asset_byte_range(mocker, client, test_db, mock_result_obje
     mocker.patch(
         "covalent_dispatcher._service.assets.get_result_object", return_value=mock_result_object
     )
+    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
     mock_generate_file_slice = mocker.patch(
         "covalent_dispatcher._service.assets._generate_file_slice", mock_generator
     )
 
     headers = {"Range": "bytes=0-6"}
-    resp = client.get(f"/api/v1/assets/{dispatch_id}/dispatch/{key}", headers=headers)
+    resp = client.get(f"/api/v2/dispatches/{dispatch_id}/assets/{key}", headers=headers)
 
     assert resp.text == test_str[0:6]
     assert (INTERNAL_URI, 0, 6, 65536) == mock_generator.calls[0]
@@ -489,10 +501,11 @@ def test_get_dispatch_asset_rep(
     mocker.patch(
         "covalent_dispatcher._service.assets._get_tobj_pickle_offsets", return_value=(6, 12)
     )
+    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
     params = {"representation": rep}
 
-    resp = client.get(f"/api/v1/assets/{dispatch_id}/dispatch/{key}", params=params)
+    resp = client.get(f"/api/v2/dispatches/{dispatch_id}/assets/{key}", params=params)
 
     assert resp.text == test_str[start_byte:end_byte]
     assert (INTERNAL_URI, start_byte, end_byte, 65536) == mock_generator.calls[0]
@@ -510,159 +523,164 @@ def test_get_dispatch_asset_bad_dispatch_id(mocker, client):
         "covalent_dispatcher._service.assets.get_cached_result_object",
         side_effect=HTTPException(status_code=400),
     )
+    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
-    resp = client.get(f"/api/v1/assets/{dispatch_id}/dispatch/{key}")
+    resp = client.get(f"/api/v2/dispatches/{dispatch_id}/assets/{key}")
     assert resp.status_code == 400
 
 
-def test_post_node_asset(test_db, mocker, client, mock_result_object):
+def test_put_node_asset(test_db, mocker, client, mock_result_object):
     """
-    Test post node asset
+    Test put node asset
     """
 
     key = "function"
     node_id = 0
-    dispatch_id = "test_post_node_asset"
+    dispatch_id = "test_put_node_asset"
 
     mocker.patch("covalent_dispatcher._service.assets.workflow_db", test_db)
     mocker.patch(
         "covalent_dispatcher._service.assets.get_result_object", return_value=mock_result_object
     )
 
-    mock_copy = mocker.patch("covalent_dispatcher._service.assets._copy_file_obj")
+    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
     with tempfile.NamedTemporaryFile("w") as writer:
         writer.write(f"{dispatch_id}")
         writer.flush()
 
-        files = {"asset_file": open(writer.name, "rb")}
-        headers = {"Digest": "sha=0af"}
-        resp = client.post(
-            f"/api/v1/assets/{dispatch_id}/node/{node_id}/{key}", files=files, headers=headers
-        )
+        headers = {"Digest-alg": "sha", "Digest": "0bf"}
+        with open(writer.name, "rb") as reader:
+            resp = client.put(
+                f"/api/v2/dispatches/{dispatch_id}/electrons/{node_id}/assets/{key}",
+                data=reader,
+                headers=headers,
+            )
         mock_node = mock_result_object.lattice.transport_graph.get_node(node_id)
         mock_node.update_assets.assert_called()
         assert resp.status_code == 200
 
-    mock_copy.assert_called()
 
-
-def test_post_node_asset_bad_dispatch_id(mocker, client):
+def test_put_node_asset_bad_dispatch_id(mocker, client):
     """
-    Test post node asset
+    Test put node asset
     """
     key = "function"
     node_id = 0
-    dispatch_id = "test_post_node_asset_no_dispatch_id"
+    dispatch_id = "test_put_node_asset_no_dispatch_id"
 
     mocker.patch(
         "covalent_dispatcher._service.assets.get_cached_result_object",
         side_effect=HTTPException(status_code=400),
     )
+    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
     with tempfile.NamedTemporaryFile("w") as writer:
         writer.write(f"{dispatch_id}")
         writer.flush()
 
-        files = {"asset_file": open(writer.name, "rb")}
-        resp = client.post(f"/api/v1/assets/{dispatch_id}/node/{node_id}/{key}", files=files)
+        with open(writer.name, "rb") as reader:
+            resp = client.put(
+                f"/api/v2/dispatches/{dispatch_id}/electrons/{node_id}/assets/{key}", data=reader
+            )
 
     assert resp.status_code == 400
 
 
-def test_post_lattice_asset(mocker, client, test_db, mock_result_object):
+def test_put_lattice_asset(mocker, client, test_db, mock_result_object):
     """
-    Test post lattice asset
+    Test put lattice asset
     """
     key = "workflow_function"
-    dispatch_id = "test_post_lattice_asset"
+    dispatch_id = "test_put_lattice_asset"
 
     mocker.patch("covalent_dispatcher._service.assets.workflow_db", test_db)
     mocker.patch(
         "covalent_dispatcher._service.assets.get_result_object", return_value=mock_result_object
     )
-
-    mock_copy = mocker.patch("covalent_dispatcher._service.assets._copy_file_obj")
+    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
     with tempfile.NamedTemporaryFile("w") as writer:
         writer.write(f"{dispatch_id}")
         writer.flush()
 
-        files = {"asset_file": open(writer.name, "rb")}
-        resp = client.post(f"/api/v1/assets/{dispatch_id}/lattice/{key}", files=files)
+        with open(writer.name, "rb") as reader:
+            resp = client.put(
+                f"/api/v2/dispatches/{dispatch_id}/lattice/assets/{key}", data=reader
+            )
         mock_lattice = mock_result_object.lattice
         mock_lattice.update_assets.assert_called()
         assert resp.status_code == 200
 
-    mock_copy.assert_called()
 
-
-def test_post_lattice_asset_bad_dispatch_id(mocker, client):
+def test_put_lattice_asset_bad_dispatch_id(mocker, client):
     """
-    Test post lattice asset
+    Test put lattice asset
     """
     key = "workflow_function"
-    dispatch_id = "test_post_lattice_asset_no_dispatch_id"
+    dispatch_id = "test_put_lattice_asset_no_dispatch_id"
 
     mocker.patch(
         "covalent_dispatcher._service.assets.get_cached_result_object",
-        side_effect=HTTPException(status_code=400),
+        side_effect=HTTPException(status_code=404),
     )
+    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
     with tempfile.NamedTemporaryFile("w") as writer:
         writer.write(f"{dispatch_id}")
         writer.flush()
 
-        files = {"asset_file": open(writer.name, "rb")}
-        resp = client.post(f"/api/v1/assets/{dispatch_id}/lattice/{key}", files=files)
+        with open(writer.name, "rb") as reader:
+            resp = client.put(
+                f"/api/v2/dispatches/{dispatch_id}/lattice/assets/{key}", data=reader
+            )
 
     assert resp.status_code == 400
 
 
-def test_post_dispatch_asset(mocker, client, test_db, mock_result_object):
+def test_put_dispatch_asset(mocker, client, test_db, mock_result_object):
     """
-    Test post dispatch asset
+    Test put dispatch asset
     """
     key = "result"
-    dispatch_id = "test_post_dispatch_asset"
+    dispatch_id = "test_put_dispatch_asset"
 
     mocker.patch("covalent_dispatcher._service.assets.workflow_db", test_db)
     mocker.patch(
         "covalent_dispatcher._service.assets.get_result_object", return_value=mock_result_object
     )
 
-    mock_copy = mocker.patch("covalent_dispatcher._service.assets._copy_file_obj")
+    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
     with tempfile.NamedTemporaryFile("w") as writer:
         writer.write(f"{dispatch_id}")
         writer.flush()
 
-        files = {"asset_file": open(writer.name, "rb")}
-        resp = client.post(f"/api/v1/assets/{dispatch_id}/dispatch/{key}", files=files)
+        with open(writer.name, "rb") as reader:
+            resp = client.put(f"/api/v2/dispatches/{dispatch_id}/assets/{key}", data=reader)
         mock_result_object.update_assets.assert_called()
         assert resp.status_code == 200
 
-    mock_copy.assert_called()
 
-
-def test_post_dispatch_asset_bad_dispatch_id(mocker, client):
+def test_put_dispatch_asset_bad_dispatch_id(mocker, client):
     """
-    Test post dispatch asset
+    Test put dispatch asset
     """
     key = "result"
-    dispatch_id = "test_post_dispatch_asset_no_dispatch_id"
+    dispatch_id = "test_put_dispatch_asset_no_dispatch_id"
 
     mocker.patch(
         "covalent_dispatcher._service.assets.get_cached_result_object",
         side_effect=HTTPException(status_code=400),
     )
+    mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
     with tempfile.NamedTemporaryFile("w") as writer:
         writer.write(f"{dispatch_id}")
         writer.flush()
 
-        files = {"asset_file": open(writer.name, "rb")}
-        resp = client.post(f"/api/v1/assets/{dispatch_id}/dispatch/{key}", files=files)
+        with open(writer.name, "rb") as reader:
+            resp = client.put(f"/api/v2/dispatches/{dispatch_id}/assets/{key}", data=reader)
 
     assert resp.status_code == 400
 
@@ -723,13 +741,3 @@ def test_get_cached_result_obj(mocker, test_db):
     mocker.patch("covalent_dispatcher._service.assets.get_result_object", side_effect=KeyError())
     with pytest.raises(HTTPException):
         get_cached_result_object("test_get_cached_result_obj")
-
-
-def test_copy_file_obj(mocker):
-    with tempfile.NamedTemporaryFile("rb+") as src:
-        src.write("Hello".encode("utf-8"))
-        src.flush()
-        src.seek(0)
-        with tempfile.NamedTemporaryFile("r") as dest:
-            _copy_file_obj(src, f"file://{dest.name}")
-            assert dest.read() == "Hello"

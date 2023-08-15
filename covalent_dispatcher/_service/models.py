@@ -22,7 +22,7 @@
 
 import re
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -115,3 +115,16 @@ class ExportResponseSchema(BaseModel):
 class AssetRepresentation(str, Enum):
     string = "string"
     b64pickle = "object"
+
+
+class TargetDispatchStatus(str, Enum):
+    running = "RUNNING"
+    cancelled = "CANCELLED"
+
+
+class DispatchStatusSetSchema(BaseModel):
+    # The target status
+    status: TargetDispatchStatus
+
+    # For cancellation, an optional list of task ids to cancel
+    task_ids: Optional[List] = []

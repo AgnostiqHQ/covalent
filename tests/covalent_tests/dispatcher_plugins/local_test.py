@@ -58,7 +58,7 @@ def test_dispatch_when_no_server_is_running(mocker):
     # the test suite is using another port, thus, with the dummy address below
     # the covalent server is not running in some sense.
     dummy_dispatcher_addr = "http://localhost:12345"
-    endpoint = "/api/v2/dispatches/register"
+    endpoint = "/api/v2/dispatches"
     url = dummy_dispatcher_addr + endpoint
     message = f"The Covalent server cannot be reached at {url}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
 
@@ -245,7 +245,7 @@ def test_dispatcher_start(mocker):
 
     # test when api doesn't raise an implicit error
     r = Response()
-    r.status_code = 200
+    r.status_code = 202
     r.url = "http://dummy"
     r._content = dispatch_id.encode("utf-8")
 
@@ -348,7 +348,7 @@ def test_register_manifest(mocker):
     manifest.metadata.dispatch_id = dispatch_id
 
     r = Response()
-    r.status_code = 200
+    r.status_code = 201
     r.json = MagicMock(return_value=manifest.dict())
 
     mocker.patch("covalent._api.apiclient.requests.Session.post", return_value=r)
@@ -382,7 +382,7 @@ def test_register_derived_manifest(mocker):
     manifest.metadata.dispatch_id = dispatch_id
 
     r = Response()
-    r.status_code = 200
+    r.status_code = 201
     r.json = MagicMock(return_value=manifest.dict())
 
     mocker.patch("covalent._api.apiclient.requests.Session.post", return_value=r)
@@ -417,12 +417,14 @@ def test_upload_assets(mocker):
         # Populate the lattice asset schemas with dummy URLs
         for key, asset in manifest.lattice.assets:
             num_assets += 1
-            asset.remote_uri = f"http://localhost:48008/api/v1/assets/{dispatch_id}/lattice/dummy"
+            asset.remote_uri = (
+                f"http://localhost:48008/api/v2/dispatches/{dispatch_id}/lattice/assets/dummy"
+            )
 
-        endpoint = f"/api/v1/assets/{dispatch_id}/lattice/dummy"
+        endpoint = f"/api/v2/dispatches/{dispatch_id}/lattice/assets/dummy"
         r = Response()
         r.status_code = 200
-        mock_post = mocker.patch("covalent._api.apiclient.requests.Session.post", return_value=r)
+        mock_post = mocker.patch("covalent._api.apiclient.requests.Session.put", return_value=r)
 
         LocalDispatcher.upload_assets(manifest)
 
