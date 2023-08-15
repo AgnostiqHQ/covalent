@@ -36,7 +36,7 @@ class QEDevice(QubitDevice):
     """
 
     name = "QEDevice"
-    short_name = "qe_device"
+    short_name = "qelectron_device"
     pennylane_requires = ">=0.29.1"
     version = "0.0.1"
     author = "aq"
