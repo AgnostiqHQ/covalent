@@ -143,7 +143,7 @@ class BaseQExecutor(ABC, BaseModel):
 
     def run_circuit(self, qscript, device, result_obj: 'QCResult') -> 'QCResult':
         start_time = time.perf_counter()
-        results = qml.execute([qscript], device, None)
+        results = qml.execute([qscript], device, gradient_fn="best")
         end_time = time.perf_counter()
 
         result_obj.results = results
@@ -301,7 +301,7 @@ class AsyncBaseQExecutor(BaseQExecutor):
     async def run_circuit(self, qscript, device, result_obj) -> QCResult:
         await asyncio.sleep(0)
         start_time = time.perf_counter()
-        results = qml.execute([qscript], device, None)
+        results = qml.execute([qscript], device, gradient_fn="best")
         end_time = time.perf_counter()
 
         result_obj.results = results

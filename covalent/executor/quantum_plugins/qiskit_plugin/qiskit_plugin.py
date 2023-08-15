@@ -296,7 +296,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
         """
 
         start_time = time.perf_counter()
-        results = qml.execute([tape], device, None)
+        results = qml.execute([tape], device, gradient_fn="best")
 
         await asyncio.sleep(0)
 
@@ -316,7 +316,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
         """
 
         start_time = time.perf_counter()
-        results = qml.execute(tapes, device, None)
+        results = qml.execute(tapes, device, gradient_fn="best")
 
         await asyncio.sleep(0)
 

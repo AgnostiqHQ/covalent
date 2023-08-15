@@ -219,7 +219,7 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
         as if it came from `batch_execute`.
         """
         dev = _PostProcessDevice(self.wires, results)
-        return qml.execute(tapes, dev, None)
+        return qml.execute(tapes, dev, gradient_fn="best")
 
     def _dummy_result(self) -> Union[Any, List[Any]]:
         """
