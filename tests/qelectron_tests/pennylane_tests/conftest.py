@@ -79,7 +79,7 @@ XFAIL_TEST_NAMES = [
 # VALIDATION FUNCTIONS
 # ------------------------------------------------------------------------------
 
-def _check_return_type(func):
+def _check_return_type(executors, func):
     """
     Checks whether a function returns a type that is not supported by QElectrons.
     """
@@ -110,8 +110,9 @@ def _check_device_type(executors, device):
         simulator_in_execs = any(isinstance(ex, ct.executor.Simulator) for ex in executors)
         if not (simulator_in_execs and device.short_name == "default.gaussian"):
             pytest.skip(f"QElectrons do not support the '{device.short_name}' device.")
-    # if device.shot_vector:
-    #     pytest.skip("QElectrons don't support shot vectors.")
+
+    if any(hasattr(ex.shots, "__len__") and ex.name != "Simulator" for ex in executors):
+        pytest.skip("Only the Simulator QExecutor currently supports shot vectors.")
 
 
     # Simulator
@@ -204,42 +205,6 @@ def _get_wrapped_QNode(use_run_later, get_executors):  # pylint: disable=invalid
             return self.qelectron(*args, **kwargs)
 
     return _PatchedQNode
-
-
-# VALIDATION FUNCTIONS
-# ------------------------------------------------------------------------------
-
-def _check_return_type(executors, func):
-    """
-    Checks whether a function returns a type that is not supported by QElectrons.
-    """
-
-    func_lines = inspect.getsourcelines(func)[0]
-    reached_return = False
-    for line in func_lines:
-
-        if line.strip().startswith("return"):
-            reached_return = True
-
-        if reached_return:
-            for ret_typ in SKIP_RETURN_TYPES:
-                if ret_typ in line or ret_typ.split(".", maxsplit=1)[-1] in line:
-                    pytest.skip(f"QElectrons don't support `{ret_typ}` measurements.")
-
-
-def _check_device_type(executors, device):
-    """
-    Checks whether a device is supported by QElectrons.
-    """
-
-    if device.short_name in SKIP_DEVICES:
-        pytest.skip(f"QElectrons don't support the `{device}` device.")
-    if device.shot_vector:
-        if (
-            isinstance(executors, ct.executor.LocalBraketQubitExecutor) or
-            any(isinstance(ex, ct.executor.LocalBraketQubitExecutor) for ex in executors)
-        ):
-            pytest.skip("Braket executor does not support shot vectors")
 
 
 # SKIP SETTINGS
