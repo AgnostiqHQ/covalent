@@ -31,7 +31,7 @@ import pennylane as qml
 from mpire import WorkerPool
 from pydantic import BaseModel, Extra, Field, root_validator  # pylint: disable=no-name-in-module
 
-from .._shared_files.qinfo import QElectronInfo
+from .._shared_files.qinfo import QElectronInfo, QNodeSpecs
 
 __all__ = [
     "BaseQExecutor",
@@ -86,11 +86,11 @@ class BaseQExecutor(ABC, BaseModel):
     shots_converter: type = None
     persist_data: bool = True
 
-    # Executors need to container certain information about original QNode wrapped
-    # by the QElectron, in order to produce correct results. This attribute contains
-    # that information. The `QServer` receives the original QElectron information
-    # and copies it here for each executor to use.
+    # Executors need to contain certain information about original QNode, in order
+    # to produce correct results. These attributes below contain that information.
+    # They are set inside the `QServer` and will be `None` client-side.
     qelectron_info: QElectronInfo = None
+    qnode_specs: QNodeSpecs = None
 
     @property
     def override_shots(self) -> Union[int, None]:
