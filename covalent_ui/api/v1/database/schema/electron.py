@@ -122,7 +122,7 @@ class Electron(Base):
     is_active = Column(Boolean, nullable=False, default=True)
 
     # ID for circuit_info
-    job_id = Column(Integer)
+    job_id = Column(Integer, ForeignKey("jobs.id", name="job_id_link"), nullable=False)
 
     # Flag that indicates if an electron is a QElectron
     qelectron_data_exists = Column(Boolean, nullable=False)
@@ -131,7 +131,6 @@ class Electron(Base):
     updated_at = Column(DateTime, nullable=False, onupdate=func.now(), server_default=func.now())
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
-    job_id = Column(Integer, ForeignKey("jobs.id", name="job_id_link"), nullable=False)
 
 
 class Job(Base):

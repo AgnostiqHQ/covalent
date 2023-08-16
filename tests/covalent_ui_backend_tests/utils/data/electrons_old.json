@@ -10,6 +10,7 @@
         "function_filename": "function.pkl",
         "function_string_filename": "function_string.txt",
         "id": 1,
+        "info_filename": "info.log",
         "is_active": 1,
         "name": "hello",
         "parent_lattice_id": 1,
@@ -25,8 +26,7 @@
         "updated_at": "2022-09-23 10:01:11.490513",
         "value_filename": "value.pkl",
         "job_id": 0,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "call_after_filename": "call_after.pkl",
@@ -39,6 +39,7 @@
         "function_filename": "function.pkl",
         "function_string_filename": "function_string.txt",
         "id": 2,
+        "info_filename": "info.log",
         "is_active": 1,
         "name": "moniker",
         "parent_lattice_id": 1,
@@ -54,8 +55,7 @@
         "updated_at": "2022-09-23 10:01:11.526865",
         "value_filename": "value.pkl",
         "job_id": 0,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "call_after_filename": "call_after.pkl",
@@ -68,6 +68,7 @@
         "function_filename": "function.pkl",
         "function_string_filename": "function_string.txt",
         "id": 3,
+        "info_filename": "info.log",
         "is_active": 1,
         "name": ":parameter:shore",
         "parent_lattice_id": 1,
@@ -83,8 +84,7 @@
         "updated_at": "2022-09-23 10:01:11.197121",
         "value_filename": "value.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "call_after_filename": "call_after.pkl",
@@ -97,6 +97,7 @@
         "function_filename": "function.pkl",
         "function_string_filename": "function_string.txt",
         "id": 4,
+        "info_filename": "info.log",
         "is_active": 1,
         "name": "join",
         "parent_lattice_id": 1,
@@ -112,8 +113,7 @@
         "updated_at": "2022-09-23 10:01:11.591516",
         "value_filename": "value.pkl",
         "job_id": 2,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "call_after_filename": "call_after.pkl",
@@ -126,6 +126,7 @@
         "function_filename": "function.pkl",
         "function_string_filename": "function_string.txt",
         "id": 5,
+        "info_filename": "info.log",
         "is_active": 1,
         "name": "join_+_ !!",
         "parent_lattice_id": 1,
@@ -141,8 +142,7 @@
         "updated_at": "2022-09-23 10:01:11.642760",
         "value_filename": "value.pkl",
         "job_id": 3,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "call_after_filename": "call_after.pkl",
@@ -155,6 +155,7 @@
         "function_filename": "function.pkl",
         "function_string_filename": "function_string.txt",
         "id": 6,
+        "info_filename": "info.log",
         "is_active": 1,
         "name": ":parameter: !!",
         "parent_lattice_id": 1,
@@ -170,8 +171,7 @@
         "updated_at": "2022-09-23 10:01:11.229709",
         "value_filename": "value.pkl",
         "job_id": 4,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 7,
@@ -191,6 +191,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:33.721544",
         "updated_at": "2022-10-27 10:08:33.937039",
@@ -199,8 +200,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 5,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 8,
@@ -220,6 +220,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:33.737909",
         "updated_at": "2022-10-27 10:08:33.832449",
@@ -228,8 +229,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 6,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 9,
@@ -249,6 +249,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:33.754840",
         "updated_at": "2022-10-27 10:08:36.033792",
@@ -257,8 +258,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 10,
@@ -278,6 +278,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:33.769064",
         "updated_at": "2022-10-27 10:08:43.907507",
@@ -286,8 +287,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 11,
@@ -307,6 +307,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.121824",
         "updated_at": "2022-10-27 10:08:35.166045",
@@ -315,8 +316,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 12,
@@ -336,6 +336,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.141566",
         "updated_at": "2022-10-27 10:08:34.530775",
@@ -344,8 +345,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 13,
@@ -365,6 +365,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.157807",
         "updated_at": "2022-10-27 10:08:35.245235",
@@ -373,8 +374,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 14,
@@ -394,6 +394,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.174837",
         "updated_at": "2022-10-27 10:08:34.582442",
@@ -402,8 +403,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 15,
@@ -423,6 +423,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.193334",
         "updated_at": "2022-10-27 10:08:35.326034",
@@ -431,8 +432,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 16,
@@ -452,6 +452,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.210810",
         "updated_at": "2022-10-27 10:08:34.618496",
@@ -460,8 +461,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 17,
@@ -481,6 +481,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.225974",
         "updated_at": "2022-10-27 10:08:35.414015",
@@ -489,8 +490,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 18,
@@ -510,6 +510,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.243921",
         "updated_at": "2022-10-27 10:08:34.656399",
@@ -518,8 +519,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 19,
@@ -539,6 +539,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.262261",
         "updated_at": "2022-10-27 10:08:35.564214",
@@ -547,8 +548,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 20,
@@ -568,6 +568,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.279546",
         "updated_at": "2022-10-27 10:08:34.696612",
@@ -576,8 +577,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 21,
@@ -597,6 +597,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.300588",
         "updated_at": "2022-10-27 10:08:35.525729",
@@ -605,8 +606,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 22,
@@ -626,6 +626,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.319777",
         "updated_at": "2022-10-27 10:08:34.737932",
@@ -634,8 +635,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 23,
@@ -655,6 +655,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.337839",
         "updated_at": "2022-10-27 10:08:35.682213",
@@ -663,8 +664,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 24,
@@ -684,6 +684,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.357823",
         "updated_at": "2022-10-27 10:08:34.777085",
@@ -692,8 +693,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 25,
@@ -713,6 +713,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.374314",
         "updated_at": "2022-10-27 10:08:35.774775",
@@ -721,8 +722,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 26,
@@ -742,6 +742,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.390256",
         "updated_at": "2022-10-27 10:08:34.818988",
@@ -750,8 +751,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 27,
@@ -771,6 +771,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.406105",
         "updated_at": "2022-10-27 10:08:35.818772",
@@ -779,8 +780,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 28,
@@ -800,6 +800,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.424469",
         "updated_at": "2022-10-27 10:08:34.860444",
@@ -808,8 +809,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 29,
@@ -829,6 +829,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.442225",
         "updated_at": "2022-10-27 10:08:35.872264",
@@ -837,8 +838,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 30,
@@ -858,6 +858,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:34.457399",
         "updated_at": "2022-10-27 10:08:34.902193",
@@ -866,8 +867,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 31,
@@ -887,6 +887,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.302082",
         "updated_at": "2022-10-27 10:08:43.171795",
@@ -895,8 +896,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 32,
@@ -916,6 +916,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.320779",
         "updated_at": "2022-10-27 10:08:42.512375",
@@ -924,8 +925,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 33,
@@ -945,6 +945,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.338612",
         "updated_at": "2022-10-27 10:08:38.787144",
@@ -953,8 +954,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 34,
@@ -974,6 +974,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.355690",
         "updated_at": "2022-10-27 10:08:38.825702",
@@ -982,8 +983,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 35,
@@ -1003,6 +1003,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.373101",
         "updated_at": "2022-10-27 10:08:38.859815",
@@ -1011,8 +1012,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 36,
@@ -1032,6 +1032,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.389371",
         "updated_at": "2022-10-27 10:08:38.893261",
@@ -1040,8 +1041,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 37,
@@ -1061,6 +1061,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.407041",
         "updated_at": "2022-10-27 10:08:38.929879",
@@ -1069,8 +1070,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 38,
@@ -1090,6 +1090,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.426321",
         "updated_at": "2022-10-27 10:08:38.980004",
@@ -1098,8 +1099,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 39,
@@ -1119,6 +1119,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.442352",
         "updated_at": "2022-10-27 10:08:39.045890",
@@ -1127,8 +1128,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 40,
@@ -1148,6 +1148,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.457450",
         "updated_at": "2022-10-27 10:08:39.092994",
@@ -1156,8 +1157,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 41,
@@ -1177,6 +1177,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.474123",
         "updated_at": "2022-10-27 10:08:39.118499",
@@ -1185,8 +1186,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 42,
@@ -1206,6 +1206,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.489691",
         "updated_at": "2022-10-27 10:08:39.143260",
@@ -1214,8 +1215,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 43,
@@ -1235,6 +1235,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.508357",
         "updated_at": "2022-10-27 10:08:43.258311",
@@ -1243,8 +1244,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 44,
@@ -1264,6 +1264,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.526014",
         "updated_at": "2022-10-27 10:08:42.589511",
@@ -1272,8 +1273,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 45,
@@ -1293,6 +1293,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.543830",
         "updated_at": "2022-10-27 10:08:39.175803",
@@ -1301,8 +1302,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 46,
@@ -1322,6 +1322,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.558599",
         "updated_at": "2022-10-27 10:08:39.211919",
@@ -1330,8 +1331,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 47,
@@ -1351,6 +1351,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.574942",
         "updated_at": "2022-10-27 10:08:39.254111",
@@ -1359,8 +1360,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 48,
@@ -1380,6 +1380,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.592225",
         "updated_at": "2022-10-27 10:08:39.280784",
@@ -1388,8 +1389,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 49,
@@ -1409,6 +1409,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.605931",
         "updated_at": "2022-10-27 10:08:39.310818",
@@ -1417,8 +1418,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 50,
@@ -1438,6 +1438,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.624526",
         "updated_at": "2022-10-27 10:08:39.344570",
@@ -1446,8 +1447,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 51,
@@ -1467,6 +1467,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.642423",
         "updated_at": "2022-10-27 10:08:39.378598",
@@ -1475,8 +1476,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 52,
@@ -1496,6 +1496,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.659032",
         "updated_at": "2022-10-27 10:08:39.410576",
@@ -1504,8 +1505,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 53,
@@ -1525,6 +1525,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.675982",
         "updated_at": "2022-10-27 10:08:39.442893",
@@ -1533,8 +1534,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 54,
@@ -1554,6 +1554,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.691008",
         "updated_at": "2022-10-27 10:08:39.475648",
@@ -1562,8 +1563,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 55,
@@ -1583,6 +1583,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.706843",
         "updated_at": "2022-10-27 10:08:43.345118",
@@ -1591,8 +1592,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 56,
@@ -1612,6 +1612,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.725044",
         "updated_at": "2022-10-27 10:08:42.654361",
@@ -1620,8 +1621,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 57,
@@ -1641,6 +1641,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.742116",
         "updated_at": "2022-10-27 10:08:39.508733",
@@ -1649,8 +1650,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 58,
@@ -1670,6 +1670,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.758671",
         "updated_at": "2022-10-27 10:08:39.540296",
@@ -1678,8 +1679,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 59,
@@ -1699,6 +1699,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.778892",
         "updated_at": "2022-10-27 10:08:39.572480",
@@ -1707,8 +1708,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 60,
@@ -1728,6 +1728,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.795931",
         "updated_at": "2022-10-27 10:08:39.607869",
@@ -1736,8 +1737,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 61,
@@ -1757,6 +1757,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.808616",
         "updated_at": "2022-10-27 10:08:39.642195",
@@ -1765,8 +1766,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 62,
@@ -1786,6 +1786,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.826128",
         "updated_at": "2022-10-27 10:08:39.681521",
@@ -1794,8 +1795,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 63,
@@ -1815,6 +1815,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.842655",
         "updated_at": "2022-10-27 10:08:39.716039",
@@ -1823,8 +1824,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 64,
@@ -1844,6 +1844,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.857408",
         "updated_at": "2022-10-27 10:08:39.748445",
@@ -1852,8 +1853,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 65,
@@ -1873,6 +1873,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.875349",
         "updated_at": "2022-10-27 10:08:39.782746",
@@ -1881,8 +1882,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 66,
@@ -1902,6 +1902,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.892565",
         "updated_at": "2022-10-27 10:08:39.816223",
@@ -1910,8 +1911,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 67,
@@ -1931,6 +1931,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.909599",
         "updated_at": "2022-10-27 10:08:43.507730",
@@ -1939,8 +1940,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 68,
@@ -1960,6 +1960,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.925895",
         "updated_at": "2022-10-27 10:08:42.773297",
@@ -1968,8 +1969,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 69,
@@ -1989,6 +1989,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.941241",
         "updated_at": "2022-10-27 10:08:39.844978",
@@ -1997,8 +1998,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 70,
@@ -2018,6 +2018,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.958115",
         "updated_at": "2022-10-27 10:08:39.876766",
@@ -2026,8 +2027,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 71,
@@ -2047,6 +2047,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.972882",
         "updated_at": "2022-10-27 10:08:39.910667",
@@ -2055,8 +2056,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 72,
@@ -2076,6 +2076,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:36.988747",
         "updated_at": "2022-10-27 10:08:39.941892",
@@ -2084,8 +2085,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 73,
@@ -2105,6 +2105,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.004250",
         "updated_at": "2022-10-27 10:08:39.977285",
@@ -2113,8 +2114,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 74,
@@ -2134,6 +2134,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.024965",
         "updated_at": "2022-10-27 10:08:40.008953",
@@ -2142,8 +2143,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 75,
@@ -2163,6 +2163,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.042155",
         "updated_at": "2022-10-27 10:08:40.042835",
@@ -2171,8 +2172,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 76,
@@ -2192,6 +2192,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.057877",
         "updated_at": "2022-10-27 10:08:40.076546",
@@ -2200,8 +2201,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 77,
@@ -2221,6 +2221,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.074699",
         "updated_at": "2022-10-27 10:08:40.112193",
@@ -2229,8 +2230,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 78,
@@ -2250,6 +2250,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.090017",
         "updated_at": "2022-10-27 10:08:40.149688",
@@ -2258,8 +2259,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 79,
@@ -2279,6 +2279,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.108724",
         "updated_at": "2022-10-27 10:08:43.425359",
@@ -2287,8 +2288,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 80,
@@ -2308,6 +2308,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.127189",
         "updated_at": "2022-10-27 10:08:42.803765",
@@ -2316,8 +2317,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 81,
@@ -2337,6 +2337,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.148132",
         "updated_at": "2022-10-27 10:08:40.190076",
@@ -2345,8 +2346,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 82,
@@ -2366,6 +2366,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.163845",
         "updated_at": "2022-10-27 10:08:40.225434",
@@ -2374,8 +2375,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 83,
@@ -2395,6 +2395,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.182859",
         "updated_at": "2022-10-27 10:08:40.259819",
@@ -2403,8 +2404,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 84,
@@ -2424,6 +2424,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.197103",
         "updated_at": "2022-10-27 10:08:40.303439",
@@ -2432,8 +2433,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 85,
@@ -2453,6 +2453,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.212968",
         "updated_at": "2022-10-27 10:08:40.345385",
@@ -2461,8 +2462,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 86,
@@ -2482,6 +2482,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.233015",
         "updated_at": "2022-10-27 10:08:40.396468",
@@ -2490,8 +2491,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 87,
@@ -2511,6 +2511,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.250635",
         "updated_at": "2022-10-27 10:08:40.437562",
@@ -2519,8 +2520,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 88,
@@ -2540,6 +2540,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.272024",
         "updated_at": "2022-10-27 10:08:40.486616",
@@ -2548,8 +2549,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 89,
@@ -2569,6 +2569,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.285661",
         "updated_at": "2022-10-27 10:08:40.529335",
@@ -2577,8 +2578,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 90,
@@ -2598,6 +2598,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.295628",
         "updated_at": "2022-10-27 10:08:40.575426",
@@ -2606,8 +2607,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 91,
@@ -2627,6 +2627,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.308194",
         "updated_at": "2022-10-27 10:08:43.594444",
@@ -2635,8 +2636,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 92,
@@ -2656,6 +2656,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.330291",
         "updated_at": "2022-10-27 10:08:42.879558",
@@ -2664,8 +2665,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 93,
@@ -2685,6 +2685,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.351111",
         "updated_at": "2022-10-27 10:08:40.612649",
@@ -2693,8 +2694,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 94,
@@ -2714,6 +2714,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.374099",
         "updated_at": "2022-10-27 10:08:40.644544",
@@ -2722,8 +2723,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 95,
@@ -2743,6 +2743,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.392103",
         "updated_at": "2022-10-27 10:08:40.676302",
@@ -2751,8 +2752,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 96,
@@ -2772,6 +2772,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.409575",
         "updated_at": "2022-10-27 10:08:40.698956",
@@ -2780,8 +2781,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 97,
@@ -2801,6 +2801,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.429387",
         "updated_at": "2022-10-27 10:08:40.727386",
@@ -2809,8 +2810,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 98,
@@ -2830,6 +2830,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.448684",
         "updated_at": "2022-10-27 10:08:40.762293",
@@ -2838,8 +2839,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 99,
@@ -2859,6 +2859,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.470073",
         "updated_at": "2022-10-27 10:08:40.799334",
@@ -2867,8 +2868,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 100,
@@ -2888,6 +2888,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.487636",
         "updated_at": "2022-10-27 10:08:40.837240",
@@ -2896,8 +2897,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 101,
@@ -2917,6 +2917,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.504586",
         "updated_at": "2022-10-27 10:08:40.876500",
@@ -2925,8 +2926,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 102,
@@ -2946,6 +2946,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.526051",
         "updated_at": "2022-10-27 10:08:40.913187",
@@ -2954,8 +2955,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 103,
@@ -2975,6 +2975,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.546764",
         "updated_at": "2022-10-27 10:08:43.656594",
@@ -2983,8 +2984,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 104,
@@ -3004,6 +3004,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.567169",
         "updated_at": "2022-10-27 10:08:42.942520",
@@ -3012,8 +3013,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 105,
@@ -3033,6 +3033,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.585364",
         "updated_at": "2022-10-27 10:08:40.946512",
@@ -3041,8 +3042,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 106,
@@ -3062,6 +3062,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.599294",
         "updated_at": "2022-10-27 10:08:40.981200",
@@ -3070,8 +3071,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 107,
@@ -3091,6 +3091,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.619618",
         "updated_at": "2022-10-27 10:08:41.016945",
@@ -3099,8 +3100,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 108,
@@ -3120,6 +3120,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.638808",
         "updated_at": "2022-10-27 10:08:41.055936",
@@ -3128,8 +3129,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 109,
@@ -3149,6 +3149,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.654483",
         "updated_at": "2022-10-27 10:08:41.091582",
@@ -3157,8 +3158,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 110,
@@ -3178,6 +3178,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.671724",
         "updated_at": "2022-10-27 10:08:41.123420",
@@ -3186,8 +3187,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 111,
@@ -3207,6 +3207,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.687139",
         "updated_at": "2022-10-27 10:08:41.156278",
@@ -3215,8 +3216,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 112,
@@ -3236,6 +3236,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.704070",
         "updated_at": "2022-10-27 10:08:41.192404",
@@ -3244,8 +3245,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 113,
@@ -3265,6 +3265,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.725651",
         "updated_at": "2022-10-27 10:08:41.224627",
@@ -3273,8 +3274,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 114,
@@ -3294,6 +3294,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.745048",
         "updated_at": "2022-10-27 10:08:41.257055",
@@ -3302,8 +3303,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 115,
@@ -3323,6 +3323,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.760175",
         "updated_at": "2022-10-27 10:08:43.692219",
@@ -3331,8 +3332,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 116,
@@ -3352,6 +3352,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.776605",
         "updated_at": "2022-10-27 10:08:42.991653",
@@ -3360,8 +3361,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 117,
@@ -3381,6 +3381,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.792093",
         "updated_at": "2022-10-27 10:08:41.293646",
@@ -3389,8 +3390,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 118,
@@ -3410,6 +3410,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.808215",
         "updated_at": "2022-10-27 10:08:41.327075",
@@ -3418,8 +3419,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 119,
@@ -3439,6 +3439,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.826520",
         "updated_at": "2022-10-27 10:08:41.360839",
@@ -3447,8 +3448,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 120,
@@ -3468,6 +3468,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.842543",
         "updated_at": "2022-10-27 10:08:41.394483",
@@ -3476,8 +3477,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 121,
@@ -3497,6 +3497,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.859025",
         "updated_at": "2022-10-27 10:08:41.428439",
@@ -3505,8 +3506,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 122,
@@ -3526,6 +3526,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.875312",
         "updated_at": "2022-10-27 10:08:41.462184",
@@ -3534,8 +3535,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 123,
@@ -3555,6 +3555,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.890211",
         "updated_at": "2022-10-27 10:08:41.496118",
@@ -3563,8 +3564,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 124,
@@ -3584,6 +3584,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.906062",
         "updated_at": "2022-10-27 10:08:41.527497",
@@ -3592,8 +3593,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 125,
@@ -3613,6 +3613,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.925923",
         "updated_at": "2022-10-27 10:08:41.561383",
@@ -3621,8 +3622,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 126,
@@ -3642,6 +3642,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.941795",
         "updated_at": "2022-10-27 10:08:41.595700",
@@ -3650,8 +3651,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 127,
@@ -3671,6 +3671,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.957926",
         "updated_at": "2022-10-27 10:08:43.766491",
@@ -3679,8 +3680,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 128,
@@ -3700,6 +3700,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.973121",
         "updated_at": "2022-10-27 10:08:43.091461",
@@ -3708,8 +3709,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 129,
@@ -3729,6 +3729,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:37.986933",
         "updated_at": "2022-10-27 10:08:41.627489",
@@ -3737,8 +3738,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 130,
@@ -3758,6 +3758,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.001766",
         "updated_at": "2022-10-27 10:08:41.661875",
@@ -3766,8 +3767,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 131,
@@ -3787,6 +3787,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.020035",
         "updated_at": "2022-10-27 10:08:41.696908",
@@ -3795,8 +3796,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 132,
@@ -3816,6 +3816,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.035546",
         "updated_at": "2022-10-27 10:08:41.730325",
@@ -3824,8 +3825,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 133,
@@ -3845,6 +3845,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.046972",
         "updated_at": "2022-10-27 10:08:41.767052",
@@ -3853,8 +3854,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 134,
@@ -3874,6 +3874,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.059033",
         "updated_at": "2022-10-27 10:08:41.803941",
@@ -3882,8 +3883,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 135,
@@ -3903,6 +3903,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.073850",
         "updated_at": "2022-10-27 10:08:41.837237",
@@ -3911,8 +3912,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 136,
@@ -3932,6 +3932,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.086138",
         "updated_at": "2022-10-27 10:08:41.873392",
@@ -3940,8 +3941,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 137,
@@ -3961,6 +3961,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.098049",
         "updated_at": "2022-10-27 10:08:41.906181",
@@ -3969,8 +3970,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 138,
@@ -3990,6 +3990,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.112014",
         "updated_at": "2022-10-27 10:08:41.940831",
@@ -3998,8 +3999,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 139,
@@ -4019,6 +4019,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.129412",
         "updated_at": "2022-10-27 10:08:43.730488",
@@ -4027,8 +4028,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 140,
@@ -4048,6 +4048,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.146475",
         "updated_at": "2022-10-27 10:08:43.062996",
@@ -4056,8 +4057,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 141,
@@ -4077,6 +4077,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.162055",
         "updated_at": "2022-10-27 10:08:41.974642",
@@ -4085,8 +4086,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 142,
@@ -4106,6 +4106,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.178884",
         "updated_at": "2022-10-27 10:08:42.005490",
@@ -4114,8 +4115,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 143,
@@ -4135,6 +4135,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.195346",
         "updated_at": "2022-10-27 10:08:42.038186",
@@ -4143,8 +4144,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 144,
@@ -4164,6 +4164,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.214888",
         "updated_at": "2022-10-27 10:08:42.071763",
@@ -4172,8 +4173,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 145,
@@ -4193,6 +4193,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.237282",
         "updated_at": "2022-10-27 10:08:42.105918",
@@ -4201,8 +4202,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 146,
@@ -4222,6 +4222,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.253156",
         "updated_at": "2022-10-27 10:08:42.141465",
@@ -4230,8 +4231,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 147,
@@ -4251,6 +4251,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.271635",
         "updated_at": "2022-10-27 10:08:42.175810",
@@ -4259,8 +4260,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 148,
@@ -4280,6 +4280,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.287718",
         "updated_at": "2022-10-27 10:08:42.207773",
@@ -4288,8 +4289,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 149,
@@ -4309,6 +4309,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.302767",
         "updated_at": "2022-10-27 10:08:42.238861",
@@ -4317,8 +4318,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
+        "qelectron_data_exists": false
     },
     {
         "id": 150,
@@ -4338,6 +4338,7 @@
         "call_before_filename": "call_before.pkl",
         "call_after_filename": "call_after.pkl",
         "stderr_filename": "stderr.log",
+        "info_filename": "info.log",
         "is_active": 1,
         "created_at": "2022-10-27 10:08:38.320742",
         "updated_at": "2022-10-27 10:08:42.272361",
@@ -4346,37 +4347,7 @@
         "executor": "dask",
         "executor_data_filename": "executor_data.pkl",
         "job_id": 1,
-        "qelectron_data_exists": false,
-        "error_filename": "error.log"
-    },
-    {
-        "call_after_filename": "call_after.pkl",
-        "call_before_filename": "call_before.pkl",
-        "completed_at": "2023-08-10 10:08:55.902257",
-        "created_at": "2023-08-10 10:08:55.403522",
-        "deps_filename": "deps.pkl",
-        "error_filename": "error.log",
-        "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
-        "function_filename": "function.pkl",
-        "function_string_filename": "function_string.txt",
-        "id": 152,
-        "is_active": 1,
-        "job_id": 2,
-        "name": ":postprocess:",
-        "parent_lattice_id": 5,
-        "qelectron_data_exists": 0,
-        "results_filename": "results.pkl",
-        "started_at": "2023-08-10 10:08:55.843982",
-        "status": "COMPLETED",
-        "stderr_filename": "stderr.log",
-        "stdout_filename": "stdout.log",
-        "storage_path": "/home/arunmukesh/.local/share/covalent/data/e8fd09c9-1406-4686-9e77-c8d4d64a76ee/node_1",
-        "storage_type": "local",
-        "transport_graph_node_id": 1,
-        "type": "function",
-        "updated_at": "2023-08-10 10:08:55.906001",
-        "value_filename": "value.pkl"
+        "qelectron_data_exists": false
     },
     {
         "call_after_filename": "call_after.pkl",
@@ -4405,6 +4376,35 @@
         "transport_graph_node_id": 0,
         "type": "function",
         "updated_at": "2023-08-10 10:08:55.825643",
+        "value_filename": "value.pkl"
+    },
+    {
+        "call_after_filename": "call_after.pkl",
+        "call_before_filename": "call_before.pkl",
+        "completed_at": "2023-08-10 10:08:55.902257",
+        "created_at": "2023-08-10 10:08:55.403522",
+        "deps_filename": "deps.pkl",
+        "error_filename": "error.log",
+        "executor": "dask",
+        "executor_data_filename": "executor_data.pkl",
+        "function_filename": "function.pkl",
+        "function_string_filename": "function_string.txt",
+        "id": 152,
+        "is_active": 1,
+        "job_id": 2,
+        "name": ":postprocess:",
+        "parent_lattice_id": 5,
+        "qelectron_data_exists": 0,
+        "results_filename": "results.pkl",
+        "started_at": "2023-08-10 10:08:55.843982",
+        "status": "COMPLETED",
+        "stderr_filename": "stderr.log",
+        "stdout_filename": "stdout.log",
+        "storage_path": "/home/arunmukesh/.local/share/covalent/data/e8fd09c9-1406-4686-9e77-c8d4d64a76ee/node_1",
+        "storage_type": "local",
+        "transport_graph_node_id": 1,
+        "type": "function",
+        "updated_at": "2023-08-10 10:08:55.906001",
         "value_filename": "value.pkl"
     }
 ]
