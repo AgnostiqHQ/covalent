@@ -18,13 +18,15 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import warnings
+"""
+Define the custom Pennylane device that interacts with Covalent's Quantum Executors.
+"""
+
 from typing import Sequence
 
 import numpy as np
 from pennylane import QubitDevice
 from pennylane.devices.default_qubit import DefaultQubit
-from pennylane.gradients import finite_diff, param_shift, spsa_grad
 
 from ..quantum.qclient.core import middleware
 
@@ -32,7 +34,10 @@ from ..quantum.qclient.core import middleware
 class QEDevice(QubitDevice):
 
     """
-    Custom Pennylane device that batch executes circuits by submitting them to the middleware
+    The purpose of this device is to redirect circuit execution through Covalent's
+    Quantum Executors and to enable asynchronous execution.
+
+    All QElectrons (which are QNodes) implicitly use this device.
     """
 
     name = "QEDevice"
@@ -43,12 +48,6 @@ class QEDevice(QubitDevice):
 
     operations = DefaultQubit.operations
     observables = DefaultQubit.observables
-
-    _supported_diff_methods = {
-        "parameter-shift": param_shift,
-        "finite-diff": finite_diff,
-        "spsa": spsa_grad,
-    }
 
     def __init__(
         self,
@@ -94,101 +93,6 @@ class QEDevice(QubitDevice):
         results = middleware.get_results(batch_id)
 
         return results
-
-    def gradients(self, circuits, **kwargs):  # pylint: disable=arguments-differ
-
-        # Try same `diff_method` as original QNode.
-        diff_method = self.qnode_specs.diff_method
-
-        # Obtain gradient transform e.g.`qml.gradients.param_shift`.
-        grad_transform = self._get_gradient_transform(diff_method)
-
-        # Obtain gradient tapes and processing functions.
-        grad_tapes_tuple, processing_fns = zip(
-            *(grad_transform(circuit, **kwargs) for circuit in circuits)
-        )
-
-        # Flatten the list of gradient tapes.
-        nonempty_grad_tapes_list = []
-        for grad_tapes in grad_tapes_tuple:
-            nonempty_grad_tapes_list.extend(grad_tapes)
-
-        # No gradients to compute.
-        if not nonempty_grad_tapes_list:
-            return []
-
-        # Submit gradient circuits to middleware.
-        nonempty_grad_res = self.batch_execute(nonempty_grad_tapes_list)
-
-        # Unpack the nonempty gradient result into the expected shape.
-        grad_res = self._unpack_gradient_result(nonempty_grad_res, grad_tapes_tuple)
-
-        # Compute parameter-shift jacobians.
-        jacs = [fn(r) for r, fn in zip(grad_res, processing_fns)]
-
-        # Permute shape of Jacobians in case of batch inputs.
-        if any(c.batch_size for c in circuits):
-            jacs = self._reshape_batch(jacs)
-
-        return jacs
-
-    def _reshape_batch(self, jacs):
-        """
-        Reshape the list of Jacobians to match the interface.
-        """
-        interface = self.qnode_specs.interface
-
-        if interface == "torch":
-            return [tuple(np.einsum('ijk->jik', jacs))]
-
-        if interface == "tf":
-            raise NotImplementedError("tf jacobian on batches is not yet.")
-
-        if interface == "jax":
-            raise NotImplementedError("jax jacobian on batches is not yet.")
-
-        # autograd
-        return jacs
-
-    def _get_gradient_transform(self, diff_method):
-        """
-        Select from the supported gradient transforms. Return a default (supported)
-        transform if the provided `diff_method` is not supported.
-        """
-        if gradient_transform := self._supported_diff_methods.get(diff_method):
-            return gradient_transform
-
-        default_gradient_transform = finite_diff
-        if diff_method == "best":
-            return default_gradient_transform
-
-        warnings.warn(
-            f"QElectrons do not currently support the diff method '{diff_method}'. "
-            f"Using gradient transform `{default_gradient_transform.__name__}` instead."
-        )
-        return default_gradient_transform
-
-    def _unpack_gradient_result(self, nonzero_grads, grad_tapes_tuple):
-        """
-        Unpack the gradient tapes' execution results into a list containing arrays
-        and lists of arrays. Insert zero-arrays for empty gradient tapes.
-        """
-        grad_res = []
-        zero_arr = self._asarray(0.)
-        nonempty_idx = 0
-        for grad_tapes in grad_tapes_tuple:
-            if not grad_tapes:
-                grad_res.append(zero_arr)
-            else:
-                sub_res = []
-                for _ in grad_tapes:
-                    sub_res.append(nonzero_grads[nonempty_idx])
-                    nonempty_idx += 1
-
-                sub_res = sub_res[0] if len(sub_res) == 1 else sub_res
-                grad_res.append(sub_res)
-
-        return grad_res
 
     def apply(self, *args, **kwargs):
         # Dummy implementation of abstractmethod on `QubitDevice`
