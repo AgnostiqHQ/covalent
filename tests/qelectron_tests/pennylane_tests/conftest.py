@@ -21,14 +21,15 @@
 # pylint: disable=no-member
 # pylint: disable=missing-function-docstring
 # pylint: disable=invalid-name
-# pylint: disable=redefined-outer-name
 
 """
 Configuration that enables easy adoption of Pennylane tests to QElectrons.
 
 NOTE: ONLY USE this configuration file with Pennylane tests.
 """
+
 import inspect
+import re
 from typing import List
 from unittest.mock import patch
 
@@ -54,6 +55,7 @@ SKIP_DEVICES = [
 # XFAIL NOTES LEGEND
 # (1) configuration issue; test passes manually
 # (2) incompatible; requires manual test
+# (3) not yet determined
 # -----------------
 XFAIL_TEST_NAMES = [
     # "test_array_multiple"  # NOTE: produces array with inhomogeneous shape
@@ -73,6 +75,40 @@ XFAIL_TEST_NAMES = [
     # incompatible test, needs manual equivalent
     "test_qnode::test_diff_method",
     "test_qnode::test_jacobian",
+
+    # Case 3 #
+    "TestHamiltonian::test_hamiltonian_iadd",
+    "TestHamiltonian::test_hamiltonian_imul",
+    "TestHamiltonian::test_hamiltonian_isub",
+]
+
+XFAIL_TEST_NAMES_CONDITIONAL = {
+
+    # NOTE: mocker.spy(qml.QubitDevice, "probability") working incorrectly for Braket executor.
+    "test_numerical_analytic_diff_agree": lambda item: (
+        item.callspec.params.get('get_executors') is _init_LocalBraketQubitExecutor or
+        item.callspec.params.get('get_executors') is _init_LocalBraketQubitExecutor_cluster
+    ),
+
+    "test_lightning_qubit.py::test_integration": lambda item: (
+        item.callspec.params.get('get_executors') is _init_QiskitExecutor_local_sampler or
+        item.callspec.params.get('get_executors') is _init_QiskitExecutor_local_sampler_cluster
+    ),
+
+}
+
+SKIP_FOR_RUN_LATER = [
+    # NOTE: calls qml.jacobian(qe_circuit.run_later(input).result())
+    "test_numerical_analytic_diff_agree",
+
+    # Similar to previous.
+    "test_hamiltonian.py::TestHamiltonianDifferentiation::test_trainable_coeffs_paramshift",
+    "test_hamiltonian.py::TestHamiltonianDifferentiation::test_nontrainable_coeffs_paramshift",
+    "test_hamiltonian.py::TestHamiltonianDifferentiation::test_trainable_coeffs_autograd",
+    "test_hamiltonian.py::TestHamiltonianDifferentiation::test_nontrainable_coeffs_autograd",
+    "test_hamiltonian.py::TestHamiltonianDifferentiation::test_trainable_coeffs_jax",
+    "test_lightning_qubit.py::test_integration",
+    "test_iqp_emb.py::TestInterfaces::test_jax",
 ]
 
 
@@ -111,14 +147,22 @@ def _check_device_type(executors, device):
         if not (simulator_in_execs and device.short_name == "default.gaussian"):
             pytest.skip(f"QElectrons do not support the '{device.short_name}' device.")
 
+    # Simulator
     if any(hasattr(ex.shots, "__len__") and ex.name != "Simulator" for ex in executors):
         pytest.skip("Only the Simulator QExecutor currently supports shot vectors.")
 
-
-    # Simulator
     if any(isinstance(ex, ct.executor.Simulator) for ex in executors):
         if device.short_name not in SIMULATOR_DEVICES:
             pytest.skip(f"Simulator does not support the '{device.short_name}' device.")
+
+
+def _check_qnode(qnode):
+    """
+    Checks whether QNode settings are supported by QElectrons.
+    """
+    # General
+    if qnode.diff_method in {"backprop", "adjoint"}:
+        pytest.skip(f"QElectron devices don't support the '{qnode.diff_method}' diff method.")
 
 
 # UTILITIES
@@ -190,6 +234,7 @@ def _get_wrapped_QNode(use_run_later, get_executors):  # pylint: disable=invalid
             shots = get_original_shots(qnode.device)
             executors = get_executors(shots=shots)
 
+            _check_qnode(self)
             _check_return_type(executors, qnode.func)
             _check_device_type(executors, qnode.device)
 
@@ -207,48 +252,17 @@ def _get_wrapped_QNode(use_run_later, get_executors):  # pylint: disable=invalid
     return _PatchedQNode
 
 
-# SKIP SETTINGS
-# ------------------------------------------------------------------------------
-
-SKIP_RETURN_TYPES = [
-    "qml.apply",
-    "qml.vn_entropy",
-    "qml.mutual_info"
-]
-
-SKIP_DEVICES = [
-    "default.qutrit",
-    "default.mixed",
-]
-
-SKIP_FOR_RUN_LATER = [
-    # NOTE: calls qml.jacobian(qe_circuit.run_later(input).result())
-    "test_numerical_analytic_diff_agree",
-]
-
-XFAIL_TEST_NAMES = [
-    "test_array_multiple"  # NOTE: produces array with inhomogeneous shape
-]
-
-XFAIL_TEST_NAMES_CONDITIONAL = {
-
-    # NOTE: mocker.spy(qml.QubitDevice, "probability") working incorrectly for Braket executor.
-    "test_numerical_analytic_diff_agree": lambda item: (
-        item.callspec.params.get('get_executors') is _init_LocalBraketQubitExecutor or
-        item.callspec.params.get('get_executors') is _init_LocalBraketQubitExecutor_cluster
-    ),
-
-}
-
-
 # TEST UTILITIES
 # ------------------------------------------------------------------------------
 
-def _get_test_name(nodeid: str):
+def _get_test_name(item: str):
     """
     Returns the name of a test.
     """
-    return nodeid.split("::")[-1].split("[")[0]
+    return (
+        re.findall(r"(test_[\w|\d]+.py::test_.*)\[", item.nodeid) or
+        re.findall(r"(test_[\w|\d]+.py::Test_.*)\[", item.nodeid)
+    ).pop()
 
 
 # HOOKS
@@ -276,11 +290,9 @@ def pytest_collection_modifyitems(config: pytest.Config, items: List[pytest.Item
 
         # XFail tests expected to fail in certain conditions.
         if any(name in item.nodeid for name in XFAIL_TEST_NAMES_CONDITIONAL):
-            condition = XFAIL_TEST_NAMES_CONDITIONAL[_get_test_name(item.nodeid)]
+            condition = XFAIL_TEST_NAMES_CONDITIONAL[_get_test_name(item)]
             if condition(item):
-                item.add_marker(
-                    pytest.mark.xfail(reason="XFailing test also failed by normal QNode.")
-                )
+                item.add_marker(pytest.mark.xfail(reason="XFailing conditional case."))
 
 
 # FIXTURES
