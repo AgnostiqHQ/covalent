@@ -43,6 +43,7 @@ class QNodeFutureResult:
     def __init__(
         self,
         batch_id: str,
+        interface: str,
         original_qnode: qml.QNode,
         original_tape: QuantumTape,
     ):
@@ -54,6 +55,7 @@ class QNodeFutureResult:
                 the middleware.
         """
         self.batch_id = batch_id
+        self.interface = interface  # NOT the original QNode's interface
 
         # Required for batch_transforms and correct output typing.
         self.device = original_qnode.device
@@ -86,11 +88,25 @@ class QNodeFutureResult:
             # Get raw results from the middleware.
             results = middleware.get_results(self.batch_id)
 
-            self._result = re_execute(
-                self.args, self.kwargs,
-                results=results,
-                qnode=self.qnode,
-                tape=self.tape,
-            )
+            # Required correct gradient post-processing in some cases.
+            if self.interface != "numpy":
+                interface = self.interface  # re-execute with any non-numpy interface
+                res = results[0]  # re-execute with this result
+
+            elif self.qnode.interface is None:
+                interface = None
+                res = results[0]
+
+            elif self.qnode.interface == "auto":
+                interface = "auto"
+                res = results
+
+            else:
+                # Skip re-execution.
+                self._result = results
+                return results
+
+            args, kwargs = self.args, self.kwargs
+            self._result = re_execute(res, self.qnode, self.tape)(interface, *args, **kwargs)
 
         return self._result

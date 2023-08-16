@@ -110,28 +110,46 @@ class QNodeQE(qml.QNode):
             self(*args, **kwargs)
             batch_id = self.device._batch_id
 
-        return QNodeFutureResult(batch_id, self.original_qnode, self.tape)(*args, **kwargs)
+        future_result = QNodeFutureResult(
+            batch_id,
+            interface=self.device.qnode_specs.interface,
+            original_qnode=self.original_qnode,
+            original_tape=self.tape
+        )
+
+        return future_result(*args, **kwargs)
 
     def __call__(self, *args, **kwargs):
+        """
+        Call QElectrons with args and kwargs suitable for the original QNode.
+        """
 
         self.device.qnode_specs = self._specs(*args, **kwargs)
+
+        # This leads to execution on the QEDevice `self.device`.
         retval = super().__call__(*args, **kwargs)
+        self._update_num_executions()
 
-        # Increment number of executions on original and custom device.
-        self.device._num_executions += 1
-        self.original_qnode.device._num_executions += 1
+        if self.device._async_run:
+            # Do nothing during call from `run_later()`.
+            return None
 
-        if self.device.qnode_specs.interface not in {"autograd", "numpy"}:
-            # Required correct gradient post-processing in some cases.
-            # Fixes batched gradients for interface='torch'.
-            retval = re_execute(
-                args, kwargs,
-                results=retval,
-                qnode=self.original_qnode,
-                tape=self.tape,
-            )
+        # Skip re-execution for numpy interface.
+        interface = self.device.qnode_specs.interface
+        if interface in {"numpy", "autograd"}:
+            return retval
+
+        # Run through an overloaded circuit/device to loop `retval` into interfaces.
+        retval = re_execute(retval, self.original_qnode, self.tape)(interface, *args, **kwargs)
 
         return retval
+
+    def _update_num_executions(self):
+        """
+        Increment number of executions on original and custom device.
+        """
+        self.device._num_executions += 1
+        self.original_qnode.device._num_executions += 1
 
     def _specs(self, *args, **kwargs) -> QNodeSpecs:
         """
