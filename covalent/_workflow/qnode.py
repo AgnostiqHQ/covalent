@@ -29,6 +29,7 @@ import pennylane as qml
 
 from .._results_manager.qresult import QNodeFutureResult
 from .._shared_files.qinfo import QElectronInfo, QNodeSpecs
+from .._shared_files.qresult_utils import re_execute
 from .._shared_files.utils import get_original_shots
 from ..executor.qbase import BaseQExecutor
 from .qdevice import QEDevice
@@ -82,7 +83,6 @@ class QNodeQE(qml.QNode):
             max_expansion=qnode.max_expansion,
         )
 
-
     @contextmanager
     def mark_call_async(self):
         """
@@ -121,6 +121,16 @@ class QNodeQE(qml.QNode):
         self.device._num_executions += 1
         self.original_qnode.device._num_executions += 1
 
+        if self.device.qnode_specs.interface not in {"autograd", "numpy"}:
+            # Required correct gradient post-processing in some cases.
+            # Fixes batched gradients for interface='torch'.
+            retval = re_execute(
+                args, kwargs,
+                results=retval,
+                qnode=self.original_qnode,
+                tape=self.tape,
+            )
+
         return retval
 
     def _specs(self, *args, **kwargs) -> QNodeSpecs:
@@ -141,12 +151,12 @@ class QNodeQE(qml.QNode):
                 specs = QNodeSpecs(**qml.specs(self)(*args, **kwargs))
 
             # Replace override value with actual `gradient_fn`.
+            self.construct(args, kwargs)
             specs.gradient_fn = self.gradient_fn
 
-        if specs.interface == "auto":
-            # This will be done inside QNode.__call__() to update `self.interface`.
-            # Here, we anticipate that change and update the specs as well.
-            specs.interface = qml.math.get_interface(*args, *list(kwargs.values()))
+        # This will be done inside QNode.__call__() to update `self.interface`.
+        # Here, we anticipate that change and update the specs as well.
+        specs.interface = qml.math.get_interface(*args, *list(kwargs.values()))
 
         return specs
 
@@ -167,8 +177,7 @@ class QNodeQE(qml.QNode):
     @property
     def gradient_fn(self):
         """
-        This property replaces the `qml.QNode.gradient_fn` attribute and 
-        enables overriding it.
+        This property replaces the `qml.QNode.gradient_fn` attribute and enables overriding it.
         """
         return self._gradient_fn
 

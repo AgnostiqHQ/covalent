@@ -23,7 +23,7 @@ from typing import Any
 import pennylane as qml
 from pennylane.tape import QuantumTape
 
-from covalent._shared_files.utils import get_original_shots
+from covalent._shared_files.qresult_utils import re_execute
 
 from ..quantum.qclient.core import middleware
 
@@ -57,20 +57,19 @@ class QNodeFutureResult:
 
         # Required for batch_transforms and correct output typing.
         self.device = original_qnode.device
-        self.interface = original_qnode.interface
-        self.diff_method = original_qnode.diff_method
+        self.qnode = original_qnode
         self.tape = original_tape
 
-        self._original_args = None
-        self._original_kwargs = None
+        self.args = None
+        self.kwargs = None
         self._result = None
 
     def __call__(self, *args, **kwargs):
         """
         Store the arguments and keyword arguments of the original QNode call.
         """
-        self._original_args = args
-        self._original_kwargs = kwargs
+        self.args = args
+        self.kwargs = kwargs
         return self
 
     def result(self) -> Any:
@@ -87,53 +86,11 @@ class QNodeFutureResult:
             # Get raw results from the middleware.
             results = middleware.get_results(self.batch_id)
 
-            # Create a device from the original QNode's device class for correct typing.
-            dev = _run_later_device_factory(results, self.device, self.tape)
-
-            # Define a dummy circuit that returns the original QNode's return value.
-            @qml.qnode(dev, interface=self.interface, diff_method=self.diff_method)
-            def _dummy_circuit(*_, **__):
-                return self.tape._qfunc_output  # pylint: disable=protected-access
-
-            self._result = _dummy_circuit(*self._original_args, **self._original_kwargs)
+            self._result = re_execute(
+                self.args, self.kwargs,
+                results=results,
+                qnode=self.qnode,
+                tape=self.tape,
+            )
 
         return self._result
-
-
-def _run_later_device_factory(
-    results: Any,
-    original_device: qml.Device,
-    original_tape: QuantumTape,
-) -> qml.Device:
-    """
-    Returns an instance of a new class that inherits from the original QNode's
-    device class. Inheriting ensures the correct return type, while overriding
-    `batch_execute` returns the expected `results` without actually running circuits.
-    """
-
-    qml_device_cls = type(original_device)
-
-    class _RunLaterDevice(qml_device_cls):
-        # pylint: disable=too-few-public-methods
-
-        def batch_execute(self, circuits):
-            """
-            Override to return expected result.
-            """
-            if len(circuits) > 1 or len(results) > 1:
-                return [[r] for r in results]
-            return results
-
-        def batch_transform(self, _):
-            """
-            Ignore blank circuit and run batch transform on original tape.
-            """
-            return original_device.batch_transform(original_tape)
-
-    wires = original_device.num_wires
-    dev = _RunLaterDevice(wires=wires, shots=1)
-
-    # Use the `shots` property setter on `qml.Device` to set the shots or shot vector.
-    dev.shots = get_original_shots(original_device)
-
-    return dev
