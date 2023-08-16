@@ -25,10 +25,11 @@ Quantum Server Implementation: Handles the async execution of quantum circuits.
 import datetime
 import uuid
 from asyncio import Task
-from typing import TYPE_CHECKING, Callable, List, Tuple
+from typing import Callable, List, Tuple
 
 from pennylane.tape import QuantumScript
 
+from ..._shared_files.qinfo import QElectronInfo, QNodeSpecs
 from ..._shared_files.utils import (
     cloudpickle_deserialize,
     cloudpickle_serialize,
@@ -38,10 +39,6 @@ from ...executor.utils import get_context
 from ..qcluster.base import AsyncBaseQCluster, BaseQExecutor
 from .database import Database
 from .utils import CircuitInfo, get_cached_executor, get_circuit_id
-
-if TYPE_CHECKING:
-    from ..._workflow.qelectron import QElectronInfo
-    from ..._workflow.qnode import QNodeSpecs
 
 
 class FuturesTable:
@@ -104,7 +101,12 @@ class QServer:
         """Return the database for reading."""
         return self.serialize(self._database)
 
-    def select_executors(self, qscripts: List[QuantumScript], executors: List[BaseQExecutor]):
+    def select_executors(
+        self,
+        qscripts: List[QuantumScript],
+        executors: List[BaseQExecutor],
+        qnode_specs: QNodeSpecs,
+    ):
         """
         Links qscripts with an executor
         based on the self.selector function
@@ -126,11 +128,13 @@ class QServer:
                 # Use cached executor.
                 selected_executor = get_cached_executor(**selected_executor.dict())
 
-            linked_executors.append(selected_executor)
+            # This is the only place where the qnode_specs are set.
+            selected_executor.qnode_specs = qnode_specs.copy()
 
-        # An example `linked_executors` will look like:
-        # [exec_4, exec_4, exec_2, exec_3]
-        # Their indices corresponding to the indices of `qscripts`.
+            # An example `linked_executors` will look like:
+            # [exec_4, exec_4, exec_2, exec_3]
+            # Their indices corresponding to the indices of `qscripts`.
+            linked_executors.append(selected_executor)
 
         return linked_executors
 
@@ -138,7 +142,7 @@ class QServer:
         self,
         qscripts: List[QuantumScript],
         linked_executors: List[BaseQExecutor],
-        qelectron_info: "QElectronInfo",
+        qelectron_info: QElectronInfo,
     ):
         """
         Generates futures for scheduled execution
@@ -202,8 +206,8 @@ class QServer:
         self,
         qscripts: List[QuantumScript],
         executors: List[BaseQExecutor],
-        qelectron_info: "QElectronInfo",
-        qnode_specs: "QNodeSpecs"
+        qelectron_info: QElectronInfo,
+        qnode_specs: QNodeSpecs,
     ):
         # pylint: disable=too-many-locals
         """
@@ -234,7 +238,7 @@ class QServer:
         # - reenable once `orjson` or other serialization method is used
 
         # Generate a list of executors for each qscript.
-        linked_executors = self.select_executors(qscripts, executors)
+        linked_executors = self.select_executors(qscripts, executors, qnode_specs)
 
         # Assign qscript sub-batches to unique executors.
         executor_future_pairs, submission_order = self.submit_to_executors(
