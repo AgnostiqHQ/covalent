@@ -107,6 +107,9 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, ele
 
   useEffect(() => {
     setDefaultId('');
+    if (openQelectronDrawer) {
+      setExpanded(true);
+    }
     if (!(electronId === null || electronId === undefined) && openQelectronDrawer) {
       const bodyParams = {
         sort_by: 'start_time',
@@ -189,7 +192,7 @@ const QElectronDrawer = ({ toggleQelectron, openQelectronDrawer, dispatchId, ele
               details={details}
               toggleQelectron={toggleQelectron}
             />
-            <QElelctronAccordion expanded={expanded} setExpanded={setExpanded} overviewData={overviewData} />
+            <QElelctronAccordion expanded={expanded} setExpanded={setExpanded} overviewData={overviewData} openQelectronDrawer={openQelectronDrawer} />
             <QElectronList expanded={expanded}
               data={listData}
               rowClick={rowClickHandler}

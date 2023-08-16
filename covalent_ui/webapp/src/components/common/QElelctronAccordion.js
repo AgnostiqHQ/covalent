@@ -32,8 +32,12 @@ import Circuit from '../qelectron/Circuit'
 import Executor from '../qelectron/Executor'
 
 const QElelctronAccordion = (props) => {
-  const { expanded, setExpanded, overviewData } = props
+  const { expanded, setExpanded, overviewData, openQelectronDrawer } = props
   const [value, setValue] = React.useState('1')
+
+  React.useEffect(() => {
+    if (openQelectronDrawer) setValue('1')
+  }, [openQelectronDrawer]);
 
   const handleAccordChange = () => {
     setExpanded(!expanded)
