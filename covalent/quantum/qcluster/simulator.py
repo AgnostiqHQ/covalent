@@ -96,6 +96,7 @@ class Simulator(BaseQExecutor):
         # Pass on server-set settings from original device.
         updates = {"device_name": device, "device_shots": self.override_shots}
         self._backend.qelectron_info = self.qelectron_info.copy(update=updates)
+        self._backend.qnode_specs = self.qnode_specs.copy()
 
         return self._backend.batch_submit(qscripts_list)
 
