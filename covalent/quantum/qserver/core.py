@@ -232,11 +232,6 @@ class QServer:
         qscripts = self.deserialize(qscripts)
         executors = self.deserialize(executors)
 
-        # Reconstruct executors using cashed objects
-        # TODO:
-        # - this is disabled so `cloudpickle` can be used throughout
-        # - reenable once `orjson` or other serialization method is used
-
         # Generate a list of executors for each qscript.
         linked_executors = self.select_executors(qscripts, executors, qnode_specs)
 
@@ -352,7 +347,8 @@ class QServer:
                     qscript_number = submission_order[qscript_submission_index]
 
                     # Use tuple of integers for key to enable later multi-factor sort.
-                    results_dict[(qscript_number, circuit_number, result_number)] = sub_result_obj.results[0]
+                    key = (qscript_number, circuit_number, result_number)
+                    results_dict[key] = sub_result_obj.results[0]
                     qscript_submission_index += 1
 
                     # To store the results in the database
