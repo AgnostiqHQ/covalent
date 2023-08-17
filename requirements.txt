@@ -10,7 +10,7 @@ lmdbm==0.0.5
 mpire==2.7.1
 networkx>=2.8.6
 orjson==3.8.10
-pennylane==0.30.0
+pennylane==0.31.1
 psutil>=5.9.0
 pydantic>=1.10.1, <2.0.0
 python-socketio>=5.7.1
