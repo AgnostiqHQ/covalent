@@ -23,12 +23,43 @@
 """Hopefully temporary custom tools to handle pickling and/or un-pickling."""
 
 from contextlib import contextmanager
-from typing import Callable
+from typing import Any, Callable, Tuple
 
 from pennylane.ops.qubit.observables import Projector
 
+_PENNYLANE_METHOD_OVERRIDES = (
+    # class, method_name, method_func
+    (Projector, "__reduce__", lambda self: (Projector, (self.data[0], self.wires))),
+)
 
-def _apply_method_overrides(overrides) -> Callable:
+
+def _qml_mods_pickle(func: Callable) -> Callable:
+    """
+    A decorator that applies overrides to select PennyLane objects, making them
+    pickleable and/or un-pickleable in the local scope.
+    """
+    def _wrapper(*args, **kwargs):
+        with _method_overrides(_PENNYLANE_METHOD_OVERRIDES):
+            return func(*args, **kwargs)
+
+    return _wrapper
+
+
+@contextmanager
+def _method_overrides(overrides: Tuple[Any, str, Callable]) -> None:
+    """
+    Creates a context where all `overrides` are applied on entry and un-applied on exit.
+    """
+
+    unapply_overrides = None
+    try:
+        unapply_overrides = _apply_method_overrides(overrides)
+        yield
+    finally:
+        unapply_overrides()
+
+
+def _apply_method_overrides(overrides: Tuple[Any, str, Callable]) -> Callable:
     """
     This function is called by the `_method_overrides()` context manager.
 
@@ -62,35 +93,3 @@ def _apply_method_overrides(overrides) -> Callable:
                 setattr(cls, attr[0], attr[1])
 
     return _unapply_overrides
-
-
-@contextmanager
-def _method_overrides(overrides):
-    """
-    Creates a context where all `overrides` are applied on entry and un-applied on exit.
-    """
-
-    unapply_overrides = None
-    try:
-        unapply_overrides = _apply_method_overrides(overrides)
-        yield
-    finally:
-        unapply_overrides()
-
-
-_PENNYLANE_METHOD_OVERRIDES = (
-    # class, method_name, method_func
-    (Projector, "__reduce__", lambda self: (Projector, (self.data[0], self.wires))),
-)
-
-
-def _qml_mods_pickle(func):
-    """
-    A decorator that applies overrides to select PennyLane objects, making them
-    pickleable and/or un-pickleable in the local scope.
-    """
-    def _wrapper(*args, **kwargs):
-        with _method_overrides(_PENNYLANE_METHOD_OVERRIDES):
-            return func(*args, **kwargs)
-
-    return _wrapper
