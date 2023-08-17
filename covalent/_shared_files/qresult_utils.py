@@ -149,7 +149,7 @@ def _override_capabilities(
     """
     Implements interface-based conditional overrides for device capabilities.
     """
-    if interface in {"numpy", "autograd"}:
+    if interface in {"auto", "numpy", "autograd"}:
         # No override necessary.
         return default_capabilities
 
@@ -181,7 +181,7 @@ def _reshape_for_interface(
     expected shape or type requirements in Pennylane's execution pipeline.
     """
 
-    if interface in {"numpy", "autograd"}:
+    if interface in {"auto", "numpy", "autograd"}:
 
         # More than one circuit and more than one result.
         if len(circuits) > 1 and hasattr(results, "__len__") and len(results) > 1:
