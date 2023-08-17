@@ -81,7 +81,6 @@ def shell_device_factory(
     Returns an instance of a new class that inherits from the original QNode's device class.
     """
 
-    # interface = interface or qml.math.get_interface(results)
     default_capabilities = QEDevice.capabilities().copy()
 
     # Conditional override of the device's capabilities to accommodate interface.
