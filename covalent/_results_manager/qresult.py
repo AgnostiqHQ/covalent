@@ -89,6 +89,10 @@ class QNodeFutureResult:
             results = middleware.get_results(self.batch_id)
 
             # Required correct gradient post-processing in some cases.
+            if self.interface == "autograd":
+                self._result = results
+                res = results[0]
+
             if self.interface != "numpy":
                 interface = self.interface  # re-execute with any non-numpy interface
                 res = results[0]  # re-execute with this result

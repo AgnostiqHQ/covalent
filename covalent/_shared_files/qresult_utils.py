@@ -81,7 +81,7 @@ def shell_device_factory(
     Returns an instance of a new class that inherits from the original QNode's device class.
     """
 
-    interface = interface or qml.math.get_interface(results)
+    # interface = interface or qml.math.get_interface(results)
     default_capabilities = QEDevice.capabilities().copy()
 
     # Conditional override of the device's capabilities to accommodate interface.
@@ -149,7 +149,7 @@ def _override_capabilities(
     """
     Implements interface-based conditional overrides for device capabilities.
     """
-    if interface in {"auto", "numpy", "autograd"}:
+    if interface in {None, "auto", "numpy", "autograd"}:
         # No override necessary.
         return default_capabilities
 
@@ -160,6 +160,7 @@ def _override_capabilities(
                 'model': 'qubit',
                 'passthru_interface': 'torch',
             }
+        return default_capabilities
 
     if interface == "jax":
         return {
@@ -181,7 +182,7 @@ def _reshape_for_interface(
     expected shape or type requirements in Pennylane's execution pipeline.
     """
 
-    if interface in {"auto", "numpy", "autograd"}:
+    if interface in {"auto", "numpy"}:
 
         # More than one circuit and more than one result.
         if len(circuits) > 1 and hasattr(results, "__len__") and len(results) > 1:
@@ -194,7 +195,7 @@ def _reshape_for_interface(
         # No reshaping required.
         return results
 
-    if interface in {"torch", "jax"}:
+    if interface in {None, "autograd", "torch", "jax"}:
         # Ensure result is a list.
         if isinstance(results, list):
             return results
