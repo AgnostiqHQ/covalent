@@ -24,8 +24,8 @@ Define the custom Pennylane device that interacts with Covalent's Quantum Execut
 
 from typing import Sequence
 
-import numpy as np
 from pennylane import QubitDevice
+from pennylane import numpy as np
 from pennylane.devices.default_qubit import DefaultQubit
 
 from ..quantum.qclient.core import middleware
