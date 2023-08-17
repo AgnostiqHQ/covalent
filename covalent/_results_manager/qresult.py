@@ -23,8 +23,7 @@ from typing import Any
 import pennylane as qml
 from pennylane.tape import QuantumTape
 
-from covalent._shared_files.qresult_utils import re_execute
-
+from .._shared_files.qresult_utils import re_execute
 from ..quantum.qclient.core import middleware
 
 

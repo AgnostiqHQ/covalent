@@ -26,8 +26,7 @@ from pennylane import transforms
 from pennylane.measurements import ExpectationMP
 from pennylane.tape import QuantumTape
 
-from covalent._workflow.qdevice import QEDevice
-
+from .._workflow.qdevice import QEDevice
 from .utils import get_original_shots
 
 
