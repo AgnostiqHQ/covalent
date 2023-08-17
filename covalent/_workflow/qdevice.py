@@ -71,6 +71,10 @@ class QEDevice(QubitDevice):
         self.qnode_specs = None
 
     def batch_execute(self, circuits):
+        """
+        Submits circuits to QElectron middleware for execution on chosen backend(s).
+        Retrieves and returns results, or returns a dummy result if running asynchronously.
+        """
 
         # Async submit all circuits to middleware.
         batch_id = middleware.run_circuits_async(
