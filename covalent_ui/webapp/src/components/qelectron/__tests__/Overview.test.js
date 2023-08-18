@@ -1,5 +1,5 @@
 /**
- * Copyright 2021 Agnostiq Inc.
+ * Copyright 2023 Agnostiq Inc.
  *
  * This file is part of Covalent.
  *
@@ -19,36 +19,34 @@
  *
  * Relief from the License may be granted by purchasing a commercial license.
  */
-
 import { screen, render } from '@testing-library/react'
-import App from '../App'
+import App from '../Overview'
 import { BrowserRouter } from 'react-router-dom'
 import React from 'react'
 import { Provider } from 'react-redux'
-import reducers from '../redux/reducers'
+import reducers from '../../../redux/reducers'
 import { configureStore } from '@reduxjs/toolkit'
-import theme from '../utils/theme'
+import theme from '../../../utils/theme'
 import ThemeProvider from '@mui/system/ThemeProvider'
-import DispatchLayout from '../components/dispatch/DispatchLayout'
 
 function reduxRender(renderedComponent) {
-  const store = configureStore({
-    reducer: reducers,
-  })
+    const store = configureStore({
+        reducer: reducers,
+    })
 
-  return render(
-    <Provider store={store}>
-      <ThemeProvider theme={theme}>
-        <BrowserRouter>{renderedComponent}</BrowserRouter>
-      </ThemeProvider>
-    </Provider>
-  )
+    return render(
+        <Provider store={store}>
+            <ThemeProvider theme={theme}>
+                <BrowserRouter>{renderedComponent}</BrowserRouter>
+            </ThemeProvider>
+        </Provider>
+    )
 }
 
-describe('App Page', () => {
-  test('app.js is rendered', () => {
-    reduxRender(<App element={DispatchLayout} />)
-    const linkElement = screen.getByTestId('dashboard')
-    expect(linkElement).toBeInTheDocument()
-  })
+describe('Overview Tab', () => {
+    test('overview tab is rendered', () => {
+        reduxRender(<App />)
+        const linkElement = screen.getByTestId('Overview-grid')
+        expect(linkElement).toBeInTheDocument()
+    })
 })

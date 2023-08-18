@@ -254,7 +254,7 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
   }, [isError]);
 
   useEffect(() => {
-    if (electronId) {
+    if (electronId || electronId === 0) {
       const bodyParams = {
         sort_by: sortColumn,
         direction: sortOrder,
@@ -476,6 +476,7 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
         }),
         background: (theme) => theme.palette.background.qListBg,
       }}
+      data-testid="QelectronList-grid"
     >
       <Box data-testid="logsTable">
         {!isFetching && data && (
@@ -503,7 +504,9 @@ const QElectronList = ({ expanded, data, rowClick, electronId, dispatchId, setEx
               height: expanded ? '36rem' : '51.5rem',
             })
           }}
-            ml={1} >
+            ml={1}
+            data-testid="QelectronList-table"
+          >
 
             {!_.isEmpty(data) && !isFetching &&
               <RTable

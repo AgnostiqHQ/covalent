@@ -113,13 +113,14 @@ def seed(engine):
                     call_before_filename=item["call_before_filename"],
                     call_after_filename=item["call_after_filename"],
                     stderr_filename=item["stderr_filename"],
-                    error_filename=item["info_filename"],
+                    error_filename=item["error_filename"],
                     is_active=item["is_active"],
                     created_at=convert_to_date(item["created_at"]),
                     updated_at=convert_to_date(item["updated_at"]),
                     started_at=convert_to_date(item["started_at"]),
                     completed_at=convert_to_date(item["completed_at"]),
                     job_id=item["job_id"],
+                    qelectron_data_exists=item["qelectron_data_exists"],
                 )
             )
 

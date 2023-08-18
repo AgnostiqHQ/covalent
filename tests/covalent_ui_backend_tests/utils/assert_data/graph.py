@@ -48,6 +48,7 @@ def seed_graph_data():
                                 "type": "function",
                                 "executor_label": "dask",
                                 "sublattice_dispatch_id": None,
+                                "qelectron_data_exists": 0,
                             },
                             {
                                 "id": 2,
@@ -59,6 +60,7 @@ def seed_graph_data():
                                 "type": "function",
                                 "executor_label": "dask",
                                 "sublattice_dispatch_id": None,
+                                "qelectron_data_exists": 0,
                             },
                             {
                                 "id": 3,
@@ -70,6 +72,7 @@ def seed_graph_data():
                                 "type": "parameter",
                                 "executor_label": "dask",
                                 "sublattice_dispatch_id": None,
+                                "qelectron_data_exists": 0,
                             },
                             {
                                 "id": 4,
@@ -81,6 +84,7 @@ def seed_graph_data():
                                 "type": "function",
                                 "executor_label": "dask",
                                 "sublattice_dispatch_id": None,
+                                "qelectron_data_exists": 0,
                             },
                             {
                                 "id": 5,
@@ -92,6 +96,7 @@ def seed_graph_data():
                                 "type": "function",
                                 "executor_label": "dask",
                                 "sublattice_dispatch_id": None,
+                                "qelectron_data_exists": 0,
                             },
                             {
                                 "id": 6,
@@ -103,6 +108,7 @@ def seed_graph_data():
                                 "type": "parameter",
                                 "executor_label": "dask",
                                 "sublattice_dispatch_id": None,
+                                "qelectron_data_exists": 0,
                             },
                         ],
                         "links": [

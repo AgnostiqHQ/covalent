@@ -283,7 +283,6 @@ def test_delete_all():
     )
     assert response.status_code == test_data["status_code"]
     if "response_data" in test_data:
-        print(response.json())
         assert response.json() == test_data["response_data"]
 
 

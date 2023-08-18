@@ -121,6 +121,7 @@ const NodeDrawer = ({
 
   useEffect(() => {
     if (!!node) {
+      setOpenQelectronDrawer(false);
       dispatch(electronDetails({ electronId, dispatchId }))
       dispatch(electronInput({ dispatchId, electronId, params: 'inputs' }))
       dispatch(electronResult({ dispatchId, electronId, params: 'result' }))

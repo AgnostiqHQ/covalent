@@ -52,6 +52,7 @@ const QElectronCard = (props) => {
           backgroundColor: (theme) => theme.palette.background.coveBlack02,
         },
       }}
+      data-testid="QelectronCard-grid"
     >
       <Grid
         item
