@@ -84,7 +84,7 @@ def seed_summary_data():
                             "started_at": "2022-09-23T10:01:11.155428",
                             "ended_at": "2022-09-23T10:01:11.717064",
                             "status": "COMPLETED",
-                            "updated_at": "2022-09-23T10:01:11.72014",
+                            "updated_at": "2022-09-23T10:01:11.720140",
                         },
                     ],
                     "total_count": 2,
@@ -111,7 +111,7 @@ def seed_summary_data():
                             "started_at": "2022-09-23T10:01:11.155428",
                             "ended_at": "2022-09-23T10:01:11.717064",
                             "status": "COMPLETED",
-                            "updated_at": "2022-09-23T10:01:11.72014",
+                            "updated_at": "2022-09-23T10:01:11.720140",
                         }
                     ],
                     "total_count": 2,
