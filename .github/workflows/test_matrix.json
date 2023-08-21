@@ -384,7 +384,8 @@
     "experimental": false,
     "trigger": [
       "schedule",
-      "workflow_dispatch"
+      "workflow_dispatch",
+      "pull_request"
     ]
   }
 ]
