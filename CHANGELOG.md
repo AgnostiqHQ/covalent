@@ -9,12 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
+
 - Added Python 3.11 to test suite
+- Respecting node version as specified in `.nvmrc` file for testworkflow
 - Bumped versions in pre-commit config
 - Added prettier for markdown files.
 - Reduce the number of pinned version numbers in the `setup.py`, `requirements.txt`, and `requirements-client.txt`
 - Updated the `wci.yml` file with new features
-- Bumped pre-commit prettier version
+- Bumped pre-commit versions
 
 ### Added
 
@@ -50,9 +52,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed test cases to adapt changes to SQLAlchemy version 1.4.49
 - Ignored remote file transfer how-to functional tests.
 - Skipping a UI backend test for now
+- Fixed `test_decorated_function` test case in functional tests
 
 ### Fixed
 
+- Using `filelock` package now for platform independent file locking of config file. This should fix the failing tests as well as improve compatibility with Windows.
 - When stopping the server, we send the proper `SIGINT` signal to uvicorn instead of `SIGKILL` which allows the second part of the FastAPI `lifespan` to execute properly.
 - Fixed the outstanding incompatibities between front-end data layer and a postgres database
 - Reverted file-lock changes
