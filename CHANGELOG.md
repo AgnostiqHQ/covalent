@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated the `wci.yml` file with new features
 - Bumped pre-commit versions
 - Temporarily running nightly hourly to test whether the fix worked
+- Reverted to daily frequency for nightly
 
 ### Added
 
