@@ -46,7 +46,7 @@ Quantum Executors
 
 Quantum executors are special executors designed for quantum circuits. Together with quantum electrons, they allow quantum circuits to run on various local and/or cloud backends.
 
-.. toctree:: 
+.. toctree::
    :maxdepth: 1
 
    qiskit

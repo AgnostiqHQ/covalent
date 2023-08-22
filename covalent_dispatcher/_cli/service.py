@@ -693,7 +693,7 @@ def purge(ctx, hard: bool, yes: bool, hell_yeah: bool) -> None:
     Purge Covalent from this system
     """
     cm = get_config_manager()
-    
+
     console = Console()
 
     removal_list = {

@@ -2,17 +2,17 @@
 AWS Braket Qubit Executor
 """""""""""""
 
-This quantum executor accesses quantum resources operating under the qubit model as 
+This quantum executor accesses quantum resources operating under the qubit model as
 made available through AWS (:code:`"braket.aws.qubit"`).
 
-It utilizes the Pennylane plugin found `here <https://amazon-braket-pennylane-plugin-python.readthedocs.io/en/latest/>`_. 
+It utilizes the Pennylane plugin found `here <https://amazon-braket-pennylane-plugin-python.readthedocs.io/en/latest/>`_.
 :code:`BraketQubitExecutor` introduces thread-based parallelism for circuit execution on the :code:`"braket.aws.qubit"` device.
 
 ===============
 1. Installation
 ===============
 
-:code:`BraketQubitExecutor` is not included in base Covalent. 
+:code:`BraketQubitExecutor` is not included in base Covalent.
 To use it, you will need to install the Covalent with:
 
 .. code:: console
@@ -25,7 +25,7 @@ and have valid AWS credentials as specified `here <https://boto3.amazonaws.com/v
 2. Usage Example
 ================
 
-Using :code:`BraketQubitExecutor` requires specifying an AWS Quantum backend through the :code:`device_arn` argument. 
+Using :code:`BraketQubitExecutor` requires specifying an AWS Quantum backend through the :code:`device_arn` argument.
 
 .. code:: python
 
@@ -73,8 +73,8 @@ and asynchronously:
     >>> # Wait for all circuits to finish.
     >>> [fut.result() for fut in futs]
 
-    [[array(-0.02), array(0.01)], 
-     [array(0.014), array(-0.022)], 
+    [[array(-0.02), array(0.01)],
+     [array(0.014), array(-0.022)],
      [array(-0.074), array(0.05)]]
 
 ============================

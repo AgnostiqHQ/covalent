@@ -35,7 +35,7 @@ class Simulator(BaseQExecutor):
     or processes.
 
     Keyword Args:
-        device: A valid string corresponding to a Pennylane device. Simulation-based 
+        device: A valid string corresponding to a Pennylane device. Simulation-based
             devices (e.g. "default.qubit" and "lightning.qubit") are recommended.
             Defaults to "default.qubit".
         parallel: The type of parallelism to use. Valid values are "thread" and

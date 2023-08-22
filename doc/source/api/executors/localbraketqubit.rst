@@ -4,14 +4,14 @@ Local Braket Qubit Executor
 
 This quantum executor accesses the local Braket quantum circuit simulator (:code:`"braket.local.qubit"`).
 
-It utilizes the Pennylane plugin found `here <https://amazon-braket-pennylane-plugin-python.readthedocs.io/en/latest/>`_. 
+It utilizes the Pennylane plugin found `here <https://amazon-braket-pennylane-plugin-python.readthedocs.io/en/latest/>`_.
 :code:`LocalBraketQubitExecutor` introduces thread-based parallelism for circuit execution on the :code:`"braket.local.qubit"` device.
 
 ===============
 1. Installation
 ===============
 
-:code:`LocalBraketQubitExecutor` is not included in base Covalent. 
+:code:`LocalBraketQubitExecutor` is not included in base Covalent.
 To use it, you will need to install the Covalent with:
 
 .. code:: console
@@ -22,7 +22,7 @@ To use it, you will need to install the Covalent with:
 2. Usage Example
 ================
 
-Using :code:`LocalBraketQubitExecutor` is simple: 
+Using :code:`LocalBraketQubitExecutor` is simple:
 
 .. code:: python
 
@@ -63,8 +63,8 @@ and asynchronously:
     >>> # Wait for all circuits to finish.
     >>> [fut.result() for fut in futs]
 
-    [[array(-0.02), array(0.01)], 
-     [array(0.014), array(-0.022)], 
+    [[array(-0.02), array(0.01)],
+     [array(0.014), array(-0.022)],
      [array(-0.074), array(0.05)]]
 
 ============================
