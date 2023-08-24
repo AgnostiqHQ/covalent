@@ -36,7 +36,6 @@ class QiskitLocalSampler(QiskitSamplerDevice):
     short_name = "local_sampler"
 
     def __init__(self, wires: int, shots: int, **_):
-
         self.circuit = None
         self.transpile_args = {}
 
@@ -74,7 +73,6 @@ class QiskitLocalSampler(QiskitSamplerDevice):
         self._metadatas = []
 
         for circuit, quasi_dist in zip(circuits, job_result.quasi_dists):
-
             # Process quasi-distribution into expected numerical result
             res = self._process_batch_execute_result(circuit, quasi_dist)
             results.append(res)

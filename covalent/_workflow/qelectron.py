@@ -95,10 +95,7 @@ def qelectron(
     if qnode is None:
         # This only happens when `qelectron()` is not used as a decorator.
         return functools.partial(
-            qelectron,
-            executors=executors,
-            name=name,
-            description=description
+            qelectron, executors=executors, name=name, description=description
         )
 
     # Set default name and description.

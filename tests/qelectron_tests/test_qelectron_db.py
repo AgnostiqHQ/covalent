@@ -71,9 +71,7 @@ def test_db_exposed_in_result():
 
     # Check results.
     for result_dict in result_obj.get_all_node_results():
-
         if (node_name := result_dict["node_name"]) in num_entries:
-
             if node_name == "task_2":
                 # Non-QElectron task should have no qelectron data.
                 assert result_dict["qelectron"] is None

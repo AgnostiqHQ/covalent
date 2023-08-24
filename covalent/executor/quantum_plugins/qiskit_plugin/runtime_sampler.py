@@ -49,7 +49,6 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
         options: dict,
         service_init_kwargs: dict,
     ):
-
         if options:
             _options = extract_options(options)
             _options.execution.shots = shots
@@ -113,7 +112,6 @@ class QiskitRuntimeSampler(QiskitSamplerDevice):
         results = []
         metadatas = []
         for i, circuit in enumerate(self._active_circuits):
-
             # Get broadcasted circuit and active job
             circuit = self._active_circuits[i]
             job = self._active_jobs[i]
@@ -248,7 +246,6 @@ class _PostProcessDevice(QiskitRuntimeSampler):
     """
 
     def __init__(self, wires, results: Any):
-
         super().__init__(
             wires=wires,
             shots=1,
@@ -257,7 +254,7 @@ class _PostProcessDevice(QiskitRuntimeSampler):
             max_time=1,
             single_job=False,
             options={},
-            service_init_kwargs={}
+            service_init_kwargs={},
         )
 
         self._results = results

@@ -75,7 +75,7 @@ def extract_qelectron_db(s: str) -> Tuple[str, bytes]:
     data_pattern = f".*{_QE_DB_DATA_MARKER}(.*){_QE_DB_DATA_MARKER}.*"
     if not s or not (_matches := re.findall(data_pattern, s)):
         app_log.debug("No Qelectron data detected")
-        return s, b''
+        return s, b""
 
     # load qelectron data and convert back to bytes
     app_log.debug("Detected Qelectron output data")

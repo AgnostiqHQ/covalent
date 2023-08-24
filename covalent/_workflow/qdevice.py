@@ -64,7 +64,6 @@ class QEDevice(QubitDevice):
         self.qnode_specs = None
 
     def batch_execute(self, circuits):
-
         # Async submit all circuits to middleware.
         batch_id = middleware.run_circuits_async(
             circuits, self.executors, self.qelectron_info, self.qnode_specs
@@ -116,7 +115,7 @@ class QEDevice(QubitDevice):
         and lists of arrays. Insert zero-arrays for empty gradient tapes.
         """
         grad_res = []
-        zero_arr = self._asarray(0.)
+        zero_arr = self._asarray(0.0)
         nonempty_idx = 0
         for grad_tapes in grad_tapes_tuple:
             if not grad_tapes:

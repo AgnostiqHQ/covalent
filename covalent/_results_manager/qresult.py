@@ -71,7 +71,6 @@ class QNodeFutureResult:
         """
 
         if self._result is None:
-
             # Get raw results from the middleware.
             results = middleware.get_results(self.batch_id)
 

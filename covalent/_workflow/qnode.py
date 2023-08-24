@@ -33,6 +33,7 @@ class QNodeSpecs(BaseModel):
     """
     A container for the specifications of a QNode.
     """
+
     gate_sizes: Dict[str, int]
     gate_types: Dict[str, int]
     num_operations: int
@@ -56,6 +57,7 @@ class QElectronInfo(BaseModel):
     """
     A container for related settings used by the wrapping QElectron.
     """
+
     name: str
     description: str = None
     qnode_device_import_path: str  # used to inherit type converters and other methods
@@ -155,7 +157,6 @@ class QNodeQE(qml.QNode):
         return QNodeFutureResult(batch_id, self.original_qnode, self.tape)
 
     def __call__(self, *args, **kwargs):
-
         self.device.qnode_specs = self._specs(*args, **kwargs)
         with self.override_gradient_fn("device"):
             return super().__call__(*args, **kwargs)
@@ -170,8 +171,8 @@ class QNodeQE(qml.QNode):
             return QNodeSpecs(**qml.specs(self)(*args, **kwargs))
 
         # Some args or some kwargs are trainable. No warning expected.
-        if (
-            any(qml.math.get_trainable_indices(args)) or any(qml.math.get_trainable_indices(kwargs.values()))
+        if any(qml.math.get_trainable_indices(args)) or any(
+            qml.math.get_trainable_indices(kwargs.values())
         ):
             return QNodeSpecs(**qml.specs(self)(*args, **kwargs))
 
@@ -206,7 +207,8 @@ class QNodeQE(qml.QNode):
         `override_gradient_fn`) every second time the property is accessed.
         """
         if (
-            self._override_gradient_fn and self._gradient_access_counter >= self.gradient_access_max
+            self._override_gradient_fn
+            and self._gradient_access_counter >= self.gradient_access_max
         ):
             self.reset_gradient_counter()
             return self._override_gradient_fn

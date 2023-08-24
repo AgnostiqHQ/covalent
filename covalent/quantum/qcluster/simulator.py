@@ -56,9 +56,10 @@ class Simulator(BaseQExecutor):
     _backend: BaseQExecutor = None
 
     def batch_submit(self, qscripts_list):
-
         if self.parallel == "process":
-            self._backend = BaseProcessPoolQExecutor(num_processes=self.workers, device=self.device)
+            self._backend = BaseProcessPoolQExecutor(
+                num_processes=self.workers, device=self.device
+            )
         elif self.parallel == "thread":
             self._backend = BaseThreadPoolQExecutor(num_threads=self.workers, device=self.device)
         else:

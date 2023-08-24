@@ -30,7 +30,6 @@ from ...executor.qbase import AsyncBaseQExecutor, BaseQExecutor, QCResult
 
 
 class AsyncBaseQCluster(AsyncBaseQExecutor):
-
     executors: Sequence[BaseQExecutor]
     selector: Union[str, Callable]
 
@@ -84,11 +83,10 @@ class AsyncBaseQCluster(AsyncBaseQExecutor):
 
 
 class BaseQSelector(ABC, BaseModel):
-
     name: str = "base_qselector"
 
     def __call__(self, qscript, executors):
-        """"
+        """ "
         Interface used by the quantum server.
         """
         return self.selector_function(qscript, executors)

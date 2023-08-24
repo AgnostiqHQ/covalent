@@ -36,7 +36,7 @@ __all__ = [
     "BaseProcessPoolQExecutor",
     "AsyncBaseQExecutor",
     "BaseThreadPoolQExecutor",
-    "AsyncBaseQCluster"
+    "AsyncBaseQCluster",
 ]
 
 
@@ -75,7 +75,6 @@ def get_asyncio_event_loop():
 
 
 class BaseQExecutor(ABC, BaseModel):
-
     persist_data: bool = True
 
     class Config:
@@ -96,7 +95,7 @@ class BaseQExecutor(ABC, BaseModel):
     def batch_get_results(self, futures_list):
         raise NotImplementedError
 
-    def run_circuit(self, qscript, device, result_obj: 'QCResult') -> 'QCResult':
+    def run_circuit(self, qscript, device, result_obj: "QCResult") -> "QCResult":
         start_time = time.perf_counter()
         results = qml.execute([qscript], device, None)
         end_time = time.perf_counter()
@@ -124,18 +123,15 @@ class QCResult(BaseModel):
     execution_time: float = None
     metadata: Dict[str, Any] = Field(default_factory=lambda: {"execution_metadata": []})
 
-    def expand(self) -> List['QCResult']:
+    def expand(self) -> List["QCResult"]:
         """
         Expand result object into a list of result objects, one for each execution.
         """
         result_objs = []
         for i, result in enumerate(self.results):
-
             # Copy other non-execution metadata.
             _result_obj = QCResult(
-                results=[result],
-                execution_time=self.execution_time,
-                metadata={}
+                results=[result], execution_time=self.execution_time, metadata={}
             )
 
             # Handle single and multi-component metadata.
@@ -174,11 +170,9 @@ class QCResult(BaseModel):
 
 
 class SyncBaseQExecutor(BaseQExecutor):
-
     device: str = "default.qubit"
 
     def run_all_circuits(self, qscripts_list) -> List[QCResult]:
-
         result_objs: List[QCResult] = []
 
         for qscript in qscripts_list:
@@ -188,10 +182,7 @@ class SyncBaseQExecutor(BaseQExecutor):
                 shots=self.qnode_device_shots,
             )
 
-            result_obj = QCResult.with_metadata(
-                device_name=dev.short_name,
-                executor=self
-            )
+            result_obj = QCResult.with_metadata(device_name=dev.short_name, executor=self)
             result_obj = self.run_circuit(qscript, dev, result_obj)
             result_objs.append(result_obj)
 
@@ -217,7 +208,6 @@ class AsyncBaseQExecutor(BaseQExecutor):
     device: str = "default.qubit"
 
     def batch_submit(self, qscripts_list):
-
         futures = []
         loop = get_asyncio_event_loop()
         for qscript in qscripts_list:
@@ -237,7 +227,6 @@ class AsyncBaseQExecutor(BaseQExecutor):
         return futures
 
     def batch_get_results(self, futures_list: List):
-
         loop = get_asyncio_event_loop()
         task = asyncio.run_coroutine_threadsafe(self._get_result(futures_list), loop)
         return task.result()
@@ -258,7 +247,6 @@ class AsyncBaseQExecutor(BaseQExecutor):
 
 
 class BaseProcessPoolQExecutor(BaseQExecutor):
-
     device: str = "default.qubit"
     num_processes: int = 10
 
@@ -287,7 +275,6 @@ class BaseProcessPoolQExecutor(BaseQExecutor):
 
 
 class BaseThreadPoolQExecutor(BaseQExecutor):
-
     device: str = "default.qubit"
     num_threads: int = 10
 

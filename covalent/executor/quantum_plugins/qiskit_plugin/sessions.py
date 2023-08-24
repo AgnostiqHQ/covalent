@@ -56,9 +56,7 @@ def init_runtime_service(
     elif channel == "ibm_cloud":
         # Require `cloud_instance` to be specified in this case.
         if not cloud_instance:
-            raise ValueError(
-                "The `cloud_instance` is required for the 'ibm_cloud' channel."
-            )
+            raise ValueError("The `cloud_instance` is required for the 'ibm_cloud' channel.")
 
         instance = cloud_instance
 
@@ -69,10 +67,7 @@ def init_runtime_service(
 
     # Initialize the runtime service instance.
     return QiskitRuntimeService(
-        channel=channel,
-        token=ibmqx_token,
-        url=ibmqx_url,
-        instance=instance
+        channel=channel, token=ibmqx_token, url=ibmqx_url, instance=instance
     )
 
 
@@ -81,6 +76,7 @@ class SessionIdentifier:
     """
     Proxy for defining a unique `Session` instance.
     """
+
     service_channel: str
     service_instance: str
     service_url: str
@@ -113,7 +109,7 @@ def make_session_id(service, backend, max_time) -> SessionIdentifier:
         service_instance=service._account.instance,
         service_url=service._account.url,
         backend_name=backend.name,
-        max_time=max_time
+        max_time=max_time,
     )
 
 

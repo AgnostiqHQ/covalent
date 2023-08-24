@@ -308,8 +308,9 @@ class _QExecutorManager:
         """
 
         # Iterate over all subdirectories of the plugins path except for those starting with "_" like "__pycache__"
-        for plugin_dir in filter(lambda _p: _p.is_dir() and not _p.name.startswith("_"), _QUANTUM_PLUGINS_PATH.iterdir()):
-
+        for plugin_dir in filter(
+            lambda _p: _p.is_dir() and not _p.name.startswith("_"), _QUANTUM_PLUGINS_PATH.iterdir()
+        ):
             # Get the Path of the plugin module
             plugin_module_path = list(plugin_dir.glob("*_plugin.py"))
             if not plugin_module_path:
@@ -322,8 +323,7 @@ class _QExecutorManager:
                 with contextlib.suppress(Exception):
                     sys.path.append(str(plugin_module_path.parent))
                     plugin_module_spec = importlib.util.spec_from_file_location(
-                        plugin_module_path.stem,
-                        plugin_module_path
+                        plugin_module_path.stem, plugin_module_path
                     )
                     plugin_module = importlib.util.module_from_spec(plugin_module_spec)
                     sys.modules[plugin_module_path.stem] = plugin_module
@@ -343,10 +343,11 @@ class _QExecutorManager:
         for qexecutor_cls_name in getattr(module_obj, "__all__"):
             self.executor_plugins_map[qexecutor_cls_name] = getattr(module_obj, qexecutor_cls_name)
 
-        for qexecutor_cls_name, defaults_dict in getattr(module_obj, _QUANTUM_DEFAULTS_VARNAME).items():
+        for qexecutor_cls_name, defaults_dict in getattr(
+            module_obj, _QUANTUM_DEFAULTS_VARNAME
+        ).items():
             update_config(
-                {"qelectron": {qexecutor_cls_name: defaults_dict}},
-                override_existing=False
+                {"qelectron": {qexecutor_cls_name: defaults_dict}}, override_existing=False
             )
 
     def validate_module(self, module_obj) -> None:
@@ -365,9 +366,7 @@ class _QExecutorManager:
         plugin_defaults = getattr(module_obj, _QUANTUM_DEFAULTS_VARNAME)
 
         if set(module_obj.__all__).difference(set(plugin_defaults)):
-            raise RuntimeError(
-                f"Module missing default parameters in {module_obj.__file__}"
-            )
+            raise RuntimeError(f"Module missing default parameters in {module_obj.__file__}")
         if set(plugin_defaults).difference(set(module_obj.__all__)):
             raise RuntimeError(
                 f"Non-exported QExecutor class in default parameters in {module_obj.__file__}"

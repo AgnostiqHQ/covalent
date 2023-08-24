@@ -65,6 +65,7 @@ class _OrjsonStrategy(_Serializer):
     """
     uses `orjson` and `zlib` to serialize/deserialize
     """
+
     name = "orjson"
 
     def pre_value(self, value):
@@ -125,6 +126,7 @@ class Strategy(Enum):
     """
     available serialization strategies
     """
+
     ORJSON = _OrjsonStrategy
     PICKLE = _PickleStrategy
     FALLBACK = _FallbackStrategy
@@ -135,11 +137,7 @@ class JsonLmdb(Lmdb):
     custom `Lmdb` implementation with pre- and post-value strategy option
     """
 
-    def __init__(
-        self,
-        strategy_type: Union[Strategy, Sequence[Strategy]],
-        **kw
-    ):
+    def __init__(self, strategy_type: Union[Strategy, Sequence[Strategy]], **kw):
         self._strategy_map = {}
         self.strategy = self.init_strategy(strategy_type)
         super().__init__(**kw)
@@ -191,7 +189,7 @@ class JsonLmdb(Lmdb):
         file,
         flag="r",
         mode=0o755,
-        map_size=2 ** 20,
+        map_size=2**20,
         *,
         strategy_name,
         autogrow=True,
@@ -211,40 +209,20 @@ class JsonLmdb(Lmdb):
 
         if flag == "r":  # Open existing database for reading only (default)
             env = lmdb.open(
-                file,
-                map_size=map_size,
-                max_dbs=1,
-                readonly=True,
-                create=False,
-                mode=mode
+                file, map_size=map_size, max_dbs=1, readonly=True, create=False, mode=mode
             )
         elif flag == "w":  # Open existing database for reading and writing
             env = lmdb.open(
-                file,
-                map_size=map_size,
-                max_dbs=1,
-                readonly=False,
-                create=False,
-                mode=mode
+                file, map_size=map_size, max_dbs=1, readonly=False, create=False, mode=mode
             )
         elif flag == "c":  # Open database for reading and writing, creating it if it doesn't exist
             env = lmdb.open(
-                file,
-                map_size=map_size,
-                max_dbs=1,
-                readonly=False,
-                create=True,
-                mode=mode
+                file, map_size=map_size, max_dbs=1, readonly=False, create=True, mode=mode
             )
         elif flag == "n":  # Always create a new, empty database, open for reading and writing
             remove_lmdbm(file)
             env = lmdb.open(
-                file,
-                map_size=map_size,
-                max_dbs=1,
-                readonly=False,
-                create=True,
-                mode=mode
+                file, map_size=map_size, max_dbs=1, readonly=False, create=True, mode=mode
             )
         else:
             raise ValueError("Invalid flag")

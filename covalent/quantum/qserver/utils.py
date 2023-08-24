@@ -50,14 +50,10 @@ class CircuitInfo(BaseModel):
 
 @lru_cache
 def get_cached_module():
-    return importlib.import_module(
-        ".executor",
-        package="covalent"
-    )
+    return importlib.import_module(".executor", package="covalent")
 
 
 def executor_from_dict(executor_dict: Dict):
-
     if "executors" in executor_dict:
         executors = [executor_from_dict(ed) for ed in executor_dict["executors"]]
         executor_dict["executors"] = executors
@@ -69,7 +65,6 @@ def executor_from_dict(executor_dict: Dict):
 
 @lru_cache(maxsize=MAX_DIFFERENT_EXECUTORS)
 def get_cached_executor(**executor_dict):
-
     if "executors" in executor_dict:
         executors = tuple(orjson.loads(ex) for ex in executor_dict["executors"])
         executor_dict["executors"] = executors

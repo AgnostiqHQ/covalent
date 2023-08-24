@@ -26,13 +26,12 @@ from .local_client import LocalQClient
 
 
 class MiddleWare:
-
     def __init__(self) -> None:
         self.qclient = LocalQClient()
 
     def __new__(cls):
         # Making this a singleton class
-        if not hasattr(cls, 'instance'):
+        if not hasattr(cls, "instance"):
             cls.instance = super(MiddleWare, cls).__new__(cls)
         return cls.instance
 
@@ -58,7 +57,12 @@ class MiddleWare:
         return self.qclient.database
 
     def run_circuits_async(
-            self, qscripts: List[qml.tape.qscript.QuantumScript], executors, qelectron_info, qnode_specs):
+        self,
+        qscripts: List[qml.tape.qscript.QuantumScript],
+        executors,
+        qelectron_info,
+        qnode_specs,
+    ):
         return self.qclient.submit(qscripts, executors, qelectron_info, qnode_specs)
 
     def get_results(self, batch_id):

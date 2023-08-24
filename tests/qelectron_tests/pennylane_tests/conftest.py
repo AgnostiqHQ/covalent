@@ -37,24 +37,19 @@ import pytest
 
 import covalent as ct
 
-SKIP_RETURN_TYPES = [
-    "qml.apply",
-    "qml.vn_entropy",
-    "qml.mutual_info"
-]
+SKIP_RETURN_TYPES = ["qml.apply", "qml.vn_entropy", "qml.mutual_info"]
 
 SKIP_DEVICES = [
     "default.qutrit",
     "default.mixed",
 ]
 
-XFAIL_TEST_NAMES = [
-    "test_array_multiple"  # NOTE: produces array with inhomogeneous shape
-]
+XFAIL_TEST_NAMES = ["test_array_multiple"]  # NOTE: produces array with inhomogeneous shape
 
 
 # VALIDATION FUNCTIONS
 # ------------------------------------------------------------------------------
+
 
 def _check_return_type(func):
     """
@@ -64,7 +59,6 @@ def _check_return_type(func):
     func_lines = inspect.getsourcelines(func)[0]
     reached_return = False
     for line in func_lines:
-
         if line.strip().startswith("return"):
             reached_return = True
 
@@ -87,6 +81,7 @@ def _check_device_type(device):
 
 # UTILITIES
 # ------------------------------------------------------------------------------
+
 
 def _init_Simulator(shots):
     return ct.executor.Simulator(parallel="thread", shots=shots)
@@ -151,8 +146,7 @@ def _get_wrapped_QNode(use_run_later, get_executors):  # pylint: disable=invalid
 
             # QElectron that wraps the normal QNode
             self.qelectron = ct.qelectron(
-                qnode=qnode,
-                executors=get_executors(shots=qnode.device.shots)
+                qnode=qnode, executors=get_executors(shots=qnode.device.shots)
             )
 
         def __call__(self, *args, **kwargs):
@@ -166,19 +160,19 @@ def _get_wrapped_QNode(use_run_later, get_executors):  # pylint: disable=invalid
 # HOOKS
 # ------------------------------------------------------------------------------
 
+
 def pytest_collection_modifyitems(config, items):  # pylint: disable=unused-argument
     """
     Using Pytest hook to xfail selected tests.
     """
     for item in items:
         if any(name in item.nodeid for name in XFAIL_TEST_NAMES):
-            item.add_marker(
-                pytest.mark.xfail(reason="XFailing test also failed by normal QNode.")
-            )
+            item.add_marker(pytest.mark.xfail(reason="XFailing test also failed by normal QNode."))
 
 
 # FIXTURES
 # ------------------------------------------------------------------------------
+
 
 @pytest.fixture(params=[True, False])
 def use_run_later(request):
@@ -204,7 +198,6 @@ def get_executors(request):
     Determines the QExecutor that is used.
     """
     return request.param
-
 
 
 @pytest.fixture(autouse=True)

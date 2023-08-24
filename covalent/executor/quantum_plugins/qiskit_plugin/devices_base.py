@@ -51,7 +51,7 @@ class _PennylaneQiskitDevice(QiskitDevice, ABC):
         backend_name: str,
         local_transpile: bool,
         service_init_kwargs: dict,
-        **kwargs
+        **kwargs,
     ):
         # proxy for client-side `pennylane.active_return()` status
         self.pennylane_active_return = True
@@ -149,16 +149,15 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         backend_name: str,
         local_transpile: bool,
         service_init_kwargs: dict,
-        **kwargs
+        **kwargs,
     ):
-
         super().__init__(
             wires=wires,
             shots=shots,
             backend_name=backend_name,
             local_transpile=local_transpile,
             service_init_kwargs=service_init_kwargs,
-            **kwargs
+            **kwargs,
         )
 
         self._default_shots = QiskitSamplerDevice.default_shots
@@ -184,7 +183,6 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         """
         compiled_circuits = []
         for circuit in circuits:
-
             # Unwraps a quantum script with tensor-like parameters to numpy arrays.
             with circuit.unwrap():
                 qiskit_circuit = super().compile_circuits([circuit]).pop()
@@ -239,7 +237,7 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         """
         Generate a state-vector from a quasi-distribution
         """
-        N = 2**len(self.wires)
+        N = 2 ** len(self.wires)
 
         state = np.zeros(N)
         for i in range(N):
@@ -337,7 +335,6 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
         self._samples = self.dist_generate_samples(quasi_dist)
 
         with self.set_distribution(quasi_dist):
-
             if not self.pennylane_active_return:
                 res = self._statistics_legacy(circuit)
                 return self.asarray(res)

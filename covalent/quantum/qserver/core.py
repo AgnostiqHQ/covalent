@@ -118,7 +118,6 @@ class QServer:
             selected_executor = get_cached_executor(**selected_executor.dict())
 
             if isinstance(selected_executor, AsyncBaseQCluster):
-
                 # Apply QCluster's selector as well.
                 qcluster = selected_executor
                 selected_executor = qcluster.get_selector()(qscript, qcluster.executors)
@@ -183,7 +182,6 @@ class QServer:
         # Generating futures from each executor:
         executor_future_pairs = []
         for executor, qscript_sub_batch in executor_qscript_sub_batch_pairs:
-
             executor.qnode_device_import_path = qelectron_info.qnode_device_import_path
             executor.qnode_device_shots = qelectron_info.qnode_device_shots
             executor.qnode_device_wires = qelectron_info.num_device_wires
@@ -206,7 +204,7 @@ class QServer:
         qscripts: List[QuantumScript],
         executors: List[BaseQExecutor],
         qelectron_info: "QElectronInfo",
-        qnode_specs: "QNodeSpecs"
+        qnode_specs: "QNodeSpecs",
     ):
         # pylint: disable=too-many-locals
         """
@@ -305,9 +303,7 @@ class QServer:
         # ]
 
         self._database.set(
-            *key_value_pairs,
-            dispatch_id=context.dispatch_id,
-            node_id=context.node_id
+            *key_value_pairs, dispatch_id=context.dispatch_id, node_id=context.node_id
         )
 
         return batch_id
@@ -329,16 +325,14 @@ class QServer:
 
         results_dict = {}
         key_value_pairs = [[], []]
-        executor_future_pairs, submission_order \
-            = self.futures_table.pop_executor_future_pairs(batch_id)
+        executor_future_pairs, submission_order = self.futures_table.pop_executor_future_pairs(
+            batch_id
+        )
 
         # ids of (e)xecutor_(f)uture_(p)airs, hence `idx_efp`
         qscript_submission_index = 0
         for idx_efp, (executor, futures_sub_batch) in enumerate(executor_future_pairs):
-
-            result_objs = executor.batch_get_results(
-                futures_sub_batch.values()
-            )
+            result_objs = executor.batch_get_results(futures_sub_batch.values())
 
             # Adding results according to the order of the qscripts
             # ids of (f)utures_(s)ub_(b)atch, hence `idx_fsb`
@@ -351,7 +345,9 @@ class QServer:
                     qscript_number = submission_order[qscript_submission_index]
 
                     # Use tuple of integers for key to enable later multi-factor sort.
-                    results_dict[(qscript_number, circuit_number, result_number)] = sub_result_obj.results[0]
+                    results_dict[
+                        (qscript_number, circuit_number, result_number)
+                    ] = sub_result_obj.results[0]
                     qscript_submission_index += 1
 
                     # To store the results in the database
@@ -361,7 +357,9 @@ class QServer:
                         {
                             "execution_time": sub_result_obj.execution_time,
                             "result": sub_result_obj.results if executor.persist_data else None,
-                            "result_metadata": sub_result_obj.metadata if executor.persist_data else None,
+                            "result_metadata": sub_result_obj.metadata
+                            if executor.persist_data
+                            else None,
                         }
                     )
 
@@ -389,9 +387,7 @@ class QServer:
             # [[exec_4], [exec_2, {2: future_3}], [exec_3, {4: future_5}]]
 
         self._database.set(
-            *key_value_pairs,
-            dispatch_id=context.dispatch_id,
-            node_id=context.node_id
+            *key_value_pairs, dispatch_id=context.dispatch_id, node_id=context.node_id
         )
 
         # An example `results_dict` will look like:

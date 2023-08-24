@@ -80,9 +80,7 @@ class QCluster(AsyncBaseQCluster):
             return self.selector
 
         # Deserialize the selector function (or string).
-        selector = cloudpickle_deserialize(
-            base64.b64decode(self.selector.encode("utf-8"))
-        )
+        selector = cloudpickle_deserialize(base64.b64decode(self.selector.encode("utf-8")))
 
         self._selector_serialized = False
         return selector

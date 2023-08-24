@@ -66,9 +66,7 @@ class Database:
             raise FileNotFoundError(f"Missing database directory {db_path}.")
 
         return JsonLmdb.open_with_strategy(
-            file=str(db_path),
-            flag="c",
-            strategy_name=self.strategy_name
+            file=str(db_path), flag="c", strategy_name=self.strategy_name
         )
 
     def set(self, keys, values, *, dispatch_id, node_id):

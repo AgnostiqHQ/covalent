@@ -44,7 +44,6 @@ __all__ = [
 ]
 
 _QEXECUTOR_PLUGIN_DEFAULTS = {
-
     "IBMQExecutor": {
         "backend": "ibmq_qasm_simulator",
         "ibmqx_token": "",
@@ -52,7 +51,6 @@ _QEXECUTOR_PLUGIN_DEFAULTS = {
         "group": "open",
         "project": "main",
     },
-
     "QiskitExecutor": {
         "device": "local_sampler",
         "backend": "ibmq_qasm_simulator",
@@ -63,7 +61,7 @@ _QEXECUTOR_PLUGIN_DEFAULTS = {
         "options": {
             "optimization_level": 3,
             "resilience_level": 1,
-        }
+        },
     },
 }
 
@@ -106,18 +104,13 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
     ibmqx_token: str = Field(
         default_factory=lambda: get_config("qelectron")["IBMQExecutor"]["ibmqx_token"]
     )
-    hub: str = Field(
-        default_factory=lambda: get_config("qelectron")["IBMQExecutor"]["hub"]
-    )
-    group: str = Field(
-        default_factory=lambda: get_config("qelectron")["IBMQExecutor"]["group"]
-    )
+    hub: str = Field(default_factory=lambda: get_config("qelectron")["IBMQExecutor"]["hub"])
+    group: str = Field(default_factory=lambda: get_config("qelectron")["IBMQExecutor"]["group"])
     project: str = Field(
         default_factory=lambda: get_config("qelectron")["IBMQExecutor"]["project"]
     )
 
     def batch_submit(self, qscripts_list):
-
         # Check `self.shots` against 0 to allow override with `None`.
         device_shots = self.shots if self.shots != 0 else self.qnode_device_shots
 
@@ -191,12 +184,8 @@ class QiskitExecutor(AsyncBaseQExecutor):
     ibmqx_token: str = Field(
         default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["ibmqx_token"]
     )
-    hub: str = Field(
-        default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["hub"]
-    )
-    group: str = Field(
-        default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["group"]
-    )
+    hub: str = Field(default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["hub"])
+    group: str = Field(default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["group"])
     project: str = Field(
         default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["project"]
     )
@@ -231,14 +220,14 @@ class QiskitExecutor(AsyncBaseQExecutor):
             "single_job": self.single_job,
             "options": self.options or {},
             "service_init_kwargs": {
-                'ibmqx_token': self.ibmqx_token,
-                'ibmqx_url': self.ibmqx_url,
-                'channel': self.channel,
-                'instance': self.instance,
-                'cloud_instance': self.cloud_instance,
-                'hub': self.hub,
-                'group': self.group,
-                'project': self.project
+                "ibmqx_token": self.ibmqx_token,
+                "ibmqx_url": self.ibmqx_url,
+                "channel": self.channel,
+                "instance": self.instance,
+                "cloud_instance": self.cloud_instance,
+                "hub": self.hub,
+                "group": self.group,
+                "project": self.project,
             },
         }
 
@@ -259,7 +248,6 @@ class QiskitExecutor(AsyncBaseQExecutor):
         return dev
 
     def batch_submit(self, qscripts_list):
-
         qscripts_list = list(qscripts_list)
 
         loop = get_asyncio_event_loop()
@@ -292,7 +280,9 @@ class QiskitExecutor(AsyncBaseQExecutor):
 
         return tasks
 
-    async def run_circuit(self, tape, device, result_obj: QCResult):  # pylint: disable=arguments-renamed
+    async def run_circuit(
+        self, tape, device, result_obj: QCResult
+    ):  # pylint: disable=arguments-renamed
         """
         Allows a circuit to be submitted asynchronously.
         """
@@ -311,7 +301,9 @@ class QiskitExecutor(AsyncBaseQExecutor):
 
         return result_obj
 
-    async def run_all_circuits(self, tapes, device, result_obj: QCResult):  # pylint: disable=arguments-renamed
+    async def run_all_circuits(
+        self, tapes, device, result_obj: QCResult
+    ):  # pylint: disable=arguments-renamed
         """
         Allows multiple circuits to be submitted asynchronously into a single
         IBM Qiskit Runtime Job.
@@ -355,6 +347,7 @@ def _execution_device_factory(device_name: str, qnode_device_cls, **kwargs):
         Wrapper that inherits from a Pennylane device class to extend the custom
         Pennylane-Qiskit device with any device-specific overridden methods.
         """
+
         @property
         def stopping_condition(self):
             """
@@ -363,7 +356,8 @@ def _execution_device_factory(device_name: str, qnode_device_cls, **kwargs):
             NOTE: is identical to `pennylane._device.Device.stopping_condition`.
             """
             return qml.BooleanFn(
-                lambda obj: not isinstance(obj, QuantumScript) and self.supports_operation(obj.name)
+                lambda obj: not isinstance(obj, QuantumScript)
+                and self.supports_operation(obj.name)
             )
 
     return _QiskitExecutionDevice(**kwargs)

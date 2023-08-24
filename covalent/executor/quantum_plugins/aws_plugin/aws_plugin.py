@@ -27,13 +27,9 @@ from pydantic import Field
 from covalent._shared_files.config import get_config
 from covalent.executor.qbase import BaseThreadPoolQExecutor, QCResult, get_thread_pool
 
-__all__ = [
-    "BraketQubitExecutor",
-    "LocalBraketQubitExecutor"
-]
+__all__ = ["BraketQubitExecutor", "LocalBraketQubitExecutor"]
 
 _QEXECUTOR_PLUGIN_DEFAULTS = {
-
     "BraketQubitExecutor": {
         "device_arn": "",
         "poll_timeout_seconds": AwsQuantumTask.DEFAULT_RESULTS_POLL_TIMEOUT,
@@ -41,10 +37,9 @@ _QEXECUTOR_PLUGIN_DEFAULTS = {
         "max_connections": AwsQuantumTaskBatch.MAX_CONNECTIONS_DEFAULT,
         "max_retries": AwsQuantumTaskBatch.MAX_RETRIES,
     },
-
     "LocalBraketQubitExecutor": {
         "backend": "default",
-    }
+    },
 }
 
 
@@ -76,14 +71,19 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
         run_kwargs: Variable length keyword arguments for :code:`braket.devices.Device.run()`
 
     """
+
     device_arn: str = Field(
         default_factory=lambda: get_config("qelectron")["BraketQubitExecutor"]["device_arn"]
     )
     poll_timeout_seconds: float = Field(
-        default_factory=lambda: get_config("qelectron")["BraketQubitExecutor"]["poll_timeout_seconds"]
+        default_factory=lambda: get_config("qelectron")["BraketQubitExecutor"][
+            "poll_timeout_seconds"
+        ]
     )
     poll_interval_seconds: float = Field(
-        default_factory=lambda: get_config("qelectron")["BraketQubitExecutor"]["poll_interval_seconds"]
+        default_factory=lambda: get_config("qelectron")["BraketQubitExecutor"][
+            "poll_interval_seconds"
+        ]
     )
     max_connections: int = Field(
         default_factory=lambda: get_config("qelectron")["BraketQubitExecutor"]["max_connections"]
@@ -129,7 +129,7 @@ class BraketQubitExecutor(BaseThreadPoolQExecutor):
                 max_parallel=self.max_parallel,
                 max_connections=self.max_connections,
                 max_retries=self.max_retries,
-                **self.run_kwargs
+                **self.run_kwargs,
             )
 
             result_obj = QCResult.with_metadata(
@@ -160,13 +160,13 @@ class LocalBraketQubitExecutor(BaseThreadPoolQExecutor):
             simulator backend name.
         run_kwargs: Variable length keyword arguments for :code:`braket.devices.Device.run()`.
     """
+
     backend: str = Field(
         default_factory=lambda: get_config("qelectron")["LocalBraketQubitExecutor"]["backend"]
     )
     max_jobs: int = 20
     shots: Optional[int] = 0
     run_kwargs: dict = {}
-
 
     def batch_submit(self, qscripts_list):
         """
@@ -190,7 +190,7 @@ class LocalBraketQubitExecutor(BaseThreadPoolQExecutor):
                 wires=qscript.wires,
                 backend=self.backend,
                 shots=device_shots,
-                **self.run_kwargs
+                **self.run_kwargs,
             )
 
             result_obj = QCResult.with_metadata(

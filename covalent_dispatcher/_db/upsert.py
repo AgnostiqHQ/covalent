@@ -230,7 +230,7 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
             node_output = None
 
         try:
-            node_qelectron_data_exists= tg.get_node_value(node_id, "qelectron_data_exists")
+            node_qelectron_data_exists = tg.get_node_value(node_id, "qelectron_data_exists")
         except KeyError:
             node_qelectron_data_exists = False
 

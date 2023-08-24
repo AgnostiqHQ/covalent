@@ -122,7 +122,7 @@ _TEMPLATES = [
     (qml.IQPEmbedding, (arg_vector(6),), {"wires": range(6)}),
     (qml.QAOAEmbedding, (arg_vector(6),), {"wires": range(6), "weights": weight_vector(6)}),
     (qml.DoubleExcitation, (arg_vector(4),), {"wires": range(4)}),
-    (qml.SingleExcitation, (arg_vector(2),), {"wires": range(2)})
+    (qml.SingleExcitation, (arg_vector(2),), {"wires": range(2)}),
 ]
 
 

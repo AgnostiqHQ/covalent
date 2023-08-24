@@ -80,7 +80,6 @@ def test_circuit_call_single():
         assert np.isclose(res_1, res_2, rtol=0.1)
 
 
-
 def test_circuit_call_vector():
     """Test calling a QNode vs. QElectron with a vector argument."""
 

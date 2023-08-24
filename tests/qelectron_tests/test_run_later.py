@@ -49,14 +49,14 @@ def test_qaoa(executor):
         qaoa.mixer_layer(alpha, mixer_h)
 
     @ct.qelectron(executors=executor)
-    @qml.qnode(qml.device('lightning.qubit', wires=len(wires)))
+    @qml.qnode(qml.device("lightning.qubit", wires=len(wires)))
     def circuit(params):
         for w in wires:
             qml.Hadamard(wires=w)
         qml.layer(qaoa_layer, 2, params[0], params[1])
         return qml.expval(cost_h)
 
-    inputs = [[1, 1.], [1.2, 1]]
+    inputs = [[1, 1.0], [1.2, 1]]
     output_1 = circuit(inputs.copy())
     output_2 = circuit.run_later(inputs.copy()).result()
 

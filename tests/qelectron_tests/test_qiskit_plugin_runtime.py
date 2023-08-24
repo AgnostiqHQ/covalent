@@ -53,7 +53,6 @@ def ensure_ibmqx_token():
     tokens = {}
     qelectron_config = get_config("qelectron")
     for k, val in qelectron_config.items():
-
         # Exit if a global `ibmqx_token` is set.
         if k == "ibmqx_token" and val:
             return
@@ -99,8 +98,10 @@ def test_qiskit_runtime_hamiltonian(backend, executor_class, single_job):
 
     # Assert value agreement.
     # Assert value agreement.
-    msg = (f"QElectron output ({val_2!r}) differs from "
-           f"QNode output ({val_1!r}) by >10% (shots={SHOTS}).")
+    msg = (
+        f"QElectron output ({val_2!r}) differs from "
+        f"QNode output ({val_1!r}) by >10% (shots={SHOTS})."
+    )
     assert np.isclose(val_1, val_2, rtol=0.10), msg
 
 
@@ -130,22 +131,14 @@ def test_qiskit_runtime_hamiltonian_cluster(single_job_triplet):
     qcluster = ct.executor.QCluster(
         executors=[
             ct.executor.QiskitExecutor(
-                device="sampler",
-                single_job=p_1,
-                backend="ibmq_qasm_simulator"
+                device="sampler", single_job=p_1, backend="ibmq_qasm_simulator"
             ),
             ct.executor.QiskitExecutor(
-                device="sampler",
-                single_job=p_2,
-                backend="simulator_statevector"
+                device="sampler", single_job=p_2, backend="simulator_statevector"
             ),
-            ct.executor.QiskitExecutor(
-                device="sampler",
-                single_job=p_3,
-                backend="simulator_mps"
-            )
+            ct.executor.QiskitExecutor(device="sampler", single_job=p_3, backend="simulator_mps"),
         ],
-        selector=cyclic_selector
+        selector=cyclic_selector,
     )
 
     # Define a QElectron that uses the executor cluster.
@@ -161,8 +154,10 @@ def test_qiskit_runtime_hamiltonian_cluster(single_job_triplet):
     assert isinstance(val_2, type(val_1))
 
     # Assert value agreement.
-    msg = (f"QElectron output ({val_2!r}) differs from "
-           f"QNode output ({val_1!r}) by >10% (shots={SHOTS}).")
+    msg = (
+        f"QElectron output ({val_2!r}) differs from "
+        f"QNode output ({val_1!r}) by >10% (shots={SHOTS})."
+    )
     assert np.isclose(val_1, val_2, rtol=0.1), msg
 
 
@@ -171,7 +166,7 @@ TEMPLATES = [
     (qml.IQPEmbedding, (arg_vector(6),), {"wires": range(6)}),
     (qml.QAOAEmbedding, (arg_vector(6),), {"wires": range(6), "weights": weight_vector(6)}),
     (qml.DoubleExcitation, (arg_vector(4),), {"wires": range(4)}),
-    (qml.SingleExcitation, (arg_vector(2),), {"wires": range(2)})
+    (qml.SingleExcitation, (arg_vector(2),), {"wires": range(2)}),
 ]
 
 
