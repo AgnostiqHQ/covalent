@@ -46,7 +46,6 @@ from typing import (
 
 import aiofiles
 
-from .utils import Signals
 from .._shared_files import TaskRuntimeError, logger
 from .._shared_files.context_managers import active_dispatch_info_manager
 from .._shared_files.exceptions import TaskCancelledError
@@ -54,6 +53,7 @@ from .._shared_files.qelectron_utils import remove_qelectron_db
 from .._shared_files.util_classes import RESULT_STATUS, DispatchInfo
 from .._workflow.depscall import RESERVED_RETVAL_KEY__FILES
 from .._workflow.transport import TransportableObject
+from .utils import Signals
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info

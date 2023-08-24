@@ -55,7 +55,7 @@ from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
 
-from covalent._shared_files.config import get_config_manager, get_config, set_config
+from covalent._shared_files.config import get_config, get_config_manager, set_config
 
 from .._db.datastore import DataStore
 from .migrate import migrate_pickled_result_object

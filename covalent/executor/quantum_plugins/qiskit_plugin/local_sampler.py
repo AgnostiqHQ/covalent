@@ -24,9 +24,8 @@ Pennylane-Qiskit device that uses the local Qiskit `Sampler` primitive
 
 from typing import Any, List, Tuple
 
-from qiskit.primitives import Sampler as LocalSampler
-
 from devices_base import QiskitSamplerDevice
+from qiskit.primitives import Sampler as LocalSampler
 
 
 class QiskitLocalSampler(QiskitSamplerDevice):

@@ -25,9 +25,8 @@ Revises: f64ecaa040d5
 Create Date: 2023-05-29 15:53:25.621195
 
 """
-from alembic import op
 import sqlalchemy as sa
-
+from alembic import op
 
 # revision identifiers, used by Alembic.
 # pragma: allowlist nextline secret

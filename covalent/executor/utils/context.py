@@ -18,8 +18,9 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from pydantic import BaseModel
 from contextlib import contextmanager
+
+from pydantic import BaseModel
 
 
 class Context(BaseModel):

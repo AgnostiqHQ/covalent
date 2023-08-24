@@ -21,8 +21,8 @@
 from pathlib import Path
 
 from ..._shared_files.config import get_config
-from .utils import CircuitInfo
 from .serialize import JsonLmdb, Strategy
+from .utils import CircuitInfo
 
 
 def set_serialization_strategy(strategy_name):

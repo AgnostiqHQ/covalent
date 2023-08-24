@@ -18,9 +18,9 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-from .base_client import BaseQClient
-from ..qserver import LocalQServer
 from ..._shared_files.utils import cloudpickle_deserialize, cloudpickle_serialize
+from ..qserver import LocalQServer
+from .base_client import BaseQClient
 
 # Since in the local case, the server and client are the same
 # thus the "server" class's functions are directly accessed

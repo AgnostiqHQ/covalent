@@ -23,8 +23,10 @@ import time
 from typing import Optional, Union
 
 import pennylane as qml
+from local_sampler import QiskitLocalSampler
 from pennylane.tape.qscript import QuantumScript
 from pydantic import Field
+from runtime_sampler import QiskitRuntimeSampler
 
 from covalent._shared_files.config import get_config
 from covalent._shared_files.utils import import_from_path
@@ -35,8 +37,6 @@ from covalent.executor.qbase import (
     get_asyncio_event_loop,
     get_thread_pool,
 )
-from local_sampler import QiskitLocalSampler
-from runtime_sampler import QiskitRuntimeSampler
 
 __all__ = [
     "IBMQExecutor",

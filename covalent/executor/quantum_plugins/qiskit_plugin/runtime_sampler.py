@@ -25,9 +25,8 @@ Pennylane-Qiskit device that uses the Qiskit Runtime `Sampler` primitive
 from typing import Any, List, Union
 
 import pennylane as qml
-from qiskit_ibm_runtime import Sampler
-
 from devices_base import QiskitSamplerDevice
+from qiskit_ibm_runtime import Sampler
 from sessions import get_cached_session
 from utils import extract_options
 

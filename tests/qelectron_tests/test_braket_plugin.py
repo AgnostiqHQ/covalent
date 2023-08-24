@@ -42,6 +42,7 @@ def test_init_executor():
 def test_decorator_path():
     """Test that `ct.qelectron` is the QElectron decorator"""
     from typing import Callable
+
     import covalent as ct
 
     assert isinstance(ct.qelectron, Callable), f"`ct.qelectron` is a {type(ct.qelectron).__name__}"
@@ -50,9 +51,10 @@ def test_decorator_path():
 def test_circuit_call_single():
     """Test calling a QNode vs. QElectron with a scalar argument."""
 
-    import covalent as ct
     import pennylane as qml
     from pennylane import numpy as np
+
+    import covalent as ct
 
     executors = [
         ct.executor.LocalBraketQubitExecutor(shots=None, max_jobs=19),
@@ -82,9 +84,10 @@ def test_circuit_call_single():
 def test_circuit_call_vector():
     """Test calling a QNode vs. QElectron with a vector argument."""
 
-    import covalent as ct
     import pennylane as qml
     from pennylane import numpy as np
+
+    import covalent as ct
 
     executors = [
         ct.executor.LocalBraketQubitExecutor(shots=None, max_jobs=19),
@@ -113,9 +116,10 @@ def test_circuit_call_vector():
 def test_grad_basic():
     """Test calling gradients QNode vs. QElectron."""
 
-    import covalent as ct
     import pennylane as qml
     from pennylane import numpy as np
+
+    import covalent as ct
 
     executors = [
         ct.executor.LocalBraketQubitExecutor(shots=10_000, max_jobs=1),

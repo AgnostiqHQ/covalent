@@ -20,11 +20,11 @@
 
 # pylint: disable=no-member
 
+import pennylane as qml
 import pytest
+from numpy import isclose
 
 import covalent as ct
-import pennylane as qml
-from numpy import isclose
 
 EXECUTORS = [
     ct.executor.QiskitExecutor(device="local_sampler", shots=10_000),
@@ -37,8 +37,8 @@ def test_qaoa(executor):
     """
     Test that `run_later` produces the same result as the normal call.
     """
-    from pennylane import qaoa
     from networkx import Graph
+    from pennylane import qaoa
 
     wires = range(10)
     graph = Graph([(0, 1), (1, 2), (2, 0)])

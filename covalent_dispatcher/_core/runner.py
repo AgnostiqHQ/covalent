@@ -36,10 +36,10 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow import DepsBash, DepsCall, DepsPip
+from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
 from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
 from covalent.executor.utils import set_context
-from covalent._workflow.transport import TransportableObject
 
 from . import data_manager as datasvc
 from .data_modules.job_manager import get_jobs_metadata, set_cancel_result

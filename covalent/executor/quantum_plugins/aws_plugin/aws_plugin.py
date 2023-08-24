@@ -21,17 +21,11 @@
 from typing import Optional
 
 import pennylane as qml
+from braket.aws import AwsQuantumTask, AwsQuantumTaskBatch
 from pydantic import Field
 
-from braket.aws import AwsQuantumTask, AwsQuantumTaskBatch
-
 from covalent._shared_files.config import get_config
-from covalent.executor.qbase import (
-    BaseThreadPoolQExecutor,
-    QCResult,
-    get_thread_pool,
-)
-
+from covalent.executor.qbase import BaseThreadPoolQExecutor, QCResult, get_thread_pool
 
 __all__ = [
     "BraketQubitExecutor",
