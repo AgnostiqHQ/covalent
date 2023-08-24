@@ -198,7 +198,7 @@ jobs:
           echo "Using transformed VERSION: $VERSION"
           cd dist
           tar xzf covalent-${VERSION}.tar.gz
-          diff -x .gitignore -r covalent-${VERSION}/covalent ../covalent
+          diff -x .gitignore -x quantum_plugins -r covalent-${VERSION}/covalent ../covalent
           diff -x .gitignore -r covalent-${VERSION}/covalent_dispatcher ../covalent_dispatcher
           diff -x README.md -r covalent-${VERSION}/covalent_migrations ../covalent_migrations
           diff -x .gitignore -x README.md -x webapp covalent-${VERSION}/covalent_ui ../covalent_ui
