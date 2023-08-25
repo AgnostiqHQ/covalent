@@ -27,9 +27,11 @@ from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import postprocess_prefix, prefix_separator, sublattice_prefix
+from .._shared_files.qelectron_utils import QE_DB_DIRNAME
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.lattice import Lattice
 from .._workflow.transport import TransportableObject
+from ..quantum.qserver import database as qe_db
 
 if TYPE_CHECKING:
     from .._shared_files.util_classes import Status
@@ -263,6 +265,7 @@ Node Outputs
             "end_time": self.lattice.transport_graph.get_node_value(node_id, "end_time"),
             "status": self._get_node_status(node_id),
             "output": self._get_node_output(node_id),
+            "qelectron": self._get_node_qelectron_data(node_id),
             "error": self.lattice.transport_graph.get_node_value(node_id, "error"),
             "sublattice_result": self.lattice.transport_graph.get_node_value(
                 node_id, "sublattice_result"
@@ -372,6 +375,27 @@ Node Outputs
         """
         return self._lattice.transport_graph.get_node_value(node_id, "output")
 
+    def _get_node_qelectron_data(self, node_id: int) -> dict:
+        """
+        Return all QElectron data associated with a node.
+
+        Args:
+            node_id: The node id.
+
+        Returns:
+            The QElectron data of said node. Will return None if no data exists.
+        """
+        try:
+            # Checks existence of QElectron data.
+            self._lattice.transport_graph.get_node_value(node_id, "qelectron_data_exists")
+        except KeyError:
+            return None
+
+        results_dir = get_config("dispatcher")["results_dir"]
+        db_dir = os.path.join(results_dir, self.dispatch_id, QE_DB_DIRNAME)
+
+        return qe_db.Database(db_dir).get_db(dispatch_id=self.dispatch_id, node_id=node_id)
+
     def _get_node_error(self, node_id: int) -> Union[None, str]:
         """
         Return the error of a node.
@@ -407,6 +431,7 @@ Node Outputs
         sublattice_result: "Result" = None,
         stdout: str = None,
         stderr: str = None,
+        qelectron_data_exists: bool = False,
     ) -> None:
         """
         Update the node result in the transport graph.
@@ -423,6 +448,7 @@ Node Outputs
             sublattice_result: The result of the sublattice if any.
             stdout: The stdout of the node execution.
             stderr: The stderr of the node execution.
+            qelectron_data_exists: Flag indicating presence of Qelectron(s) inside the task
 
         Returns:
             None
@@ -463,6 +489,9 @@ Node Outputs
 
         if stderr is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
+
+        if qelectron_data_exists:
+            self.lattice.transport_graph.set_node_value(node_id, "qelectron_data_exists", qelectron_data_exists)
 
         app_log.debug("Inside update node - SUCCESS")
 

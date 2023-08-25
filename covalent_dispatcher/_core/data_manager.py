@@ -34,6 +34,7 @@ from covalent._shared_files.defaults import sublattice_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport_graph_ops import TransportGraphOps
+from covalent._shared_files.qelectron_utils import extract_qelectron_db, write_qelectron_db
 
 from .._db import load, update, upsert
 from .._db.write_result_to_db import resolve_electron_id
@@ -50,6 +51,7 @@ _dispatch_status_queues = {}
 
 
 def generate_node_result(
+    dispatch_id: str,
     node_id: int,
     node_name: str,
     start_time=None,
@@ -66,7 +68,8 @@ def generate_node_result(
     Helper routine to prepare the node result
 
     Arg(s)
-        node_id: ID of the node in the transport graph
+        dispatch_id: ID of the dispatched workflow
+        node_id: ID of the node in the trasport graph
         node_name: Name of the node
         start_time: Start time of the node
         end_time: Time at which the node finished executing
@@ -81,6 +84,13 @@ def generate_node_result(
     Return(s)
         Dictionary of the inputs
     """
+    clean_stdout, bytes_data = extract_qelectron_db(stdout)
+    qelectron_data_exists = bool(bytes_data)
+
+    if qelectron_data_exists:
+        app_log.debug(f"Reproducing Qelectron database for node {node_id}")
+        write_qelectron_db(dispatch_id, node_id, bytes_data)
+
     return {
         "node_id": node_id,
         "node_name": node_name,
@@ -89,10 +99,11 @@ def generate_node_result(
         "status": status,
         "output": output,
         "error": error,
-        "stdout": stdout,
+        "stdout": clean_stdout,
         "stderr": stderr,
         "sub_dispatch_id": sub_dispatch_id,
         "sublattice_result": sublattice_result,
+        "qelectron_data_exists": qelectron_data_exists,
     }
 
 
@@ -371,6 +382,7 @@ async def _update_parent_electron(result_object: Result):
             status = RESULT_STATUS.FAILED
         parent_result_obj = get_result_object(dispatch_id)
         node_result = generate_node_result(
+            dispatch_id=dispatch_id,
             node_id=node_id,
             node_name=parent_result_obj.lattice.transport_graph.get_node_value(node_id, "name"),
             end_time=result_object.end_time,

@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Corrected support from distributed Hamiltonian expval calculations
+- Exposed qelectron db in sdk result object
+- UI changes added for qelectrons and fix for related config file corruption
+- UI fix regarding Qelectron not showing up
+- Performance optimisation of UI for large Qelectrons
+## Tests
+
+- Changed the method for startup and shutdown events for pytest to work with fastapi version 0.93.0
+- Fixed test cases to adapt changes to SQLAlchemy version 1.4.49
+- Add tests for GUI frontend and backend.
+
+### Docs
+
+- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
+- Updated documentation links in README
+
 ### Operations
 
 - Respecting node version as specified in `.nvmrc` file for tests workflow

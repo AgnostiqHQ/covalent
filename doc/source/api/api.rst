@@ -35,6 +35,25 @@ API
 .. _dispatch_infrastructure_api:
 .. include:: ./section_dispatch_infrastructure.rst
 
+.. _qelectrons_api:
+
+Quantum Electrons
+"""""""""""""""""""""""""""
+
+.. autodecorator:: covalent.qelectron
+
+
+----------------------------------------------------------------
+
+.. _qclusters_api:
+
+Quantum Clusters
+"""""""""""""""""""""""""""
+
+.. autopydantic_model:: covalent.executor.QCluster
+
+
+----------------------------------------------------------------
 
 .. _covalent_cli_tool_api:
 .. include:: ./section_covalent_cli_tool.rst
