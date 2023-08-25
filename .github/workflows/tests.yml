@@ -164,6 +164,12 @@ jobs:
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
 
+      - name: Set up Node
+        if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: 'covalent_ui/webapp/.nvmrc'
+
       - name: Build webapp
         if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
         uses: nick-fields/retry@v2
@@ -277,11 +283,7 @@ jobs:
       - name: Dump Covalent logs
         if: >
           steps.covalent_start.outcome == 'success'
-          && (steps.sdk-tests.outcome == 'failed'
-          || steps.dispatcher-tests.outcome == 'failed'
-          || steps.functional-tests.outcome == 'failed'
-          || steps.ui-backend-tests.outcome == 'failed'
-          || steps.ui-frontend-tests.outcome == 'failed')
+          && failure()
         run: covalent logs
 
       - name: Upload SDK report to Codecov
