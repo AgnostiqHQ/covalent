@@ -38,6 +38,7 @@ def _qml_mods_pickle(func: Callable) -> Callable:
     A decorator that applies overrides to select PennyLane objects, making them
     pickleable and/or un-pickleable in the local scope.
     """
+
     def _wrapper(*args, **kwargs):
         with _method_overrides(_PENNYLANE_METHOD_OVERRIDES):
             return func(*args, **kwargs)
@@ -68,8 +69,7 @@ def _apply_method_overrides(overrides: Tuple[Any, str, Callable]) -> Callable:
     """
 
     restoration_list = []
-    for (cls, method_name, func) in overrides:
-
+    for cls, method_name, func in overrides:
         # Attribute will be deleted later if `attr` is a length-1 tuple.
         attr = (method_name,)
         if hasattr(cls, method_name):

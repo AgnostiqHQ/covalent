@@ -83,11 +83,7 @@ def shell_device_factory(
     default_capabilities = QEDevice.capabilities().copy()
 
     # Conditional override of the device's capabilities to accommodate interface.
-    overriden_capabilities = _override_capabilities(
-        results,
-        interface,
-        default_capabilities
-    )
+    overriden_capabilities = _override_capabilities(results, interface, default_capabilities)
 
     class _ShellDevice(qnode.device.__class__):
         # pylint: disable=too-few-public-methods
@@ -105,9 +101,9 @@ def shell_device_factory(
 
             # Conditional lifted from `qml.transforms.hamiltonian_expand`.
             if not (
-                len(original_tape.measurements) != 1 or
-                not isinstance(original_tape.measurements[0].obs, qml.Hamiltonian) or
-                not isinstance(original_tape.measurements[0], ExpectationMP)
+                len(original_tape.measurements) != 1
+                or not isinstance(original_tape.measurements[0].obs, qml.Hamiltonian)
+                or not isinstance(original_tape.measurements[0], ExpectationMP)
             ):
                 # Apply batch transform for Hamiltonian expvals.
                 return transforms.hamiltonian_expand(original_tape)
@@ -140,9 +136,7 @@ def shell_device_factory(
 
 
 def _override_capabilities(
-    results: Any,
-    interface: str,
-    default_capabilities: dict
+    results: Any, interface: str, default_capabilities: dict
 ) -> Optional[dict]:
     """
     Implements interface-based conditional overrides for device capabilities.
@@ -155,33 +149,28 @@ def _override_capabilities(
     if interface == "torch":
         if isinstance(results, list) or results.ndim == 0:
             return {
-                'model': 'qubit',
-                'passthru_interface': 'torch',
+                "model": "qubit",
+                "passthru_interface": "torch",
             }
         return default_capabilities
 
     if interface == "jax":
         return {
-            'model': 'qubit',
-            'passthru_interface': 'jax',
+            "model": "qubit",
+            "passthru_interface": "jax",
         }
 
     warnings.warn(f"Skipped capabilities override. No logic defined for '{interface}' interface")
     return default_capabilities
 
 
-def _reshape_for_interface(
-    interface: str,
-    circuits: List[QuantumTape],
-    results: Any
-):
+def _reshape_for_interface(interface: str, circuits: List[QuantumTape], results: Any):
     """
     Reshape or re-package the return value in an interface-specific way to satisfy
     expected shape or type requirements in Pennylane's execution pipeline.
     """
 
     if interface in {"auto", "numpy"}:
-
         # More than one circuit and more than one result.
         if len(circuits) > 1 and hasattr(results, "__len__") and len(results) > 1:
             return [[r] for r in results]
