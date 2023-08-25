@@ -20,7 +20,7 @@
 
 import asyncio
 import time
-from typing import Optional, Union
+from typing import Sequence, Union
 
 import pennylane as qml
 from local_sampler import QiskitLocalSampler
@@ -85,7 +85,7 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
        shots: The number of shots to use for the execution device. Overrides the
             :code:`shots` value from the original device if set to :code:`None` or
             a positive :code:`int`. The shots setting from the original device is
-            is used by default, when this argument is 0.
+            is used by default.
         backend: The name of the IBM Quantum backend device. Defaults to
             :code:`"ibmq_qasm_simulator"`.
         ibmqx_token: The IBM Quantum API token.
@@ -96,7 +96,6 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
     """
 
     max_jobs: int = 20
-    shots: Optional[int] = 0
 
     backend: str = Field(
         default_factory=lambda: get_config("qelectron")["IBMQExecutor"]["backend"]
@@ -111,16 +110,13 @@ class IBMQExecutor(BaseThreadPoolQExecutor):
     )
 
     def batch_submit(self, qscripts_list):
-        # Check `self.shots` against 0 to allow override with `None`.
-        device_shots = self.shots if self.shots != 0 else self.qnode_device_shots
-
         p = get_thread_pool(self.max_jobs)
         jobs = []
         for qscript in qscripts_list:
             dev = qml.device(
                 "qiskit.ibmq",
-                wires=self.qnode_device_wires,
-                shots=device_shots,
+                wires=self.qelectron_info.device_wires,
+                shots=self.override_shots,
                 backend=self.backend,
                 ibmqx_token=self.ibmqx_token,
                 hub=self.hub,
@@ -190,7 +186,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
         default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["project"]
     )
 
-    shots: Optional[int] = 1024
+    shots: Union[None, int, Sequence[int], Sequence[Union[int, Sequence[int]]]] = 1024
     single_job: bool = False
     local_transpile: bool = False
 
@@ -212,8 +208,8 @@ class QiskitExecutor(AsyncBaseQExecutor):
         Keyword arguments to pass to the device constructor.
         """
         return {
-            "wires": self.qnode_device_wires,
-            "shots": self.qnode_device_shots or self.shots,
+            "wires": self.qelectron_info.device_wires,
+            "shots": self.qelectron_info.device_shots or self.override_shots,
             "backend_name": self.backend,
             "local_transpile": self.local_transpile,
             "max_time": self.max_time,
@@ -239,12 +235,12 @@ class QiskitExecutor(AsyncBaseQExecutor):
         # Initialize a custom Pennylane device
         dev = _execution_device_factory(
             self.device,
-            qnode_device_cls=import_from_path(self.qnode_device_import_path),
+            qnode_device_cls=import_from_path(self.qelectron_info.device_import_path),
             **self.device_init_kwargs,
         )
 
         # Set `pennylane.active_return()` status
-        dev.pennylane_active_return = self.pennylane_active_return
+        dev.pennylane_active_return = self.qelectron_info.pennylane_active_return
         return dev
 
     def batch_submit(self, qscripts_list):
@@ -288,7 +284,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
         """
 
         start_time = time.perf_counter()
-        results = qml.execute([tape], device, None)
+        results = qml.execute([tape], device, gradient_fn="best")
 
         await asyncio.sleep(0)
 
@@ -310,7 +306,7 @@ class QiskitExecutor(AsyncBaseQExecutor):
         """
 
         start_time = time.perf_counter()
-        results = qml.execute(tapes, device, None)
+        results = qml.execute(tapes, device, gradient_fn="best")
 
         await asyncio.sleep(0)
 

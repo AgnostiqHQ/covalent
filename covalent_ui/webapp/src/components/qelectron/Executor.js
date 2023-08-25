@@ -31,7 +31,7 @@ const Executor = (props) => {
     (state) => state.electronResults.qelectronJobOverviewList.isFetching
   )
   return (
-    <Grid px={2}>
+    <Grid px={2} data-testid="Executor-grid">
       <Paper
         elevation={0}
         sx={(theme) => ({

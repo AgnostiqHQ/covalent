@@ -161,7 +161,7 @@ export function DispatchLayout() {
 const UUID_PATTERN =
   /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/;
 
-export function DispatchLayoutValidate () {
+export function DispatchLayoutValidate() {
   let { dispatchId } = useParams()
   if (!UUID_PATTERN.test(dispatchId)) {
     return <NotFound text="Lattice dispatch not found." />

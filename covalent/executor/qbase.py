@@ -24,24 +24,27 @@ from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 from threading import Thread
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Union
 
 import orjson
 import pennylane as qml
 from mpire import WorkerPool
-from pydantic import BaseModel, Extra, Field, root_validator
+from pydantic import BaseModel, Extra, Field, root_validator  # pylint: disable=no-name-in-module
+
+from .._shared_files.qinfo import QElectronInfo, QNodeSpecs
 
 __all__ = [
     "BaseQExecutor",
     "BaseProcessPoolQExecutor",
     "AsyncBaseQExecutor",
     "BaseThreadPoolQExecutor",
-    "AsyncBaseQCluster",
 ]
+
+SHOTS_DEFAULT = -1
 
 
 def orjson_dumps(v, *, default):
-    return orjson.dumps(v, default=default).decode()
+    return orjson.dumps(v, default=default).decode()  # pylint: disable=no-member
 
 
 @lru_cache
@@ -75,7 +78,40 @@ def get_asyncio_event_loop():
 
 
 class BaseQExecutor(ABC, BaseModel):
+    """
+    Base class for all Quantum Executors.
+    """
+
+    shots: Union[None, int, Sequence[int], Sequence[Union[int, Sequence[int]]]] = SHOTS_DEFAULT
+    shots_converter: type = None
     persist_data: bool = True
+
+    # Executors need to contain certain information about original QNode, in order
+    # to produce correct results. These attributes below contain that information.
+    # They are set inside the `QServer` and will be `None` client-side.
+    qelectron_info: QElectronInfo = None
+    qnode_specs: QNodeSpecs = None
+
+    @property
+    def override_shots(self) -> Union[int, None]:
+        """
+        Fallback to the QNode device's shots if no user-specified shots on executor.
+        """
+
+        if self.shots is SHOTS_DEFAULT:
+            # No user-specified shots. Use the original QNode device's shots instead.
+            shots = self.qelectron_info.device_shots
+            shots_converter = self.qelectron_info.device_shots_type
+            return shots_converter(shots) if shots_converter is not None else shots
+        if self.shots is None:
+            # User has specified `shots=None` on executor.
+            return None
+
+        if isinstance(self.shots, Sequence) and self.shots_converter is not None:
+            return self.shots_converter(self.shots)
+
+        # User has specified `shots` as an int.
+        return self.shots
 
     class Config:
         extra = Extra.allow
@@ -97,7 +133,7 @@ class BaseQExecutor(ABC, BaseModel):
 
     def run_circuit(self, qscript, device, result_obj: "QCResult") -> "QCResult":
         start_time = time.perf_counter()
-        results = qml.execute([qscript], device, None)
+        results = qml.execute([qscript], device, gradient_fn="best")
         end_time = time.perf_counter()
 
         result_obj.results = results
@@ -105,12 +141,20 @@ class BaseQExecutor(ABC, BaseModel):
 
         return result_obj
 
-    # To make executor instances re-usable, these attributes are set
-    # server-side, after reconstruction.
-    qnode_device_import_path: Tuple[str, str] = None
-    qnode_device_shots: Optional[int] = None
-    qnode_device_wires: int = None
-    pennylane_active_return: bool = None
+    def dict(self, *args, **kwargs):
+        dict_ = super().dict(*args, **kwargs)
+
+        # Ensure shots is a hashable value.
+        shots = dict_.get("shots")
+        if isinstance(shots, Sequence):
+            dict_["shots"] = tuple(shots)
+
+            # Set shots converter to recover original sequence type.
+            shots_converter = dict_.get("shots_converter")
+            if shots_converter is None:
+                dict_["shots_converter"] = type(shots)
+
+        return dict_
 
 
 class QCResult(BaseModel):
@@ -157,10 +201,7 @@ class QCResult(BaseModel):
         Create a blank instance with pre-set metadata.
         """
         result_obj = cls()
-        backend_name = ""
-        if hasattr(executor, "backend"):
-            backend_name = executor.backend
-
+        backend_name = executor.backend if hasattr(executor, "backend") else ""
         result_obj.metadata.update(
             device_name=device_name,
             executor_name=executor.__class__.__name__,
@@ -170,7 +211,7 @@ class QCResult(BaseModel):
 
 
 class SyncBaseQExecutor(BaseQExecutor):
-    device: str = "default.qubit"
+    device: Optional[str] = "default.qubit"
 
     def run_all_circuits(self, qscripts_list) -> List[QCResult]:
         result_objs: List[QCResult] = []
@@ -178,8 +219,8 @@ class SyncBaseQExecutor(BaseQExecutor):
         for qscript in qscripts_list:
             dev = qml.device(
                 self.device,
-                wires=self.qnode_device_wires,
-                shots=self.qnode_device_shots,
+                wires=self.qelectron_info.device_wires,
+                shots=self.qelectron_info.device_shots,
             )
 
             result_obj = QCResult.with_metadata(device_name=dev.short_name, executor=self)
@@ -205,7 +246,7 @@ class AsyncBaseQExecutor(BaseQExecutor):
     Executor that uses `asyncio` to handle multiple job submissions
     """
 
-    device: str = "default.qubit"
+    device: Optional[str] = "default.qubit"
 
     def batch_submit(self, qscripts_list):
         futures = []
@@ -213,8 +254,8 @@ class AsyncBaseQExecutor(BaseQExecutor):
         for qscript in qscripts_list:
             dev = qml.device(
                 self.device,
-                wires=self.qnode_device_wires,
-                shots=self.qnode_device_shots,
+                wires=self.qelectron_info.device_wires,
+                shots=self.qelectron_info.device_shots,
             )
 
             result_obj = QCResult.with_metadata(
@@ -237,7 +278,7 @@ class AsyncBaseQExecutor(BaseQExecutor):
     async def run_circuit(self, qscript, device, result_obj) -> QCResult:
         await asyncio.sleep(0)
         start_time = time.perf_counter()
-        results = qml.execute([qscript], device, None)
+        results = qml.execute([qscript], device, gradient_fn="best")
         end_time = time.perf_counter()
 
         result_obj.results = results
@@ -247,7 +288,7 @@ class AsyncBaseQExecutor(BaseQExecutor):
 
 
 class BaseProcessPoolQExecutor(BaseQExecutor):
-    device: str = "default.qubit"
+    device: Optional[str] = "default.qubit"
     num_processes: int = 10
 
     def batch_submit(self, qscripts_list):
@@ -257,8 +298,8 @@ class BaseProcessPoolQExecutor(BaseQExecutor):
         for qscript in qscripts_list:
             dev = qml.device(
                 self.device,
-                wires=self.qnode_device_wires,
-                shots=self.qnode_device_shots,
+                wires=self.qelectron_info.device_wires,
+                shots=self.qelectron_info.device_shots,
             )
 
             result_obj = QCResult.with_metadata(
@@ -275,7 +316,7 @@ class BaseProcessPoolQExecutor(BaseQExecutor):
 
 
 class BaseThreadPoolQExecutor(BaseQExecutor):
-    device: str = "default.qubit"
+    device: Optional[str] = "default.qubit"
     num_threads: int = 10
 
     def batch_submit(self, qscripts_list):
@@ -285,8 +326,8 @@ class BaseThreadPoolQExecutor(BaseQExecutor):
         for qscript in qscripts_list:
             dev = qml.device(
                 self.device,
-                wires=self.qnode_device_wires,
-                shots=self.qnode_device_shots,
+                wires=self.qelectron_info.device_wires,
+                shots=self.qelectron_info.device_shots,
             )
 
             result_obj = QCResult.with_metadata(

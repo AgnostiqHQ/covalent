@@ -42,14 +42,14 @@ const styles = {
   boxShadow: 24,
 }
 
-const SingleGrid = ({ title, value }) => {
+const SingleGrid = ({ title, value, id }) => {
 
   const qelectronJobOverviewIsFetching = useSelector(
     (state) => state.electronResults.qelectronJobOverviewList.isFetching
   );
 
   return (
-    <Grid item sx={{ width: '10.4rem' }}>
+    <Grid item sx={{ width: '10.4rem' }} data-testid={id}>
       <Typography
         sx={{
           fontSize: theme.typography.sidebarh3,
@@ -91,8 +91,9 @@ const Circuit = ({ circuitDetails }) => {
       const obj = {};
       if (/qbit[0-9]+_gates/.test(item)) {
         obj['value'] = details[item];
-        const i = item?.substring(4, item?.indexOf('_'))
-        obj['title'] = `No. ${i}-Qubit Gates`
+        const i = item?.substring(4, item?.indexOf('_'));
+        obj['title'] = `No. ${i}-Qubit Gates`;
+        obj['id'] = item;
         gatesArray?.push(obj);
       }
     })
@@ -103,7 +104,7 @@ const Circuit = ({ circuitDetails }) => {
 
   const renderQubitgates = () => {
     return circuitData?.gates?.map((detail, index) => (
-      <SingleGrid title={detail?.title} value={detail?.value} />
+      <SingleGrid title={detail?.title} value={detail?.value} id={detail?.id} />
     ));
   }
 
@@ -114,6 +115,7 @@ const Circuit = ({ circuitDetails }) => {
       container
       height="14rem"
       sx={{ overflow: 'auto' }}
+      data-testid="Circuit-grid"
     >
       <Grid
         id="topGrid"
@@ -123,9 +125,9 @@ const Circuit = ({ circuitDetails }) => {
         columnSpacing={7.4}
         rowSpacing={4}
       >
-        <SingleGrid title="No. of Qubits" value={circuitData?.total_qbits} />
+        <SingleGrid title="No. of Qubits" value={circuitData?.total_qbits} id='total_qbits' />
         {renderQubitgates()}
-        <SingleGrid title="Depth" value={circuitData?.depth} />
+        <SingleGrid title="Depth" value={circuitData?.depth} id='depth' />
       </Grid>
       <Grid id="bottomGrid" mt={3}>
         <Typography
@@ -137,7 +139,7 @@ const Circuit = ({ circuitDetails }) => {
           Circuit
         </Typography>
 
-        <Grid sx={{ width: '17rem', height: '5rem' }}>
+        <Grid sx={{ width: '17rem', height: '5rem' }} data-testid="circuit">
           <Paper
             elevation={0}
             sx={(theme) => ({

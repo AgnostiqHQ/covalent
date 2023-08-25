@@ -18,56 +18,25 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+"""
+Define the special QNode that replaces Pennylane circuits decorated with `@ct.qelectron`.
+"""
+
 from contextlib import contextmanager
-from typing import Any, Dict, List, Optional
+from typing import List
 
 import pennylane as qml
-from pydantic import BaseModel  # pylint: disable=no-name-in-module
 
 from .._results_manager.qresult import QNodeFutureResult
+from .._shared_files.qinfo import QElectronInfo, QNodeSpecs
+from .._shared_files.qresult_utils import re_execute
+from .._shared_files.utils import get_original_shots
 from ..executor.qbase import BaseQExecutor
 from .qdevice import QEDevice
 
 _GRADIENT_ACCESS_MAXES = {
     "parameter-shift": 2,
 }
-
-
-class QNodeSpecs(BaseModel):
-    """
-    A container for the specifications of a QNode.
-    """
-
-    gate_sizes: Dict[str, int]
-    gate_types: Dict[str, int]
-    num_operations: int
-    num_observables: int
-    num_diagonalizing_gates: int
-    num_used_wires: int
-    depth: int
-    num_trainable_params: int = None
-    num_device_wires: int
-    device_name: str
-    diff_method: Optional[str]
-    expansion_strategy: str
-    gradient_options: Dict[str, int]
-    interface: Optional[str]
-    gradient_fn: Optional[str]
-    num_gradient_executions: Any = 0
-    num_parameter_shift_executions: int = None
-
-
-class QElectronInfo(BaseModel):
-    """
-    A container for related settings used by the wrapping QElectron.
-    """
-
-    name: str
-    description: str = None
-    qnode_device_import_path: str  # used to inherit type converters and other methods
-    qnode_device_shots: Optional[int]  # optional default for execution devices
-    num_device_wires: int  # this can not be reliably inferred from tapes alone
-    pennylane_active_return: bool  # client-side status of `pennylane.active_return()`
 
 
 class QNodeQE(qml.QNode):
@@ -97,10 +66,14 @@ class QNodeQE(qml.QNode):
 
         self.original_qnode = qnode
 
+        # Private gradient_fn enables overriding the `gradient_fn` attribute.
+        self._gradient_fn = None
+        self._gradient_fn_overridden = False
+
         # Create a new device for every QNodeQE instance
         qe_device = QEDevice(
             wires=qnode.device.num_wires,
-            shots=qnode.device.shots,
+            shots=get_original_shots(qnode.device),
             executors=executors,
             qelectron_info=qelectron_info,
         )
@@ -113,18 +86,6 @@ class QNodeQE(qml.QNode):
             expansion_strategy=qnode.expansion_strategy,
             max_expansion=qnode.max_expansion,
         )
-
-        self._gradient_fn = None
-        self._override_gradient_fn = None
-        self._gradient_access_counter = 0
-
-        # Update `execute_kwargs` such that `qe_device.batch_execute` will be called
-        # to obtain the circuits result, and `qe_device.gradients` will be called
-        # to obtain the gradients.
-        if self.device.qelectron_info.pennylane_active_return:
-            self.execute_kwargs.update(grad_on_execution=False)
-        else:
-            self.execute_kwargs.update(mode="backward")
 
     @contextmanager
     def mark_call_async(self):
@@ -153,77 +114,100 @@ class QNodeQE(qml.QNode):
             self(*args, **kwargs)
             batch_id = self.device._batch_id
 
-        return QNodeFutureResult(batch_id, self.original_qnode, self.tape)
+        future_result = QNodeFutureResult(
+            batch_id,
+            interface=self.device.qnode_specs.interface,
+            original_qnode=self.original_qnode,
+            original_tape=self.tape,
+        )
+
+        return future_result(*args, **kwargs)
 
     def __call__(self, *args, **kwargs):
+        """
+        Call QElectrons with args and kwargs suitable for the original QNode.
+        """
+
         self.device.qnode_specs = self._specs(*args, **kwargs)
-        with self.override_gradient_fn("device"):
-            return super().__call__(*args, **kwargs)
+
+        # This leads to execution on the QEDevice `self.device`.
+        retval = super().__call__(*args, **kwargs)
+        self._update_num_executions()
+
+        if self.device._async_run:
+            # Do nothing during call from `run_later()`.
+            return None
+
+        # Skip re-execution for numpy interface.
+        interface = self.device.qnode_specs.interface
+        if interface in {"numpy", "autograd"}:
+            return retval
+
+        # Run through an overloaded circuit/device to loop `retval` into interfaces.
+        retval = re_execute(retval, self.original_qnode, self.tape)(interface, *args, **kwargs)
+
+        return retval
+
+    def _update_num_executions(self):
+        """
+        Increment number of executions on original and custom device.
+        """
+        self.device._num_executions += 1
+        self.original_qnode.device._num_executions += 1
 
     def _specs(self, *args, **kwargs) -> QNodeSpecs:
         """
         Check args and kwargs to avoid computing gradients on non-trainable parameters.
+        Update the interface if it is set to "auto".
         """
-
-        # No args or kwargs to worry about.
-        if not args and not kwargs:
-            return QNodeSpecs(**qml.specs(self)(*args, **kwargs))
 
         # Some args or some kwargs are trainable. No warning expected.
-        if any(qml.math.get_trainable_indices(args)) or any(
-            qml.math.get_trainable_indices(kwargs.values())
+        if (args or kwargs) and (
+            any(qml.math.get_trainable_indices(args))
+            or any(qml.math.get_trainable_indices(kwargs.values()))
         ):
-            return QNodeSpecs(**qml.specs(self)(*args, **kwargs))
+            specs = QNodeSpecs(**qml.specs(self)(*args, **kwargs))
+        else:
+            # No trainable params. Avoid warning.
+            with self.override_gradient_fn(None):
+                specs = QNodeSpecs(**qml.specs(self)(*args, **kwargs))
 
-        # No trainable params. Avoid warning.
-        with self.override_gradient_fn("none"):
-            return QNodeSpecs(**qml.specs(self)(*args, **kwargs))
+            # Replace override value with actual `gradient_fn`.
+            self.construct(args, kwargs)
+            specs.gradient_fn = self.gradient_fn
+
+        # This will be done inside QNode.__call__() to update `self.interface`.
+        # Here, we anticipate that change and update the specs as well.
+        specs.interface = qml.math.get_interface(*args, *list(kwargs.values()))
+
+        return specs
 
     @contextmanager
-    def override_gradient_fn(self, gradient_fn):
+    def override_gradient_fn(self, fn):
         """
-        Set the `_override_gradient_fn` attribute to enable custom `gradient_fn`
-        property behavior.
+        Override the private `self._gradient_fn` to override the `gradient_fn`
+        attribute (property).
         """
-        self._override_gradient_fn = gradient_fn
+        self._gradient_fn, _tmp_gradient_fn = fn, self._gradient_fn
+        self._gradient_fn_overridden = True
         try:
             yield
         finally:
-            self._override_gradient_fn = None
-
-    @property
-    def gradient_access_max(self):
-        """
-        Return the maximum number of times the `gradient_fn` property can be
-        accessed before the overridden value is returned and the counter is reset.
-        """
-        return _GRADIENT_ACCESS_MAXES.get(self.diff_method, -1)
+            self._gradient_fn = _tmp_gradient_fn
+            self._gradient_fn_overridden = False
 
     @property
     def gradient_fn(self):
         """
-        Override the `gradient_fn` attribute to return custom value (as set by
-        `override_gradient_fn`) every second time the property is accessed.
+        This property replaces the `qml.QNode.gradient_fn` attribute and enables overriding it.
         """
-        if (
-            self._override_gradient_fn
-            and self._gradient_access_counter >= self.gradient_access_max
-        ):
-            self.reset_gradient_counter()
-            return self._override_gradient_fn
-
-        # Increment access counter.
-        self._gradient_access_counter += 1
         return self._gradient_fn
 
     @gradient_fn.setter
     def gradient_fn(self, fn):
-        # Set attribute and reset access counter.
+        """
+        Enforces gradient override.
+        """
+        if self._gradient_fn_overridden:
+            return  # disallow setting `.gradient_fn``
         self._gradient_fn = fn
-        self.reset_gradient_counter()
-
-    def reset_gradient_counter(self):
-        """
-        Reset the gradient access counter to 0.
-        """
-        self._gradient_access_counter = 0

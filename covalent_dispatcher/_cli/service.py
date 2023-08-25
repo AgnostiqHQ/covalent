@@ -977,6 +977,7 @@ def cluster(
 @click.command()
 def config() -> None:
     """Display the Covalent configuration"""
+
     cm = get_config_manager()
 
     console = Console()

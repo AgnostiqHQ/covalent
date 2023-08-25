@@ -23,7 +23,7 @@ import warnings
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from math import sqrt
-from typing import Any, List, Tuple, Union
+from typing import Any, List, Sequence, Tuple, Union
 
 import numpy as np
 import pennylane.numpy as pnp
@@ -47,7 +47,7 @@ class _PennylaneQiskitDevice(QiskitDevice, ABC):
     def __init__(
         self,
         wires: int,
-        shots: int,
+        shots: Union[None, int, Sequence[int], Sequence[Union[int, Sequence[int]]]],
         backend_name: str,
         local_transpile: bool,
         service_init_kwargs: dict,
@@ -145,7 +145,7 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
     def __init__(
         self,
         wires: int,
-        shots: int,
+        shots: Union[None, int, Sequence[int], Sequence[Union[int, Sequence[int]]]],
         backend_name: str,
         local_transpile: bool,
         service_init_kwargs: dict,
@@ -338,7 +338,11 @@ class QiskitSamplerDevice(_PennylaneQiskitDevice):
             if not self.pennylane_active_return:
                 res = self._statistics_legacy(circuit)
                 return self.asarray(res)
-            res = self.statistics(circuit)
+
+            if self._shot_vector is not None:
+                res = self.shot_vec_statistics(circuit)
+            else:
+                res = self.statistics(circuit)
 
         if len(circuit.measurements) > 1:
             return tuple(res)
