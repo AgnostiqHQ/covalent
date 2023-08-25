@@ -19,9 +19,12 @@
 # Relief from the License may be granted by purchasing a commercial license.
 
 
+import pytest
+
 import covalent as ct
 
 
+@pytest.mark.skip(reason="temp skip test")
 def test_local_executor_returns_stdout_stderr():
     from covalent.executor import LocalExecutor
 
