@@ -38,6 +38,12 @@ DEFAULT_UI_ADDRESS = get_config("user_interface.address")
 DEFAULT_UI_PORT = get_config("user_interface.port")
 
 
+# Dictionary to map Dask clients to their scheduler addresses
+_address_client_mapper = {}
+
+_IMPORT_PATH_SEPARATOR = ":"
+
+
 def get_ui_url(path):
     baseUrl = f"http://{DEFAULT_UI_ADDRESS}:{DEFAULT_UI_PORT}"
     return f"{baseUrl}{path}"
@@ -224,19 +230,12 @@ def get_named_params(func, args, kwargs):
     return (named_args, named_kwargs)
 
 
-# Dictionary to map Dask clients to their scheduler addresses
-_address_client_mapper = {}
-
-
 def cloudpickle_serialize(obj):
     return cloudpickle.dumps(obj)
 
 
 def cloudpickle_deserialize(obj):
     return cloudpickle.loads(obj)
-
-
-_IMPORT_PATH_SEPARATOR = ":"
 
 
 def select_first_executor(qnode, executors):

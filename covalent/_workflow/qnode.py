@@ -28,6 +28,10 @@ from .._results_manager.qresult import QNodeFutureResult
 from ..executor.qbase import BaseQExecutor
 from .qdevice import QEDevice
 
+_GRADIENT_ACCESS_MAXES = {
+    "parameter-shift": 2,
+}
+
 
 class QNodeSpecs(BaseModel):
     """
@@ -64,11 +68,6 @@ class QElectronInfo(BaseModel):
     qnode_device_shots: Optional[int]  # optional default for execution devices
     num_device_wires: int  # this can not be reliably inferred from tapes alone
     pennylane_active_return: bool  # client-side status of `pennylane.active_return()`
-
-
-_GRADIENT_ACCESS_MAXES = {
-    "parameter-shift": 2,
-}
 
 
 class QNodeQE(qml.QNode):
