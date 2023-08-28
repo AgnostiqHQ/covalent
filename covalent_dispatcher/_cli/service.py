@@ -503,6 +503,9 @@ def start(
     console.print(config_table)
     console.print("\nServer Status: [green]:heavy_check_mark:[/green] Running", style="bold")
 
+    dispatcher_address = f"http://{str(get_config('dispatcher.address'))}:{str(port)}"
+    console.print(f"\nCovalent UI can be accessed at {dispatcher_address}")
+
     if not no_footer:
         console.print("\nFor a summary of the system status, use 'covalent status'")
         print_footer(console)

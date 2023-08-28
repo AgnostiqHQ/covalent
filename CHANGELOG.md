@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+- Fixed dispatcher address not showing when covalent server starts.
+
 ### Operations
 
 - Respecting node version as specified in `.nvmrc` file for tests workflow
