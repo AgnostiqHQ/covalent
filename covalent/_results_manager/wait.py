@@ -28,6 +28,7 @@ class Wait:
         return self.RETRIES
 
 
+SHORT = Wait(30)
 LONG = Wait(3000)
 VERY_LONG = Wait(60000)
 EXTREME = Wait(sys.maxsize)
