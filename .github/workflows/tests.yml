@@ -253,7 +253,7 @@ jobs:
         id: functional-tests
         if: env.BUILD_AND_RUN_ALL
         timeout-minutes: 30
-        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vvs tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
 
       - name: Generate functional test coverage report
         id: functional-coverage

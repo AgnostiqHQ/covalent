@@ -27,6 +27,7 @@ This is a plugin executor module; it is loaded if found and properly structured.
 
 import os
 from concurrent.futures import ProcessPoolExecutor
+from functools import lru_cache
 from typing import Any, Callable, Dict, List, Optional
 
 # Relative imports are not allowed in executor plugins
@@ -58,7 +59,16 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     "create_unique_workdir": False,
 }
 
-proc_pool = ProcessPoolExecutor()
+
+@lru_cache(maxsize=1)
+def get_process_pool() -> ProcessPoolExecutor:
+    """
+    Get the process pool executor.
+
+    Returns:
+        The process pool executor.
+    """
+    return ProcessPoolExecutor()
 
 
 class LocalExecutor(BaseExecutor):
@@ -103,6 +113,8 @@ class LocalExecutor(BaseExecutor):
         Return(s)
             Task output
         """
+
+        proc_pool = get_process_pool()
 
         app_log.debug(f"Running function {function} locally")
 
