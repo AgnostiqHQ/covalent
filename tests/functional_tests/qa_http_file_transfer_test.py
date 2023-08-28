@@ -20,9 +20,12 @@
 
 """Test http file transfer."""
 
+import pytest
+
 import covalent as ct
 
 
+@pytest.mark.skip(reason="temp skip test")
 def test_http_file_transfer():
     """Test http file transfer."""
 

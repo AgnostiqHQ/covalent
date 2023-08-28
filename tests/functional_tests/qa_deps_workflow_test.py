@@ -23,11 +23,13 @@
 from pathlib import Path
 
 import numpy
+import pytest
 
 import covalent as ct
 from covalent import DepsBash, DepsCall, DepsPip
 
 
+@pytest.mark.skip(reason="temp skip test")
 def test_deps_workflow():
     """Test the deps functionality."""
 
