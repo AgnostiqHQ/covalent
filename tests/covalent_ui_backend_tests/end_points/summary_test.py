@@ -131,7 +131,7 @@ def test_list_invalid_count():
     if "response_data" in test_data:
         api_response = response.json()
         mock_response = test_data["response_data"]
-        del api_response["detail"][0]["url"]
+        # del api_response["detail"][0]["url"]
         assert api_response == mock_response
 
 
