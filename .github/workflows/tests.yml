@@ -217,7 +217,7 @@ jobs:
           if [ "${{ matrix.backend }}" = 'dask' ] ; then
             covalent start -d
           elif [ "${{ matrix.backend }}" = 'local' ] ; then
-            covalent start --no-cluster -d
+            covalent start --no-cluster
           else
             echo "Invalid backend specified in test matrix."
             exit 1
