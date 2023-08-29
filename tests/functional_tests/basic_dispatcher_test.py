@@ -26,6 +26,7 @@ import covalent as ct
 from covalent._results_manager import results_manager as rm
 
 
+@pytest.mark.debug
 def test_dispatcher_functional():
     # Dispatch after starting the dispatcher server.
 
@@ -69,7 +70,7 @@ def test_dispatcher_functional():
     res = ct.get_result(dispatch_id, wait=True)
     output = res.result
 
-    assert output == "aqbq"
+    assert res == "aqbq"
 
     try:
         output = ct.dispatch(bad_workflow)("z")
