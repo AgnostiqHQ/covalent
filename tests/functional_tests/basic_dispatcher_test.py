@@ -26,7 +26,7 @@ import covalent as ct
 from covalent._results_manager import results_manager as rm
 
 
-@pytest.mark.skip(reason="temp skip test")
+@pytest.mark.debug
 def test_dispatcher_functional():
     # Dispatch after starting the dispatcher server.
 

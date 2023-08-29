@@ -26,7 +26,7 @@ import pytest
 import covalent as ct
 
 
-@pytest.mark.skip(reason="temp skip test")
+@pytest.mark.debug
 def test_using_executor_names():
     """Test that all loaded executors can be used in a simple electron."""
 
@@ -46,7 +46,7 @@ def test_using_executor_names():
     assert output.result == "input"
 
 
-@pytest.mark.skip(reason="temp skip test")
+@pytest.mark.debug
 def test_using_executor_classes():
     """Test creating executor objects and using them in a simple electron."""
 
