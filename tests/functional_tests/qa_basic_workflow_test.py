@@ -21,12 +21,9 @@
 
 """QA script to test basic workflow functionality."""
 
-import pytest
-
 import covalent as ct
 
 
-@pytest.mark.skip(reason="temp skip test")
 def test_basic_workflow():
     """Test the basic workflow functionality."""
 

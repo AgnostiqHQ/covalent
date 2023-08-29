@@ -27,7 +27,6 @@ from sklearn import datasets, svm
 import covalent as ct
 
 
-@pytest.mark.skip(reason="temp skip test")
 def test_svm_workflow():
     """Test the SVM workflow."""
 

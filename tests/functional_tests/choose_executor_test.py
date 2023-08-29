@@ -24,7 +24,6 @@
 import covalent as ct
 
 
-# @pytest.mark.debug
 def test_using_executor_names():
     """Test that all loaded executors can be used in a simple electron."""
 

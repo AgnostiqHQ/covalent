@@ -21,12 +21,9 @@
 """QA script to test the call deps return value functionality."""
 
 
-import pytest
-
 import covalent as ct
 
 
-@pytest.mark.skip(reason="temp skip test")
 def test_call_deps_retval():
     """Test the call deps return value functionality."""
 

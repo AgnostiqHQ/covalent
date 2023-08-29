@@ -33,7 +33,6 @@ class WORKFLOW_TYPES(str, enum.Enum):
     HAGRID = "HAGRID"
 
 
-@pytest.mark.skip(reason="temp skip test")
 @pytest.mark.parametrize(
     "workflow_type, parallel, serial, n",
     [

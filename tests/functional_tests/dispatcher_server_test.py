@@ -54,6 +54,4 @@ def test_dispatcher_server():
     assert result.status == ct.status.COMPLETED
     assert result.result == 3
 
-    print(result)
-
     rm._delete_result(dispatch_id)
