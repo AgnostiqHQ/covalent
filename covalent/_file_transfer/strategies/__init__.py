@@ -31,7 +31,7 @@ try:
 except:  # pragma: no cover
     pass
 
-try:
-    from .gcloud_strategy import GCloud
-except:  # pragma: no cover
-    pass
+# try:
+#     from .gcloud_strategy import GCloud
+# except:  # pragma: no cover
+#     pass
