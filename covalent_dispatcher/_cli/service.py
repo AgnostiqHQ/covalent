@@ -30,6 +30,7 @@ import signal
 import socket
 import sys
 import time
+import traceback
 from pathlib import Path
 from subprocess import DEVNULL, Popen
 from typing import Optional
@@ -449,29 +450,24 @@ def start(
     else:
         set_config("sdk.no_cluster", "true")
 
-    port = _graceful_start(
-        UI_SRVDIR, UI_PIDFILE, UI_LOGFILE, port, no_cluster, develop, no_triggers, triggers_only
-    )
-
-    # try:
-    #     with Status("Starting server...", console=console):
-    #         port = _graceful_start(
-    #             UI_SRVDIR,
-    #             UI_PIDFILE,
-    #             UI_LOGFILE,
-    #             port,
-    #             no_cluster,
-    #             develop,
-    #             no_triggers,
-    #             triggers_only,
-    #         )
-    # except Exception:
-    #     click.secho("Error: ", fg="red")
-    #     click.secho(
-    #         "Covalent was unable to start due to the following error: ", fg="red", bold=True
-    #     )
-    #     click.secho(traceback.format_exc(), fg="lightgrey")
-    #     return ctx.exit(1)
+    try:
+        with Status("Starting server...", console=console):
+            port = _graceful_start(
+                UI_SRVDIR,
+                UI_PIDFILE,
+                UI_LOGFILE,
+                port,
+                no_cluster,
+                develop,
+                no_triggers,
+                triggers_only,
+            )
+    except Exception:
+        click.secho("Error: ", fg="red")
+        click.secho(
+            "Covalent was unable to start due to the following error: ", fg="red", bold=True
+        )
+        click.secho(traceback.format_exc(), fg="lightgrey")
 
     set_config("user_interface.port", port)
     set_config("dispatcher.port", port)
