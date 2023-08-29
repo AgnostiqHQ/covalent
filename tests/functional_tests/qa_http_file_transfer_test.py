@@ -20,7 +20,6 @@
 
 """Test http file transfer."""
 
-
 import covalent as ct
 
 

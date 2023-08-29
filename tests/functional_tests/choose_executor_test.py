@@ -43,7 +43,6 @@ def test_using_executor_names():
     assert output.result == "input"
 
 
-# @pytest.mark.debug
 def test_using_executor_classes():
     """Test creating executor objects and using them in a simple electron."""
 
