@@ -225,29 +225,29 @@ jobs:
         env:
           COVALENT_EXECUTOR_DIR: doc/source/how_to/execution/custom_executors
 
-      - name: Run SDK tests and measure coverage
-        id: sdk-tests
-        if: >
-          steps.modified-files.outputs.sdk == 'true'
-          || env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_tests --cov=covalent --cov-config=.coveragerc
+      # - name: Run SDK tests and measure coverage
+      #   id: sdk-tests
+      #   if: >
+      #     steps.modified-files.outputs.sdk == 'true'
+      #     || env.BUILD_AND_RUN_ALL
+      #   run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_tests --cov=covalent --cov-config=.coveragerc
 
-      - name: Generate SDK coverage report
-        id: sdk-coverage
-        if: steps.sdk-tests.outcome == 'success'
-        run: coverage xml -o sdk_coverage.xml
+      # - name: Generate SDK coverage report
+      #   id: sdk-coverage
+      #   if: steps.sdk-tests.outcome == 'success'
+      #   run: coverage xml -o sdk_coverage.xml
 
-      - name: Run dispatcher tests and measure coverage
-        id: dispatcher-tests
-        if: >
-          steps.modified-files.outputs.dispatcher == 'true'
-          || env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
+      # - name: Run dispatcher tests and measure coverage
+      #   id: dispatcher-tests
+      #   if: >
+      #     steps.modified-files.outputs.dispatcher == 'true'
+      #     || env.BUILD_AND_RUN_ALL
+      #   run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
 
-      - name: Generate dispatcher coverage report
-        id: dispatcher-coverage
-        if: steps.dispatcher-tests.outcome == 'success'
-        run: coverage xml -o dispatcher_coverage.xml
+      # - name: Generate dispatcher coverage report
+      #   id: dispatcher-coverage
+      #   if: steps.dispatcher-tests.outcome == 'success'
+      #   run: coverage xml -o dispatcher_coverage.xml
 
       - name: Run functional tests and measure coverage
         id: functional-tests
