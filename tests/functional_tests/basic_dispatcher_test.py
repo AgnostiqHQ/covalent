@@ -18,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import sys
 from pathlib import Path
 
 import pytest
@@ -70,8 +71,8 @@ def test_dispatcher_functional():
     res = ct.get_result(dispatch_id, wait=True)
     output = res.result
 
-    assert str(res) == "aqbq"
-    print("RESULT:", res)
+    assert str(res._get_node_error(5)) == "aqbq"
+    print("RESULT:", res, file=sys.stderr)
 
     try:
         output = ct.dispatch(bad_workflow)("z")
