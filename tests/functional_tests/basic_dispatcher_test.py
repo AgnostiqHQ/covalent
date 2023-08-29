@@ -70,7 +70,8 @@ def test_dispatcher_functional():
     res = ct.get_result(dispatch_id, wait=True)
     output = res.result
 
-    assert res == "aqbq"
+    assert str(res) == "aqbq"
+    print("RESULT:", res)
 
     try:
         output = ct.dispatch(bad_workflow)("z")
