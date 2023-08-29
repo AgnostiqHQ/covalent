@@ -18,7 +18,6 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
-import pytest
 
 import covalent as ct
 from covalent._dispatcher_plugins.local import LocalDispatcher
@@ -26,7 +25,7 @@ from covalent._dispatcher_plugins.local import LocalDispatcher
 dispatcher = LocalDispatcher()
 
 
-@pytest.mark.debug
+# @pytest.mark.debug
 def test_local_dispatcher_dispatch():
     """Tests whether the local dispatcher can dispatch a workflow successfully."""
 
@@ -46,7 +45,7 @@ def test_local_dispatcher_dispatch():
     assert isinstance(dispatch_id, str)
 
 
-@pytest.mark.debug
+# @pytest.mark.debug
 def test_local_dispatcher_dispatch_sync():
     """Tests whether the local dispatcher can synchronously dispatch a workflow successfully."""
 

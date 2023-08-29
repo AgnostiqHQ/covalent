@@ -71,7 +71,7 @@ def test_dispatcher_functional():
     output = res.result
 
     assert output == "aqbq"
-    print(res)
+    print("RESULT:", res)
 
     try:
         output = ct.dispatch(bad_workflow)("z")
