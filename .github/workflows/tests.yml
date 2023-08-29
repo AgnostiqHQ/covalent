@@ -254,11 +254,12 @@ jobs:
         if: env.BUILD_AND_RUN_ALL
         timeout-minutes: 30
         run: |
-          covalent db migrate;
+          covalent db migrate
           if [ "${{ matrix.backend }}" = 'dask' ] ; then
             covalent purge -Hy && covalent start -d;
           elif [ "${{ matrix.backend }}" = 'local' ] ; then
             covalent purge -Hy && covalent start --no-cluster -d;
+          fi
           PYTHONPATH=$PWD/ pytest -vvs -m debug tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
 
       - name: Generate functional test coverage report
