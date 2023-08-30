@@ -339,7 +339,7 @@ def make_derived_dispatch(
 
 
 def get_result_object(dispatch_id: str) -> Result:
-    return _registered_dispatches[dispatch_id]
+    return _registered_dispatches.get(dispatch_id)
 
 
 def _register_result_object(result_object: Result):

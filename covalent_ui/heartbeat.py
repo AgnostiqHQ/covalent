@@ -82,8 +82,8 @@ async def cancel_all_with_status(status: Status) -> List[str]:
 
         page += 1
 
-    for dispatch in dispatch_ids:
-        await cancel_dispatch(dispatch.dispatch_id)
+    for dispatch_id in dispatch_ids:
+        await cancel_dispatch(dispatch_id)
 
     return dispatch_ids
 
