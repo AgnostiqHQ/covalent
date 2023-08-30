@@ -466,7 +466,6 @@ def start(
             "Covalent was unable to start due to the following error: ", fg="red", bold=True
         )
         click.secho(traceback.format_exc(), fg="lightgrey")
-        return ctx.exit(1)
 
     set_config("user_interface.port", port)
     set_config("dispatcher.port", port)

@@ -215,9 +215,9 @@ jobs:
         run: |
           covalent db migrate
           if [ "${{ matrix.backend }}" = 'dask' ] ; then
-            covalent start
+            covalent start -d
           elif [ "${{ matrix.backend }}" = 'local' ] ; then
-            covalent start --no-cluster
+            covalent start --no-cluster -d
           else
             echo "Invalid backend specified in test matrix."
             exit 1
@@ -225,12 +225,22 @@ jobs:
         env:
           COVALENT_EXECUTOR_DIR: doc/source/how_to/execution/custom_executors
 
+      - name: Run functional tests and measure coverage
+        id: functional-tests
+        if: env.BUILD_AND_RUN_ALL
+        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
+
+      - name: Generate functional test coverage report
+        id: functional-coverage
+        if: steps.functional-tests.outcome == 'success'
+        run: coverage xml -o functional_tests_coverage.xml
+
       - name: Run SDK tests and measure coverage
         id: sdk-tests
         if: >
           steps.modified-files.outputs.sdk == 'true'
           || env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_tests --cov=covalent --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_tests --cov=covalent --cov-config=.coveragerc
 
       - name: Generate SDK coverage report
         id: sdk-coverage
@@ -242,29 +252,19 @@ jobs:
         if: >
           steps.modified-files.outputs.dispatcher == 'true'
           || env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
 
       - name: Generate dispatcher coverage report
         id: dispatcher-coverage
         if: steps.dispatcher-tests.outcome == 'success'
         run: coverage xml -o dispatcher_coverage.xml
 
-      - name: Run functional tests and measure coverage
-        id: functional-tests
-        if: env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
-
-      - name: Generate functional test coverage report
-        id: functional-coverage
-        if: steps.functional-tests.outcome == 'success'
-        run: coverage xml -o functional_tests_coverage.xml
-
       - name: Run UI backend tests and measure coverage
         id: ui-backend-tests
         if: >
           steps.modified-files.outputs.ui_backend == 'true'
           || env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_backend_tests --cov=covalent_ui --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_ui_backend_tests --cov=covalent_ui --cov-config=.coveragerc
 
       - name: Generate UI backend coverage report
         id: ui-backend-coverage

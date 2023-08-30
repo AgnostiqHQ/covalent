@@ -27,7 +27,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated documentation links in README
 
 ### Fixed
+
 - Fixed dispatcher address not showing when covalent server starts.
+- Fixed the failing tests in the `nightly` workflow.
 
 ### Operations
 
@@ -64,7 +66,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed the upper limit from `dask` and `distributed` packages' versions until we find a version which is incompatible with Covalent.
 - When the server is stopped, any workflows in a non-terminal state are first cancelled
 - Pinned sqlalchemy version with upper limit <2.0.0.
-- Added rich support to cli for better printing statements. 
+- Added rich support to cli for better printing statements.
+- Performed minor modifications and rearrangementsto fix the broken tests in the `nightly` workflow.
 
 ### Tests
 
