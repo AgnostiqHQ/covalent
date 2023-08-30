@@ -1,3 +1,5 @@
+# Copyright 2021 Agnostiq Inc.
+#
 # This file is part of Covalent.
 #
 # Licensed under the GNU Affero General Public License 3.0 (the "License").
@@ -15,6 +17,7 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
 #
 # Relief from the License may be granted by purchasing a commercial license.
+
 
 import sys
 from dataclasses import dataclass

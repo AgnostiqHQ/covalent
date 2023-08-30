@@ -71,9 +71,6 @@ def test_dispatcher_functional():
 
     assert output == "aqbq"
 
-    # assert str(res._get_node_error(5)) == "aqbq"
-    # print("RESULT:", res, file=sys.stderr)
-
     try:
         output = ct.dispatch(bad_workflow)("z")
     except Exception as ex:
