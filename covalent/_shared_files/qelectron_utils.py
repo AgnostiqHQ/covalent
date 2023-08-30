@@ -21,7 +21,7 @@
 import base64
 import re
 from pathlib import Path
-from typing import Tuple
+from typing import Tuple, Union
 
 from ..executor.utils.context import get_context
 from .config import get_config
@@ -31,6 +31,29 @@ _QE_DB_DATA_MARKER = "<====QELECTRON_DB_DATA====>"
 _DATA_FILENAME = "data.mdb"
 
 QE_DB_DIRNAME = ".database"
+
+
+def _get_qelectron_db_subdir(dispatch_id: str, node_id: Union[int, str]) -> Path:
+    """Subdirectory for a given workflow task in the server 'qelectron_db_path'"""
+    db_dir = Path(get_config("dispatcher")["qelectron_db_path"]).resolve()
+    return db_dir / dispatch_id / f"node-{node_id}"
+
+
+def _get_results_node_subdir(dispatch_id: str, node_id: Union[int, str]) -> Path:
+    """Subdirectory for a given workflow task in the server 'results_dir'"""
+    results_dir = Path(get_config("dispatcher")["results_dir"]).resolve()
+
+    # Create DB entry in the "results_dir", if it does not exist.
+    qelectron_db_dir = results_dir / dispatch_id / QE_DB_DIRNAME
+    if not qelectron_db_dir.exists():
+        qelectron_db_dir.mkdir()
+
+    # Create node subdirectory if it does not exist.
+    node_dir = qelectron_db_dir / dispatch_id / f"node-{node_id}"
+    if not node_dir.exists():
+        node_dir.mkdir(parents=True)
+
+    return node_dir
 
 
 def print_qelectron_db() -> None:
@@ -46,12 +69,12 @@ def print_qelectron_db() -> None:
     context = get_context()
     node_id, dispatch_id = context.node_id, context.dispatch_id
 
-    db_dir = Path(get_config("dispatcher")["qelectron_db_path"]).resolve()
-    task_subdir = db_dir / dispatch_id / f"node-{node_id}"
+    task_subdir = _get_qelectron_db_subdir(dispatch_id, node_id)
     if not task_subdir.exists():
-        # qelectron database not found for dispatch_id/node
+        # QElectron database not found for dispatch_id/node.
         return
 
+    # Create DB entry in the "qelectron_db_path" in case of local execution.
     with open(task_subdir / _DATA_FILENAME, "rb") as data_mdb_file:
         data_bytes = base64.b64encode(data_mdb_file.read())
 
@@ -60,7 +83,7 @@ def print_qelectron_db() -> None:
     print(output_string)
 
 
-def extract_qelectron_db(s: str) -> Tuple[str, bytes]:
+def extract_qelectron_db(s: Union[None, str]) -> Tuple[str, bytes]:
     """
     Detect Qelectron data in `s` and process into dict if found
 
@@ -71,17 +94,17 @@ def extract_qelectron_db(s: str) -> Tuple[str, bytes]:
         s_without_db: captured stdout string without Qelectron data
         bytes_data: bytes representing the `data.mdb` file
     """
-    # do nothing if string is empty or no database bytes found in the `s`
+    # Do nothing if string is empty or no database bytes found in the `s`.
     data_pattern = f".*{_QE_DB_DATA_MARKER}(.*){_QE_DB_DATA_MARKER}.*"
     if not s or not (_matches := re.findall(data_pattern, s)):
-        app_log.debug("No Qelectron data detected")
-        return s, b""
+        app_log.debug(f"No Qelectron data detected in '{s!s}'")
+        return s, b''
 
-    # load qelectron data and convert back to bytes
+    # Load qelectron data and convert back to bytes.
     app_log.debug("Detected Qelectron output data")
     bytes_data = base64.b64decode(_matches.pop())
 
-    # remove decoded database bytes from `s`
+    # Remove decoded database bytes from `s`.
     s_without_db = remove_qelectron_db(s)
 
     return s_without_db, bytes_data
@@ -119,20 +142,26 @@ def write_qelectron_db(
 
     inside the `results_dir/dispatch_id`.
     """
-    results_dir = Path(get_config("dispatcher")["results_dir"]).resolve()
 
-    # create the database directory if it does not exist
-    qelectron_db_dir = results_dir / dispatch_id / QE_DB_DIRNAME
-    if not qelectron_db_dir.exists():
-        qelectron_db_dir.mkdir()
+    # Create DB entry in the "results_dir", if it does not exist.
+    node_dir = _get_results_node_subdir(dispatch_id, node_id)
 
-    # create node subdirectory if it does not exist
-    node_dir = qelectron_db_dir / dispatch_id / f"node-{node_id}"
-    if not node_dir.exists():
-        node_dir.mkdir(parents=True)
-
-    # write 'data.mdb' file
+    # Write "data.mdb" file.
     data_mdb_path = node_dir / _DATA_FILENAME
-    app_log.debug(f"Writing Qelectron database file {str(data_mdb_path)}")
+    app_log.debug(f"Writing Qelectron database file in results: {str(data_mdb_path)}")
     with open(data_mdb_path, "wb") as data_mdb_file:
         data_mdb_file.write(bytes_data)
+
+    # Create DB entry in the "qelectron_db_path" in case of remote execution.
+    task_subdir = _get_qelectron_db_subdir(dispatch_id, node_id)
+    data_mdb_path = task_subdir / _DATA_FILENAME
+    if task_subdir.exists():
+        app_log.debug(f"Task subdirectory already exists in qelectron_db_path: {str(data_mdb_path)}")
+    else:
+        # Create task subdirectory.
+        task_subdir.mkdir(parents=True)
+        app_log.debug(f"Writing Qelectron database file in qelectron_db_path: {str(data_mdb_path)}")
+
+        # Write "data.mdb" file.
+        with open(data_mdb_path, "wb") as server_data_mdb_file:
+            server_data_mdb_file.write(bytes_data)
