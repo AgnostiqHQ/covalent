@@ -22,7 +22,7 @@
 import os
 import shutil
 from dataclasses import asdict
-from functools import lru_cache, reduce
+from functools import reduce
 from operator import getitem
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -31,21 +31,6 @@ import filelock
 import toml
 
 """Configuration manager."""
-
-
-@lru_cache(maxsize=1)
-def get_config_manager() -> "ConfigManager":
-    """
-    Get the configuration manager.
-
-    Args:
-        None
-
-    Returns:
-        ConfigManager object
-    """
-
-    return ConfigManager()
 
 
 class ConfigManager:
@@ -229,7 +214,7 @@ def set_config(new_config: Union[Dict, str], new_value: Any = None) -> None:
     Returns:
         None
     """
-    cm = get_config_manager()
+    cm = ConfigManager()
 
     if isinstance(new_config, str):
         cm.set(new_config, new_value)
@@ -256,7 +241,7 @@ def get_config(entries: Union[str, List] = None) -> Union[Dict, Union[str, int]]
     """
 
     entries = entries or []
-    cm = get_config_manager()
+    cm = ConfigManager()
 
     if isinstance(entries, List) and len(entries) == 0:
         # If no arguments are passed, return the full configuration as a dict
@@ -283,7 +268,7 @@ def reload_config() -> None:
     Returns:
         None
     """
-    cm = get_config_manager()
+    cm = ConfigManager()
     cm.read_config()
 
 
@@ -301,5 +286,5 @@ def update_config(new_entries: Optional[Dict] = None, override_existing: bool = 
     Returns:
         None
     """
-    cm = get_config_manager()
+    cm = ConfigManager()
     cm.update_config(new_entries, override_existing)
