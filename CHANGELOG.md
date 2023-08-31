@@ -26,6 +26,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
 - Updated documentation links in README
 
+
+## [0.228.0-rc.0] - 2023-08-31
+
+### Authors
+
+- Andrew S. Rosen <asrosen93@gmail.com>
+- Co-authored-by: Sankalp Sanand <sankalp@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+- WingCode <smallstar1234@gmail.com>
+- Nick Tyler <nicholas.s.tyler.4@gmail.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Aravind <100823292+Aravind-psiog@users.noreply.github.com>
+- Co-authored-by: Manjunath PV <manjunath.poilath@psiog.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: RaviPsiog <raviteja.gurram@psiog.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+- Co-authored-by: mpvgithub <107603631+mpvgithub@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- dwelsch-esi <116022979+dwelsch-esi@users.noreply.github.com>
+- Co-authored-by: dwelsch-memverge <david.welsch@memverge.com>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+
 ### Fixed
 
 - Fixed dispatcher address not showing when covalent server starts.
