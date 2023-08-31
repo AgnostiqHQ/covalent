@@ -98,7 +98,7 @@ def extract_qelectron_db(s: Union[None, str]) -> Tuple[str, bytes]:
     data_pattern = f".*{_QE_DB_DATA_MARKER}(.*){_QE_DB_DATA_MARKER}.*"
     if not s or not (_matches := re.findall(data_pattern, s)):
         app_log.debug(f"No Qelectron data detected in '{s!s}'")
-        return s, b''
+        return s, b""
 
     # Load qelectron data and convert back to bytes.
     app_log.debug("Detected Qelectron output data")
@@ -156,11 +156,15 @@ def write_qelectron_db(
     task_subdir = _get_qelectron_db_subdir(dispatch_id, node_id)
     data_mdb_path = task_subdir / _DATA_FILENAME
     if task_subdir.exists():
-        app_log.debug(f"Task subdirectory already exists in qelectron_db_path: {str(data_mdb_path)}")
+        app_log.debug(
+            f"Task subdirectory already exists in qelectron_db_path: {str(data_mdb_path)}"
+        )
     else:
         # Create task subdirectory.
         task_subdir.mkdir(parents=True)
-        app_log.debug(f"Writing Qelectron database file in qelectron_db_path: {str(data_mdb_path)}")
+        app_log.debug(
+            f"Writing Qelectron database file in qelectron_db_path: {str(data_mdb_path)}"
+        )
 
         # Write "data.mdb" file.
         with open(data_mdb_path, "wb") as server_data_mdb_file:
