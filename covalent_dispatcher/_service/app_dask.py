@@ -223,20 +223,36 @@ class DaskCluster(Process):
         dashboard_link = self.cluster.dashboard_link
 
         try:
-            update_config(
-                {
-                    "dask": {
-                        "scheduler_address": scheduler_address,
-                        "dashboard_link": dashboard_link,
-                        "process_info": current_process(),
-                        "pid": os.getpid(),
-                        "admin_host": self.admin_host,
-                        "admin_port": self.admin_port,
-                    }
-                }
-            )
-
-            admin = DaskAdminWorker(self.cluster, self.admin_host, self.admin_port, self.logger)
-            admin.start()
+            self.start_cluster_and_verify_config(scheduler_address, dashboard_link)
         except Exception as e:
             self.logger.exception(e)
+
+    def start_cluster_and_verify_config(self, scheduler_address, dashboard_link):
+        update_config(
+            {
+                "dask": {
+                    "scheduler_address": scheduler_address,
+                    "dashboard_link": dashboard_link,
+                    "process_info": current_process(),
+                    "pid": os.getpid(),
+                    "admin_host": self.admin_host,
+                    "admin_port": self.admin_port,
+                }
+            }
+        )
+
+        admin = DaskAdminWorker(self.cluster, self.admin_host, self.admin_port, self.logger)
+        admin.start()
+
+        try:
+            # Verify if cluster config is updated
+            assert get_config("dask.scheduler_address") == scheduler_address
+            assert get_config("dask.dashboard_link") == dashboard_link
+            assert get_config("dask.process_info") == current_process()
+            assert get_config("dask.pid") == os.getpid()
+            assert get_config("dask.admin_host") == self.admin_host
+            assert get_config("dask.admin_port") == self.admin_port
+        except AssertionError as e:
+            self.logger.exception(e)
+            admin.join()
+            raise e
