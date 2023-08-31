@@ -25,7 +25,7 @@ from typing import Dict
 
 from fastapi import APIRouter, HTTPException, status
 
-from covalent._shared_files.config import get_config_manager
+from covalent._shared_files.config import ConfigManager
 from covalent_ui.api.v1.models.settings_model import (
     GetSettingsResponseModel,
     UpdateSettingsResponseModel,
@@ -47,7 +47,7 @@ def get_settings():
     server = {}
     client = {}
 
-    settings = get_config_manager()
+    settings = ConfigManager()
 
     [
         server.update({validator.value: settings.config_data[validator.value]})
@@ -98,6 +98,6 @@ def post_settings(new_entries: Dict, override_existing: bool = True):
                 }
             ],
         )
-    settings = get_config_manager()
+    settings = ConfigManager()
     settings.update_config(new_entries[file_type], override_existing)
     return UpdateSettingsResponseModel(data="settings updated successfully")

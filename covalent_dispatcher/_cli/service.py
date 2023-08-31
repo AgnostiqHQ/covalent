@@ -55,7 +55,7 @@ from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
 
-from covalent._shared_files.config import get_config, get_config_manager, set_config
+from covalent._shared_files.config import ConfigManager, get_config, set_config
 
 from .._db.datastore import DataStore
 from .migrate import migrate_pickled_result_object
@@ -694,7 +694,7 @@ def purge(ctx, hard: bool, yes: bool, hell_yeah: bool) -> None:
     """
     Purge Covalent from this system
     """
-    cm = get_config_manager()
+    cm = ConfigManager()
 
     console = Console()
 
@@ -980,7 +980,7 @@ def cluster(
 def config() -> None:
     """Display the Covalent configuration"""
 
-    cm = get_config_manager()
+    cm = ConfigManager()
 
     console = Console()
     print_header(console)
