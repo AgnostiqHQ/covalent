@@ -300,7 +300,6 @@ async def _run_task(
         app_log.debug(f"Exception occurred when running task {node_id}:")
         app_log.debug(tb)
         error_msg = tb if debug_mode else str(ex)
-        error_msg += "\n" + f" Executor: {executor}"
         node_result = datasvc.generate_node_result(
             dispatch_id=dispatch_id,
             node_id=node_id,
