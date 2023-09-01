@@ -295,7 +295,9 @@ class Electrons:
         if not is_qa_electron:
             return None
         qdb_path = _path_to_qelectron_db(dispatch_id=str(dispatch_id))
-        return len(Database(qdb_path).get_circuit_ids(dispatch_id=str(dispatch_id), node_id=node_id))
+        return len(
+            Database(qdb_path).get_circuit_ids(dispatch_id=str(dispatch_id), node_id=node_id)
+        )
 
     def get_avg_quantum_calls(self, dispatch_id, node_id, is_qa_electron: bool):
         if not is_qa_electron:
