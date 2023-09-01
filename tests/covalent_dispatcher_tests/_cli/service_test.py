@@ -616,7 +616,9 @@ def test_logs(exists, mocker):
 def test_config(mocker):
     """Test covalent config cli"""
 
-    cfg_read_config_mock = mocker.patch("covalent_dispatcher._cli.service.cm.read_config")
+    cfg_read_config_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.ConfigManager.read_config"
+    )
     json_dumps_mock = mocker.patch("covalent_dispatcher._cli.service.json.dumps")
     click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
 
