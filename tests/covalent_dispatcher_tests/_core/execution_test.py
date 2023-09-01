@@ -236,7 +236,7 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
     assert result_object._error == "The following tasks failed:\n0: failing_task"
 
 
-@pytest.mark.skip(reason="Temp skip")
+# @pytest.mark.skip(reason="Temp skip")
 @pytest.mark.asyncio
 async def test_run_workflow_with_failing_leaf(mocker):
     """Test running workflow with a failing leaf node"""
@@ -284,6 +284,7 @@ async def test_run_workflow_with_failing_leaf(mocker):
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
     )
+
     mock_get_failed_nodes = mocker.patch(
         "covalent._results_manager.result.Result._get_failed_nodes",
         return_value=[(0, "failing_task")],
