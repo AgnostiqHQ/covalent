@@ -22,6 +22,7 @@ import codecs
 import pickle
 import uuid
 from datetime import timedelta
+from pathlib import Path
 
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
@@ -30,6 +31,8 @@ from sqlalchemy.sql import func
 
 from covalent._results_manager.results_manager import get_result
 from covalent._shared_files import logger
+from covalent._shared_files.config import get_config
+from covalent._shared_files.qelectron_utils import QE_DB_DIRNAME
 from covalent.quantum.qserver.database import Database
 from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
 from covalent_dispatcher._service.app import get_result
@@ -41,6 +44,7 @@ from covalent_ui.api.v1.utils.file_handle import validate_data
 from covalent_ui.api.v1.utils.models_helper import JobsSortBy, SortDirection
 
 app_log = logger.app_log
+RESULTS_DIR = Path(get_config("dispatcher")["results_dir"]).resolve()
 
 
 class Electrons:
@@ -48,7 +52,6 @@ class Electrons:
 
     def __init__(self, db_con) -> None:
         self.db_con = db_con
-        self.qdb = Database()
 
     def electron_exist(self, electron_id: int) -> bool:
         return self.db_con.execute(
@@ -91,7 +94,7 @@ class Electrons:
             if not validated:
                 return jobs_response
             try:
-                jobs = self.qdb.get_db(dispatch_id=str(dispatch_id), node_id=electron_id)
+                jobs = _qelectron_get_db(str(dispatch_id), electron_id)
                 if not jobs:
                     jobs_response.data = []
                     jobs_response.msg = f"Job details for {dispatch_id} dispatch with {electron_id} node do not exist."
@@ -142,9 +145,8 @@ class Electrons:
             if not validated:
                 return job_detail_response
             try:
-                selected_job = self.qdb.get_db(dispatch_id=str(dispatch_id), node_id=electron_id)[
-                    job_id
-                ]
+                jobs = _qelectron_get_db(dispatch_id=str(dispatch_id), node_id=electron_id)
+                selected_job = jobs[job_id]
             except Exception as exc:
                 app_log.debug(f"Unable to process get jobs \n {exc}")
                 job_detail_response.data = []
@@ -292,12 +294,13 @@ class Electrons:
     def get_total_quantum_calls(self, dispatch_id, node_id, is_qa_electron: bool):
         if not is_qa_electron:
             return None
-        return len(self.qdb.get_circuit_ids(dispatch_id=str(dispatch_id), node_id=node_id))
+        qdb_path = _path_to_qelectron_db(dispatch_id=str(dispatch_id))
+        return len(Database(qdb_path).get_circuit_ids(dispatch_id=str(dispatch_id), node_id=node_id))
 
     def get_avg_quantum_calls(self, dispatch_id, node_id, is_qa_electron: bool):
         if not is_qa_electron:
             return None
-        jobs = self.qdb.get_db(dispatch_id=str(dispatch_id), node_id=node_id)
+        jobs = _qelectron_get_db(dispatch_id=str(dispatch_id), node_id=node_id)
         time = [jobs[value]["execution_time"] for value in jobs]
         return sum(time) / len(time)
 
@@ -320,3 +323,22 @@ class Electrons:
             node_id=electron_id, node_name=electron_result.name, result_object=result_object
         )
         return validate_data(inputs)
+
+
+def _path_to_qelectron_db(dispatch_id: str) -> Path:
+    """Construct path to the QElectron database in Covalent's results directory."""
+
+    # This is NOT the QServer's data.
+    qdb_path = RESULTS_DIR / dispatch_id / QE_DB_DIRNAME
+    qdb_path = qdb_path.resolve().absolute()
+
+    if not qdb_path.exists():
+        app_log.error(f"Expected QElectron database at {qdb_path}.")
+
+    return qdb_path
+
+
+def _qelectron_get_db(dispatch_id: str, node_id: int) -> dict:
+    """Return the QElectron jobs dictionary for a given node."""
+    qdb_path = _path_to_qelectron_db(dispatch_id)
+    return Database(qdb_path).get_db(dispatch_id=dispatch_id, node_id=node_id)
