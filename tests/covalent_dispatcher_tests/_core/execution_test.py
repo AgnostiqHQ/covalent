@@ -273,15 +273,11 @@ async def test_run_workflow_with_failing_leaf(mocker):
         "covalent._results_manager.result.Result._get_node_error", return_value="AssertionError"
     )
 
-    # mock_persist_result = mocker.patch(
-    #     "covalent_dispatcher._core.dispatcher.datasvc.persist_result"
-    # )
+    mock_persist_result = mocker.patch("covalent_dispatcher._core.data_manager.persist_result")
 
-    mock_unregister = mocker.patch(
-        "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
-    )
+    mock_unregister = mocker.patch("covalent_dispatcher._core.data_manager.finalize_dispatch")
     mocker.patch(
-        "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
     )
 
     status_queue = asyncio.Queue()
@@ -296,7 +292,7 @@ async def test_run_workflow_with_failing_leaf(mocker):
     update.persist(result_object)
 
     result_object = await run_workflow(result_object)
-    # mock_persist_result.assert_called_with(result_object.dispatch_id)
+    mock_persist_result.assert_called_with(result_object.dispatch_id)
     mock_unregister.assert_called_with(result_object.dispatch_id)
     assert result_object.status == Result.FAILED
     assert result_object._error == "The following tasks failed:\n0: failing_task"
