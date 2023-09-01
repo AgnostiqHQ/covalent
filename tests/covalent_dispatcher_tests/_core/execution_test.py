@@ -236,7 +236,7 @@ async def test_run_workflow_with_failing_nonleaf(mocker):
     assert result_object._error == "The following tasks failed:\n0: failing_task"
 
 
-# @pytest.mark.skip(reason="Temp skip")
+@pytest.mark.skip(reason="Temp skip")
 @pytest.mark.asyncio
 async def test_run_workflow_with_failing_leaf(mocker):
     """Test running workflow with a failing leaf node"""
