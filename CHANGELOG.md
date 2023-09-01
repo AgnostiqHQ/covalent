@@ -26,7 +26,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
 - Updated documentation links in README
 
-
 ## [0.228.0-rc.0] - 2023-08-31
 
 ### Authors
