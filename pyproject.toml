@@ -43,3 +43,6 @@ all = true
 
 [tool.pytest.ini_options]
 markers = ["conda: Marks tests that need conda"]
+
+[tool.setuptools.package-data]
+covalent = ["py.typed"]
