@@ -7,11 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+
 ### Changed
 
 - Raised the minimum version of Pydantic from 1.10.1 to 2.1.1 in `requirements.txt`
 
-## Added
+### Added
 
 - Added a `py.typed` file to support type-checking
 
