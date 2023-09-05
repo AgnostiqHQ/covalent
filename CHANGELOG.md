@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Electron DAL to use Covalent server's data instead of QServer's data.
+
 ### Added
 
 - Corrected support from distributed Hamiltonian expval calculations
@@ -14,7 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - UI changes added for qelectrons and fix for related config file corruption
 - UI fix regarding Qelectron not showing up
 - Performance optimisation of UI for large Qelectrons
-- 
+
 ## Tests
 
 - Changed the method for startup and shutdown events for pytest to work with fastapi version 0.93.0

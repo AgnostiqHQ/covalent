@@ -92,10 +92,10 @@ def remove_qelectron_db(output: str):
     Replace the Qelectron DB string in `s` with the empty string.
 
     Arg:
-        s:
+        output: captured stdout string
 
     Return:
-        the string `s` without any Qelectron database
+        the output string without QElectron database removed
     """
     output = re.sub(f"{_QE_DB_DATA_MARKER}.*{_QE_DB_DATA_MARKER}", "", output)
     return output.strip()
@@ -112,10 +112,13 @@ def write_qelectron_db(
 
     That is, creates the tree
 
-    .database
-    └── <dispatch-id>
-        └── <node-id>
-            └── data.mdb
+    covalent
+    └── data
+        └── <dispatch-id>
+            └── .database
+                └── <dispatch-id>  # redundant hierarchy here to mimic QServer DB
+                    └── <node-id>
+                        └── data.mdb
 
     inside the `results_dir/dispatch_id`.
     """
