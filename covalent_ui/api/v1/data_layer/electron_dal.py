@@ -330,7 +330,7 @@ class Electrons:
 def _path_to_qelectron_db(dispatch_id: str) -> Path:
     """Construct path to the QElectron database in Covalent's results directory."""
 
-    # This is NOT the QServer's data.
+    # This is NOT the QServer's data but rather the qdb stored on Covalent's server.
     qdb_path = RESULTS_DIR / dispatch_id / QE_DB_DIRNAME
     qdb_path = qdb_path.resolve().absolute()
 
