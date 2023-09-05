@@ -351,7 +351,6 @@ async def run_workflow(result_object: Result) -> Result:
         _plan_workflow(result_object)
         status_queue = datasvc.get_status_queue(result_object.dispatch_id)
         result_object = await _run_planned_workflow(result_object, status_queue)
-        assert False
 
     except Exception as ex:
         app_log.error(f"Exception during _run_planned_workflow: {ex}")
