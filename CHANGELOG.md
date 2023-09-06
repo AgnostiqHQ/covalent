@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Changed `actions/checkout@v3` to `actions/checkout@v4` in CI
 - Raised the minimum version of Pydantic from 1.10.1 to 2.1.1 in `requirements.txt`
 
 ## [0.228.0-rc.0] - 2023-08-31
@@ -39,7 +40,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
-
 
 ### Fixed
 
@@ -70,8 +70,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Enhanced the quickstart with a set of commonly used features
 - Removed duplicate "stop server" warning in the First Experimemnt page
 - Fixed typo in quickstart
-- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
-- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
+- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch
+- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch
 - Updated documentation links in README
 - Updating and reorganizing RTD API documentation
 - Adding example links in API documentation
@@ -114,7 +114,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: Casey Jao <casey@agnostiq.ai>
-
 
 ### Added
 
@@ -184,7 +183,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Error messages are propagated to stdout when the server is not started. These changes are applied to `dispatch`, `redispatch`, and `get_result`.
-
 
 ### Docs
 
