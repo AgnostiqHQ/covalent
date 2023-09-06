@@ -1,3 +1,5 @@
+# Copyright 2021 Agnostiq Inc.
+#
 # This file is part of Covalent.
 #
 # Licensed under the GNU Affero General Public License 3.0 (the "License").
@@ -16,6 +18,7 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+
 import sys
 from dataclasses import dataclass
 
@@ -28,6 +31,7 @@ class Wait:
         return self.RETRIES
 
 
+SHORT = Wait(30)
 LONG = Wait(3000)
 VERY_LONG = Wait(60000)
 EXTREME = Wait(sys.maxsize)

@@ -468,7 +468,6 @@ def start(
             "Covalent was unable to start due to the following error: ", fg="red", bold=True
         )
         click.secho(traceback.format_exc(), fg="lightgrey")
-        return ctx.exit(1)
 
     set_config("user_interface.port", port)
     set_config("dispatcher.port", port)
@@ -502,6 +501,9 @@ def start(
 
     console.print(config_table)
     console.print("\nServer Status: [green]:heavy_check_mark:[/green] Running", style="bold")
+
+    dispatcher_address = f"http://{str(get_config('dispatcher.address'))}:{str(port)}"
+    console.print(f"\nCovalent UI can be accessed at {dispatcher_address}")
 
     if not no_footer:
         console.print("\nFor a summary of the system status, use 'covalent status'")

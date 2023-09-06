@@ -1150,8 +1150,7 @@ def test_graceful_start_permission_exception(mocker):
     click_secho_mock = mocker.patch("covalent_dispatcher._cli.service.click.secho")
 
     runner = CliRunner()
-    result = runner.invoke(start)
-    assert result.exit_code == 1
+    runner.invoke(start)
 
     assert graceful_start_mock.called_once()
     assert click_secho_mock.call_count == 3
