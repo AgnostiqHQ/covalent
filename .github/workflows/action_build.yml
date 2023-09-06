@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out head
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
       - name: Install npm, ncc, and jq on Ubuntu
