@@ -9,10 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Raised the minimum version of Pydantic from 1.10.1 to 2.1.1 in `requirements.txt`
 - Electron DAL to use Covalent server's data instead of QServer's data.
 
 ### Added
 
+- Added a `py.typed` file to support type-checking
 - Corrected support from distributed Hamiltonian expval calculations
 - Exposed qelectron db in sdk result object
 - UI changes added for qelectrons and fix for related config file corruption
@@ -29,10 +31,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
 - Updated documentation links in README
-
-### Added
-
-- Added a `py.typed` file to support type-checking
 
 ## [0.228.0-rc.0] - 2023-08-31
 
