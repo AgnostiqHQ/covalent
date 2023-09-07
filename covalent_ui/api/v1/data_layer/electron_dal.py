@@ -199,7 +199,9 @@ class Electrons:
                     "name": selected_job["qexecutor"]["name"]
                     if "qexecutor" in selected_job and "name" in selected_job["qexecutor"]
                     else None,
-                    "executor": str(selected_job["qexecutor"]) if "qexecutor" in selected_job else None,
+                    "executor": str(selected_job["qexecutor"])
+                    if "qexecutor" in selected_job
+                    else None,
                 },
             }
 

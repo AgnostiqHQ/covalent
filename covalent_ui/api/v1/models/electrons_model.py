@@ -67,7 +67,7 @@ class ElectronResponse(BaseModel):
     runtime: Union[int, None] = None
     description: Union[str, None] = None
     qelectron_data_exists: bool = False
-    qelectron: dict = None
+    qelectron: Union[dict, None] = None
 
 
 class ElectronFileResponse(BaseModel):
