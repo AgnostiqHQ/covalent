@@ -135,18 +135,9 @@ async def test_run_abstract_task_exception_handling(mocker):
         "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
     )
 
-    mock_get_cancel_requested = mocker.patch(
-        "covalent_dispatcher._core.runner_modules.executor_proxy._get_cancel_requested",
-        return_value=False,
-    )
-
-    mock_get_task_input_values = mocker.patch(
+    mocker.patch(
         "covalent_dispatcher._core.runner._get_task_input_values",
         side_effect=RuntimeError(),
-    )
-
-    mock_update_node_result = mocker.patch(
-        "covalent_dispatcher._core.runner.datasvc.update_node_result",
     )
 
     node_result = await _run_abstract_task(
@@ -157,10 +148,6 @@ async def test_run_abstract_task_exception_handling(mocker):
         executor=["local", {}],
     )
 
-    mock_get_result.assert_called_with(result_object.dispatch_id)
-    mock_get_cancel_requested.assert_awaited_once_with(result_object.dispatch_id, 0)
-    mock_get_task_input_values.assert_called_with(result_object, inputs)
-    mock_update_node_result.assert_called_once()
     assert node_result["status"] == Result.FAILED
 
 

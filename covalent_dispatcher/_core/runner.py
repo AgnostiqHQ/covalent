@@ -149,7 +149,22 @@ async def _run_abstract_task(
                 end_time=timestamp,
                 status=RESULT_STATUS.CANCELLED,
             )
+
+        serialized_callable = result_object.lattice.transport_graph.get_node_value(
+            node_id, "function"
+        )
+
         input_values = _get_task_input_values(result_object, abstract_inputs)
+
+        abstract_args = abstract_inputs["args"]
+        abstract_kwargs = abstract_inputs["kwargs"]
+        args = [input_values[node_id] for node_id in abstract_args]
+        kwargs = {k: input_values[v] for k, v in abstract_kwargs.items()}
+
+        task_input = {"args": args, "kwargs": kwargs}
+
+        app_log.debug(f"Collecting deps for task {node_id}")
+        call_before, call_after = _gather_deps(result_object, node_id)
 
     except Exception as ex:
         app_log.error(f"Exception when trying to resolve inputs or deps: {ex}")
@@ -162,17 +177,7 @@ async def _run_abstract_task(
             status=RESULT_STATUS.FAILED,
             error=str(ex),
         )
-
-    serialized_callable = result_object.lattice.transport_graph.get_node_value(node_id, "function")
-
-    abstract_args = abstract_inputs["args"]
-    abstract_kwargs = abstract_inputs["kwargs"]
-    args = [input_values[node_id] for node_id in abstract_args]
-    kwargs = {k: input_values[v] for k, v in abstract_kwargs.items()}
-    task_input = {"args": args, "kwargs": kwargs}
-
-    app_log.debug(f"Collecting deps for task {node_id}")
-    call_before, call_after = _gather_deps(result_object, node_id)
+        return node_result
 
     node_result = datasvc.generate_node_result(
         dispatch_id=dispatch_id,
