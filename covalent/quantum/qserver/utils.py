@@ -21,7 +21,7 @@
 import datetime
 import importlib
 from functools import lru_cache
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
 
 import orjson
 from pydantic import BaseModel
@@ -37,7 +37,7 @@ class CircuitInfo(BaseModel):
     electron_node_id: int = None
     dispatch_id: str = None
     circuit_name: str = None
-    circuit_description: str = None
+    circuit_description: Optional[str] = None
     circuit_diagram: str = None
     qnode_specs: Union[Dict[str, Any], QNodeSpecs] = None
     qexecutor: BaseQExecutor = None
