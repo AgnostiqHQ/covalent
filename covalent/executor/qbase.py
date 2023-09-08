@@ -83,14 +83,14 @@ class BaseQExecutor(ABC, BaseModel):
     """
 
     shots: Union[None, int, Sequence[int], Sequence[Union[int, Sequence[int]]]] = SHOTS_DEFAULT
-    shots_converter: type = None
+    shots_converter: Optional[type] = None
     persist_data: bool = True
 
     # Executors need to contain certain information about original QNode, in order
     # to produce correct results. These attributes below contain that information.
     # They are set inside the `QServer` and will be `None` client-side.
-    qelectron_info: QElectronInfo = None
-    qnode_specs: QNodeSpecs = None
+    qelectron_info: Optional[QElectronInfo] = None
+    qnode_specs: Optional[QNodeSpecs] = None
 
     @property
     def override_shots(self) -> Union[int, None]:

@@ -21,11 +21,12 @@
 import datetime
 import importlib
 from functools import lru_cache
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Union
 
 import orjson
 from pydantic import BaseModel
 
+from ..._shared_files.qinfo import QNodeSpecs
 from ...executor.qbase import BaseQExecutor
 
 BATCH_ID_SEPARATOR = "@"
@@ -33,12 +34,12 @@ MAX_DIFFERENT_EXECUTORS = 10
 
 
 class CircuitInfo(BaseModel):
-    electron_node_id: str = None
+    electron_node_id: int = None
     dispatch_id: str = None
     circuit_name: str = None
     circuit_description: str = None
     circuit_diagram: str = None
-    qnode_specs: Dict[str, Any] = None
+    qnode_specs: Union[Dict[str, Any], QNodeSpecs] = None
     qexecutor: BaseQExecutor = None
     save_time: datetime.datetime
     circuit_id: str = None

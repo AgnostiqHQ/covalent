@@ -28,11 +28,15 @@ from typing import List
 import pennylane as qml
 
 from .._results_manager.qresult import QNodeFutureResult
+from .._shared_files import logger
 from .._shared_files.qinfo import QElectronInfo, QNodeSpecs
 from .._shared_files.qresult_utils import re_execute
 from .._shared_files.utils import get_original_shots
 from ..executor.qbase import BaseQExecutor
 from .qdevice import QEDevice
+
+app_log = logger.app_log
+log_stack_info = logger.log_stack_info
 
 _GRADIENT_ACCESS_MAXES = {
     "parameter-shift": 2,
