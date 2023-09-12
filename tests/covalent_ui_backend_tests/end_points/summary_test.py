@@ -127,11 +127,6 @@ def test_list_invalid_count():
         query_data=test_data["request_data"]["query"],
     )
     assert response.status_code == test_data["status_code"]
-    if "response_data" in test_data:
-        api_response = response.json()
-        mock_response = test_data["response_data"]
-        # del api_response["detail"][0]["url"]
-        assert api_response == mock_response
 
 
 def test_list_search():

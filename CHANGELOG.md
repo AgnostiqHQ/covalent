@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Formatted executor block under Qelectron job details to handle any class-type values
+- Fixed test-cases to handle latest pydantic version changes
+
 ### Changed
 
 - Raised the minimum version of Pydantic from 1.10.1 to 2.1.1 in `requirements.txt`
