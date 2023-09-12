@@ -34,19 +34,19 @@ MAX_DIFFERENT_EXECUTORS = 10
 
 
 class CircuitInfo(BaseModel):
-    electron_node_id: int = None
-    dispatch_id: str = None
-    circuit_name: str = None
+    electron_node_id: Optional[int] = None
+    dispatch_id: Optional[str] = None
+    circuit_name: Optional[str] = None
     circuit_description: Optional[str] = None
-    circuit_diagram: str = None
-    qnode_specs: Union[Dict[str, Any], QNodeSpecs] = None
-    qexecutor: BaseQExecutor = None
+    circuit_diagram: Optional[str] = None
+    qnode_specs: Optional[Union[Dict[str, Any], QNodeSpecs]] = None
+    qexecutor: Optional[BaseQExecutor] = None
     save_time: datetime.datetime
-    circuit_id: str = None
-    qscript: str = None
-    execution_time: float = None
-    result: List[Any] = None
-    result_metadata: List[Dict[str, Any]] = None
+    circuit_id: Optional[str] = None
+    qscript: Optional[str] = None
+    execution_time: Optional[float] = None
+    result: Optional[List[Any]] = None
+    result_metadata: Optional[List[Dict[str, Any]]] = None
 
 
 @lru_cache
