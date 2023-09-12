@@ -29,6 +29,9 @@ def extract_options(opts: dict) -> Options:
     """
     Construct a Qiskit `Options` object from the options dictionary
     """
+    if isinstance(opts, tuple):
+        opts = dict(opts)
+
     _options = Options()
     _options.optimization_level = opts.get("optimization_level", 3)
     _options.resilience_level = opts.get("resilience_level", 1)

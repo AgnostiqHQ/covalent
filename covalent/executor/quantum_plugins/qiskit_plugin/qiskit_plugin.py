@@ -20,7 +20,7 @@
 
 import asyncio
 import time
-from typing import Sequence, Union
+from typing import Optional, Sequence, Union
 
 import pennylane as qml
 from local_sampler import QiskitLocalSampler
@@ -190,14 +190,14 @@ class QiskitExecutor(AsyncBaseQExecutor):
     single_job: bool = False
     local_transpile: bool = False
 
-    max_time: Union[int, str] = None
+    max_time: Optional[Union[int, str]] = None
 
-    ibmqx_url: str = None
+    ibmqx_url: Optional[str] = None
     channel: str = "ibm_quantum"
     instance: str = ""
     cloud_instance: str = ""
 
-    options: dict = Field(
+    options: Optional[Union[dict, tuple]] = Field(
         # pylint: disable=unnecessary-lambda
         default_factory=lambda: get_config("qelectron")["QiskitExecutor"]["options"]
     )
