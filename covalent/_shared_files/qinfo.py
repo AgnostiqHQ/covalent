@@ -44,7 +44,7 @@ class QNodeSpecs(BaseModel):
     expansion_strategy: str
     gradient_options: Dict[str, int]
     interface: Optional[str]
-    gradient_fn: Optional[str]
+    gradient_fn: Any  # can be string or `qml.gradients.gradient_transform`
     num_gradient_executions: Any = 0
     num_parameter_shift_executions: int = None
 
