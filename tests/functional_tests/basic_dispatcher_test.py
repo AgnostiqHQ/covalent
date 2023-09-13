@@ -65,7 +65,9 @@ def test_dispatcher_functional():
         raise RuntimeError(f"byebye {input}")
 
     dispatch_id = ct.dispatch(workflow)(name="q")
-    output = ct.get_result(dispatch_id, wait=True).result
+
+    res = ct.get_result(dispatch_id, wait=True)
+    output = res.result
 
     assert output == "aqbq"
 

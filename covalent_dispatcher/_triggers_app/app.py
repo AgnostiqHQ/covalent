@@ -85,6 +85,14 @@ async def healthcheck(request: Request):
     return {"status": "ok"}
 
 
+@router.get("/triggers/status")
+def trigger_server_status(request: Request):
+    if disable_triggers:
+        return {"status": "disabled"}
+    else:
+        return {"status": "running"}
+
+
 @router.post("/triggers/register")
 async def register_and_observe(request: Request):
     """

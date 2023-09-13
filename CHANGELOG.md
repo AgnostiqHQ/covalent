@@ -7,13 +7,55 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Added a `py.typed` file to support type-checking
+
+### Changed
+
+- Raised the minimum version of Pydantic from 1.10.1 to 2.1.1 in `requirements.txt`
+
+## [0.228.0-rc.0] - 2023-08-31
+
+### Authors
+
+- Andrew S. Rosen <asrosen93@gmail.com>
+- Co-authored-by: Sankalp Sanand <sankalp@agnostiq.ai>
+- Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: Casey Jao <casey@agnostiq.ai>
+- WingCode <smallstar1234@gmail.com>
+- Nick Tyler <nicholas.s.tyler.4@gmail.com>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Aravind <100823292+Aravind-psiog@users.noreply.github.com>
+- Co-authored-by: Manjunath PV <manjunath.poilath@psiog.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: RaviPsiog <raviteja.gurram@psiog.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+- Co-authored-by: mpvgithub <107603631+mpvgithub@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- dwelsch-esi <116022979+dwelsch-esi@users.noreply.github.com>
+- Co-authored-by: dwelsch-memverge <david.welsch@memverge.com>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+
+
+### Fixed
+
+- Fixed dispatcher address not showing when covalent server starts.
+- Fixed the failing tests in the `nightly` workflow.
+
 ### Operations
 
+- Respecting node version as specified in `.nvmrc` file for tests workflow
 - Bumped versions in pre-commit config
 - Added prettier for markdown files.
 - Reduce the number of pinned version numbers in the `setup.py`, `requirements.txt`, and `requirements-client.txt`
 - Updated the `wci.yml` file with new features
-- Bumped pre-commit prettier version
+- Bumped pre-commit versions
+- Temporarily running nightly hourly to test whether the fix worked
+- Reverted to daily frequency for nightly
 
 ### Added
 
@@ -39,6 +81,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed the upper limit from `dask` and `distributed` packages' versions until we find a version which is incompatible with Covalent.
 - When the server is stopped, any workflows in a non-terminal state are first cancelled
 - Pinned sqlalchemy version with upper limit <2.0.0.
+- Added rich support to cli for better printing statements.
+- Performed minor modifications and rearrangementsto fix the broken tests in the `nightly` workflow.
 
 ### Tests
 
@@ -46,14 +90,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added testcases for GUI backend.
 - Changed the method for startup and shutdown events for pytest to work with fastapi version 0.93.0
 - Fixed test cases to adapt changes to SQLAlchemy version 1.4.49
+- Ignored remote file transfer how-to functional tests.
+- Skipping a UI backend test for now
+- Fixed `test_decorated_function` test case in functional tests
 
 ### Fixed
 
+- Using `filelock` package now for platform independent file locking of config file. This should fix the failing tests as well as improve compatibility with Windows.
 - When stopping the server, we send the proper `SIGINT` signal to uvicorn instead of `SIGKILL` which allows the second part of the FastAPI `lifespan` to execute properly.
 - Fixed the outstanding incompatibities between front-end data layer and a postgres database
 - Reverted file-lock changes
 - Fixed dispatches list UI api caused by pydantic config.
 - Fixed graph API.
+- Fixed UI backend unit test case.
+- Executor and workflow executor data dictionaries are passed to sublattices
 
 ## [0.227.0-rc.0] - 2023-06-13
 

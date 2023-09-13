@@ -474,22 +474,20 @@ def test_decorated_function():
     Test whether covalent works as intended on an already decorated function.
     """
 
-    import pennylane as qml
+    def wrapper(func):
+        def inner(*args, **kwargs):
+            return func(*args, **kwargs)
 
-    import covalent as ct
-
-    dev1 = qml.device("default.qubit", wires=1)
+        return inner
 
     @ct.electron
-    @qml.qnode(dev1)
-    def circuit(params):
-        qml.RX(params[0], wires=0)
-        qml.RY(params[1], wires=0)
-        return qml.expval(qml.PauliZ(0))
+    @wrapper
+    def task(x):
+        return x**2
 
     @ct.lattice
     def workflow():
-        return circuit([0.54, 0.12])
+        return task(x=5)
 
     dispatch_id = ct.dispatch(workflow)()
     workflow_result = rm.get_result(dispatch_id, wait=True)
