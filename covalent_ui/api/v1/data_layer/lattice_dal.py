@@ -23,7 +23,7 @@
 from typing import List
 from uuid import UUID
 
-from sqlalchemy import extract
+from sqlalchemy import extract, select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import desc, func
 
@@ -37,6 +37,11 @@ class Lattices:
 
     def __init__(self, db_con: Session) -> None:
         self.db_con = db_con
+
+    def dispatch_exist(self, dispatch_id: UUID) -> bool:
+        return self.db_con.execute(
+            select(Lattice).where(Lattice.dispatch_id == str(dispatch_id))
+        ).fetchone()
 
     def get_lattices_id(self, dispatch_id: UUID) -> LatticeDetailResponse:
         """

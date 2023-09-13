@@ -7,13 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Added
+### Fixed
 
-- Added a `py.typed` file to support type-checking
+- Formatted executor block under Qelectron job details to handle any class-type values
+- Fixed test-cases to handle latest pydantic version changes
 
 ### Changed
 
 - Raised the minimum version of Pydantic from 1.10.1 to 2.1.1 in `requirements.txt`
+- Electron DAL to use Covalent server's data instead of QServer's data.
+
+### Added
+
+- Added a `py.typed` file to support type-checking
+- Corrected support from distributed Hamiltonian expval calculations
+- Exposed qelectron db in sdk result object
+- UI changes added for qelectrons and fix for related config file corruption
+- UI fix regarding Qelectron not showing up
+- Performance optimisation of UI for large Qelectrons
+
+## Tests
+
+- Changed the method for startup and shutdown events for pytest to work with fastapi version 0.93.0
+- Fixed test cases to adapt changes to SQLAlchemy version 1.4.49
+- Add tests for GUI frontend and backend.
+
+### Docs
+
+- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
+- Updated documentation links in README
 
 ## [0.228.0-rc.0] - 2023-08-31
 
@@ -39,7 +61,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
-
 
 ### Fixed
 

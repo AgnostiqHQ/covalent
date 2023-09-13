@@ -47,7 +47,7 @@ function reduxRender(renderedComponent) {
 
 describe('App Page', () => {
   test('app.js is rendered', () => {
-    reduxRender(<App element={<DispatchLayout />} />)
+    reduxRender(<App element={DispatchLayout} />)
     const linkElement = screen.getByTestId('dashboard')
     expect(linkElement).toBeInTheDocument()
   })

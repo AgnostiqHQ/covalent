@@ -46,14 +46,14 @@ from typing import (
 
 import aiofiles
 
-from covalent._shared_files.exceptions import TaskCancelledError
-from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES
-from covalent.executor.utils import Signals
-
 from .._shared_files import TaskRuntimeError, logger
 from .._shared_files.context_managers import active_dispatch_info_manager
+from .._shared_files.exceptions import TaskCancelledError
+from .._shared_files.qelectron_utils import remove_qelectron_db
 from .._shared_files.util_classes import RESULT_STATUS, DispatchInfo
+from .._workflow.depscall import RESERVED_RETVAL_KEY__FILES
 from .._workflow.transport import TransportableObject
+from .utils import Signals
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -330,7 +330,7 @@ class BaseExecutor(_AbstractBaseExecutor):
                 filename.touch(exist_ok=True)
 
                 with open(filepath, "a") as f:
-                    f.write(ss)
+                    f.write(remove_qelectron_db(ss))
 
     async def _execute(
         self,
@@ -613,7 +613,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
                 filename.touch(exist_ok=True)
 
                 async with aiofiles.open(filepath, "a") as f:
-                    await f.write(ss)
+                    await f.write(remove_qelectron_db(ss))
 
     async def _execute(
         self,
