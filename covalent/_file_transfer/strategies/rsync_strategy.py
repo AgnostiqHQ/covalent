@@ -58,9 +58,9 @@ class Rsync(FileTransferStrategy):
         remote_filepath = remote_file.filepath
         args = ["rsync"]
         if self.private_key_path:
-            args.append(f'-e "ssh -i {self.private_key_path}"')
+            args.append(f'-ae "ssh -i {self.private_key_path}"')
         else:
-            args.append("-e ssh")
+            args.append("-ae ssh")
 
         remote_source = f"{self.user}@{self.host}:{remote_filepath}"
 
