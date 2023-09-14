@@ -141,18 +141,18 @@ class TestRsyncStrategy:
         # commands take the form of rsync -s ssh ... [source] [destination]
         assert (
             upload_cmd_with_key
-            == f'rsync -e "ssh -i {private_key_path}" {self.MOCK_LOCAL_FILEPATH} {self.MOCK_USER}@{self.MOCK_HOST}:{self.MOCK_REMOTE_FILEPATH}'
+            == f'rsync -ae "ssh -i {private_key_path}" {self.MOCK_LOCAL_FILEPATH} {self.MOCK_USER}@{self.MOCK_HOST}:{self.MOCK_REMOTE_FILEPATH}'
         )
         assert (
             download_cmd_with_key
-            == f'rsync -e "ssh -i {private_key_path}" {self.MOCK_USER}@{self.MOCK_HOST}:{self.MOCK_REMOTE_FILEPATH} {self.MOCK_LOCAL_FILEPATH}'
+            == f'rsync -ae "ssh -i {private_key_path}" {self.MOCK_USER}@{self.MOCK_HOST}:{self.MOCK_REMOTE_FILEPATH} {self.MOCK_LOCAL_FILEPATH}'
         )
 
         assert (
             upload_cmd_without_key
-            == f"rsync -e ssh {self.MOCK_LOCAL_FILEPATH} {self.MOCK_USER}@{self.MOCK_HOST}:{self.MOCK_REMOTE_FILEPATH}"
+            == f"rsync -ae ssh {self.MOCK_LOCAL_FILEPATH} {self.MOCK_USER}@{self.MOCK_HOST}:{self.MOCK_REMOTE_FILEPATH}"
         )
         assert (
             download_cmd_without_key
-            == f"rsync -e ssh {self.MOCK_USER}@{self.MOCK_HOST}:{self.MOCK_REMOTE_FILEPATH} {self.MOCK_LOCAL_FILEPATH}"
+            == f"rsync -ae ssh {self.MOCK_USER}@{self.MOCK_HOST}:{self.MOCK_REMOTE_FILEPATH} {self.MOCK_LOCAL_FILEPATH}"
         )

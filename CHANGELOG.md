@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Formatted executor block under Qelectron job details to handle any class-type values
 - Fixed test-cases to handle latest pydantic version changes
+- Rsync command fixed to recursively copy files when using SSH
+- Removed accidentally added migrations build files
 
 ### Changed
 
