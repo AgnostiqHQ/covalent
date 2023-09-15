@@ -71,6 +71,8 @@ Advanced
      - :doc:`Tracking stars in the night sky<./2_Astronomy/star_tracker/source>`
    * - Quantum Gravity
      - :doc:`Classifying discrete spacetimes by dimension<./4_QuantumGravity/spacetime_classification/source>`
+   * - Redispatching workflows
+     - :doc:`Redispatching generative AI workflows<./0_ClassicalMachineLearning/genai/source>`
 
 ---------------------------------
 
