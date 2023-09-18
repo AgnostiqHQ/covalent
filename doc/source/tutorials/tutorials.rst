@@ -72,7 +72,7 @@ Advanced
    * - Quantum Gravity
      - :doc:`Classifying discrete spacetimes by dimension<./4_QuantumGravity/spacetime_classification/source>`
    * - Generative AI/LLM
-     - :doc:`Redispatching generative AI workflows<./0_ClassicalMachineLearning/genai/source>`
+     - :doc:`Scalable API backends for LLM and generative AI <./0_ClassicalMachineLearning/genai/source>`
 
 ---------------------------------
 
