@@ -33,7 +33,9 @@ class AsyncBaseQCluster(AsyncBaseQExecutor):
     executors: Sequence[BaseQExecutor]
     selector: Union[str, Callable]
 
-    _selector_serialized: bool = False
+    # Flag used to indicate whether `self.selector` is currently serialized.
+    # This needs to be without the "_" prefix so that it gets propagated to the server.
+    selector_serialized: bool = False
 
     @abstractmethod
     def serialize_selector(self) -> None:
