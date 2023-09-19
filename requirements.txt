@@ -1,4 +1,4 @@
-aiofiles>=0.8.0
+aiofiles>=0.8.0,!=4.0.0a*
 aiohttp>=3.8.1
 alembic>=1.8.0
 click>=8.1.3
