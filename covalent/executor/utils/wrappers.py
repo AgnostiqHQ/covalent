@@ -191,12 +191,12 @@ def run_task_from_uris(
     """Run task while using API calls to upload/download node asset contents.
 
     Args:
-        task_specs:
-        resources:
-        output_uris:
-        results_dir:
-        task_group_metadata:
-        server_url:
+        task_specs: Task function, args and kwargs id.
+        resources: Resources. Note: This variable is probably here to make this function adhere to some template, probably in parallel to the batch executor.
+        output_uris: File paths for result, stdout and stderr.
+        results_dir: Results directory.
+        task_group_metadata: Task group metadata.
+        server_url: Server URL.
 
     Raises:
         Exception if an error occurs during task execution or asset upload/download.
