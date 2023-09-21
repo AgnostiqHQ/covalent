@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Raised the minimum version of Pydantic from 1.10.1 to 2.1.1 in `requirements.txt`
 - Electron DAL to use Covalent server's data instead of QServer's data.
 - Renamed QCluster's `selector_serialized` attribute so it gets propagated to the qserver.
+- Removed `orm_mode = True` in `covalent_ui/api/v1/models/dispatch_model.py` as it is deprecated in Pydantic 2
 
 ### Added
 

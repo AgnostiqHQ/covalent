@@ -63,7 +63,7 @@ class MockLattice(MockBase):
     completed_at = Column(DateTime)
 
 
-@pytest.mark.skip(reason="TODO: Need to fix this test. See PR #1778")
+@pytest.mark.skip(reason="TODO: Need to fix this test. See failing tests in PR #1778.")
 def test_overview():
     """Test overview"""
     test_data = output_data["test_overview"]["case1"]
