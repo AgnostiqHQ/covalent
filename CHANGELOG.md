@@ -7,6 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.229.0-rc.0] - 2023-09-22
+
+### Authors
+
+- Andrew S. Rosen <asrosen93@gmail.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: mpvgithub <107603631+mpvgithub@users.noreply.github.com>
+- Co-authored-by: Manjunath PV <manjunath.poilath@psiog.com>
+- Co-authored-by: Ara Ghukasyan <ara@agnostiq.ai>
+- Co-authored-by: Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: jackbaker1001 <jsbaker1001@gmail.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <will@agnostiq.ai>
+- Co-authored-by: sriranjani venkatesan <sriranjani.venkatesan@psiog.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+- Co-authored-by: Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- FilipBolt <filipbolt@gmail.com>
+
+
 ### Fixed
 
 - Formatted executor block under Qelectron job details to handle any class-type values
