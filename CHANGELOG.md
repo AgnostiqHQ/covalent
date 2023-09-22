@@ -74,7 +74,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed duplicate "stop server" warning in the First Experimemnt page
 - Fixed typo in quickstart
 - Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch
-- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch
 - Updated documentation links in README
 - Updating and reorganizing RTD API documentation
 - Adding example links in API documentation
