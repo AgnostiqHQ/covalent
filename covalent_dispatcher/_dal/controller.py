@@ -21,7 +21,7 @@
 
 from __future__ import annotations
 
-from typing import Generic, TypeVar
+from typing import Generic, Type, TypeVar
 
 from sqlalchemy import select, update
 from sqlalchemy.orm import Session, load_only
@@ -38,7 +38,7 @@ class Record(Generic[T]):
 
     @classmethod
     @property
-    def model(cls) -> type(T):
+    def model(cls) -> Type[T]:
         raise NotImplementedError
 
     def __init__(self, session: Session, record: models.Base, *, fields: list):
@@ -89,16 +89,17 @@ class Record(Generic[T]):
         return session.get(cls.model, primary_key, with_for_update=for_update)
 
     @classmethod
-    def insert(cls, session: Session, *, insert_kwargs: dict, flush: bool = True) -> T:
-        """INSERT a record into the DB.
+    def create(cls, session: Session, *, insert_kwargs: dict, flush: bool = True) -> T:
+        """Create a new record.
 
         Args:
             session: SQLalchemy session
             insert_kwargs: kwargs to pass to the model constructor
             flush: Whether to flush the session immediately
 
-        Returns:
-            The bound record
+        Returns: A SQLAlchemy model of type T. If `flush=False`, the
+            model will need to be added to the session manually.
+
         """
 
         new_record = cls.model(**insert_kwargs)

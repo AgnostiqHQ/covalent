@@ -54,7 +54,7 @@ class ResultAsset(Record[models.LatticeAsset]):
     model = models.LatticeAsset
 
 
-class Result(DispatchedObject):
+class Result(DispatchedObject[ResultMeta, ResultAsset]):
     meta_type = ResultMeta
     asset_link_type = ResultAsset
     metadata_keys = RESULT_KEYS

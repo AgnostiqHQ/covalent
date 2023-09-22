@@ -22,6 +22,7 @@
 """Functions to transform ResultSchema -> Result"""
 
 import os
+from datetime import datetime
 from typing import List, Optional, Tuple
 
 from sqlalchemy.orm import Session
@@ -69,7 +70,7 @@ def import_result(
             membership_filters={},
         )
         if len(records) > 0:
-            return _connect_result_to_electron(res, electron_id)
+            return _connect_result_to_electron(session, res, electron_id)
 
     # Main case: insert new lattice, electron, edge, and job records
 
@@ -80,7 +81,8 @@ def import_result(
     lattice_record_kwargs.update(_get_lattice_meta(res.lattice, storage_path))
 
     with Result.session() as session:
-        lattice_row = ResultMeta.insert(session, insert_kwargs=lattice_record_kwargs, flush=True)
+        st = datetime.now()
+        lattice_row = ResultMeta.create(session, insert_kwargs=lattice_record_kwargs, flush=True)
         res_record = Result(session, lattice_row, True)
         res_assets = import_result_assets(session, res, res_record, local_store)
 
@@ -91,7 +93,11 @@ def import_result(
             res_record.lattice,
             local_store,
         )
+        et = datetime.now()
+        delta = (et - st).total_seconds()
+        app_log.debug(f"{dispatch_id}: Inserting lattice took {delta} seconds")
 
+        st = datetime.now()
         tg = import_transport_graph(
             session,
             dispatch_id,
@@ -100,14 +106,24 @@ def import_result(
             local_store,
             electron_id,
         )
+        et = datetime.now()
+        delta = (et - st).total_seconds()
+        app_log.debug(f"{dispatch_id}: Inserting transport graph took {delta} seconds")
 
     lat = LatticeSchema(metadata=res.lattice.metadata, assets=lat_assets, transport_graph=tg)
 
     output = ResultSchema(metadata=res.metadata, assets=res_assets, lattice=lat)
-    return _filter_remote_uris(output)
+    st = datetime.now()
+    filtered_uris = _filter_remote_uris(output)
+    et = datetime.now()
+    delta = (et - st).total_seconds()
+    app_log.debug(f"{dispatch_id}: Filtering URIs took {delta} seconds")
+    return filtered_uris
 
 
-def _connect_result_to_electron(res: ResultSchema, parent_electron_id: int) -> ResultSchema:
+def _connect_result_to_electron(
+    session: Session, res: ResultSchema, parent_electron_id: int
+) -> ResultSchema:
     """Link a sublattice dispatch to its parent electron"""
 
     # Update the `electron_id` lattice field and propagate the
@@ -115,39 +131,39 @@ def _connect_result_to_electron(res: ResultSchema, parent_electron_id: int) -> R
 
     app_log.debug("connecting previously submitted subdispatch to parent electron")
     sub_result = Result.from_dispatch_id(res.metadata.dispatch_id, bare=True)
-    with Result.session() as session:
-        sub_result.set_value("electron_id", parent_electron_id, session)
-        sub_result.set_value("root_dispatch_id", res.metadata.root_dispatch_id, session)
 
-        parent_electron_record = ElectronMeta.get(
-            session,
-            fields={"id", "parent_lattice_id", "job_id"},
-            equality_filters={"id": parent_electron_id},
-            membership_filters={},
-        )[0]
-        parent_job_record = Job.get(
-            session,
-            fields={"id", "cancel_requested"},
-            equality_filters={"id": parent_electron_record.job_id},
-            membership_filters={},
-        )[0]
-        cancel_requested = parent_job_record.cancel_requested
+    sub_result.set_value("electron_id", parent_electron_id, session)
+    sub_result.set_value("root_dispatch_id", res.metadata.root_dispatch_id, session)
 
-        sub_electron_records = ElectronMeta.get(
-            session,
-            fields={"id", "parent_lattice_id", "job_id"},
-            equality_filters={"parent_lattice_id": sub_result._lattice_id},
-            membership_filters={},
-        )
+    parent_electron_record = ElectronMeta.get(
+        session,
+        fields={"id", "parent_lattice_id", "job_id"},
+        equality_filters={"id": parent_electron_id},
+        membership_filters={},
+    )[0]
+    parent_job_record = Job.get(
+        session,
+        fields={"id", "cancel_requested"},
+        equality_filters={"id": parent_electron_record.job_id},
+        membership_filters={},
+    )[0]
+    cancel_requested = parent_job_record.cancel_requested
 
-        job_ids = [rec.job_id for rec in sub_electron_records]
+    sub_electron_records = ElectronMeta.get(
+        session,
+        fields={"id", "parent_lattice_id", "job_id"},
+        equality_filters={"parent_lattice_id": sub_result._lattice_id},
+        membership_filters={},
+    )
 
-        Job.update_bulk(
-            session,
-            values={"cancel_requested": cancel_requested},
-            equality_filters={},
-            membership_filters={"id": job_ids},
-        )
+    job_ids = [rec.job_id for rec in sub_electron_records]
+
+    Job.update_bulk(
+        session,
+        values={"cancel_requested": cancel_requested},
+        equality_filters={},
+        membership_filters={"id": job_ids},
+    )
 
     return res
 
@@ -237,16 +253,31 @@ def import_result_assets(
             "remote_uri": asset.uri,
             "size": asset.size,
         }
-        asset_ids[asset_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
+        asset_ids[asset_key] = Asset.create(session, insert_kwargs=asset_kwargs, flush=False)
 
         # Send this back to the client
         asset.digest = None
         asset.remote_uri = f"file://{local_uri}"
 
-    session.flush()
+    # Write asset records to DB
+    n_records = len(asset_ids)
 
+    st = datetime.now()
+    session.flush()
+    et = datetime.now()
+    delta = (et - st).total_seconds()
+    app_log.debug(f"Inserting {n_records} asset records took {delta} seconds")
+
+    result_asset_links = []
     for key, asset_rec in asset_ids.items():
-        record.associate_asset(session, key, asset_rec.id)
+        result_asset_links.append(record.associate_asset(session, key, asset_rec.id))
+
+    n_records = len(result_asset_links)
+    st = datetime.now()
+    session.flush()
+    et = datetime.now()
+    delta = (et - st).total_seconds()
+    app_log.debug(f"Inserting {n_records} asset links took {delta} seconds")
 
     return manifest.assets
 

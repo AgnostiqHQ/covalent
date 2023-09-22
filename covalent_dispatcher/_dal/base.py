@@ -20,8 +20,8 @@
 
 """Base class for server-side analogues of workflow data types"""
 
-from abc import ABC, abstractmethod
-from typing import Any, Dict, Generator, List, Union
+from abc import abstractmethod
+from typing import Any, Dict, Generator, Generic, List, Type, TypeVar, Union
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session, load_only
@@ -30,8 +30,14 @@ from .._db.datastore import workflow_db
 from . import controller
 from .asset import FIELDS, Asset
 
+# Metadata
+MetaType = TypeVar("MetaType", bound=controller.Record)
 
-class DispatchedObject(ABC):
+# Asset links
+AssetLinkType = TypeVar("AssetLinkType", bound=controller.Record)
+
+
+class DispatchedObject(Generic[MetaType, AssetLinkType]):
     """Base class for types with both metadata and assets.
 
     Each subclass must define two properties:
@@ -42,13 +48,13 @@ class DispatchedObject(ABC):
 
     @classmethod
     @property
-    def meta_type(cls) -> type(controller.Record):
+    def meta_type(cls) -> Type[MetaType]:
         """Returns the metadata controller class."""
         raise NotImplementedError
 
     @classmethod
     @property
-    def asset_link_type(cls) -> type(controller.Record):
+    def asset_link_type(cls) -> Type[AssetLinkType]:
         """Returns the asset link controller class"""
         raise NotImplementedError
 
@@ -64,7 +70,7 @@ class DispatchedObject(ABC):
 
     @property
     @abstractmethod
-    def metadata(self) -> controller.Record:
+    def metadata(self) -> MetaType:
         raise NotImplementedError
 
     @property
@@ -85,13 +91,17 @@ class DispatchedObject(ABC):
         )
         return {x.key: x.asset_id for x in records}
 
-    def associate_asset(self, session: Session, key: str, asset_id: int):
+    def associate_asset(
+        self, session: Session, key: str, asset_id: int, flush: bool = False
+    ) -> AssetLinkType:
         asset_link_kwargs = {
             "meta_id": self._id,
             "asset_id": asset_id,
             "key": key,
         }
-        type(self).asset_link_type.insert(session, insert_kwargs=asset_link_kwargs, flush=False)
+        return type(self).asset_link_type.create(
+            session, insert_kwargs=asset_link_kwargs, flush=flush
+        )
 
     @property
     @abstractmethod

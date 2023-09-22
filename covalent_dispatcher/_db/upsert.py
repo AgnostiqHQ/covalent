@@ -147,7 +147,7 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
             "digest": digest.hexdigest,
         }
 
-        assets[key] = Asset.insert(session, insert_kwargs=asset_record_kwargs, flush=True)
+        assets[key] = Asset.create(session, insert_kwargs=asset_record_kwargs, flush=True)
 
     # Get custom asset declarations
     lat_metadata = result.lattice.metadata
@@ -160,9 +160,10 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
                 "digest_alg": "",
                 "digest": "",
             }
-            assets[key] = Asset.insert(session, insert_kwargs=asset_record_kwargs, flush=True)
+            assets[key] = Asset.create(session, insert_kwargs=asset_record_kwargs, flush=True)
 
     # Write lattice records to Database
+    session.flush()
 
     lattice_record_kwarg = {
         "dispatch_id": result.dispatch_id,
@@ -201,10 +202,14 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         "started_at": result.start_time,
         "completed_at": result.end_time,
     }
-    lattice_row = Lattice.meta_type.insert(session, insert_kwargs=lattice_record_kwarg, flush=True)
+    lattice_row = Lattice.meta_type.create(session, insert_kwargs=lattice_record_kwarg, flush=True)
     lattice_record = Lattice(session, lattice_row, bare=True, keys={"id"}, electron_keys={"id"})
+
+    lattice_asset_links = []
     for key, asset in assets.items():
-        lattice_record.associate_asset(session, key, asset.id)
+        lattice_asset_links.append(lattice_record.associate_asset(session, key, asset.id))
+
+    session.flush()
 
     return lattice_row.id
 
@@ -241,7 +246,7 @@ def _electron_data(
     timestamp = datetime.now(timezone.utc)
 
     for gid, nodes in task_groups.items():
-        job_row = Job.insert(
+        job_row = Job.create(
             session, insert_kwargs={"cancel_requested": cancel_requested}, flush=True
         )
 
@@ -328,7 +333,7 @@ def _electron_data(
                     "digest": digest.hexdigest,
                 }
 
-                assets[key] = Asset.insert(session, insert_kwargs=asset_record_kwargs, flush=True)
+                assets[key] = Asset.create(session, insert_kwargs=asset_record_kwargs, flush=True)
 
             # Register custom assets
             node_metadata = tg.get_node_value(node_id, "metadata")
@@ -341,7 +346,7 @@ def _electron_data(
                         "digest_alg": "",
                         "digest": "",
                     }
-                    assets[key] = Asset.insert(
+                    assets[key] = Asset.create(
                         session, insert_kwargs=asset_record_kwargs, flush=True
                     )
 
@@ -376,7 +381,7 @@ def _electron_data(
                 "started_at": started_at,
                 "completed_at": completed_at,
             }
-            electron_row = Electron.meta_type.insert(
+            electron_row = Electron.meta_type.create(
                 session,
                 insert_kwargs=electron_record_kwarg,
                 flush=True,
@@ -385,8 +390,13 @@ def _electron_data(
 
             node_id_eid_map[node_id] = electron_row.id
 
+            electron_asset_links = []
             for key, asset in assets.items():
-                electron_record.associate_asset(session, key, asset.id)
+                electron_asset_links.append(
+                    electron_record.associate_asset(session, key, asset.id)
+                )
+
+            session.flush()
 
     return node_id_eid_map
 

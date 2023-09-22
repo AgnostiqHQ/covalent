@@ -21,7 +21,8 @@
 
 """Functions to transform ResultSchema -> Result"""
 
-from typing import Dict, Optional
+from datetime import datetime
+from typing import Dict, List, Optional
 
 from sqlalchemy.orm import Session
 
@@ -78,9 +79,10 @@ def import_transport_graph(
             "cancel_requested": cancel_requested,
         }
 
-        gid_job_record_map[gid] = Job.insert(session, insert_kwargs=job_kwargs, flush=False)
+        gid_job_record_map[gid] = Job.create(session, insert_kwargs=job_kwargs, flush=False)
 
-    # Compute job record primary keys
+    # Write job records to DB and retrieve primary keys
+
     session.flush()
 
     for gid, node_group in task_groups.items():
@@ -99,20 +101,61 @@ def import_transport_graph(
             electron_asset_links[node.id] = asset_records_by_key
 
     # Compute asset ids, electron ids, and create associations
-    session.flush()
 
+    n_records = len(electron_map)
+    st = datetime.now()
+    session.flush()
+    et = datetime.now()
+    delta = (et - st).total_seconds()
+    app_log.debug(f"Inserting {n_records} electron records took {delta} seconds")
+
+    n_records = 0
+    for _, asset_records_by_key in electron_asset_links.items():
+        n_records += len(asset_records_by_key)
+
+    st = datetime.now()
+    session.flush()
+    et = datetime.now()
+    delta = (et - st).total_seconds()
+    app_log.debug(f"Inserting {n_records} asset records took {delta} seconds")
+
+    meta_asset_associations = []
     for node_id, asset_records in electron_asset_links.items():
         electron_dal = Electron(session, electron_map[node_id])
         for key, asset_rec in asset_records.items():
-            electron_dal.associate_asset(session, key, asset_rec.id)
+            meta_asset_associations.append(
+                electron_dal.associate_asset(session, key, asset_rec.id)
+            )
 
-    edges = [_import_edge(session, e, electron_map) for e in tg.links]
+    n_records = len(meta_asset_associations)
+
+    st = datetime.now()
+    session.flush()
+    et = datetime.now()
+    delta = (et - st).total_seconds()
+    app_log.debug(f"Inserting {n_records} asset record links took {delta} seconds")
+
+    # Insert edges
+    edge_records = []
+    edges = [_import_edge(session, e, electron_map, edge_records) for e in tg.links]
+
+    n_records = 0
+    n_records = len(edge_records)
+
+    st = datetime.now()
+    session.flush()
+    et = datetime.now()
+    delta = (et - st).total_seconds()
+    app_log.debug(f"Inserting {n_records} edge records took {delta} seconds")
 
     return TransportGraphSchema(nodes=output_nodes, links=edges)
 
 
 def _import_edge(
-    session: Session, edge: EdgeSchema, electron_map: Dict[int, models.Electron]
+    session: Session,
+    edge: EdgeSchema,
+    electron_map: Dict[int, models.Electron],
+    edge_records: List[models.ElectronDependency],
 ) -> EdgeSchema:
     source_electron = electron_map[edge.source]
     target_electron = electron_map[edge.target]
@@ -127,7 +170,9 @@ def _import_edge(
         "arg_index": arg_index,
     }
 
-    ElectronDependency.insert(session, insert_kwargs=insert_kwargs, flush=False)
+    edge_records.append(
+        ElectronDependency.create(session, insert_kwargs=insert_kwargs, flush=False)
+    )
 
     # No filtering involved
     return edge

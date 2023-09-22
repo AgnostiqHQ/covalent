@@ -120,7 +120,7 @@ def import_lattice_assets(
             "remote_uri": asset.uri,
             "size": asset.size,
         }
-        asset_ids[asset_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
+        asset_ids[asset_key] = Asset.create(session, insert_kwargs=asset_kwargs, flush=False)
 
         # Send this back to the client
         asset.digest = None
@@ -141,7 +141,7 @@ def import_lattice_assets(
                 "remote_uri": asset.uri,
                 "size": asset.size,
             }
-            asset_ids[asset_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
+            asset_ids[asset_key] = Asset.create(session, insert_kwargs=asset_kwargs, flush=False)
 
             # Send this back to the client
             asset.remote_uri = f"file://{local_uri}" if asset.digest else ""
@@ -149,7 +149,14 @@ def import_lattice_assets(
 
     session.flush()
 
+    # Write asset records to DB
+    session.flush()
+
+    # Link assets to lattice
+    lattice_asset_links = []
     for key, asset_rec in asset_ids.items():
-        record.associate_asset(session, key, asset_rec.id)
+        lattice_asset_links.append(record.associate_asset(session, key, asset_rec.id))
+
+    session.flush()
 
     return lat.assets

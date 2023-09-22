@@ -76,7 +76,7 @@ def import_electron(
     node_storage_path = asset_recs["function"].storage_path
 
     electron_kwargs = _get_electron_meta(e, lat, node_storage_path, job_id)
-    electron_row = ElectronMeta.insert(session, insert_kwargs=electron_kwargs, flush=False)
+    electron_row = ElectronMeta.create(session, insert_kwargs=electron_kwargs, flush=False)
 
     return (
         electron_row,
@@ -158,7 +158,7 @@ def import_electron_assets(
             "remote_uri": asset.uri,
             "size": asset.size,
         }
-        asset_recs[asset_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
+        asset_recs[asset_key] = Asset.create(session, insert_kwargs=asset_kwargs, flush=False)
 
         # Send this back to the client
         asset.digest = None
@@ -179,7 +179,7 @@ def import_electron_assets(
                 "remote_uri": asset.uri,
                 "size": asset.size,
             }
-            asset_recs[asset_key] = Asset.insert(session, insert_kwargs=asset_kwargs, flush=False)
+            asset_recs[asset_key] = Asset.create(session, insert_kwargs=asset_kwargs, flush=False)
 
             # Send this back to the client
             asset.remote_uri = f"file://{local_uri}" if asset.digest else ""

@@ -43,7 +43,7 @@ class LatticeAsset(Record[models.LatticeAsset]):
     model = models.LatticeAsset
 
 
-class Lattice(DispatchedObject):
+class Lattice(DispatchedObject[LatticeMeta, LatticeAsset]):
     meta_type = LatticeMeta
     asset_link_type = LatticeAsset
 

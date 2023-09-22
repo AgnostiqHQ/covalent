@@ -43,7 +43,7 @@ class ElectronAsset(Record[models.ElectronAsset]):
     model = models.ElectronAsset
 
 
-class Electron(DispatchedObject):
+class Electron(DispatchedObject[ElectronMeta, ElectronAsset]):
     meta_type = ElectronMeta
     asset_link_type = ElectronAsset
 
