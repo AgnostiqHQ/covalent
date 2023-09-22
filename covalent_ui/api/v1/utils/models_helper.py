@@ -43,6 +43,15 @@ class SortBy(CaseInsensitiveEnum):
     ENDED = "ended_at"
 
 
+class JobsSortBy(CaseInsensitiveEnum):
+    """Values to filter jobs data by"""
+
+    EXECUTOR = "executor"
+    JOB_ID = "job_id"
+    START_TIME = "start_time"
+    STATUS = "status"
+
+
 class SortDirection(CaseInsensitiveEnum):
     """Values to decide sort direction"""
 

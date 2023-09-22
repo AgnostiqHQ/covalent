@@ -95,14 +95,6 @@ class DaskExecutor(AsyncBaseExecutor):
                 debug_msg = f"Couldn't find `executors.dask.create_unique_workdir` in config, using default value {create_unique_workdir}."
                 app_log.debug(debug_msg)
 
-        if not scheduler_address:
-            try:
-                scheduler_address = get_config("dask.scheduler_address")
-            except KeyError as ex:
-                app_log.debug(
-                    "No dask scheduler address found in config. Address must be set manually."
-                )
-
         super().__init__(
             log_stdout,
             log_stderr,
@@ -117,6 +109,14 @@ class DaskExecutor(AsyncBaseExecutor):
 
     async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         """Submit the function and inputs to the dask cluster"""
+
+        if not self.scheduler_address:
+            try:
+                self.scheduler_address = get_config("dask.scheduler_address")
+            except KeyError as ex:
+                app_log.debug(
+                    "No dask scheduler address found in config. Address must be set manually."
+                )
 
         if await self.get_cancel_requested():
             app_log.debug("Task has cancelled")

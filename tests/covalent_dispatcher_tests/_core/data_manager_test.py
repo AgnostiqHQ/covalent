@@ -103,6 +103,7 @@ async def test_handle_built_sublattice(mocker):
         return_value="mock-sub-dispatch-id",
     )
     mock_node_result = generate_node_result(
+        dispatch_id="mock-dispatch-id",
         node_id=0,
         node_name="mock_node_name",
         status=RESULT_STATUS.COMPLETED,
@@ -129,6 +130,7 @@ async def test_handle_built_sublattice_exception(mocker):
         return_value="mock-sub-dispatch-id",
     )
     mock_node_result = generate_node_result(
+        dispatch_id="mock-dispatch-id",
         node_id=0,
         node_name="mock_node_name",
         status=RESULT_STATUS.COMPLETED,

@@ -60,8 +60,6 @@ from covalent._shared_files.config import ConfigManager, get_config, set_config
 from .._db.datastore import DataStore
 from .migrate import migrate_pickled_result_object
 
-cm = ConfigManager()
-
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
 UI_SRVDIR = f"{os.path.dirname(os.path.abspath(__file__))}/../../covalent_ui"
@@ -696,7 +694,10 @@ def purge(ctx, hard: bool, yes: bool, hell_yeah: bool) -> None:
     """
     Purge Covalent from this system
     """
+    cm = ConfigManager()
+
     console = Console()
+
     removal_list = {
         get_config("sdk.log_dir"),
         get_config("dispatcher.cache_dir"),
@@ -978,6 +979,9 @@ def cluster(
 @click.command()
 def config() -> None:
     """Display the Covalent configuration"""
+
+    cm = ConfigManager()
+
     console = Console()
     print_header(console)
     console.print(Panel("Covalent Configuration", expand=False, border_style="blue"))

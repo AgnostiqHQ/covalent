@@ -430,6 +430,7 @@ def test_node(mocker, node_name):
         end_time="mock_time",
         status="COMPLETED",
         output="mock_output",
+        qelectron_data_exists=False,
     )
     if node_name is None:
         node_name = mock_result.lattice.transport_graph.get_node_value()
@@ -440,6 +441,7 @@ def test_node(mocker, node_name):
         end_time="mock_time",
         status="COMPLETED",
         output="mock_output",
+        qelectron_data_exists=False,
         error=None,
         sub_dispatch_id=None,
         sublattice_result=None,
