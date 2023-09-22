@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Raised the minimum version of Pydantic from 1.10.1 to 2.1.1 in `requirements.txt`
 - Electron DAL to use Covalent server's data instead of QServer's data.
+- Changed license to Apache
 
 ### Added
 
