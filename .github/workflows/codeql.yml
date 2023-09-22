@@ -49,7 +49,7 @@ jobs:
             language: javascript
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: AgnostiqHQ/${{ matrix.repo }}
       - name: Initialize CodeQL

@@ -52,7 +52,6 @@ class DispatchModule(BaseModel):
     updated_at: Optional[Union[datetime, None]]
 
     class Config:
-        orm_mode = True
         from_attributes = True
 
 
@@ -65,7 +64,6 @@ class DispatchResponse(BaseModel):
     class Config:
         """Configure example for openAPI"""
 
-        orm_mode = True
         json_schema_extra = {
             "example": {
                 "dispatches": [

@@ -40,7 +40,7 @@ jobs:
       matrix: ${{ steps.filter-matrix.outputs.matrix }}
     steps:
       - name: Check out head
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
@@ -68,7 +68,7 @@ jobs:
     steps:
       - name: Check out head
         if: github.event_name != 'workflow_dispatch'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
@@ -76,7 +76,7 @@ jobs:
         if: >
           github.event_name == 'workflow_dispatch'
           && github.event.inputs.commit_sha
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
           fetch-depth: 0
