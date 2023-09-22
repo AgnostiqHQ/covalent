@@ -21,3 +21,12 @@ Covalent offers various plugins, starting with executor plugins. Executors are u
    api/executors/awsbraket.rst
    api/executors/azurebatch.rst
    api/executors/gcpbatch.rst
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Quantum Executor Plugins
+
+   api/executors/qiskit.rst
+   api/executors/ibmq.rst
+   api/executors/braketqubit.rst
+   api/executors/localbraketqubit.rst

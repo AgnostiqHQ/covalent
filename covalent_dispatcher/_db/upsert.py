@@ -229,6 +229,11 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
         except KeyError:
             node_output = None
 
+        try:
+            node_qelectron_data_exists = tg.get_node_value(node_id, "qelectron_data_exists")
+        except KeyError:
+            node_qelectron_data_exists = False
+
         executor = tg.get_node_value(node_id, "metadata")["executor"]
         started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
         completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
@@ -290,6 +295,7 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
                 "deps_filename": ELECTRON_DEPS_FILENAME,
                 "call_before_filename": ELECTRON_CALL_BEFORE_FILENAME,
                 "call_after_filename": ELECTRON_CALL_AFTER_FILENAME,
+                "qelectron_data_exists": node_qelectron_data_exists,
                 "cancel_requested": cancel_requested,
                 "created_at": datetime.now(timezone.utc),
                 "updated_at": datetime.now(timezone.utc),
@@ -306,6 +312,7 @@ def _electron_data(session: Session, result: Result, cancel_requested: bool = Fa
                 "started_at": started_at,
                 "updated_at": datetime.now(timezone.utc),
                 "completed_at": completed_at,
+                "qelectron_data_exists": node_qelectron_data_exists,
             }
             update_electrons_data(**electron_record_kwarg)
             if status == Result.COMPLETED:

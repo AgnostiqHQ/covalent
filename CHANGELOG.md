@@ -7,13 +7,64 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
-### Added
+## [0.229.0-rc.0] - 2023-09-22
 
-- Added a `py.typed` file to support type-checking
+### Authors
+
+- Andrew S. Rosen <asrosen93@gmail.com>
+- Alejandro Esquivel <ae@alejandro.ltd>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Co-authored-by: mpvgithub <107603631+mpvgithub@users.noreply.github.com>
+- Co-authored-by: Manjunath PV <manjunath.poilath@psiog.com>
+- Co-authored-by: Ara Ghukasyan <ara@agnostiq.ai>
+- Co-authored-by: Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: jackbaker1001 <jsbaker1001@gmail.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Co-authored-by: Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <will@agnostiq.ai>
+- Co-authored-by: sriranjani venkatesan <sriranjani.venkatesan@psiog.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+- Co-authored-by: Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
+- FilipBolt <filipbolt@gmail.com>
+
+
+### Fixed
+
+- Formatted executor block under Qelectron job details to handle any class-type values
+- Fixed test-cases to handle latest pydantic version changes
+- Rsync command fixed to recursively copy files when using SSH
+- Removed accidentally added migrations build files
+- Updated migration script to add a default value for `qelectron_data_exists` in the `electrons` table since it cannot be nullable
 
 ### Changed
 
 - Raised the minimum version of Pydantic from 1.10.1 to 2.1.1 in `requirements.txt`
+- Electron DAL to use Covalent server's data instead of QServer's data.
+- Renamed QCluster's `selector_serialized` attribute so it gets propagated to the qserver.
+- Removed `orm_mode = True` in `covalent_ui/api/v1/models/dispatch_model.py` as it is deprecated in Pydantic 2
+
+### Added
+
+- Added a `py.typed` file to support type-checking
+- Corrected support from distributed Hamiltonian expval calculations
+- Exposed qelectron db in sdk result object
+- UI changes added for qelectrons and fix for related config file corruption
+- UI fix regarding Qelectron not showing up
+- Performance optimisation of UI for large Qelectrons
+
+## Tests
+
+- Changed the method for startup and shutdown events for pytest to work with fastapi version 0.93.0
+- Fixed test cases to adapt changes to SQLAlchemy version 1.4.49
+- Add tests for GUI frontend and backend.
+- Skipped `tests/covalent_ui_backend_tests/end_points/summary_test.py::test_overview` until it gets fixed.
+
+### Docs
+
+- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
+- Updated documentation links in README
+- Added tutorial for redispatching workflows with Streamlit
 
 ## [0.228.0-rc.0] - 2023-08-31
 
@@ -39,7 +90,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
-
 
 ### Fixed
 

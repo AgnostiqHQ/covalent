@@ -134,7 +134,8 @@ async def test_run_abstract_task_exception_handling(mocker):
     mock_get_result = mocker.patch(
         "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
     )
-    mock_get_task_input_values = mocker.patch(
+
+    mocker.patch(
         "covalent_dispatcher._core.runner._get_task_input_values",
         side_effect=RuntimeError(),
     )
