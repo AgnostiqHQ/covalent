@@ -234,7 +234,12 @@ class Lattice:
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
                 try:
-                    retval = workflow_function(*new_args, **new_kwargs)
+                    from .electron import ParamElectron
+
+                    electron_args = [ParamElectron(arg)() for arg in new_args]
+                    electron_kwargs = {k: ParamElectron(v)() for k, v in new_kwargs.items()}
+
+                    retval = workflow_function(*electron_args, **electron_kwargs)
                 except Exception:
                     warnings.warn(
                         "Please make sure you are not manipulating an object inside the lattice."

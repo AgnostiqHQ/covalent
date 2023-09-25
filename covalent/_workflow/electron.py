@@ -164,6 +164,12 @@ class Electron:
             electron: Electron object corresponding to the operation execution.
                       Behaves as a normal function call if outside a lattice.
         """
+
+        if not isinstance(operand_1, Electron):
+            operand_1 = ParamElectron(operand_1)()
+        if not isinstance(operand_2, Electron):
+            operand_2 = ParamElectron(operand_2)()
+
         op_table = {
             "+": operator.add,
             "-": operator.sub,
@@ -186,17 +192,51 @@ class Electron:
             """
 
             def decorator(f):
-                op1_name = op1
                 if hasattr(op1, "function") and op1.function:
                     op1_name = op1.function.__name__
-                op2_name = op2
+                else:
+                    op1_name = op1.no_prefix_name
                 if hasattr(op2, "function") and op2.function:
                     op2_name = op2.function.__name__
+                else:
+                    op2_name = op2.no_prefix_name
 
                 f.__name__ = f"{op1_name}_{op}_{op2_name}"
                 return f
 
             return decorator
+
+        if isinstance(operand_1, ParamElectron) and isinstance(operand_2, ParamElectron):
+            new_param_value = op_table[op](operand_1.param_value, operand_2.param_value)
+
+            new_param_no_prefix_name = (
+                f"{operand_1.no_prefix_name}_{op}_{operand_2.no_prefix_name}"
+            )
+
+            new_param_electron = ParamElectron(new_param_value, new_param_no_prefix_name)()
+
+            active_lattice = active_lattice_manager.get_active_lattice()
+
+            # Connect with operand 1
+            new_param_electron.connect_node_with_others(
+                new_param_electron.node_id,
+                "op_1",
+                operand_1,
+                "kwarg",
+                None,
+                active_lattice.transport_graph,
+            )
+
+            # Connect with operand 2
+            new_param_electron.connect_node_with_others(
+                new_param_electron.node_id,
+                "op_2",
+                operand_2,
+                "kwarg",
+                None,
+                active_lattice.transport_graph,
+            )
+            return new_param_electron
 
         @electron
         @rename(operand_1, op, operand_2)
@@ -281,6 +321,18 @@ class Electron:
 
         for i in range(expected_unpack_values):
             if active_lattice := active_lattice_manager.get_active_lattice():
+                if isinstance(self, ParamElectron):
+                    new_param_electron = ParamElectron(self.param_value[i])()
+                    new_param_electron.connect_node_with_others(
+                        new_param_electron.node_id,
+                        f"{self.no_prefix_name}[{i}]",
+                        self,
+                        "kwarg",
+                        None,
+                        active_lattice.transport_graph,
+                    )
+                    yield new_param_electron
+
                 try:
                     node_name = prefix_separator + self.function.__name__ + "()" + f"[{i}]"
 
@@ -323,6 +375,17 @@ class Electron:
             )
 
         if active_lattice := active_lattice_manager.get_active_lattice():
+            if isinstance(self, ParamElectron):
+                new_param_electron = ParamElectron(getattr(self.param_value, attr))()
+                new_param_electron.connect_node_with_others(
+                    new_param_electron.node_id,
+                    f"{self.no_prefix_name}.{attr}",
+                    self,
+                    "kwarg",
+                    None,
+                    active_lattice.transport_graph,
+                )
+                return new_param_electron
 
             def get_attr(e, attr):
                 return getattr(e, attr)
@@ -338,6 +401,17 @@ class Electron:
 
     def __getitem__(self, key: Union[int, str]) -> "Electron":
         if active_lattice := active_lattice_manager.get_active_lattice():
+            if isinstance(self, ParamElectron):
+                new_param_electron = ParamElectron(self.param_value[key])()
+                new_param_electron.connect_node_with_others(
+                    new_param_electron.node_id,
+                    f"{self.no_prefix_name}[{key}]",
+                    self,
+                    "kwarg",
+                    None,
+                    active_lattice.transport_graph,
+                )
+                return new_param_electron
 
             def get_item(e, key):
                 return e[key]
@@ -540,19 +614,13 @@ class Electron:
             )
 
         else:
-            encoded_param_value = TransportableObject.make_transportable(param_value)
-            parameter_node = transport_graph.add_node(
-                name=parameter_prefix + str(param_value),
-                function=None,
-                metadata=encode_metadata(DEFAULT_METADATA_VALUES.copy()),
-                value=encoded_param_value,
-            )
-            transport_graph.add_edge(
-                parameter_node,
+            return self.connect_node_with_others(
                 node_id,
-                edge_name=param_name,
-                param_type=param_type,
-                arg_index=arg_index,
+                param_name,
+                ParamElectron(param_value),
+                param_type,
+                arg_index,
+                transport_graph,
             )
 
     def add_collection_node_to_graph(self, graph: "_TransportGraph", prefix: str) -> int:
@@ -629,6 +697,57 @@ class Electron:
             "function_string": get_serialized_function_str(self.function),
             "metadata": filter_null_metadata(self.metadata),
         }
+
+
+class ParamElectron(Electron):
+    def __init__(
+        self,
+        param_value: Any,
+        no_prefix_name: str = None,
+        function: Callable[..., Any] = None,
+        node_id: int = None,
+        metadata: dict = None,
+        task_group_id: int = None,
+        packing_tasks: bool = False,
+    ) -> None:
+        self.param_value = param_value
+        self.no_prefix_name = no_prefix_name
+        super().__init__(function, node_id, metadata, task_group_id, packing_tasks)
+
+    def __call__(self, *args: Any, **kwds: Any) -> Any:
+        active_lattice = active_lattice_manager.get_active_lattice()
+        if active_lattice is None:
+            return self.param_value
+
+        self.metadata = DEFAULT_METADATA_VALUES.copy()
+
+        if active_lattice.post_processing:
+            active_lattice.electron_outputs.pop(0)
+
+        self.node_id = active_lattice.transport_graph.add_node(
+            name=f"{parameter_prefix}__UNSET__",
+            function=None,
+            metadata=encode_metadata(self.metadata.copy()),
+            value=TransportableObject.make_transportable(self.param_value),
+        )
+
+        if self.no_prefix_name is None:
+            self.no_prefix_name = f"param_{self.node_id}"
+        active_lattice.transport_graph.set_node_value(
+            self.node_id, "name", f"{parameter_prefix}{self.no_prefix_name}"
+        )
+
+        active_lattice._bound_electrons[self.node_id] = self
+        return self
+
+    def __int__(self):
+        return ParamElectron(int(self.param_value))
+
+    def __float__(self):
+        return ParamElectron(float(self.param_value))
+
+    def __complex__(self):
+        return ParamElectron(complex(self.param_value))
 
 
 # Dynamically adding properties to the Electron class
