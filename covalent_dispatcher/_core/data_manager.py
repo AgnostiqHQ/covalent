@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """
 Defines the core functionality of the result service
@@ -31,6 +27,7 @@ from typing import Callable, Dict, Optional
 from covalent._results_manager import Result
 from covalent._shared_files import logger
 from covalent._shared_files.defaults import sublattice_prefix
+from covalent._shared_files.qelectron_utils import extract_qelectron_db, write_qelectron_db
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport_graph_ops import TransportGraphOps
@@ -50,6 +47,7 @@ _dispatch_status_queues = {}
 
 
 def generate_node_result(
+    dispatch_id: str,
     node_id: int,
     node_name: str,
     start_time=None,
@@ -66,7 +64,8 @@ def generate_node_result(
     Helper routine to prepare the node result
 
     Arg(s)
-        node_id: ID of the node in the transport graph
+        dispatch_id: ID of the dispatched workflow
+        node_id: ID of the node in the trasport graph
         node_name: Name of the node
         start_time: Start time of the node
         end_time: Time at which the node finished executing
@@ -81,6 +80,13 @@ def generate_node_result(
     Return(s)
         Dictionary of the inputs
     """
+    clean_stdout, bytes_data = extract_qelectron_db(stdout)
+    qelectron_data_exists = bool(bytes_data)
+
+    if qelectron_data_exists:
+        app_log.debug(f"Reproducing Qelectron database for node {node_id}")
+        write_qelectron_db(dispatch_id, node_id, bytes_data)
+
     return {
         "node_id": node_id,
         "node_name": node_name,
@@ -89,10 +95,11 @@ def generate_node_result(
         "status": status,
         "output": output,
         "error": error,
-        "stdout": stdout,
+        "stdout": clean_stdout,
         "stderr": stderr,
         "sub_dispatch_id": sub_dispatch_id,
         "sublattice_result": sublattice_result,
+        "qelectron_data_exists": qelectron_data_exists,
     }
 
 
@@ -371,6 +378,7 @@ async def _update_parent_electron(result_object: Result):
             status = RESULT_STATUS.FAILED
         parent_result_obj = get_result_object(dispatch_id)
         node_result = generate_node_result(
+            dispatch_id=dispatch_id,
             node_id=node_id,
             node_name=parent_result_obj.lattice.transport_graph.get_node_value(node_id, "name"),
             end_time=result_object.end_time,

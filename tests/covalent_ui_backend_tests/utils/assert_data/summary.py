@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 "Summary mock data"
 
@@ -38,9 +34,9 @@ def seed_summary_data():
             "case1": {
                 "status_code": 200,
                 "response_data": {
-                    "total_jobs": 2,
+                    "total_jobs": 3,
                     "total_jobs_running": 0,
-                    "total_jobs_completed": 2,
+                    "total_jobs_completed": 3,
                     "total_jobs_failed": 0,
                     "total_jobs_cancelled": 0,
                     "total_jobs_new_object": 0,
@@ -76,7 +72,7 @@ def seed_summary_data():
                             "updated_at": "2022-10-27T10:08:43.997619",
                         },
                         {
-                            "dispatch_id": VALID_DISPATCH_ID,
+                            "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
                             "lattice_name": "workflow",
                             "runtime": 0,
                             "total_electrons": 6,
@@ -86,8 +82,19 @@ def seed_summary_data():
                             "status": "COMPLETED",
                             "updated_at": "2022-09-23T10:01:11.720140",
                         },
+                        {
+                            "dispatch_id": "e8fd09c9-1406-4686-9e77-c8d4d64a76ee",
+                            "lattice_name": "workflow",
+                            "runtime": 0,
+                            "total_electrons": 2,
+                            "total_electrons_completed": 2,
+                            "started_at": "2023-08-10T10:08:55.420784",
+                            "ended_at": "2023-08-10T10:08:55.902257",
+                            "status": "COMPLETED",
+                            "updated_at": "2023-08-10T10:08:55.946668",
+                        },
                     ],
-                    "total_count": 2,
+                    "total_count": 3,
                 },
             },
             "case2": {
@@ -103,7 +110,7 @@ def seed_summary_data():
                 "response_data": {
                     "items": [
                         {
-                            "dispatch_id": VALID_DISPATCH_ID,
+                            "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
                             "lattice_name": "workflow",
                             "runtime": 0,
                             "total_electrons": 6,
@@ -114,7 +121,7 @@ def seed_summary_data():
                             "updated_at": "2022-09-23T10:01:11.720140",
                         }
                     ],
-                    "total_count": 2,
+                    "total_count": 3,
                 },
             },
             "case3": {
@@ -129,7 +136,7 @@ def seed_summary_data():
                         "status_filter": "ALL",
                     }
                 },
-                "response_message": "Input should be greater than -1",
+                "response_message": "ensure this value is greater than -1",
             },
             "case4": {
                 "status_code": 422,
@@ -145,11 +152,10 @@ def seed_summary_data():
                 "response_data": {
                     "detail": [
                         {
-                            "type": "greater_than",
                             "loc": ["query", "count"],
-                            "msg": "Input should be greater than 0",
-                            "input": "0",
-                            "ctx": {"gt": 0},
+                            "msg": "ensure this value is greater than 0",
+                            "type": "value_error.number.not_gt",
+                            "ctx": {"limit_value": 0},
                         }
                     ]
                 },
@@ -207,7 +213,7 @@ def seed_summary_data():
                         ]
                     }
                 },
-                "response_message": "Input should be an instance of UUID",
+                "response_message": "value is not a valid uuid",
             },
             "case5": {
                 "status_code": 200,
@@ -261,9 +267,10 @@ def seed_summary_data():
                 "response_data": {
                     "success_items": [
                         "69dec597-79d9-4c99-96de-8d5f06f3d4dd",
+                        "e8fd09c9-1406-4686-9e77-c8d4d64a76ee",
                     ],
                     "failure_items": [],
-                    "message": messages["success"],
+                    "message": "Dispatch(es) have been deleted successfully!",
                 },
             },
             "case2": {
@@ -296,7 +303,7 @@ def seed_summary_data():
             "case5": {
                 "status_code": 422,
                 "request_data": {"body": {"status_filter": "failed"}},
-                "response_message": "Input should be 'ALL','NEW_OBJECT','COMPLETED','POSTPROCESSING','PENDING_POSTPROCESSING','POSTPROCESSING_FAILED','FAILED','RUNNING' or 'CANCELLED'",
+                "response_message": "value is not a valid enumeration member; permitted: 'ALL', 'NEW_OBJECT', 'COMPLETED', 'POSTPROCESSING', 'PENDING_POSTPROCESSING', 'POSTPROCESSING_FAILED', 'FAILED', 'RUNNING', 'CANCELLED'",
             },
             "case6": {
                 "status_code": 200,

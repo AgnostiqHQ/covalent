@@ -1,23 +1,17 @@
 /**
- * Copyright 2021 Agnostiq Inc.
- *
  * This file is part of Covalent.
  *
- * Licensed under the GNU Affero General Public License 3.0 (the "License").
- * A copy of the License may be obtained with this software package or at
+ * Licensed under the Apache License 2.0 (the "License"). A copy of the
+ * License may be obtained with this software package or at
  *
- *      https://www.gnu.org/licenses/agpl-3.0.en.html
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
- * Use of this file is prohibited except in compliance with the License. Any
- * modifications or derivative works of this file must retain this copyright
- * notice, and modified files must contain a notice indicating that they have
- * been altered from the originals.
- *
- * Covalent is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
- *
- * Relief from the License may be granted by purchasing a commercial license.
+ * Use of this file is prohibited except in compliance with the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import _ from 'lodash'
@@ -28,7 +22,7 @@ import { ReactComponent as ActivitySvg } from '../assets/status/pending.svg'
 import { ReactComponent as CheckSvg } from '../assets/status/checkmark.svg'
 import { ReactComponent as ErrorSvg } from '../assets/status/error.svg'
 import { ReactComponent as CancelSvg } from '../assets/status/stop.svg'
-import { ReactComponent as LoaderSvg } from '../assets/loader.svg'
+import { ReactComponent as LoaderSvg } from '../assets/status/running.svg'
 import { ReactComponent as FunctionSvg } from '../assets/nodeType/fuction.svg'
 import { ReactComponent as ParameterSvg } from '../assets/nodeType/parameter.svg'
 import { ReactComponent as SubLattice } from '../assets/nodeType/sublattice.svg'
@@ -49,6 +43,8 @@ import { ReactComponent as CompletingSvg } from '../assets/status/completing.svg
 import { ReactComponent as RunningTopBarSvg } from '../assets/sublattice/runningTopBar.svg'
 import { ReactComponent as FailedTopBarSvg } from '../assets/sublattice/failedTopBar.svg'
 import { ReactComponent as SuccessTopBarSvg } from '../assets/sublattice/successTopBar.svg'
+import './style.css'
+
 export const secondsToHms = (ms) => {
   let time = ''
   const sec = Math.floor(ms / 1000)
@@ -249,9 +245,7 @@ export const statusIcon = (status) => {
     case 'RUNNING':
     case 'STARTING':
       return (
-        <SvgIcon aria-label={status} sx={{ mr: 0.5 }}>
-          <LoaderSvg />
-        </SvgIcon>
+        <LoaderSvg className='circleRunningStatus' aria-label={status} />
       )
     case 'NEW_OBJECT':
     case 'PENDING':
@@ -291,7 +285,7 @@ export const statusIcon = (status) => {
     case 'PROVISION_FAILED':
     case 'DEPROVISION_FAILED':
       return (
-        <SvgIcon aria-label={status} sx={{ mt: 1 }}>
+        <SvgIcon aria-label={status} sx={{ mt: 1.3 }}>
           <ErrorSvg />
         </SvgIcon>
       )
@@ -443,4 +437,23 @@ export const sublatticeIconTopBar = (type, sub) => {
 export const getLocalStartTime = (time) => {
   let startTimeToLocal = new Date((time = time + 'Z'))
   return startTimeToLocal.toISOString()
+}
+
+export const formatQElectronTime = (sec) => {
+  let time = ''
+  const days = Math.floor(sec / (3600 * 24))
+  const hours = Math.floor(sec / 3600)
+  const minutes = ('0' + (Math.floor(sec / 60) % 60)).slice(-2)
+  if (sec > 0 && sec < 60) {
+    time = '< 1min'
+  } else if (sec > 60 && sec < 3600) {
+    time = `${Math.round(minutes)}m`
+  } else if (sec > 3600 && sec < 86400) {
+    time = `${Math.round(hours)}h ${Math.round(minutes)}m`
+  } else if (sec > 86400 && sec < 172800) {
+    time = '> 1 day'
+  } else if (sec > 172800) {
+    time = `${Math.round(days)} days`
+  }
+  return time
 }
