@@ -617,7 +617,7 @@ class Electron:
             return self.connect_node_with_others(
                 node_id,
                 param_name,
-                ParamElectron(param_value),
+                ParamElectron(param_value)(),
                 param_type,
                 arg_index,
                 transport_graph,
