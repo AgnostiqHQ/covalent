@@ -18,11 +18,17 @@ conda create -n covalent-dev python=3.8
 conda activate covalent-dev
 ```
 
+We recommend using [Node Version Manager](https://github.com/nvm-sh/nvm) to install and manage Node.js. Please install and activate Node.js version 16 to work with Covalent locally:
+```shell
+nvm install 16
+nvm use 16
+```
+
 Install Covalent's core requirements as well as the developer requirements:
 ```shell
 conda config --add channels conda-forge
 conda config --set channel_priority strict
-conda install setuptools pip nodejs yarn requests
+conda install setuptools pip yarn requests
 python setup.py webapp
 pip install -e .
 pip install -r tests/requirements.txt
@@ -50,7 +56,7 @@ Contribution for Covalent UI
 
 ## Setup
 
-- Install `node` (v16 or later) and `npm`:
+- Install `node` (v16) and `npm`:
 
 ```shell
 # Linux

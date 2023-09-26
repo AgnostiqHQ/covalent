@@ -79,3 +79,12 @@ covalent_ui/api/sonar.sh
 
 # Ignore node dependencies
 node_modules/
+
+# Yarn ignored and allowed files and folders
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
