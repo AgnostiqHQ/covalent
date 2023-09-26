@@ -82,25 +82,61 @@ def test_database_trigger_observe(mocker, where_clauses, database_trigger):
     mock_sleep.assert_called_once_with(1)
 
 
-# def test_database_trigger_exception(mocker, database_trigger):
-#     """
-#     Test the observe method of Database trigger when an OperationalError is raised
-#     """
+@pytest.mark.parametrize(
+    "where_clauses",
+    [
+        ["id > 2", "status = COMPLETED"],
+        None,
+    ],
+)
+def test_database_trigger_exception(mocker, where_clauses, database_trigger):
+    """
+    Test the observe method of Database trigger when an OperationalError is raised
+    """
 
-#     database_trigger.trigger = mocker.MagicMock()
-#     mock_event = mocker.patch("covalent.triggers.database_trigger.Event")
-#     mock_sleep = mocker.patch("covalent.triggers.database_trigger.time.sleep")
-#     mock_event.return_value.is_set.side_effect = [False, True]
-#     mock_session = mocker.patch('covalent.triggers.database_trigger.Session')
-#     import sqlalchemy
-#     from sqlalchemy.exc import ArgumentError
-#     mock_session.side_effect = ArgumentError
+    mock_db_engine = mocker.patch("covalent.triggers.database_trigger.create_engine")
+    mock_session = mocker.patch("covalent.triggers.database_trigger.Session")
+    mock_event = mocker.patch("covalent.triggers.database_trigger.Event")
+    mock_sleep = mocker.patch("covalent.triggers.database_trigger.time.sleep")
 
-#     # Call the 'observer' method
-#     try:
-#         database_trigger.observe()
-#     except sqlalchemy.exc.ArgumentError as exc:
-#         assert str(exc) == "Could not parse SQLAlchemy URL from string 'test_db_path'"
+    mock_event.return_value.is_set.side_effect = [False, True]
+    database_trigger.observe()
+
+    sql_poll_cmd = "SELECT * FROM test_table_name"
+    if where_clauses:
+        sql_poll_cmd += " WHERE "
+        sql_poll_cmd += " AND ".join(list(where_clauses))
+    sql_poll_cmd += ";"
+
+    mock_db_engine.assert_called_once_with("test_db_path")
+    mock_session.assert_called_once_with(mock_db_engine("test_db_path"))
+    mock_event.assert_called_once()
+    mock_sql_execute = mocker.patch.object(mock_session, "execute", autospec=True)
+    mock_sql_execute.assert_called_once_with(sql_poll_cmd)
+    mock_sleep.assert_called_once_with(1)
+
+
+@pytest.mark.parametrize(
+    "where_clauses",
+    [
+        ["id > 2", "status = FAILED"],
+        None,
+    ],
+)
+def test_database_trigger_exception_session(mocker, where_clauses, database_trigger):
+    """
+    Test the observe method of Database trigger when an OperationalError is raised
+    """
+    database_trigger.trigger = mocker.MagicMock()
+    mock_event = mocker.patch("covalent.triggers.database_trigger.Event")
+    mock_event.return_value.is_set.side_effect = [False, True]
+    import sqlalchemy
+
+    # Call the 'observer' method
+    try:
+        database_trigger.observe()
+    except sqlalchemy.exc.ArgumentError as exc:
+        assert str(exc) == "Could not parse SQLAlchemy URL from string 'test_db_path'"
 
 
 def test_database_trigger_stop(mocker, database_trigger):
