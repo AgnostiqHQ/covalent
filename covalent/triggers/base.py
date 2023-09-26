@@ -69,7 +69,7 @@ class BaseTrigger:
             None  # to attach the event loop when directly using dispatcher's functions
         )
         self.use_internal_funcs = (
-            False  # whether to use dispatcher's functions directly instead of through API calls
+            True  # whether to use dispatcher's functions directly instead of through API calls
         )
         self.stop_flag = None  # to handle stopping mechanism in a thread safe manner in case observe() is a blocking call (e.g. see TimeTrigger)
 
@@ -106,9 +106,6 @@ class BaseTrigger:
         Returns:
             status: Status
         """
-
-        app_log.debug("GET STATUS")
-        app_log.debug(f"use_internal_funcs: {self.use_internal_funcs}")
 
         if self.use_internal_funcs:
             from covalent_dispatcher._service.app import get_result
@@ -171,7 +168,6 @@ class BaseTrigger:
             )
 
         status = self._get_status()
-        app_log.debug(f"STATUS: {status}")
 
         if status == Result.NEW_OBJ or status is None:
             # To continue the pending dispatch

@@ -110,7 +110,6 @@ FROM base AS build_base
 RUN <<EOL
   apt-get update
   apt-get install -y --no-install-recommends \
-    curl \
     git \
     rsync \
     unzip \
@@ -224,14 +223,13 @@ COPY --from=covalent_src $BUILDROOT/ $BUILDROOT
 
 RUN <<EOL
   if [ ! -d $BUILDROOT/dist ] ; then
-    #cd $BUILDROOT/covalent_ui/webapp
-    #yarn install --network-timeout 100000
-    #yarn build --network-timeout 100000
+    cd $BUILDROOT/covalent_ui/webapp
+    yarn install --network-timeout 100000
+    yarn build --network-timeout 100000
     cd $BUILDROOT
     python setup.py sdist
   fi
-  tarball=`find dist -type f -name 'covalent-*.tar.gz'`
-  python -m pip install ${tarball}[postgres]
+  python -m pip install dist/covalent-*.tar.gz
 EOL
 
 ##############################
@@ -308,18 +306,6 @@ COPY --from=build_base /usr/bin/wget /usr/bin/wget
 COPY --from=build_base /usr/lib/x86_64-linux-gnu/libpcre2-8.so.0 /usr/lib/x86_64-linux-gnu/libpcre2-8.so.0
 COPY --from=build_base /usr/lib/x86_64-linux-gnu/libpsl.so.5 /usr/lib/x86_64-linux-gnu/libpsl.so.5
 
-COPY --from=build_base /usr/bin/curl /usr/bin/curl
-COPY --from=build_base /usr/lib/x86_64-linux-gnu/libcurl.so.4 /usr/lib/x86_64-linux-gnu/libcurl.so.4
-COPY --from=build_base /usr/lib/x86_64-linux-gnu/libnghttp2.so.14 /usr/lib/x86_64-linux-gnu/libnghttp2.so.14
-COPY --from=build_base /usr/lib/x86_64-linux-gnu/librtmp.so.1 /usr/lib/x86_64-linux-gnu/librtmp.so.1
-COPY --from=build_base /usr/lib/x86_64-linux-gnu/libssh2.so.1 /usr/lib/x86_64-linux-gnu/libssh2.so.1
-COPY --from=build_base /usr/lib/x86_64-linux-gnu/libldap_r-2.4.so.2 /usr/lib/x86_64-linux-gnu/libldap_r-2.4.so.2
-COPY --from=build_base /usr/lib/x86_64-linux-gnu/liblber-2.4.so.2 /usr/lib/x86_64-linux-gnu/liblber-2.4.so.2
-COPY --from=build_base /usr/lib/x86_64-linux-gnu/libbrotlidec.so.1 /usr/lib/x86_64-linux-gnu/libbrotlidec.so.1
-COPY --from=build_base /usr/lib/x86_64-linux-gnu/libsasl2.so.2 /usr/lib/x86_64-linux-gnu/libsasl2.so.2
-COPY --from=build_base /usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1 /usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1
-COPY --from=build_base /usr/lib/x86_64-linux-gnu/libpsl.so.5 /usr/lib/x86_64-linux-gnu/libpsl.so.5
-
 USER root
 
 RUN <<EOL
@@ -342,7 +328,7 @@ ENV COVALENT_SVC_PORT=${COVALENT_SVC_PORT} \
 
 EXPOSE ${COVALENT_SVC_PORT}
 
-#HEALTHCHECK CMD wget --no-verbose --tries=1 --spider http://localhost:${COVALENT_SVC_PORT} || exit 1
+HEALTHCHECK CMD wget --no-verbose --tries=1 --spider http://localhost:${COVALENT_SVC_PORT} || exit 1
 
 ENTRYPOINT [ "/bin/bash" ]
 
