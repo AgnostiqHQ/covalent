@@ -234,12 +234,14 @@ class Lattice:
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
                 try:
-                    from .electron import ParamElectron
+                    # Makes everything an Electron which might mess up when they are not expected to be
+                    # from .electron import ParamElectron
+                    # electron_args = [ParamElectron(arg)() for arg in new_args]
+                    # electron_kwargs = {k: ParamElectron(v)() for k, v in new_kwargs.items()}
+                    # retval = workflow_function(*electron_args, **electron_kwargs)
 
-                    electron_args = [ParamElectron(arg)() for arg in new_args]
-                    electron_kwargs = {k: ParamElectron(v)() for k, v in new_kwargs.items()}
-
-                    retval = workflow_function(*electron_args, **electron_kwargs)
+                    # The normal case which works but creates duplicate (non-executable) electrons
+                    retval = workflow_function(*new_args, **new_kwargs)
                 except Exception:
                     warnings.warn(
                         "Please make sure you are not manipulating an object inside the lattice."
