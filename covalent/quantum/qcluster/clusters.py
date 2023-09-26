@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import base64
 from typing import Callable, Union
@@ -48,10 +44,11 @@ class QCluster(AsyncBaseQCluster):
     selector: Union[str, Callable] = "cyclic"
 
     # Flag used to indicate whether `self.selector` is currently serialized.
-    _selector_serialized: bool = False
+    # This needs to be without the "_" prefix so that it gets propagated to the server.
+    selector_serialized: bool = False
 
     def batch_submit(self, qscripts_list):
-        if self._selector_serialized:
+        if self.selector_serialized:
             self.selector = self.deserialize_selector()
 
         selector = self.get_selector()
@@ -62,7 +59,7 @@ class QCluster(AsyncBaseQCluster):
         return selected_executor.batch_submit(qscripts_list)
 
     def serialize_selector(self) -> None:
-        if self._selector_serialized:
+        if self.selector_serialized:
             return
 
         # serialize to bytes with cloudpickle
@@ -70,16 +67,16 @@ class QCluster(AsyncBaseQCluster):
 
         # convert to string to make JSON-able
         self.selector = base64.b64encode(self.selector).decode("utf-8")
-        self._selector_serialized = True
+        self.selector_serialized = True
 
     def deserialize_selector(self) -> Union[str, Callable]:
-        if not self._selector_serialized:
+        if not self.selector_serialized:
             return self.selector
 
         # Deserialize the selector function (or string).
         selector = cloudpickle_deserialize(base64.b64decode(self.selector.encode("utf-8")))
 
-        self._selector_serialized = False
+        self.selector_serialized = False
         return selector
 
     def dict(self, *args, **kwargs) -> dict:
