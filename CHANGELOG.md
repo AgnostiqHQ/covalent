@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Contributing guidelines steps for installing
+- Updated gitignore to ignore yarn files and folders
+
 ### Operations
 
 - Changed `actions/checkout@v3` to `actions/checkout@v4` in CI
