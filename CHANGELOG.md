@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Contributing guidelines steps for installing
-- Updated gitignore to ignore yarn files and folders
+- Updated gitignore to ignore yarn files and folders for latest version of yarn
 
 ### Operations
 
