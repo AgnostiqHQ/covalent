@@ -205,6 +205,7 @@ def get_electron_kwargs(
     deps_filename=DEPS_FILENAME,
     call_before_filename=CALL_BEFORE_FILENAME,
     call_after_filename=CALL_AFTER_FILENAME,
+    qelectron_data_exists=False,
     cancel_requested=False,
     created_at=None,
     updated_at=None,
@@ -233,6 +234,7 @@ def get_electron_kwargs(
         "deps_filename": deps_filename,
         "call_before_filename": call_before_filename,
         "call_after_filename": call_after_filename,
+        "qelectron_data_exists": qelectron_data_exists,
         "cancel_requested": cancel_requested,
         "created_at": created_at,
         "updated_at": updated_at,
@@ -606,6 +608,7 @@ def test_update_electrons_data(test_db, mocker):
             started_at=dt.now(timezone.utc),
             updated_at=dt.now(timezone.utc),
             completed_at=None,
+            qelectron_data_exists=False,
         )
 
     insert_electrons_data(
@@ -623,6 +626,7 @@ def test_update_electrons_data(test_db, mocker):
         started_at=cur_time,
         updated_at=cur_time,
         completed_at=None,
+        qelectron_data_exists=False,
     )
 
     with test_db.session() as session:
