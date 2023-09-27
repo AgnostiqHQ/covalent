@@ -1,8 +1,5 @@
-.. _config:
-
-
 Setting Defaults
-""""""""""""""""""
+""""""""""""""""
 
 Default configuration for covalent can be set by defining the environment variable :code:`COVALENT_CONFIG_DIR`. By default, config files are stored in :code:`~/.config/covalent/covalent.conf`.
 
@@ -28,8 +25,8 @@ Example settings in config file
         ssh_key_file = "/home/user/.ssh/id_rsa"
 
 
-Typical Configuration settings
-******************************
+Typical Configuration Settings
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Generated each time covalent is installed and can be found at :code:`~/.config/covalent/covalent.conf`
 

@@ -3,7 +3,7 @@
 AWS Batch Executor
 """""""""""""""""""""""""""
 
-.. image:: AWS_Batch.jpg
+.. image:: ./executors/AWS_Batch.jpg
 
 
 Covalent is a Pythonic workflow tool used to execute tasks on advanced computing hardware.
@@ -209,11 +209,6 @@ The following shows an example of how a user might modify their `covalent config
     ...
 
 
-.. autoclass:: covalent.executor.EC2Executor
-    :members:
-    :inherited-members:
-
-
 ===========================================
 4. Required Cloud Resources
 ===========================================
@@ -355,6 +350,6 @@ In order to run your workflows with covalent there are a few notable AWS resourc
 .. 5. Source
 .. ===========================================
 
-.. autoclass:: covalent.executor.AWSBatchExecutor
+.. autoclass:: covalent_awsbatch_plugin.awsbatch.AWSBatchExecutor
     :members:
     :inherited-members:

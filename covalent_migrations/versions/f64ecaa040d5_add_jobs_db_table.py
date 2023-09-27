@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Add jobs db table
 
@@ -49,7 +45,6 @@ def upgrade() -> None:
     )
     with op.batch_alter_table("electron_dependency", schema=None) as batch_op:
         batch_op.create_foreign_key("electron_link", "electrons", ["parent_electron_id"], ["id"])
-        batch_op.create_foreign_key("electron_link", "electrons", ["electron_id"], ["id"])
 
     with op.batch_alter_table("electrons", schema=None) as batch_op:
         batch_op.add_column(sa.Column("job_id", sa.Integer(), nullable=False))
@@ -65,7 +60,6 @@ def downgrade() -> None:
         batch_op.drop_column("job_id")
 
     with op.batch_alter_table("electron_dependency", schema=None) as batch_op:
-        batch_op.drop_constraint("electron_link", type_="foreignkey")
         batch_op.drop_constraint("electron_link", type_="foreignkey")
 
     op.drop_table("jobs")

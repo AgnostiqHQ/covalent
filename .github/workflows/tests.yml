@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 name: tests
 
@@ -44,7 +40,7 @@ jobs:
       matrix: ${{ steps.filter-matrix.outputs.matrix }}
     steps:
       - name: Check out head
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
@@ -72,7 +68,7 @@ jobs:
     steps:
       - name: Check out head
         if: github.event_name != 'workflow_dispatch'
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
 
@@ -80,7 +76,7 @@ jobs:
         if: >
           github.event_name == 'workflow_dispatch'
           && github.event.inputs.commit_sha
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -99,6 +95,7 @@ jobs:
             - 'tests/covalent_dispatcher_tests/**'
             ui_backend:
             - 'covalent_ui/*.py'
+            - 'tests/covalent_ui_backend_tests/**'
             ui_frontend:
             - 'covalent_ui/webapp/**'
             functional_tests:
@@ -163,6 +160,12 @@ jobs:
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
 
+      - name: Set up Node
+        if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: 'covalent_ui/webapp/.nvmrc'
+
       - name: Build webapp
         if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
         uses: nick-fields/retry@v2
@@ -208,9 +211,9 @@ jobs:
         run: |
           covalent db migrate
           if [ "${{ matrix.backend }}" = 'dask' ] ; then
-            covalent start
+            covalent start -d
           elif [ "${{ matrix.backend }}" = 'local' ] ; then
-            covalent start --no-cluster
+            covalent start --no-cluster -d
           else
             echo "Invalid backend specified in test matrix."
             exit 1
@@ -218,12 +221,22 @@ jobs:
         env:
           COVALENT_EXECUTOR_DIR: doc/source/how_to/execution/custom_executors
 
+      - name: Run functional tests and measure coverage
+        id: functional-tests
+        if: env.BUILD_AND_RUN_ALL
+        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
+
+      - name: Generate functional test coverage report
+        id: functional-coverage
+        if: steps.functional-tests.outcome == 'success'
+        run: coverage xml -o functional_tests_coverage.xml
+
       - name: Run SDK tests and measure coverage
         id: sdk-tests
         if: >
           steps.modified-files.outputs.sdk == 'true'
           || env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_tests --cov=covalent --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_tests --cov=covalent --cov-config=.coveragerc
 
       - name: Generate SDK coverage report
         id: sdk-coverage
@@ -235,30 +248,19 @@ jobs:
         if: >
           steps.modified-files.outputs.dispatcher == 'true'
           || env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
 
       - name: Generate dispatcher coverage report
         id: dispatcher-coverage
         if: steps.dispatcher-tests.outcome == 'success'
         run: coverage xml -o dispatcher_coverage.xml
 
-      - name: Run functional tests and measure coverage
-        id: functional-tests
-        if: env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
-
-      - name: Generate functional test coverage report
-        id: functional-coverage
-        if: steps.functional-tests.outcome == 'success'
-        run: coverage xml -o functional_tests_coverage.xml
-
       - name: Run UI backend tests and measure coverage
         id: ui-backend-tests
         if: >
-          false
-          && (steps.modified-files.outputs.ui_backend == 'true'
-          || env.BUILD_AND_RUN_ALL)
-        run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc
+          steps.modified-files.outputs.ui_backend == 'true'
+          || env.BUILD_AND_RUN_ALL
+        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_ui_backend_tests --cov=covalent_ui --cov-config=.coveragerc
 
       - name: Generate UI backend coverage report
         id: ui-backend-coverage
@@ -277,11 +279,7 @@ jobs:
       - name: Dump Covalent logs
         if: >
           steps.covalent_start.outcome == 'success'
-          && (steps.sdk-tests.outcome == 'failed'
-          || steps.dispatcher-tests.outcome == 'failed'
-          || steps.functional-tests.outcome == 'failed'
-          || steps.ui-backend-tests.outcome == 'failed'
-          || steps.ui-frontend-tests.outcome == 'failed')
+          && failure()
         run: covalent logs
 
       - name: Upload SDK report to Codecov
@@ -328,8 +326,7 @@ jobs:
       - name: Upload UI backend report to Codecov
         id: upload-ui-backend-report
         if: >
-          false
-          && env.RECOMMENDED_PLATFORM
+          env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
           && (github.event_name == 'schedule'
           || steps.ui-backend-coverage.outcome == 'success')

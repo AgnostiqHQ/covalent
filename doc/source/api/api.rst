@@ -1,4 +1,5 @@
 .. currentmodule:: covalent
+
 ############
 Covalent API
 ############
@@ -6,6 +7,8 @@ Covalent API
 The following API documentation describes how to use Covalent.
 
 - :ref:`electrons_api` and :ref:`lattices_api` are used for constructing workflows
+- :ref:`qelectrons_api` are used to customize and track quantum circuit execution
+- :ref:`qclusters_api` are used to distribute Quantum Electrons across multiple quantum backends.
 - :ref:`local_executor` is used to execute electrons locally
 - :ref:`file_transfer` is used to queue remote or local file transfer operations prior or post electron execution.
 - :ref:`file_transfer_strategies` are used to perform download/upload/copy operations over various protocols.
@@ -45,6 +48,25 @@ Lattice
 
 ----------------------------------------------------------------
 
+.. _qelectrons_api:
+
+Quantum Electrons
+"""""""""""""""""""""""""""
+
+.. autodecorator:: covalent.qelectron
+
+
+----------------------------------------------------------------
+
+.. _qclusters_api:
+
+Quantum Clusters
+"""""""""""""""""""""""""""
+
+.. autopydantic_model:: covalent.executor.QCluster
+
+
+----------------------------------------------------------------
 
 .. _local_executor:
 
@@ -180,44 +202,46 @@ Functions, shell commands, PyPI packages, and other types of dependencies to be 
 
 .. _dispatcher_interface:
 
-Dispatcher
-""""""""""""""
+Index
+#####
 
-Dispatching jobs to the server and stopping triggered dispatches
+:doc:`Here<./index>` is an alphabetical index.
 
-.. autofunction:: dispatch
-.. autofunction:: dispatch_sync
-.. autofunction:: stop_triggers
+Contents
+########
 
-
-----------------------------------------------------------------
-
-.. _results_interface:
-
-Result
-""""""""""""""
-
-Collecting and managing results
-
-.. autofunction:: get_result
+.. include:: ./toc.rst
 
 
-.. autoclass:: covalent._results_manager.result.Result
-    :members:
+API
+###
+
+.. _workflow_components_api:
+.. include:: ./section_workflow_components.rst
 
 
-----------------------------------------------------------------
+.. _task_helpers_api:
+.. include:: ./section_task_helpers.rst
 
-.. currentmodule:: covalent_dispatcher
 
-.. _dispatcher_server_api:
+.. _executors_api:
+.. include:: ./section_executors.rst
 
-Covalent CLI Tool
-""""""""""""""""""
 
-This Command Line Interface (CLI) tool is used to manage Covalent server.
+.. _dispatch_infrastructure_api:
+.. include:: ./section_dispatch_infrastructure.rst
 
-.. click:: covalent_dispatcher._cli.cli:cli
-    :prog: covalent
-    :commands: start,stop,restart,status,purge,logs,db,migrate-legacy-result-object,cluster
-    :nested: full
+
+.. _covalent_cli_tool_api:
+.. include:: ./section_covalent_cli_tool.rst
+
+
+.. toctree::
+   :maxdepth: 1
+   :hidden:
+
+   section_workflow_components
+   section_task_helpers
+   section_executors
+   section_dispatch_infrastructure
+   section_covalent_cli_tool
