@@ -19,6 +19,7 @@ Defines the core functionality of the runner
 """
 
 import asyncio
+import importlib
 import json
 import traceback
 from concurrent.futures import ThreadPoolExecutor
@@ -31,8 +32,10 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow import DepsBash, DepsCall, DepsPip
+from covalent._workflow.transport import TransportableObject
 from covalent.executor import _executor_manager
 from covalent.executor.base import AsyncBaseExecutor, wrapper_fn
+from covalent.executor.utils import set_context
 
 from . import data_manager as datasvc
 from .data_modules.job_manager import get_jobs_metadata, set_cancel_result
@@ -131,10 +134,11 @@ async def _run_abstract_task(
     timestamp = datetime.now(timezone.utc)
 
     try:
-        cancel_req = await _get_cancel_requested(dispatch_id, node_id)
+        cancel_req = await executor_proxy._get_cancel_requested(dispatch_id, node_id)
         if cancel_req:
             app_log.debug(f"Don't run cancelled task {dispatch_id}:{node_id}")
             return datasvc.generate_node_result(
+                dispatch_id=dispatch_id,
                 node_id=node_id,
                 node_name=node_name,
                 start_time=timestamp,
@@ -158,7 +162,8 @@ async def _run_abstract_task(
 
     except Exception as ex:
         app_log.error(f"Exception when trying to resolve inputs or deps: {ex}")
-        return datasvc.generate_node_result(
+        node_result = datasvc.generate_node_result(
+            dispatch_id=dispatch_id,
             node_id=node_id,
             node_name=node_name,
             start_time=timestamp,
@@ -166,7 +171,10 @@ async def _run_abstract_task(
             status=RESULT_STATUS.FAILED,
             error=str(ex),
         )
+        return node_result
+
     node_result = datasvc.generate_node_result(
+        dispatch_id=dispatch_id,
         node_id=node_id,
         node_name=node_name,
         start_time=timestamp,
@@ -228,17 +236,38 @@ async def _run_task(
         app_log.debug("Exception when trying to instantiate executor:")
         app_log.debug(tb)
         error_msg = tb if debug_mode else str(ex)
-        return datasvc.generate_node_result(
+        node_result = datasvc.generate_node_result(
+            dispatch_id=dispatch_id,
             node_id=node_id,
             node_name=node_name,
             end_time=datetime.now(timezone.utc),
             status=RESULT_STATUS.FAILED,
             error=error_msg,
         )
+        return node_result
 
     # Run the task on the executor and register any failures.
     try:
         app_log.debug(f"Executing task {node_name}")
+
+        def qelectron_compatible_wrapper(node_id, dispatch_id, ser_user_fn, *args, **kwargs):
+            user_fn = ser_user_fn.get_deserialized()
+
+            try:
+                mod_qe_utils = importlib.import_module("covalent._shared_files.qelectron_utils")
+
+                with set_context(node_id, dispatch_id):
+                    res = user_fn(*args, **kwargs)
+                    mod_qe_utils.print_qelectron_db()
+
+                return res
+            except ModuleNotFoundError:
+                return user_fn(*args, **kwargs)
+
+        serialized_callable = TransportableObject(
+            partial(qelectron_compatible_wrapper, node_id, dispatch_id, serialized_callable)
+        )
+
         assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
 
         # Note: Executor proxy monitors the executors instances and watches the send and receive queues of the executor.
@@ -254,6 +283,7 @@ async def _run_task(
         )
 
         node_result = datasvc.generate_node_result(
+            dispatch_id=dispatch_id,
             node_id=node_id,
             node_name=node_name,
             end_time=datetime.now(timezone.utc),
@@ -269,6 +299,7 @@ async def _run_task(
         app_log.debug(tb)
         error_msg = tb if debug_mode else str(ex)
         node_result = datasvc.generate_node_result(
+            dispatch_id=dispatch_id,
             node_id=node_id,
             node_name=node_name,
             end_time=datetime.now(timezone.utc),
