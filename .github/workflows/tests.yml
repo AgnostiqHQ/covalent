@@ -95,6 +95,7 @@ jobs:
             - 'tests/covalent_dispatcher_tests/**'
             ui_backend:
             - 'covalent_ui/*.py'
+            - 'tests/covalent_ui_backend_tests/**'
             ui_frontend:
             - 'covalent_ui/webapp/**'
             functional_tests:
@@ -244,7 +245,7 @@ jobs:
           false
           && (steps.modified-files.outputs.ui_backend == 'true'
           || env.BUILD_AND_RUN_ALL)
-        run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_tests --cov=covalent_ui --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vv --reruns=5 tests/covalent_ui_backend_tests --cov=covalent_ui --cov-config=.coveragerc
 
       - name: Generate UI backend coverage report
         id: ui-backend-coverage
