@@ -26,6 +26,7 @@ Create Date: 2023-05-29 15:53:25.621195
 
 """
 import sqlalchemy as sa
+
 from alembic import op
 
 # revision identifiers, used by Alembic.
@@ -43,7 +44,11 @@ def upgrade() -> None:
         batch_op.create_foreign_key("electron_link", "electrons", ["parent_electron_id"], ["id"])
 
     with op.batch_alter_table("electrons", schema=None) as batch_op:
-        batch_op.add_column(sa.Column("qelectron_data_exists", sa.Boolean(), nullable=False))
+        batch_op.add_column(
+            sa.Column(
+                "qelectron_data_exists", sa.Boolean(), nullable=False, server_default=sa.false()
+            )
+        )
 
     # ### end Alembic commands ###
 

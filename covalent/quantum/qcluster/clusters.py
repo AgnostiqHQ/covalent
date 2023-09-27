@@ -44,10 +44,11 @@ class QCluster(AsyncBaseQCluster):
     selector: Union[str, Callable] = "cyclic"
 
     # Flag used to indicate whether `self.selector` is currently serialized.
-    _selector_serialized: bool = False
+    # This needs to be without the "_" prefix so that it gets propagated to the server.
+    selector_serialized: bool = False
 
     def batch_submit(self, qscripts_list):
-        if self._selector_serialized:
+        if self.selector_serialized:
             self.selector = self.deserialize_selector()
 
         selector = self.get_selector()
@@ -58,7 +59,7 @@ class QCluster(AsyncBaseQCluster):
         return selected_executor.batch_submit(qscripts_list)
 
     def serialize_selector(self) -> None:
-        if self._selector_serialized:
+        if self.selector_serialized:
             return
 
         # serialize to bytes with cloudpickle
@@ -66,16 +67,16 @@ class QCluster(AsyncBaseQCluster):
 
         # convert to string to make JSON-able
         self.selector = base64.b64encode(self.selector).decode("utf-8")
-        self._selector_serialized = True
+        self.selector_serialized = True
 
     def deserialize_selector(self) -> Union[str, Callable]:
-        if not self._selector_serialized:
+        if not self.selector_serialized:
             return self.selector
 
         # Deserialize the selector function (or string).
         selector = cloudpickle_deserialize(base64.b64decode(self.selector.encode("utf-8")))
 
-        self._selector_serialized = False
+        self.selector_serialized = False
         return selector
 
     def dict(self, *args, **kwargs) -> dict:
