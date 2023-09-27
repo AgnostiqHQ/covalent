@@ -89,6 +89,8 @@ class Lattice:
         # Bound electrons are defined as electrons with a valid node_id, since it means they are bound to a TransportGraph.
         self._bound_electrons = {}  # Clear before serializing
 
+        self.electronic_inputs = None
+
     # To be called after build_graph
     def serialize_to_json(self) -> str:
         attributes = deepcopy(self.__dict__)
@@ -216,7 +218,12 @@ class Lattice:
         self.named_args = named_args
         self.named_kwargs = named_kwargs
 
-        new_args = [v.get_deserialized() for _, v in named_args.items()]
+        arg_names = []
+        new_args = []
+        for k, v in named_args.items():
+            arg_names.append(k)
+            new_args.append(v.get_deserialized())
+
         new_kwargs = {k: v.get_deserialized() for k, v in named_kwargs.items()}
 
         # Set any lattice metadata not explicitly set by the user
@@ -234,14 +241,19 @@ class Lattice:
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
                 try:
-                    # Makes everything an Electron which might mess up when they are not expected to be
-                    # from .electron import ParamElectron
-                    # electron_args = [ParamElectron(arg)() for arg in new_args]
-                    # electron_kwargs = {k: ParamElectron(v)() for k, v in new_kwargs.items()}
-                    # retval = workflow_function(*electron_args, **electron_kwargs)
+                    # Makes inputs ParamElectrons which might mess up when they are not expected to be
+                    if self.electronic_inputs:
+                        from .electron import ParamElectron
 
-                    # The normal case which works but creates duplicate (non-executable) electrons
-                    retval = workflow_function(*new_args, **new_kwargs)
+                        electron_args = [
+                            ParamElectron(new_args[i], arg_names[i])()
+                            for i in range(len(new_args))
+                        ]
+                        electron_kwargs = {k: ParamElectron(v, k)() for k, v in new_kwargs.items()}
+                        retval = workflow_function(*electron_args, **electron_kwargs)
+                    else:
+                        # The normal and backwards compatible case
+                        retval = workflow_function(*new_args, **new_kwargs)
                 except Exception:
                     warnings.warn(
                         "Please make sure you are not manipulating an object inside the lattice."
@@ -343,6 +355,7 @@ def lattice(
     call_before: Union[List[DepsCall], DepsCall] = [],
     call_after: Union[List[DepsCall], DepsCall] = [],
     triggers: Union["BaseTrigger", List["BaseTrigger"]] = None,
+    electronic_inputs: bool = False,
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
     """
@@ -362,6 +375,7 @@ def lattice(
         call_before: An optional list of DepsCall objects specifying python functions to invoke before the electron
         call_after: An optional list of DepsCall objects specifying python functions to invoke after the electron
         triggers: Any triggers that need to be attached to this lattice, default is None
+        electronic_inputs: Whether to make all workflow inputs ParamElectrons or not. Defaults to False.
 
     Returns:
         :obj:`Lattice <covalent._workflow.lattice.Lattice>` : Lattice object inside which the decorated function exists.
@@ -415,6 +429,7 @@ def lattice(
             for k, v in constraints.items():
                 lattice_object.set_metadata(k, v)
             lattice_object.transport_graph.lattice_metadata = lattice_object.metadata
+            lattice_object.electronic_inputs = electronic_inputs
             return lattice_object
 
         return wrapper_lattice()

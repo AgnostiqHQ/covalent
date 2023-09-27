@@ -617,7 +617,7 @@ class Electron:
             return self.connect_node_with_others(
                 node_id,
                 param_name,
-                ParamElectron(param_value)(),
+                ParamElectron(param_value, param_name)(),
                 param_type,
                 arg_index,
                 transport_graph,
@@ -722,7 +722,7 @@ class ParamElectron(Electron):
         self.metadata = DEFAULT_METADATA_VALUES.copy()
 
         if active_lattice.post_processing:
-            active_lattice.electron_outputs.pop(0)
+            return active_lattice.electron_outputs.pop(0)
 
         self.node_id = active_lattice.transport_graph.add_node(
             name=f"{parameter_prefix}__UNSET__",
@@ -733,6 +733,7 @@ class ParamElectron(Electron):
 
         if self.no_prefix_name is None:
             self.no_prefix_name = f"param_{self.node_id}"
+
         active_lattice.transport_graph.set_node_value(
             self.node_id, "name", f"{parameter_prefix}{self.no_prefix_name}"
         )
@@ -741,13 +742,13 @@ class ParamElectron(Electron):
         return self
 
     def __int__(self):
-        return ParamElectron(int(self.param_value))
+        return ParamElectron(int(self.param_value), self.no_prefix_name)
 
     def __float__(self):
-        return ParamElectron(float(self.param_value))
+        return ParamElectron(float(self.param_value), self.no_prefix_name)
 
     def __complex__(self):
-        return ParamElectron(complex(self.param_value))
+        return ParamElectron(complex(self.param_value), self.no_prefix_name)
 
 
 # Dynamically adding properties to the Electron class
