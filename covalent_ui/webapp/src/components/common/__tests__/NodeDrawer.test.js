@@ -111,6 +111,7 @@ const node = {
   status: 'COMPLETED',
   type: 'function',
 }
+const setOpenQelectronDrawer = jest.fn();
 
 const dispatchId = 'edcd9b3e-6d52-44ac-baa5-d45614e25699'
 const electronId = 42
@@ -139,6 +140,7 @@ describe('electronNode file Rendered', () => {
         electronDetailIsFetching={true}
         electronDetailStatus={electronDetail.status}
         electronDetail={electronDetail}
+        setOpenQelectronDrawer={setOpenQelectronDrawer}
       />
     )
     const linkElement = screen.getByTestId('nodeDrawer')
@@ -152,6 +154,7 @@ describe('electronNode file Rendered', () => {
         dispatchId={dispatchId}
         electronId={electronId}
         electronDetailIsFetching={false}
+        setOpenQelectronDrawer={setOpenQelectronDrawer}
       />
     )
     const linkElement = screen.getByTestId('nodeDrawer')
@@ -159,13 +162,13 @@ describe('electronNode file Rendered', () => {
   })
 
   test('renders electronNode', async () => {
-    reduxRender(<NodeDrawer />)
+    reduxRender(<NodeDrawer setOpenQelectronDrawer={setOpenQelectronDrawer} />)
     const linkElement = screen.getByTestId('nodeDrawer')
     expect(linkElement).toBeInTheDocument()
   })
 
   test('renders Node drawer for handleclose function', async () => {
-    reduxRender(<NodeDrawer node={node} />)
+    reduxRender(<NodeDrawer node={node} setOpenQelectronDrawer={setOpenQelectronDrawer} />)
     const linkElement = screen.getByTestId('node__dra_close')
     fireEvent.click(screen.getByTestId('CloseIcon'))
     expect(linkElement).toBeInTheDocument()

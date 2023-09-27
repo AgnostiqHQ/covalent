@@ -27,6 +27,7 @@ const CopyButton = ({
   width,
   height,
   borderRadius,
+  backgroundColor,
   ...props
 }) => {
   const [copied, setCopied] = useState(false)
@@ -54,6 +55,10 @@ const CopyButton = ({
             borderRadius: borderRadius ? borderRadius : '8px',
             width: width ? width : '32px',
             height: height ? height : '32px',
+            padding: 0,
+            '&:hover': {
+              backgroundColor: backgroundColor || ''
+            }
           }}
           container
           direction="row"

@@ -58,7 +58,7 @@ class LogsResponse(BaseModel):
     class Config:
         """Configure example for openAPI"""
 
-        schema_extra = {
+        json_schema_extra = {
             "example": {
                 "data": [
                     {

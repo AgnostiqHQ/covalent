@@ -25,12 +25,16 @@ const initialState = {
   electronInput: {},
   electronError: {},
   electronExecutor: {},
+  qelectronJobs: [],
+  qelectronJobOverview: {},
   electronDetailsList: { isFetching: false, error: null },
   electronResultList: { isFetching: false, error: null },
   electronFunctionStringList: { isFetching: false, error: null },
   electronInputList: { isFetching: false, error: null },
   electronErrorList: { isFetching: false, error: null },
   electronExecutorList: { isFetching: false, error: null },
+  qelectronJobsList: { isFetching: false, error: null },
+  qelectronJobOverviewList: { isFetching: false, error: null },
 }
 
 export const electronDetails = createAsyncThunk(
@@ -67,6 +71,18 @@ export const electronExecutor = createAsyncThunk(
   'electronResults/electronExecutor',
   ({ dispatchId, electronId, params }, thunkAPI) =>
     api.get(`api/v1/dispatches/${dispatchId}/electron/${electronId}/details/${params}`).catch(thunkAPI.rejectWithValue)
+)
+
+export const qelectronJobs = createAsyncThunk(
+  'electronResults/qelectronJobs',
+  ({ dispatchId, electronId, bodyParams }, thunkAPI) =>
+    api.get(`api/v1/dispatches/${dispatchId}/electron/${electronId}/jobs?&sort_by=${bodyParams.sort_by}&sort_direction=${bodyParams.direction}&offset=${bodyParams.offset}`).catch(thunkAPI.rejectWithValue)
+)
+
+export const qelectronJobOverview = createAsyncThunk(
+  'electronResults/qelectronJobOverview',
+  ({ dispatchId, electronId, jobId }, thunkAPI) =>
+    api.get(`api/v1/dispatches/${dispatchId}/electron/${electronId}/jobs/${jobId}`).catch(thunkAPI.rejectWithValue)
 )
 
 export const electronSlice = createSlice({
@@ -163,6 +179,33 @@ export const electronSlice = createSlice({
         state.electronExecutorList.error = payload
       })
 
+      // qelectron Jobs
+      .addCase(qelectronJobs.fulfilled, (state, { payload }) => {
+        state.qelectronJobsList.isFetching = false
+        state.qelectronJobs = payload
+      })
+      .addCase(qelectronJobs.pending, (state) => {
+        state.qelectronJobsList.isFetching = true
+        state.qelectronJobsList.error = null
+      })
+      .addCase(qelectronJobs.rejected, (state, { payload }) => {
+        state.qelectronJobsList.isFetching = false
+        state.qelectronJobsList.error = payload
+      })
+
+      // qelectron Job Overview
+      .addCase(qelectronJobOverview.fulfilled, (state, { payload }) => {
+        state.qelectronJobOverviewList.isFetching = false
+        state.qelectronJobOverview = payload
+      })
+      .addCase(qelectronJobOverview.pending, (state) => {
+        state.qelectronJobOverviewList.isFetching = true
+        state.qelectronJobOverviewList.error = null
+      })
+      .addCase(qelectronJobOverview.rejected, (state, { payload }) => {
+        state.qelectronJobOverviewList.isFetching = false
+        state.qelectronJobOverviewList.error = payload
+      })
   },
 })
 

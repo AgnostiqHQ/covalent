@@ -35,6 +35,7 @@ from fastapi.responses import JSONResponse
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent_ui.api.v1.routes import routes
+from covalent_ui.heartbeat import lifespan
 
 file_descriptor = None
 child_process_id = None
@@ -49,7 +50,7 @@ origins = ["*"]
 app_log = logger.app_log
 log_to_file = get_config("sdk.enable_logging").upper() == "TRUE"
 
-app = FastAPI()
+app = FastAPI(lifespan=lifespan)
 sio = socketio.AsyncServer(
     cors_allowed_origins="*", async_mode="asgi", logger=False, engineio_logger=False
 )

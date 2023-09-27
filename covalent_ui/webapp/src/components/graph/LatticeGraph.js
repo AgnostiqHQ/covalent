@@ -42,6 +42,8 @@ function usePrevious(value) {
 }
 
 const LatticeGraph = ({
+  togglePrettify,
+  prettify,
   graph,
   preview,
   hasSelectedNode,
@@ -54,6 +56,7 @@ const LatticeGraph = ({
   const [direction, setDirection] = useState('DOWN')
   const [showMinimap, setShowMinimap] = useState(false)
   const [showParams, setShowParams] = useState(false)
+  const [showPostProcess, setPostProcess] = useState(false)
   const [nodesDraggable, setNodesDraggable] = useState(false)
   const [algorithm, setAlgorithm] = useState('layered')
   const [hideLabels, setHideLabels] = useState(false)
@@ -62,6 +65,24 @@ const LatticeGraph = ({
 
   // set Margin
   const prevMarginRight = usePrevious(marginRight)
+
+  const nodeMap = new Map((graph?.nodes ?? []).map((node) => [node.name, node]))
+
+  const searchName = ':postprocess:'
+  const searchStatus = 'FAILED'
+  const desiredNode = nodeMap.get(searchName)
+
+  useEffect(() => {
+    if (desiredNode && desiredNode.status === searchStatus) {
+      setPostProcess(true)
+    }
+
+    // setPostProcess(
+    // 	!!graph?.nodes?.find(
+    // 		obj => obj.name.startsWith(':postprocess:') && obj.status === 'NEW_OBJECT'
+    // 	)
+    // );
+  }, [graph, desiredNode])
 
   const marginSet = () => {
     setTimeout(() => {
@@ -102,7 +123,17 @@ const LatticeGraph = ({
   // layouting
   useEffect(() => {
     if (algorithm === 'oldLayout') {
-      setElements(layout(graph, direction, showParams, hideLabels, preview))
+      setElements(
+        layout(
+          graph,
+          direction,
+          showParams,
+          hideLabels,
+          preview,
+          showPostProcess,
+          prettify
+        )
+      )
     } else {
       assignNodePositions(
         graph,
@@ -110,7 +141,9 @@ const LatticeGraph = ({
         showParams,
         algorithm,
         hideLabels,
-        preview
+        preview,
+        showPostProcess,
+        prettify
       )
         .then((els) => {
           setElements(els)
@@ -118,7 +151,15 @@ const LatticeGraph = ({
         .catch((error) => console.log(error))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [graph, direction, showParams, algorithm, hideLabels])
+  }, [
+    graph,
+    direction,
+    showParams,
+    algorithm,
+    hideLabels,
+    showPostProcess,
+    prettify,
+  ])
 
   // menu for layout
   const [anchorEl, setAnchorEl] = useState(null)
@@ -185,51 +226,44 @@ const LatticeGraph = ({
   // }
 
   const getAllIncomers = (node, elements, prevIncomers = []) => {
-    const incomers = getIncomers(node, elements);
-    const result = incomers.reduce(
-      (memo, incomer) => {
-        memo.push(incomer);
+    const incomers = getIncomers(node, elements)
+    const result = incomers.reduce((memo, incomer) => {
+      memo.push(incomer)
 
-        if ((prevIncomers.findIndex(n => n.id === incomer.id) === -1)) {
-          prevIncomers.push(incomer);
+      if (prevIncomers.findIndex((n) => n.id === incomer.id) === -1) {
+        prevIncomers.push(incomer)
 
-          getAllIncomers(incomer, elements, prevIncomers).forEach((foundNode) => {
-            memo.push(foundNode);
+        getAllIncomers(incomer, elements, prevIncomers).forEach((foundNode) => {
+          memo.push(foundNode)
 
-            if ((prevIncomers.findIndex(n => n.id === foundNode.id) === -1)) {
-              prevIncomers.push(incomer);
-
-            }
-          });
-        }
-        return memo;
-      },
-      []
-    );
-    return result;
+          if (prevIncomers.findIndex((n) => n.id === foundNode.id) === -1) {
+            prevIncomers.push(incomer)
+          }
+        })
+      }
+      return memo
+    }, [])
+    return result
   }
 
   const getAllOutgoers = (node, elements, prevOutgoers = []) => {
-    const outgoers = getOutgoers(node, elements);
-    return outgoers.reduce(
-      (memo, outgoer) => {
-        memo.push(outgoer);
+    const outgoers = getOutgoers(node, elements)
+    return outgoers.reduce((memo, outgoer) => {
+      memo.push(outgoer)
 
-        if ((prevOutgoers.findIndex(n => n.id === outgoer.id) === -1)) {
-          prevOutgoers.push(outgoer);
+      if (prevOutgoers.findIndex((n) => n.id === outgoer.id) === -1) {
+        prevOutgoers.push(outgoer)
 
-          getAllOutgoers(outgoer, elements, prevOutgoers).forEach((foundNode) => {
-            memo.push(foundNode);
+        getAllOutgoers(outgoer, elements, prevOutgoers).forEach((foundNode) => {
+          memo.push(foundNode)
 
-            if ((prevOutgoers.findIndex(n => n.id === foundNode.id) === -1)) {
-              prevOutgoers.push(foundNode);
-            }
-          });
-        }
-        return memo;
-      },
-      []
-    )
+          if (prevOutgoers.findIndex((n) => n.id === foundNode.id) === -1) {
+            prevOutgoers.push(foundNode)
+          }
+        })
+      }
+      return memo
+    }, [])
   }
 
   const highlightPath = (node, elements, selection) => {
@@ -292,8 +326,11 @@ const LatticeGraph = ({
     })
   }
 
-  const nodeTypes = useMemo(() => ({ electron: ElectronNode, parameter: ParameterNode }), []);
-  const edgeTypes = useMemo(() => ({ directed: DirectedEdge }), []);
+  const nodeTypes = useMemo(
+    () => ({ electron: ElectronNode, parameter: ParameterNode }),
+    []
+  )
+  const edgeTypes = useMemo(() => ({ directed: DirectedEdge }), [])
 
   return (
     <>
@@ -337,6 +374,10 @@ const LatticeGraph = ({
           <LatticeControls
             marginLeft={marginLeft}
             marginRight={marginRight}
+            showPostProcess={showPostProcess}
+            togglePostProcess={() => {
+              setPostProcess(!showPostProcess)
+            }}
             showParams={showParams}
             toggleParams={() => {
               setShowParams(!showParams)
@@ -348,6 +389,8 @@ const LatticeGraph = ({
             toggleScreenShot={() => {
               setScreen(true)
             }}
+            togglePrettify={togglePrettify}
+            prettify={prettify}
             open={open}
             anchorEl={anchorEl}
             handleClick={handleClick}

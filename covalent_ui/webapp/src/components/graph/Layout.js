@@ -18,18 +18,28 @@ import _ from 'lodash'
 import dagre from 'dagre'
 import { isNode } from 'react-flow-renderer'
 
-import { isParameter } from '../../utils/misc'
+import { isParameter, isPostProcess, Prettify } from '../../utils/misc'
 import theme from '../../utils/theme'
 
-const layout = (graph, direction, showParams = true, hideLabels, preview) => {
+const layout = (
+  graph,
+  direction,
+  showParams = true,
+  hideLabels,
+  preview,
+  showPostProcess,
+  prettify
+) => {
   const elements = mapGraphToElements(
     graph,
     direction,
     showParams,
     hideLabels,
-    preview
+    preview,
+    showPostProcess,
+    prettify
   )
-  assignNodePositions(elements, direction, preview)
+  assignNodePositions(elements, direction, preview, showPostProcess, prettify)
   return elements
 }
 
@@ -51,8 +61,13 @@ const mapGraphToElements = (
   direction,
   showParams,
   hideLabels,
-  preview
+  preview,
+  showPostProcess,
+  prettify
 ) => {
+  if (!showPostProcess) {
+    graph = filterGraph(graph, (node) => !isPostProcess(node))
+  }
   if (!showParams) {
     graph = filterGraph(graph, (node) => !isParameter(node))
   }
@@ -61,7 +76,14 @@ const mapGraphToElements = (
     const handlePositions = getHandlePositions(direction)
     const isParam = isParameter(node)
 
-    const name = isParam ? _.trim(node.name, ':parameter:') : node.name
+    const name = prettify
+      ? Prettify(
+          isParam ? _.trim(node.name, ':parameter:') : node.name,
+          node.type
+        )
+      : isParam
+      ? _.trim(node.name, ':parameter:')
+      : node.name
 
     return {
       id: String(node.id),
