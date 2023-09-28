@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
+- Remove version pin on `orjson`
 - Changed `actions/checkout@v3` to `actions/checkout@v4` in CI
 - Dependabot update to npm in changelog action
 - Added rich support to cli for better printing statements. 
