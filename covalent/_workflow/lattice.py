@@ -356,6 +356,7 @@ def lattice(
     call_after: Union[List[DepsCall], DepsCall] = [],
     triggers: Union["BaseTrigger", List["BaseTrigger"]] = None,
     electronic_inputs: bool = False,
+    automatron: bool = False,
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
     """
@@ -429,7 +430,7 @@ def lattice(
             for k, v in constraints.items():
                 lattice_object.set_metadata(k, v)
             lattice_object.transport_graph.lattice_metadata = lattice_object.metadata
-            lattice_object.electronic_inputs = electronic_inputs
+            lattice_object.electronic_inputs = electronic_inputs or automatron
             return lattice_object
 
         return wrapper_lattice()
