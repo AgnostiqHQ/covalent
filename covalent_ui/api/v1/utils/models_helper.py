@@ -25,7 +25,7 @@ class CaseInsensitiveEnum(Enum):
     @classmethod
     def _missing_(cls, value):
         for member in cls:
-            if member.value == value.upper():
+            if member.value.upper() == value.upper():
                 return member
 
 
@@ -37,6 +37,15 @@ class SortBy(CaseInsensitiveEnum):
     STARTED = "started_at"
     LATTICE_NAME = "lattice_name"
     ENDED = "ended_at"
+
+
+class JobsSortBy(CaseInsensitiveEnum):
+    """Values to filter jobs data by"""
+
+    EXECUTOR = "executor"
+    JOB_ID = "job_id"
+    START_TIME = "start_time"
+    STATUS = "status"
 
 
 class SortDirection(CaseInsensitiveEnum):

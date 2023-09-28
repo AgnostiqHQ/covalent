@@ -16,15 +16,23 @@
 
 """General utils for Covalent."""
 
+import importlib
 import inspect
 import socket
 from datetime import timedelta
-from typing import Callable, Dict, Set, Tuple
+from typing import Any, Callable, Dict, Set, Tuple
+
+import cloudpickle
+from pennylane._device import Device
 
 from . import logger
+from .pickling import _qml_mods_pickle
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+
+_IMPORT_PATH_SEPARATOR = ":"
 
 
 def get_random_available_port() -> int:
@@ -210,3 +218,51 @@ def get_named_params(func, args, kwargs):
 
 # Dictionary to map Dask clients to their scheduler addresses
 _address_client_mapper = {}
+
+
+@_qml_mods_pickle
+def cloudpickle_serialize(obj):
+    return cloudpickle.dumps(obj)
+
+
+def cloudpickle_deserialize(obj):
+    return cloudpickle.loads(obj)
+
+
+def select_first_executor(qnode, executors):
+    """Selects the first executor to run the qnode"""
+    return executors[0]
+
+
+def get_import_path(obj) -> Tuple[str, str]:
+    """
+    Determine the import path of an object.
+    """
+    module = inspect.getmodule(obj)
+    if module:
+        module_path = module.__name__
+        class_name = obj.__name__
+        return f"{module_path}{_IMPORT_PATH_SEPARATOR}{class_name}"
+    raise RuntimeError(f"Unable to determine import path for {obj}.")
+
+
+def import_from_path(path: str) -> Any:
+    """
+    Import a class from a path.
+    """
+    module_path, class_name = path.split(_IMPORT_PATH_SEPARATOR)
+    module = importlib.import_module(module_path)
+    return getattr(module, class_name)
+
+
+def get_original_shots(dev: Device):
+    """
+    Recreate vector of shots if device has a shot vector.
+    """
+    if not dev.shot_vector:
+        return dev.shots
+
+    shot_sequence = []
+    for shots in dev.shot_vector:
+        shot_sequence.extend([shots.shots] * shots.copies)
+    return type(dev.shot_vector)(shot_sequence)

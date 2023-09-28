@@ -167,6 +167,7 @@ async def _submit_task(result_object, node_id):
         output = result_object.lattice.transport_graph.get_node_value(node_id, "value")
         timestamp = datetime.now(timezone.utc)
         node_result = datasvc.generate_node_result(
+            dispatch_id=result_object.dispatch_id,
             node_id=node_id,
             node_name=node_name,
             start_time=timestamp,
@@ -181,6 +182,7 @@ async def _submit_task(result_object, node_id):
         timestamp = datetime.now(timezone.utc)
         output = result_object.lattice.transport_graph.get_node_value(node_id, "output")
         node_result = datasvc.generate_node_result(
+            dispatch_id=result_object.dispatch_id,
             node_id=node_id,
             node_name=node_name,
             start_time=timestamp,
@@ -378,7 +380,11 @@ async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = None) -> None:
     if not dispatch_id:
         return
 
-    tg = datasvc.get_result_object(dispatch_id=dispatch_id).lattice.transport_graph
+    res_object = datasvc.get_result_object(dispatch_id)
+    if res_object is None:
+        return
+
+    tg = res_object.lattice.transport_graph
     if task_ids:
         app_log.debug(f"Cancelling tasks {task_ids} in dispatch {dispatch_id}")
     else:
