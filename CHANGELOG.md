@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove version pin on `orjson`
 - Changed `actions/checkout@v3` to `actions/checkout@v4` in CI
 - Dependabot update to npm in changelog action
+- Update tough-cookie to 4.1.3 version
 - Added rich support to cli for better printing statements. 
 - Updated word-wrap to 1.2.4 version
 
