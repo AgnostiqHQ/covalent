@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Lattice mock data"""
 
@@ -139,7 +135,7 @@ def seed_lattice_data():
                     "dispatch_id": VALID_DISPATCH_ID,
                     "name": "results",
                 },
-                "response_message": "Input should be 'result','function_string','inputs','error','executor','workflow_executor','function' or 'transport_graph'",
+                "response_message": "value is not a valid enumeration member; permitted: 'result', 'function_string', 'inputs', 'error', 'executor', 'workflow_executor', 'function', 'transport_graph'",
             },
             "case_bad_request": {
                 "status_code": 400,
@@ -164,7 +160,7 @@ def seed_lattice_data():
                             "total_electrons": 120,
                             "total_electrons_completed": 120,
                             "started_at": "2022-10-27T10:08:38.759335",
-                            "ended_at": lattice_end_date,
+                            "ended_at": "2022-10-27T10:08:43.877056",
                             "status": "COMPLETED",
                             "updated_at": "2022-10-27T10:08:43.890454",
                         },
@@ -177,7 +173,7 @@ def seed_lattice_data():
                             "started_at": "2022-10-27T10:08:34.497285",
                             "ended_at": "2022-10-27T10:08:35.997225",
                             "status": "COMPLETED",
-                            "updated_at": "2022-10-27T10:08:36.00403",
+                            "updated_at": "2022-10-27T10:08:36.004030",
                         },
                     ]
                 },
@@ -197,7 +193,7 @@ def seed_lattice_data():
                             "started_at": "2022-10-27T10:08:34.497285",
                             "ended_at": "2022-10-27T10:08:35.997225",
                             "status": "COMPLETED",
-                            "updated_at": "2022-10-27T10:08:36.00403",
+                            "updated_at": "2022-10-27T10:08:36.004030",
                         },
                         {
                             "dispatch_id": "69dec597-79d9-4c99-96de-8d5f06f3d4dd",
@@ -206,7 +202,7 @@ def seed_lattice_data():
                             "total_electrons": 120,
                             "total_electrons_completed": 120,
                             "started_at": "2022-10-27T10:08:38.759335",
-                            "ended_at": lattice_end_date,
+                            "ended_at": "2022-10-27T10:08:43.877056",
                             "status": "COMPLETED",
                             "updated_at": "2022-10-27T10:08:43.890454",
                         },

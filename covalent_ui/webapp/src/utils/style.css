@@ -1,0 +1,13 @@
+@keyframes rotate {
+  from {
+    transform: rotateZ(-360deg);
+  }
+  to {
+    transform: rotateZ(360deg);
+  }
+}
+
+.circleRunningStatus {
+  animation: rotate 7s linear;
+  animation-iteration-count: infinite;
+}
