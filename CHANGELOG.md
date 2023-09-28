@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dependabot update to npm in changelog action
 - Update tough-cookie to 4.1.3 version
 - Added rich support to cli for better printing statements. 
+- Changed semver from 5.7.1 to 5.7.2 in package.json
 - Updated word-wrap to 1.2.4 version
 
 ### Changed
