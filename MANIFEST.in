@@ -1,7 +1,8 @@
 include VERSION
 include requirements.txt
 include requirements-client.txt
-recursive-include covalent/executor/executor_plugins/ *
+include covalent/py.typed
+recursive-include covalent/executor/ *
 recursive-include covalent_dispatcher/_service/ *
 recursive-include covalent_migrations/ *
 recursive-exclude covalent_ui/webapp/ *

@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Mock files data"""
 
@@ -45,7 +41,7 @@ def mock_files_data():
 
     file_name = {
         "value": "value.pkl",
-        "info": "info.log",
+        "error": "error.log",
         "stdout": "stdout.log",
         "stderr": "stderr.log",
         "call_after": "call_after.pkl",
@@ -190,7 +186,7 @@ def workflow(name):
                     "file_name": file_name["function"],
                     "data": TransportableObject.make_transportable(test_function),
                 },
-                {"file_name": file_name["info"], "data": ""},
+                {"file_name": file_name["error"], "data": ""},
                 {
                     "file_name": file_name["results"],
                     "data": TransportableObject.make_transportable("Hello shore - Node 0 !!"),
@@ -267,7 +263,7 @@ DEBUG: update_electrons_data called on node 1""",
                     "file_name": file_name["function"],
                     "data": TransportableObject.make_transportable(test_function),
                 },
-                {"file_name": file_name["info"], "data": ""},
+                {"file_name": file_name["error"], "data": ""},
                 {
                     "file_name": file_name["results"],
                     "data": TransportableObject.make_transportable("Hello shore - Node 1  !!"),
@@ -340,7 +336,7 @@ DEBUG: update_electrons_data called on node 1""",
                     "file_name": file_name["function"],
                     "data": TransportableObject.make_transportable(test_function),
                 },
-                {"file_name": file_name["info"], "data": ""},
+                {"file_name": file_name["error"], "data": ""},
                 {
                     "file_name": file_name["results"],
                     "data": TransportableObject.make_transportable("Hello shore - Node 2 !!"),
@@ -413,7 +409,7 @@ DEBUG: update_electrons_data called on node 1""",
                     "file_name": file_name["function"],
                     "data": TransportableObject.make_transportable(test_function),
                 },
-                {"file_name": file_name["info"], "data": ""},
+                {"file_name": file_name["error"], "data": ""},
                 {
                     "file_name": file_name["results"],
                     "data": TransportableObject.make_transportable("Hello shore - Node 3 !!"),
@@ -486,7 +482,7 @@ DEBUG: update_electrons_data called on node 1""",
                     "file_name": file_name["function"],
                     "data": TransportableObject.make_transportable(test_function),
                 },
-                {"file_name": file_name["info"], "data": ""},
+                {"file_name": file_name["error"], "data": ""},
                 {
                     "file_name": file_name["results"],
                     "data": TransportableObject.make_transportable("Hello shore - Node 4 !!"),
@@ -559,7 +555,7 @@ DEBUG: update_electrons_data called on node 1""",
                     "file_name": file_name["function"],
                     "data": TransportableObject.make_transportable(test_function),
                 },
-                {"file_name": file_name["info"], "data": ""},
+                {"file_name": file_name["error"], "data": ""},
                 {
                     "file_name": file_name["results"],
                     "data": TransportableObject.make_transportable("Hello shore - Node 5 !!"),
