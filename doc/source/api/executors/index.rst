@@ -39,3 +39,18 @@ The way in which workflows and tasks interface with the hardware is through exec
 
    basesync
    asyncbase
+
+
+Quantum Executors
+=================
+
+Quantum executors are special executors designed for quantum circuits. Together with quantum electrons, they allow quantum circuits to run on various local and/or cloud backends.
+
+.. toctree::
+   :maxdepth: 1
+
+   qiskit
+   ibmq
+   braketqubit
+   localbraketqubit
+   simulator
