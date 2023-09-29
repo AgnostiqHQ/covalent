@@ -143,9 +143,13 @@ class Postprocessor:
         """
         executor = self.lattice.get_metadata("executor")
         executor_data = self.lattice.get_metadata("executor_data")
+        workflow_executor = self.lattice.get_metadata("workflow_executor")
+        workflow_executor_data = self.lattice.get_metadata("workflow_executor_data")
         pp_metadata = encode_metadata(DEFAULT_METADATA_VALUES.copy())
         pp_metadata["executor"] = executor
         pp_metadata["executor_data"] = executor_data
+        pp_metadata["workflow_executor"] = workflow_executor
+        pp_metadata["workflow_executor_data"] = workflow_executor_data
         pp_metadata = encode_metadata(pp_metadata)
         return pp_metadata
 
