@@ -244,7 +244,7 @@ def _graceful_start(
         try:
             requests.get(dispatcher_addr, timeout=1)
             up = True
-        except requests.exceptions.ConnectionError as err:
+        except requests.exceptions.ConnectionError:
             time.sleep(1)
 
     Path(get_config("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
@@ -649,7 +649,7 @@ def status() -> None:
     try:
         response = requests.get(f"http://localhost:{port}/api/triggers/status", timeout=1)
         trigger_status = response.json()["status"]
-    except requests.exceptions.ConnectionError as err:
+    except requests.exceptions.ConnectionError:
         trigger_status = "stopped"
 
     if trigger_status == "running":

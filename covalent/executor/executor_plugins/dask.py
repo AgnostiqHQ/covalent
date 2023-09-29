@@ -98,7 +98,7 @@ class DaskExecutor(AsyncBaseExecutor):
         if not scheduler_address:
             try:
                 scheduler_address = get_config("dask.scheduler_address")
-            except KeyError as ex:
+            except KeyError:
                 app_log.debug(
                     "No dask scheduler address found in config. Address must be set manually."
                 )

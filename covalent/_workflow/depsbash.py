@@ -28,7 +28,7 @@ from .transport import TransportableObject
 
 def apply_bash_commands(commands):
     for cmd in commands:
-        proc = subprocess.run(
+        subprocess.run(
             cmd, stdin=subprocess.DEVNULL, shell=True, capture_output=True, check=True, text=True
         )
 

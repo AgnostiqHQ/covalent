@@ -40,7 +40,7 @@ def test_migration_success(mocker):
     runner = CliRunner()
     db_mock = Mock()
     mocker.patch.object(DataStore, "factory", lambda: db_mock)
-    res = runner.invoke(migrate, catch_exceptions=False)
+    runner.invoke(migrate, catch_exceptions=False)
     db_mock.run_migrations.assert_called_once()
 
 

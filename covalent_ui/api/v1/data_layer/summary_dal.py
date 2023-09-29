@@ -62,7 +62,6 @@ class Summary:
         Return:
             List of top most Lattices and count
         """
-        result = None
 
         status_filters = self.get_filters(status_filter)
 
