@@ -20,16 +20,14 @@ import importlib
 import inspect
 import socket
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Callable, Dict, Set, Tuple
+from typing import Any, Callable, Dict, Set, Tuple
 
 import cloudpickle
+from pennylane._device import Device
 
 from . import logger
 from .config import get_config
 from .pickling import _qml_mods_pickle
-
-if TYPE_CHECKING:
-    from pennylane._device import Device
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
