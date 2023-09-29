@@ -2,40 +2,43 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """
 Defines executors and provides a "manager" to get all available executors
 """
 
+import contextlib
 import glob
 import importlib
 import inspect
 import os
+import sys
+from pathlib import Path
 from typing import Any, Dict, List, Union
 
 import pkg_resources
 
 from .._shared_files import logger
 from .._shared_files.config import get_config, update_config
+from ..quantum import QCluster, Simulator
 from .base import BaseExecutor, wrapper_fn
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
+
+_QUANTUM_PLUGINS_PATH = Path(__file__).parent / "quantum_plugins"
+_QUANTUM_DEFAULTS_VARNAME = "_QEXECUTOR_PLUGIN_DEFAULTS"
 
 
 class _ExecutorManager:
@@ -272,8 +275,106 @@ class _ExecutorManager:
         return executor_list
 
 
+class _QExecutorManager:
+    """
+    QExecutor manager to return a valid QExecutor which can be
+    used as an argument to `qelectron` decorator.
+
+    Initializing generates a list of available QExecutor plugins.
+    """
+
+    def __init__(self):
+        # Dictionary mapping executor name to executor class
+        self.executor_plugins_map: Dict[str, Any] = {
+            "QCluster": QCluster,
+            "Simulator": Simulator,
+        }
+        self.load_executors()
+
+    def __new__(cls):
+        # Singleton pattern for this class
+        if not hasattr(cls, "_instance"):
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    def load_executors(self) -> None:
+        """
+        Looks for `plugin.py` modules in the subdirectories of the given path and
+        loads QExecutor classes from them.
+        """
+
+        # Iterate over all subdirectories of the plugins path except for those starting with "_" like "__pycache__"
+        for plugin_dir in filter(
+            lambda _p: _p.is_dir() and not _p.name.startswith("_"), _QUANTUM_PLUGINS_PATH.iterdir()
+        ):
+            # Get the Path of the plugin module
+            plugin_module_path = list(plugin_dir.glob("*_plugin.py"))
+            if not plugin_module_path:
+                continue
+            plugin_module_path = plugin_module_path[0]
+
+            if plugin_module_path.exists():
+                # Suppress any exceptions that may occur while importing the plugin module
+                # This is to prevent the plugin module from crashing the application
+                with contextlib.suppress(Exception):
+                    sys.path.append(str(plugin_module_path.parent))
+                    plugin_module_spec = importlib.util.spec_from_file_location(
+                        plugin_module_path.stem, plugin_module_path
+                    )
+                    plugin_module = importlib.util.module_from_spec(plugin_module_spec)
+                    sys.modules[plugin_module_path.stem] = plugin_module
+                    plugin_module_spec.loader.exec_module(plugin_module)
+                    self.populate_executors_map(plugin_module)
+
+        # print("Loaded QExecutor plugins: ", self.executor_plugins_map.keys())
+
+    def populate_executors_map(self, module_obj) -> None:
+        """
+        Validates modules containing potential QExecutor classes.
+        Populates the `executor_plugins_map` dictionary and updates the config.
+        """
+
+        self.validate_module(module_obj)
+
+        for qexecutor_cls_name in getattr(module_obj, "__all__"):
+            self.executor_plugins_map[qexecutor_cls_name] = getattr(module_obj, qexecutor_cls_name)
+
+        for qexecutor_cls_name, defaults_dict in getattr(
+            module_obj, _QUANTUM_DEFAULTS_VARNAME
+        ).items():
+            update_config(
+                {"qelectron": {qexecutor_cls_name: defaults_dict}}, override_existing=False
+            )
+
+    def validate_module(self, module_obj) -> None:
+        """
+        Checks all of the following:
+            - module exports plugin classes using `__all__`
+            - module defines `_QUANTUM_DEFAULTS_VARNAME`
+            - exported plugin classes match the default parameters
+
+        """
+        if not hasattr(module_obj, "__all__"):
+            return
+        if not hasattr(module_obj, _QUANTUM_DEFAULTS_VARNAME):
+            return
+
+        plugin_defaults = getattr(module_obj, _QUANTUM_DEFAULTS_VARNAME)
+
+        if set(module_obj.__all__).difference(set(plugin_defaults)):
+            raise RuntimeError(f"Module missing default parameters in {module_obj.__file__}")
+        if set(plugin_defaults).difference(set(module_obj.__all__)):
+            raise RuntimeError(
+                f"Non-exported QExecutor class in default parameters in {module_obj.__file__}"
+            )
+
+
 _executor_manager = _ExecutorManager()
+_qexecutor_manager = _QExecutorManager()
 
 for name in _executor_manager.executor_plugins_map:
     plugin_class = _executor_manager.executor_plugins_map[name]
     globals()[plugin_class.__name__] = plugin_class
+
+for qexecutor_cls in _qexecutor_manager.executor_plugins_map.values():
+    globals()[qexecutor_cls.__name__] = qexecutor_cls

@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Covalent CLI Tool - Service Management."""
 
@@ -59,8 +55,6 @@ from covalent._shared_files.config import ConfigManager, get_config, set_config
 
 from .._db.datastore import DataStore
 from .migrate import migrate_pickled_result_object
-
-cm = ConfigManager()
 
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
@@ -696,7 +690,10 @@ def purge(ctx, hard: bool, yes: bool, hell_yeah: bool) -> None:
     """
     Purge Covalent from this system
     """
+    cm = ConfigManager()
+
     console = Console()
+
     removal_list = {
         get_config("sdk.log_dir"),
         get_config("dispatcher.cache_dir"),
@@ -978,6 +975,9 @@ def cluster(
 @click.command()
 def config() -> None:
     """Display the Covalent configuration"""
+
+    cm = ConfigManager()
+
     console = Console()
     print_header(console)
     console.print(Panel("Covalent Configuration", expand=False, border_style="blue"))
