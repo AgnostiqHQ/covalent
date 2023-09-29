@@ -253,7 +253,7 @@ class Lattice:
                         retval = workflow_function(*electron_args, **electron_kwargs)
                     except Exception:
                         warnings.warn(
-                            "The lattice may not be compatible with electron coversion, please try without the electronic_inputs flag."
+                            "The lattice may not be compatible with electron conversion, please try without the electronic_inputs flag."
                         )
                         raise
                 else:
