@@ -240,9 +240,9 @@ class Lattice:
 
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
-                try:
-                    # Makes inputs ParamElectrons which might mess up when they are not expected to be
-                    if self.electronic_inputs:
+                # Makes inputs ParamElectrons which might mess up when they are not expected to be
+                if self.electronic_inputs:
+                    try:
                         from .electron import ParamElectron
 
                         electron_args = [
@@ -251,14 +251,20 @@ class Lattice:
                         ]
                         electron_kwargs = {k: ParamElectron(v, k)() for k, v in new_kwargs.items()}
                         retval = workflow_function(*electron_args, **electron_kwargs)
-                    else:
+                    except Exception:
+                        warnings.warn(
+                            "The lattice may not be compatible with electron coversion, please try without the electronic_inputs flag."
+                        )
+                        raise
+                else:
+                    try:
                         # The normal and backwards compatible case
                         retval = workflow_function(*new_args, **new_kwargs)
-                except Exception:
-                    warnings.warn(
-                        "Please make sure you are not manipulating an object inside the lattice."
-                    )
-                    raise
+                    except Exception:
+                        warnings.warn(
+                            "Please make sure you are not manipulating an object inside the lattice."
+                        )
+                        raise
 
         pp = Postprocessor(lattice=self)
 
