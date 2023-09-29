@@ -18,9 +18,10 @@
 #
 # Relief from the License may be granted by purchasing a commercial license.
 
+import os
+import tempfile
 from copy import deepcopy
 from functools import wraps
-import tempfile
 from pathlib import Path
 from typing import Callable, List, Optional
 
@@ -42,6 +43,10 @@ app_log = logger.app_log
 
 dispatch_cache_dir = Path(get_config("sdk.dispatch_cache_dir"))
 dispatch_cache_dir.mkdir(parents=True, exist_ok=True)
+
+
+class AuthorizationError(Exception):
+    pass
 
 
 class LocalDispatcher(BaseDispatcher):
@@ -193,7 +198,6 @@ class LocalDispatcher(BaseDispatcher):
         r.raise_for_status()
         return r.content.decode("utf-8").strip().replace('"', "")
 
-
     @staticmethod
     def dispatch_sync(
         lattice: Lattice,
@@ -323,21 +327,20 @@ class LocalDispatcher(BaseDispatcher):
         if dispatcher_addr is None:
             dispatcher_addr = format_server_url()
 
-        if push_assets:
-            stripped = strip_local_uris(manifest)
-        else:
-            stripped = manifest
+        stripped = strip_local_uris(manifest) if push_assets else manifest
+        register_dispatch_endpoint = f"{dispatcher_addr}/api/v2/lattices"
 
-        test_url = f"{dispatcher_addr}/api/v1/dispatchv2/register"
-        headers = {"x-api-key": request_api_key()}
+        headers = {"X-SESSION-TOKEN": os.getenv("COVALENT_JOB_SESSION_TOKEN")}
 
-        if not headers["x-api-key"]:
-            return
+        if headers.get("X-SESSION-TOKEN") is None:
+            raise AuthorizationError
 
         if parent_dispatch_id:
-            test_url = f"{test_url}/{parent_dispatch_id}"
+            register_dispatch_endpoint = (
+                f"{register_dispatch_endpoint}/{parent_dispatch_id}/sublattices"
+            )
 
-        r = requests.post(test_url, data=stripped.json(), headers=headers)
+        r = requests.post(register_dispatch_endpoint, data=stripped.json(), headers=headers)
         r.raise_for_status()
 
         parsed_resp = ResultSchema.parse_obj(r.json())

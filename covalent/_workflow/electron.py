@@ -814,16 +814,14 @@ def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kw
 
     sub.build_graph(*args, **kwargs)
 
-    return sub.serialize_to_json()
+    with tempfile.TemporaryDirectory(prefix="covalent-") as staging_path:
+        manifest = LocalDispatcher.prepare_manifest(sub, staging_path)
 
-    # with tempfile.TemporaryDirectory(prefix="covalent-") as staging_path:
-    #     manifest = LocalDispatcher.prepare_manifest(sub, staging_path)
+        # Omit these two steps to return the manifest to Covalent and
+        # request the assets be pulled TODO covalent-cloud-server/320 - Not sure what this comment means
+        recv_manifest = LocalDispatcher.register_manifest(
+            manifest, parent_dispatch_id=parent_dispatch_id, push_assets=True
+        )
+        LocalDispatcher.upload_assets(recv_manifest)
 
-    #     # Omit these two steps to return the manifest to Covalent and
-    #     # request the assets be pulled
-    #     recv_manifest = LocalDispatcher.register_manifest(
-    #         manifest, parent_dispatch_id=parent_dispatch_id, push_assets=True
-    #     )
-    #     LocalDispatcher.upload_assets(recv_manifest)
-
-    # return recv_manifest.json()
+    return recv_manifest.json()
