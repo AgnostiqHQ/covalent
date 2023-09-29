@@ -20,7 +20,7 @@ import importlib
 import inspect
 import socket
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Callable, Dict, Set, Tuple
+from typing import Any, Callable, Dict, Set, Tuple, TYPE_CHECKING
 
 import cloudpickle
 
