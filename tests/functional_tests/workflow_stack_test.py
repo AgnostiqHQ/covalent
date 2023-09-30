@@ -926,6 +926,7 @@ def test_redispatch_reusing_previous_results_and_new_args():
     assert result.status == "COMPLETED"
     assert result.get_node_result(0)["start_time"] == result.get_node_result(0)["end_time"]
 
+
 @pytest.mark.parameterize("executor", ["local", ct.executor.LocalExecutor()])
 def test_executor_inheritance_electron(executor):
     """Test for executor inheritance via Electron"""
@@ -938,13 +939,13 @@ def test_executor_inheritance_electron(executor):
     def workflow(a, b):
         return add(a, b)
 
-
     dispatch_id = ct.dispatch(workflow)(1, 2)
     result = ct.get_result(dispatch_id, wait=True)
     assert add.electron_object.get_metadata("executor") == "local"
     assert workflow.get_metadata("executor") is None
     assert result.status == "COMPLETED"
     assert result.result == 3
+
 
 @pytest.mark.parameterize("executor", ["local", ct.executor.LocalExecutor()])
 def test_executor_inheritance_lattice(executor):
@@ -960,13 +961,13 @@ def test_executor_inheritance_lattice(executor):
     def workflow(a, b):
         return add(a, b)
 
-
     dispatch_id = ct.dispatch(workflow)(1, 2)
     result = ct.get_result(dispatch_id, wait=True)
     assert add.electron_object.get_metadata("executor") is None
     assert workflow.get_metadata("executor") == "local"
     assert result.status == "COMPLETED"
     assert result.result == 3
+
 
 @pytest.mark.parameterize("executor", ["local", ct.executor.LocalExecutor()])
 def test_executor_inheritance_electron_and_lattice(executor):
@@ -980,13 +981,13 @@ def test_executor_inheritance_electron_and_lattice(executor):
     def workflow(a, b):
         return add(a, b)
 
-
     dispatch_id = ct.dispatch(workflow)(1, 2)
     result = ct.get_result(dispatch_id, wait=True)
     assert add.electron_object.get_metadata("executor") == "local"
     assert workflow.get_metadata("executor") == "local"
     assert result.status == "COMPLETED"
     assert result.result == 3
+
 
 @pytest.mark.parameterize("executor", ["local", ct.executor.LocalExecutor()])
 def test_executor_inheritance_electron_with_sublattice(executor):
@@ -996,24 +997,20 @@ def test_executor_inheritance_electron_with_sublattice(executor):
     def add(a, b):
         return a + b
 
-
     @ct.electron
     def make_more(val):
         return [val] * 3
-
 
     @ct.electron
     @ct.lattice
     def add_distributed(vals, c):
         return [add(val, c) for val in vals]
 
-
     @ct.lattice
     def workflow(a, b, c):
         result1 = add(a, b)
         result2 = make_more(result1)
         return add_distributed(result2, c)
-
 
     dispatch_id = ct.dispatch(workflow)(1, 2, 3)
     result = ct.get_result(dispatch_id, wait=True)
@@ -1024,6 +1021,7 @@ def test_executor_inheritance_electron_with_sublattice(executor):
     assert result.status == "COMPLETED"
     assert result.result == [6, 6, 6]
 
+
 @pytest.mark.parameterize("executor", ["local", ct.executor.LocalExecutor()])
 def test_executor_inheritance_lattice_with_sublattice(executor):
     """Test for executor inheritance with lattice specification"""
@@ -1032,24 +1030,20 @@ def test_executor_inheritance_lattice_with_sublattice(executor):
     def add(a, b):
         return a + b
 
-
     @ct.electron
     def make_more(val):
         return [val] * 3
-
 
     @ct.electron
     @ct.lattice
     def add_distributed(vals, c):
         return [add(val, c) for val in vals]
 
-
     @ct.lattice(executor=executor)
     def workflow(a, b, c):
         result1 = add(a, b)
         result2 = make_more(result1)
         return add_distributed(result2, c)
-
 
     # Dispatched
     dispatch_id = ct.dispatch(workflow)(1, 2, 3)
@@ -1061,6 +1055,7 @@ def test_executor_inheritance_lattice_with_sublattice(executor):
     assert result.status == "COMPLETED"
     assert result.result == [6, 6, 6]
 
+
 @pytest.mark.parameterize("executor", ["local", ct.executor.LocalExecutor()])
 def test_executor_inheritance_electron_and_lattice_with_sublattice(executor):
     """Test for executor inheritance with electron and lattice specification"""
@@ -1069,24 +1064,20 @@ def test_executor_inheritance_electron_and_lattice_with_sublattice(executor):
     def add(a, b):
         return a + b
 
-
     @ct.electron
     def make_more(val):
         return [val] * 3
-
 
     @ct.electron
     @ct.lattice
     def add_distributed(vals, c):
         return [add(val, c) for val in vals]
 
-
     @ct.lattice(executor=executor)
     def workflow(a, b, c):
         result1 = add(a, b)
         result2 = make_more(result1)
         return add_distributed(result2, c)
-
 
     dispatch_id = ct.dispatch(workflow)(1, 2, 3)
     result = ct.get_result(dispatch_id, wait=True)
@@ -1097,6 +1088,7 @@ def test_executor_inheritance_electron_and_lattice_with_sublattice(executor):
     assert result.status == "COMPLETED"
     assert result.result == [6, 6, 6]
 
+
 @pytest.mark.parameterize("executor", ["local", ct.executor.LocalExecutor()])
 def test_executor_inheritance_sublattice_v1(executor):
     """Test for executor inheritance with sublattice override (in electron)"""
@@ -1105,24 +1097,20 @@ def test_executor_inheritance_sublattice_v1(executor):
     def add(a, b):
         return a + b
 
-
     @ct.electron
     def make_more(val):
         return [val] * 3
-
 
     @ct.electron(executor="dask")
     @ct.lattice
     def add_distributed(vals, c):
         return [add(val, c) for val in vals]
 
-
     @ct.lattice(executor=executor)
     def workflow(a, b, c):
         result1 = add(a, b)
         result2 = make_more(result1)
         return add_distributed(result2, c)
-
 
     dispatch_id = ct.dispatch(workflow)(1, 2, 3)
     result = ct.get_result(dispatch_id, wait=True)
@@ -1133,6 +1121,7 @@ def test_executor_inheritance_sublattice_v1(executor):
     assert result.status == "COMPLETED"
     assert result.result == [6, 6, 6]
 
+
 @pytest.mark.parameterize("executor", ["local", ct.executor.LocalExecutor()])
 def test_executor_inheritance_sublattice_v2(executor):
     """Test for executor inheritance with sublattice override (in lattice)"""
@@ -1141,24 +1130,20 @@ def test_executor_inheritance_sublattice_v2(executor):
     def add(a, b):
         return a + b
 
-
     @ct.electron
     def make_more(val):
         return [val] * 3
-
 
     @ct.electron
     @ct.lattice(executor="dask")
     def add_distributed(vals, c):
         return [add(val, c) for val in vals]
 
-
     @ct.lattice(executor=executor)
     def workflow(a, b, c):
         result1 = add(a, b)
         result2 = make_more(result1)
         return add_distributed(result2, c)
-
 
     dispatch_id = ct.dispatch(workflow)(1, 2, 3)
     result = ct.get_result(dispatch_id, wait=True)
