@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
+- Updated `black` , `prettier`, `pycln` package versions in pre-commit config
 - Changed `actions/checkout@v3` to `actions/checkout@v4` in CI
 - Dependabot update to npm in changelog action
 - Update tough-cookie to 4.1.3 version
