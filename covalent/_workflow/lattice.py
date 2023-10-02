@@ -240,31 +240,20 @@ class Lattice:
 
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
-                # Makes inputs ParamElectrons which might mess up when they are not expected to be
-                if self.electronic_inputs:
-                    try:
-                        from .electron import ParamElectron
+                try:
+                    # Make inputs ParamElectrons which might mess up when they are not expected to be
+                    from .electron import ParamElectron
 
-                        electron_args = [
-                            ParamElectron(new_args[i], arg_names[i])()
-                            for i in range(len(new_args))
-                        ]
-                        electron_kwargs = {k: ParamElectron(v, k)() for k, v in new_kwargs.items()}
-                        retval = workflow_function(*electron_args, **electron_kwargs)
-                    except Exception:
-                        warnings.warn(
-                            "The lattice may not be compatible with electron conversion, please try without the electronic_inputs flag."
-                        )
-                        raise
-                else:
-                    try:
-                        # The normal and backwards compatible case
-                        retval = workflow_function(*new_args, **new_kwargs)
-                    except Exception:
-                        warnings.warn(
-                            "Please make sure you are not manipulating an object inside the lattice."
-                        )
-                        raise
+                    electron_args = [
+                        ParamElectron(new_args[i], arg_names[i])() for i in range(len(new_args))
+                    ]
+                    electron_kwargs = {k: ParamElectron(v, k)() for k, v in new_kwargs.items()}
+                    retval = self.call_workflow(*electron_args, **electron_kwargs)
+                except Exception:
+                    warnings.warn(
+                        "The lattice is not compatible with redispatch, computing graph for a one-time dispatch."
+                    )
+                    retval = self.call_workflow(*new_args, **new_kwargs)
 
         pp = Postprocessor(lattice=self)
 
@@ -274,6 +263,27 @@ class Lattice:
             pp.add_reconstruct_postprocess_node(retval, self._bound_electrons.copy())
 
         self._bound_electrons = {}  # Reset bound electrons
+
+    def call_workflow(self, *args, **kwargs):
+        """
+        Execute the workflow function and return the result.
+
+        Args:
+            *args: Positional arguments to be passed to the workflow function.
+            **kwargs: Keyword arguments to be passed to the workflow function.
+
+        Returns:
+            result: Result of the workflow function.
+        """
+        try:
+            workflow_function = self.workflow_function.get_deserialized()
+            retval = workflow_function(*args, **kwargs)
+        except Exception:
+            warnings.warn(
+                "Please make sure you are not manipulating an object inside the lattice."
+            )
+            raise
+        return retval
 
     def draw(self, *args, **kwargs) -> None:
         """
