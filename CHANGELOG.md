@@ -26,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Changed license to Apache
 
+### Docs
+
+- Added federated learning showcase code
+
 ## [0.229.0-rc.0] - 2023-09-22
 
 ### Authors
@@ -79,12 +83,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add tests for GUI frontend and backend.
 - Skipped `tests/covalent_ui_backend_tests/end_points/summary_test.py::test_overview` until it gets fixed.
 
-### Docs
 
 - Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
 - Updated documentation links in README
 - Added tutorial for redispatching workflows with Streamlit
-- Added federated learning showcase code
 
 ## [0.228.0-rc.0] - 2023-08-31
 
