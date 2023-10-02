@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Removed unassigned variable names
 - Contributing guidelines steps for installing for the first time
 - Updated gitignore to ignore yarn files and folders for latest version of yarn
 
