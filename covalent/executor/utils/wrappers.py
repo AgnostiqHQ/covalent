@@ -55,7 +55,6 @@ def wrapper_fn(
     the various executors.
 
     """
-
     cb_retvals = {}
     for tup in call_before:
         serialized_fn, serialized_args, serialized_kwargs, retval_key = tup
@@ -251,11 +250,11 @@ def run_task_from_uris(
                         )
 
                         call_before_json = pickle.loads(
-                            get_node_asset(url=f"{base_uri}/{task_id}/call_before/")
+                            get_node_asset(url=f"{base_uri}/{task_id}/call_before/contents")
                         )
 
                         call_after_json = pickle.loads(
-                            get_node_asset(url=f"{base_uri}/{task_id}/call_after")
+                            get_node_asset(url=f"{base_uri}/{task_id}/call_after/contents")
                         )
 
                         call_before, call_after = _gather_deps(
@@ -299,13 +298,16 @@ def run_task_from_uris(
 
                     finally:
                         upload_node_asset(
-                            asset_filepath=result_uri, upload_url=f"{base_uri}/{task_id}/output"
+                            asset_filepath=result_uri,
+                            upload_url=f"{base_uri}/{task_id}/output/contents",
                         )
                         upload_node_asset(
-                            asset_filepath=stdout_uri, upload_url=f"{base_uri}/{task_id}/stdout"
+                            asset_filepath=stdout_uri,
+                            upload_url=f"{base_uri}/{task_id}/stdout/contents",
                         )
                         upload_node_asset(
-                            asset_filepath=stderr_uri, upload_url=f"{base_uri}/{task_id}/stderr"
+                            asset_filepath=stderr_uri,
+                            upload_url=f"{base_uri}/{task_id}/stderr/contents",
                         )
 
                         result_path = os.path.join(
@@ -317,7 +319,8 @@ def run_task_from_uris(
 
                         # Notify Covalent that the task has terminated
                         url = f"{server_url}/api/v1/update/{dispatch_id}/task/{task_id}"
-                        requests.put(url)
+                        response = requests.put(url)
+                        response.raise_for_status()
 
         # Deal with any tasks that did not run
         n = len(results)
