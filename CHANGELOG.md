@@ -83,6 +83,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add tests for GUI frontend and backend.
 - Skipped `tests/covalent_ui_backend_tests/end_points/summary_test.py::test_overview` until it gets fixed.
 
+## Docs
 
 - Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
 - Updated documentation links in README
