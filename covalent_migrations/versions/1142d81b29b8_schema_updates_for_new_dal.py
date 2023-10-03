@@ -17,7 +17,7 @@
 """Schema updates for new DAL
 
 Revision ID: 1142d81b29b8
-Revises: f64ecaa040d5
+Revises: de0a6c0a3e3d
 Create Date: 2023-06-18 09:18:31.450740
 
 """
@@ -28,7 +28,7 @@ from alembic import op
 # pragma: allowlist nextline secret
 revision = "1142d81b29b8"
 # pragma: allowlist nextline secret
-down_revision = "f64ecaa040d5"
+down_revision = "de0a6c0a3e3d"
 branch_labels = None
 depends_on = None
 
