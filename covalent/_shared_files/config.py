@@ -46,7 +46,7 @@ class ConfigManager:
         self.generate_default_config()
 
         try:
-            with open(self.config_file, "r") as f:
+            with open(self.config_file, "r"):
                 pass
 
             self.update_config()

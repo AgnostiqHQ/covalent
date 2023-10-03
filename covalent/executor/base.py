@@ -377,8 +377,8 @@ class BaseExecutor(_AbstractBaseExecutor):
             output: The result of the function execution.
         """
 
-        dispatch_info = DispatchInfo(dispatch_id)
-        fn_version = function.args[0].python_version
+        DispatchInfo(dispatch_id)
+        function.args[0].python_version
         self._task_stdout = io.StringIO()
         self._task_stderr = io.StringIO()
 
@@ -392,10 +392,10 @@ class BaseExecutor(_AbstractBaseExecutor):
             self.setup(task_metadata=task_metadata)
             result = self.run(function, args, kwargs, task_metadata)
             job_status = RESULT_STATUS.COMPLETED
-        except TaskRuntimeError as err:
+        except TaskRuntimeError:
             job_status = RESULT_STATUS.FAILED
             result = None
-        except TaskCancelledError as err:
+        except TaskCancelledError:
             job_status = RESULT_STATUS.CANCELLED
             result = None
         finally:
@@ -651,10 +651,10 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             await self.setup(task_metadata=task_metadata)
             result = await self.run(function, args, kwargs, task_metadata)
             job_status = RESULT_STATUS.COMPLETED
-        except TaskCancelledError as err:
+        except TaskCancelledError:
             job_status = RESULT_STATUS.CANCELLED
             result = None
-        except TaskRuntimeError as err:
+        except TaskRuntimeError:
             job_status = RESULT_STATUS.FAILED
             result = None
         finally:
