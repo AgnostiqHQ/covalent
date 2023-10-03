@@ -596,7 +596,7 @@ def test_logs(exists, mocker):
     if not exists:
         result = runner.invoke(logs)
         assert (
-            result.output.replace("\n", " ").strip()
+            result.output.replace("\n", "")
             == f"{UI_LOGFILE} not found. Restart the server to create a new log file."
         )
     else:
