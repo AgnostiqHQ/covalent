@@ -1,0 +1,151 @@
+,round,dataset,test_accuracy,batch_size,image_dimension,method
+0,1,"('keremberke/chest-xray-classification', 'full')",0.8848797250859106,32,64,federated
+1,1,"('mmenendezg/raw_pneumonia_x_ray',)",0.8782051282051282,32,64,federated
+2,1,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.3733138136568023,32,64,federated
+3,2,"('keremberke/chest-xray-classification', 'full')",0.8419243986254296,32,64,federated
+4,2,"('mmenendezg/raw_pneumonia_x_ray',)",0.907051282051282,32,64,federated
+5,2,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.4181742131130398,32,64,federated
+6,3,"('keremberke/chest-xray-classification', 'full')",0.9192439862542955,32,64,federated
+7,3,"('mmenendezg/raw_pneumonia_x_ray',)",0.9198717948717948,32,64,federated
+8,3,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.6758339433232249,32,64,federated
+9,4,"('keremberke/chest-xray-classification', 'full')",0.8762886597938144,32,64,federated
+10,4,"('mmenendezg/raw_pneumonia_x_ray',)",0.907051282051282,32,64,federated
+11,4,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.6138241137718289,32,64,federated
+12,5,"('keremberke/chest-xray-classification', 'full')",0.8969072164948454,32,64,federated
+13,5,"('mmenendezg/raw_pneumonia_x_ray',)",0.9230769230769231,32,64,federated
+14,5,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7138973125588205,32,64,federated
+15,6,"('keremberke/chest-xray-classification', 'full')",0.9243986254295533,32,64,federated
+16,6,"('mmenendezg/raw_pneumonia_x_ray',)",0.8990384615384616,32,64,federated
+17,6,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7370072153090035,32,64,federated
+18,7,"('keremberke/chest-xray-classification', 'full')",0.9501718213058419,32,64,federated
+19,7,"('mmenendezg/raw_pneumonia_x_ray',)",0.8910256410256411,32,64,federated
+20,7,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7719334936735334,32,64,federated
+21,8,"('keremberke/chest-xray-classification', 'full')",0.9501718213058419,32,64,federated
+22,8,"('mmenendezg/raw_pneumonia_x_ray',)",0.9278846153846154,32,64,federated
+23,8,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.811774547736066,32,64,federated
+24,9,"('keremberke/chest-xray-classification', 'full')",0.915807560137457,32,64,federated
+25,9,"('mmenendezg/raw_pneumonia_x_ray',)",0.9198717948717948,32,64,federated
+26,9,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8927114922095577,32,64,federated
+27,10,"('keremberke/chest-xray-classification', 'full')",0.9347079037800687,32,64,federated
+28,10,"('mmenendezg/raw_pneumonia_x_ray',)",0.9246794871794872,32,64,federated
+29,10,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8557983896266862,32,64,federated
+30,11,"('keremberke/chest-xray-classification', 'full')",0.9450171821305842,32,64,federated
+31,11,"('mmenendezg/raw_pneumonia_x_ray',)",0.9198717948717948,32,64,federated
+32,11,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8679284743281397,32,64,federated
+33,12,"('keremberke/chest-xray-classification', 'full')",0.9570446735395189,32,64,federated
+34,12,"('mmenendezg/raw_pneumonia_x_ray',)",0.9455128205128205,32,64,federated
+35,12,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8829865105092544,32,64,federated
+36,13,"('keremberke/chest-xray-classification', 'full')",0.9621993127147767,32,64,federated
+37,13,"('mmenendezg/raw_pneumonia_x_ray',)",0.9342948717948718,32,64,federated
+38,13,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8907246679912162,32,64,federated
+39,14,"('keremberke/chest-xray-classification', 'full')",0.9604810996563574,32,64,federated
+40,14,"('mmenendezg/raw_pneumonia_x_ray',)",0.8862179487179487,32,64,federated
+41,14,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8907246679912162,32,64,federated
+42,15,"('keremberke/chest-xray-classification', 'full')",0.9536082474226805,32,64,federated
+43,15,"('mmenendezg/raw_pneumonia_x_ray',)",0.9342948717948718,32,64,federated
+44,15,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8928160619052599,32,64,federated
+45,16,"('keremberke/chest-xray-classification', 'full')",0.9587628865979382,32,64,federated
+46,16,"('mmenendezg/raw_pneumonia_x_ray',)",0.9407051282051282,32,64,federated
+47,16,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.864163965282861,32,64,federated
+48,17,"('keremberke/chest-xray-classification', 'full')",0.9621993127147767,32,64,federated
+49,17,"('mmenendezg/raw_pneumonia_x_ray',)",0.9455128205128205,32,64,federated
+50,17,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8933389103837708,32,64,federated
+51,18,"('keremberke/chest-xray-classification', 'full')",0.9518900343642611,32,64,federated
+52,18,"('mmenendezg/raw_pneumonia_x_ray',)",0.9391025641025641,32,64,federated
+53,18,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8797448499424867,32,64,federated
+54,19,"('keremberke/chest-xray-classification', 'full')",0.9690721649484536,32,64,federated
+55,19,"('mmenendezg/raw_pneumonia_x_ray',)",0.9503205128205128,32,64,federated
+56,19,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8587263411063474,32,64,federated
+57,20,"('keremberke/chest-xray-classification', 'full')",0.9690721649484536,32,64,federated
+58,20,"('mmenendezg/raw_pneumonia_x_ray',)",0.9439102564102564,32,64,federated
+59,20,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.9088152253476942,32,64,federated
+60,21,"('keremberke/chest-xray-classification', 'full')",0.9621993127147767,32,64,federated
+61,21,"('mmenendezg/raw_pneumonia_x_ray',)",0.9503205128205128,32,64,federated
+62,21,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8916657952525359,32,64,federated
+63,22,"('keremberke/chest-xray-classification', 'full')",0.9690721649484536,32,64,federated
+64,22,"('mmenendezg/raw_pneumonia_x_ray',)",0.9535256410256411,32,64,federated
+65,22,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.9015999163442434,32,64,federated
+66,23,"('keremberke/chest-xray-classification', 'full')",0.9484536082474226,32,64,federated
+67,23,"('mmenendezg/raw_pneumonia_x_ray',)",0.9711538461538461,32,64,federated
+68,23,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.9011816375614347,32,64,federated
+69,24,"('keremberke/chest-xray-classification', 'full')",0.9656357388316151,32,64,federated
+70,24,"('mmenendezg/raw_pneumonia_x_ray',)",0.9583333333333334,32,64,federated
+71,24,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8956394436892189,32,64,federated
+72,25,"('keremberke/chest-xray-classification', 'full')",0.9725085910652921,32,64,federated
+73,25,"('mmenendezg/raw_pneumonia_x_ray',)",0.9599358974358975,32,64,federated
+74,25,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8602948865418801,32,64,federated
+75,26,"('keremberke/chest-xray-classification', 'full')",0.9776632302405498,32,64,federated
+76,26,"('mmenendezg/raw_pneumonia_x_ray',)",0.9599358974358975,32,64,federated
+77,26,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8663599288926069,32,64,federated
+78,27,"('keremberke/chest-xray-classification', 'full')",0.9742268041237113,32,64,federated
+79,27,"('mmenendezg/raw_pneumonia_x_ray',)",0.9663461538461539,32,64,federated
+80,27,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8456551291435742,32,64,federated
+81,28,"('keremberke/chest-xray-classification', 'full')",0.9776632302405498,32,64,federated
+82,28,"('mmenendezg/raw_pneumonia_x_ray',)",0.9615384615384616,32,64,federated
+83,28,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8428317473596152,32,64,federated
+84,29,"('keremberke/chest-xray-classification', 'full')",0.9810996563573883,32,64,federated
+85,29,"('mmenendezg/raw_pneumonia_x_ray',)",0.9583333333333334,32,64,federated
+86,29,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8285056990484158,32,64,federated
+87,30,"('keremberke/chest-xray-classification', 'full')",0.979381443298969,32,64,federated
+88,30,"('mmenendezg/raw_pneumonia_x_ray',)",0.9663461538461539,32,64,federated
+89,30,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.9231412736588936,32,64,federated
+90,31,"('keremberke/chest-xray-classification', 'full')",0.9450171821305842,32,64,federated
+91,31,"('mmenendezg/raw_pneumonia_x_ray',)",0.9647435897435898,32,64,federated
+92,31,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.9117431768273554,32,64,federated
+93,32,"('keremberke/chest-xray-classification', 'full')",0.9776632302405498,32,64,federated
+94,32,"('mmenendezg/raw_pneumonia_x_ray',)",0.969551282051282,32,64,federated
+95,32,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8210812506535606,32,64,federated
+96,33,"('keremberke/chest-xray-classification', 'full')",0.9759450171821306,32,64,federated
+97,33,"('mmenendezg/raw_pneumonia_x_ray',)",0.9727564102564102,32,64,federated
+98,33,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8800585590295932,32,64,federated
+99,34,"('keremberke/chest-xray-classification', 'full')",0.9673539518900344,32,64,federated
+100,34,"('mmenendezg/raw_pneumonia_x_ray',)",0.9743589743589743,32,64,federated
+101,34,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8766077590714211,32,64,federated
+102,35,"('keremberke/chest-xray-classification', 'full')",0.9776632302405498,32,64,federated
+103,35,"('mmenendezg/raw_pneumonia_x_ray',)",0.9567307692307693,32,64,federated
+104,35,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8547526926696644,32,64,federated
+105,36,"('keremberke/chest-xray-classification', 'full')",0.9828178694158075,32,64,federated
+106,36,"('mmenendezg/raw_pneumonia_x_ray',)",0.9631410256410257,32,64,federated
+107,36,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.852870438147025,32,64,federated
+108,37,"('keremberke/chest-xray-classification', 'full')",0.9759450171821306,32,64,federated
+109,37,"('mmenendezg/raw_pneumonia_x_ray',)",0.969551282051282,32,64,federated
+110,37,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.9165533828296559,32,64,federated
+111,38,"('keremberke/chest-xray-classification', 'full')",0.9862542955326461,32,64,federated
+112,38,"('mmenendezg/raw_pneumonia_x_ray',)",0.9775641025641025,32,64,federated
+113,38,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8313290808323748,32,64,federated
+114,39,"('keremberke/chest-xray-classification', 'full')",0.9759450171821306,32,64,federated
+115,39,"('mmenendezg/raw_pneumonia_x_ray',)",0.9599358974358975,32,64,federated
+116,39,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8735752378960577,32,64,federated
+117,40,"('keremberke/chest-xray-classification', 'full')",0.9810996563573883,32,64,federated
+118,40,"('mmenendezg/raw_pneumonia_x_ray',)",0.969551282051282,32,64,federated
+119,40,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8805814075081041,32,64,federated
+120,41,"('keremberke/chest-xray-classification', 'full')",0.9776632302405498,32,64,federated
+121,41,"('mmenendezg/raw_pneumonia_x_ray',)",0.9631410256410257,32,64,federated
+122,41,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8599811774547736,32,64,federated
+123,42,"('keremberke/chest-xray-classification', 'full')",0.9587628865979382,32,64,federated
+124,42,"('mmenendezg/raw_pneumonia_x_ray',)",0.967948717948718,32,64,federated
+125,42,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8126111053016836,32,64,federated
+126,43,"('keremberke/chest-xray-classification', 'full')",0.9810996563573883,32,64,federated
+127,43,"('mmenendezg/raw_pneumonia_x_ray',)",0.9711538461538461,32,64,federated
+128,43,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8344661717034404,32,64,federated
+129,44,"('keremberke/chest-xray-classification', 'full')",0.9759450171821306,32,64,federated
+130,44,"('mmenendezg/raw_pneumonia_x_ray',)",0.9711538461538461,32,64,federated
+131,44,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7816584753738367,32,64,federated
+132,45,"('keremberke/chest-xray-classification', 'full')",0.9828178694158075,32,64,federated
+133,45,"('mmenendezg/raw_pneumonia_x_ray',)",0.9535256410256411,32,64,federated
+134,45,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.9151939767855276,32,64,federated
+135,46,"('keremberke/chest-xray-classification', 'full')",0.9776632302405498,32,64,federated
+136,46,"('mmenendezg/raw_pneumonia_x_ray',)",0.967948717948718,32,64,federated
+137,46,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7864686813761372,32,64,federated
+138,47,"('keremberke/chest-xray-classification', 'full')",0.9845360824742269,32,64,federated
+139,47,"('mmenendezg/raw_pneumonia_x_ray',)",0.9711538461538461,32,64,federated
+140,47,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8778625954198473,32,64,federated
+141,48,"('keremberke/chest-xray-classification', 'full')",0.9810996563573883,32,64,federated
+142,48,"('mmenendezg/raw_pneumonia_x_ray',)",0.9631410256410257,32,64,federated
+143,48,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8426226079682108,32,64,federated
+144,49,"('keremberke/chest-xray-classification', 'full')",0.979381443298969,32,64,federated
+145,49,"('mmenendezg/raw_pneumonia_x_ray',)",0.9759615384615384,32,64,federated
+146,49,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8819408135522325,32,64,federated
+147,50,"('keremberke/chest-xray-classification', 'full')",0.9845360824742269,32,64,federated
+148,50,"('mmenendezg/raw_pneumonia_x_ray',)",0.9727564102564102,32,64,federated
+149,50,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8752483530272926,32,64,federated

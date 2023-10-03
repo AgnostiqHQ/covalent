@@ -73,6 +73,8 @@ Advanced
      - :doc:`Classifying discrete spacetimes by dimension<./4_QuantumGravity/spacetime_classification/source>`
    * - Generative AI/LLM
      - :doc:`Scalable API backends for LLM and generative AI <./0_ClassicalMachineLearning/genai/source>`
+   * - Federated learning
+     - :doc:`Federated learning <./federated_learning/source>`
 
 ---------------------------------
 
