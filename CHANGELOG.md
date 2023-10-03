@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Removed strict version pins on `lmdbm`, `mpire`, `orjson`, and `pennylane`
 - Changed license to Apache
 
 ### Docs
