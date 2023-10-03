@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 # """
 # Integration tests for the dispatcher, runner, and result modules
@@ -270,17 +266,19 @@
 #     mocker.patch(
 #         "covalent._results_manager.result.Result._get_node_error", return_value="AssertionError"
 #     )
-#     mock_unregister = mocker.patch(
-#         "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
-#     )
+
+#     mock_persist_result = mocker.patch("covalent_dispatcher._core.data_manager.persist_result")
+
+#     mock_unregister = mocker.patch("covalent_dispatcher._core.data_manager.finalize_dispatch")
 #     mocker.patch(
-#         "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
+#         "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
 #     )
 
 #     status_queue = asyncio.Queue()
 #     mocker.patch(
 #         "covalent_dispatcher._core.data_manager.get_status_queue", return_value=status_queue
 #     )
+
 #     mock_get_failed_nodes = mocker.patch(
 #         "covalent._results_manager.result.Result._get_failed_nodes",
 #         return_value=[(0, "failing_task")],
@@ -289,6 +287,7 @@
 #     update.persist(result_object)
 
 #     result_object = await run_workflow(result_object)
+#     mock_persist_result.assert_called_with(result_object.dispatch_id)
 #     mock_unregister.assert_called_with(result_object.dispatch_id)
 #     assert result_object.status == Result.FAILED
 #     assert result_object._error == "The following tasks failed:\n0: failing_task"

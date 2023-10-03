@@ -9,7 +9,7 @@
 [![tests](https://github.com/AgnostiqHQ/covalent/actions/workflows/tests.yml/badge.svg)](https://github.com/AgnostiqHQ/covalent/actions/workflows/tests.yml)
 [![docs](https://readthedocs.org/projects/covalent/badge/?version=latest)](https://covalent.readthedocs.io/en/latest/?badge=latest)
 [![codecov](https://codecov.io/gh/AgnostiqHQ/covalent/branch/master/graph/badge.svg?token=YGHCB3DE4P)](https://codecov.io/gh/AgnostiqHQ/covalent)
-[![agpl](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.en.html)
+[![apache](https://img.shields.io/badge/License-Apache_License_2.0-blue)](https://www.apache.org/licenses/LICENSE-2.0)
 
 </div>
 
@@ -53,13 +53,13 @@ Covalent is developed using Python version 3.8 on Linux and macOS. The easiest w
 pip install covalent
 ```
 
-Refer to the [Quick Start](https://covalent.readthedocs.io/en/latest/getting_started/quick_start/index.html) guide for quick setup instructions, or to the [First Experiment](https://covalent.readthedocs.io/en/latest/getting_started/first_experiment/index.html) guide for a more thorough approach. For a full list of supported platforms, see the Covalent [compatibility matrix](https://covalent.readthedocs.io/en/latest/getting_started/compatibility.html).
+Refer to the [Quick Start](https://docs.covalent.xyz/docs/get-started/quick-start) guide for quick setup instructions, or to the [First Experiment](https://docs.covalent.xyz/docs/get-started/first-experiment) guide for a more thorough approach. For a full list of supported platforms, see the Covalent [compatibility matrix](https://docs.covalent.xyz/docs/user-documentation/compatibility).
 
 ## 🚀 Getting started
 
-Ready to try it? Go to the [First Experiment](https://covalent.readthedocs.io/en/latest/getting_started/first_experiment/index.html) guide in the documentation.
+Ready to try it? Go to the [First Experiment](https://docs.covalent.xyz/docs/get-started/first-experiment) guide in the documentation.
 
-For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://covalent.readthedocs.io/en/latest/concepts/concepts.html) page in the documentation.
+For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index) page in the documentation.
 
 <table border="0">
  <tr>
@@ -71,16 +71,16 @@ For a more in-depth description of Covalent's features and how they work, see th
 
   - [What is Covalent?](https://www.covalent.xyz/what-is-covalent/)
   - [Covalent in the era of cloud-HPC](https://www.covalent.xyz/navigating-the-modern-hpc-landscape/)
-  - [Basic Concepts of Covalent](https://covalent.readthedocs.io/en/latest/concepts/concepts.html)
+  - [Basic Concepts of Covalent](https://docs.covalent.xyz/docs/user-documentation/concepts/covalent-basics)
   - [How does Covalent work?](#how-does-it-work)
 </td>
     <td>
 
-  - [Covalent with pytorch for classical machine learning](https://covalent.readthedocs.io/en/latest/tutorials/0_ClassicalMachineLearning/mnist_images/source.html)
-  - [Covalent with pennylane for quantum machine learning](https://covalent.readthedocs.io/en/latest/tutorials/1_QuantumMachineLearning/quantum_embedding_kernel/source.html)
-  - [Covalent with Qiskit for quantum-SVM](https://covalent.readthedocs.io/en/latest/tutorials/1_QuantumMachineLearning/classical_quantum_svm/source.html)
-  - [Covalent with Dask for scaling Ensemble classification](https://covalent.readthedocs.io/en/latest/tutorials/1_QuantumMachineLearning/pennylane_ensemble_classification/source.html)
-  - [Covalent for Deep Neural Network on AWS](https://covalent.readthedocs.io/en/latest/tutorials/machine_learning/dnn_comparison.html)
+  - [Covalent with pytorch for classical machine learning](https://docs.covalent.xyz/docs/user-documentation/tutorials/mnist)
+  - [Covalent with pennylane for quantum machine learning](https://docs.covalent.xyz/docs/user-documentation/tutorials/quantumembedding)
+  - [Covalent with Qiskit for quantum-SVM](https://docs.covalent.xyz/docs/user-documentation/tutorials/svm/)
+  - [Covalent with Dask for scaling Ensemble classification](https://docs.covalent.xyz/docs/user-documentation/tutorials/ensemble/)
+  - [Covalent for Deep Neural Network on AWS](https://docs.covalent.xyz/docs/user-documentation/tutorials/dnn_comparison/)
 </td>
  </tr>
 </table>
@@ -117,11 +117,11 @@ The Covalent user interface runs as a web server on the machine where the Covale
 
 ## 📚 Documentation
 
-The official documentation includes tips on getting started, high-level concepts, tutorials, and the API documentation, and more. To learn more, see the [Covalent documentation](https://covalent.readthedocs.io/en/latest/).
+The official documentation includes tips on getting started, high-level concepts, tutorials, and the API documentation, and more. To learn more, see the [Covalent documentation](https://docs.covalent.xyz/docs).
 
 ## Troubleshooting
 
-Solutions to common issues can be found in the [Troubleshooting Guide](https://covalent.readthedocs.io/en/latest/).
+Solutions to common issues can be found in the [Troubleshooting Guide](https://docs.covalent.xyz/docs/user-documentation/troubleshooting).
 
 ## ✔️  Contributing
 
@@ -135,7 +135,7 @@ Please use the following citation in any publications:
 
 ## 📃 License
 
-Covalent is licensed under the GNU Affero GPL 3.0 License. Covalent may be distributed under other licenses upon request. See the [LICENSE](https://github.com/AgnostiqHQ/covalent/blob/master/LICENSE) file or contact the [support team](mailto:support@agnostiq.ai) for more details.
+Covalent is licensed under the Apache 2.0 License. See the [LICENSE](https://github.com/AgnostiqHQ/covalent/blob/master/LICENSE) file or contact the [support team](mailto:support@agnostiq.ai) for more details.
 
 
 >For a detailed history of changes and new features, see the [Changelog](https://github.com/AgnostiqHQ/covalent/blob/master/CHANGELOG.md).

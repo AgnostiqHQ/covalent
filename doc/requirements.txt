@@ -1,3 +1,4 @@
+autodoc-pydantic>=1.9.0
 autodocsumm==0.2.6
 docutils
 furo>=2022.6.21

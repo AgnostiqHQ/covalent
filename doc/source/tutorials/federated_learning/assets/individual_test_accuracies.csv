@@ -1,0 +1,151 @@
+,round,dataset,test_accuracy,batch_size,image_dimension,method
+0,1,"('keremberke/chest-xray-classification', 'full')",0.852233676975945,32,64,individual
+1,2,"('keremberke/chest-xray-classification', 'full')",0.8676975945017182,32,64,individual
+2,3,"('keremberke/chest-xray-classification', 'full')",0.8900343642611683,32,64,individual
+3,4,"('keremberke/chest-xray-classification', 'full')",0.8883161512027491,32,64,individual
+4,5,"('keremberke/chest-xray-classification', 'full')",0.8969072164948454,32,64,individual
+5,6,"('keremberke/chest-xray-classification', 'full')",0.9054982817869416,32,64,individual
+6,7,"('keremberke/chest-xray-classification', 'full')",0.9072164948453608,32,64,individual
+7,8,"('keremberke/chest-xray-classification', 'full')",0.9037800687285223,32,64,individual
+8,9,"('keremberke/chest-xray-classification', 'full')",0.8969072164948454,32,64,individual
+9,10,"('keremberke/chest-xray-classification', 'full')",0.9003436426116839,32,64,individual
+10,11,"('keremberke/chest-xray-classification', 'full')",0.9072164948453608,32,64,individual
+11,12,"('keremberke/chest-xray-classification', 'full')",0.9106529209621993,32,64,individual
+12,13,"('keremberke/chest-xray-classification', 'full')",0.9037800687285223,32,64,individual
+13,14,"('keremberke/chest-xray-classification', 'full')",0.915807560137457,32,64,individual
+14,15,"('keremberke/chest-xray-classification', 'full')",0.915807560137457,32,64,individual
+15,16,"('keremberke/chest-xray-classification', 'full')",0.9054982817869416,32,64,individual
+16,17,"('keremberke/chest-xray-classification', 'full')",0.9106529209621993,32,64,individual
+17,18,"('keremberke/chest-xray-classification', 'full')",0.9192439862542955,32,64,individual
+18,19,"('keremberke/chest-xray-classification', 'full')",0.9089347079037801,32,64,individual
+19,20,"('keremberke/chest-xray-classification', 'full')",0.9123711340206185,32,64,individual
+20,21,"('keremberke/chest-xray-classification', 'full')",0.9192439862542955,32,64,individual
+21,22,"('keremberke/chest-xray-classification', 'full')",0.9140893470790378,32,64,individual
+22,23,"('keremberke/chest-xray-classification', 'full')",0.9175257731958762,32,64,individual
+23,24,"('keremberke/chest-xray-classification', 'full')",0.915807560137457,32,64,individual
+24,25,"('keremberke/chest-xray-classification', 'full')",0.9209621993127147,32,64,individual
+25,26,"('keremberke/chest-xray-classification', 'full')",0.9209621993127147,32,64,individual
+26,27,"('keremberke/chest-xray-classification', 'full')",0.929553264604811,32,64,individual
+27,28,"('keremberke/chest-xray-classification', 'full')",0.9243986254295533,32,64,individual
+28,29,"('keremberke/chest-xray-classification', 'full')",0.9261168384879725,32,64,individual
+29,30,"('keremberke/chest-xray-classification', 'full')",0.9054982817869416,32,64,individual
+30,31,"('keremberke/chest-xray-classification', 'full')",0.9312714776632303,32,64,individual
+31,32,"('keremberke/chest-xray-classification', 'full')",0.9072164948453608,32,64,individual
+32,33,"('keremberke/chest-xray-classification', 'full')",0.9243986254295533,32,64,individual
+33,34,"('keremberke/chest-xray-classification', 'full')",0.929553264604811,32,64,individual
+34,35,"('keremberke/chest-xray-classification', 'full')",0.929553264604811,32,64,individual
+35,36,"('keremberke/chest-xray-classification', 'full')",0.9106529209621993,32,64,individual
+36,37,"('keremberke/chest-xray-classification', 'full')",0.9243986254295533,32,64,individual
+37,38,"('keremberke/chest-xray-classification', 'full')",0.9123711340206185,32,64,individual
+38,39,"('keremberke/chest-xray-classification', 'full')",0.915807560137457,32,64,individual
+39,40,"('keremberke/chest-xray-classification', 'full')",0.9226804123711341,32,64,individual
+40,41,"('keremberke/chest-xray-classification', 'full')",0.9192439862542955,32,64,individual
+41,42,"('keremberke/chest-xray-classification', 'full')",0.9140893470790378,32,64,individual
+42,43,"('keremberke/chest-xray-classification', 'full')",0.9467353951890034,32,64,individual
+43,44,"('keremberke/chest-xray-classification', 'full')",0.9278350515463918,32,64,individual
+44,45,"('keremberke/chest-xray-classification', 'full')",0.9175257731958762,32,64,individual
+45,46,"('keremberke/chest-xray-classification', 'full')",0.9278350515463918,32,64,individual
+46,47,"('keremberke/chest-xray-classification', 'full')",0.929553264604811,32,64,individual
+47,48,"('keremberke/chest-xray-classification', 'full')",0.9450171821305842,32,64,individual
+48,49,"('keremberke/chest-xray-classification', 'full')",0.9484536082474226,32,64,individual
+49,50,"('keremberke/chest-xray-classification', 'full')",0.936426116838488,32,64,individual
+50,1,"('mmenendezg/raw_pneumonia_x_ray',)",0.8894230769230769,32,64,individual
+51,2,"('mmenendezg/raw_pneumonia_x_ray',)",0.8846153846153846,32,64,individual
+52,3,"('mmenendezg/raw_pneumonia_x_ray',)",0.8846153846153846,32,64,individual
+53,4,"('mmenendezg/raw_pneumonia_x_ray',)",0.8766025641025641,32,64,individual
+54,5,"('mmenendezg/raw_pneumonia_x_ray',)",0.8782051282051282,32,64,individual
+55,6,"('mmenendezg/raw_pneumonia_x_ray',)",0.8766025641025641,32,64,individual
+56,7,"('mmenendezg/raw_pneumonia_x_ray',)",0.8782051282051282,32,64,individual
+57,8,"('mmenendezg/raw_pneumonia_x_ray',)",0.875,32,64,individual
+58,9,"('mmenendezg/raw_pneumonia_x_ray',)",0.8621794871794872,32,64,individual
+59,10,"('mmenendezg/raw_pneumonia_x_ray',)",0.8669871794871795,32,64,individual
+60,11,"('mmenendezg/raw_pneumonia_x_ray',)",0.8782051282051282,32,64,individual
+61,12,"('mmenendezg/raw_pneumonia_x_ray',)",0.8685897435897436,32,64,individual
+62,13,"('mmenendezg/raw_pneumonia_x_ray',)",0.8862179487179487,32,64,individual
+63,14,"('mmenendezg/raw_pneumonia_x_ray',)",0.875,32,64,individual
+64,15,"('mmenendezg/raw_pneumonia_x_ray',)",0.8830128205128205,32,64,individual
+65,16,"('mmenendezg/raw_pneumonia_x_ray',)",0.8782051282051282,32,64,individual
+66,17,"('mmenendezg/raw_pneumonia_x_ray',)",0.875,32,64,individual
+67,18,"('mmenendezg/raw_pneumonia_x_ray',)",0.8782051282051282,32,64,individual
+68,19,"('mmenendezg/raw_pneumonia_x_ray',)",0.8798076923076923,32,64,individual
+69,20,"('mmenendezg/raw_pneumonia_x_ray',)",0.8862179487179487,32,64,individual
+70,21,"('mmenendezg/raw_pneumonia_x_ray',)",0.8846153846153846,32,64,individual
+71,22,"('mmenendezg/raw_pneumonia_x_ray',)",0.8974358974358975,32,64,individual
+72,23,"('mmenendezg/raw_pneumonia_x_ray',)",0.8862179487179487,32,64,individual
+73,24,"('mmenendezg/raw_pneumonia_x_ray',)",0.8846153846153846,32,64,individual
+74,25,"('mmenendezg/raw_pneumonia_x_ray',)",0.8894230769230769,32,64,individual
+75,26,"('mmenendezg/raw_pneumonia_x_ray',)",0.8894230769230769,32,64,individual
+76,27,"('mmenendezg/raw_pneumonia_x_ray',)",0.8878205128205128,32,64,individual
+77,28,"('mmenendezg/raw_pneumonia_x_ray',)",0.8878205128205128,32,64,individual
+78,29,"('mmenendezg/raw_pneumonia_x_ray',)",0.8814102564102564,32,64,individual
+79,30,"('mmenendezg/raw_pneumonia_x_ray',)",0.8862179487179487,32,64,individual
+80,31,"('mmenendezg/raw_pneumonia_x_ray',)",0.875,32,64,individual
+81,32,"('mmenendezg/raw_pneumonia_x_ray',)",0.8894230769230769,32,64,individual
+82,33,"('mmenendezg/raw_pneumonia_x_ray',)",0.8926282051282052,32,64,individual
+83,34,"('mmenendezg/raw_pneumonia_x_ray',)",0.8862179487179487,32,64,individual
+84,35,"('mmenendezg/raw_pneumonia_x_ray',)",0.8974358974358975,32,64,individual
+85,36,"('mmenendezg/raw_pneumonia_x_ray',)",0.8669871794871795,32,64,individual
+86,37,"('mmenendezg/raw_pneumonia_x_ray',)",0.8942307692307693,32,64,individual
+87,38,"('mmenendezg/raw_pneumonia_x_ray',)",0.8878205128205128,32,64,individual
+88,39,"('mmenendezg/raw_pneumonia_x_ray',)",0.8846153846153846,32,64,individual
+89,40,"('mmenendezg/raw_pneumonia_x_ray',)",0.8974358974358975,32,64,individual
+90,41,"('mmenendezg/raw_pneumonia_x_ray',)",0.8942307692307693,32,64,individual
+91,42,"('mmenendezg/raw_pneumonia_x_ray',)",0.8798076923076923,32,64,individual
+92,43,"('mmenendezg/raw_pneumonia_x_ray',)",0.8830128205128205,32,64,individual
+93,44,"('mmenendezg/raw_pneumonia_x_ray',)",0.8701923076923077,32,64,individual
+94,45,"('mmenendezg/raw_pneumonia_x_ray',)",0.8798076923076923,32,64,individual
+95,46,"('mmenendezg/raw_pneumonia_x_ray',)",0.8894230769230769,32,64,individual
+96,47,"('mmenendezg/raw_pneumonia_x_ray',)",0.8910256410256411,32,64,individual
+97,48,"('mmenendezg/raw_pneumonia_x_ray',)",0.8846153846153846,32,64,individual
+98,49,"('mmenendezg/raw_pneumonia_x_ray',)",0.875,32,64,individual
+99,50,"('mmenendezg/raw_pneumonia_x_ray',)",0.8798076923076923,32,64,individual
+100,1,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.5013071211962773,32,64,individual
+101,2,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.47725609118477463,32,64,individual
+102,3,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.4527867823904632,32,64,individual
+103,4,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.5092544180696434,32,64,individual
+104,5,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.5657220537488236,32,64,individual
+105,6,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.5395796298232772,32,64,individual
+106,7,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.589041095890411,32,64,individual
+107,8,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.6123601380319983,32,64,individual
+108,9,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.5680225870542717,32,64,individual
+109,10,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.5976158109379902,32,64,individual
+110,11,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.5791069747987033,32,64,individual
+111,12,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.573878490013594,32,64,individual
+112,13,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.5963609745895639,32,64,individual
+113,14,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.6389208407403535,32,64,individual
+114,15,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.6652724040573041,32,64,individual
+115,16,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.6517829133117222,32,64,individual
+116,17,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.684304088675102,32,64,individual
+117,18,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.6702917494510091,32,64,individual
+118,19,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.6813761371954408,32,64,individual
+119,20,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7042769005542194,32,64,individual
+120,21,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.6540834466171703,32,64,individual
+121,22,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7262365366516783,32,64,individual
+122,23,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7122241974275855,32,64,individual
+123,24,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.6767750705845446,32,64,individual
+124,25,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.6932970825054899,32,64,individual
+125,26,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.6905782704172331,32,64,individual
+126,27,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.702917494510091,32,64,individual
+127,28,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7245634215204434,32,64,individual
+128,29,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7372163547004078,32,64,individual
+129,30,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7394123183101537,32,64,individual
+130,31,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7283279305657221,32,64,individual
+131,32,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.747987033357733,32,64,individual
+132,33,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7424448394855171,32,64,individual
+133,34,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7507058454459897,32,64,individual
+134,35,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7796716511554951,32,64,individual
+135,36,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7783122451113668,32,64,individual
+136,37,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7572937362752274,32,64,individual
+137,38,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7781031057199623,32,64,individual
+138,39,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7924291540311618,32,64,individual
+139,40,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7747568754574924,32,64,individual
+140,41,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.784063578374987,32,64,individual
+141,42,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7534246575342466,32,64,individual
+142,43,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7929520025096727,32,64,individual
+143,44,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7798807905468995,32,64,individual
+144,45,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7781031057199623,32,64,individual
+145,46,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7960890933807383,32,64,individual
+146,47,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7838544389835825,32,64,individual
+147,48,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7676461361497438,32,64,individual
+148,49,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.8017358569486562,32,64,individual
+149,50,"('alkzar90/NIH-Chest-X-ray-dataset', 'image-classification')",0.7971347903377601,32,64,individual

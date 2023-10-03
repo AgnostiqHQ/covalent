@@ -1,13 +1,9 @@
-.. currentmodule:: covalent_dispatcher
-
-.. _dispatcher_server_api:
-
 Covalent CLI Tool
-""""""""""""""""""
+"""""""""""""""""
 
-This Command Line Interface (CLI) tool is used to manage Covalent server.
+The command line interface (CLI) tool is used to manage the Covalent server.
 
 .. click:: covalent_dispatcher._cli.cli:cli
     :prog: covalent
-    :commands: start,stop,restart,status,purge,logs,db,cluster
+    :commands: start,stop,restart,status,purge,logs,db,migrate-legacy-result-object,cluster
     :nested: full

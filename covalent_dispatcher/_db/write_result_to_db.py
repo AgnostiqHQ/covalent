@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """This module contains all the functions required to save the decomposed result object in the database."""
 
@@ -261,6 +257,8 @@ def transaction_insert_electrons_data(
     call_before_filename: str,
     call_after_filename: str,
     job_id: int,
+    qelectron_data_exists: bool,
+    cancel_requested: bool,
     created_at: dt,
     updated_at: dt,
     started_at: dt,
@@ -303,6 +301,8 @@ def transaction_insert_electrons_data(
         deps_filename=deps_filename,
         call_before_filename=call_before_filename,
         call_after_filename=call_after_filename,
+        qelectron_data_exists=qelectron_data_exists,
+        cancel_requested=cancel_requested,
         is_active=True,
         job_id=job_id,
         created_at=created_at,
@@ -446,6 +446,7 @@ def update_electrons_data(
     started_at: dt,
     updated_at: dt,
     completed_at: dt,
+    qelectron_data_exists: bool,
 ) -> None:
     """This function updates the electrons record."""
 
@@ -477,6 +478,7 @@ def update_electrons_data(
                 started_at=started_at,
                 updated_at=updated_at,
                 completed_at=completed_at,
+                qelectron_data_exists=qelectron_data_exists,
             )
         )
 

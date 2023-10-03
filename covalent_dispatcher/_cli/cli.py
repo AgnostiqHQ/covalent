@@ -4,27 +4,25 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Covalent CLI Tool."""
 
 from importlib import metadata
+from platform import machine, python_version, system
 
 import click
+from rich.console import Console
 
 from .groups import db
 from .service import (
@@ -32,6 +30,7 @@ from .service import (
     config,
     logs,
     migrate_legacy_result_object,
+    print_header,
     purge,
     restart,
     start,
@@ -46,17 +45,22 @@ from .service import (
 @click.pass_context
 def cli(ctx: click.Context, version: bool) -> None:
     """
-    Covalent CLI tool used to manage the servers.
+    The Covalent CLI is used to manage and configure Covalent servers.
     """
+
+    console = Console()
+
     if version:
-        click.echo("covalent:  Covalent Workflow CLI Tool")
-        click.echo("Copyright (C) 2021 Agnostiq Inc.")
-        click.echo("Built using Python 3.8 (Platform: x86_64-linux)")
-        click.echo(f"Release version {metadata.version('covalent')}")
+        print_header(console)
+        console.print("Copyright (C) 2021 Agnostiq Inc.", highlight=False)
+        console.print(
+            f"Using Python {python_version()} on {system()}-{machine()}", highlight=False
+        )
+        console.print(f"Release version {metadata.version('covalent')}", highlight=False)
     elif ctx.invoked_subcommand is None:
         # Display the help menu if no command was provided
         ctx = click.get_current_context()
-        click.echo(ctx.get_help())
+        console.print(ctx.get_help())
 
 
 # Server management

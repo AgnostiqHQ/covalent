@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import json
 import os
@@ -29,7 +25,7 @@ import pytest
 import covalent as ct
 from covalent._results_manager.result import Result
 from covalent._serialize.result import deserialize_result
-from covalent._shared_files.defaults import WAIT_EDGE_NAME
+from covalent._shared_files.defaults import WAIT_EDGE_NAME, postprocess_prefix
 from covalent._workflow.lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
 from covalent_dispatcher._dal.asset import local_store
@@ -407,3 +403,43 @@ def test_cannot_persist_twice(test_db, mocker):
 
     with pytest.raises(RuntimeError):
         update.persist(result)
+
+
+@pytest.mark.parametrize("node_name", [None, "mock_node_name", postprocess_prefix])
+def test_node(mocker, node_name):
+    """Test the _node method."""
+    electron_data_mock = mocker.patch("covalent_dispatcher._db.upsert.electron_data")
+    lattice_data_mock = mocker.patch("covalent_dispatcher._db.upsert.lattice_data")
+    mock_result = mocker.MagicMock()
+    update._node(
+        mock_result,
+        node_id=0,
+        node_name=node_name,
+        start_time="mock_time",
+        end_time="mock_time",
+        status="COMPLETED",
+        output="mock_output",
+        qelectron_data_exists=False,
+    )
+    if node_name is None:
+        node_name = mock_result.lattice.transport_graph.get_node_value()
+    mock_result._update_node.assert_called_once_with(
+        node_id=0,
+        node_name=node_name,
+        start_time="mock_time",
+        end_time="mock_time",
+        status="COMPLETED",
+        output="mock_output",
+        qelectron_data_exists=False,
+        error=None,
+        sub_dispatch_id=None,
+        sublattice_result=None,
+        stdout=None,
+        stderr=None,
+    )
+    if node_name.startswith(postprocess_prefix):
+        assert mock_result._result == "mock_output"
+        assert mock_result._status == "COMPLETED"
+    else:
+        assert mock_result._result != "mock_output"
+        assert mock_result._status != "COMPLETED"
