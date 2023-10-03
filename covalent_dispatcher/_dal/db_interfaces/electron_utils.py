@@ -21,21 +21,21 @@ import json
 from covalent._shared_files.schemas.electron import ELECTRON_ASSET_KEYS, ELECTRON_METADATA_KEYS
 from covalent._shared_files.util_classes import Status
 
-ATTRIBUTES = {
-    "name",
-    "start_time",
-    "end_time",
-    "status",
-    "sub_dispatch_id",
-    "function",
-    "function_string",
-    "output",
-    "value",
-    "error",
-    "stdout",
-    "stderr",
-    "metadata",
-}
+# ATTRIBUTES = {
+#     "name",
+#     "start_time",
+#     "end_time",
+#     "status",
+#     "sub_dispatch_id",
+#     "function",
+#     "function_string",
+#     "output",
+#     "value",
+#     "error",
+#     "stdout",
+#     "stderr",
+#     "metadata",
+# }
 
 METADATA_KEYS = ELECTRON_METADATA_KEYS
 ASSET_KEYS = ELECTRON_ASSET_KEYS

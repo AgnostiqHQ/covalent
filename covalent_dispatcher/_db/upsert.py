@@ -393,12 +393,10 @@ def _electron_data(
 
             node_id_eid_map[node_id] = electron_row.id
 
-            electron_asset_links = []
-            for key, asset in assets.items():
-                electron_asset_links.append(
-                    electron_record.associate_asset(session, key, asset.id)
-                )
-
+            electron_asset_links = [
+                electron_record.associate_asset(session, key, asset.id)
+                for key, asset in assets.items()
+            ]
             session.flush()
 
     return node_id_eid_map
