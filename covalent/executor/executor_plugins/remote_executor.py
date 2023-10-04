@@ -40,7 +40,7 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     "poll_freq": 15,
     "remote_cache": ".cache/covalent",
     "credentials_file": "",
-    "covalent_version": "0.228.0-rc.0",
+    "covalent_version": "",
 }
 
 
@@ -59,7 +59,7 @@ class RemoteExecutor(AsyncBaseExecutor):
         poll_freq: int = 15,
         remote_cache: str = "",
         credentials_file: str = "",
-        covalent_version: str = "0.228.0-rc.0",
+        covalent_version: str = "",
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
