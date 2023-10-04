@@ -40,6 +40,7 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     "poll_freq": 15,
     "remote_cache": ".cache/covalent",
     "credentials_file": "",
+    "covalent_version": "0.228.0-rc.0",
 }
 
 
@@ -58,6 +59,7 @@ class RemoteExecutor(AsyncBaseExecutor):
         poll_freq: int = 15,
         remote_cache: str = "",
         credentials_file: str = "",
+        covalent_version: str = "0.228.0-rc.0",
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
@@ -65,6 +67,7 @@ class RemoteExecutor(AsyncBaseExecutor):
         self.poll_freq = poll_freq
         self.remote_cache = remote_cache
         self.credentials_file = credentials_file
+        self.covalent_version = covalent_version
 
     @abstractmethod
     async def _validate_credentials(self) -> bool:
