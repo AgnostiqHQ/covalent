@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Added covalent version attribute to Remote Executors
 - Removed unassigned variable names
 - Contributing guidelines steps for installing for the first time
 - Updated gitignore to ignore yarn files and folders for latest version of yarn
@@ -19,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed `actions/checkout@v3` to `actions/checkout@v4` in CI
 - Dependabot update to npm in changelog action
 - Update tough-cookie to 4.1.3 version
-- Added rich support to cli for better printing statements. 
+- Added rich support to cli for better printing statements.
 - Changed semver from 5.7.1 to 5.7.2 in package.json
 - Updated word-wrap to 1.2.4 version
 
@@ -52,7 +53,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
 - Co-authored-by: Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
 - FilipBolt <filipbolt@gmail.com>
-
 
 ### Fixed
 
@@ -87,7 +87,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Docs
 
-- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch 
+- Fix autodoc for SSH, Slurm, AWS Braket, AWS Lambda, AWS EC2, AWS Batch, Google Batch
 - Updated documentation links in README
 - Added tutorial for redispatching workflows with Streamlit
 
