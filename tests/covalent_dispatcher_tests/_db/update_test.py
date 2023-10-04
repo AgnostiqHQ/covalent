@@ -155,9 +155,6 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         )
 
         executor_data = json.loads(lattice_row.executor_data)
-        # executor_data = local_store.load_file(
-        #     storage_path=lattice_storage_path, filename=lattice_row.executor_data_filename
-        # )
 
         assert executor_data["short_name"] == le.short_name()
         assert executor_data["attributes"] == le.__dict__

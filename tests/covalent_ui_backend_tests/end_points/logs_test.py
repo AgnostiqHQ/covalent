@@ -17,10 +17,10 @@
 
 import pytest
 
-from tests.covalent_ui_backend_tests import fastapi_app
-from tests.covalent_ui_backend_tests.utils.assert_data.logs import seed_logs_data
-from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
-from tests.covalent_ui_backend_tests.utils.trigger_events import shutdown_event, startup_event
+from .. import fastapi_app
+from ..utils.assert_data.logs import seed_logs_data
+from ..utils.client_template import MethodType, TestClientTemplate
+from ..utils.trigger_events import shutdown_event, startup_event
 
 object_test_template = TestClientTemplate()
 output_data = seed_logs_data()
