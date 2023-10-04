@@ -49,6 +49,10 @@ class AuthorizationError(Exception):
     pass
 
 
+class AssetUploadFailed(Exception):
+    pass
+
+
 class LocalDispatcher(BaseDispatcher):
     """
     Local dispatcher which sends the workflow to the locally running
@@ -320,8 +324,7 @@ class LocalDispatcher(BaseDispatcher):
             Dictionary representation of manifest with asset remote_uris filled in
 
         Side effect:
-            If push_assets is False, the server will
-            automatically pull the task assets from the submitted asset URIs.
+            If push_assets is False, the server will automatically pull the task assets from the submitted asset URIs.
         """
 
         if dispatcher_addr is None:
@@ -394,8 +397,12 @@ def _upload_asset(local_uri, remote_uri):
     else:
         local_path = local_uri
 
-    with open(local_path, "rb") as f:
-        files = {"asset_file": f}
-        app_log.debug(f"uploading to {remote_uri}")
-        r = requests.post(remote_uri, files=files)
-        r.raise_for_status()
+    try:
+        if os.path.getsize(local_path) == 0:
+            r = requests.put(remote_uri, headers={"Content-Length": "0"}, data="")
+        else:
+            with open(local_path, "rb") as f:
+                r = requests.put(remote_uri, data=f)
+                r.raise_for_status()
+    except Exception as err:
+        raise AssetUploadFailed(f"Asset upload failed due to error: {err}") from err

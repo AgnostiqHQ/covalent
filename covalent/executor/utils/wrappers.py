@@ -342,7 +342,8 @@ def run_task_from_uris(
                     json.dump(result_summary, f)
 
                 url = f"{server_url}/api/v1/update/task/{dispatch_id}/{task_id}"
-                requests.put(url)
+                response = requests.put(url)
+                response.raise_for_status()
 
         # For debugging
         app_log.debug(f"Finished task group {dispatch_id}:{gid}")

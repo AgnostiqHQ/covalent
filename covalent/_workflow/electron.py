@@ -817,8 +817,8 @@ def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kw
     with tempfile.TemporaryDirectory(prefix="covalent-") as staging_path:
         manifest = LocalDispatcher.prepare_manifest(sub, staging_path)
 
-        # Omit these two steps to return the manifest to Covalent and
-        # request the assets be pulled TODO covalent-cloud-server/320 - Not sure what this comment means
+        # Omit these two steps to return the manifest to Covalent and request the assets be pulled.
+        # NOTE: This comment is with regards to future facing feature involving the executor not being able to pull assets.
         recv_manifest = LocalDispatcher.register_manifest(
             manifest, parent_dispatch_id=parent_dispatch_id, push_assets=True
         )
