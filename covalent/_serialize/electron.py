@@ -29,6 +29,12 @@ from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.transportable_object import TransportableObject
 from .common import AssetType, load_asset, save_asset
 
+__all__ = [
+    "serialize_node",
+    "deserialize_node",
+]
+
+
 ASSET_TYPES = {
     "function": AssetType.TRANSPORTABLE,
     "function_string": AssetType.TEXT,
@@ -52,11 +58,11 @@ def _serialize_node_metadata(node_attrs: dict, node_storage_path: str) -> Electr
     # Optional
     status = node_attrs.get("status", RESULT_STATUS.NEW_OBJECT)
 
-    start_time = node_attrs.get("start_time", None)
+    start_time = node_attrs.get("start_time")
     if start_time:
         start_time = start_time.isoformat()
 
-    end_time = node_attrs.get("end_time", None)
+    end_time = node_attrs.get("end_time")
     if end_time:
         end_time = end_time.isoformat()
 

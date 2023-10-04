@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+""" Serialization/Deserialization methods for Assets """
 
 import hashlib
 import json
@@ -26,17 +27,41 @@ import cloudpickle
 from .._shared_files.schemas.asset import AssetSchema
 from .._workflow.transportable_object import TransportableObject
 
+__all__ = [
+    "AssetType",
+    "save_asset",
+    "load_asset",
+]
+
+
 CHECKSUM_ALGORITHM = "sha"
 
 
 class AssetType(Enum):
-    OBJECT = 0
-    TRANSPORTABLE = 1
+    """
+    Enum for the type of Asset data
+
+    """
+
+    OBJECT = 0  # Fallback to cloudpickling
+    TRANSPORTABLE = 1  # Custom TO serialization
     JSONABLE = 2
-    TEXT = 3
+    TEXT = 3  # Mainly for stdout, stderr, docstrings, etc.
 
 
 def serialize_asset(data: Any, data_type: AssetType) -> bytes:
+    """
+    Serialize the asset data
+
+    Args:
+        data: Data to serialize
+        data_type: Type of the Asset data to serialize
+
+    Returns:
+        Serialized data as bytes
+
+    """
+
     if data_type == AssetType.OBJECT:
         return cloudpickle.dumps(data)
     elif data_type == AssetType.TRANSPORTABLE:
@@ -50,6 +75,18 @@ def serialize_asset(data: Any, data_type: AssetType) -> bytes:
 
 
 def deserialize_asset(data: bytes, data_type: AssetType) -> Any:
+    """
+    Deserialize the asset data
+
+    Args:
+        data: Data to deserialize
+        data_type: Type of the Asset data to deserialize
+
+    Returns:
+        Deserialized data
+
+    """
+
     if data_type == AssetType.OBJECT:
         return cloudpickle.loads(data)
     elif data_type == AssetType.TRANSPORTABLE:
@@ -63,10 +100,35 @@ def deserialize_asset(data: bytes, data_type: AssetType) -> Any:
 
 
 def _sha1_asset(data: bytes) -> str:
+    """
+    Compute the sha1 checksum of the asset data
+
+    Args:
+        data: Data to compute checksum for
+
+    Returns:
+        sha1 checksum of the data
+
+    """
+
     return hashlib.sha1(data).hexdigest()
 
 
 def save_asset(data: Any, data_type: AssetType, storage_path: str, filename: str) -> AssetSchema:
+    """
+    Save the asset data to the storage path
+
+    Args:
+        data: Data to save
+        data_type: Type of the Asset data to save
+        storage_path: Path to save the data to
+        filename: Name of the file to save the data to
+
+    Returns:
+        AssetSchema object containing metadata about the saved data
+
+    """
+
     scheme = "file"
 
     serialized = serialize_asset(data, data_type)
@@ -80,16 +142,26 @@ def save_asset(data: Any, data_type: AssetType, storage_path: str, filename: str
 
 
 def load_asset(asset_meta: AssetSchema, data_type: AssetType) -> Any:
+    """
+    Load the asset data from the storage path
+
+    Args:
+        asset_meta: Metadata about the asset to load
+        data_type: Type of the Asset data to load
+
+    Returns:
+        Asset data
+
+    """
+
     scheme_prefix = "file://"
     uri = asset_meta.uri
 
     if not uri:
         return None
 
-    if uri.startswith(scheme_prefix):
-        path = uri[len(scheme_prefix) :]
-    else:
-        path = uri
+    path = uri[len(scheme_prefix) :] if uri.startswith(scheme_prefix) else uri
+
     with open(path, "rb") as f:
         data = f.read()
     return deserialize_asset(data, data_type)

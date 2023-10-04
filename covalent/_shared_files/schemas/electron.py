@@ -86,7 +86,7 @@ class ElectronAssets(BaseModel):
     stdout: Optional[AssetSchema] = None
     stderr: Optional[AssetSchema] = None
 
-    # electron_metadata
+    # electron_metadata attached by the user
     deps: AssetSchema
     call_before: AssetSchema
     call_after: AssetSchema

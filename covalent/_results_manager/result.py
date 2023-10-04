@@ -63,7 +63,9 @@ class Result:
     """
 
     NEW_OBJ = RESULT_STATUS.NEW_OBJECT
-    PENDING_REUSE = RESULT_STATUS.PENDING_REUSE
+    PENDING_REUSE = (
+        RESULT_STATUS.PENDING_REUSE
+    )  # Facilitates reuse of previous electrons in the new dispatcher design
     COMPLETED = RESULT_STATUS.COMPLETED
     POSTPROCESSING = RESULT_STATUS.POSTPROCESSING
     PENDING_POSTPROCESSING = RESULT_STATUS.PENDING_POSTPROCESSING
@@ -106,8 +108,8 @@ class Result:
             pattern = re.compile(regex)
             m = pattern.match(input_string)
             if m:
-                arg_str_repr = m.group(1).rstrip(",")
-                kwarg_str_repr = m.group(2)
+                arg_str_repr = m[1].rstrip(",")
+                kwarg_str_repr = m[2]
             else:
                 arg_str_repr = str(None)
                 kwarg_str_repr = str(None)

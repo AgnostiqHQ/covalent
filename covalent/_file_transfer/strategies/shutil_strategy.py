@@ -34,6 +34,17 @@ class Shutil(FileTransferStrategy):
 
     # return callable to copy files in the local file system
     def cp(self, from_file: File, to_file: File = File()) -> None:
+        """
+        Get a callable that copies a file from one location to another locally
+
+        Args:
+            from_file: File to copy from
+            to_file: File to copy to. Defaults to File().
+
+        Returns:
+            A callable that copies a file from one location to another locally
+        """
+
         def callable():
             shutil.copyfile(from_file.filepath, to_file.filepath)
 

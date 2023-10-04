@@ -32,6 +32,10 @@ BYTE_ORDER = "big"
 
 
 class _TOArchive:
+    """
+    Archived TransportableObject
+    """
+
     def __init__(self, header: bytes, object_string: bytes, data: bytes):
         self.header = header
         self.object_string = object_string
@@ -48,18 +52,18 @@ class _TOArchive:
 
         return string_offset + data_offset + self.header + self.object_string + self.data
 
-    def load(serialized: bytes, header_only: bool, string_only: bool) -> "_TOArchive":
-        string_offset = TOArchiveUtils.string_offset(serialized)
-        header = TOArchiveUtils.parse_header(serialized, string_offset)
+    def load(self, header_only: bool, string_only: bool) -> "_TOArchive":
+        string_offset = TOArchiveUtils.string_offset(self)
+        header = TOArchiveUtils.parse_header(self, string_offset)
         object_string = b""
         data = b""
 
         if not header_only:
-            data_offset = TOArchiveUtils.data_offset(serialized)
-            object_string = TOArchiveUtils.parse_string(serialized, string_offset, data_offset)
+            data_offset = TOArchiveUtils.data_offset(self)
+            object_string = TOArchiveUtils.parse_string(self, string_offset, data_offset)
 
             if not string_only:
-                data = TOArchiveUtils.parse_data(serialized, data_offset)
+                data = TOArchiveUtils.parse_data(self, data_offset)
         return _TOArchive(header, object_string, data)
 
 
@@ -319,7 +323,7 @@ def _from_archive(ar: _TOArchive) -> TransportableObject:
     decoded_header = json.loads(ar.header.decode("utf-8"))
     to = TransportableObject(None)
     to._header = decoded_header
-    to._object_string = decoded_object_str if decoded_object_str else ""
-    to._object = decoded_data if decoded_data else ""
+    to._object_string = decoded_object_str or ""
+    to._object = decoded_data or ""
 
     return to
