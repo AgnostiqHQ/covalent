@@ -336,7 +336,7 @@ class LocalDispatcher(BaseDispatcher):
         headers = {"X-SESSION-TOKEN": os.getenv("COVALENT_JOB_SESSION_TOKEN")}
 
         if headers.get("X-SESSION-TOKEN") is None:
-            raise AuthorizationError
+            raise AuthorizationError("Missing job session token")
 
         if parent_dispatch_id:
             register_dispatch_endpoint = (

@@ -41,6 +41,10 @@ from covalent._workflow.transport import TransportableObject
 app_log = logger.app_log
 
 
+class AuthorizationError(Exception):
+    pass
+
+
 def wrapper_fn(
     function: TransportableObject,
     call_before: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
@@ -156,7 +160,12 @@ def get_node_asset(url: str) -> bytes:
     """
     import requests
 
-    resp = requests.get(url)
+    headers = {"X-SESSION-TOKEN": os.getenv("COVALENT_JOB_SESSION_TOKEN")}
+
+    if headers.get("X-SESSION-TOKEN") is None:
+        raise AuthorizationError("Missing job session token")
+
+    resp = requests.get(url, headers=headers)
     resp.raise_for_status()
     return resp.content
 
@@ -171,9 +180,14 @@ def upload_node_asset(upload_url: str, asset_filepath: str) -> None:
     """
     import requests
 
+    headers = {"X-SESSION-TOKEN": os.getenv("COVALENT_JOB_SESSION_TOKEN")}
+
+    if headers.get("X-SESSION-TOKEN") is None:
+        raise AuthorizationError("Missing job session token")
+
     if asset_filepath:
         with open(asset_filepath, "rb") as f:
-            requests.put(upload_url, data=f.read())
+            requests.put(upload_url, data=f.read(), headers=headers)
         os.unlink(asset_filepath)
     sys.stdout.flush()
 
