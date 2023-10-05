@@ -201,10 +201,24 @@ def my_workflow():
 
 ```
 
+
+4. `DatabaseTrigger`: This trigger monitors the database for changes and performs the trigger action when changes occur. It is helpful for automating tasks in response to database updates. For example:
+
+```{code-block} python
+from covalent.triggers import DatabaseTrigger
+import covalent as ct
+database_trigger = DatabaseTrigger(db_path="db path",table_name='table name')
+@ct.lattice(triggers=database_trigger)
+def my_workflow():
+    ...
+```
+
 These triggers can be easily integrated into your Covalent workflows to automate various tasks based on the desired conditions.
 
 ## Trigger How-to Guides
 
 For further examples on how to use triggers, check out the Trigger how to guides:
-- {doc}`How to add a directory trigger to a lattice <../how_to/coding/dir_trigger>`
-- {doc}`How to add a time trigger to a lattice <../how_to/coding/time_trigger>`
+- {doc}`How to add a directory trigger to a lattice <../../how_to/execution/trigger_dir>`
+- {doc}`How to add a time trigger to a lattice <../../how_to/execution/trigger_time>`
+- {doc}`How to add a sqlite trigger to a lattice <../../how_to/execution/trigger_sqlite>`
+- {doc}`How to add a database trigger to a lattice <../../how_to/execution/trigger_database>`
