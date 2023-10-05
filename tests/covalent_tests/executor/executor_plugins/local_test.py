@@ -227,3 +227,33 @@ def test_local_executor_get_cancel_requested(mocker):
         le.run(local_executor_run__mock_task, args, kwargs, task_metadata)
         le.get_cancel_requested.assert_called_once()
         assert mock_app_log.call_count == 2
+
+
+@ct.electron
+def fibonacci(smaller, larger, stop_point=1000):
+    """Calculate the next number in the Fibonacci sequence.
+
+    If the number is larger than stop_point, the job will stop the workflow
+    execution, otherwise, a new job will be submitted to calculate the next number.
+    """
+    total = smaller + larger
+
+    if total > stop_point:
+        return total
+
+    return fibonacci(larger, total, stop_point=stop_point)
+
+
+def test_electron_recursive_function(mocker):
+    """
+    Test that Electron can run recursive functions
+    """
+    le = LocalExecutor()
+    mock_set_job_handle = mocker.patch.object(le, "set_job_handle", MagicMock(return_value=42))
+    mock_get_cancel_requested = mocker.patch.object(
+        le, "get_cancel_requested", MagicMock(return_value=False)
+    )
+
+    task_metadata = {"dispatch_id": "dispatch_1", "node_id": 1}
+    output = le.run(fibonacci, [1, 1], {}, task_metadata)
+    assert output == 1597
