@@ -58,7 +58,6 @@ socketio_app = socketio.ASGIApp(
 )
 fastapi_app.mount("/", socketio_app)
 
-
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
 
@@ -116,7 +115,10 @@ if __name__ == "__main__":
 
     app_name = "app:fastapi_app"
     if args.triggers_only:
+        from covalent_dispatcher._triggers_app import trigger_only_router  # nopycln: import
+
         app_name = "app:triggers_only_app"
+        fastapi_app.include_router(trigger_only_router, prefix="/api", tags=["Triggers"])
     elif args.no_triggers:
         import covalent_dispatcher._triggers_app.app as tr_app
 

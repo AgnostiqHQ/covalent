@@ -233,7 +233,9 @@ class Summary:
             latest_running_task_status=last_ran_job_status[0]
             if last_ran_job_status is not None
             else None,
-            total_dispatcher_duration=run_time[0] if run_time is not None else 0,
+            total_dispatcher_duration=int(run_time[0])
+            if run_time is not None and run_time[0] is not None
+            else 0,
             total_jobs_failed=total_failed[0],
             total_jobs_cancelled=total_jobs_cancelled[0],
             total_jobs_new_object=total_jobs_new_object[0],
