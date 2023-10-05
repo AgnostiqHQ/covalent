@@ -29,6 +29,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed strict version pins on `lmdbm`, `mpire`, `orjson`, and `pennylane`
 - Changed license to Apache
 
+### Added 
+
+- Documentation and test cases for database triggers. 
+
 ### Docs
 
 - Added federated learning showcase code
