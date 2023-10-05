@@ -145,9 +145,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Introduced new data access layer
 - Introduced Shutil file transfer strategy for local file transfers
 
-### Fixed
-
-
 ### Docs
 
 - Added documentation for Azure Blob Storage file transfers
