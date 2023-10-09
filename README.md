@@ -1,5 +1,10 @@
 <!-- <div  style="border: 1px solid #43444A; border-radius:4px;   align:center; padding:28px;"> -->
+<style>
+  .gg {color:red;}
+  p {color:blue;}
+</style>
 
+<div class="gg">dfdf</div>
  <div align="center"> 
   <img src="./doc/source/_static/readme_hero.svg" style="width:100%"  alt="hero"/>
  </div>
