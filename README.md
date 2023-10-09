@@ -1,15 +1,10 @@
 <!-- <div  style="border: 1px solid #43444A; border-radius:4px;   align:center; padding:28px;"> -->
-<style>
-  .gg {color:red;}
-  p {color:blue;}
-</style>
 
-<div class="gg">dfdf</div>
  <div align="center"> 
   <img src="./doc/source/_static/readme_hero.svg" style="width:100%"  alt="hero"/>
  </div>
 
-<div align="center" style="margin-top:20px">
+<div align="center" style="margin-top:200px">
 
 [![version](https://img.shields.io/github/v/tag/AgnostiqHQ/covalent?color=%235552FF&include_prereleases&label=version&sort=semver)](https://github.com/AgnostiqHQ/covalent/blob/develop/CHANGELOG.md)
 [![Static Badge](https://img.shields.io/badge/python-3.8_%7C_3.9_%7C_3.10-%235552FF)](https://github.com/AgnostiqHQ/covalent)
