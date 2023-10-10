@@ -167,7 +167,7 @@ def get_node_asset(url: str) -> bytes:
 
     resp = requests.get(url, headers=headers)
     resp.raise_for_status()
-    return resp.content
+    return pickle.loads(resp.content)
 
 
 def upload_node_asset(upload_url: str, asset_filepath: str) -> None:
@@ -187,7 +187,8 @@ def upload_node_asset(upload_url: str, asset_filepath: str) -> None:
 
     if asset_filepath:
         with open(asset_filepath, "rb") as f:
-            requests.put(upload_url, data=f.read(), headers=headers)
+            response = requests.put(upload_url, data=f.read(), headers=headers)
+            response.raise_for_status()
         os.unlink(asset_filepath)
     sys.stdout.flush()
 
@@ -241,34 +242,23 @@ def run_task_from_uris(
 
                         import requests
 
-                        serialized_fn = pickle.loads(
-                            get_node_asset(url=f"{base_uri}/{task_id}/function/contents")
+                        serialized_fn = get_node_asset(
+                            url=f"{base_uri}/{task_id}/function/contents"
                         )
-
                         ser_args = [
-                            pickle.loads(
-                                get_node_asset(url=f"{base_uri}/{node_id}/output/contents")
-                            )
+                            get_node_asset(url=f"{base_uri}/{node_id}/output/contents")
                             for node_id in args_ids
                         ]
-
                         ser_kwargs = {
-                            k: pickle.loads(
-                                get_node_asset(url=f"{base_uri}/{node_id}/output/contents")
-                            )
+                            k: get_node_asset(url=f"{base_uri}/{node_id}/output/contents")
                             for k, node_id in kwargs_ids.items()
                         }
-
-                        deps_json = pickle.loads(
-                            get_node_asset(url=f"{base_uri}/{task_id}/deps/contents")
+                        deps_json = get_node_asset(url=f"{base_uri}/{task_id}/deps/contents")
+                        call_before_json = get_node_asset(
+                            url=f"{base_uri}/{task_id}/call_before/contents"
                         )
-
-                        call_before_json = pickle.loads(
-                            get_node_asset(url=f"{base_uri}/{task_id}/call_before/contents")
-                        )
-
-                        call_after_json = pickle.loads(
-                            get_node_asset(url=f"{base_uri}/{task_id}/call_after/contents")
+                        call_after_json = get_node_asset(
+                            url=f"{base_uri}/{task_id}/call_after/contents"
                         )
 
                         call_before, call_after = _gather_deps(
