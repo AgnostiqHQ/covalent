@@ -1,6 +1,6 @@
 <!-- <div  style="border: 1px solid #43444A; border-radius:4px;   align:center; padding:28px;"> -->
 
- <div align="center"> 
+ <div align="center">
   <img src="./doc/source/_static/readme_hero.svg" style="width:100%"  alt="hero"/>
  </div>
 
@@ -13,7 +13,15 @@
 [![Static Badge](https://img.shields.io/badge/codecov-88%25-%235552FF?logo=codecov)](https://codecov.io/gh/AgnostiqHQ/covalent)
 [![apache](https://img.shields.io/badge/License-Apache_License_2.0-blue?color=%235552FF)](https://www.apache.org/licenses/LICENSE-2.0)
 
- <div style="font-size:14px; margin-bottom:20px">Empowering Research on Limited Resources –   Quantum, HPC, GPU, Cloud
+ <div>
+ <style>
+  div {
+    font-size:14px;
+    color:pink;
+    margin-bottom:20px
+  }
+   </style>
+ Empowering Research on Limited Resources –   Quantum, HPC, GPU, Cloud
  </div>
 
  <div>  <img src="./doc/source/_static/getting_started.svg"  alt="hero" style="margin:15px 0 28px 0"/></div>
@@ -36,22 +44,22 @@
    <video  controls>
    <source src="./doc/source/_static/readme.mp4" type="video/mp4">
   Your browser does not support the video tag.
-</video> 
+</video>
  </div>
 
   <div align="center">
   <img style="margin-bottom:20px" src="./doc/source/_static/executors.svg"  alt="executors"></img>
  </div>
- 
+
   <div style="border:1px solid #5552FF;
   border-radius:10px;">
    <div style="display: grid;
-    grid-template-columns: repeat(3, 1fr); 
+    grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(2, 1fr);
     gap: 10px; ">
-     <div style=" 
-      display:flex; 
-      flex-direction:column; 
+     <div style="
+      display:flex;
+      flex-direction:column;
       align-items:center;
       padding:20px;
       text-align:center">
@@ -66,9 +74,9 @@
        color:#F9F9F9">Seamlessly transition from experiments to production within Covalent.
        </div>
      </div>
-     <div style=" 
-      display:flex; 
-      flex-direction:column; 
+     <div style="
+      display:flex;
+      flex-direction:column;
       align-items:center;
       padding:20px;
       text-align:center">
@@ -83,9 +91,9 @@
        color:#F9F9F9">Expose functions and solvers from generative AI to quantum using Covalent.
        </div>
      </div>
-        <div style=" 
-      display:flex; 
-      flex-direction:column; 
+        <div style="
+      display:flex;
+      flex-direction:column;
       align-items:center;
       padding:20px;
       text-align:center">
@@ -100,9 +108,9 @@
        color:#F9F9F9">Oversee workflows across clouds with real-time tracking via a user-friendly UI.
        </div>
      </div>
-     <div style=" 
-      display:flex; 
-      flex-direction:column; 
+     <div style="
+      display:flex;
+      flex-direction:column;
       align-items:center;
       padding:20px;
       text-align:center">
@@ -117,9 +125,9 @@
        color:#F9F9F9">From local prototypes to multi-cloud applications, manage with ease.
        </div>
      </div>
-      <div style=" 
-      display:flex; 
-      flex-direction:column; 
+      <div style="
+      display:flex;
+      flex-direction:column;
       align-items:center;
       padding:20px;
       text-align:center">
@@ -134,9 +142,9 @@
        color:#F9F9F9">Real-time workflow adjustments with dynamic resource allocation.
        </div>
      </div>
-      <div style=" 
-      display:flex; 
-      flex-direction:column; 
+      <div style="
+      display:flex;
+      flex-direction:column;
       align-items:center;
       padding:20px;
       text-align:center">
@@ -163,15 +171,15 @@
     Covalent is developed using Python version 3.8 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager:
     </div>
     <div style="margin:20px 0 0 0;width:50%;border-radius:6px;background:#171B21;color:#89BEFA;padding:12px 10px;display:flex;justify-content:space-between"><div>$ pip install covalent</div><img src="./doc/source/_static/copy.svg"  alt="copy" style="cursor:pointer"/></div>
-    
+
   </div>
   <div style="width:50%;  padding:5px">
    <div style="color:#F9F9F9; font-size:24px; font-weight:500;">
     Getting Started
    </div>
    <div style="color:#CBCBD7; font-size:14px; font-weight:400; margin:21px 0 0 0">
-    Ready to try it? 
-    Refer to the  <a href="https://docs.covalent.xyz/docs/get-started/quick-start/">Quick Start</a>  guide for quick setup instructions, or to the <a href="https://docs.covalent.xyz/docs/get-started/first-experiment/">First Experiment</a>  guide for a more thorough approach. For a full list of supported platforms, see the Covalent <a href="https://docs.covalent.xyz/docs/user-documentation/compatibility/">compatibility matrix.</a> 
+    Ready to try it?
+    Refer to the  <a href="https://docs.covalent.xyz/docs/get-started/quick-start/">Quick Start</a>  guide for quick setup instructions, or to the <a href="https://docs.covalent.xyz/docs/get-started/first-experiment/">First Experiment</a>  guide for a more thorough approach. For a full list of supported platforms, see the Covalent <a href="https://docs.covalent.xyz/docs/user-documentation/compatibility/">compatibility matrix.</a>
     </div>
      <div style="color:#CBCBD7; font-size:14px; font-weight:400; margin:21px 0 0 0">
     For a more in-depth description of Covalent's features and how they work, see the <a href="https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/">Concepts</a> page in the documentation.
@@ -190,42 +198,42 @@
  </div>
 
  <div style=
- "display:flex; 
+ "display:flex;
  margin:20px 0 0 0;">
- 
+
   <div style="width:25%;height:80px;
-  display:flex; 
-  flex-direction:column; 
+  display:flex;
+  flex-direction:column;
   align-items:center;">
    <img src="./doc/source/_static/what_is_covalent.svg"  alt="whatiscovalent" style="width:50%"/>
-    <a href="https://www.covalent.xyz/what-is-covalent/" style="margin:20px 0 0 0">What is Covalent</a> 
+    <a href="https://www.covalent.xyz/what-is-covalent/" style="margin:20px 0 0 0">What is Covalent</a>
   </div>
-  
+
   <div style="width:25%; height:80px;
-  display:flex; 
-  flex-direction:column; 
-  align-items:center; 
+  display:flex;
+  flex-direction:column;
+  align-items:center;
   text-align:center">
    <img src="./doc/source/_static/hpc.svg"  alt="whatiscovalent" style="width:50%"/>
-    <a href="https://www.covalent.xyz/navigating-the-modern-hpc-landscape/" style="margin:20px 0 0 0">Covalent in the era of cloud-HPC</a> 
+    <a href="https://www.covalent.xyz/navigating-the-modern-hpc-landscape/" style="margin:20px 0 0 0">Covalent in the era of cloud-HPC</a>
   </div>
-  
+
   <div style="width:25%; height:80px;
-  display:flex; 
-  flex-direction:column; 
-  align-items:center; 
+  display:flex;
+  flex-direction:column;
+  align-items:center;
   text-align:center;">
    <img src="./doc/source/_static/concepts.svg"  alt="whatiscovalent" style="width:50%"/>
-    <a href="https://docs.covalent.xyz/docs/user-documentation/concepts/covalent-basics/" style="margin:20px 0 0 0">Basic Concepts of Covalent</a> 
+    <a href="https://docs.covalent.xyz/docs/user-documentation/concepts/covalent-basics/" style="margin:20px 0 0 0">Basic Concepts of Covalent</a>
   </div>
-  
+
   <div style="width:25%; height:80px;
-  display:flex; 
-  flex-direction:column; 
-  align-items:center; 
+  display:flex;
+  flex-direction:column;
+  align-items:center;
   text-align:center;">
    <img src="./doc/source/_static/work.svg"  alt="whatiscovalent" style="width:50%"/>
-    <a href="https://github.com/AgnostiqHQ/covalent/blob/develop/README.md#how-does-it-work" style="margin:20px 0 0 0">How does Covalent work?</a> 
+    <a href="https://github.com/AgnostiqHQ/covalent/blob/develop/README.md#how-does-it-work" style="margin:20px 0 0 0">How does Covalent work?</a>
   </div>
  </div>
 
@@ -236,7 +244,7 @@
   </div>
 
   <div  style="display: grid;
-         grid-template-columns: repeat(2, 1fr); 
+         grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(2, 1fr);
          cursor:pointer;
          padding:0 20px;">
@@ -288,7 +296,7 @@
 
   <div style="height:1px; background:#43444A; margin:38px 0 38px 0;"></div>
 
- <div style="color:#CBCBD7; font-size:14px; 
+ <div style="color:#CBCBD7; font-size:14px;
  display:grid; place-items:center">
   <div>Covalent’s serverless HPC architecture allows you to easily scale jobs from your laptop to your HPC/Cloud
   </div>
