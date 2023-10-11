@@ -49,7 +49,7 @@ class LatticeDetailResponse(BaseModel):
     ended_at: Union[datetime, None] = None
     directory: Union[str, None] = None
     description: Union[str, None] = None
-    runtime: Union[int, None] = None
+    runtime: Union[int, float, None] = None
     updated_at: Union[datetime, None] = None
 
 

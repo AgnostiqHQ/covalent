@@ -33,6 +33,7 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 router = APIRouter()
+trigger_only_router = APIRouter()
 triggers_only_app = FastAPI()
 
 active_triggers = {}
@@ -74,6 +75,11 @@ def init_trigger(tr_dict: dict) -> BaseTrigger:
 @lru_cache
 def get_threadpool():
     return ThreadPoolExecutor()
+
+
+@trigger_only_router.get("/triggers/healthcheck")
+async def healthcheck(request: Request):
+    return {"status": "ok"}
 
 
 @router.get("/triggers/status")
@@ -135,3 +141,4 @@ async def stop_observe(request: Request):
 
 
 triggers_only_app.include_router(router, prefix="/api", tags=["Triggers"])
+triggers_only_app.include_router(trigger_only_router, prefix="/api", tags=["Triggers"])

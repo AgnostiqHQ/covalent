@@ -60,7 +60,7 @@ class ElectronResponse(BaseModel):
     status: Union[str, None] = None
     started_at: Union[datetime, None] = None
     ended_at: Union[datetime, None] = None
-    runtime: Union[int, None] = None
+    runtime: Union[int, float, None] = None
     description: Union[str, None] = None
     qelectron_data_exists: bool = False
     qelectron: Union[dict, None] = None
