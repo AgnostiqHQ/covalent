@@ -1,0 +1,13 @@
+accelerate==0.21.0
+bs4==0.0.1
+covalent-azurebatch-plugin==0.12.0
+diffusers==0.19.3
+emoji==2.8.0
+fastapi==0.103.1
+Pillow==9.5.0
+sentencepiece==0.1.99
+streamlit==1.25.0
+torch==2.0.1
+transformers==4.31.0
+uvicorn==0.18.3
+xformers==0.0.21

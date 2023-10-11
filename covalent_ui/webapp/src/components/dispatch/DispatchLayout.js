@@ -1,23 +1,17 @@
 /**
- * Copyright 2021 Agnostiq Inc.
- *
  * This file is part of Covalent.
  *
- * Licensed under the GNU Affero General Public License 3.0 (the "License").
- * A copy of the License may be obtained with this software package or at
+ * Licensed under the Apache License 2.0 (the "License"). A copy of the
+ * License may be obtained with this software package or at
  *
- *      https://www.gnu.org/licenses/agpl-3.0.en.html
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
- * Use of this file is prohibited except in compliance with the License. Any
- * modifications or derivative works of this file must retain this copyright
- * notice, and modified files must contain a notice indicating that they have
- * been altered from the originals.
- *
- * Covalent is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
- *
- * Relief from the License may be granted by purchasing a commercial license.
+ * Use of this file is prohibited except in compliance with the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import _ from 'lodash'
@@ -38,10 +32,12 @@ import { resetLatticeState } from '../../redux/latticeSlice'
 import { resetElectronState } from '../../redux/electronSlice'
 import DispatchTopBar from './DispatchTopBar'
 import DispatchDrawerContents from './DispatchDrawerContents'
+import QElectronDrawer from '../common/QElectronDrawer'
 
 export function DispatchLayout() {
   const { dispatchId } = useParams()
   const dispatch = useDispatch()
+  const [openQelectronDrawer, setOpenQelectronDrawer] = useState(false)
   const graph_result = useSelector((state) => state.graphResults.graphList)
   const [prettify, setPrettify] = useState(true)
   const latDetailError = useSelector(
@@ -92,6 +88,7 @@ export function DispatchLayout() {
   if (latDetailError !== null && latDetailError.status === 400) {
     return <NotFound text="Lattice dispatch not found." />
   }
+
   return (
     <>
       <DispatchTopBar />
@@ -121,8 +118,24 @@ export function DispatchLayout() {
       <LatticeDrawer>
         <DispatchDrawerContents />
       </LatticeDrawer>
+
+      {
+        <QElectronDrawer
+          toggleQelectron={() => setOpenQelectronDrawer((prev) => !prev)}
+          openQelectronDrawer={openQelectronDrawer}
+          dispatchId={
+            sublatticesDispatchId
+              ? sublatticesDispatchId?.dispatchId
+              : dispatchId
+          }
+          electronId={selectedElectron?.node_id}
+        />
+      }
       {Object.keys(graph_result).length !== 0 ? (
         <NodeDrawer
+          setOpenQelectronDrawer={setOpenQelectronDrawer}
+          toggleQelectron={() => setOpenQelectronDrawer((prev) => !prev)}
+          openQelectronDrawer={openQelectronDrawer}
           prettify={prettify}
           node={selectedElectron}
           graph={graph_result}
@@ -142,7 +155,7 @@ export function DispatchLayout() {
 const UUID_PATTERN =
   /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/;
 
-export function DispatchLayoutValidate () {
+export function DispatchLayoutValidate() {
   let { dispatchId } = useParams()
   if (!UUID_PATTERN.test(dispatchId)) {
     return <NotFound text="Lattice dispatch not found." />

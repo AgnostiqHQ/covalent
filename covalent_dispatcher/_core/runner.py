@@ -2,27 +2,24 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """
 Defines the core functionality of the runner
 """
 
 import asyncio
+import importlib
 import traceback
 from datetime import datetime, timezone
 from functools import partial
@@ -32,11 +29,12 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow import DepsBash, DepsCall, DepsPip
+from covalent._workflow.transport import TransportableObject
 from covalent.executor.base import wrapper_fn
+from covalent.executor.utils import set_context
 
 from . import data_manager as datasvc
 from .runner_modules import executor_proxy
-from .runner_modules.cancel import cancel_tasks  # nopycln: import
 from .runner_modules.utils import get_executor
 
 app_log = logger.app_log
@@ -83,6 +81,7 @@ async def _run_abstract_task(
         abstract_kwargs = abstract_inputs["kwargs"]
         args = [input_values[node_id] for node_id in abstract_args]
         kwargs = {k: input_values[v] for k, v in abstract_kwargs.items()}
+
         task_input = {"args": args, "kwargs": kwargs}
 
         app_log.debug(f"Collecting deps for task {node_id}")
@@ -92,6 +91,7 @@ async def _run_abstract_task(
     except Exception as ex:
         app_log.error(f"Exception when trying to resolve inputs or deps: {ex}")
         node_result = datasvc.generate_node_result(
+            dispatch_id=dispatch_id,
             node_id=node_id,
             start_time=timestamp,
             end_time=timestamp,
@@ -101,6 +101,7 @@ async def _run_abstract_task(
         return node_result
 
     node_result = datasvc.generate_node_result(
+        dispatch_id=dispatch_id,
         node_id=node_id,
         start_time=timestamp,
         status=RESULT_STATUS.RUNNING,
@@ -166,6 +167,7 @@ async def _run_task(
         app_log.debug(tb)
         error_msg = tb if debug_mode else str(ex)
         node_result = datasvc.generate_node_result(
+            dispatch_id=dispatch_id,
             node_id=node_id,
             end_time=datetime.now(timezone.utc),
             status=RESULT_STATUS.FAILED,
@@ -176,6 +178,25 @@ async def _run_task(
     # run the task on the executor and register any failures
     try:
         app_log.debug(f"Executing task {node_name}")
+
+        def qelectron_compatible_wrapper(node_id, dispatch_id, ser_user_fn, *args, **kwargs):
+            user_fn = ser_user_fn.get_deserialized()
+
+            try:
+                mod_qe_utils = importlib.import_module("covalent._shared_files.qelectron_utils")
+
+                with set_context(node_id, dispatch_id):
+                    res = user_fn(*args, **kwargs)
+                    mod_qe_utils.print_qelectron_db()
+
+                return res
+            except ModuleNotFoundError:
+                return user_fn(*args, **kwargs)
+
+        serialized_callable = TransportableObject(
+            partial(qelectron_compatible_wrapper, node_id, dispatch_id, serialized_callable)
+        )
+
         assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
         execute_callable = partial(
             executor.execute,
@@ -200,6 +221,7 @@ async def _run_task(
         )
 
         node_result = datasvc.generate_node_result(
+            dispatch_id=dispatch_id,
             node_id=node_id,
             end_time=datetime.now(timezone.utc),
             status=status,
@@ -214,6 +236,7 @@ async def _run_task(
         app_log.debug(tb)
         error_msg = tb if debug_mode else str(ex)
         node_result = datasvc.generate_node_result(
+            dispatch_id=dispatch_id,
             node_id=node_id,
             end_time=datetime.now(timezone.utc),
             status=RESULT_STATUS.FAILED,
