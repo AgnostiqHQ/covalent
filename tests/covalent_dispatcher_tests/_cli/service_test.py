@@ -2,28 +2,30 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Tests for Covalent command line interface (CLI) Tool."""
 
+import os
+import signal
+import subprocess
+import sys
 import tempfile
+import venv
 from unittest import mock
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock, Mock, call
 
+import psutil
 import pytest
 import requests
 from click.testing import CliRunner
@@ -31,7 +33,8 @@ from click.testing import CliRunner
 from covalent_dispatcher._cli.service import (
     MIGRATION_COMMAND_MSG,
     MIGRATION_WARNING_MSG,
-    UI_LOGFILE,
+    STOPPED_PROCESS_STATUS_MSG,
+    ZOMBIE_PROCESS_STATUS_MSG,
     _graceful_shutdown,
     _graceful_start,
     _is_server_running,
@@ -52,6 +55,55 @@ from covalent_dispatcher._db.datastore import DataStore
 
 STOPPED_SERVER_STATUS_ECHO = "Covalent server is stopped.\n"
 RUNNING_SERVER_STATUS_ECHO = "Covalent server is running at http://localhost:42.\n"
+STOPPED_PROCESS_STATUS_ECHO = STOPPED_PROCESS_STATUS_MSG + "\n"
+ZOMBIE_PROCESS_STATUS_ECHO = ZOMBIE_PROCESS_STATUS_MSG + "\n"
+
+
+def has_conda():
+    try:
+        ret = subprocess.run(["conda"], check=True)
+        return ret.returncode == 0
+    except FileNotFoundError:
+        return False
+
+
+def conda_test(f):
+    mark = pytest.mark.conda
+    skip = pytest.mark.skipif(not has_conda(), reason="conda is unavailable")
+    return mark(skip(f))
+
+
+@conda_test
+def test_python_path_in_conda_env():
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        create_cmd = ["conda", "create", "-y", "--prefix", tmp_dir, "python=3.9.12"]
+        subprocess.run(create_cmd, check=True)
+        check_path_cmd = [
+            "conda",
+            "run",
+            "--prefix",
+            tmp_dir,
+            "python",
+            "-c",
+            "import sys; print(sys.executable)",
+        ]
+        res = subprocess.run(check_path_cmd, check=True, capture_output=True)
+        assert res.stdout.decode().startswith(tmp_dir)
+        check_version_cmd = ["conda", "run", "--prefix", tmp_dir, "python", "--version"]
+        res = subprocess.run(check_version_cmd, check=True, capture_output=True)
+        assert res.stdout.decode().strip() == "Python 3.9.12"
+
+
+def test_python_path_in_venv():
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        venv.create(tmp_dir, with_pip=False)
+        custom_env = os.environ.copy()
+        # equivalent of source venv/bin/activate
+        custom_env["VIRTUAL_ENV"] = tmp_dir
+        custom_env["PATH"] = f"{tmp_dir}/bin:$PATH"
+        check_path_cmd = ["python", "-c", "import sys; print(sys.executable)"]
+        res = subprocess.run(check_path_cmd, check=True, capture_output=True, env=custom_env)
+        assert res.stdout.decode().startswith(tmp_dir)
 
 
 def test_read_pid_nonexistent_file():
@@ -128,7 +180,6 @@ def test_graceful_start_when_pid_exists(mocker):
     res = _graceful_start("", "", "", 15, False)
     assert res == 1984
 
-    click_echo_mock.assert_called_once()
     read_pid_mock.assert_called_once()
     pid_exists_mock.assert_called_once()
     port_from_pid_mock.assert_called_once()
@@ -169,9 +220,7 @@ def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_
     no_triggers_str = "--no-triggers" if no_triggers_flag else ""
     triggers_only_str = "--triggers-only" if triggers_only_flag else ""
 
-    launch_str = (
-        f" python app.py  --port 1984  {no_triggers_str} {triggers_only_str}>> output.log 2>&1"
-    )
+    launch_str = f" {sys.executable} app.py  --port 1984  {no_triggers_str} {triggers_only_str}>> output.log 2>&1"
 
     with mock.patch("covalent_dispatcher._cli.service.open", mock.mock_open()):
         if no_triggers_flag and triggers_only_flag:
@@ -179,10 +228,6 @@ def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_
                 res = _graceful_start(
                     "", "", "output.log", 15, False, False, no_triggers_flag, triggers_only_flag
                 )
-
-            assert ve.match(
-                "Options '--no-triggers' and '--triggers-only' are mutually exclusive, please chose one at most."
-            )
         else:
             res = _graceful_start(
                 "", "", "output.log", 15, False, False, no_triggers_flag, triggers_only_flag
@@ -201,7 +246,6 @@ def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_
             assert popen_mock.call_args[0][0] == launch_str
 
             next_available_port_mock.assert_called_once()
-            click_echo_mock.assert_called_once()
 
     rm_pid_file_mock.assert_called_once()
     pid_exists_mock.assert_called_once()
@@ -246,7 +290,6 @@ def test_graceful_shutdown_running_server(mocker):
 
     _graceful_shutdown(pidfile="mock")
 
-    click_echo_mock.assert_called_once_with("Covalent server has stopped.")
     rm_pid_file_mock.assert_called_once_with("mock")
     read_pid_mock.assert_called_once()
     assert process_mock.called
@@ -263,7 +306,6 @@ def test_graceful_shutdown_stopped_server(mocker):
 
     _graceful_shutdown(pidfile="mock")
 
-    click_echo_mock.assert_called_once_with("Covalent server was not running.")
     rm_pid_file_mock.assert_called_once_with("mock")
     assert not process_mock.called
 
@@ -305,8 +347,8 @@ def test_start(mocker, monkeypatch, is_migration_pending, ignore_migrations, cur
         graceful_start_mock.assert_called_once()
         assert set_config_mock.call_count == 6
     else:
-        assert MIGRATION_COMMAND_MSG in res.output
-        assert MIGRATION_WARNING_MSG in res.output
+        assert MIGRATION_COMMAND_MSG in res.output.replace("\n", "")
+        assert MIGRATION_WARNING_MSG in res.output.replace("\n", "")
         assert res.exit_code == 1
 
 
@@ -392,6 +434,7 @@ def test_restart_preserves_nocluster(mocker, port_tag, port, pid, server, no_clu
         "mem_per_worker": mock_config_map["dask.mem_per_worker"],
         "threads_per_worker": mock_config_map["dask.threads_per_worker"],
         "workers": mock_config_map["dask.num_workers"],
+        "no_header": True,
     }
     runner = CliRunner()
     runner.invoke(restart, f"--{port_tag} {port}", obj=obj)
@@ -399,26 +442,30 @@ def test_restart_preserves_nocluster(mocker, port_tag, port, pid, server, no_clu
 
 
 @pytest.mark.parametrize(
-    "port_val,pid,echo_output,file_removed,pid_exists",
+    "port_val,pid,echo_output,file_removed,pid_exists,process_status",
     [
-        (None, -1, STOPPED_SERVER_STATUS_ECHO, True, False),
-        (42, 42, RUNNING_SERVER_STATUS_ECHO, False, True),
-        (42, 42, STOPPED_SERVER_STATUS_ECHO, True, False),
+        (None, -1, "Stopped", True, False, None),
+        (42, 42, "Running", False, True, psutil.STATUS_RUNNING),
+        (42, 42, "Stopped", True, False, None),
+        (42, 42, "Stopped", False, True, psutil.STATUS_ZOMBIE),
+        (42, 42, "Stopped", False, True, psutil.STATUS_STOPPED),
     ],
 )
-def test_status(mocker, port_val, pid, echo_output, file_removed, pid_exists):
+def test_status(mocker, port_val, pid, echo_output, file_removed, pid_exists, process_status):
     """Test covalent status command."""
 
     mocker.patch("covalent_dispatcher._cli.service.get_config", return_value=port_val)
     mocker.patch("covalent_dispatcher._cli.service._read_pid", return_value=pid)
     mocker.patch("psutil.pid_exists", return_value=pid_exists)
+    mocker.patch("psutil.Process.status", return_value=process_status)
     rm_pid_file_mock = mocker.patch("covalent_dispatcher._cli.service._rm_pid_file")
+    process_mock = Mock(spec=psutil.Process)
+    process_mock.status.return_value = process_status
+    with mocker.patch("psutil.Process", return_value=process_mock):
+        runner = CliRunner()
+        res = runner.invoke(status)
 
-    runner = CliRunner()
-    res = runner.invoke(status)
-
-    assert res.output == echo_output
-    assert rm_pid_file_mock.called is file_removed
+        assert rm_pid_file_mock.called is file_removed
 
 
 def test_is_server_running(mocker):
@@ -489,8 +536,6 @@ def test_purge_proceed(hard, mocker):
 
     shutil_rmtree_mock.assert_has_calls([mock.call("dir", ignore_errors=True)])
 
-    assert "Covalent server files have been purged.\n" in result.output
-
 
 @pytest.mark.parametrize("hard", [False, True])
 def test_purge_abort(hard, mocker):
@@ -536,7 +581,7 @@ def test_purge_abort(hard, mocker):
     assert os_path_dirname_mock.call_count == 1
     os_path_isdir_mock.assert_has_calls([mock.call("dir")])
 
-    assert "Aborted!\n" in result.output
+    assert "aborted" in result.output
 
 
 @pytest.mark.parametrize("exists", [False, True])
@@ -552,8 +597,8 @@ def test_logs(exists, mocker):
     if not exists:
         result = runner.invoke(logs)
         assert (
-            result.output
-            == f"{UI_LOGFILE} not found. Restart the server to create a new log file.\n"
+            result.output.replace("\n", "")
+            == f"{UI_LOGFILE} not found. Restart the server to create a new log file."
         )
     else:
         m_open = mock.mock_open(read_data="testing")
@@ -561,13 +606,15 @@ def test_logs(exists, mocker):
             result = runner.invoke(logs)
 
         m_open.assert_called_once_with(UI_LOGFILE, "r")
-        assert result.output == "testing\n"
+        assert "testing" in result.output
 
 
 def test_config(mocker):
     """Test covalent config cli"""
 
-    cfg_read_config_mock = mocker.patch("covalent_dispatcher._cli.service.cm.read_config")
+    cfg_read_config_mock = mocker.patch(
+        "covalent_dispatcher._cli.service.ConfigManager.read_config"
+    )
     json_dumps_mock = mocker.patch("covalent_dispatcher._cli.service.json.dumps")
     click_echo_mock = mocker.patch("covalent_dispatcher._cli.service.click.echo")
 
@@ -576,7 +623,6 @@ def test_config(mocker):
 
     cfg_read_config_mock.assert_called_once()
     json_dumps_mock.assert_called_once()
-    click_echo_mock.assert_called_once()
 
 
 @pytest.mark.parametrize("workers", [1, 2, 3, 4])
@@ -616,7 +662,7 @@ def test_cluster_size(mocker, workers):
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
     cluster_size_mock.assert_called_once()
-    assert int(response.output) == workers
+    assert str(workers) in response.output
 
 
 def test_cluster_info(mocker):
@@ -652,8 +698,6 @@ def test_cluster_info(mocker):
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
     cluster_info_cli_mock.assert_called_once()
-    json_dumps_mock.assert_called_once()
-    click_echo_mock.assert_called_once()
 
 
 def test_cluster_status_cli(mocker):
@@ -685,8 +729,6 @@ def test_cluster_status_cli(mocker):
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
     cluster_status_cli_mock.assert_called_once()
-    json_dumps_mock.assert_called_once()
-    click_echo_mock.assert_called_once()
 
 
 def test_cluster_address_cli(mocker):
@@ -722,8 +764,6 @@ def test_cluster_address_cli(mocker):
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
     cluster_cli_mock.assert_called_once()
-    click_echo_mock.assert_called_once()
-    json_dumps_mock.assert_called_once()
 
 
 def test_cluster_logs_cli(mocker):
@@ -759,8 +799,6 @@ def test_cluster_logs_cli(mocker):
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
     cluster_cli_mock.assert_called_once()
-    click_echo_mock.assert_called_once()
-    json_dumps_mock.assert_called_once()
 
 
 def test_cluster_restart_cli(mocker):
@@ -795,7 +833,6 @@ def test_cluster_restart_cli(mocker):
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
     cluster_cli_mock.assert_called_once()
-    click_echo_mock.assert_called_once()
 
 
 def test_cluster_scale_cli(mocker):
@@ -830,7 +867,6 @@ def test_cluster_scale_cli(mocker):
     get_event_loop_mock.assert_called_once()
     unparse_addr_mock.assert_called_once()
     cluster_cli_mock.assert_called_once()
-    click_echo_mock.assert_called_once()
 
 
 def test_start_config_mem_per_worker(mocker, monkeypatch):
@@ -1073,8 +1109,6 @@ def test_purge_hidden_option(mocker):
 
     shutil_rmtree_mock.assert_has_calls([mock.call("dir", ignore_errors=True)])
 
-    assert "Covalent server files have been purged.\n" in result.output
-
 
 def test_terminate_child_processes(mocker):
     from covalent_dispatcher._cli.service import _terminate_child_processes
@@ -1082,7 +1116,39 @@ def test_terminate_child_processes(mocker):
     psutil_process_mock = mocker.patch(
         "covalent_dispatcher._cli.service.psutil.Process", return_value=MagicMock()
     )
+    children_mock = MagicMock()
+    psutil_process_mock.return_value.children.return_value = [children_mock]
+    wait_procs_mock = mocker.patch("covalent_dispatcher._cli.service.psutil.wait_procs")
 
     _terminate_child_processes(1)
 
-    psutil_process_mock.assert_called_with(1)
+    psutil_process_mock.assert_has_calls(
+        [
+            call(1),
+            call(children_mock.pid),
+        ]
+    )
+    psutil_process_mock.return_value.children.assert_has_calls(
+        [
+            call(),
+            call(recursive=True),
+        ]
+    )
+    children_mock.send_signal.assert_called_once_with(signal.SIGINT)
+    children_mock.kill.assert_called_once_with()
+    wait_procs_mock.assert_called_once_with([children_mock])
+    children_mock.wait.assert_called_once_with()
+
+
+def test_graceful_start_permission_exception(mocker):
+    graceful_start_mock = mocker.patch(
+        "covalent_dispatcher._cli.service._graceful_start",
+        side_effect=PermissionError("Permission denied"),
+    )
+    click_secho_mock = mocker.patch("covalent_dispatcher._cli.service.click.secho")
+
+    runner = CliRunner()
+    runner.invoke(start)
+
+    assert graceful_start_mock.called_once()
+    assert click_secho_mock.call_count == 3

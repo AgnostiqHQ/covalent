@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """File handlers"""
 
@@ -30,7 +26,6 @@ from covalent._workflow.transport import TransportableObject, _TransportGraph
 
 def transportable_object(obj):
     """Decode transportable object
-
     Args:
         obj: Covalent transportable object
     Returns:
@@ -103,25 +98,18 @@ class FileHandler:
         """Return data from pickle file"""
         try:
             unpickled_object = self.__unpickle_file(path)
-            return validate_data(unpickled_object)
-        except Exception as e:
+            res = validate_data(unpickled_object)
+            return res
+        except Exception:
             return None
 
     def read_from_text(self, path):
         """Return data from text file"""
         try:
             with open(self.location + "/" + path, "r", encoding="utf-8") as read_file:
-                text_object = read_file.readlines()
-                list_str = ""
+                text_object = read_file.read()
                 read_file.close()
-                if isinstance(text_object, list):
-                    for i in text_object:
-                        list_str += i
-                    return list_str if (list_str != "" or list_str is not None) else None
-                else:
-                    return text_object if (text_object != "" or text_object is not None) else None
-        except EOFError:
-            return None
+                return text_object if text_object is not None else ""
         except Exception:
             return None
 
@@ -131,5 +119,5 @@ class FileHandler:
                 unpickled_object = pickle.load(read_file)
                 read_file.close()
                 return unpickled_object
-        except EOFError:
+        except Exception:
             return None

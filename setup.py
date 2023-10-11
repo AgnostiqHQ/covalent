@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import os
 import site
@@ -202,19 +198,28 @@ setup_info = {
     "maintainer": "Agnostiq",
     "url": "https://github.com/AgnostiqHQ/covalent",
     "download_url": f"https://github.com/AgnostiqHQ/covalent/archive/v{version}.tar.gz",
-    "license": "GNU Affero GPL v3.0",
+    "license": "Apache License 2.0",
     "author": "Agnostiq",
     "author_email": "support@agnostiq.ai",
     "description": "Covalent Workflow Tool",
-    "long_description": open("README.md").read(),
+    "long_description": open("README.md", encoding="utf-8").read(),
     "long_description_content_type": "text/markdown",
     "include_package_data": True,
     "zip_safe": False,
     "install_requires": required,
     "extras_require": {
         "aws": ["boto3>=1.20.48"],
+        "azure": ["azure-identity>=1.13.0", "azure-storage-blob>=12.16.0"],
+        "braket": ["amazon-braket-pennylane-plugin>=1.17.4", "boto3>=1.28.5"],
+        "gcp": ["google-auth>=2.16.2", "google-cloud-storage>=2.7.0"],
         "mysql": ["mysqlclient>=2.1.1"],
         "postgres": ["psycopg2-binary>=2.9.5"],
+        "qiskit": [
+            "pennylane-qiskit==0.30",
+            "qiskit==0.43.1",
+            "qiskit-ibm-provider==0.6.1",
+            "qiskit-ibm-runtime==0.10.0",
+        ],
     },
     "classifiers": [
         "Development Status :: 4 - Beta",
@@ -222,7 +227,7 @@ setup_info = {
         "Intended Audience :: Developers",
         "Intended Audience :: Education",
         "Intended Audience :: Science/Research",
-        "License :: OSI Approved :: GNU Affero General Public License v3",
+        "License :: OSI Approved :: Apache Software License",
         "Natural Language :: English",
         "Operating System :: MacOS :: MacOS X",
         "Operating System :: POSIX",

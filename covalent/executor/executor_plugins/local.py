@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """
 Module for defining a local executor that directly invokes the input python function.
@@ -27,10 +23,11 @@ This is a plugin executor module; it is loaded if found and properly structured.
 
 import os
 from concurrent.futures import ProcessPoolExecutor
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable, Dict, List, Optional
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files import TaskCancelledError, TaskRuntimeError, logger
+from covalent._shared_files.config import get_config
 from covalent.executor import BaseExecutor
 
 # Store the wrapper function in an external module to avoid module
@@ -49,7 +46,14 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     "cache_dir": os.path.join(
         os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "covalent"
     ),
+    "workdir": os.path.join(
+        os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
+        "covalent",
+        "workdir",
+    ),
+    "create_unique_workdir": False,
 }
+
 
 proc_pool = ProcessPoolExecutor()
 
@@ -58,6 +62,30 @@ class LocalExecutor(BaseExecutor):
     """
     Local executor class that directly invokes the input function.
     """
+
+    def __init__(
+        self, workdir: str = "", create_unique_workdir: Optional[bool] = None, *args, **kwargs
+    ) -> None:
+        if not workdir:
+            try:
+                workdir = get_config("executors.local.workdir")
+            except KeyError:
+                workdir = _EXECUTOR_PLUGIN_DEFAULTS["workdir"]
+                debug_msg = f"Couldn't find `executors.local.workdir` in config, using default value {workdir}."
+                app_log.debug(debug_msg)
+
+        if create_unique_workdir is None:
+            try:
+                create_unique_workdir = get_config("executors.local.create_unique_workdir")
+            except KeyError:
+                create_unique_workdir = _EXECUTOR_PLUGIN_DEFAULTS["create_unique_workdir"]
+                debug_msg = f"Couldn't find `executors.local.create_unique_workdir` in config, using default value {create_unique_workdir}."
+                app_log.debug(debug_msg)
+
+        super().__init__(*args, **kwargs)
+
+        self.workdir = workdir
+        self.create_unique_workdir = create_unique_workdir
 
     def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict) -> Any:
         """
@@ -72,6 +100,7 @@ class LocalExecutor(BaseExecutor):
         Return(s)
             Task output
         """
+
         app_log.debug(f"Running function {function} locally")
 
         self.set_job_handle(42)
@@ -80,8 +109,16 @@ class LocalExecutor(BaseExecutor):
             app_log.debug("Task has been cancelled don't proceed")
             raise TaskCancelledError
 
+        dispatch_id = task_metadata["dispatch_id"]
+        node_id = task_metadata["node_id"]
+
+        if self.create_unique_workdir:
+            current_workdir = os.path.join(self.workdir, dispatch_id, f"node_{node_id}")
+        else:
+            current_workdir = self.workdir
+
         # Run the target function in a separate process
-        fut = proc_pool.submit(io_wrapper, function, args, kwargs)
+        fut = proc_pool.submit(io_wrapper, function, args, kwargs, current_workdir)
 
         output, worker_stdout, worker_stderr, tb = fut.result()
 

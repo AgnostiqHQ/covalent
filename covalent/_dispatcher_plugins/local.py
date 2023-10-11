@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import json
 from copy import deepcopy
@@ -149,14 +145,17 @@ class LocalDispatcher(BaseDispatcher):
             lattice_dispatch_id = None
             try:
                 r = requests.post(
-                    submit_dispatch_url, data=json_lattice, params={"disable_run": disable_run}
+                    submit_dispatch_url,
+                    data=json_lattice,
+                    params={"disable_run": disable_run},
+                    timeout=5,
                 )
                 r.raise_for_status()
                 lattice_dispatch_id = r.content.decode("utf-8").strip().replace('"', "")
-            except requests.exceptions.ConnectionError as e:
-                message = f"The Covalent dispatcher server is not running at {dispatcher_addr}. You must start Covalent (with `covalent start`) before dispatching your workflow."
-                app_log.error(message)
-                raise ConnectionError(message) from e
+            except requests.exceptions.ConnectionError:
+                message = f"The Covalent server cannot be reached at {dispatcher_addr}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
+                print(message)
+                return
 
             if not disable_run or triggers_data is None:
                 return lattice_dispatch_id
@@ -264,8 +263,16 @@ class LocalDispatcher(BaseDispatcher):
                 dispatch_id, new_args, new_kwargs, replace_electrons, reuse_previous_results
             )
             redispatch_url = f"{dispatcher_addr}/api/redispatch"
-            r = requests.post(redispatch_url, json=body, params={"is_pending": is_pending})
-            r.raise_for_status()
+            try:
+                r = requests.post(
+                    redispatch_url, json=body, params={"is_pending": is_pending}, timeout=5
+                )
+                r.raise_for_status()
+            except requests.exceptions.ConnectionError:
+                message = f"The Covalent server cannot be reached at {dispatcher_addr}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
+                print(message)
+                return
+
             return r.content.decode("utf-8").strip().replace('"', "")
 
         return func

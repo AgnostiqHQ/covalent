@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """
 Module for defining a Dask executor that submits the input python function in a dask cluster
@@ -26,7 +22,7 @@ This is a plugin executor module; it is loaded if found and properly structured.
 """
 
 import os
-from typing import Callable, Dict, List, Literal
+from typing import Callable, Dict, List, Literal, Optional
 
 from dask.distributed import CancelledError, Client, Future
 
@@ -51,6 +47,12 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     "cache_dir": os.path.join(
         os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"), "covalent"
     ),
+    "workdir": os.path.join(
+        os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
+        "covalent",
+        "workdir",
+    ),
+    "create_unique_workdir": False,
 }
 
 
@@ -67,32 +69,56 @@ class DaskExecutor(AsyncBaseExecutor):
         conda_env: str = "",
         cache_dir: str = "",
         current_env_on_conda_fail: bool = False,
+        workdir: str = "",
+        create_unique_workdir: Optional[bool] = None,
     ) -> None:
         if not cache_dir:
-            cache_dir = os.path.join(
-                os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
-                "covalent",
-            )
+            cache_dir = _EXECUTOR_PLUGIN_DEFAULTS["cache_dir"]
 
-        if not scheduler_address:
+        if not workdir:
             try:
-                scheduler_address = get_config("dask.scheduler_address")
-            except KeyError as ex:
-                app_log.debug(
-                    "No dask scheduler address found in config. Address must be set manually."
-                )
+                workdir = get_config("executors.dask.workdir")
+            except KeyError:
+                workdir = _EXECUTOR_PLUGIN_DEFAULTS["workdir"]
+                debug_msg = f"Couldn't find `executors.dask.workdir` in config, using default value {workdir}."
+                app_log.debug(debug_msg)
 
-        super().__init__(log_stdout, log_stderr, conda_env, cache_dir, current_env_on_conda_fail)
+        if create_unique_workdir is None:
+            try:
+                create_unique_workdir = get_config("executors.dask.create_unique_workdir")
+            except KeyError:
+                create_unique_workdir = _EXECUTOR_PLUGIN_DEFAULTS["create_unique_workdir"]
+                debug_msg = f"Couldn't find `executors.dask.create_unique_workdir` in config, using default value {create_unique_workdir}."
+                app_log.debug(debug_msg)
 
+        super().__init__(
+            log_stdout,
+            log_stderr,
+            cache_dir,
+            conda_env,
+            current_env_on_conda_fail,
+        )
+
+        self.workdir = workdir
+        self.create_unique_workdir = create_unique_workdir
         self.scheduler_address = scheduler_address
 
     async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         """Submit the function and inputs to the dask cluster"""
 
+        if not self.scheduler_address:
+            try:
+                self.scheduler_address = get_config("dask.scheduler_address")
+            except KeyError as ex:
+                app_log.debug(
+                    "No dask scheduler address found in config. Address must be set manually."
+                )
+
         if await self.get_cancel_requested():
             app_log.debug("Task has cancelled")
             raise TaskCancelledError
 
+        dispatch_id = task_metadata["dispatch_id"]
         node_id = task_metadata["node_id"]
 
         dask_client = _address_client_mapper.get(self.scheduler_address)
@@ -102,7 +128,12 @@ class DaskExecutor(AsyncBaseExecutor):
             _address_client_mapper[self.scheduler_address] = dask_client
             await dask_client
 
-        future = dask_client.submit(dask_wrapper, function, args, kwargs)
+        if self.create_unique_workdir:
+            current_workdir = os.path.join(self.workdir, dispatch_id, f"node_{node_id}")
+        else:
+            current_workdir = self.workdir
+
+        future = dask_client.submit(dask_wrapper, function, args, kwargs, current_workdir)
         await self.set_job_handle(future.key)
         app_log.debug(f"Submitted task {node_id} to dask with key {future.key}")
 

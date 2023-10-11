@@ -1,9 +1,9 @@
 .. _azurebatch_executor:
 
-🔌 Azure Batch Executor
-""""""""""""""""""""""""
+Azure Batch Executor
+""""""""""""""""""""
 
-.. image:: Azure_Batch.png
+.. image:: ./executors/Azure_Batch.png
 
 Covalent Azure Batch executor is an interface between Covalent and `Microsoft Azure Batch <https://azure.microsoft.com/en-us/products/batch/#overview>`_. This executor allows execution of Covalent tasks on Azure's Batch service.
 
@@ -46,6 +46,7 @@ In this example, we train a Support Vector Machine (SVM) using an instance of th
         batch_account_domain="batch.core.windows.net",
         storage_account_name="covalentbatch",
         storage_account_domain="blob.core.windows.net",
+        base_image_uri="covalent.azurecr.io/covalent-executor-base:latest",
         pool_id="covalent-pool",
         retries=3,
         time_limit=300,
@@ -151,6 +152,10 @@ During the execution of the workflow, one can navigate to the UI to see the stat
      - No
      - blob.core.windows.net
      - Azure Storage account domain
+   * - base_image_uri
+     - No
+     - covalent.azurecr.io/covalent-executor-base:latest
+     - Image used to run Covalent tasks
    * - pool_id
      - Yes
      - None
@@ -188,11 +193,30 @@ The following shows an example of how a user might modify their `covalent config
     batch_account_domain="batch.core.windows.net",
     storage_account_name="covalentbatch",
     storage_account_domain="blob.core.windows.net",
+    base_image_uri="my-custom-base-image",
     pool_id="covalent-pool",
     retries=5,
     time_limit=500,
     ...
 
+-----------------
+Custom Containers
+-----------------
+
+In some cases, users may wish to specify a custom base image for Covalent tasks running on Azure Batch.  For instance, some orgazations may have pre-built environments containing application runtimes that may be otherwise difficult to configure at runtime. Similarly, some packages may be simple to install but greatly increase the memory and runtime overhead for a task. In both of these scenarios, custom containers can simplify the user experience.
+
+To incorporate a custom container that can be used by Covalent tasks on Azure Batch, first locate the Dockerfile packaged with this plugin in `covalent_azurebatch_plugin/assets/infra/Dockerfile`.  Assuming the custom container already has a compatible version of Python installed (specifically, the same version used by the Covalent SDK), build this image using the command
+
+.. code-block:: shell
+
+    # Login to ACR registry first
+    acr login --name=<my_custom_registry_name>
+    # Build the combined image used by tasks
+    docker build --build-arg COVALENT_BASE_IMAGE=<my_custom_image_uri> -t <my_custom_registry_name>.azurecr.io/<my_custom_image_name>:latest .
+    # Push to the registry
+    docker push <my_custom_registry_name>.azurecr.io/<my_custom_image_name>:latest
+
+where :code:`my_custom_image_uri` is the fully qualified URI to the user's image, :code:`my_custom_registry_name` is the name of the ACR resource created during deployment of the resources below, and :code:`my_custom_image_name` is the name of the output which contains both Covalent and the user's custom image dependencies. Users would then use :code:`base_image_name=<my_custom_registry_name>.azurecr.io/<my_custom_image_name>:latest` in the Azure Batch executor or associated configuration.
 
 ===========================
 4. Required Cloud Resources
@@ -223,11 +247,7 @@ In order to use this plugin, the following Azure resources need to be provisione
    * - Container Registry
      - Yes
      - N/A
-     - Container registry is required to store the containers that are used to run Batch jobs.
-   * - Virtual Network
-     - Yes
-     - N/A
-     - `Azure Virtual Network <https://learn.microsoft.com/en-us/azure/virtual-network/virtual-networks-overview>`_ is used by resources to securely communicate with each other.
+     - Container registry is required to store any custom containers used to run Batch jobs.
    * - Pool ID
      - Yes
      - :code:`pool_id`

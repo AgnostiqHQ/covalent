@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 
 import codecs
@@ -74,6 +70,9 @@ def get_result(
 
         raise ex
 
+    except requests.exceptions.ConnectionError:
+        return None
+
     return result
 
 
@@ -111,10 +110,17 @@ def _get_result_from_dispatcher(
     http.mount("http://", adapter)
 
     result_url = f"{dispatcher_addr}/api/result/{dispatch_id}"
-    response = http.get(
-        result_url,
-        params={"wait": bool(int(wait)), "status_only": status_only},
-    )
+
+    try:
+        response = http.get(
+            result_url,
+            params={"wait": bool(int(wait)), "status_only": status_only},
+            timeout=5,
+        )
+    except requests.exceptions.ConnectionError:
+        message = f"The Covalent server cannot be reached at {dispatcher_addr}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
+        print(message)
+        raise
 
     if response.status_code == 404:
         raise MissingLatticeRecordError

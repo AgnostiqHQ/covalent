@@ -1,38 +1,33 @@
 /**
- * Copyright 2021 Agnostiq Inc.
- *
  * This file is part of Covalent.
  *
- * Licensed under the GNU Affero General Public License 3.0 (the "License").
- * A copy of the License may be obtained with this software package or at
+ * Licensed under the Apache License 2.0 (the "License"). A copy of the
+ * License may be obtained with this software package or at
  *
- *      https://www.gnu.org/licenses/agpl-3.0.en.html
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
- * Use of this file is prohibited except in compliance with the License. Any
- * modifications or derivative works of this file must retain this copyright
- * notice, and modified files must contain a notice indicating that they have
- * been altered from the originals.
- *
- * Covalent is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
- *
- * Relief from the License may be granted by purchasing a commercial license.
+ * Use of this file is prohibited except in compliance with the License.
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 import _ from 'lodash'
 import React, { useEffect } from 'react'
-import { Close } from '@mui/icons-material'
 import { useStoreActions } from 'react-flow-renderer'
+import { Close } from '@mui/icons-material'
 import { useDispatch, useSelector } from 'react-redux'
 import {
   Box,
   Divider,
   Drawer,
-  IconButton,
   Paper,
   Typography,
   Skeleton,
+  SvgIcon,
+  Grid,
 } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 
@@ -58,14 +53,33 @@ import {
   electronError,
   electronInput,
 } from '../../redux/electronSlice'
+import QElectronCard from './QElectronCard'
+import { ReactComponent as QelectronSvg } from '../../assets/qelectron/qelectron.svg'
+import CopyButton from './CopyButton'
+import { Prettify } from '../../utils/misc'
 
 export const nodeDrawerWidth = 360
 
-const NodeDrawer = ({ node, dispatchId }) => {
+
+const NodeDrawer = ({
+  node,
+  dispatchId,
+  toggleQelectron,
+  openQelectronDrawer,
+  setOpenQelectronDrawer,
+  prettify
+}) => {
   const dispatch = useDispatch()
   const electronId = node !== undefined && node.node_id
   const electronDetail = useSelector(
     (state) => state.electronResults.electronList
+  )
+
+  const qElectronExists = useSelector(
+    (state) => state.electronResults.electronList?.qelectron_data_exists
+  )
+  const qElectronDetails = useSelector(
+    (state) => state.electronResults.electronList?.qelectron
   )
   const electronInputResult = useSelector(
     (state) => state.electronResults.electronInput
@@ -101,6 +115,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
 
   useEffect(() => {
     if (!!node) {
+      setOpenQelectronDrawer(false);
       dispatch(electronDetails({ electronId, dispatchId }))
       dispatch(electronInput({ dispatchId, electronId, params: 'inputs' }))
       dispatch(electronResult({ dispatchId, electronId, params: 'result' }))
@@ -122,8 +137,15 @@ const NodeDrawer = ({ node, dispatchId }) => {
   )
 
   const handleClose = () => {
+    setOpenQelectronDrawer(false)
     setSelectedElements([])
   }
+
+  useEffect(() => {
+    if (!node) {
+      setOpenQelectronDrawer(false)
+    }
+  })
 
   const nodeLabel = (type, name) => {
     switch (type) {
@@ -143,6 +165,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
 
   return (
     <Drawer
+      transitionDuration={400}
       sx={(theme) => ({
         width: nodeDrawerWidth,
         '& .MuiDrawer-paper': {
@@ -173,6 +196,7 @@ const NodeDrawer = ({ node, dispatchId }) => {
         <>
           <Box
             sx={{
+              width: '100%',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
@@ -182,41 +206,110 @@ const NodeDrawer = ({ node, dispatchId }) => {
             {!electronDetail && electronDetailIsFetching ? (
               <Skeleton data-testid="node__box_skl" width={150} />
             ) : (
-              <Typography sx={{ color: '#A5A6F6', overflowWrap: 'anywhere' }}>
-                {nodeLabel(electronDetail?.type, electronDetail?.name)}
-              </Typography>
-            )}
+              <Grid container sx={{ background: '', position: 'relative' }}>
+                <Grid item xs={8}>
+                  <Typography
+                    sx={{
+                      color: '#A5A6F6',
+                      overflowWrap: 'anywhere',
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    {prettify
+                      ? Prettify(electronDetail?.name, electronDetail?.type || '')
+                      : nodeLabel(electronDetail?.type, electronDetail?.name)}
+                    {qElectronExists && (
+                      <SvgIcon
+                        aria-label="view"
+                        sx={{
+                          display: 'flex',
+                          justifyContent: 'flex-end',
+                          mr: 0,
+                          ml: 1.5,
+                          mt: 0.7,
+                          pr: 0,
+                        }}
+                      >
+                        <QelectronSvg />
+                      </SvgIcon>
+                    )}
+                  </Typography>
+                </Grid>
+                <Grid
+                  item
+                  xs={4}
 
-            <Box data-testid="node__dra_close">
-              <IconButton onClick={handleClose}>
-                <Close />
-              </IconButton>
-            </Box>
+                >
+                  <Box
+                    data-testid="node__dra_close"
+                    sx={{ position: 'absolute', top: 0, right: 1.5 }}
+                  >
+                    <Close onClick={handleClose} fontSize='small' sx={{ cursor: 'pointer' }} />
+                  </Box>
+                </Grid>
+              </Grid>
+            )}
           </Box>
 
           {/* Status */}
-          {electronDetail.status && (
-            <>
-              <Heading>Status</Heading>
-              {!electronDetail && electronDetailIsFetching ? (
-                <Skeleton data-testid="node__status_skl" width={150} />
-              ) : (
-                <Box
-                  sx={{
-                    mt: 1,
-                    mb: 2,
-                    color: statusColor(electronDetail.status),
-                    display: 'flex',
-                    alignItems: 'center',
-                  }}
-                >
-                  {statusIcon(electronDetail.status)}
-                  &nbsp;
-                  {statusLabel(electronDetail.status)}
-                </Box>
+          <Grid container sx={{ background: '', position: 'relative' }}>
+            <Grid
+              id="statusGrid"
+              item
+              xs={8}
+              sx={{ display: 'flex', flexDirection: 'column' }}
+            >
+              {electronDetail.status && (
+                <Grid item container direction="column">
+                  <Heading>Status</Heading>
+                  {!electronDetail && electronDetailIsFetching ? (
+                    <Skeleton data-testid="node__status_skl" width={150} />
+                  ) : (
+                    <Box
+                      sx={{
+                        mt: 1,
+                        mb: 2,
+                        color: statusColor(electronDetail.status),
+                        display: 'flex',
+                        alignItems: 'center',
+                      }}
+                    >
+                      {statusIcon(electronDetail.status)}
+                      &nbsp;
+                      {statusLabel(electronDetail.status)}
+                    </Box>
+                  )}
+                </Grid>
               )}
-            </>
-          )}
+            </Grid>
+            <Grid
+              xs={4}
+              item
+              sx={{ display: 'flex', justifyContent: 'flex-end' }}
+            >
+              <Box
+                ml={5}
+                sx={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  position: 'absolute',
+                  top: 10,
+                  right: -18
+                }}
+              >
+                <Typography
+                  mt={0.2}
+                  sx={{ fontSize: '14px', color: '#86869A' }}
+                >
+                  {electronDetail.node_id}
+                </Typography>
+                <Grid>
+                  <CopyButton content={electronDetail.node_id} />
+                </Grid>
+              </Box>
+            </Grid>
+          </Grid>
 
           {electronErrorData && <ErrorCard error={electronErrorData.data} />}
 
@@ -330,6 +423,14 @@ const NodeDrawer = ({ node, dispatchId }) => {
               </Paper>
             </>
           )}
+          {qElectronExists && (
+            <QElectronCard
+              qElectronDetails={qElectronDetails}
+              openQelectronDrawer={openQelectronDrawer}
+              toggleQelectron={toggleQelectron}
+            />
+          )}
+
         </>
       )}
     </Drawer>

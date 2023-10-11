@@ -19,7 +19,7 @@ COVALENT DOCUMENTATION
 
    <center>
    <a href="https://pypi.org/project/covalent/"><img alt="Downloads per Month Badge" src="https://img.shields.io/pypi/dm/covalent"></a>
-   <a href="https://www.gnu.org/licenses/agpl-3.0.en.html"><img alt="AGPL License Badge" src="https://img.shields.io/badge/License-AGPL_v3-lightgray.svg"></a>
+   <a href="https://www.apache.org/licenses/LICENSE-2.0"><img alt="Apache License Badge" src="https://img.shields.io/badge/License-Apache_License_2.0-lightgray.svg"></a>
    <a href="https://github.com/AgnostiqHQ/covalent/releases/latest"><img alt="Latest Release Badge" src="https://img.shields.io/github/v/release/AgnostiqHQ/covalent"></a>
    <img alt="Supported Platforms Badge" src="https://img.shields.io/badge/python-3.8%20%7C%203.9%20%7C%203.10-blueviolet">
    </center>
@@ -159,8 +159,9 @@ Covalent is a quickly growing and vibrant community of enthusiasts, researchers,
    Tutorials <tutorials/tutorials>
    How-To Guide <how_to/index>
    User Interface <webapp_ui/index>
-   API Reference <api/index>
+   API Reference <api/api>
    Server Deployment <deployment/index>
+   Best Practices <developer/index>
    Credentials <credentials>
    Glossary <glossary/index>
    Troubleshooting <troubleshooting>

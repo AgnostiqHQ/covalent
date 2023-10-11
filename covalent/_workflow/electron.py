@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Class corresponding to computation nodes."""
 
@@ -386,9 +382,7 @@ class Electron:
                 and k in DEFAULT_METADATA_VALUES
                 and not self.get_metadata(k)
             ):
-                meta = active_lattice.get_metadata(k)
-                if not meta:
-                    meta = DEFAULT_METADATA_VALUES[k]
+                meta = active_lattice.get_metadata(k) or DEFAULT_METADATA_VALUES[k]
                 self.set_metadata(k, meta)
 
         # Handle sublattices by injecting _build_sublattice_graph node
@@ -637,6 +631,16 @@ class Electron:
         }
 
 
+# Dynamically adding properties to the Electron class
+# This is being done this way so that it's easier to add
+# or remove properties in the future without having to
+# edit the class definition itself.
+Electron.executor = property(lambda self: self.get_metadata("executor"))
+Electron.executor = Electron.executor.setter(
+    lambda self, value: self.metadata.update(encode_metadata({"executor": value}))
+)
+
+
 def electron(
     _func: Optional[Callable] = None,
     *,
@@ -648,8 +652,9 @@ def electron(
     deps_pip: Union[DepsPip, list] = None,
     call_before: Union[List[DepsCall], DepsCall] = [],
     call_after: Union[List[DepsCall], DepsCall] = [],
-) -> Callable:
-    """Electron decorator to be called upon a function. Returns the wrapper function with the same functionality as `_func`.
+) -> Callable:  # sourcery skip: assign-if-exp
+    """
+    Electron decorator to be called upon a function. Returns the wrapper function with the same functionality as `_func`.
 
     Args:
         _func: function to be decorated
@@ -666,6 +671,7 @@ def electron(
 
     Returns:
         :obj:`Electron <covalent._workflow.electron.Electron>` : Electron object inside which the decorated function exists.
+
     """
 
     if backend:
@@ -727,7 +733,13 @@ def electron(
     constraints = encode_metadata(constraints)
 
     def decorator_electron(func=None):
-        """Electron decorator function. Note that the electron_object defined below is an example of an unbound electron, i.e. electron without a node id."""
+        """
+        Electron decorator function. Note that the electron_object
+        defined below is an example of an unbound electron, i.e.
+        electron without a node id.
+
+        """
+
         electron_object = Electron(func)
         for k, v in constraints.items():
             electron_object.set_metadata(k, v)

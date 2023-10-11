@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Create custom sentinels and defaults for Covalent"""
 
@@ -52,7 +48,10 @@ def get_default_sdk_config():
         + "/covalent.conf",
         "log_dir": (
             os.environ.get("COVALENT_LOGDIR")
-            or (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache/covalent"))
+            or os.path.join(
+                os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
+                "covalent",
+            )
         ),
         "log_level": os.environ.get("LOGLEVEL", "WARNING").lower(),
         "enable_logging": os.environ.get("COVALENT_LOG_TO_FILE", "true").lower(),
@@ -71,15 +70,38 @@ def get_default_dispatcher_config():
         "address": os.environ.get("COVALENT_DISPATCHER_ADDR", "localhost"),
         "port": int(os.environ.get("COVALENT_SVC_PORT", 48008)),
         "cache_dir": os.environ.get("COVALENT_CACHE_DIR")
-        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache")) + "/covalent"),
+        or os.path.join(
+            os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
+            "covalent",
+        ),
         "results_dir": os.environ.get("COVALENT_DATA_DIR")
         or os.path.join(os.environ["HOME"], ".local/share/covalent/data"),
         "log_dir": os.environ.get("COVALENT_LOGDIR")
-        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache/covalent"))),
+        or os.path.join(
+            os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
+            "covalent",
+        ),
         "db_path": os.environ.get("COVALENT_DATABASE")
         or (
             (os.environ.get("XDG_DATA_HOME") or (os.environ["HOME"] + "/.local/share"))
             + "/covalent/dispatcher_db.sqlite"
+        ),
+        "qelectron_db_path": os.environ.get("COVALENT_DATABASE")
+        or (
+            (os.environ.get("XDG_DATA_HOME") or (os.environ["HOME"] + "/.local/share"))
+            + "/covalent/qelectron_db"
+        ),
+        "heartbeat_interval": os.environ.get("COVALENT_HEARTBEAT_INTERVAL") or 5,
+        "heartbeat_file": os.environ.get("COVALENT_HEARTBEAT_FILE")
+        or os.path.join(
+            (
+                os.environ.get("COVALENT_CACHE_DIR")
+                or os.path.join(
+                    os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
+                    "covalent",
+                )
+            ),
+            "heartbeat",
         ),
     }
 
@@ -87,9 +109,15 @@ def get_default_dispatcher_config():
 def get_default_dask_config():
     return {
         "cache_dir": os.environ.get("COVALENT_CACHE_DIR")
-        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache/covalent"))),
+        or os.path.join(
+            os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
+            "covalent",
+        ),
         "log_dir": os.environ.get("COVALENT_LOGDIR")
-        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache/covalent"))),
+        or os.path.join(
+            os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
+            "covalent",
+        ),
         "mem_per_worker": "auto",
         "threads_per_worker": 1,
         "num_workers": dask.system.CPU_COUNT,
@@ -115,7 +143,10 @@ def get_default_ui_config():
         else 48008,
         "dev_port": 49009,
         "log_dir": os.environ.get("COVALENT_LOGDIR")
-        or ((os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache/covalent"))),
+        or os.path.join(
+            os.environ.get("XDG_CACHE_HOME") or os.path.join(os.environ["HOME"], ".cache"),
+            "covalent",
+        ),
     }
 
 
@@ -148,7 +179,9 @@ class DefaultConfig:
 @dataclass
 class DefaultMetadataValues:
     executor: str = field(default_factory=get_default_executor)
+    executor_data: Dict = field(default_factory=dict)
     deps: Dict = field(default_factory=dict)
     call_before: List = field(default_factory=list)
     call_after: List = field(default_factory=list)
     workflow_executor: str = field(default_factory=get_default_executor)
+    workflow_executor_data: Dict = field(default_factory=dict)

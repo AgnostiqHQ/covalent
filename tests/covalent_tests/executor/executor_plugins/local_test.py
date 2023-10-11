@@ -2,25 +2,22 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Tests for Covalent local executor."""
 
 import io
+import os
 import tempfile
 from functools import partial
 from unittest.mock import MagicMock
@@ -32,7 +29,56 @@ from covalent._shared_files import TaskRuntimeError
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._workflow.transport import TransportableObject
 from covalent.executor.base import wrapper_fn
-from covalent.executor.executor_plugins.local import LocalExecutor
+from covalent.executor.executor_plugins.local import _EXECUTOR_PLUGIN_DEFAULTS, LocalExecutor
+
+
+def test_local_executor_init(mocker):
+    """Test local executor constructor"""
+
+    mocker.patch("covalent.executor.executor_plugins.local.get_config", side_effect=KeyError())
+    default_workdir_path = _EXECUTOR_PLUGIN_DEFAULTS["workdir"]
+
+    le = LocalExecutor()
+
+    assert le.workdir == default_workdir_path
+    assert le.create_unique_workdir is False
+
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        le = LocalExecutor(workdir=tmp_dir, create_unique_workdir=True)
+        assert le.workdir == tmp_dir
+        assert le.create_unique_workdir is True
+
+
+def test_local_executor_with_workdir(mocker):
+    with tempfile.TemporaryDirectory() as tmp_dir:
+        le = ct.executor.LocalExecutor(workdir=tmp_dir, create_unique_workdir=True)
+
+        @ct.lattice
+        @ct.electron(executor=le)
+        def simple_task(x, y):
+            with open("job.txt", "w") as w:
+                w.write(str(x + y))
+            return "Done!"
+
+        mock_set_job_handle = mocker.patch.object(le, "set_job_handle", MagicMock(return_value=42))
+        mock_get_cancel_requested = mocker.patch.object(
+            le, "get_cancel_requested", MagicMock(return_value=False)
+        )
+
+        args = [1, 2]
+        kwargs = {}
+        task_metadata = {"dispatch_id": "asdf", "node_id": 1}
+        assert le.run(simple_task, args, kwargs, task_metadata)
+
+        target_dir = os.path.join(
+            tmp_dir, task_metadata["dispatch_id"], f"node_{task_metadata['node_id']}"
+        )
+
+        assert os.listdir(target_dir) == ["job.txt"]
+        assert open(os.path.join(target_dir, "job.txt")).read() == "3"
+
+        mock_set_job_handle.assert_called_once()
+        mock_get_cancel_requested.assert_called_once()
 
 
 def test_local_executor_passes_results_dir(mocker):

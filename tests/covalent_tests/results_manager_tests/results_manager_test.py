@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Tests for results manager."""
 
@@ -24,12 +20,30 @@ from http.client import HTTPMessage
 from unittest.mock import ANY, MagicMock, Mock, call
 
 import pytest
+import requests
 
 from covalent._results_manager import wait
-from covalent._results_manager.results_manager import _get_result_from_dispatcher, cancel
+from covalent._results_manager.results_manager import (
+    _get_result_from_dispatcher,
+    cancel,
+    get_result,
+)
 from covalent._shared_files.config import get_config
 
-DISPATCH_ID = "91c3ee18-5f2d-44ee-ac2a-39b79cf56646"
+
+def test_get_result_unreachable_dispatcher(mocker):
+    """
+    Test that get_result returns None when
+    the dispatcher server is unreachable.
+    """
+    mock_dispatch_id = "mock_dispatch_id"
+
+    mocker.patch(
+        "covalent._results_manager.results_manager._get_result_from_dispatcher",
+        side_effect=requests.exceptions.ConnectionError,
+    )
+
+    assert get_result(mock_dispatch_id) is None
 
 
 @pytest.mark.parametrize(
@@ -65,6 +79,35 @@ def test_get_result_from_dispatcher(mocker, dispatcher_addr):
         ]
         * retries
     )
+
+
+def test_get_result_from_dispatcher_unreachable(mocker):
+    """
+    Test that _get_result_from_dispatcher raises an exception when
+    the dispatcher server is unreachable.
+    """
+
+    # TODO: Will need to edit this once `_get_result_from_dispatcher` is fixed
+    # to actually throw an exception when the dispatcher server is unreachable
+    # instead of just hanging.
+
+    mock_dispatcher_addr = "mock_dispatcher_addr"
+    mock_dispatch_id = "mock_dispatch_id"
+
+    message = f"The Covalent server cannot be reached at {mock_dispatcher_addr}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
+
+    mocker.patch("covalent._results_manager.results_manager.HTTPAdapter")
+    mock_session = mocker.patch("covalent._results_manager.results_manager.requests.Session")
+    mock_session.return_value.get.side_effect = requests.exceptions.ConnectionError
+
+    mock_print = mocker.patch("covalent._results_manager.results_manager.print")
+
+    with pytest.raises(requests.exceptions.ConnectionError):
+        _get_result_from_dispatcher(
+            mock_dispatch_id, wait=wait.LONG, dispatcher_addr=mock_dispatcher_addr
+        )
+
+    mock_print.assert_called_once_with(message)
 
 
 def test_cancel_with_single_task_id(mocker):

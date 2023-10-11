@@ -44,6 +44,8 @@ Intermediate
      - :doc:`Modeling time series for sales forecasting<./machine_learning/dnn_comparison>`
    * - Machine Learning
      - :doc:`Training a quantum-classical neural network<./qiskit_hybrid_neural_network/source>`
+   * - Quantum Chemistry
+     - :doc:`Dynamic quantum chemistry workflow<./3_QuantumChemistry/dynamic_quantum_chemistry/source>`
 
 ~~~~~~~~
 Advanced
@@ -69,6 +71,10 @@ Advanced
      - :doc:`Tracking stars in the night sky<./2_Astronomy/star_tracker/source>`
    * - Quantum Gravity
      - :doc:`Classifying discrete spacetimes by dimension<./4_QuantumGravity/spacetime_classification/source>`
+   * - Generative AI/LLM
+     - :doc:`Scalable API backends for LLM and generative AI <./0_ClassicalMachineLearning/genai/source>`
+   * - Federated learning
+     - :doc:`Federated learning <./federated_learning/source>`
 
 ---------------------------------
 

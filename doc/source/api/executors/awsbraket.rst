@@ -3,7 +3,7 @@
 AWS Braket Executor
 """""""""""""""""""""""""""
 
-.. image:: AWS_Braket.jpg
+.. image:: executors/AWS_Braket.jpg
 
 
 Covalent is a Pythonic workflow tool used to execute tasks on advanced computing hardware.
@@ -419,6 +419,6 @@ Users can use the following `Terraform <https://www.terraform.io/>`_ snippet as 
 .. 5. Source
 .. ===========================================
 
-.. autoclass:: covalent.executor.BraketExecutor
+.. autoclass:: covalent_braket_plugin.braket.BraketExecutor
     :members:
     :inherited-members:
