@@ -27,6 +27,7 @@ import sys
 from pathlib import Path
 from typing import Dict, Tuple
 
+import boto3
 import click
 from rich.console import Console
 from rich.table import Table
@@ -133,7 +134,7 @@ def deploy():
     pass
 
 
-@deploy.command(context_settings={"ignore_unknown_options": True})
+@deploy.command(context_settings={"ignore_unknown_options": False})
 @click.argument("executor_name", nargs=1)
 @click.argument("vars", nargs=-1)
 @click.option(
@@ -164,6 +165,9 @@ def up(executor_name: str, vars: Dict, help: bool, dry_run: bool, verbose: bool)
 
     """
     cmd_options = {key[2:]: value for key, value in (var.split("=") for var in vars)}
+    if msg := validate_args(cmd_options):
+        click.echo(msg)
+        return
     crm = get_crm_object(executor_name, cmd_options)
     if help:
         click.echo(Console().print(get_up_help_table(crm)))
@@ -294,3 +298,19 @@ def status(executor_names: Tuple[str]) -> None:
                 fg="yellow",
             )
         )
+
+
+def validate_args(args: dict):
+    message = None
+    if len(args) == 0:
+        return message
+    if "region" in args and args["region"] != "":
+        if not validate_region(args["region"]):
+            return f"Unable to find the provided region: {args['region']}"
+
+
+def validate_region(region_name: str):
+    ec2_client = boto3.client("ec2")
+    response = ec2_client.describe_regions()
+    exists = region_name in [item["RegionName"] for item in response["Regions"]]
+    return exists
