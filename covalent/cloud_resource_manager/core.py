@@ -16,17 +16,24 @@
 
 
 import importlib
+import logging
 import os
 import shutil
 import subprocess
+import sys
 from configparser import ConfigParser
 from pathlib import Path
 from types import ModuleType
 from typing import Callable, Dict, List, Optional
 
 from covalent._shared_files.config import get_config, set_config
-from covalent._shared_files.exceptions import CommandNotFoundError
 from covalent.executor import _executor_manager
+
+logger = logging.getLogger()
+logger.setLevel(logging.ERROR)
+handler = logging.StreamHandler(sys.stderr)
+logger.addHandler(handler)
+logger.propagate = False
 
 
 def get_executor_module(executor_name: str) -> ModuleType:
@@ -181,8 +188,18 @@ class CloudResourceManager:
             List of lines in the terraform error log.
 
         """
-        with open(self._terraform_log_env_vars["TF_LOG_PATH"], "r") as f:
+        with open(Path(self.executor_tf_path) / "terraform-error.log", "r") as f:
             lines = f.readlines()
+        for index, line in enumerate(lines):
+            error_index = line.strip().find("error:")
+            if error_index != -1:
+                error_message = line.strip()[error_index + len("error:") :]
+                logger.error("Error while:")
+                logger.error(error_message)
+                logger.error("_________________________")
+        with open(Path(self.executor_tf_path) / "terraform-error.log", "w"):
+            pass
+        f.close()
         return lines
 
     def _run_in_subprocess(
@@ -210,7 +227,10 @@ class CloudResourceManager:
             stderr=subprocess.STDOUT,
             cwd=workdir,
             shell=True,
-            env=env_vars,
+            env={
+                "TF_LOG": "ERROR",
+                "TF_LOG_PATH": Path(self.executor_tf_path) / "terraform-error.log",
+            },
         )
         retcode = self._print_stdout(proc, print_callback)
 
@@ -259,7 +279,8 @@ class CloudResourceManager:
         if terraform := shutil.which("terraform"):
             return terraform
         else:
-            raise CommandNotFoundError("Terraform not found on system")
+            logger.error("Terraform not found on system")
+            exit()
 
     def _get_tf_statefile_path(self) -> str:
         """
@@ -291,9 +312,9 @@ class CloudResourceManager:
         tfvars_file = Path(self.executor_tf_path) / "terraform.tfvars"
         tf_executor_config_file = Path(self.executor_tf_path) / f"{self.executor_name}.conf"
 
-        tf_init = " ".join(["TF_CLI_ARGS=-no-color", terraform, "init"])
-        tf_plan = " ".join(["TF_CLI_ARGS=-no-color", terraform, "plan", "-out", "tf.plan"])
-        tf_apply = " ".join(["TF_CLI_ARGS=-no-color", terraform, "apply", "tf.plan"])
+        tf_init = " ".join([terraform, "init"])
+        tf_plan = " ".join([terraform, "plan", "-out", "tf.plan"])
+        tf_apply = " ".join([terraform, "apply", "tf.plan"])
 
         # Run `terraform init`
         self._run_in_subprocess(
@@ -315,7 +336,10 @@ class CloudResourceManager:
         self._run_in_subprocess(
             cmd=tf_plan,
             workdir=self.executor_tf_path,
-            env_vars=tf_vars_env_dict.update(self._terraform_log_env_vars),
+            env_vars={
+                "TF_LOG": "ERROR",
+                "TF_LOG_PATH": Path(self.executor_tf_path) / "terraform-error.log",
+            },
             print_callback=print_callback,
         )
 

@@ -23,6 +23,7 @@
 
 
 import subprocess
+import sys
 from pathlib import Path
 from typing import Dict, Tuple
 
@@ -30,7 +31,7 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-from covalent.cloud_resource_manager.core import CloudResourceManager
+from covalent.cloud_resource_manager.core import CloudResourceManager, logger
 from covalent.executor import _executor_manager
 
 
@@ -68,6 +69,9 @@ def get_print_callback(
 
     def inline_print_callback(msg):
         console_status.update(f"{prepend_msg} {msg}")
+        if msg == "No changes. No objects need to be destroyed.":
+            logger.error("Resources already destroyed")
+            sys.exit()
 
     return inline_print_callback
 
@@ -180,9 +184,9 @@ def up(executor_name: str, vars: Dict, help: bool, dry_run: bool, verbose: bool)
                 ),
             )
         except subprocess.CalledProcessError as e:
-            click.echo(
-                f"Unable to provision resources due to the following error:\n\n{e.stderr[-1]}"
-            )
+            # click.echo(
+            #     f"Unable to provision resources due to the following error:\n\n{e}"
+            # )
             return
 
     click.echo(Console().print(get_settings_table(crm)))
