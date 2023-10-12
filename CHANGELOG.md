@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Docs
 
 - Added federated learning showcase code
+- Updated tutorial for redispatching workflows with Streamlit 
 
 ### Tests
 
