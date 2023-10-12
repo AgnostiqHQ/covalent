@@ -205,6 +205,7 @@ class Result(DispatchedObject[ResultMeta, ResultAsset]):
         error: Exception = None,
         stdout: str = None,
         stderr: str = None,
+        qelectron_data_exists: bool = None,
     ) -> bool:
         """
         Update the node result in the transport graph.
@@ -253,6 +254,7 @@ class Result(DispatchedObject[ResultMeta, ResultAsset]):
 
             if end_time is not None:
                 self.lattice.transport_graph.set_node_value(node_id, "end_time", end_time, session)
+
             if output is not None:
                 self.lattice.transport_graph.set_node_value(node_id, "output", output, session)
 
@@ -264,6 +266,11 @@ class Result(DispatchedObject[ResultMeta, ResultAsset]):
 
             if stderr is not None:
                 self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr, session)
+
+            if qelectron_data_exists is not None:
+                self.lattice.transport_graph.set_node_value(
+                    node_id, "qelectron_data_exists", qelectron_data_exists, session
+                )
 
         # Handle postprocessing node
         tg = self.lattice.transport_graph

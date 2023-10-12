@@ -21,22 +21,6 @@ import json
 from covalent._shared_files.schemas.electron import ELECTRON_ASSET_KEYS, ELECTRON_METADATA_KEYS
 from covalent._shared_files.util_classes import Status
 
-ATTRIBUTES = {
-    "name",
-    "start_time",
-    "end_time",
-    "status",
-    "sub_dispatch_id",
-    "function",
-    "function_string",
-    "output",
-    "value",
-    "error",
-    "stdout",
-    "stderr",
-    "metadata",
-}
-
 METADATA_KEYS = ELECTRON_METADATA_KEYS
 ASSET_KEYS = ELECTRON_ASSET_KEYS
 
@@ -51,6 +35,7 @@ _meta_record_map = {
     "status": "status",
     "executor": "executor",
     "executor_data": "executor_data",
+    "qelectron_data_exists": "qelectron_data_exists",
 }
 
 _db_meta_record_map = {
@@ -63,21 +48,6 @@ _db_meta_record_map = {
 }
 
 _meta_record_map.update(_db_meta_record_map)
-
-# Obsoleted by ElectronAsset table
-_asset_record_map = {
-    "function": "function_filename",
-    "function_string": "function_string_filename",
-    "output": "results_filename",
-    "value": "value_filename",
-    "error": "error_filename",
-    "stdout": "stdout_filename",
-    "stderr": "stderr_filename",
-    "executor_data": "executor_data_filename",
-    "deps": "deps_filename",
-    "call_before": "call_before_filename",
-    "call_after": "call_after_filename",
-}
 
 
 def identity(x):

@@ -102,6 +102,7 @@ async def _run_abstract_task(
 
     node_result = datasvc.generate_node_result(
         dispatch_id=dispatch_id,
+        node_name=node_name,
         node_id=node_id,
         start_time=timestamp,
         status=RESULT_STATUS.RUNNING,
@@ -223,6 +224,7 @@ async def _run_task(
         node_result = datasvc.generate_node_result(
             dispatch_id=dispatch_id,
             node_id=node_id,
+            node_name=node_name,
             end_time=datetime.now(timezone.utc),
             status=status,
             output=output,
@@ -238,6 +240,7 @@ async def _run_task(
         node_result = datasvc.generate_node_result(
             dispatch_id=dispatch_id,
             node_id=node_id,
+            node_name=node_name,
             end_time=datetime.now(timezone.utc),
             status=RESULT_STATUS.FAILED,
             error=error_msg,

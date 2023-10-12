@@ -95,7 +95,7 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
         )
 
 
-def _get_abstract_task_inputs(dispatch_id: str, node_id: int) -> dict:
+async def _get_abstract_task_inputs(dispatch_id: str, node_id: int) -> dict:
     """Return placeholders for the required inputs for a task execution.
 
     Args:
@@ -110,7 +110,7 @@ def _get_abstract_task_inputs(dispatch_id: str, node_id: int) -> dict:
 
     abstract_task_input = {"args": [], "kwargs": {}}
 
-    in_edges = core_graph.get_incoming_edges(dispatch_id, node_id)
+    in_edges = await core_graph.get_incoming_edges(dispatch_id, node_id)
     for edge in in_edges:
         parent = edge["source"]
 
@@ -130,7 +130,7 @@ def _get_abstract_task_inputs(dispatch_id: str, node_id: int) -> dict:
 
 
 # Domain: data
-def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
+async def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
     """
     Get Electron Inputs
     Args:
@@ -140,7 +140,9 @@ def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
         Returns the inputs data from Result object
     """
 
-    abstract_inputs = _get_abstract_task_inputs(dispatch_id=str(dispatch_id), node_id=electron_id)
+    abstract_inputs = await _get_abstract_task_inputs(
+        dispatch_id=str(dispatch_id), node_id=electron_id
+    )
 
     # Resolve node ids to object strings
     input_assets = {"args": [], "kwargs": {}}
@@ -166,7 +168,7 @@ def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
 
 
 @routes.get("/{dispatch_id}/electron/{electron_id}/details/{name}")
-def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFileOutput):
+async def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFileOutput):
     """
     Get Electron details
     Args:
@@ -194,7 +196,7 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
             )
         handler = FileHandler(result["storage_path"])
         if name == "inputs":
-            response, python_object = get_electron_inputs(
+            response, python_object = await get_electron_inputs(
                 dispatch_id=dispatch_id, electron_id=electron_id
             )
             return ElectronFileResponse(data=str(response), python_object=str(python_object))

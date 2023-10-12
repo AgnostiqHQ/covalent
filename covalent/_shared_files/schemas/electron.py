@@ -33,6 +33,7 @@ ELECTRON_METADATA_KEYS = {
     # electron metadata
     "executor",
     "executor_data",
+    "qelectron_data_exists",
 }
 
 ELECTRON_ASSET_KEYS = {
