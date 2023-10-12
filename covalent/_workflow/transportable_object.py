@@ -52,18 +52,19 @@ class _TOArchive:
 
         return string_offset + data_offset + self.header + self.object_string + self.data
 
-    def load(self, header_only: bool, string_only: bool) -> "_TOArchive":
-        string_offset = TOArchiveUtils.string_offset(self)
-        header = TOArchiveUtils.parse_header(self, string_offset)
+    @staticmethod
+    def load(serialized: bytes, header_only: bool, string_only: bool) -> "_TOArchive":
+        string_offset = TOArchiveUtils.string_offset(serialized)
+        header = TOArchiveUtils.parse_header(serialized, string_offset)
         object_string = b""
         data = b""
 
         if not header_only:
-            data_offset = TOArchiveUtils.data_offset(self)
-            object_string = TOArchiveUtils.parse_string(self, string_offset, data_offset)
+            data_offset = TOArchiveUtils.data_offset(serialized)
+            object_string = TOArchiveUtils.parse_string(serialized, string_offset, data_offset)
 
             if not string_only:
-                data = TOArchiveUtils.parse_data(self, data_offset)
+                data = TOArchiveUtils.parse_data(serialized, data_offset)
         return _TOArchive(header, object_string, data)
 
 

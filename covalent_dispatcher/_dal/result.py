@@ -205,7 +205,7 @@ class Result(DispatchedObject[ResultMeta, ResultAsset]):
         error: Exception = None,
         stdout: str = None,
         stderr: str = None,
-        qelectron_data_exists: bool = False,
+        qelectron_data_exists: bool = None,
     ) -> bool:
         """
         Update the node result in the transport graph.
