@@ -119,7 +119,11 @@ def get_plugin_settings(
 
     if executor_options:
         for key, value in executor_options.items():
-            settings_dict[key]["value"] = value
+            try:
+                settings_dict[key]["value"] = value
+            except:
+                logger.error(f"No such option '{key}'. Use --help for available options")
+                sys.exit()
 
     return settings_dict
 

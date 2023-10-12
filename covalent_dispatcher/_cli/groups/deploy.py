@@ -134,7 +134,7 @@ def deploy():
     pass
 
 
-@deploy.command(context_settings={"ignore_unknown_options": False})
+@deploy.command(context_settings={"ignore_unknown_options": True})
 @click.argument("executor_name", nargs=1)
 @click.argument("vars", nargs=-1)
 @click.option(
