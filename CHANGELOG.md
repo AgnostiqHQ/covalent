@@ -38,6 +38,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Added federated learning showcase code
 
+### Tests
+
+- Temporarily skipping the sqlite and database trigger functional tests
+
 ## [0.229.0-rc.0] - 2023-09-22
 
 ### Authors
