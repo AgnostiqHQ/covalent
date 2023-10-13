@@ -10,7 +10,7 @@ Use the Dask Cluster Settings page to view preferences for the Dask cluster that
   :align: center
 
 Cache Directory
-    The directory path that Dask uses for cacheing.
+    The directory path that Dask uses for caching.
 Log Directory
     The directory path of the Dask cluster logs.
 Mem Per Worker
