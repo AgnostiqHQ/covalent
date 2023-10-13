@@ -34,7 +34,7 @@ Pending (orange)
 
 ## Transport Graph
 
-Click on a dispatch ID to view the {ref}`transport graph <Transport Graph>`. The nodes in the graph shows the executor, name, and ID number of each task. The graph's edges are labeled with the data dependencies betwen nodes.
+Click on a dispatch ID to view the {ref}`transport graph <Transport Graph>`. The nodes in the graph shows the executor, name, and ID number of each task. The graph's edges are labeled with the data dependencies between nodes.
 
 :::{note}
 In some default display configurations, edges can run behind other nodes, labels can be obscured, and other display anomalies can occur. The graph view features {ref}`controls<graph_controls>` that you can use to adjust the graph display.
