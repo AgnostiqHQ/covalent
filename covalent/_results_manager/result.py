@@ -442,7 +442,7 @@ Node Outputs
         sublattice_result: "Result" = None,
         stdout: str = None,
         stderr: str = None,
-        qelectron_data_exists: bool = False,
+        qelectron_data_exists: bool = None,
     ) -> None:
         """
         Update the node result in the transport graph.
@@ -501,7 +501,7 @@ Node Outputs
         if stderr is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
 
-        if qelectron_data_exists:
+        if qelectron_data_exists is not None:
             self.lattice.transport_graph.set_node_value(
                 node_id, "qelectron_data_exists", qelectron_data_exists
             )

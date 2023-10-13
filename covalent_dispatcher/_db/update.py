@@ -74,7 +74,7 @@ def _node(
     stderr: str = None,
     sub_dispatch_id=None,
     sublattice_result=None,
-    qelectron_data_exists: bool = False,
+    qelectron_data_exists: bool = None,
 ) -> bool:
     """
     Update the node result in the transport graph.

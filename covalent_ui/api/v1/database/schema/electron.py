@@ -127,7 +127,7 @@ class Electron(Base):
     cancel_requested = Column(Boolean, nullable=False, default=False)
 
     # Flag that indicates if qelectron data exists in the electron
-    qelectron_data_exists = Column(Boolean, nullable=False)
+    qelectron_data_exists = Column(Boolean, nullable=False, default=False)
 
     # Timestamps
     created_at = Column(DateTime, nullable=False, server_default=func.now())
