@@ -16,6 +16,7 @@
 
 """Result object."""
 import os
+import re
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Dict, List, Set, Union
 
@@ -62,6 +63,9 @@ class Result:
     """
 
     NEW_OBJ = RESULT_STATUS.NEW_OBJECT
+    PENDING_REUSE = (
+        RESULT_STATUS.PENDING_REUSE
+    )  # Facilitates reuse of previous electrons in the new dispatcher design
     COMPLETED = RESULT_STATUS.COMPLETED
     POSTPROCESSING = RESULT_STATUS.POSTPROCESSING
     PENDING_POSTPROCESSING = RESULT_STATUS.PENDING_POSTPROCESSING
@@ -92,19 +96,26 @@ class Result:
 
         self._num_nodes = -1
 
-        self._inputs = {"args": [], "kwargs": {}}
-        if lattice.args:
-            self._inputs["args"] = lattice.args
-        if lattice.kwargs:
-            self._inputs["kwargs"] = lattice.kwargs
-
-        self._error = None
+        self._error = ""
 
     def __str__(self):
         """String representation of the result object"""
 
-        arg_str_repr = [e.object_string for e in self.inputs["args"]]
-        kwarg_str_repr = {key: value.object_string for key, value in self.inputs["kwargs"].items()}
+        if isinstance(self.inputs, TransportableObject):
+            input_string = self.inputs.object_string
+
+            regex = r"^\{'args': \((.*)\), 'kwargs': \{(.*)\}\}$"
+            pattern = re.compile(regex)
+            m = pattern.match(input_string)
+            if m:
+                arg_str_repr = m[1].rstrip(",")
+                kwarg_str_repr = m[2]
+            else:
+                arg_str_repr = str(None)
+                kwarg_str_repr = str(None)
+        else:
+            arg_str_repr = str(None)
+            kwarg_str_repr = str(None)
 
         show_result_str = f"""
 Lattice Result
@@ -200,7 +211,10 @@ Node Outputs
         Final result of current dispatch.
         """
 
-        return self._result.get_deserialized()
+        if self._result is not None:
+            return self._result.get_deserialized()
+        else:
+            return None
 
     @property
     def inputs(self) -> dict:
@@ -208,7 +222,7 @@ Node Outputs
         Inputs sent to the "Lattice" function for dispatching.
         """
 
-        return self._inputs
+        return self.lattice.inputs
 
     @property
     def error(self) -> str:
@@ -327,8 +341,9 @@ Node Outputs
         with active_lattice_manager.claim(lattice):
             lattice.post_processing = True
             lattice.electron_outputs = ordered_node_outputs
-            args = [arg.get_deserialized() for arg in lattice.args]
-            kwargs = {k: v.get_deserialized() for k, v in lattice.kwargs.items()}
+            inputs = self.lattice.inputs.get_deserialized()
+            args = inputs["args"]
+            kwargs = inputs["kwargs"]
             workflow_function = lattice.workflow_function.get_deserialized()
             result = workflow_function(*args, **kwargs)
             lattice.post_processing = False
@@ -427,7 +442,7 @@ Node Outputs
         sublattice_result: "Result" = None,
         stdout: str = None,
         stderr: str = None,
-        qelectron_data_exists: bool = False,
+        qelectron_data_exists: bool = None,
     ) -> None:
         """
         Update the node result in the transport graph.
@@ -486,7 +501,7 @@ Node Outputs
         if stderr is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
 
-        if qelectron_data_exists:
+        if qelectron_data_exists is not None:
             self.lattice.transport_graph.set_node_value(
                 node_id, "qelectron_data_exists", qelectron_data_exists
             )

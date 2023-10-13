@@ -471,11 +471,13 @@ async def test_persist_result(mocker):
     mock_update_parent = mocker.patch(
         "covalent_dispatcher._core.data_manager._update_parent_electron"
     )
-    mock_persist = mocker.patch("covalent_dispatcher._core.data_manager.update.persist")
+    mock_update_lattice = mocker.patch(
+        "covalent_dispatcher._core.data_manager.update.lattice_data"
+    )
 
     await persist_result(result_object.dispatch_id)
     mock_update_parent.assert_awaited_with(result_object)
-    mock_persist.assert_called_with(result_object)
+    mock_update_lattice.assert_called_with(result_object)
 
 
 @pytest.mark.parametrize(
@@ -536,6 +538,6 @@ def test_upsert_lattice_data(mocker):
     mocker.patch(
         "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
     )
-    mock_upsert_lattice = mocker.patch("covalent_dispatcher._db.upsert.lattice_data")
+    mock_update_lattice = mocker.patch("covalent_dispatcher._db.update.lattice_data")
     upsert_lattice_data(result_object.dispatch_id)
-    mock_upsert_lattice.assert_called_with(result_object)
+    mock_update_lattice.assert_called_with(result_object)

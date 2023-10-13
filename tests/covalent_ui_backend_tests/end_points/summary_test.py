@@ -23,10 +23,10 @@ import pytest
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, func
 from sqlalchemy.orm import declarative_base
 
-from tests.covalent_ui_backend_tests import fastapi_app
-from tests.covalent_ui_backend_tests.utils.assert_data.summary import seed_summary_data
-from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
-from tests.covalent_ui_backend_tests.utils.trigger_events import shutdown_event, startup_event
+from .. import fastapi_app
+from ..utils.assert_data.summary import seed_summary_data
+from ..utils.client_template import MethodType, TestClientTemplate
+from ..utils.trigger_events import shutdown_event, startup_event
 
 object_test_template = TestClientTemplate()
 MockBase = declarative_base()

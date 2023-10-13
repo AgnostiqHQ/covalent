@@ -6,7 +6,7 @@
         "created_at": "2022-09-23 10:01:11.062647",
         "deps_filename": "deps.pkl",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "function_filename": "function.pkl",
         "function_string_filename": "function_string.txt",
         "id": 1,
@@ -20,12 +20,14 @@
         "stdout_filename": "stdout.log",
         "storage_path": "/tests/covalent_ui_backend_tests/utils/results/78525234-72ec-42dc-94a0-f4751707f9cd/node_0",
         "storage_type": "local",
+        "task_group_id": -1,
         "transport_graph_node_id": 0,
         "type": "function",
         "updated_at": "2022-09-23 10:01:11.490513",
         "value_filename": "value.pkl",
         "job_id": 0,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
@@ -35,7 +37,7 @@
         "created_at": "2022-09-23 10:01:11.075465",
         "deps_filename": "deps.pkl",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "function_filename": "function.pkl",
         "function_string_filename": "function_string.txt",
         "id": 2,
@@ -49,12 +51,14 @@
         "stdout_filename": "stdout.log",
         "storage_path": "/tests/covalent_ui_backend_tests/utils/results/78525234-72ec-42dc-94a0-f4751707f9cd/node_1",
         "storage_type": "local",
+        "task_group_id": -1,
         "transport_graph_node_id": 1,
         "type": "function",
         "updated_at": "2022-09-23 10:01:11.526865",
         "value_filename": "value.pkl",
         "job_id": 0,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
@@ -64,7 +68,7 @@
         "created_at": "2022-09-23 10:01:11.085971",
         "deps_filename": "deps.pkl",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "function_filename": "function.pkl",
         "function_string_filename": "function_string.txt",
         "id": 3,
@@ -78,12 +82,14 @@
         "stdout_filename": "stdout.log",
         "storage_path": "/tests/covalent_ui_backend_tests/utils/results/78525234-72ec-42dc-94a0-f4751707f9cd/node_2",
         "storage_type": "local",
+        "task_group_id": -1,
         "transport_graph_node_id": 2,
         "type": "parameter",
         "updated_at": "2022-09-23 10:01:11.197121",
         "value_filename": "value.pkl",
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
@@ -93,7 +99,7 @@
         "created_at": "2022-09-23 10:01:11.098325",
         "deps_filename": "deps.pkl",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "function_filename": "function.pkl",
         "function_string_filename": "function_string.txt",
         "id": 4,
@@ -107,12 +113,14 @@
         "stdout_filename": "stdout.log",
         "storage_path": "/tests/covalent_ui_backend_tests/utils/results/78525234-72ec-42dc-94a0-f4751707f9cd/node_3",
         "storage_type": "local",
+        "task_group_id": -1,
         "transport_graph_node_id": 3,
         "type": "function",
         "updated_at": "2022-09-23 10:01:11.591516",
         "value_filename": "value.pkl",
         "job_id": 2,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
@@ -122,7 +130,7 @@
         "created_at": "2022-09-23 10:01:11.109305",
         "deps_filename": "deps.pkl",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "function_filename": "function.pkl",
         "function_string_filename": "function_string.txt",
         "id": 5,
@@ -136,12 +144,14 @@
         "stdout_filename": "stdout.log",
         "storage_path": "/tests/covalent_ui_backend_tests/utils/results/78525234-72ec-42dc-94a0-f4751707f9cd/node_4",
         "storage_type": "local",
+        "task_group_id": -1,
         "transport_graph_node_id": 4,
         "type": "function",
         "updated_at": "2022-09-23 10:01:11.642760",
         "value_filename": "value.pkl",
         "job_id": 3,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
@@ -151,7 +161,7 @@
         "created_at": "2022-09-23 10:01:11.121100",
         "deps_filename": "deps.pkl",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "function_filename": "function.pkl",
         "function_string_filename": "function_string.txt",
         "id": 6,
@@ -165,17 +175,20 @@
         "stdout_filename": "stdout.log",
         "storage_path": "/tests/covalent_ui_backend_tests/utils/results/78525234-72ec-42dc-94a0-f4751707f9cd/node_5",
         "storage_type": "local",
+        "task_group_id": -1,
         "transport_graph_node_id": 5,
         "type": "parameter",
         "updated_at": "2022-09-23 10:01:11.229709",
         "value_filename": "value.pkl",
         "job_id": 4,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 7,
         "parent_lattice_id": 2,
+        "task_group_id": -1,
         "transport_graph_node_id": 0,
         "type": "function",
         "name": "identity",
@@ -197,14 +210,16 @@
         "started_at": "2022-10-27 10:08:33.861837",
         "completed_at": "2022-10-27 10:08:33.933100",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 5,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 8,
         "parent_lattice_id": 2,
+        "task_group_id": -1,
         "transport_graph_node_id": 1,
         "type": "parameter",
         "name": ":parameter:2",
@@ -226,14 +241,16 @@
         "started_at": "2022-10-27 10:08:33.827366",
         "completed_at": "2022-10-27 10:08:33.827372",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 6,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 9,
         "parent_lattice_id": 2,
+        "task_group_id": -1,
         "transport_graph_node_id": 2,
         "type": "sublattice",
         "name": ":sublattice:sub",
@@ -255,14 +272,16 @@
         "started_at": "2022-10-27 10:08:33.967565",
         "completed_at": "2022-10-27 10:08:36.028194",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 10,
         "parent_lattice_id": 2,
+        "task_group_id": -1,
         "transport_graph_node_id": 3,
         "type": "sublattice",
         "name": ":sublattice:sub",
@@ -284,14 +303,16 @@
         "started_at": "2022-10-27 10:08:36.065830",
         "completed_at": "2022-10-27 10:08:43.905519",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 11,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 0,
         "type": "function",
         "name": "identity",
@@ -313,14 +334,16 @@
         "started_at": "2022-10-27 10:08:34.939603",
         "completed_at": "2022-10-27 10:08:35.159092",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 12,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 1,
         "type": "parameter",
         "name": ":parameter:2",
@@ -342,14 +365,16 @@
         "started_at": "2022-10-27 10:08:34.523975",
         "completed_at": "2022-10-27 10:08:34.523987",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 13,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 2,
         "type": "function",
         "name": "identity",
@@ -371,14 +396,16 @@
         "started_at": "2022-10-27 10:08:34.968949",
         "completed_at": "2022-10-27 10:08:35.238154",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 14,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 3,
         "type": "parameter",
         "name": ":parameter:2",
@@ -400,14 +427,16 @@
         "started_at": "2022-10-27 10:08:34.576178",
         "completed_at": "2022-10-27 10:08:34.576181",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 15,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 4,
         "type": "function",
         "name": "identity",
@@ -429,14 +458,16 @@
         "started_at": "2022-10-27 10:08:35.011096",
         "completed_at": "2022-10-27 10:08:35.324016",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 16,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 5,
         "type": "parameter",
         "name": ":parameter:2",
@@ -458,14 +489,16 @@
         "started_at": "2022-10-27 10:08:34.614049",
         "completed_at": "2022-10-27 10:08:34.614051",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 17,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 6,
         "type": "function",
         "name": "identity",
@@ -487,14 +520,16 @@
         "started_at": "2022-10-27 10:08:35.058712",
         "completed_at": "2022-10-27 10:08:35.408068",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 18,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 7,
         "type": "parameter",
         "name": ":parameter:2",
@@ -516,14 +551,16 @@
         "started_at": "2022-10-27 10:08:34.647511",
         "completed_at": "2022-10-27 10:08:34.647516",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 19,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 8,
         "type": "function",
         "name": "identity",
@@ -545,14 +582,16 @@
         "started_at": "2022-10-27 10:08:35.109570",
         "completed_at": "2022-10-27 10:08:35.558177",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 20,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 9,
         "type": "parameter",
         "name": ":parameter:2",
@@ -574,14 +613,16 @@
         "started_at": "2022-10-27 10:08:34.689654",
         "completed_at": "2022-10-27 10:08:34.689659",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 21,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 10,
         "type": "function",
         "name": "identity",
@@ -603,14 +644,16 @@
         "started_at": "2022-10-27 10:08:35.193220",
         "completed_at": "2022-10-27 10:08:35.514718",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 22,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 11,
         "type": "parameter",
         "name": ":parameter:2",
@@ -632,14 +675,16 @@
         "started_at": "2022-10-27 10:08:34.729529",
         "completed_at": "2022-10-27 10:08:34.729533",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 23,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 12,
         "type": "function",
         "name": "identity",
@@ -661,14 +706,16 @@
         "started_at": "2022-10-27 10:08:35.287892",
         "completed_at": "2022-10-27 10:08:35.673424",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 24,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 13,
         "type": "parameter",
         "name": ":parameter:2",
@@ -690,14 +737,16 @@
         "started_at": "2022-10-27 10:08:34.769243",
         "completed_at": "2022-10-27 10:08:34.769254",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 25,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 14,
         "type": "function",
         "name": "identity",
@@ -719,14 +768,16 @@
         "started_at": "2022-10-27 10:08:35.354986",
         "completed_at": "2022-10-27 10:08:35.763519",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 26,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 15,
         "type": "parameter",
         "name": ":parameter:2",
@@ -748,14 +799,16 @@
         "started_at": "2022-10-27 10:08:34.810072",
         "completed_at": "2022-10-27 10:08:34.810076",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 27,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 16,
         "type": "function",
         "name": "identity",
@@ -777,14 +830,16 @@
         "started_at": "2022-10-27 10:08:35.447829",
         "completed_at": "2022-10-27 10:08:35.809561",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 28,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 17,
         "type": "parameter",
         "name": ":parameter:2",
@@ -806,14 +861,16 @@
         "started_at": "2022-10-27 10:08:34.853785",
         "completed_at": "2022-10-27 10:08:34.853790",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 29,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 18,
         "type": "function",
         "name": "identity",
@@ -835,14 +892,16 @@
         "started_at": "2022-10-27 10:08:35.596881",
         "completed_at": "2022-10-27 10:08:35.861501",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 30,
         "parent_lattice_id": 3,
+        "task_group_id": -1,
         "transport_graph_node_id": 19,
         "type": "parameter",
         "name": ":parameter:2",
@@ -864,14 +923,16 @@
         "started_at": "2022-10-27 10:08:34.895470",
         "completed_at": "2022-10-27 10:08:34.895475",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 31,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 0,
         "type": "function",
         "name": "identity",
@@ -893,14 +954,16 @@
         "started_at": "2022-10-27 10:08:42.917693",
         "completed_at": "2022-10-27 10:08:43.165874",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 32,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 1,
         "type": "electron_list",
         "name": ":electron_list:",
@@ -922,14 +985,16 @@
         "started_at": "2022-10-27 10:08:42.299329",
         "completed_at": "2022-10-27 10:08:42.506677",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 33,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 2,
         "type": "parameter",
         "name": ":parameter:2",
@@ -951,14 +1016,16 @@
         "started_at": "2022-10-27 10:08:38.780790",
         "completed_at": "2022-10-27 10:08:38.780796",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 34,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 3,
         "type": "parameter",
         "name": ":parameter:2",
@@ -980,14 +1047,16 @@
         "started_at": "2022-10-27 10:08:38.820257",
         "completed_at": "2022-10-27 10:08:38.820263",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 35,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 4,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1009,14 +1078,16 @@
         "started_at": "2022-10-27 10:08:38.854643",
         "completed_at": "2022-10-27 10:08:38.854648",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 36,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 5,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1038,14 +1109,16 @@
         "started_at": "2022-10-27 10:08:38.887957",
         "completed_at": "2022-10-27 10:08:38.887961",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 37,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 6,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1067,14 +1140,16 @@
         "started_at": "2022-10-27 10:08:38.922953",
         "completed_at": "2022-10-27 10:08:38.922958",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 38,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 7,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1096,14 +1171,16 @@
         "started_at": "2022-10-27 10:08:38.964715",
         "completed_at": "2022-10-27 10:08:38.964719",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 39,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 8,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1125,14 +1202,16 @@
         "started_at": "2022-10-27 10:08:39.035460",
         "completed_at": "2022-10-27 10:08:39.035471",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 40,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 9,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1154,14 +1233,16 @@
         "started_at": "2022-10-27 10:08:39.090917",
         "completed_at": "2022-10-27 10:08:39.090918",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 41,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 10,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1183,14 +1264,16 @@
         "started_at": "2022-10-27 10:08:39.115263",
         "completed_at": "2022-10-27 10:08:39.115265",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 42,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 11,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1212,14 +1295,16 @@
         "started_at": "2022-10-27 10:08:39.140423",
         "completed_at": "2022-10-27 10:08:39.140424",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 43,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 12,
         "type": "function",
         "name": "identity",
@@ -1241,14 +1326,16 @@
         "started_at": "2022-10-27 10:08:42.962785",
         "completed_at": "2022-10-27 10:08:43.253146",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 44,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 13,
         "type": "electron_list",
         "name": ":electron_list:",
@@ -1270,14 +1357,16 @@
         "started_at": "2022-10-27 10:08:42.322474",
         "completed_at": "2022-10-27 10:08:42.587122",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 45,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 14,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1299,14 +1388,16 @@
         "started_at": "2022-10-27 10:08:39.170609",
         "completed_at": "2022-10-27 10:08:39.170613",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 46,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 15,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1328,14 +1419,16 @@
         "started_at": "2022-10-27 10:08:39.205854",
         "completed_at": "2022-10-27 10:08:39.205857",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 47,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 16,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1357,14 +1450,16 @@
         "started_at": "2022-10-27 10:08:39.248043",
         "completed_at": "2022-10-27 10:08:39.248047",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 48,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 17,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1386,14 +1481,16 @@
         "started_at": "2022-10-27 10:08:39.277848",
         "completed_at": "2022-10-27 10:08:39.277851",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 49,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 18,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1415,14 +1512,16 @@
         "started_at": "2022-10-27 10:08:39.306032",
         "completed_at": "2022-10-27 10:08:39.306035",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 50,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 19,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1444,14 +1543,16 @@
         "started_at": "2022-10-27 10:08:39.339834",
         "completed_at": "2022-10-27 10:08:39.339839",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 51,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 20,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1473,14 +1574,16 @@
         "started_at": "2022-10-27 10:08:39.372707",
         "completed_at": "2022-10-27 10:08:39.372710",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 52,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 21,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1502,14 +1605,16 @@
         "started_at": "2022-10-27 10:08:39.406279",
         "completed_at": "2022-10-27 10:08:39.406281",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 53,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 22,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1531,14 +1636,16 @@
         "started_at": "2022-10-27 10:08:39.438271",
         "completed_at": "2022-10-27 10:08:39.438274",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 54,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 23,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1560,14 +1667,16 @@
         "started_at": "2022-10-27 10:08:39.471663",
         "completed_at": "2022-10-27 10:08:39.471666",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 55,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 24,
         "type": "function",
         "name": "identity",
@@ -1589,14 +1698,16 @@
         "started_at": "2022-10-27 10:08:43.012521",
         "completed_at": "2022-10-27 10:08:43.340161",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 56,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 25,
         "type": "electron_list",
         "name": ":electron_list:",
@@ -1618,14 +1729,16 @@
         "started_at": "2022-10-27 10:08:42.364016",
         "completed_at": "2022-10-27 10:08:42.650965",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 57,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 26,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1647,14 +1760,16 @@
         "started_at": "2022-10-27 10:08:39.504710",
         "completed_at": "2022-10-27 10:08:39.504713",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 58,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 27,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1676,14 +1791,16 @@
         "started_at": "2022-10-27 10:08:39.536280",
         "completed_at": "2022-10-27 10:08:39.536282",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 59,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 28,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1705,14 +1822,16 @@
         "started_at": "2022-10-27 10:08:39.567594",
         "completed_at": "2022-10-27 10:08:39.567598",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 60,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 29,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1734,14 +1853,16 @@
         "started_at": "2022-10-27 10:08:39.602978",
         "completed_at": "2022-10-27 10:08:39.602981",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 61,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 30,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1763,14 +1884,16 @@
         "started_at": "2022-10-27 10:08:39.636935",
         "completed_at": "2022-10-27 10:08:39.636938",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 62,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 31,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1792,14 +1915,16 @@
         "started_at": "2022-10-27 10:08:39.676238",
         "completed_at": "2022-10-27 10:08:39.676241",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 63,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 32,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1821,14 +1946,16 @@
         "started_at": "2022-10-27 10:08:39.710482",
         "completed_at": "2022-10-27 10:08:39.710485",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 64,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 33,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1850,14 +1977,16 @@
         "started_at": "2022-10-27 10:08:39.743820",
         "completed_at": "2022-10-27 10:08:39.743822",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 65,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 34,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1879,14 +2008,16 @@
         "started_at": "2022-10-27 10:08:39.776311",
         "completed_at": "2022-10-27 10:08:39.776316",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 66,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 35,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1908,14 +2039,16 @@
         "started_at": "2022-10-27 10:08:39.813526",
         "completed_at": "2022-10-27 10:08:39.813527",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 67,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 36,
         "type": "function",
         "name": "identity",
@@ -1937,14 +2070,16 @@
         "started_at": "2022-10-27 10:08:43.124746",
         "completed_at": "2022-10-27 10:08:43.502348",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 68,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 37,
         "type": "electron_list",
         "name": ":electron_list:",
@@ -1966,14 +2101,16 @@
         "started_at": "2022-10-27 10:08:42.410990",
         "completed_at": "2022-10-27 10:08:42.767106",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 69,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 38,
         "type": "parameter",
         "name": ":parameter:2",
@@ -1995,14 +2132,16 @@
         "started_at": "2022-10-27 10:08:39.840526",
         "completed_at": "2022-10-27 10:08:39.840528",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 70,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 39,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2024,14 +2163,16 @@
         "started_at": "2022-10-27 10:08:39.872532",
         "completed_at": "2022-10-27 10:08:39.872534",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 71,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 40,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2053,14 +2194,16 @@
         "started_at": "2022-10-27 10:08:39.905887",
         "completed_at": "2022-10-27 10:08:39.905891",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 72,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 41,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2082,14 +2225,16 @@
         "started_at": "2022-10-27 10:08:39.937792",
         "completed_at": "2022-10-27 10:08:39.937795",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 73,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 42,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2111,14 +2256,16 @@
         "started_at": "2022-10-27 10:08:39.973990",
         "completed_at": "2022-10-27 10:08:39.973995",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 74,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 43,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2140,14 +2287,16 @@
         "started_at": "2022-10-27 10:08:40.004694",
         "completed_at": "2022-10-27 10:08:40.004696",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 75,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 44,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2169,14 +2318,16 @@
         "started_at": "2022-10-27 10:08:40.038140",
         "completed_at": "2022-10-27 10:08:40.038143",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 76,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 45,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2198,14 +2349,16 @@
         "started_at": "2022-10-27 10:08:40.071383",
         "completed_at": "2022-10-27 10:08:40.071386",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 77,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 46,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2227,14 +2380,16 @@
         "started_at": "2022-10-27 10:08:40.105934",
         "completed_at": "2022-10-27 10:08:40.105939",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 78,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 47,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2256,14 +2411,16 @@
         "started_at": "2022-10-27 10:08:40.142740",
         "completed_at": "2022-10-27 10:08:40.142743",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 79,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 48,
         "type": "function",
         "name": "identity",
@@ -2285,14 +2442,16 @@
         "started_at": "2022-10-27 10:08:43.041103",
         "completed_at": "2022-10-27 10:08:43.419548",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 80,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 49,
         "type": "electron_list",
         "name": ":electron_list:",
@@ -2314,14 +2473,16 @@
         "started_at": "2022-10-27 10:08:42.460853",
         "completed_at": "2022-10-27 10:08:42.796610",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 81,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 50,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2343,14 +2504,16 @@
         "started_at": "2022-10-27 10:08:40.181654",
         "completed_at": "2022-10-27 10:08:40.181662",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 82,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 51,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2372,14 +2535,16 @@
         "started_at": "2022-10-27 10:08:40.220720",
         "completed_at": "2022-10-27 10:08:40.220725",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 83,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 52,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2401,14 +2566,16 @@
         "started_at": "2022-10-27 10:08:40.254308",
         "completed_at": "2022-10-27 10:08:40.254312",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 84,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 53,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2430,14 +2597,16 @@
         "started_at": "2022-10-27 10:08:40.293041",
         "completed_at": "2022-10-27 10:08:40.293044",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 85,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 54,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2459,14 +2628,16 @@
         "started_at": "2022-10-27 10:08:40.339703",
         "completed_at": "2022-10-27 10:08:40.339706",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 86,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 55,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2488,14 +2659,16 @@
         "started_at": "2022-10-27 10:08:40.388397",
         "completed_at": "2022-10-27 10:08:40.388409",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 87,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 56,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2517,14 +2690,16 @@
         "started_at": "2022-10-27 10:08:40.427023",
         "completed_at": "2022-10-27 10:08:40.427026",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 88,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 57,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2546,14 +2721,16 @@
         "started_at": "2022-10-27 10:08:40.476868",
         "completed_at": "2022-10-27 10:08:40.476872",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 89,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 58,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2575,14 +2752,16 @@
         "started_at": "2022-10-27 10:08:40.524104",
         "completed_at": "2022-10-27 10:08:40.524107",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 90,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 59,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2604,14 +2783,16 @@
         "started_at": "2022-10-27 10:08:40.568992",
         "completed_at": "2022-10-27 10:08:40.569005",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 91,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 60,
         "type": "function",
         "name": "identity",
@@ -2633,14 +2814,16 @@
         "started_at": "2022-10-27 10:08:43.207640",
         "completed_at": "2022-10-27 10:08:43.589035",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 92,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 61,
         "type": "electron_list",
         "name": ":electron_list:",
@@ -2662,14 +2845,16 @@
         "started_at": "2022-10-27 10:08:42.540112",
         "completed_at": "2022-10-27 10:08:42.874105",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 93,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 62,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2691,14 +2876,16 @@
         "started_at": "2022-10-27 10:08:40.606339",
         "completed_at": "2022-10-27 10:08:40.606344",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 94,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 63,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2720,14 +2907,16 @@
         "started_at": "2022-10-27 10:08:40.641995",
         "completed_at": "2022-10-27 10:08:40.641996",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 95,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 64,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2749,14 +2938,16 @@
         "started_at": "2022-10-27 10:08:40.672991",
         "completed_at": "2022-10-27 10:08:40.672994",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 96,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 65,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2778,14 +2969,16 @@
         "started_at": "2022-10-27 10:08:40.696115",
         "completed_at": "2022-10-27 10:08:40.696117",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 97,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 66,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2807,14 +3000,16 @@
         "started_at": "2022-10-27 10:08:40.722953",
         "completed_at": "2022-10-27 10:08:40.722956",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 98,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 67,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2836,14 +3031,16 @@
         "started_at": "2022-10-27 10:08:40.755865",
         "completed_at": "2022-10-27 10:08:40.755868",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 99,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 68,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2865,14 +3062,16 @@
         "started_at": "2022-10-27 10:08:40.793381",
         "completed_at": "2022-10-27 10:08:40.793384",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 100,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 69,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2894,14 +3093,16 @@
         "started_at": "2022-10-27 10:08:40.828280",
         "completed_at": "2022-10-27 10:08:40.828284",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 101,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 70,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2923,14 +3124,16 @@
         "started_at": "2022-10-27 10:08:40.865834",
         "completed_at": "2022-10-27 10:08:40.865850",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 102,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 71,
         "type": "parameter",
         "name": ":parameter:2",
@@ -2952,14 +3155,16 @@
         "started_at": "2022-10-27 10:08:40.908278",
         "completed_at": "2022-10-27 10:08:40.908311",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 103,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 72,
         "type": "function",
         "name": "identity",
@@ -2981,14 +3186,16 @@
         "started_at": "2022-10-27 10:08:43.290300",
         "completed_at": "2022-10-27 10:08:43.649360",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 104,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 73,
         "type": "electron_list",
         "name": ":electron_list:",
@@ -3010,14 +3217,16 @@
         "started_at": "2022-10-27 10:08:42.622934",
         "completed_at": "2022-10-27 10:08:42.939996",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 105,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 74,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3039,14 +3248,16 @@
         "started_at": "2022-10-27 10:08:40.941095",
         "completed_at": "2022-10-27 10:08:40.941099",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 106,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 75,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3068,14 +3279,16 @@
         "started_at": "2022-10-27 10:08:40.976058",
         "completed_at": "2022-10-27 10:08:40.976061",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 107,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 76,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3097,14 +3310,16 @@
         "started_at": "2022-10-27 10:08:41.009802",
         "completed_at": "2022-10-27 10:08:41.009805",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 108,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 77,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3126,14 +3341,16 @@
         "started_at": "2022-10-27 10:08:41.048453",
         "completed_at": "2022-10-27 10:08:41.048457",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 109,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 78,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3155,14 +3372,16 @@
         "started_at": "2022-10-27 10:08:41.086414",
         "completed_at": "2022-10-27 10:08:41.086417",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 110,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 79,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3184,14 +3403,16 @@
         "started_at": "2022-10-27 10:08:41.116755",
         "completed_at": "2022-10-27 10:08:41.116759",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 111,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 80,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3213,14 +3434,16 @@
         "started_at": "2022-10-27 10:08:41.149923",
         "completed_at": "2022-10-27 10:08:41.149926",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 112,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 81,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3242,14 +3465,16 @@
         "started_at": "2022-10-27 10:08:41.186466",
         "completed_at": "2022-10-27 10:08:41.186469",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 113,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 82,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3271,14 +3496,16 @@
         "started_at": "2022-10-27 10:08:41.218531",
         "completed_at": "2022-10-27 10:08:41.218536",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 114,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 83,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3300,14 +3527,16 @@
         "started_at": "2022-10-27 10:08:41.250702",
         "completed_at": "2022-10-27 10:08:41.250704",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 115,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 84,
         "type": "function",
         "name": "identity",
@@ -3329,14 +3558,16 @@
         "started_at": "2022-10-27 10:08:43.375045",
         "completed_at": "2022-10-27 10:08:43.687405",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 116,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 85,
         "type": "electron_list",
         "name": ":electron_list:",
@@ -3358,14 +3589,16 @@
         "started_at": "2022-10-27 10:08:42.677025",
         "completed_at": "2022-10-27 10:08:42.989021",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 117,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 86,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3387,14 +3620,16 @@
         "started_at": "2022-10-27 10:08:41.288911",
         "completed_at": "2022-10-27 10:08:41.288914",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 118,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 87,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3416,14 +3651,16 @@
         "started_at": "2022-10-27 10:08:41.322042",
         "completed_at": "2022-10-27 10:08:41.322045",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 119,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 88,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3445,14 +3682,16 @@
         "started_at": "2022-10-27 10:08:41.356030",
         "completed_at": "2022-10-27 10:08:41.356033",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 120,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 89,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3474,14 +3713,16 @@
         "started_at": "2022-10-27 10:08:41.389522",
         "completed_at": "2022-10-27 10:08:41.389525",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 121,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 90,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3503,14 +3744,16 @@
         "started_at": "2022-10-27 10:08:41.421862",
         "completed_at": "2022-10-27 10:08:41.421865",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 122,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 91,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3532,14 +3775,16 @@
         "started_at": "2022-10-27 10:08:41.457205",
         "completed_at": "2022-10-27 10:08:41.457208",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 123,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 92,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3561,14 +3806,16 @@
         "started_at": "2022-10-27 10:08:41.491181",
         "completed_at": "2022-10-27 10:08:41.491184",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 124,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 93,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3590,14 +3837,16 @@
         "started_at": "2022-10-27 10:08:41.522585",
         "completed_at": "2022-10-27 10:08:41.522588",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 125,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 94,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3619,14 +3868,16 @@
         "started_at": "2022-10-27 10:08:41.556600",
         "completed_at": "2022-10-27 10:08:41.556602",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 126,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 95,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3648,14 +3899,16 @@
         "started_at": "2022-10-27 10:08:41.590899",
         "completed_at": "2022-10-27 10:08:41.590902",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 127,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 96,
         "type": "function",
         "name": "identity",
@@ -3677,14 +3930,16 @@
         "started_at": "2022-10-27 10:08:43.541105",
         "completed_at": "2022-10-27 10:08:43.761303",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 128,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 97,
         "type": "electron_list",
         "name": ":electron_list:",
@@ -3706,14 +3961,16 @@
         "started_at": "2022-10-27 10:08:42.724995",
         "completed_at": "2022-10-27 10:08:43.086071",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 129,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 98,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3735,14 +3992,16 @@
         "started_at": "2022-10-27 10:08:41.622560",
         "completed_at": "2022-10-27 10:08:41.622563",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 130,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 99,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3764,14 +4023,16 @@
         "started_at": "2022-10-27 10:08:41.656441",
         "completed_at": "2022-10-27 10:08:41.656443",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 131,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 100,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3793,14 +4054,16 @@
         "started_at": "2022-10-27 10:08:41.691678",
         "completed_at": "2022-10-27 10:08:41.691681",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 132,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 101,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3822,14 +4085,16 @@
         "started_at": "2022-10-27 10:08:41.725404",
         "completed_at": "2022-10-27 10:08:41.725407",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 133,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 102,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3851,14 +4116,16 @@
         "started_at": "2022-10-27 10:08:41.759767",
         "completed_at": "2022-10-27 10:08:41.759771",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 134,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 103,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3880,14 +4147,16 @@
         "started_at": "2022-10-27 10:08:41.799118",
         "completed_at": "2022-10-27 10:08:41.799121",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 135,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 104,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3909,14 +4178,16 @@
         "started_at": "2022-10-27 10:08:41.830166",
         "completed_at": "2022-10-27 10:08:41.830169",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 136,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 105,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3938,14 +4209,16 @@
         "started_at": "2022-10-27 10:08:41.864510",
         "completed_at": "2022-10-27 10:08:41.864513",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 137,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 106,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3967,14 +4240,16 @@
         "started_at": "2022-10-27 10:08:41.900656",
         "completed_at": "2022-10-27 10:08:41.900659",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 138,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 107,
         "type": "parameter",
         "name": ":parameter:2",
@@ -3996,14 +4271,16 @@
         "started_at": "2022-10-27 10:08:41.935954",
         "completed_at": "2022-10-27 10:08:41.935957",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 139,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 108,
         "type": "function",
         "name": "identity",
@@ -4025,14 +4302,16 @@
         "started_at": "2022-10-27 10:08:43.459156",
         "completed_at": "2022-10-27 10:08:43.724659",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 140,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 109,
         "type": "electron_list",
         "name": ":electron_list:",
@@ -4054,14 +4333,16 @@
         "started_at": "2022-10-27 10:08:42.835169",
         "completed_at": "2022-10-27 10:08:43.060465",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 141,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 110,
         "type": "parameter",
         "name": ":parameter:2",
@@ -4083,14 +4364,16 @@
         "started_at": "2022-10-27 10:08:41.970618",
         "completed_at": "2022-10-27 10:08:41.970621",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 142,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 111,
         "type": "parameter",
         "name": ":parameter:2",
@@ -4112,14 +4395,16 @@
         "started_at": "2022-10-27 10:08:41.998870",
         "completed_at": "2022-10-27 10:08:41.998874",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 143,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 112,
         "type": "parameter",
         "name": ":parameter:2",
@@ -4141,14 +4426,16 @@
         "started_at": "2022-10-27 10:08:42.032233",
         "completed_at": "2022-10-27 10:08:42.032236",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 144,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 113,
         "type": "parameter",
         "name": ":parameter:2",
@@ -4170,14 +4457,16 @@
         "started_at": "2022-10-27 10:08:42.065366",
         "completed_at": "2022-10-27 10:08:42.065369",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 145,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 114,
         "type": "parameter",
         "name": ":parameter:2",
@@ -4199,14 +4488,16 @@
         "started_at": "2022-10-27 10:08:42.099840",
         "completed_at": "2022-10-27 10:08:42.099844",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 146,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 115,
         "type": "parameter",
         "name": ":parameter:2",
@@ -4228,14 +4519,16 @@
         "started_at": "2022-10-27 10:08:42.134805",
         "completed_at": "2022-10-27 10:08:42.134812",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 147,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 116,
         "type": "parameter",
         "name": ":parameter:2",
@@ -4257,14 +4550,16 @@
         "started_at": "2022-10-27 10:08:42.170433",
         "completed_at": "2022-10-27 10:08:42.170438",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 148,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 117,
         "type": "parameter",
         "name": ":parameter:2",
@@ -4286,14 +4581,16 @@
         "started_at": "2022-10-27 10:08:42.202646",
         "completed_at": "2022-10-27 10:08:42.202650",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 149,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 118,
         "type": "parameter",
         "name": ":parameter:2",
@@ -4315,14 +4612,16 @@
         "started_at": "2022-10-27 10:08:42.233364",
         "completed_at": "2022-10-27 10:08:42.233366",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
         "id": 150,
         "parent_lattice_id": 4,
+        "task_group_id": -1,
         "transport_graph_node_id": 119,
         "type": "parameter",
         "name": ":parameter:2",
@@ -4344,9 +4643,10 @@
         "started_at": "2022-10-27 10:08:42.265656",
         "completed_at": "2022-10-27 10:08:42.265658",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "job_id": 1,
         "qelectron_data_exists": false,
+        "cancel_requested": false,
         "error_filename": "error.log"
     },
     {
@@ -4357,7 +4657,7 @@
         "deps_filename": "deps.pkl",
         "error_filename": "error.log",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "function_filename": "function.pkl",
         "function_string_filename": "function_string.txt",
         "id": 152,
@@ -4365,7 +4665,8 @@
         "job_id": 2,
         "name": ":postprocess:",
         "parent_lattice_id": 5,
-        "qelectron_data_exists": 0,
+        "qelectron_data_exists": false,
+        "cancel_requested": false,
         "results_filename": "results.pkl",
         "started_at": "2023-08-10 10:08:55.843982",
         "status": "COMPLETED",
@@ -4373,6 +4674,7 @@
         "stdout_filename": "stdout.log",
         "storage_path": "/home/arunmukesh/.local/share/covalent/data/e8fd09c9-1406-4686-9e77-c8d4d64a76ee/node_1",
         "storage_type": "local",
+        "task_group_id": -1,
         "transport_graph_node_id": 1,
         "type": "function",
         "updated_at": "2023-08-10 10:08:55.906001",
@@ -4386,7 +4688,7 @@
         "deps_filename": "deps.pkl",
         "error_filename": "error.log",
         "executor": "dask",
-        "executor_data_filename": "executor_data.pkl",
+
         "function_filename": "function.pkl",
         "function_string_filename": "function_string.txt",
         "id": 151,
@@ -4394,7 +4696,8 @@
         "job_id": 1,
         "name": "call_circuit",
         "parent_lattice_id": 5,
-        "qelectron_data_exists": 1,
+        "qelectron_data_exists": false,
+        "cancel_requested": false,
         "results_filename": "results.pkl",
         "started_at": "2023-08-10 10:08:55.432686",
         "status": "COMPLETED",
@@ -4402,6 +4705,7 @@
         "stdout_filename": "stdout.log",
         "storage_path": "/home/arunmukesh/.local/share/covalent/data/e8fd09c9-1406-4686-9e77-c8d4d64a76ee/node_0",
         "storage_type": "local",
+        "task_group_id": -1,
         "transport_graph_node_id": 0,
         "type": "function",
         "updated_at": "2023-08-10 10:08:55.825643",
