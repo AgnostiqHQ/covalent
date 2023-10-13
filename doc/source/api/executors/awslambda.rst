@@ -334,7 +334,7 @@ Users can use the following `Terraform <https://www.terraform.io/>`_ snippet as 
     resource aws_lambda_function lambda {
         function_name = "my-lambda-function"
         role = aws_iam_role.lambda_iam.arn
-        packge_type = "Image"
+        package_type = "Image"
         timeout = <timeout value in seconds, max 900 (15 minutes), defaults to 3>
         memory_size = <Max memory in MB that the Lambda is expected to use, defaults to 128>
         image_uri = aws_ecr_repository.lambda_ecr.repository_url
@@ -382,7 +382,7 @@ All of our base AWS executor images are available in the AWS public registries a
 
 .. note::
 
-   Executor images with the ``latest`` tag are also routinely pushed to the same registry. However, we strongly recommended using the **stable** tag when running executing workflows usin the AWS Lambda executor. The ``<aws-region>`` is a placeholder for the actual AWS region to be used by the user
+   Executor images with the ``latest`` tag are also routinely pushed to the same registry. However, we strongly recommended using the **stable** tag when running executing workflows using the AWS Lambda executor. The ``<aws-region>`` is a placeholder for the actual AWS region to be used by the user
 
 
 Once the lambda base executor image has been downloaded, users can build upon that image by installing all the Python packages required by their tasks. The base executor uses a build time argument named ``LAMBDA_TASK_ROOT`` to set the install path of all python packages to ``/var/task`` inside the image. When extending the base image by installing additional python packages, it is **recommended** to install them to the same location so that they get resolved properly during runtime. Following is a simple example of how users can extend the AWS lambda base image by creating their own ``Dockerfile`` and installting additional packages such as ``numpy``, ``pandas`` and ``scipy``.
@@ -399,7 +399,7 @@ Once the lambda base executor image has been downloaded, users can build upon th
 
 .. warning::
 
-   Do **not** override the entrypoint of the base image in the derived image when installing new packages. The docker  ``ENTRYPOINT`` of the base image is what that gets trigged when AWS invokes your lambda function to execute the workflow electron
+   Do **not** override the entrypoint of the base image in the derived image when installing new packages. The docker  ``ENTRYPOINT`` of the base image is what that gets triggered when AWS invokes your lambda function to execute the workflow electron
 
 
 Once the ``Dockerfile`` has been created the derived image can be built as follows
@@ -413,7 +413,7 @@ Once the ``Dockerfile`` has been created the derived image can be built as follo
 Pushing to ECR
 ^^^^^^^^^^^^^^^^^^^^^
 
-After a successful build of the derived image, it needs to be uploaded to ECR so that it can be consumed by a lambda function when triggered by Covalent. As as first step, it is required to create an elastic container registry to hold the dervied executor images. This can be easily done by using the AWS CLI tool as follows
+After a successful build of the derived image, it needs to be uploaded to ECR so that it can be consumed by a lambda function when triggered by Covalent. As as first step, it is required to create an elastic container registry to hold the derived executor images. This can be easily done by using the AWS CLI tool as follows
 
 .. code-block:: bash
 

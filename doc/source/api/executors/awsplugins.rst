@@ -58,7 +58,7 @@ This will ensure that all the AWS executor plugins listed below are installed.
 2. Included Plugins
 ===========================================
 
-While each plugin can be seperately installed installing the above pip package installs all of the below plugins.
+While each plugin can be separately installed installing the above pip package installs all of the below plugins.
 
 
 .. list-table::
