@@ -82,6 +82,9 @@ def encode_metadata(metadata: dict) -> dict:
         else:
             encoded_metadata["triggers"] = metadata["triggers"]
 
+    # qelectron_data_exists
+    encode_metadata["qelectron_data_exists"] = None
+
     return encoded_metadata
 
 
