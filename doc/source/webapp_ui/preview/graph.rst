@@ -7,4 +7,4 @@ The Workflow Preview Graph shows the transport graph of the lattice on which the
 .. image:: ../images/preview.gif
    :align: center
 
-The preview displays only the nodes (tasks) and edges (dependencies) of the tranport graph. No dispatch information is available (Status, Start time, End time, Input, Results or Directory) since the lattice has not actually been dispatched.
+The preview displays only the nodes (tasks) and edges (dependencies) of the transport graph. No dispatch information is available (Status, Start time, End time, Input, Results or Directory) since the lattice has not actually been dispatched.
