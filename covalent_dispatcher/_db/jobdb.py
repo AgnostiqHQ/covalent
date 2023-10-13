@@ -97,7 +97,7 @@ def _update_job_record(
 
 def get_job_record(job_id: int) -> Dict:
     """
-    Retrive the job record from database
+    Retrieve the job record from database
 
     Arg(s)
         job_id: ID of the job to be returned
@@ -147,7 +147,7 @@ def to_job_ids(dispatch_id: str, task_ids: List[int]) -> List[int]:
         task_ids: IDs of tasks in the lattice
 
     Return(s)
-        Corresponding job ids assocated with the provided task ids
+        Corresponding job ids associated with the provided task ids
     """
     with workflow_db.session() as session:
         stmt = select(Lattice).where(Lattice.dispatch_id == dispatch_id)
