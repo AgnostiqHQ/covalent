@@ -169,7 +169,7 @@ During the execution of the workflow one can navigate to the UI to see the statu
    * - num_gpus
      - No
      - 0
-     - Number of GPUs availabel to a task.
+     - Number of GPUs available to a task.
    * - retry_attempts
      - No
      - 3
