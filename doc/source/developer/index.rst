@@ -14,7 +14,7 @@ This guide describes some best practices for use with Covalent. Most are coding 
 
 The coding practices described here fall into two categories:
 
-- Patterns and techniques that improve Covalent implementations in some way. These improvements can be in efficiency, performance, code maintainability, or any of a number of other attributes considered desireable in a development project.
+- Patterns and techniques that improve Covalent implementations in some way. These improvements can be in efficiency, performance, code maintainability, or any of a number of other attributes considered desirable in a development project.
 - Techniques that must be followed when using Covalent. These usually reflect requirements for server-based dispatch and execution of workflows. The consequences of violating these requirements are demonstrated in the individual entries; in most cases, they cause the workflow to fail.
 
 Coding Best Practices
