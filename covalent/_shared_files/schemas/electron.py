@@ -97,6 +97,7 @@ class ElectronMetadata(BaseModel):
     name: str
     executor: str
     executor_data: dict
+    qelectron_data_exists: bool
     sub_dispatch_id: Optional[str] = None
     status: StatusEnum
     start_time: Optional[datetime] = None

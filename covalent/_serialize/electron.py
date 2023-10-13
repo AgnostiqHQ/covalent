@@ -54,6 +54,7 @@ def _serialize_node_metadata(node_attrs: dict, node_storage_path: str) -> Electr
     name = node_attrs["name"]
     executor = node_attrs["metadata"]["executor"]
     executor_data = node_attrs["metadata"]["executor_data"]
+    qelectron_data_exists = node_attrs["metadata"]["qelectron_data_exists"]
 
     # Optional
     status = node_attrs.get("status", RESULT_STATUS.NEW_OBJECT)
@@ -71,6 +72,7 @@ def _serialize_node_metadata(node_attrs: dict, node_storage_path: str) -> Electr
         name=name,
         executor=executor,
         executor_data=executor_data,
+        qelectron_data_exists=qelectron_data_exists,
         status=str(status),
         start_time=start_time,
         end_time=end_time,
@@ -88,6 +90,7 @@ def _deserialize_node_metadata(meta: ElectronMetadata) -> dict:
         "metadata": {
             "executor": meta.executor,
             "executor_data": meta.executor_data,
+            "qelectron_data_exists": meta.qelectron_data_exists,
         },
     }
 
