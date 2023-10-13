@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed unassigned variable names
 - Contributing guidelines steps for installing for the first time
 - Updated gitignore to ignore yarn files and folders for latest version of yarn
+- Fixed the bug that caused ValueError error when using KEYWORD_ONLY parameter in electron func 
+- changed code at line 218 in covalent/_shared_files/utils.py
 
 ### Operations
 
@@ -5037,9 +5039,3 @@ Installed executor plugins don't have to be referred to by their full module nam
 - CHANGELOG.md to track changes (this file).
 - Semantic versioning in VERSION.
 - CI pipeline job to enforce versioning.
-
-
-### Fixed
-
-- Fixed the bug that caused ValueError error when using KEYWORD_ONLY parameter in electron func 
-- changed code at line 218 in covalent/_shared_files/utils.py
