@@ -97,7 +97,7 @@ The dispatch won't run the workflow but will return a `dispatch_id` that you can
 
 ### Using a Remote Trigger
 
-When a trigger fires, it dispatches a workflow either by directly accessing the required Covalent server function or by calling the REST API endpoint at the server IP adress and port. Which of these two methods it uses is controlled by a flag, `use_internal_funcs`, in the `trigger` object.
+When a trigger fires, it dispatches a workflow either by directly accessing the required Covalent server function or by calling the REST API endpoint at the server IP address and port. Which of these two methods it uses is controlled by a flag, `use_internal_funcs`, in the `trigger` object.
 
 (triggers_remote)=
 
@@ -150,7 +150,7 @@ trigger.dispatcher_addr = `<ServerA_addr>`
 trigger.observe()
 ```
 
-The `trigger.observe()` function can be called synchronously (blocking) or asynchronously (non-blocking). If you use `trigger.observe()` as a blocking call, we recommend that you run it on a separate thread so it doesn't block other components of your server. You can check if `trigger.observe()` is blocking by querying the trigger's `trigger.observe_blocks` attribute. The `trigger.observe()` funciton is especially useful when writing custom triggers, for example to trigger workflows on email or Slack messages.
+The `trigger.observe()` function can be called synchronously (blocking) or asynchronously (non-blocking). If you use `trigger.observe()` as a blocking call, we recommend that you run it on a separate thread so it doesn't block other components of your server. You can check if `trigger.observe()` is blocking by querying the trigger's `trigger.observe_blocks` attribute. The `trigger.observe()` function is especially useful when writing custom triggers, for example to trigger workflows on email or Slack messages.
 
 For further examples of how to use triggers, see these articles in the How-to Guide:
 
