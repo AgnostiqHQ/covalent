@@ -25,7 +25,7 @@ electron (lower-case "e")
 
 The {code}`@covalent.electron` decorator makes the function runnable in a Covalent executor. It does not change the function in any other way.
 
-The function decorated with {code}`@covalent.electron` can be any Python function; however, it should be thought of, and operate as, a single task. Best practice is to write an electron with a single, well defined purpose; for example, performing a single tranformation of some input or writing or reading a record to a file or database.
+The function decorated with {code}`@covalent.electron` can be any Python function; however, it should be thought of, and operate as, a single task. Best practice is to write an electron with a single, well defined purpose; for example, performing a single transformation of some input or writing or reading a record to a file or database.
 
 Here is a simple electron that adds two numbers:
 
@@ -67,13 +67,13 @@ The function decorated with {code}`@covalent.lattice` must contain one or more e
 
 For Covalent to work properly, the lattice must operate on data only by calling electrons. By "work properly," we mean "dispatch all tasks to executors." The flexibility and power of Covalent comes from the ability to assign and reassign tasks (electrons) to executors, which has two main advantages, *hardware independence* and *parallelization*.
 
-Hardware indepdendence
+Hardware independence
 
 : The task's code is decoupled from the details of the hardware it is run on.
 
 Parallelization
 
-: Independent tasks can be run in parallel on the same or different backends. Here, *indepedent* means that for any two tasks, their inputs are unaffected by each others' execution outcomes (that is, their outputs or side effects). The Covalent dispatcher can run independent electrons in parallel. For example, in the workflow structure shown below, electron 2 and electron 3 are executed in parallel.
+: Independent tasks can be run in parallel on the same or different backends. Here, *independent* means that for any two tasks, their inputs are unaffected by each others' execution outcomes (that is, their outputs or side effects). The Covalent dispatcher can run independent electrons in parallel. For example, in the workflow structure shown below, electron 2 and electron 3 are executed in parallel.
 
 ```{image} ./images/parallel_lattice.png
 :align: center
