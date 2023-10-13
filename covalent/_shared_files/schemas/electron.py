@@ -17,7 +17,7 @@
 """FastAPI models for /api/v1/resultv2 endpoints"""
 
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 from pydantic import BaseModel, validator
 
@@ -97,7 +97,7 @@ class ElectronMetadata(BaseModel):
     name: str
     executor: str
     executor_data: dict
-    qelectron_data_exists: bool
+    qelectron_data_exists: Union[None, bool]
     sub_dispatch_id: Optional[str] = None
     status: StatusEnum
     start_time: Optional[datetime] = None
