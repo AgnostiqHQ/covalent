@@ -589,7 +589,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Location of function to load result from the database now moved to load module in covalent_dispatcher/\_db folde.
+- Location of function to load result from the database now moved to load module in covalent_dispatcher/\_db folder.
 
 ### Added
 
@@ -2118,7 +2118,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Adding a `covalent config` convenience CLI to quickly view retrive the covalent configuration
+- Adding a `covalent config` convenience CLI to quickly view retrieve the covalent configuration
 
 ## [0.168.0] - 2022-08-08
 
@@ -2161,7 +2161,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Remove newline from log stream formatter for better log statment output
+- Remove newline from log stream formatter for better log statement output
 - Jsonify covalent cluster cli outputs
 
 ## [0.165.0] - 2022-08-06
@@ -2433,7 +2433,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- `script_location` key not found issue when running alembic programatically
+- `script_location` key not found issue when running alembic programmatically
 
 ### Operations
 
@@ -2461,7 +2461,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Added methods to programatically fetch information from Alembic without needing subprocess
+- Added methods to programmatically fetch information from Alembic without needing subprocess
 
 ## [0.153.1] - 2022-07-25
 
@@ -3176,7 +3176,7 @@ Casey Jao <casey@agnostiq.ai>
 
 ### Operations
 
-- Added Github push changelog workflow to append commiters username
+- Added Github push changelog workflow to append committers username
 - Reusable JavaScript action to parse changelog and update version
 
 ## [0.113.0] - 2022-06-21
@@ -3299,7 +3299,7 @@ Casey Jao <casey@agnostiq.ai>
 
 ### Added
 
-- Simplifed starting the dask cluster using `multiprocessing`
+- Simplified starting the dask cluster using `multiprocessing`
 - Added `bokeh==2.4.3` to requirements.txt to enable view Dask dashboard
 
 ### Fixed
@@ -3436,7 +3436,7 @@ Casey Jao <casey@agnostiq.ai>
 
 ### Fixed
 
-- Fixed the order of output storage in `post_process` which should have been the order in which the electron functions are called instead of being the order in which they are executed. This fixes the order in which the replacement of function calls with their output happens, which further fixes any discrepencies in the results obtained by the user.
+- Fixed the order of output storage in `post_process` which should have been the order in which the electron functions are called instead of being the order in which they are executed. This fixes the order in which the replacement of function calls with their output happens, which further fixes any discrepancies in the results obtained by the user.
 
 - Fixed the `post_process` test to check the order as well.
 
@@ -3589,7 +3589,7 @@ Installed executor plugins don't have to be referred to by their full module nam
 
 - `get_named_params` function added in `_shared_files/utils.py` which will return a tuple containing named positional arguments and named keyword arguments. The names help in showing and storing these parameters in the transport graph.
 
-- Tests to verify whether all kinds of input paramaters are supported by electron or a lattice.
+- Tests to verify whether all kinds of input parameters are supported by electron or a lattice.
 
 ### Changed
 
@@ -4457,7 +4457,7 @@ Installed executor plugins don't have to be referred to by their full module nam
 ### Changed
 
 - UI server result serialization improvements
-- UI result update webhook no longer fails on request exceptions, logs warning intead
+- UI result update webhook no longer fails on request exceptions, logs warning instead
 
 ## [0.12.10] - 2021-12-17
 
