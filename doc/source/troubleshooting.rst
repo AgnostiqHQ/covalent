@@ -49,7 +49,7 @@ Covalent server not starting
 
 If dispatches are failing due to connection refused errors after running ``covalent start`` it is possible the covalent server was unable to start.
 
-1. Ensure that you are able to run the ``python`` command and that ``python --version`` is compatible with covalent refer to `compatibility <https://covalent.readthedocs.io/en/latest/getting_started/compatibility.html>`_ section. If your python version is not compatible or if you only have ``python3`` installed it is recommended that a virtual environment is used (several tools can also be leveraged for this: poetry, conda, pyenv, ect.)
+1. Ensure that you are able to run the ``python`` command and that ``python --version`` is compatible with covalent refer to `compatibility <https://covalent.readthedocs.io/en/latest/getting_started/compatibility.html>`_ section. If your python version is not compatible or if you only have ``python3`` installed it is recommended that a virtual environment is used (several tools can also be leveraged for this: poetry, conda, pyenv, etc.)
 
 Users should ultimately check ``covalent logs`` for more information and submit a new issue on Github `discussion <https://github.com/AgnostiqHQ/covalent/issues>`_ with any relevant log information associated with the issue.
 
