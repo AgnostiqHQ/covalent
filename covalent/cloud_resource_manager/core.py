@@ -281,6 +281,17 @@ class CloudResourceManager:
 
         """
         if terraform := shutil.which("terraform"):
+            import subprocess
+
+            result = subprocess.run(
+                ["terraform --version"], shell=True, capture_output=True, text=True
+            )
+            if "v1.2" in result.stdout:
+                logger.error(
+                    "Old version of terraform found. Please update it to version greater than 1.3"
+                )
+                sys.exit()
+
             return terraform
         else:
             logger.error("Terraform not found on system")
