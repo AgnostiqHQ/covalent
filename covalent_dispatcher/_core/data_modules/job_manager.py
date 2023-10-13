@@ -52,14 +52,14 @@ async def set_cancel_requested(dispatch_id: str, task_ids: List[int]):
 
 async def get_jobs_metadata(dispatch_id: str, task_ids: List[int]) -> Any:
     """
-    Retrive all job records with task_ids for the given dispatch
+    Retrieve all job records with task_ids for the given dispatch
 
     Arg(s)
         dispatch_id: Dispatch ID
         task_ids: List of task ids
 
     Return(s)
-        Dictionary of job metdata associated with each task
+        Dictionary of job metadata associated with each task
     """
     job_ids = to_job_ids(dispatch_id, task_ids)
     return get_job_records(job_ids)
