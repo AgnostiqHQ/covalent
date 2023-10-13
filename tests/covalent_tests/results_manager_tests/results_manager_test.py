@@ -117,12 +117,7 @@ def test_result_export(mocker):
     mock_response.status_code = 200
     mock_response.json = MagicMock(return_value=mock_body)
 
-    # mock_client.get = MagicMock(return_value=mock_response)
     mocker.patch("covalent._api.apiclient.requests.Session.get", return_value=mock_response)
-
-    # mocker.patch(
-    #     "covalent._results_manager.results_manager.CovalentAPIClient", return_value=mock_client
-    # )
 
     endpoint = f"/api/v2/dispatches/{dispatch_id}"
     assert mock_body == _get_result_export_from_dispatcher(

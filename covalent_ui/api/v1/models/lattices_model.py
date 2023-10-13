@@ -123,6 +123,3 @@ class LatticeFileOutput(str, Enum):
     EXECUTOR = "executor"
     WORKFLOW_EXECUTOR = "workflow_executor"
     FUNCTION = "function"
-
-
-#    TRANSPORT_GRAPH = "transport_graph"

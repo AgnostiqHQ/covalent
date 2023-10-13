@@ -377,7 +377,6 @@ async def test_make_sublattice_dispatch(mocker):
     mock_make_dispatch = mocker.patch("covalent_dispatcher._core.data_manager.make_dispatch")
     sub_dispatch_id = await _make_sublattice_dispatch(result_object.dispatch_id, node_result)
 
-    # mock_make_dispatch.assert_awaited_with("lattice_json", result_object, mock_node._electron_id)
     assert sub_dispatch_id == mock_manifest.metadata.dispatch_id
 
 

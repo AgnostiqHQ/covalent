@@ -116,7 +116,10 @@ class LocalDispatcher(BaseDispatcher):
 
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
-            dispatcher_addr: The address of the dispatcher server.  If None then then defaults to the address set in Covalent's config.
+            dispatcher_addr: The address of the dispatcher server. If None then defaults to the address set in Covalent's config.
+
+        Kwargs:
+            disable_run: Whether to disable running the workflow and rather just save it on Covalent's server for later execution.
 
         Returns:
             Wrapper function which takes the inputs of the workflow as arguments
@@ -265,7 +268,7 @@ class LocalDispatcher(BaseDispatcher):
 
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
-            dispatcher_addr: The address of the dispatcher server. If None then then defaults to the address set in Covalent's config.
+            dispatcher_addr: The address of the dispatcher server. If None then defaults to the address set in Covalent's config.
 
         Returns:
             Wrapper function which takes the inputs of the workflow as arguments.
@@ -307,7 +310,7 @@ class LocalDispatcher(BaseDispatcher):
 
         Args:
             dispatch_id: The dispatch id of the workflow to re-dispatch.
-            dispatcher_addr: The address of the dispatcher server. If None then then defaults to the address set in Covalent's config.
+            dispatcher_addr: The address of the dispatcher server. If None then defaults to the address set in Covalent's config.
             replace_electrons: A dictionary of electron names and the new electron to replace them with.
             reuse_previous_results: Boolean value whether to reuse the results from the previous dispatch.
 
@@ -458,7 +461,7 @@ class LocalDispatcher(BaseDispatcher):
 
         Args:
             dispatch_id: The dispatch id of the workflow to re-dispatch.
-            dispatcher_addr: The address of the dispatcher server. If None then then defaults to the address set in Covalent's config.
+            dispatcher_addr: The address of the dispatcher server. If None then defaults to the address set in Covalent's config.
             replace_electrons: A dictionary of electron names and the new electron to replace them with.
             reuse_previous_results: Boolean value whether to reuse the results from the previous dispatch.
 

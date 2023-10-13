@@ -207,7 +207,6 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
         elif name == "executor":
             executor_name = result["executor"]
             executor_data = json.loads(result["executor_data"])
-            # executor_data = handler.read_from_serialized(result["executor_data_filename"])
             return ElectronExecutorResponse(
                 executor_name=executor_name, executor_details=executor_data
             )

@@ -137,8 +137,6 @@ def test_build_sublattice_graph(mocker):
     assert lat.metadata.workflow_executor == parent_metadata["workflow_executor"]
     assert lat.metadata.workflow_executor_data == parent_metadata["workflow_executor_data"]
 
-    # lattice = Lattice.deserialize_from_json(json_lattice)
-
 
 def test_build_sublattice_graph_fallback(mocker):
     """

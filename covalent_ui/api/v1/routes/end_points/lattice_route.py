@@ -124,7 +124,7 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
         elif name == "executor":
             executor_name = lattice_data["executor"]
             executor_data = json.loads(lattice_data["executor_data"])
-            # executor_data = handler.read_from_serialized(lattice_data["executor_data_filename"])
+
             return LatticeExecutorResponse(
                 executor_name=executor_name, executor_details=executor_data
             )
@@ -132,9 +132,7 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
         elif name == "workflow_executor":
             executor_name = lattice_data["workflow_executor"]
             executor_data = json.loads(lattice_data["workflow_executor_data"])
-            # executor_data = handler.read_from_serialized(
-            #     lattice_data["workflow_executor_data_filename"]
-            # )
+
             return LatticeWorkflowExecutorResponse(
                 workflow_executor_name=executor_name, workflow_executor_details=executor_data
             )
@@ -148,10 +146,6 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
                 lattice_data["function_filename"]
             )
             return LatticeFileResponse(data=response, python_object=python_object)
-
-        # elif name == "transport_graph":
-        #     response = handler.read_from_pickle(lattice_data["transport_graph_filename"])
-        #     return LatticeFileResponse(data=response)
 
         else:
             return LatticeFileResponse(data=None)

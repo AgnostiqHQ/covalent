@@ -106,8 +106,8 @@ class Result:
             pattern = re.compile(regex)
             m = pattern.match(input_string)
             if m:
-                arg_str_repr = m.group(1).rstrip(",")
-                kwarg_str_repr = m.group(2)
+                arg_str_repr = m[1].rstrip(",")
+                kwarg_str_repr = m[2]
             else:
                 arg_str_repr = str(None)
                 kwarg_str_repr = str(None)
@@ -209,10 +209,7 @@ Node Outputs
         Final result of current dispatch.
         """
 
-        if self._result is not None:
-            return self._result.get_deserialized()
-        else:
-            return None
+        return self._result.get_deserialized() if self._result is not None else None
 
     @property
     def inputs(self) -> dict:
@@ -293,11 +290,12 @@ Node Outputs
             node_outputs: A dictionary containing the output of every node execution.
         """
 
-        all_node_outputs = {}
-        for node_id in self._lattice.transport_graph._graph.nodes:
-            all_node_outputs[
-                f"{self._get_node_name(node_id=node_id)}({node_id})"
-            ] = self._get_node_output(node_id=node_id)
+        all_node_outputs = {
+            f"{self._get_node_name(node_id=node_id)}({node_id})": self._get_node_output(
+                node_id=node_id
+            )
+            for node_id in self._lattice.transport_graph._graph.nodes
+        }
         return all_node_outputs
 
     def get_all_node_results(self) -> List[Dict]:

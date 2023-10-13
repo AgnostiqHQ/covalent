@@ -239,14 +239,6 @@ async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_gro
                 selected_executor=[selected_executor, selected_executor_data],
             )
 
-            # coro = runner_ng.run_abstract_task_group(
-            #     dispatch_id=dispatch_id,
-            #     task_group_id=task_group_id,
-            #     task_seq=task_specs,
-            #     known_nodes=known_nodes,
-            #     selected_executor=[selected_executor, selected_executor_data],
-            # )
-
             asyncio.create_task(coro)
         else:
             ts = datetime.now(timezone.utc)
