@@ -12,7 +12,10 @@
 [![apache](https://img.shields.io/badge/License-Apache_License_2.0-blue)](https://www.apache.org/licenses/LICENSE-2.0)
 
 </div>
-
+<div align="center">
+ 
+## [Covalent Website](https://www.covalent.xyz/)
+</div>
 
 
 ## 🤔  What is Covalent?
