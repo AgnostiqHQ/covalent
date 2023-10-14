@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Documentation and test cases for database triggers.
+- Website link is added in the README.md file.
 
 ### Docs
 
