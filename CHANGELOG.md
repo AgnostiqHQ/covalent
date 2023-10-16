@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- [Significant Changes] Improving memory management part 1/3
 - Removed strict version pins on `lmdbm`, `mpire`, `orjson`, and `pennylane`
 - Changed license to Apache
 
@@ -148,6 +149,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - File transfer strategy for GCP storage
 - Add CLI status for zombie, stopped process.
 - Fix for double locking file in configurations.
+- Introduced new data access layer
+- Introduced Shutil file transfer strategy for local file transfers
 
 ### Docs
 

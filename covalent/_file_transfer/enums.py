@@ -34,6 +34,7 @@ class FileSchemes(str, enum.Enum):
 
 
 class FileTransferStrategyTypes(str, enum.Enum):
+    Shutil = "Shutil"
     Rsync = "rsync"
     HTTP = "http"
     S3 = "s3"
@@ -43,7 +44,7 @@ class FileTransferStrategyTypes(str, enum.Enum):
 
 
 SchemeToStrategyMap = {
-    "file": FileTransferStrategyTypes.Rsync,
+    "file": FileTransferStrategyTypes.Shutil,
     "http": FileTransferStrategyTypes.HTTP,
     "https": FileTransferStrategyTypes.HTTP,
     "s3": FileTransferStrategyTypes.S3,
