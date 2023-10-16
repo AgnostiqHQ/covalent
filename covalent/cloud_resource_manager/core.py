@@ -225,24 +225,28 @@ class CloudResourceManager:
             None
 
         """
-        proc = subprocess.Popen(
-            args=cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.STDOUT,
-            cwd=workdir,
-            shell=True,
-            env={
-                "TF_LOG": "ERROR",
-                "TF_LOG_PATH": Path(self.executor_tf_path) / "terraform-error.log",
-                "PATH": "$PATH:/usr/bin",
-            },
-        )
-        retcode = self._print_stdout(proc, print_callback)
-
-        if retcode != 0:
-            raise subprocess.CalledProcessError(
-                returncode=retcode, cmd=cmd, stderr=self._parse_terraform_error_log()
+        if git := shutil.which("git"):
+            proc = subprocess.Popen(
+                args=cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                cwd=workdir,
+                shell=True,
+                env={
+                    "TF_LOG": "ERROR",
+                    "TF_LOG_PATH": Path(self.executor_tf_path) / "terraform-error.log",
+                    "PATH": "$PATH:/usr/bin",
+                },
             )
+            retcode = self._print_stdout(proc, print_callback)
+
+            if retcode != 0:
+                raise subprocess.CalledProcessError(
+                    returncode=retcode, cmd=cmd, stderr=self._parse_terraform_error_log()
+                )
+        else:
+            logger.error("Git not found on the system.")
+            sys.exit()
 
     def _update_config(self, tf_executor_config_file: str) -> None:
         """
@@ -282,8 +286,6 @@ class CloudResourceManager:
 
         """
         if terraform := shutil.which("terraform"):
-            import subprocess
-
             result = subprocess.run(
                 ["terraform --version"], shell=True, capture_output=True, text=True
             )
