@@ -28,6 +28,7 @@ class Electron(Base):
         id: primary key id
         parent_lattice_id: id of the lattice containing this electron
         transport_graph_node_id: id of the node in the context of a transport graph
+        task_group_id: id of the node's task group in the context of a transport graph
         type: node type
         name: node name
         status: Execution status of the node
@@ -48,6 +49,8 @@ class Electron(Base):
         call_after_filename : Name of the file containing list of DepsCall objects
         error_filename: Name of the file containing execution information generated at runtime
         is_active: Status of the record, 1: active and 0: inactive
+        job_id: ID for circuit_info
+        qelectron_data_exists: Flag that indicates if qelectron data exists in the electron
         created_at: created timestamp
         updated_at: updated timestamp
         started_at: started timestamp
@@ -62,6 +65,9 @@ class Electron(Base):
 
     # id of the node in the context of a transport graph
     transport_graph_node_id = Column(Integer, nullable=False)
+
+    # id of the node's task group in the context of a transport graph
+    task_group_id = Column(Integer, nullable=False)
 
     # Node type
     type = Column(String(24), nullable=False)
@@ -86,9 +92,6 @@ class Electron(Base):
 
     # Short name describing the executor ("local", "dask", etc)
     executor = Column(Text)
-
-    # JSONified executor attributes
-    executor_data = Column(Text)
 
     # name of the file containing the serialized output
     results_filename = Column(Text)
@@ -120,8 +123,12 @@ class Electron(Base):
     # ID for circuit_info
     job_id = Column(Integer, ForeignKey("jobs.id", name="job_id_link"), nullable=False)
 
-    # Flag that indicates if an electron is a QElectron
-    qelectron_data_exists = Column(Boolean, nullable=False)
+    # Cancel requested flag
+    cancel_requested = Column(Boolean, nullable=False, default=False)
+
+    # Flag that indicates if qelectron data exists in the electron
+    qelectron_data_exists = Column(Boolean, nullable=False, default=False)
+
     # Timestamps
     created_at = Column(DateTime, nullable=False, server_default=func.now())
     updated_at = Column(DateTime, nullable=False, onupdate=func.now(), server_default=func.now())

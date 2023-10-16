@@ -63,7 +63,9 @@ class Result:
     """
 
     NEW_OBJ = RESULT_STATUS.NEW_OBJECT
-    PENDING_REUSE = RESULT_STATUS.PENDING_REUSE
+    PENDING_REUSE = (
+        RESULT_STATUS.PENDING_REUSE
+    )  # Facilitates reuse of previous electrons in the new dispatcher design
     COMPLETED = RESULT_STATUS.COMPLETED
     POSTPROCESSING = RESULT_STATUS.POSTPROCESSING
     PENDING_POSTPROCESSING = RESULT_STATUS.PENDING_POSTPROCESSING
@@ -209,7 +211,10 @@ Node Outputs
         Final result of current dispatch.
         """
 
-        return self._result.get_deserialized() if self._result is not None else None
+        if self._result is not None:
+            return self._result.get_deserialized()
+        else:
+            return None
 
     @property
     def inputs(self) -> dict:
@@ -438,7 +443,7 @@ Node Outputs
         sublattice_result: "Result" = None,
         stdout: str = None,
         stderr: str = None,
-        qelectron_data_exists: bool = False,
+        qelectron_data_exists: bool = None,
     ) -> None:
         """
         Update the node result in the transport graph.
@@ -497,7 +502,7 @@ Node Outputs
         if stderr is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
 
-        if qelectron_data_exists:
+        if qelectron_data_exists is not None:
             self.lattice.transport_graph.set_node_value(
                 node_id, "qelectron_data_exists", qelectron_data_exists
             )

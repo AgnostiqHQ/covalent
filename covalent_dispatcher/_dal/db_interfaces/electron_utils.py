@@ -79,9 +79,7 @@ custom_get_filters = {
 
 custom_set_filters = {"status": set_status_filter, "executor_data": set_executor_data_filter}
 
-
 get_filters = {key: identity for key in METADATA_KEYS.union(ASSET_KEYS)}
-
 set_filters = {key: identity for key in METADATA_KEYS.union(ASSET_KEYS)}
 
 get_filters.update(custom_get_filters)

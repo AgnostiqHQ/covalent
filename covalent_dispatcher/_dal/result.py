@@ -221,6 +221,7 @@ class Result(DispatchedObject[ResultMeta, ResultAsset]):
             error: The error of the node if occured else None.
             stdout: The stdout of the node execution.
             stderr: The stderr of the node execution.
+            qelectron_data_exists: Whether the qelectron data exists.
 
         Returns:
             True/False indicating whether the update succeeded

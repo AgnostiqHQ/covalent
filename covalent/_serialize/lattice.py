@@ -29,6 +29,12 @@ from .._workflow.lattice import Lattice
 from .common import AssetType, load_asset, save_asset
 from .transport_graph import deserialize_transport_graph, serialize_transport_graph
 
+__all__ = [
+    "serialize_lattice",
+    "deserialize_lattice",
+]
+
+
 ASSET_TYPES = {
     "workflow_function": AssetType.TRANSPORTABLE,
     "workflow_function_string": AssetType.TEXT,

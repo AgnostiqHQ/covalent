@@ -147,8 +147,9 @@ async def _get_initial_tasks_and_deps(dispatch_id: str) -> Tuple[int, int, Dict]
         parent_gid = g.nodes[node_id]["task_group_id"]
         for succ, datadict in g.adj[node_id].items():
             child_gid = g.nodes[succ]["task_group_id"]
-            n_edges = len(datadict.keys())
+
             if parent_gid != child_gid:
+                n_edges = len(datadict.keys())
                 pending_parents[child_gid] += n_edges
 
     initial_task_groups = [gid for gid, d in pending_parents.items() if d == 0]

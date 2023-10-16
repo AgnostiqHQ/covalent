@@ -86,7 +86,7 @@ class ElectronAssets(BaseModel):
     stdout: Optional[AssetSchema] = None
     stderr: Optional[AssetSchema] = None
 
-    # electron_metadata
+    # electron_metadata attached by the user
     deps: AssetSchema
     call_before: AssetSchema
     call_after: AssetSchema
@@ -97,6 +97,7 @@ class ElectronMetadata(BaseModel):
     name: str
     executor: str
     executor_data: dict
+    qelectron_data_exists: bool
     sub_dispatch_id: Optional[str] = None
     status: StatusEnum
     start_time: Optional[datetime] = None

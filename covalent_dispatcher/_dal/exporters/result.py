@@ -44,12 +44,11 @@ app_log = logger.app_log
 
 # res is assumed to represent a full db record
 def _export_result_meta(res: Result) -> ResultMetadata:
-    metadata_kwargs = {}
-    for key in METADATA_KEYS:
-        if key in METADATA_KEYS_TO_OMIT:
-            continue
-        metadata_kwargs[key] = res.get_metadata(key, None, refresh=False)
-
+    metadata_kwargs = {
+        key: res.get_metadata(key, None, refresh=False)
+        for key in METADATA_KEYS
+        if key not in METADATA_KEYS_TO_OMIT
+    }
     return ResultMetadata(**metadata_kwargs)
 
 

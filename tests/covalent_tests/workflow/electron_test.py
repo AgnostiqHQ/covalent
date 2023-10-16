@@ -285,7 +285,7 @@ def test_injected_inputs_are_not_in_tg():
 
     # Account for postprocessing node
     assert list(g.nodes) == [0, 1, 2]
-    assert set(g.edges) == set([(1, 0, 0), (0, 2, 0), (0, 2, 1)])
+    assert set(g.edges) == {(1, 0, 0), (0, 2, 0), (0, 2, 1)}
 
 
 def test_metadata_in_electron_list():
@@ -309,8 +309,8 @@ def test_metadata_in_electron_list():
     task_metadata = workflow.transport_graph.get_node_value(0, "metadata")
     e_list_metadata = workflow.transport_graph.get_node_value(1, "metadata")
 
-    assert list(e_list_metadata["call_before"]) == []
-    assert list(e_list_metadata["call_after"]) == []
+    assert not list(e_list_metadata["call_before"])
+    assert not list(e_list_metadata["call_after"])
 
     assert e_list_metadata["executor"] == task_metadata["executor"]
 
@@ -364,7 +364,14 @@ def test_autogen_list_electrons():
 
     assert g.nodes[2]["value"].get_deserialized() == 5
     assert g.nodes[3]["value"].get_deserialized() == 7
-    assert set(g.edges) == set([(1, 0, 0), (2, 1, 0), (3, 1, 0), (0, 4, 0), (0, 4, 1), (1, 4, 0)])
+    assert set(g.edges) == {
+        (1, 0, 0),
+        (2, 1, 0),
+        (3, 1, 0),
+        (0, 4, 0),
+        (0, 4, 1),
+        (1, 4, 0),
+    }
 
 
 def test_autogen_dict_electrons():
@@ -386,7 +393,14 @@ def test_autogen_dict_electrons():
     assert fn(x=2, y=5, z=7) == {"x": 2, "y": 5, "z": 7}
     assert g.nodes[2]["value"].get_deserialized() == 5
     assert g.nodes[3]["value"].get_deserialized() == 7
-    assert set(g.edges) == set([(1, 0, 0), (2, 1, 0), (3, 1, 0), (0, 4, 0), (0, 4, 1), (1, 4, 0)])
+    assert set(g.edges) == {
+        (1, 0, 0),
+        (2, 1, 0),
+        (3, 1, 0),
+        (0, 4, 0),
+        (0, 4, 1),
+        (1, 4, 0),
+    }
 
 
 def test_as_transportable_dict():
@@ -458,7 +472,7 @@ def test_electron_auto_task_groups(task_packing):
         assert all(tg.get_node_value(i, "task_group_id") == 0 for i in [0, 3, 4])
         assert all(tg.get_node_value(i, "task_group_id") == i for i in [1, 2, 5, 6, 7, 8])
     else:
-        assert all(tg.get_node_value(i, "task_group_id") == i for i in range(0, 9))
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in range(9))
 
 
 @pytest.mark.parametrize("task_packing", ["true", "false"])
@@ -503,7 +517,7 @@ def test_electron_get_attr(task_packing):
         assert getitem_y_gid == point_electron_gid
         assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
     else:
-        assert all(tg.get_node_value(i, "task_group_id") == i for i in range(0, 7))
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in range(7))
 
 
 @pytest.mark.parametrize("task_packing", ["true", "false"])
@@ -545,7 +559,7 @@ def test_electron_auto_task_groups_getitem(task_packing):
         assert getitem_y_gid == arr_electron_gid
         assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
     else:
-        assert all(tg.get_node_value(i, "task_group_id") == i for i in range(0, 7))
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in range(7))
 
 
 @pytest.mark.parametrize("task_packing", ["true", "false"])
@@ -588,7 +602,7 @@ def test_electron_auto_task_groups_iter(task_packing):
         assert getitem_y_gid == tup_electron_gid
         assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
     else:
-        assert all(tg.get_node_value(i, "task_group_id") == i for i in range(0, 7))
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in range(7))
 
 
 def test_electron_executor_property():

@@ -30,6 +30,15 @@ from .._shared_files.util_classes import Status
 from .common import AssetType, load_asset, save_asset
 from .lattice import deserialize_lattice, serialize_lattice
 
+__all__ = [
+    "serialize_result",
+    "deserialize_result",
+    "strip_local_uris",
+    "merge_response_manifest",
+    "extract_assets",
+]
+
+
 ASSET_TYPES = {
     "error": AssetType.TEXT,
     "result": AssetType.TRANSPORTABLE,
@@ -170,32 +179,28 @@ def merge_response_manifest(manifest: ResultSchema, response: ResultSchema) -> R
 
 
 def extract_assets(manifest: ResultSchema) -> List[AssetSchema]:
-    """Extract all of the asset metadata from a manifest dictionary.
+    """
+    Extract all of the asset metadata from a manifest dictionary.
 
     Args:
         manifest: A result manifest
 
     Returns:
         A list of assets
-    """
 
-    assets = []
+    """
 
     # workflow-level assets
     dispatch_assets = manifest.assets
-    for key, asset in dispatch_assets:
-        assets.append(asset)
-
+    assets = [asset for key, asset in dispatch_assets]
     lattice = manifest.lattice
     lattice_assets = lattice.assets
-    for key, asset in lattice_assets:
-        assets.append(asset)
+    assets.extend(asset for key, asset in lattice_assets)
 
     # Node assets
     tg = lattice.transport_graph
     nodes = tg.nodes
     for node in nodes:
         node_assets = node.assets
-        for key, asset in node_assets:
-            assets.append(asset)
+        assets.extend(asset for key, asset in node_assets)
     return assets

@@ -69,7 +69,7 @@ def import_transport_graph(
     # Maps node ids to asset record dictionaries
     electron_asset_links = {}
 
-    for gid, node_group in task_groups.items():
+    for gid in task_groups:
         # Create a job record for each task group
         job_kwargs = {
             "cancel_requested": cancel_requested,
@@ -106,7 +106,7 @@ def import_transport_graph(
     app_log.debug(f"Inserting {n_records} electron records took {delta} seconds")
 
     n_records = 0
-    for _, asset_records_by_key in electron_asset_links.items():
+    for asset_records_by_key in electron_asset_links.values():
         n_records += len(asset_records_by_key)
 
     st = datetime.now()
@@ -118,11 +118,10 @@ def import_transport_graph(
     meta_asset_associations = []
     for node_id, asset_records in electron_asset_links.items():
         electron_dal = Electron(session, electron_map[node_id])
-        for key, asset_rec in asset_records.items():
-            meta_asset_associations.append(
-                electron_dal.associate_asset(session, key, asset_rec.id)
-            )
-
+        meta_asset_associations.extend(
+            electron_dal.associate_asset(session, key, asset_rec.id)
+            for key, asset_rec in asset_records.items()
+        )
     n_records = len(meta_asset_associations)
 
     st = datetime.now()

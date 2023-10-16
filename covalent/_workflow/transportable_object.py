@@ -318,13 +318,6 @@ class TransportableObject:
         Recursively deserializes a list of TransportableObjects. More
         precisely, `collection` is a list, each of whose entries is
         assumed to be either a `TransportableObject`, a list, or dict`
-
-        Args:
-            collection: A list of TransportableObjects.
-
-        Returns:
-            A list of deserialized objects.
-
         """
 
         new_list = []

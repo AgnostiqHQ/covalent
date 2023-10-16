@@ -16,6 +16,8 @@
 
 """
 Tests for the core functionality of the dispatcher.
+
+This will be replaced in the next patch.
 """
 
 
@@ -775,10 +777,7 @@ async def test_cancel_dispatch(mocker):
     ]
 
     async def mock_get(dispatch_id, task_ids, keys):
-        if dispatch_id == res.dispatch_id:
-            return node_attrs
-        else:
-            return sub_node_attrs
+        return node_attrs if dispatch_id == res.dispatch_id else sub_node_attrs
 
     mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.electron.get_bulk",
@@ -835,10 +834,7 @@ async def test_cancel_dispatch_with_task_ids(mocker):
     ]
 
     async def mock_get(dispatch_id, task_ids, keys):
-        if dispatch_id == res.dispatch_id:
-            return node_attrs
-        else:
-            return sub_node_attrs
+        return node_attrs if dispatch_id == res.dispatch_id else sub_node_attrs
 
     mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.electron.get_bulk",

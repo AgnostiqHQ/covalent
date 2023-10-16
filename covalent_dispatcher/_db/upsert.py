@@ -45,7 +45,6 @@ LATTICE_FILENAMES.update(result.ASSET_FILENAME_MAP.copy())
 ELECTRON_FUNCTION_FILENAME = ELECTRON_FILENAMES["function"]
 ELECTRON_FUNCTION_STRING_FILENAME = ELECTRON_FILENAMES["function_string"]
 ELECTRON_VALUE_FILENAME = ELECTRON_FILENAMES["value"]
-
 ELECTRON_STDOUT_FILENAME = ELECTRON_FILENAMES["stdout"]
 ELECTRON_STDERR_FILENAME = ELECTRON_FILENAMES["stderr"]
 ELECTRON_ERROR_FILENAME = ELECTRON_FILENAMES["error"]
@@ -57,13 +56,11 @@ ELECTRON_STORAGE_TYPE = "file"
 LATTICE_FUNCTION_FILENAME = LATTICE_FILENAMES["workflow_function"]
 LATTICE_FUNCTION_STRING_FILENAME = LATTICE_FILENAMES["workflow_function_string"]
 LATTICE_DOCSTRING_FILENAME = LATTICE_FILENAMES["doc"]
-
 LATTICE_ERROR_FILENAME = LATTICE_FILENAMES["error"]
 LATTICE_INPUTS_FILENAME = LATTICE_FILENAMES["inputs"]
 LATTICE_NAMED_ARGS_FILENAME = LATTICE_FILENAMES["named_args"]
 LATTICE_NAMED_KWARGS_FILENAME = LATTICE_FILENAMES["named_kwargs"]
 LATTICE_RESULTS_FILENAME = LATTICE_FILENAMES["result"]
-
 LATTICE_DEPS_FILENAME = LATTICE_FILENAMES["deps"]
 LATTICE_CALL_BEFORE_FILENAME = LATTICE_FILENAMES["call_before"]
 LATTICE_CALL_AFTER_FILENAME = LATTICE_FILENAMES["call_after"]
@@ -112,16 +109,6 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         ("workflow_function", LATTICE_FUNCTION_FILENAME, result.lattice.workflow_function),
         ("workflow_function_string", LATTICE_FUNCTION_STRING_FILENAME, workflow_func_string),
         ("doc", LATTICE_DOCSTRING_FILENAME, result.lattice.__doc__),
-        # (
-        #     "executor_data",
-        #     LATTICE_EXECUTOR_DATA_FILENAME,
-        #     result.lattice.metadata["executor_data"],
-        # ),
-        # (
-        #     "workflow_executor_data",
-        #     LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME,
-        #     result.lattice.metadata["workflow_executor_data"],
-        # ),
         ("error", LATTICE_ERROR_FILENAME, result.error),
         ("inputs", LATTICE_INPUTS_FILENAME, result.lattice.inputs),
         ("named_args", LATTICE_NAMED_ARGS_FILENAME, result.lattice.named_args),
@@ -174,10 +161,8 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         "function_string_filename": LATTICE_FUNCTION_STRING_FILENAME,
         "executor": result.lattice.metadata["executor"],
         "executor_data": json.dumps(result.lattice.metadata["executor_data"]),
-        # "executor_data_filename": LATTICE_EXECUTOR_DATA_FILENAME,
         "workflow_executor": result.lattice.metadata["workflow_executor"],
         "workflow_executor_data": json.dumps(result.lattice.metadata["workflow_executor_data"]),
-        # "workflow_executor_data_filename": LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME,
         "error_filename": LATTICE_ERROR_FILENAME,
         "inputs_filename": LATTICE_INPUTS_FILENAME,
         "named_args_filename": LATTICE_NAMED_ARGS_FILENAME,
@@ -200,10 +185,9 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
     lattice_row = Lattice.meta_type.create(session, insert_kwargs=lattice_record_kwarg, flush=True)
     lattice_record = Lattice(session, lattice_row, bare=True, keys={"id"}, electron_keys={"id"})
 
-    lattice_asset_links = []
-    for key, asset in assets.items():
-        lattice_asset_links.append(lattice_record.associate_asset(session, key, asset.id))
-
+    lattice_asset_links = [
+        lattice_record.associate_asset(session, key, asset.id) for key, asset in assets.items()
+    ]
     session.flush()
 
     return lattice_row.id
@@ -284,14 +268,14 @@ def _electron_data(
                 node_error = None
 
             try:
-                node_qelectron_data_exists = tg.get_node_value(node_id, "qelectron_data_exists")
-            except KeyError:
-                node_qelectron_data_exists = False
-
-            try:
                 node_output = tg.get_node_value(node_id, "output")
             except KeyError:
                 node_output = TransportableObject(None)
+
+            try:
+                node_qelectron_data_exists = tg.get_node_value(node_id, "qelectron_data_exists")
+            except KeyError:
+                node_qelectron_data_exists = False
 
             executor = tg.get_node_value(node_id, "metadata")["executor"]
             started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
@@ -366,7 +350,6 @@ def _electron_data(
                 "function_string_filename": ELECTRON_FUNCTION_STRING_FILENAME,
                 "executor": executor,
                 "executor_data": json.dumps(executor_data),
-                # "executor_data_filename": ELECTRON_EXECUTOR_DATA_FILENAME,
                 "results_filename": ELECTRON_RESULTS_FILENAME,
                 "value_filename": ELECTRON_VALUE_FILENAME,
                 "stdout_filename": ELECTRON_STDOUT_FILENAME,
@@ -375,12 +358,13 @@ def _electron_data(
                 "deps_filename": ELECTRON_DEPS_FILENAME,
                 "call_before_filename": ELECTRON_CALL_BEFORE_FILENAME,
                 "call_after_filename": ELECTRON_CALL_AFTER_FILENAME,
+                "qelectron_data_exists": node_qelectron_data_exists,
+                "cancel_requested": cancel_requested,
                 "job_id": job_row.id,
                 "created_at": timestamp,
                 "updated_at": timestamp,
                 "started_at": started_at,
                 "completed_at": completed_at,
-                "qelectron_data_exists": node_qelectron_data_exists,
             }
             electron_row = Electron.meta_type.create(
                 session,

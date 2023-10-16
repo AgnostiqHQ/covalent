@@ -147,11 +147,9 @@ def import_lattice_assets(
     # Write asset records to DB
     session.flush()
 
-    # Link assets to lattice
-    lattice_asset_links = []
-    for key, asset_rec in asset_ids.items():
-        lattice_asset_links.append(record.associate_asset(session, key, asset_rec.id))
-
+    lattice_asset_links = [
+        record.associate_asset(session, key, asset_rec.id) for key, asset_rec in asset_ids.items()
+    ]
     session.flush()
 
     return lat.assets

@@ -71,7 +71,9 @@ def get_default_sdk_config():
         "multistage_dispatch": "false"
         if os.environ.get("COVALENT_DISABLE_MULTISTAGE_DISPATCH") == "1"
         else "true",
-        "results_dir": os.environ.get("COVALENT_RESULTS_DIR")
+        "results_dir": os.environ.get(
+            "COVALENT_RESULTS_DIR"
+        )  # COVALENT_RESULTS_DIR is where the client downloads workflow artifacts during get_result() which is different from COVALENT_DATA_DIR
         or (
             (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
             + "/covalent/results"

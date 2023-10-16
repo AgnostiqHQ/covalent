@@ -34,10 +34,7 @@ app_log = logger.app_log
 def _export_nodes(tg: _TransportGraph) -> List[ElectronSchema]:
     g = tg.get_internal_graph_copy()
     internal_nodes = tg.get_nodes(list(g.nodes), None)
-    export_nodes = []
-    for e in internal_nodes:
-        export_nodes.append(export_electron(e))
-
+    export_nodes = [export_electron(e) for e in internal_nodes]
     return export_nodes
 
 

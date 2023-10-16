@@ -265,10 +265,9 @@ def import_result_assets(
     delta = (et - st).total_seconds()
     app_log.debug(f"Inserting {n_records} asset records took {delta} seconds")
 
-    result_asset_links = []
-    for key, asset_rec in asset_ids.items():
-        result_asset_links.append(record.associate_asset(session, key, asset_rec.id))
-
+    result_asset_links = [
+        record.associate_asset(session, key, asset_rec.id) for key, asset_rec in asset_ids.items()
+    ]
     n_records = len(result_asset_links)
     st = datetime.now()
     session.flush()

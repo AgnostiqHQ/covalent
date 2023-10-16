@@ -28,8 +28,26 @@ from .._shared_files.schemas.transport_graph import TransportGraphSchema
 from .._workflow.transport import _TransportGraph
 from .electron import deserialize_node, serialize_node
 
+__all__ = [
+    "serialize_transport_graph",
+    "deserialize_transport_graph",
+]
 
-def serialize_edge(source: int, target: int, attrs: dict) -> EdgeSchema:
+
+def _serialize_edge(source: int, target: int, attrs: dict) -> EdgeSchema:
+    """
+    Serialize an edge in a graph
+
+    Args:
+        source: Source node
+        target: Target node
+        attrs: Edge attributes
+
+    Returns:
+        Serialized EdgeSchema object
+
+    """
+
     meta = EdgeMetadata(
         edge_name=attrs["edge_name"],
         param_type=attrs.get("param_type"),
@@ -38,7 +56,18 @@ def serialize_edge(source: int, target: int, attrs: dict) -> EdgeSchema:
     return EdgeSchema(source=source, target=target, metadata=meta)
 
 
-def deserialize_edge(e: EdgeSchema) -> dict:
+def _deserialize_edge(e: EdgeSchema) -> dict:
+    """
+    Deserialize an EdgeSchema into a dictionary
+
+    Args:
+        e: EdgeSchema
+
+    Returns:
+        Deserialized dictionary
+
+    """
+
     return {
         "source": e.source,
         "target": e.target,
@@ -47,6 +76,18 @@ def deserialize_edge(e: EdgeSchema) -> dict:
 
 
 def _serialize_nodes(g: nx.MultiDiGraph, storage_path: str) -> List[ElectronSchema]:
+    """
+    Serialize nodes in a graph
+
+    Args:
+        g: NetworkX graph
+        storage_path: Path to store serialized object
+
+    Returns:
+        Serialized nodes
+
+    """
+
     results = []
     base_path = Path(storage_path)
     for i in g.nodes:
@@ -57,14 +98,37 @@ def _serialize_nodes(g: nx.MultiDiGraph, storage_path: str) -> List[ElectronSche
 
 
 def _serialize_edges(g: nx.MultiDiGraph) -> List[EdgeSchema]:
+    """
+    Serialize edges in a graph
+
+    Args:
+        g: NetworkX graph
+
+    Returns:
+        Serialized edges
+
+    """
+
     results = []
     for edge in g.edges:
         source, target, key = edge
-        results.append(serialize_edge(source, target, g.edges[edge]))
+        results.append(_serialize_edge(source, target, g.edges[edge]))
     return results
 
 
 def serialize_transport_graph(tg, storage_path: str) -> TransportGraphSchema:
+    """
+    Serialize a TransportGraph object into a TransportGraphSchema
+
+    Args:
+        tg: TransportGraph object
+        storage_path: Path to store serialized object
+
+    Returns:
+        Serialized TransportGraphSchema object
+
+    """
+
     g = tg.get_internal_graph_copy()
     return TransportGraphSchema(
         nodes=_serialize_nodes(g, storage_path),
@@ -73,10 +137,21 @@ def serialize_transport_graph(tg, storage_path: str) -> TransportGraphSchema:
 
 
 def deserialize_transport_graph(t: TransportGraphSchema) -> _TransportGraph:
+    """
+    Deserialize a TransportGraphSchema into a TransportGraph object
+
+    Args:
+        t: TransportGraphSchema
+
+    Returns:
+        Deserialized TransportGraph object
+
+    """
+
     tg = _TransportGraph()
     g = tg._graph
     nodes = [deserialize_node(n) for n in t.nodes]
-    edges = [deserialize_edge(e) for e in t.links]
+    edges = [_deserialize_edge(e) for e in t.links]
     for node in nodes:
         node_id = node["id"]
         attrs = node["attrs"]

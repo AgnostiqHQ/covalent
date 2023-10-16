@@ -35,11 +35,9 @@ class Lattice(Base):
         storage_path: Bucket name (dispatch_id)
         function_filename: Name of the file containing the serialized function
         function_string_filename: Name of the file containing the function string
-        executor_filename: Name of the file containing the serialized executor
         error_filename: Name of the file containing an error message for the electron
         results_filename: Name of the file containing the serialized output
         inputs_filename: Name of the file containing the serialized input data
-        transport_graph_filename: Name of the file containing generic transport graph data
         is_active: Status of the record, 1: active and 0: inactive
         created_at: created timestamp
         updated_at: updated timestamp
@@ -84,14 +82,8 @@ class Lattice(Base):
     # Short name describing the executor ("local", "dask", etc)
     executor = Column(Text)
 
-    # JSONified executor attributes
-    executor_data = Column(Text)
-
     # Short name describing the workflow executor ("local", "dask", etc)
     workflow_executor = Column(Text)
-
-    # JSONified executor attributes
-    workflow_executor_data = Column(Text)
 
     # Name of the file containing an error message for the workflow
     error_filename = Column(Text)

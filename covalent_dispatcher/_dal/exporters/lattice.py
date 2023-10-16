@@ -26,10 +26,7 @@ from .tg import export_transport_graph
 
 
 def _export_lattice_meta(lat: Lattice) -> LatticeMetadata:
-    metadata_kwargs = {}
-    for key in METADATA_KEYS:
-        metadata_kwargs[key] = lat.get_value(key, None, refresh=False)
-
+    metadata_kwargs = {key: lat.get_value(key, None, refresh=False) for key in METADATA_KEYS}
     return LatticeMetadata(**metadata_kwargs)
 
 

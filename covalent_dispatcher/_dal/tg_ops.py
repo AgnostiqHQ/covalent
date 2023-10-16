@@ -213,7 +213,7 @@ class TransportGraphOps:
                     self._flag_successors(A, A_node_status, y)
                     continue
 
-                if y in B.adj[current_node] and B_node_status[y] == -1:
+                if B_node_status[y] == -1:
                     app_log.debug(f"A: Node {y} is marked as failed in B")
                     self._flag_successors(A, A_node_status, y)
                     continue
@@ -251,7 +251,7 @@ class TransportGraphOps:
                     app_log.debug(f"B: {y} not adjacent to node {current_node} in A")
                     self._flag_successors(B, B_node_status, y)
                     continue
-                if y in A.adj[current_node] and B_node_status[y] == -1:
+                if B_node_status[y] == -1:
                     app_log.debug(f"B: Node {y} is marked as failed in A")
                     self._flag_successors(B, B_node_status, y)
 
