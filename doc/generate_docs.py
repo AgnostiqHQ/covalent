@@ -60,6 +60,9 @@ def run(clean_dir: bool = False) -> None:
     else:
         install_autoclass_doc_dependencies()
         cmd = subprocess.Popen(["make", "html"])
-    cmd.communicate()
+    _, stderr = cmd.communicate()
+    
+    if cmd.returncode != 0:
+        logging.error(f"Error running 'make': {stderr}")
 
     os.chdir(pwd)
