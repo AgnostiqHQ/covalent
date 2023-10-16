@@ -63,6 +63,6 @@ def run(clean_dir: bool = False) -> None:
     _, stderr = cmd.communicate()
 
     if cmd.returncode != 0:
-        logging.error(f"Error running 'make': {stderr}")
+        print(f"Error running 'make': {stderr}")
 
     os.chdir(pwd)
