@@ -234,6 +234,7 @@ class CloudResourceManager:
             env={
                 "TF_LOG": "ERROR",
                 "TF_LOG_PATH": Path(self.executor_tf_path) / "terraform-error.log",
+                "PATH": "$PATH:/usr/bin",
             },
         )
         retcode = self._print_stdout(proc, print_callback)
