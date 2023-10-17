@@ -98,6 +98,7 @@ def test_build_sublattice_graph(mocker):
         "call_before": [],
         "call_after": [],
         "triggers": "mock-trigger",
+        "qelectron_data_exists": False,
         "results_dir": None,
     }
     mock_environ = {
@@ -161,6 +162,7 @@ def test_build_sublattice_graph_fallback(mocker):
         "call_before": [],
         "call_after": [],
         "triggers": "mock-trigger",
+        "qelectron_data_exists": False,
         "results_dir": None,
     }
 
