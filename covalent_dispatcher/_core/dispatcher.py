@@ -34,6 +34,7 @@ from . import data_manager as datasvc
 from . import runner
 from .data_modules import job_manager as jbmgr
 from .dispatcher_modules.caches import _pending_parents, _sorted_task_groups, _unresolved_tasks
+from .runner_modules.cancel import cancel_tasks
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -348,7 +349,7 @@ async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = None) -> None:
         app_log.debug(f"Cancelling dispatch {dispatch_id}")
 
     await jbmgr.set_cancel_requested(dispatch_id, task_ids)
-    await runner.cancel_tasks(dispatch_id, task_ids)
+    await cancel_tasks(dispatch_id, task_ids)
 
     # Recursively cancel running sublattice dispatches
     attrs = await datasvc.electron.get_bulk(dispatch_id, task_ids, ["sub_dispatch_id"])

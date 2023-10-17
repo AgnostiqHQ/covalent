@@ -21,7 +21,7 @@ This will be replaced in the next patch.
 """
 
 
-from unittest.mock import AsyncMock, call
+from unittest.mock import call
 
 import pytest
 
@@ -749,9 +749,7 @@ async def test_cancel_dispatch(mocker):
         "covalent_dispatcher._core.dispatcher.jbmgr.set_cancel_requested"
     )
 
-    mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner")
-
-    mock_runner.cancel_tasks = AsyncMock()
+    mock_cancel_tasks = mocker.patch("covalent_dispatcher._core.dispatcher.cancel_tasks")
 
     res._initialize_nodes()
     sub_res._initialize_nodes()
@@ -791,7 +789,7 @@ async def test_cancel_dispatch(mocker):
 
     calls = [call("pipeline_workflow", task_ids), call(sub_dispatch_id, sub_task_ids)]
     mock_data_cancel.assert_has_awaits(calls)
-    mock_runner.cancel_tasks.assert_has_awaits(calls)
+    mock_cancel_tasks.assert_has_awaits(calls)
 
 
 @pytest.mark.asyncio
@@ -813,9 +811,7 @@ async def test_cancel_dispatch_with_task_ids(mocker):
         "covalent_dispatcher._core.dispatcher.jbmgr.set_cancel_requested"
     )
 
-    mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner")
-
-    mock_runner.cancel_tasks = AsyncMock()
+    mock_cancel_tasks = mocker.patch("covalent_dispatcher._core.dispatcher.cancel_tasks")
 
     async def mock_get_nodes(dispatch_id):
         if dispatch_id == res.dispatch_id:
@@ -849,5 +845,5 @@ async def test_cancel_dispatch_with_task_ids(mocker):
 
     calls = [call("pipeline_workflow", task_ids), call(sub_dispatch_id, sub_task_ids)]
     mock_data_cancel.assert_has_awaits(calls)
-    mock_runner.cancel_tasks.assert_has_awaits(calls)
+    mock_cancel_tasks.assert_has_awaits(calls)
     assert mock_app_log.call_count == 2
