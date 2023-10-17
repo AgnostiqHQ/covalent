@@ -205,9 +205,7 @@ def test_result_post_process(
         "compute_system_energy(8)": 3,
     }
 
-    encoded_node_outputs = {
-        k: ct.TransportableObject.make_transportable(v) for k, v in node_outputs.items()
-    }
+    encoded_node_outputs = {k: ct.TransportableObject(v) for k, v in node_outputs.items()}
 
     res = Result(compute_energy)
     res._initialize_nodes()

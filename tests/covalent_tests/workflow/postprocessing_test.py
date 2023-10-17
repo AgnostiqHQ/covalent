@@ -90,20 +90,17 @@ def test_postprocess():
     mock_kwarg = Mock()
     mock_workflow = Mock()
     mock_workflow.get_deserialized.__call__().return_value = "mock_result"
-    mock_lattice.args.__iter__.return_value = [mock_arg]
-    mock_lattice.kwargs = {"mock_key": mock_kwarg}
+    mock_lattice.inputs = MagicMock()
+    mock_lattice.inputs.get_deserialized = MagicMock(
+        return_value={"args": (mock_arg,), "kwargs": {"mock_key": mock_kwarg}}
+    )
     mock_lattice.workflow_function = mock_workflow
 
     pp = Postprocessor(mock_lattice)
     res = pp._postprocess(["mock_output_1", "mock_output_2"])
 
     assert mock_lattice.electron_outputs == [["mock_output_1", "mock_output_2"]]
-
-    mock_arg.get_deserialized.assert_called_once_with()
-    mock_kwarg.get_deserialized.assert_called_once_with()
-    mock_workflow.get_deserialized().assert_called_once_with(
-        mock_arg.get_deserialized(), mock_key=mock_kwarg.get_deserialized()
-    )
+    mock_workflow.get_deserialized().assert_called_once_with(mock_arg, mock_key=mock_kwarg)
 
     assert res == "mock_result"
 

@@ -17,7 +17,7 @@
 from contextlib import contextmanager
 from os import environ, path
 from pathlib import Path
-from typing import BinaryIO, Generator, Optional
+from typing import Generator, Optional
 
 from alembic import command
 from alembic.config import Config
@@ -31,6 +31,8 @@ from sqlalchemy_utils import create_database, database_exists
 from covalent._shared_files.config import get_config
 
 from . import models
+
+DEBUG_DB = environ.get("COVALENT_DEBUG_DB") == "1"
 
 
 class DataStore:
@@ -59,7 +61,7 @@ class DataStore:
 
     @staticmethod
     def factory():
-        return DataStore(db_URL=environ.get("COVALENT_DATABASE_URL"), echo=False)
+        return DataStore(db_URL=environ.get("COVALENT_DATABASE_URL"), echo=DEBUG_DB)
 
     def get_alembic_config(self, logging_enabled: bool = True):
         alembic_ini_path = Path(path.join(__file__, "./../../../covalent_migrations/alembic.ini"))
@@ -98,28 +100,6 @@ class DataStore:
     def session(self) -> Generator[Session, None, None]:
         with self.Session.begin() as session:
             yield session
-
-
-class DataStoreSession:
-    def __init__(self, session: Session, metadata={}):
-        self.db_session = session
-        self.metadata = metadata
-        self.pending_uploads = []
-        self.pending_deletes = []
-
-    def queue_upload(self, data: BinaryIO, storage_type: str, storage_path: str, file_name: str):
-        self.pending_uploads.append((data, storage_type, storage_path, file_name))
-
-    def queue_delete(self, storage_type: str, storage_path: str, file_name: str):
-        self.pending_deletes.append((storage_type, storage_path, file_name))
-
-
-class DataStoreNotInitializedError(Exception):
-    """Exception raised when a database action is attempted before the database is initialized."""
-
-    def __init__(self, message="Database is not initialized."):
-        self.message = message
-        super().__init__(self.message)
 
 
 workflow_db = DataStore.factory()

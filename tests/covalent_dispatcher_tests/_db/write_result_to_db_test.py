@@ -16,7 +16,7 @@
 
 """Unit tests for the module used to write the decomposed result object to the database."""
 
-import tempfile
+import json
 from datetime import datetime as dt
 from datetime import timezone
 
@@ -37,7 +37,6 @@ from covalent._shared_files.defaults import (
 from covalent_dispatcher._db.datastore import DataStore
 from covalent_dispatcher._db.models import Electron, ElectronDependency, Job, Lattice
 from covalent_dispatcher._db.write_result_to_db import (
-    InvalidFileExtension,
     MissingElectronRecordError,
     MissingLatticeRecordError,
     get_electron_type,
@@ -45,16 +44,14 @@ from covalent_dispatcher._db.write_result_to_db import (
     insert_electron_dependency_data,
     insert_electrons_data,
     insert_lattices_data,
-    load_file,
     resolve_electron_id,
-    store_file,
     transaction_upsert_electron_dependency_data,
     update_electrons_data,
     update_lattice_completed_electron_num,
     update_lattices_data,
 )
 
-STORAGE_TYPE = "local"
+STORAGE_TYPE = "file"
 FUNCTION_FILENAME = "dispatch_source.pkl"
 FUNCTION_STRING_FILENAME = "dispatch_source.py"
 DOCSTRING_FILENAME = "dispatch_source_docstring.txt"
@@ -126,15 +123,16 @@ def get_lattice_kwargs(
     function_filename=FUNCTION_FILENAME,
     function_string_filename=FUNCTION_STRING_FILENAME,
     executor="dask",
-    executor_data_filename=EXECUTOR_DATA_FILENAME,
+    executor_data=json.dumps({}),
+    # executor_data_filename=EXECUTOR_DATA_FILENAME,
     workflow_executor="dask",
-    workflow_executor_data_filename=WORKFLOW_EXECUTOR_DATA_FILENAME,
+    workflow_executor_data=json.dumps({}),
+    # workflow_executor_data_filename=WORKFLOW_EXECUTOR_DATA_FILENAME,
     error_filename=ERROR_FILENAME,
     inputs_filename=INPUTS_FILENAME,
     named_args_filename=NAMED_ARGS_FILENAME,
     named_kwargs_filename=NAMED_KWARGS_FILENAME,
     results_filename=RESULTS_FILENAME,
-    transport_graph_filename=TRANSPORT_GRAPH_FILENAME,
     deps_filename=DEPS_FILENAME,
     call_before_filename=CALL_BEFORE_FILENAME,
     call_after_filename=CALL_AFTER_FILENAME,
@@ -162,15 +160,16 @@ def get_lattice_kwargs(
         "function_filename": function_filename,
         "function_string_filename": function_string_filename,
         "executor": executor,
-        "executor_data_filename": executor_data_filename,
+        "executor_data": executor_data,
+        # "executor_data_filename": executor_data_filename,
         "workflow_executor": workflow_executor,
-        "workflow_executor_data_filename": workflow_executor_data_filename,
+        "workflow_executor_data": workflow_executor_data,
+        # "workflow_executor_data_filename": workflow_executor_data_filename,
         "error_filename": error_filename,
         "inputs_filename": inputs_filename,
         "named_args_filename": named_args_filename,
         "named_kwargs_filename": named_kwargs_filename,
         "results_filename": results_filename,
-        "transport_graph_filename": transport_graph_filename,
         "deps_filename": deps_filename,
         "call_before_filename": call_before_filename,
         "call_after_filename": call_after_filename,
@@ -188,6 +187,7 @@ def get_lattice_kwargs(
 def get_electron_kwargs(
     parent_dispatch_id="dispatch_1",
     transport_graph_node_id=0,
+    task_group_id=0,
     type=parameter_prefix.strip(prefix_separator),
     name=f"{parameter_prefix}0",
     status="NEW_OBJ",
@@ -196,7 +196,8 @@ def get_electron_kwargs(
     function_filename=FUNCTION_STRING_FILENAME,
     function_string_filename=FUNCTION_STRING_FILENAME,
     executor="dask",
-    executor_data_filename=EXECUTOR_DATA_FILENAME,
+    executor_data=json.dumps({}),
+    # executor_data_filename=EXECUTOR_DATA_FILENAME,
     results_filename=RESULTS_FILENAME,
     value_filename=VALUE_FILENAME,
     stdout_filename=STDOUT_FILENAME,
@@ -205,6 +206,7 @@ def get_electron_kwargs(
     deps_filename=DEPS_FILENAME,
     call_before_filename=CALL_BEFORE_FILENAME,
     call_after_filename=CALL_AFTER_FILENAME,
+    job_id=1,
     qelectron_data_exists=False,
     cancel_requested=False,
     created_at=None,
@@ -217,6 +219,7 @@ def get_electron_kwargs(
     return {
         "parent_dispatch_id": parent_dispatch_id,
         "transport_graph_node_id": transport_graph_node_id,
+        "task_group_id": task_group_id,
         "type": type,
         "name": name,
         "status": status,
@@ -225,7 +228,8 @@ def get_electron_kwargs(
         "function_filename": function_filename,
         "function_string_filename": function_string_filename,
         "executor": executor,
-        "executor_data_filename": executor_data_filename,
+        "executor_data": executor_data,
+        # "executor_data_filename": executor_data_filename,
         "results_filename": results_filename,
         "value_filename": value_filename,
         "stdout_filename": stdout_filename,
@@ -234,6 +238,7 @@ def get_electron_kwargs(
         "deps_filename": deps_filename,
         "call_before_filename": call_before_filename,
         "call_after_filename": call_after_filename,
+        "job_id": job_id,
         "qelectron_data_exists": qelectron_data_exists,
         "cancel_requested": cancel_requested,
         "created_at": created_at,
@@ -296,9 +301,9 @@ def test_insert_lattices_data(test_db, mocker):
             assert lattice.function_filename == FUNCTION_FILENAME
             assert lattice.function_string_filename == FUNCTION_STRING_FILENAME
             assert lattice.executor == "dask"
-            assert lattice.executor_data_filename == EXECUTOR_DATA_FILENAME
+            # assert lattice.executor_data_filename == EXECUTOR_DATA_FILENAME
             assert lattice.workflow_executor == "dask"
-            assert lattice.workflow_executor_data_filename == WORKFLOW_EXECUTOR_DATA_FILENAME
+            # assert lattice.workflow_executor_data_filename == WORKFLOW_EXECUTOR_DATA_FILENAME
             assert lattice.error_filename == ERROR_FILENAME
             assert lattice.inputs_filename == INPUTS_FILENAME
             assert lattice.named_args_filename == NAMED_ARGS_FILENAME
@@ -338,9 +343,15 @@ def test_insert_electrons_data(cancel_requested, test_db, mocker):
         **get_lattice_kwargs(created_at=cur_time, updated_at=cur_time, started_at=cur_time)
     )
 
+    with test_db.session() as session:
+        job_row = Job(cancel_requested=cancel_requested)
+        session.add(job_row)
+        session.flush()
+        job_id = job_row.id
+
     electron_kwargs = {
         **get_electron_kwargs(
-            cancel_requested=cancel_requested,
+            job_id=job_id,
             created_at=cur_time,
             updated_at=cur_time,
         )
@@ -403,21 +414,22 @@ def test_insert_electron_dependency_data(test_db, workflow_lattice, mocker):
         (":parameter:1", 1),
         (":parameter:2", 2),
         (":sublattice:task_2", 3),
-        (":parameter:2", 4),
-        ("task_1", 5),
-        (":parameter:1", 6),
-        (":parameter:2", 7),
-        (":sublattice:task_2", 8),
-        (":parameter:2", 9),
-        (":postprocess:", 10),
+        (":parameter:sublattice", 4),
+        (":parameter:metadata", 5),
+        (":parameter:2", 6),
+        (":postprocess:", 7),
     ]:
         electron_kwargs = get_electron_kwargs(
             name=name,
             transport_graph_node_id=node_id,
+            task_group_id=node_id,
             created_at=cur_time,
             updated_at=cur_time,
         )
         electron_ids.append(insert_electrons_data(**electron_kwargs))
+
+    with test_db.session() as session:
+        rows = session.query(Electron.id, Electron.transport_graph_node_id, Electron.name).all()
 
     insert_electron_dependency_data(dispatch_id="dispatch_1", lattice=workflow_lattice)
 
@@ -429,6 +441,7 @@ def test_insert_electron_dependency_data(test_db, workflow_lattice, mocker):
                 electron_dependency.electron_id == 4
                 and electron_dependency.parent_electron_id == 1
             ):
+                # Note that `electron._build_sublattice_graph` is injected
                 assert electron_dependency.edge_name == "arg[2]"
                 assert electron_dependency.arg_index == 2
                 assert electron_dependency.parameter_type == "arg"
@@ -477,11 +490,15 @@ def test_upsert_electron_dependency_data(test_db, workflow_lattice, mocker):
         (":parameter:1", 1),
         (":parameter:2", 2),
         (":sublattice:task_2", 3),
-        (":parameter:2", 4),
+        (":parameter:sublattice", 4),
+        (":parameter:metadata", 5),
+        (":parameter:2", 6),
+        (":postprocess:", 7),
     ]:
         electron_kwargs = get_electron_kwargs(
             name=name,
             transport_graph_node_id=node_id,
+            task_group_id=node_id,
             created_at=cur_time,
             updated_at=cur_time,
         )
@@ -517,17 +534,15 @@ def test_upsert_electron_dependency_data_idempotent(test_db, workflow_lattice, m
         (":parameter:1", 1),
         (":parameter:2", 2),
         (":sublattice:task_2", 3),
-        (":parameter:2", 4),
-        ("task_1", 5),
-        (":parameter:1", 6),
-        (":parameter:2", 7),
-        (":sublattice:task_2", 8),
-        (":parameter:2", 9),
-        (":postprocess:", 10),
+        (":parameter:sublattice", 4),
+        (":parameter:metadata", 5),
+        (":parameter:2", 6),
+        (":postprocess:", 7),
     ]:
         electron_kwargs = get_electron_kwargs(
             name=name,
             transport_graph_node_id=node_id,
+            task_group_id=node_id,
             created_at=cur_time,
             updated_at=cur_time,
         )
@@ -683,6 +698,7 @@ def test_write_sublattice_electron_id(test_db, mocker):
         electron_kwargs = get_electron_kwargs(
             name=name,
             transport_graph_node_id=node_id,
+            task_group_id=node_id,
             created_at=cur_time,
             updated_at=cur_time,
         )
@@ -734,6 +750,7 @@ def test_resolve_electron_id(test_db, mocker):
         electron_kwargs = get_electron_kwargs(
             name=name,
             transport_graph_node_id=node_id,
+            task_group_id=node_id,
             created_at=cur_time,
             updated_at=cur_time,
         )
@@ -743,44 +760,3 @@ def test_resolve_electron_id(test_db, mocker):
     dispatch_id, node_id = resolve_electron_id(electron_ids[3])
     assert dispatch_id == "dispatch_1"
     assert node_id == 3
-
-
-def test_store_file_invalid_extension():
-    """Test the function used to write data corresponding to the filenames in the DB."""
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        with pytest.raises(InvalidFileExtension):
-            store_file(storage_path=temp_dir, filename="test.invalid", data="")
-
-        with pytest.raises(InvalidFileExtension):
-            store_file(storage_path=temp_dir, filename="test.txt", data={4})
-
-        with pytest.raises(InvalidFileExtension):
-            store_file(storage_path=temp_dir, filename="test.log", data={4})
-
-
-def test_store_file_valid_extension():
-    """Test the function used to write data corresponding to the filenames in the DB."""
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        with pytest.raises(InvalidFileExtension):
-            store_file(storage_path=temp_dir, filename="test.invalid", data="")
-
-        with pytest.raises(InvalidFileExtension):
-            store_file(storage_path=temp_dir, filename="test.txt", data={4})
-
-        with pytest.raises(InvalidFileExtension):
-            store_file(storage_path=temp_dir, filename="test.log", data={4})
-
-
-def test_store_and_load_file():
-    """Test the data storage and loading methods simultaneously."""
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        data = [1, 2, 3]
-        store_file(storage_path=temp_dir, filename="pickle.pkl", data=data)
-        assert load_file(storage_path=temp_dir, filename="pickle.pkl") == data
-
-        data = None
-        store_file(storage_path=temp_dir, filename="pickle.txt", data=data)
-        assert load_file(storage_path=temp_dir, filename="pickle.txt") == ""

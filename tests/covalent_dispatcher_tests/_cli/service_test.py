@@ -195,7 +195,6 @@ def test_graceful_start_when_pid_absent(mocker, no_triggers_flag, triggers_only_
         "dispatcher.results_dir",
         "dispatcher.log_dir",
         "user_interface.log_dir",
-        "dispatcher.db_path",
     ]
 
     def patched_fn(entry):

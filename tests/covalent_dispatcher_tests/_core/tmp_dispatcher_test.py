@@ -16,6 +16,8 @@
 
 """
 Tests for the core functionality of the dispatcher.
+
+This will be replaced in the next patch.
 """
 
 
@@ -93,6 +95,7 @@ def test_plan_workflow():
     def workflow(x):
         return task(x)
 
+    workflow.build_graph(1)
     workflow.metadata["schedule"] = True
     received_workflow = Lattice.deserialize_from_json(workflow.serialize_to_json())
     result_object = Result(received_workflow, "asdf")
@@ -180,7 +183,7 @@ def test_get_abstract_task_inputs():
     result_object = Result(lattice=received_lattice, dispatch_id="asdf")
     tg = received_lattice.transport_graph
 
-    assert list(tg._graph.nodes) == list(range(9))
+    assert list(tg._graph.nodes) == list(range(10))
     tg.set_node_value(0, "output", ct.TransportableObject(1))
     tg.set_node_value(2, "output", ct.TransportableObject(2))
 
@@ -264,7 +267,7 @@ async def test_get_initial_tasks_and_deps(mocker):
     num_tasks, initial_nodes, pending_parents = await _get_initial_tasks_and_deps(result_object)
 
     assert initial_nodes == [1]
-    assert pending_parents == {0: 1, 1: 0, 2: 1, 3: 2}
+    assert pending_parents == {0: 1, 1: 0, 2: 1, 3: 3}
     assert num_tasks == len(result_object.lattice.transport_graph._graph.nodes)
 
 
@@ -298,13 +301,16 @@ async def test_run_workflow_normal(mocker):
     mocker.patch(
         "covalent_dispatcher._core.dispatcher._run_planned_workflow", return_value=result_object
     )
-    mock_persist = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.persist_result")
+    mock_get_result_object = mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
+    )
+    mock_upsert = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data")
     mock_unregister = mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.finalize_dispatch"
     )
     await run_workflow(result_object)
 
-    mock_persist.assert_awaited_with(result_object.dispatch_id)
+    mock_upsert.assert_called_with(result_object.dispatch_id)
     mock_unregister.assert_called_with(result_object.dispatch_id)
 
 
@@ -328,7 +334,7 @@ async def test_run_completed_workflow(mocker):
     mocker.patch(
         "covalent_dispatcher._core.dispatcher._run_planned_workflow", return_value=result_object
     )
-    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.persist_result")
+    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data")
 
     await run_workflow(result_object)
 
@@ -359,12 +365,15 @@ async def test_run_workflow_exception(mocker):
         return_value=result_object,
         side_effect=RuntimeError("Error"),
     )
-    mock_persist = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.persist_result")
+    mock_get_result_object = mocker.patch(
+        "covalent_dispatcher._core.data_manager.get_result_object", return_value=result_object
+    )
+    mock_upsert = mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.upsert_lattice_data")
 
     result = await run_workflow(result_object)
 
     assert result.status == Result.FAILED
-    mock_persist.assert_awaited_with(result_object.dispatch_id)
+    mock_upsert.assert_called_with(result_object.dispatch_id)
     mock_unregister.assert_called_with(result_object.dispatch_id)
 
 

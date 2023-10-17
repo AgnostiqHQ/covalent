@@ -19,7 +19,8 @@
 
 import pytest
 
-from covalent._shared_files.utils import filter_null_metadata, get_named_params
+from covalent._shared_files.config import get_config
+from covalent._shared_files.utils import filter_null_metadata, format_server_url, get_named_params
 
 
 @pytest.mark.parametrize(
@@ -42,3 +43,14 @@ def test_func(a, *, b):
 
 
 named_args, named_kwargs = get_named_params(test_func, [1], {"b": 2})
+
+
+def test_format_server_url():
+    """Test the convenience function to format server urls."""
+
+    base_url = format_server_url()
+
+    addr = get_config("dispatcher.address")
+    port = int(get_config("dispatcher.port"))
+
+    assert base_url == f"http://{addr}:{port}"

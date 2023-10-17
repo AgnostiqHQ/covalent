@@ -16,9 +16,9 @@
 
 """Unit tests to test whether electrons inherit lattice metadata correctly"""
 
-import json
 
 from covalent._shared_files.defaults import get_default_executor, postprocess_prefix
+from covalent._workflow.transport import _TransportGraph
 
 
 def test_electrons_get_lattice_metadata_1():
@@ -44,16 +44,20 @@ def test_electrons_get_lattice_metadata_1():
     hello_world.build_graph(1)
 
     data = hello_world.transport_graph.serialize_to_json()
-    data = json.loads(data)
+    # data = json.loads(data)
 
-    for node_data in data["nodes"]:
-        if node_data["name"].startswith(postprocess_prefix):
-            assert node_data["metadata"]["executor"] == get_default_executor()
-        elif "parameter" not in node_data["name"]:
-            assert node_data["metadata"]["executor"] == "electron_executor"
-            assert node_data["metadata"]["deps"]["bash"] == electron_bash_dep.to_dict()
-            assert len(node_data["metadata"]["call_before"]) == 2
-            assert len(node_data["metadata"]["call_after"]) == 0
+    tg = _TransportGraph()
+    tg.deserialize_from_json(data)
+    for node_id in tg._graph.nodes:
+        metadata = tg.get_node_value(node_id, "metadata")
+        node_name = tg.get_node_value(node_id, "name")
+        if node_name.startswith(postprocess_prefix):
+            assert metadata["executor"] == get_default_executor()
+        elif "parameter" not in node_name:
+            assert metadata["executor"] == "electron_executor"
+            assert metadata["deps"]["bash"] == electron_bash_dep.to_dict()
+            assert len(metadata["call_before"]) == 2
+            assert len(metadata["call_after"]) == 0
 
 
 def test_electrons_get_lattice_metadata_2():
@@ -81,16 +85,14 @@ def test_electrons_get_lattice_metadata_2():
     hello_world.build_graph(1)
 
     data = hello_world.transport_graph.serialize_to_json()
-    data = json.loads(data)
 
-    for node_data in data["nodes"]:
-        if node_data["name"].startswith(postprocess_prefix):
-            assert node_data["metadata"]["executor"] == get_default_executor()
-        elif "parameter" not in node_data["name"]:
-            assert node_data["metadata"]["executor"] == "lattice_executor"
-            assert node_data["metadata"]["deps"]["bash"] == lattice_bash_dep.to_dict()
-            assert len(node_data["metadata"]["call_before"]) == 1
-            assert len(node_data["metadata"]["call_after"]) == 1
+    tg = _TransportGraph()
+    tg.deserialize_from_json(data)
+    metadata = tg.get_node_value(0, "metadata")
+    assert metadata["executor"] == "lattice_executor"
+    assert metadata["deps"]["bash"] == lattice_bash_dep.to_dict()
+    assert len(metadata["call_before"]) == 1
+    assert len(metadata["call_after"]) == 1
 
 
 def test_electrons_get_lattice_metadata_3():
