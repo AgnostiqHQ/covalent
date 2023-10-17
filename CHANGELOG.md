@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [Significant Changes] Improving memory management part 1/3
 - Removed strict version pins on `lmdbm`, `mpire`, `orjson`, and `pennylane`
 - Changed license to Apache
+- Improved error handling in generate_docs.py
 
 ### Added
 
