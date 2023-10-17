@@ -32,8 +32,6 @@ from covalent._shared_files.util_classes import RESULT_STATUS
 
 from . import data_manager as datasvc
 from . import runner
-
-# from . import runner_ng
 from .data_modules import job_manager as jbmgr
 from .dispatcher_modules.caches import _pending_parents, _sorted_task_groups, _unresolved_tasks
 
@@ -351,7 +349,6 @@ async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = None) -> None:
 
     await jbmgr.set_cancel_requested(dispatch_id, task_ids)
     await runner.cancel_tasks(dispatch_id, task_ids)
-    # await runner_ng.cancel_tasks(dispatch_id, task_ids)
 
     # Recursively cancel running sublattice dispatches
     attrs = await datasvc.electron.get_bulk(dispatch_id, task_ids, ["sub_dispatch_id"])

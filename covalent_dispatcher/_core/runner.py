@@ -35,6 +35,7 @@ from covalent.executor.utils import set_context
 
 from . import data_manager as datasvc
 from .runner_modules import executor_proxy
+from .runner_modules.cancel import cancel_tasks as orig_cancel_tasks
 from .runner_modules.utils import get_executor
 
 app_log = logger.app_log
@@ -307,3 +308,18 @@ async def run_abstract_task(
         selected_executor=selected_executor,
     )
     await datasvc.update_node_result(dispatch_id, node_result)
+
+
+async def cancel_tasks(dispatch_id: str, task_ids: List[int]) -> None:
+    """
+    Proxy to the runner_modules' cancel_tasks function
+
+    Args:
+        dispatch_id: Dispatch ID of the workflow
+        task_ids: List of task ids to be cancelled
+
+    Returns:
+        None
+
+    """
+    return await orig_cancel_tasks(dispatch_id, task_ids)
