@@ -165,7 +165,7 @@ def get_node_asset(url: str) -> bytes:
     if headers.get("X-SESSION-TOKEN") is None:
         raise AuthorizationError("Missing job session token")
 
-    resp = requests.get(url, headers=headers)
+    resp = requests.get(f"{url}/contents", headers=headers)
     resp.raise_for_status()
     return pickle.loads(resp.content)
 
@@ -174,7 +174,7 @@ def upload_node_asset(upload_url: str, asset_filepath: str) -> None:
     """Upload node asset contents.
 
     Args:
-        upload_url: Request URL.
+        upload_url: Request URL for getting upload presigned URL.
         asset_filepath: Path to asset file.
 
     """
@@ -186,8 +186,11 @@ def upload_node_asset(upload_url: str, asset_filepath: str) -> None:
         raise AuthorizationError("Missing job session token")
 
     if asset_filepath:
+        response = requests.put(f"{upload_url}/presigned", headers=headers)
+        response.raise_for_status()
+        presigned_upload_url = response.json().get("urls")[0].get("url")
         with open(asset_filepath, "rb") as f:
-            response = requests.put(upload_url, data=f.read(), headers=headers)
+            response = requests.put(presigned_upload_url, data=f.read())
             response.raise_for_status()
         os.unlink(asset_filepath)
     sys.stdout.flush()
@@ -242,24 +245,18 @@ def run_task_from_uris(
 
                         import requests
 
-                        serialized_fn = get_node_asset(
-                            url=f"{base_uri}/{task_id}/function/contents"
-                        )
+                        serialized_fn = get_node_asset(url=f"{base_uri}/{task_id}/function")
                         ser_args = [
-                            get_node_asset(url=f"{base_uri}/{node_id}/output/contents")
+                            get_node_asset(url=f"{base_uri}/{node_id}/output")
                             for node_id in args_ids
                         ]
                         ser_kwargs = {
-                            k: get_node_asset(url=f"{base_uri}/{node_id}/output/contents")
+                            k: get_node_asset(url=f"{base_uri}/{node_id}/output")
                             for k, node_id in kwargs_ids.items()
                         }
-                        deps_json = get_node_asset(url=f"{base_uri}/{task_id}/deps/contents")
-                        call_before_json = get_node_asset(
-                            url=f"{base_uri}/{task_id}/call_before/contents"
-                        )
-                        call_after_json = get_node_asset(
-                            url=f"{base_uri}/{task_id}/call_after/contents"
-                        )
+                        deps_json = get_node_asset(url=f"{base_uri}/{task_id}/deps")
+                        call_before_json = get_node_asset(url=f"{base_uri}/{task_id}/call_before")
+                        call_after_json = get_node_asset(url=f"{base_uri}/{task_id}/call_after")
 
                         call_before, call_after = _gather_deps(
                             deps_json, call_before_json, call_after_json
@@ -303,15 +300,15 @@ def run_task_from_uris(
                     finally:
                         upload_node_asset(
                             asset_filepath=result_uri,
-                            upload_url=f"{base_uri}/{task_id}/output/contents",
+                            upload_url=f"{base_uri}/{task_id}/output",
                         )
                         upload_node_asset(
                             asset_filepath=stdout_uri,
-                            upload_url=f"{base_uri}/{task_id}/stdout/contents",
+                            upload_url=f"{base_uri}/{task_id}/stdout",
                         )
                         upload_node_asset(
                             asset_filepath=stderr_uri,
-                            upload_url=f"{base_uri}/{task_id}/stderr/contents",
+                            upload_url=f"{base_uri}/{task_id}/stderr",
                         )
 
                         result_path = os.path.join(
