@@ -17,7 +17,7 @@ v0.202.0
           <th style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Notes</th>
         </tr>
         <tr style="background-color: #f2f2f2;">
-            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">macOS 11 (Big Sure)</td>
+            <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">macOS 11 (Big Sur)</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">3.8</td>
             <td class="stable" style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd; background-color: #afddba;">STABLE</td>
             <td style="padding: 15px; text-align: center; color: black; font-size: 12px; border: 1px solid #ddd;">Officially supported.</td>
