@@ -48,7 +48,7 @@ log_stack_info = logger.log_stack_info
 def generate_node_result(
     dispatch_id: str,
     node_id: int,
-    node_name: str,
+    node_name: str = None,
     start_time=None,
     end_time=None,
     status=None,

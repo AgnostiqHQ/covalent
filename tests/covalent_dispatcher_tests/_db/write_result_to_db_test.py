@@ -223,7 +223,6 @@ def get_electron_kwargs(
         "function_string_filename": function_string_filename,
         "executor": executor,
         "executor_data": executor_data,
-        # "executor_data_filename": executor_data_filename,
         "results_filename": results_filename,
         "value_filename": value_filename,
         "stdout_filename": stdout_filename,
@@ -294,9 +293,7 @@ def test_insert_lattices_data(test_db, mocker):
             assert lattice.function_filename == FUNCTION_FILENAME
             assert lattice.function_string_filename == FUNCTION_STRING_FILENAME
             assert lattice.executor == "dask"
-            # assert lattice.executor_data_filename == EXECUTOR_DATA_FILENAME
             assert lattice.workflow_executor == "dask"
-            # assert lattice.workflow_executor_data_filename == WORKFLOW_EXECUTOR_DATA_FILENAME
             assert lattice.error_filename == ERROR_FILENAME
             assert lattice.inputs_filename == INPUTS_FILENAME
             assert lattice.named_args_filename == NAMED_ARGS_FILENAME
