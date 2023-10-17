@@ -19,7 +19,7 @@
 
 import pytest
 
-from covalent._shared_files.utils import filter_null_metadata
+from covalent._shared_files.utils import filter_null_metadata, get_named_params
 
 
 @pytest.mark.parametrize(
@@ -34,3 +34,11 @@ def test_filter_null_metadata(meta_dict, expected):
     """Test the filter null metadata function."""
     filtered = filter_null_metadata(meta_dict)
     assert filtered == expected
+
+
+def test_func(a, *, b):
+    """Tests the changes I made in covalent/covalent/_shared_files/utils.py for fixing ValueError in when using KEYWORD_ONLU parameter in electron func"""
+    return a + b
+
+
+named_args, named_kwargs = get_named_params(test_func, [1], {"b": 2})
