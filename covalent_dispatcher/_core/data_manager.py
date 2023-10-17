@@ -37,7 +37,7 @@ from .._dal.result import Result as SRVResult
 from .._dal.result import get_result_object as get_result_object_from_db
 from .._db.write_result_to_db import resolve_electron_id
 from . import dispatcher
-from .data_modules import dispatch, electron, graph  # nopycln: import
+from .data_modules import dispatch, electron  # nopycln: import
 from .data_modules import importer as manifest_importer
 from .data_modules.utils import run_in_executor
 

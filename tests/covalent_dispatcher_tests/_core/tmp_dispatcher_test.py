@@ -716,7 +716,7 @@ async def test_clear_caches(mocker):
     g.add_node(2, task_group_id=0)
     g.add_node(3, task_group_id=3)
 
-    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.graph.get_nodes_links")
+    mocker.patch("covalent_dispatcher._core.dispatcher.tg_utils.get_nodes_links")
     mocker.patch("networkx.readwrite.node_link_graph", return_value=g)
     mock_unresolved_remove = mocker.patch(
         "covalent_dispatcher._core.dispatcher._unresolved_tasks.remove"
@@ -764,7 +764,7 @@ async def test_cancel_dispatch(mocker):
         else:
             return list(sub_tg._graph.nodes)
 
-    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.graph.get_nodes", mock_get_nodes)
+    mocker.patch("covalent_dispatcher._core.dispatcher.tg_utils.get_nodes", mock_get_nodes)
 
     node_attrs = [
         {"sub_dispatch_id": tg.get_node_value(i, "sub_dispatch_id")} for i in tg._graph.nodes
@@ -819,7 +819,7 @@ async def test_cancel_dispatch_with_task_ids(mocker):
         else:
             return list(sub_tg._graph.nodes)
 
-    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.graph.get_nodes", mock_get_nodes)
+    mocker.patch("covalent_dispatcher._core.dispatcher.tg_utils.get_nodes", mock_get_nodes)
 
     node_attrs = [
         {"sub_dispatch_id": tg.get_node_value(i, "sub_dispatch_id")} for i in tg._graph.nodes

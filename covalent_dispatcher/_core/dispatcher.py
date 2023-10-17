@@ -32,6 +32,7 @@ from covalent._shared_files.util_classes import RESULT_STATUS
 
 from . import data_manager as datasvc
 from . import runner
+from .data_modules import graph as tg_utils
 from .data_modules import job_manager as jbmgr
 from .dispatcher_modules.caches import _pending_parents, _sorted_task_groups, _unresolved_tasks
 from .runner_modules.cancel import cancel_tasks
@@ -63,7 +64,7 @@ async def _get_abstract_task_inputs(dispatch_id: str, node_id: int, node_name: s
 
     abstract_task_input = {"args": [], "kwargs": {}}
 
-    for edge in await datasvc.graph.get_incoming_edges(dispatch_id, node_id):
+    for edge in await tg_utils.get_incoming_edges(dispatch_id, node_id):
         parent = edge["source"]
 
         d = edge["attrs"]
@@ -89,7 +90,7 @@ async def _handle_completed_node(dispatch_id: str, node_id: int):
     parent_gid = (await datasvc.electron.get(dispatch_id, node_id, ["task_group_id"]))[
         "task_group_id"
     ]
-    for child in await datasvc.graph.get_node_successors(dispatch_id, node_id):
+    for child in await tg_utils.get_node_successors(dispatch_id, node_id):
         node_id = child["node_id"]
         gid = child["task_group_id"]
         app_log.debug(f"dispatch {dispatch_id}: parent gid {parent_gid}, child gid {gid}")
@@ -129,7 +130,7 @@ async def _get_initial_tasks_and_deps(dispatch_id: str) -> Tuple[int, int, Dict]
     # Number of pending predecessor nodes for each task group
     pending_parents = {}
 
-    g_node_link = await datasvc.graph.get_nodes_links(dispatch_id)
+    g_node_link = await tg_utils.get_nodes_links(dispatch_id)
     g = nx.readwrite.node_link_graph(g_node_link)
 
     # Topologically sort each task group
@@ -344,7 +345,7 @@ async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = None) -> None:
     if task_ids:
         app_log.debug(f"Cancelling tasks {task_ids} in dispatch {dispatch_id}")
     else:
-        task_ids = await datasvc.graph.get_nodes(dispatch_id)
+        task_ids = await tg_utils.get_nodes(dispatch_id)
 
         app_log.debug(f"Cancelling dispatch {dispatch_id}")
 
@@ -547,7 +548,7 @@ async def _clear_caches(dispatch_id: str):
     """Clean up all keys in caches."""
     await _unresolved_tasks.remove(dispatch_id)
 
-    g_node_link = await datasvc.graph.get_nodes_links(dispatch_id)
+    g_node_link = await tg_utils.get_nodes_links(dispatch_id)
     g = nx.readwrite.node_link_graph(g_node_link)
 
     task_groups = {g.nodes[i]["task_group_id"] for i in g.nodes}
