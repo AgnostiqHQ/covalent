@@ -123,9 +123,6 @@ class Electron(Base):
     # ID for circuit_info
     job_id = Column(Integer, ForeignKey("jobs.id", name="job_id_link"), nullable=False)
 
-    # Cancel requested flag
-    cancel_requested = Column(Boolean, nullable=False, default=False)
-
     # Flag that indicates if qelectron data exists in the electron
     qelectron_data_exists = Column(Boolean, nullable=False, default=False)
 

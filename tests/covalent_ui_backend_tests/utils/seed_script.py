@@ -115,7 +115,6 @@ def seed(engine):
                     completed_at=convert_to_date(item["completed_at"]),
                     job_id=item["job_id"],
                     qelectron_data_exists=item["qelectron_data_exists"],
-                    cancel_requested=item["cancel_requested"],
                 )
             )
 

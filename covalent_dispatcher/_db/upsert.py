@@ -287,11 +287,6 @@ def _electron_data(
                 ("function", ELECTRON_FUNCTION_FILENAME, tg.get_node_value(node_id, "function")),
                 ("function_string", ELECTRON_FUNCTION_STRING_FILENAME, function_string),
                 ("value", ELECTRON_VALUE_FILENAME, node_value),
-                # (
-                #     "executor_data",
-                #     ELECTRON_EXECUTOR_DATA_FILENAME,
-                #     tg.get_node_value(node_id, "metadata")["executor_data"],
-                # ),
                 ("deps", ELECTRON_DEPS_FILENAME, tg.get_node_value(node_id, "metadata")["deps"]),
                 (
                     "call_before",
@@ -359,7 +354,6 @@ def _electron_data(
                 "call_before_filename": ELECTRON_CALL_BEFORE_FILENAME,
                 "call_after_filename": ELECTRON_CALL_AFTER_FILENAME,
                 "qelectron_data_exists": node_qelectron_data_exists,
-                "cancel_requested": cancel_requested,
                 "job_id": job_row.id,
                 "created_at": timestamp,
                 "updated_at": timestamp,
