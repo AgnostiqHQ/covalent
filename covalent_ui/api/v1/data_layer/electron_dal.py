@@ -253,6 +253,7 @@ class Electrons:
                 Electron.function_filename,
                 Electron.function_string_filename,
                 Electron.executor,
+                Electron.executor_data,
                 Electron.results_filename,
                 Electron.value_filename,
                 Electron.stdout_filename,

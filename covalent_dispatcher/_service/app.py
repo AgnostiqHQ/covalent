@@ -95,7 +95,7 @@ async def cancel_all_with_status(status: RESULT_STATUS):
             membership_filters={},
         )
     for record in records:
-        dispatch_id = record.attrs["dispatch_id"]
+        dispatch_id = record.metadata.attrs["dispatch_id"]
         await dispatcher.cancel_running_dispatch(dispatch_id)
 
 
