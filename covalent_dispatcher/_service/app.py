@@ -94,9 +94,10 @@ async def cancel_all_with_status(status: RESULT_STATUS):
             equality_filters={"status": str(status)},
             membership_filters={},
         )
-    for record in records:
-        dispatch_id = record.attrs["dispatch_id"]
-        await dispatcher.cancel_running_dispatch(dispatch_id)
+
+        for record in records:
+            dispatch_id = record.dispatch_id
+            await dispatcher.cancel_running_dispatch(dispatch_id)
 
 
 @router.post("/dispatches/submit")
