@@ -643,3 +643,22 @@ def test_replace_electrons():
     assert (
         workflow.transport_graph.get_node_value(0, "status") == RESULT_STATUS.PENDING_REPLACEMENT
     )
+
+
+def test_electron_pow_method():
+    electron = Electron(function=None)
+    assert hasattr(electron, "__pow__")
+
+
+def test_workflow():
+    @ct.electron
+    def g(x):
+        return 42 * x
+
+    @ct.lattice
+    def workflow(x):
+        res = g(x)
+        return res**2
+
+    result = workflow(2)
+    assert result == 7056  # Expected result for (42 * 2) ** 2
