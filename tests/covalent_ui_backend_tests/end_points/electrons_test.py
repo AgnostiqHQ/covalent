@@ -110,7 +110,6 @@ def test_electrons_details_function():
         assert response.json() == test_data["response_data"]
 
 
-@pytest.mark.skip(reason="TODO: Fix this failing test, see PR #1729")
 def test_electrons_details_executor():
     """ "Test electrons for executor details"""
     test_data = output_data["test_electrons_details"]["case_executor_1"]

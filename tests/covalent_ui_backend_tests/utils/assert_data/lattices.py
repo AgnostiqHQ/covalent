@@ -108,7 +108,7 @@ def seed_lattice_data():
                     "dispatch_id": VALID_DISPATCH_ID,
                     "name": "executor",
                 },
-                "response_data": {"executor_name": "dask", "executor_details": None},
+                "response_data": {"executor_name": "dask", "executor_details": {}},
             },
             "case_workflow_executor_1": {
                 "status_code": 200,
@@ -118,7 +118,7 @@ def seed_lattice_data():
                 },
                 "response_data": {
                     "workflow_executor_name": "dask",
-                    "workflow_executor_details": None,
+                    "workflow_executor_details": {},
                 },
             },
             "case_transport_graph_1": {
@@ -173,7 +173,7 @@ def seed_lattice_data():
                             "started_at": "2022-10-27T10:08:34.497285",
                             "ended_at": "2022-10-27T10:08:35.997225",
                             "status": "COMPLETED",
-                            "updated_at": "2022-10-27T10:08:36.004030",
+                            "updated_at": "2022-10-27T10:08:36.00403",
                         },
                     ]
                 },
@@ -193,7 +193,7 @@ def seed_lattice_data():
                             "started_at": "2022-10-27T10:08:34.497285",
                             "ended_at": "2022-10-27T10:08:35.997225",
                             "status": "COMPLETED",
-                            "updated_at": "2022-10-27T10:08:36.004030",
+                            "updated_at": "2022-10-27T10:08:36.00403",
                         },
                         {
                             "dispatch_id": "69dec597-79d9-4c99-96de-8d5f06f3d4dd",

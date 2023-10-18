@@ -80,7 +80,7 @@ def seed_summary_data():
                             "started_at": "2022-09-23T10:01:11.155428",
                             "ended_at": "2022-09-23T10:01:11.717064",
                             "status": "COMPLETED",
-                            "updated_at": "2022-09-23T10:01:11.720140",
+                            "updated_at": "2022-09-23T10:01:11.72014",
                         },
                         {
                             "dispatch_id": "e8fd09c9-1406-4686-9e77-c8d4d64a76ee",
@@ -118,7 +118,7 @@ def seed_summary_data():
                             "started_at": "2022-09-23T10:01:11.155428",
                             "ended_at": "2022-09-23T10:01:11.717064",
                             "status": "COMPLETED",
-                            "updated_at": "2022-09-23T10:01:11.720140",
+                            "updated_at": "2022-09-23T10:01:11.72014",
                         }
                     ],
                     "total_count": 3,
