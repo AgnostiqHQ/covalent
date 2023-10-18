@@ -19,7 +19,7 @@
 
 from covalent._shared_files import logger
 from covalent._shared_files.util_classes import Status
-from covalent_dispatcher._core import data_manager as datamgr
+from covalent_dispatcher._core.data_modules import lattice as lattice_query_module
 
 from .. import data_manager as datasvc
 from ..data_modules import job_manager
@@ -59,7 +59,7 @@ async def get_version_info(dispatch_id: str, task_id: int):
         {"python": python_version, "covalent": covalent_version}
     """
 
-    data = await datamgr.lattice.get(dispatch_id, ["python_version", "covalent_version"])
+    data = await lattice_query_module.get(dispatch_id, ["python_version", "covalent_version"])
 
     return {
         "python": data["python_version"],

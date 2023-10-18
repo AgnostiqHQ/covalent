@@ -258,7 +258,7 @@ async def test_run_workflow_does_not_deserialize(test_db, mocker):
     json_lattice = workflow.serialize_to_json()
     dispatch_id = "asdf"
     lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice, lattice.metadata["results_dir"])
+    result_object = Result(lattice, dispatch_id)
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 

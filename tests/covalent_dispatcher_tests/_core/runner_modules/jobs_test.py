@@ -45,7 +45,7 @@ async def test_get_version_info(mocker):
     mock_ver_info = {"python_version": "3.10", "covalent_version": "0.220"}
 
     mocker.patch(
-        "covalent_dispatcher._core.runner_modules.jobs.datamgr.lattice.get",
+        "covalent_dispatcher._core.runner_modules.jobs.lattice_query_module.get",
         return_value=mock_ver_info,
     )
     assert await jobs.get_version_info(dispatch_id, 0) == {"python": "3.10", "covalent": "0.220"}

@@ -145,7 +145,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
         return result_object.lattice.transport_graph.get_incoming_edges(node_id)
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.graph.get_incoming_edges",
+        "covalent_dispatcher._core.dispatcher.tg_utils.get_incoming_edges",
         mock_get_incoming_edges,
     )
 
@@ -168,7 +168,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
     result_object = get_mock_srvresult(sdkres, test_db)
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.graph.get_incoming_edges",
+        "covalent_dispatcher._core.dispatcher.tg_utils.get_incoming_edges",
         mock_get_incoming_edges,
     )
 
@@ -192,7 +192,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
     tg.set_node_value(2, "output", ct.TransportableObject(2))
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.graph.get_incoming_edges",
+        "covalent_dispatcher._core.dispatcher.tg_utils.get_incoming_edges",
         mock_get_incoming_edges,
     )
 
@@ -202,7 +202,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
     assert task_inputs["args"] == [0, 2]
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.graph.get_incoming_edges",
+        "covalent_dispatcher._core.dispatcher.tg_utils.get_incoming_edges",
         mock_get_incoming_edges,
     )
 
@@ -212,7 +212,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
     assert task_inputs["args"] == [2, 0]
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.graph.get_incoming_edges",
+        "covalent_dispatcher._core.dispatcher.tg_utils.get_incoming_edges",
         mock_get_incoming_edges,
     )
 
@@ -221,7 +221,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
     )
     assert task_inputs["args"] == [2, 0]
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.graph.get_incoming_edges",
+        "covalent_dispatcher._core.dispatcher.tg_utils.get_incoming_edges",
         mock_get_incoming_edges,
     )
 
@@ -253,7 +253,7 @@ async def test_handle_completed_node(mocker, test_db):
         return {keys[0]: node_id}
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.graph.get_node_successors",
+        "covalent_dispatcher._core.dispatcher.tg_utils.get_node_successors",
         get_node_successors,
     )
 
@@ -307,7 +307,7 @@ async def test_get_initial_tasks_and_deps(mocker, test_db):
         return nx.readwrite.node_link_data(g)
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.graph.get_nodes_links",
+        "covalent_dispatcher._core.dispatcher.tg_utils.get_nodes_links",
         side_effect=get_graph_nodes_links,
     )
 
