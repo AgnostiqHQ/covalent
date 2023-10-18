@@ -19,6 +19,7 @@ Integration tests for the dispatcher, runner, and result modules
 """
 
 import asyncio
+import uuid
 from typing import Dict, List
 
 import pytest
@@ -256,9 +257,9 @@ async def test_run_workflow_does_not_deserialize(test_db, mocker):
     workflow.build_graph(5)
 
     json_lattice = workflow.serialize_to_json()
-    dispatch_id = "asdf"
+    dispatch_id = str(uuid.uuid4())
     lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice, dispatch_id)
+    result_object = Result(lattice)
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
