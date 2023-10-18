@@ -166,16 +166,16 @@ jobs:
         with:
           node-version-file: 'covalent_ui/webapp/.nvmrc'
 
-      # - name: Build webapp
-      #   if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
-      #   uses: nick-fields/retry@v2
-      #   with:
-      #     timeout_minutes: 10
-      #     max_attempts: 2
-      #     command: |
-      #       cd ./covalent_ui/webapp
-      #       yarn install
-      #       yarn build
+      - name: Build webapp
+        if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
+        uses: nick-fields/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 2
+          command: |
+            cd ./covalent_ui/webapp
+            yarn install
+            yarn build
 
       - name: Transform semver version to pep440
         id: version-transform
@@ -221,15 +221,15 @@ jobs:
         env:
           COVALENT_EXECUTOR_DIR: doc/source/how_to/execution/custom_executors
 
-      # - name: Run functional tests and measure coverage
-      #   id: functional-tests
-      #   if: env.BUILD_AND_RUN_ALL
-      #   run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
+      - name: Run functional tests and measure coverage
+        id: functional-tests
+        if: env.BUILD_AND_RUN_ALL
+        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/functional_tests  --cov=covalent --cov=covalent_dispatcher --cov-config=.coveragerc
 
-      # - name: Generate functional test coverage report
-      #   id: functional-coverage
-      #   if: steps.functional-tests.outcome == 'success'
-      #   run: coverage xml -o functional_tests_coverage.xml
+      - name: Generate functional test coverage report
+        id: functional-coverage
+        if: steps.functional-tests.outcome == 'success'
+        run: coverage xml -o functional_tests_coverage.xml
 
       - name: Run SDK tests and measure coverage
         id: sdk-tests
@@ -310,18 +310,18 @@ jobs:
           name: "Dispatcher Unit Tests"
           fail_ci_if_error: true
 
-      # - name: Upload Functional report to Codecov
-      #   id: upload-functional-report
-      #   if: >
-      #     env.RECOMMENDED_PLATFORM
-      #     && github.event_name != 'workflow_dispatch'
-      #     && steps.functional-coverage.outcome == 'success'
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     files: ./functional_tests_coverage.xml
-      #     flags: Functional_Tests
-      #     name: "Functional Tests"
-      #     fail_ci_if_error: true
+      - name: Upload Functional report to Codecov
+        id: upload-functional-report
+        if: >
+          env.RECOMMENDED_PLATFORM
+          && github.event_name != 'workflow_dispatch'
+          && steps.functional-coverage.outcome == 'success'
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./functional_tests_coverage.xml
+          flags: Functional_Tests
+          name: "Functional Tests"
+          fail_ci_if_error: true
 
       - name: Upload UI backend report to Codecov
         id: upload-ui-backend-report
@@ -337,19 +337,19 @@ jobs:
           name: "UI Backend Unit Tests"
           fail_ci_if_error: true
 
-      # - name: Upload UI frontend report to Codecov
-      #   id: upload-ui-frontend-report
-      #   if: >
-      #     env.RECOMMENDED_PLATFORM
-      #     && github.event_name != 'workflow_dispatch'
-      #     && (github.event_name == 'schedule'
-      #     || steps.ui-frontend-tests.outcome == 'success')
-      #   uses: codecov/codecov-action@v3
-      #   with:
-      #     files: ./covalent_ui/webapp/coverage/clover.xml
-      #     flags: UI_Frontend
-      #     name: "UI Frontend Unit Tests"
-      #     fail_ci_if_error: true
+      - name: Upload UI frontend report to Codecov
+        id: upload-ui-frontend-report
+        if: >
+          env.RECOMMENDED_PLATFORM
+          && github.event_name != 'workflow_dispatch'
+          && (github.event_name == 'schedule'
+          || steps.ui-frontend-tests.outcome == 'success')
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./covalent_ui/webapp/coverage/clover.xml
+          flags: UI_Frontend
+          name: "UI Frontend Unit Tests"
+          fail_ci_if_error: true
 
       - name: Local Codecov
         id: local-codecov
