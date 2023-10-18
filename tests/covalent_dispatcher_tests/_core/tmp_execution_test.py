@@ -267,11 +267,13 @@ async def test_run_workflow_does_not_deserialize(test_db, mocker):
     mocker.patch(
         "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
     )
+
+    mocker.patch("covalent_dispatcher._core.dispatcher._global_status_queue", asyncio.Queue())
+
     update.persist(result_object)
 
     mock_to_deserialize = mocker.patch("covalent.TransportableObject.get_deserialized")
 
-    status = await run_workflow(result_object.dispatch_id)
+    await run_workflow(result_object.dispatch_id)
 
     mock_to_deserialize.assert_not_called()
-    assert status == Result.COMPLETED
