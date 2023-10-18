@@ -326,7 +326,7 @@ def test_try_get_result_object_not_found(mocker, app, client, mock_manifest):
 @pytest.mark.asyncio
 async def test_cancel_all_with_status(mocker, test_db):
     mock_rec = MagicMock()
-    mock_rec.metadata.attrs = {"dispatch_id": "mock_dispatch"}
+    mock_rec.dispatch_id = "mock_dispatch"
 
     mocker.patch("covalent_dispatcher._service.app.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.result.Result.get_db_records", return_value=[mock_rec])
