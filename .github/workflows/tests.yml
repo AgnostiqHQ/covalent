@@ -166,16 +166,16 @@ jobs:
         with:
           node-version-file: 'covalent_ui/webapp/.nvmrc'
 
-      - name: Build webapp
-        if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
-        uses: nick-fields/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 2
-          command: |
-            cd ./covalent_ui/webapp
-            yarn install
-            yarn build
+      # - name: Build webapp
+      #   if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
+      #   uses: nick-fields/retry@v2
+      #   with:
+      #     timeout_minutes: 10
+      #     max_attempts: 2
+      #     command: |
+      #       cd ./covalent_ui/webapp
+      #       yarn install
+      #       yarn build
 
       - name: Transform semver version to pep440
         id: version-transform
@@ -236,7 +236,7 @@ jobs:
         if: >
           steps.modified-files.outputs.sdk == 'true'
           || env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_tests --cov=covalent --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vvs tests/covalent_tests --cov=covalent --cov-config=.coveragerc
 
       - name: Generate SDK coverage report
         id: sdk-coverage
@@ -248,7 +248,7 @@ jobs:
         if: >
           steps.modified-files.outputs.dispatcher == 'true'
           || env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vvs tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
 
       - name: Generate dispatcher coverage report
         id: dispatcher-coverage
@@ -260,7 +260,7 @@ jobs:
         if: >
           steps.modified-files.outputs.ui_backend == 'true'
           || env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_ui_backend_tests --cov=covalent_ui --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vvs tests/covalent_ui_backend_tests --cov=covalent_ui --cov-config=.coveragerc
 
       - name: Generate UI backend coverage report
         id: ui-backend-coverage
@@ -337,19 +337,19 @@ jobs:
           name: "UI Backend Unit Tests"
           fail_ci_if_error: true
 
-      - name: Upload UI frontend report to Codecov
-        id: upload-ui-frontend-report
-        if: >
-          env.RECOMMENDED_PLATFORM
-          && github.event_name != 'workflow_dispatch'
-          && (github.event_name == 'schedule'
-          || steps.ui-frontend-tests.outcome == 'success')
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./covalent_ui/webapp/coverage/clover.xml
-          flags: UI_Frontend
-          name: "UI Frontend Unit Tests"
-          fail_ci_if_error: true
+      # - name: Upload UI frontend report to Codecov
+      #   id: upload-ui-frontend-report
+      #   if: >
+      #     env.RECOMMENDED_PLATFORM
+      #     && github.event_name != 'workflow_dispatch'
+      #     && (github.event_name == 'schedule'
+      #     || steps.ui-frontend-tests.outcome == 'success')
+      #   uses: codecov/codecov-action@v3
+      #   with:
+      #     files: ./covalent_ui/webapp/coverage/clover.xml
+      #     flags: UI_Frontend
+      #     name: "UI Frontend Unit Tests"
+      #     fail_ci_if_error: true
 
       - name: Local Codecov
         id: local-codecov
