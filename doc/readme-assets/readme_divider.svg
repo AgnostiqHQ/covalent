@@ -1,0 +1,23 @@
+<svg fill="none" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
+    <foreignObject width="100%" height="100%">
+
+        <div xmlns="http://www.w3.org/1999/xhtml">
+            <style>
+                .container {
+                margin:38px 0 20px 0;
+                }
+
+            </style>
+            <div class="container">
+                <svg width="820" height="2" viewBox="0 0 820 2" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <line x1="4.37114e-08" y1="1.07349" x2="820" y2="1.07356" stroke="#43444A" />
+                </svg>
+            </div>
+
+        </div>
+    </foreignObject>
+</svg> 
+
+
+  

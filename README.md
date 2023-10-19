@@ -1,5 +1,5 @@
 <div align="center"> 
-  <img src="./readme-assets/readme_hero.svg" style="width:100%"  alt="hero"/>
+  <img src="./doc/readme-assets/readme_hero.svg" style="width:100%"  alt="hero"/>
  </div>
 
 <div align="center">
@@ -12,11 +12,11 @@
 [![apache](https://img.shields.io/badge/License-Apache_License_2.0-blue?color=%235552FF)](https://www.apache.org/licenses/LICENSE-2.0)</div>
 
  <div align="center" mt="200">
-   <img src="./readme-assets/getting_started.svg"  alt="hero" style="margin:15px 0 28px 0"/>
+   <img src="./doc/readme-assets/getting_started.svg"  alt="hero" style="margin:15px 0 28px 0"/>
 </div>
 
  <div align="center">
-  <img src="./readme-assets/readme_executor_.svg"  alt="hero" />
+  <img src="./doc/readme-assets/readme_executor_.svg"  alt="hero" />
  </div>
 
 Covalent is a Pythonic workflow tool for computational scientists, AI/ML software engineers, and anyone who needs to run experiments on limited or expensive computing resources including quantum computers, HPC clusters, GPU arrays, and cloud services.
@@ -24,7 +24,7 @@ Covalent is a Pythonic workflow tool for computational scientists, AI/ML softwar
 Covalent enables a researcher to run computation tasks on an advanced hardware platform – such as a quantum computer or serverless HPC cluster – using a single line of code.
   <div align="center" >
    <video  controls>
-   <source src="./readme-assets/readme.mp4" type="video/mp4">
+   <source src="./doc/readme-assets/readme.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video> 
 <!-- ![abc](./readme.mp4) -->
@@ -32,14 +32,14 @@ Covalent enables a researcher to run computation tasks on an advanced hardware p
  </div>
 
  <div align="center">
-  <img src="./readme-assets/executors.svg"  alt="executors"></img>
+  <img src="./doc/readme-assets/executors.svg"  alt="executors"></img>
  </div>
 
   <div align="center">
-  <img src="./readme-assets/development.svg"  alt="executors"></img>
+  <img src="./doc/readme-assets/development.svg"  alt="executors"></img>
  </div>
 
-  <img src="./readme-assets/installation.svg"  alt="Click to see the source">
+  <img src="./doc/readme-assets/installation.svg"  alt="Click to see the source">
 <!-- <div style="display:grid; grid-template-columns: repeat(4, 200px); grid-gap: 45px; justify-content: space-around;">
   <div style=" width:50%; padding:5px;">
     <div style="color:white; font-size:24px; font-weight:400; font-family:Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;">
@@ -84,14 +84,14 @@ Covalent enables a researcher to run computation tasks on an advanced hardware p
 </div>
 </div> -->
 
-<div><img src="./readme-assets/divider.svg" alt="divider"></div>
+<div><img src="./doc/readme-assets/divider.svg" alt="divider"></div>
 
 <div style="color:#CBCBD7; font-size:24px; font-weight:400; font-family:Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji; padding-bottom:1rem">Know More</div>
 
 For a more in-depth description of Covalent's features and how they work, see the Concepts page in the documentation.
 
 <div style=";margin-bottom:-8rem">
-  <img src="./readme-assets/know_more_box.svg"  alt="Click to see the source">
+  <img src="./doc/readme-assets/know_more_box.svg"  alt="Click to see the source">
 </div>
 
 
@@ -110,7 +110,7 @@ For a more in-depth description of Covalent's features and how they work, see th
     </a>
   </div>
    -->
-<div><img src="./readme-assets/divider.svg" alt="divider"></div>
+<div><img src="./doc/readme-assets/divider.svg" alt="divider"></div>
 
 
   <div style="color:#CBCBD7; font-size:24px; font-weight:400; font-family:Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji; padding-bottom:1rem">
@@ -119,18 +119,18 @@ For a more in-depth description of Covalent's features and how they work, see th
 
   <div style="display: grid; grid-template-columns: repeat(4, 100px); grid-gap: 30px;">
     <a href="https://docs.covalent.xyz/docs//docs/user-documentation/tutorials/mnist">
-        <img src="./readme-assets/images/mnist.png" alt="mnist" >
+        <img src="./doc/readme-assets/images/mnist.png" alt="mnist" >
     </a>
     <a href="https://docs.covalent.xyz/docs//docs/user-documentation/tutorials/quantumchemistry">
-        <img src="./readme-assets/images/quantumChem.png" alt="qchem">
+        <img src="./doc/readme-assets/images/quantumChem.png" alt="qchem">
     </a>
     <a href="https://docs.covalent.xyz/docs//docs/user-documentation/tutorials/generativeai">
-        <img src="./readme-assets/images/api.png" alt="api">
+        <img src="./doc/readme-assets/images/api.png" alt="api">
     </a>
   </div>
 
 
-<div><img src="./readme-assets/divider.svg" alt="divider"></div>
+<div><img src="./doc/readme-assets/divider.svg" alt="divider"></div>
 
 <div >
 
@@ -141,12 +141,12 @@ Covalent’s serverless HPC architecture allows you to easily scale jobs from yo
 </div>
 
  <div align="center">
-  <img src="./readme-assets/self.svg" alt="mnist" style="margin-top:38px"/>
+  <img src="./doc/readme-assets/self.svg" alt="mnist" style="margin-top:38px"/>
  </div>
 
- <div><img src="./readme-assets/divider.svg" alt="divider"></div>
+ <div><img src="./doc/readme-assets/divider.svg" alt="divider"></div>
 
- <div><img src="./readme-assets/contributing_heading.svg" alt="divider"></div>
+ <div><img src="./doc/readme-assets/contributing_heading.svg" alt="divider"></div>
 
   <!-- <div style="color:#CBCBD7; font-size:24px; font-weight:400; font-family:Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji; padding-bottom:1rem">
     Contributing
@@ -154,9 +154,9 @@ Covalent’s serverless HPC architecture allows you to easily scale jobs from yo
 
  <div style="color:#CBCBD7; font-size:14px; font-weight:400; font-family:Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji">To contribute to Covalent, refer to the <a href="https://github.com/AgnostiqHQ/covalent/blob/master/CONTRIBUTING.md">Contribution Guidelines</a>. We use GitHub's <a href="https://github.com/AgnostiqHQ/covalent/issues">issue tracking</a>. to manage known issues, bugs, and pull requests. Get started by forking the develop branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. For more more information on adding tutorials, check the <a href="https://github.com/AgnostiqHQ/covalent/blob/master/doc/TUTORIAL_GUIDELINES.md">Tutorial Guidelines</a> Participation in the Covalent community is governed by the <a href="https://github.com/AgnostiqHQ/covalent/blob/master/CODE_OF_CONDUCT.md">Code of Conduct</a>.</div> -->
 
-  <div><img src="./readme-assets/divider.svg" alt="divider"></div>
+  <div><img src="./doc/readme-assets/divider.svg" alt="divider"></div>
 
-  <div><img src="./readme-assets/citation.svg" alt="divider"></div>
+  <div><img src="./doc/readme-assets/citation.svg" alt="divider"></div>
 
  <!-- <div style="color:#F9F9F9; font-size:24px; font-weight:500;font-family:Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji; padding-top:1.3rem" >Citation</div>
 
@@ -167,9 +167,9 @@ Covalent’s serverless HPC architecture allows you to easily scale jobs from yo
   </div> -->
 
   <!-- <div style=";margin-bottom:-8rem"><img src="./citation.svg" alt="divider"></div> -->
-  <div><img src="./readme-assets/divider.svg" alt="divider"></div>
+  <div><img src="./doc/readme-assets/divider.svg" alt="divider"></div>
 
-  <div><img src="./readme-assets/licence.svg" alt="divider"></div>
+  <div><img src="./doc/readme-assets/licence.svg" alt="divider"></div>
 
 <!-- <div>
     <div style="color:#F9F9F9; font-size:24px; font-weight:500;font-family:Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji; padding-bottom:1.5rem">

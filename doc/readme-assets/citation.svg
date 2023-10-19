@@ -1,0 +1,41 @@
+<svg fill="none" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
+    <foreignObject width="100%" height="100%">
+
+        <div xmlns="http://www.w3.org/1999/xhtml">
+            <style>
+                .container {
+                font-size:24px;
+                font-weight:500;
+                color:#F9F9F9;
+                margin:38px 0;
+                font-family:"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+                }
+
+                .para{
+                    color:#CBCBD7;
+                    font-family:"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+
+                }
+                
+                .anch{
+                    margin-top:8px;
+                    color:#6D7CFF;
+                    font-family:"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+
+                }
+
+            </style>
+            <div>
+                <div class="container">
+                    Citation
+                </div>
+                <div class="para">Please use the following citation in any publications</div>
+                <div class="anch"><a href="https://zenodo.org/record/8369670"> https://doi.org/10.5281/zenodo.5903364</a></div>
+
+            </div>
+        </div>
+    </foreignObject>
+</svg> 
+
+
+  

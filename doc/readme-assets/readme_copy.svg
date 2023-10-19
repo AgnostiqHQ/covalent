@@ -1,0 +1,22 @@
+<svg fill="none" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
+    <foreignObject width="100%" height="100%">
+
+        <div xmlns="http://www.w3.org/1999/xhtml">
+            <style>
+                .container {
+                border:1px solid red
+                }
+            </style>
+                <svg width="22" height="22" viewBox="0 0 22 22" fill="none"
+                    xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0.5" y="0.5" width="15.0769" height="17.3333" rx="1.5" stroke="#86869A" />
+                    <rect x="6.4231" y="4.16662" width="15.0769" height="17.3333" rx="1.5"
+                        stroke="#86869A" />
+                </svg>
+
+        </div>
+    </foreignObject>
+</svg> 
+
+
+  
