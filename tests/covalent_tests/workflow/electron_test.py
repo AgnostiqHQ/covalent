@@ -17,7 +17,7 @@
 """Unit tests for electron"""
 
 import json
-from unittest.mock import MagicMock
+from unittest.mock import ANY, MagicMock
 
 import pytest
 
@@ -655,3 +655,22 @@ def test_replace_electrons():
     assert (
         workflow.transport_graph.get_node_value(0, "status") == RESULT_STATUS.PENDING_REPLACEMENT
     )
+
+
+def test_electron_pow_method(mocker):
+    mock_electron_get_op_function = mocker.patch.object(
+        Electron, "get_op_function", return_value=Electron
+    )
+
+    @ct.electron
+    def g(x):
+        return 42 * x
+
+    @ct.lattice
+    def workflow(x):
+        res = g(x)
+        return res**2
+
+    workflow.build_graph(2)
+
+    mock_electron_get_op_function.assert_called_with(ANY, 2, "**")

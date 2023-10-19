@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Documentation and test cases for database triggers.
+- Added the `__pow__` method to the `Electron` class
 - New Runner and executor API to bypass server-side memory when running tasks.
 
 ### Docs
