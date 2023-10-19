@@ -61,7 +61,23 @@ def get_default_sdk_config():
             + "/covalent/executor_plugins"
         ),
         "no_cluster": "true" if os.environ.get("COVALENT_DISABLE_DASK") == "1" else "false",
-        "exhaustive_postprocess": "true",
+        "exhaustive_postprocess": "false",
+        "dispatch_cache_dir": os.environ.get("COVALENT_DISPATCH_CACHE_DIR")
+        or (
+            (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
+            + "/covalent/dispatches"
+        ),
+        "task_packing": "true" if os.environ.get("COVALENT_ENABLE_TASK_PACKING") else "false",
+        "multistage_dispatch": "false"
+        if os.environ.get("COVALENT_DISABLE_MULTISTAGE_DISPATCH") == "1"
+        else "true",
+        "results_dir": os.environ.get(
+            "COVALENT_RESULTS_DIR"
+        )  # COVALENT_RESULTS_DIR is where the client downloads workflow artifacts during get_result() which is different from COVALENT_DATA_DIR
+        or (
+            (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
+            + "/covalent/results"
+        ),
     }
 
 
@@ -103,6 +119,9 @@ def get_default_dispatcher_config():
             ),
             "heartbeat",
         ),
+        "use_async_dispatcher": os.environ.get("COVALENT_USE_ASYNC_DISPATCHER", "true") or "false",
+        "data_uri_filter_policy": os.environ.get("COVALENT_DATA_URI_FILTER_POLICY", "http"),
+        "asset_cache_size": int(os.environ.get("COVALENT_ASSET_CACHE_SIZE", 32)),
     }
 
 

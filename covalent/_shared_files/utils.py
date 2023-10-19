@@ -228,6 +228,23 @@ def get_named_params(func, args, kwargs):
     return (named_args, named_kwargs)
 
 
+def format_server_url(hostname: str = None, port: int = None) -> str:
+    if hostname is None:
+        hostname = get_config("dispatcher.address")
+    if port is None:
+        port = int(get_config("dispatcher.port"))
+
+    url = hostname
+    if not url.startswith("http"):
+        url = f"https://{url}" if port == 443 else f"http://{url}"
+    # Inject port
+    if port not in [80, 443]:
+        parts = url.split("/")
+        url = "".join(["/".join(parts[:3])] + [f":{port}/"] + ["/".join(parts[3:])])
+
+    return url.strip("/")
+
+
 @_qml_mods_pickle
 def cloudpickle_serialize(obj):
     return cloudpickle.dumps(obj)

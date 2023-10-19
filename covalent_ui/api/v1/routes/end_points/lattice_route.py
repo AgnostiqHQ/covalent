@@ -107,17 +107,11 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
                 return LatticeFileResponse(data=response)
             elif name == "executor":
                 executor_name = lattice_data["executor"]
-                executor_data = handler.read_from_pickle(lattice_data["executor_data_filename"])
-                return LatticeExecutorResponse(
-                    executor_name=executor_name, executor_details=executor_data
-                )
+                return LatticeExecutorResponse(executor_name=executor_name)
             elif name == "workflow_executor":
                 executor_name = lattice_data["workflow_executor"]
-                executor_data = handler.read_from_pickle(
-                    lattice_data["workflow_executor_data_filename"]
-                )
                 return LatticeWorkflowExecutorResponse(
-                    workflow_executor_name=executor_name, workflow_executor_details=executor_data
+                    workflow_executor_name=executor_name,
                 )
             elif name == "error":
                 response = handler.read_from_text(lattice_data["error_filename"])
@@ -128,8 +122,7 @@ def get_lattice_files(dispatch_id: uuid.UUID, name: LatticeFileOutput):
                 )
                 return LatticeFileResponse(data=response, python_object=python_object)
             elif name == "transport_graph":
-                response = handler.read_from_pickle(lattice_data["transport_graph_filename"])
-                return LatticeFileResponse(data=response)
+                return LatticeFileResponse()
         else:
             raise HTTPException(
                 status_code=400,

@@ -145,9 +145,8 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
                 return ElectronFileResponse(data=response, python_object=python_object)
             elif name == "executor":
                 executor_name = result["executor"]
-                executor_data = handler.read_from_pickle(result["executor_data_filename"])
                 return ElectronExecutorResponse(
-                    executor_name=executor_name, executor_details=executor_data
+                    executor_name=executor_name,
                 )
             elif name == "result":
                 response, python_object = handler.read_from_pickle(result["results_filename"])

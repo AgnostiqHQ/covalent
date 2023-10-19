@@ -21,8 +21,9 @@ import pytest
 
 from covalent_ui.api.v1.data_layer.logs_dal import Logs
 from covalent_ui.api.v1.utils.log_handler import log_config
-from tests.covalent_ui_backend_tests.utils.assert_data.logs import seed_logs_data
-from tests.covalent_ui_backend_tests.utils.trigger_events import shutdown_event, startup_event
+
+from ..utils.assert_data.logs import seed_logs_data
+from ..utils.trigger_events import shutdown_event, startup_event
 
 output_data = seed_logs_data()
 UI_LOGFILE = "covalent_ui.api.v1.data_layer.logs_dal.UI_LOGFILE"
