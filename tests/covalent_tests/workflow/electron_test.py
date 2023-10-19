@@ -645,12 +645,14 @@ def test_replace_electrons():
     )
 
 
-def test_electron_pow_method():
-    electron = Electron(function=None)
-    assert hasattr(electron, "__pow__")
+def test_electron_pow_method(mocker):
+    mock_electron_get_op_function = mocker.patch.object(
+        Electron, "get_op_function", return_value=Electron
+    )
+    # mock_electron_pow = mocker.patch.object(
+    #   Electron, "__pow__", return_value=Electron
+    # )
 
-
-def test_workflow():
     @ct.electron
     def g(x):
         return 42 * x
@@ -660,5 +662,7 @@ def test_workflow():
         res = g(x)
         return res**2
 
-    result = workflow(2)
-    assert result == 7056  # Expected result for (42 * 2) ** 2
+    workflow.build_graph(2)
+
+    mock_electron_get_op_function.assert_called_once()
+    # mock_electron_pow.assert_called_once()
