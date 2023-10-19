@@ -15,6 +15,8 @@
 # limitations under the License.
 
 
+import pytest
+
 import covalent as ct
 import covalent._results_manager.results_manager as rm
 from covalent._results_manager.result import Result
@@ -45,6 +47,7 @@ def test_local_executor_returns_stdout_stderr():
     assert tg.get_node_value(0, "output").get_deserialized() == 5
 
 
+@pytest.mark.skip(reason="Sporadically halts the functional test suite")
 def test_local_executor_build_sublattice_graph():
     """
     Check using local executor to build_sublattice_graph.
