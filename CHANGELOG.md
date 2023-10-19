@@ -35,11 +35,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Documentation and test cases for database triggers.
+- New Runner and executor API to bypass server-side memory when running tasks.
 
 ### Docs
 
 - Added federated learning showcase code
-- Updated tutorial for redispatching workflows with Streamlit 
+- Updated tutorial for redispatching workflows with Streamlit
 
 ### Tests
 
@@ -152,7 +153,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix for double locking file in configurations.
 - Introduced new data access layer
 - Introduced Shutil file transfer strategy for local file transfers
-- New Runner and executor API to bypass server-side memory when running tasks.
 
 ### Docs
 

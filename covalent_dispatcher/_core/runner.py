@@ -15,7 +15,7 @@
 # limitations under the License.
 
 """
-Defines the core functionality of the runner
+Defines the core functionality of the legacy runner
 """
 
 import asyncio

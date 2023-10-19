@@ -26,9 +26,10 @@ import pytest
 from covalent import DepsCall, TransportableObject
 from covalent._results_manager import Result
 from covalent._shared_files.exceptions import TaskCancelledError, TaskRuntimeError
-from covalent.executor import BaseExecutor, wrapper_fn
+from covalent.executor import BaseExecutor
 from covalent.executor.base import AsyncBaseExecutor
 from covalent.executor.utils.enums import Signals
+from covalent.executor.utils.wrappers import wrapper_fn
 
 
 class MockExecutor(BaseExecutor):

@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -15,7 +15,7 @@
 # limitations under the License.
 
 """
-Defines the core functionality of the runner
+Defines the core functionality of the new improved runner
 """
 
 import asyncio
@@ -72,6 +72,7 @@ async def _submit_abstract_task_group(
 ) -> None:
     # Task sequence of the form {"function_id": task_id, "args_ids":
     # [node_ids], "kwargs_ids": {key: node_id}}
+
     task_ids = [task["function_id"] for task in task_seq]
     task_specs = []
     task_group_metadata = {
