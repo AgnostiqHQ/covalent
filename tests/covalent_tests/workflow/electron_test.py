@@ -17,7 +17,7 @@
 """Unit tests for electron"""
 
 import json
-from unittest.mock import MagicMock
+from unittest.mock import ANY, MagicMock
 
 import pytest
 
@@ -649,9 +649,6 @@ def test_electron_pow_method(mocker):
     mock_electron_get_op_function = mocker.patch.object(
         Electron, "get_op_function", return_value=Electron
     )
-    # mock_electron_pow = mocker.patch.object(
-    #   Electron, "__pow__", return_value=Electron
-    # )
 
     @ct.electron
     def g(x):
@@ -664,5 +661,4 @@ def test_electron_pow_method(mocker):
 
     workflow.build_graph(2)
 
-    mock_electron_get_op_function.assert_called_once()
-    # mock_electron_pow.assert_called_once()
+    mock_electron_get_op_function.assert_called_with(ANY, 2, "**")
