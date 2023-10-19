@@ -45,7 +45,8 @@
 
             <div class="contain">
                 
-                    <div onclick="location.href='www.google.com';" class="item ri">
+                <a href="https://www.w3schools.com" class="item ri">Visit W3Schools.com!
+                    <!-- <div onclick="location.href='www.google.com';" class="item ri"> -->
                         <svg width="270" height="96" viewBox="0 0 319 96" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
                             <g clip-path="url(#clip0_85_517)">
                             <rect y="0.57373" width="319" height="95" rx="6" fill="#6D7CFF"/>
@@ -72,7 +73,8 @@
                         <div class="heading">
                             MNIST Classifier
                         </div>
-                    </div>
+                    <!-- </div> -->
+                </a> 
                 
                     <div class="item">
                         <svg width="270" height="96" viewBox="0 0 319 96" fill="none" xmlns="http://www.w3.org/2000/svg">
