@@ -2,28 +2,26 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """
 Tests for the core functionality of the dispatcher.
+
+This will be replaced in the next patch.
 """
 
 
-from unittest.mock import AsyncMock, call
+from unittest.mock import call
 
 import pytest
 
@@ -644,6 +642,7 @@ async def test_submit_parameter(mocker):
     mock_run_abs_task = mocker.patch(
         "covalent_dispatcher._core.dispatcher.runner_ng.run_abstract_task_group",
     )
+
     await _submit_task_group(dispatch_id, [node_id], node_id)
 
     mock_run_abs_task.assert_not_called()
@@ -660,7 +659,7 @@ async def test_clear_caches(mocker):
     g.add_node(2, task_group_id=0)
     g.add_node(3, task_group_id=3)
 
-    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.graph.get_nodes_links")
+    mocker.patch("covalent_dispatcher._core.dispatcher.tg_utils.get_nodes_links")
     mocker.patch("networkx.readwrite.node_link_graph", return_value=g)
     mock_unresolved_remove = mocker.patch(
         "covalent_dispatcher._core.dispatcher._unresolved_tasks.remove"
@@ -693,8 +692,7 @@ async def test_cancel_dispatch(mocker):
         "covalent_dispatcher._core.dispatcher.jbmgr.set_cancel_requested"
     )
 
-    mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner_ng")
-    mock_runner.cancel_tasks = AsyncMock()
+    mock_cancel_tasks = mocker.patch("covalent_dispatcher._core.dispatcher.cancel_tasks")
 
     res._initialize_nodes()
     sub_res._initialize_nodes()
@@ -709,7 +707,7 @@ async def test_cancel_dispatch(mocker):
         else:
             return list(sub_tg._graph.nodes)
 
-    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.graph.get_nodes", mock_get_nodes)
+    mocker.patch("covalent_dispatcher._core.dispatcher.tg_utils.get_nodes", mock_get_nodes)
 
     node_attrs = [
         {"sub_dispatch_id": tg.get_node_value(i, "sub_dispatch_id")} for i in tg._graph.nodes
@@ -720,10 +718,7 @@ async def test_cancel_dispatch(mocker):
     ]
 
     async def mock_get(dispatch_id, task_ids, keys):
-        if dispatch_id == res.dispatch_id:
-            return node_attrs
-        else:
-            return sub_node_attrs
+        return node_attrs if dispatch_id == res.dispatch_id else sub_node_attrs
 
     mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.electron.get_bulk",
@@ -737,7 +732,7 @@ async def test_cancel_dispatch(mocker):
 
     calls = [call("pipeline_workflow", task_ids), call(sub_dispatch_id, sub_task_ids)]
     mock_data_cancel.assert_has_awaits(calls)
-    mock_runner.cancel_tasks.assert_has_awaits(calls)
+    mock_cancel_tasks.assert_has_awaits(calls)
 
 
 @pytest.mark.asyncio
@@ -759,8 +754,7 @@ async def test_cancel_dispatch_with_task_ids(mocker):
         "covalent_dispatcher._core.dispatcher.jbmgr.set_cancel_requested"
     )
 
-    mock_runner = mocker.patch("covalent_dispatcher._core.dispatcher.runner_ng")
-    mock_runner.cancel_tasks = AsyncMock()
+    mock_cancel_tasks = mocker.patch("covalent_dispatcher._core.dispatcher.cancel_tasks")
 
     async def mock_get_nodes(dispatch_id):
         if dispatch_id == res.dispatch_id:
@@ -768,7 +762,7 @@ async def test_cancel_dispatch_with_task_ids(mocker):
         else:
             return list(sub_tg._graph.nodes)
 
-    mocker.patch("covalent_dispatcher._core.dispatcher.datasvc.graph.get_nodes", mock_get_nodes)
+    mocker.patch("covalent_dispatcher._core.dispatcher.tg_utils.get_nodes", mock_get_nodes)
 
     node_attrs = [
         {"sub_dispatch_id": tg.get_node_value(i, "sub_dispatch_id")} for i in tg._graph.nodes
@@ -779,10 +773,7 @@ async def test_cancel_dispatch_with_task_ids(mocker):
     ]
 
     async def mock_get(dispatch_id, task_ids, keys):
-        if dispatch_id == res.dispatch_id:
-            return node_attrs
-        else:
-            return sub_node_attrs
+        return node_attrs if dispatch_id == res.dispatch_id else sub_node_attrs
 
     mocker.patch(
         "covalent_dispatcher._core.dispatcher.datasvc.electron.get_bulk",
@@ -797,5 +788,5 @@ async def test_cancel_dispatch_with_task_ids(mocker):
 
     calls = [call("pipeline_workflow", task_ids), call(sub_dispatch_id, sub_task_ids)]
     mock_data_cancel.assert_has_awaits(calls)
-    mock_runner.cancel_tasks.assert_has_awaits(calls)
+    mock_cancel_tasks.assert_has_awaits(calls)
     assert mock_app_log.call_count == 2

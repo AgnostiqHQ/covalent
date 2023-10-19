@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """
 Class that defines the base executor template.
@@ -41,6 +37,7 @@ from covalent.executor.utils import Signals
 
 from .._shared_files import TaskRuntimeError, logger
 from .._shared_files.context_managers import active_dispatch_info_manager
+from .._shared_files.qelectron_utils import remove_qelectron_db
 from .._shared_files.util_classes import RESULT_STATUS, DispatchInfo, Status
 from .schemas import TaskUpdate
 
@@ -301,7 +298,7 @@ class BaseExecutor(_AbstractBaseExecutor):
                 filename.touch(exist_ok=True)
 
                 with open(filepath, "a") as f:
-                    f.write(ss)
+                    f.write(remove_qelectron_db(ss))
 
     async def _execute(
         self,
@@ -352,8 +349,8 @@ class BaseExecutor(_AbstractBaseExecutor):
             output: The result of the function execution.
         """
 
-        dispatch_info = DispatchInfo(dispatch_id)
-        fn_version = function.args[0].python_version
+        DispatchInfo(dispatch_id)
+        function.args[0].python_version
         self._task_stdout = io.StringIO()
         self._task_stderr = io.StringIO()
 
@@ -367,10 +364,10 @@ class BaseExecutor(_AbstractBaseExecutor):
             self.setup(task_metadata=task_metadata)
             result = self.run(function, args, kwargs, task_metadata)
             job_status = RESULT_STATUS.COMPLETED
-        except TaskRuntimeError as err:
+        except TaskRuntimeError:
             job_status = RESULT_STATUS.FAILED
             result = None
-        except TaskCancelledError as err:
+        except TaskCancelledError:
             job_status = RESULT_STATUS.CANCELLED
             result = None
         finally:
@@ -685,7 +682,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
                 filename.touch(exist_ok=True)
 
                 async with aiofiles.open(filepath, "a") as f:
-                    await f.write(ss)
+                    await f.write(remove_qelectron_db(ss))
 
     async def _execute(
         self,
@@ -727,10 +724,10 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             await self.setup(task_metadata=task_metadata)
             result = await self.run(function, args, kwargs, task_metadata)
             job_status = RESULT_STATUS.COMPLETED
-        except TaskCancelledError as err:
+        except TaskCancelledError:
             job_status = RESULT_STATUS.CANCELLED
             result = None
-        except TaskRuntimeError as err:
+        except TaskRuntimeError:
             job_status = RESULT_STATUS.FAILED
             result = None
         finally:

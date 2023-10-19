@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Functions to convert node -> ElectronSchema"""
 
@@ -32,6 +28,12 @@ from .._shared_files.schemas.electron import (
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.transportable_object import TransportableObject
 from .common import AssetType, load_asset, save_asset
+
+__all__ = [
+    "serialize_node",
+    "deserialize_node",
+]
+
 
 ASSET_TYPES = {
     "function": AssetType.TRANSPORTABLE,
@@ -52,15 +54,16 @@ def _serialize_node_metadata(node_attrs: dict, node_storage_path: str) -> Electr
     name = node_attrs["name"]
     executor = node_attrs["metadata"]["executor"]
     executor_data = node_attrs["metadata"]["executor_data"]
+    qelectron_data_exists = node_attrs["metadata"]["qelectron_data_exists"]
 
     # Optional
     status = node_attrs.get("status", RESULT_STATUS.NEW_OBJECT)
 
-    start_time = node_attrs.get("start_time", None)
+    start_time = node_attrs.get("start_time")
     if start_time:
         start_time = start_time.isoformat()
 
-    end_time = node_attrs.get("end_time", None)
+    end_time = node_attrs.get("end_time")
     if end_time:
         end_time = end_time.isoformat()
 
@@ -69,6 +72,7 @@ def _serialize_node_metadata(node_attrs: dict, node_storage_path: str) -> Electr
         name=name,
         executor=executor,
         executor_data=executor_data,
+        qelectron_data_exists=qelectron_data_exists,
         status=str(status),
         start_time=start_time,
         end_time=end_time,
@@ -86,6 +90,7 @@ def _deserialize_node_metadata(meta: ElectronMetadata) -> dict:
         "metadata": {
             "executor": meta.executor,
             "executor_data": meta.executor_data,
+            "qelectron_data_exists": meta.qelectron_data_exists,
         },
     }
 

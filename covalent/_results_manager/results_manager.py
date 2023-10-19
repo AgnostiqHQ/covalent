@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 
 from __future__ import annotations
@@ -216,17 +212,17 @@ def _get_default_assets(rm: ResultManager):
 # Functions for computing local URIs
 def get_node_asset_path(results_dir: str, node_id: int, key: str):
     filename = ELECTRON_ASSET_FILENAMES[key]
-    return results_dir + f"/node_{node_id}/{filename}"
+    return f"{results_dir}/node_{node_id}/{filename}"
 
 
 def get_lattice_asset_path(results_dir: str, key: str):
     filename = LATTICE_ASSET_FILENAMES[key]
-    return results_dir + f"/{filename}"
+    return f"{results_dir}/{filename}"
 
 
 def get_result_asset_path(results_dir: str, key: str):
     filename = RESULT_ASSET_FILENAMES[key]
-    return results_dir + f"/{filename}"
+    return f"{results_dir}/{filename}"
 
 
 # Asset transfers
@@ -254,7 +250,7 @@ def _download_result_asset(manifest: dict, results_dir: str, key: str):
     remote_uri = manifest["assets"][key]["remote_uri"]
     local_path = get_result_asset_path(results_dir, key)
     download_asset(remote_uri, local_path)
-    manifest["assets"][key]["uri"] = "file://" + local_path
+    manifest["assets"][key]["uri"] = f"file://{local_path}"
 
 
 def _download_lattice_asset(manifest: dict, results_dir: str, key: str):
@@ -262,7 +258,7 @@ def _download_lattice_asset(manifest: dict, results_dir: str, key: str):
     remote_uri = lattice_assets[key]["remote_uri"]
     local_path = get_lattice_asset_path(results_dir, key)
     download_asset(remote_uri, local_path)
-    lattice_assets[key]["uri"] = "file://" + local_path
+    lattice_assets[key]["uri"] = f"file://{local_path}"
 
 
 def _download_node_asset(manifest: dict, results_dir: str, node_id: int, key: str):
@@ -271,7 +267,7 @@ def _download_node_asset(manifest: dict, results_dir: str, node_id: int, key: st
     remote_uri = node_assets[key]["remote_uri"]
     local_path = get_node_asset_path(results_dir, node_id, key)
     download_asset(remote_uri, local_path)
-    node_assets[key]["uri"] = "file://" + local_path
+    node_assets[key]["uri"] = f"file://{local_path}"
 
 
 def _load_result_asset(manifest: dict, key: str):
@@ -361,7 +357,7 @@ class ResultManager:
 
         # Create node subdirectories
         for node_id in result_object.lattice.transport_graph._graph.nodes:
-            node_dir = results_dir + f"/node_{node_id}"
+            node_dir = f"{results_dir}/node_{node_id}"
             Path(node_dir).mkdir(exist_ok=True)
 
         return rm
@@ -390,9 +386,18 @@ def _get_result_multistage(
     Args:
         dispatch_id: The dispatch id of the result.
         wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
+        status_only: If true, only returns result status, not the full result object. Default is False.
+        dispatcher_addr: Dispatcher server address, defaults to the address set in Covalent's config.
+        results_dir: The directory where the results are stored in dispatch id named folders.
+
+
+    Kwargs:
+        workflow_output: Whether to return the workflow output. Defaults to True.
+        intermediate_outputs: Whether to return all intermediate outputs in the compute graph. Defaults to True.
+        sublattice_results: Whether to recursively retrieve sublattice results. Default is True.
 
     Returns:
-        The result from the file.
+        The Result object from the Covalent server
 
     """
 
@@ -404,9 +409,8 @@ def _get_result_multistage(
                 status_only=status_only,
                 dispatcher_addr=dispatcher_addr,
             )
-        else:
-            rm = get_result_manager(dispatch_id, results_dir, wait, dispatcher_addr)
-            _get_default_assets(rm)
+        rm = get_result_manager(dispatch_id, results_dir, wait, dispatcher_addr)
+        _get_default_assets(rm)
 
         if workflow_output:
             rm.download_result_asset("result")
@@ -466,6 +470,9 @@ def get_result(
         wait: Controls how long the method waits for the server to return a result. If False, the method will not wait and will return the current status of the workflow. If True, the method will wait for the result to finish and keep retrying for sys.maxsize.
         dispatcher_addr: Dispatcher server address. Defaults to the address set in Covalent's config.
         status_only: If true, only returns result status, not the full result object. Default is False.
+
+    Kwargs:
+        results_dir: The directory where the results are stored in dispatch id named folders.
         workflow_output: Whether to return the workflow output. Defaults to True.
         intermediate_outputs: Whether to return all intermediate outputs in the compute graph. Defaults to True.
         sublattice_results: Whether to recursively retrieve sublattice results. Default is True.

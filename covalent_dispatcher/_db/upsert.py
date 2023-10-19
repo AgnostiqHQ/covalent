@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import json
 import os
@@ -49,7 +45,6 @@ LATTICE_FILENAMES.update(result.ASSET_FILENAME_MAP.copy())
 ELECTRON_FUNCTION_FILENAME = ELECTRON_FILENAMES["function"]
 ELECTRON_FUNCTION_STRING_FILENAME = ELECTRON_FILENAMES["function_string"]
 ELECTRON_VALUE_FILENAME = ELECTRON_FILENAMES["value"]
-# ELECTRON_EXECUTOR_DATA_FILENAME = "executor_data.pkl"
 ELECTRON_STDOUT_FILENAME = ELECTRON_FILENAMES["stdout"]
 ELECTRON_STDERR_FILENAME = ELECTRON_FILENAMES["stderr"]
 ELECTRON_ERROR_FILENAME = ELECTRON_FILENAMES["error"]
@@ -61,14 +56,11 @@ ELECTRON_STORAGE_TYPE = "file"
 LATTICE_FUNCTION_FILENAME = LATTICE_FILENAMES["workflow_function"]
 LATTICE_FUNCTION_STRING_FILENAME = LATTICE_FILENAMES["workflow_function_string"]
 LATTICE_DOCSTRING_FILENAME = LATTICE_FILENAMES["doc"]
-# LATTICE_EXECUTOR_DATA_FILENAME = "executor_data.pkl"
-# LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME = "workflow_executor_data.pkl"
 LATTICE_ERROR_FILENAME = LATTICE_FILENAMES["error"]
 LATTICE_INPUTS_FILENAME = LATTICE_FILENAMES["inputs"]
 LATTICE_NAMED_ARGS_FILENAME = LATTICE_FILENAMES["named_args"]
 LATTICE_NAMED_KWARGS_FILENAME = LATTICE_FILENAMES["named_kwargs"]
 LATTICE_RESULTS_FILENAME = LATTICE_FILENAMES["result"]
-# LATTICE_TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
 LATTICE_DEPS_FILENAME = LATTICE_FILENAMES["deps"]
 LATTICE_CALL_BEFORE_FILENAME = LATTICE_FILENAMES["call_before"]
 LATTICE_CALL_AFTER_FILENAME = LATTICE_FILENAMES["call_after"]
@@ -117,16 +109,6 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         ("workflow_function", LATTICE_FUNCTION_FILENAME, result.lattice.workflow_function),
         ("workflow_function_string", LATTICE_FUNCTION_STRING_FILENAME, workflow_func_string),
         ("doc", LATTICE_DOCSTRING_FILENAME, result.lattice.__doc__),
-        # (
-        #     "executor_data",
-        #     LATTICE_EXECUTOR_DATA_FILENAME,
-        #     result.lattice.metadata["executor_data"],
-        # ),
-        # (
-        #     "workflow_executor_data",
-        #     LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME,
-        #     result.lattice.metadata["workflow_executor_data"],
-        # ),
         ("error", LATTICE_ERROR_FILENAME, result.error),
         ("inputs", LATTICE_INPUTS_FILENAME, result.lattice.inputs),
         ("named_args", LATTICE_NAMED_ARGS_FILENAME, result.lattice.named_args),
@@ -179,10 +161,8 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         "function_string_filename": LATTICE_FUNCTION_STRING_FILENAME,
         "executor": result.lattice.metadata["executor"],
         "executor_data": json.dumps(result.lattice.metadata["executor_data"]),
-        # "executor_data_filename": LATTICE_EXECUTOR_DATA_FILENAME,
         "workflow_executor": result.lattice.metadata["workflow_executor"],
         "workflow_executor_data": json.dumps(result.lattice.metadata["workflow_executor_data"]),
-        # "workflow_executor_data_filename": LATTICE_WORKFLOW_EXECUTOR_DATA_FILENAME,
         "error_filename": LATTICE_ERROR_FILENAME,
         "inputs_filename": LATTICE_INPUTS_FILENAME,
         "named_args_filename": LATTICE_NAMED_ARGS_FILENAME,
@@ -205,10 +185,9 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
     lattice_row = Lattice.meta_type.create(session, insert_kwargs=lattice_record_kwarg, flush=True)
     lattice_record = Lattice(session, lattice_row, bare=True, keys={"id"}, electron_keys={"id"})
 
-    lattice_asset_links = []
-    for key, asset in assets.items():
-        lattice_asset_links.append(lattice_record.associate_asset(session, key, asset.id))
-
+    lattice_asset_links = [
+        lattice_record.associate_asset(session, key, asset.id) for key, asset in assets.items()
+    ]
     session.flush()
 
     return lattice_row.id
@@ -293,6 +272,11 @@ def _electron_data(
             except KeyError:
                 node_output = TransportableObject(None)
 
+            try:
+                node_qelectron_data_exists = tg.get_node_value(node_id, "qelectron_data_exists")
+            except KeyError:
+                node_qelectron_data_exists = False
+
             executor = tg.get_node_value(node_id, "metadata")["executor"]
             started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
             completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
@@ -303,11 +287,6 @@ def _electron_data(
                 ("function", ELECTRON_FUNCTION_FILENAME, tg.get_node_value(node_id, "function")),
                 ("function_string", ELECTRON_FUNCTION_STRING_FILENAME, function_string),
                 ("value", ELECTRON_VALUE_FILENAME, node_value),
-                # (
-                #     "executor_data",
-                #     ELECTRON_EXECUTOR_DATA_FILENAME,
-                #     tg.get_node_value(node_id, "metadata")["executor_data"],
-                # ),
                 ("deps", ELECTRON_DEPS_FILENAME, tg.get_node_value(node_id, "metadata")["deps"]),
                 (
                     "call_before",
@@ -366,7 +345,6 @@ def _electron_data(
                 "function_string_filename": ELECTRON_FUNCTION_STRING_FILENAME,
                 "executor": executor,
                 "executor_data": json.dumps(executor_data),
-                # "executor_data_filename": ELECTRON_EXECUTOR_DATA_FILENAME,
                 "results_filename": ELECTRON_RESULTS_FILENAME,
                 "value_filename": ELECTRON_VALUE_FILENAME,
                 "stdout_filename": ELECTRON_STDOUT_FILENAME,
@@ -375,6 +353,7 @@ def _electron_data(
                 "deps_filename": ELECTRON_DEPS_FILENAME,
                 "call_before_filename": ELECTRON_CALL_BEFORE_FILENAME,
                 "call_after_filename": ELECTRON_CALL_AFTER_FILENAME,
+                "qelectron_data_exists": node_qelectron_data_exists,
                 "job_id": job_row.id,
                 "created_at": timestamp,
                 "updated_at": timestamp,
@@ -390,12 +369,10 @@ def _electron_data(
 
             node_id_eid_map[node_id] = electron_row.id
 
-            electron_asset_links = []
-            for key, asset in assets.items():
-                electron_asset_links.append(
-                    electron_record.associate_asset(session, key, asset.id)
-                )
-
+            electron_asset_links = [
+                electron_record.associate_asset(session, key, asset.id)
+                for key, asset in assets.items()
+            ]
             session.flush()
 
     return node_id_eid_map

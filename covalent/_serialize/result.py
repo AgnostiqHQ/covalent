@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Functions to convert lattice -> LatticeSchema"""
 
@@ -33,6 +29,15 @@ from .._shared_files.schemas.result import (
 from .._shared_files.util_classes import Status
 from .common import AssetType, load_asset, save_asset
 from .lattice import deserialize_lattice, serialize_lattice
+
+__all__ = [
+    "serialize_result",
+    "deserialize_result",
+    "strip_local_uris",
+    "merge_response_manifest",
+    "extract_assets",
+]
+
 
 ASSET_TYPES = {
     "error": AssetType.TEXT,
@@ -174,32 +179,28 @@ def merge_response_manifest(manifest: ResultSchema, response: ResultSchema) -> R
 
 
 def extract_assets(manifest: ResultSchema) -> List[AssetSchema]:
-    """Extract all of the asset metadata from a manifest dictionary.
+    """
+    Extract all of the asset metadata from a manifest dictionary.
 
     Args:
         manifest: A result manifest
 
     Returns:
         A list of assets
-    """
 
-    assets = []
+    """
 
     # workflow-level assets
     dispatch_assets = manifest.assets
-    for key, asset in dispatch_assets:
-        assets.append(asset)
-
+    assets = [asset for key, asset in dispatch_assets]
     lattice = manifest.lattice
     lattice_assets = lattice.assets
-    for key, asset in lattice_assets:
-        assets.append(asset)
+    assets.extend(asset for key, asset in lattice_assets)
 
     # Node assets
     tg = lattice.transport_graph
     nodes = tg.nodes
     for node in nodes:
         node_assets = node.assets
-        for key, asset in node_assets:
-            assets.append(asset)
+        assets.extend(asset for key, asset in node_assets)
     return assets

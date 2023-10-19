@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """
 Tests for the core functionality of the dispatcher.
@@ -149,7 +145,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
         return result_object.lattice.transport_graph.get_incoming_edges(node_id)
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.graph.get_incoming_edges",
+        "covalent_dispatcher._core.dispatcher.tg_utils.get_incoming_edges",
         mock_get_incoming_edges,
     )
 
@@ -172,7 +168,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
     result_object = get_mock_srvresult(sdkres, test_db)
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.graph.get_incoming_edges",
+        "covalent_dispatcher._core.dispatcher.tg_utils.get_incoming_edges",
         mock_get_incoming_edges,
     )
 
@@ -196,7 +192,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
     tg.set_node_value(2, "output", ct.TransportableObject(2))
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.graph.get_incoming_edges",
+        "covalent_dispatcher._core.dispatcher.tg_utils.get_incoming_edges",
         mock_get_incoming_edges,
     )
 
@@ -206,7 +202,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
     assert task_inputs["args"] == [0, 2]
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.graph.get_incoming_edges",
+        "covalent_dispatcher._core.dispatcher.tg_utils.get_incoming_edges",
         mock_get_incoming_edges,
     )
 
@@ -216,7 +212,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
     assert task_inputs["args"] == [2, 0]
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.graph.get_incoming_edges",
+        "covalent_dispatcher._core.dispatcher.tg_utils.get_incoming_edges",
         mock_get_incoming_edges,
     )
 
@@ -225,7 +221,7 @@ async def test_get_abstract_task_inputs(mocker, test_db):
     )
     assert task_inputs["args"] == [2, 0]
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.graph.get_incoming_edges",
+        "covalent_dispatcher._core.dispatcher.tg_utils.get_incoming_edges",
         mock_get_incoming_edges,
     )
 
@@ -257,7 +253,7 @@ async def test_handle_completed_node(mocker, test_db):
         return {keys[0]: node_id}
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.graph.get_node_successors",
+        "covalent_dispatcher._core.dispatcher.tg_utils.get_node_successors",
         get_node_successors,
     )
 
@@ -311,7 +307,7 @@ async def test_get_initial_tasks_and_deps(mocker, test_db):
         return nx.readwrite.node_link_data(g)
 
     mocker.patch(
-        "covalent_dispatcher._core.data_manager.graph.get_nodes_links",
+        "covalent_dispatcher._core.dispatcher.tg_utils.get_nodes_links",
         side_effect=get_graph_nodes_links,
     )
 

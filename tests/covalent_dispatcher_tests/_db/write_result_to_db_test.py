@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Unit tests for the module used to write the decomposed result object to the database."""
 
@@ -128,10 +124,8 @@ def get_lattice_kwargs(
     function_string_filename=FUNCTION_STRING_FILENAME,
     executor="dask",
     executor_data=json.dumps({}),
-    # executor_data_filename=EXECUTOR_DATA_FILENAME,
     workflow_executor="dask",
     workflow_executor_data=json.dumps({}),
-    # workflow_executor_data_filename=WORKFLOW_EXECUTOR_DATA_FILENAME,
     error_filename=ERROR_FILENAME,
     inputs_filename=INPUTS_FILENAME,
     named_args_filename=NAMED_ARGS_FILENAME,
@@ -165,10 +159,8 @@ def get_lattice_kwargs(
         "function_string_filename": function_string_filename,
         "executor": executor,
         "executor_data": executor_data,
-        # "executor_data_filename": executor_data_filename,
         "workflow_executor": workflow_executor,
         "workflow_executor_data": workflow_executor_data,
-        # "workflow_executor_data_filename": workflow_executor_data_filename,
         "error_filename": error_filename,
         "inputs_filename": inputs_filename,
         "named_args_filename": named_args_filename,
@@ -201,7 +193,6 @@ def get_electron_kwargs(
     function_string_filename=FUNCTION_STRING_FILENAME,
     executor="dask",
     executor_data=json.dumps({}),
-    # executor_data_filename=EXECUTOR_DATA_FILENAME,
     results_filename=RESULTS_FILENAME,
     value_filename=VALUE_FILENAME,
     stdout_filename=STDOUT_FILENAME,
@@ -211,6 +202,7 @@ def get_electron_kwargs(
     call_before_filename=CALL_BEFORE_FILENAME,
     call_after_filename=CALL_AFTER_FILENAME,
     job_id=1,
+    qelectron_data_exists=False,
     created_at=None,
     updated_at=None,
     started_at=None,
@@ -231,7 +223,6 @@ def get_electron_kwargs(
         "function_string_filename": function_string_filename,
         "executor": executor,
         "executor_data": executor_data,
-        # "executor_data_filename": executor_data_filename,
         "results_filename": results_filename,
         "value_filename": value_filename,
         "stdout_filename": stdout_filename,
@@ -241,6 +232,7 @@ def get_electron_kwargs(
         "call_before_filename": call_before_filename,
         "call_after_filename": call_after_filename,
         "job_id": job_id,
+        "qelectron_data_exists": qelectron_data_exists,
         "created_at": created_at,
         "updated_at": updated_at,
         "started_at": started_at,
@@ -301,9 +293,7 @@ def test_insert_lattices_data(test_db, mocker):
             assert lattice.function_filename == FUNCTION_FILENAME
             assert lattice.function_string_filename == FUNCTION_STRING_FILENAME
             assert lattice.executor == "dask"
-            # assert lattice.executor_data_filename == EXECUTOR_DATA_FILENAME
             assert lattice.workflow_executor == "dask"
-            # assert lattice.workflow_executor_data_filename == WORKFLOW_EXECUTOR_DATA_FILENAME
             assert lattice.error_filename == ERROR_FILENAME
             assert lattice.inputs_filename == INPUTS_FILENAME
             assert lattice.named_args_filename == NAMED_ARGS_FILENAME
@@ -623,6 +613,7 @@ def test_update_electrons_data(test_db, mocker):
             started_at=dt.now(timezone.utc),
             updated_at=dt.now(timezone.utc),
             completed_at=None,
+            qelectron_data_exists=False,
         )
 
     insert_electrons_data(
@@ -640,6 +631,7 @@ def test_update_electrons_data(test_db, mocker):
         started_at=cur_time,
         updated_at=cur_time,
         completed_at=None,
+        qelectron_data_exists=False,
     )
 
     with test_db.session() as session:

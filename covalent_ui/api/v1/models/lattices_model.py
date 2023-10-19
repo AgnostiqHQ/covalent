@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Lattice request and response model"""
 
@@ -39,7 +35,7 @@ class SubLatticeSortBy(CaseInsensitiveEnum):
 
 
 class SubLatticeDetailResponse(BaseModel):
-    sub_lattices: List[DispatchModule] = None
+    sub_lattices: Union[List[DispatchModule], None] = None
 
 
 class LatticeDetailResponse(BaseModel):
@@ -53,7 +49,7 @@ class LatticeDetailResponse(BaseModel):
     ended_at: Union[datetime, None] = None
     directory: Union[str, None] = None
     description: Union[str, None] = None
-    runtime: Union[int, None] = None
+    runtime: Union[int, float, None] = None
     updated_at: Union[datetime, None] = None
 
 
@@ -96,16 +92,16 @@ class GraphNodes(BaseModel):
     executor: str = None
 
     # Immediate parent electron id
-    parent_electron_id: int = None
+    parent_electron_id: Union[None, int] = None
 
     # Is_parent field introduced to for graph box
-    is_parent: int = None
+    is_parent: Union[None, int] = None
 
     # Immediate parent dispatch id, to get electrons details
-    parent_dispatch_id: str = None
+    parent_dispatch_id: Union[None, str] = None
 
     # Allow users to copy dispatch id a sublattice
-    sublattice_dispatch_id: str = None
+    sublattice_dispatch_id: Union[None, str] = None
 
 
 class GraphResponseData(BaseModel):
@@ -127,6 +123,3 @@ class LatticeFileOutput(str, Enum):
     EXECUTOR = "executor"
     WORKFLOW_EXECUTOR = "workflow_executor"
     FUNCTION = "function"
-
-
-#    TRANSPORT_GRAPH = "transport_graph"

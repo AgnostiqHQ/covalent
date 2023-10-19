@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 from unittest import mock
 
@@ -114,19 +110,6 @@ def test_do_redispatch(mocker, use_internal_func, is_pending):
     base_trigger = BaseTrigger()
     base_trigger.use_internal_funcs = use_internal_func
 
-    # if use_internal_func:
-    #     mocker.patch("covalent_dispatcher.entry_point.run_redispatch")
-    #     mocker.patch("covalent_dispatcher.entry_point.start_dispatch")
-    #     mock_fut_res = mock.Mock()
-    #     mock_fut_res.result.return_value = mock_redispatch_id
-    #     mock_run_coro = mocker.patch(
-    #         "covalent.triggers.base.asyncio.run_coroutine_threadsafe", return_value=mock_fut_res
-    #     )
-    #     redispatch_id = base_trigger._do_redispatch(is_pending)
-
-    #     mock_run_coro.assert_called_once()
-    #     mock_fut_res.result.assert_called_once()
-    # else:
     redispatch_id = base_trigger._do_redispatch(is_pending)
 
     if is_pending:

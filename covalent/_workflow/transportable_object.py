@@ -2,23 +2,19 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-"""TransportableObject"""
+"""Transportable object module defining relevant classes and functions"""
 
 import base64
 import json
@@ -36,12 +32,35 @@ BYTE_ORDER = "big"
 
 
 class _TOArchive:
+
+    """Archived transportable object."""
+
     def __init__(self, header: bytes, object_string: bytes, data: bytes):
+        """
+        Initialize TOArchive.
+
+        Args:
+            header: Archived transportable object header.
+            object_string: Archived transportable object string.
+            data: Archived transportable object data.
+
+        Returns:
+            None
+        """
+
         self.header = header
         self.object_string = object_string
         self.data = data
 
     def cat(self) -> bytes:
+        """
+        Concatenate TOArchive.
+
+        Returns:
+            Concatenated TOArchive.
+
+        """
+
         header_size = len(self.header)
         string_size = len(self.object_string)
         data_offset = STRING_OFFSET_BYTES + DATA_OFFSET_BYTES + header_size + string_size
@@ -52,7 +71,21 @@ class _TOArchive:
 
         return string_offset + data_offset + self.header + self.object_string + self.data
 
+    @staticmethod
     def load(serialized: bytes, header_only: bool, string_only: bool) -> "_TOArchive":
+        """
+        Load TOArchive object from serialized bytes.
+
+        Args:
+            serialized: Serialized transportable object.
+            header_only: Load header only.
+            string_only: Load string only.
+
+        Returns:
+            Archived transportable object.
+
+        """
+
         string_offset = TOArchiveUtils.string_offset(serialized)
         header = TOArchiveUtils.parse_header(serialized, string_offset)
         object_string = b""
@@ -246,6 +279,17 @@ class TransportableObject:
 
     @staticmethod
     def make_transportable(obj) -> "TransportableObject":
+        """
+        Make an object transportable.
+
+        Args:
+            obj: The object to make transportable.
+
+        Returns:
+            Transportable object.
+
+        """
+
         if isinstance(obj, TransportableObject):
             return obj
         else:
@@ -295,6 +339,11 @@ class TransportableObject:
         precisely, `collection` is a dict, each of whose entries is
         assumed to be either a `TransportableObject`, a list, or dict`
 
+        Args:
+            collection: A dictionary of TransportableObjects.
+        Returns:
+            A dictionary of deserialized objects.
+
         """
 
         new_dict = {}
@@ -311,6 +360,17 @@ class TransportableObject:
 
 
 def _to_archive(to: TransportableObject) -> _TOArchive:
+    """
+    Convert a TransportableObject to a _TOArchive.
+
+    Args:
+        to: Transportable object to be converted.
+
+    Returns:
+        Archived transportable object.
+
+    """
+
     header = json.dumps(to._header).encode("utf-8")
     object_string = to._object_string.encode("utf-8")
     data = to._object.encode("utf-8")
@@ -318,12 +378,23 @@ def _to_archive(to: TransportableObject) -> _TOArchive:
 
 
 def _from_archive(ar: _TOArchive) -> TransportableObject:
+    """
+    Convert a _TOArchive to a TransportableObject.
+
+    Args:
+        ar: Archived transportable object.
+
+    Returns:
+        Transportable object.
+
+    """
+
     decoded_object_str = ar.object_string.decode("utf-8")
     decoded_data = ar.data.decode("utf-8")
     decoded_header = json.loads(ar.header.decode("utf-8"))
     to = TransportableObject(None)
     to._header = decoded_header
-    to._object_string = decoded_object_str if decoded_object_str else ""
-    to._object = decoded_data if decoded_data else ""
+    to._object_string = decoded_object_str or ""
+    to._object = decoded_data or ""
 
     return to

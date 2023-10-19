@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import json
 import os
@@ -159,9 +155,6 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         )
 
         executor_data = json.loads(lattice_row.executor_data)
-        # executor_data = local_store.load_file(
-        #     storage_path=lattice_storage_path, filename=lattice_row.executor_data_filename
-        # )
 
         assert executor_data["short_name"] == le.short_name()
         assert executor_data["attributes"] == le.__dict__
@@ -207,63 +200,12 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
                 )
             if electron.transport_graph_node_id == 3:
                 executor_data = json.loads(electron.executor_data)
-                # executor_data = local_store.load_file(
-                #     storage_path=electron.storage_path, filename=electron.executor_data_filename
-                # )
 
                 assert executor_data["short_name"] == le.short_name()
                 assert executor_data["attributes"] == le.__dict__
 
         # Check that there are the appropriate amount of electron dependency records
         assert len(electron_dependency_rows) == 7
-
-        # # Update some node / lattice statuses
-        # cur_time = dt.now(timezone.utc)
-        # result_1._end_time = cur_time
-        # result_1._status = "COMPLETED"
-        # result_1._result = ct.TransportableObject({"helo": 1, "world": 2})
-
-        # for node_id in range(6):
-        #     result_1._update_node(
-        #         node_id=node_id,
-        #         start_time=cur_time,
-        #         end_time=cur_time,
-        #         status="COMPLETED",
-        #         # output={"test_data": "test_data"},  # TODO - Put back in later
-        #         # sublattice_result=None,  # TODO - Add a test where this is not None
-        #     )
-
-        # Call Result.persist
-    #        update.persist(result_1)
-
-    # Query lattice / electron / electron dependency
-    # with test_db.session() as session:
-    #     lattice_row = session.query(Lattice).first()
-    #     electron_rows = session.query(Electron).all()
-    #     electron_dependency_rows = session.query(ElectronDependency).all()
-
-    #     # Check that the lattice records are as expected
-    #     assert lattice_row.completed_at.strftime("%Y-%m-%d %H:%M") == cur_time.strftime(
-    #         "%Y-%m-%d %H:%M"
-    #     )
-    #     assert lattice_row.status == "COMPLETED"
-    #     result = local_store.load_file(
-    #         storage_path=lattice_storage_path, filename=lattice_row.results_filename
-    #     )
-    #     assert result_1.result == result.get_deserialized()
-
-    #     # Check that the electron records are as expected
-    #     for electron in electron_rows:
-    #         assert electron.status == "COMPLETED"
-    #         assert electron.parent_lattice_id == 1
-    #         assert (
-    #             electron.started_at.strftime("%Y-%m-%d %H:%M")
-    #             == electron.completed_at.strftime("%Y-%m-%d %H:%M")
-    #             == cur_time.strftime("%Y-%m-%d %H:%M")
-    #         )
-    #         assert Path(electron.storage_path) == Path(
-    #             f"{TEMP_RESULTS_DIR}/dispatch_1/node_{electron.transport_graph_node_id}"
-    #         )
 
     # Tear down temporary results directory
     teardown_temp_results_dir(dispatch_id="dispatch_1")
@@ -375,7 +317,7 @@ def test_task_packing_persist(test_db, mocker):
 
     update.persist(result)
     tg = workflow.transport_graph
-    task_groups = set([tg.get_node_value(node_id, "task_group_id") for node_id in tg._graph.nodes])
+    task_groups = {tg.get_node_value(node_id, "task_group_id") for node_id in tg._graph.nodes}
 
     with test_db.session() as session:
         job_records = session.query(Job).all()

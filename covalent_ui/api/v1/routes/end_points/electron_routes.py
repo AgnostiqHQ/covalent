@@ -2,42 +2,44 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Electrons Route"""
 
 import json
 import uuid
+from typing import List, Optional
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy.orm import Session
 
+import covalent_ui.api.v1.database.config.db as db
 from covalent._shared_files.defaults import WAIT_EDGE_NAME
 from covalent_dispatcher._core.data_modules import graph as core_graph
 from covalent_dispatcher._dal.result import get_result_object
 from covalent_ui.api.v1.data_layer.electron_dal import Electrons
-from covalent_ui.api.v1.database.config.db import engine
 from covalent_ui.api.v1.models.electrons_model import (
     ElectronExecutorResponse,
     ElectronFileOutput,
     ElectronFileResponse,
     ElectronResponse,
+    Job,
+    JobDetails,
+    JobDetailsResponse,
+    JobsResponse,
 )
 from covalent_ui.api.v1.utils.file_handle import FileHandler, validate_data
+from covalent_ui.api.v1.utils.models_helper import JobsSortBy, SortDirection
 
 routes: APIRouter = APIRouter()
 
@@ -52,7 +54,7 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
     Returns:
         Returns the electron details
     """
-    with Session(engine) as session:
+    with Session(db.engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
         if result is None:
@@ -66,6 +68,16 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
                     }
                 ],
             )
+        qelectron = {
+            "total_quantum_calls": electron.get_total_quantum_calls(
+                dispatch_id, result["transport_graph_node_id"], result["qelectron_data_exists"]
+            ),
+            "avg_quantum_calls": electron.get_avg_quantum_calls(
+                dispatch_id=dispatch_id,
+                is_qa_electron=result["qelectron_data_exists"],
+                node_id=result["transport_graph_node_id"],
+            ),
+        }
         return ElectronResponse(
             id=result["id"],
             node_id=result["transport_graph_node_id"],
@@ -78,6 +90,8 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
             ended_at=result["completed_at"],
             runtime=result["runtime"],
             description="",
+            qelectron_data_exists=bool(result["qelectron_data_exists"]),
+            qelectron=qelectron if bool(result["qelectron_data_exists"]) else None,
         )
 
 
@@ -96,7 +110,7 @@ def _get_abstract_task_inputs(dispatch_id: str, node_id: int) -> dict:
 
     abstract_task_input = {"args": [], "kwargs": {}}
 
-    in_edges = core_graph.get_incoming_edges(dispatch_id, node_id)
+    in_edges = core_graph.get_incoming_edges_sync(dispatch_id, node_id)
     for edge in in_edges:
         parent = edge["source"]
 
@@ -131,7 +145,7 @@ def get_electron_inputs(dispatch_id: uuid.UUID, electron_id: int) -> str:
     # Resolve node ids to object strings
     input_assets = {"args": [], "kwargs": {}}
 
-    with Session(engine) as session:
+    with Session(db.engine) as session:
         result_object = get_result_object(str(dispatch_id), bare=True)
         tg = result_object.lattice.transport_graph
         for arg in abstract_inputs["args"]:
@@ -164,57 +178,10 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
         Returns electron details based on the given name
     """
 
-    with Session(engine) as session:
+    with Session(db.engine) as session:
         electron = Electrons(session)
         result = electron.get_electrons_id(dispatch_id, electron_id)
-        if result is not None:
-            handler = FileHandler(result["storage_path"])
-            if name == "inputs":
-                response, python_object = get_electron_inputs(
-                    dispatch_id=dispatch_id, electron_id=electron_id
-                )
-                return ElectronFileResponse(data=str(response), python_object=str(python_object))
-            elif name == "function_string":
-                response = handler.read_from_text(result["function_string_filename"])
-                return ElectronFileResponse(data=response)
-            elif name == "function":
-                response, python_object = handler.read_from_serialized(result["function_filename"])
-                return ElectronFileResponse(data=response, python_object=python_object)
-            elif name == "executor":
-                executor_name = result["executor"]
-                executor_data = json.loads(result["executor_data"])
-                # executor_data = handler.read_from_serialized(result["executor_data_filename"])
-                return ElectronExecutorResponse(
-                    executor_name=executor_name, executor_details=executor_data
-                )
-            elif name == "result":
-                response, python_object = handler.read_from_serialized(result["results_filename"])
-                return ElectronFileResponse(data=str(response), python_object=python_object)
-            elif name == "value":
-                response = handler.read_from_serialized(result["value_filename"])
-                return ElectronFileResponse(data=str(response))
-            elif name == "stdout":
-                response = handler.read_from_text(result["stdout_filename"])
-                return ElectronFileResponse(data=response)
-            elif name == "deps":
-                response = handler.read_from_serialized(result["deps_filename"])
-                return ElectronFileResponse(data=response)
-            elif name == "call_before":
-                response = handler.read_from_serialized(result["call_before_filename"])
-                return ElectronFileResponse(data=response)
-            elif name == "call_after":
-                response = handler.read_from_serialized(result["call_after_filename"])
-                return ElectronFileResponse(data=response)
-            elif name == "error":
-                # Error and stderr won't be both populated if `error`
-                # is only used for fatal dispatcher-executor interaction errors
-                error_response = handler.read_from_text(result["error_filename"])
-                stderr_response = handler.read_from_text(result["stderr_filename"])
-                response = stderr_response + error_response
-                return ElectronFileResponse(data=response)
-            else:
-                return ElectronFileResponse(data=None)
-        else:
+        if result is None:
             raise HTTPException(
                 status_code=400,
                 detail=[
@@ -225,3 +192,110 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
                     }
                 ],
             )
+        handler = FileHandler(result["storage_path"])
+        if name == "inputs":
+            response, python_object = get_electron_inputs(
+                dispatch_id=dispatch_id, electron_id=electron_id
+            )
+            return ElectronFileResponse(data=str(response), python_object=str(python_object))
+        elif name == "function_string":
+            response = handler.read_from_text(result["function_string_filename"])
+            return ElectronFileResponse(data=response)
+        elif name == "function":
+            response, python_object = handler.read_from_serialized(result["function_filename"])
+            return ElectronFileResponse(data=response, python_object=python_object)
+        elif name == "executor":
+            executor_name = result["executor"]
+            executor_data = json.loads(result["executor_data"])
+            return ElectronExecutorResponse(
+                executor_name=executor_name, executor_details=executor_data
+            )
+        elif name == "result":
+            response, python_object = handler.read_from_serialized(result["results_filename"])
+            return ElectronFileResponse(data=str(response), python_object=python_object)
+        elif name == "value":
+            response = handler.read_from_serialized(result["value_filename"])
+            return ElectronFileResponse(data=str(response))
+        elif name == "stdout":
+            response = handler.read_from_text(result["stdout_filename"])
+            return ElectronFileResponse(data=response)
+        elif name == "deps":
+            response = handler.read_from_serialized(result["deps_filename"])
+            return ElectronFileResponse(data=response)
+        elif name == "call_before":
+            response = handler.read_from_serialized(result["call_before_filename"])
+            return ElectronFileResponse(data=response)
+        elif name == "call_after":
+            response = handler.read_from_serialized(result["call_after_filename"])
+            return ElectronFileResponse(data=response)
+        elif name == "error":
+            # Error and stderr won't be both populated if `error`
+            # is only used for fatal dispatcher-executor interaction errors
+            error_response = handler.read_from_text(result["error_filename"])
+            stderr_response = handler.read_from_text(result["stderr_filename"])
+            response = stderr_response + error_response
+            return ElectronFileResponse(data=response)
+        else:
+            return ElectronFileResponse(data=None)
+
+
+@routes.get("/{dispatch_id}/electron/{electron_id}/jobs", response_model=List[Job])
+def get_electron_jobs(
+    dispatch_id: uuid.UUID,
+    electron_id: int,
+    sort_by: Optional[JobsSortBy] = JobsSortBy.START_TIME,
+    sort_direction: Optional[SortDirection] = SortDirection.DESCENDING,
+    count: Optional[int] = None,
+    offset: Optional[int] = Query(0),
+) -> List[Job]:
+    """Get Electron Jobs List
+
+    Args:
+        dispatch_id: To fetch electron data with dispatch id
+        electron_id: To fetch electron data with the provided electron id.
+
+    Returns:
+        Returns the list of electron jobs
+    """
+    with Session(db.engine) as session:
+        electron = Electrons(session)
+        jobs_response: JobsResponse = electron.get_jobs(
+            dispatch_id=dispatch_id,
+            electron_id=electron_id,
+            sort_by=sort_by,
+            sort_direction=sort_direction,
+            count=count,
+            offset=offset,
+        )
+        if jobs_response.data is None:
+            raise HTTPException(
+                status_code=422,
+                detail=[{"msg": jobs_response.msg}],
+            )
+        return jobs_response.data
+
+
+@routes.get("/{dispatch_id}/electron/{electron_id}/jobs/{job_id}", response_model=JobDetails)
+def get_electron_job_overview(dispatch_id: uuid.UUID, electron_id: int, job_id: str) -> JobDetails:
+    """Get Electron Job Detail
+
+    Args:
+        dispatch_id: To fetch electron data with dispatch id
+        electron_id: To fetch electron data with the provided electron id.
+        job_id: To fetch appropriate job details with job id
+
+    Returns:
+        Returns the electron job details
+    """
+    with Session(db.engine) as session:
+        electron = Electrons(session)
+        job_response: JobDetailsResponse = electron.get_job_detail(
+            dispatch_id, electron_id, job_id
+        )
+        if job_response.data is None:
+            raise HTTPException(
+                status_code=422,
+                detail=[{"msg": job_response.msg}],
+            )
+
+        return job_response.data

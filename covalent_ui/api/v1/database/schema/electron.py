@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Electrons Schema """
 
@@ -32,6 +28,7 @@ class Electron(Base):
         id: primary key id
         parent_lattice_id: id of the lattice containing this electron
         transport_graph_node_id: id of the node in the context of a transport graph
+        task_group_id: id of the node's task group in the context of a transport graph
         type: node type
         name: node name
         status: Execution status of the node
@@ -52,6 +49,8 @@ class Electron(Base):
         call_after_filename : Name of the file containing list of DepsCall objects
         error_filename: Name of the file containing execution information generated at runtime
         is_active: Status of the record, 1: active and 0: inactive
+        job_id: ID for circuit_info
+        qelectron_data_exists: Flag that indicates if qelectron data exists in the electron
         created_at: created timestamp
         updated_at: updated timestamp
         started_at: started timestamp
@@ -66,6 +65,9 @@ class Electron(Base):
 
     # id of the node in the context of a transport graph
     transport_graph_node_id = Column(Integer, nullable=False)
+
+    # id of the node's task group in the context of a transport graph
+    task_group_id = Column(Integer, nullable=False)
 
     # Node type
     type = Column(String(24), nullable=False)
@@ -121,8 +123,29 @@ class Electron(Base):
     # Name of the column which signifies soft deletion of the electrons corresponding to a lattice
     is_active = Column(Boolean, nullable=False, default=True)
 
+    # ID for circuit_info
+    job_id = Column(Integer, ForeignKey("jobs.id", name="job_id_link"), nullable=False)
+
+    # Flag that indicates if qelectron data exists in the electron
+    qelectron_data_exists = Column(Boolean, nullable=False, default=False)
+
     # Timestamps
     created_at = Column(DateTime, nullable=False, server_default=func.now())
     updated_at = Column(DateTime, nullable=False, onupdate=func.now(), server_default=func.now())
     started_at = Column(DateTime)
     completed_at = Column(DateTime)
+
+
+class Job(Base):
+    __tablename__ = "jobs"
+    id = Column(Integer, primary_key=True)
+
+    # Indicates whether the job has been requested to be cancelled
+    cancel_requested = Column(Boolean, nullable=False, default=False)
+
+    # Indicates whether the task cancellation succeeded (return value
+    # of Executor.cancel())
+    cancel_successful = Column(Boolean, nullable=False, default=False)
+
+    # JSON-serialized identifier for job
+    job_handle = Column(Text, nullable=False, default="null")

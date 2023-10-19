@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """
 Defines the core functionality of the dispatcher
@@ -36,8 +32,10 @@ from covalent._shared_files.util_classes import RESULT_STATUS
 
 from . import data_manager as datasvc
 from . import runner_ng
+from .data_modules import graph as tg_utils
 from .data_modules import job_manager as jbmgr
 from .dispatcher_modules.caches import _pending_parents, _sorted_task_groups, _unresolved_tasks
+from .runner_modules.cancel import cancel_tasks
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -66,7 +64,7 @@ async def _get_abstract_task_inputs(dispatch_id: str, node_id: int, node_name: s
 
     abstract_task_input = {"args": [], "kwargs": {}}
 
-    for edge in await datasvc.graph.get_incoming_edges(dispatch_id, node_id):
+    for edge in await tg_utils.get_incoming_edges(dispatch_id, node_id):
         parent = edge["source"]
 
         d = edge["attrs"]
@@ -92,7 +90,7 @@ async def _handle_completed_node(dispatch_id: str, node_id: int):
     parent_gid = (await datasvc.electron.get(dispatch_id, node_id, ["task_group_id"]))[
         "task_group_id"
     ]
-    for child in await datasvc.graph.get_node_successors(dispatch_id, node_id):
+    for child in await tg_utils.get_node_successors(dispatch_id, node_id):
         node_id = child["node_id"]
         gid = child["task_group_id"]
         app_log.debug(f"dispatch {dispatch_id}: parent gid {parent_gid}, child gid {gid}")
@@ -132,7 +130,7 @@ async def _get_initial_tasks_and_deps(dispatch_id: str) -> Tuple[int, int, Dict]
     # Number of pending predecessor nodes for each task group
     pending_parents = {}
 
-    g_node_link = await datasvc.graph.get_nodes_links(dispatch_id)
+    g_node_link = await tg_utils.get_nodes_links(dispatch_id)
     g = nx.readwrite.node_link_graph(g_node_link)
 
     # Topologically sort each task group
@@ -149,8 +147,9 @@ async def _get_initial_tasks_and_deps(dispatch_id: str) -> Tuple[int, int, Dict]
         parent_gid = g.nodes[node_id]["task_group_id"]
         for succ, datadict in g.adj[node_id].items():
             child_gid = g.nodes[succ]["task_group_id"]
-            n_edges = len(datadict.keys())
+
             if parent_gid != child_gid:
+                n_edges = len(datadict.keys())
                 pending_parents[child_gid] += n_edges
 
     initial_task_groups = [gid for gid, d in pending_parents.items() if d == 0]
@@ -184,8 +183,6 @@ async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_gro
         app_log.debug("8A: Update node success (run_planned_workflow).")
 
     else:
-        # Gather inputs for each task and send the task spec sequence to the runner
-        task_specs = []
         known_nodes = []
 
         # Skip the group if all task outputs can be reused from a
@@ -195,7 +192,10 @@ async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_gro
             filter(lambda record: record["status"] != RESULT_STATUS.PENDING_REUSE, statuses)
         )
 
-        if len(incomplete) > 0:
+        if incomplete:
+            # Gather inputs for each task and send the task spec sequence to the runner
+            task_specs = []
+
             for node_id in sorted_nodes:
                 app_log.debug(f"Gathering inputs for task {node_id} (run_planned_workflow).")
 
@@ -315,7 +315,7 @@ async def run_workflow(dispatch_id: str, wait: bool = SYNC_DISPATCHES) -> RESULT
 
 
 # Domain: dispatcher
-async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = []) -> None:
+async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = None) -> None:
     """
     Cancel an entire dispatch or a specific set of tasks within it
 
@@ -325,19 +325,24 @@ async def cancel_dispatch(dispatch_id: str, task_ids: List[int] = []) -> None:
 
     Return(s)
         None
+
     """
+
+    if task_ids is None:
+        task_ids = []
+
     if not dispatch_id:
         return
 
     if task_ids:
         app_log.debug(f"Cancelling tasks {task_ids} in dispatch {dispatch_id}")
     else:
-        task_ids = await datasvc.graph.get_nodes(dispatch_id)
+        task_ids = await tg_utils.get_nodes(dispatch_id)
 
         app_log.debug(f"Cancelling dispatch {dispatch_id}")
 
     await jbmgr.set_cancel_requested(dispatch_id, task_ids)
-    await runner_ng.cancel_tasks(dispatch_id, task_ids)
+    await cancel_tasks(dispatch_id, task_ids)
 
     # Recursively cancel running sublattice dispatches
     attrs = await datasvc.electron.get_bulk(dispatch_id, task_ids, ["sub_dispatch_id"])
@@ -351,8 +356,11 @@ def run_dispatch(dispatch_id: str) -> asyncio.Future:
 
 
 async def notify_node_status(
-    dispatch_id: str, node_id: int, status: RESULT_STATUS, detail: Dict = {}
+    dispatch_id: str, node_id: int, status: RESULT_STATUS, detail: Dict = None
 ):
+    if detail is None:
+        detail = {}
+
     msg = {
         "dispatch_id": dispatch_id,
         "node_id": node_id,
@@ -506,7 +514,7 @@ async def _handle_event(msg: Dict):
     except Exception as ex:
         dispatch_status = await _handle_dispatch_exception(dispatch_id, ex)
         await datasvc.persist_result(dispatch_id)
-        fut = _futures.get(dispatch_id, None)
+        fut = _futures.get(dispatch_id)
         if fut:
             fut.set_result(dispatch_status)
         return dispatch_status
@@ -521,7 +529,7 @@ async def _handle_event(msg: Dict):
 
         finally:
             await datasvc.persist_result(dispatch_id)
-            fut = _futures.get(dispatch_id, None)
+            fut = _futures.get(dispatch_id)
             if fut:
                 fut.set_result(dispatch_status)
 
@@ -532,9 +540,11 @@ async def _clear_caches(dispatch_id: str):
     """Clean up all keys in caches."""
     await _unresolved_tasks.remove(dispatch_id)
 
-    g_node_link = await datasvc.graph.get_nodes_links(dispatch_id)
+    g_node_link = await tg_utils.get_nodes_links(dispatch_id)
     g = nx.readwrite.node_link_graph(g_node_link)
-    task_groups = set([g.nodes[i]["task_group_id"] for i in g.nodes])
+
+    task_groups = {g.nodes[i]["task_group_id"] for i in g.nodes}
+
     for gid in task_groups:
         # Clean up no longer referenced keys
         await _pending_parents.remove(dispatch_id, gid)

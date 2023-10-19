@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Lattices schema"""
 from sqlalchemy import Boolean, Column, DateTime, Integer, String, Text, func
@@ -39,11 +35,9 @@ class Lattice(Base):
         storage_path: Bucket name (dispatch_id)
         function_filename: Name of the file containing the serialized function
         function_string_filename: Name of the file containing the function string
-        executor_filename: Name of the file containing the serialized executor
         error_filename: Name of the file containing an error message for the electron
         results_filename: Name of the file containing the serialized output
         inputs_filename: Name of the file containing the serialized input data
-        transport_graph_filename: Name of the file containing generic transport graph data
         is_active: Status of the record, 1: active and 0: inactive
         created_at: created timestamp
         updated_at: updated timestamp
@@ -94,7 +88,7 @@ class Lattice(Base):
     # Short name describing the workflow executor ("local", "dask", etc)
     workflow_executor = Column(Text)
 
-    # JSONified executor attributes
+    # JSONified workflow executor attributes
     workflow_executor_data = Column(Text)
 
     # Name of the file containing an error message for the workflow
@@ -111,9 +105,6 @@ class Lattice(Base):
 
     # name of the file containing the serialized output
     results_filename = Column(Text)
-
-    # Name of the file containing the transport graph
-    # transport_graph_filename = Column(Text)
 
     # Name of the file containing the default electron dependencies
     deps_filename = Column(Text)

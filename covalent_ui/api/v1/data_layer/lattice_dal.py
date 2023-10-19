@@ -2,28 +2,24 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Lattice Data Layer"""
 
 from typing import List
 from uuid import UUID
 
-from sqlalchemy import extract
+from sqlalchemy import extract, select
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import desc, func
 
@@ -37,6 +33,11 @@ class Lattices:
 
     def __init__(self, db_con: Session) -> None:
         self.db_con = db_con
+
+    def dispatch_exist(self, dispatch_id: UUID) -> bool:
+        return self.db_con.execute(
+            select(Lattice).where(Lattice.dispatch_id == str(dispatch_id))
+        ).fetchone()
 
     def get_lattices_id(self, dispatch_id: UUID) -> LatticeDetailResponse:
         """
@@ -95,16 +96,13 @@ class Lattices:
                 Lattice.function_string_filename,
                 Lattice.executor,
                 Lattice.executor_data,
-                # Lattice.executor_data_filename,
                 Lattice.workflow_executor,
                 Lattice.workflow_executor_data,
-                # Lattice.workflow_executor_data_filename,
                 Lattice.error_filename,
                 Lattice.inputs_filename,
                 Lattice.results_filename,
                 Lattice.storage_type,
                 Lattice.function_filename,
-                #  Lattice.transport_graph_filename,
                 Lattice.started_at.label("started_at"),
                 Lattice.completed_at.label("ended_at"),
                 Lattice.electron_num.label("total_electrons"),
@@ -113,21 +111,6 @@ class Lattices:
             .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.is_active.is_not(False))
             .first()
         )
-
-    def get_lattice_id_by_dispatch_id(self, dispatch_id: UUID):
-        """
-        Get top lattice id from dispatch id
-        Args:
-            dispatch_id: UUID of dispatch
-        Returns:
-            Top most lattice id
-        """
-        data = (
-            self.db_con.query(Lattice.id)
-            .filter(Lattice.dispatch_id == str(dispatch_id), Lattice.electron_id.is_(None))
-            .first()
-        )
-        return data[0]
 
     def get_sub_lattice_details(self, sort_by, sort_direction, dispatch_id) -> List[Lattice]:
         """

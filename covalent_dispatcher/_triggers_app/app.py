@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Triggers server API routes and standalone app definition"""
 
@@ -37,6 +33,7 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 router = APIRouter()
+trigger_only_router = APIRouter()
 triggers_only_app = FastAPI()
 
 active_triggers = {}
@@ -78,6 +75,19 @@ def init_trigger(tr_dict: dict) -> BaseTrigger:
 @lru_cache
 def get_threadpool():
     return ThreadPoolExecutor()
+
+
+@trigger_only_router.get("/triggers/healthcheck")
+async def healthcheck(request: Request):
+    return {"status": "ok"}
+
+
+@router.get("/triggers/status")
+def trigger_server_status(request: Request):
+    if disable_triggers:
+        return {"status": "disabled"}
+    else:
+        return {"status": "running"}
 
 
 @router.post("/triggers/register")
@@ -131,3 +141,4 @@ async def stop_observe(request: Request):
 
 
 triggers_only_app.include_router(router, prefix="/api", tags=["Triggers"])
+triggers_only_app.include_router(trigger_only_router, prefix="/api", tags=["Triggers"])

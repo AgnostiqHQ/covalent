@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 
 """Functions to transform ResultSchema -> Result"""
@@ -73,7 +69,7 @@ def import_transport_graph(
     # Maps node ids to asset record dictionaries
     electron_asset_links = {}
 
-    for gid, node_group in task_groups.items():
+    for gid in task_groups:
         # Create a job record for each task group
         job_kwargs = {
             "cancel_requested": cancel_requested,
@@ -110,7 +106,7 @@ def import_transport_graph(
     app_log.debug(f"Inserting {n_records} electron records took {delta} seconds")
 
     n_records = 0
-    for _, asset_records_by_key in electron_asset_links.items():
+    for asset_records_by_key in electron_asset_links.values():
         n_records += len(asset_records_by_key)
 
     st = datetime.now()
@@ -122,11 +118,10 @@ def import_transport_graph(
     meta_asset_associations = []
     for node_id, asset_records in electron_asset_links.items():
         electron_dal = Electron(session, electron_map[node_id])
-        for key, asset_rec in asset_records.items():
-            meta_asset_associations.append(
-                electron_dal.associate_asset(session, key, asset_rec.id)
-            )
-
+        meta_asset_associations.extend(
+            electron_dal.associate_asset(session, key, asset_rec.id)
+            for key, asset_rec in asset_records.items()
+        )
     n_records = len(meta_asset_associations)
 
     st = datetime.now()

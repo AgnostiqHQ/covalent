@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 import tempfile
 from copy import deepcopy
@@ -120,7 +116,10 @@ class LocalDispatcher(BaseDispatcher):
 
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
-            dispatcher_addr: The address of the dispatcher server.  If None then then defaults to the address set in Covalent's config.
+            dispatcher_addr: The address of the dispatcher server. If None then defaults to the address set in Covalent's config.
+
+        Kwargs:
+            disable_run: Whether to disable running the workflow and rather just save it on Covalent's server for later execution.
 
         Returns:
             Wrapper function which takes the inputs of the workflow as arguments
@@ -269,7 +268,7 @@ class LocalDispatcher(BaseDispatcher):
 
         Args:
             orig_lattice: The lattice/workflow to send to the dispatcher server.
-            dispatcher_addr: The address of the dispatcher server. If None then then defaults to the address set in Covalent's config.
+            dispatcher_addr: The address of the dispatcher server. If None then defaults to the address set in Covalent's config.
 
         Returns:
             Wrapper function which takes the inputs of the workflow as arguments.
@@ -311,7 +310,7 @@ class LocalDispatcher(BaseDispatcher):
 
         Args:
             dispatch_id: The dispatch id of the workflow to re-dispatch.
-            dispatcher_addr: The address of the dispatcher server. If None then then defaults to the address set in Covalent's config.
+            dispatcher_addr: The address of the dispatcher server. If None then defaults to the address set in Covalent's config.
             replace_electrons: A dictionary of electron names and the new electron to replace them with.
             reuse_previous_results: Boolean value whether to reuse the results from the previous dispatch.
 
@@ -462,7 +461,7 @@ class LocalDispatcher(BaseDispatcher):
 
         Args:
             dispatch_id: The dispatch id of the workflow to re-dispatch.
-            dispatcher_addr: The address of the dispatcher server. If None then then defaults to the address set in Covalent's config.
+            dispatcher_addr: The address of the dispatcher server. If None then defaults to the address set in Covalent's config.
             replace_electrons: A dictionary of electron names and the new electron to replace them with.
             reuse_previous_results: Boolean value whether to reuse the results from the previous dispatch.
 

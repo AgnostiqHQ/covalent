@@ -2,21 +2,17 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """Result object."""
 import os
@@ -28,9 +24,11 @@ from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import postprocess_prefix, prefix_separator, sublattice_prefix
+from .._shared_files.qelectron_utils import QE_DB_DIRNAME
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.lattice import Lattice
 from .._workflow.transport import TransportableObject
+from ..quantum.qserver import database as qe_db
 
 if TYPE_CHECKING:
     from .._shared_files.util_classes import Status
@@ -65,7 +63,9 @@ class Result:
     """
 
     NEW_OBJ = RESULT_STATUS.NEW_OBJECT
-    PENDING_REUSE = RESULT_STATUS.PENDING_REUSE
+    PENDING_REUSE = (
+        RESULT_STATUS.PENDING_REUSE
+    )  # Facilitates reuse of previous electrons in the new dispatcher design
     COMPLETED = RESULT_STATUS.COMPLETED
     POSTPROCESSING = RESULT_STATUS.POSTPROCESSING
     PENDING_POSTPROCESSING = RESULT_STATUS.PENDING_POSTPROCESSING
@@ -108,8 +108,8 @@ class Result:
             pattern = re.compile(regex)
             m = pattern.match(input_string)
             if m:
-                arg_str_repr = m.group(1).rstrip(",")
-                kwarg_str_repr = m.group(2)
+                arg_str_repr = m[1].rstrip(",")
+                kwarg_str_repr = m[2]
             else:
                 arg_str_repr = str(None)
                 kwarg_str_repr = str(None)
@@ -275,6 +275,7 @@ Node Outputs
             "end_time": self.lattice.transport_graph.get_node_value(node_id, "end_time"),
             "status": self._get_node_status(node_id),
             "output": self._get_node_output(node_id),
+            "qelectron": self._get_node_qelectron_data(node_id),
             "error": self.lattice.transport_graph.get_node_value(node_id, "error"),
             "sublattice_result": self.lattice.transport_graph.get_node_value(
                 node_id, "sublattice_result"
@@ -294,11 +295,12 @@ Node Outputs
             node_outputs: A dictionary containing the output of every node execution.
         """
 
-        all_node_outputs = {}
-        for node_id in self._lattice.transport_graph._graph.nodes:
-            all_node_outputs[
-                f"{self._get_node_name(node_id=node_id)}({node_id})"
-            ] = self._get_node_output(node_id=node_id)
+        all_node_outputs = {
+            f"{self._get_node_name(node_id=node_id)}({node_id})": self._get_node_output(
+                node_id=node_id
+            )
+            for node_id in self._lattice.transport_graph._graph.nodes
+        }
         return all_node_outputs
 
     def get_all_node_results(self) -> List[Dict]:
@@ -385,6 +387,27 @@ Node Outputs
         """
         return self._lattice.transport_graph.get_node_value(node_id, "output")
 
+    def _get_node_qelectron_data(self, node_id: int) -> dict:
+        """
+        Return all QElectron data associated with a node.
+
+        Args:
+            node_id: The node id.
+
+        Returns:
+            The QElectron data of said node. Will return None if no data exists.
+        """
+        try:
+            # Checks existence of QElectron data.
+            self._lattice.transport_graph.get_node_value(node_id, "qelectron_data_exists")
+        except KeyError:
+            return None
+
+        results_dir = get_config("dispatcher")["results_dir"]
+        db_dir = os.path.join(results_dir, self.dispatch_id, QE_DB_DIRNAME)
+
+        return qe_db.Database(db_dir).get_db(dispatch_id=self.dispatch_id, node_id=node_id)
+
     def _get_node_error(self, node_id: int) -> Union[None, str]:
         """
         Return the error of a node.
@@ -420,6 +443,7 @@ Node Outputs
         sublattice_result: "Result" = None,
         stdout: str = None,
         stderr: str = None,
+        qelectron_data_exists: bool = None,
     ) -> None:
         """
         Update the node result in the transport graph.
@@ -436,6 +460,7 @@ Node Outputs
             sublattice_result: The result of the sublattice if any.
             stdout: The stdout of the node execution.
             stderr: The stderr of the node execution.
+            qelectron_data_exists: Flag indicating presence of Qelectron(s) inside the task
 
         Returns:
             None
@@ -476,6 +501,11 @@ Node Outputs
 
         if stderr is not None:
             self.lattice.transport_graph.set_node_value(node_id, "stderr", stderr)
+
+        if qelectron_data_exists is not None:
+            self.lattice.transport_graph.set_node_value(
+                node_id, "qelectron_data_exists", qelectron_data_exists
+            )
 
         app_log.debug("Inside update node - SUCCESS")
 

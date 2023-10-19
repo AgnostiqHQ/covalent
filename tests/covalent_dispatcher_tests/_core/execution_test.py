@@ -2,27 +2,24 @@
 #
 # This file is part of Covalent.
 #
-# Licensed under the GNU Affero General Public License 3.0 (the "License").
-# A copy of the License may be obtained with this software package or at
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
 #
-#      https://www.gnu.org/licenses/agpl-3.0.en.html
+#     https://www.apache.org/licenses/LICENSE-2.0
 #
-# Use of this file is prohibited except in compliance with the License. Any
-# modifications or derivative works of this file must retain this copyright
-# notice, and modified files must contain a notice indicating that they have
-# been altered from the originals.
-#
-# Covalent is distributed in the hope that it will be useful, but WITHOUT
-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-# FITNESS FOR A PARTICULAR PURPOSE. See the License for more details.
-#
-# Relief from the License may be granted by purchasing a commercial license.
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
 """
 Integration tests for the dispatcher, runner, and result modules
 """
 
 import asyncio
+import uuid
 from typing import Dict, List
 
 import pytest
@@ -233,7 +230,8 @@ async def test_get_task_inputs(mocker, test_db):
     assert input_args == [1, 2]
 
 
-async def test_run_workflow_does_not_deserialize(mocker):
+@pytest.mark.asyncio
+async def test_run_workflow_does_not_deserialize(test_db, mocker):
     """Check that dispatcher does not deserialize user data when using
     out-of-process `workflow_executor`"""
 
@@ -259,9 +257,9 @@ async def test_run_workflow_does_not_deserialize(mocker):
     workflow.build_graph(5)
 
     json_lattice = workflow.serialize_to_json()
-    dispatch_id = "asdf"
+    dispatch_id = str(uuid.uuid4())
     lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice, lattice.metadata["results_dir"])
+    result_object = Result(lattice)
     result_object._dispatch_id = dispatch_id
     result_object._initialize_nodes()
 
@@ -269,11 +267,13 @@ async def test_run_workflow_does_not_deserialize(mocker):
     mocker.patch(
         "covalent_dispatcher._core.runner.datasvc.get_result_object", return_value=result_object
     )
+
+    mocker.patch("covalent_dispatcher._core.dispatcher._global_status_queue", asyncio.Queue())
+
     update.persist(result_object)
 
     mock_to_deserialize = mocker.patch("covalent.TransportableObject.get_deserialized")
 
-    status = await run_workflow(result_object.dispatch_id)
+    await run_workflow(result_object.dispatch_id)
 
     mock_to_deserialize.assert_not_called()
-    assert status == Result.COMPLETED
