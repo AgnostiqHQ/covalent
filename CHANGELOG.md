@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed strict version pins on `lmdbm`, `mpire`, `orjson`, and `pennylane`
 - Changed license to Apache
 - Improved error handling in generate_docs.py
+- [Significant Changes] Migrated core server-side code to new data access layer.
 
 ### Added
 
@@ -73,6 +74,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rsync command fixed to recursively copy files when using SSH
 - Removed accidentally added migrations build files
 - Updated migration script to add a default value for `qelectron_data_exists` in the `electrons` table since it cannot be nullable
+- Reduced server memory consumption during workflow processing
 
 ### Changed
 

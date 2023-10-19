@@ -16,6 +16,8 @@
 
 
 import covalent as ct
+import covalent._results_manager.results_manager as rm
+from covalent._results_manager.result import Result
 
 
 def test_local_executor_returns_stdout_stderr():
@@ -41,3 +43,33 @@ def test_local_executor_returns_stdout_stderr():
     assert tg.get_node_value(0, "stdout") == "Hello\n"
     assert tg.get_node_value(0, "stderr") == "Error\n"
     assert tg.get_node_value(0, "output").get_deserialized() == 5
+
+
+def test_local_executor_build_sublattice_graph():
+    """
+    Check using local executor to build_sublattice_graph.
+
+    This will exercise the /register endpoint for sublattices.
+    """
+
+    def add(a, b):
+        return a + b
+
+    @ct.electron(executor="local")
+    def identity(a):
+        return a
+
+    sublattice_add = ct.lattice(add)
+
+    @ct.lattice(executor="local", workflow_executor="local")
+    def workflow(a, b):
+        res_1 = ct.electron(sublattice_add, executor="local")(a=a, b=b)
+        return identity(a=res_1)
+
+    dispatch_id = ct.dispatch(workflow)(a=1, b=2)
+    workflow_result = rm.get_result(dispatch_id, wait=True)
+
+    assert workflow_result.error == ""
+    assert workflow_result.status == Result.COMPLETED
+    assert workflow_result.result == 3
+    assert workflow_result.get_node_result(node_id=0)["sublattice_result"].result == 3

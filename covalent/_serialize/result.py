@@ -145,7 +145,6 @@ def merge_response_manifest(manifest: ResultSchema, response: ResultSchema) -> R
         response: The manifest returned from `/register`.
     Returns:
         A combined manifest with asset `remote_uri`s populated.
-
     """
 
     manifest.metadata.dispatch_id = response.metadata.dispatch_id

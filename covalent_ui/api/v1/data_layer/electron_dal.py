@@ -31,7 +31,6 @@ from covalent._shared_files.config import get_config
 from covalent._shared_files.qelectron_utils import QE_DB_DIRNAME
 from covalent.quantum.qserver.database import Database
 from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
-from covalent_dispatcher._service.app import get_result
 from covalent_ui.api.v1.data_layer.lattice_dal import Lattices
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.lattices import Lattice
@@ -254,6 +253,7 @@ class Electrons:
                 Electron.function_filename,
                 Electron.function_string_filename,
                 Electron.executor,
+                Electron.executor_data,
                 Electron.results_filename,
                 Electron.value_filename,
                 Electron.stdout_filename,

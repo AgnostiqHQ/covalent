@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -40,13 +40,12 @@ from covalent._shared_files.schemas.electron import (
     ElectronAssets,
     ElectronSchema,
 )
-
-from ..._db import models
-from ..._db.write_result_to_db import get_electron_type
-from ..._object_store.base import BaseProvider
-from ..asset import Asset
-from ..electron import ElectronMeta
-from ..lattice import Lattice
+from covalent_dispatcher._dal.asset import Asset
+from covalent_dispatcher._dal.electron import ElectronMeta
+from covalent_dispatcher._dal.lattice import Lattice
+from covalent_dispatcher._db import models
+from covalent_dispatcher._db.write_result_to_db import get_electron_type
+from covalent_dispatcher._object_store.base import BaseProvider
 
 app_log = logger.app_log
 

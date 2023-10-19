@@ -19,37 +19,36 @@ Defines the core functionality of the result service
 """
 
 import asyncio
+import tempfile
 import traceback
-import uuid
-from datetime import datetime, timezone
-from typing import Callable, Dict, Optional
+from typing import Dict
 
+from pydantic import ValidationError
+
+from covalent._dispatcher_plugins.local import LocalDispatcher
 from covalent._results_manager import Result
 from covalent._shared_files import logger
-from covalent._shared_files.defaults import sublattice_prefix
 from covalent._shared_files.qelectron_utils import extract_qelectron_db, write_qelectron_db
+from covalent._shared_files.schemas.result import ResultSchema
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
-from covalent._workflow.transport_graph_ops import TransportGraphOps
 
-from .._db import load, update
+from .._dal.result import Result as SRVResult
+from .._dal.result import get_result_object as get_result_object_from_db
 from .._db.write_result_to_db import resolve_electron_id
+from . import dispatcher
+from .data_modules import dispatch, electron  # nopycln: import
+from .data_modules import importer as manifest_importer
+from .data_modules.utils import run_in_executor
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
-
-# References to result objects of live dispatches
-_registered_dispatches = {}
-
-# Map of dispatch_id -> message_queue for pushing node status updates
-# to dispatcher
-_dispatch_status_queues = {}
 
 
 def generate_node_result(
     dispatch_id: str,
     node_id: int,
-    node_name: str,
+    node_name: str = None,
     start_time=None,
     end_time=None,
     status=None,
@@ -57,8 +56,6 @@ def generate_node_result(
     error=None,
     stdout=None,
     stderr=None,
-    sub_dispatch_id=None,
-    sublattice_result=None,
 ):
     """
     Helper routine to prepare the node result
@@ -74,8 +71,6 @@ def generate_node_result(
         error: Error from the node
         stdout: STDOUT of a node
         stderr: STDERR generated during node execution
-        sub_dispatch_id: Dispatch ID of the sublattice
-        sublattice_result: Result of the sublattice
 
     Return(s)
         Dictionary of the inputs
@@ -97,304 +92,247 @@ def generate_node_result(
         "error": error,
         "stdout": clean_stdout,
         "stderr": stderr,
-        "sub_dispatch_id": sub_dispatch_id,
-        "sublattice_result": sublattice_result,
         "qelectron_data_exists": qelectron_data_exists,
     }
 
 
-async def _handle_built_sublattice(dispatch_id: str, node_result: Dict) -> None:
-    """Make dispatch for sublattice node.
-
-    Note: The status COMPLETED which invokes this function refers to the graph being built. Once this step is completed, the sublattice is ready to be dispatched. Hence, the status is changed to DISPATCHING.
-
-    Args:
-        dispatch_id: Dispatch ID
-        node_result: Node result dictionary
-
-    """
-    try:
-        node_result["status"] = RESULT_STATUS.DISPATCHING_SUBLATTICE
-        result_object = get_result_object(dispatch_id)
-        sub_dispatch_id = await make_sublattice_dispatch(result_object, node_result)
-        node_result["sub_dispatch_id"] = sub_dispatch_id
-        node_result["start_time"] = datetime.now(timezone.utc)
-        node_result["end_time"] = None
-    except Exception as ex:
-        tb = "".join(traceback.TracebackException.from_exception(ex).format())
-        node_result["status"] = RESULT_STATUS.FAILED
-        node_result["error"] = tb
-        app_log.debug(f"Failed to make sublattice dispatch: {tb}")
-
-
 # Domain: result
-async def update_node_result(result_object, node_result) -> None:
-    """
-    Updates the result object with the current node_result
-
-    Arg(s)
-        result_object: Result object the current dispatch
-        node_result: Result of the node to be updated in the result object
-
-    Return(s)
-        None
-
-    """
-    app_log.debug(f"Updating node result for {node_result['node_id']}.")
-
-    if (
-        node_result["status"] == RESULT_STATUS.COMPLETED
-        and node_result["node_name"].startswith(sublattice_prefix)
-        and not node_result["sub_dispatch_id"]
-    ):
-        app_log.debug(
-            f"Sublattice {node_result['node_name']} build graph completed, invoking make sublattice dispatch..."
-        )
-        await _handle_built_sublattice(result_object.dispatch_id, node_result)
-
+async def update_node_result(dispatch_id, node_result):
+    app_log.debug("Updating node result (run_planned_workflow).")
+    valid_update = True
     try:
-        update._node(result_object, **node_result)
+        node_id = node_result["node_id"]
+        node_status = node_result["status"]
+        node_info = await electron.get(dispatch_id, node_id, ["type", "sub_dispatch_id"])
+        node_type = node_info["type"]
+        sub_dispatch_id = node_info["sub_dispatch_id"]
+
+        # Handle returns from _build_sublattice_graph -- change
+        # COMPLETED -> DISPATCHING
+        node_result = _filter_sublattice_status(
+            dispatch_id, node_id, node_status, node_type, sub_dispatch_id, node_result
+        )
+
+        valid_update = await electron.update(dispatch_id, node_result)
+        if not valid_update:
+            app_log.warning(
+                f"Invalid status update {node_status} for node {dispatch_id}:{node_id}"
+            )
+            return
+
+        if node_result["status"] == RESULT_STATUS.DISPATCHING:
+            app_log.debug("Received sublattice dispatch")
+            try:
+                sub_dispatch_id = await _make_sublattice_dispatch(dispatch_id, node_result)
+            except Exception as ex:
+                tb = "".join(traceback.TracebackException.from_exception(ex).format())
+                node_result["status"] = RESULT_STATUS.FAILED
+                node_result["error"] = tb
+                await electron.update(dispatch_id, node_result)
+
+    except KeyError as ex:
+        valid_update = False
+        app_log.exception(f"Error persisting node update: {ex}")
+
     except Exception as ex:
         app_log.exception(f"Error persisting node update: {ex}")
-        node_result["status"] = RESULT_STATUS.FAILED
+        sub_dispatch_id = None
+        node_result["status"] = Result.FAILED
+
     finally:
-        sub_dispatch_id = node_result["sub_dispatch_id"]
-        detail = {"sub_dispatch_id": sub_dispatch_id} if sub_dispatch_id is not None else {}
-        if node_status := node_result["status"]:
-            dispatch_id = result_object.dispatch_id
-            status_queue = get_status_queue(dispatch_id)
-            node_id = node_result["node_id"]
-            await status_queue.put((node_id, node_status, detail))
+        if not valid_update:
+            return
+
+        node_id = node_result["node_id"]
+        node_status = node_result["status"]
+        detail = {"sub_dispatch_id": sub_dispatch_id} if sub_dispatch_id else {}
+
+        if node_status and valid_update:
+            dispatch_id = dispatch_id
+            await dispatcher.notify_node_status(dispatch_id, node_id, node_status, detail)
 
 
 # Domain: result
-def initialize_result_object(
-    json_lattice: str, parent_result_object: Result = None, parent_electron_id: int = None
-) -> Result:
-    """Convenience function for constructing a result object from a json-serialized lattice.
+def _redirect_lattice(
+    json_lattice: str,
+    parent_dispatch_id: str,
+    parent_electron_id: int,
+    loop: asyncio.AbstractEventLoop,
+) -> str:
+    """Redirect a JSON lattice through the new DAL.
 
     Args:
-        json_lattice: a JSON-serialized lattice
-        parent_result_object: the parent result object if json_lattice is a sublattice
-        parent_electron_id: the DB id of the parent electron (for sublattices)
+        json_lattice: A JSON-serialized lattice.
+        parent_dispatch_id:  The id of a sublattice's parent dispatch.
+
+    This will only be triggered from either the monolithic /submit
+    endpoint or a monolithic sublattice dispatch.
 
     Returns:
-        Result: result object
+        The dispatch manifest
 
     """
-    dispatch_id = get_unique_id()
     lattice = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lattice, dispatch_id)
-    if parent_result_object:
-        result_object._root_dispatch_id = parent_result_object._root_dispatch_id
+    with tempfile.TemporaryDirectory() as staging_dir:
+        manifest = LocalDispatcher.prepare_manifest(lattice, staging_dir)
 
-    result_object._electron_id = parent_electron_id
-    result_object._initialize_nodes()
-    app_log.debug("2: Constructed result object and initialized nodes.")
+        # Trigger an internal asset pull from /tmp to object store
+        coro = manifest_importer.import_manifest(
+            manifest,
+            parent_dispatch_id,
+            parent_electron_id,
+        )
+        filtered_manifest = manifest_importer._import_manifest(
+            manifest,
+            parent_dispatch_id,
+            parent_electron_id,
+        )
 
-    update.persist(result_object, electron_id=parent_electron_id)
-    app_log.debug("Result object persisted.")
+        manifest_importer._pull_assets(filtered_manifest)
 
-    return result_object
-
-
-# Domain: result
-def get_unique_id() -> str:
-    """
-    Get a unique ID.
-
-    Args:
-        None
-
-    Returns:
-        str: Unique ID
-
-    """
-    return str(uuid.uuid4())
+    return filtered_manifest.metadata.dispatch_id
 
 
 async def make_dispatch(
-    json_lattice: str, parent_result_object: Result = None, parent_electron_id: int = None
+    json_lattice: str, parent_dispatch_id: str = None, parent_electron_id: int = None
 ) -> str:
-    """Make a dispatch from a json-serialized lattice.
-
-    Args:
-        json_lattice: a JSON-serialized lattice.
-        parent_result_object: the parent result object if json_lattice is a sublattice.
-        parent_electron_id: the DB id of the parent electron (for sublattices).
-
-    Returns:
-        Dispatch ID of the lattice.
-
-    """
-    result_object = initialize_result_object(
-        json_lattice, parent_result_object, parent_electron_id
+    return await run_in_executor(
+        _redirect_lattice,
+        json_lattice,
+        parent_dispatch_id,
+        parent_electron_id,
+        asyncio.get_running_loop(),
     )
-    _register_result_object(result_object)
-    return result_object.dispatch_id
 
 
-async def make_sublattice_dispatch(result_object: Result, node_result: dict) -> str:
-    """Get sublattice json lattice (once the transport graph has been built) and invoke make_dispatch.
-
-    Args:
-        result_object: Result object for parent dispatch of the node.
-        node_result: Result of the node.
-
-    Returns:
-        str: Dispatch ID of the sublattice.
-
-    """
-    node_id = node_result["node_id"]
-    json_lattice = node_result["output"].object_string
-    parent_electron_id = load.electron_record(result_object.dispatch_id, node_id)["id"]
-    app_log.debug(
-        f"Making sublattice dispatch for node_id {node_id} and electron_id {parent_electron_id}."
-    )
-    return await make_dispatch(json_lattice, result_object, parent_electron_id)
-
-
-def _get_result_object_from_new_lattice(
-    json_lattice: str, old_result_object: Result, reuse_previous_results: bool
-) -> Result:
-    """Get new result object for re-dispatching from new lattice json.
-
-    Args:
-        json_lattice: JSON-serialized lattice.
-        old_result_object: Result object of the previous dispatch.
-
-    Returns:
-        Result object.
-
-    """
-    lat = Lattice.deserialize_from_json(json_lattice)
-    result_object = Result(lat, get_unique_id())
-    result_object._initialize_nodes()
-
-    if reuse_previous_results:
-        tg = result_object.lattice.transport_graph
-        tg_old = old_result_object.lattice.transport_graph
-        reusable_nodes = TransportGraphOps(tg_old).get_reusable_nodes(tg)
-        TransportGraphOps(tg).copy_nodes_from(tg_old, reusable_nodes)
-
-    return result_object
-
-
-def _get_result_object_from_old_result(
-    old_result_object: Result, reuse_previous_results: bool
-) -> Result:
-    """Get new result object for re-dispatching from old result object.
-
-    Args:
-        old_result_object: Result object of the previous dispatch.
-        reuse_previous_results: Whether to reuse previous results.
-
-    Returns:
-        Result: Result object for the new dispatch.
-
-    """
-    result_object = Result(old_result_object.lattice, get_unique_id())
-    result_object._num_nodes = old_result_object._num_nodes
-
-    if not reuse_previous_results:
-        result_object._initialize_nodes()
-
-    return result_object
-
-
-def make_derived_dispatch(
-    parent_dispatch_id: str,
-    json_lattice: Optional[str] = None,
-    electron_updates: Optional[Dict[str, Callable]] = None,
-    reuse_previous_results: bool = False,
-) -> str:
-    """Make a re-dispatch from a previous dispatch.
-
-    Args:
-        parent_dispatch_id: Dispatch ID of the parent dispatch.
-        json_lattice: JSON-serialized lattice of the new dispatch.
-        electron_updates: Dictionary of electron updates.
-        reuse_previous_results: Whether to reuse previous results.
-
-    Returns:
-        str: Dispatch ID of the new dispatch.
-
-    """
-    if electron_updates is None:
-        electron_updates = {}
-
-    old_result_object = load.get_result_object_from_storage(parent_dispatch_id)
-
-    if json_lattice:
-        result_object = _get_result_object_from_new_lattice(
-            json_lattice, old_result_object, reuse_previous_results
-        )
-    else:
-        result_object = _get_result_object_from_old_result(
-            old_result_object, reuse_previous_results
-        )
-
-    result_object.lattice.transport_graph.apply_electron_updates(electron_updates)
-    result_object.lattice.transport_graph.dirty_nodes = list(
-        result_object.lattice.transport_graph._graph.nodes
-    )
-    update.persist(result_object)
-    _register_result_object(result_object)
-    app_log.debug(f"Redispatch result object: {result_object}")
-
-    return result_object.dispatch_id
-
-
-def get_result_object(dispatch_id: str) -> Result:
-    return _registered_dispatches.get(dispatch_id)
-
-
-def _register_result_object(result_object: Result):
-    dispatch_id = result_object.dispatch_id
-    _registered_dispatches[dispatch_id] = result_object
-    _dispatch_status_queues[dispatch_id] = asyncio.Queue()
+def get_result_object(dispatch_id: str, bare: bool = True) -> SRVResult:
+    app_log.debug(f"Getting result object from db, bare={bare}")
+    return get_result_object_from_db(dispatch_id, bare)
 
 
 def finalize_dispatch(dispatch_id: str):
-    del _dispatch_status_queues[dispatch_id]
-    del _registered_dispatches[dispatch_id]
-
-
-def get_status_queue(dispatch_id: str):
-    return _dispatch_status_queues[dispatch_id]
+    app_log.debug(f"Finalizing dispatch {dispatch_id}")
 
 
 async def persist_result(dispatch_id: str):
-    result_object = get_result_object(dispatch_id)
-    upsert_lattice_data(result_object.dispatch_id)
-    await _update_parent_electron(result_object)
+    await _update_parent_electron(dispatch_id)
 
 
-async def _update_parent_electron(result_object: Result):
-    if parent_eid := result_object._electron_id:
+async def _update_parent_electron(dispatch_id: str):
+    dispatch_attrs = await dispatch.get(dispatch_id, ["electron_id", "status", "end_time"])
+    parent_eid = dispatch_attrs["electron_id"]
+
+    if parent_eid:
         dispatch_id, node_id = resolve_electron_id(parent_eid)
-        status = result_object.status
-        if status == RESULT_STATUS.POSTPROCESSING_FAILED:
-            status = RESULT_STATUS.FAILED
-        parent_result_obj = get_result_object(dispatch_id)
+        status = dispatch_attrs["status"]
         node_result = generate_node_result(
             dispatch_id=dispatch_id,
             node_id=node_id,
-            node_name=parent_result_obj.lattice.transport_graph.get_node_value(node_id, "name"),
-            end_time=result_object.end_time,
+            end_time=dispatch_attrs["end_time"],
             status=status,
-            output=result_object._result,
-            error=result_object._error,
-            sub_dispatch_id=load.sublattice_dispatch_id(parent_eid),
-            sublattice_result=result_object,
+        )
+        parent_result_obj = get_result_object(dispatch_id)
+        app_log.debug(f"Updating sublattice parent node {dispatch_id}:{node_id}")
+        await update_node_result(parent_result_obj.dispatch_id, node_result)
+
+
+def _filter_sublattice_status(
+    dispatch_id, node_id, status, node_type, sub_dispatch_id, node_result
+):
+    if status == Result.COMPLETED and node_type == "sublattice" and not sub_dispatch_id:
+        node_result["status"] = RESULT_STATUS.DISPATCHING
+    return node_result
+
+
+async def _make_sublattice_dispatch(dispatch_id: str, node_result: dict):
+    try:
+        manifest, parent_electron_id = await run_in_executor(
+            _make_sublattice_dispatch_helper,
+            dispatch_id,
+            node_result,
         )
 
-        app_log.debug(f"Updating sublattice parent node {dispatch_id}:{node_id}")
-        await update_node_result(parent_result_obj, node_result)
+        imported_manifest = await manifest_importer.import_manifest(
+            manifest=manifest,
+            parent_dispatch_id=dispatch_id,
+            parent_electron_id=parent_electron_id,
+        )
+
+        return imported_manifest.metadata.dispatch_id
+
+    except ValidationError as ex:
+        # Fall back to legacy sublattice handling
+        # NB: this loads the JSON sublattice in memory
+        json_lattice, parent_electron_id = await run_in_executor(
+            _legacy_sublattice_dispatch_helper,
+            dispatch_id,
+            node_result,
+        )
+        return await make_dispatch(
+            json_lattice,
+            dispatch_id,
+            parent_electron_id,
+        )
 
 
-def upsert_lattice_data(dispatch_id: str):
-    result_object = get_result_object(dispatch_id)
-    # Redirect to new DAL -- this is a temporary fix as
-    # upsert_lattice_data will be obsoleted next by the next patch.
-    update.lattice_data(result_object)
+def _legacy_sublattice_dispatch_helper(dispatch_id: str, node_result: Dict):
+    app_log.debug("falling back to legacy sublattice dispatch")
+
+    result_object = get_result_object(dispatch_id, bare=True)
+    node_id = node_result["node_id"]
+    parent_node = result_object.lattice.transport_graph.get_node(node_id)
+    bg_output = parent_node.get_value("output")
+
+    parent_electron_id = parent_node._electron_id
+    json_lattice = bg_output.object_string
+    return json_lattice, parent_electron_id
+
+
+def _make_sublattice_dispatch_helper(dispatch_id: str, node_result: Dict):
+    """Helper function for performing DB queries related to sublattices."""
+    result_object = get_result_object(dispatch_id, bare=True)
+    node_id = node_result["node_id"]
+    parent_node = result_object.lattice.transport_graph.get_node(node_id)
+    bg_output = parent_node.get_value("output")
+
+    manifest = ResultSchema.parse_raw(bg_output.object_string)
+    parent_electron_id = parent_node._electron_id
+
+    return manifest, parent_electron_id
+
+
+# Common Result object queries
+
+
+def generate_dispatch_result(
+    dispatch_id,
+    start_time=None,
+    end_time=None,
+    status=None,
+    error=None,
+    result=None,
+):
+    return {
+        "start_time": start_time,
+        "end_time": end_time,
+        "status": status,
+        "error": error,
+        "result": result,
+    }
+
+
+# Ensure that a dispatch is only run once; in the future, also check
+# if all assets have been uploaded
+
+
+async def ensure_dispatch(dispatch_id: str) -> bool:
+    """Check if a dispatch can be run.
+
+    The following criteria must be met:
+    * The dispatch has not been run before.
+    * (later) all assets have been uploaded
+    """
+    return await run_in_executor(
+        SRVResult.ensure_run_once,
+        dispatch_id,
+    )
