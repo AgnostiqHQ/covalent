@@ -39,8 +39,8 @@ Covalent enables a researcher to run computation tasks on an advanced hardware p
   <img src="./doc/readme-assets/development.svg"  alt="executors"></img>
  </div>
 
-  <img src="./doc/readme-assets/installation.svg"  alt="Click to see the source">
-<!-- <div style="display:grid; grid-template-columns: repeat(4, 200px); grid-gap: 45px; justify-content: space-around;">
+  <!-- <img src="./doc/readme-assets/installation.svg"  alt="Click to see the source"> -->
+<div style="display:flex">
   <div style=" width:50%; padding:5px;">
     <div style="color:white; font-size:24px; font-weight:400; font-family:Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;">
         Installation
@@ -82,7 +82,7 @@ Covalent enables a researcher to run computation tasks on an advanced hardware p
             href="https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/">
         Concepts</a> page in the documentation. </div>
 </div>
-</div> -->
+</div>
 
 <div><img src="./doc/readme-assets/divider.svg" alt="divider"></div>
 
@@ -90,26 +90,26 @@ Covalent enables a researcher to run computation tasks on an advanced hardware p
 
 For a more in-depth description of Covalent's features and how they work, see the Concepts page in the documentation.
 
-<div style=";margin-bottom:-8rem">
+<!-- <div style=";margin-bottom:-8rem">
   <img src="./doc/readme-assets/know_more_box.svg"  alt="Click to see the source">
-</div>
+</div> -->
 
 
-<!-- <div style="display: grid; grid-template-columns: repeat(4, 200px); grid-gap: 45px; justify-content: space-around;">
+<div style="display: flex">
     <a href="https://www.covalent.xyz/what-is-covalent/">
-      <img src="images/what.svg" alt="Image 1" >
+      <img src="./doc/readme-assets/images/what.svg" alt="Image 1" >
     </a>
     <a href="https://www.covalent.xyz/navigating-the-modern-hpc-landscape/">
-      <img src="images/era.svg" alt="Image 2">
+      <img src="./doc/readme-assets/images/era.svg" alt="Image 2">
     </a>
     <a href="https://docs.covalent.xyz/docs/user-documentation/concepts/covalent-basics/">
-      <img src="images/concepts.svg" alt="Image 3">
+      <img src="./doc/readme-assets/images/concepts.svg" alt="Image 3">
     </a>
     <a href="https://github.com/AgnostiqHQ/covalent/blob/develop/README.md#how-does-it-work">
-      <img src="images/how.svg" alt="Image 4">
+      <img src="./doc/readme-assets/images/how.svg" alt="Image 4">
     </a>
   </div>
-   -->
+  
 <div><img src="./doc/readme-assets/divider.svg" alt="divider"></div>
 
 
@@ -146,42 +146,39 @@ Covalent’s serverless HPC architecture allows you to easily scale jobs from yo
 
  <div><img src="./doc/readme-assets/divider.svg" alt="divider"></div>
 
- <div><img src="./doc/readme-assets/contributing_heading.svg" alt="divider"></div>
+ <!-- <div><img src="./doc/readme-assets/contributing_heading.svg" alt="divider"></div> -->
 
-  <!-- <div style="color:#CBCBD7; font-size:24px; font-weight:400; font-family:Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji; padding-bottom:1rem">
+  <div style="color:#CBCBD7; font-size:24px; font-weight:400; font-family:Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji; padding-bottom:1rem">
     Contributing
 </div>
 
- <div style="color:#CBCBD7; font-size:14px; font-weight:400; font-family:Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji">To contribute to Covalent, refer to the <a href="https://github.com/AgnostiqHQ/covalent/blob/master/CONTRIBUTING.md">Contribution Guidelines</a>. We use GitHub's <a href="https://github.com/AgnostiqHQ/covalent/issues">issue tracking</a>. to manage known issues, bugs, and pull requests. Get started by forking the develop branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. For more more information on adding tutorials, check the <a href="https://github.com/AgnostiqHQ/covalent/blob/master/doc/TUTORIAL_GUIDELINES.md">Tutorial Guidelines</a> Participation in the Covalent community is governed by the <a href="https://github.com/AgnostiqHQ/covalent/blob/master/CODE_OF_CONDUCT.md">Code of Conduct</a>.</div> -->
+ <div style="color:#CBCBD7; font-size:14px; font-weight:400; font-family:Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji">To contribute to Covalent, refer to the <a href="https://github.com/AgnostiqHQ/covalent/blob/master/CONTRIBUTING.md">Contribution Guidelines</a>. We use GitHub's <a href="https://github.com/AgnostiqHQ/covalent/issues">issue tracking</a>. to manage known issues, bugs, and pull requests. Get started by forking the develop branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. For more more information on adding tutorials, check the <a href="https://github.com/AgnostiqHQ/covalent/blob/master/doc/TUTORIAL_GUIDELINES.md">Tutorial Guidelines</a> Participation in the Covalent community is governed by the <a href="https://github.com/AgnostiqHQ/covalent/blob/master/CODE_OF_CONDUCT.md">Code of Conduct</a>.</div>
 
   <div><img src="./doc/readme-assets/divider.svg" alt="divider"></div>
 
-  <div><img src="./doc/readme-assets/citation.svg" alt="divider"></div>
+  <!-- <div><img src="./doc/readme-assets/citation.svg" alt="divider"></div> -->
 
- <!-- <div style="color:#F9F9F9; font-size:24px; font-weight:500;font-family:Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji; padding-top:1.3rem" >Citation</div>
+ <div style="color:#F9F9F9; font-size:24px; font-weight:500;font-family:Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji; padding-top:1.3rem" >Citation</div>
 
    <div style="color:#CBCBD7; font-size:14px; font-weight:400;font-family:Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;margin-top:1.5rem">Please use the following citation in any publications</div>
 
   <div style="color:#CBCBD7; font-size:14px; font-weight:400;font-family:Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji;padding-bottom:1.3rem">
   <a href="https://zenodo.org/record/8369670"> https://doi.org/10.5281/zenodo.5903364
-  </div> -->
+  </div>
 
   <!-- <div style=";margin-bottom:-8rem"><img src="./citation.svg" alt="divider"></div> -->
   <div><img src="./doc/readme-assets/divider.svg" alt="divider"></div>
 
-  <div><img src="./doc/readme-assets/licence.svg" alt="divider"></div>
+  <!-- <div><img src="./doc/readme-assets/licence.svg" alt="divider"></div> -->
 
-<!-- <div>
+<div>
     <div style="color:#F9F9F9; font-size:24px; font-weight:500;font-family:Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji; padding-bottom:1.5rem">
         License
     </div>
     <div style="color:#CBCBD7; font-size:14px; font-weight:400;font-family:Segoe UI,Noto Sans,Helvetica,Arial,sans-serif,Apple Color Emoji,Segoe UI Emoji">Covalent is licensed under the Apache 2.0 License. See the  <a href="https://github.com/AgnostiqHQ/covalent/blob/master/LICENSE" >LICENSE</a>  file or contact the <a href="https://github.com/AgnostiqHQ/covalent/blob/master/LICENSE" class="anch">support team</a> for more details.</div>
     <div class="para">For a detailed history of changes and new features, see the <a href="https://github.com/AgnostiqHQ/covalent/blob/master/CHANGELOG.md" >Changelog</a></div>
 
-  </div> -->
+  </div>
 
 
    <!-- <div style=";margin-bottom:-15rem"><img src="./licence.svg" alt="divider"></div> -->
-<!-- <div>
-  <img src="./readme_copy.svg"  alt="Click to see the source">
-</div> -->
