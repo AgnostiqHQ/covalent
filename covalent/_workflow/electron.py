@@ -155,6 +155,7 @@ class Electron:
             "-": operator.sub,
             "*": operator.mul,
             "/": operator.truediv,
+            "**": operator.pow,
         }
 
         def rename(op1: Any, op: str, op2: Any) -> Callable:
@@ -242,6 +243,9 @@ class Electron:
 
     def __rtruediv__(self, other):
         return self.get_op_function(other, self, "/")
+
+    def __pow__(self, other):
+        return self.get_op_function(self, other, "**")
 
     def __int__(self):
         return int()
