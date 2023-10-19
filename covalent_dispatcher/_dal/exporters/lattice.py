@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -20,16 +20,13 @@
 
 from covalent._shared_files.schemas.asset import AssetSchema
 from covalent._shared_files.schemas.lattice import LatticeAssets, LatticeMetadata, LatticeSchema
+from covalent_dispatcher._dal.lattice import ASSET_KEYS, METADATA_KEYS, Lattice
 
-from ..lattice import ASSET_KEYS, METADATA_KEYS, Lattice
 from .tg import export_transport_graph
 
 
 def _export_lattice_meta(lat: Lattice) -> LatticeMetadata:
-    metadata_kwargs = {}
-    for key in METADATA_KEYS:
-        metadata_kwargs[key] = lat.get_value(key, None, refresh=False)
-
+    metadata_kwargs = {key: lat.get_value(key, None, refresh=False) for key in METADATA_KEYS}
     return LatticeMetadata(**metadata_kwargs)
 
 

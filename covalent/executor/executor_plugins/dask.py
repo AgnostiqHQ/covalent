@@ -31,7 +31,6 @@ from covalent._shared_files import TaskRuntimeError, logger
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files.config import get_config
 from covalent._shared_files.exceptions import TaskCancelledError
-from covalent._shared_files.utils import _address_client_mapper
 from covalent.executor.base import AsyncBaseExecutor
 from covalent.executor.utils.wrappers import io_wrapper as dask_wrapper
 
@@ -54,6 +53,9 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     ),
     "create_unique_workdir": False,
 }
+
+# Temporary
+_address_client_mapper = {}
 
 
 class DaskExecutor(AsyncBaseExecutor):

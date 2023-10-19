@@ -124,10 +124,8 @@ def get_lattice_kwargs(
     function_string_filename=FUNCTION_STRING_FILENAME,
     executor="dask",
     executor_data=json.dumps({}),
-    # executor_data_filename=EXECUTOR_DATA_FILENAME,
     workflow_executor="dask",
     workflow_executor_data=json.dumps({}),
-    # workflow_executor_data_filename=WORKFLOW_EXECUTOR_DATA_FILENAME,
     error_filename=ERROR_FILENAME,
     inputs_filename=INPUTS_FILENAME,
     named_args_filename=NAMED_ARGS_FILENAME,
@@ -161,10 +159,8 @@ def get_lattice_kwargs(
         "function_string_filename": function_string_filename,
         "executor": executor,
         "executor_data": executor_data,
-        # "executor_data_filename": executor_data_filename,
         "workflow_executor": workflow_executor,
         "workflow_executor_data": workflow_executor_data,
-        # "workflow_executor_data_filename": workflow_executor_data_filename,
         "error_filename": error_filename,
         "inputs_filename": inputs_filename,
         "named_args_filename": named_args_filename,
@@ -197,7 +193,6 @@ def get_electron_kwargs(
     function_string_filename=FUNCTION_STRING_FILENAME,
     executor="dask",
     executor_data=json.dumps({}),
-    # executor_data_filename=EXECUTOR_DATA_FILENAME,
     results_filename=RESULTS_FILENAME,
     value_filename=VALUE_FILENAME,
     stdout_filename=STDOUT_FILENAME,
@@ -208,7 +203,6 @@ def get_electron_kwargs(
     call_after_filename=CALL_AFTER_FILENAME,
     job_id=1,
     qelectron_data_exists=False,
-    cancel_requested=False,
     created_at=None,
     updated_at=None,
     started_at=None,
@@ -229,7 +223,6 @@ def get_electron_kwargs(
         "function_string_filename": function_string_filename,
         "executor": executor,
         "executor_data": executor_data,
-        # "executor_data_filename": executor_data_filename,
         "results_filename": results_filename,
         "value_filename": value_filename,
         "stdout_filename": stdout_filename,
@@ -240,7 +233,6 @@ def get_electron_kwargs(
         "call_after_filename": call_after_filename,
         "job_id": job_id,
         "qelectron_data_exists": qelectron_data_exists,
-        "cancel_requested": cancel_requested,
         "created_at": created_at,
         "updated_at": updated_at,
         "started_at": started_at,
@@ -301,9 +293,7 @@ def test_insert_lattices_data(test_db, mocker):
             assert lattice.function_filename == FUNCTION_FILENAME
             assert lattice.function_string_filename == FUNCTION_STRING_FILENAME
             assert lattice.executor == "dask"
-            # assert lattice.executor_data_filename == EXECUTOR_DATA_FILENAME
             assert lattice.workflow_executor == "dask"
-            # assert lattice.workflow_executor_data_filename == WORKFLOW_EXECUTOR_DATA_FILENAME
             assert lattice.error_filename == ERROR_FILENAME
             assert lattice.inputs_filename == INPUTS_FILENAME
             assert lattice.named_args_filename == NAMED_ARGS_FILENAME

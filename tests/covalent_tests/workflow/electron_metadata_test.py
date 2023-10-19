@@ -44,7 +44,6 @@ def test_electrons_get_lattice_metadata_1():
     hello_world.build_graph(1)
 
     data = hello_world.transport_graph.serialize_to_json()
-    # data = json.loads(data)
 
     tg = _TransportGraph()
     tg.deserialize_from_json(data)

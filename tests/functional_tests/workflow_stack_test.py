@@ -17,13 +17,14 @@
 """Workflow stack testing of TransportGraph, Lattice and Electron classes."""
 
 import os
+import tempfile
 
 import pytest
 
 import covalent as ct
+import covalent._dispatcher_plugins.local as local
 import covalent._results_manager.results_manager as rm
 from covalent._results_manager.result import Result
-from covalent_dispatcher._db import update
 
 
 def construct_temp_cache_dir():
@@ -116,7 +117,7 @@ def test_sublatticing():
     dispatch_id = ct.dispatch(workflow)(a=1, b=2)
     workflow_result = rm.get_result(dispatch_id, wait=True)
 
-    assert workflow_result.error is None
+    assert workflow_result.error == ""
     assert workflow_result.status == Result.COMPLETED
     assert workflow_result.result == 3
     assert workflow_result.get_node_result(node_id=0)["sublattice_result"].result == 3
@@ -172,11 +173,11 @@ import covalent as ct
 def heavy_function(a):
     import time
 
-    time.sleep(1)
+    time.sleep(10)
     return a
 
 @ct.lattice
-def workflow(x=10):
+def workflow(x=2):
     for i in range(x):
         heavy_function(a=i)
     return x
@@ -259,7 +260,7 @@ def test_electron_deps_call_before():
     dispatch_id = ct.dispatch(workflow)(file_path=tmp_path)
     res = ct.get_result(dispatch_id, wait=True)
 
-    assert res.error is None
+    assert res.error == ""
 
     assert res.result == (True, "Hello")
 
@@ -605,8 +606,9 @@ def test_all_parameter_types_in_lattice():
     result = rm.get_result(dispatch_id, wait=True)
     rm._delete_result(dispatch_id)
 
-    assert ct.TransportableObject.deserialize_list(result.inputs["args"]) == [1, 2, 3, 4]
-    assert ct.TransportableObject.deserialize_dict(result.inputs["kwargs"]) == {
+    workflow_inputs = result.inputs.get_deserialized()
+    assert workflow_inputs["args"] == (1, 2, 3, 4)
+    assert workflow_inputs["kwargs"] == {
         "c": 5,
         "d": 6,
         "e": 7,
@@ -677,7 +679,6 @@ def test_wait_for():
 
     dispatch_id = ct.dispatch(workflow)()
     result = ct.get_result(dispatch_id, wait=True)
-    update.persist(result)
 
     assert result.status == Result.COMPLETED
     assert (
@@ -925,3 +926,26 @@ def test_redispatch_reusing_previous_results_and_new_args():
     assert int(result.result) == 1
     assert result.status == "COMPLETED"
     assert result.get_node_result(0)["start_time"] == result.get_node_result(0)["end_time"]
+
+
+def test_multistage_dispatch_with_pull_assets():
+    """Test submitting a dispatch with assets to be pulled."""
+
+    @ct.electron
+    def task(x):
+        return x**3
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    workflow.build_graph(5)
+    with tempfile.TemporaryDirectory() as staging_dir:
+        manifest = local.LocalDispatcher.prepare_manifest(workflow, staging_dir)
+        return_manifest = local.LocalDispatcher.register_manifest(manifest, push_assets=False)
+        dispatch_id = return_manifest.metadata.dispatch_id
+
+        local.LocalDispatcher.start(dispatch_id)
+
+        res = rm.get_result(dispatch_id, wait=True)
+        assert res.result == 125

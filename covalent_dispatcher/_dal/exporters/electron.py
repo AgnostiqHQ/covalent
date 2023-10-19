@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -25,8 +25,7 @@ from covalent._shared_files.schemas.electron import (
     ElectronMetadata,
     ElectronSchema,
 )
-
-from ..electron import ASSET_KEYS, Electron
+from covalent_dispatcher._dal.electron import ASSET_KEYS, Electron
 
 app_log = logger.app_log
 

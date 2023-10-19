@@ -61,7 +61,9 @@ def seed(engine):
                     function_filename=item["function_filename"],
                     function_string_filename=item["function_string_filename"],
                     executor=item["executor"],
+                    executor_data=json.dumps(item["executor_data"]),
                     workflow_executor=item["workflow_executor"],
+                    workflow_executor_data=json.dumps(item["workflow_executor_data"]),
                     error_filename=item["error_filename"],
                     inputs_filename=item["inputs_filename"],
                     named_args_filename=item["named_args_filename"],
@@ -100,6 +102,7 @@ def seed(engine):
                     function_filename=item["function_filename"],
                     function_string_filename=item["function_string_filename"],
                     executor=item["executor"],
+                    executor_data=json.dumps(item["executor_data"]),
                     results_filename=item["results_filename"],
                     value_filename=item["value_filename"],
                     stdout_filename=item["stdout_filename"],
@@ -115,7 +118,6 @@ def seed(engine):
                     completed_at=convert_to_date(item["completed_at"]),
                     job_id=item["job_id"],
                     qelectron_data_exists=item["qelectron_data_exists"],
-                    cancel_requested=item["cancel_requested"],
                 )
             )
 
