@@ -256,21 +256,6 @@ class DaskExecutor(AsyncBaseExecutor):
         _clients[key] = dask_client
         _futures[key] = future
 
-        # def handle_cancelled(fut):
-        #     import requests
-
-        #     app_log.debug(f"In done callback for {dispatch_id}:{gid}, future {fut}")
-        #     if fut.cancelled():
-        #         for task_id in task_ids:
-        #             url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/job"
-        #             requests.put(url, json={"status": "CANCELLED"})
-
-        # future.add_done_callback(handle_cancelled)
-
-        # fire_and_forget(future)
-
-        # app_log.debug(f"Fire and forgetting task group {dispatch_id}:{gid}")
-
         return future.key
 
     async def poll(self, task_group_metadata: Dict, poll_data: Any):
@@ -278,14 +263,12 @@ class DaskExecutor(AsyncBaseExecutor):
         app_log.debug(f"Future {fut}")
         try:
             await fut
-        except CancelledError:
-            raise TaskCancelledError()
+        except CancelledError as e:
+            raise TaskCancelledError() from e
 
         _clients.pop(poll_data)
 
         return {"status": StatusEnum.READY.value}
-
-        # raise NotImplementedError
 
     async def receive(self, task_group_metadata: Dict, data: Any) -> List[TaskUpdate]:
         # Job should have reached a terminal state by the time this is invoked.

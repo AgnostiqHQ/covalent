@@ -289,29 +289,29 @@ async def run_abstract_task_group(
 
         # Legacy runner doesn't yet support task packing
         if not type(executor).SUPPORTS_MANAGED_EXECUTION:
-            if len(task_seq) == 1:
-                task_spec = task_seq[0]
-                node_id = task_spec["function_id"]
-                name = task_spec["name"]
-                abstract_inputs = {
-                    "args": task_spec["args_ids"],
-                    "kwargs": task_spec["kwargs_ids"],
-                }
-                app_log.debug(f"Reverting to legacy runner for task {task_group_id}")
-                coro = runner_legacy.run_abstract_task(
-                    dispatch_id,
-                    node_id,
-                    name,
-                    abstract_inputs,
-                    selected_executor,
-                )
-                fut = asyncio.create_task(coro)
-                _futures.add(fut)
-                fut.add_done_callback(_futures.discard)
-                return
-
-            else:
+            if len(task_seq) != 1:
                 raise RuntimeError("Task packing not supported by executor plugin")
+
+            task_spec = task_seq[0]
+            node_id = task_spec["function_id"]
+            name = task_spec["name"]
+            abstract_inputs = {
+                "args": task_spec["args_ids"],
+                "kwargs": task_spec["kwargs_ids"],
+            }
+            app_log.debug(f"Reverting to legacy runner for task {task_group_id}")
+            coro = runner_legacy.run_abstract_task(
+                dispatch_id,
+                node_id,
+                name,
+                abstract_inputs,
+                selected_executor,
+            )
+            fut = asyncio.create_task(coro)
+            _futures.add(fut)
+            fut.add_done_callback(_futures.discard)
+            return
+
         node_results, send_retval = await _submit_abstract_task_group(
             dispatch_id,
             task_group_id,
