@@ -131,6 +131,7 @@ async def _submit_abstract_task_group(
         ts = datetime.now(timezone.utc)
         node_results = [
             datamgr.generate_node_result(
+                dispatch_id=dispatch_id,
                 node_id=task_id,
                 start_time=ts,
                 status=RESULT_STATUS.RUNNING,
@@ -163,6 +164,7 @@ async def _submit_abstract_task_group(
 
         node_results = [
             datamgr.generate_node_result(
+                dispatch_id=dispatch_id,
                 node_id=task_id,
                 end_time=datetime.now(timezone.utc),
                 status=RESULT_STATUS.CANCELLED,
@@ -181,6 +183,7 @@ async def _submit_abstract_task_group(
 
         node_results = [
             datamgr.generate_node_result(
+                dispatch_id=dispatch_id,
                 node_id=task_id,
                 end_time=datetime.now(timezone.utc),
                 status=RESULT_STATUS.FAILED,
@@ -232,7 +235,10 @@ async def _get_task_result(task_group_metadata: Dict, data: Any):
             await am.download_assets_for_node(dispatch_id, task_id, task_result.assets)
 
             node_result = datamgr.generate_node_result(
-                node_id=task_id, end_time=datetime.now(timezone.utc), status=status
+                dispatch_id=dispatch_id,
+                node_id=task_id,
+                end_time=datetime.now(timezone.utc),
+                status=status,
             )
             node_results.append(node_result)
 
@@ -245,6 +251,7 @@ async def _get_task_result(task_group_metadata: Dict, data: Any):
 
         node_results = [
             datamgr.generate_node_result(
+                dispatch_id=dispatch_id,
                 node_id=node_id,
                 end_time=ts,
                 status=RESULT_STATUS.FAILED,
@@ -331,6 +338,7 @@ async def run_abstract_task_group(
         send_retval = None
         node_results = [
             datamgr.generate_node_result(
+                dispatch_id=dispatch_id,
                 node_id=node_id,
                 start_time=ts,
                 end_time=ts,
@@ -386,6 +394,7 @@ async def _listen_for_job_events():
                 ts = datetime.now(timezone.utc)
                 for task_id in task_ids:
                     node_result = datamgr.generate_node_result(
+                        dispatch_id=dispatch_id,
                         node_id=task_id,
                         end_time=ts,
                         status=RESULT_STATUS.FAILED,
