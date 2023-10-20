@@ -142,7 +142,7 @@ class DaskExecutor(AsyncBaseExecutor):
         if not self.scheduler_address:
             try:
                 self.scheduler_address = get_config("dask.scheduler_address")
-            except KeyError as ex:
+            except KeyError:
                 app_log.debug(
                     "No dask scheduler address found in config. Address must be set manually."
                 )
@@ -196,6 +196,15 @@ class DaskExecutor(AsyncBaseExecutor):
         Return(s)
             True by default
         """
+
+        if not self.scheduler_address:
+            try:
+                self.scheduler_address = get_config("dask.scheduler_address")
+            except KeyError:
+                app_log.debug(
+                    "No dask scheduler address found in config. Address must be set manually."
+                )
+
         dask_client = _address_client_map.get(self.scheduler_address)
 
         if not dask_client:
@@ -220,6 +229,14 @@ class DaskExecutor(AsyncBaseExecutor):
 
         # The Asset Manager is responsible for uploading all assets
         # Returns a job handle (should be JSONable)
+
+        if not self.scheduler_address:
+            try:
+                self.scheduler_address = get_config("dask.scheduler_address")
+            except KeyError:
+                app_log.debug(
+                    "No dask scheduler address found in config. Address must be set manually."
+                )
 
         dask_client = Client(address=self.scheduler_address, asynchronous=True)
         await asyncio.wait_for(dask_client, timeout=5)
@@ -333,4 +350,3 @@ class DaskExecutor(AsyncBaseExecutor):
 
         filename = f"asset_{dispatch_id}-{task_group_id}_{object_key}.pkl"
         return os.path.join("file://", self.cache_dir, filename)
-        # return ""
