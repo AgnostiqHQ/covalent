@@ -21,10 +21,10 @@ and waits for execution to finish then returns the result.
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
+import asyncio
 import json
 import os
 from enum import Enum
-from functools import lru_cache
 from typing import Any, Callable, Dict, List, Literal, Optional
 
 from dask.distributed import CancelledError, Client, Future
@@ -71,19 +71,8 @@ _futures = {}
 
 MANAGED_EXECUTION = os.environ.get("COVALENT_USE_OLD_DASK") != "1"
 
-
 # Dictionary to map Dask clients to their scheduler addresses
-@lru_cache
-def _get_dask_client(scheduler_address: str):
-    if not scheduler_address:
-        try:
-            scheduler_address = get_config("dask.scheduler_address")
-        except KeyError:
-            app_log.debug(
-                "No dask scheduler address found in config. Address must be set manually."
-            )
-            raise
-    return Client(address=scheduler_address, asynchronous=True)
+_address_client_map = {}
 
 
 # Valid terminal statuses
@@ -150,6 +139,14 @@ class DaskExecutor(AsyncBaseExecutor):
     async def run(self, function: Callable, args: List, kwargs: Dict, task_metadata: Dict):
         """Submit the function and inputs to the dask cluster"""
 
+        if not self.scheduler_address:
+            try:
+                self.scheduler_address = get_config("dask.scheduler_address")
+            except KeyError as ex:
+                app_log.debug(
+                    "No dask scheduler address found in config. Address must be set manually."
+                )
+
         if await self.get_cancel_requested():
             app_log.debug("Task has cancelled")
             raise TaskCancelledError
@@ -157,7 +154,12 @@ class DaskExecutor(AsyncBaseExecutor):
         dispatch_id = task_metadata["dispatch_id"]
         node_id = task_metadata["node_id"]
 
-        dask_client = _get_dask_client(self.scheduler_address)
+        dask_client = _address_client_map.get(self.scheduler_address)
+
+        if not dask_client:
+            dask_client = Client(address=self.scheduler_address, asynchronous=True)
+            _address_client_map[self.scheduler_address] = dask_client
+            await dask_client
 
         if self.create_unique_workdir:
             current_workdir = os.path.join(self.workdir, dispatch_id, f"node_{node_id}")
@@ -194,8 +196,11 @@ class DaskExecutor(AsyncBaseExecutor):
         Return(s)
             True by default
         """
+        dask_client = _address_client_map.get(self.scheduler_address)
 
-        dask_client = _get_dask_client(self.scheduler_address)
+        if not dask_client:
+            dask_client = Client(address=self.scheduler_address, asynchronous=True)
+            await asyncio.wait_for(dask_client, timeout=5)
 
         fut: Future = Future(key=job_handle, client=dask_client)
 
@@ -216,7 +221,8 @@ class DaskExecutor(AsyncBaseExecutor):
         # The Asset Manager is responsible for uploading all assets
         # Returns a job handle (should be JSONable)
 
-        dask_client = _get_dask_client(self.scheduler_address)
+        dask_client = Client(address=self.scheduler_address, asynchronous=True)
+        await asyncio.wait_for(dask_client, timeout=5)
 
         dispatch_id = task_group_metadata["dispatch_id"]
         task_ids = task_group_metadata["node_ids"]
