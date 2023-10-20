@@ -37,9 +37,6 @@ DEFAULT_UI_ADDRESS = get_config("user_interface.address")
 DEFAULT_UI_PORT = get_config("user_interface.port")
 
 
-# Dictionary to map Dask clients to their scheduler addresses
-_address_client_mapper = {}
-
 _IMPORT_PATH_SEPARATOR = ":"
 
 
