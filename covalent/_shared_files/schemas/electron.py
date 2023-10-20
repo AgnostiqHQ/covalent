@@ -78,6 +78,8 @@ ASSET_FILENAME_MAP = {
     "error": ELECTRON_ERROR_FILENAME,
 }
 
+FILENAME_ASSET_MAP = {v: k for k, v in ASSET_FILENAME_MAP.items()}
+
 
 class ElectronAssets(BaseModel):
     function: AssetSchema
