@@ -20,7 +20,7 @@ from __future__ import annotations
 import contextlib
 import os
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Union, Optional
 
 from furl import furl
 from requests.adapters import HTTPAdapter
@@ -450,6 +450,74 @@ def _get_result_multistage(
 
     return rm.result_object
 
+def get_all_results(
+    dispatch_ids: Optional[List[str]] = None,
+    statuses: Optional[List[str]] = None,
+    started_before: Optional[str] = None,
+    started_after: Optional[str] = None,
+    completed_before: Optional[str] = None,
+    completed_after: Optional[str] = None,
+) -> List[Dict[str, Union[str, "Result"]]]:
+    """
+    Retrieve all results.
+
+    Parameters:
+        dispatch_ids: Optional[List[str]]
+            A list of dispatch IDs to filter results by.
+
+        statuses: Optional[List[str]]
+            A list of statuses to filter results by.
+
+        started_before: Optional[str]
+            Only return results started before this timestamp.
+
+        started_after: Optional[str]
+            Only return results started after this timestamp.
+
+        completed_before: Optional[str]
+            Only return results completed before this timestamp.
+
+        completed_after: Optional[str]
+            Only return results completed after this timestamp.
+
+    Returns:
+        List[Dict[str, Union[str, "Result"]]]: A list of dictionaries, where each dictionary contains a dispatch ID and its corresponding result.
+    """
+    config_results_dir = ct.get_config()["dispatcher"]["results_dir"]
+    all_dispatch_ids = os.listdir(config_results_dir)
+
+    # Populate the docs
+    docs = []
+    for d_id in all_dispatch_ids:
+        if dispatch_ids and d_id not in dispatch_ids:
+            continue
+
+        try:
+            result_obj = ct.get_result(d_id)
+        except MissingLatticeRecordError:
+            continue
+
+        if not result_obj:
+            continue
+
+        if statuses and result_obj.status not in statuses:
+            continue
+
+        if started_before and result_obj.started > started_before:
+            continue
+
+        if started_after and result_obj.started < started_after:
+            continue
+
+        if completed_before and result_obj.completed > completed_before:
+            continue
+
+        if completed_after and result_obj.completed < completed_after:
+            continue
+
+        docs.append({"dispatch_id": d_id, "result": result_obj})
+
+    return docs
 
 def get_result(
     dispatch_id: str,
