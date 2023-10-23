@@ -20,7 +20,7 @@ from __future__ import annotations
 import contextlib
 import os
 from pathlib import Path
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Optional, Union
 
 from furl import furl
 from requests.adapters import HTTPAdapter
