@@ -200,63 +200,12 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
                 )
             if electron.transport_graph_node_id == 3:
                 executor_data = json.loads(electron.executor_data)
-                # executor_data = local_store.load_file(
-                #     storage_path=electron.storage_path, filename=electron.executor_data_filename
-                # )
 
                 assert executor_data["short_name"] == le.short_name()
                 assert executor_data["attributes"] == le.__dict__
 
         # Check that there are the appropriate amount of electron dependency records
         assert len(electron_dependency_rows) == 7
-
-        # # Update some node / lattice statuses
-        # cur_time = dt.now(timezone.utc)
-        # result_1._end_time = cur_time
-        # result_1._status = "COMPLETED"
-        # result_1._result = ct.TransportableObject({"helo": 1, "world": 2})
-
-        # for node_id in range(6):
-        #     result_1._update_node(
-        #         node_id=node_id,
-        #         start_time=cur_time,
-        #         end_time=cur_time,
-        #         status="COMPLETED",
-        #         # output={"test_data": "test_data"},  # TODO - Put back in later
-        #         # sublattice_result=None,  # TODO - Add a test where this is not None
-        #     )
-
-        # Call Result.persist
-    #        update.persist(result_1)
-
-    # Query lattice / electron / electron dependency
-    # with test_db.session() as session:
-    #     lattice_row = session.query(Lattice).first()
-    #     electron_rows = session.query(Electron).all()
-    #     electron_dependency_rows = session.query(ElectronDependency).all()
-
-    #     # Check that the lattice records are as expected
-    #     assert lattice_row.completed_at.strftime("%Y-%m-%d %H:%M") == cur_time.strftime(
-    #         "%Y-%m-%d %H:%M"
-    #     )
-    #     assert lattice_row.status == "COMPLETED"
-    #     result = local_store.load_file(
-    #         storage_path=lattice_storage_path, filename=lattice_row.results_filename
-    #     )
-    #     assert result_1.result == result.get_deserialized()
-
-    #     # Check that the electron records are as expected
-    #     for electron in electron_rows:
-    #         assert electron.status == "COMPLETED"
-    #         assert electron.parent_lattice_id == 1
-    #         assert (
-    #             electron.started_at.strftime("%Y-%m-%d %H:%M")
-    #             == electron.completed_at.strftime("%Y-%m-%d %H:%M")
-    #             == cur_time.strftime("%Y-%m-%d %H:%M")
-    #         )
-    #         assert Path(electron.storage_path) == Path(
-    #             f"{TEMP_RESULTS_DIR}/dispatch_1/node_{electron.transport_graph_node_id}"
-    #         )
 
     # Tear down temporary results directory
     teardown_temp_results_dir(dispatch_id="dispatch_1")
@@ -368,7 +317,7 @@ def test_task_packing_persist(test_db, mocker):
 
     update.persist(result)
     tg = workflow.transport_graph
-    task_groups = set([tg.get_node_value(node_id, "task_group_id") for node_id in tg._graph.nodes])
+    task_groups = {tg.get_node_value(node_id, "task_group_id") for node_id in tg._graph.nodes}
 
     with test_db.session() as session:
         job_records = session.query(Job).all()
@@ -400,43 +349,3 @@ def test_cannot_persist_twice(test_db, mocker):
 
     with pytest.raises(RuntimeError):
         update.persist(result)
-
-
-# @pytest.mark.parametrize("node_name", [None, "mock_node_name", postprocess_prefix])
-# def test_node(mocker, node_name):
-#     """Test the _node method."""
-#     electron_data_mock = mocker.patch("covalent_dispatcher._db.upsert.electron_data")
-#     lattice_data_mock = mocker.patch("covalent_dispatcher._db.upsert.lattice_data")
-#     mock_result = mocker.MagicMock()
-#     update._node(
-#         mock_result,
-#         node_id=0,
-#         node_name=node_name,
-#         start_time="mock_time",
-#         end_time="mock_time",
-#         status="COMPLETED",
-#         output="mock_output",
-#         qelectron_data_exists=False,
-#     )
-#     if node_name is None:
-#         node_name = mock_result.lattice.transport_graph.get_node_value()
-#     mock_result._update_node.assert_called_once_with(
-#         node_id=0,
-#         node_name=node_name,
-#         start_time="mock_time",
-#         end_time="mock_time",
-#         status="COMPLETED",
-#         output="mock_output",
-#         qelectron_data_exists=False,
-#         error=None,
-#         sub_dispatch_id=None,
-#         sublattice_result=None,
-#         stdout=None,
-#         stderr=None,
-#     )
-#     if node_name.startswith(postprocess_prefix):
-#         assert mock_result._result == "mock_output"
-#         assert mock_result._status == "COMPLETED"
-#     else:
-#         assert mock_result._result != "mock_output"
-#         assert mock_result._status != "COMPLETED"

@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -41,10 +41,9 @@ from covalent._shared_files.schemas.lattice import (
     LatticeAssets,
     LatticeSchema,
 )
-
-from ..._object_store.local import BaseProvider
-from ..asset import Asset
-from ..lattice import Lattice
+from covalent_dispatcher._dal.asset import Asset
+from covalent_dispatcher._dal.lattice import Lattice
+from covalent_dispatcher._object_store.local import BaseProvider
 
 
 def _get_lattice_meta(lat: LatticeSchema, storage_path) -> dict:
@@ -148,11 +147,9 @@ def import_lattice_assets(
     # Write asset records to DB
     session.flush()
 
-    # Link assets to lattice
-    lattice_asset_links = []
-    for key, asset_rec in asset_ids.items():
-        lattice_asset_links.append(record.associate_asset(session, key, asset_rec.id))
-
+    lattice_asset_links = [
+        record.associate_asset(session, key, asset_rec.id) for key, asset_rec in asset_ids.items()
+    ]
     session.flush()
 
     return lat.assets
