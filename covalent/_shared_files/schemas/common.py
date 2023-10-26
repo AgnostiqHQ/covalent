@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -18,7 +18,7 @@
 
 from enum import Enum
 
-from ..util_classes import RESULT_STATUS
+from covalent._shared_files.util_classes import RESULT_STATUS
 
 
 class StatusEnum(str, Enum):

@@ -17,104 +17,17 @@
 
 """Unit tests for local module in dispatcher_plugins."""
 
+import tempfile
 from unittest.mock import MagicMock
 
 import pytest
 from requests import Response
-from requests.exceptions import HTTPError
+from requests.exceptions import ConnectionError, HTTPError
 
 import covalent as ct
-from covalent._dispatcher_plugins.local import LocalDispatcher, get_redispatch_request_body
-
-
-def test_get_redispatch_request_body_null_arguments():
-    """Test the get request body function with null arguments."""
-
-    @ct.electron
-    def identity(a):
-        return a
-
-    @ct.electron
-    def add(a, b):
-        return a + b
-
-    response = get_redispatch_request_body(
-        "mock-dispatch-id",
-    )
-    assert response == {
-        "json_lattice": None,
-        "dispatch_id": "mock-dispatch-id",
-        "electron_updates": {},
-        "reuse_previous_results": False,
-    }
-
-
-def test_get_redispatch_request_body_args_kwargs(mocker):
-    """Test the get request body function when args/kwargs is not null."""
-    mock_electron = MagicMock()
-    get_result_mock = mocker.patch("covalent._dispatcher_plugins.local.get_result")
-    get_result_mock().lattice.serialize_to_json.return_value = "mock-json-lattice"
-
-    response = get_redispatch_request_body(
-        "mock-dispatch-id",
-        new_args=[1, 2],
-        new_kwargs={"a": 1, "b": 2},
-        replace_electrons={"mock-task-id": mock_electron},
-    )
-    assert response == {
-        "json_lattice": "mock-json-lattice",
-        "dispatch_id": "mock-dispatch-id",
-        "electron_updates": {"mock-task-id": mock_electron.electron_object.as_transportable_dict},
-        "reuse_previous_results": False,
-    }
-    get_result_mock().lattice.build_graph.assert_called_once_with(*[1, 2], **{"a": 1, "b": 2})
-
-
-@pytest.mark.parametrize("is_pending", [True, False])
-@pytest.mark.parametrize(
-    "replace_electrons, expected_arg",
-    [(None, {}), ({"mock-electron-1": "mock-electron-2"}, {"mock-electron-1": "mock-electron-2"})],
-)
-def test_redispatch(mocker, replace_electrons, expected_arg, is_pending):
-    """Test the local re-dispatch function."""
-
-    mocker.patch("covalent._dispatcher_plugins.local.get_config", return_value="mock-config")
-    requests_mock = mocker.patch("covalent._dispatcher_plugins.local.requests")
-    get_request_body_mock = mocker.patch(
-        "covalent._dispatcher_plugins.local.get_redispatch_request_body",
-        return_value={"mock-request-body"},
-    )
-
-    local_dispatcher = LocalDispatcher()
-    func = local_dispatcher.redispatch(
-        "mock-dispatch-id", replace_electrons=replace_electrons, is_pending=is_pending
-    )
-    func()
-    requests_mock.post.assert_called_once_with(
-        "http://mock-config:mock-config/api/redispatch",
-        json={"mock-request-body"},
-        params={"is_pending": is_pending},
-        timeout=5,
-    )
-    requests_mock.post().raise_for_status.assert_called_once()
-    requests_mock.post().content.decode().strip().replace.assert_called_once_with('"', "")
-
-    get_request_body_mock.assert_called_once_with("mock-dispatch-id", (), {}, expected_arg, False)
-
-
-def test_redispatch_unreachable(mocker):
-    """Test the local re-dispatch function when the server is unreachable."""
-
-    mock_dispatch_id = "mock-dispatch-id"
-    dummy_dispatcher_addr = "http://localhost:12345"
-
-    message = f"The Covalent server cannot be reached at {dummy_dispatcher_addr}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
-
-    mock_print = mocker.patch("covalent._dispatcher_plugins.local.print")
-
-    LocalDispatcher.redispatch(mock_dispatch_id, dispatcher_addr=dummy_dispatcher_addr)()
-
-    mock_print.assert_called_once_with(message)
+from covalent._dispatcher_plugins.local import LocalDispatcher, get_redispatch_request_body_v2
+from covalent._results_manager.result import Result
+from covalent._shared_files.utils import format_server_url
 
 
 def test_dispatching_a_non_lattice():
@@ -141,8 +54,9 @@ def test_dispatch_when_no_server_is_running(mocker):
     # the test suite is using another port, thus, with the dummy address below
     # the covalent server is not running in some sense.
     dummy_dispatcher_addr = "http://localhost:12345"
-
-    message = f"The Covalent server cannot be reached at {dummy_dispatcher_addr}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
+    endpoint = "/api/v2/dispatches"
+    url = dummy_dispatcher_addr + endpoint
+    message = f"The Covalent server cannot be reached at {url}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
 
     @ct.electron
     def task(a, b, c):
@@ -152,11 +66,128 @@ def test_dispatch_when_no_server_is_running(mocker):
     def workflow(a, b):
         return task(a, b, c=4)
 
-    mock_print = mocker.patch("covalent._dispatcher_plugins.local.print")
+    mock_print = mocker.patch("covalent._api.apiclient.print")
 
-    LocalDispatcher.dispatch(workflow, dispatcher_addr=dummy_dispatcher_addr)(1, 2)
+    with pytest.raises(ConnectionError):
+        LocalDispatcher.dispatch(workflow, dispatcher_addr=dummy_dispatcher_addr)(1, 2)
 
     mock_print.assert_called_once_with(message)
+
+
+def test_dispatcher_dispatch_single(mocker):
+    """test dispatching a lattice with submit api"""
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    # test when api raises an implicit error
+
+    dispatch_id = "test_dispatcher_dispatch_single"
+    # multistage = False
+    mocker.patch("covalent._dispatcher_plugins.local.get_config", return_value=False)
+
+    mock_submit_callable = MagicMock(return_value=dispatch_id)
+    mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.submit",
+        return_value=mock_submit_callable,
+    )
+
+    mock_reg_tr = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.register_triggers"
+    )
+    mock_start = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.start", return_value=dispatch_id
+    )
+
+    assert dispatch_id == LocalDispatcher.dispatch(workflow)(1, 2)
+
+    mock_submit_callable.assert_called()
+    mock_start.assert_called()
+
+
+def test_dispatcher_dispatch_multi(mocker):
+    """test dispatching a lattice with multistage api"""
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    dispatch_id = "test_dispatcher_dispatch_multi"
+    # multistage = True
+    mocker.patch("covalent._shared_files.config.get_config", return_value=True)
+
+    mock_register_callable = MagicMock(return_value=dispatch_id)
+    mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.register",
+        return_value=mock_register_callable,
+    )
+
+    mock_submit_callable = MagicMock(return_value=dispatch_id)
+    mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.submit",
+        return_value=mock_submit_callable,
+    )
+
+    mock_reg_tr = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.register_triggers"
+    )
+    mock_start = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.start", return_value=dispatch_id
+    )
+
+    assert dispatch_id == LocalDispatcher.dispatch(workflow)(1, 2)
+
+    mock_submit_callable.assert_not_called()
+    mock_register_callable.assert_called()
+    mock_start.assert_called()
+
+
+def test_dispatcher_dispatch_with_triggers(mocker):
+    """test dispatching a lattice with triggers"""
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    dispatch_id = "test_dispatcher_dispatch_with_triggers"
+
+    workflow.metadata["triggers"] = {"dir_trigger": {}}
+
+    mock_register_callable = MagicMock(return_value=dispatch_id)
+    mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.register",
+        return_value=mock_register_callable,
+    )
+
+    mock_submit_callable = MagicMock(return_value=dispatch_id)
+    mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.submit",
+        return_value=mock_submit_callable,
+    )
+
+    mock_reg_tr = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.register_triggers"
+    )
+    mock_start = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.start", return_value=dispatch_id
+    )
+
+    assert dispatch_id == LocalDispatcher.dispatch(workflow)(1, 2)
+    mock_reg_tr.assert_called()
+    mock_start.assert_not_called()
 
 
 def test_dispatcher_submit_api(mocker):
@@ -176,10 +207,10 @@ def test_dispatcher_submit_api(mocker):
     r.url = "http://dummy"
     r.reason = "dummy reason"
 
-    mocker.patch("covalent._dispatcher_plugins.local.requests.post", return_value=r)
+    mocker.patch("covalent._api.apiclient.requests.Session.post", return_value=r)
 
     with pytest.raises(HTTPError, match="404 Client Error: dummy reason for url: http://dummy"):
-        dispatch_id = LocalDispatcher.dispatch(workflow)(1, 2)
+        dispatch_id = LocalDispatcher.submit(workflow)(1, 2)
         assert dispatch_id is None
 
     # test when api doesn't raise an implicit error
@@ -188,7 +219,366 @@ def test_dispatcher_submit_api(mocker):
     r.url = "http://dummy"
     r._content = b"abcde"
 
-    mocker.patch("covalent._dispatcher_plugins.local.requests.post", return_value=r)
+    mocker.patch("covalent._api.apiclient.requests.Session.post", return_value=r)
 
-    dispatch_id = LocalDispatcher.dispatch(workflow)(1, 2)
+    dispatch_id = LocalDispatcher.submit(workflow)(1, 2)
     assert dispatch_id == "abcde"
+
+
+def test_dispatcher_start(mocker):
+    """Test starting a dispatch"""
+
+    dispatch_id = "test_dispatcher_start"
+    r = Response()
+    r.status_code = 404
+    r.url = "http://dummy"
+    r.reason = "dummy reason"
+
+    mocker.patch("covalent._api.apiclient.requests.Session.put", return_value=r)
+
+    with pytest.raises(HTTPError, match="404 Client Error: dummy reason for url: http://dummy"):
+        LocalDispatcher.start(dispatch_id)
+
+    # test when api doesn't raise an implicit error
+    r = Response()
+    r.status_code = 202
+    r.url = "http://dummy"
+    r._content = dispatch_id.encode("utf-8")
+
+    mocker.patch("covalent._api.apiclient.requests.Session.put", return_value=r)
+
+    assert LocalDispatcher.start(dispatch_id) == dispatch_id
+
+
+def test_register(mocker):
+    """test dispatching a lattice with register api"""
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    workflow.build_graph(1, 2)
+    with tempfile.TemporaryDirectory() as staging_dir:
+        manifest = LocalDispatcher.prepare_manifest(workflow, staging_dir)
+
+    manifest.metadata.dispatch_id = "test_register"
+
+    mock_upload = mocker.patch("covalent._dispatcher_plugins.local.LocalDispatcher.upload_assets")
+    mock_prepare_manifest = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.prepare_manifest",
+        return_value=manifest,
+    )
+    mock_register_manifest = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.register_manifest"
+    )
+
+    dispatch_id = LocalDispatcher.register(workflow)(1, 2)
+    assert dispatch_id == "test_register"
+    mock_upload.assert_called()
+
+
+def test_redispatch(mocker):
+    """test redispatching a lattice with register api"""
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    workflow.build_graph(1, 2)
+    with tempfile.TemporaryDirectory() as staging_dir:
+        manifest = LocalDispatcher.prepare_manifest(workflow, staging_dir)
+
+    dispatch_id = "test_register_redispatch"
+    manifest.metadata.dispatch_id = dispatch_id
+    parent_id = "parent_dispatch_id"
+
+    mock_upload = mocker.patch("covalent._dispatcher_plugins.local.LocalDispatcher.upload_assets")
+    mock_get_redispatch_manifest = mocker.patch(
+        "covalent._dispatcher_plugins.local.get_redispatch_request_body_v2", return_value=manifest
+    )
+    mock_register_derived_manifest = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.register_derived_manifest"
+    )
+    mock_start = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.start",
+        return_value="test_register_redispatch",
+    )
+
+    new_args = (1, 2)
+    new_kwargs = {}
+    redispatch_id = LocalDispatcher.redispatch(
+        dispatch_id=parent_id, replace_electrons={"f": "callable"}, reuse_previous_results=False
+    )(*new_args, **new_kwargs)
+
+    assert dispatch_id == redispatch_id
+    mock_upload.assert_called()
+
+    mock_start.assert_called_with(dispatch_id, format_server_url())
+
+
+def test_register_manifest(mocker):
+    """Test registering a dispatch manifest."""
+
+    dispatch_id = "test_register_manifest"
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    workflow.build_graph(1, 2)
+    with tempfile.TemporaryDirectory() as staging_dir:
+        manifest = LocalDispatcher.prepare_manifest(workflow, staging_dir)
+
+    manifest.metadata.dispatch_id = dispatch_id
+
+    r = Response()
+    r.status_code = 201
+    r.json = MagicMock(return_value=manifest.dict())
+
+    mocker.patch("covalent._api.apiclient.requests.Session.post", return_value=r)
+
+    mock_merge = mocker.patch(
+        "covalent._dispatcher_plugins.local.merge_response_manifest", return_value=manifest
+    )
+
+    return_manifest = LocalDispatcher.register_manifest(manifest)
+    assert return_manifest.metadata.dispatch_id == dispatch_id
+    mock_merge.assert_called_with(manifest, manifest)
+
+
+def test_register_derived_manifest(mocker):
+    """Test registering a redispatch manifest."""
+
+    dispatch_id = "test_register_derived_manifest"
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    workflow.build_graph(1, 2)
+    with tempfile.TemporaryDirectory() as staging_dir:
+        manifest = LocalDispatcher.prepare_manifest(workflow, staging_dir)
+
+    manifest.metadata.dispatch_id = dispatch_id
+
+    r = Response()
+    r.status_code = 201
+    r.json = MagicMock(return_value=manifest.dict())
+
+    mocker.patch("covalent._api.apiclient.requests.Session.post", return_value=r)
+
+    mock_merge = mocker.patch(
+        "covalent._dispatcher_plugins.local.merge_response_manifest", return_value=manifest
+    )
+
+    return_manifest = LocalDispatcher.register_derived_manifest(manifest, "original_dispatch")
+    assert return_manifest.metadata.dispatch_id == dispatch_id
+    mock_merge.assert_called_with(manifest, manifest)
+
+
+def test_upload_assets(mocker):
+    """Test uploading assets to HTTP endpoints"""
+
+    dispatch_id = "test_upload_assets_http"
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    workflow.build_graph(1, 2)
+    with tempfile.TemporaryDirectory() as staging_dir:
+        manifest = LocalDispatcher.prepare_manifest(workflow, staging_dir)
+
+        num_assets = 0
+        # Populate the lattice asset schemas with dummy URLs
+        for key, asset in manifest.lattice.assets:
+            num_assets += 1
+            asset.remote_uri = (
+                f"http://localhost:48008/api/v2/dispatches/{dispatch_id}/lattice/assets/dummy"
+            )
+
+        endpoint = f"/api/v2/dispatches/{dispatch_id}/lattice/assets/dummy"
+        r = Response()
+        r.status_code = 200
+        mock_post = mocker.patch("covalent._api.apiclient.requests.Session.put", return_value=r)
+
+        LocalDispatcher.upload_assets(manifest)
+
+        assert mock_post.call_count == num_assets
+
+
+def test_get_redispatch_request_body_norebuild(mocker):
+    """Test constructing the request body for redispatch"""
+
+    # Consider the case where the dispatch is to be retried with no
+    # changes to inputs or electrons.
+
+    dispatch_id = "test_get_redispatch_request_body_norebuild"
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    workflow.build_graph(1, 2)
+
+    # "Old" result object
+    res_obj = Result(workflow)
+
+    # Mock result manager
+    mock_resmgr = MagicMock()
+
+    with tempfile.TemporaryDirectory() as staging_dir:
+        manifest = LocalDispatcher.prepare_manifest(workflow, staging_dir)
+        mock_resmgr._manifest = manifest
+        mock_resmgr.result_object = res_obj
+
+        mock_serialize = mocker.patch(
+            "covalent._dispatcher_plugins.local.serialize_result", return_value=manifest
+        )
+        mocker.patch(
+            "covalent._dispatcher_plugins.local.ResultSchema.parse_obj", return_value=manifest
+        )
+        mocker.patch(
+            "covalent._dispatcher_plugins.local.get_result_manager", return_value=mock_resmgr
+        )
+
+    with tempfile.TemporaryDirectory() as redispatch_dir:
+        redispatch_manifest = get_redispatch_request_body_v2(
+            dispatch_id, redispatch_dir, [], {}, replace_electrons={}
+        )
+
+        assert redispatch_manifest is manifest
+
+
+def test_get_redispatch_request_body_replace_electrons(mocker):
+    """Test constructing the request body for redispatch"""
+
+    # Consider the case where electrons are to be replaced but lattice
+    # inputs stay the same.
+
+    dispatch_id = "test_get_redispatch_request_body_replace_electrons"
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.electron
+    def new_task(a, b, c):
+        return a * b * c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    workflow.build_graph(1, 2)
+
+    # "Old" result object
+    res_obj = Result(workflow)
+
+    # Mock result manager
+    mock_resmgr = MagicMock()
+
+    with tempfile.TemporaryDirectory() as staging_dir:
+        manifest = LocalDispatcher.prepare_manifest(workflow, staging_dir)
+        mock_resmgr._manifest = manifest
+        mock_resmgr.result_object = res_obj
+
+        mock_serialize = mocker.patch(
+            "covalent._dispatcher_plugins.local.serialize_result", return_value=manifest
+        )
+        mocker.patch(
+            "covalent._dispatcher_plugins.local.ResultSchema.parse_obj", return_value=manifest
+        )
+        mocker.patch(
+            "covalent._dispatcher_plugins.local.get_result_manager", return_value=mock_resmgr
+        )
+
+    with tempfile.TemporaryDirectory() as redispatch_dir:
+        redispatch_manifest = get_redispatch_request_body_v2(
+            dispatch_id, redispatch_dir, [], {}, replace_electrons={"task": new_task}
+        )
+
+        assert redispatch_manifest is manifest
+        mock_resmgr.download_lattice_asset.assert_any_call("workflow_function")
+        mock_resmgr.download_lattice_asset.assert_any_call("workflow_function_string")
+        mock_resmgr.download_lattice_asset.assert_any_call("inputs")
+
+        mock_resmgr.load_lattice_asset.assert_any_call("workflow_function")
+        mock_resmgr.load_lattice_asset.assert_any_call("workflow_function_string")
+        mock_resmgr.load_lattice_asset.assert_any_call("inputs")
+
+
+def test_get_redispatch_request_body_replace_inputs(mocker):
+    """Test constructing the request body for redispatch"""
+
+    # Consider the case where only lattice
+    # inputs are changed.
+
+    dispatch_id = "test_get_redispatch_request_body_replace_inputs"
+
+    @ct.electron
+    def task(a, b, c):
+        return a + b + c
+
+    @ct.lattice
+    def workflow(a, b):
+        return task(a, b, c=4)
+
+    workflow.build_graph(1, 2)
+
+    # "Old" result object
+    res_obj = Result(workflow)
+
+    # Mock result manager
+    mock_resmgr = MagicMock()
+
+    with tempfile.TemporaryDirectory() as staging_dir:
+        manifest = LocalDispatcher.prepare_manifest(workflow, staging_dir)
+        mock_resmgr._manifest = manifest
+        mock_resmgr.result_object = res_obj
+
+        mock_serialize = mocker.patch(
+            "covalent._dispatcher_plugins.local.serialize_result", return_value=manifest
+        )
+        mocker.patch(
+            "covalent._dispatcher_plugins.local.ResultSchema.parse_obj", return_value=manifest
+        )
+        mocker.patch(
+            "covalent._dispatcher_plugins.local.get_result_manager", return_value=mock_resmgr
+        )
+
+    with tempfile.TemporaryDirectory() as redispatch_dir:
+        redispatch_manifest = get_redispatch_request_body_v2(
+            dispatch_id, redispatch_dir, [3, 4], {}, replace_electrons=None
+        )
+
+        assert redispatch_manifest is manifest
+        mock_resmgr.download_lattice_asset.assert_any_call("workflow_function")
+        mock_resmgr.download_lattice_asset.assert_any_call("workflow_function_string")
+
+        mock_resmgr.load_lattice_asset.assert_any_call("workflow_function")
+        mock_resmgr.load_lattice_asset.assert_any_call("workflow_function_string")

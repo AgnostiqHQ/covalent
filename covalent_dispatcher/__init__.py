@@ -14,4 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from .entry_point import cancel_running_dispatch, run_dispatcher, run_redispatch
+from .entry_point import cancel_running_dispatch, run_dispatcher

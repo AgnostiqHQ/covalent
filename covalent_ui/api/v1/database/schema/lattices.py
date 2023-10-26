@@ -82,8 +82,14 @@ class Lattice(Base):
     # Short name describing the executor ("local", "dask", etc)
     executor = Column(Text)
 
+    # JSONified executor attributes
+    executor_data = Column(Text)
+
     # Short name describing the workflow executor ("local", "dask", etc)
     workflow_executor = Column(Text)
+
+    # JSONified workflow executor attributes
+    workflow_executor_data = Column(Text)
 
     # Name of the file containing an error message for the workflow
     error_filename = Column(Text)

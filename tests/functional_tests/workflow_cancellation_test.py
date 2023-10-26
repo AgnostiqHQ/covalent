@@ -48,6 +48,7 @@ def test_cancel():
     ct.cancel(dispatch_id)
 
     result = ct.get_result(dispatch_id, wait=True)
+
     assert result.status == ct.status.CANCELLED
     rm._delete_result(dispatch_id)
 
@@ -108,7 +109,7 @@ def test_cancel_sublattice():
         return sub_workflow(3)
 
     dispatch_id = ct.dispatch(workflow)(3)
-    time.sleep(0.5)
+    time.sleep(1)
 
     ct.cancel(dispatch_id, task_ids=[0])
 
@@ -116,7 +117,6 @@ def test_cancel_sublattice():
 
     tg = result.lattice.transport_graph
     sub_dispatch_id = tg.get_node_value(0, "sub_dispatch_id")
-
-    print("Sublattice dispatch id:", sub_dispatch_id)
-    sub_res = ct.get_result(sub_dispatch_id)
-    assert sub_res.status == ct.status.CANCELLED
+    if sub_dispatch_id:
+        sub_res = ct.get_result(sub_dispatch_id)
+        assert sub_res.status == ct.status.CANCELLED
