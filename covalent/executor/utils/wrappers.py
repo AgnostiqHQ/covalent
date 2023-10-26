@@ -241,7 +241,7 @@ def run_task_from_uris(
                         args_ids = task["args_ids"]
                         kwargs_ids = task["kwargs_ids"]
 
-                        base_uri = f"{server_url}/api/v2/lattices/{dispatch_id}/assets/node"
+                        base_uri = f"{server_url}/api/v2/job/lattices/{dispatch_id}/assets/node"
 
                         import requests
 
