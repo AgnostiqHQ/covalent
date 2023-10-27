@@ -331,7 +331,7 @@ class LocalDispatcher(BaseDispatcher):
             dispatcher_addr = format_server_url()
 
         stripped = strip_local_uris(manifest) if push_assets else manifest
-        register_dispatch_endpoint = f"{dispatcher_addr}/api/v2/lattices"
+        register_dispatch_endpoint = f"{dispatcher_addr}/api/v2/job/lattices"
 
         headers = {"X-SESSION-TOKEN": os.getenv("COVALENT_JOB_SESSION_TOKEN")}
 
