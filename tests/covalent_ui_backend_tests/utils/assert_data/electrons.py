@@ -95,7 +95,7 @@ def seed_electron_data():
                     "electron_id": VALID_NODE_ID,
                     "name": "executor",
                 },
-                "response_data": {"executor_name": "dask", "executor_details": None},
+                "response_data": {"executor_name": "dask", "executor_details": {}},
             },
             "case_result_1": {
                 "status_code": 200,

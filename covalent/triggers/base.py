@@ -21,10 +21,10 @@ from abc import abstractmethod
 
 import requests
 
-from .._results_manager import Result
+from .._dispatcher_plugins import local
 from .._shared_files import logger
 from .._shared_files.config import get_config
-from .._shared_files.util_classes import Status
+from .._shared_files.util_classes import RESULT_STATUS, Status
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -108,10 +108,10 @@ class BaseTrigger:
         """
 
         if self.use_internal_funcs:
-            from covalent_dispatcher._service.app import get_result
+            from covalent_dispatcher._service.app import export_result
 
             response = asyncio.run_coroutine_threadsafe(
-                get_result(self.lattice_dispatch_id, status_only=True),
+                export_result(self.lattice_dispatch_id, status_only=True),
                 self.event_loop,
             ).result()
 
@@ -137,21 +137,12 @@ class BaseTrigger:
             new_dispatch_id: Dispatch id of the newly dispatched workflow
         """
 
-        if self.use_internal_funcs:
-            from covalent_dispatcher import run_redispatch
-
-            return asyncio.run_coroutine_threadsafe(
-                run_redispatch(self.lattice_dispatch_id, None, None, False, is_pending),
-                self.event_loop,
-            ).result()
-
-        from .. import redispatch
-
-        return redispatch(
-            dispatch_id=self.lattice_dispatch_id,
-            dispatcher_addr=self.dispatcher_addr,
-            is_pending=is_pending,
-        )()
+        if is_pending:
+            return local.LocalDispatcher.start(self.lattice_dispatch_id, self.dispatcher_addr)
+        else:
+            return local.LocalDispatcher.redispatch(
+                self.lattice_dispatch_id, self.dispatcher_addr
+            )()
 
     def trigger(self) -> None:
         """
@@ -169,7 +160,7 @@ class BaseTrigger:
 
         status = self._get_status()
 
-        if status == Result.NEW_OBJ or status is None:
+        if status == str(RESULT_STATUS.NEW_OBJECT) or status is None:
             # To continue the pending dispatch
             same_dispatch_id = self._do_redispatch(True)
             app_log.debug(f"Initiating run for pending dispatch_id: {same_dispatch_id}")

@@ -236,7 +236,7 @@ jobs:
         if: >
           steps.modified-files.outputs.sdk == 'true'
           || env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_tests --cov=covalent --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vvs  --reruns=5 tests/covalent_tests --cov=covalent --cov-config=.coveragerc
 
       - name: Generate SDK coverage report
         id: sdk-coverage
@@ -248,7 +248,7 @@ jobs:
         if: >
           steps.modified-files.outputs.dispatcher == 'true'
           || env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vvs  --reruns=5 tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
 
       - name: Generate dispatcher coverage report
         id: dispatcher-coverage
@@ -260,7 +260,7 @@ jobs:
         if: >
           steps.modified-files.outputs.ui_backend == 'true'
           || env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_ui_backend_tests --cov=covalent_ui --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vvs  --reruns=5 tests/covalent_ui_backend_tests --cov=covalent_ui --cov-config=.coveragerc
 
       - name: Generate UI backend coverage report
         id: ui-backend-coverage

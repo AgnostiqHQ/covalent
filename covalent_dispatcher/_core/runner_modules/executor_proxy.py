@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-""" Monitor executor instances."""
+""" Monitor executor instances """
 
 
 from typing import Any
@@ -23,7 +23,13 @@ from covalent._shared_files import logger
 from covalent.executor.base import _AbstractBaseExecutor as _ABE
 from covalent.executor.utils import Signals
 
-from ..data_modules import job_manager
+from .jobs import (
+    get_cancel_requested,
+    get_job_status,
+    get_version_info,
+    put_job_handle,
+    put_job_status,
+)
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -32,50 +38,11 @@ _putters = {}
 _getters = {}
 
 
-async def _get_cancel_requested(dispatch_id: str, task_id: int):
-    """
-    Query the database for the task's cancellation status
-
-    Arg(s)
-        dispatch_id: Dispatch ID of the lattice
-        task_id: ID of the task within the lattice
-
-    Return(s)
-        Cancellation status of the task
-
-    """
-    # Don't hit the DB for post-processing task
-    if task_id < 0:
-        return False
-
-    app_log.debug(f"Get _handle_requested for executor {dispatch_id}:{task_id}")
-    job_records = await job_manager.get_jobs_metadata(dispatch_id, [task_id])
-    app_log.debug(f"Job record: {job_records[0]}")
-    return job_records[0]["cancel_requested"]
-
-
-async def _put_job_handle(dispatch_id: str, task_id: int, job_handle: str) -> bool:
-    """
-    Store the job handle of the task returned by the backend in the database
-
-    Arg(s)
-        dispatch_id: Dispatch ID of the lattice
-        task_id: ID of the task within the lattice
-        job_handle: Unique identifier of the task returned by the execution backend
-
-    Return(s)
-        True
-    """
-    # Don't hit the DB for post-processing task
-    if task_id < 0:
-        return False
-    app_log.debug(f"Put job_handle for executor {dispatch_id}:{task_id}")
-    await job_manager.set_job_handle(dispatch_id, task_id, job_handle)
-    return True
-
-
-_putters["job_handle"] = _put_job_handle
-_getters["cancel_requested"] = _get_cancel_requested
+_putters["job_handle"] = put_job_handle
+_putters["job_status"] = put_job_status
+_getters["cancel_requested"] = get_cancel_requested
+_getters["job_status"] = get_job_status
+_getters["version_info"] = get_version_info
 
 
 async def _handle_message(

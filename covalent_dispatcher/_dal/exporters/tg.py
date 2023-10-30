@@ -1,4 +1,4 @@
-# Copyright 2021 Agnostiq Inc.
+# Copyright 2023 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -23,8 +23,8 @@ from covalent._shared_files import logger
 from covalent._shared_files.schemas.edge import EdgeMetadata, EdgeSchema
 from covalent._shared_files.schemas.electron import ElectronSchema
 from covalent._shared_files.schemas.transport_graph import TransportGraphSchema
+from covalent_dispatcher._dal.tg import _TransportGraph
 
-from ..tg import _TransportGraph
 from .electron import export_electron
 
 app_log = logger.app_log
@@ -34,10 +34,7 @@ app_log = logger.app_log
 def _export_nodes(tg: _TransportGraph) -> List[ElectronSchema]:
     g = tg.get_internal_graph_copy()
     internal_nodes = tg.get_nodes(list(g.nodes), None)
-    export_nodes = []
-    for e in internal_nodes:
-        export_nodes.append(export_electron(e))
-
+    export_nodes = [export_electron(e) for e in internal_nodes]
     return export_nodes
 
 

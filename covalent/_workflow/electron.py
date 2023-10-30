@@ -25,7 +25,8 @@ from dataclasses import asdict
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
 
-from .._dispatcher_plugins.local import LocalDispatcher
+from covalent._dispatcher_plugins.local import LocalDispatcher
+
 from .._file_transfer.enums import Order
 from .._file_transfer.file_transfer import FileTransfer
 from .._shared_files import logger
@@ -154,6 +155,7 @@ class Electron:
             "-": operator.sub,
             "*": operator.mul,
             "/": operator.truediv,
+            "**": operator.pow,
         }
 
         def rename(op1: Any, op: str, op2: Any) -> Callable:
@@ -241,6 +243,9 @@ class Electron:
 
     def __rtruediv__(self, other):
         return self.get_op_function(other, self, "/")
+
+    def __pow__(self, other):
+        return self.get_op_function(self, other, "**")
 
     def __int__(self):
         return int()
