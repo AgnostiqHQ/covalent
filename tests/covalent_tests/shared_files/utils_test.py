@@ -45,7 +45,7 @@ def test_get_named_params():
 
     named_args, named_kwargs = get_named_params(test_func, [1], {"b": 2})
 
-    assert named_args == [1]
+    assert named_args == {"a": 1}
     assert named_kwargs == {"b": 2}
 
 
