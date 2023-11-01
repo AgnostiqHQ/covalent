@@ -188,9 +188,7 @@ def up(executor_name: str, vars: Dict, help: bool, dry_run: bool, verbose: bool)
                 ),
             )
         except subprocess.CalledProcessError as e:
-            # click.echo(
-            #     f"Unable to provision resources due to the following error:\n\n{e}"
-            # )
+            click.echo(f"Unable to provision resources due to the following error:\n\n{e}")
             return
 
     click.echo(Console().print(get_settings_table(crm)))
@@ -234,9 +232,7 @@ def down(executor_name: str, verbose: bool) -> None:
                 )
             )
         except subprocess.CalledProcessError as e:
-            click.echo(
-                f"Unable to destroy resources due to the following error:\n\n{e.stderr[-1]}"
-            )
+            click.echo(f"Unable to destroy resources due to the following error:\n\n{e}")
             return
 
     click.echo("Completed.")

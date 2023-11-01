@@ -26,7 +26,7 @@ from pathlib import Path
 from types import ModuleType
 from typing import Callable, Dict, List, Optional
 
-from covalent._shared_files.config import get_config, set_config
+from covalent._shared_files.config import set_config
 from covalent.executor import _executor_manager
 
 logger = logging.getLogger()
@@ -194,16 +194,11 @@ class CloudResourceManager:
         """
         with open(Path(self.executor_tf_path) / "terraform-error.log", "r") as f:
             lines = f.readlines()
-        for index, line in enumerate(lines):
+        for _, line in enumerate(lines):
             error_index = line.strip().find("error:")
             if error_index != -1:
                 error_message = line.strip()[error_index + len("error:") :]
-                logger.error("Error while:")
                 logger.error(error_message)
-                logger.error("_________________________")
-        with open(Path(self.executor_tf_path) / "terraform-error.log", "w"):
-            pass
-        f.close()
         return lines
 
     def _run_in_subprocess(
@@ -238,6 +233,15 @@ class CloudResourceManager:
                     "PATH": "$PATH:/usr/bin",
                 },
             )
+            TERRAFORM_STATE = "state list -state"
+            if TERRAFORM_STATE in cmd:
+                stdout, stderr = proc.communicate()
+                if stderr is None:
+                    return "down" if "No state file was found!" in str(stdout) else "up"
+                else:
+                    raise subprocess.CalledProcessError(
+                        returncode=1, cmd=cmd, stderr=self._parse_terraform_error_log()
+                    )
             retcode = self._print_stdout(proc, print_callback)
 
             if retcode != 0:
@@ -312,7 +316,7 @@ class CloudResourceManager:
 
         """
         # Saving in a directory which doesn't get deleted on purge
-        return str(Path(get_config("dispatcher.db_path")).parent / f"{self.executor_name}.tfstate")
+        return str(Path(self.executor_tf_path) / "terraform.tfstate")
 
     def up(self, print_callback: Callable, dry_run: bool = True) -> None:
         """
