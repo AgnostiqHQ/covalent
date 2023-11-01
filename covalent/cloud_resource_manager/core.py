@@ -424,7 +424,8 @@ class CloudResourceManager:
 
         if Path(tf_state_file).exists():
             Path(tf_state_file).unlink()
-            Path(f"{tf_state_file}.backup").unlink()
+            if Path(f"{tf_state_file}.backup").exists():
+                Path(f"{tf_state_file}.backup").unlink()
 
     def status(self) -> None:
         """

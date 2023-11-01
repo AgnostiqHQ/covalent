@@ -23,7 +23,6 @@
 
 
 import subprocess
-import sys
 from pathlib import Path
 from typing import Dict, Tuple
 
@@ -32,8 +31,12 @@ import click
 from rich.console import Console
 from rich.table import Table
 
-from covalent.cloud_resource_manager.core import CloudResourceManager, logger
+from covalent.cloud_resource_manager.core import CloudResourceManager
 from covalent.executor import _executor_manager
+
+RESOURCE_ALREADY_EXISTS = "Resources already deployed"
+RESOURCE_ALREADY_DESTROYED = "Resources already destroyed"
+COMPLETED = "Completed"
 
 
 def get_crm_object(executor_name: str, options: Dict = None) -> CloudResourceManager:
@@ -70,9 +73,6 @@ def get_print_callback(
 
     def inline_print_callback(msg):
         console_status.update(f"{prepend_msg} {msg}")
-        if msg == "No changes. No objects need to be destroyed.":
-            logger.error("Resources already destroyed")
-            sys.exit()
 
     return inline_print_callback
 
@@ -173,7 +173,7 @@ def up(executor_name: str, vars: Dict, help: bool, dry_run: bool, verbose: bool)
         click.echo(Console().print(get_up_help_table(crm)))
         return
 
-    console = Console()
+    console = Console(record=True)
     prepend_msg = "[bold green] Provisioning resources..."
 
     with console.status(prepend_msg) as status:
@@ -192,7 +192,13 @@ def up(executor_name: str, vars: Dict, help: bool, dry_run: bool, verbose: bool)
             return
 
     click.echo(Console().print(get_settings_table(crm)))
-    click.echo("Completed.")
+    exists_msg_with_verbose = "Apply complete! Resources: 0 added, 0 changed, 0 destroyed"
+    exists_msg_without_verbose = "found no differences, so no changes are needed"
+    export_data = console.export_text()
+    if exists_msg_with_verbose in export_data or exists_msg_without_verbose in export_data:
+        click.echo(RESOURCE_ALREADY_EXISTS)
+    else:
+        click.echo(COMPLETED)
 
 
 @deploy.command()
@@ -219,7 +225,7 @@ def down(executor_name: str, verbose: bool) -> None:
     """
     crm = get_crm_object(executor_name)
 
-    console = Console()
+    console = Console(record=True)
     prepend_msg = "[bold green] Destroying resources..."
     with console.status(prepend_msg) as status:
         try:
@@ -234,8 +240,12 @@ def down(executor_name: str, verbose: bool) -> None:
         except subprocess.CalledProcessError as e:
             click.echo(f"Unable to destroy resources due to the following error:\n\n{e}")
             return
-
-    click.echo("Completed.")
+    destroyed_msg = "Destroy complete! Resources: 0 destroyed."
+    export_data = console.export_text()
+    if destroyed_msg in export_data:
+        click.echo(RESOURCE_ALREADY_DESTROYED)
+    else:
+        click.echo(COMPLETED)
 
 
 # TODO - Color code status.
