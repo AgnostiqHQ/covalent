@@ -84,11 +84,7 @@ def test_electron_takes_nested_iterables():
         b_list = [identity(a=i) for i in range(5, 10)]
         return collect(l_electrons=[a_list, b_list])
 
-    # Temporarily force task packing for this test
-    old_task_packing = ct.get_config("sdk.task_packing")
-    ct.set_config("sdk.task_packing", "true")
     dispatch_id = ct.dispatch(workflow)()
-    ct.set_config("sdk.task_packing", old_task_packing)
 
     assert rm.get_result(dispatch_id, wait=True).result == [
         [0, 1, 2, 3, 4],
