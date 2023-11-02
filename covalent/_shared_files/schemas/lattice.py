@@ -62,8 +62,8 @@ LATTICE_RESULTS_FILENAME = "results.tobj"
 LATTICE_DEPS_FILENAME = "deps.json"
 LATTICE_CALL_BEFORE_FILENAME = "call_before.json"
 LATTICE_CALL_AFTER_FILENAME = "call_after.json"
-LATTICE_COVA_IMPORTS_FILENAME = "cova_imports.pkl"
-LATTICE_LATTICE_IMPORTS_FILENAME = "lattice_imports.pkl"
+LATTICE_COVA_IMPORTS_FILENAME = "cova_imports.json"
+LATTICE_LATTICE_IMPORTS_FILENAME = "lattice_imports.txt"
 LATTICE_STORAGE_TYPE = "file"
 
 

@@ -21,7 +21,7 @@ import inspect
 import shutil
 import socket
 from datetime import timedelta
-from typing import Any, Callable, Dict, Set, Tuple
+from typing import Any, Callable, Dict, List, Tuple
 
 import cloudpickle
 from pennylane._device import Device
@@ -138,7 +138,7 @@ def get_serialized_function_str(function):
     return function_str + "\n\n"
 
 
-def get_imports(func: Callable) -> Tuple[str, Set[str]]:
+def get_imports(func: Callable) -> Tuple[str, List[str]]:
     """
     Given an input workflow function, find the imports that were used, and determine
         which ones are Covalent-related.
@@ -152,7 +152,7 @@ def get_imports(func: Callable) -> Tuple[str, Set[str]]:
     """
 
     imports_str = ""
-    cova_imports = set()
+    cova_imports = []
     for i, j in func.__globals__.items():
         if inspect.ismodule(j) or (
             inspect.isfunction(j) and j.__name__ in ["lattice", "electron"]
@@ -164,7 +164,7 @@ def get_imports(func: Callable) -> Tuple[str, Set[str]]:
 
             if j.__name__ in ["covalent", "lattice", "electron"]:
                 import_line = f"# {import_line}"
-                cova_imports.add(i)
+                cova_imports.append(i)
 
             imports_str += import_line
 

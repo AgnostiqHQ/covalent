@@ -70,8 +70,8 @@ TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
 DEPS_FILENAME = "deps.pkl"
 CALL_BEFORE_FILENAME = "call_before.pkl"
 CALL_AFTER_FILENAME = "call_after.pkl"
-COVA_IMPORTS_FILENAME = "cova_imports.pkl"
-LATTICE_IMPORTS_FILENAME = "lattice_imports.pkl"
+COVA_IMPORTS_FILENAME = "cova_imports.json"
+LATTICE_IMPORTS_FILENAME = "lattice_imports.txt"
 RESULTS_DIR = "/tmp/results"
 
 
