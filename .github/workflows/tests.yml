@@ -227,6 +227,7 @@ jobs:
         run: |
           covalent status
           covalent cluster --info
+          covalent cluster --logs
 
       - name: Run functional tests and measure coverage
         id: functional-tests
