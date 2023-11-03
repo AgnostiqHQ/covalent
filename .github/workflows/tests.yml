@@ -221,6 +221,13 @@ jobs:
         env:
           COVALENT_EXECUTOR_DIR: doc/source/how_to/execution/custom_executors
 
+      - name: Print Covalent status
+        if: env.BUILD_AND_RUN_ALL
+        id: covalent_status
+        run: |
+          covalent status
+          covalent cluster --info
+
       - name: Run functional tests and measure coverage
         id: functional-tests
         if: env.BUILD_AND_RUN_ALL
