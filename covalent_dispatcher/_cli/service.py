@@ -51,7 +51,7 @@ from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
 
-from covalent._shared_files.config import ConfigManager, get_config, set_config
+from covalent._shared_files.config import ConfigManager, get_config, reload_config, set_config
 
 from .._db.datastore import DataStore
 from .migrate import migrate_pickled_result_object
@@ -240,6 +240,11 @@ def _graceful_start(
             up = True
         except requests.exceptions.ConnectionError:
             time.sleep(1)
+
+    # Since the dispatcher process might update the config file with the Dask cluster's state,
+    # we need to sync those changes with the CLI's ConfigManager instance. Otherwise the next
+    # call to `set_config()` from this module would obliterate the Dask cluster state.
+    reload_config()
 
     Path(get_config("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
     Path(get_config("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
@@ -858,11 +863,12 @@ async def _get_cluster_logs(uri):
 
 def _get_cluster_admin_address():
     try:
+        reload_config()
         admin_host = get_config("dask.admin_host")
         admin_port = get_config("dask.admin_port")
         admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
         return admin_server_addr
-    except KeyError:
+    except KeyError as e:
         return
 
 
