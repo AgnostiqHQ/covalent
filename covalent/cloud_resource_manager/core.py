@@ -24,7 +24,7 @@ import sys
 from configparser import ConfigParser
 from pathlib import Path
 from types import ModuleType
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Dict, List, Optional, Union
 
 from covalent._shared_files.config import set_config
 from covalent.executor import _executor_manager
@@ -192,7 +192,7 @@ class CloudResourceManager:
             List of lines in the terraform error log.
 
         """
-        with open(Path(self.executor_tf_path) / "terraform-error.log", "r") as f:
+        with open(Path(self.executor_tf_path) / "terraform-error.log", "r", encoding="UTF-8") as f:
             lines = f.readlines()
         for _, line in enumerate(lines):
             error_index = line.strip().find("error:")
@@ -201,13 +201,69 @@ class CloudResourceManager:
                 logger.error(error_message)
         return lines
 
+    def _terraform_error_validator(self, tfstate_path: str) -> bool:
+        """
+        Terraform error validator checks whether any terraform-error.log files existence and validate last line.
+        Args: None
+        Return:
+            up    - if terraform-error.log is empty and tfstate exists.
+            *up   - if terraform-error.log is not empty and 'On deploy' at last line.
+            down  - if terraform-error.log is empty and tfstate file not exists.
+            *down - if terraform-error.log is not empty and 'On destroy' at last line.
+        """
+        tf_error_file = os.path.join(self.executor_tf_path, "terraform-error.log")
+        if os.path.exists(tf_error_file) and os.path.getsize(tf_error_file) > 0:
+            with open(tf_error_file, "r", encoding="UTF-8") as error_file:
+                indicator = error_file.readlines()[-1]
+                if indicator == "On deploy":
+                    return "*up"
+                elif indicator == "On destroy":
+                    return "*down"
+        return "up" if os.path.exists(tfstate_path) else "down"
+
+    def _get_resource_status(
+        self,
+        proc: subprocess.Popen,
+        cmd: str,
+    ) -> str:
+        """
+        Get resource status will return current status of plugin based on terraform-error.log and tfstate file.
+        Args:
+            proc  : subprocess.Popen - To read stderr from Popen.communicate.
+            cmd   : command for executing terraform scripts.
+        Returns:
+            status: str - status of plugin
+        """
+        _, stderr = proc.communicate()
+        cmds = cmd.split(" ")
+        tfstate_path = cmds[-1].split("=")[-1]
+        if stderr is None:
+            return self._terraform_error_validator(tfstate_path=tfstate_path)
+        else:
+            raise subprocess.CalledProcessError(
+                returncode=1, cmd=cmd, stderr=self._parse_terraform_error_log()
+            )
+
+    def _log_error_msg(self, cmd) -> None:
+        """
+        Log error msg with valid command to terraform-erro.log
+        Args: cmd: str - terraform-error.log file path.
+        """
+        with open(
+            Path(self.executor_tf_path) / "terraform-error.log", "a", encoding="UTF-8"
+        ) as file:
+            if any(tf_cmd in cmd for tf_cmd in ["init", "plan", "apply"]):
+                file.write("\nOn deploy")
+            elif "destroy" in cmd:
+                file.write("\nOn destroy")
+
     def _run_in_subprocess(
         self,
         cmd: str,
         workdir: str,
         env_vars: Optional[Dict[str, str]] = None,
         print_callback: Optional[Callable] = None,
-    ) -> None:
+    ) -> Union[None, str]:
         """
         Run the `cmd` in a subprocess shell with the env_vars set in the process's new environment
 
@@ -217,8 +273,11 @@ class CloudResourceManager:
             env_vars: Dictionary of environment variables to set in the processes execution environment
 
         Returns:
-            None
-
+            Union[None, str]
+                - For 'covalent deploy status'
+                    returns status of the deplyment
+                - Others
+                    return None
         """
         if git := shutil.which("git"):
             proc = subprocess.Popen(
@@ -235,20 +294,16 @@ class CloudResourceManager:
             )
             TERRAFORM_STATE = "state list -state"
             if TERRAFORM_STATE in cmd:
-                stdout, stderr = proc.communicate()
-                if stderr is None:
-                    return "down" if "No state file was found!" in str(stdout) else "up"
-                else:
-                    raise subprocess.CalledProcessError(
-                        returncode=1, cmd=cmd, stderr=self._parse_terraform_error_log()
-                    )
+                return self._get_resource_status(proc=proc, cmd=cmd)
             retcode = self._print_stdout(proc, print_callback)
 
             if retcode != 0:
+                self._log_error_msg(cmd=cmd)
                 raise subprocess.CalledProcessError(
                     returncode=retcode, cmd=cmd, stderr=self._parse_terraform_error_log()
                 )
         else:
+            self._log_error_msg(cmd=cmd)
             logger.error("Git not found on the system.")
             sys.exit()
 
@@ -337,6 +392,10 @@ class CloudResourceManager:
         tf_init = " ".join([terraform, "init"])
         tf_plan = " ".join([terraform, "plan", "-out", "tf.plan"])
         tf_apply = " ".join([terraform, "apply", "tf.plan"])
+        terraform_log_file = self._terraform_log_env_vars["TF_LOG_PATH"]
+
+        if Path(terraform_log_file).exists():
+            Path(terraform_log_file).unlink()
 
         # Run `terraform init`
         self._run_in_subprocess(
@@ -378,8 +437,7 @@ class CloudResourceManager:
             # Update covalent executor config based on Terraform output
             self._update_config(tf_executor_config_file)
 
-        terraform_log_file = self._terraform_log_env_vars["TF_LOG_PATH"]
-        if Path(terraform_log_file).exists():
+        if Path(terraform_log_file).exists() and os.path.getsize(terraform_log_file) == 0:
             Path(terraform_log_file).unlink()
 
     def down(self, print_callback: Callable) -> None:
@@ -408,6 +466,8 @@ class CloudResourceManager:
                 "-auto-approve",
             ]
         )
+        if Path(terraform_log_file).exists():
+            Path(terraform_log_file).unlink()
 
         # Run `terraform destroy`
         self._run_in_subprocess(
@@ -419,7 +479,7 @@ class CloudResourceManager:
         if Path(tfvars_file).exists():
             Path(tfvars_file).unlink()
 
-        if Path(terraform_log_file).exists():
+        if Path(terraform_log_file).exists() and os.path.getsize(terraform_log_file) == 0:
             Path(terraform_log_file).unlink()
 
         if Path(tf_state_file).exists():
