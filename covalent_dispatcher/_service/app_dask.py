@@ -25,15 +25,19 @@ from threading import Thread
 import dask.config
 from dask.distributed import LocalCluster
 from distributed.core import Server, rpc
+from fastapi import APIRouter
 
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config, update_config
 from covalent._shared_files.utils import get_random_available_port
+from covalent_dispatcher._cli.service import _get_cluster_admin_address, _get_cluster_status
 
 app_log = logger.app_log
 
 # Configure dask to not allow daemon workers
 dask.config.set({"distributed.worker.daemon": False})
+
+router: APIRouter = APIRouter()
 
 
 class DaskAdminWorker(Thread):
@@ -218,6 +222,8 @@ class DaskCluster(Process):
         scheduler_address = self.cluster.scheduler_address
         dashboard_link = self.cluster.dashboard_link
 
+        print("DEBUG: scheduler_address", scheduler_address)
+        print(f"DEBUG: admin address {self.admin_host}:{self.admin_port}")
         try:
             update_config(
                 {
@@ -236,3 +242,14 @@ class DaskCluster(Process):
             admin.start()
         except Exception as e:
             self.logger.exception(e)
+
+        print("DEBUG: scheduler_address in config:", get_config("dask.scheduler_address"))
+
+
+@router.get("/cluster/status")
+async def get_cluster_status():
+    admin_address = _get_cluster_admin_address()
+    if not admin_address:
+        return {"scheduler": "stopped"}
+    cluster_status = await _get_cluster_status(admin_address)
+    return cluster_status
