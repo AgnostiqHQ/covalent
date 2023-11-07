@@ -20,6 +20,7 @@ import asyncio
 import os
 from logging import Logger
 from multiprocessing import Process, current_process
+from multiprocessing.connection import Connection
 from threading import Thread
 
 import dask.config
@@ -28,9 +29,8 @@ from distributed.core import Server, rpc
 from fastapi import APIRouter
 
 from covalent._shared_files import logger
-from covalent._shared_files.config import get_config, update_config
+from covalent._shared_files.config import get_config
 from covalent._shared_files.utils import get_random_available_port
-from covalent_dispatcher._cli.service import _get_cluster_admin_address, _get_cluster_status
 
 app_log = logger.app_log
 
@@ -174,11 +174,14 @@ class DaskCluster(Process):
     randomly selected TCP port that is available
     """
 
-    def __init__(self, name: str, logger: Logger):
+    def __init__(self, name: str, logger: Logger, conn: Connection):
         super(DaskCluster, self).__init__()
         self.name = name
         self.logger = logger
         self.cluster = None
+
+        # For sending cluster state back to main covalent process
+        self.conn = conn
 
         # Cluster configuration
         self.num_workers = None
@@ -222,34 +225,21 @@ class DaskCluster(Process):
         scheduler_address = self.cluster.scheduler_address
         dashboard_link = self.cluster.dashboard_link
 
-        print("DEBUG: scheduler_address", scheduler_address)
-        print(f"DEBUG: admin address {self.admin_host}:{self.admin_port}")
         try:
-            update_config(
-                {
-                    "dask": {
-                        "scheduler_address": scheduler_address,
-                        "dashboard_link": dashboard_link,
-                        "process_info": current_process(),
-                        "pid": os.getpid(),
-                        "admin_host": self.admin_host,
-                        "admin_port": self.admin_port,
-                    }
+            dask_config = {
+                "dask": {
+                    "scheduler_address": scheduler_address,
+                    "dashboard_link": dashboard_link,
+                    "process_info": current_process(),
+                    "pid": os.getpid(),
+                    "admin_host": self.admin_host,
+                    "admin_port": self.admin_port,
                 }
-            )
+            }
+
+            self.conn.send(dask_config)
 
             admin = DaskAdminWorker(self.cluster, self.admin_host, self.admin_port, self.logger)
             admin.start()
         except Exception as e:
             self.logger.exception(e)
-
-        print("DEBUG: scheduler_address in config:", get_config("dask.scheduler_address"))
-
-
-@router.get("/cluster/status")
-async def get_cluster_status():
-    admin_address = _get_cluster_admin_address()
-    if not admin_address:
-        return {"scheduler": "stopped"}
-    cluster_status = await _get_cluster_status(admin_address)
-    return cluster_status
