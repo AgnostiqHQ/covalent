@@ -218,6 +218,7 @@ jobs:
             echo "Invalid backend specified in test matrix."
             exit 1
           fi
+          cat $HOME/.config/covalent/covalent.conf
         env:
           COVALENT_EXECUTOR_DIR: doc/source/how_to/execution/custom_executors
 
