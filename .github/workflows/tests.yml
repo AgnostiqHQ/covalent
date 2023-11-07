@@ -218,8 +218,17 @@ jobs:
             echo "Invalid backend specified in test matrix."
             exit 1
           fi
+          cat $HOME/.config/covalent/covalent.conf
         env:
           COVALENT_EXECUTOR_DIR: doc/source/how_to/execution/custom_executors
+
+      - name: Print Covalent status
+        if: env.BUILD_AND_RUN_ALL
+        id: covalent_status
+        run: |
+          covalent status
+          covalent cluster --info
+          covalent cluster --logs
 
       - name: Run functional tests and measure coverage
         id: functional-tests
