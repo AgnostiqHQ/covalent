@@ -230,7 +230,7 @@ class DaskCluster(Process):
                 "dask": {
                     "scheduler_address": scheduler_address,
                     "dashboard_link": dashboard_link,
-                    "process_info": current_process(),
+                    "process_info": str(current_process()),
                     "pid": os.getpid(),
                     "admin_host": self.admin_host,
                     "admin_port": self.admin_port,
