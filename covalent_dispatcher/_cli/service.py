@@ -242,7 +242,8 @@ def _graceful_start(
             time.sleep(1)
 
     # Since the dispatcher process might update the config file with the Dask cluster's state,
-    # we need to sync those changes with the CLI's ConfigManager instance.
+    # we need to sync those changes with the CLI's ConfigManager instance. Otherwise the next
+    # call to `set_config()` from this module would obliterate the Dask cluster state.
     reload_config()
 
     Path(get_config("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
