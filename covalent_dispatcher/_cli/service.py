@@ -51,7 +51,7 @@ from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
 
-from covalent._shared_files.config import ConfigManager, get_config, set_config
+from covalent._shared_files.config import ConfigManager, get_config, reload_config, set_config
 
 from .._db.datastore import DataStore
 from .migrate import migrate_pickled_result_object
@@ -858,11 +858,12 @@ async def _get_cluster_logs(uri):
 
 def _get_cluster_admin_address():
     try:
+        reload_config()
         admin_host = get_config("dask.admin_host")
         admin_port = get_config("dask.admin_port")
         admin_server_addr = unparse_address("tcp", f"{admin_host}:{admin_port}")
         return admin_server_addr
-    except KeyError:
+    except KeyError as e:
         return
 
 
