@@ -241,6 +241,10 @@ def _graceful_start(
         except requests.exceptions.ConnectionError:
             time.sleep(1)
 
+    # Since the dispatcher process might update the config file with the Dask cluster's state,
+    # we need to sync those changes with the CLI's ConfigManager instance.
+    reload_config()
+
     Path(get_config("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
     Path(get_config("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
     Path(get_config("dispatcher.log_dir")).mkdir(parents=True, exist_ok=True)
