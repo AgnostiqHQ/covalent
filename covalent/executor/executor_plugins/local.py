@@ -20,19 +20,27 @@ Module for defining a local executor that directly invokes the input python func
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
-
+import asyncio
 import os
 from concurrent.futures import ProcessPoolExecutor
+from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
-# Relative imports are not allowed in executor plugins
+import requests
+from pydantic import BaseModel
+
 from covalent._shared_files import TaskCancelledError, TaskRuntimeError, logger
 from covalent._shared_files.config import get_config
+from covalent._shared_files.util_classes import RESULT_STATUS, Status
+from covalent._shared_files.utils import format_server_url
 from covalent.executor import BaseExecutor
+
+# Relative imports are not allowed in executor plugins
+from covalent.executor.schemas import ResourceMap, TaskSpec, TaskUpdate
 
 # Store the wrapper function in an external module to avoid module
 # import errors during pickling
-from covalent.executor.utils.wrappers import io_wrapper
+from covalent.executor.utils.wrappers import io_wrapper, run_task_from_uris
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "LocalExecutor"
@@ -58,10 +66,26 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
 proc_pool = ProcessPoolExecutor()
 
 
+# Valid terminal statuses
+class StatusEnum(str, Enum):
+    CANCELLED = str(RESULT_STATUS.CANCELLED)
+    COMPLETED = str(RESULT_STATUS.COMPLETED)
+    FAILED = str(RESULT_STATUS.FAILED)
+
+
+class ReceiveModel(BaseModel):
+    status: StatusEnum
+
+
+MANAGED_EXECUTION = True
+
+
 class LocalExecutor(BaseExecutor):
     """
     Local executor class that directly invokes the input function.
     """
+
+    SUPPORTS_MANAGED_EXECUTION = MANAGED_EXECUTION
 
     def __init__(
         self, workdir: str = "", create_unique_workdir: Optional[bool] = None, *args, **kwargs
@@ -130,3 +154,118 @@ class LocalExecutor(BaseExecutor):
             raise TaskRuntimeError(tb)
 
         return output
+
+    def _send(
+        self,
+        task_specs: List[TaskSpec],
+        resources: ResourceMap,
+        task_group_metadata: dict,
+    ):
+        dispatch_id = task_group_metadata["dispatch_id"]
+        task_ids = task_group_metadata["node_ids"]
+        gid = task_group_metadata["task_group_id"]
+        output_uris = []
+        for node_id in task_ids:
+            result_uri = os.path.join(self.cache_dir, f"result_{dispatch_id}-{node_id}.pkl")
+            stdout_uri = os.path.join(self.cache_dir, f"stdout_{dispatch_id}-{node_id}.txt")
+            stderr_uri = os.path.join(self.cache_dir, f"stderr_{dispatch_id}-{node_id}.txt")
+            output_uris.append((result_uri, stdout_uri, stderr_uri))
+
+        server_url = format_server_url()
+
+        app_log.debug(f"Running task group {dispatch_id}:{task_ids}")
+        future = proc_pool.submit(
+            run_task_from_uris,
+            list(map(lambda t: t.dict(), task_specs)),
+            resources.dict(),
+            output_uris,
+            self.cache_dir,
+            task_group_metadata,
+            server_url,
+        )
+
+        def handle_cancelled(fut):
+            app_log.debug(f"In done callback for {dispatch_id}:{gid}, future {fut}")
+            if fut.cancelled():
+                for task_id in task_ids:
+                    url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/job"
+                    requests.put(url, json={"status": "CANCELLED"})
+
+        future.add_done_callback(handle_cancelled)
+
+    def _receive(self, task_group_metadata: Dict, data: Any) -> List[TaskUpdate]:
+        # Returns (output_uri, stdout_uri, stderr_uri,
+        # exception_raised)
+
+        # Job should have reached a terminal state by the time this is invoked.
+        dispatch_id = task_group_metadata["dispatch_id"]
+        task_ids = task_group_metadata["node_ids"]
+
+        task_results = []
+
+        for task_id in task_ids:
+            # Handle the case where the job was cancelled before the task started running
+            app_log.debug(f"Receive called for task {dispatch_id}:{task_id} with data {data}")
+
+            if not data:
+                terminal_status = RESULT_STATUS.CANCELLED
+            else:
+                received = ReceiveModel.parse_obj(data)
+                terminal_status = Status(received.status.value)
+
+            task_result = {
+                "dispatch_id": dispatch_id,
+                "node_id": task_id,
+                "status": terminal_status,
+                "assets": {
+                    "output": {
+                        "remote_uri": "",
+                    },
+                    "stdout": {
+                        "remote_uri": "",
+                    },
+                    "stderr": {
+                        "remote_uri": "",
+                    },
+                },
+            }
+
+            task_results.append(TaskUpdate(**task_result))
+
+        app_log.debug(f"Returning results for tasks {dispatch_id}:{task_ids}")
+        return task_results
+
+    async def send(
+        self,
+        task_specs: List[TaskSpec],
+        resources: ResourceMap,
+        task_group_metadata: dict,
+    ):
+        # Assets are assumed to be accessible by the compute backend
+        # at the provided URIs
+
+        # The Asset Manager is responsible for uploading all assets
+        # Returns a job handle (should be JSONable)
+
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(
+            None,
+            self._send,
+            task_specs,
+            resources,
+            task_group_metadata,
+        )
+
+    async def receive(self, task_group_metadata: Dict, data: Any) -> List[TaskUpdate]:
+        # Returns (output_uri, stdout_uri, stderr_uri,
+        # exception_raised)
+
+        # Job should have reached a terminal state by the time this is invoked.
+        loop = asyncio.get_running_loop()
+
+        return await loop.run_in_executor(
+            None,
+            self._receive,
+            task_group_metadata,
+            data,
+        )

@@ -15,4 +15,4 @@
 # limitations under the License.
 
 from .context import get_context, set_context
-from .wrappers import Signals
+from .enums import Signals
