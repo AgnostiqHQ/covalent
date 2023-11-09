@@ -82,7 +82,6 @@ class Lattice:
         self.named_kwargs = None
         self.electron_outputs = {}
         self.lattice_imports, self.cova_imports = get_imports(self.workflow_function)
-        # self.cova_imports.update({"electron"})
 
         self.workflow_function = TransportableObject.make_transportable(self.workflow_function)
 

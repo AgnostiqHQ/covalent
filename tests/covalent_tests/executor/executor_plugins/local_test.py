@@ -573,14 +573,14 @@ test_cases = [
 
 
 @pytest.mark.parametrize("test_case", test_cases, ids=[tc["id"] for tc in test_cases])
-def test_send(
+def test_send_internal(
     test_case,
     mock_os_path_join,
     mock_format_server_url,
     mock_future,
     mock_proc_pool_submit,
 ):
-    """Test the send function of LocalExecutor"""
+    """Test the internal _send function of LocalExecutor"""
 
     local_exec = LocalExecutor()
 
@@ -606,6 +606,53 @@ def test_send(
         "mock_cache_dir",
         test_case["task_group_metadata"],
         test_case["expected_server_url"],
+    )
+
+
+@pytest.mark.asyncio
+async def test_send(mocker):
+    """Test the send function of LocalExecutor"""
+
+    local_exec = LocalExecutor()
+
+    # Arrange
+    task_group_metadata = {"dispatch_id": "1", "node_ids": ["1", "2"]}
+    task_spec = TaskSpec(
+        function_id=0,
+        args_ids=[1],
+        kwargs_ids={"y": 2},
+        deps_id="deps",
+        call_before_id="call_before",
+        call_after_id="call_after",
+    )
+    resource = ResourceMap(
+        functions={0: "mock_function_uri"},
+        inputs={1: "mock_input_uri"},
+        deps={"deps": "mock_deps_uri"},
+    )
+
+    mock_loop = mocker.Mock()
+
+    mock_get_running_loop = mocker.patch(
+        "covalent.executor.executor_plugins.local.asyncio.get_running_loop",
+        return_value=mock_loop,
+    )
+    mock_get_running_loop.return_value.run_in_executor = mocker.AsyncMock()
+
+    await local_exec.send(
+        [task_spec],
+        resource,
+        task_group_metadata,
+    )
+
+    mock_get_running_loop.assert_called_once()
+
+    mock_get_running_loop.return_value.run_in_executor.assert_awaited_once_with(
+        None,
+        local_exec._send,
+        [task_spec],
+        resource,
+        task_group_metadata,
     )
 
 
@@ -641,8 +688,8 @@ test_data = [
 
 
 @pytest.mark.parametrize("test_case", test_data, ids=[tc["id"] for tc in test_data])
-def test_receive(test_case):
-    """Test the receive function of LocalExecutor"""
+def test_receive_internal(test_case):
+    """Test the internal _receive function of LocalExecutor"""
 
     local_exec = LocalExecutor()
 
@@ -657,3 +704,36 @@ def test_receive(test_case):
     # Assert
     for task_result in task_results:
         assert task_result.status == expected_status
+
+
+@pytest.mark.asyncio
+async def test_receive(mocker):
+    """Test the receive function of LocalExecutor"""
+
+    local_exec = LocalExecutor()
+
+    # Arrange
+    task_group_metadata = {"dispatch_id": "1", "node_ids": ["1", "2"]}
+    test_data = {"status": StatusEnum.COMPLETED}
+
+    mock_loop = mocker.Mock()
+
+    mock_get_running_loop = mocker.patch(
+        "covalent.executor.executor_plugins.local.asyncio.get_running_loop",
+        return_value=mock_loop,
+    )
+    mock_get_running_loop.return_value.run_in_executor = mocker.AsyncMock()
+
+    await local_exec.receive(
+        task_group_metadata,
+        test_data,
+    )
+
+    mock_get_running_loop.assert_called_once()
+
+    mock_get_running_loop.return_value.run_in_executor.assert_awaited_once_with(
+        None,
+        local_exec._receive,
+        task_group_metadata,
+        test_data,
+    )
