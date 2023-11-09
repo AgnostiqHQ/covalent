@@ -308,7 +308,6 @@ class DaskExecutor(AsyncBaseExecutor):
                 stderr_uri = ""
 
             else:
-                # terminal_status = data["status"] if data else RESULT_STATUS.CANCELLED
                 result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
                 with open(result_path, "r") as f:
                     result_summary = json.load(f)

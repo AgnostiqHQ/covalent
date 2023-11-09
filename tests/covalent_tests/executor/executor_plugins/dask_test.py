@@ -17,12 +17,15 @@
 """Tests for Covalent dask executor."""
 
 import asyncio
+import io
 import json
 import os
+import sys
 import tempfile
 from unittest.mock import AsyncMock
 
 import pytest
+from dask.distributed import LocalCluster
 
 import covalent as ct
 from covalent._shared_files import TaskRuntimeError
@@ -33,6 +36,7 @@ from covalent.executor.executor_plugins.dask import (
     DaskExecutor,
     ResourceMap,
     TaskSpec,
+    dask_wrapper,
     run_task_from_uris_alt,
 )
 from covalent.executor.utils.serialize import serialize_node_asset
@@ -58,8 +62,6 @@ def test_dask_executor_init(mocker):
 
 
 def test_dask_executor_with_workdir(mocker):
-    from dask.distributed import LocalCluster
-
     with tempfile.TemporaryDirectory() as tmp_dir:
         lc = LocalCluster()
         de = ct.executor.DaskExecutor(
@@ -96,10 +98,6 @@ def test_dask_executor_with_workdir(mocker):
 
 
 def test_dask_wrapper_fn(mocker):
-    import sys
-
-    from covalent.executor.executor_plugins.dask import dask_wrapper
-
     def f(x):
         print("Hello", file=sys.stdout)
         print("Bye", file=sys.stderr)
@@ -116,10 +114,6 @@ def test_dask_wrapper_fn(mocker):
 
 
 def test_dask_wrapper_fn_exception_handling(mocker):
-    import sys
-
-    from covalent.executor.executor_plugins.dask import dask_wrapper
-
     def f(x):
         raise RuntimeError("error")
 
@@ -134,13 +128,6 @@ def test_dask_wrapper_fn_exception_handling(mocker):
 
 def test_dask_executor_run(mocker):
     """Test run method for Dask executor"""
-
-    import io
-    import sys
-
-    from dask.distributed import LocalCluster
-
-    from covalent.executor import DaskExecutor
 
     cluster = LocalCluster()
 
@@ -173,12 +160,6 @@ def test_dask_executor_run_cancel_requested(mocker):
     """
     Test dask executor cancel request
     """
-    import io
-    import sys
-
-    from dask.distributed import LocalCluster
-
-    from covalent.executor import DaskExecutor
 
     cluster = LocalCluster()
 
@@ -206,13 +187,6 @@ def test_dask_executor_run_cancel_requested(mocker):
 
 def test_dask_executor_run_exception_handling(mocker):
     """Test run method for Dask executor"""
-
-    import io
-    import sys
-
-    from dask.distributed import LocalCluster
-
-    from covalent.executor import DaskExecutor
 
     cluster = LocalCluster()
 
@@ -244,9 +218,6 @@ def test_dask_app_log_debug_when_cancel_requested(mocker):
     """
     Test logging when task cancellation is requested
     """
-    from dask.distributed import LocalCluster
-
-    from covalent.executor import DaskExecutor
 
     cluster = LocalCluster()
 
@@ -277,9 +248,6 @@ def test_dask_task_cancel(mocker):
     """
     Test dask task cancellation method
     """
-    from dask.distributed import LocalCluster
-
-    from covalent.executor import DaskExecutor
 
     cluster = LocalCluster()
 
@@ -297,12 +265,15 @@ def test_dask_task_cancel(mocker):
 
 def test_dask_send_poll_receive(mocker):
     """Test running a task using send + poll + receive."""
-    from dask.distributed import LocalCluster
-
-    from covalent.executor import DaskExecutor
 
     cluster = LocalCluster()
-    dask_exec = DaskExecutor(cluster.scheduler_address)
+    dask_exec = DaskExecutor()
+
+    mock_get_config = mocker.patch(
+        "covalent.executor.executor_plugins.dask.get_config",
+        return_value=cluster.scheduler_address,
+    )
+
     mock_get_cancel_requested = mocker.patch.object(
         dask_exec, "get_cancel_requested", AsyncMock(return_value=False)
     )
@@ -391,6 +362,8 @@ def test_dask_send_poll_receive(mocker):
     job_status, task_updates = asyncio.run(
         run_dask_job([task_spec], resources, task_group_metadata)
     )
+
+    mock_get_config.assert_called_once()
 
     assert job_status["status"] == "READY"
     assert len(task_updates) == 1
@@ -610,3 +583,29 @@ def test_run_task_from_uris_alt_exception():
     with open(summary_file_path, "r") as f:
         summary = json.load(f)
         assert summary["exception_occurred"] is True
+
+
+def test_get_upload_uri():
+    """
+    Test the get_upload_uri method
+    """
+
+    dispatch_id = "test_dask_send_receive"
+    node_id = 0
+    task_group_id = 0
+
+    task_group_metadata = {
+        "dispatch_id": dispatch_id,
+        "node_ids": [node_id],
+        "task_group_id": task_group_id,
+    }
+
+    object_key = "test_object_key"
+
+    dask_exec = DaskExecutor()
+
+    path_string = str(dask_exec.get_upload_uri(task_group_metadata, object_key))
+
+    assert dispatch_id in path_string
+    assert str(task_group_id) in path_string
+    assert object_key in path_string
