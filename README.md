@@ -27,16 +27,7 @@
   <img src="./doc/source/_static/readme_executor.svg"  alt="hero" />
  </div>
 
-  <div align="center"> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/aws-plugins/"><img src="./doc/source/_static/aws.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/azurebatch/)"><img src="./doc/source/_static/azure.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/gcp/"><img src="./doc/source/_static/google.svg" alt="divider"></a> 
-<a href="https://covalent.readthedocs.io/en/latest/?badge=latest"><img src="./doc/source/_static/ibm.svg" alt="divider"></a>
-</div>
-<div align="center"><a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/slurm/"><img src="./doc/source/_static/slurm.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/dask/)"><img src="./doc/source/_static/dask.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs"><img src="./doc/source/_static/kubernetes.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs"><img src="./doc/source/_static/many_more.svg" alt="divider"></a></div>
+
 
 Covalent is a Pythonic workflow tool for computational scientists, AI/ML software engineers, and anyone who needs to run experiments on limited or expensive computing resources including quantum computers, HPC clusters, GPU arrays, and cloud services.
 
@@ -50,7 +41,16 @@ Covalent enables a researcher to run computation tasks on an advanced hardware p
  </div>
 
 
-
+  <div align="center"> 
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/aws-plugins/"><img src="./doc/source/_static/aws.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/azurebatch/)"><img src="./doc/source/_static/azure.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/gcp/"><img src="./doc/source/_static/google.svg" alt="divider"></a> 
+<a href="https://covalent.readthedocs.io/en/latest/?badge=latest"><img src="./doc/source/_static/ibm.svg" alt="divider"></a>
+</div>
+<div align="center"><a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/slurm/"><img src="./doc/source/_static/slurm.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/dask/)"><img src="./doc/source/_static/dask.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs"><img src="./doc/source/_static/kubernetes.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs"><img src="./doc/source/_static/many_more.svg" alt="divider"></a></div>
 
 
 
