@@ -26,6 +26,7 @@ from concurrent.futures import ProcessPoolExecutor
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
 
+import requests
 from pydantic import BaseModel
 
 from covalent._shared_files import TaskCancelledError, TaskRuntimeError, logger
@@ -169,7 +170,6 @@ class LocalExecutor(BaseExecutor):
             stdout_uri = os.path.join(self.cache_dir, f"stdout_{dispatch_id}-{node_id}.txt")
             stderr_uri = os.path.join(self.cache_dir, f"stderr_{dispatch_id}-{node_id}.txt")
             output_uris.append((result_uri, stdout_uri, stderr_uri))
-        # future = dask_client.submit(lambda x: x**3, 3)
 
         server_url = format_server_url()
 
@@ -185,8 +185,6 @@ class LocalExecutor(BaseExecutor):
         )
 
         def handle_cancelled(fut):
-            import requests
-
             app_log.debug(f"In done callback for {dispatch_id}:{gid}, future {fut}")
             if fut.cancelled():
                 for task_id in task_ids:
@@ -194,8 +192,6 @@ class LocalExecutor(BaseExecutor):
                     requests.put(url, json={"status": "CANCELLED"})
 
         future.add_done_callback(handle_cancelled)
-
-        return 42
 
     def _receive(self, task_group_metadata: Dict, data: Any) -> List[TaskUpdate]:
         # Returns (output_uri, stdout_uri, stderr_uri,
@@ -206,9 +202,6 @@ class LocalExecutor(BaseExecutor):
         task_ids = task_group_metadata["node_ids"]
 
         task_results = []
-
-        # if len(task_ids) > 1:
-        #     raise RuntimeError("Task packing is not yet supported")
 
         for task_id in task_ids:
             # Handle the case where the job was cancelled before the task started running
@@ -276,6 +269,3 @@ class LocalExecutor(BaseExecutor):
             task_group_metadata,
             data,
         )
-
-    def get_upload_uri(self, task_group_metadata: Dict, object_key: str):
-        return ""

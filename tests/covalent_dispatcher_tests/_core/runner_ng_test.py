@@ -20,6 +20,8 @@ Tests for the core functionality of the runner.
 
 
 import asyncio
+import datetime
+import sys
 from unittest.mock import AsyncMock
 
 import pytest
@@ -79,8 +81,6 @@ def test_db():
 def get_mock_result() -> Result:
     """Construct a mock result object corresponding to a lattice."""
 
-    import sys
-
     @ct.electron(executor="local")
     def task(x):
         print(f"stdout: {x}")
@@ -109,11 +109,17 @@ def get_mock_srvresult(sdkres, test_db) -> SRVResult:
 
 
 @pytest.mark.asyncio
-async def test_submit_abstract_task_group(mocker):
-    import datetime
-
+@pytest.mark.parametrize(
+    "task_cancelled",
+    [False, True],
+)
+async def test_submit_abstract_task_group(mocker, task_cancelled):
     me = MockManagedExecutor()
-    me.send = AsyncMock(return_value="42")
+
+    if task_cancelled:
+        me.send = AsyncMock(side_effect=TaskCancelledError())
+    else:
+        me.send = AsyncMock(return_value="42")
 
     mocker.patch(
         "covalent_dispatcher._core.runner_ng.datamgr.electron.get",
@@ -242,7 +248,11 @@ async def test_submit_abstract_task_group(mocker):
         ResourceMap(**resources),
         task_group_metadata,
     )
-    assert send_retval == "42"
+
+    if task_cancelled:
+        assert send_retval is None
+    else:
+        assert send_retval == "42"
 
 
 @pytest.mark.asyncio
@@ -300,8 +310,6 @@ async def test_submit_requires_opt_in(mocker):
 
 @pytest.mark.asyncio
 async def test_get_task_result(mocker):
-    import datetime
-
     me = MockManagedExecutor()
     asset_uri = "file:///tmp/asset.pkl"
     mock_task_result = {
@@ -436,8 +444,6 @@ async def test_poll_status(mocker):
 
 @pytest.mark.asyncio
 async def test_event_listener(mocker):
-    import datetime
-
     ts = datetime.datetime.now()
     node_result = {
         "node_id": 0,

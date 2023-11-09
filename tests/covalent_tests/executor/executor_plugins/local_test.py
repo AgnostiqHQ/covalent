@@ -21,7 +21,7 @@ import json
 import os
 import tempfile
 from functools import partial
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
@@ -31,10 +31,13 @@ from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._workflow.transport import TransportableObject
 from covalent.executor.executor_plugins.local import (
     _EXECUTOR_PLUGIN_DEFAULTS,
+    RESULT_STATUS,
     LocalExecutor,
+    StatusEnum,
     TaskSpec,
     run_task_from_uris,
 )
+from covalent.executor.schemas import ResourceMap
 from covalent.executor.utils.serialize import serialize_node_asset
 from covalent.executor.utils.wrappers import wrapper_fn
 
@@ -242,7 +245,7 @@ def test_run_task_from_uris(mocker):
     def task(x, y):
         return x + y
 
-    dispatch_id = "test_dask_send_receive"
+    dispatch_id = "test_local_send_receive"
     node_id = 0
     task_group_id = 0
     server_url = "http://localhost:48008"
@@ -371,7 +374,7 @@ def test_run_task_from_uris_exception(mocker):
     def task(x, y):
         assert False
 
-    dispatch_id = "test_dask_send_receive"
+    dispatch_id = "test_local_send_receive"
     node_id = 0
     task_group_id = 0
     server_url = "http://localhost:48008"
@@ -486,3 +489,171 @@ def test_run_task_from_uris_exception(mocker):
     with open(summary_file_path, "r") as f:
         summary = json.load(f)
         assert summary["exception_occurred"] is True
+
+
+# Mocks for external dependencies
+@pytest.fixture
+def mock_os_path_join():
+    with patch("os.path.join", return_value="mock_path") as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_format_server_url():
+    with patch(
+        "covalent.executor.executor_plugins.local.format_server_url",
+        return_value="mock_server_url",
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_future():
+    mock = Mock()
+    mock.cancelled.return_value = False
+    return mock
+
+
+@pytest.fixture
+def mock_proc_pool_submit(mock_future):
+    with patch(
+        "covalent.executor.executor_plugins.local.proc_pool.submit", return_value=mock_future
+    ) as mock:
+        yield mock
+
+
+# Test cases
+test_cases = [
+    # Happy path
+    {
+        "id": "happy_path",
+        "task_specs": [
+            TaskSpec(
+                function_id=0,
+                args_ids=[1],
+                kwargs_ids={"y": 2},
+                deps_id="deps",
+                call_before_id="call_before",
+                call_after_id="call_after",
+            )
+        ],
+        "resources": ResourceMap(
+            functions={0: "mock_function_uri"},
+            inputs={1: "mock_input_uri"},
+            deps={"deps": "mock_deps_uri"},
+        ),
+        "task_group_metadata": {"dispatch_id": "1", "node_ids": ["1"], "task_group_id": "1"},
+        "expected_output_uris": [("mock_path", "mock_path", "mock_path")],
+        "expected_server_url": "mock_server_url",
+        "expected_future_cancelled": False,
+    },
+    {
+        "id": "future_cancelled",
+        "task_specs": [
+            TaskSpec(
+                function_id=0,
+                args_ids=[1],
+                kwargs_ids={"y": 2},
+                deps_id="deps",
+                call_before_id="call_before",
+                call_after_id="call_after",
+            )
+        ],
+        "resources": ResourceMap(
+            functions={0: "mock_function_uri"},
+            inputs={1: "mock_input_uri"},
+            deps={"deps": "mock_deps_uri"},
+        ),
+        "task_group_metadata": {"dispatch_id": "1", "node_ids": ["1"], "task_group_id": "1"},
+        "expected_output_uris": [("mock_path", "mock_path", "mock_path")],
+        "expected_server_url": "mock_server_url",
+        "expected_future_cancelled": True,
+    },
+]
+
+
+@pytest.mark.parametrize("test_case", test_cases, ids=[tc["id"] for tc in test_cases])
+def test_send(
+    test_case,
+    mock_os_path_join,
+    mock_format_server_url,
+    mock_future,
+    mock_proc_pool_submit,
+):
+    """Test the send function of LocalExecutor"""
+
+    local_exec = LocalExecutor()
+
+    # Arrange
+    local_exec.cache_dir = "mock_cache_dir"
+    mock_future.cancelled.return_value = test_case["expected_future_cancelled"]
+
+    # Act
+    local_exec._send(
+        test_case["task_specs"],
+        test_case["resources"],
+        test_case["task_group_metadata"],
+    )
+
+    # Assert
+    mock_os_path_join.assert_called()
+    mock_format_server_url.assert_called_once_with()
+    mock_proc_pool_submit.assert_called_once_with(
+        run_task_from_uris,
+        list(map(lambda t: t.dict(), test_case["task_specs"])),
+        test_case["resources"].dict(),
+        test_case["expected_output_uris"],
+        "mock_cache_dir",
+        test_case["task_group_metadata"],
+        test_case["expected_server_url"],
+    )
+
+
+# Test data
+test_data = [
+    # Happy path tests
+    {
+        "id": "HP1",
+        "task_group_metadata": {"dispatch_id": "1", "node_ids": ["1", "2"]},
+        "data": {"status": StatusEnum.COMPLETED},
+        "expected_status": StatusEnum.COMPLETED,
+    },
+    {
+        "id": "HP2",
+        "task_group_metadata": {"dispatch_id": "2", "node_ids": ["3", "4"]},
+        "data": {"status": StatusEnum.FAILED},
+        "expected_status": StatusEnum.FAILED,
+    },
+    # Edge case tests
+    {
+        "id": "EC1",
+        "task_group_metadata": {"dispatch_id": "3", "node_ids": []},
+        "data": {"status": StatusEnum.COMPLETED},
+        "expected_status": StatusEnum.COMPLETED,
+    },
+    {
+        "id": "EC2",
+        "task_group_metadata": {"dispatch_id": "4", "node_ids": ["5"]},
+        "data": None,
+        "expected_status": RESULT_STATUS.CANCELLED,
+    },
+]
+
+
+@pytest.mark.parametrize("test_case", test_data, ids=[tc["id"] for tc in test_data])
+def test_receive(test_case):
+    """Test the receive function of LocalExecutor"""
+
+    local_exec = LocalExecutor()
+
+    # Arrange
+    task_group_metadata = test_case["task_group_metadata"]
+    data = test_case["data"]
+    expected_status = test_case["expected_status"]
+
+    # Act
+    task_results = local_exec._receive(task_group_metadata, data)
+
+    # Assert
+    for task_result in task_results:
+        assert task_result.status == expected_status
