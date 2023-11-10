@@ -15,7 +15,7 @@
 # limitations under the License.
 
 """
-Defines the core functionality of the runner
+Defines the core functionality of the legacy runner
 """
 
 import asyncio
@@ -30,8 +30,8 @@ from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow import DepsBash, DepsCall, DepsPip
 from covalent._workflow.transport import TransportableObject
-from covalent.executor.base import wrapper_fn
 from covalent.executor.utils import set_context
+from covalent.executor.utils.wrappers import wrapper_fn
 
 from . import data_manager as datasvc
 from .runner_modules import executor_proxy

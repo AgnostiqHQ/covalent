@@ -27,91 +27,23 @@ import queue
 from abc import ABC, abstractmethod
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
-from typing import (
-    Any,
-    Callable,
-    ContextManager,
-    Dict,
-    Iterable,
-    List,
-    Literal,
-    Optional,
-    Tuple,
-    Union,
-)
+from typing import Any, Callable, ContextManager, Dict, Iterable, List, Optional, Union
 
 import aiofiles
 
+from covalent._shared_files.exceptions import TaskCancelledError
+from covalent.executor.schemas import ResourceMap, TaskSpec
+from covalent.executor.utils import Signals
+
 from .._shared_files import TaskRuntimeError, logger
 from .._shared_files.context_managers import active_dispatch_info_manager
-from .._shared_files.exceptions import TaskCancelledError
 from .._shared_files.qelectron_utils import remove_qelectron_db
-from .._shared_files.util_classes import RESULT_STATUS, DispatchInfo
-from .._workflow.depscall import RESERVED_RETVAL_KEY__FILES
-from .._workflow.transport import TransportableObject
-from .utils import Signals
+from .._shared_files.util_classes import RESULT_STATUS, DispatchInfo, Status
+from .schemas import TaskUpdate
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 TypeJSON = Union[str, int, float, bool, None, Dict[str, Any], List[Any]]
-
-
-def wrapper_fn(
-    function: TransportableObject,
-    call_before: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
-    call_after: List[Tuple[TransportableObject, TransportableObject, TransportableObject]],
-    *args,
-    **kwargs,
-):
-    """Wrapper for serialized callable.
-
-    Execute preparatory shell commands before deserializing and
-    running the callable. This is the actual function to be sent to
-    the various executors.
-
-    """
-
-    cb_retvals = {}
-    for tup in call_before:
-        serialized_fn, serialized_args, serialized_kwargs, retval_key = tup
-        cb_fn = serialized_fn.get_deserialized()
-        cb_args = serialized_args.get_deserialized()
-        cb_kwargs = serialized_kwargs.get_deserialized()
-        retval = cb_fn(*cb_args, **cb_kwargs)
-
-        # we always store cb_kwargs dict values as arrays to factor in non-unique values
-        if retval_key and retval_key in cb_retvals:
-            cb_retvals[retval_key].append(retval)
-        elif retval_key:
-            cb_retvals[retval_key] = [retval]
-
-    # if cb_retvals key only contains one item this means it is a unique (non-repeated) retval key
-    # so we only return the first element however if it is a 'files' kwarg we always return as a list
-    cb_retvals = {
-        key: value[0] if len(value) == 1 and key != RESERVED_RETVAL_KEY__FILES else value
-        for key, value in cb_retvals.items()
-    }
-
-    fn = function.get_deserialized()
-
-    new_args = [arg.get_deserialized() for arg in args]
-
-    new_kwargs = {k: v.get_deserialized() for k, v in kwargs.items()}
-
-    # Inject return values into kwargs
-    for key, val in cb_retvals.items():
-        new_kwargs[key] = val
-
-    output = fn(*new_args, **new_kwargs)
-
-    for tup in call_after:
-        serialized_fn, serialized_args, serialized_kwargs, retval_key = tup
-        ca_fn = serialized_fn.get_deserialized()
-        ca_args = serialized_args.get_deserialized()
-        ca_kwargs = serialized_kwargs.get_deserialized()
-        ca_fn(*ca_args, **ca_kwargs)
-
-    return TransportableObject(output)
 
 
 class _AbstractBaseExecutor(ABC):
@@ -126,6 +58,8 @@ class _AbstractBaseExecutor(ABC):
         retries: Number of times to retry execution upon failure
 
     """
+
+    SUPPORTS_MANAGED_EXECUTION = False
 
     def __init__(
         self,
@@ -285,6 +219,18 @@ class BaseExecutor(_AbstractBaseExecutor):
         """
         return self._notify_sync(Signals.GET, "cancel_requested")
 
+    def get_version_info(self) -> Dict:
+        """
+        Query the database for the task's Python and Covalent version
+
+        Arg:
+            dispatch_id: Dispatch ID of the lattice
+
+        Returns:
+            {"python": python_version, "covalent": covalent_version}
+        """
+        return self._notify_sync(Signals.GET, "version_info")
+
     def set_job_handle(self, handle: TypeJSON) -> Any:
         """
         Save the job_id/handle returned by the backend executing the task
@@ -296,6 +242,32 @@ class BaseExecutor(_AbstractBaseExecutor):
             Response from saving the job handle to database
         """
         return self._notify_sync(Signals.PUT, ("job_handle", json.dumps(handle)))
+
+    def _set_job_status_sync(self, status: Status) -> bool:
+        if self.validate_status(status):
+            return self._notify_sync(Signals.PUT, ("job_status", str(status)))
+        else:
+            return False
+
+    def validate_status(self, status: Status) -> bool:
+        """Overridable filter"""
+        return True
+
+    async def set_job_status(self, status: Status) -> bool:
+        """
+        Sets the job state
+
+        For use with send/receive API
+
+        Return(s)
+            Whether the action succeeded
+        """
+        loop = asyncio.get_running_loop()
+        return await loop.run_in_executor(
+            None,
+            self._set_job_status_sync,
+            status,
+        )
 
     def write_streams_to_file(
         self,
@@ -432,7 +404,7 @@ class BaseExecutor(_AbstractBaseExecutor):
 
         raise NotImplementedError
 
-    def cancel(self, task_metadata: Dict, job_handle: Any) -> Literal[False]:
+    def cancel(self, task_metadata: Dict, job_handle: Any) -> bool:
         """
         Method to cancel the job identified uniquely by the `job_handle` (base class)
 
@@ -446,7 +418,7 @@ class BaseExecutor(_AbstractBaseExecutor):
         app_log.debug(f"Cancel not implemented for executor {type(self)}")
         return False
 
-    async def _cancel(self, task_metadata: Dict, job_handle: Any) -> Any:
+    async def _cancel(self, task_metadata: Dict, job_handle: Any) -> bool:
         """
         Cancel the task in a non-blocking manner
 
@@ -466,6 +438,77 @@ class BaseExecutor(_AbstractBaseExecutor):
     def teardown(self, task_metadata: Dict) -> Any:
         """Placeholder to run any executor specific cleanup/teardown actions"""
         pass
+
+    async def send(
+        self,
+        task_specs: List[Dict],
+        resources: ResourceMap,
+        task_group_metadata: Dict,
+    ):
+        """Submit a list of task references to the compute backend.
+
+        Args:
+            task_specs: a list of TaskSpecs
+            resources: a ResourceMap mapping task assets to URIs
+            task_group_metadata: a dictionary of metadata for the task group.
+                                 Current keys are `dispatch_id`, `node_ids`,
+                                 and `task_group_id`.
+
+        The return value of `send()` will be passed directly into `poll()`.
+        """
+        # Schemas:
+        #
+        # Task spec:
+        # {
+        #     "function_id": int,
+        #     "args_ids": List[int],
+        #     "kwargs_ids": Dict[str, int],
+        #     "deps_id": str,
+        #     "call_before_id": str,
+        #     "call_after_id": str,
+        # }
+
+        # resources:
+        # {
+        #     "functions": Dict[int, str],
+        #     "inputs": Dict[int, str],
+        #     "deps": Dict[str, str]
+        # }
+
+        # task_group_metadata:
+        # {
+        #     "dispatch_id": str,
+        #     "node_ids": List[int],
+        #     "task_group_id": int,
+        # }
+
+        # Assets are will be accessible by the compute backend
+        # at the provided URIs
+
+        # Covalent will upload all assets before invoking `send()`.
+
+        raise NotImplementedError
+
+    async def poll(self, task_group_metadata: Dict, data: Any):
+        # To be run as a background task.  A callback will be
+        # registered with the runner to invoke the receive()
+
+        raise NotImplementedError
+
+    async def receive(
+        self,
+        task_group_metadata: Dict,
+        data: Any,
+    ) -> List[TaskUpdate]:
+        # Returns (output_uri, stdout_uri, stderr_uri,
+        # exception_raised)
+
+        # Job should have reached a terminal state by the time this is invoked.
+
+        raise NotImplementedError
+
+    def get_upload_uri(self, task_metadata: Dict, object_key: str):
+        return ""
 
 
 class AsyncBaseExecutor(_AbstractBaseExecutor):
@@ -566,6 +609,18 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         """
         return await self._notify_sync(Signals.GET, "cancel_requested")
 
+    async def get_version_info(self) -> Dict:
+        """
+        Query the database for dispatch version metadata.
+
+        Arg:
+            dispatch_id: Dispatch ID of the lattice
+
+        Returns:
+            {"python": python_version, "covalent": covalent_version}
+        """
+        return await self._notify_sync(Signals.GET, "version_info")
+
     async def set_job_handle(self, handle: TypeJSON) -> Any:
         """
         Save the job handle to database
@@ -577,6 +632,24 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
             Response from the listener that handles inserting the job handle to database
         """
         return await self._notify_sync(Signals.PUT, ("job_handle", json.dumps(handle)))
+
+    def validate_status(self, status: Status) -> bool:
+        """Overridable filter"""
+        return True
+
+    async def set_job_status(self, status: Status) -> bool:
+        """
+        Validates and sets the job state
+
+        For use with send/receive API
+
+        Return(s)
+            Whether the action succeeded
+        """
+        if self.validate_status(status):
+            return await self._notify_sync(Signals.PUT, ("job_status", str(status)))
+        else:
+            return False
 
     async def write_streams_to_file(
         self,
@@ -695,13 +768,13 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
 
         raise NotImplementedError
 
-    async def cancel(self, task_metadata: Dict, job_handle: Any) -> Literal[False]:
+    async def cancel(self, task_metadata: Dict, job_handle: Any) -> bool:
         """
-        Executor specific task cancellation method
+        Method to cancel the job identified uniquely by the `job_handle` (base class)
 
         Arg(s)
-            task_metadata: Metadata associated with the task to be cancelled
-            job_handle: Unique ID assigned to the job by the backend
+            task_metadata: Metadata of the task to be cancelled
+            job_handle: Unique ID of the job assigned by the backend
 
         Return(s)
             False by default
@@ -709,17 +782,132 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
         app_log.debug(f"Cancel not implemented for executor {type(self)}")
         return False
 
-    async def _cancel(self, task_metadata: Dict, job_handle: Any) -> Literal[False]:
+    async def _cancel(self, task_metadata: Dict, job_handle: Any) -> bool:
         """
-        Cancel the task in a non-blocking manner and teardown the infrastructure
+        Cancel the task in a non-blocking manner
 
         Arg(s)
-            task_metadata: Metadata associated with the task to be cancelled
-            job_handle: Unique ID assigned to the job by the backend
+            task_metadata: Metadata of the task to be cancelled
+            job_handle: Unique ID of the job assigned by the backend
 
         Return(s)
-            Result from cancelling the task
+           Result of the task cancellation
         """
-        cancel_result = await self.cancel(task_metadata, job_handle)
-        await self.teardown(task_metadata)
-        return cancel_result
+        return await self.cancel(task_metadata, job_handle)
+
+    async def send(
+        self,
+        task_specs: List[TaskSpec],
+        resources: ResourceMap,
+        task_group_metadata: Dict,
+    ) -> Any:
+        """Submit a list of task references to the compute backend.
+
+        Args:
+            task_specs: a list of TaskSpecs
+            resources: a ResourceMap mapping task assets to URIs
+            task_group_metadata: A dictionary of metadata for the task group.
+                                 Current keys are `dispatch_id`, `node_ids`,
+                                 and `task_group_id`.
+
+        The return value of `send()` will be passed directly into `poll()`.
+        """
+        # Schemas:
+        #
+        # Task spec:
+        # {
+        #     "function_id": int,
+        #     "args_ids": List[int],
+        #     "kwargs_ids": Dict[str, int],
+        #     "deps_id": str,
+        #     "call_before_id": str,
+        #     "call_after_id": str,
+        # }
+
+        # resources:
+        # {
+        #     "functions": Dict[int, str],
+        #     "inputs": Dict[int, str],
+        #     "deps": Dict[str, str]
+        # }
+
+        # task_group_metadata:
+        # {
+        #     "dispatch_id": str,
+        #     "node_ids": List[int],
+        #     "task_group_id": int,
+        # }
+
+        # Assets are assumed to be accessible by the compute backend
+        # at the provided URIs
+
+        # Covalent will upload all assets before invoking send().
+
+        raise NotImplementedError
+
+    async def poll(self, task_group_metadata: Dict, data: Any) -> Any:
+        """Block until the job has reached a terminal state.
+
+        Args:
+            task_group_metadata: A dictionary of metadata for the task group.
+                                 Current keys are `dispatch_id`, `node_ids`,
+                                 and `task_group_id`.
+            data: The return value of send().
+
+        The return value of `poll()` will be passed directly into receive().
+
+        Raise `NotImplementedError` to indicate that the compute backend
+        will notify the Covalent server asynchronously of job completion.
+
+        """
+
+        raise NotImplementedError
+
+    async def receive(
+        self,
+        task_group_metadata: Dict,
+        data: Any,
+    ) -> List[TaskUpdate]:
+        """Return a list of task updates.
+
+        Each task must have reached a terminal state by the time this is invoked.
+
+        Args:
+            task_group_metadata: A dictionary of metadata for the task group.
+                                 Current keys are `dispatch_id`, `node_ids`,
+                                 and `task_group_id`.
+            data: The return value of poll() or the request body of `/jobs/update`.
+
+        Returns:
+            Returns a list of task results, each a TaskUpdate dataclass
+            of the form
+
+            {
+              "dispatch_id": dispatch_id,
+              "node_id": node_id,
+              "status": status,
+              "assets": {
+                  "output":  {
+                    "remote_uri": output_uri,
+                  },
+                  "stdout":  {
+                    "remote_uri": stdout_uri,
+                  },
+                  "stderr":  {
+                    "remote_uri": stderr_uri,
+                  },
+                },
+            }
+
+            corresponding to the node ids (task_ids) specified in the
+            `task_group_metadata`.  This might be a subset of the node
+            ids in the originally submitted task group as jobs may
+            notify Covalent asynchronously of completed tasks before
+            the entire task group finishes running.
+
+        """
+
+        raise NotImplementedError
+
+    def get_upload_uri(self, task_group_metadata: Dict, object_key: str):
+        return ""
