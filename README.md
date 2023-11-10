@@ -15,13 +15,11 @@
 <div align="center">Empowering Research on Limited Resources – Quantum, HPC, GPU, Cloud</div>
 
  <div align="center"> 
-<a href="https://docs.covalent.xyz/docs/"><img src="./doc/source/_static/getting_started.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs/)"><img src="./doc/source/_static/documentation.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs/"><img src="./doc/source/_static/examples.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs/"><img src="./doc/source/_static/slack.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/get-started/install"><img src="./doc/source/_static/getting_started.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/"><img src="./doc/source/_static/documentation.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/"><img src="./doc/source/_static/examples.svg" alt="divider"></a> 
+<a href="https://covalentworkflows.slack.com/join/shared_invite/zt-1ew7f2rfk-dKSXVQmRniu5mQW4Z_eQuw#/shared-invite/email"><img src="./doc/source/_static/slack.svg" alt="divider"></a>
 </div>
-
-
 
  <div align="center">
   <img src="./doc/source/_static/readme_executor.svg"  alt="hero" />
@@ -75,7 +73,7 @@ https://github.com/AgnostiqHQ/covalent/assets/126003896/7d06b29e-53fd-4669-b469-
 
 | **Installation**                                                                                                                                                                                                                                                                                         | **Getting started**                                                                                                                                                                                                     |
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Covalent is developed using Python version 3.8 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager: ![pip install](./doc/source/_static/code_snippet.svg)| Ready to try it? Refer to the [Quick Start](https://docs.covalent.xyz/docs/get-started/quick-start/) guide for quick setup instructions, or to the [First Experiment](https://docs.covalent.xyz/docs/get-started/first-experiment/) guide for a more thorough approach. For a full list of supported platforms, see the Covalent [compatibility matrix](https://docs.covalent.xyz/docs/user-documentation/compatibility/). For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/) page in the documentation. |
+| Covalent is developed using Python version 3.8 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager: <pre> pip install covalent</pre> | Ready to try it? Refer to the [Quick Start](https://docs.covalent.xyz/docs/get-started/quick-start/) guide for quick setup instructions, or to the [First Experiment](https://docs.covalent.xyz/docs/get-started/first-experiment/) guide for a more thorough approach. For a full list of supported platforms, see the Covalent [compatibility matrix](https://docs.covalent.xyz/docs/user-documentation/compatibility/). For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/) page in the documentation. |
 
 <!-- <div><img src="./divider.svg" alt="divider"></div> -->
 
