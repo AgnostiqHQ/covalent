@@ -37,7 +37,10 @@ Covalent enables a researcher to run computation tasks on an advanced hardware p
 
 
 
-https://github.com/AgnostiqHQ/covalent/assets/126003896/11f0d95a-bfda-41a4-a71a-cc3bf01a0056
+
+
+https://github.com/AgnostiqHQ/covalent/assets/126003896/7d06b29e-53fd-4669-b469-4ef4a01c62ac
+
 
 
 
