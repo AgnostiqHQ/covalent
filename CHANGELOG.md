@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed unassigned variable names
 - Contributing guidelines steps for installing for the first time
 - Updated gitignore to ignore yarn files and folders for latest version of yarn
+- Fixed the bug that caused ValueError error when using KEYWORD_ONLY parameter in electron func 
+- Changed code at line 218 in covalent/_shared_files/utils.py
 
 ### Operations
 
@@ -37,11 +39,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Documentation and test cases for database triggers.
 - Added the `__pow__` method to the `Electron` class
+- New Runner and executor API to bypass server-side memory when running tasks.
 
 ### Docs
 
 - Added federated learning showcase code
-- Updated tutorial for redispatching workflows with Streamlit 
+- Updated tutorial for redispatching workflows with Streamlit
 
 ### Tests
 

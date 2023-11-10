@@ -82,7 +82,6 @@ class Lattice:
         self.named_kwargs = None
         self.electron_outputs = {}
         self.lattice_imports, self.cova_imports = get_imports(self.workflow_function)
-        self.cova_imports.update({"electron"})
 
         self.workflow_function = TransportableObject.make_transportable(self.workflow_function)
 
@@ -110,13 +109,11 @@ class Lattice:
         for node_name, output in self.electron_outputs.items():
             attributes["electron_outputs"][node_name] = output.to_dict()
 
-        attributes["cova_imports"] = list(self.cova_imports)
         return json.dumps(attributes)
 
     @staticmethod
     def deserialize_from_json(json_data: str) -> None:
         attributes = json.loads(json_data)
-        attributes["cova_imports"] = set(attributes["cova_imports"])
 
         for node_name, object_dict in attributes["electron_outputs"].items():
             attributes["electron_outputs"][node_name] = TransportableObject.from_dict(object_dict)
@@ -211,6 +208,7 @@ class Lattice:
         self.inputs = TransportableObject({"args": args, "kwargs": kwargs})
         self.named_args = TransportableObject(named_args)
         self.named_kwargs = TransportableObject(named_kwargs)
+        self.lattice_imports, self.cova_imports = get_imports(workflow_function)
 
         # Set any lattice metadata not explicitly set by the user
         constraint_names = {"executor", "workflow_executor", "deps", "call_before", "call_after"}

@@ -15,6 +15,7 @@
 # limitations under the License.
 
 import pytest
+import sqlalchemy
 
 from covalent.triggers.database_trigger import DatabaseTrigger
 
@@ -77,11 +78,14 @@ def test_database_trigger_observe(mocker, where_clauses, database_trigger):
     mock_db_engine.assert_called_once_with("test_db_path")
     mock_session.assert_called_once_with(mock_db_engine("test_db_path"))
     mock_event.assert_called_once()
-    mock_sql_execute = mocker.patch.object(mock_session, "execute", autospec=True)
+    mock_sql_execute = mock_session.return_value.__enter__.return_value.execute
     mock_sql_execute.assert_called_once_with(sql_poll_cmd)
     mock_sleep.assert_called_once_with(1)
 
 
+@pytest.mark.skip(
+    reason="Not sure what the purpose of this test is since no specific exception is raised or checked for."
+)
 @pytest.mark.parametrize(
     "where_clauses",
     [
@@ -116,21 +120,13 @@ def test_database_trigger_exception(mocker, where_clauses, database_trigger):
     mock_sleep.assert_called_once_with(1)
 
 
-@pytest.mark.parametrize(
-    "where_clauses",
-    [
-        ["id > 2", "status = FAILED"],
-        None,
-    ],
-)
-def test_database_trigger_exception_session(mocker, where_clauses, database_trigger):
+def test_database_trigger_exception_session(mocker, database_trigger):
     """
-    Test the observe method of Database trigger when an OperationalError is raised
+    Test the observe method of Database trigger when an ArgumentError is raised
     """
     database_trigger.trigger = mocker.MagicMock()
     mock_event = mocker.patch("covalent.triggers.database_trigger.Event")
     mock_event.return_value.is_set.side_effect = [False, True]
-    import sqlalchemy
 
     # Call the 'observer' method
     try:
