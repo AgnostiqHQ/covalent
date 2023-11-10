@@ -6,9 +6,9 @@
 <div align="center">
 
 [![version](https://img.shields.io/github/v/tag/AgnostiqHQ/covalent?color=%235552FF&include_prereleases&label=version&sort=semver)](https://github.com/AgnostiqHQ/covalent/blob/develop/CHANGELOG.md)
-[![Static Badge](https://img.shields.io/badge/python-3.8_%7C_3.9_%7C_3.10-%235552FF)](https://github.com/AgnostiqHQ/covalent)
+[![Static Badge](https://img.shields.io/badge/python-3.8_%7C_3.9_%7C_3.10-%235552FF)](#)
 [![Static Badge](https://img.shields.io/badge/tests-passing-%235552FF?logo=github)](https://github.com/AgnostiqHQ/covalent/actions/workflows/tests.yml)
-[![Static Badge](https://img.shields.io/badge/docs-passing-%235552FF)](https://covalent.readthedocs.io/en/latest/?badge=latest)
+[![Static Badge](https://img.shields.io/badge/docs-passing-%235552FF)](https://docs.covalent.xyz/docs/)
 [![Static Badge](https://img.shields.io/badge/codecov-88%25-%235552FF?logo=codecov)](https://codecov.io/gh/AgnostiqHQ/covalent)
 [![apache](https://img.shields.io/badge/License-Apache_License_2.0-blue?color=%235552FF)](https://www.apache.org/licenses/LICENSE-2.0)</div>
 
