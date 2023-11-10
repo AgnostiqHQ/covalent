@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Contributing guidelines steps for installing for the first time
 - Updated gitignore to ignore yarn files and folders for latest version of yarn
 - Fixed the bug that caused ValueError error when using KEYWORD_ONLY parameter in electron func 
-- changed code at line 218 in covalent/_shared_files/utils.py
+- Changed code at line 218 in covalent/_shared_files/utils.py
 
 ### Operations
 
