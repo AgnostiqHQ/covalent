@@ -13,3 +13,19 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+"""
+Helper functions for the local executor
+"""
+
+from enum import Enum
+
+
+class Signals(Enum):
+    """
+    Signals to enable communication between the executors and Covalent dispatcher
+    """
+
+    GET = 0
+    PUT = 1
+    EXIT = 2

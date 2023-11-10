@@ -45,6 +45,7 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
+# TODO: Remove dispatch_id from the signature once qelectron_db becomes an Asset (PR #1690)
 def generate_node_result(
     dispatch_id: str,
     node_id: int,
