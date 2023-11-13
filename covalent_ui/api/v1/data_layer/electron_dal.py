@@ -261,6 +261,7 @@ class Electrons:
                 Electron.call_before_filename,
                 Electron.call_after_filename,
                 Electron.stderr_filename,
+                Electron.qelectron_db_filename,
                 Electron.error_filename,
                 Electron.name,
                 Electron.status,

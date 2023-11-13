@@ -248,14 +248,14 @@ def get_electron_jobs(
     count: Optional[int] = None,
     offset: Optional[int] = Query(0),
 ) -> List[Job]:
-    """Get Electron Jobs List
+    """Get Qelectron Jobs List
 
     Args:
-        dispatch_id: To fetch electron data with dispatch id
-        electron_id: To fetch electron data with the provided electron id.
+        dispatch_id: To fetch qelectron data with dispatch id
+        electron_id: To fetch qelectron data with the provided electron id.
 
     Returns:
-        Returns the list of electron jobs
+        Returns the list of qelectron jobs
     """
     with Session(db.engine) as session:
         electron = Electrons(session)
