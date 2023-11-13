@@ -56,7 +56,7 @@ def get_redispatch_request_body_v2(
     dispatcher_addr: str = None,
 ) -> ResultSchema:
     rm = get_result_manager(dispatch_id, dispatcher_addr=dispatcher_addr, wait=True)
-    manifest = ResultSchema.parse_obj(rm._manifest)
+    manifest = ResultSchema.model_validate(rm._manifest)
 
     # If no changes to inputs or electron, just retry the dispatch
     if not new_args and not new_kwargs and not replace_electrons:
@@ -166,6 +166,69 @@ class LocalDispatcher(BaseDispatcher):
             if not disable_run:
                 return LocalDispatcher.start(dispatch_id, dispatcher_addr)
             else:
+                return dispatch_id
+
+        return wrapper
+
+    @staticmethod
+    def register(
+        orig_lattice: Lattice,
+        dispatcher_addr: str = None,
+    ) -> Callable:
+        """
+        Wrapping the dispatching functionality to allow input passing
+        and server address specification.
+
+        Afterwards, send the lattice to the dispatcher server and return
+        the assigned dispatch id.
+
+        Args:
+            orig_lattice: The lattice/workflow to send to the dispatcher server.
+            dispatcher_addr: The address of the dispatcher server.  If None then then defaults to the address set in Covalent's config.
+
+        Returns:
+            Wrapper function which takes the inputs of the workflow as arguments
+        """
+
+        if dispatcher_addr is None:
+            dispatcher_addr = format_server_url()
+
+        @wraps(orig_lattice)
+        def wrapper(*args, **kwargs) -> str:
+            """
+            Send the lattice to the dispatcher server and return
+            the assigned dispatch id.
+
+            Args:
+                *args: The inputs of the workflow.
+                **kwargs: The keyword arguments of the workflow.
+
+            Returns:
+                The dispatch id of the workflow.
+            """
+
+            if not isinstance(orig_lattice, Lattice):
+                message = f"Dispatcher expected a Lattice, received {type(orig_lattice)} instead."
+                app_log.error(message)
+                raise TypeError(message)
+
+            lattice = deepcopy(orig_lattice)
+
+            lattice.build_graph(*args, **kwargs)
+
+            with tempfile.TemporaryDirectory() as tmp_dir:
+                manifest = LocalDispatcher.prepare_manifest(lattice, tmp_dir)
+                LocalDispatcher.register_manifest(manifest, dispatcher_addr)
+
+                dispatch_id = manifest.metadata.dispatch_id
+
+                path = dispatch_cache_dir / f"{dispatch_id}"
+
+                with open(path, "w") as f:
+                    f.write(manifest.model_dump_json())
+
+                LocalDispatcher.upload_assets(manifest)
+
                 return dispatch_id
 
         return wrapper
@@ -373,8 +436,6 @@ class LocalDispatcher(BaseDispatcher):
                 + str(get_config("dispatcher.port"))
             )
 
-        stop_triggers_url = f"{triggers_server_addr}/api/triggers/stop_observe"
-
         if isinstance(dispatch_ids, str):
             dispatch_ids = [dispatch_ids]
 
@@ -385,69 +446,6 @@ class LocalDispatcher(BaseDispatcher):
         app_log.debug("Triggers for following dispatch_ids have stopped observing:")
         for d_id in dispatch_ids:
             app_log.debug(d_id)
-
-    @staticmethod
-    def register(
-        orig_lattice: Lattice,
-        dispatcher_addr: str = None,
-    ) -> Callable:
-        """
-        Wrapping the dispatching functionality to allow input passing
-        and server address specification.
-
-        Afterwards, send the lattice to the dispatcher server and return
-        the assigned dispatch id.
-
-        Args:
-            orig_lattice: The lattice/workflow to send to the dispatcher server.
-            dispatcher_addr: The address of the dispatcher server.  If None then then defaults to the address set in Covalent's config.
-
-        Returns:
-            Wrapper function which takes the inputs of the workflow as arguments
-        """
-
-        if dispatcher_addr is None:
-            dispatcher_addr = format_server_url()
-
-        @wraps(orig_lattice)
-        def wrapper(*args, **kwargs) -> str:
-            """
-            Send the lattice to the dispatcher server and return
-            the assigned dispatch id.
-
-            Args:
-                *args: The inputs of the workflow.
-                **kwargs: The keyword arguments of the workflow.
-
-            Returns:
-                The dispatch id of the workflow.
-            """
-
-            if not isinstance(orig_lattice, Lattice):
-                message = f"Dispatcher expected a Lattice, received {type(orig_lattice)} instead."
-                app_log.error(message)
-                raise TypeError(message)
-
-            lattice = deepcopy(orig_lattice)
-
-            lattice.build_graph(*args, **kwargs)
-
-            with tempfile.TemporaryDirectory() as tmp_dir:
-                manifest = LocalDispatcher.prepare_manifest(lattice, tmp_dir)
-                LocalDispatcher.register_manifest(manifest, dispatcher_addr)
-
-                dispatch_id = manifest.metadata.dispatch_id
-
-                path = dispatch_cache_dir / f"{dispatch_id}"
-
-                with open(path, "w") as f:
-                    f.write(manifest.json())
-
-                LocalDispatcher.upload_assets(manifest)
-
-                return dispatch_id
-
-        return wrapper
 
     @staticmethod
     def register_redispatch(
@@ -506,7 +504,7 @@ class LocalDispatcher(BaseDispatcher):
                 path = dispatch_cache_dir / f"{redispatch_id}"
 
                 with open(path, "w") as f:
-                    f.write(manifest.json())
+                    f.write(manifest.model_dump_json())
 
                 LocalDispatcher.upload_assets(manifest)
 
@@ -541,20 +539,16 @@ class LocalDispatcher(BaseDispatcher):
         if dispatcher_addr is None:
             dispatcher_addr = format_server_url()
 
-        if push_assets:
-            stripped = strip_local_uris(manifest)
-        else:
-            stripped = manifest
-
+        stripped = strip_local_uris(manifest) if push_assets else manifest
         endpoint = "/api/v2/dispatches"
 
         if parent_dispatch_id:
             endpoint = f"{endpoint}/{parent_dispatch_id}/subdispatches"
 
-        r = APIClient(dispatcher_addr).post(endpoint, data=stripped.json())
+        r = APIClient(dispatcher_addr).post(endpoint, data=stripped.model_dump_json())
         r.raise_for_status()
 
-        parsed_resp = ResultSchema.parse_obj(r.json())
+        parsed_resp = ResultSchema.model_validate_json((r.json()))
 
         return merge_response_manifest(manifest, parsed_resp)
 
@@ -581,10 +575,12 @@ class LocalDispatcher(BaseDispatcher):
         endpoint = f"/api/v2/dispatches/{dispatch_id}/redispatches"
 
         params = {"reuse_previous_results": reuse_previous_results}
-        r = APIClient(dispatcher_addr).post(endpoint, data=stripped.json(), params=params)
+        r = APIClient(dispatcher_addr).post(
+            endpoint, data=stripped.model_dump_json(), params=params
+        )
         r.raise_for_status()
 
-        parsed_resp = ResultSchema.parse_obj(r.json())
+        parsed_resp = ResultSchema.model_dump_json(r.json())
 
         return merge_response_manifest(manifest, parsed_resp)
 

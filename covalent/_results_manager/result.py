@@ -24,11 +24,9 @@ from .._shared_files import logger
 from .._shared_files.config import get_config
 from .._shared_files.context_managers import active_lattice_manager
 from .._shared_files.defaults import postprocess_prefix, prefix_separator, sublattice_prefix
-from .._shared_files.qelectron_utils import QE_DB_DIRNAME
 from .._shared_files.util_classes import RESULT_STATUS, Status
 from .._workflow.lattice import Lattice
 from .._workflow.transport import TransportableObject
-from ..quantum.qserver import database as qe_db
 
 if TYPE_CHECKING:
     from .._shared_files.util_classes import Status
@@ -211,10 +209,7 @@ Node Outputs
         Final result of current dispatch.
         """
 
-        if self._result is not None:
-            return self._result.get_deserialized()
-        else:
-            return None
+        return self._result.get_deserialized() if self._result is not None else None
 
     @property
     def inputs(self) -> dict:
@@ -397,16 +392,19 @@ Node Outputs
         Returns:
             The QElectron data of said node. Will return None if no data exists.
         """
+
         try:
             # Checks existence of QElectron data.
             self._lattice.transport_graph.get_node_value(node_id, "qelectron_data_exists")
         except KeyError:
             return None
 
-        results_dir = get_config("dispatcher")["results_dir"]
-        db_dir = os.path.join(results_dir, self.dispatch_id, QE_DB_DIRNAME)
+        # results_dir = get_config("dispatcher")["results_dir"]
+        # db_dir = os.path.join(results_dir, self.dispatch_id, QE_DB_DIRNAME)
 
-        return qe_db.Database(db_dir).get_db(dispatch_id=self.dispatch_id, node_id=node_id)
+        # return qe_db.Database(db_dir).get_db(dispatch_id=self.dispatch_id, node_id=node_id)
+
+        raise NotImplementedError
 
     def _get_node_error(self, node_id: int) -> Union[None, str]:
         """

@@ -289,14 +289,14 @@ def _load_node_asset(manifest: dict, node_id: int, key: str):
 class ResultManager:
     def __init__(self, manifest: ResultSchema, results_dir: str):
         self.result_object = deserialize_result(manifest)
-        self._manifest = manifest.dict()
+        self._manifest = manifest.model_dump()
         self._results_dir = results_dir
 
     def save(self, path: Optional[str] = None):
         if not path:
             path = os.path.join(self._results_dir, "manifest.json")
         with open(path, "w") as f:
-            f.write(ResultSchema.parse_obj(self._manifest).json())
+            f.write(ResultSchema.model_validate(self._manifest).model_dump_json())
 
     @staticmethod
     def load(path: str, results_dir: str) -> "ResultManager":
@@ -345,7 +345,7 @@ class ResultManager:
             dispatch_id, wait, status_only=False, dispatcher_addr=dispatcher_addr
         )
 
-        manifest = ResultSchema.parse_obj(export["result_export"])
+        manifest = ResultSchema.model_validate(export["result_export"])
 
         # sort the nodes
         manifest.lattice.transport_graph.nodes.sort(key=lambda x: x.id)
