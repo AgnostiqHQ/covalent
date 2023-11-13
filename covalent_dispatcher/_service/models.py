@@ -98,6 +98,7 @@ class ElectronAssetKey(str, Enum):
     error = "error"
     stdout = "stdout"
     stderr = "stderr"
+    qelectron_db = "qelectron_db"
     call_before = "call_before"
     call_after = "call_after"
 

@@ -548,7 +548,7 @@ class LocalDispatcher(BaseDispatcher):
         r = APIClient(dispatcher_addr).post(endpoint, data=stripped.model_dump_json())
         r.raise_for_status()
 
-        parsed_resp = ResultSchema.model_validate_json((r.json()))
+        parsed_resp = ResultSchema.model_validate(r.json())
 
         return merge_response_manifest(manifest, parsed_resp)
 

@@ -162,6 +162,14 @@ def run_task_from_uris(
     task_group_metadata: dict,
     server_url: str,
 ):
+    """
+    Run the task from URIs.
+
+    This is appropriate for executors which can access the Covalent
+    server url directly. Exampl: LocalExecutor.
+
+    """
+
     prefix = "file://"
     prefix_len = len(prefix)
 
@@ -327,12 +335,15 @@ def run_task_from_uris_alt(
     task_group_metadata: dict,
     server_url: str,
 ):
-    """Alternate form of run_task_from_uris for sync executors.
+    """
+    Alternate form of run_task_from_uris for sync executors.
 
     This is appropriate for backends that cannot reach the Covalent
     server. Covalent will push input assets to the executor's
     persistent storage before invoking `Executor.send()` and pull output
     artifacts after `Executor.receive()`.
+
+    Example: DaskExecutor.
 
     """
 

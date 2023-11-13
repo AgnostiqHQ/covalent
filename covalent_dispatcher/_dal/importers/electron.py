@@ -103,7 +103,7 @@ def _get_electron_meta(
 
     legacy_kwargs = {
         "storage_type": ELECTRON_STORAGE_TYPE,
-        "storage_path": str(node_storage_path),
+        "storage_path": node_storage_path,
         "function_filename": ELECTRON_FUNCTION_FILENAME,
         "function_string_filename": ELECTRON_FUNCTION_STRING_FILENAME,
         "results_filename": ELECTRON_RESULTS_FILENAME,
