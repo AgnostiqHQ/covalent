@@ -685,7 +685,7 @@ def electron(
     backend: Optional[str] = None,
     executor: Optional[Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]] = None,
     # Add custom metadata fields here
-    files: List[FileTransfer] = [],
+    files: List[FileTransfer] = None,
     deps_bash: Union[DepsBash, List, str] = None,
     deps_pip: Union[DepsPip, list] = None,
     call_before: Union[List[DepsCall], DepsCall] = None,
