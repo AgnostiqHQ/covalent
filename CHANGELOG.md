@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Lattice-default metadata attributes are now applied correctly
+- Sublattices are built using `workflow_executor`
 - Added covalent version attribute to Remote Executors
 - Removed unassigned variable names
 - Contributing guidelines steps for installing for the first time
@@ -25,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added rich support to cli for better printing statements.
 - Changed semver from 5.7.1 to 5.7.2 in package.json
 - Updated word-wrap to 1.2.4 version
+- Updated the nightly workflow's schedule
 
 ### Changed
 

@@ -25,6 +25,7 @@ import covalent as ct
 import covalent._dispatcher_plugins.local as local
 import covalent._results_manager.results_manager as rm
 from covalent._results_manager.result import Result
+from covalent.executor import LocalExecutor
 
 
 def construct_temp_cache_dir():
@@ -139,7 +140,7 @@ def test_lattice_electron_metadata_propagation():
     def task_2():
         pass
 
-    @ct.lattice(deps_bash=l_bash_dep)
+    @ct.lattice(executor=LocalExecutor(), deps_bash=l_bash_dep)
     def workflow():
         task_1()
         task_2()
