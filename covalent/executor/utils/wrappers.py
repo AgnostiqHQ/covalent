@@ -249,7 +249,9 @@ def run_task_from_uris(
                         f.write(ser_output)
 
                     qelectron_db_dict = get_qelectron_db_dict(dispatch_id, task_id)
-                    ser_qelectron_db = serialize_node_asset(qelectron_db_dict, "qelectron_db")
+                    ser_qelectron_db = serialize_node_asset(
+                        TransportableObject(qelectron_db_dict), "qelectron_db"
+                    )
                     with open(qelectron_db_uri, "wb") as f:
                         f.write(ser_qelectron_db)
 
@@ -304,7 +306,6 @@ def run_task_from_uris(
                     if qelectron_db_uri:
                         upload_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/assets/qelectron_db"
                         with open(qelectron_db_uri, "rb") as f:
-                            headers = {"Content-Length": os.path.getsize(qelectron_db_uri)}
                             requests.put(upload_url, data=f)
 
                     result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
@@ -456,7 +457,9 @@ def run_task_from_uris_alt(
 
                     # Save QElectron DB
                     qelectron_db_dict = get_qelectron_db_dict(dispatch_id, task_id)
-                    ser_qelectron_db = serialize_node_asset(qelectron_db_dict, "qelectron_db")
+                    ser_qelectron_db = serialize_node_asset(
+                        TransportableObject(qelectron_db_dict), "qelectron_db"
+                    )
                     with open(qelectron_db_uri, "wb") as f:
                         f.write(ser_qelectron_db)
 
