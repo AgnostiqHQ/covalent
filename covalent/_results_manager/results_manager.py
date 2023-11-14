@@ -482,13 +482,16 @@ def get_result(
 
     """
 
-    return _get_result_multistage(
-        dispatch_id=dispatch_id,
-        wait=wait,
-        dispatcher_addr=dispatcher_addr,
-        status_only=status_only,
-        results_dir=results_dir,
-        workflow_output=workflow_output,
-        intermediate_outputs=intermediate_outputs,
-        sublattice_results=sublattice_results,
-    )
+    try:
+        return _get_result_multistage(
+            dispatch_id=dispatch_id,
+            wait=wait,
+            dispatcher_addr=dispatcher_addr,
+            status_only=status_only,
+            results_dir=results_dir,
+            workflow_output=workflow_output,
+            intermediate_outputs=intermediate_outputs,
+            sublattice_results=sublattice_results,
+        )
+    except RecursionError as re:
+        app_log.error(re)
