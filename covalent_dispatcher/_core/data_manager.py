@@ -56,6 +56,7 @@ def generate_node_result(
     error=None,
     stdout=None,
     stderr=None,
+    qelectron_data_exists=None,
 ):
     """
     Helper routine to prepare the node result
@@ -75,8 +76,9 @@ def generate_node_result(
     Return(s)
         Dictionary of the inputs
     """
-    # clean_stdout, bytes_data = extract_qelectron_db(stdout)
-    # qelectron_data_exists = bool(bytes_data)
+
+    # qelectron_db_dict = get_qelectron_db_dict(dispatch_id, node_id)
+    # qelectron_data_exists = bool(qelectron_db_dict)
 
     # if qelectron_data_exists:
     #     app_log.debug(f"Reproducing Qelectron database for node {node_id}")
@@ -92,7 +94,7 @@ def generate_node_result(
         "error": error,
         "stdout": stdout,
         "stderr": stderr,
-        "qelectron_data_exists": None,
+        "qelectron_data_exists": qelectron_data_exists,
     }
 
 

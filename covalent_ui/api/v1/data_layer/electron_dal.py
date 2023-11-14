@@ -34,7 +34,7 @@ from covalent_ui.api.v1.data_layer.lattice_dal import Lattices
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.lattices import Lattice
 from covalent_ui.api.v1.models.electrons_model import JobDetailsResponse, JobsResponse
-from covalent_ui.api.v1.utils.file_handle import FileHandler, validate_data
+from covalent_ui.api.v1.utils.file_handle import validate_data
 from covalent_ui.api.v1.utils.models_helper import JobsSortBy, SortDirection
 
 app_log = logger.app_log
@@ -309,13 +309,16 @@ class Electrons:
     def get_total_quantum_calls(self, dispatch_id, node_id, is_qa_electron: bool):
         if not is_qa_electron:
             return None
+
         qdb = self._get_qelectron_db_dict(dispatch_id=str(dispatch_id), node_id=node_id)
         return len(qdb)
 
     def get_avg_quantum_calls(self, dispatch_id, node_id, is_qa_electron: bool):
         if not is_qa_electron:
             return None
+
         jobs = self._get_qelectron_db_dict(dispatch_id=str(dispatch_id), node_id=node_id)
+
         time = [jobs[value]["execution_time"] for value in jobs]
         return sum(time) / len(time)
 
@@ -342,20 +345,8 @@ class Electrons:
     def _get_qelectron_db_dict(self, dispatch_id: str, node_id: int) -> Database:
         """Return the QElectron DB for a given node."""
 
-        electron = self.get_electrons_id(dispatch_id=dispatch_id, electron_id=node_id)
+        # TODO: Fix this, it shouldn't try to access the db directly here:
 
-        handler = FileHandler(electron.storage_path)
-        qelectron_db_dict = handler.read_from_serialized(electron.qelectron_db_filename)
+        from covalent._shared_files.qelectron_utils import get_qelectron_db_dict
 
-        app_log.error(f"QElectron DB: {qelectron_db_dict}")
-
-        return qelectron_db_dict
-
-        # # This is NOT the QServer's data but rather the qdb stored on Covalent's server.
-        # qdb_path = RESULTS_DIR / dispatch_id / QE_DB_DIRNAME
-        # qdb_path = qdb_path.resolve().absolute()
-
-        # if not qdb_path.exists():
-        #     app_log.error(f"Expected QElectron database at {qdb_path}.")
-
-        # return Database(qdb_path)
+        return get_qelectron_db_dict(dispatch_id, node_id)

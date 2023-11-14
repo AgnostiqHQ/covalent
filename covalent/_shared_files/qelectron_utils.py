@@ -142,7 +142,11 @@ def get_qelectron_db_dict(dispatch_id: str, task_id: int):
 
     try:
         database = Database()
-        return database.get_db_dict(dispatch_id=dispatch_id, node_id=task_id)
+        res = database.get_db_dict(dispatch_id=dispatch_id, node_id=task_id)
+
+        app_log.error(f"Found qelectron DB for task {task_id}")
+        app_log.error(f"Qelectron DB: {res}")
+        return res
 
     except FileNotFoundError:
         app_log.error(f"Qelectron database not found for task {task_id}")
