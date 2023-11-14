@@ -92,3 +92,7 @@ class Database:
                 db_copy[key] = value
 
         return db_copy
+
+    def db_exists(self, *, dispatch_id, node_id):
+        db_path = self._get_db_path(dispatch_id, node_id)
+        return db_path.exists()

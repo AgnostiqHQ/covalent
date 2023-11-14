@@ -28,6 +28,7 @@ from pydantic import ValidationError
 from covalent._dispatcher_plugins.local import LocalDispatcher
 from covalent._results_manager import Result
 from covalent._shared_files import logger
+from covalent._shared_files.qelectron_utils import get_qelectron_db_dict
 from covalent._shared_files.schemas.result import ResultSchema
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
@@ -77,12 +78,7 @@ def generate_node_result(
         Dictionary of the inputs
     """
 
-    # qelectron_db_dict = get_qelectron_db_dict(dispatch_id, node_id)
-    # qelectron_data_exists = bool(qelectron_db_dict)
-
-    # if qelectron_data_exists:
-    #     app_log.debug(f"Reproducing Qelectron database for node {node_id}")
-    #     write_qelectron_db(dispatch_id, node_id, bytes_data)
+    qelectron_data_exists = get_qelectron_db_dict(dispatch_id, node_id, exists_only=True)
 
     return {
         "node_id": node_id,

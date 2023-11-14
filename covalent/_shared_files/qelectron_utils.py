@@ -133,7 +133,7 @@ QE_DB_DIRNAME = ".database"
 #         data_mdb_file.write(bytes_data)
 
 
-def get_qelectron_db_dict(dispatch_id: str, task_id: int):
+def get_qelectron_db_dict(dispatch_id: str, task_id: int, exists_only: bool = False):
     """
     Return the Qelectron database as a dictionary
     for a given dispatch_id and task_id.
@@ -142,6 +142,10 @@ def get_qelectron_db_dict(dispatch_id: str, task_id: int):
 
     try:
         database = Database()
+
+        if exists_only:
+            return database.db_exists(dispatch_id=dispatch_id, node_id=task_id)
+
         res = database.get_db_dict(dispatch_id=dispatch_id, node_id=task_id)
 
         app_log.error(f"Found qelectron DB for task {task_id}")
