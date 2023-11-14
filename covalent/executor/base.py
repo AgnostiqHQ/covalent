@@ -37,7 +37,6 @@ from covalent.executor.utils import Signals
 
 from .._shared_files import TaskRuntimeError, logger
 from .._shared_files.context_managers import active_dispatch_info_manager
-from .._shared_files.qelectron_utils import remove_qelectron_db
 from .._shared_files.util_classes import RESULT_STATUS, DispatchInfo, Status
 from .schemas import TaskUpdate
 
@@ -298,7 +297,7 @@ class BaseExecutor(_AbstractBaseExecutor):
                 filename.touch(exist_ok=True)
 
                 with open(filepath, "a") as f:
-                    f.write(remove_qelectron_db(ss))
+                    f.write(ss)
 
     async def _execute(
         self,
@@ -682,7 +681,7 @@ class AsyncBaseExecutor(_AbstractBaseExecutor):
                 filename.touch(exist_ok=True)
 
                 async with aiofiles.open(filepath, "a") as f:
-                    await f.write(remove_qelectron_db(ss))
+                    await f.write(ss)
 
     async def _execute(
         self,

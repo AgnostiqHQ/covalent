@@ -29,10 +29,12 @@ from typing import Any, Callable, Dict, List, Tuple
 
 import requests
 
+from covalent._shared_files.qelectron_utils import get_qelectron_db_dict
 from covalent._workflow.depsbash import DepsBash
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from covalent._workflow.depspip import DepsPip
 from covalent._workflow.transport import TransportableObject
+from covalent.executor.utils import set_context
 from covalent.executor.utils.serialize import deserialize_node_asset, serialize_node_asset
 
 
@@ -183,7 +185,7 @@ def run_task_from_uris(
     os.environ["COVALENT_DISPATCHER_URL"] = server_url
 
     for i, task in enumerate(task_specs):
-        result_uri, stdout_uri, stderr_uri = output_uris[i]
+        result_uri, stdout_uri, stderr_uri, qelectron_db_uri = output_uris[i]
 
         with open(stdout_uri, "w") as stdout, open(stderr_uri, "w") as stderr:
             with redirect_stdout(stdout), redirect_stderr(stderr):
@@ -237,12 +239,19 @@ def run_task_from_uris(
                     )
                     exception_occurred = False
 
-                    transportable_output = wrapper_fn(
-                        serialized_fn, call_before, call_after, *ser_args, **ser_kwargs
-                    )
+                    with set_context(dispatch_id, task_id):
+                        transportable_output = wrapper_fn(
+                            serialized_fn, call_before, call_after, *ser_args, **ser_kwargs
+                        )
+
                     ser_output = serialize_node_asset(transportable_output, "output")
                     with open(result_uri, "wb") as f:
                         f.write(ser_output)
+
+                    qelectron_db_dict = get_qelectron_db_dict(dispatch_id, task_id)
+                    ser_qelectron_db = serialize_node_asset(qelectron_db_dict, "qelectron_db")
+                    with open(qelectron_db_uri, "w") as f:
+                        f.write(ser_qelectron_db)
 
                     outputs[task_id] = result_uri
 
@@ -251,6 +260,7 @@ def run_task_from_uris(
                         "output_uri": result_uri,
                         "stdout_uri": stdout_uri,
                         "stderr_uri": stderr_uri,
+                        "qelectron_db_uri": qelectron_db_uri,
                         "exception_occurred": exception_occurred,
                     }
 
@@ -264,6 +274,7 @@ def run_task_from_uris(
                         "output_uri": result_uri,
                         "stdout_uri": stdout_uri,
                         "stderr_uri": stderr_uri,
+                        "qelectron_db_uri": qelectron_db_uri,
                         "exception_occurred": exception_occurred,
                     }
 
@@ -290,6 +301,12 @@ def run_task_from_uris(
                             headers = {"Content-Length": os.path.getsize(stderr_uri)}
                             requests.put(upload_url, data=f)
 
+                    if qelectron_db_uri:
+                        upload_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/assets/qelectron_db"
+                        with open(qelectron_db_uri, "rb") as f:
+                            headers = {"Content-Length": os.path.getsize(qelectron_db_uri)}
+                            requests.put(upload_url, data=f)
+
                     result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
 
                     with open(result_path, "w") as f:
@@ -312,6 +329,7 @@ def run_task_from_uris(
                 "output_uri": "",
                 "stdout_uri": "",
                 "stderr_uri": "",
+                "qelectron_db_uri": "",
                 "exception_occurred": True,
             }
 
@@ -360,7 +378,7 @@ def run_task_from_uris_alt(
     os.environ["COVALENT_DISPATCHER_URL"] = server_url
 
     for i, task in enumerate(task_specs):
-        result_uri, stdout_uri, stderr_uri = output_uris[i]
+        result_uri, stdout_uri, stderr_uri, qelectron_db_uri = output_uris[i]
 
         with open(stdout_uri, "w") as stdout, open(stderr_uri, "w") as stderr:
             with redirect_stdout(stdout), redirect_stderr(stderr):
@@ -421,16 +439,26 @@ def run_task_from_uris_alt(
                     call_before, call_after = _gather_deps(
                         deps_json, call_before_json, call_after_json
                     )
+
                     exception_occurred = False
 
-                    transportable_output = wrapper_fn(
-                        serialized_fn, call_before, call_after, *ser_args, **ser_kwargs
-                    )
+                    # Run the task function
+                    with set_context(dispatch_id, task_id):
+                        transportable_output = wrapper_fn(
+                            serialized_fn, call_before, call_after, *ser_args, **ser_kwargs
+                        )
+
                     ser_output = serialize_node_asset(transportable_output, "output")
 
                     # Save output
                     with open(result_uri, "wb") as f:
                         f.write(ser_output)
+
+                    # Save QElectron DB
+                    qelectron_db_dict = get_qelectron_db_dict(dispatch_id, task_id)
+                    ser_qelectron_db = serialize_node_asset(qelectron_db_dict, "qelectron_db")
+                    with open(qelectron_db_uri, "w") as f:
+                        f.write(ser_qelectron_db)
 
                     resources["inputs"][task_id] = result_uri
 
@@ -439,6 +467,7 @@ def run_task_from_uris_alt(
                         "output_uri": result_uri,
                         "stdout_uri": stdout_uri,
                         "stderr_uri": stderr_uri,
+                        "qelectron_db_uri": qelectron_db_uri,
                         "exception_occurred": exception_occurred,
                     }
 
@@ -452,6 +481,7 @@ def run_task_from_uris_alt(
                         "output_uri": result_uri,
                         "stdout_uri": stdout_uri,
                         "stderr_uri": stderr_uri,
+                        "qelectron_db_uri": qelectron_db_uri,
                         "exception_occurred": exception_occurred,
                     }
 
@@ -462,7 +492,7 @@ def run_task_from_uris_alt(
                     result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
 
                     # Write the summary file containing the URIs for
-                    # the serialized result, stdout, and stderr
+                    # the serialized result, stdout, stderr, and qelectron_db
                     with open(result_path, "w") as f:
                         json.dump(result_summary, f)
 
@@ -475,6 +505,7 @@ def run_task_from_uris_alt(
                 "output_uri": "",
                 "stdout_uri": "",
                 "stderr_uri": "",
+                "qelectron_db_uri": "",
                 "exception_occurred": True,
             }
 

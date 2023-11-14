@@ -169,15 +169,18 @@ class LocalExecutor(BaseExecutor):
             result_uri = os.path.join(self.cache_dir, f"result_{dispatch_id}-{node_id}.pkl")
             stdout_uri = os.path.join(self.cache_dir, f"stdout_{dispatch_id}-{node_id}.txt")
             stderr_uri = os.path.join(self.cache_dir, f"stderr_{dispatch_id}-{node_id}.txt")
-            output_uris.append((result_uri, stdout_uri, stderr_uri))
+            qelectron_db_uri = os.path.join(
+                self.cache_dir, f"qelectron_db_{dispatch_id}-{node_id}.txt"
+            )
+            output_uris.append((result_uri, stdout_uri, stderr_uri, qelectron_db_uri))
 
         server_url = format_server_url()
 
         app_log.debug(f"Running task group {dispatch_id}:{task_ids}")
         future = proc_pool.submit(
             run_task_from_uris,
-            list(map(lambda t: t.dict(), task_specs)),
-            resources.dict(),
+            list(map(lambda t: t.model_dump(), task_specs)),
+            resources.model_dump(),
             output_uris,
             self.cache_dir,
             task_group_metadata,
