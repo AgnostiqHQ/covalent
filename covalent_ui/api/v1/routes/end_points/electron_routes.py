@@ -74,7 +74,7 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
             ),
             "avg_quantum_calls": electron.get_avg_quantum_calls(
                 dispatch_id=dispatch_id,
-                is_qa_electron=result["qelectron_data_exists"],
+                is_qelectron=result["qelectron_data_exists"],
                 node_id=result["transport_graph_node_id"],
             ),
         }

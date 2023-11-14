@@ -28,13 +28,12 @@ from sqlalchemy.sql import func
 from covalent._results_manager.results_manager import get_result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-from covalent.quantum.qserver.database import Database
 from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
 from covalent_ui.api.v1.data_layer.lattice_dal import Lattices
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.lattices import Lattice
 from covalent_ui.api.v1.models.electrons_model import JobDetailsResponse, JobsResponse
-from covalent_ui.api.v1.utils.file_handle import validate_data
+from covalent_ui.api.v1.utils.file_handle import FileHandler, validate_data
 from covalent_ui.api.v1.utils.models_helper import JobsSortBy, SortDirection
 
 app_log = logger.app_log
@@ -306,15 +305,15 @@ class Electrons:
         )
         return data
 
-    def get_total_quantum_calls(self, dispatch_id, node_id, is_qa_electron: bool):
-        if not is_qa_electron:
+    def get_total_quantum_calls(self, dispatch_id, node_id, is_qelectron: bool):
+        if not is_qelectron:
             return None
 
         qdb = self._get_qelectron_db_dict(dispatch_id=str(dispatch_id), node_id=node_id)
         return len(qdb)
 
-    def get_avg_quantum_calls(self, dispatch_id, node_id, is_qa_electron: bool):
-        if not is_qa_electron:
+    def get_avg_quantum_calls(self, dispatch_id, node_id, is_qelectron: bool):
+        if not is_qelectron:
             return None
 
         jobs = self._get_qelectron_db_dict(dispatch_id=str(dispatch_id), node_id=node_id)
@@ -342,11 +341,23 @@ class Electrons:
         )
         return validate_data(inputs)
 
-    def _get_qelectron_db_dict(self, dispatch_id: str, node_id: int) -> Database:
+    def _get_qelectron_db_dict(self, dispatch_id: str, node_id: int) -> dict:
         """Return the QElectron DB for a given node."""
 
         # TODO: Fix this, it shouldn't try to access the db directly here:
 
-        from covalent._shared_files.qelectron_utils import get_qelectron_db_dict
+        # from covalent._shared_files.qelectron_utils import get_qelectron_db_dict
 
-        return get_qelectron_db_dict(dispatch_id, node_id)
+        # return get_qelectron_db_dict(dispatch_id, node_id)
+
+        electron = self.get_electrons_id(dispatch_id, node_id)
+
+        app_log.error(f"Electron: {electron}")
+
+        handler = FileHandler(electron.storage_path)
+
+        data = handler.read_from_serialized(electron.qelectron_db_filename)
+
+        app_log.error(f"QElectron DB data: {data}")
+
+        return {}

@@ -213,7 +213,7 @@ class LocalExecutor(BaseExecutor):
             if not data:
                 terminal_status = RESULT_STATUS.CANCELLED
             else:
-                received = ReceiveModel.parse_obj(data)
+                received = ReceiveModel.model_validate(data)
                 terminal_status = Status(received.status.value)
 
             task_result = {
@@ -228,6 +228,9 @@ class LocalExecutor(BaseExecutor):
                         "remote_uri": "",
                     },
                     "stderr": {
+                        "remote_uri": "",
+                    },
+                    "qelectron_db": {
                         "remote_uri": "",
                     },
                 },

@@ -47,6 +47,7 @@ ELECTRON_FUNCTION_STRING_FILENAME = ELECTRON_FILENAMES["function_string"]
 ELECTRON_VALUE_FILENAME = ELECTRON_FILENAMES["value"]
 ELECTRON_STDOUT_FILENAME = ELECTRON_FILENAMES["stdout"]
 ELECTRON_STDERR_FILENAME = ELECTRON_FILENAMES["stderr"]
+ELECTRON_QELECTRON_DB_FILENAME = ELECTRON_FILENAMES["qelectron_db"]
 ELECTRON_ERROR_FILENAME = ELECTRON_FILENAMES["error"]
 ELECTRON_RESULTS_FILENAME = ELECTRON_FILENAMES["output"]
 ELECTRON_DEPS_FILENAME = ELECTRON_FILENAMES["deps"]
@@ -300,6 +301,7 @@ def _electron_data(
                 ),
                 ("stdout", ELECTRON_STDOUT_FILENAME, node_stdout),
                 ("stderr", ELECTRON_STDERR_FILENAME, node_stderr),
+                ("qelectron_db", ELECTRON_QELECTRON_DB_FILENAME, ELECTRON_QELECTRON_DB_FILENAME),
                 ("error", ELECTRON_ERROR_FILENAME, node_error),
                 ("output", ELECTRON_RESULTS_FILENAME, node_output),
             ]:
@@ -349,6 +351,7 @@ def _electron_data(
                 "value_filename": ELECTRON_VALUE_FILENAME,
                 "stdout_filename": ELECTRON_STDOUT_FILENAME,
                 "stderr_filename": ELECTRON_STDERR_FILENAME,
+                "qelectron_db_filename": ELECTRON_QELECTRON_DB_FILENAME,
                 "error_filename": ELECTRON_ERROR_FILENAME,
                 "deps_filename": ELECTRON_DEPS_FILENAME,
                 "call_before_filename": ELECTRON_CALL_BEFORE_FILENAME,

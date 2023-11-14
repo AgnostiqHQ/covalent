@@ -298,7 +298,7 @@ class DaskExecutor(AsyncBaseExecutor):
         if not data:
             terminal_status = RESULT_STATUS.CANCELLED
         else:
-            received = ReceiveModel.parse_obj(data)
+            received = ReceiveModel.model_validate(data)
             terminal_status = Status(received.status.value)
 
         for task_id in task_ids:
@@ -309,6 +309,7 @@ class DaskExecutor(AsyncBaseExecutor):
                 output_uri = ""
                 stdout_uri = ""
                 stderr_uri = ""
+                qelectron_db_uri = ""
 
             else:
                 result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
@@ -318,6 +319,7 @@ class DaskExecutor(AsyncBaseExecutor):
                     output_uri = result_summary["output_uri"]
                     stdout_uri = result_summary["stdout_uri"]
                     stderr_uri = result_summary["stderr_uri"]
+                    qelectron_db_uri = result_summary["qelectron_db_uri"]
                     exception_raised = result_summary["exception_occurred"]
 
                 terminal_status = (
@@ -337,6 +339,9 @@ class DaskExecutor(AsyncBaseExecutor):
                     },
                     "stderr": {
                         "remote_uri": stderr_uri,
+                    },
+                    "qelectron_db": {
+                        "remote_uri": qelectron_db_uri,
                     },
                 },
             }
