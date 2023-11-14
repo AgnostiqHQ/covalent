@@ -249,7 +249,8 @@ class DaskExecutor(AsyncBaseExecutor):
             result_uri = os.path.join(self.cache_dir, f"result_{dispatch_id}-{node_id}.pkl")
             stdout_uri = os.path.join(self.cache_dir, f"stdout_{dispatch_id}-{node_id}.txt")
             stderr_uri = os.path.join(self.cache_dir, f"stderr_{dispatch_id}-{node_id}.txt")
-            output_uris.append((result_uri, stdout_uri, stderr_uri))
+            profile_uri = os.path.join(self.cache_dir, f"profile_{dispatch_id}-{node_id}.prof")
+            output_uris.append((result_uri, stdout_uri, stderr_uri, profile_uri))
 
         server_url = format_server_url()
 
@@ -315,6 +316,7 @@ class DaskExecutor(AsyncBaseExecutor):
                     output_uri = result_summary["output_uri"]
                     stdout_uri = result_summary["stdout_uri"]
                     stderr_uri = result_summary["stderr_uri"]
+                    profile_uri = result_summary["profile_uri"]
                     exception_raised = result_summary["exception_occurred"]
 
                 terminal_status = (
@@ -334,6 +336,9 @@ class DaskExecutor(AsyncBaseExecutor):
                     },
                     "stderr": {
                         "remote_uri": stderr_uri,
+                    },
+                    "profile": {
+                        "remote_uri": profile_uri,
                     },
                 },
             }

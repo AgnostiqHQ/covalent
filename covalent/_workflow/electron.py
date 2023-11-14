@@ -775,6 +775,7 @@ def electron(
         "deps": deps,
         "call_before": call_before_final,
         "call_after": call_after_final,
+        "custom_asset_keys": None,  # This is to be a list of strings declaring raw executor-produced assets
     }
 
     constraints = encode_metadata(constraints)

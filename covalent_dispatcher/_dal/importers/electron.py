@@ -163,7 +163,12 @@ def import_electron_assets(
     # Register custom assets
     if e.custom_assets:
         for asset_key, asset in e.custom_assets.items():
-            object_key = f"{asset_key}.data"
+            node_storage_path, object_key = object_store.get_uri_components(
+                dispatch_id,
+                e.id,
+                asset_key,
+            )
+
             local_uri = os.path.join(node_storage_path, object_key)
 
             asset_kwargs = {

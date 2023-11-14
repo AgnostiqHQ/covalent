@@ -185,6 +185,11 @@ def get_default_executor() -> dict:
     )
 
 
+# Raw executor-produced assets to be declared for each electron
+def get_default_custom_assets() -> list:
+    return ["profile"]
+
+
 # Default configuration settings
 @dataclass
 class DefaultConfig:
@@ -204,3 +209,4 @@ class DefaultMetadataValues:
     call_after: List = field(default_factory=list)
     workflow_executor: str = field(default_factory=get_default_executor)
     workflow_executor_data: Dict = field(default_factory=dict)
+    custom_asset_keys: List = field(default_factory=get_default_custom_assets)

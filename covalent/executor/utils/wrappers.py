@@ -162,6 +162,8 @@ def run_task_from_uris(
     task_group_metadata: dict,
     server_url: str,
 ):
+    from datetime import datetime
+
     prefix = "file://"
     prefix_len = len(prefix)
 
@@ -180,6 +182,9 @@ def run_task_from_uris(
         with open(stdout_uri, "w") as stdout, open(stderr_uri, "w") as stderr:
             with redirect_stdout(stdout), redirect_stderr(stderr):
                 try:
+                    # Profiling
+                    st = datetime.now()
+
                     task_id = task["function_id"]
                     args_ids = task["args_ids"]
                     kwargs_ids = task["kwargs_ids"]
@@ -229,9 +234,21 @@ def run_task_from_uris(
                     )
                     exception_occurred = False
 
+                    # Profiling
+                    ts_after_load = datetime.now()
+
                     transportable_output = wrapper_fn(
                         serialized_fn, call_before, call_after, *ser_args, **ser_kwargs
                     )
+
+                    # Profiling
+                    ts_after_execute = datetime.now()
+
+                    profile_info = {
+                        "load_time": (ts_after_load - st).total_seconds(),
+                        "execute_time": (ts_after_execute - st).total_seconds(),
+                    }
+
                     ser_output = serialize_node_asset(transportable_output, "output")
                     with open(result_uri, "wb") as f:
                         f.write(ser_output)
@@ -259,6 +276,7 @@ def run_task_from_uris(
                         "exception_occurred": exception_occurred,
                     }
 
+                    profile_info = None
                     break
 
                 finally:
@@ -281,6 +299,12 @@ def run_task_from_uris(
                         with open(stderr_uri, "rb") as f:
                             headers = {"Content-Length": os.path.getsize(stderr_uri)}
                             requests.put(upload_url, data=f)
+
+                    # Upload profiling data
+                    upload_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/assets/profile"
+                    body = json.dumps(profile_info).encode("utf-8")
+                    headers = {"Content-Length": len(body)}
+                    requests.put(upload_url, data=body)
 
                     result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
 
@@ -335,6 +359,7 @@ def run_task_from_uris_alt(
     artifacts after `Executor.receive()`.
 
     """
+    from datetime import datetime
 
     prefix = "file://"
     prefix_len = len(prefix)
@@ -349,7 +374,7 @@ def run_task_from_uris_alt(
     os.environ["COVALENT_DISPATCHER_URL"] = server_url
 
     for i, task in enumerate(task_specs):
-        result_uri, stdout_uri, stderr_uri = output_uris[i]
+        result_uri, stdout_uri, stderr_uri, profile_uri = output_uris[i]
 
         with open(stdout_uri, "w") as stdout, open(stderr_uri, "w") as stderr:
             with redirect_stdout(stdout), redirect_stderr(stderr):
@@ -357,6 +382,9 @@ def run_task_from_uris_alt(
                     task_id = task["function_id"]
                     args_ids = task["args_ids"]
                     kwargs_ids = task["kwargs_ids"]
+
+                    # Start the clock
+                    st = datetime.now()
 
                     # Load function
                     function_uri = resources["functions"][task_id]
@@ -412,9 +440,16 @@ def run_task_from_uris_alt(
                     )
                     exception_occurred = False
 
+                    # Profiling
+                    ts_after_load = datetime.now()
+
                     transportable_output = wrapper_fn(
                         serialized_fn, call_before, call_after, *ser_args, **ser_kwargs
                     )
+
+                    # Profiling
+                    ts_after_execute = datetime.now()
+
                     ser_output = serialize_node_asset(transportable_output, "output")
 
                     # Save output
@@ -423,11 +458,20 @@ def run_task_from_uris_alt(
 
                     resources["inputs"][task_id] = result_uri
 
+                    # Write profiling info
+                    with open(profile_uri, "w") as f:
+                        profile_info = {
+                            "load_time": (ts_after_load - st).total_seconds(),
+                            "execute_time": (ts_after_execute - ts_after_load).total_seconds(),
+                        }
+                        json.dump(profile_info, f)
+
                     result_summary = {
                         "node_id": task_id,
                         "output_uri": result_uri,
                         "stdout_uri": stdout_uri,
                         "stderr_uri": stderr_uri,
+                        "profile_uri": profile_uri,
                         "exception_occurred": exception_occurred,
                     }
 
@@ -436,11 +480,15 @@ def run_task_from_uris_alt(
                     tb = "".join(traceback.TracebackException.from_exception(ex).format())
                     print(tb, file=sys.stderr)
                     result_uri = None
+                    with open(profile_uri, "w") as f:
+                        json.dump(None, f)
+
                     result_summary = {
                         "node_id": task_id,
                         "output_uri": result_uri,
                         "stdout_uri": stdout_uri,
                         "stderr_uri": stderr_uri,
+                        "profile_uri": profile_uri,
                         "exception_occurred": exception_occurred,
                     }
 

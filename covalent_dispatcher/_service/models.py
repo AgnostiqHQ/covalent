@@ -101,6 +101,9 @@ class ElectronAssetKey(str, Enum):
     call_before = "call_before"
     call_after = "call_after"
 
+    # Allow downloading and uploading the asset
+    profile = "profile"
+
 
 class ExportResponseSchema(BaseModel):
     id: str

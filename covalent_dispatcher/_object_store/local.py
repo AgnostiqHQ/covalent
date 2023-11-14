@@ -34,7 +34,11 @@ ALGORITHM = "sha1"
 
 WORKFLOW_ASSET_FILENAME_MAP = result.ASSET_FILENAME_MAP.copy()
 WORKFLOW_ASSET_FILENAME_MAP.update(lattice.ASSET_FILENAME_MAP)
-ELECTRON_ASSET_FILENAME_MAP = electron.ASSET_FILENAME_MAP
+ELECTRON_ASSET_FILENAME_MAP = electron.ASSET_FILENAME_MAP.copy()
+
+# Override default `.data` filename extension` for select custom
+# assets
+ELECTRON_ASSET_FILENAME_MAP["profile"] = "profile.custom"
 
 
 # Moved from write_result_to_db.py
@@ -94,11 +98,15 @@ class LocalProvider(BaseProvider):
         """
         storage_path = os.path.join(self.base_path, dispatch_id)
 
-        if node_id is not None:
-            storage_path = os.path.join(storage_path, f"node_{node_id}")
-            object_key = ELECTRON_ASSET_FILENAME_MAP[asset_key]
-        else:
-            object_key = WORKFLOW_ASSET_FILENAME_MAP[asset_key]
+        try:
+            if node_id is not None:
+                storage_path = os.path.join(storage_path, f"node_{node_id}")
+                object_key = ELECTRON_ASSET_FILENAME_MAP[asset_key]
+            else:
+                object_key = WORKFLOW_ASSET_FILENAME_MAP[asset_key]
+        except KeyError:
+            # generic custom asset
+            object_key = f"{asset_key}.data"
 
         os.makedirs(storage_path, exist_ok=True)
 

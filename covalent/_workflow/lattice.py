@@ -394,6 +394,7 @@ def lattice(
         "call_before": call_before,
         "call_after": call_after,
         "triggers": triggers,
+        "custom_asset_keys": ["profile"],  # Postprocessor electron will inherit this attribute
     }
 
     constraints = encode_metadata(constraints)
