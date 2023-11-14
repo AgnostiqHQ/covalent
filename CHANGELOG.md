@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Lattice-default metadata attributes are now applied correctly
+- Sublattices are built using `workflow_executor`
 - Added covalent version attribute to Remote Executors
 - Removed unassigned variable names
 - Contributing guidelines steps for installing for the first time
