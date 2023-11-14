@@ -28,14 +28,13 @@ from sqlalchemy.sql import func
 from covalent._results_manager.results_manager import get_result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-from covalent._shared_files.qelectron_utils import QE_DB_DIRNAME
 from covalent.quantum.qserver.database import Database
 from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
 from covalent_ui.api.v1.data_layer.lattice_dal import Lattices
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.lattices import Lattice
 from covalent_ui.api.v1.models.electrons_model import JobDetailsResponse, JobsResponse
-from covalent_ui.api.v1.utils.file_handle import validate_data
+from covalent_ui.api.v1.utils.file_handle import FileHandler, validate_data
 from covalent_ui.api.v1.utils.models_helper import JobsSortBy, SortDirection
 
 app_log = logger.app_log
@@ -70,6 +69,22 @@ class Electrons:
 
         return (validated, response)
 
+    # def get_qelectron_db_filename(self, dispatch_id: uuid.UUID, electron_id: int) -> str:
+    #     """
+    #     Get QElectron DB filename
+    #     Args:
+    #         dispatch_id: Dispatch id of lattice/sublattice
+    #         electron_id: Transport graph node id of a electron
+    #     Returns:
+    #         Returns the QElectron DB filename
+    #     """
+    #     try:
+    #         electron_result = self.get_electrons_id(dispatch_id, electron_id)
+    #         return electron_result.qelectron_db_filename
+    #     except Exception as exc:
+    #         app_log.debug(f"Unable to process get qelectron db filename \n {exc}")
+    #         return None
+
     def get_jobs(
         self,
         dispatch_id: uuid.UUID,
@@ -89,7 +104,7 @@ class Electrons:
             if not validated:
                 return jobs_response
             try:
-                jobs = _qelectron_get_db(str(dispatch_id), electron_id)
+                jobs = self._get_qelectron_db_dict(str(dispatch_id), electron_id)
                 if not jobs:
                     jobs_response.data = []
                     jobs_response.msg = f"Job details for {dispatch_id} dispatch with {electron_id} node do not exist."
@@ -140,7 +155,9 @@ class Electrons:
             if not validated:
                 return job_detail_response
             try:
-                jobs = _qelectron_get_db(dispatch_id=str(dispatch_id), node_id=electron_id)
+                jobs = self._get_qelectron_db_dict(
+                    dispatch_id=str(dispatch_id), node_id=electron_id
+                )
                 selected_job = jobs[job_id]
             except Exception as exc:
                 app_log.debug(f"Unable to process get jobs \n {exc}")
@@ -292,15 +309,13 @@ class Electrons:
     def get_total_quantum_calls(self, dispatch_id, node_id, is_qa_electron: bool):
         if not is_qa_electron:
             return None
-        qdb_path = _path_to_qelectron_db(dispatch_id=str(dispatch_id))
-        return len(
-            Database(qdb_path).get_circuit_ids(dispatch_id=str(dispatch_id), node_id=node_id)
-        )
+        qdb = self._get_qelectron_db_dict(dispatch_id=str(dispatch_id), node_id=node_id)
+        return len(qdb)
 
     def get_avg_quantum_calls(self, dispatch_id, node_id, is_qa_electron: bool):
         if not is_qa_electron:
             return None
-        jobs = _qelectron_get_db(dispatch_id=str(dispatch_id), node_id=node_id)
+        jobs = self._get_qelectron_db_dict(dispatch_id=str(dispatch_id), node_id=node_id)
         time = [jobs[value]["execution_time"] for value in jobs]
         return sum(time) / len(time)
 
@@ -324,21 +339,23 @@ class Electrons:
         )
         return validate_data(inputs)
 
+    def _get_qelectron_db_dict(self, dispatch_id: str, node_id: int) -> Database:
+        """Return the QElectron DB for a given node."""
 
-def _path_to_qelectron_db(dispatch_id: str) -> Path:
-    """Construct path to the QElectron database in Covalent's results directory."""
+        electron = self.get_electrons_id(dispatch_id=dispatch_id, electron_id=node_id)
 
-    # This is NOT the QServer's data but rather the qdb stored on Covalent's server.
-    qdb_path = RESULTS_DIR / dispatch_id / QE_DB_DIRNAME
-    qdb_path = qdb_path.resolve().absolute()
+        handler = FileHandler(electron.storage_path)
+        qelectron_db_dict = handler.read_from_serialized(electron.qelectron_db_filename)
 
-    if not qdb_path.exists():
-        app_log.error(f"Expected QElectron database at {qdb_path}.")
+        app_log.error(f"QElectron DB: {qelectron_db_dict}")
 
-    return qdb_path
+        return qelectron_db_dict
 
+        # # This is NOT the QServer's data but rather the qdb stored on Covalent's server.
+        # qdb_path = RESULTS_DIR / dispatch_id / QE_DB_DIRNAME
+        # qdb_path = qdb_path.resolve().absolute()
 
-def _qelectron_get_db(dispatch_id: str, node_id: int) -> dict:
-    """Return the QElectron jobs dictionary for a given node."""
-    qdb_path = _path_to_qelectron_db(dispatch_id)
-    return Database(qdb_path).get_db(dispatch_id=dispatch_id, node_id=node_id)
+        # if not qdb_path.exists():
+        #     app_log.error(f"Expected QElectron database at {qdb_path}.")
+
+        # return Database(qdb_path)

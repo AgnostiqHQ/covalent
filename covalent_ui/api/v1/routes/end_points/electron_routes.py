@@ -235,6 +235,9 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
             stderr_response = handler.read_from_text(result["stderr_filename"])
             response = stderr_response + error_response
             return ElectronFileResponse(data=response)
+        elif name == "qelectron_db":
+            response = handler.read_from_serialized(result["qelectron_db_filename"])
+            return ElectronFileResponse(data=response)
         else:
             return ElectronFileResponse(data=None)
 

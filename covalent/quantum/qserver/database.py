@@ -85,7 +85,7 @@ class Database:
         with self._open(dispatch_id, node_id) as db:
             return CircuitInfo(**db.get(circuit_id, None))
 
-    def get_db(self, *, dispatch_id, node_id):
+    def get_db_dict(self, *, dispatch_id, node_id):
         db_copy = {}
         with self._open(dispatch_id, node_id) as db:
             for key, value in db.items():

@@ -250,7 +250,7 @@ def run_task_from_uris(
 
                     qelectron_db_dict = get_qelectron_db_dict(dispatch_id, task_id)
                     ser_qelectron_db = serialize_node_asset(qelectron_db_dict, "qelectron_db")
-                    with open(qelectron_db_uri, "w") as f:
+                    with open(qelectron_db_uri, "wb") as f:
                         f.write(ser_qelectron_db)
 
                     outputs[task_id] = result_uri
@@ -457,7 +457,7 @@ def run_task_from_uris_alt(
                     # Save QElectron DB
                     qelectron_db_dict = get_qelectron_db_dict(dispatch_id, task_id)
                     ser_qelectron_db = serialize_node_asset(qelectron_db_dict, "qelectron_db")
-                    with open(qelectron_db_uri, "w") as f:
+                    with open(qelectron_db_uri, "wb") as f:
                         f.write(ser_qelectron_db)
 
                     resources["inputs"][task_id] = result_uri
