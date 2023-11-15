@@ -44,7 +44,6 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-# TODO: Remove dispatch_id from the signature once qelectron_db becomes an Asset (PR #1690)
 def generate_node_result(
     node_id: int,
     node_name: str = None,
@@ -86,7 +85,7 @@ def generate_node_result(
         "error": error,
         "stdout": stdout,
         "stderr": stderr,
-        "qelectron_data_exists": True,  # TODO: Remove this after debugging
+        "qelectron_data_exists": qelectron_data_exists,  # TODO: This field is now defunct, see PR #1850
     }
 
 

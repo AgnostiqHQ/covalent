@@ -89,7 +89,7 @@ class Electrons:
                 return jobs_response
             try:
                 jobs = self._get_qelectron_db_dict(str(dispatch_id), electron_id)
-                if not jobs:
+                if len(jobs) == 0:
                     jobs_response.data = []
                     jobs_response.msg = f"Job details for {dispatch_id} dispatch with {electron_id} node do not exist."
                     return jobs_response
@@ -290,18 +290,14 @@ class Electrons:
         )
         return data
 
-    def get_total_quantum_calls(self, dispatch_id, node_id, is_qelectron: bool):
-        if not is_qelectron:
-            return None
-
+    def get_total_quantum_calls(self, dispatch_id, node_id):
         qdb = self._get_qelectron_db_dict(dispatch_id=str(dispatch_id), node_id=node_id)
-        return len(qdb)
+        return None if len(qdb) == 0 else len(qdb)
 
-    def get_avg_quantum_calls(self, dispatch_id, node_id, is_qelectron: bool):
-        if not is_qelectron:
-            return None
-
+    def get_avg_quantum_calls(self, dispatch_id, node_id):
         jobs = self._get_qelectron_db_dict(dispatch_id=str(dispatch_id), node_id=node_id)
+        if len(jobs) == 0:
+            return None
 
         time = [jobs[value]["execution_time"] for value in jobs]
         return sum(time) / len(time)
