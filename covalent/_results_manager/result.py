@@ -270,7 +270,7 @@ Node Outputs
             "end_time": self.lattice.transport_graph.get_node_value(node_id, "end_time"),
             "status": self._get_node_status(node_id),
             "output": self._get_node_output(node_id),
-            "qelectron": self._get_node_qelectron_data(node_id),
+            "qelectron": self._get_node_qelectron_db_bytes(node_id),
             "error": self.lattice.transport_graph.get_node_value(node_id, "error"),
             "sublattice_result": self.lattice.transport_graph.get_node_value(
                 node_id, "sublattice_result"
@@ -382,29 +382,23 @@ Node Outputs
         """
         return self._lattice.transport_graph.get_node_value(node_id, "output")
 
-    def _get_node_qelectron_data(self, node_id: int) -> dict:
+    def _get_node_qelectron_db_bytes(self, node_id: int) -> dict:
         """
-        Return all QElectron data associated with a node.
+        Return the entire QRlectron DB in bytes, associated with a node.
+
+        In order to use this db, the user needs to save this in an data.mdb file and
+        then use the `Database` class, found in `covalent.quantum.qserver.database` to access the data,
+        i.e.: database = Database("dirpath/containing/data.mdb")
+            database.get_db_dict(dispatch_id="dispatch_id", node_id="node_id", direct_path=True)
 
         Args:
             node_id: The node id.
 
         Returns:
-            The QElectron data of said node. Will return None if no data exists.
+            The QElectron db of said node. Will return an empty byte string if it doesn't exist.
         """
 
-        try:
-            # Checks existence of QElectron data.
-            self._lattice.transport_graph.get_node_value(node_id, "qelectron_data_exists")
-        except KeyError:
-            return None
-
-        # results_dir = get_config("dispatcher")["results_dir"]
-        # db_dir = os.path.join(results_dir, self.dispatch_id, QE_DB_DIRNAME)
-
-        # return qe_db.Database(db_dir).get_db(dispatch_id=self.dispatch_id, node_id=node_id)
-
-        raise NotImplementedError
+        return self._lattice.transport_graph.get_node_value(node_id, "qelectron_db")
 
     def _get_node_error(self, node_id: int) -> Union[None, str]:
         """

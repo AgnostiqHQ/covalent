@@ -65,6 +65,7 @@ RESULTS_FILENAME = "results.pkl"
 VALUE_FILENAME = "value.pkl"
 STDOUT_FILENAME = "stdout.log"
 STDERR_FILENAME = "stderr.log"
+QELECTRON_DB_FILENAME = "data.mdb"
 ERROR_FILENAME = "error.log"
 TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
 DEPS_FILENAME = "deps.pkl"
@@ -197,6 +198,7 @@ def get_electron_kwargs(
     value_filename=VALUE_FILENAME,
     stdout_filename=STDOUT_FILENAME,
     stderr_filename=STDERR_FILENAME,
+    qelectron_db_filename=QELECTRON_DB_FILENAME,
     error_filename=ERROR_FILENAME,
     deps_filename=DEPS_FILENAME,
     call_before_filename=CALL_BEFORE_FILENAME,
@@ -227,6 +229,7 @@ def get_electron_kwargs(
         "value_filename": value_filename,
         "stdout_filename": stdout_filename,
         "stderr_filename": stderr_filename,
+        "qelectron_db_filename": qelectron_db_filename,
         "error_filename": error_filename,
         "deps_filename": deps_filename,
         "call_before_filename": call_before_filename,
