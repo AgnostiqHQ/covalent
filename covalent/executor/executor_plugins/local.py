@@ -170,7 +170,7 @@ class LocalExecutor(BaseExecutor):
             stdout_uri = os.path.join(self.cache_dir, f"stdout_{dispatch_id}-{node_id}.txt")
             stderr_uri = os.path.join(self.cache_dir, f"stderr_{dispatch_id}-{node_id}.txt")
             qelectron_db_uri = os.path.join(
-                self.cache_dir, f"qelectron_db_{dispatch_id}-{node_id}.pkl"
+                self.cache_dir, f"qelectron_db_{dispatch_id}-{node_id}.mdb"
             )
             output_uris.append((result_uri, stdout_uri, stderr_uri, qelectron_db_uri))
 

@@ -251,7 +251,7 @@ def run_task_from_uris(
                     qelectron_db_path = get_qelectron_db_path(dispatch_id, task_id)
                     qelectron_db_bytes = bytes()
                     if qelectron_db_path is not None:
-                        with open(qelectron_db_path, "rb") as f:
+                        with open(qelectron_db_path / "data.mdb", "rb") as f:
                             qelectron_db_bytes = f.read()
 
                     outputs[task_id] = result_uri
@@ -457,7 +457,7 @@ def run_task_from_uris_alt(
                     qelectron_db_path = get_qelectron_db_path(dispatch_id, task_id)
                     qelectron_db_bytes = bytes()
                     if qelectron_db_path is not None:
-                        with open(qelectron_db_path, "rb") as f:
+                        with open(qelectron_db_path / "data.mdb", "rb") as f:
                             qelectron_db_bytes = f.read()
 
                     with open(qelectron_db_uri, "wb") as f:

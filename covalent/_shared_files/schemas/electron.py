@@ -56,7 +56,9 @@ ELECTRON_FUNCTION_STRING_FILENAME = "function_string.txt"
 ELECTRON_VALUE_FILENAME = "value.tobj"
 ELECTRON_STDOUT_FILENAME = "stdout.log"
 ELECTRON_STDERR_FILENAME = "stderr.log"
-ELECTRON_QELECTRON_DB_FILENAME = "qelectron_db.mdb"
+ELECTRON_QELECTRON_DB_FILENAME = (
+    "data.mdb"  # This NEEDS to be data.mdb so that the qelectron's Database class can find it
+)
 ELECTRON_ERROR_FILENAME = "error.log"
 ELECTRON_RESULTS_FILENAME = "results.tobj"
 ELECTRON_DEPS_FILENAME = "deps.json"

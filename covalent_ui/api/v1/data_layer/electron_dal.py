@@ -345,12 +345,6 @@ class Electrons:
     def _get_qelectron_db_dict(self, dispatch_id: str, node_id: int) -> dict:
         """Return the QElectron DB for a given node."""
 
-        # TODO: Fix this, it shouldn't try to access the db directly here:
-
-        # from covalent._shared_files.qelectron_utils import get_qelectron_db_dict
-
-        # return get_qelectron_db_dict(dispatch_id, node_id)
-
         electron = self.get_electrons_id(dispatch_id, node_id)
 
         app_log.error(f"Electron: {electron}")
@@ -360,10 +354,6 @@ class Electrons:
         qelectron_db_dict = database.get_db_dict(
             dispatch_id=dispatch_id, node_id=node_id, direct_path=True
         )
-
-        # handler = FileHandler(electron.storage_path)
-
-        # data = handler.read_from_serialized(electron.qelectron_db_filename)
 
         app_log.error(f"QElectron DB data: {qelectron_db_dict}")
 
