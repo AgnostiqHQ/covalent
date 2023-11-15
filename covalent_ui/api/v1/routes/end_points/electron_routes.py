@@ -236,7 +236,9 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
             response = stderr_response + error_response
             return ElectronFileResponse(data=response)
         elif name == "qelectron_db":
-            response = handler.read_from_serialized(result["qelectron_db_filename"])
+            # Since in case of bytes 2 same bytes objects are returned by the handler
+            # so we are taking only the first one
+            response = handler.read_from_serialized(result["qelectron_db_filename"])[0]
             return ElectronFileResponse(data=response)
         else:
             return ElectronFileResponse(data=None)

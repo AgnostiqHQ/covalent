@@ -24,8 +24,8 @@ def get_qelectron_db_path(dispatch_id: str, task_id: int):
     """
     Return the path to the Qelectron database for a given dispatch_id and task_id.
 
-    WARNING: IDEALLY SHOULD ONLY BE USED IN THE SAME
-    LOCATION AS WHERE THE USER'S TASK FUNCTION IS BEING RUN.
+    WARNING: SHOULD ONLY BE USED FROM THE SAME MACHINE
+    AS WHERE THE USER'S TASK FUNCTION IS BEING RUN.
     """
 
     database = Database()

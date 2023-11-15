@@ -69,22 +69,6 @@ class Electrons:
 
         return (validated, response)
 
-    # def get_qelectron_db_filename(self, dispatch_id: uuid.UUID, electron_id: int) -> str:
-    #     """
-    #     Get QElectron DB filename
-    #     Args:
-    #         dispatch_id: Dispatch id of lattice/sublattice
-    #         electron_id: Transport graph node id of a electron
-    #     Returns:
-    #         Returns the QElectron DB filename
-    #     """
-    #     try:
-    #         electron_result = self.get_electrons_id(dispatch_id, electron_id)
-    #         return electron_result.qelectron_db_filename
-    #     except Exception as exc:
-    #         app_log.debug(f"Unable to process get qelectron db filename \n {exc}")
-    #         return None
-
     def get_jobs(
         self,
         dispatch_id: uuid.UUID,
