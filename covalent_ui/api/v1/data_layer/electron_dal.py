@@ -28,12 +28,13 @@ from sqlalchemy.sql import func
 from covalent._results_manager.results_manager import get_result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
+from covalent.quantum.qserver.database import Database
 from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
 from covalent_ui.api.v1.data_layer.lattice_dal import Lattices
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.lattices import Lattice
 from covalent_ui.api.v1.models.electrons_model import JobDetailsResponse, JobsResponse
-from covalent_ui.api.v1.utils.file_handle import FileHandler, validate_data
+from covalent_ui.api.v1.utils.file_handle import validate_data
 from covalent_ui.api.v1.utils.models_helper import JobsSortBy, SortDirection
 
 app_log = logger.app_log
@@ -354,10 +355,16 @@ class Electrons:
 
         app_log.error(f"Electron: {electron}")
 
-        handler = FileHandler(electron.storage_path)
+        database = Database(electron.storage_path)
 
-        data = handler.read_from_serialized(electron.qelectron_db_filename)
+        qelectron_db_dict = database.get_db_dict(
+            dispatch_id=dispatch_id, node_id=node_id, direct_path=True
+        )
 
-        app_log.error(f"QElectron DB data: {data}")
+        # handler = FileHandler(electron.storage_path)
 
-        return {}
+        # data = handler.read_from_serialized(electron.qelectron_db_filename)
+
+        app_log.error(f"QElectron DB data: {qelectron_db_dict}")
+
+        return qelectron_db_dict

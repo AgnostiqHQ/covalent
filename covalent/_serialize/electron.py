@@ -43,7 +43,7 @@ ASSET_TYPES = {
     "deps": AssetType.JSONABLE,
     "call_before": AssetType.JSONABLE,
     "call_after": AssetType.JSONABLE,
-    "qelectron_db": AssetType.TRANSPORTABLE,
+    "qelectron_db": AssetType.BYTES,
     "stdout": AssetType.TEXT,
     "stderr": AssetType.TEXT,
     "error": AssetType.TEXT,
@@ -145,7 +145,7 @@ def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> Electron
         ASSET_FILENAME_MAP["stderr"],
     )
 
-    qelectron_db = node_attrs.get("qelectron_db", TransportableObject(None))
+    qelectron_db = node_attrs.get("qelectron_db", bytes())
     qelectron_db_asset = save_asset(
         qelectron_db,
         ASSET_TYPES["qelectron_db"],

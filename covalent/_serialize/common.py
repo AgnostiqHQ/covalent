@@ -47,6 +47,7 @@ class AssetType(Enum):
     TRANSPORTABLE = 1  # Custom TO serialization
     JSONABLE = 2
     TEXT = 3  # Mainly for stdout, stderr, docstrings, etc.
+    BYTES = 4  # Just bytes, used for qelectron DB, and other binary data
 
 
 def serialize_asset(data: Any, data_type: AssetType) -> bytes:
@@ -70,6 +71,8 @@ def serialize_asset(data: Any, data_type: AssetType) -> bytes:
         return json.dumps(data).encode("utf-8")
     elif data_type == AssetType.TEXT:
         return data.encode("utf-8")
+    elif data_type == AssetType.BYTES:
+        return data
     else:
         raise TypeError(f"Unsupported data type {type(data)}")
 
@@ -95,6 +98,8 @@ def deserialize_asset(data: bytes, data_type: AssetType) -> Any:
         return json.loads(data.decode("utf-8"))
     elif data_type == AssetType.TEXT:
         return data.decode("utf-8")
+    elif data_type == AssetType.BYTES:
+        return data
     else:
         raise TypeError("Unsupported data type")
 

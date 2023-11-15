@@ -278,6 +278,11 @@ def _electron_data(
             except KeyError:
                 node_qelectron_data_exists = False
 
+            try:
+                node_qelectron_data = tg.get_node_value(node_id, "qelectron_data")
+            except KeyError:
+                node_qelectron_data = bytes()
+
             executor = tg.get_node_value(node_id, "metadata")["executor"]
             started_at = tg.get_node_value(node_key=node_id, value_key="start_time")
             completed_at = tg.get_node_value(node_key=node_id, value_key="end_time")
@@ -301,7 +306,7 @@ def _electron_data(
                 ),
                 ("stdout", ELECTRON_STDOUT_FILENAME, node_stdout),
                 ("stderr", ELECTRON_STDERR_FILENAME, node_stderr),
-                ("qelectron_db", ELECTRON_QELECTRON_DB_FILENAME, ELECTRON_QELECTRON_DB_FILENAME),
+                ("qelectron_db", ELECTRON_QELECTRON_DB_FILENAME, node_qelectron_data),
                 ("error", ELECTRON_ERROR_FILENAME, node_error),
                 ("output", ELECTRON_RESULTS_FILENAME, node_output),
             ]:

@@ -28,7 +28,6 @@ from pydantic import ValidationError
 from covalent._dispatcher_plugins.local import LocalDispatcher
 from covalent._results_manager import Result
 from covalent._shared_files import logger
-from covalent._shared_files.qelectron_utils import get_qelectron_db_dict
 from covalent._shared_files.schemas.result import ResultSchema
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.lattice import Lattice
@@ -47,7 +46,6 @@ log_stack_info = logger.log_stack_info
 
 # TODO: Remove dispatch_id from the signature once qelectron_db becomes an Asset (PR #1690)
 def generate_node_result(
-    dispatch_id: str,
     node_id: int,
     node_name: str = None,
     start_time=None,
@@ -63,7 +61,6 @@ def generate_node_result(
     Helper routine to prepare the node result
 
     Arg(s)
-        dispatch_id: ID of the dispatched workflow
         node_id: ID of the node in the trasport graph
         node_name: Name of the node
         start_time: Start time of the node
@@ -73,12 +70,11 @@ def generate_node_result(
         error: Error from the node
         stdout: STDOUT of a node
         stderr: STDERR generated during node execution
+        qelectron_data_exists: Whether the qelectron data exists
 
     Return(s)
         Dictionary of the inputs
     """
-
-    qelectron_data_exists = get_qelectron_db_dict(dispatch_id, node_id, exists_only=True)
 
     return {
         "node_id": node_id,
@@ -90,7 +86,7 @@ def generate_node_result(
         "error": error,
         "stdout": stdout,
         "stderr": stderr,
-        "qelectron_data_exists": qelectron_data_exists,
+        "qelectron_data_exists": True,  # TODO: Remove this after debugging
     }
 
 
@@ -224,7 +220,6 @@ async def _update_parent_electron(dispatch_id: str):
         dispatch_id, node_id = resolve_electron_id(parent_eid)
         status = dispatch_attrs["status"]
         node_result = generate_node_result(
-            dispatch_id=dispatch_id,
             node_id=node_id,
             end_time=dispatch_attrs["end_time"],
             status=status,

@@ -20,25 +20,21 @@ from covalent.quantum.qserver.database import Database
 from .logger import app_log
 
 
-def get_qelectron_db_dict(dispatch_id: str, task_id: int, exists_only: bool = False):
+def get_qelectron_db_path(dispatch_id: str, task_id: int):
     """
-    Return the Qelectron database as a dictionary
-    for a given dispatch_id and task_id.
+    Return the path to the Qelectron database for a given dispatch_id and task_id.
 
+    WARNING: IDEALLY SHOULD ONLY BE USED IN THE SAME
+    LOCATION AS WHERE THE USER'S TASK FUNCTION IS BEING RUN.
     """
 
-    try:
-        database = Database()
+    database = Database()
 
-        if exists_only:
-            return database.db_exists(dispatch_id=dispatch_id, node_id=task_id)
+    db_path = database.get_db_path(dispatch_id=dispatch_id, node_id=task_id)
 
-        res = database.get_db_dict(dispatch_id=dispatch_id, node_id=task_id)
-
+    if db_path.exists():
         app_log.error(f"Found qelectron DB for task {task_id}")
-        # app_log.error(f"Qelectron DB: {res}")
-        return res
-
-    except FileNotFoundError:
+        return db_path
+    else:
         app_log.error(f"Qelectron database not found for task {task_id}")
-        return {}
+        return None

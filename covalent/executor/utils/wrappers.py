@@ -29,7 +29,7 @@ from typing import Any, Callable, Dict, List, Tuple
 
 import requests
 
-from covalent._shared_files.qelectron_utils import get_qelectron_db_dict
+from covalent._shared_files.qelectron_utils import get_qelectron_db_path
 from covalent._workflow.depsbash import DepsBash
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from covalent._workflow.depspip import DepsPip
@@ -248,12 +248,11 @@ def run_task_from_uris(
                     with open(result_uri, "wb") as f:
                         f.write(ser_output)
 
-                    qelectron_db_dict = get_qelectron_db_dict(dispatch_id, task_id)
-                    ser_qelectron_db = serialize_node_asset(
-                        TransportableObject(qelectron_db_dict), "qelectron_db"
-                    )
-                    with open(qelectron_db_uri, "wb") as f:
-                        f.write(ser_qelectron_db)
+                    qelectron_db_path = get_qelectron_db_path(dispatch_id, task_id)
+                    qelectron_db_bytes = bytes()
+                    if qelectron_db_path is not None:
+                        with open(qelectron_db_path, "rb") as f:
+                            qelectron_db_bytes = f.read()
 
                     outputs[task_id] = result_uri
 
@@ -303,10 +302,9 @@ def run_task_from_uris(
                             headers = {"Content-Length": os.path.getsize(stderr_uri)}
                             requests.put(upload_url, data=f)
 
-                    if qelectron_db_uri:
+                    if qelectron_db_bytes:
                         upload_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/assets/qelectron_db"
-                        with open(qelectron_db_uri, "rb") as f:
-                            requests.put(upload_url, data=f)
+                        requests.put(upload_url, data=qelectron_db_bytes)
 
                     result_path = os.path.join(results_dir, f"result-{dispatch_id}:{task_id}.json")
 
@@ -456,12 +454,14 @@ def run_task_from_uris_alt(
                         f.write(ser_output)
 
                     # Save QElectron DB
-                    qelectron_db_dict = get_qelectron_db_dict(dispatch_id, task_id)
-                    ser_qelectron_db = serialize_node_asset(
-                        TransportableObject(qelectron_db_dict), "qelectron_db"
-                    )
+                    qelectron_db_path = get_qelectron_db_path(dispatch_id, task_id)
+                    qelectron_db_bytes = bytes()
+                    if qelectron_db_path is not None:
+                        with open(qelectron_db_path, "rb") as f:
+                            qelectron_db_bytes = f.read()
+
                     with open(qelectron_db_uri, "wb") as f:
-                        f.write(ser_qelectron_db)
+                        f.write(qelectron_db_bytes)
 
                     resources["inputs"][task_id] = result_uri
 
