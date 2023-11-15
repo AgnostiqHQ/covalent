@@ -347,14 +347,9 @@ class Electrons:
 
         electron = self.get_electrons_id(dispatch_id, node_id)
 
-        app_log.error(f"Electron: {electron}")
-
         database = Database(electron.storage_path)
-
         qelectron_db_dict = database.get_db_dict(
             dispatch_id=dispatch_id, node_id=node_id, direct_path=True
         )
-
-        app_log.error(f"QElectron DB data: {qelectron_db_dict}")
 
         return qelectron_db_dict
