@@ -1,6 +1,7 @@
  <!-- <img style="margin-bottom:20px" src="./doc/source/_static/executors.svg"  alt="executors"></img> -->
 <div align="center"> 
-  <img src="./doc/source/_static/readme_hero.svg" style="width:100%"  alt="hero"/>
+  <img src="./doc/source/_static/readme_hero.svg#gh-dark-mode-only" style="width:100%"  alt="hero"/>
+   <img src="./doc/source/_static/readme_hero_light.svg#gh-light-mode-only" style="width:100%"  alt="hero"/>
  </div>
 
 <div align="center">
@@ -49,9 +50,8 @@ https://github.com/AgnostiqHQ/covalent/assets/126003896/7d06b29e-53fd-4669-b469-
 </video> 
  </div>
 
-
   <div align="center"> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/aws-plugins/"><img src="./doc/source/_static/aws.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/aws-plugins/"><img src="./doc/source/_static/aws.svg#gh-dark-mode-only" alt="divider"><img src="./doc/source/_static/aws_light.svg#gh-light-mode-only" alt="divider"></a> 
 <a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/azurebatch/"><img src="./doc/source/_static/azure.svg" alt="divider"></a> 
 <a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/gcp/"><img src="./doc/source/_static/google.svg" alt="divider"></a> 
 <a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/ibmq/"><img src="./doc/source/_static/ibm.svg" alt="divider"></a>
