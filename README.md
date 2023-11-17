@@ -41,7 +41,7 @@ https://github.com/AgnostiqHQ/covalent/assets/126003896/7d06b29e-53fd-4669-b469-
 <a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/aws-plugins/"><img src="./doc/source/_static/aws_light.svg" alt="divider"></a> 
 <a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/azurebatch/"><img src="./doc/source/_static/azure_light.svg" alt="divider"></a> 
 <a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/gcp/"><img src="./doc/source/_static/google_light.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/ibmq/"><img src="./doc/source/_static/ibm_light.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/ibmq/"><img src="./doc/source/_static/ibmq_light.svg" alt="divider"></a>
 </div>
 <div align="center"><a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/slurm/"><img src="./doc/source/_static/slurm_light.svg" alt="divider"></a> 
 <a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/dask/"><img src="./doc/source/_static/dask_light.svg" alt="divider"></a> 
