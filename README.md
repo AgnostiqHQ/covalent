@@ -24,11 +24,13 @@
   <img src="./doc/source/_static/executor.gif"  alt="hero" />
  </div>
 
-Covalent is a Pythonic workflow tool for computational scientists, AI/ML software engineers, and anyone who needs to run experiments on limited or expensive computing resources including quantum computers, HPC clusters, GPU arrays, and cloud services.
+Covalent is a Pythonic framework designed for AI/ML practitioners, computational scientists, and developers, offering abstracted and easy access to a wide array of high-performance computing resources. It facilitates integration with advanced computing platforms, from quantum computers and HPC clusters to GPU arrays and diverse cloud services, providing serverless access to all of them.
 
-Covalent enables a researcher to run computation tasks on an advanced hardware platform – such as a quantum computer or serverless HPC cluster – using a single line of code.
+**For AI/ML Practitioners and Developers:** Covalent serves as a robust compute backend framework, enabling seamless, cloud-agnostic execution of high-compute tasks. Ideal solution for powering AI/ML applications, Large Language Models (LLMs), Generative AI, and other compute-intensive processes, all without the hassle of infrastructure management.
 
-https://github.com/AgnostiqHQ/covalent/assets/126003896/7d06b29e-53fd-4669-b469-4ef4a01c62ac
+**For Researchers:** Covalent empowers researchers to directly tap into advanced computing resources from their laptops or Jupyter notebooks. Whether the need is for cloud platforms or HPC systems like SLURM, PBS, or LSF, [Covalent plugins](https://docs.covalent.xyz/docs/plugin) offers instant connectivity and unparalleled ease of use.
+
+Check out the [quick start guide](https://docs.covalent.xyz/docs/get-started/quick-start/) to get started
 
   <div align="center" >
    <video  controls>
@@ -58,7 +60,7 @@ https://github.com/AgnostiqHQ/covalent/assets/126003896/7d06b29e-53fd-4669-b469-
 
 | **Installation**                                                                                                                                                                       | **Getting started**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
 | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Covalent is developed using Python version 3.8 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager: <pre lang="bash"> pip install covalent</pre> | Ready to try it? Refer to the [Quick Start](https://docs.covalent.xyz/docs/get-started/quick-start/) guide for quick setup instructions, or to the [First Experiment](https://docs.covalent.xyz/docs/get-started/first-experiment/) guide for a more thorough approach. For a full list of supported platforms, see the Covalent [compatibility matrix](https://docs.covalent.xyz/docs/user-documentation/compatibility/). For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/) page in the documentation. |
+| Covalent is developed using Python version 3.8 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager: <pre lang="bash"> pip install covalent --upgrade</pre> For other methods of installation please [check the docs](https://docs.covalent.xyz/docs/) |Ready to try it? Refer to the [Quick Start](https://docs.covalent.xyz/docs/get-started/quick-start/) guide for quick setup instructions, or to the [First Experiment](https://docs.covalent.xyz/docs/get-started/first-experiment/) guide for a more thorough approach. For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/) page in the documentation. |
 
 <!-- <div><img src="./divider.svg" alt="divider"></div> -->
 
