@@ -580,7 +580,7 @@ class LocalDispatcher(BaseDispatcher):
         )
         r.raise_for_status()
 
-        parsed_resp = ResultSchema.model_dump_json(r.json())
+        parsed_resp = ResultSchema.model_validate(r.json())
 
         return merge_response_manifest(manifest, parsed_resp)
 

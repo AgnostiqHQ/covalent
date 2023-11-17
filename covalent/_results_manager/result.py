@@ -398,7 +398,10 @@ Node Outputs
             The QElectron db of said node. Will return an empty byte string if it doesn't exist.
         """
 
-        return self._lattice.transport_graph.get_node_value(node_id, "qelectron_db")
+        try:
+            return self._lattice.transport_graph.get_node_value(node_id, "qelectron_db")
+        except KeyError:
+            return bytes()
 
     def _get_node_error(self, node_id: int) -> Union[None, str]:
         """

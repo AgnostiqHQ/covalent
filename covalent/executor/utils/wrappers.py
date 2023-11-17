@@ -187,6 +187,9 @@ def run_task_from_uris(
     for i, task in enumerate(task_specs):
         result_uri, stdout_uri, stderr_uri, qelectron_db_uri = output_uris[i]
 
+        # Setting these to empty bytes in case the task fails
+        qelectron_db_bytes = bytes()
+
         with open(stdout_uri, "w") as stdout, open(stderr_uri, "w") as stderr:
             with redirect_stdout(stdout), redirect_stderr(stderr):
                 try:
@@ -249,7 +252,6 @@ def run_task_from_uris(
                         f.write(ser_output)
 
                     qelectron_db_path = get_qelectron_db_path(dispatch_id, task_id)
-                    qelectron_db_bytes = bytes()
                     if qelectron_db_path is not None:
                         with open(qelectron_db_path / "data.mdb", "rb") as f:
                             qelectron_db_bytes = f.read()
@@ -379,6 +381,9 @@ def run_task_from_uris_alt(
     for i, task in enumerate(task_specs):
         result_uri, stdout_uri, stderr_uri, qelectron_db_uri = output_uris[i]
 
+        # Setting these to empty bytes in case the task fails
+        qelectron_db_bytes = bytes()
+
         with open(stdout_uri, "w") as stdout, open(stderr_uri, "w") as stderr:
             with redirect_stdout(stdout), redirect_stderr(stderr):
                 try:
@@ -455,7 +460,6 @@ def run_task_from_uris_alt(
 
                     # Save QElectron DB
                     qelectron_db_path = get_qelectron_db_path(dispatch_id, task_id)
-                    qelectron_db_bytes = bytes()
                     if qelectron_db_path is not None:
                         with open(qelectron_db_path / "data.mdb", "rb") as f:
                             qelectron_db_bytes = f.read()
