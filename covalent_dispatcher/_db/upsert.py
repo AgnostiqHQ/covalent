@@ -279,7 +279,7 @@ def _electron_data(
                 node_qelectron_data_exists = False
 
             try:
-                node_qelectron_data = tg.get_node_value(node_id, "qelectron_data")
+                node_qelectron_data = tg.get_node_value(node_id, "qelectron_db")
             except KeyError:
                 node_qelectron_data = bytes()
 
@@ -356,7 +356,6 @@ def _electron_data(
                 "value_filename": ELECTRON_VALUE_FILENAME,
                 "stdout_filename": ELECTRON_STDOUT_FILENAME,
                 "stderr_filename": ELECTRON_STDERR_FILENAME,
-                "qelectron_db_filename": ELECTRON_QELECTRON_DB_FILENAME,
                 "error_filename": ELECTRON_ERROR_FILENAME,
                 "deps_filename": ELECTRON_DEPS_FILENAME,
                 "call_before_filename": ELECTRON_CALL_BEFORE_FILENAME,
