@@ -33,8 +33,8 @@ def get_qelectron_db_path(dispatch_id: str, task_id: int):
     db_path = database.get_db_path(dispatch_id=dispatch_id, node_id=task_id)
 
     if db_path.exists():
-        app_log.error(f"Found qelectron DB for task {task_id}")
+        app_log.debug(f"Found qelectron DB for task {task_id}")
         return db_path
     else:
-        app_log.error(f"Qelectron database not found for task {task_id}")
+        app_log.debug(f"Qelectron database not found for task {task_id}")
         return None

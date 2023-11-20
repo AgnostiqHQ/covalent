@@ -575,8 +575,8 @@ def test_run_task_from_uris_alt_exception():
     results_dir = tempfile.TemporaryDirectory()
 
     run_task_from_uris_alt(
-        task_specs=[task_spec.dict()],
-        resources=resources.dict(),
+        task_specs=[task_spec.model_dump()],
+        resources=resources.model_dump(),
         output_uris=[
             (result_file.name, stdout_file.name, stderr_file.name, qelectron_db_file.name)
         ],

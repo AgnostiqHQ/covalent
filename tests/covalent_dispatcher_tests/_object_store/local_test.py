@@ -62,3 +62,7 @@ def test_store_and_load_file():
         data = None
         local_store.store_file(storage_path=temp_dir, filename="pickle.txt", data=data)
         assert local_store.load_file(storage_path=temp_dir, filename="pickle.txt") == ""
+
+        data = b"test"
+        local_store.store_file(storage_path=temp_dir, filename="pickle.mdb", data=data)
+        assert local_store.load_file(storage_path=temp_dir, filename="pickle.mdb") == data
