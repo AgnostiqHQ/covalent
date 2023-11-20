@@ -74,3 +74,7 @@ def covalent_stop():
         return
 
     _call_cli_command(stop)
+
+    while covalent_is_running():
+        app_log.debug("Waiting for Covalent Server to stop...")
+        time.sleep(1)
