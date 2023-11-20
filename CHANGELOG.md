@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Programmatic equivalents of CLI commands `covalent start` and `covalent stop`
+
 ### Fixed
 
 - Lattice-default metadata attributes are now applied correctly
