@@ -15,3 +15,4 @@
 # limitations under the License.
 
 from .entry_point import cancel_running_dispatch, run_dispatcher
+from .programmatic import covalent_is_running, covalent_start, covalent_stop
