@@ -36,7 +36,7 @@ def test_get_qelectron_db_path(mocker, db_exists):
     dispatch_id = "mock_dispatch_id"
     task_id = 0
 
-    db_path = get_qelectron_db_path("dispatch_id", 0)
+    db_path = get_qelectron_db_path(dispatch_id, 0)
 
     mock_database.return_value.get_db_path.assert_called_once_with(
         dispatch_id=dispatch_id, node_id=task_id
