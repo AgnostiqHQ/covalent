@@ -249,7 +249,10 @@ class DaskExecutor(AsyncBaseExecutor):
             result_uri = os.path.join(self.cache_dir, f"result_{dispatch_id}-{node_id}.pkl")
             stdout_uri = os.path.join(self.cache_dir, f"stdout_{dispatch_id}-{node_id}.txt")
             stderr_uri = os.path.join(self.cache_dir, f"stderr_{dispatch_id}-{node_id}.txt")
-            output_uris.append((result_uri, stdout_uri, stderr_uri))
+            qelectron_db_uri = os.path.join(
+                self.cache_dir, f"qelectron_db_{dispatch_id}-{node_id}.mdb"
+            )
+            output_uris.append((result_uri, stdout_uri, stderr_uri, qelectron_db_uri))
 
         server_url = format_server_url()
 
@@ -259,8 +262,8 @@ class DaskExecutor(AsyncBaseExecutor):
 
         future = dask_client.submit(
             run_task_from_uris_alt,
-            list(map(lambda t: t.dict(), task_specs)),
-            resources.dict(),
+            list(map(lambda t: t.model_dump(), task_specs)),
+            resources.model_dump(),
             output_uris,
             self.cache_dir,
             task_group_metadata,
@@ -295,7 +298,7 @@ class DaskExecutor(AsyncBaseExecutor):
         if not data:
             terminal_status = RESULT_STATUS.CANCELLED
         else:
-            received = ReceiveModel.parse_obj(data)
+            received = ReceiveModel.model_validate(data)
             terminal_status = Status(received.status.value)
 
         for task_id in task_ids:
@@ -306,6 +309,7 @@ class DaskExecutor(AsyncBaseExecutor):
                 output_uri = ""
                 stdout_uri = ""
                 stderr_uri = ""
+                qelectron_db_uri = ""
 
             else:
                 result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
@@ -315,6 +319,7 @@ class DaskExecutor(AsyncBaseExecutor):
                     output_uri = result_summary["output_uri"]
                     stdout_uri = result_summary["stdout_uri"]
                     stderr_uri = result_summary["stderr_uri"]
+                    qelectron_db_uri = result_summary["qelectron_db_uri"]
                     exception_raised = result_summary["exception_occurred"]
 
                 terminal_status = (
@@ -334,6 +339,9 @@ class DaskExecutor(AsyncBaseExecutor):
                     },
                     "stderr": {
                         "remote_uri": stderr_uri,
+                    },
+                    "qelectron_db": {
+                        "remote_uri": qelectron_db_uri,
                     },
                 },
             }

@@ -68,16 +68,18 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
                     }
                 ],
             )
+
         qelectron = {
             "total_quantum_calls": electron.get_total_quantum_calls(
-                dispatch_id, result["transport_graph_node_id"], result["qelectron_data_exists"]
+                dispatch_id,
+                result["transport_graph_node_id"],
             ),
             "avg_quantum_calls": electron.get_avg_quantum_calls(
                 dispatch_id=dispatch_id,
-                is_qa_electron=result["qelectron_data_exists"],
                 node_id=result["transport_graph_node_id"],
             ),
         }
+
         return ElectronResponse(
             id=result["id"],
             node_id=result["transport_graph_node_id"],
@@ -90,8 +92,8 @@ def get_electron_details(dispatch_id: uuid.UUID, electron_id: int):
             ended_at=result["completed_at"],
             runtime=result["runtime"],
             description="",
-            qelectron_data_exists=bool(result["qelectron_data_exists"]),
-            qelectron=qelectron if bool(result["qelectron_data_exists"]) else None,
+            qelectron_data_exists=qelectron["total_quantum_calls"] is not None,
+            qelectron=qelectron if qelectron["total_quantum_calls"] is not None else None,
         )
 
 
@@ -235,6 +237,11 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
             stderr_response = handler.read_from_text(result["stderr_filename"])
             response = stderr_response + error_response
             return ElectronFileResponse(data=response)
+        elif name == "qelectron_db":
+            # Since in case of bytes 2 same bytes objects are returned by the handler
+            # so we are taking only the first one
+            response = handler.read_from_serialized(result["qelectron_db_filename"])[0]
+            return ElectronFileResponse(data=response)
         else:
             return ElectronFileResponse(data=None)
 
@@ -248,14 +255,14 @@ def get_electron_jobs(
     count: Optional[int] = None,
     offset: Optional[int] = Query(0),
 ) -> List[Job]:
-    """Get Electron Jobs List
+    """Get Qelectron Jobs List
 
     Args:
-        dispatch_id: To fetch electron data with dispatch id
-        electron_id: To fetch electron data with the provided electron id.
+        dispatch_id: To fetch qelectron data with dispatch id
+        electron_id: To fetch qelectron data with the provided electron id.
 
     Returns:
-        Returns the list of electron jobs
+        Returns the list of qelectron jobs
     """
     with Session(db.engine) as session:
         electron = Electrons(session)
