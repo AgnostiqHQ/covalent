@@ -25,7 +25,6 @@ from ._dispatcher_plugins import local_dispatch_sync as dispatch_sync  # nopycln
 from ._dispatcher_plugins import local_redispatch as redispatch  # nopycln: import
 from ._dispatcher_plugins import stop_triggers  # nopycln: import
 from ._file_transfer import strategies as fs_strategies  # nopycln: import
-from ._programmatic.commands import covalent_is_running, covalent_start, covalent_stop
 from ._results_manager.results_manager import (  # nopycln: import
     cancel,
     get_result,
