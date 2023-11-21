@@ -71,3 +71,17 @@ def test_covalent_start_and_stop():
     # Finally, stop Covalent
     ct.covalent_stop(quiet=False)
     assert _is_server_running() is False
+
+
+def test_covalent_is_running():
+    """Test that the `covalent_is_running` function agrees with the CLI status check"""
+
+    from covalent_dispatcher._cli import _is_server_running
+
+    # Start Covalent
+    ct.covalent_start(quiet=True)
+    assert ct.covalent_is_running() is _is_server_running() is True
+
+    # Stop Covalent
+    ct.covalent_stop(quiet=True)
+    assert ct.covalent_is_running() is _is_server_running() is False
