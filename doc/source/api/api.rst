@@ -23,11 +23,11 @@ The following API documentation describes how to use Covalent.
 - :ref:`dispatcher_interface` is used for dispatching workflows and stopping triggered dispatches
 - The :ref:`dispatcher_server_api` is used for interfacing with the Covalent server
 
-.. _starting_covalent:
+.. _covalent_server:
 
 Covalent Server
 """""""""""""""""""""""""""
-Either a local or self-hosted Covalent server must be running in order to dispatch workflows. The covalent CLI provides various utilities for starting, stopping, and managing a Covalent server. For more information, see:
+A Covalent server must be running in order to dispatch workflows. The Covalent CLI provides various utilities for starting, stopping, and managing a Covalent server. For more information, see:
 
 .. code-block:: bash
 
