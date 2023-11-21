@@ -41,8 +41,8 @@ def covalent_is_running() -> bool:
     return (
         psutil.pid_exists(pid)
         and pid != -1
-        and get_config("dispatcher.address")
-        and get_config("dispatcher.port")
+        and get_config("dispatcher.address") != ''
+        and get_config("dispatcher.port") != ''
     )
 
 
