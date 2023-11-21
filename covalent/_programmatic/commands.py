@@ -39,8 +39,8 @@ def covalent_is_running() -> bool:
     """Return True if the Covalent server is in a ready state."""
     pid = _read_pid(get_config("dispatcher.cache_dir") + "/ui.pid")
     return (
-        psutil.pid_exists(pid)
-        and pid != -1
+        pid != -1
+        and psutil.pid_exists(pid)
         and get_config("dispatcher.address") != ''
         and get_config("dispatcher.port") != ''
     )
