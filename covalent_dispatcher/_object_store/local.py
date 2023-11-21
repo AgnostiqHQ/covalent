@@ -34,7 +34,7 @@ ALGORITHM = "sha1"
 
 WORKFLOW_ASSET_FILENAME_MAP = result.ASSET_FILENAME_MAP.copy()
 WORKFLOW_ASSET_FILENAME_MAP.update(lattice.ASSET_FILENAME_MAP)
-ELECTRON_ASSET_FILENAME_MAP = electron.ASSET_FILENAME_MAP
+ELECTRON_ASSET_FILENAME_MAP = electron.ASSET_FILENAME_MAP.copy()
 
 
 # Moved from write_result_to_db.py
@@ -128,6 +128,10 @@ class LocalProvider(BaseProvider):
         elif filename.endswith(".json"):
             with open(Path(storage_path) / filename, "w") as f:
                 json.dump(data, f)
+
+        elif filename.endswith(".mdb"):
+            with open(Path(storage_path) / filename, "wb") as f:
+                f.write(data)
         else:
             raise InvalidFileExtension("The file extension is not supported.")
 
@@ -152,6 +156,10 @@ class LocalProvider(BaseProvider):
         elif filename.endswith(".json"):
             with open(Path(storage_path) / filename, "r") as f:
                 data = json.load(f)
+
+        elif filename.endswith(".mdb"):
+            with open(Path(storage_path) / filename, "rb") as f:
+                data = f.read()
 
         return data
 

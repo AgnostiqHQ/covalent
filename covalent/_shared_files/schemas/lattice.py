@@ -27,7 +27,7 @@ LATTICE_METADATA_KEYS = {
     "__name__",
     "python_version",
     "covalent_version",
-    # metadata
+    # user dependent metadata
     "executor",
     "workflow_executor",
     "executor_data",
@@ -43,7 +43,7 @@ LATTICE_ASSET_KEYS = {
     "named_kwargs",
     "cova_imports",
     "lattice_imports",
-    # metadata
+    # user dependent assets
     "deps",
     "call_before",
     "call_after",

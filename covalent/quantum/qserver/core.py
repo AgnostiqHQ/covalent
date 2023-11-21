@@ -247,7 +247,7 @@ class QServer:
             circuit_id = get_circuit_id(batch_id, i)
             key_value_pairs[0].append(circuit_id)
             circuit_info = CircuitInfo(
-                electron_node_id=context.node_id,
+                electron_node_id=context.task_id,
                 dispatch_id=context.dispatch_id,
                 circuit_name=qelectron_info.name,
                 circuit_description=qelectron_info.description,
@@ -295,7 +295,7 @@ class QServer:
         # ]
 
         self._database.set(
-            *key_value_pairs, dispatch_id=context.dispatch_id, node_id=context.node_id
+            *key_value_pairs, dispatch_id=context.dispatch_id, node_id=context.task_id
         )
 
         return batch_id
@@ -378,7 +378,7 @@ class QServer:
             # [[exec_4], [exec_2, {2: future_3}], [exec_3, {4: future_5}]]
 
         self._database.set(
-            *key_value_pairs, dispatch_id=context.dispatch_id, node_id=context.node_id
+            *key_value_pairs, dispatch_id=context.dispatch_id, node_id=context.task_id
         )
 
         # An example `results_dict` will look like:
