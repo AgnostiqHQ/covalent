@@ -54,10 +54,7 @@ def covalent_is_running() -> bool:
 
 
 def _call_cli_command(
-    cmd: click.Command,
-    *,
-    quiet: bool = False,
-    **kwargs: Dict[str, Any]
+    cmd: click.Command, *, quiet: bool = False, **kwargs: Dict[str, Any]
 ) -> None:
     """
     Call a CLI command with the specified kwargs.
