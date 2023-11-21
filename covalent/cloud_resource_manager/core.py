@@ -163,7 +163,8 @@ class CloudResourceManager:
 
         self._terraform_log_env_vars = {
             "TF_LOG": "ERROR",
-            "TF_LOG_PATH": Path(self.executor_tf_path) / "terraform-error.log",
+            "TF_LOG_PATH": os.path.join(self.executor_tf_path, "terraform-error.log"),
+            "PATH": "$PATH:/usr/bin",
         }
 
     def _print_stdout(self, process: subprocess.Popen, print_callback: Callable) -> int:
@@ -286,11 +287,7 @@ class CloudResourceManager:
                 stderr=subprocess.STDOUT,
                 cwd=workdir,
                 shell=True,
-                env={
-                    "TF_LOG": "ERROR",
-                    "TF_LOG_PATH": Path(self.executor_tf_path) / "terraform-error.log",
-                    "PATH": "$PATH:/usr/bin",
-                },
+                env=env_vars,
             )
             TERRAFORM_STATE = "state list -state"
             if TERRAFORM_STATE in cmd:
@@ -333,6 +330,11 @@ class CloudResourceManager:
             set_config({f"executors.{self.executor_name}.{key}": value})
             self.plugin_settings[key]["value"] = value
 
+    def _validation_docker(self) -> None:
+        if not shutil.which("docker"):
+            logger.error("Docker not found on system")
+            sys.exit()
+
     def _get_tf_path(self) -> str:
         """
         Get the terraform path
@@ -348,12 +350,12 @@ class CloudResourceManager:
             result = subprocess.run(
                 ["terraform --version"], shell=True, capture_output=True, text=True
             )
-            if "v1.2" in result.stdout:
+            version = result.stdout.split("v", 1)[1][:3]
+            if float(version) < 1.4:
                 logger.error(
                     "Old version of terraform found. Please update it to version greater than 1.3"
                 )
                 sys.exit()
-
             return terraform
         else:
             logger.error("Terraform not found on system")
@@ -385,7 +387,7 @@ class CloudResourceManager:
 
         """
         terraform = self._get_tf_path()
-
+        self._validation_docker()
         tfvars_file = Path(self.executor_tf_path) / "terraform.tfvars"
         tf_executor_config_file = Path(self.executor_tf_path) / f"{self.executor_name}.conf"
 
@@ -417,10 +419,7 @@ class CloudResourceManager:
         self._run_in_subprocess(
             cmd=tf_plan,
             workdir=self.executor_tf_path,
-            env_vars={
-                "TF_LOG": "ERROR",
-                "TF_LOG_PATH": Path(self.executor_tf_path) / "terraform-error.log",
-            },
+            env_vars=self._terraform_log_env_vars,
             print_callback=print_callback,
         )
 
@@ -452,6 +451,7 @@ class CloudResourceManager:
 
         """
         terraform = self._get_tf_path()
+        self._validation_docker()
         tf_state_file = self._get_tf_statefile_path()
         tfvars_file = Path(self.executor_tf_path) / "terraform.tfvars"
         terraform_log_file = self._terraform_log_env_vars["TF_LOG_PATH"]
@@ -474,6 +474,7 @@ class CloudResourceManager:
             cmd=tf_destroy,
             workdir=self.executor_tf_path,
             print_callback=print_callback,
+            env_vars=self._terraform_log_env_vars,
         )
 
         if Path(tfvars_file).exists():
@@ -503,9 +504,12 @@ class CloudResourceManager:
 
         """
         terraform = self._get_tf_path()
+        self._validation_docker()
         tf_state_file = self._get_tf_statefile_path()
 
         tf_state = " ".join([terraform, "state", "list", f"-state={tf_state_file}"])
 
         # Run `terraform state list`
-        return self._run_in_subprocess(cmd=tf_state, workdir=self.executor_tf_path)
+        return self._run_in_subprocess(
+            cmd=tf_state, workdir=self.executor_tf_path, env_vars=self._terraform_log_env_vars
+        )
