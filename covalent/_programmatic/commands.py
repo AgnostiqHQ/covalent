@@ -37,16 +37,13 @@ def covalent_is_running() -> bool:
     return (
         pid != -1
         and psutil.pid_exists(pid)
-        and get_config("dispatcher.address") != ''
-        and get_config("dispatcher.port") != ''
+        and get_config("dispatcher.address") != ""
+        and get_config("dispatcher.port") != ""
     )
 
 
 def _call_cli_command(
-    cmd: click.Command,
-    *,
-    quiet: bool = False,
-    **kwargs: Dict[str, Any]
+    cmd: click.Command, *, quiet: bool = False, **kwargs: Dict[str, Any]
 ) -> None:
     """Call a CLI command with the specified kwargs.
 
