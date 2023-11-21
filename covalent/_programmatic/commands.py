@@ -33,7 +33,9 @@ app_log = logger.app_log
 
 
 def covalent_is_running() -> bool:
-    """Return True if the Covalent server is in a ready state."""
+    """
+    Returns :code:`True` if the Covalent server is in a ready state, :code:`False` otherwise.
+    """
     try:
         from covalent_dispatcher._cli.service import _read_pid
 
@@ -52,13 +54,17 @@ def covalent_is_running() -> bool:
 
 
 def _call_cli_command(
-    cmd: click.Command, *, quiet: bool = False, **kwargs: Dict[str, Any]
+    cmd: click.Command,
+    *,
+    quiet: bool = False,
+    **kwargs: Dict[str, Any]
 ) -> None:
-    """Call a CLI command with the specified kwargs.
+    """
+    Call a CLI command with the specified kwargs.
 
     Args:
         func: The CLI command to call.
-        quiet: Suppress stdout. Defaults to False.
+        quiet: Suppress stdout. Defaults to :code:`False`.
     """
     with contextlib.redirect_stdout(None if quiet else sys.stdout):
         ctx = click.Context(cmd)
@@ -72,7 +78,8 @@ def _poll_with_timeout(
     timeout_msg: str,
     timeout: int,
 ) -> None:
-    """Poll a callable once per second, until it returns True or a timeout is reached.
+    """
+    Poll a callable once per second, until it returns :code:`True` or the timeout is reached.
 
     Args:
         callable_: The callable to poll.
@@ -81,7 +88,7 @@ def _poll_with_timeout(
         timeout: Timeout in seconds.
 
     Raises:
-        TimeoutError: _description_
+        TimeoutError: When the timeout is reached.
     """
     _num_wait = 0
     _max_wait = timeout
@@ -108,20 +115,21 @@ def covalent_start(
     *,
     quiet: bool = False,
 ) -> None:
-    """Start the Covalent server. Wrapper for the `covalent start` CLI command.
+    """
+    Start the Covalent server. Wrapper for the :code:`covalent start` CLI command.
     This function returns immediately if the local Covalent server is already running.
 
     Args:
-        develop: Start local server in develop mode. Defaults to False.
-        port: Local server port number. Defaults to 48008.
+        develop: Start local server in develop mode. Defaults to :code:`False`.
+        port: Local server port number. Defaults to :code:`"48008"`.
         mem_per_worker: Memory limit per worker in GB. Defaults to auto.
         workers: Number of Dask workers. Defaults to 8.
         threads_per_worker: Number of threads per Dask worker. Defaults to 1.
-        ignore_migrations: Start server without database migrations. Defaults to False.
-        no_cluster: Start server without Dask cluster. Defaults to False.
-        no_triggers: Start server without a triggers server. Defaults to False.
-        triggers_only: Start only the triggers server. Defaults to False.
-        quiet: Suppress stdout. Defaults to False.
+        ignore_migrations: Start server without database migrations. Defaults to :code:`False`.
+        no_cluster: Start server without Dask cluster. Defaults to :code:`False`.
+        no_triggers: Start server without a triggers server. Defaults to :code:`False`.
+        triggers_only: Start only the triggers server. Defaults to :code:`False`.
+        quiet: Suppress stdout. Defaults to :code:`False`.
     """
 
     try:
@@ -160,11 +168,12 @@ def covalent_start(
 
 
 def covalent_stop(*, quiet: bool = False) -> None:
-    """Stop the Covalent server. Wrapper for the `covalent stop` CLI command.
+    """
+    Stop the Covalent server. Wrapper for the :code:`covalent stop` CLI command.
     This function returns immediately if the local Covalent server is not running.
 
     Args:
-        quiet: Suppress stdout. Defaults to False.
+        quiet: Suppress stdout. Defaults to :code:`False`.
     """
 
     try:
