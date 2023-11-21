@@ -15,6 +15,8 @@
 # limitations under the License.
 
 """Functions providing programmatic access to Covalent CLI commands."""
+import contextlib
+import sys
 import time
 from typing import Any, Dict, Optional
 
@@ -29,10 +31,21 @@ from .._shared_files.config import get_config
 app_log = logger.app_log
 
 
-def _call_cli_command(func: click.Command, **kwargs: Dict[str, Any]) -> Any:
-    """Call the CLI command ``func`` with the specified kwargs."""
-    ctx = click.Context(func)
-    ctx.invoke(func, **kwargs)
+def _call_cli_command(
+    cmd: click.Command,
+    *,
+    quiet: bool = False,
+    **kwargs: Dict[str, Any]
+) -> None:
+    """Call a CLI command with the specified kwargs.
+
+    Args:
+        func: The CLI command to call.
+        quiet: Suppress stdout. Defaults to False.
+    """
+    with contextlib.redirect_stdout(None if quiet else sys.stdout):
+        ctx = click.Context(cmd)
+        ctx.invoke(cmd, **kwargs)
 
 
 def covalent_is_running() -> bool:
@@ -56,8 +69,11 @@ def covalent_start(
     no_cluster: bool = False,
     no_triggers: bool = False,
     triggers_only: bool = False,
+    *,
+    quiet: bool = False,
 ) -> None:
     """Start the Covalent server. Wrapper for the `covalent start` CLI command.
+    This function returns immediately if the local Covalent server is already running.
 
     Args:
         develop: Start local server in develop mode. Defaults to False.
@@ -69,6 +85,7 @@ def covalent_start(
         no_cluster: Start server without Dask cluster. Defaults to False.
         no_triggers: Start server without a triggers server. Defaults to False.
         triggers_only: Start only the triggers server. Defaults to False.
+        quiet: Suppress stdout. Defaults to False.
     """
     if covalent_is_running():
         return
@@ -85,19 +102,24 @@ def covalent_start(
         "triggers_only": triggers_only,
     }
 
-    _call_cli_command(start, **kwargs)
+    _call_cli_command(start, quiet=quiet, **kwargs)
 
     while not covalent_is_running():
         app_log.debug("Waiting for Covalent Server to be to dispatch-ready...")
         time.sleep(1)
 
 
-def covalent_stop() -> None:
-    """Stop the Covalent server. Wrapper for the `covalent stop` CLI command."""
+def covalent_stop(*, quiet: bool = False) -> None:
+    """Stop the Covalent server. Wrapper for the `covalent stop` CLI command.
+    This function returns immediately if the local Covalent server is not running.
+
+    Args:
+        quiet: Suppress stdout. Defaults to False.
+    """
     if not covalent_is_running():
         return
 
-    _call_cli_command(stop)
+    _call_cli_command(stop, quiet=quiet)
 
     while covalent_is_running():
         app_log.debug("Waiting for Covalent Server to stop...")
