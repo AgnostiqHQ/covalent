@@ -34,7 +34,10 @@ app_log = logger.app_log
 
 def covalent_is_running() -> bool:
     """
-    Returns :code:`True` if the Covalent server is in a ready state, :code:`False` otherwise.
+    Check if the Covalent server is running.
+
+    Returns:
+        :code:`True` if the Covalent server is in a ready state, :code:`False` otherwise.
     """
     try:
         from covalent_dispatcher._cli.service import _read_pid
@@ -127,6 +130,9 @@ def covalent_start(
         no_triggers: Start server without a triggers server. Defaults to :code:`False`.
         triggers_only: Start only the triggers server. Defaults to :code:`False`.
         quiet: Suppress stdout. Defaults to :code:`False`.
+
+    Returns:
+        None
     """
 
     try:
@@ -171,6 +177,9 @@ def covalent_stop(*, quiet: bool = False) -> None:
 
     Args:
         quiet: Suppress stdout. Defaults to :code:`False`.
+
+    Returns:
+        None
     """
 
     try:
