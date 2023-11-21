@@ -16,6 +16,8 @@
 
 """Class corresponding to computation nodes."""
 
+
+import contextlib
 import inspect
 import json
 import operator
@@ -359,6 +361,26 @@ class Electron:
 
         raise StopIteration
 
+    def _is_metadata_field_empty(self, key: str) -> bool:
+        """
+        Checks if the metadata field is empty.
+
+        Args:
+            key: Name of the metadata field.
+
+        Returns:
+            True if metadata field is empty, else False.
+        """
+
+        if self.get_metadata(key) is None:
+            return True
+
+        with contextlib.suppress(TypeError):
+            if len(self.get_metadata(key)) == 0:
+                return True
+
+        return False
+
     def __call__(self, *args, **kwargs) -> Union[Any, "Electron"]:
         """
         Function to execute the electron.
@@ -391,7 +413,7 @@ class Electron:
             if (
                 k not in consumable_constraints
                 and k in DEFAULT_METADATA_VALUES
-                and self.get_metadata(k) is None
+                and self._is_metadata_field_empty(k)
             ):
                 meta = active_lattice.get_metadata(k) or DEFAULT_METADATA_VALUES[k]
                 self.set_metadata(k, meta)
