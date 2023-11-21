@@ -343,13 +343,16 @@ def test_run_task_from_uris(mocker):
     result_file = tempfile.NamedTemporaryFile()
     stdout_file = tempfile.NamedTemporaryFile()
     stderr_file = tempfile.NamedTemporaryFile()
+    qelectron_db_file = tempfile.NamedTemporaryFile()
 
     results_dir = tempfile.TemporaryDirectory()
 
     run_task_from_uris(
         task_specs=[task_spec.dict()],
         resources={},
-        output_uris=[(result_file.name, stdout_file.name, stderr_file.name)],
+        output_uris=[
+            (result_file.name, stdout_file.name, stderr_file.name, qelectron_db_file.name)
+        ],
         results_dir=results_dir.name,
         task_group_metadata=task_group_metadata,
         server_url=server_url,
@@ -472,13 +475,16 @@ def test_run_task_from_uris_exception(mocker):
     result_file = tempfile.NamedTemporaryFile()
     stdout_file = tempfile.NamedTemporaryFile()
     stderr_file = tempfile.NamedTemporaryFile()
+    qelectron_db_file = tempfile.NamedTemporaryFile()
 
     results_dir = tempfile.TemporaryDirectory()
 
     run_task_from_uris(
         task_specs=[task_spec.dict()],
         resources={},
-        output_uris=[(result_file.name, stdout_file.name, stderr_file.name)],
+        output_uris=[
+            (result_file.name, stdout_file.name, stderr_file.name, qelectron_db_file.name)
+        ],
         results_dir=results_dir.name,
         task_group_metadata=task_group_metadata,
         server_url=server_url,
@@ -543,7 +549,7 @@ test_cases = [
             deps={"deps": "mock_deps_uri"},
         ),
         "task_group_metadata": {"dispatch_id": "1", "node_ids": ["1"], "task_group_id": "1"},
-        "expected_output_uris": [("mock_path", "mock_path", "mock_path")],
+        "expected_output_uris": [("mock_path", "mock_path", "mock_path", "mock_path")],
         "expected_server_url": "mock_server_url",
         "expected_future_cancelled": False,
     },
@@ -565,7 +571,7 @@ test_cases = [
             deps={"deps": "mock_deps_uri"},
         ),
         "task_group_metadata": {"dispatch_id": "1", "node_ids": ["1"], "task_group_id": "1"},
-        "expected_output_uris": [("mock_path", "mock_path", "mock_path")],
+        "expected_output_uris": [("mock_path", "mock_path", "mock_path", "mock_path")],
         "expected_server_url": "mock_server_url",
         "expected_future_cancelled": True,
     },
