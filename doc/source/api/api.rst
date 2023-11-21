@@ -35,11 +35,13 @@ A Covalent server must be running in order to dispatch workflows. The Covalent C
 
 The Covalent SDK also includes a Python interface for starting and stopping the Covalent server.
 
-.. autofunction:: covalent.covalent_is_running
+.. autofunction:: covalent._programmatic.commands.covalent_is_running
 
-.. autofunction:: covalent.covalent_start
 
-.. autofunction:: covalent.covalent_stop
+.. autofunction:: covalent._programmatic.commands.covalent_start
+
+
+.. autofunction:: covalent._programmatic.commands.covalent_stop
 
 
 ----------------------------------------------------------------
