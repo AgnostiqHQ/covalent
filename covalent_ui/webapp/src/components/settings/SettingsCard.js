@@ -78,11 +78,18 @@ const SettingsCard = () => {
   const [serverDetail, setServerDetail] = useState(null)
   const [tempData, setTempData] = useState(null)
   const [tempDataServer, setTempDataServer] = useState(null)
+  const [openMenuKey, setOpenMenuKey] = useState(null)
+
+  console.log(subMenu, 'submenu')
+  console.log(resultKey, 'resultKey')
+  console.log(`%c${subMenu}`, 'background-color:green;padding:4px')
 
   useEffect(() => {
     dispatch(settingsResults())
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  console.log(openMenuKey, 'openMenuKey')
 
   useEffect(() => {
     if (valueChange) {
@@ -126,6 +133,7 @@ const SettingsCard = () => {
         [resultKey]: resultOutput,
       },
     }
+    console.log(updateData, 'ud')
     dispatch(updateSettings(updateData)).then((action) => {
       if (action.type === updateSettings.fulfilled.type) {
         setOpenSnackbar(true)
@@ -169,7 +177,10 @@ const SettingsCard = () => {
     return childIsObject
   }
 
-  const handleClick = (item) => {
+  const handleClick = (item, args) => {
+    console.log(item, ';litem')
+    console.log(args, 'lkey')
+    openMenuKey === args ? setOpenMenuKey(null) : setOpenMenuKey(args)
     _.map(item, function (value, _key) {
       if (_.isObject(value)) {
         setOpen(!open)
@@ -314,13 +325,21 @@ const SettingsCard = () => {
     setSubMenu(Object.values(settings_result)[0].executors)
   }
 
-  const handleSubmenuClick = (value, key) => {
+  const handleSubmenuClick = (value, key, args) => {
+    console.log(value, 'onclick value')
+    console.log(key, 'onclick key')
+
     setIsDisabled(false)
-    if (resultKey !== 'executors') {
+    setResultKey(args)
+
+    if (!key) {
       setValueChange(false)
-      setResultKey('executors')
       setResultOutput(value)
       setRestoreData(value)
+      // Check if the key is 'qelectron' and scroll into view
+      if (key) {
+        document.getElementById(key).scrollIntoView({ behavior: 'smooth' })
+      }
     } else {
       document.getElementById(key).scrollIntoView({ behavior: 'smooth' })
     }
@@ -436,6 +455,9 @@ const SettingsCard = () => {
                   placeholder="Search"
                 />
                 {_.map(clientDetail, function (menuValue, menuKey) {
+                  console.log(clientDetail, 'tclientDetail')
+                  console.log(menuValue, 'tmenuValue')
+                  console.log(menuKey, 'tmenuKey')
                   return (
                     <StyledList sx={{ pb: 0, pt: 0 }} key={menuKey}>
                       <ListItem disablePadding sx={{ lineHeight: '18px' }}>
@@ -443,7 +465,7 @@ const SettingsCard = () => {
                           data-testid="openMenu"
                           onClick={
                             isChildHasList
-                              ? () => handleClick(menuValue)
+                              ? () => handleClick(menuValue, menuKey)
                               : () => {}
                           }
                           sx={{
@@ -452,8 +474,13 @@ const SettingsCard = () => {
                           }}
                         >
                           {isChildHasList(menuValue) && (
-                            <ListItemIcon sx={{ minWidth: '45px', pl: 1 }}>
-                              {open ? (
+                            <ListItemIcon
+                              sx={{ minWidth: '45px', pl: 1 }}
+                              onClick={() =>
+                                menuClick(menuValue, menuKey, accName)
+                              }
+                            >
+                              {menuKey === openMenuKey && menuKey !== 'sdk' ? (
                                 <ExpandMore />
                               ) : (
                                 <KeyboardArrowRightIcon />
@@ -483,51 +510,60 @@ const SettingsCard = () => {
                           />
                         </ListItemButton>
                       </ListItem>
+                      {openMenuKey && (
+                        <Collapse
+                          in={menuKey === openMenuKey && menuKey !== 'sdk'}
+                          timeout="auto"
+                          unmountOnExit
+                        >
+                          <List component="div" disablePadding>
+                            {_.map(subMenu, function (value, key) {
+                              return (
+                                <StyledList sx={{ pb: 0, pt: 0 }} key={key}>
+                                  <ListItem
+                                    disablePadding
+                                    sx={{ lineHeight: '18px' }}
+                                  >
+                                    <ListItemButton
+                                      sx={{ pl: 7, pt: 0.3, pb: 0.3 }}
+                                      onClick={() =>
+                                        handleSubmenuClick(
+                                          subMenu,
+                                          key,
+                                          menuKey
+                                        )
+                                      }
+                                    >
+                                      <ListItemText
+                                        inset
+                                        primary={formatUnderscoreConcatenatedString(
+                                          key
+                                        )}
+                                        disableTypography
+                                        sx={{ pl: '0px', fontSize: '14px' }}
+                                      />
+                                    </ListItemButton>
+                                  </ListItem>
+                                </StyledList>
+                              )
+                            })}
+                          </List>
+                        </Collapse>
+                      )}
                     </StyledList>
                   )
                 })}
-
-                {open && (
-                  <Collapse in={open} timeout="auto" unmountOnExit>
-                    <List component="div" disablePadding>
-                      {_.map(subMenu, function (value, key) {
-                        return (
-                          <StyledList sx={{ pb: 0, pt: 0 }} key={key}>
-                            <ListItem
-                              disablePadding
-                              sx={{ lineHeight: '18px' }}
-                            >
-                              <ListItemButton
-                                sx={{ pl: 7, pt: 0.3, pb: 0.3 }}
-                                onClick={() => handleSubmenuClick(subMenu, key)}
-                              >
-                                <ListItemText
-                                  inset
-                                  primary={formatUnderscoreConcatenatedString(
-                                    key
-                                  )}
-                                  disableTypography
-                                  sx={{ pl: '0px', fontSize: '14px' }}
-                                />
-                              </ListItemButton>
-                            </ListItem>
-                          </StyledList>
-                        )
-                      })}
-                    </List>
-                  </Collapse>
-                )}
               </Box>
 
               <Box>
-                {_.map(serverDetail, function (menuValue, menuKey) {
+                {_.map(serverDetail, function (menuValue, menuKey, index) {
                   return (
-                    <StyledList sx={{ pb: 0, pt: 0 }} key={menuKey}>
+                    <StyledList sx={{ pb: 0, pt: 0 }} key={index}>
                       <ListItem disablePadding sx={{ lineHeight: '18px' }}>
                         <ListItemButton
                           onClick={
                             isChildHasList
-                              ? () => handleClick(menuValue)
+                              ? () => handleClick(menuValue, menuKey)
                               : () => {}
                           }
                           sx={{
