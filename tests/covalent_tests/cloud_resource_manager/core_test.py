@@ -309,6 +309,15 @@ def test_get_tf_path(mocker, test_tf_path, crm):
     )
 
     if test_tf_path:
+        mocker.patch(
+            "covalent.cloud_resource_manager.core.subprocess.run",
+            return_value=subprocess.CompletedProcess(
+                args=["terraform --version"],
+                returncode=0,
+                stdout="Terraform v1.6.0\non linux_amd64\n\nYour version of Terraform is out of date! The latest version\nis 1.6.4. You can update by downloading from https://www.terraform.io/downloads.html\n",
+                stderr="",
+            ),
+        )
         assert crm._get_tf_path() == test_tf_path
     else:
         with pytest.raises(
@@ -356,7 +365,9 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
         "covalent.cloud_resource_manager.core.CloudResourceManager._get_tf_path",
         return_value=test_tf_path,
     )
-
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._validation_docker",
+    )
     mock_get_tf_statefile_path = mocker.patch(
         "covalent.cloud_resource_manager.core.CloudResourceManager._get_tf_statefile_path",
         return_value=test_tf_state_file,
@@ -472,6 +483,10 @@ def test_down(mocker, crm):
         return_value=test_tf_state_file,
     )
 
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._validation_docker",
+    )
+
     log_file_path = os.path.join(crm.executor_tf_path + "/terraform-error.log")
 
     mock_run_in_subprocess = mocker.patch(
@@ -531,6 +546,10 @@ def test_status(mocker, crm):
     mock_get_tf_statefile_path = mocker.patch(
         "covalent.cloud_resource_manager.core.CloudResourceManager._get_tf_statefile_path",
         return_value=test_tf_state_file,
+    )
+
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._validation_docker",
     )
 
     mock_run_in_subprocess = mocker.patch(
