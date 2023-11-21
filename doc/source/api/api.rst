@@ -27,13 +27,9 @@ The following API documentation describes how to use Covalent.
 
 Covalent Server
 """""""""""""""""""""""""""
-A Covalent server must be running in order to dispatch workflows. The Covalent CLI provides various utilities for starting, stopping, and managing a Covalent server. For more information, see:
+A Covalent server must be running in order to dispatch workflows. The Covalent CLI provides various utilities for starting, stopping, and managing a Covalent server. For more information, see the Covalent CLI help menu at :code:`covalent --help`.
 
-.. code-block:: bash
-
-    covalent --help
-
-The Covalent SDK also includes a Python interface for starting and stopping the covalent server.
+The Covalent SDK also includes a Python interface for starting and stopping the Covalent server.
 
 .. autofunction:: covalent._programmatic.commands.covalent_is_running
 
