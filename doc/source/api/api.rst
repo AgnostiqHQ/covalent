@@ -37,7 +37,9 @@ The Covalent SDK also includes a Python interface for starting and stopping the 
 
 .. autofunction:: covalent._programmatic.commands.covalent_is_running
 
+
 .. autofunction:: covalent._programmatic.commands.covalent_start
+
 
 .. autofunction:: covalent._programmatic.commands.covalent_stop
 
