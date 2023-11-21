@@ -54,6 +54,7 @@ jobs:
           --ignore-file=covalent/triggers/**
           --ignore-file=covalent/cloud_resource_manager/**
           --ignore-file=covalent/quantum/qserver/**
+          --ignore-file=covalent/_programmatic/**
           covalent
 
       - name: Check missing dispatcher requirements
