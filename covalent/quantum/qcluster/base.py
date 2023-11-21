@@ -20,7 +20,7 @@ from concurrent.futures import Future
 from typing import Callable, List, Sequence, Union
 
 from mpire.async_result import AsyncResult
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel
 
 from ...executor.qbase import AsyncBaseQExecutor, BaseQExecutor, QCResult
 
@@ -98,4 +98,4 @@ class BaseQSelector(ABC, BaseModel):
 
     class Config:
         # Allows defining extra state fields in subclasses.
-        extra = Extra.allow
+        extra = "allow"
