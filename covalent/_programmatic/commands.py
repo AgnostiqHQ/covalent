@@ -56,9 +56,19 @@ def covalent_start(
     no_cluster: bool = False,
     no_triggers: bool = False,
     triggers_only: bool = False,
-):
-    """
-    Start the Covalent server. Wrapper for the `covalent start` CLI command.
+) -> None:
+    """Start the Covalent server. Wrapper for the `covalent start` CLI command.
+
+    Args:
+        develop: Start local server in develop mode. Defaults to False.
+        port: Local server port number. Defaults to 48008.
+        mem_per_worker: Memory limit per worker in GB. Defaults to auto.
+        workers: Number of Dask workers. Defaults to 8.
+        threads_per_worker: Number of threads per Dask worker. Defaults to 1.
+        ignore_migrations: Start server without database migrations. Defaults to False.
+        no_cluster: Start server without Dask cluster. Defaults to False.
+        no_triggers: Start server without a triggers server. Defaults to False.
+        triggers_only: Start only the triggers server. Defaults to False.
     """
     if covalent_is_running():
         return
@@ -82,10 +92,8 @@ def covalent_start(
         time.sleep(1)
 
 
-def covalent_stop():
-    """
-    Stop the Covalent server. Wrapper for the `covalent stop` CLI command.
-    """
+def covalent_stop() -> None:
+    """Stop the Covalent server. Wrapper for the `covalent stop` CLI command."""
     if not covalent_is_running():
         return
 
