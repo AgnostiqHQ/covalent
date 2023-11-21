@@ -130,9 +130,6 @@ def covalent_start(
         no_triggers: Start server without a triggers server. Defaults to :code:`False`.
         triggers_only: Start only the triggers server. Defaults to :code:`False`.
         quiet: Suppress stdout. Defaults to :code:`False`.
-
-    Returns:
-        None
     """
 
     try:
@@ -177,9 +174,6 @@ def covalent_stop(*, quiet: bool = False) -> None:
 
     Args:
         quiet: Suppress stdout. Defaults to :code:`False`.
-
-    Returns:
-        None
     """
 
     try:
