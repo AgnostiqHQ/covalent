@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Changed the azurebatch.rst banner from default covalent jpg to azure batch's svg file
+
 ### Fixed
 
 - Lattice-default metadata attributes are now applied correctly
