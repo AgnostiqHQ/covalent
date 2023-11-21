@@ -18,7 +18,7 @@
 import contextlib
 import sys
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
 import click
 import psutil
@@ -29,6 +29,17 @@ from .._shared_files import logger
 from .._shared_files.config import get_config
 
 app_log = logger.app_log
+
+
+def covalent_is_running() -> bool:
+    """Return True if the Covalent server is in a ready state."""
+    pid = _read_pid(get_config("dispatcher.cache_dir") + "/ui.pid")
+    return (
+        pid != -1
+        and psutil.pid_exists(pid)
+        and get_config("dispatcher.address") != ''
+        and get_config("dispatcher.port") != ''
+    )
 
 
 def _call_cli_command(
@@ -48,15 +59,34 @@ def _call_cli_command(
         ctx.invoke(cmd, **kwargs)
 
 
-def covalent_is_running() -> bool:
-    """Return True if the Covalent server is in a ready state."""
-    pid = _read_pid(get_config("dispatcher.cache_dir") + "/ui.pid")
-    return (
-        pid != -1
-        and psutil.pid_exists(pid)
-        and get_config("dispatcher.address") != ''
-        and get_config("dispatcher.port") != ''
-    )
+def _poll_with_timeout(
+    callable_: Callable[[], bool],
+    *,
+    waiting_msg: str,
+    timeout_msg: str,
+    timeout: int,
+) -> None:
+    """Poll a callable once per second, until it returns True or a timeout is reached.
+
+    Args:
+        callable_: The callable to poll.
+        waiting_msg: Log message to display while waiting.
+        timeout_msg: Error message to display if timeout is reached.
+        timeout: Timeout in seconds.
+
+    Raises:
+        TimeoutError: _description_
+    """
+    _num_wait = 0
+    _max_wait = timeout
+
+    while not callable_():
+        app_log.debug(waiting_msg)
+
+        time.sleep(1)
+        _num_wait += 1
+        if _num_wait >= _max_wait:
+            raise TimeoutError(timeout_msg)
 
 
 def covalent_start(
@@ -102,11 +132,16 @@ def covalent_start(
         "triggers_only": triggers_only,
     }
 
+    # Run the `covalent start [OPTIONS]` command.
     _call_cli_command(start, quiet=quiet, **kwargs)
 
-    while not covalent_is_running():
-        app_log.debug("Waiting for Covalent Server to be to dispatch-ready...")
-        time.sleep(1)
+    # Wait to confirm Covalent server is running.
+    _poll_with_timeout(
+        covalent_is_running,
+        waiting_msg="Waiting for Covalent Server to start...",
+        timeout_msg="Covalent Server failed to start!",
+        timeout=10,
+    )
 
 
 def covalent_stop(*, quiet: bool = False) -> None:
@@ -119,8 +154,13 @@ def covalent_stop(*, quiet: bool = False) -> None:
     if not covalent_is_running():
         return
 
+    # Run the `covalent stop` command.
     _call_cli_command(stop, quiet=quiet)
 
-    while covalent_is_running():
-        app_log.debug("Waiting for Covalent Server to stop...")
-        time.sleep(1)
+    # Wait to confirm Covalent server is stopped.
+    _poll_with_timeout(
+        lambda: not covalent_is_running(),
+        waiting_msg="Waiting for Covalent server to stop...",
+        timeout_msg="Failed to stop Covalent server!",
+        timeout=10,
+    )
