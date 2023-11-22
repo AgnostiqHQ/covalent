@@ -105,9 +105,9 @@ def import_transport_graph(
     delta = (et - st).total_seconds()
     app_log.debug(f"Inserting {n_records} electron records took {delta} seconds")
 
-    n_records = 0
-    for asset_records_by_key in electron_asset_links.values():
-        n_records += len(asset_records_by_key)
+    n_records = sum(
+        len(asset_records_by_key) for asset_records_by_key in electron_asset_links.values()
+    )
 
     st = datetime.now()
     session.flush()
