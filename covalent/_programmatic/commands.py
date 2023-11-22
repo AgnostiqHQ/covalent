@@ -136,6 +136,7 @@ def covalent_start(
         from covalent_dispatcher._cli.service import start
 
         if covalent_is_running():
+            app_log.debug("Covalent server is already running.")
             return
 
         kwargs = {
@@ -151,13 +152,14 @@ def covalent_start(
         }
 
         # Run the `covalent start [OPTIONS]` command.
+        app_log.debug("Starting Covalent server programmatically...")
         _call_cli_command(start, quiet=quiet, **kwargs)
 
         # Wait to confirm Covalent server is running.
         _poll_with_timeout(
             covalent_is_running,
             waiting_msg="Waiting for Covalent Server to start...",
-            timeout_msg="Covalent Server failed to start!",
+            timeout_msg="Failed to start Covalent server programmatically!",
             timeout=10,
         )
 
@@ -180,16 +182,18 @@ def covalent_stop(*, quiet: bool = False) -> None:
         from covalent_dispatcher._cli.service import stop
 
         if not covalent_is_running():
+            app_log.debug("Covalent server is not running.")
             return
 
         # Run the `covalent stop` command.
+        app_log.debug("Stopping Covalent server programmatically...")
         _call_cli_command(stop, quiet=quiet)
 
         # Wait to confirm Covalent server is stopped.
         _poll_with_timeout(
             lambda: not covalent_is_running(),
             waiting_msg="Waiting for Covalent server to stop...",
-            timeout_msg="Failed to stop Covalent server!",
+            timeout_msg="Failed to stop Covalent server programmatically!",
             timeout=10,
         )
 
