@@ -80,16 +80,10 @@ const SettingsCard = () => {
   const [tempDataServer, setTempDataServer] = useState(null)
   const [openMenuKey, setOpenMenuKey] = useState(null)
 
-  console.log(subMenu, 'submenu')
-  console.log(resultKey, 'resultKey')
-  console.log(`%c${subMenu}`, 'background-color:green;padding:4px')
-
   useEffect(() => {
     dispatch(settingsResults())
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
-
-  console.log(openMenuKey, 'openMenuKey')
 
   useEffect(() => {
     if (valueChange) {
@@ -133,7 +127,6 @@ const SettingsCard = () => {
         [resultKey]: resultOutput,
       },
     }
-    console.log(updateData, 'ud')
     dispatch(updateSettings(updateData)).then((action) => {
       if (action.type === updateSettings.fulfilled.type) {
         setOpenSnackbar(true)
@@ -178,8 +171,6 @@ const SettingsCard = () => {
   }
 
   const handleClick = (item, args) => {
-    console.log(item, ';litem')
-    console.log(args, 'lkey')
     openMenuKey === args ? setOpenMenuKey(null) : setOpenMenuKey(args)
     _.map(item, function (value, _key) {
       if (_.isObject(value)) {
@@ -326,8 +317,6 @@ const SettingsCard = () => {
   }
 
   const handleSubmenuClick = (value, key, args) => {
-    console.log(value, 'onclick value')
-    console.log(key, 'onclick key')
 
     setIsDisabled(false)
     setResultKey(args)
@@ -455,9 +444,6 @@ const SettingsCard = () => {
                   placeholder="Search"
                 />
                 {_.map(clientDetail, function (menuValue, menuKey) {
-                  console.log(clientDetail, 'tclientDetail')
-                  console.log(menuValue, 'tmenuValue')
-                  console.log(menuKey, 'tmenuKey')
                   return (
                     <StyledList sx={{ pb: 0, pt: 0 }} key={menuKey}>
                       <ListItem disablePadding sx={{ lineHeight: '18px' }}>
