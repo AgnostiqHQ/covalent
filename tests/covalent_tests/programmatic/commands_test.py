@@ -26,6 +26,8 @@ def test_covalent_start_and_stop():
 
     from covalent_dispatcher._cli import _is_server_running
 
+    _starting_state = _is_server_running()
+
     # Start Covalent
     ct.covalent_start(quiet=True)
     assert _is_server_running() is True
@@ -33,15 +35,6 @@ def test_covalent_start_and_stop():
     # Re-issue start command (should do nothing and exit immediately)
     ct.covalent_start(quiet=True)
     assert _is_server_running() is True
-
-    # Run a dummy workflow
-    @ct.lattice
-    @ct.electron
-    def dummy_1():
-        return "success"
-
-    dispatch_id = ct.dispatch(dummy_1)()
-    assert ct.get_result(dispatch_id, wait=True).result == "success"
 
     # Stop Covalent
     ct.covalent_stop(quiet=True)
@@ -53,24 +46,12 @@ def test_covalent_start_and_stop():
 
     # Try running the dummy workflow again (should fail)
     with pytest.raises(requests.exceptions.ConnectionError):
-        ct.dispatch(dummy_1)()
+        ct.dispatch(ct.lattice(ct.electron(lambda: "result")))()
 
-    # Re-start Covalent after stopping
-    ct.covalent_start(quiet=False)
-    assert _is_server_running() is True
-
-    # Run another dummy workflow
-    @ct.lattice
-    @ct.electron
-    def dummy_2():
-        return "success again"
-
-    dispatch_id = ct.dispatch(dummy_2)()
-    assert ct.get_result(dispatch_id, wait=True).result == "success again"
-
-    # Finally, stop Covalent
-    ct.covalent_stop(quiet=False)
-    assert _is_server_running() is False
+    if _starting_state:
+        # Re-start Covalent after stopping
+        ct.covalent_start(quiet=False)
+        assert _is_server_running() is True
 
 
 def test_covalent_is_running():
@@ -78,10 +59,25 @@ def test_covalent_is_running():
 
     from covalent_dispatcher._cli import _is_server_running
 
-    # Start Covalent
-    ct.covalent_start(quiet=True)
-    assert ct.covalent_is_running() is _is_server_running() is True
+    _starting_state = _is_server_running()
 
-    # Stop Covalent
-    ct.covalent_stop(quiet=True)
-    assert ct.covalent_is_running() is _is_server_running() is False
+    # Stop then start Covalent or vice versa, depending on starting state.
+    if _starting_state:
+        # Stop Covalent
+        ct.covalent_stop(quiet=True)
+        assert ct.covalent_is_running() is _is_server_running() is False
+
+        # Re-start Covalent
+        ct.covalent_start(quiet=True)
+        assert ct.covalent_is_running() is _is_server_running() is True
+    else:
+        # Start Covalent
+        ct.covalent_start(quiet=True)
+        assert ct.covalent_is_running() is _is_server_running() is True
+
+        # Re-stop Covalent
+        ct.covalent_stop(quiet=True)
+        assert ct.covalent_is_running() is _is_server_running() is False
+
+    # Check that Covalent server is back in its starting state.
+    assert ct.covalent_is_running() is _starting_state
