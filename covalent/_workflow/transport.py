@@ -37,7 +37,7 @@ def encode_metadata(metadata: dict) -> dict:
     encoded_metadata = deepcopy(metadata)
     if "executor" in metadata:
         if "executor_data" not in metadata:
-            encoded_metadata["executor_data"] = {}
+            encoded_metadata["executor_data"] = None if metadata["executor"] is None else {}
         if metadata["executor"] is not None and not isinstance(metadata["executor"], str):
             encoded_executor = metadata["executor"].to_dict()
             encoded_metadata["executor"] = encoded_executor["short_name"]
@@ -45,7 +45,9 @@ def encode_metadata(metadata: dict) -> dict:
 
     if "workflow_executor" in metadata:
         if "workflow_executor_data" not in metadata:
-            encoded_metadata["workflow_executor_data"] = {}
+            encoded_metadata["workflow_executor_data"] = (
+                None if metadata["executor"] is None else {}
+            )
         if metadata["workflow_executor"] is not None and not isinstance(
             metadata["workflow_executor"], str
         ):
