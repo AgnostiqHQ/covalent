@@ -122,8 +122,11 @@ def deploy():
     Covalent deploy group with options to:
 
     1. Spin resources up via `covalent deploy up <executor_name> <options>`.
+
     2. Tear resources down via `covalent deploy down <executor_name> <options>`.
+
     3. Show status of resources via `covalent deploy status <executor_name>`.
+
     4. Show status of all resources via `covalent deploy status`.
 
     """
