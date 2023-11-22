@@ -68,8 +68,8 @@ SDK_LAT_META_KEYS = {
 
 DEFERRED_KEYS = {
     "output",
-    "value",
     "result",
+    "qelectron_db",
 }
 
 
@@ -289,14 +289,14 @@ def _load_node_asset(manifest: dict, node_id: int, key: str):
 class ResultManager:
     def __init__(self, manifest: ResultSchema, results_dir: str):
         self.result_object = deserialize_result(manifest)
-        self._manifest = manifest.dict()
+        self._manifest = manifest.model_dump()
         self._results_dir = results_dir
 
     def save(self, path: Optional[str] = None):
         if not path:
             path = os.path.join(self._results_dir, "manifest.json")
         with open(path, "w") as f:
-            f.write(ResultSchema.parse_obj(self._manifest).json())
+            f.write(ResultSchema.model_validate(self._manifest).model_dump_json())
 
     @staticmethod
     def load(path: str, results_dir: str) -> "ResultManager":
@@ -345,7 +345,7 @@ class ResultManager:
             dispatch_id, wait, status_only=False, dispatcher_addr=dispatcher_addr
         )
 
-        manifest = ResultSchema.parse_obj(export["result_export"])
+        manifest = ResultSchema.model_validate(export["result_export"])
 
         # sort the nodes
         manifest.lattice.transport_graph.nodes.sort(key=lambda x: x.id)
@@ -379,6 +379,7 @@ def _get_result_multistage(
     workflow_output: bool = True,
     intermediate_outputs: bool = True,
     sublattice_results: bool = True,
+    qelectron_db: bool = False,
 ) -> Result:
     """
     Get the results of a dispatch from a file.
@@ -395,6 +396,7 @@ def _get_result_multistage(
         workflow_output: Whether to return the workflow output. Defaults to True.
         intermediate_outputs: Whether to return all intermediate outputs in the compute graph. Defaults to True.
         sublattice_results: Whether to recursively retrieve sublattice results. Default is True.
+        qelectron_db: Whether to load the bytes data of qelectron_db. Default is False.
 
     Returns:
         The Result object from the Covalent server
@@ -422,6 +424,11 @@ def _get_result_multistage(
                 rm.download_node_asset(node_id, "output")
                 rm.load_node_asset(node_id, "output")
 
+        if qelectron_db:
+            for node_id in tg._graph.nodes:
+                rm.download_node_asset(node_id, "qelectron_db")
+                rm.load_node_asset(node_id, "qelectron_db")
+
         # Fetch sublattice result objects recursively
         tg = rm.result_object.lattice.transport_graph
         for node_id in tg._graph.nodes:
@@ -436,6 +443,7 @@ def _get_result_multistage(
                     workflow_output=workflow_output,
                     intermediate_outputs=intermediate_outputs,
                     sublattice_results=sublattice_results,
+                    qelectron_db=qelectron_db,
                 )
                 tg.set_node_value(node_id, "sublattice_result", sub_result)
             else:
@@ -461,6 +469,7 @@ def get_result(
     workflow_output: bool = True,
     intermediate_outputs: bool = True,
     sublattice_results: bool = True,
+    qelectron_db: bool = False,
 ) -> Result:
     """
     Get the results of a dispatch.
@@ -476,6 +485,7 @@ def get_result(
         workflow_output: Whether to return the workflow output. Defaults to True.
         intermediate_outputs: Whether to return all intermediate outputs in the compute graph. Defaults to True.
         sublattice_results: Whether to recursively retrieve sublattice results. Default is True.
+        qelectron_db: Whether to load the bytes data of qelectron_db. Default is False.
 
     Returns:
         The Result object from the Covalent server
@@ -492,6 +502,8 @@ def get_result(
             workflow_output=workflow_output,
             intermediate_outputs=intermediate_outputs,
             sublattice_results=sublattice_results,
+            qelectron_db=qelectron_db,
         )
+
     except RecursionError as re:
         app_log.error(re)

@@ -13,29 +13,3 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-from contextlib import contextmanager
-
-from pydantic import BaseModel
-
-
-class Context(BaseModel):
-    dispatch_id: str = None
-    task_id: int = None
-
-
-def get_context():
-    return current_context
-
-
-@contextmanager
-def set_context(dispatch_id: int, task_id: str):
-    global current_context
-    global unset_context
-    current_context = Context(dispatch_id=dispatch_id, task_id=task_id)
-    yield
-    current_context = unset_context
-
-
-unset_context = Context()
-current_context = unset_context
