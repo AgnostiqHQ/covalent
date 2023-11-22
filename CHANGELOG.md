@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed license to Apache
 - Improved error handling in generate_docs.py
 - [Significant Changes] Migrated core server-side code to new data access layer.
+- Changed the axios version on the webapp side.
 
 ### Added
 
