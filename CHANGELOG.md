@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed semver from 5.7.1 to 5.7.2 in package.json
 - Updated word-wrap to 1.2.4 version
 - Updated the nightly workflow's schedule
+- Temporarily making the nightly workflow more frequent to test the fix for the failing tests
 
 ### Changed
 
