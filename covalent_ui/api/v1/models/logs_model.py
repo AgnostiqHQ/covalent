@@ -55,15 +55,17 @@ class LogsResponse(BaseModel):
 
     items: List[LogsModule]
     total_count: Union[int, None] = None
-    model_config = ConfigDict(json_schema_extra={
-        "example": {
-            "data": [
-                {
-                    "log_date": "2022-06-13T07:45:02.114328+00:00",
-                    "status": "INFO",
-                    "message": "Application Started",
-                }
-            ],
-            "total_count": 1,
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "data": [
+                    {
+                        "log_date": "2022-06-13T07:45:02.114328+00:00",
+                        "status": "INFO",
+                        "message": "Application Started",
+                    }
+                ],
+                "total_count": 1,
+            }
         }
-    })
+    )

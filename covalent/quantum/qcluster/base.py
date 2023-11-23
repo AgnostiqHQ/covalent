@@ -95,4 +95,5 @@ class BaseQSelector(ABC, BaseModel):
         Implement selection logic here.
         """
         raise NotImplementedError
+
     model_config = ConfigDict(extra="allow")

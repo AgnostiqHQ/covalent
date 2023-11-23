@@ -59,21 +59,23 @@ class DispatchResponse(BaseModel):
 
     items: List[DispatchModule]
     total_count: int
-    model_config = ConfigDict(json_schema_extra={
-        "example": {
-            "dispatches": [
-                {
-                    "dispatch_id": "1b44989a-1c65-4148-959e-00062a34ac16",
-                    "lattice_name": "testing content",
-                    "runtime": 1,
-                    "started_time": "2022-06-13T07:45:02.114328+00:00",
-                    "end_time": "2022-06-13T07:45:02.216474+00:00",
-                    "status": "COMPLETED",
-                }
-            ],
-            "total_count": 10,
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "dispatches": [
+                    {
+                        "dispatch_id": "1b44989a-1c65-4148-959e-00062a34ac16",
+                        "lattice_name": "testing content",
+                        "runtime": 1,
+                        "started_time": "2022-06-13T07:45:02.114328+00:00",
+                        "end_time": "2022-06-13T07:45:02.216474+00:00",
+                        "status": "COMPLETED",
+                    }
+                ],
+                "total_count": 10,
+            }
         }
-    })
+    )
 
 
 class DeleteDispatchesRequest(BaseModel):
@@ -108,15 +110,17 @@ class DispatchDashBoardResponse(BaseModel):
     total_jobs_new_object: Union[int, None] = None
     latest_running_task_status: Union[Status, None] = None
     total_dispatcher_duration: Union[int, None] = None
-    model_config = ConfigDict(json_schema_extra={
-        "example": {
-            "total_jobs": 5,
-            "total_jobs_running": 5,
-            "total_jobs_completed": 20,
-            "total_jobs_failed": 3,
-            "total_jobs_cancelled": 0,
-            "total_jobs_new_object": 1,
-            "latest_running_task_status": "COMPLETED",
-            "total_dispatcher_duration": 90,
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {
+                "total_jobs": 5,
+                "total_jobs_running": 5,
+                "total_jobs_completed": 20,
+                "total_jobs_failed": 3,
+                "total_jobs_cancelled": 0,
+                "total_jobs_new_object": 1,
+                "latest_running_task_status": "COMPLETED",
+                "total_dispatcher_duration": 90,
+            }
         }
-    })
+    )

@@ -113,6 +113,7 @@ class BaseQExecutor(ABC, BaseModel):
 
         # User has specified `shots` as an int.
         return self.shots
+
     model_config = ConfigDict(extra="allow")
 
     @model_validator(mode="before")
