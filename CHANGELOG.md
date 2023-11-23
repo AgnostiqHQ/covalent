@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed code at line 218 in covalent/_shared_files/utils.py
 - Fixed usage of deprecated pydantic validation methods
 - Fixed qelectron_db retrieval in result object
+- Fixed editability of Qelectron on settings page - UI changes
 
 ### Operations
 
