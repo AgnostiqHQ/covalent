@@ -163,6 +163,8 @@ class Record(Generic[T]):
             equality_filters={"id": self.primary_key},
             membership_filters={},
         )
+        for k, v in values.items():
+            self._attrs[k] = v
 
     def incr(self, session: Session, *, increments: dict):
         """Increment the fields of the corresponding record."""

@@ -16,6 +16,7 @@
 
 """Class corresponding to computation nodes."""
 
+
 import inspect
 import json
 import operator
@@ -391,7 +392,7 @@ class Electron:
             if (
                 k not in consumable_constraints
                 and k in DEFAULT_METADATA_VALUES
-                and not self.get_metadata(k)
+                and self.get_metadata(k) is None
             ):
                 meta = active_lattice.get_metadata(k) or DEFAULT_METADATA_VALUES[k]
                 self.set_metadata(k, meta)
@@ -426,8 +427,8 @@ class Electron:
             parent_metadata = active_lattice.metadata.copy()
             app_log.debug(f"Parent lattice metadata: {parent_metadata}")
             e_meta = parent_metadata.copy()
-            e_meta.pop("workflow_executor")
-            e_meta.pop("workflow_executor_data")
+            e_meta["executor"] = e_meta.pop("workflow_executor")
+            e_meta["executor_data"] = e_meta.pop("workflow_executor_data")
 
             sub_electron = Electron(
                 function=_build_sublattice_graph,
@@ -688,8 +689,8 @@ def electron(
     files: List[FileTransfer] = [],
     deps_bash: Union[DepsBash, List, str] = None,
     deps_pip: Union[DepsPip, list] = None,
-    call_before: Union[List[DepsCall], DepsCall] = [],
-    call_after: Union[List[DepsCall], DepsCall] = [],
+    call_before: Union[List[DepsCall], DepsCall] = None,
+    call_after: Union[List[DepsCall], DepsCall] = None,
 ) -> Callable:  # sourcery skip: assign-if-exp
     """
     Electron decorator to be called upon a function. Returns the wrapper function with the same functionality as `_func`.
@@ -719,7 +720,7 @@ def electron(
         )
         executor = backend
 
-    deps = {}
+    deps = {} if deps_bash or deps_pip else None
 
     if isinstance(deps_bash, DepsBash):
         deps["bash"] = deps_bash
@@ -758,14 +759,23 @@ def electron(
     if isinstance(call_after, DepsCall):
         call_after = [call_after]
 
-    call_before = internal_call_before_deps + call_before
-    call_after = internal_call_after_deps + call_after
+    call_before_final = [] if internal_call_before_deps or call_before else None
+    if internal_call_before_deps:
+        call_before_final.extend(internal_call_before_deps)
+    if call_before:
+        call_before_final.extend(call_before)
+
+    call_after_final = [] if internal_call_after_deps or call_after else None
+    if internal_call_after_deps:
+        call_after_final.extend(internal_call_after_deps)
+    if call_after:
+        call_after_final.extend(call_after)
 
     constraints = {
         "executor": executor,
         "deps": deps,
-        "call_before": call_before,
-        "call_after": call_after,
+        "call_before": call_before_final,
+        "call_after": call_after_final,
     }
 
     constraints = encode_metadata(constraints)

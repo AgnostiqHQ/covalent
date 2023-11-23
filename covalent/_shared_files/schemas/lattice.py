@@ -18,7 +18,7 @@
 
 from typing import Dict, Optional
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 from .asset import AssetSchema
 from .transport_graph import TransportGraphSchema
@@ -27,7 +27,7 @@ LATTICE_METADATA_KEYS = {
     "__name__",
     "python_version",
     "covalent_version",
-    # metadata
+    # user dependent metadata
     "executor",
     "workflow_executor",
     "executor_data",
@@ -43,7 +43,7 @@ LATTICE_ASSET_KEYS = {
     "named_kwargs",
     "cova_imports",
     "lattice_imports",
-    # metadata
+    # user dependent assets
     "deps",
     "call_before",
     "call_after",
@@ -62,8 +62,8 @@ LATTICE_RESULTS_FILENAME = "results.tobj"
 LATTICE_DEPS_FILENAME = "deps.json"
 LATTICE_CALL_BEFORE_FILENAME = "call_before.json"
 LATTICE_CALL_AFTER_FILENAME = "call_after.json"
-LATTICE_COVA_IMPORTS_FILENAME = "cova_imports.pkl"
-LATTICE_LATTICE_IMPORTS_FILENAME = "lattice_imports.pkl"
+LATTICE_COVA_IMPORTS_FILENAME = "cova_imports.json"
+LATTICE_LATTICE_IMPORTS_FILENAME = "lattice_imports.txt"
 LATTICE_STORAGE_TYPE = "file"
 
 
@@ -115,7 +115,7 @@ class LatticeSchema(BaseModel):
 
     transport_graph: TransportGraphSchema
 
-    @validator("custom_assets")
+    @field_validator("custom_assets")
     def check_custom_asset_keys(cls, v):
         if v is not None:
             for key in v:

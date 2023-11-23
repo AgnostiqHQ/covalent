@@ -82,7 +82,6 @@ class Lattice:
         self.named_kwargs = None
         self.electron_outputs = {}
         self.lattice_imports, self.cova_imports = get_imports(self.workflow_function)
-        self.cova_imports.update({"electron"})
 
         self.workflow_function = TransportableObject.make_transportable(self.workflow_function)
 
@@ -110,13 +109,11 @@ class Lattice:
         for node_name, output in self.electron_outputs.items():
             attributes["electron_outputs"][node_name] = output.to_dict()
 
-        attributes["cova_imports"] = list(self.cova_imports)
         return json.dumps(attributes)
 
     @staticmethod
     def deserialize_from_json(json_data: str) -> None:
         attributes = json.loads(json_data)
-        attributes["cova_imports"] = set(attributes["cova_imports"])
 
         for node_name, object_dict in attributes["electron_outputs"].items():
             attributes["electron_outputs"][node_name] = TransportableObject.from_dict(object_dict)
@@ -206,18 +203,19 @@ class Lattice:
 
         named_args, named_kwargs = get_named_params(workflow_function, args, kwargs)
         new_args = [v for _, v in named_args.items()]
-        new_kwargs = {k: v for k, v in named_kwargs.items()}
+        new_kwargs = dict(named_kwargs.items())
 
         self.inputs = TransportableObject({"args": args, "kwargs": kwargs})
         self.named_args = TransportableObject(named_args)
         self.named_kwargs = TransportableObject(named_kwargs)
+        self.lattice_imports, self.cova_imports = get_imports(workflow_function)
 
         # Set any lattice metadata not explicitly set by the user
         constraint_names = {"executor", "workflow_executor", "deps", "call_before", "call_after"}
         new_metadata = {
             name: DEFAULT_METADATA_VALUES[name]
             for name in constraint_names
-            if not self.metadata[name]
+            if self.metadata[name] is None
         }
         new_metadata = encode_metadata(new_metadata)
 
@@ -332,8 +330,8 @@ def lattice(
     # Add custom metadata fields here
     deps_bash: Union[DepsBash, list, str] = None,
     deps_pip: Union[DepsPip, list] = None,
-    call_before: Union[List[DepsCall], DepsCall] = [],
-    call_after: Union[List[DepsCall], DepsCall] = [],
+    call_before: Union[List[DepsCall], DepsCall] = None,
+    call_after: Union[List[DepsCall], DepsCall] = None,
     triggers: Union["BaseTrigger", List["BaseTrigger"]] = None,
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:

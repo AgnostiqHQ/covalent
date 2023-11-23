@@ -29,8 +29,8 @@ EDGE_METADATA_KEYS = {
 
 class EdgeMetadata(BaseModel):
     edge_name: str
-    param_type: Optional[str]
-    arg_index: Optional[int]
+    param_type: Optional[str] = None
+    arg_index: Optional[int] = None
 
 
 class EdgeSchema(BaseModel):

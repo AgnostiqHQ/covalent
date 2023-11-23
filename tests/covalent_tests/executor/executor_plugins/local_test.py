@@ -17,10 +17,11 @@
 """Tests for Covalent local executor."""
 
 import io
+import json
 import os
 import tempfile
 from functools import partial
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
@@ -28,8 +29,17 @@ import covalent as ct
 from covalent._shared_files import TaskRuntimeError
 from covalent._shared_files.exceptions import TaskCancelledError
 from covalent._workflow.transport import TransportableObject
-from covalent.executor.base import wrapper_fn
-from covalent.executor.executor_plugins.local import _EXECUTOR_PLUGIN_DEFAULTS, LocalExecutor
+from covalent.executor.executor_plugins.local import (
+    _EXECUTOR_PLUGIN_DEFAULTS,
+    RESULT_STATUS,
+    LocalExecutor,
+    StatusEnum,
+    TaskSpec,
+    run_task_from_uris,
+)
+from covalent.executor.schemas import ResourceMap
+from covalent.executor.utils.serialize import serialize_node_asset
+from covalent.executor.utils.wrappers import wrapper_fn
 
 
 def test_local_executor_init(mocker):
@@ -227,3 +237,509 @@ def test_local_executor_get_cancel_requested(mocker):
         le.run(local_executor_run__mock_task, args, kwargs, task_metadata)
         le.get_cancel_requested.assert_called_once()
         assert mock_app_log.call_count == 2
+
+
+def test_run_task_from_uris(mocker):
+    """Test the wrapper submitted to local"""
+
+    def task(x, y):
+        return x + y
+
+    dispatch_id = "test_local_send_receive"
+    node_id = 0
+    task_group_id = 0
+    server_url = "http://localhost:48008"
+
+    x = TransportableObject(1)
+    y = TransportableObject(2)
+    deps = {}
+
+    cb_tmpfile = tempfile.NamedTemporaryFile()
+    ca_tmpfile = tempfile.NamedTemporaryFile()
+
+    deps = {
+        "bash": ct.DepsBash([f"echo Hello > {cb_tmpfile.name}"]).to_dict(),
+        "pip": ct.DepsBash(f"echo Bye > {ca_tmpfile.name}").to_dict(),
+    }
+
+    call_before = []
+    call_after = []
+
+    ser_task = serialize_node_asset(TransportableObject(task), "function")
+    ser_deps = serialize_node_asset(deps, "deps")
+    ser_cb = serialize_node_asset(call_before, "call_before")
+    ser_ca = serialize_node_asset(call_after, "call_after")
+    ser_x = serialize_node_asset(x, "output")
+    ser_y = serialize_node_asset(y, "output")
+
+    node_0_file = tempfile.NamedTemporaryFile("wb")
+    node_0_file.write(ser_task)
+    node_0_file.flush()
+    node_0_function_url = (
+        f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/function"
+    )
+
+    deps_file = tempfile.NamedTemporaryFile("wb")
+    deps_file.write(ser_deps)
+    deps_file.flush()
+    deps_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/deps"
+
+    cb_file = tempfile.NamedTemporaryFile("wb")
+    cb_file.write(ser_cb)
+    cb_file.flush()
+    cb_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/call_before"
+
+    ca_file = tempfile.NamedTemporaryFile("wb")
+    ca_file.write(ser_ca)
+    ca_file.flush()
+    ca_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/call_after"
+
+    node_1_file = tempfile.NamedTemporaryFile("wb")
+    node_1_file.write(ser_x)
+    node_1_file.flush()
+    node_1_output_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/1/assets/output"
+
+    node_2_file = tempfile.NamedTemporaryFile("wb")
+    node_2_file.write(ser_y)
+    node_2_file.flush()
+    node_2_output_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/2/assets/output"
+
+    task_spec = TaskSpec(
+        function_id=0,
+        args_ids=[1, 2],
+        kwargs_ids={},
+        deps_id="deps",
+        call_before_id="call_before",
+        call_after_id="call_after",
+    )
+
+    resources = {
+        node_0_function_url: ser_task,
+        node_1_output_url: ser_x,
+        node_2_output_url: ser_y,
+        deps_url: ser_deps,
+        cb_url: ser_cb,
+        ca_url: ser_ca,
+    }
+
+    def mock_req_get(url, stream):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.content = resources[url]
+        return mock_resp
+
+    def mock_req_post(url, files):
+        resources[url] = files["asset_file"].read()
+
+    mocker.patch("requests.get", mock_req_get)
+    mocker.patch("requests.post", mock_req_post)
+    mock_put = mocker.patch("requests.put")
+    task_group_metadata = {
+        "dispatch_id": dispatch_id,
+        "node_ids": [node_id],
+        "task_group_id": task_group_id,
+    }
+
+    result_file = tempfile.NamedTemporaryFile()
+    stdout_file = tempfile.NamedTemporaryFile()
+    stderr_file = tempfile.NamedTemporaryFile()
+    qelectron_db_file = tempfile.NamedTemporaryFile()
+
+    results_dir = tempfile.TemporaryDirectory()
+
+    run_task_from_uris(
+        task_specs=[task_spec.dict()],
+        resources={},
+        output_uris=[
+            (result_file.name, stdout_file.name, stderr_file.name, qelectron_db_file.name)
+        ],
+        results_dir=results_dir.name,
+        task_group_metadata=task_group_metadata,
+        server_url=server_url,
+    )
+
+    with open(result_file.name, "rb") as f:
+        output = TransportableObject.deserialize(f.read())
+    assert output.get_deserialized() == 3
+
+    with open(cb_tmpfile.name, "r") as f:
+        assert f.read() == "Hello\n"
+
+    with open(ca_tmpfile.name, "r") as f:
+        assert f.read() == "Bye\n"
+
+    mock_put.assert_called()
+
+
+def test_run_task_from_uris_exception(mocker):
+    """Test the wrapper submitted to local"""
+
+    def task(x, y):
+        assert False
+
+    dispatch_id = "test_local_send_receive"
+    node_id = 0
+    task_group_id = 0
+    server_url = "http://localhost:48008"
+
+    x = TransportableObject(1)
+    y = TransportableObject(2)
+    deps = {}
+
+    cb_tmpfile = tempfile.NamedTemporaryFile()
+    ca_tmpfile = tempfile.NamedTemporaryFile()
+
+    deps = {
+        "bash": ct.DepsBash([f"echo Hello > {cb_tmpfile.name}"]).to_dict(),
+        "pip": ct.DepsBash(f"echo Bye > {ca_tmpfile.name}").to_dict(),
+    }
+
+    call_before = []
+    call_after = []
+
+    ser_task = serialize_node_asset(TransportableObject(task), "function")
+    ser_deps = serialize_node_asset(deps, "deps")
+    ser_cb = serialize_node_asset(call_before, "call_before")
+    ser_ca = serialize_node_asset(call_after, "call_after")
+    ser_x = serialize_node_asset(x, "output")
+    ser_y = serialize_node_asset(y, "output")
+
+    node_0_file = tempfile.NamedTemporaryFile("wb")
+    node_0_file.write(ser_task)
+    node_0_file.flush()
+    node_0_function_url = (
+        f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/function"
+    )
+
+    deps_file = tempfile.NamedTemporaryFile("wb")
+    deps_file.write(ser_deps)
+    deps_file.flush()
+    deps_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/deps"
+
+    cb_file = tempfile.NamedTemporaryFile("wb")
+    cb_file.write(ser_cb)
+    cb_file.flush()
+    cb_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/call_before"
+
+    ca_file = tempfile.NamedTemporaryFile("wb")
+    ca_file.write(ser_ca)
+    ca_file.flush()
+    ca_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/call_after"
+
+    node_1_file = tempfile.NamedTemporaryFile("wb")
+    node_1_file.write(ser_x)
+    node_1_file.flush()
+    node_1_output_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/1/assets/output"
+
+    node_2_file = tempfile.NamedTemporaryFile("wb")
+    node_2_file.write(ser_y)
+    node_2_file.flush()
+    node_2_output_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/2/assets/output"
+
+    task_spec = TaskSpec(
+        function_id=0,
+        args_ids=[1],
+        kwargs_ids={"y": 2},
+        deps_id="deps",
+        call_before_id="call_before",
+        call_after_id="call_after",
+    )
+
+    resources = {
+        node_0_function_url: ser_task,
+        node_1_output_url: ser_x,
+        node_2_output_url: ser_y,
+        deps_url: ser_deps,
+        cb_url: ser_cb,
+        ca_url: ser_ca,
+    }
+
+    def mock_req_get(url, stream):
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.content = resources[url]
+        return mock_resp
+
+    def mock_req_post(url, files):
+        resources[url] = files["asset_file"].read()
+
+    mocker.patch("requests.get", mock_req_get)
+    mocker.patch("requests.post", mock_req_post)
+    mocker.patch("requests.put")
+    task_group_metadata = {
+        "dispatch_id": dispatch_id,
+        "node_ids": [node_id],
+        "task_group_id": task_group_id,
+    }
+
+    result_file = tempfile.NamedTemporaryFile()
+    stdout_file = tempfile.NamedTemporaryFile()
+    stderr_file = tempfile.NamedTemporaryFile()
+    qelectron_db_file = tempfile.NamedTemporaryFile()
+
+    results_dir = tempfile.TemporaryDirectory()
+
+    run_task_from_uris(
+        task_specs=[task_spec.dict()],
+        resources={},
+        output_uris=[
+            (result_file.name, stdout_file.name, stderr_file.name, qelectron_db_file.name)
+        ],
+        results_dir=results_dir.name,
+        task_group_metadata=task_group_metadata,
+        server_url=server_url,
+    )
+
+    summary_file_path = f"{results_dir.name}/result-{dispatch_id}:{node_id}.json"
+
+    with open(summary_file_path, "r") as f:
+        summary = json.load(f)
+        assert summary["exception_occurred"] is True
+
+
+# Mocks for external dependencies
+@pytest.fixture
+def mock_os_path_join():
+    with patch("os.path.join", return_value="mock_path") as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_format_server_url():
+    with patch(
+        "covalent.executor.executor_plugins.local.format_server_url",
+        return_value="mock_server_url",
+    ) as mock:
+        yield mock
+
+
+@pytest.fixture
+def mock_future():
+    mock = Mock()
+    mock.cancelled.return_value = False
+    return mock
+
+
+@pytest.fixture
+def mock_proc_pool_submit(mock_future):
+    with patch(
+        "covalent.executor.executor_plugins.local.proc_pool.submit", return_value=mock_future
+    ) as mock:
+        yield mock
+
+
+# Test cases
+test_cases = [
+    # Happy path
+    {
+        "id": "happy_path",
+        "task_specs": [
+            TaskSpec(
+                function_id=0,
+                args_ids=[1],
+                kwargs_ids={"y": 2},
+                deps_id="deps",
+                call_before_id="call_before",
+                call_after_id="call_after",
+            )
+        ],
+        "resources": ResourceMap(
+            functions={0: "mock_function_uri"},
+            inputs={1: "mock_input_uri"},
+            deps={"deps": "mock_deps_uri"},
+        ),
+        "task_group_metadata": {"dispatch_id": "1", "node_ids": ["1"], "task_group_id": "1"},
+        "expected_output_uris": [("mock_path", "mock_path", "mock_path", "mock_path")],
+        "expected_server_url": "mock_server_url",
+        "expected_future_cancelled": False,
+    },
+    {
+        "id": "future_cancelled",
+        "task_specs": [
+            TaskSpec(
+                function_id=0,
+                args_ids=[1],
+                kwargs_ids={"y": 2},
+                deps_id="deps",
+                call_before_id="call_before",
+                call_after_id="call_after",
+            )
+        ],
+        "resources": ResourceMap(
+            functions={0: "mock_function_uri"},
+            inputs={1: "mock_input_uri"},
+            deps={"deps": "mock_deps_uri"},
+        ),
+        "task_group_metadata": {"dispatch_id": "1", "node_ids": ["1"], "task_group_id": "1"},
+        "expected_output_uris": [("mock_path", "mock_path", "mock_path", "mock_path")],
+        "expected_server_url": "mock_server_url",
+        "expected_future_cancelled": True,
+    },
+]
+
+
+@pytest.mark.parametrize("test_case", test_cases, ids=[tc["id"] for tc in test_cases])
+def test_send_internal(
+    test_case,
+    mock_os_path_join,
+    mock_format_server_url,
+    mock_future,
+    mock_proc_pool_submit,
+):
+    """Test the internal _send function of LocalExecutor"""
+
+    local_exec = LocalExecutor()
+
+    # Arrange
+    local_exec.cache_dir = "mock_cache_dir"
+    mock_future.cancelled.return_value = test_case["expected_future_cancelled"]
+
+    # Act
+    local_exec._send(
+        test_case["task_specs"],
+        test_case["resources"],
+        test_case["task_group_metadata"],
+    )
+
+    # Assert
+    mock_os_path_join.assert_called()
+    mock_format_server_url.assert_called_once_with()
+    mock_proc_pool_submit.assert_called_once_with(
+        run_task_from_uris,
+        list(map(lambda t: t.dict(), test_case["task_specs"])),
+        test_case["resources"].dict(),
+        test_case["expected_output_uris"],
+        "mock_cache_dir",
+        test_case["task_group_metadata"],
+        test_case["expected_server_url"],
+    )
+
+
+@pytest.mark.asyncio
+async def test_send(mocker):
+    """Test the send function of LocalExecutor"""
+
+    local_exec = LocalExecutor()
+
+    # Arrange
+    task_group_metadata = {"dispatch_id": "1", "node_ids": ["1", "2"]}
+    task_spec = TaskSpec(
+        function_id=0,
+        args_ids=[1],
+        kwargs_ids={"y": 2},
+        deps_id="deps",
+        call_before_id="call_before",
+        call_after_id="call_after",
+    )
+    resource = ResourceMap(
+        functions={0: "mock_function_uri"},
+        inputs={1: "mock_input_uri"},
+        deps={"deps": "mock_deps_uri"},
+    )
+
+    mock_loop = mocker.Mock()
+
+    mock_get_running_loop = mocker.patch(
+        "covalent.executor.executor_plugins.local.asyncio.get_running_loop",
+        return_value=mock_loop,
+    )
+    mock_get_running_loop.return_value.run_in_executor = mocker.AsyncMock()
+
+    await local_exec.send(
+        [task_spec],
+        resource,
+        task_group_metadata,
+    )
+
+    mock_get_running_loop.assert_called_once()
+
+    mock_get_running_loop.return_value.run_in_executor.assert_awaited_once_with(
+        None,
+        local_exec._send,
+        [task_spec],
+        resource,
+        task_group_metadata,
+    )
+
+
+# Test data
+test_data = [
+    # Happy path tests
+    {
+        "id": "HP1",
+        "task_group_metadata": {"dispatch_id": "1", "node_ids": ["1", "2"]},
+        "data": {"status": StatusEnum.COMPLETED},
+        "expected_status": StatusEnum.COMPLETED,
+    },
+    {
+        "id": "HP2",
+        "task_group_metadata": {"dispatch_id": "2", "node_ids": ["3", "4"]},
+        "data": {"status": StatusEnum.FAILED},
+        "expected_status": StatusEnum.FAILED,
+    },
+    # Edge case tests
+    {
+        "id": "EC1",
+        "task_group_metadata": {"dispatch_id": "3", "node_ids": []},
+        "data": {"status": StatusEnum.COMPLETED},
+        "expected_status": StatusEnum.COMPLETED,
+    },
+    {
+        "id": "EC2",
+        "task_group_metadata": {"dispatch_id": "4", "node_ids": ["5"]},
+        "data": None,
+        "expected_status": RESULT_STATUS.CANCELLED,
+    },
+]
+
+
+@pytest.mark.parametrize("test_case", test_data, ids=[tc["id"] for tc in test_data])
+def test_receive_internal(test_case):
+    """Test the internal _receive function of LocalExecutor"""
+
+    local_exec = LocalExecutor()
+
+    # Arrange
+    task_group_metadata = test_case["task_group_metadata"]
+    data = test_case["data"]
+    expected_status = test_case["expected_status"]
+
+    # Act
+    task_results = local_exec._receive(task_group_metadata, data)
+
+    # Assert
+    for task_result in task_results:
+        assert task_result.status == expected_status
+
+
+@pytest.mark.asyncio
+async def test_receive(mocker):
+    """Test the receive function of LocalExecutor"""
+
+    local_exec = LocalExecutor()
+
+    # Arrange
+    task_group_metadata = {"dispatch_id": "1", "node_ids": ["1", "2"]}
+    test_data = {"status": StatusEnum.COMPLETED}
+
+    mock_loop = mocker.Mock()
+
+    mock_get_running_loop = mocker.patch(
+        "covalent.executor.executor_plugins.local.asyncio.get_running_loop",
+        return_value=mock_loop,
+    )
+    mock_get_running_loop.return_value.run_in_executor = mocker.AsyncMock()
+
+    await local_exec.receive(
+        task_group_metadata,
+        test_data,
+    )
+
+    mock_get_running_loop.assert_called_once()
+
+    mock_get_running_loop.return_value.run_in_executor.assert_awaited_once_with(
+        None,
+        local_exec._receive,
+        task_group_metadata,
+        test_data,
+    )

@@ -21,7 +21,7 @@ import inspect
 import shutil
 import socket
 from datetime import timedelta
-from typing import Any, Callable, Dict, Set, Tuple
+from typing import Any, Callable, Dict, List, Tuple
 
 import cloudpickle
 from pennylane._device import Device
@@ -36,9 +36,6 @@ log_stack_info = logger.log_stack_info
 DEFAULT_UI_ADDRESS = get_config("user_interface.address")
 DEFAULT_UI_PORT = get_config("user_interface.port")
 
-
-# Dictionary to map Dask clients to their scheduler addresses
-_address_client_mapper = {}
 
 _IMPORT_PATH_SEPARATOR = ":"
 
@@ -141,7 +138,7 @@ def get_serialized_function_str(function):
     return function_str + "\n\n"
 
 
-def get_imports(func: Callable) -> Tuple[str, Set[str]]:
+def get_imports(func: Callable) -> Tuple[str, List[str]]:
     """
     Given an input workflow function, find the imports that were used, and determine
         which ones are Covalent-related.
@@ -155,7 +152,7 @@ def get_imports(func: Callable) -> Tuple[str, Set[str]]:
     """
 
     imports_str = ""
-    cova_imports = set()
+    cova_imports = []
     for i, j in func.__globals__.items():
         if inspect.ismodule(j) or (
             inspect.isfunction(j) and j.__name__ in ["lattice", "electron"]
@@ -167,7 +164,7 @@ def get_imports(func: Callable) -> Tuple[str, Set[str]]:
 
             if j.__name__ in ["covalent", "lattice", "electron"]:
                 import_line = f"# {import_line}"
-                cova_imports.add(i)
+                cova_imports.append(i)
 
             imports_str += import_line
 
@@ -212,10 +209,13 @@ def get_named_params(func, args, kwargs):
         elif param.kind == param.VAR_POSITIONAL:
             for i in range(ind, len(args)):
                 named_args[f"arg[{i}]"] = args[i]
-        elif param.kind in [param.KEYWORD_ONLY, param.VAR_KEYWORD]:
+        elif param.kind == param.VAR_KEYWORD:
             for key, value in kwargs.items():
                 if key != param_name:
                     named_kwargs[key] = value
+        elif param.kind == param.KEYWORD_ONLY:
+            if param_name in kwargs:
+                named_kwargs[param_name] = kwargs[param_name]
 
     if len(args) > len(named_args):
         raise ValueError(

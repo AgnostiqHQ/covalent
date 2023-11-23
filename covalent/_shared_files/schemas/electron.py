@@ -19,7 +19,7 @@
 from datetime import datetime
 from typing import Dict, Optional
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 from .asset import AssetSchema
 from .common import StatusEnum
@@ -30,7 +30,7 @@ ELECTRON_METADATA_KEYS = {
     "start_time",
     "end_time",
     "status",
-    # electron metadata
+    # user dependent metadata
     "executor",
     "executor_data",
     "qelectron_data_exists",
@@ -44,7 +44,8 @@ ELECTRON_ASSET_KEYS = {
     "error",
     "stdout",
     "stderr",
-    # electron metadata
+    "qelectron_db",
+    # user dependent assets
     "deps",
     "call_before",
     "call_after",
@@ -55,6 +56,9 @@ ELECTRON_FUNCTION_STRING_FILENAME = "function_string.txt"
 ELECTRON_VALUE_FILENAME = "value.tobj"
 ELECTRON_STDOUT_FILENAME = "stdout.log"
 ELECTRON_STDERR_FILENAME = "stderr.log"
+ELECTRON_QELECTRON_DB_FILENAME = (
+    "data.mdb"  # This NEEDS to be data.mdb so that the qelectron's Database class can find it
+)
 ELECTRON_ERROR_FILENAME = "error.log"
 ELECTRON_RESULTS_FILENAME = "results.tobj"
 ELECTRON_DEPS_FILENAME = "deps.json"
@@ -68,12 +72,13 @@ ASSET_FILENAME_MAP = {
     "function_string": ELECTRON_FUNCTION_STRING_FILENAME,
     "value": ELECTRON_VALUE_FILENAME,
     "output": ELECTRON_RESULTS_FILENAME,
+    "stdout": ELECTRON_STDOUT_FILENAME,
+    "stderr": ELECTRON_STDERR_FILENAME,
+    "qelectron_db": ELECTRON_QELECTRON_DB_FILENAME,
+    "error": ELECTRON_ERROR_FILENAME,
     "deps": ELECTRON_DEPS_FILENAME,
     "call_before": ELECTRON_CALL_BEFORE_FILENAME,
     "call_after": ELECTRON_CALL_AFTER_FILENAME,
-    "stdout": ELECTRON_STDOUT_FILENAME,
-    "stderr": ELECTRON_STDERR_FILENAME,
-    "error": ELECTRON_ERROR_FILENAME,
 }
 
 
@@ -85,8 +90,9 @@ class ElectronAssets(BaseModel):
     error: Optional[AssetSchema] = None
     stdout: Optional[AssetSchema] = None
     stderr: Optional[AssetSchema] = None
+    qelectron_db: AssetSchema
 
-    # electron_metadata attached by the user
+    # user dependent assets
     deps: AssetSchema
     call_before: AssetSchema
     call_after: AssetSchema
@@ -116,7 +122,7 @@ class ElectronSchema(BaseModel):
     assets: ElectronAssets
     custom_assets: Optional[Dict[str, AssetSchema]] = None
 
-    @validator("custom_assets")
+    @field_validator("custom_assets")
     def check_custom_asset_keys(cls, v):
         if v is not None:
             for key in v:
