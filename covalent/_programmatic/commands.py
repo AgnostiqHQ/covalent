@@ -31,6 +31,9 @@ __all__ = ["covalent_is_running", "covalent_start", "covalent_stop"]
 
 app_log = logger.app_log
 
+# Maximum time in seconds to spend verifying covalent start and stop.
+_TIMEOUT = 10
+
 
 def covalent_is_running() -> bool:
     """
@@ -160,7 +163,7 @@ def covalent_start(
             covalent_is_running,
             waiting_msg="Waiting for Covalent Server to start...",
             timeout_msg="Failed to start Covalent server programmatically!",
-            timeout=10,
+            timeout=_TIMEOUT,
         )
 
     except ImportError:
@@ -194,7 +197,7 @@ def covalent_stop(*, quiet: bool = False) -> None:
             lambda: not covalent_is_running(),
             waiting_msg="Waiting for Covalent server to stop...",
             timeout_msg="Failed to stop Covalent server programmatically!",
-            timeout=10,
+            timeout=_TIMEOUT,
         )
 
     except ImportError:
