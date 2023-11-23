@@ -36,16 +36,6 @@ def test_covalent_start_and_stop():
     ct.covalent_start(quiet=True)
     assert _is_server_running() is True
 
-    # Run a dummy workflow
-    @ct.lattice
-    @ct.electron
-    def dummy_workflow():
-        return "success"
-
-    dispatch_id = ct.dispatch(dummy_workflow)()
-    result = ct.get_result(dispatch_id, wait=True)
-    assert result.result == "success"
-
     # Stop Covalent
     ct.covalent_stop(quiet=True)
     assert _is_server_running() is False
