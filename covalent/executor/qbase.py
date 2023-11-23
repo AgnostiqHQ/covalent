@@ -25,7 +25,12 @@ from typing import Any, Dict, List, Optional, Sequence, Union
 import orjson
 import pennylane as qml
 from mpire import WorkerPool
-from pydantic import model_validator, ConfigDict, BaseModel, Field  # pylint: disable=no-name-in-module
+from pydantic import (  # pylint: disable=no-name-in-module
+    BaseModel,
+    ConfigDict,
+    Field,
+    model_validator,
+)
 
 from .._shared_files.qinfo import QElectronInfo, QNodeSpecs
 

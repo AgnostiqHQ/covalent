@@ -20,7 +20,7 @@ from concurrent.futures import Future
 from typing import Callable, List, Sequence, Union
 
 from mpire.async_result import AsyncResult
-from pydantic import ConfigDict, BaseModel
+from pydantic import BaseModel, ConfigDict
 
 from ...executor.qbase import AsyncBaseQExecutor, BaseQExecutor, QCResult
 

@@ -19,10 +19,10 @@
 
 from typing import List, Optional, Union
 
-from pydantic import Field, ConfigDict, BaseModel
+from pydantic import BaseModel, ConfigDict, Field
+from typing_extensions import Annotated
 
 from covalent_ui.api.v1.utils.models_helper import CaseInsensitiveEnum, SortDirection
-from typing_extensions import Annotated
 
 
 class SortBy(CaseInsensitiveEnum):

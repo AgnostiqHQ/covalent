@@ -21,11 +21,11 @@ from datetime import datetime
 from typing import List, Optional, Union
 from uuid import UUID
 
-from pydantic import Field, ConfigDict, BaseModel
+from pydantic import BaseModel, ConfigDict, Field
+from typing_extensions import Annotated
 
 from covalent_ui.api.v1.utils.models_helper import SortBy, SortDirection
 from covalent_ui.api.v1.utils.status import Status
-from typing_extensions import Annotated
 
 
 class DispatchSummaryRequest(BaseModel):
