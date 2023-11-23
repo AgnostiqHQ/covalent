@@ -15,11 +15,10 @@
 # limitations under the License.
 
 """
-Defines the core functionality of the runner
+Defines the core functionality of the legacy runner
 """
 
 import asyncio
-import importlib
 import traceback
 from datetime import datetime, timezone
 from functools import partial
@@ -29,9 +28,7 @@ from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow import DepsBash, DepsCall, DepsPip
-from covalent._workflow.transport import TransportableObject
-from covalent.executor.base import wrapper_fn
-from covalent.executor.utils import set_context
+from covalent.executor.utils.wrappers import wrapper_fn
 
 from . import data_manager as datasvc
 from .runner_modules import executor_proxy
@@ -91,7 +88,6 @@ async def _run_abstract_task(
     except Exception as ex:
         app_log.error(f"Exception when trying to resolve inputs or deps: {ex}")
         node_result = datasvc.generate_node_result(
-            dispatch_id=dispatch_id,
             node_id=node_id,
             start_time=timestamp,
             end_time=timestamp,
@@ -101,7 +97,6 @@ async def _run_abstract_task(
         return node_result
 
     node_result = datasvc.generate_node_result(
-        dispatch_id=dispatch_id,
         node_name=node_name,
         node_id=node_id,
         start_time=timestamp,
@@ -168,7 +163,6 @@ async def _run_task(
         app_log.debug(tb)
         error_msg = tb if debug_mode else str(ex)
         node_result = datasvc.generate_node_result(
-            dispatch_id=dispatch_id,
             node_id=node_id,
             end_time=datetime.now(timezone.utc),
             status=RESULT_STATUS.FAILED,
@@ -180,34 +174,7 @@ async def _run_task(
     try:
         app_log.debug(f"Executing task {node_name}")
 
-        def qelectron_compatible_wrapper(node_id, dispatch_id, ser_user_fn, *args, **kwargs):
-            user_fn = ser_user_fn.get_deserialized()
-
-            try:
-                mod_qe_utils = importlib.import_module("covalent._shared_files.qelectron_utils")
-
-                with set_context(node_id, dispatch_id):
-                    res = user_fn(*args, **kwargs)
-                    mod_qe_utils.print_qelectron_db()
-
-                return res
-            except ModuleNotFoundError:
-                return user_fn(*args, **kwargs)
-
-        serialized_callable = TransportableObject(
-            partial(qelectron_compatible_wrapper, node_id, dispatch_id, serialized_callable)
-        )
-
         assembled_callable = partial(wrapper_fn, serialized_callable, call_before, call_after)
-        execute_callable = partial(
-            executor.execute,
-            function=assembled_callable,
-            args=inputs["args"],
-            kwargs=inputs["kwargs"],
-            dispatch_id=dispatch_id,
-            results_dir=results_dir,
-            node_id=node_id,
-        )
 
         # Start listening for messages from the plugin
         asyncio.create_task(executor_proxy.watch(dispatch_id, node_id, executor))
@@ -222,7 +189,6 @@ async def _run_task(
         )
 
         node_result = datasvc.generate_node_result(
-            dispatch_id=dispatch_id,
             node_id=node_id,
             node_name=node_name,
             end_time=datetime.now(timezone.utc),
@@ -238,7 +204,6 @@ async def _run_task(
         app_log.debug(tb)
         error_msg = tb if debug_mode else str(ex)
         node_result = datasvc.generate_node_result(
-            dispatch_id=dispatch_id,
             node_id=node_id,
             node_name=node_name,
             end_time=datetime.now(timezone.utc),

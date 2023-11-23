@@ -110,7 +110,7 @@ def deserialize_result(res: ResultSchema) -> Result:
 
 def strip_local_uris(res: ResultSchema) -> ResultSchema:
     # Create a copy with the local uris removed for submission
-    manifest = res.copy(deep=True).dict()
+    manifest = res.model_copy(deep=True).model_dump()
 
     # Strip workflow asset uris:
     dispatch_assets = manifest["assets"]
@@ -131,7 +131,7 @@ def strip_local_uris(res: ResultSchema) -> ResultSchema:
         for _, asset in node_assets.items():
             asset["uri"] = ""
 
-    return ResultSchema.parse_obj(manifest)
+    return ResultSchema.model_validate(manifest)
 
 
 # Functions to postprocess response from dispatcher

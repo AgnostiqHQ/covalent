@@ -16,6 +16,7 @@
 
 import argparse
 import os
+from multiprocessing import Pipe
 
 import socketio
 import uvicorn
@@ -23,7 +24,7 @@ from fastapi import Request
 from fastapi.templating import Jinja2Templates
 
 from covalent._shared_files import logger
-from covalent._shared_files.config import get_config
+from covalent._shared_files.config import get_config, update_config
 from covalent_dispatcher._service.app_dask import DaskCluster
 from covalent_dispatcher._triggers_app import triggers_only_app  # nopycln: import
 from covalent_ui.api.main import app as fastapi_app
@@ -110,8 +111,11 @@ if __name__ == "__main__":
 
     # Start dask if no-cluster flag is not specified (covalent stop auto terminates all child processes of this)
     if args.cluster:
-        dask_cluster = DaskCluster(name="LocalDaskCluster", logger=app_log)
+        parent_conn, child_conn = Pipe()
+        dask_cluster = DaskCluster(name="LocalDaskCluster", logger=app_log, conn=child_conn)
         dask_cluster.start()
+        dask_config = parent_conn.recv()
+        update_config(dask_config)
 
     app_name = "app:fastapi_app"
     if args.triggers_only:

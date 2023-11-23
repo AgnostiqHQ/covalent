@@ -426,7 +426,10 @@ def test_as_transportable_dict():
 def test_call_sublattice():
     """Test the sublattice logic when the __call__ method is invoked."""
 
-    @ct.lattice(executor="mock")
+    le = LocalExecutor()
+    bash_dep = ct.DepsBash("apt install rustc cargo")
+
+    @ct.lattice(executor=le, workflow_executor="dask", deps_bash=bash_dep)
     def mock_workflow(x):
         return sublattice(x)
 
@@ -441,7 +444,9 @@ def test_call_sublattice():
 
     with active_lattice_manager.claim(mock_workflow):
         bound_electron = sublattice()
-        assert bound_electron.metadata["executor"] == "mock"
+        assert bound_electron.metadata["executor"] == "dask"
+        assert bound_electron.metadata["executor_data"] == {}
+        assert bound_electron.metadata["deps"]["bash"] == bash_dep.to_dict()
         for _, node_data in mock_workflow.transport_graph._graph.nodes(data=True):
             if node_data["name"].startswith(sublattice_prefix):
                 assert "mock_task" in node_data["function_string"]

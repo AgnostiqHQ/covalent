@@ -7,12 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Changed the azurebatch.rst banner from default covalent jpg to azure batch's svg file
+
 ### Fixed
 
+- Lattice-default metadata attributes are now applied correctly
+- Sublattices are built using `workflow_executor`
 - Added covalent version attribute to Remote Executors
 - Removed unassigned variable names
 - Contributing guidelines steps for installing for the first time
 - Updated gitignore to ignore yarn files and folders for latest version of yarn
+- Fixed the bug that caused ValueError error when using KEYWORD_ONLY parameter in electron func
+- Changed code at line 218 in covalent/_shared_files/utils.py
+- Fixed usage of deprecated pydantic validation methods
+- Fixed qelectron_db retrieval in result object
 
 ### Operations
 
@@ -23,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added rich support to cli for better printing statements.
 - Changed semver from 5.7.1 to 5.7.2 in package.json
 - Updated word-wrap to 1.2.4 version
+- Updated the nightly workflow's schedule
 
 ### Changed
 
@@ -31,21 +42,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed license to Apache
 - Improved error handling in generate_docs.py
 - [Significant Changes] Migrated core server-side code to new data access layer.
+- Changed the way UI was accessing the qelectron database to access it directly from the mdb file in object store
 - Update version of browserverify-sign
 
 ### Added
 
 - Documentation and test cases for database triggers.
 - Added the `__pow__` method to the `Electron` class
+- New Runner and executor API to bypass server-side memory when running tasks.
+- Added qelectron_db as an asset to be transferred from executor's machine to covalent server
+- New methods to qelectron_utils, replacing the old ones
 
 ### Docs
 
 - Added federated learning showcase code
-- Updated tutorial for redispatching workflows with Streamlit 
+- Updated tutorial for redispatching workflows with Streamlit
 
 ### Tests
 
 - Temporarily skipping the sqlite and database trigger functional tests
+- Updated tests to accommodate the new qelectron fixes
+- Added new tests for the Database class and qelectron_utils
+
+### Removed
+
+- Removed no longer needed methods in qelectron_utils
+- Removed `dispatch-id` from generate_node_result method
 
 ## [0.229.0-rc.0] - 2023-09-22
 

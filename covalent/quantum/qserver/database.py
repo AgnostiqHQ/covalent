@@ -29,6 +29,9 @@ def set_serialization_strategy(strategy_name):
 
 
 class Database:
+    # TODO: Should probably revisit the path mechanism later as it
+    #       can be implemented in a more elegant way.
+
     # dash-separated names result in fallback strategy with try/except loops,
     # other valid strategy names uses the one strategy every time
     # see `covalent_qelectron/quantum_server/serialize.py`
@@ -46,7 +49,11 @@ class Database:
         else:
             self.db_dir = Path(get_config("dispatcher")["qelectron_db_path"])
 
-    def _get_db_path(self, dispatch_id, node_id, *, mkdir=False):
+    def get_db_path(self, dispatch_id=None, node_id=None, *, mkdir=False, direct_path=False):
+        if direct_path:
+            # If the .mdb file is directly located in the db_dir
+            return self.db_dir.resolve().absolute()
+
         dispatch_id = "default-dispatch" if dispatch_id is None else dispatch_id
         node_id = "default-node" if node_id is None else node_id
         db_path = self.db_dir.joinpath(dispatch_id, f"node-{node_id}")
@@ -55,8 +62,8 @@ class Database:
 
         return db_path.resolve().absolute()
 
-    def _open(self, dispatch_id, node_id, mkdir=False):
-        db_path = self._get_db_path(dispatch_id, node_id, mkdir=mkdir)
+    def _open(self, dispatch_id, node_id, mkdir=False, direct_path=False):
+        db_path = self.get_db_path(dispatch_id, node_id, mkdir=mkdir, direct_path=direct_path)
 
         if not db_path.exists():
             raise FileNotFoundError(f"Missing database directory {db_path}.")
@@ -65,8 +72,8 @@ class Database:
             file=str(db_path), flag="c", strategy_name=self.strategy_name
         )
 
-    def set(self, keys, values, *, dispatch_id, node_id):
-        with self._open(dispatch_id, node_id, mkdir=True) as db:
+    def set(self, keys, values, *, dispatch_id, node_id, direct_path=False):
+        with self._open(dispatch_id, node_id, mkdir=True, direct_path=direct_path) as db:
             for i, circuit_id in enumerate(keys):
                 stored_val: dict = db.get(circuit_id, None)
                 if stored_val is None:
@@ -77,17 +84,17 @@ class Database:
 
             db.update(dict(zip(keys, values)))
 
-    def get_circuit_ids(self, *, dispatch_id, node_id):
-        with self._open(dispatch_id, node_id) as db:
+    def get_circuit_ids(self, *, dispatch_id, node_id, direct_path=False):
+        with self._open(dispatch_id, node_id, direct_path=direct_path) as db:
             return list(db.keys())
 
-    def get_circuit_info(self, circuit_id, *, dispatch_id, node_id):
-        with self._open(dispatch_id, node_id) as db:
+    def get_circuit_info(self, circuit_id, *, dispatch_id, node_id, direct_path=False):
+        with self._open(dispatch_id, node_id, direct_path=direct_path) as db:
             return CircuitInfo(**db.get(circuit_id, None))
 
-    def get_db(self, *, dispatch_id, node_id):
+    def get_db_dict(self, *, dispatch_id, node_id, direct_path=False):
         db_copy = {}
-        with self._open(dispatch_id, node_id) as db:
+        with self._open(dispatch_id, node_id, direct_path=direct_path) as db:
             for key, value in db.items():
                 db_copy[key] = value
 
