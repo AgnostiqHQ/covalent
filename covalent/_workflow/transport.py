@@ -46,7 +46,7 @@ def encode_metadata(metadata: dict) -> dict:
     if "workflow_executor" in metadata:
         if "workflow_executor_data" not in metadata:
             encoded_metadata["workflow_executor_data"] = (
-                None if metadata["executor"] is None else {}
+                None if metadata["workflow_executor"] is None else {}
             )
         if metadata["workflow_executor"] is not None and not isinstance(
             metadata["workflow_executor"], str
