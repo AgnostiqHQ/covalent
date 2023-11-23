@@ -24,7 +24,7 @@ from platform import machine, python_version, system
 import click
 from rich.console import Console
 
-from .groups import db
+from .groups import db, deploy
 from .service import (
     cluster,
     config,
@@ -74,6 +74,7 @@ cli.add_command(cluster)
 cli.add_command(db)
 cli.add_command(config)
 cli.add_command(migrate_legacy_result_object)
+cli.add_command(deploy)
 
 if __name__ == "__main__":
     cli()

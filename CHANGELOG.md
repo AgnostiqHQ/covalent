@@ -57,6 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - New Runner and executor API to bypass server-side memory when running tasks.
 - Added qelectron_db as an asset to be transferred from executor's machine to covalent server
 - New methods to qelectron_utils, replacing the old ones
+- Covalent deploy CLI tool added - allows provisioning infras directly from covalent
 
 ### Docs
 
@@ -68,6 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Temporarily skipping the sqlite and database trigger functional tests
 - Updated tests to accommodate the new qelectron fixes
 - Added new tests for the Database class and qelectron_utils
+- Covalent deploy CLI tool tests.
 
 ### Removed
 
