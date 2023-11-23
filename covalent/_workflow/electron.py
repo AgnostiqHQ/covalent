@@ -16,6 +16,7 @@
 
 """Class corresponding to computation nodes."""
 
+
 import inspect
 import json
 import operator

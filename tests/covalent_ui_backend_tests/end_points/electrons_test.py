@@ -395,7 +395,7 @@ mock_input_data_jobs = {
 def qelectron_mocked_data_for_jobs(mocker):
     from covalent.quantum.qserver.database import Database
 
-    return mocker.patch.object(Database, "get_db", return_value=mock_input_data_jobs)
+    return mocker.patch.object(Database, "get_db_dict", return_value=mock_input_data_jobs)
 
 
 def test_get_qelectrons_jobs(qelectron_mocked_data_for_jobs):

@@ -19,7 +19,7 @@
 from datetime import datetime
 from typing import Dict, Optional
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 from .asset import AssetSchema
 from .common import StatusEnum
@@ -122,7 +122,7 @@ class ElectronSchema(BaseModel):
     assets: ElectronAssets
     custom_assets: Optional[Dict[str, AssetSchema]] = None
 
-    @validator("custom_assets")
+    @field_validator("custom_assets")
     def check_custom_asset_keys(cls, v):
         if v is not None:
             for key in v:
