@@ -203,7 +203,7 @@ class Lattice:
 
         named_args, named_kwargs = get_named_params(workflow_function, args, kwargs)
         new_args = [v for _, v in named_args.items()]
-        new_kwargs = {k: v for k, v in named_kwargs.items()}
+        new_kwargs = dict(named_kwargs.items())
 
         self.inputs = TransportableObject({"args": args, "kwargs": kwargs})
         self.named_args = TransportableObject(named_args)
@@ -215,7 +215,7 @@ class Lattice:
         new_metadata = {
             name: DEFAULT_METADATA_VALUES[name]
             for name in constraint_names
-            if not self.metadata[name]
+            if self.metadata[name] is None
         }
         new_metadata = encode_metadata(new_metadata)
 
@@ -330,8 +330,8 @@ def lattice(
     # Add custom metadata fields here
     deps_bash: Union[DepsBash, list, str] = None,
     deps_pip: Union[DepsPip, list] = None,
-    call_before: Union[List[DepsCall], DepsCall] = [],
-    call_after: Union[List[DepsCall], DepsCall] = [],
+    call_before: Union[List[DepsCall], DepsCall] = None,
+    call_after: Union[List[DepsCall], DepsCall] = None,
     triggers: Union["BaseTrigger", List["BaseTrigger"]] = None,
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:
