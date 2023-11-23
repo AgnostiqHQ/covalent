@@ -45,6 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improved error handling in generate_docs.py
 - [Significant Changes] Migrated core server-side code to new data access layer.
 - Changed the way UI was accessing the qelectron database to access it directly from the mdb file in object store
+- Update version of browserverify-sign
 - Limiting cloudpickle version to less than 3.0 for now
 
 ### Added
