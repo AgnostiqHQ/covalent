@@ -106,7 +106,7 @@ class ElectronAssetKey(str, Enum):
 class ExportResponseSchema(BaseModel):
     id: str
     status: str
-    result_export: Optional[ResultSchema]
+    result_export: Optional[ResultSchema] = None
 
 
 class AssetRepresentation(str, Enum):

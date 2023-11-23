@@ -19,8 +19,9 @@
 from typing import Optional
 
 from fastapi import APIRouter, Query
-from pydantic import conint
+from pydantic import Field
 from sqlalchemy.orm import Session
+from typing_extensions import Annotated
 
 import covalent_ui.api.v1.database.config.db as db
 from covalent_ui.api.v1.data_layer.summary_dal import Summary
@@ -39,8 +40,8 @@ routes: APIRouter = APIRouter()
 
 @routes.get("/list")
 def get_all_dispatches(
-    count: Optional[conint(gt=0, lt=100)] = Query(10),
-    offset: Optional[conint(gt=-1)] = 0,
+    count: Optional[Annotated[int, Field(gt=0, lt=100)]] = Query(10),
+    offset: Optional[Annotated[int, Field(gt=-1)]] = 0,
     sort_by: Optional[SortBy] = SortBy.RUNTIME,
     search: Optional[str] = "",
     sort_direction: Optional[SortDirection] = SortDirection.DESCENDING,
