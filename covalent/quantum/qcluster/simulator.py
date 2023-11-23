@@ -16,7 +16,7 @@
 
 from typing import Union
 
-from pydantic import validator
+from pydantic import field_validator
 
 from ...executor.qbase import (
     BaseProcessPoolQExecutor,
@@ -61,7 +61,7 @@ class Simulator(BaseQExecutor):
     parallel: Union[bool, str] = "thread"
     workers: int = 10
 
-    @validator("device")
+    @field_validator("device")
     def validate_device(cls, device):  # pylint: disable=no-self-argument
         """
         Check that the `device` attribute is NOT a provider or hardware device.

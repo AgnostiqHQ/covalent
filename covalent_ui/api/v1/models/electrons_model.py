@@ -26,10 +26,10 @@ from covalent_ui.api.v1.utils.status import Status
 
 
 class Job(BaseModel):
-    job_id: Union[str, None]
-    start_time: Union[datetime, None]
-    executor: Union[str, None]
-    status: Union[str, None]
+    job_id: Union[str, None] = None
+    start_time: Union[datetime, None] = None
+    executor: Union[str, None] = None
+    status: Union[str, None] = None
 
 
 class JobsResponse(BaseModel):
@@ -38,9 +38,9 @@ class JobsResponse(BaseModel):
 
 
 class JobDetails(BaseModel):
-    overview: Union[dict, None]
-    circuit: Union[dict, None]
-    executor: Union[dict, None]
+    overview: Union[dict, None] = None
+    circuit: Union[dict, None] = None
+    executor: Union[dict, None] = None
 
 
 class JobDetailsResponse(BaseModel):

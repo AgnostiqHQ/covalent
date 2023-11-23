@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed usage of deprecated pydantic validation methods
 - Fixed qelectron_db retrieval in result object
 - Fixed editability of Qelectron on settings page - UI changes
+- Certain pydantic v2 related updates
+- Fixed lattice's metadata propagation to electron's metadata in case no metadata was provided to the electron
 
 ### Operations
 
@@ -45,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [Significant Changes] Migrated core server-side code to new data access layer.
 - Changed the way UI was accessing the qelectron database to access it directly from the mdb file in object store
 - Update version of browserverify-sign
+- Limiting cloudpickle version to less than 3.0 for now
 
 ### Added
 

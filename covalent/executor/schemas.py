@@ -20,7 +20,7 @@ Types defining the runner-executor interface
 
 from typing import Dict, List
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 from covalent._shared_files.schemas.asset import AssetUpdate
 from covalent._shared_files.util_classes import RESULT_STATUS, Status
@@ -41,7 +41,7 @@ class TaskUpdate(BaseModel):
     status: Status
     assets: Dict[str, AssetUpdate]
 
-    @validator("status")
+    @field_validator("status")
     def validate_status(cls, v):
         if RESULT_STATUS.is_terminal(v):
             return v
