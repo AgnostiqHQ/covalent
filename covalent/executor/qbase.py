@@ -25,7 +25,7 @@ from typing import Any, Dict, List, Optional, Sequence, Union
 import orjson
 import pennylane as qml
 from mpire import WorkerPool
-from pydantic import BaseModel, Field, root_validator  # pylint: disable=no-name-in-module
+from pydantic import model_validator, ConfigDict, BaseModel, Field  # pylint: disable=no-name-in-module
 
 from .._shared_files.qinfo import QElectronInfo, QNodeSpecs
 
@@ -108,11 +108,10 @@ class BaseQExecutor(ABC, BaseModel):
 
         # User has specified `shots` as an int.
         return self.shots
+    model_config = ConfigDict(extra="allow")
 
-    class Config:
-        extra = "allow"
-
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def set_name(cls, values):
         # pylint: disable=no-self-argument
         # Set the `name` attribute to the class name

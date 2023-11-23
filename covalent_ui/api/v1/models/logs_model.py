@@ -19,9 +19,10 @@
 
 from typing import List, Optional, Union
 
-from pydantic import BaseModel, conint
+from pydantic import Field, ConfigDict, BaseModel
 
 from covalent_ui.api.v1.utils.models_helper import CaseInsensitiveEnum, SortDirection
+from typing_extensions import Annotated
 
 
 class SortBy(CaseInsensitiveEnum):
@@ -34,8 +35,8 @@ class SortBy(CaseInsensitiveEnum):
 class LogsRequest(BaseModel):
     """Logs request model"""
 
-    count: conint(gt=0, lt=100)
-    offset: Optional[conint(gt=-1)] = 0
+    count: Annotated[int, Field(gt=0, lt=100)]
+    offset: Optional[Annotated[int, Field(gt=-1)]] = 0
     sort_by: Optional[SortBy] = SortBy.LOG_DATE
     search: Optional[str] = ""
     direction: Optional[SortDirection] = SortDirection.DESCENDING
@@ -46,7 +47,7 @@ class LogsModule(BaseModel):
 
     log_date: Union[str, None] = None
     status: str = "INFO"
-    message: Optional[Union[str, None]]
+    message: Optional[Union[str, None]] = None
 
 
 class LogsResponse(BaseModel):
@@ -54,19 +55,15 @@ class LogsResponse(BaseModel):
 
     items: List[LogsModule]
     total_count: Union[int, None] = None
-
-    class Config:
-        """Configure example for openAPI"""
-
-        json_schema_extra = {
-            "example": {
-                "data": [
-                    {
-                        "log_date": "2022-06-13T07:45:02.114328+00:00",
-                        "status": "INFO",
-                        "message": "Application Started",
-                    }
-                ],
-                "total_count": 1,
-            }
+    model_config = ConfigDict(json_schema_extra={
+        "example": {
+            "data": [
+                {
+                    "log_date": "2022-06-13T07:45:02.114328+00:00",
+                    "status": "INFO",
+                    "message": "Application Started",
+                }
+            ],
+            "total_count": 1,
         }
+    })
