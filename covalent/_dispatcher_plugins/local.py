@@ -540,10 +540,10 @@ class LocalDispatcher(BaseDispatcher):
             dispatcher_addr = format_server_url()
 
         stripped = strip_local_uris(manifest) if push_assets else manifest
-        endpoint = "/api/v2/dispatches"
+        endpoint = "/api/v2/job/lattices"
 
         if parent_dispatch_id:
-            endpoint = f"{endpoint}/{parent_dispatch_id}/subdispatches"
+            endpoint = f"{endpoint}/{parent_dispatch_id}/sublattices"
 
         r = APIClient(dispatcher_addr).post(endpoint, data=stripped.model_dump_json())
         r.raise_for_status()
