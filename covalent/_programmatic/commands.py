@@ -28,6 +28,8 @@ __all__ = ["is_covalent_running", "covalent_start", "covalent_stop"]
 
 app_log = logger.app_log
 
+_MISSING_SERVER_WARNING = "Covalent has not been installed with the server component."
+
 
 def _call_cli_command(cmd: List[str], *, quiet: bool = False) -> subprocess.CompletedProcess:
     """
@@ -47,9 +49,6 @@ def _call_cli_command(cmd: List[str], *, quiet: bool = False) -> subprocess.Comp
         )
 
     return subprocess.run(cmd, check=True)
-
-
-_MISSING_SDK_WARNING = "Covalent has not been installed with the server component."
 
 
 def is_covalent_running() -> bool:
@@ -72,7 +71,7 @@ def is_covalent_running() -> bool:
 
     except ModuleNotFoundError:
         # If the covalent_dispatcher is not installed, assume Covalent is not running.
-        app_log.warning(_MISSING_SDK_WARNING)
+        app_log.warning(_MISSING_SERVER_WARNING)
         return False
 
 
@@ -130,13 +129,10 @@ def covalent_start(
     }
 
     cmd = ["covalent", "start"]
-    for flag, value in flags.items():
-        if value:
-            cmd.append(flag)
+    cmd.extend(flag for flag, value in flags.items() if value)
 
     for arg, value in args.items():
-        cmd.append(arg)
-        cmd.append(str(value))
+        cmd.extend((arg, str(value)))
 
     # Run the `covalent start [OPTIONS]` command.
     app_log.debug("Starting Covalent server programmatically...")

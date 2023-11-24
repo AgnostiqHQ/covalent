@@ -17,13 +17,14 @@
 import pytest
 
 import covalent as ct
+from covalent._programmatic.commands import _MISSING_SERVER_WARNING
 
 
 def test_is_covalent_running(mocker):
     """Check that `is_covalent_running` returns True when the server is running."""
     try:
         from covalent_dispatcher._cli.service import _read_pid  # nopycln: import
-    except (ModuleNotFoundError, ImportError):
+    except ModuleNotFoundError:
         pytest.xfail("`covalent_dispatcher` not installed")
 
     # Simulate server running
@@ -42,11 +43,9 @@ def test_is_covalent_running(mocker):
 
 def test_is_covalent_running_import_error(mocker):
     """Check that `is_covalent_running` catches the `ModuleNotFoundError`."""
-    from covalent._programmatic.commands import _MISSING_SDK_WARNING
-
     try:
         from covalent_dispatcher._cli.service import _read_pid  # nopycln: import
-    except (ModuleNotFoundError, ImportError):
+    except ModuleNotFoundError:
         pytest.xfail("`covalent_dispatcher` not installed")
 
     mocker.patch(
@@ -57,7 +56,7 @@ def test_is_covalent_running_import_error(mocker):
     mock_app_log = mocker.patch("covalent._programmatic.commands.app_log")
 
     assert not ct.is_covalent_running()
-    mock_app_log.warning.assert_called_once_with(_MISSING_SDK_WARNING)
+    mock_app_log.warning.assert_called_once_with(_MISSING_SERVER_WARNING)
 
 
 def test_covalent_start(mocker):
