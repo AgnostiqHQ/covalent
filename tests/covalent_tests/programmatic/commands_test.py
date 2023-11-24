@@ -22,7 +22,7 @@ import covalent as ct
 def test_is_covalent_running(mocker):
     """Check that `is_covalent_running` returns True when the server is running."""
     try:
-        from covalent_dispatcher._cli.service import _read_pid
+        from covalent_dispatcher._cli.service import _read_pid  # nopycln: import
     except (ModuleNotFoundError, ImportError):
         pytest.xfail("`covalent_dispatcher` not installed")
 
@@ -45,7 +45,7 @@ def test_is_covalent_running_import_error(mocker):
     from covalent._programmatic.commands import _MISSING_SDK_WARNING
 
     try:
-        from covalent_dispatcher._cli.service import _read_pid
+        from covalent_dispatcher._cli.service import _read_pid  # nopycln: import
     except (ModuleNotFoundError, ImportError):
         pytest.xfail("`covalent_dispatcher` not installed")
 
