@@ -178,63 +178,6 @@
     ]
   },
   {
-    "name": "CentOS 7 / Python 3.8 / Dask",
-    "os": "ubuntu-latest",
-    "container": {
-      "image": "ghcr.io/agnostiqhq/covalent-dev/centos7-py38:latest",
-      "options": "--user root"
-    },
-    "backend": "dask",
-    "experimental": false,
-    "trigger": [
-      "schedule",
-      "workflow_dispatch",
-      "pull_request"
-    ]
-  },
-  {
-    "name": "CentOS 7 / Python 3.8 / Local",
-    "os": "ubuntu-latest",
-    "container": {
-      "image": "ghcr.io/agnostiqhq/covalent-dev/centos7-py38:latest",
-      "options": "--user root"
-    },
-    "backend": "local",
-    "experimental": false,
-    "trigger": [
-      "schedule",
-      "workflow_dispatch"
-    ]
-  },
-  {
-    "name": "CentOS 7 / Python 3.9 / Dask",
-    "os": "ubuntu-latest",
-    "container": {
-      "image": "ghcr.io/agnostiqhq/covalent-dev/centos7-py39:latest",
-      "options": "--user root"
-    },
-    "backend": "dask",
-    "experimental": false,
-    "trigger": [
-      "schedule",
-      "workflow_dispatch"
-    ]
-  },
-  {
-    "name": "CentOS 7 / Python 3.9 / Local",
-    "os": "ubuntu-latest",
-    "container": {
-      "image": "ghcr.io/agnostiqhq/covalent-dev/centos7-py39:latest",
-      "options": "--user root"
-    },
-    "backend": "local",
-    "experimental": false,
-    "trigger": [
-      "schedule",
-      "workflow_dispatch"
-    ]
-  },
-  {
     "name": "MacOS 11 / Python 3.8 / Dask",
     "os": "macos-latest",
     "python-version": "3.8",
