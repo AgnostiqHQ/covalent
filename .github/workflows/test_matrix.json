@@ -74,7 +74,6 @@
     "experimental": false,
     "trigger": [
       "push",
-      "pull_request",
       "schedule",
       "workflow_dispatch"
     ]
@@ -189,7 +188,8 @@
     "experimental": false,
     "trigger": [
       "schedule",
-      "workflow_dispatch"
+      "workflow_dispatch",
+      "pull_request"
     ]
   },
   {
@@ -308,7 +308,8 @@
     "experimental": false,
     "trigger": [
       "schedule",
-      "workflow_dispatch"
+      "workflow_dispatch",
+      "pull_request"
     ]
   },
   {
