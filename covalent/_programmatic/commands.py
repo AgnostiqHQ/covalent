@@ -29,11 +29,7 @@ __all__ = ["is_covalent_running", "covalent_start", "covalent_stop"]
 app_log = logger.app_log
 
 
-def _call_cli_command(
-    cmd: List[str],
-    *,
-    quiet: bool = False
-) -> subprocess.CompletedProcess:
+def _call_cli_command(cmd: List[str], *, quiet: bool = False) -> subprocess.CompletedProcess:
     """
     Call a CLI command with the specified kwargs.
 

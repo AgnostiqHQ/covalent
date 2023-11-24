@@ -31,7 +31,7 @@ def test_is_covalent_running(mocker):
     mocker.patch("psutil.pid_exists", return_value=True)
     mocker.patch(
         "covalent._shared_files.config.get_config",
-        return_value={"port": 48008, "host": "localhost"}
+        return_value={"port": 48008, "host": "localhost"},
     )
     assert ct.is_covalent_running()
 
