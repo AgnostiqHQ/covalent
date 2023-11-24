@@ -16,6 +16,7 @@
 
 """Functions providing programmatic access to Covalent CLI commands."""
 import contextlib
+import os
 import sys
 import time
 from typing import Any, Callable, Dict, Optional
@@ -72,9 +73,11 @@ def _call_cli_command(
         func: The CLI command to call.
         quiet: Suppress stdout. Defaults to :code:`False`.
     """
-    with contextlib.redirect_stdout(None if quiet else sys.stdout):
-        ctx = click.Context(cmd)
-        ctx.invoke(cmd, **kwargs)
+
+    with open(os.devnull, "w") as fnull:
+        with contextlib.redirect_stdout(fnull if quiet else sys.stdout):
+            ctx = click.Context(cmd)
+            ctx.invoke(cmd, **kwargs)
 
 
 def _poll_with_timeout(
