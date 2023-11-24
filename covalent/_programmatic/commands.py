@@ -56,9 +56,6 @@ def _call_cli_command(
 _MISSING_SDK_WARNING = "Covalent has not been installed with the server component."
 
 
-WARNING_MSG = "Covalent has not been installed with the server component."
-
-
 def is_covalent_running() -> bool:
     """
     Check if the Covalent server is running.
