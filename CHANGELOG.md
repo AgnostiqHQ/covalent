@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.230.0-rc.0] - 2023-11-24
+
+### Authors
+
+- Andrew S. Rosen <asrosen93@gmail.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Kevin Taylor <tkdtaylor@gmail.com>
+- FilipBolt <filipbolt@gmail.com>
+- Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+- Co-authored-by: Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+- Aviral Katiyar <123640350+maskboyAvi@users.noreply.github.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Casey Jao <casey@agnostiq.ai>
+- Arnav Kohli <95236897+THEGAMECHANGER416@users.noreply.github.com>
+- Kirill Pushkarev <71515921+kirill-push@users.noreply.github.com>
+- Aditya Raj Kashyap <95625520+AdityaRaj23@users.noreply.github.com>
+- ArunPsiog <106462226+ArunPsiog@users.noreply.github.com>
+- mpvgithub <107603631+mpvgithub@users.noreply.github.com>
+- Aravind <100823292+Aravind-psiog@users.noreply.github.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <balavk89@gmail.com>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: Aravind-psiog <aravind.prabaharan@psiog.com>
+- Co-authored-by: Manjunath PV <manjunath.poilath@psiog.com>
+- Co-authored-by: Ara Ghukasyan <ara@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
 
 ### Added
 
