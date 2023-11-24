@@ -15,13 +15,9 @@
 # limitations under the License.
 
 """Functions providing programmatic access to Covalent CLI commands."""
-import contextlib
-import os
-import sys
-import time
-from typing import Any, Callable, Dict, Optional
+import subprocess
+from typing import List, Optional
 
-import click
 import psutil
 
 from .._shared_files import logger
@@ -32,8 +28,32 @@ __all__ = ["is_covalent_running", "covalent_start", "covalent_stop"]
 
 app_log = logger.app_log
 
-# Maximum time in seconds to spend verifying covalent start and stop.
-_TIMEOUT = 10
+
+def _call_cli_command(
+    cmd: List[str],
+    *,
+    quiet: bool = False
+) -> subprocess.CompletedProcess:
+    """
+    Call a CLI command with the specified kwargs.
+
+    Args:
+        func: The CLI command to call.
+        quiet: Suppress stdout. Defaults to :code:`False`.
+    """
+
+    if quiet:
+        return subprocess.run(
+            cmd,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=True,
+        )
+
+    return subprocess.run(cmd, check=True)
+
+
+_MISSING_SDK_WARNING = "Covalent has not been installed with the server component."
 
 
 WARNING_MSG = "Covalent has not been installed with the server component."
@@ -57,58 +77,10 @@ def is_covalent_running() -> bool:
             and get_config("dispatcher.port") != ""
         )
 
-    except ImportError:
+    except ModuleNotFoundError:
         # If the covalent_dispatcher is not installed, assume Covalent is not running.
-        app_log.warning(WARNING_MSG)
+        app_log.warning(_MISSING_SDK_WARNING)
         return False
-
-
-def _call_cli_command(
-    cmd: click.Command, *, quiet: bool = False, **kwargs: Dict[str, Any]
-) -> None:
-    """
-    Call a CLI command with the specified kwargs.
-
-    Args:
-        func: The CLI command to call.
-        quiet: Suppress stdout. Defaults to :code:`False`.
-    """
-
-    with open(os.devnull, "w") as fnull:
-        with contextlib.redirect_stdout(fnull if quiet else sys.stdout):
-            ctx = click.Context(cmd)
-            ctx.invoke(cmd, **kwargs)
-
-
-def _poll_with_timeout(
-    callable_: Callable[[], bool],
-    *,
-    waiting_msg: str,
-    timeout_msg: str,
-    timeout: int,
-) -> None:
-    """
-    Poll a callable once per second, until it returns :code:`True` or the timeout is reached.
-
-    Args:
-        callable_: The callable to poll.
-        waiting_msg: Log message to display while waiting.
-        timeout_msg: Error message to display if timeout is reached.
-        timeout: Timeout in seconds.
-
-    Raises:
-        TimeoutError: When the timeout is reached.
-    """
-    _num_wait = 0
-    _max_wait = timeout
-
-    while not callable_():
-        app_log.debug(waiting_msg)
-
-        time.sleep(1)
-        _num_wait += 1
-        if _num_wait >= _max_wait:
-            raise TimeoutError(timeout_msg)
 
 
 def covalent_start(
@@ -141,41 +113,41 @@ def covalent_start(
         quiet: Suppress stdout. Defaults to :code:`False`.
     """
 
-    try:
-        from covalent_dispatcher._cli.service import start
+    if is_covalent_running():
+        msg = "Covalent server is already running."
+        if not quiet:
+            print(msg)
 
-        if is_covalent_running():
-            app_log.debug("Covalent server is already running.")
-            return
-
-        kwargs = {
-            "develop": develop,
-            "port": port or get_config("dispatcher.port"),
-            "mem_per_worker": mem_per_worker or get_config("dask.mem_per_worker"),
-            "workers": workers or get_config("dask.num_workers"),
-            "threads_per_worker": threads_per_worker or get_config("dask.threads_per_worker"),
-            "ignore_migrations": ignore_migrations,
-            "no_cluster": no_cluster,
-            "no_triggers": no_triggers,
-            "triggers_only": triggers_only,
-        }
-
-        # Run the `covalent start [OPTIONS]` command.
-        app_log.debug("Starting Covalent server programmatically...")
-        _call_cli_command(start, quiet=quiet, **kwargs)
-
-        # Wait to confirm Covalent server is running.
-        _poll_with_timeout(
-            is_covalent_running,
-            waiting_msg="Waiting for Covalent Server to start...",
-            timeout_msg="Failed to start Covalent server programmatically!",
-            timeout=_TIMEOUT,
-        )
-
-    except ImportError:
-        # If the covalent_dispatcher is not installed, show warning and return.
-        app_log.warning(WARNING_MSG)
+        app_log.debug(msg)
         return
+
+    flags = {
+        "--develop": develop,
+        "--ignore-migrations": ignore_migrations,
+        "--no-cluster": no_cluster,
+        "--no-triggers": no_triggers,
+        "--triggers-only": triggers_only,
+    }
+
+    args = {
+        "--port": port or get_config("dispatcher.port"),
+        "--mem-per-worker": mem_per_worker or get_config("dask.mem_per_worker"),
+        "--workers": workers or get_config("dask.num_workers"),
+        "--threads-per-worker": threads_per_worker or get_config("dask.threads_per_worker"),
+    }
+
+    cmd = ["covalent", "start"]
+    for flag, value in flags.items():
+        if value:
+            cmd.append(flag)
+
+    for arg, value in args.items():
+        cmd.append(arg)
+        cmd.append(str(value))
+
+    # Run the `covalent start [OPTIONS]` command.
+    app_log.debug("Starting Covalent server programmatically...")
+    _call_cli_command(cmd, quiet=quiet)
 
 
 def covalent_stop(*, quiet: bool = False) -> None:
@@ -187,26 +159,14 @@ def covalent_stop(*, quiet: bool = False) -> None:
         quiet: Suppress stdout. Defaults to :code:`False`.
     """
 
-    try:
-        from covalent_dispatcher._cli.service import stop
+    if not is_covalent_running():
+        msg = "Covalent server is not running."
+        if not quiet:
+            print(msg)
 
-        if not is_covalent_running():
-            app_log.debug("Covalent server is not running.")
-            return
-
-        # Run the `covalent stop` command.
-        app_log.debug("Stopping Covalent server programmatically...")
-        _call_cli_command(stop, quiet=quiet)
-
-        # Wait to confirm Covalent server is stopped.
-        _poll_with_timeout(
-            lambda: not is_covalent_running(),
-            waiting_msg="Waiting for Covalent server to stop...",
-            timeout_msg="Failed to stop Covalent server programmatically!",
-            timeout=_TIMEOUT,
-        )
-
-    except ImportError:
-        # If the covalent_dispatcher is not installed, show warning and return.
-        app_log.warning(WARNING_MSG)
+        app_log.debug(msg)
         return
+
+    # Run the `covalent stop` command.
+    app_log.debug("Stopping Covalent server programmatically...")
+    _call_cli_command(["covalent", "stop"], quiet=quiet)
