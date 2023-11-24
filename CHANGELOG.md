@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+
+### Added
+
+- Programmatic equivalents of CLI commands `covalent start` and `covalent stop`
+
 ### Changed
 
 - Changed the azurebatch.rst banner from default covalent jpg to azure batch's svg file
