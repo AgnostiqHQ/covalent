@@ -17,6 +17,7 @@
 import pytest
 
 import covalent as ct
+from covalent._programmatic.commands import WARNING_MSG
 
 
 def test_covalent_start_and_stop(mocker):
@@ -31,12 +32,12 @@ def test_covalent_start_and_stop(mocker):
     mocker.patch("click.Context.invoke", return_value=None)
 
     # Assumer server is not running
-    covalent_is_running_patch = mocker.patch(
-        "covalent._programmatic.commands.covalent_is_running",
+    is_covalent_running_patch = mocker.patch(
+        "covalent._programmatic.commands.is_covalent_running",
     )
-    covalent_is_running_patch.side_effect = _flipping_retval
+    is_covalent_running_patch.side_effect = _flipping_retval
 
-    # Since `covalent_is_running` is called at least twice in both start and stop:
+    # Since `is_covalent_running` is called at least twice in both start and stop:
     # once to check check status and again to check for change in status.
 
     # Start Covalent as if not running.
@@ -66,24 +67,71 @@ def test_covalent_start_and_stop_timeouts(mocker):
     mocker.patch("covalent._programmatic.commands._TIMEOUT", 0.1)
 
     # Assumer server is not running
-    covalent_is_running_patch = mocker.patch(
-        "covalent._programmatic.commands.covalent_is_running",
+    is_covalent_running_patch = mocker.patch(
+        "covalent._programmatic.commands.is_covalent_running",
     )
 
-    covalent_is_running_patch.return_value = False
+    is_covalent_running_patch.return_value = False
     with pytest.raises(TimeoutError):
         ct.covalent_start(quiet=True)
 
-    covalent_is_running_patch.return_value = True
+    is_covalent_running_patch.return_value = True
     with pytest.raises(TimeoutError):
         ct.covalent_stop(quiet=True)
 
 
-def test_covalent_is_running():
-    """Test that the `covalent_is_running` function agrees with the CLI status check"""
+def test_covalent_start_import_error(mocker):
+    """Test that `covalent_start` shows a warning if covalent_dispatcher is not installed"""
+
+    mocker.patch("click.Context.invoke", return_value=None)
+
+    mock_app_log_warning = mocker.patch("covalent._programmatic.commands.app_log.warning")
+
+    mocker.patch(
+        "covalent._programmatic.commands.is_covalent_running",
+        side_effect=ImportError,
+    )
+
+    ct.covalent_start(quiet=True)
+    mock_app_log_warning.assert_called_once_with(WARNING_MSG)
+
+
+def test_covalent_stop_import_error(mocker):
+    """Test that `covalent_stop` shows a warning if covalent_dispatcher is not installed"""
+
+    mocker.patch("click.Context.invoke", return_value=None)
+
+    mock_app_log_warning = mocker.patch("covalent._programmatic.commands.app_log.warning")
+
+    mocker.patch(
+        "covalent._programmatic.commands.is_covalent_running",
+        side_effect=ImportError,
+    )
+
+    ct.covalent_stop(quiet=True)
+    mock_app_log_warning.assert_called_once_with(WARNING_MSG)
+
+
+def test_is_covalent_running():
+    """Test that the `is_covalent_running` function agrees with the CLI status check"""
 
     from covalent_dispatcher._cli import _is_server_running
 
     # TODO: Seems we can't start/stop the server in the test environment.
     # Check here is not complete, but at least it is necessary.
-    assert ct.covalent_is_running() is _is_server_running()
+    assert ct.is_covalent_running() == _is_server_running()
+
+
+def test_is_covalent_running_import_error(mocker):
+    """Test that `is_covalent_running` returns False if covalent_dispatcher is not installed"""
+
+    mock_app_log_warning = mocker.patch("covalent._programmatic.commands.app_log.warning")
+
+    # _read_pid isn't importable
+    mocker.patch(
+        "covalent_dispatcher._cli.service._read_pid",
+        side_effect=ImportError,
+    )
+
+    assert not ct.is_covalent_running()
+    mock_app_log_warning.assert_called_once_with(WARNING_MSG)

@@ -26,7 +26,7 @@ import psutil
 from .._shared_files import logger
 from .._shared_files.config import get_config
 
-__all__ = ["covalent_is_running", "covalent_start", "covalent_stop"]
+__all__ = ["is_covalent_running", "covalent_start", "covalent_stop"]
 
 
 app_log = logger.app_log
@@ -35,7 +35,10 @@ app_log = logger.app_log
 _TIMEOUT = 10
 
 
-def covalent_is_running() -> bool:
+WARNING_MSG = "Covalent has not been installed with the server component."
+
+
+def is_covalent_running() -> bool:
     """
     Check if the Covalent server is running.
 
@@ -55,7 +58,7 @@ def covalent_is_running() -> bool:
 
     except ImportError:
         # If the covalent_dispatcher is not installed, assume Covalent is not running.
-        app_log.warning("Covalent has not been installed with the server component.")
+        app_log.warning(WARNING_MSG)
         return False
 
 
@@ -138,7 +141,7 @@ def covalent_start(
     try:
         from covalent_dispatcher._cli.service import start
 
-        if covalent_is_running():
+        if is_covalent_running():
             app_log.debug("Covalent server is already running.")
             return
 
@@ -160,7 +163,7 @@ def covalent_start(
 
         # Wait to confirm Covalent server is running.
         _poll_with_timeout(
-            covalent_is_running,
+            is_covalent_running,
             waiting_msg="Waiting for Covalent Server to start...",
             timeout_msg="Failed to start Covalent server programmatically!",
             timeout=_TIMEOUT,
@@ -168,7 +171,7 @@ def covalent_start(
 
     except ImportError:
         # If the covalent_dispatcher is not installed, show warning and return.
-        app_log.warning("Covalent has not been installed with the server component.")
+        app_log.warning(WARNING_MSG)
         return
 
 
@@ -184,7 +187,7 @@ def covalent_stop(*, quiet: bool = False) -> None:
     try:
         from covalent_dispatcher._cli.service import stop
 
-        if not covalent_is_running():
+        if not is_covalent_running():
             app_log.debug("Covalent server is not running.")
             return
 
@@ -194,7 +197,7 @@ def covalent_stop(*, quiet: bool = False) -> None:
 
         # Wait to confirm Covalent server is stopped.
         _poll_with_timeout(
-            lambda: not covalent_is_running(),
+            lambda: not is_covalent_running(),
             waiting_msg="Waiting for Covalent server to stop...",
             timeout_msg="Failed to stop Covalent server programmatically!",
             timeout=_TIMEOUT,
@@ -202,5 +205,5 @@ def covalent_stop(*, quiet: bool = False) -> None:
 
     except ImportError:
         # If the covalent_dispatcher is not installed, show warning and return.
-        app_log.warning("Covalent has not been installed with the server component.")
+        app_log.warning(WARNING_MSG)
         return
