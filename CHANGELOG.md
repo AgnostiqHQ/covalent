@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
-- Removed the strict version pin on `pennylane`
+- Change the strict version pin on `pennylane` from `==0.33.1` to `>=0.33.1,<0.33.1`
 
 ## [0.230.0-rc.0] - 2023-11-24
 
