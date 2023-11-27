@@ -25,7 +25,12 @@ from typing import Any, Dict, List, Optional, Sequence, Union
 import orjson
 import pennylane as qml
 from mpire import WorkerPool
-from pydantic import BaseModel, Extra, Field, root_validator  # pylint: disable=no-name-in-module
+from pydantic import (  # pylint: disable=no-name-in-module
+    BaseModel,
+    ConfigDict,
+    Field,
+    model_validator,
+)
 
 from .._shared_files.qinfo import QElectronInfo, QNodeSpecs
 
@@ -109,10 +114,10 @@ class BaseQExecutor(ABC, BaseModel):
         # User has specified `shots` as an int.
         return self.shots
 
-    class Config:
-        extra = Extra.allow
+    model_config = ConfigDict(extra="allow")
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
+    @classmethod
     def set_name(cls, values):
         # pylint: disable=no-self-argument
         # Set the `name` attribute to the class name
@@ -138,7 +143,7 @@ class BaseQExecutor(ABC, BaseModel):
         return result_obj
 
     def dict(self, *args, **kwargs):
-        dict_ = super().dict(*args, **kwargs)
+        dict_ = super().model_dump(*args, **kwargs)
 
         # Ensure shots is a hashable value.
         shots = dict_.get("shots")

@@ -56,6 +56,7 @@ def test_cli_commands():
         "cluster",
         "config",
         "db",
+        "deploy",
         "logs",
         "migrate-legacy-result-object",
         "purge",

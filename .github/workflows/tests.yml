@@ -257,7 +257,7 @@ jobs:
         if: >
           steps.modified-files.outputs.dispatcher == 'true'
           || env.BUILD_AND_RUN_ALL
-        run: PYTHONPATH=$PWD/ pytest -vvs  --reruns=5 tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
+        run: PYTHONPATH=$PWD/ pytest -vvs --reruns=5 tests/covalent_dispatcher_tests --cov=covalent_dispatcher --cov-config=.coveragerc
 
       - name: Generate dispatcher coverage report
         id: dispatcher-coverage
