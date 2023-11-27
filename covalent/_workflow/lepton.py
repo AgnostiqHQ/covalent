@@ -316,7 +316,7 @@ class Lepton(Electron):
                     shell_executable = proc.stdout.decode("utf-8").strip()
                     break
             if not shell_executable:
-                raise Exception("Could not find a shell.")
+                raise Exception("Could not find a shell on remote.")
 
             mutated_kwargs = ""
             for k, v in kwargs.items():
