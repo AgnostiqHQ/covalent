@@ -343,7 +343,12 @@ class Lepton(Electron):
                 if isinstance(self.command, list):
                     self.command = " && ".join(self.command)
                 self.command = self.command.format(**kwargs)
-                cmd = [shell_executable, "-c", f"{mutated_kwargs} {self.command} {output_string}", "_"]
+                cmd = [
+                    shell_executable,
+                    "-c",
+                    f"{mutated_kwargs} {self.command} {output_string}",
+                    "_",
+                ]
                 cmd += args
                 proc = subprocess.run(cmd, capture_output=True)
             elif self.library_name:
