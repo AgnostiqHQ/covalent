@@ -18,7 +18,11 @@ name: nightly
 
 on:
   schedule:
-    - cron: "0 0 * * *"
+    - cron: "*/10 * * * *"
+
+permissions:
+  id-token: write
+  contents: read
 
 jobs:
   license:
@@ -131,9 +135,6 @@ jobs:
             "AgnostiqHQ/covalent-awslambda-plugin",
             "AgnostiqHQ/covalent-braket-plugin",
           ]
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - name: Build executor_base_images
         uses: peter-evans/repository-dispatch@v2

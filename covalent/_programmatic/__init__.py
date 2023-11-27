@@ -13,5 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from .db import db
-from .deploy import deploy
+
+"""
+NOTE: This package exists to avoid circular imports that would be encountered if
+`covalent` imports from `covalent_dispatcher._cli`.
+"""
