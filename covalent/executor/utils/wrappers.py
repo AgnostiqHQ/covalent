@@ -29,7 +29,6 @@ from typing import Any, Callable, Dict, List, Tuple
 
 import requests
 
-from covalent._shared_files.qelectron_utils import get_qelectron_db_path
 from covalent._workflow.depsbash import DepsBash
 from covalent._workflow.depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
 from covalent._workflow.depspip import DepsPip
@@ -171,6 +170,8 @@ def run_task_from_uris(
     server url directly. Exampl: LocalExecutor.
 
     """
+
+    from covalent._shared_files.qelectron_utils import get_qelectron_db_path
 
     prefix = "file://"
     prefix_len = len(prefix)
@@ -365,6 +366,8 @@ def run_task_from_uris_alt(
     Example: DaskExecutor.
 
     """
+
+    from covalent._shared_files.qelectron_utils import get_qelectron_db_path
 
     prefix = "file://"
     prefix_len = len(prefix)

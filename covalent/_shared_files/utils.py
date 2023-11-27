@@ -21,14 +21,15 @@ import inspect
 import shutil
 import socket
 from datetime import timedelta
-from typing import Any, Callable, Dict, List, Tuple
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Tuple
+
+if TYPE_CHECKING:
+    from pennylane._device import Device
 
 import cloudpickle
-from pennylane._device import Device
 
 from . import logger
 from .config import get_config
-from .pickling import _qml_mods_pickle
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -264,9 +265,15 @@ def copy_file_locally(src_uri, dest_uri):
     shutil.copyfile(src_path, dest_path)
 
 
-@_qml_mods_pickle
-def cloudpickle_serialize(obj):
-    return cloudpickle.dumps(obj)
+try:
+    from .pickling import _qml_mods_pickle
+
+    @_qml_mods_pickle
+    def cloudpickle_serialize(obj):
+        return cloudpickle.dumps(obj)
+
+except ImportError:
+    pass
 
 
 def cloudpickle_deserialize(obj):
@@ -299,7 +306,7 @@ def import_from_path(path: str) -> Any:
     return getattr(module, class_name)
 
 
-def get_original_shots(dev: Device):
+def get_original_shots(dev: "Device"):
     """
     Recreate vector of shots if device has a shot vector.
     """

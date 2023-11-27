@@ -19,9 +19,6 @@ from functools import partial
 from threading import Event
 from typing import List
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import Session
-
 from covalent._shared_files import logger
 
 from .base import BaseTrigger
@@ -87,6 +84,9 @@ class DatabaseTrigger(BaseTrigger):
         Keep performing the trigger action as long as
         where conditions are met or until stop has being called
         """
+
+        from sqlalchemy import create_engine
+        from sqlalchemy.orm import Session
 
         app_log.debug("Inside DatabaseTrigger's observe")
         event_count = 0

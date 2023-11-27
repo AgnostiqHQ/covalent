@@ -31,7 +31,6 @@ import pkg_resources
 
 from .._shared_files import logger
 from .._shared_files.config import get_config, update_config
-from ..quantum import QCluster, Simulator
 from .base import BaseExecutor
 
 app_log = logger.app_log
@@ -284,6 +283,8 @@ class _QExecutorManager:
     """
 
     def __init__(self):
+        from ..quantum import QCluster, Simulator
+
         # Dictionary mapping executor name to executor class
         self.executor_plugins_map: Dict[str, Any] = {
             "QCluster": QCluster,
@@ -370,11 +371,14 @@ class _QExecutorManager:
 
 
 _executor_manager = _ExecutorManager()
-_qexecutor_manager = _QExecutorManager()
 
 for name in _executor_manager.executor_plugins_map:
     plugin_class = _executor_manager.executor_plugins_map[name]
     globals()[plugin_class.__name__] = plugin_class
 
-for qexecutor_cls in _qexecutor_manager.executor_plugins_map.values():
-    globals()[qexecutor_cls.__name__] = qexecutor_cls
+
+with contextlib.suppress(ImportError):
+    # Suppress import error if PennyLane is not installed, i.e. SDK-only mode
+    _qexecutor_manager = _QExecutorManager()
+    for qexecutor_cls in _qexecutor_manager.executor_plugins_map.values():
+        globals()[qexecutor_cls.__name__] = qexecutor_cls
