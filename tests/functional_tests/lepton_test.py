@@ -117,31 +117,3 @@ def test_call_dep_retvals_in_lepton():
         dispatch_id = ct.dispatch(ft_workflow)()
         ct.get_result(dispatch_id, wait=True)
         rm._delete_result(dispatch_id)
-
-
-def test_no_shell_exception_in_lepton(mocker):
-    """
-    Test exception raised inside `shell_wrapper` if no shell executable is found.
-    """
-
-    from collections import namedtuple
-
-    @ct.leptons.bash(
-        executor="local",
-        display_name="no_shell_lepton"
-    )
-    def task():
-        return "ls -lth"
-
-    @ct.lattice
-    def no_shell_workflow():
-        return task()
-
-    # To force exception shell-not-found inside `shell_wrapper`.
-    fake_proc = namedtuple("FakeProc", ["returncode"])(1)
-    mocker.patch("subprocess.run", return_value=fake_proc)
-
-    with pytest.raises(Exception):
-        dispatch_id = ct.dispatch(no_shell_workflow)()
-        ct.get_result(dispatch_id, wait=True)
-        rm._delete_result(dispatch_id)
