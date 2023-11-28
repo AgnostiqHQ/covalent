@@ -309,6 +309,15 @@ class Lepton(Electron):
             import builtins
             import subprocess
 
+            shell_executable = None
+            for shell in ["bash", "sh"]:
+                proc = subprocess.run(["which", shell], check=False, capture_output=True)
+                if proc.returncode == 0:
+                    shell_executable = proc.stdout.decode("utf-8").strip()
+                    break
+            if not shell_executable:
+                raise Exception("Could not find a shell on remote.")
+
             mutated_kwargs = ""
             for k, v in kwargs.items():
                 mutated_kwargs += f"export {k}={v} && "
@@ -334,7 +343,12 @@ class Lepton(Electron):
                 if isinstance(self.command, list):
                     self.command = " && ".join(self.command)
                 self.command = self.command.format(**kwargs)
-                cmd = ["/bin/bash", "-c", f"{mutated_kwargs} {self.command} {output_string}", "_"]
+                cmd = [
+                    shell_executable,
+                    "-c",
+                    f"{mutated_kwargs} {self.command} {output_string}",
+                    "_",
+                ]
                 cmd += args
                 proc = subprocess.run(cmd, capture_output=True)
             elif self.library_name:
@@ -343,7 +357,7 @@ class Lepton(Electron):
                     mutated_args += f'"{arg}" '
 
                 cmd = f"{mutated_kwargs} source {self.library_name} && {self.function_name} {mutated_args} {output_string}"
-                proc = subprocess.run(["/bin/bash", "-c", cmd], capture_output=True)
+                proc = subprocess.run([shell_executable, "-c", cmd], capture_output=True)
             else:
                 raise AttributeError(
                     "Shell task does not have enough information to run."
