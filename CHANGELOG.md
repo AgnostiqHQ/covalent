@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - check for `/bin/bash` AND `/bin/sh` (in that order) to execute bash leptons
 
+### Changed
+
+- Changed the axios version on the webapp side.
+
 ### Operations
 
 - Change the strict version pin on `pennylane` from `==0.33.1` to `>=0.31.1,<0.33.0`
@@ -92,7 +96,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Changed license to Apache
 - Improved error handling in generate_docs.py
 - [Significant Changes] Migrated core server-side code to new data access layer.
-- Changed the axios version on the webapp side.
 - Changed the way UI was accessing the qelectron database to access it directly from the mdb file in object store
 - Update version of browserverify-sign
 - Limiting cloudpickle version to less than 3.0 for now
