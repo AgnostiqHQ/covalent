@@ -59,7 +59,9 @@ https://github.com/AgnostiqHQ/covalent/assets/116076079/87268cc8-4d53-4053-b739-
 
 Covalent is developed using Python version 3.8 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager.
 
- <pre lang="bash"> pip install covalent --upgrade</pre>
+```shell
+pip install covalent --upgrade
+```
 
 For other methods of installation please [check the docs.](https://docs.covalent.xyz/docs/get-started/install/)
 
