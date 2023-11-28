@@ -15,8 +15,11 @@
 </br>
  <div align="center"> 
 <a href="https://docs.covalent.xyz/docs/get-started/install"><img src="./doc/source/_static/getting_started.svg" alt="divider"></a> 
+&nbsp&nbsp
 <a href="https://docs.covalent.xyz/docs/"><img src="./doc/source/_static/documentation.svg" alt="divider"></a> 
+&nbsp&nbsp
 <a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/"><img src="./doc/source/_static/examples.svg" alt="divider"></a> 
+&nbsp&nbsp
 <a href="https://covalentworkflows.slack.com/join/shared_invite/zt-1ew7f2rfk-dKSXVQmRniu5mQW4Z_eQuw#/shared-invite/email"><img src="./doc/source/_static/slack.svg" alt="divider"></a>
 </div>
 </br>
