@@ -78,6 +78,10 @@ def get_default_sdk_config():
             (os.environ.get("XDG_CACHE_HOME") or (os.environ["HOME"] + "/.cache"))
             + "/covalent/results"
         ),
+        # From old pion
+        "multistage_get_result": "false"
+        if os.environ.get("COVALENT_DISABLE_MULTISTAGE_GET_RESULT") == "1"
+        else "true",
     }
 
 
@@ -122,6 +126,19 @@ def get_default_dispatcher_config():
         "use_async_dispatcher": os.environ.get("COVALENT_USE_ASYNC_DISPATCHER", "true") or "false",
         "data_uri_filter_policy": os.environ.get("COVALENT_DATA_URI_FILTER_POLICY", "http"),
         "asset_cache_size": int(os.environ.get("COVALENT_ASSET_CACHE_SIZE", 32)),
+        # From old pion
+        "no_cluster": "false",
+        "full_postprocess": "false",
+        "eager_postprocess": "false",
+        "use_stateless_datamgr": os.environ.get("COVALENT_USE_STATELESS_DATAMGR", "true")
+        or "false",
+        "redis": os.environ.get("COVALENT_REDIS_HOST", ""),
+        "sns": {
+            "delete_lattice_arn": os.environ.get("COVALENT_SNS_DELETE_LATTICE_ARN", ""),
+            "new_lattice_arn": os.environ.get("COVALENT_SNS_NEW_LATTICE_ARN", ""),
+            "lattice_update_arn": os.environ.get("COVALENT_SNS_LATTICE_UPDATE_ARN", ""),
+            "electron_update_arn": os.environ.get("COVALENT_SNS_ELECTRON_UPDATE_ARN", ""),
+        },
     }
 
 
