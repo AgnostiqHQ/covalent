@@ -49,15 +49,20 @@ https://github.com/AgnostiqHQ/covalent/assets/116076079/87268cc8-4d53-4053-b739-
   <img src="./doc/source/_static/development.svg"  alt="development"></img>
  </div>
 
-<!-- <div >
-  <img src="./installation.svg"  alt="Click to see the source">
-</div> -->
+### Installation
 
-| **Installation**                                                                                                                                                                       | **Getting started**                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-| :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Covalent is developed using Python version 3.8 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager: <pre lang="bash"> pip install covalent --upgrade</pre> For other methods of installation please [check the docs](https://docs.covalent.xyz/docs/get-started/install/) |Ready to try it? Refer to the [Quick Start](https://docs.covalent.xyz/docs/get-started/quick-start/) guide for quick setup instructions, or to the [First Experiment](https://docs.covalent.xyz/docs/get-started/first-experiment/) guide for a more thorough approach. For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/) page in the documentation. |
+Covalent is developed using Python version 3.8 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager.
 
-<!-- <div><img src="./divider.svg" alt="divider"></div> -->
+ <pre lang="bash"> pip install covalent --upgrade</pre>
+
+For other methods of installation please [check the docs.](https://docs.covalent.xyz/docs/get-started/install/)
+
+### Getting Started
+
+Ready to try it?
+Refer to the [Quick Start](https://docs.covalent.xyz/docs/get-started/quick-start/) guide for quick setup instructions, or to the [First Experiment](https://docs.covalent.xyz/docs/get-started/first-experiment/) guide for a more thorough approach. For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/) page in the documentation.
+
+---
 
 ### Know More
 
@@ -70,6 +75,8 @@ For a more in-depth description of Covalent's features and how they work, see th
 <a href="https://github.com/AgnostiqHQ/covalent/blob/develop/README.md#how-does-it-work"><img src="./doc/source/_static/covalent_work.svg" alt="divider"></a>
 </div>
 
+---
+
 ### Tutorials
 
 <div align="center" mt="1000"> 
@@ -77,6 +84,8 @@ For a more in-depth description of Covalent's features and how they work, see th
 <a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/quantumchemistry/"><img src="./doc/source/_static/quantum_tutorial.svg" alt="divider"></a>
 
 <a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/generativeai/"><img src="./doc/source/_static/ai_tutorial.svg" alt="divider"></a> </div>
+
+---
 
 <div >
 
@@ -86,11 +95,15 @@ Covalent’s serverless HPC architecture allows you to easily scale jobs from yo
 
 </div>
 
+---
+
 ### Contributing
 
  <!-- <div><img src="./contributing_heading.svg" alt="divider"></div> -->
 
 To contribute to Covalent, refer to the [Contribution Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/CONTRIBUTING.md). We use GitHub's [issue tracking](https://github.com/AgnostiqHQ/covalent/issues) to manage known issues, bugs, and pull requests. Get started by forking the develop branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. For more more information on adding tutorials, check the [Tutorial Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/doc/TUTORIAL_GUIDELINES.md) Participation in the Covalent community is governed by the [Code of Conduct](https://github.com/AgnostiqHQ/covalent/blob/master/CODE_OF_CONDUCT.md).
+
+---
 
 ### Citation
 
