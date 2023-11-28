@@ -1,5 +1,5 @@
 <div align="center"> 
-  <img src="./doc/source/_static/readme_hero_light.svg" alt="hero" />
+  <img src="./doc/source/_static/readme_hero.svg" alt="hero" />
  </div>
 
 <div align="center">
@@ -33,8 +33,8 @@ Covalent is a Pythonic framework designed for AI/ML practitioners, computational
 Check out the [quick start guide](https://docs.covalent.xyz/docs/get-started/quick-start/) to get started
 
   <div align="center" >
-   <video  controls>
-   <source src="./doc/source/_static/readme.mp4" type="video/mp4">
+   <video controls>
+   <source src="./doc/source/_static/readmeVid.mp4" type="video/mp4">
   Your browser does not support the video tag.
 </video> 
  </div>
