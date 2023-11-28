@@ -51,7 +51,7 @@ Check out the [quick start guide](https://docs.covalent.xyz/docs/get-started/qui
 <a href="https://docs.covalent.xyz/docs/plugin"><img src="./doc/source/_static/many_more_light.svg" alt="divider"></a></div>
 
   <div align="center">
-  <img src="./doc/source/_static/development_light.svg"  alt="development"></img>
+  <img src="./doc/source/_static/development.svg"  alt="development"></img>
  </div>
 
 <!-- <div >
@@ -69,19 +69,19 @@ Check out the [quick start guide](https://docs.covalent.xyz/docs/get-started/qui
 For a more in-depth description of Covalent's features and how they work, see the Concepts page in the documentation.
 
 <div align="center"> 
-<a href="https://www.covalent.xyz/what-is-covalent/"><img src="./doc/source/_static/what_is_covalent_light.svg" alt="divider"></a> 
-<a href="https://www.covalent.xyz/navigating-the-modern-hpc-landscape/"><img src="./doc/source/_static/cloud_hpc_light.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/concepts/covalent-basics/"><img src="./doc/source/_static/concepts_of_covalent_light.svg" alt="divider"></a> 
-<a href="https://github.com/AgnostiqHQ/covalent/blob/develop/README.md#how-does-it-work"><img src="./doc/source/_static/covalent_work_light.svg" alt="divider"></a>
+<a href="https://www.covalent.xyz/what-is-covalent/"><img src="./doc/source/_static/what_is_covalent.svg" alt="divider"></a> 
+<a href="https://www.covalent.xyz/navigating-the-modern-hpc-landscape/"><img src="./doc/source/_static/cloud_hpc.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/user-documentation/concepts/covalent-basics/"><img src="./doc/source/_static/concepts_of_covalent.svg" alt="divider"></a> 
+<a href="https://github.com/AgnostiqHQ/covalent/blob/develop/README.md#how-does-it-work"><img src="./doc/source/_static/covalent_work.svg" alt="divider"></a>
 </div>
 
 ### Tutorials
 
 <div align="center" mt="1000"> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/mnist/"><img src="./doc/source/_static/mnist_tutorial_light.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/quantumchemistry/"><img src="./doc/source/_static/quantum_tutorial_light.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/mnist/"><img src="./doc/source/_static/mnist_tutorial.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/quantumchemistry/"><img src="./doc/source/_static/quantum_tutorial.svg" alt="divider"></a>
 
-<a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/generativeai/"><img src="./doc/source/_static/ai_tutorial_light.svg" alt="divider"></a> </div>
+<a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/generativeai/"><img src="./doc/source/_static/ai_tutorial.svg" alt="divider"></a> </div>
 
 <div >
 
