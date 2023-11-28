@@ -34,17 +34,16 @@ Check out the [quick start guide](https://docs.covalent.xyz/docs/get-started/qui
 
 https://github.com/AgnostiqHQ/covalent/assets/116076079/87268cc8-4d53-4053-b739-1d03f2eafa7c
 
-
   <div align="center"> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/aws-plugins/"><img src="./doc/source/_static/aws_light.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/azurebatch/"><img src="./doc/source/_static/azure_light.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/gcp/"><img src="./doc/source/_static/google_light.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/ibmq/"><img src="./doc/source/_static/ibmq_light.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/aws-plugins/"><img src="./doc/source/_static/aws.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/azurebatch/"><img src="./doc/source/_static/azure.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/gcp/"><img src="./doc/source/_static/google.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/ibmq/"><img src="./doc/source/_static/ibmq.svg" alt="divider"></a>
 </div>
-<div align="center"><a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/slurm/"><img src="./doc/source/_static/slurm_light.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/dask/"><img src="./doc/source/_static/dask_light.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs"><img src="./doc/source/_static/kubernetes_light.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs/plugin"><img src="./doc/source/_static/many_more_light.svg" alt="divider"></a></div>
+<div align="center"><a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/slurm/"><img src="./doc/source/_static/slurm.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/dask/"><img src="./doc/source/_static/dask.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs"><img src="./doc/source/_static/kubernetes.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/plugin"><img src="./doc/source/_static/many_more.svg" alt="divider"></a></div>
 
   <div align="center">
   <img src="./doc/source/_static/development.svg"  alt="development"></img>
