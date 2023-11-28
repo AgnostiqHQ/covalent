@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - check for `/bin/bash` AND `/bin/sh` (in that order) to execute bash leptons
 
+### Changed
+
+- Changed the axios version on the webapp side.
+
 ### Operations
 
 - Change the strict version pin on `pennylane` from `==0.33.1` to `>=0.31.1,<0.33.0`
