@@ -32,12 +32,8 @@ Covalent is a Pythonic framework designed for AI/ML practitioners, computational
 
 Check out the [quick start guide](https://docs.covalent.xyz/docs/get-started/quick-start/) to get started
 
-  <div align="center" >
-   <video controls>
-   <source src="./doc/source/_static/readmeVid.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video> 
- </div>
+https://github.com/AgnostiqHQ/covalent/assets/116076079/87268cc8-4d53-4053-b739-1d03f2eafa7c
+
 
   <div align="center"> 
 <a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/aws-plugins/"><img src="./doc/source/_static/aws_light.svg" alt="divider"></a> 
