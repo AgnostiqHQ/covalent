@@ -30,7 +30,7 @@ Covalent is a Pythonic framework designed for AI/ML practitioners, computational
 
 **For Researchers:** Covalent empowers researchers to directly tap into advanced computing resources from their laptops or Jupyter notebooks. Whether the need is for cloud platforms or HPC systems like SLURM, PBS, or LSF, [Covalent plugins](https://docs.covalent.xyz/docs/plugin) offers instant connectivity and unparalleled ease of use.
 
-Check out the [quick start guide](https://docs.covalent.xyz/docs/get-started/quick-start/) to get started
+Check out the [quick start guide](https://docs.covalent.xyz/docs/get-started/quick-start/) to get started.
 
 https://github.com/AgnostiqHQ/covalent/assets/116076079/87268cc8-4d53-4053-b739-1d03f2eafa7c
 
@@ -69,20 +69,20 @@ For other methods of installation please [check the docs.](https://docs.covalent
 
 </br>
 
-Ready to try it?
+Ready to try it?\
 Refer to the [Quick Start](https://docs.covalent.xyz/docs/get-started/quick-start/) guide for quick setup instructions, or to the [First Experiment](https://docs.covalent.xyz/docs/get-started/first-experiment/) guide for a more thorough approach. For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/) page in the documentation.
 
 </br>
 
 ---
 
-</br>
-
 ### Know More
 
 </br>
 
 For a more in-depth description of Covalent's features and how they work, see the Concepts page in the documentation.
+
+</br>
 
 <div align="center"> 
 <a href="https://www.covalent.xyz/what-is-covalent/"><img src="./doc/source/_static/what_is_covalent.svg" alt="divider"></a> 
@@ -94,8 +94,6 @@ For a more in-depth description of Covalent's features and how they work, see th
 </br>
 
 ---
-
-</br>
 
 ### Tutorials
 
@@ -119,21 +117,15 @@ Covalent’s serverless HPC architecture allows you to easily scale jobs from yo
 
 ---
 
-</br>
-
 ### Contributing
 
 </br>
 
  <!-- <div><img src="./contributing_heading.svg" alt="divider"></div> -->
 
-To contribute to Covalent, refer to the [Contribution Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/CONTRIBUTING.md). We use GitHub's [issue tracking](https://github.com/AgnostiqHQ/covalent/issues) to manage known issues, bugs, and pull requests. Get started by forking the develop branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. For more more information on adding tutorials, check the [Tutorial Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/doc/TUTORIAL_GUIDELINES.md) Participation in the Covalent community is governed by the [Code of Conduct](https://github.com/AgnostiqHQ/covalent/blob/master/CODE_OF_CONDUCT.md).
-
-</br>
+To contribute to Covalent, refer to the [Contribution Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/CONTRIBUTING.md). We use GitHub's [issue tracking](https://github.com/AgnostiqHQ/covalent/issues) to manage known issues, bugs, and pull requests. Get started by forking the develop branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. For more information on adding tutorials, check the [Tutorial Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/doc/TUTORIAL_GUIDELINES.md). Participation in the Covalent community is governed by the [Code of Conduct](https://github.com/AgnostiqHQ/covalent/blob/master/CODE_OF_CONDUCT.md).
 
 ---
-
-</br>
 
 ### Citation
 
