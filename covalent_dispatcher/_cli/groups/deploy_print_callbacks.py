@@ -94,6 +94,6 @@ class ScrollBufferCallback:
         """Print normally, line by line."""
         print(msg.rstrip() if msg != "\n" else msg)
 
-    def render_buffer(self, sep: str = ' ') -> str:
+    def render_buffer(self, sep: str = " ") -> str:
         """Render the current buffer as a string."""
         return sep.join(self.buffer)

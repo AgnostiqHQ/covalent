@@ -94,10 +94,7 @@ def get_up_help_table(crm: CloudResourceManager) -> Table:
 
 
 def _run_command_and_show_output(
-    _command: Callable[[Callable], None],
-    _status_message: str,
-    *,
-    verbose: bool
+    _command: Callable[[Callable], None], _status_message: str, *, verbose: bool
 ) -> None:
     """Run the command and show the output in the console.
 
@@ -112,7 +109,6 @@ def _run_command_and_show_output(
     msg_template = _TEMPLATE.format(message=_status_message, text="{text}")
 
     with console.status(msg_template.format(text="")) as console_status:
-
         print_callback = ScrollBufferCallback(
             console=console,
             console_status=console_status,
@@ -131,7 +127,7 @@ def _run_command_and_show_output(
         if not verbose:
             console_status.stop()
             if (complete_msg := print_callback.complete_msg) is not None:
-                console.print('\n', complete_msg, style="bold green")
+                console.print("\n", complete_msg, style="bold green")
 
 
 @click.group(invoke_without_command=True)

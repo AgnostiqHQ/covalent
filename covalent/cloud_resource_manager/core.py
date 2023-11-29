@@ -195,7 +195,7 @@ class CloudResourceManager:
         for _, line in enumerate(lines):
             error_index = line.strip().find("error:")
             if error_index != -1:
-                error_message = line.strip()[error_index + len("error:"):]
+                error_message = line.strip()[error_index + len("error:") :]
                 logger.error(error_message)
         return lines
 
@@ -525,6 +525,4 @@ class CloudResourceManager:
         tf_state = " ".join([terraform, "state", "list", f"-state={tf_state_file}"])
 
         # Run `terraform state list`
-        return self._run_in_subprocess(
-            cmd=tf_state, env_vars=self._terraform_log_env_vars
-        )
+        return self._run_in_subprocess(cmd=tf_state, env_vars=self._terraform_log_env_vars)
