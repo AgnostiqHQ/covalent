@@ -121,7 +121,7 @@ def get_plugin_settings(
         for key, value in executor_options.items():
             try:
                 settings_dict[key]["value"] = value
-            except:
+            except Exception:
                 logger.error(f"No such option '{key}'. Use --help for available options")
                 sys.exit()
 
@@ -164,10 +164,9 @@ class CloudResourceManager:
         self._terraform_log_env_vars = {
             "TF_LOG": "ERROR",
             "TF_LOG_PATH": os.path.join(self.executor_tf_path, "terraform-error.log"),
-            "PATH": "$PATH:/usr/bin",
         }
 
-    def _print_stdout(self, process: subprocess.Popen, print_callback: Callable) -> int:
+    def _poll_process(self, process: subprocess.Popen, print_callback: Callable) -> int:
         """
         Print the stdout from the subprocess to console
 
@@ -179,12 +178,10 @@ class CloudResourceManager:
             Return code of the process.
 
         """
-        while (retcode := process.poll()) is None:
-            if (proc_stdout := process.stdout.readline()) and print_callback:
-                print_callback(proc_stdout.strip().decode("utf-8"))
-        return retcode
-
-        # TODO: Return the command output along with return code
+        while (returncode := process.poll()) is None:
+            if print_callback:
+                print_callback(process.stdout.readline())
+        return returncode
 
     def _parse_terraform_error_log(self) -> List[str]:
         """Parse the terraform error logs.
@@ -198,7 +195,7 @@ class CloudResourceManager:
         for _, line in enumerate(lines):
             error_index = line.strip().find("error:")
             if error_index != -1:
-                error_message = line.strip()[error_index + len("error:") :]
+                error_message = line.strip()[error_index + len("error:"):]
                 logger.error(error_message)
         return lines
 
@@ -235,15 +232,19 @@ class CloudResourceManager:
         Returns:
             status: str - status of plugin
         """
-        _, stderr = proc.communicate()
+
         cmds = cmd.split(" ")
         tfstate_path = cmds[-1].split("=")[-1]
-        if stderr is None:
-            return self._terraform_error_validator(tfstate_path=tfstate_path)
-        else:
-            raise subprocess.CalledProcessError(
-                returncode=1, cmd=cmd, stderr=self._parse_terraform_error_log()
+
+        returncode = self._poll_process(proc, print_callback=None)
+        if returncode != 0:
+            print(
+                "Unable to get resource status due to the following error:\n\n",
+                proc.stderr.read(),
+                file=sys.stderr,
             )
+
+        return self._terraform_error_validator(tfstate_path=tfstate_path)
 
     def _log_error_msg(self, cmd) -> None:
         """
@@ -261,7 +262,6 @@ class CloudResourceManager:
     def _run_in_subprocess(
         self,
         cmd: str,
-        workdir: str,
         env_vars: Optional[Dict[str, str]] = None,
         print_callback: Optional[Callable] = None,
     ) -> Union[None, str]:
@@ -270,39 +270,50 @@ class CloudResourceManager:
 
         Args:
             cmd: Command to execute in the subprocess
-            workdir: Working directory of the subprocess
             env_vars: Dictionary of environment variables to set in the processes execution environment
 
         Returns:
             Union[None, str]
                 - For 'covalent deploy status'
-                    returns status of the deplyment
+                    returns status of the deployment
                 - Others
                     return None
         """
-        if git := shutil.which("git"):
-            proc = subprocess.Popen(
-                args=cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                cwd=workdir,
-                shell=True,
-                env=env_vars,
-            )
-            TERRAFORM_STATE = "state list -state"
-            if TERRAFORM_STATE in cmd:
-                return self._get_resource_status(proc=proc, cmd=cmd)
-            retcode = self._print_stdout(proc, print_callback)
-
-            if retcode != 0:
-                self._log_error_msg(cmd=cmd)
-                raise subprocess.CalledProcessError(
-                    returncode=retcode, cmd=cmd, stderr=self._parse_terraform_error_log()
-                )
-        else:
+        if not shutil.which("git"):
             self._log_error_msg(cmd=cmd)
             logger.error("Git not found on the system.")
-            sys.exit()
+            sys.exit(1)
+
+        env_vars = env_vars or {}
+        env_vars.update({"PATH": os.environ["PATH"]})
+
+        proc = subprocess.Popen(
+            args=cmd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            cwd=self.executor_tf_path,
+            universal_newlines=True,
+            shell=True,
+            env=env_vars,
+        )
+
+        if "state list -state" in cmd:
+            return self._get_resource_status(proc=proc, cmd=cmd)
+
+        returncode = self._poll_process(proc, print_callback)
+
+        if returncode != 0:
+            self._log_error_msg(cmd=cmd)
+
+            _, stderr = proc.communicate()
+            raise subprocess.CalledProcessError(
+                returncode=returncode,
+                cmd=cmd,
+                stderr=self._parse_terraform_error_log(),
+                output=stderr,
+            )
+
+        return None
 
     def _update_config(self, tf_executor_config_file: str) -> None:
         """
@@ -348,7 +359,11 @@ class CloudResourceManager:
         """
         if terraform := shutil.which("terraform"):
             result = subprocess.run(
-                ["terraform --version"], shell=True, capture_output=True, text=True
+                ["terraform --version"],
+                shell=True,
+                capture_output=True,
+                text=True,
+                check=True,
             )
             version = result.stdout.split("v", 1)[1][:3]
             if float(version) < 1.4:
@@ -357,9 +372,9 @@ class CloudResourceManager:
                 )
                 sys.exit()
             return terraform
-        else:
-            logger.error("Terraform not found on system")
-            exit()
+
+        logger.error("Terraform not found on system")
+        exit()
 
     def _get_tf_statefile_path(self) -> str:
         """
@@ -401,14 +416,16 @@ class CloudResourceManager:
 
         # Run `terraform init`
         self._run_in_subprocess(
-            cmd=tf_init, workdir=self.executor_tf_path, env_vars=self._terraform_log_env_vars
+            cmd=tf_init,
+            env_vars=self._terraform_log_env_vars,
+            print_callback=print_callback,
         )
 
         # Setup terraform infra variables as passed by the user
         tf_vars_env_dict = os.environ.copy()
 
         if self.executor_options:
-            with open(tfvars_file, "w") as f:
+            with open(tfvars_file, "w", encoding="utf-8") as f:
                 for key, value in self.executor_options.items():
                     tf_vars_env_dict[f"TF_VAR_{key}"] = value
 
@@ -418,7 +435,6 @@ class CloudResourceManager:
         # Run `terraform plan`
         self._run_in_subprocess(
             cmd=tf_plan,
-            workdir=self.executor_tf_path,
             env_vars=self._terraform_log_env_vars,
             print_callback=print_callback,
         )
@@ -426,9 +442,8 @@ class CloudResourceManager:
         # Create infrastructure as per the plan
         # Run `terraform apply`
         if not dry_run:
-            cmd_output = self._run_in_subprocess(
+            self._run_in_subprocess(
                 cmd=tf_apply,
-                workdir=self.executor_tf_path,
                 env_vars=tf_vars_env_dict.update(self._terraform_log_env_vars),
                 print_callback=print_callback,
             )
@@ -472,7 +487,6 @@ class CloudResourceManager:
         # Run `terraform destroy`
         self._run_in_subprocess(
             cmd=tf_destroy,
-            workdir=self.executor_tf_path,
             print_callback=print_callback,
             env_vars=self._terraform_log_env_vars,
         )
@@ -511,5 +525,5 @@ class CloudResourceManager:
 
         # Run `terraform state list`
         return self._run_in_subprocess(
-            cmd=tf_state, workdir=self.executor_tf_path, env_vars=self._terraform_log_env_vars
+            cmd=tf_state, env_vars=self._terraform_log_env_vars
         )

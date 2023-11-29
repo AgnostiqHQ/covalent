@@ -17,10 +17,10 @@
 
 """Covalent deploy CLI group."""
 
-
 import subprocess
+from functools import partial
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Callable, Dict, Tuple
 
 import boto3
 import click
@@ -30,9 +30,9 @@ from rich.table import Table
 from covalent.cloud_resource_manager.core import CloudResourceManager
 from covalent.executor import _executor_manager
 
-RESOURCE_ALREADY_EXISTS = "Resources already deployed"
-RESOURCE_ALREADY_DESTROYED = "Resources already destroyed"
-COMPLETED = "Completed"
+from .deploy_print_callbacks import ScrollBufferCallback
+
+_TEMPLATE = "[bold green]{message} [default]\n {text}"
 
 
 def get_crm_object(executor_name: str, options: Dict = None) -> CloudResourceManager:
@@ -47,30 +47,6 @@ def get_crm_object(executor_name: str, options: Dict = None) -> CloudResourceMan
         __import__(_executor_manager.executor_plugins_map[executor_name].__module__).__path__[0]
     )
     return CloudResourceManager(executor_name, executor_module_path, options)
-
-
-def get_print_callback(
-    console: Console, console_status: Console.status, prepend_msg: str, verbose: bool
-):
-    """Get print callback method.
-
-    Args:
-        console: Rich console object.
-        console_status: Console status object.
-        prepend_msg: Message to prepend to the output.
-        verbose: Whether to print the output inline or not.
-
-    Returns:
-        Callback method.
-
-    """
-    if verbose:
-        return console.print
-
-    def inline_print_callback(msg):
-        console_status.update(f"{prepend_msg} {msg}")
-
-    return inline_print_callback
 
 
 def get_settings_table(crm: CloudResourceManager) -> Table:
@@ -116,6 +92,47 @@ def get_up_help_table(crm: CloudResourceManager) -> Table:
     return table
 
 
+def _run_command_and_show_output(
+    _command: Callable[[Callable], None],
+    _status_message: str,
+    *,
+    verbose: bool
+) -> None:
+    """Run the command and show the output in the console.
+
+    This function handles execution and outputs from the `up` and `down` commands.
+
+    Args:
+        _command: command to run, e.g. `partial(crm.up, dry_run=dry_run)`
+        _status_message: message to show in the console status bar, e.g. "Provisioning resources..."
+        verbose: whether to show the full Terraform output or not.
+    """
+    console = Console(record=True)
+    msg_template = _TEMPLATE.format(message=_status_message, text="{text}")
+
+    with console.status(msg_template.format(text="")) as console_status:
+
+        print_callback = ScrollBufferCallback(
+            console=console,
+            console_status=console_status,
+            msg_template=msg_template,
+            verbose=verbose,
+        )
+
+        try:
+            _command(print_callback=print_callback)
+
+        except subprocess.CalledProcessError as e:
+            console_status.stop()
+            click.echo(e.stdout)  # display error
+            return
+
+        if not verbose:
+            console_status.stop()
+            if (complete_msg := print_callback.complete_msg) is not None:
+                console.print('\n', complete_msg, style="bold green")
+
+
 @click.group(invoke_without_command=True)
 def deploy():
     """
@@ -130,7 +147,6 @@ def deploy():
     4. Show status of all resources via `covalent deploy status`.
 
     """
-    pass
 
 
 @deploy.command(context_settings={"ignore_unknown_options": True})
@@ -172,32 +188,8 @@ def up(executor_name: str, vars: Dict, help: bool, dry_run: bool, verbose: bool)
         click.echo(Console().print(get_up_help_table(crm)))
         return
 
-    console = Console(record=True)
-    prepend_msg = "[bold green] Provisioning resources..."
-
-    with console.status(prepend_msg) as status:
-        try:
-            crm.up(
-                dry_run=dry_run,
-                print_callback=get_print_callback(
-                    console=console,
-                    console_status=status,
-                    prepend_msg=prepend_msg,
-                    verbose=verbose,
-                ),
-            )
-        except subprocess.CalledProcessError as e:
-            click.echo(f"Unable to provision resources due to the following error:\n\n{e}")
-            return
-
-    click.echo(Console().print(get_settings_table(crm)))
-    exists_msg_with_verbose = "Apply complete! Resources: 0 added, 0 changed, 0 destroyed"
-    exists_msg_without_verbose = "found no differences, so no changes are needed"
-    export_data = console.export_text()
-    if exists_msg_with_verbose in export_data or exists_msg_without_verbose in export_data:
-        click.echo(RESOURCE_ALREADY_EXISTS)
-    else:
-        click.echo(COMPLETED)
+    _command = partial(crm.up, dry_run=dry_run)
+    _run_command_and_show_output(_command, "Provisioning resources...", verbose=verbose)
 
 
 @deploy.command()
@@ -223,28 +215,8 @@ def down(executor_name: str, verbose: bool) -> None:
 
     """
     crm = get_crm_object(executor_name)
-
-    console = Console(record=True)
-    prepend_msg = "[bold green] Destroying resources..."
-    with console.status(prepend_msg) as status:
-        try:
-            crm.down(
-                print_callback=get_print_callback(
-                    console=console,
-                    console_status=status,
-                    prepend_msg=prepend_msg,
-                    verbose=verbose,
-                )
-            )
-        except subprocess.CalledProcessError as e:
-            click.echo(f"Unable to destroy resources due to the following error:\n\n{e}")
-            return
-    destroyed_msg = "Destroy complete! Resources: 0 destroyed."
-    export_data = console.export_text()
-    if destroyed_msg in export_data:
-        click.echo(RESOURCE_ALREADY_DESTROYED)
-    else:
-        click.echo(COMPLETED)
+    _command = partial(crm.down)
+    _run_command_and_show_output(_command, "Destroying resources...", verbose=verbose)
 
 
 # TODO - Color code status.
@@ -275,7 +247,7 @@ def status(executor_names: Tuple[str]) -> None:
     if not executor_names:
         executor_names = [
             name
-            for name in _executor_manager.executor_plugins_map.keys()
+            for name in _executor_manager.executor_plugins_map
             if name not in ["dask", "local", "remote_executor"]
         ]
         click.echo(f"Executors: {', '.join(executor_names)}")
@@ -289,8 +261,8 @@ def status(executor_names: Tuple[str]) -> None:
     for executor_name in executor_names:
         try:
             crm = get_crm_object(executor_name)
-            status = crm.status()
-            table.add_row(executor_name, status, description[status])
+            crm_status = crm.status()
+            table.add_row(executor_name, crm_status, description[crm_status])
         except KeyError:
             invalid_executor_names.append(executor_name)
 
