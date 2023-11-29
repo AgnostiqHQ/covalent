@@ -135,6 +135,7 @@ def test_scroll_buffer_print_callback(mocker, verbose, mode):
     """
     from rich.console import Console
     from rich.status import Status
+
     from covalent_dispatcher._cli.groups.deploy import _TEMPLATE
 
     console = Console(record=True)
