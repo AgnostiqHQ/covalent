@@ -56,6 +56,35 @@ def crm(mocker, executor_name, executor_module_path):
     )
 
 
+class _FakeIO:
+    """Mocks process stdout and stderr."""
+
+    def __init__(self, message):
+        self.message = message
+
+    def read(self):
+        return self.message
+
+    def readline(self):
+        return self.read()
+
+
+class _FakeProc:
+    """Mocks process"""
+
+    def __init__(self, returncode, stdout="", stderr=""):
+        self.returncode = returncode
+        self.args = ()
+        self.stdout = _FakeIO(stdout)
+        self.stderr = _FakeIO(stderr)
+
+    def poll(self):
+        return self.returncode
+
+    def communicate(self):
+        return self.stdout.read(), self.stderr.read()
+
+
 def test_get_executor_module(mocker):
     """
     Unit test for get_executor_module method
@@ -205,10 +234,9 @@ def test_run_in_subprocess(mocker, test_retcode, crm):
     test_cmd = "test_cmd"
     test_env_vars = {"test_env_key": "test_env_value"}
 
-    mock_process = mocker.MagicMock()
     mock_popen = mocker.patch(
         "covalent.cloud_resource_manager.core.subprocess.Popen",
-        return_value=mock_process,
+        return_value=_FakeProc(test_retcode),
     )
 
     mocker.patch(
@@ -221,14 +249,12 @@ def test_run_in_subprocess(mocker, test_retcode, crm):
     )
     mocker.patch(
         "covalent.cloud_resource_manager.core.CloudResourceManager._log_error_msg",
-        return_value=None,
-        side_effect=None,
     )
 
     if test_retcode != 0:
         exception = subprocess.CalledProcessError(returncode=test_retcode, cmd=test_cmd)
         print("some exception ", exception)
-        with pytest.raises(Exception) as excinfo:
+        with pytest.raises(subprocess.CalledProcessError) as excinfo:
             crm._run_in_subprocess(
                 cmd=test_cmd,
                 env_vars=test_env_vars,
@@ -550,32 +576,6 @@ def test_status(mocker, crm):
         cmd=f"{test_tf_path} state list -state={test_tf_state_file}",
         env_vars=crm._terraform_log_env_vars,
     )
-
-
-class _FakeIO:
-    """Mocks process stdout and stderr."""
-
-    def __init__(self, message):
-        self.message = message
-
-    def read(self):
-        return self.message
-
-    def readline(self):
-        return self.read()
-
-
-class _FakeProc:
-    """Mocks process"""
-
-    def __init__(self, returncode):
-        self.returncode = returncode
-        self.args = ()
-        self.stdout = _FakeIO("v99.99")
-        self.stderr = _FakeIO("")
-
-    def poll(self):
-        return self.returncode
 
 
 def test_crm_get_resource_status(mocker, crm):

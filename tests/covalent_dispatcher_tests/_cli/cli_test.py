@@ -26,6 +26,7 @@ from click.testing import CliRunner
 
 from covalent_dispatcher._cli.cli import cli
 from covalent_dispatcher._cli.groups.deploy import _run_command_and_show_output
+from covalent_dispatcher._cli.groups.deploy_print_callbacks import ScrollBufferCallback
 
 
 def test_cli(mocker):
@@ -117,3 +118,55 @@ def test_run_command_and_show_output(mocker, error, verbose):
         mock_console_print.assert_called_once()
     else:
         assert _command.calls == 1
+
+
+@pytest.mark.parametrize(
+    ("verbose", "mode"),
+    [
+        (False, "provision"),
+        (False, "destroy"),
+        (True, "provision"),
+        (True, "destroy"),
+    ]
+)
+def test_scroll_buffer_print_callback(mocker, verbose, mode):
+    """
+    Unit test for the custom buffered print callback.
+    """
+    from rich.console import Console
+    from rich.status import Status
+    from covalent_dispatcher._cli.groups.deploy import _TEMPLATE
+
+    console = Console(record=True)
+    console_status = Status("Testing...", console=console)
+
+    mock_print = mocker.patch("covalent_dispatcher._cli.groups.deploy_print_callbacks.print")
+    mock_console_status_update = mocker.patch("rich.status.Status.update")
+
+    print_callback = ScrollBufferCallback(
+        console=console,
+        console_status=console_status,
+        msg_template=_TEMPLATE.format(message="Testing...", text="{text}"),
+        verbose=verbose,
+    )
+
+    complete_msg = (
+        "Apply complete! Resources: 19 added, 0 changed, 0 destroyed."
+        if mode == "provision" else
+        "Destroy complete! Resources: 19 destroyed."
+    )
+    messages = [
+        "fake", "fake", "fake", complete_msg, "fake", "fake", "fake"
+    ]
+
+    for msg in messages:
+        print_callback(msg)
+        if verbose:
+            mock_print.assert_called_with(msg)
+        else:
+            mock_console_status_update.assert_called_with(
+                print_callback.msg_template.format(text=print_callback.render_buffer())
+            )
+
+    if not verbose:
+        assert print_callback.complete_msg == complete_msg
