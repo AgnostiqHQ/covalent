@@ -592,10 +592,7 @@ def test_crm_get_resource_status(mocker, crm):
         "covalent.cloud_resource_manager.core.print",
     )
 
-    crm._get_resource_status(
-        proc=_FakeProc(1),
-        cmd="fake command"
-    )
+    crm._get_resource_status(proc=_FakeProc(1), cmd="fake command")
     mock_print.assert_called_once()
     mock_terraform_error_validator.assert_called_once()
 
@@ -618,8 +615,7 @@ def test_tf_version_error(mocker, crm):
     """
     latest_incompatible_version = 1.3
     mocker.patch(
-        "covalent.cloud_resource_manager.core.float",
-        return_value=latest_incompatible_version
+        "covalent.cloud_resource_manager.core.float", return_value=latest_incompatible_version
     )
 
     with pytest.raises(SystemExit):
