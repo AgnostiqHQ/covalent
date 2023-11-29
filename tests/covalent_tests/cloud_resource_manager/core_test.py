@@ -632,5 +632,6 @@ def test_tf_version_error(mocker, crm):
     # NOTE: Assume terraform does not exist in CI test environment
     mocker.patch("shutil.which", return_value="/opt/homebrew/bin/terraform")
     mocker.patch("covalent.cloud_resource_manager.core.logger.error")
+    mocker.patch("subprocess.run")
 
     assert "terraform" in crm._get_tf_path()
