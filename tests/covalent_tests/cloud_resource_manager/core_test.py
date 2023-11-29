@@ -668,25 +668,22 @@ def test_tf_version_error(mocker, crm):
     """
     Unit test for CloudResourceManager._get_tf_path() method.
     """
-    latest_incompatible_version = 1.3
 
-    # fail
-    mocker.patch(
-        "covalent.cloud_resource_manager.core.float", return_value=latest_incompatible_version
-    )
-
+    # Fail. Terraform not found on system.
+    mocker.patch("shutil.which", return_value=None)
     with pytest.raises(SystemExit):
         crm._get_tf_path()
 
-    # succeed
-    mocker.patch(
-        "covalent.cloud_resource_manager.core.float",
-        return_value=latest_incompatible_version + 10_000,
-    )
+    fake_proc_1 = _FakeProc(0, stdout="v0.0", fake_stream=False)
+    fake_proc_2 = _FakeProc(0, stdout="v99.99", fake_stream=False)
 
-    # NOTE: Assume terraform does not exist in CI test environment
+    # Fail. Old version of terraform found.
     mocker.patch("shutil.which", return_value="/opt/homebrew/bin/terraform")
-    mocker.patch("covalent.cloud_resource_manager.core.logger.error")
-    mocker.patch("subprocess.run")
+    mocker.patch("subprocess.run", return_value=fake_proc_1)
+    with pytest.raises(SystemExit):
+        crm._get_tf_path()
 
+    # Succeed.
+    mocker.patch("subprocess.run", return_value=fake_proc_2)
+    mocker.patch("covalent.cloud_resource_manager.core.logger.error")
     assert "terraform" in crm._get_tf_path()
