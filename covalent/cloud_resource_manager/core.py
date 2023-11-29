@@ -371,11 +371,11 @@ class CloudResourceManager:
                 logger.error(
                     "Old version of terraform found. Please update it to version greater than 1.3"
                 )
-                sys.exit()
+                sys.exit(1)
             return terraform
 
         logger.error("Terraform not found on system")
-        exit()
+        sys.exit(1)
 
     def _get_tf_statefile_path(self) -> str:
         """

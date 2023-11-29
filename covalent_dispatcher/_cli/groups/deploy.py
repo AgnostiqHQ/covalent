@@ -18,6 +18,7 @@
 """Covalent deploy CLI group."""
 
 import subprocess
+import sys
 from functools import partial
 from pathlib import Path
 from typing import Callable, Dict, Tuple
@@ -125,7 +126,7 @@ def _run_command_and_show_output(
         except subprocess.CalledProcessError as e:
             console_status.stop()
             click.echo(e.stdout)  # display error
-            return
+            sys.exit(1)
 
         if not verbose:
             console_status.stop()
@@ -182,11 +183,11 @@ def up(executor_name: str, vars: Dict, help: bool, dry_run: bool, verbose: bool)
     cmd_options = {key[2:]: value for key, value in (var.split("=") for var in vars)}
     if msg := validate_args(cmd_options):
         click.echo(msg)
-        return
+        sys.exit(1)
     crm = get_crm_object(executor_name, cmd_options)
     if help:
         click.echo(Console().print(get_up_help_table(crm)))
-        return
+        sys.exit(1)
 
     _command = partial(crm.up, dry_run=dry_run)
     _run_command_and_show_output(_command, "Provisioning resources...", verbose=verbose)
