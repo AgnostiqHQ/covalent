@@ -163,9 +163,9 @@ def test_cloud_resource_manager_init(mocker, options, executor_name, executor_mo
             )
 
 
-def test_print_stdout(mocker, crm):
+def test_poll_process(mocker, crm):
     """
-    Unit test for CloudResourceManager._print_stdout() method
+    Unit test for CloudResourceManager._poll_process() method
     """
 
     test_stdout = "test_stdout".encode("utf-8")
@@ -177,7 +177,7 @@ def test_print_stdout(mocker, crm):
     mock_process.stdout.readline.side_effect = partial(next, iter([test_stdout, None]))
 
     mock_print = mocker.patch("covalent.cloud_resource_manager.core.print")
-    return_code = crm._print_stdout(
+    return_code = crm._poll_process(
         mock_process,
         print_callback=mock_print(
             test_stdout.decode("utf-8"),
@@ -203,7 +203,6 @@ def test_run_in_subprocess(mocker, test_retcode, crm):
     """
 
     test_cmd = "test_cmd"
-    test_workdir = "test_workdir"
     test_env_vars = {"test_env_key": "test_env_value"}
 
     mock_process = mocker.MagicMock()
@@ -212,8 +211,8 @@ def test_run_in_subprocess(mocker, test_retcode, crm):
         return_value=mock_process,
     )
 
-    mock_print_stdout = mocker.patch(
-        "covalent.cloud_resource_manager.core.CloudResourceManager._print_stdout",
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._poll_process",
         return_value=int(test_retcode),
     )
 
@@ -228,31 +227,29 @@ def test_run_in_subprocess(mocker, test_retcode, crm):
 
     if test_retcode != 0:
         exception = subprocess.CalledProcessError(returncode=test_retcode, cmd=test_cmd)
-        print("sam exception ", exception)
-        with pytest.raises(Exception, match=str(exception)):
+        print("some exception ", exception)
+        with pytest.raises(Exception) as excinfo:
             crm._run_in_subprocess(
                 cmd=test_cmd,
-                workdir=test_workdir,
                 env_vars=test_env_vars,
             )
+            # Errors are contained in the output for printing.
+            assert excinfo.value.output == "some exception "
     else:
         crm._run_in_subprocess(
             cmd=test_cmd,
-            workdir=test_workdir,
             env_vars=test_env_vars,
         )
 
     mock_popen.assert_called_once_with(
         args=test_cmd,
         stdout=subprocess.PIPE,
-        stderr=subprocess.STDOUT,
-        cwd=test_workdir,
+        stderr=subprocess.PIPE,
+        cwd=crm.executor_tf_path,
+        universal_newlines=True,
         shell=True,
         env=test_env_vars,
     )
-    # print("sam mocker process : ", mock_process)
-    # print("sam mocker print   : ", mock_print_stdout)
-    # mock_print_stdout.assert_called_once_with(mock_process)
 
 
 def test_update_config(mocker, crm, executor_name):
@@ -361,14 +358,14 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
     test_tf_path = "test_tf_path"
     test_tf_state_file = "test_tf_state_file"
 
-    mock_get_tf_path = mocker.patch(
+    mocker.patch(
         "covalent.cloud_resource_manager.core.CloudResourceManager._get_tf_path",
         return_value=test_tf_path,
     )
     mocker.patch(
         "covalent.cloud_resource_manager.core.CloudResourceManager._validation_docker",
     )
-    mock_get_tf_statefile_path = mocker.patch(
+    mocker.patch(
         "covalent.cloud_resource_manager.core.CloudResourceManager._get_tf_statefile_path",
         return_value=test_tf_state_file,
     )
@@ -420,18 +417,12 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
         ) as mock_file:
             crm.up(dry_run=dry_run, print_callback=None)
 
-        env_vars = {
-            "PATH": "$PATH:/usr/bin",
-            "TF_LOG": "ERROR",
-            "TF_LOG_PATH": os.path.join(crm.executor_tf_path + "/terraform-error.log"),
-        }
         # mock_get_tf_path.assert_called_once()
         init_cmd = f"{test_tf_path} init"
         mock_run_in_subprocess.assert_any_call(
             cmd=init_cmd,
-            workdir=crm.executor_tf_path,
-            env_vars=env_vars,
-            # print_callback=None,
+            env_vars=crm._terraform_log_env_vars,
+            print_callback=None,
         )
 
         mock_environ_copy.assert_called_once()
@@ -444,18 +435,17 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
 
             key, value = list(executor_options.items())[0]
             mock_file().write.assert_called_once_with(f'{key}="{value}"\n')
+
         mock_run_in_subprocess.assert_any_call(
             cmd=f"{test_tf_path} plan -out tf.plan",  # -state={test_tf_state_file}",
-            workdir=crm.executor_tf_path,
-            env_vars=env_vars,
+            env_vars=crm._terraform_log_env_vars,
             print_callback=None,
         )
 
         if not dry_run:
             mock_run_in_subprocess.assert_any_call(
                 cmd=f"{test_tf_path} apply tf.plan -state={test_tf_state_file}",
-                workdir=crm.executor_tf_path,
-                env_vars=env_vars,
+                env_vars=crm._terraform_log_env_vars,
                 print_callback=None,
             )
 
@@ -471,7 +461,6 @@ def test_down(mocker, crm):
 
     test_tf_path = "test_tf_path"
     test_tf_state_file = "test_tf_state_file"
-    test_tf_log_file = "terraform-error.log"
 
     mock_get_tf_path = mocker.patch(
         "covalent.cloud_resource_manager.core.CloudResourceManager._get_tf_path",
@@ -521,9 +510,9 @@ def test_down(mocker, crm):
             "-auto-approve",
         ]
     )
-    env_vars = {"PATH": "$PATH:/usr/bin", "TF_LOG": "ERROR", "TF_LOG_PATH": log_file_path}
+    env_vars = crm._terraform_log_env_vars
     mock_run_in_subprocess.assert_called_once_with(
-        cmd=cmd, print_callback=None, workdir=crm.executor_tf_path, env_vars=env_vars
+        cmd=cmd, print_callback=None, env_vars=env_vars
     )
 
     assert mock_path_exists.call_count == 5
@@ -562,6 +551,5 @@ def test_status(mocker, crm):
     mock_get_tf_statefile_path.assert_called_once()
     mock_run_in_subprocess.assert_called_once_with(
         cmd=f"{test_tf_path} state list -state={test_tf_state_file}",
-        workdir=crm.executor_tf_path,
-        env_vars={"PATH": "$PATH:/usr/bin", "TF_LOG": "ERROR", "TF_LOG_PATH": log_file_path},
+        env_vars=crm._terraform_log_env_vars,
     )
