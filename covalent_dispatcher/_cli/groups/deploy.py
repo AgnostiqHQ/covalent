@@ -183,7 +183,7 @@ def up(executor_name: str, vars: Dict, help: bool, dry_run: bool, verbose: bool)
     crm = get_crm_object(executor_name, cmd_options)
     if help:
         click.echo(Console().print(get_up_help_table(crm)))
-        sys.exit(1)
+        sys.exit(0)
 
     _command = partial(crm.up, dry_run=dry_run)
     _run_command_and_show_output(_command, "Provisioning resources...", verbose=verbose)
