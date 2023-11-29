@@ -426,51 +426,11 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
 
     if executor_options:
         with pytest.raises(SystemExit):
-            crm = CloudResourceManager(
+            CloudResourceManager(
                 executor_name=executor_name,
                 executor_module_path=executor_module_path,
                 options=executor_options,
             )
-
-        # Try again, but force success with patches.
-        # Disable validation.
-        mocker.patch(
-            "covalent.cloud_resource_manager.core.CloudResourceManager.validate_options",
-            return_value=None,
-        )
-        # Disable plugin settings.
-        mocker.patch(
-            "covalent.cloud_resource_manager.core.CloudResourceManager.get_plugin_settings",
-            return_value={},
-        )
-        # Disable path checks so nothing deleted (as it would be, if exists).
-        mocker.patch("covalent.cloud_resource_manager.core.Path.exists", return_value=False)
-        # Disable _run_in_subprocess to avoid side effects.
-        mocker.patch(
-            "covalent.cloud_resource_manager.core.CloudResourceManager._run_in_subprocess",
-        )
-        # Disable _update_config to avoid side effects.
-        mocker.patch(
-            "covalent.cloud_resource_manager.core.CloudResourceManager._update_config",
-        )
-
-        with tempfile.TemporaryDirectory() as d:
-            # Create fake vars file to avoid side effects.
-            fake_tfvars_file = Path(d.name) / "terraform.tfvars"
-            fake_tfvars_file.touch()
-            mocker.patch(
-                "covalent.cloud_resource_manager.core.CloudResourceManager.executor_tf_path",
-                return_value=Path(d.name),
-            )
-
-            crm.up(dry_run=False, print_callback=None)
-
-        crm = CloudResourceManager(
-            executor_name=executor_name,
-            executor_module_path=executor_module_path,
-            options=executor_options,
-        )
-
     else:
         crm = CloudResourceManager(
             executor_name=executor_name,
@@ -510,6 +470,61 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
             mock_update_config.assert_called_once_with(
                 f"{crm.executor_tf_path}/{executor_name}.conf",
             )
+
+
+def test_up_executor_options(mocker, executor_name, executor_module_path):
+    """
+    Unit test for CloudResourceManager.up() method with executor options.
+
+    Test expected behavior with 'valid' options. Note that *actual* valid options
+    require executor plugins to be installed, so not suitable for CI tests.
+    """
+    # Disable validation.
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.validate_options",
+        return_value=None,
+    )
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._validation_docker",
+    )
+
+    # Disable actually finding executor.
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.get_executor_module",
+    )
+
+    # Disable plugin settings.
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.get_plugin_settings",
+        return_value={},
+    )
+
+    # Disable path checks so nothing deleted (as it would be, if exists).
+    mocker.patch("covalent.cloud_resource_manager.core.Path.exists", return_value=False)
+
+    # Disable _run_in_subprocess to avoid side effects.
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._run_in_subprocess",
+    )
+
+    # Disable _update_config to avoid side effects.
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._update_config",
+    )
+
+    crm = CloudResourceManager(
+        executor_name=executor_name,
+        executor_module_path=executor_module_path,
+        options={"test_key": "test_value"},
+    )
+
+    with tempfile.TemporaryDirectory() as d:
+        # Create fake vars file to avoid side effects.
+        fake_tfvars_file = Path(d) / "terraform.tfvars"
+        fake_tfvars_file.touch()
+
+        crm.executor_tf_path = d
+        crm.up(dry_run=False, print_callback=None)
 
 
 def test_down(mocker, crm):
