@@ -25,8 +25,6 @@ import pytest
 from click.testing import CliRunner
 
 from covalent_dispatcher._cli.cli import cli
-from covalent_dispatcher._cli.groups.deploy_group import _run_command_and_show_output
-from covalent_dispatcher._cli.groups.deploy_group_print_callbacks import ScrollBufferCallback
 
 
 def test_cli(mocker):
@@ -87,11 +85,12 @@ def test_run_command_and_show_output(mocker, error, verbose):
 
     Test that errors are raised and messages printed when expected.
     """
+    from covalent_dispatcher._cli.groups.deploy_group import _run_command_and_show_output
 
     mock_console_print = mocker.patch("rich.console.Console.print")
     mock_click_echo = mocker.patch("click.echo")
     mocker.patch(
-        "covalent_dispatcher._cli.groups.deploy_print_callbacks.ScrollBufferCallback.complete_msg",
+        "covalent_dispatcher._cli.groups.deploy_group_print_callbacks.ScrollBufferCallback.complete_msg",
         return_value="Apply complete! Resources: 19 added, 0 changed, 0 destroyed.",
     )
 
@@ -137,11 +136,12 @@ def test_scroll_buffer_print_callback(mocker, verbose, mode):
     from rich.status import Status
 
     from covalent_dispatcher._cli.groups.deploy_group import _TEMPLATE
+    from covalent_dispatcher._cli.groups.deploy_group_print_callbacks import ScrollBufferCallback
 
     console = Console(record=True)
     console_status = Status("Testing...", console=console)
 
-    mock_print = mocker.patch("covalent_dispatcher._cli.groups.deploy_print_callbacks.print")
+    mock_print = mocker.patch("covalent_dispatcher._cli.groups.deploy_group_print_callbacks.print")
     mock_console_status_update = mocker.patch("rich.status.Status.update")
 
     print_callback = ScrollBufferCallback(
@@ -170,3 +170,103 @@ def test_scroll_buffer_print_callback(mocker, verbose, mode):
 
     if not verbose:
         assert print_callback.complete_msg == complete_msg
+
+
+def test_deploy_up(mocker):
+    """
+    Unit test for `covalent deploy up [executor_name]` command.
+    """
+
+    from covalent_dispatcher._cli.groups.deploy_group import up
+
+    # Patch function that executes commands.
+    mock_run_command_and_show_output = mocker.patch(
+        "covalent_dispatcher._cli.groups.deploy_group._run_command_and_show_output",
+    )
+
+    # Fail with invalid command options.
+    mocker.patch(
+        "covalent_dispatcher._cli.groups.deploy_group.validate_args",
+        return_value="Non-empty msg",
+    )
+    with pytest.raises(SystemExit) as exc_info:
+        ctx = click.Context(up)
+        ctx.invoke(up)
+
+    assert exc_info.value.code == 1
+
+    # Succeed but exit after help message.
+    mocker.patch(
+        "covalent_dispatcher._cli.groups.deploy_group.validate_args",
+        return_value=None,
+    )
+    mocker.patch(
+        "covalent_dispatcher._cli.groups.deploy_group.get_crm_object",
+    )
+    with pytest.raises(SystemExit) as exc_info:
+        ctx = click.Context(up)
+        ctx.invoke(up, help=True)
+
+    assert exc_info.value.code == 0
+
+    # Succeed with valid command options.
+    ctx = click.Context(up)
+    ctx.invoke(up, verbose=True)
+
+    mock_run_command_and_show_output.assert_called_once()
+
+
+def test_deploy_down(mocker):
+    """
+    Unit test for `covalent deploy down [executor_name]` command.
+    """
+
+    from covalent_dispatcher._cli.groups.deploy_group import down
+
+    # Patch function that executes commands.
+    mock_run_command_and_show_output = mocker.patch(
+        "covalent_dispatcher._cli.groups.deploy_group._run_command_and_show_output",
+    )
+    mocker.patch(
+        "covalent_dispatcher._cli.groups.deploy_group.get_crm_object",
+    )
+
+    ctx = click.Context(down)
+    ctx.invoke(down, verbose=True)
+    mock_run_command_and_show_output.assert_called_once()
+
+
+def test_deploy_status(mocker):
+    """
+    Unit test for `covalent deploy status [executor_name]` command.
+    """
+
+    from covalent_dispatcher._cli.groups.deploy_group import status
+
+    # Succeed with empty `executor_names` argument.
+    ctx = click.Context(status)
+    ctx.invoke(status, executor_names=[])
+
+    # Succeed with invalid `executor_names` argument.
+    mock_click_style = mocker.patch("click.style")
+
+    ctx = click.Context(status)
+    ctx.invoke(status, executor_names=["invalid"])
+
+    mock_click_style.asert_called_once()
+
+    # Succeed with 'valid' `executor_names` argument.
+    mocker.patch(
+        "covalent_dispatcher._cli.groups.deploy_group.get_crm_object",
+    )
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager.status",
+        return_value="down",
+    )
+
+    mock_console_print = mocker.patch("rich.console.Console.print")
+
+    ctx = click.Context(status)
+    ctx.invoke(status, executor_names=["awsbatch"])  # OK if not installed
+
+    mock_console_print.assert_called_once()
