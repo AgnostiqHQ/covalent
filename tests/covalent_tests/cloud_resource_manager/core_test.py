@@ -614,9 +614,19 @@ def test_tf_version_error(mocker, crm):
     Unit test for CloudResourceManager._get_tf_path() method.
     """
     latest_incompatible_version = 1.3
+
+    # fail
     mocker.patch(
         "covalent.cloud_resource_manager.core.float", return_value=latest_incompatible_version
     )
 
     with pytest.raises(SystemExit):
         crm._get_tf_path()
+
+    # succeed
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.float",
+        return_value=latest_incompatible_version + 10_000
+    )
+
+    assert "terraform" in crm._get_tf_path()
