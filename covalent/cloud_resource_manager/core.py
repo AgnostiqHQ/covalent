@@ -123,7 +123,7 @@ def get_plugin_settings(
                 settings_dict[key]["value"] = value
             except Exception:
                 logger.error(f"No such option '{key}'. Use --help for available options")
-                sys.exit()
+                sys.exit(1)
 
     return settings_dict
 
