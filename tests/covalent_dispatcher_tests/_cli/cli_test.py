@@ -149,6 +149,7 @@ def test_scroll_buffer_print_callback(mocker, verbose, mode):
         console_status=console_status,
         msg_template=_TEMPLATE.format(message="Testing...", text="{text}"),
         verbose=verbose,
+        max_lines=3,  # shorten to hit pop inside `._inline_print`
     )
 
     complete_msg = (
