@@ -512,6 +512,9 @@ def test_up_executor_options(mocker, executor_name, executor_module_path):
         "covalent.cloud_resource_manager.core.CloudResourceManager._update_config",
     )
 
+    # For CI tests, pretend homebrew exists.
+    mocker.patch("shutil.which", return_value="/opt/homebrew/bin/terraform")
+
     crm = CloudResourceManager(
         executor_name=executor_name,
         executor_module_path=executor_module_path,
