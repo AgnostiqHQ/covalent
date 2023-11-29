@@ -176,7 +176,6 @@ def up(executor_name: str, vars: Dict, help: bool, dry_run: bool, verbose: bool)
         $ covalent deploy up awslambda --verbose --region=us-east-1 --instance-type=t2.micro
 
     """
-    # pragma: no cover
     cmd_options = {key[2:]: value for key, value in (var.split("=") for var in vars)}
     if msg := validate_args(cmd_options):
         click.echo(msg)
@@ -212,7 +211,6 @@ def down(executor_name: str, verbose: bool) -> None:
         $ covalent deploy down ecs --verbose
 
     """
-    # pragma: no cover
     crm = get_crm_object(executor_name)
     _command = partial(crm.down)
     _run_command_and_show_output(_command, "Destroying resources...", verbose=verbose)
@@ -242,7 +240,6 @@ def status(executor_names: Tuple[str]) -> None:
         "*up": "Warning: Provisioning error, retry 'up'.",
         "*down": "Warning: Teardown error, retry 'down'.",
     }
-    # pragma: no cover
     if not executor_names:
         executor_names = [
             name

@@ -426,7 +426,6 @@ class CloudResourceManager:
         tf_vars_env_dict = os.environ.copy()
 
         if self.executor_options:
-            # pragma: no cover
             with open(tfvars_file, "w", encoding="utf-8") as f:
                 for key, value in self.executor_options.items():
                     tf_vars_env_dict[f"TF_VAR_{key}"] = value
