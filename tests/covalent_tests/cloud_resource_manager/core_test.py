@@ -629,4 +629,7 @@ def test_tf_version_error(mocker, crm):
         return_value=latest_incompatible_version + 10_000,
     )
 
+    # NOTE: Assume terraform does not exist in CI test environment
+    mocker.patch("shutil.which", return_value="/opt/homebrew/bin/terraform")
+
     assert "terraform" in crm._get_tf_path()
