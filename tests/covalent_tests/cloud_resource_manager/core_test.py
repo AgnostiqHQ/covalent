@@ -511,9 +511,7 @@ def test_down(mocker, crm):
         ]
     )
     env_vars = crm._terraform_log_env_vars
-    mock_run_in_subprocess.assert_called_once_with(
-        cmd=cmd, print_callback=None, env_vars=env_vars
-    )
+    mock_run_in_subprocess.assert_called_once_with(cmd=cmd, print_callback=None, env_vars=env_vars)
 
     assert mock_path_exists.call_count == 5
     assert mock_path_unlink.call_count == 4
