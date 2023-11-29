@@ -25,8 +25,8 @@ import pytest
 from click.testing import CliRunner
 
 from covalent_dispatcher._cli.cli import cli
-from covalent_dispatcher._cli.groups.deploy import _run_command_and_show_output
-from covalent_dispatcher._cli.groups.deploy_print_callbacks import ScrollBufferCallback
+from covalent_dispatcher._cli.groups.deploy_group import _run_command_and_show_output
+from covalent_dispatcher._cli.groups.deploy_group_print_callbacks import ScrollBufferCallback
 
 
 def test_cli(mocker):
@@ -136,7 +136,7 @@ def test_scroll_buffer_print_callback(mocker, verbose, mode):
     from rich.console import Console
     from rich.status import Status
 
-    from covalent_dispatcher._cli.groups.deploy import _TEMPLATE
+    from covalent_dispatcher._cli.groups.deploy_group import _TEMPLATE
 
     console = Console(record=True)
     console_status = Status("Testing...", console=console)

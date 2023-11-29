@@ -31,7 +31,7 @@ from rich.table import Table
 from covalent.cloud_resource_manager.core import CloudResourceManager
 from covalent.executor import _executor_manager
 
-from .deploy_print_callbacks import ScrollBufferCallback
+from .deploy_group_print_callbacks import ScrollBufferCallback
 
 _TEMPLATE = "[bold green]{message} [default]\n {text}"
 

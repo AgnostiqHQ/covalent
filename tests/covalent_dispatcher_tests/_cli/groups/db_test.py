@@ -18,7 +18,7 @@ from unittest.mock import Mock
 
 from click.testing import CliRunner
 
-from covalent_dispatcher._cli.groups.db import MIGRATION_WARNING_MSG, alembic, migrate
+from covalent_dispatcher._cli.groups.db_group import MIGRATION_WARNING_MSG, alembic, migrate
 from covalent_dispatcher._db.datastore import DataStore
 
 
