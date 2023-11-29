@@ -127,7 +127,7 @@ def test_run_command_and_show_output(mocker, error, verbose):
         (False, "destroy"),
         (True, "provision"),
         (True, "destroy"),
-    ]
+    ],
 )
 def test_scroll_buffer_print_callback(mocker, verbose, mode):
     """
@@ -153,12 +153,10 @@ def test_scroll_buffer_print_callback(mocker, verbose, mode):
 
     complete_msg = (
         "Apply complete! Resources: 19 added, 0 changed, 0 destroyed."
-        if mode == "provision" else
-        "Destroy complete! Resources: 19 destroyed."
+        if mode == "provision"
+        else "Destroy complete! Resources: 19 destroyed."
     )
-    messages = [
-        "fake", "fake", "fake", complete_msg, "fake", "fake", "fake"
-    ]
+    messages = ["fake", "fake", "fake", complete_msg, "fake", "fake", "fake"]
 
     for msg in messages:
         print_callback(msg)
