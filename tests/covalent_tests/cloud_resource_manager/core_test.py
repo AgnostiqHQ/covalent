@@ -73,11 +73,11 @@ class _FakeIO:
 class _FakeProc:
     """Mocks process"""
 
-    def __init__(self, returncode, stdout="", stderr=""):
+    def __init__(self, returncode, stdout="", stderr="", fake_stream=True):
         self.returncode = returncode
         self.args = ()
-        self.stdout = _FakeIO(stdout)
-        self.stderr = _FakeIO(stderr)
+        self.stdout = _FakeIO(stdout) if fake_stream else stdout
+        self.stderr = _FakeIO(stderr) if fake_stream else stderr
 
     def poll(self):
         return self.returncode
@@ -514,6 +514,10 @@ def test_up_executor_options(mocker, executor_name, executor_module_path):
 
     # For CI tests, pretend homebrew exists.
     mocker.patch("shutil.which", return_value="/opt/homebrew/bin/terraform")
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.subprocess.run",
+        return_value=_FakeProc(0, stdout="v99.99", fake_stream=False),
+    )
 
     crm = CloudResourceManager(
         executor_name=executor_name,
