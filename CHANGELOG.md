@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Terraform output to use scrolling buffer.
+- Terraform output handling to show errors.
+
 ### Added
 
 - check for `/bin/bash` AND `/bin/sh` (in that order) to execute bash leptons
