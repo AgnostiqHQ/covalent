@@ -178,6 +178,7 @@ def up(executor_name: str, vars: Dict, help: bool, dry_run: bool, verbose: bool)
     """
     cmd_options = {key[2:]: value for key, value in (var.split("=") for var in vars)}
     if msg := validate_args(cmd_options):
+        # Message is not None, so there was an error.
         click.echo(msg)
         sys.exit(1)
     crm = get_crm_object(executor_name, cmd_options)
