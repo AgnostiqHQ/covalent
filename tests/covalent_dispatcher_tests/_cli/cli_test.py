@@ -253,7 +253,7 @@ def test_deploy_status(mocker):
     ctx = click.Context(status)
     ctx.invoke(status, executor_names=["invalid"])
 
-    mock_click_style.asert_called_once()
+    mock_click_style.assert_called_once()
 
     # Succeed with 'valid' `executor_names` argument.
     mocker.patch(
