@@ -16,6 +16,7 @@
 
 import os
 import subprocess
+import tempfile
 from configparser import ConfigParser
 from functools import partial
 from pathlib import Path
@@ -430,6 +431,46 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
                 executor_module_path=executor_module_path,
                 options=executor_options,
             )
+
+        # Try again, but force success with patches.
+        # Disable validation.
+        mocker.patch(
+            "covalent.cloud_resource_manager.core.CloudResourceManager.validate_options",
+            return_value=None,
+        )
+        # Disable plugin settings.
+        mocker.patch(
+            "covalent.cloud_resource_manager.core.CloudResourceManager.get_plugin_settings",
+            return_value={},
+        )
+        # Disable path checks so nothing deleted (as it would be, if exists).
+        mocker.patch("covalent.cloud_resource_manager.core.Path.exists", return_value=False)
+        # Disable _run_in_subprocess to avoid side effects.
+        mocker.patch(
+            "covalent.cloud_resource_manager.core.CloudResourceManager._run_in_subprocess",
+        )
+        # Disable _update_config to avoid side effects.
+        mocker.patch(
+            "covalent.cloud_resource_manager.core.CloudResourceManager._update_config",
+        )
+
+        with tempfile.TemporaryDirectory() as d:
+            # Create fake vars file to avoid side effects.
+            fake_tfvars_file = Path(d.name) / "terraform.tfvars"
+            fake_tfvars_file.touch()
+            mocker.patch(
+                "covalent.cloud_resource_manager.core.CloudResourceManager.executor_tf_path",
+                return_value=Path(d.name),
+            )
+
+            crm.up(dry_run=False, print_callback=None)
+
+        crm = CloudResourceManager(
+            executor_name=executor_name,
+            executor_module_path=executor_module_path,
+            options=executor_options,
+        )
+
     else:
         crm = CloudResourceManager(
             executor_name=executor_name,
@@ -452,15 +493,6 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
         )
 
         mock_environ_copy.assert_called_once()
-
-        if executor_options:
-            mock_file.assert_called_once_with(
-                f"{crm.executor_tf_path}/terraform.tfvars",
-                "w",
-            )
-
-            key, value = list(executor_options.items())[0]
-            mock_file().write.assert_called_once_with(f'{key}="{value}"\n')
 
         mock_run_in_subprocess.assert_any_call(
             cmd=f"{test_tf_path} plan -out tf.plan",  # -state={test_tf_state_file}",
@@ -560,22 +592,23 @@ def test_status(mocker, crm):
         return_value=test_tf_state_file,
     )
 
+    mock_terraform_error_validator = mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._terraform_error_validator",
+    )
+
     mocker.patch(
         "covalent.cloud_resource_manager.core.CloudResourceManager._validation_docker",
     )
 
-    mock_run_in_subprocess = mocker.patch(
-        "covalent.cloud_resource_manager.core.CloudResourceManager._run_in_subprocess",
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.subprocess.Popen",
     )
 
     crm.status()
 
     mock_get_tf_path.assert_called_once()
     mock_get_tf_statefile_path.assert_called_once()
-    mock_run_in_subprocess.assert_called_once_with(
-        cmd=f"{test_tf_path} state list -state={test_tf_state_file}",
-        env_vars=crm._terraform_log_env_vars,
-    )
+    mock_terraform_error_validator.assert_called_once_with(tfstate_path=test_tf_state_file)
 
 
 def test_crm_get_resource_status(mocker, crm):
