@@ -626,7 +626,7 @@ def test_tf_version_error(mocker, crm):
     # succeed
     mocker.patch(
         "covalent.cloud_resource_manager.core.float",
-        return_value=latest_incompatible_version + 10_000
+        return_value=latest_incompatible_version + 10_000,
     )
 
     assert "terraform" in crm._get_tf_path()
