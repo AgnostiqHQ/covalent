@@ -237,10 +237,11 @@ class CloudResourceManager:
         tfstate_path = cmds[-1].split("=")[-1]
 
         returncode = self._poll_process(proc, print_callback=None)
-        if returncode != 0:
+        stderr = proc.stderr.read()
+        if returncode != 0 and "No state file was found!" not in stderr:
             print(
                 "Unable to get resource status due to the following error:\n\n",
-                proc.stderr.read(),
+                stderr,
                 file=sys.stderr,
             )
 
