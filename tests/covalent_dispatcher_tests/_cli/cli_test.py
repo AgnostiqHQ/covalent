@@ -18,10 +18,14 @@
 
 """Test for Covalent CLI Tool."""
 
+import subprocess
+
 import click
+import pytest
 from click.testing import CliRunner
 
 from covalent_dispatcher._cli.cli import cli
+from covalent_dispatcher._cli.groups.deploy import _run_command_and_show_output
 
 
 def test_cli(mocker):
@@ -65,3 +69,51 @@ def test_cli_commands():
         "status",
         "stop",
     ]
+
+
+@pytest.mark.parametrize(
+    ("error", "verbose"),
+    [
+        (False, False),
+        (False, True),
+        (True, False),
+        (True, True),
+    ],
+)
+def test_run_command_and_show_output(mocker, error, verbose):
+    """
+    Unit test for `_run_command_and_show_output` function.
+
+    Test that errors are raised and messages printed when expected.
+    """
+
+    mock_console_print = mocker.patch("rich.console.Console.print")
+    mock_click_echo = mocker.patch("click.echo")
+    mocker.patch(
+        "covalent_dispatcher._cli.groups.deploy_print_callbacks.ScrollBufferCallback.complete_msg",
+        return_value="Apply complete! Resources: 19 added, 0 changed, 0 destroyed.",
+    )
+
+    def _command(*args, **kwargs):
+        _command.calls += 1
+        _output = "Testing Error..."
+        _error = subprocess.CalledProcessError(1, "terraform", _output)
+        if error:
+            raise _error
+
+    _command.calls = 0
+
+    if error:
+        msg = "Testing Error..."
+        with pytest.raises(SystemExit):
+            _run_command_and_show_output(_command, msg, verbose=verbose)
+    else:
+        msg = "Testing Success..."
+        _run_command_and_show_output(_command, msg, verbose=verbose)
+
+    if error:
+        mock_click_echo.assert_called_once_with("Testing Error...")
+    elif not verbose:
+        mock_console_print.assert_called_once()
+    else:
+        assert _command.calls == 1

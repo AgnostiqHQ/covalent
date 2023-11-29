@@ -524,7 +524,6 @@ def test_status(mocker, crm):
 
     test_tf_path = "test_tf_path"
     test_tf_state_file = "test_tf_state_file"
-    log_file_path = os.path.join(crm.executor_tf_path + "/terraform-error.log")
     mock_get_tf_path = mocker.patch(
         "covalent.cloud_resource_manager.core.CloudResourceManager._get_tf_path",
         return_value=test_tf_path,
@@ -551,3 +550,77 @@ def test_status(mocker, crm):
         cmd=f"{test_tf_path} state list -state={test_tf_state_file}",
         env_vars=crm._terraform_log_env_vars,
     )
+
+
+class _FakeIO:
+    """Mocks process stdout and stderr."""
+
+    def __init__(self, message):
+        self.message = message
+
+    def read(self):
+        return self.message
+
+    def readline(self):
+        return self.read()
+
+
+class _FakeProc:
+    """Mocks process"""
+
+    def __init__(self, returncode):
+        self.returncode = returncode
+        self.args = ()
+        self.stdout = _FakeIO("v99.99")
+        self.stderr = _FakeIO("")
+
+    def poll(self):
+        return self.returncode
+
+
+def test_crm_get_resource_status(mocker, crm):
+    """
+    Unit test for CloudResourceManager._get_resource_status() method.
+
+    Test that errors while getting resource status don't exit, rather print and report status.
+    """
+
+    mock_terraform_error_validator = mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._terraform_error_validator",
+    )
+    mock_print = mocker.patch(
+        "covalent.cloud_resource_manager.core.print",
+    )
+
+    crm._get_resource_status(
+        proc=_FakeProc(1),
+        cmd="fake command"
+    )
+    mock_print.assert_called_once()
+    mock_terraform_error_validator.assert_called_once()
+
+
+def test_no_git(crm, mocker):
+    """
+    Test for exit with status 1 if `git` is not available.
+    """
+
+    mocker.patch("shutil.which", return_value=None)
+    mocker.patch("covalent.cloud_resource_manager.CloudResourceManager._log_error_msg")
+
+    with pytest.raises(SystemExit):
+        crm._run_in_subprocess("fake command")
+
+
+def test_tf_version_error(mocker, crm):
+    """
+    Unit test for CloudResourceManager._get_tf_path() method.
+    """
+    latest_incompatible_version = 1.3
+    mocker.patch(
+        "covalent.cloud_resource_manager.core.float",
+        return_value=latest_incompatible_version
+    )
+
+    with pytest.raises(SystemExit):
+        crm._get_tf_path()
