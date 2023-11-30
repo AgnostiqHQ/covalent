@@ -30,7 +30,7 @@ on:
       commit_sha:
         description: "Commit SHA used for testing"
         type: string
-        required: true
+        required: false
 
 jobs:
   build_test_matrix:
@@ -66,8 +66,8 @@ jobs:
     outputs:
       codecov: ${{ steps.local-codecov.outputs.local_codecov }}
     steps:
-      - name: Check out head
-        if: github.event_name != 'workflow_dispatch'
+      - name: Check out the default branch
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.commit_sha == ''
         uses: actions/checkout@v4
         with:
           persist-credentials: false
