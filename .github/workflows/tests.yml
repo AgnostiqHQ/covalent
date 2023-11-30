@@ -28,7 +28,7 @@ on:
   workflow_dispatch:
     inputs:
       commit_sha:
-        description: "Commit SHA used for testing"
+        description: "Commit SHA used for testing. If left blank, the default branch will be used."
         type: string
         required: false
 
