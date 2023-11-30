@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Terraform output to use scrolling buffer.
 - Terraform output handling to show errors.
+- Bumped up babel/traverse version to 7.23.2
 
 ## [0.231.0-rc.0] - 2023-11-28
 
