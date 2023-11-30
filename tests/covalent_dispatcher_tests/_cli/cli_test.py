@@ -241,11 +241,25 @@ def test_deploy_status(mocker):
     Unit test for `covalent deploy status [executor_name]` command.
     """
 
+    from covalent.executor import _executor_manager
     from covalent_dispatcher._cli.groups.deploy_group import status
 
     # Succeed with empty `executor_names` argument.
+    # Ignoring extra plugin(s) discovered in CI tests environment.
+    filtered_plugins_map = {
+        k: v
+        for k, v in _executor_manager.executor_plugins_map.items()
+        if k not in ["timing_plugin"]
+    }
+    mock_executor_manager = mocker.patch.object(
+        _executor_manager,
+        "executor_plugins_map",
+        return_value=filtered_plugins_map,
+    )
+
     ctx = click.Context(status)
     ctx.invoke(status, executor_names=[])
+    mocker.stop(mock_executor_manager)  # stop ignoring any plugins
 
     # Succeed with invalid `executor_names` argument.
     mock_click_style = mocker.patch("click.style")
