@@ -53,7 +53,7 @@ def test_asset_load_data():
         temppath = temp.name
         key = os.path.basename(temppath)
 
-    storage_path = "/tmp"
+    storage_path = temppath[: -len(key)]
 
     rec = get_asset_record(storage_path, key)
     a = Asset(None, rec)
@@ -65,7 +65,9 @@ def test_asset_store_data():
     with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
         temppath = temp.name
         key = os.path.basename(temppath)
-    storage_path = "/tmp"
+
+    storage_path = temppath[: -len(key)]
+
     rec = get_asset_record(storage_path, key)
     a = Asset(None, rec)
     a.store_data("Hello\n")
@@ -80,7 +82,8 @@ def test_upload_asset():
     with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
         src_path = temp.name
         src_key = os.path.basename(src_path)
-    storage_path = "/tmp"
+
+    storage_path = src_path[: -len(src_key)]
 
     rec = get_asset_record(storage_path, src_key)
     a = Asset(None, rec)
@@ -101,10 +104,12 @@ def test_download_asset():
     with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
         src_path = temp.name
         src_key = os.path.basename(src_path)
+
     with open(src_path, "w") as f:
         f.write("Hello\n")
 
-    storage_path = "/tmp"
+    storage_path = src_path[: -len(src_key)]
+
     with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
         dest_path = temp.name
         dest_key = os.path.basename(dest_path)
@@ -123,10 +128,11 @@ def test_copy_asset():
     with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
         src_path = temp.name
         src_key = os.path.basename(src_path)
+
     with open(src_path, "w") as f:
         f.write("Hello\n")
 
-    storage_path = "/tmp"
+    storage_path = src_path[: -len(src_key)]
     rec = get_asset_record(storage_path, src_key)
     src_asset = Asset(None, rec)
 
