@@ -20,6 +20,7 @@
 import subprocess
 import sys
 from functools import partial
+from importlib import import_module
 from pathlib import Path
 from typing import Callable, Dict, Tuple
 
@@ -44,9 +45,8 @@ def get_crm_object(executor_name: str, options: Dict = None) -> CloudResourceMan
         CloudResourceManager object.
 
     """
-    executor_module_path = Path(
-        __import__(_executor_manager.executor_plugins_map[executor_name].__module__).__path__[0]
-    )
+    executor_plugin = _executor_manager.executor_plugins_map[executor_name]
+    executor_module_path = Path(import_module(executor_plugin.__module__).__file__).parent
     return CloudResourceManager(executor_name, executor_module_path, options)
 
 
