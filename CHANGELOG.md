@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Ignore custom executor plugin in how-to's when running `test_deploy_status` CLI test.
+
 ### Changed
 
 - Terraform output to use scrolling buffer.
