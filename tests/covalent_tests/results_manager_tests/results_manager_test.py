@@ -265,11 +265,13 @@ def test_get_result_RecursionError(mocker):
     """Check exception handing for RecursionError."""
 
     dispatch_id = "test_get_result_RecursionError"
-    with mocker.patch(
-        "covalent._results_manager.results_manager._get_result_multistage",
-        side_effect=RecursionError("from test_get_result_RecursionError"),
-    ):
-        assert get_result(dispatch_id, wait=True) is None
+
+    with pytest.raises(RuntimeError):
+        with mocker.patch(
+            "covalent._results_manager.results_manager._get_result_multistage",
+            side_effect=RecursionError("from test_get_result_RecursionError"),
+        ):
+            get_result(dispatch_id, wait=True)
 
 
 def test_get_status_only(mocker):
