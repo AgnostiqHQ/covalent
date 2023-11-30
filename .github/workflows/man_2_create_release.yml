@@ -25,6 +25,11 @@ on:
         default: true
         description: "WARNING: Make sure the `man_1_push_to_master` workflow has passed successfully before running this workflow.
         Uncheck this box if it has."
+      branch_name:
+        type: string
+        required: true
+        default: "master"
+        description: "The name of the branch to create a release from, defaults to master."
 
 permissions:
   id-token: write
@@ -38,6 +43,7 @@ jobs:
       !github.event.inputs.check_push_to_master
     with:
       prerelease: true
+      prerelease_name: github.event.inputs.branch_name
     secrets: inherit # pragma: allowlist secret
 
   notify_slack:

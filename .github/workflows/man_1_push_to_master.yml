@@ -38,24 +38,6 @@ jobs:
       release: ${{ steps.push.outputs.release }}
 
     steps:
-      - name: Get all the tags
-        id: query-tags
-        uses: octokit/request-action@v2.x
-        with:
-          route: GET /repos/AgnostiqHQ/covalent/tags
-        env:
-          GITHUB_TOKEN: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
-
-      - name: Parse the latest tag
-        id: get-latest-tag
-        run: |
-          # This assumes that the response from the API is sorted in decreasing order (thus the first element is the latest tag)
-          # Remember, the latest tag IS NOT necessarily the latest released version, i.e.,
-          # the latest tag can be 0.220.0post2, but the latest release/pre-release is actually 0.228.0rc0,
-          # which is why it SHOULD NOT be used in place of the latest version (for example when incrementing the version number).
-          latest_tag=${{ fromJSON(steps.query-tags.outputs.data)[0].name }}
-          echo "::set-output name=tag::${latest_tag}"
-
       - name: Get versions of develop and master
         id: get-versions
         uses: actions/checkout@v4
