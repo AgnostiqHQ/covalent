@@ -71,7 +71,7 @@ def _deserialize_edge(e: EdgeSchema) -> dict:
     return {
         "source": e.source,
         "target": e.target,
-        "attrs": e.metadata.dict(),
+        "attrs": e.metadata.model_dump(),
     }
 
 

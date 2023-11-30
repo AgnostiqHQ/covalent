@@ -18,7 +18,7 @@
 
 from typing import Dict, Optional
 
-from pydantic import BaseModel, validator
+from pydantic import BaseModel, field_validator
 
 from .asset import AssetSchema
 from .transport_graph import TransportGraphSchema
@@ -115,7 +115,7 @@ class LatticeSchema(BaseModel):
 
     transport_graph: TransportGraphSchema
 
-    @validator("custom_assets")
+    @field_validator("custom_assets")
     def check_custom_asset_keys(cls, v):
         if v is not None:
             for key in v:

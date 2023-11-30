@@ -36,11 +36,11 @@ class QNodeSpecs(BaseModel):
     num_trainable_params: int = None
     num_device_wires: int
     device_name: str
-    diff_method: Optional[str]
+    diff_method: Optional[str] = None
     expansion_strategy: str
     gradient_options: Dict[str, int]
-    interface: Optional[str]
-    gradient_fn: Any  # can be string or `qml.gradients.gradient_transform`
+    interface: Optional[str] = None
+    gradient_fn: Any = None  # can be string or `qml.gradients.gradient_transform`
     num_gradient_executions: Any = 0
     num_parameter_shift_executions: int = None
 
@@ -56,7 +56,7 @@ class QElectronInfo(BaseModel):
     device_import_path: str  # used to inherit type converters and other methods
     device_shots: Union[
         None, int, Sequence[int], Sequence[Union[int, Sequence[int]]]
-    ]  # optional default for execution devices
+    ] = None  # optional default for execution devices
     device_shots_type: Any = None
     device_wires: int  # this can not be reliably inferred from tapes alone
     pennylane_active_return: bool  # client-side status of `pennylane.active_return()`

@@ -6,6 +6,7 @@ Covalent API
 
 The following API documentation describes how to use Covalent.
 
+- The :ref:`covalent_server` manages workflow dispatch, orchestration, and metadata
 - :ref:`electrons_api` and :ref:`lattices_api` are used for constructing workflows
 - :ref:`qelectrons_api` are used to customize and track quantum circuit execution
 - :ref:`qclusters_api` are used to distribute Quantum Electrons across multiple quantum backends.
@@ -21,6 +22,29 @@ The following API documentation describes how to use Covalent.
 - :ref:`results_interface` is used for collecting and manipulating results
 - :ref:`dispatcher_interface` is used for dispatching workflows and stopping triggered dispatches
 - The :ref:`dispatcher_server_api` is used for interfacing with the Covalent server
+
+.. _covalent_server:
+
+Covalent Server
+"""""""""""""""""""""""""""
+A Covalent server must be running in order to dispatch workflows. The Covalent CLI provides various utilities for starting, stopping, and managing a Covalent server. For more information, see:
+
+.. code-block:: bash
+
+    covalent --help
+
+The Covalent SDK also includes a Python interface for starting and stopping the Covalent server.
+
+.. autofunction:: covalent._programmatic.commands.is_covalent_running
+
+
+.. autofunction:: covalent._programmatic.commands.covalent_start
+
+
+.. autofunction:: covalent._programmatic.commands.covalent_stop
+
+
+----------------------------------------------------------------
 
 .. _electrons_api:
 

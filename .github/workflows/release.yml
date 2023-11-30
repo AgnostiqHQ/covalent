@@ -40,6 +40,10 @@ on:
         type: string
         default: "master"
 
+permissions:
+  id-token: write
+  contents: read
+
 env:
   PAUL_BLART: >
     '['
@@ -266,9 +270,6 @@ jobs:
 
   docker:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
     steps:
       - name: Check out release tag
         uses: actions/checkout@v2
