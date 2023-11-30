@@ -27,6 +27,17 @@ on:
         required: true
         type: boolean
         default: true
+      prerelease:
+        description: "true: Create a prerelease. false: Create a stable release"
+        required: true
+        type: boolean
+        default: true
+      prerelease_version:
+        description: "The prerelease version to release"
+        required: false
+        type: string
+        default: "master"
+
   workflow_call:
     inputs:
       prerelease:
@@ -68,10 +79,10 @@ jobs:
           fetch-depth: 0
           ref: "v${{ github.event.inputs.stable_version }}"
       - name: Format prerelease ref
-        if: inputs.prerelease
+        if: github.event.inputs.prerelease_version
         run: |
           re='^[0-9]+$'
-          IFS='.' read -ra version <<< "${{ inputs.prerelease_version }}"
+          IFS='.' read -ra version <<< "${{ github.event.inputs.prerelease_version }}"
           if [[ ${version[0]} =~ $re ]] ; then
             echo "PRERELEASE=v$version" >> $GITHUB_ENV
           else
@@ -79,7 +90,7 @@ jobs:
           fi
       - name: Check out prerelease tag
         uses: actions/checkout@v4
-        if: inputs.prerelease
+        if: github.event.inputs.prerelease
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -96,7 +107,7 @@ jobs:
 
       - name: Read version
         run: |
-          if [ -z ${{ inputs.prerelease }} ] && \
+          if [ -z ${{ github.event.inputs.prerelease }} ] && \
              [ -z ${{ github.event.inputs.stable_version }} ] ; then
             echo "You can't create a stable release without specifying the stable version number."
             exit 1
@@ -105,7 +116,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "RELEASE=v$VERSION" >> $GITHUB_ENV
       - name: Generate prerelease message
-        if: inputs.prerelease
+        if: github.event.inputs.prerelease
         id: message
         run: |
           begin=$(grep -n "\b${VERSION}\b" ./CHANGELOG.md | cut -d ':' -f 1)
@@ -125,7 +136,7 @@ jobs:
           git push origin $RELEASE
       - name: Create prerelease
         if: >-
-          inputs.prerelease
+          github.event.inputs.prerelease
           && steps.message.outcome == 'success'
           && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false')
         uses: ncipollo/release-action@v1
@@ -196,7 +207,7 @@ jobs:
       - name: Validate Distribution
         id: validate
         run: |
-          if [ -z ${{ inputs.prerelease }} ] && \
+          if [ -z ${{ github.event.inputs.prerelease }} ] && \
              [ -z ${{ github.event.inputs.stable_version }} ] ; then
             echo "You can't create a stable release without specifying the stable version number."
             exit 1
