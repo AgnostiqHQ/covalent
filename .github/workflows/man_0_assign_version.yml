@@ -31,8 +31,14 @@ permissions:
   contents: read
 
 jobs:
+  license:
+    name: License Scanner
+    uses: AgnostiqHQ/covalent/.github/workflows/license.yml@develop
+
   version_assigner:
     name: Assign Version
+    needs:
+      - license
     if: >
       !github.event.inputs.check_tests
     uses: AgnostiqHQ/covalent/.github/workflows/changelog.yml@develop
