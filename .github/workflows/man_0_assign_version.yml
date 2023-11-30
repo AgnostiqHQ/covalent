@@ -16,6 +16,16 @@
 
 name: man_0_assign_version
 
+on:
+  workflow_dispatch:
+    inputs:
+      check_tests:
+        type: boolean
+        required: true
+        default: true
+        description: "WARNING: Make sure the `nightly-tests` workflow has passed successfully before running this workflow.
+        Uncheck this box if it has."
+
 permissions:
   id-token: write
   contents: read
@@ -23,8 +33,7 @@ permissions:
 jobs:
   version_assigner:
     name: Assign Version
-    needs:
-      - license
-      - tests
+    if: >
+      !github.event.inputs.check_tests
     uses: AgnostiqHQ/covalent/.github/workflows/changelog.yml@develop
     secrets: inherit # pragma: allowlist secret

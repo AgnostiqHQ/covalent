@@ -16,6 +16,16 @@
 
 name: man_1_push_to_master
 
+on:
+  workflow_dispatch:
+    inputs:
+      check_assign_version:
+        type: boolean
+        required: true
+        default: true
+        description: "WARNING: Make sure the `man_0_assign_version` workflow has passed successfully before running this workflow.
+        Uncheck this box if it has."
+
 permissions:
   id-token: write
   contents: read
@@ -60,6 +70,8 @@ jobs:
 
       - name: Perform the push to master
         id: push
+        if: >
+          !github.event.inputs.check_assign_version
         run: |
           DEVELOP_VERSION="${{ steps.get-versions.outputs.develop_version }}"
           MASTER_VERSION="${{ steps.get-versions.outputs.master_version }}"

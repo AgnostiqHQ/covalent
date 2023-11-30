@@ -16,6 +16,18 @@
 
 name: man_2_create_release
 
+on:
+  workflow_dispatch:
+    inputs:
+      check_push_to_master:
+        type: boolean
+        required: true
+        default: true
+        description: "WARNING: Make sure the `man_1_push_to_master` workflow has passed successfully before running this workflow.
+        Uncheck this box if it has."
+
 permissions:
   id-token: write
   contents: read
+
+jobs:
