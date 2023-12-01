@@ -104,8 +104,8 @@ class LatticeMetadata(BaseModel):
     executor_data: dict
     workflow_executor: str
     workflow_executor_data: dict
-    python_version: str
-    covalent_version: str
+    python_version: Optional[str] = None
+    covalent_version: Optional[str] = None
 
 
 class LatticeSchema(BaseModel):
