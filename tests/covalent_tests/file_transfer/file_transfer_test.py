@@ -26,6 +26,8 @@ from covalent._file_transfer.file_transfer import (
     TransferToRemote,
 )
 from covalent._file_transfer.strategies.rsync_strategy import Rsync
+from covalent._file_transfer.strategies.s3_strategy import S3
+from covalent._file_transfer.strategies.shutil_strategy import Shutil
 
 
 class TestFileTransfer:
@@ -109,3 +111,18 @@ class TestFileTransfer:
 
         with pytest.raises(ValueError):
             result = TransferToRemote("file:///home/one", "file:///home/one/", strategy=strategy)
+
+    def test_auto_transfer_strategy(self):
+        from_file = File("s3://bucket/object.pkl")
+        to_file = File("file:///tmp/object.pkl")
+        ft = FileTransfer(from_file, to_file)
+        assert type(ft.strategy) is S3
+
+        ft = FileTransfer(to_file, from_file)
+        assert type(ft.strategy) is S3
+
+        ft = FileTransfer(to_file, to_file)
+        assert type(ft.strategy) is Shutil
+
+        with pytest.raises(AttributeError):
+            _ = FileTransfer(from_file, from_file)
