@@ -111,7 +111,7 @@ def import_lattice_assets(
 
         # Send this back to the client
         asset.digest = None
-        asset.remote_uri = f"file://{local_uri}"
+        asset.remote_uri = f"{object_store.scheme}://{local_uri}"
 
     # Register custom assets
     if lat.assets._custom:
@@ -131,7 +131,7 @@ def import_lattice_assets(
             asset_ids[asset_key] = Asset.create(session, insert_kwargs=asset_kwargs, flush=False)
 
             # Send this back to the client
-            asset.remote_uri = f"file://{local_uri}" if asset.digest else ""
+            asset.remote_uri = f"{object_store.scheme}://{local_uri}" if asset.size > 0 else None
             asset.digest = None
 
     session.flush()

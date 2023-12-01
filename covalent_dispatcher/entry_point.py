@@ -30,28 +30,6 @@ app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 
-async def make_dispatch(json_lattice: str):
-    """
-    Run the dispatcher from the lattice asynchronously using Dask.
-    Assign a new dispatch id to the result object and return it.
-    Also save the result in this initial stage to the file mentioned in the result object.
-
-    Args:
-        json_lattice: A JSON-serialized lattice
-
-    Returns:
-        dispatch_id: A string containing the dispatch id of current dispatch.
-    """
-
-    from ._core import make_dispatch
-
-    dispatch_id = await make_dispatch(json_lattice)
-
-    app_log.debug(f"Created new dispatch {dispatch_id}")
-
-    return dispatch_id
-
-
 async def start_dispatch(dispatch_id: str):
     """
     Run the dispatcher from the lattice asynchronously using Dask.
@@ -78,27 +56,6 @@ async def start_dispatch(dispatch_id: str):
     # Idempotent
     run_dispatch(dispatch_id)
     app_log.debug(f"Running dispatch {dispatch_id}")
-
-
-async def run_dispatcher(json_lattice: str):
-    """
-    Run the dispatcher from the lattice asynchronously using Dask.
-    Assign a new dispatch id to the result object and return it.
-    Also save the result in this initial stage to the file mentioned in the result object.
-
-    Args:
-        json_lattice: A JSON-serialized lattice
-
-    Returns:
-        dispatch_id: A string containing the dispatch id of current dispatch.
-    """
-
-    dispatch_id = await make_dispatch(json_lattice)
-    await start_dispatch(dispatch_id)
-
-    app_log.debug("Submitted result object to run_workflow.")
-
-    return dispatch_id
 
 
 async def cancel_running_dispatch(dispatch_id: str, task_ids: List[int] = None) -> None:

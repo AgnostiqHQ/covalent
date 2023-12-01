@@ -157,7 +157,23 @@ def import_electron_assets(
 
         # Send this back to the client
         asset.digest = None
-        asset.remote_uri = f"file://{local_uri}"
+        asset.remote_uri = f"{object_store.scheme}://{local_uri}"
+
+    # Declare an asset for sublattice manifests
+    electron_type = get_electron_type(e.metadata.name)
+    if electron_type == "sublattice":
+        object_key = "result.tobj"
+        local_uri = os.path.join(node_storage_path, object_key)
+        asset_kwargs = {
+            "storage_type": object_store.scheme,
+            "storage_path": node_storage_path,
+            "object_key": object_key,
+            "digest_alg": None,
+            "digest": None,
+            "remote_uri": None,
+            "size": 0,
+        }
+        asset_recs["sublattice_manifest"] = Asset.create(session, insert_kwargs=asset_kwargs, flush=False)
 
     # Register custom assets
     if e.assets._custom:
@@ -177,7 +193,7 @@ def import_electron_assets(
             asset_recs[asset_key] = Asset.create(session, insert_kwargs=asset_kwargs, flush=False)
 
             # Send this back to the client
-            asset.remote_uri = f"file://{local_uri}" if asset.digest else ""
+            asset.remote_uri = f"{object_store.scheme}://{local_uri}" if asset.size > 0 else None
             asset.digest = None
 
     return e.assets, asset_recs

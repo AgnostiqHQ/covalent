@@ -27,24 +27,10 @@ from covalent_dispatcher.entry_point import (
     cancel_running_dispatch,
     register_dispatch,
     register_redispatch,
-    run_dispatcher,
     start_dispatch,
 )
 
 DISPATCH_ID = "f34671d1-48f2-41ce-89d9-9a8cb5c60e5d"
-
-
-@pytest.mark.asyncio
-async def test_run_dispatcher(mocker):
-    mock_run_dispatch = mocker.patch("covalent_dispatcher._core.run_dispatch")
-    mock_make_dispatch = mocker.patch(
-        "covalent_dispatcher._core.make_dispatch", return_value=DISPATCH_ID
-    )
-    json_lattice = '{"workflow_function": "asdf"}'
-    dispatch_id = await run_dispatcher(json_lattice)
-    assert dispatch_id == DISPATCH_ID
-    mock_make_dispatch.assert_awaited_with(json_lattice)
-    mock_run_dispatch.assert_called_with(dispatch_id)
 
 
 @pytest.mark.asyncio

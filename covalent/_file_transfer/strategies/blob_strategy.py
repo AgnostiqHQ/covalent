@@ -73,7 +73,7 @@ class Blob(FileTransferStrategy):
         """Parses a blob URI and returns the account name, container name, and blob name.
 
         Args:
-            blob_uri: A URI for an Azure Blob object in the form https://<storage_account_name>.blob.core.windows.net/<container_name>/<blob_name>
+            blob_uri: A URI for an Azure Blob object in the form blob://<storage_account_name>.blob.core.windows.net/<container_name>/<blob_name>
 
         Returns:
             parsed_uri: A tuple containing the storage account name, container name, and blob name

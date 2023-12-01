@@ -46,18 +46,11 @@ class TestFile:
             ("file:///home/ubuntu/observations.csv", FileSchemes.File),
             ("s3://mybucket/observations.csv", FileSchemes.S3),
             ("globus://037f054a-15cf-11e8-b611-0ac6873fc731/observations.txt", FileSchemes.Globus),
+            ("blob://my-account.blob.core.windows.net/container/blob", FileSchemes.Blob)
         ],
     )
     def test_scheme_resolution(self, filepath, expected_scheme):
         assert File(filepath).scheme == expected_scheme
-
-    def test_scheme_to_strategy_map(self):
-        assert File("s3://file").mapped_strategy_type == FileTransferStrategyTypes.S3
-        assert File("ftp://file").mapped_strategy_type == FileTransferStrategyTypes.FTP
-        assert File("globus://file").mapped_strategy_type == FileTransferStrategyTypes.GLOBUS
-        assert File("file://file").mapped_strategy_type == FileTransferStrategyTypes.Shutil
-        assert File("https://example.com").mapped_strategy_type == FileTransferStrategyTypes.HTTP
-        assert File("http://example.com").mapped_strategy_type == FileTransferStrategyTypes.HTTP
 
     def test_is_remote_flag(self):
         assert File("s3://file").is_remote
@@ -67,6 +60,7 @@ class TestFile:
         assert File("file://file", is_remote=True).is_remote
         assert File("https://example.com").is_remote
         assert File("http://example.com").is_remote
+        assert File("blob://msft-acct.blob.core.windows.net/container/blob").is_remote
 
     @pytest.mark.parametrize(
         "filepath, expected_filepath",

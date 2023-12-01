@@ -42,6 +42,7 @@ from .models import (
     BulkGetMetadata,
     DispatchStatusSetSchema,
     DispatchSummary,
+    ElectronUpdateSchema,
     TargetDispatchStatus,
 )
 
@@ -171,28 +172,26 @@ async def register(manifest: ResultSchema) -> ResultSchema:
         ) from e
 
 
-@router.post("/dispatches/{dispatch_id}/sublattices", status_code=201)
-async def register_subdispatch(
-    manifest: ResultSchema,
-    dispatch_id: str,
-) -> ResultSchema:
-    """Register a subdispatch in the database.
+@router.patch("/dispatches/{dispatch_id}/electrons/{node_id}")
+def associate_sublattice_with_electron(dispatch_id: str, node_id: str, body: ElectronUpdateSchema):
+    dispatch_controller = Result.meta_type
 
-    Args:
-        manifest: Declares all metadata and assets in the workflow
-        dispatch_id: The parent dispatch id
+    with workflow_db.session() as session:
+        res = get_result_object(dispatch_id, bare=True, session=session)
+        node = res.lattice.transport_graph.get_node(node_id, session=session)
+        electron_id = node._electron_id
 
-    Returns:
-        The manifest with `dispatch_id` and remote URIs for each asset populated.
-    """
-    try:
-        return await dispatcher.register_dispatch(manifest, dispatch_id)
-    except Exception as e:
-        app_log.debug(f"Exception in register: {e}")
-        raise HTTPException(
-            status_code=400,
-            detail=f"Failed to submit workflow: {e}",
-        ) from e
+        dispatch_controller.update_bulk(
+            session=session,
+            values={"electron_id": electron_id},
+            equality_filters={"dispatch_id": body.sub_dispatch_id},
+            membership_filters={},
+        )
+        session.commit()
+
+    app_log.debug(
+        f"Associated sublattice {body.sub_dispatch_id} with parent electron {dispatch_id}:{node_id}"
+    )
 
 
 @router.post("/dispatches/{dispatch_id}/redispatches", status_code=201)

@@ -174,5 +174,9 @@ def copy_asset_meta(session: Session, src: Asset, dest: Asset):
         "digest_alg": src.digest_alg,
         "digest": src.digest,
         "size": src.size,
+        "storage_type": src.storage_type.value,
+        "storage_path": src.storage_path,
+        "object_key": src.object_key,
+        "remote_uri": src.remote_uri,
     }
     dest.update(session, values=update)

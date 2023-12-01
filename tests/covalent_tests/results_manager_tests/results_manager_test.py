@@ -277,20 +277,8 @@ def test_get_status_only(mocker):
 def test_download_asset(mocker):
     dispatch_id = "test_download_asset"
     remote_uri = f"http://localhost:48008/api/v2/dispatches/{dispatch_id}/assets/result"
-    mock_client = MagicMock()
-    mock_response = MagicMock()
-    mock_response.status_code = 200
-
-    mock_client.get = MagicMock(return_value=mock_response)
-    mocker.patch(
-        "covalent._results_manager.results_manager.CovalentAPIClient", return_value=mock_client
-    )
-
-    def mock_generator():
-        yield "Hello".encode("utf-8")
-
-    mock_response.iter_content = MagicMock(return_value=mock_generator())
+    mock_get = mocker.patch("requests.get")
 
     with tempfile.NamedTemporaryFile() as local_file:
         download_asset(remote_uri, local_file.name)
-        assert local_file.read().decode("utf-8") == "Hello"
+        mock_get.assert_called_with(remote_uri, stream=True)

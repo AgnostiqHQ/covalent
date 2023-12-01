@@ -16,10 +16,12 @@
 
 """Class corresponding to computation nodes."""
 
+import base64
 import inspect
 import json
 import operator
 import tempfile
+import traceback
 from builtins import list
 from copy import deepcopy
 from dataclasses import asdict
@@ -27,7 +29,12 @@ from functools import wraps
 from types import ModuleType
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
 
-from covalent._dispatcher_plugins.local import LocalDispatcher
+from covalent._dispatcher_plugins.local import (
+    BASE_ENDPOINT,
+    APIClient,
+    LocalDispatcher,
+    pack_staging_dir,
+)
 
 from .._file_transfer.enums import Order
 from .._file_transfer.file_transfer import FileTransfer
@@ -858,29 +865,64 @@ def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kw
     DISABLE_LEGACY_SUBLATTICES = os.environ.get("COVALENT_DISABLE_LEGACY_SUBLATTICES") == "1"
 
     try:
-        # Attempt multistage sublattice dispatch. For now we require
-        # the executor to reach the Covalent server
+        # Attempt to build and submit the sublattice directly to the control plane
+
         parent_dispatch_id = os.environ["COVALENT_DISPATCH_ID"]
         dispatcher_url = os.environ["COVALENT_DISPATCHER_URL"]
+        tasks = json.loads(os.environ["COVALENT_TASKS"])
 
         with tempfile.TemporaryDirectory(prefix="covalent-") as staging_path:
             manifest = LocalDispatcher.prepare_manifest(sub, staging_path)
-
-            # Omit these two steps to return the manifest to Covalent and
-            # request the assets be pulled
             recv_manifest = LocalDispatcher.register_manifest(
                 manifest,
                 dispatcher_addr=dispatcher_url,
-                parent_dispatch_id=parent_dispatch_id,
                 push_assets=True,
             )
+
+            # Read the parent electron from COVALENT_TASKS and connect it
+            # with the sublattice dispatch
+            if len(tasks) == 1:
+                node_id = tasks[0]["electron_id"]
+                body = {"sub_dispatch_id": recv_manifest.metadata.dispatch_id}
+                endpoint = f"{BASE_ENDPOINT}/{parent_dispatch_id}/electrons/{node_id}"
+                r = APIClient(dispatcher_url).patch(endpoint, json=body)
+                r.raise_for_status()
+            else:
+                raise RuntimeError(
+                    "Error: could not deduce sublattice electron from COVALENT_TASKS"
+                )
+
             LocalDispatcher.upload_assets(recv_manifest)
 
-        return recv_manifest.model_dump_json()
+            # Indicate that the sublattice was successfully submitted
+            manifest.metadata.dispatch_id = recv_manifest.metadata.dispatch_id
+            manifest.metadata.root_dispatch_id = recv_manifest.metadata.root_dispatch_id
+            tar_file = pack_staging_dir(staging_path, manifest)
+            with open(tar_file, "rb") as tar:
+                tar_b64 = base64.b64encode(tar.read()).decode("utf-8")
+
+        os.unlink(tar_file)
+        return tar_b64
 
     except Exception as ex:
-        # Fall back to legacy sublattice handling
+        # If the executor can't reach the control plane, pack up the staging directory
+        # and let the control plane import the tarball
+
+        tb = "".join(traceback.TracebackException.from_exception(ex).format())
         if DISABLE_LEGACY_SUBLATTICES:
+            print(f"Unable to submit sublattice dispatch: {tb}")
             raise
-        print("Falling back to legacy sublattice handling")
-        return sub.serialize_to_json()
+
+        print("Packing staging directory for server-side import")
+        with tempfile.TemporaryDirectory(prefix="covalent-") as staging_path:
+            manifest = LocalDispatcher.prepare_manifest(sub, staging_path)
+
+            tar_file = pack_staging_dir(staging_path, manifest)
+
+            # The base64-encoded tarball will be read server-side
+            # as `TransportableObject.object_string`
+            with open(tar_file, "rb") as tar:
+                tar_b64 = base64.b64encode(tar.read()).decode("utf-8")
+
+        os.unlink(tar_file)
+        return tar_b64

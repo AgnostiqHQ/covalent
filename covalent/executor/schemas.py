@@ -53,9 +53,9 @@ class TaskSpec(BaseModel):
     """An abstract description of a runnable task.
 
     Attributes:
-        function_id: The `node_id` of the function.
-        args_ids: The `node_id`s of the function's args
-        kwargs_ids: The `node_id`s of the function's kwargs {key: node_id}
+        electron_id: The `node_id` of the function.
+        args: The `node_id`s of the function's args
+        kwargs: The `node_id`s of the function's kwargs {key: node_id}
         hooks_id: An opaque string representing the task's hooks.
 
     The attribute values can be used in conjunction with a
@@ -63,9 +63,9 @@ class TaskSpec(BaseModel):
     environment.
     """
 
-    function_id: int
-    args_ids: List[int]
-    kwargs_ids: Dict[str, int]
+    electron_id: int
+    args: List[int]
+    kwargs: Dict[str, int]
 
 
 class ResourceMap(BaseModel):
@@ -77,8 +77,8 @@ class ResourceMap(BaseModel):
     Resource identifiers are the attribute values of TaskSpecs. For
     instance, if ts is a `TaskSpec` and rm is the corresponding
     `ResourceMap`, then
-    - the serialized function has URI `rm.functions[ts.function_id]`
-    - the serialized args have URIs `rm.inputs[ts.args_ids[i]]`
+    - the serialized function has URI `rm.functions[ts.electron_id]`
+    - the serialized args have URIs `rm.inputs[ts.args[i]]`
     - the call_before has URI `rm.deps[ts.call_before_id]`
 
     Attributes:

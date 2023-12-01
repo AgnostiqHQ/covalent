@@ -108,12 +108,6 @@ class TransportGraphOps:
                     copy_asset_meta(session, old, new)
                     assets_to_copy.append((old, new))
 
-        # Now perform all data copy operations (this could be slow)
-        if not defer_copy_objects:
-            for item in assets_to_copy:
-                src, dest = item
-                copy_asset(src, dest)
-
         # Return the assets to copy at a later time
         return assets_to_copy
 

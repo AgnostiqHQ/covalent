@@ -180,6 +180,7 @@ def run_task_group(
 
     os.environ["COVALENT_DISPATCH_ID"] = dispatch_id
     os.environ["COVALENT_DISPATCHER_URL"] = server_url
+    os.environ["COVALENT_TASKS"] = json.dumps([task for task in task_specs])
 
     for i, task in enumerate(task_specs):
         result_uri, stdout_uri, stderr_uri = output_uris[i]
@@ -187,9 +188,9 @@ def run_task_group(
         with open(stdout_uri, "w") as stdout, open(stderr_uri, "w") as stderr:
             with redirect_stdout(stdout), redirect_stderr(stderr):
                 try:
-                    task_id = task["function_id"]
-                    args_ids = task["args_ids"]
-                    kwargs_ids = task["kwargs_ids"]
+                    task_id = task["electron_id"]
+                    args = task["args"]
+                    kwargs = task["kwargs"]
 
                     function_uri = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/assets/function"
 
@@ -202,13 +203,13 @@ def run_task_group(
                     ser_kwargs = {}
 
                     # Download args and kwargs
-                    for node_id in args_ids:
+                    for node_id in args:
                         url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{node_id}/assets/output"
                         resp = requests.get(url, stream=True)
                         resp.raise_for_status()
                         ser_args.append(deserialize_node_asset(resp.content, "output"))
 
-                    for k, node_id in kwargs_ids.items():
+                    for k, node_id in kwargs.items():
                         url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{node_id}/assets/output"
                         resp = requests.get(url, stream=True)
                         resp.raise_for_status()
@@ -349,8 +350,9 @@ def run_task_group_alt(
     task_ids = task_group_metadata["node_ids"]
     gid = task_group_metadata["task_group_id"]
 
-    os.environ["COVALENT_DISPATCH_ID"] = dispatch_id
-    os.environ["COVALENT_DISPATCHER_URL"] = server_url
+    # os.environ["COVALENT_DISPATCH_ID"] = dispatch_id
+    # os.environ["COVALENT_DISPATCHER_URL"] = server_url
+    # os.environ["COVALENT_TASKS"] = json.dumps([task for task in task_specs])
 
     for i, task in enumerate(task_specs):
         result_uri, stdout_uri, stderr_uri = output_uris[i]
@@ -358,9 +360,9 @@ def run_task_group_alt(
         with open(stdout_uri, "w") as stdout, open(stderr_uri, "w") as stderr:
             with redirect_stdout(stdout), redirect_stderr(stderr):
                 try:
-                    task_id = task["function_id"]
-                    args_ids = task["args_ids"]
-                    kwargs_ids = task["kwargs_ids"]
+                    task_id = task["electron_id"]
+                    args = task["args"]
+                    kwargs = task["kwargs"]
 
                     # Load function
                     function_uri = resources["functions"][task_id]
@@ -374,14 +376,14 @@ def run_task_group_alt(
                     ser_args = []
                     ser_kwargs = {}
 
-                    args_uris = [resources["inputs"][index] for index in args_ids]
+                    args_uris = [resources["inputs"][index] for index in args]
                     for uri in args_uris:
                         if uri.startswith(prefix):
                             uri = uri[prefix_len:]
                         with open(uri, "rb") as f:
                             ser_args.append(deserialize_node_asset(f.read(), "output"))
 
-                    kwargs_uris = {k: resources["inputs"][v] for k, v in kwargs_ids.items()}
+                    kwargs_uris = {k: resources["inputs"][v] for k, v in kwargs.items()}
                     for key, uri in kwargs_uris.items():
                         if uri.startswith(prefix):
                             uri = uri[prefix_len:]

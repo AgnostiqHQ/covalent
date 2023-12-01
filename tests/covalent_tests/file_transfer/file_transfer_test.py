@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+from typing import Callable
 from unittest.mock import Mock
 
 import pytest
@@ -24,8 +25,24 @@ from covalent._file_transfer.file_transfer import (
     FileTransfer,
     TransferFromRemote,
     TransferToRemote,
+    register_downloader,
+    register_uploader,
+    guess_transfer_strategy
 )
+from covalent._file_transfer.strategies.transfer_strategy_base import FileTransferStrategy
 from covalent._file_transfer.strategies.rsync_strategy import Rsync
+from covalent._file_transfer.strategies.s3_strategy import S3
+from covalent._file_transfer.strategies.shutil_strategy import Shutil
+
+
+# Sample custom transfer strategy
+class HiveTransferStrategy:
+    def download(self, from_file: File, to_file: File) -> Callable:
+        raise NotImplementedError
+
+    def upload(self, from_file: File, to_file: File) -> Callable:
+        raise NotImplementedError
+
 
 
 class TestFileTransfer:
@@ -109,3 +126,36 @@ class TestFileTransfer:
 
         with pytest.raises(ValueError):
             result = TransferToRemote("file:///home/one", "file:///home/one/", strategy=strategy)
+
+    def test_auto_transfer_strategy(self):
+        from_file = File("s3://bucket/object.pkl")
+        to_file = File("file:///tmp/object.pkl")
+        ft = FileTransfer(from_file, to_file)
+        assert type(ft.strategy) is S3
+
+        ft = FileTransfer(to_file, from_file)
+        assert type(ft.strategy) is S3
+
+        ft = FileTransfer(to_file, to_file)
+        assert type(ft.strategy) is Shutil
+
+        with pytest.raises(AttributeError):
+            _ = FileTransfer(from_file, from_file)
+
+    def test_register_custom_schemes_and_transfers(self):
+        register_downloader("hive", HiveTransferStrategy)
+        register_uploader("hive", HiveTransferStrategy)
+        from_file = File("hive://gateway/assets/from_asset")
+        to_file = File("file:///tmp/stdout.txt")
+
+        assert from_file.is_remote
+        assert not to_file.is_remote
+        strategy = guess_transfer_strategy(from_file, to_file)
+        assert strategy == HiveTransferStrategy
+
+        strategy = guess_transfer_strategy(to_file, from_file)
+        assert strategy == HiveTransferStrategy
+
+        # Copying not supported
+        with pytest.raises(AttributeError):
+            guess_transfer_strategy(from_file, from_file)

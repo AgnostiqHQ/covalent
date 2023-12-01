@@ -16,17 +16,19 @@
 
 """Unit tests for electron"""
 
+import copy
 import json
-from unittest.mock import ANY, MagicMock
+from unittest.mock import ANY
 
 import flake8
 import isort
 import pytest
+import requests
 
 import covalent as ct
+from covalent._dispatcher_plugins.local import decode_b64_tar, untar_staging_dir
 from covalent._shared_files.context_managers import active_lattice_manager
 from covalent._shared_files.defaults import WAIT_EDGE_NAME, sublattice_prefix
-from covalent._shared_files.schemas.result import ResultSchema
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.electron import (
     Electron,
@@ -34,7 +36,6 @@ from covalent._workflow.electron import (
     filter_null_metadata,
     get_serialized_function_str,
 )
-from covalent._workflow.lattice import Lattice
 from covalent._workflow.transport import TransportableObject, encode_metadata
 from covalent.executor.executor_plugins.local import LocalExecutor
 
@@ -106,13 +107,14 @@ def test_build_sublattice_graph(mocker):
     mock_environ = {
         "COVALENT_DISPATCH_ID": dispatch_id,
         "COVALENT_DISPATCHER_URL": "http://localhost:48008",
+        "COVALENT_TASKS": json.dumps([{"electron_id": 0, "args": [], "kwargs": []}]),
     }
 
-    mock_manifest = MagicMock()
-    mock_manifest.json = MagicMock(return_value=dispatch_id)
-
     def mock_register(manifest, *args, **kwargs):
-        return manifest
+        returned_manifest = copy.deepcopy(manifest)
+        returned_manifest.metadata.dispatch_id = "mock-sublattice-dispatch"
+        returned_manifest.metadata.root_dispatch_id = "mock-sublattice-dispatch"
+        return returned_manifest
 
     mocker.patch(
         "covalent._dispatcher_plugins.local.LocalDispatcher.register_manifest",
@@ -125,25 +127,20 @@ def test_build_sublattice_graph(mocker):
 
     mocker.patch("os.environ", mock_environ)
 
-    json_manifest = _build_sublattice_graph(workflow, json.dumps(parent_metadata), 1)
+    # Mock out the call to associate sublattice with parent electron
+    r = requests.Response()
+    r.status_code = 200
+    mocker.patch("covalent._api.apiclient.requests.Session.patch", return_value=r)
 
-    manifest = ResultSchema.parse_raw(json_manifest)
-
+    tar_b64 = _build_sublattice_graph(workflow, json.dumps(parent_metadata), 1)
     mock_upload_assets.assert_called()
-
-    assert len(manifest.lattice.transport_graph.nodes) == 3
-
-    lat = manifest.lattice
-    assert lat.metadata.executor == parent_metadata["executor"]
-    assert lat.metadata.executor_data == parent_metadata["executor_data"]
-
-    assert lat.metadata.workflow_executor == parent_metadata["workflow_executor"]
-    assert lat.metadata.workflow_executor_data == parent_metadata["workflow_executor_data"]
+    work_dir, manifest = untar_staging_dir(decode_b64_tar(tar_b64))
+    assert manifest.metadata.dispatch_id == "mock-sublattice-dispatch"
 
 
 def test_build_sublattice_graph_fallback(mocker):
     """
-    Test falling back to monolithic sublattice dispatch
+    Test _build_sublattice_graph when electron is unable to reach the control plane
     """
     dispatch_id = "test_build_sublattice_graph"
 
@@ -175,27 +172,13 @@ def test_build_sublattice_graph_fallback(mocker):
     mock_reg = mocker.patch(
         "covalent._dispatcher_plugins.local.LocalDispatcher.register_manifest",
     )
-
-    mock_upload_assets = mocker.patch(
-        "covalent._dispatcher_plugins.local.LocalDispatcher.upload_assets",
-    )
-
     mocker.patch("os.environ", mock_environ)
 
-    json_lattice = _build_sublattice_graph(workflow, json.dumps(parent_metadata), 1)
-
-    lattice = Lattice.deserialize_from_json(json_lattice)
-
+    tar_b64 = _build_sublattice_graph(workflow, json.dumps(parent_metadata), 1)
     mock_reg.assert_not_called()
-    mock_upload_assets.assert_not_called()
-
-    assert list(lattice.transport_graph._graph.nodes) == list(range(3))
-    for k in lattice.metadata.keys():
-        # results_dir will be deprecated soon
-        if k == "triggers":
-            assert lattice.metadata[k] is None
-        elif k != "results_dir":
-            assert parent_metadata[k] == lattice.metadata[k]
+    work_dir, manifest = untar_staging_dir(decode_b64_tar(tar_b64))
+    assert manifest.metadata.dispatch_id == ""
+    assert manifest.metadata.root_dispatch_id == ""
 
 
 def test_wait_for_building():

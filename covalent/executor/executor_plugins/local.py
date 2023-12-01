@@ -22,6 +22,7 @@ This is a plugin executor module; it is loaded if found and properly structured.
 
 import asyncio
 import os
+import traceback
 from concurrent.futures import ProcessPoolExecutor
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional
@@ -185,6 +186,10 @@ class LocalExecutor(BaseExecutor):
 
         def handle_cancelled(fut):
             app_log.debug(f"In done callback for {dispatch_id}:{gid}, future {fut}")
+            ex = fut.exception(timeout=0)
+            if ex is not None:
+                tb = "".join(traceback.TracebackException.from_exception(ex).format())
+                app_log.debug(tb)
             if fut.cancelled():
                 for task_id in task_ids:
                     url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/job"

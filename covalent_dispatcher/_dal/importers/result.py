@@ -254,7 +254,7 @@ def import_result_assets(
 
         # Send this back to the client
         asset.digest = None
-        asset.remote_uri = f"file://{local_uri}"
+        asset.remote_uri = f"{object_store.scheme}://{local_uri}"
 
     # Write asset records to DB
     n_records = len(asset_ids)

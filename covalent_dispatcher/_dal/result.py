@@ -28,7 +28,7 @@ from covalent._shared_files.defaults import postprocess_prefix
 from covalent._shared_files.util_classes import RESULT_STATUS, Status
 
 from .._db import models
-from .asset import Asset, copy_asset, copy_asset_meta
+from .asset import Asset, copy_asset_meta
 from .base import DispatchedObject
 from .controller import Record
 from .db_interfaces.result_utils import ASSET_KEYS  # nopycln: import
@@ -186,13 +186,15 @@ class Result(DispatchedObject[ResultMeta, ResultAsset]):
                 electron_output = parent_electron.get_asset("output", session)
                 electron_err = parent_electron.get_asset("error", session)
 
+                # Archive result of _build_sublattice_graph since electron output will
+                # be overwritten by the sublattice execution result
+                subl_manifest = parent_electron.get_asset("sublattice_manifest", session)
+
             app_log.debug("Copying sublattice output to parent electron")
             with self.session() as session:
+                copy_asset_meta(session, electron_output, subl_manifest)
                 copy_asset_meta(session, subl_output, electron_output)
                 copy_asset_meta(session, subl_err, electron_err)
-
-            copy_asset(subl_output, electron_output)
-            copy_asset(subl_err, electron_err)
 
     def _update_node(
         self,
@@ -275,7 +277,6 @@ class Result(DispatchedObject[ResultMeta, ResultAsset]):
                 workflow_result = self.get_asset("result", session)
                 node_output = tg.get_node(node_id).get_asset("output", session)
                 copy_asset_meta(session, node_output, workflow_result)
-            copy_asset(node_output, workflow_result)
 
             self._update_dispatch(status=status, end_time=end_time)
 

@@ -298,9 +298,9 @@ def test_run_task_group(mocker):
     node_2_output_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/2/assets/output"
 
     task_spec = TaskSpec(
-        function_id=0,
-        args_ids=[1, 2],
-        kwargs_ids={},
+        electron_id=0,
+        args=[1, 2],
+        kwargs={},
     )
 
     resources = {
@@ -415,9 +415,9 @@ def test_run_task_group_exception(mocker):
     node_2_output_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/2/assets/output"
 
     task_spec = TaskSpec(
-        function_id=0,
-        args_ids=[1],
-        kwargs_ids={"y": 2},
+        electron_id=0,
+        args=[1],
+        kwargs={"y": 2},
     )
 
     resources = {
@@ -504,9 +504,9 @@ test_cases = [
         "id": "happy_path",
         "task_specs": [
             TaskSpec(
-                function_id=0,
-                args_ids=[1],
-                kwargs_ids={"y": 2},
+                electron_id=0,
+                args=[1],
+                kwargs={"y": 2},
             )
         ],
         "resources": ResourceMap(
@@ -523,9 +523,9 @@ test_cases = [
         "id": "future_cancelled",
         "task_specs": [
             TaskSpec(
-                function_id=0,
-                args_ids=[1],
-                kwargs_ids={"y": 2},
+                electron_id=0,
+                args=[1],
+                kwargs={"y": 2},
             )
         ],
         "resources": ResourceMap(
@@ -586,9 +586,9 @@ async def test_send(mocker):
     # Arrange
     task_group_metadata = {"dispatch_id": "1", "node_ids": ["1", "2"]}
     task_spec = TaskSpec(
-        function_id=0,
-        args_ids=[1],
-        kwargs_ids={"y": 2},
+        electron_id=0,
+        args=[1],
+        kwargs={"y": 2},
     )
     resource = ResourceMap(
         functions={0: "mock_function_uri"},

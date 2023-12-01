@@ -48,12 +48,33 @@ class CovalentAPIClient:
             with requests.Session() as session:
                 if self.adapter:
                     session.mount("http://", self.adapter)
+                    session.mount("https://", self.adapter)
 
                 r = session.get(url, headers=headers, **kwargs)
 
             if self.auto_raise:
                 r.raise_for_status()
 
+        except requests.exceptions.ConnectionError:
+            message = f"The Covalent server cannot be reached at {url}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
+            print(message)
+            raise
+
+        return r
+
+    def patch(self, endpoint: str, **kwargs):
+        headers = self.prepare_headers(kwargs)
+        url = self.dispatcher_addr + endpoint
+        try:
+            with requests.Session() as session:
+                if self.adapter:
+                    session.mount("http://", self.adapter)
+                    session.mount("https://", self.adapter)
+
+                r = session.patch(url, headers=headers, **kwargs)
+
+            if self.auto_raise:
+                r.raise_for_status()
         except requests.exceptions.ConnectionError:
             message = f"The Covalent server cannot be reached at {url}. Local servers can be started using `covalent start` in the terminal. If you are using a remote Covalent server, contact your systems administrator to report an outage."
             print(message)
@@ -68,6 +89,7 @@ class CovalentAPIClient:
             with requests.Session() as session:
                 if self.adapter:
                     session.mount("http://", self.adapter)
+                    session.mount("https://", self.adapter)
 
                 r = session.put(url, headers=headers, **kwargs)
 
@@ -87,6 +109,7 @@ class CovalentAPIClient:
             with requests.Session() as session:
                 if self.adapter:
                     session.mount("http://", self.adapter)
+                    session.mount("https://", self.adapter)
 
                 r = session.post(url, headers=headers, **kwargs)
 
@@ -106,6 +129,7 @@ class CovalentAPIClient:
             with requests.Session() as session:
                 if self.adapter:
                     session.mount("http://", self.adapter)
+                    session.mount("https://", self.adapter)
 
                 r = session.delete(url, headers=headers, **kwargs)
 

@@ -338,7 +338,7 @@ def test_upload_assets(mocker):
         endpoint = f"/api/v2/dispatches/{dispatch_id}/lattice/assets/dummy"
         r = Response()
         r.status_code = 200
-        mock_put = mocker.patch("covalent._api.apiclient.requests.Session.put", return_value=r)
+        mock_put = mocker.patch("requests.put", return_value=r)
 
         LocalDispatcher.upload_assets(manifest)
 
