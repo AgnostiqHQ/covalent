@@ -15,13 +15,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - When pushing to `master`, now the version numbers of `develop` and `master` will be compared in `man_1_push_to_master`.
 - Upgraded checkout action to v4 in `release.yml`.
 
-## [0.231.0-rc.0] - 2023-11-28
+## [0.232.0-rc.0] - 2023-12-01
 
 ### Authors
 
 - Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 
+
+### Operations
+
+- Ignore custom executor plugin in how-to's when running `test_deploy_status` CLI test.
+
+### Changed
+
+- Terraform output to use scrolling buffer.
+- Terraform output handling to show errors.
+- Bumped up babel/traverse version to 7.23.2
+
+## [0.231.0-rc.0] - 2023-11-28
+
+### Authors
+
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 
 ### Added
 
