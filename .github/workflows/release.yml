@@ -27,6 +27,17 @@ on:
         required: true
         type: boolean
         default: true
+      prerelease:
+        description: "true: Create a prerelease. false: Create a stable release"
+        required: true
+        type: boolean
+        default: true
+      prerelease_version:
+        description: "The prerelease version to release"
+        required: false
+        type: string
+        default: "develop"
+
   workflow_call:
     inputs:
       prerelease:
@@ -71,7 +82,7 @@ jobs:
         if: inputs.prerelease
         run: |
           re='^[0-9]+$'
-          IFS='.' read -ra version <<< "${{ inputs.prerelease_version }}"
+          IFS='.' read -ra version <<< "${{ github.event.inputs.prerelease_version }}"
           if [[ ${version[0]} =~ $re ]] ; then
             echo "PRERELEASE=v$version" >> $GITHUB_ENV
           else
