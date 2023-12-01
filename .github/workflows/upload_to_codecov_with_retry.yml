@@ -1,0 +1,96 @@
+# Copyright 2023 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: upload-to-codecov-with-retry
+
+on:
+  workflow_call:
+    inputs:
+      files:
+        required: true
+        type: string
+      flags:
+        required: true
+        type: string
+      name:
+        required: true
+        type: string
+
+
+jobs:
+  upload_to_codecov:
+    name: Upload coverage to Codecov
+    steps:
+      - name: Upload try 1
+        id: upload-1
+        uses: codecov/codecov-action@v3
+        continue-on-error: true
+        with:
+          files: ${{ github.event.inputs.files }}
+          flags: ${{ github.event.inputs.flags }}
+          name: ${{ github.event.inputs.name }}
+
+      - name: Wait 10 seconds
+        run: sleep 10
+
+      - name: Upload try 2
+        id: upload-2
+        if: steps.upload-1.outcome == 'failure'
+        uses: codecov/codecov-action@v3
+        continue-on-error: true
+        with:
+          files: ${{ github.event.inputs.files }}
+          flags: ${{ github.event.inputs.flags }}
+          name: ${{ github.event.inputs.name }}
+
+      - name: Wait 10 seconds
+        run: sleep 10
+
+      - name: Upload try 3
+        id: upload-3
+        if: steps.upload-2.outcome == 'failure'
+        uses: codecov/codecov-action@v3
+        continue-on-error: true
+        with:
+          files: ${{ github.event.inputs.files }}
+          flags: ${{ github.event.inputs.flags }}
+          name: ${{ github.event.inputs.name }}
+
+      - name: Wait 10 seconds
+        run: sleep 10
+
+      - name: Upload try 4
+        id: upload-4
+        if: steps.upload-3.outcome == 'failure'
+        uses: codecov/codecov-action@v3
+        continue-on-error: true
+        with:
+          files: ${{ github.event.inputs.files }}
+          flags: ${{ github.event.inputs.flags }}
+          name: ${{ github.event.inputs.name }}
+
+      - name: Wait 10 seconds
+        run: sleep 10
+
+      - name: Upload try 5
+        id: upload-5
+        if: steps.upload-4.outcome == 'failure'
+        uses: codecov/codecov-action@v3
+        with:
+          files: ${{ github.event.inputs.files }}
+          flags: ${{ github.event.inputs.flags }}
+          name: ${{ github.event.inputs.name }}
+          fail_ci_if_error: true

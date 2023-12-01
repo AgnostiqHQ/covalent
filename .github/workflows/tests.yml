@@ -298,7 +298,7 @@ jobs:
           && github.event_name != 'workflow_dispatch'
           && (github.event_name == 'schedule'
           || steps.sdk-coverage.outcome == 'success')
-        uses: codecov/codecov-action@v3
+        uses: AgnostiqHQ/covalent/.github/workflows/upload_to_codecov_with_retry.yml@develop
         with:
           files: ./sdk_coverage.xml
           flags: SDK
@@ -312,7 +312,7 @@ jobs:
           && github.event_name != 'workflow_dispatch'
           && (github.event_name == 'schedule'
           || steps.dispatcher-coverage.outcome == 'success')
-        uses: codecov/codecov-action@v3
+        uses: AgnostiqHQ/covalent/.github/workflows/upload_to_codecov_with_retry.yml@develop
         with:
           files: ./dispatcher_coverage.xml
           flags: Dispatcher
@@ -325,7 +325,7 @@ jobs:
           env.RECOMMENDED_PLATFORM
           && github.event_name != 'workflow_dispatch'
           && steps.functional-coverage.outcome == 'success'
-        uses: codecov/codecov-action@v3
+        uses: AgnostiqHQ/covalent/.github/workflows/upload_to_codecov_with_retry.yml@develop
         with:
           files: ./functional_tests_coverage.xml
           flags: Functional_Tests
@@ -339,7 +339,7 @@ jobs:
           && github.event_name != 'workflow_dispatch'
           && (github.event_name == 'schedule'
           || steps.ui-backend-coverage.outcome == 'success')
-        uses: codecov/codecov-action@v3
+        uses: AgnostiqHQ/covalent/.github/workflows/upload_to_codecov_with_retry.yml@develop
         with:
           files: ./ui_backend_coverage.xml
           flags: UI_Backend
@@ -353,7 +353,7 @@ jobs:
           && github.event_name != 'workflow_dispatch'
           && (github.event_name == 'schedule'
           || steps.ui-frontend-tests.outcome == 'success')
-        uses: codecov/codecov-action@v3
+        uses: AgnostiqHQ/covalent/.github/workflows/upload_to_codecov_with_retry.yml@develop
         with:
           files: ./covalent_ui/webapp/coverage/clover.xml
           flags: UI_Frontend
