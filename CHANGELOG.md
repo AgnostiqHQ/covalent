@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Allow for `cloudpickle` >= 3.0.0
+
 ## [0.232.0-rc.0] - 2023-12-01
 
 ### Authors
