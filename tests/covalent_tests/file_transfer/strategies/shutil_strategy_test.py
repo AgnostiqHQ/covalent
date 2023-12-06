@@ -26,6 +26,7 @@ class TestShutilStrategy:
     MOCK_TO_FILEPATH = "/home/user/data.csv.bak"
 
     def test_cp(self, mocker):
+        mocker.patch("os.makedirs")
         mock_copyfile = mocker.patch("shutil.copyfile")
         from_file = File(TestShutilStrategy.MOCK_FROM_FILEPATH)
         to_file = File(TestShutilStrategy.MOCK_TO_FILEPATH)
