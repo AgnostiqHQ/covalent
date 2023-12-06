@@ -14,7 +14,7 @@
 <div align="center">Serverless high-performance computing from your laptop to the cloud, all through a single line of Python</div>
 </br>
  <div align="center"> 
-<a href="https://docs.covalent.xyz/docs/get-started/install"><img src="./doc/source/_static/getting_started.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/get-started/quick-start"><img src="./doc/source/_static/getting_started.svg" alt="divider"></a> 
 &nbsp&nbsp
 <a href="https://docs.covalent.xyz/docs/"><img src="./doc/source/_static/documentation.svg" alt="divider"></a> 
 &nbsp&nbsp
@@ -29,9 +29,11 @@
 </br>
 Covalent is a Pythonic framework designed for AI/ML practitioners, computational scientists, and developers, offering abstracted and easy access to a wide array of high-performance computing resources. It facilitates integration with advanced computing platforms, from quantum computers and HPC clusters to GPU arrays and diverse cloud services, providing serverless access to all of them.
 
-**For AI/ML Practitioners and Developers:** Covalent serves as a robust compute backend framework, enabling seamless, cloud-agnostic execution of high-compute tasks. Ideal solution for powering AI/ML applications, Large Language Models (LLMs), Generative AI, and other compute-intensive processes, all without the hassle of infrastructure management.
+</br>
 
-**For Researchers:** Covalent empowers researchers to directly tap into advanced computing resources from their laptops or Jupyter notebooks. Whether the need is for cloud platforms or HPC systems like SLURM, PBS, or LSF, [Covalent plugins](https://docs.covalent.xyz/docs/plugin) offers instant connectivity and unparalleled ease of use.
+- **For AI/ML Practitioners and Developers:** Covalent serves as a robust compute backend framework, enabling seamless, cloud-agnostic execution of high-compute tasks. Ideal solution for powering AI/ML applications, Large Language Models (LLMs), Generative AI, and other compute-intensive processes, all without the hassle of infrastructure management.
+
+- **For Researchers:** Covalent empowers researchers to directly tap into advanced computing resources from their laptops or Jupyter notebooks. Whether the need is for cloud platforms or HPC systems like SLURM, PBS, or LSF, [Covalent plugins](https://docs.covalent.xyz/docs/plugin) offers instant connectivity and unparalleled ease of use.
 
 Check out the [quick start guide](https://docs.covalent.xyz/docs/get-started/quick-start/) to get started.
 
@@ -87,7 +89,7 @@ For a more in-depth description of Covalent's features and how they work, see th
 <a href="https://www.covalent.xyz/what-is-covalent/"><img src="./doc/source/_static/what_is_covalent.svg" alt="divider"></a> 
 <a href="https://www.covalent.xyz/navigating-the-modern-hpc-landscape/"><img src="./doc/source/_static/cloud_hpc.svg" alt="divider"></a> 
 <a href="https://docs.covalent.xyz/docs/user-documentation/concepts/covalent-basics/"><img src="./doc/source/_static/concepts_of_covalent.svg" alt="divider"></a> 
-<a href="https://github.com/AgnostiqHQ/covalent/blob/develop/README.md#how-does-it-work"><img src="./doc/source/_static/covalent_work.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/concepts/covalent-arch/covalent-architecture"><img src="./doc/source/_static/covalent_work.svg" alt="divider"></a>
 </div>
 
 </br>
@@ -115,7 +117,8 @@ Covalent’s serverless HPC architecture allows you to easily scale jobs from yo
 
 <div align="center"> 
   
-![self ](./doc/source/_static/self.svg)
+<a href="https://docs.covalent.xyz/docs/user-documentation/server-deployment"><img src="./doc/source/_static/cloud_hosted.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/user-documentation/server-deployment"><img src="./doc/source/_static/onprem_hosted.svg" alt="divider"></a>
 
 </div>
 
