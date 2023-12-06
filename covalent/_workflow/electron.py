@@ -865,25 +865,29 @@ def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kw
     DISABLE_LEGACY_SUBLATTICES = os.environ.get("COVALENT_DISABLE_LEGACY_SUBLATTICES") == "1"
 
     try:
-        # Attempt multistage sublattice dispatch. For now we require
-        # the executor to reach the Covalent server
-        parent_dispatch_id = os.environ["COVALENT_DISPATCH_ID"]
-        dispatcher_url = os.environ["COVALENT_DISPATCHER_URL"]
+        # Attempt multistage sublattice dispatch.
 
         with tempfile.TemporaryDirectory(prefix="covalent-") as staging_path:
+            # Try depositing the assets in a location readable by Covalent and
+            # request Covalent to pull those assets.
+            staging_uri_prefix = os.environ.get("COVALENT_STAGING_URI_PREFIX", None)
             manifest = LocalDispatcher.prepare_manifest(sub, staging_path)
+            recv_manifest = manifest
 
-            # Omit these two steps to return the manifest to Covalent and
-            # request the assets be pulled
-            recv_manifest = LocalDispatcher.register_manifest(
-                manifest,
-                dispatcher_addr=dispatcher_url,
-                parent_dispatch_id=parent_dispatch_id,
-                push_assets=True,
-            )
-            LocalDispatcher.upload_assets(recv_manifest)
+            # If the executor can reach the Covalent server directly,
+            # submit the sublattice dispatch to Covalent but don't start it.
+            if not staging_uri_prefix:
+                parent_dispatch_id = os.environ["COVALENT_DISPATCH_ID"]
+                dispatcher_url = os.environ["COVALENT_DISPATCHER_URL"]
+                recv_manifest = LocalDispatcher.register_manifest(
+                    manifest,
+                    dispatcher_addr=dispatcher_url,
+                    parent_dispatch_id=parent_dispatch_id,
+                    push_assets=True,
+                )
+                LocalDispatcher.upload_assets(recv_manifest)
 
-        return recv_manifest.model_dump_json()
+            return recv_manifest.model_dump_json()
 
     except Exception as ex:
         # Fall back to legacy sublattice handling
