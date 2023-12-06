@@ -757,15 +757,13 @@ def electron(
             # Convert to DepsModule objects
             converted_deps = []
             for dep in deps_module:
-                if isinstance(dep, str):
-                    converted_deps.append(DepsModule(dep))
-                elif isinstance(dep, ModuleType):
+                if type(dep) in [str, ModuleType]:
                     converted_deps.append(DepsModule(dep))
                 else:
                     converted_deps.append(dep)
             deps_module = converted_deps
 
-        elif isinstance(deps_module, str):
+        elif type(deps_module) in [str, ModuleType]:
             deps_module = [DepsModule(deps_module)]
 
         elif isinstance(deps_module, ModuleType):
