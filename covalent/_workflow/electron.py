@@ -24,6 +24,7 @@ import tempfile
 from builtins import list
 from dataclasses import asdict
 from functools import wraps
+from types import ModuleType
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
 
 from covalent._dispatcher_plugins.local import LocalDispatcher
@@ -753,12 +754,23 @@ def electron(
 
     if deps_module:
         if isinstance(deps_module, list):
-            deps_module = [
-                DepsModule(module_name=module) if isinstance(module, str) else module
-                for module in deps_module
-            ]
+            # Convert to DepsModule objects
+            converted_deps = []
+            for dep in deps_module:
+                if isinstance(dep, str):
+                    converted_deps.append(DepsModule(dep))
+                elif isinstance(dep, ModuleType):
+                    converted_deps.append(DepsModule(dep))
+                else:
+                    converted_deps.append(dep)
+            deps_module = converted_deps
+
         elif isinstance(deps_module, str):
-            deps_module = [DepsModule(module_name=deps_module)]
+            deps_module = [DepsModule(deps_module)]
+
+        elif isinstance(deps_module, ModuleType):
+            deps_module = [DepsModule(deps_module)]
+
         elif isinstance(deps_module, DepsModule):
             deps_module = [deps_module]
 
