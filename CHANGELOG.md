@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Ran pre-commit hooks for all files - fixing the migration files
+
 ## [0.232.0-rc.0] - 2023-12-01
 
 ### Authors

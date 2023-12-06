@@ -870,7 +870,7 @@ def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kw
             )
             LocalDispatcher.upload_assets(recv_manifest)
 
-        return recv_manifest.json()
+        return recv_manifest.model_dump_json()
 
     except Exception as ex:
         # Fall back to legacy sublattice handling

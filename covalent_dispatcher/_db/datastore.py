@@ -19,7 +19,6 @@ from os import environ, path
 from pathlib import Path
 from typing import Generator, Optional
 
-from alembic import command
 from alembic.config import Config
 from alembic.environment import EnvironmentContext
 from alembic.migration import MigrationContext
@@ -28,6 +27,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy_utils import create_database, database_exists
 
+from alembic import command
 from covalent._shared_files.config import get_config
 
 from . import models
