@@ -81,7 +81,7 @@ Refer to the [Quick Start](https://docs.covalent.xyz/docs/get-started/quick-sta
 
 ### Know More
 
-For a more in-depth description of Covalent's features and how they work, see the Concepts page in the documentation.
+For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/) page in the documentation.
 
 </br>
 
