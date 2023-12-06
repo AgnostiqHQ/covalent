@@ -121,13 +121,14 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         ("cova_imports", LATTICE_COVA_IMPORTS_FILENAME, result.lattice.cova_imports),
         ("lattice_imports", LATTICE_LATTICE_IMPORTS_FILENAME, result.lattice.lattice_imports),
     ]:
-        digest = local_store.store_file(data_storage_path, filename, data)
+        digest, size = local_store.store_file(data_storage_path, filename, data)
         asset_record_kwargs = {
             "storage_type": LATTICE_STORAGE_TYPE,
             "storage_path": str(data_storage_path),
             "object_key": filename,
             "digest_alg": digest.algorithm,
             "digest": digest.hexdigest,
+            "size": size,
         }
 
         assets[key] = Asset.create(session, insert_kwargs=asset_record_kwargs, flush=True)
@@ -310,13 +311,14 @@ def _electron_data(
                 ("error", ELECTRON_ERROR_FILENAME, node_error),
                 ("output", ELECTRON_RESULTS_FILENAME, node_output),
             ]:
-                digest = local_store.store_file(node_path, filename, data)
+                digest, size = local_store.store_file(node_path, filename, data)
                 asset_record_kwargs = {
                     "storage_type": ELECTRON_STORAGE_TYPE,
                     "storage_path": str(node_path),
                     "object_key": filename,
                     "digest_alg": digest.algorithm,
                     "digest": digest.hexdigest,
+                    "size": size,
                 }
 
                 assets[key] = Asset.create(session, insert_kwargs=asset_record_kwargs, flush=True)

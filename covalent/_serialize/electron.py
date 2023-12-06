@@ -26,7 +26,6 @@ from .._shared_files.schemas.electron import (
     ElectronSchema,
 )
 from .._shared_files.util_classes import RESULT_STATUS, Status
-from .._workflow.transportable_object import TransportableObject
 from .common import AssetType, load_asset, save_asset
 
 __all__ = [
@@ -105,7 +104,7 @@ def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> Electron
         ASSET_FILENAME_MAP["function"],
     )
 
-    function_string = node_attrs.get("function_string", "")
+    function_string = node_attrs.get("function_string", None)
     function_string_asset = save_asset(
         function_string,
         ASSET_TYPES["function_string"],
@@ -113,7 +112,7 @@ def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> Electron
         ASSET_FILENAME_MAP["function_string"],
     )
 
-    node_value = node_attrs.get("value", TransportableObject(None))
+    node_value = node_attrs.get("value", None)
     value_asset = save_asset(
         node_value,
         ASSET_TYPES["value"],
@@ -121,7 +120,7 @@ def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> Electron
         ASSET_FILENAME_MAP["value"],
     )
 
-    node_output = node_attrs.get("output", TransportableObject(None))
+    node_output = node_attrs.get("output", None)
     output_asset = save_asset(
         node_output,
         ASSET_TYPES["output"],
@@ -129,7 +128,7 @@ def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> Electron
         ASSET_FILENAME_MAP["output"],
     )
 
-    node_stdout = node_attrs.get("stdout", "")
+    node_stdout = node_attrs.get("stdout", None)
     stdout_asset = save_asset(
         node_stdout,
         ASSET_TYPES["stdout"],
@@ -137,7 +136,7 @@ def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> Electron
         ASSET_FILENAME_MAP["stdout"],
     )
 
-    node_stderr = node_attrs.get("stderr", "")
+    node_stderr = node_attrs.get("stderr", None)
     stderr_asset = save_asset(
         node_stderr,
         ASSET_TYPES["stderr"],
@@ -145,7 +144,7 @@ def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> Electron
         ASSET_FILENAME_MAP["stderr"],
     )
 
-    qelectron_db = node_attrs.get("qelectron_db", bytes())
+    qelectron_db = node_attrs.get("qelectron_db", None)
     qelectron_db_asset = save_asset(
         qelectron_db,
         ASSET_TYPES["qelectron_db"],
@@ -153,7 +152,7 @@ def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> Electron
         ASSET_FILENAME_MAP["qelectron_db"],
     )
 
-    node_error = node_attrs.get("error", "")
+    node_error = node_attrs.get("error", None)
     error_asset = save_asset(
         node_error,
         ASSET_TYPES["error"],
@@ -230,7 +229,7 @@ def _deserialize_node_assets(ea: ElectronAssets) -> dict:
 
 def _get_node_custom_assets(node_attrs: dict) -> Dict[str, AssetSchema]:
     if "custom_asset_keys" in node_attrs["metadata"]:
-        return {key: AssetSchema() for key in node_attrs["metadata"]["custom_asset_keys"]}
+        return {key: AssetSchema(size=0) for key in node_attrs["metadata"]["custom_asset_keys"]}
 
 
 def serialize_node(node_id: int, node_attrs: dict, node_storage_path) -> ElectronSchema:

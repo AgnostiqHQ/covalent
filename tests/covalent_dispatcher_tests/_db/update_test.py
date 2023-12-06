@@ -141,18 +141,15 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
             storage_path=lattice_storage_path, filename=lattice_row.function_filename
         ).get_deserialized()
         assert workflow_function(1, 2) == 4
-        assert (
+        with pytest.raises(FileNotFoundError):
             local_store.load_file(
                 storage_path=lattice_storage_path, filename=lattice_row.error_filename
             )
-            == ""
-        )
-        assert (
+
+        with pytest.raises(FileNotFoundError):
             local_store.load_file(
                 storage_path=lattice_storage_path, filename=lattice_row.results_filename
-            ).get_deserialized()
-            is None
-        )
+            )
 
         executor_data = json.loads(lattice_row.executor_data)
 

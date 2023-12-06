@@ -469,12 +469,30 @@ def run_task_from_uris_alt(
 
                     resources["inputs"][task_id] = result_uri
 
+                    output_size = len(ser_output)
+                    qelectron_db_size = len(qelectron_db_bytes)
+                    stdout.flush()
+                    stderr.flush()
+                    stdout_size = os.path.getsize(stdout_uri)
+                    stderr_size = os.path.getsize(stderr_uri)
                     result_summary = {
                         "node_id": task_id,
-                        "output_uri": result_uri,
-                        "stdout_uri": stdout_uri,
-                        "stderr_uri": stderr_uri,
-                        "qelectron_db_uri": qelectron_db_uri,
+                        "output": {
+                            "uri": result_uri,
+                            "size": output_size,
+                        },
+                        "stdout": {
+                            "uri": stdout_uri,
+                            "size": stdout_size,
+                        },
+                        "stderr": {
+                            "uri": stderr_uri,
+                            "size": stderr_size,
+                        },
+                        "qelectron_db": {
+                            "uri": qelectron_db_uri,
+                            "size": qelectron_db_size,
+                        },
                         "exception_occurred": exception_occurred,
                     }
 
@@ -482,13 +500,30 @@ def run_task_from_uris_alt(
                     exception_occurred = True
                     tb = "".join(traceback.TracebackException.from_exception(ex).format())
                     print(tb, file=sys.stderr)
-                    result_uri = None
+                    result_uri = ""
+                    stdout.flush()
+                    stderr.flush()
+                    stdout_size = os.path.getsize(stdout_uri)
+                    stderr_size = os.path.getsize(stderr_uri)
+                    qelectron_db_size = len(qelectron_db_bytes)
                     result_summary = {
                         "node_id": task_id,
-                        "output_uri": result_uri,
-                        "stdout_uri": stdout_uri,
-                        "stderr_uri": stderr_uri,
-                        "qelectron_db_uri": qelectron_db_uri,
+                        "output": {
+                            "uri": result_uri,
+                            "size": 0,
+                        },
+                        "stdout": {
+                            "uri": stdout_uri,
+                            "size": stdout_size,
+                        },
+                        "stderr": {
+                            "uri": stderr_uri,
+                            "size": stderr_size,
+                        },
+                        "qelectron_db": {
+                            "uri": qelectron_db_uri,
+                            "size": qelectron_db_size,
+                        },
                         "exception_occurred": exception_occurred,
                     }
 
@@ -508,11 +543,23 @@ def run_task_from_uris_alt(
     if n < len(task_ids):
         for i in range(n, len(task_ids)):
             result_summary = {
-                "node_id": task_ids[i],
-                "output_uri": "",
-                "stdout_uri": "",
-                "stderr_uri": "",
-                "qelectron_db_uri": "",
+                "node_id": task_id,
+                "output": {
+                    "uri": "",
+                    "size": 0,
+                },
+                "stdout": {
+                    "uri": "",
+                    "size": 0,
+                },
+                "stderr": {
+                    "uri": "",
+                    "size": 0,
+                },
+                "qelectron_db": {
+                    "uri": "",
+                    "size": 0,
+                },
                 "exception_occurred": True,
             }
 

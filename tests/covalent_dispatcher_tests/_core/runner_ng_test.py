@@ -318,12 +318,15 @@ async def test_get_task_result(mocker):
         "assets": {
             "output": {
                 "remote_uri": asset_uri,
+                "size": 0,
             },
             "stdout": {
                 "remote_uri": asset_uri,
+                "size": 0,
             },
             "stderr": {
                 "remote_uri": asset_uri,
+                "size": 0,
             },
         },
         "status": RESULT_STATUS.COMPLETED,

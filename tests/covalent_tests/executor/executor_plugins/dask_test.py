@@ -30,6 +30,7 @@ from dask.distributed import LocalCluster
 import covalent as ct
 from covalent._shared_files import TaskRuntimeError
 from covalent._shared_files.exceptions import TaskCancelledError
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.transportable_object import TransportableObject
 from covalent.executor.executor_plugins.dask import (
     _EXECUTOR_PLUGIN_DEFAULTS,
@@ -375,6 +376,8 @@ def test_dask_send_poll_receive(mocker):
         output = TransportableObject.deserialize(f.read())
     assert output.get_deserialized() == 3
 
+    assert task_update.assets["output"].size == os.path.getsize(output_uri)
+
 
 def test_run_task_from_uris_alt():
     """Test the wrapper submitted to dask"""
@@ -615,3 +618,17 @@ def test_get_upload_uri():
     assert dispatch_id in path_string
     assert str(task_group_id) in path_string
     assert object_key in path_string
+
+
+@pytest.mark.asyncio
+async def test_dask_receive_cancelled_tasks():
+    dispatch_id = "mock_dispatch"
+    task_group_metadata = {"dispatch_id": dispatch_id, "node_ids": [0, 1], "task_group_id": 0}
+    dask_exec = DaskExecutor()
+    updates = await dask_exec.receive(task_group_metadata, None)
+    for task_update in updates:
+        assert task_update.status == RESULT_STATUS.CANCELLED
+
+        for _, asset in task_update.assets.items():
+            assert asset.remote_uri == ""
+            assert asset.size == 0

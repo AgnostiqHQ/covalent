@@ -235,6 +235,10 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
             # is only used for fatal dispatcher-executor interaction errors
             error_response = handler.read_from_text(result["error_filename"])
             stderr_response = handler.read_from_text(result["stderr_filename"])
+            if error_response is None:
+                error_response = ""
+            if stderr_response is None:
+                stderr_response = ""
             response = stderr_response + error_response
             return ElectronFileResponse(data=response)
         elif name == "qelectron_db":
