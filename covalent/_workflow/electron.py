@@ -49,6 +49,7 @@ from .._shared_files.utils import (
 )
 from .depsbash import DepsBash
 from .depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
+from .depsmodule import DepsModule
 from .depspip import DepsPip
 from .lattice import Lattice
 from .transport import TransportableObject, encode_metadata
@@ -689,6 +690,7 @@ def electron(
     files: List[FileTransfer] = [],
     deps_bash: Union[DepsBash, List, str] = None,
     deps_pip: Union[DepsPip, list] = None,
+    deps_module: Union[DepsModule, List[DepsModule], str, List[str]] = None,
     call_before: Union[List[DepsCall], DepsCall] = None,
     call_after: Union[List[DepsCall], DepsCall] = None,
 ) -> Callable:  # sourcery skip: assign-if-exp
@@ -704,6 +706,7 @@ def electron(
             executor is used by default.
         deps_bash: An optional DepsBash object specifying a list of shell commands to run before `_func`
         deps_pip: An optional DepsPip object specifying a list of PyPI packages to install before running `_func`
+        deps_module: An optional DepsModule (or similar) object specifying which user modules to load before running `_func`
         call_before: An optional list of DepsCall objects specifying python functions to invoke before the electron
         call_after: An optional list of DepsCall objects specifying python functions to invoke after the electron
         files: An optional list of FileTransfer objects which copy files to/from remote or local filesystems.
@@ -747,6 +750,19 @@ def electron(
                 internal_call_after_deps.append(DepsCall(_file_transfer_call_dep_))
             else:
                 internal_call_before_deps.append(DepsCall(_file_transfer_call_dep_))
+
+    if deps_module:
+        if isinstance(deps_module, list):
+            deps_module = [
+                DepsModule(module_name=module) if isinstance(module, str) else module
+                for module in deps_module
+            ]
+        elif isinstance(deps_module, str):
+            deps_module = [DepsModule(module_name=deps_module)]
+        elif isinstance(deps_module, DepsModule):
+            deps_module = [deps_module]
+
+        internal_call_before_deps.extend(deps_module)
 
     if isinstance(deps_pip, DepsPip):
         deps["pip"] = deps_pip

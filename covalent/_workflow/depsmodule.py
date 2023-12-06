@@ -13,3 +13,79 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
+import importlib
+
+import cloudpickle as pickle
+
+from .depscall import DepsCall
+
+
+def _client_side_pickle_module(module_name: str):
+    """
+    Pickle a module by value on the client side
+    and return the pickled bytes.
+
+    Args:
+        module_name: The name of the module to pickle.
+                     This module must be importable on the client side.
+
+    Returns:
+        The pickled bytes of the module.
+    """
+
+    # Import the module on the client side
+    module = importlib.import_module(module_name)
+
+    # Register the module with cloudpickle by value
+    pickle.register_pickle_by_value(module)
+
+    # Pickle the module
+    pickled_module = pickle.dumps(module)
+
+    return pickled_module
+
+
+def _server_side_import_module(module_name: str, module_pickle: bytes):
+    """
+    Import a module by value on the server side
+    from a pickled module.
+
+    Args:
+        module_name: The name of the module to import.
+        module_pickle: The pickled bytes of the module.
+
+    Returns:
+        The imported module.
+    """
+
+    import sys
+
+    # Unpickle the module
+    module = pickle.loads(module_pickle)
+
+    # Add the module to the server side's sys.modules
+    sys.modules[module_name] = module
+
+
+class DepsModule(DepsCall):
+    """
+    Python modules to be imported in an electron's execution environment
+
+    Deps class to encapsulate python modules to be
+    imported in the same execution environment as the electron.
+
+    Attributes:
+        module_name: A string containing the name of the module to be imported.
+    """
+
+    def __init__(self, module_name: str):
+        # Pickle the module by value on the client side
+        module_pickle = _client_side_pickle_module(module_name)
+
+        # Pass the pickled module to the server side
+        func = _server_side_import_module
+        args = [module_name, module_pickle]
+        kwargs = {}
+
+        super().__init__(func, args, kwargs)
