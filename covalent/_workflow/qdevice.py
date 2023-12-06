@@ -42,9 +42,6 @@ class QEDevice(QubitDevice):
     version = "0.0.1"
     author = "aq"
 
-    operations = DefaultQubit.operations
-    observables = DefaultQubit.observables
-
     def __init__(
         self,
         wires=1,
