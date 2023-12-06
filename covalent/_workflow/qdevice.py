@@ -22,7 +22,6 @@ from typing import Sequence
 
 from pennylane import QubitDevice
 from pennylane import numpy as np
-from pennylane.devices.default_qubit import DefaultQubit
 
 from ..quantum.qclient.core import middleware
 
