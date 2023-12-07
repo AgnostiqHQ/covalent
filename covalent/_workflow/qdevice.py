@@ -22,7 +22,6 @@ from typing import Sequence
 
 from pennylane import QubitDevice
 from pennylane import numpy as np
-from pennylane.devices.default_qubit import DefaultQubit
 
 from ..quantum.qclient.core import middleware
 
@@ -41,9 +40,6 @@ class QEDevice(QubitDevice):
     pennylane_requires = ">=0.29.1"
     version = "0.0.1"
     author = "aq"
-
-    operations = DefaultQubit.operations
-    observables = DefaultQubit.observables
 
     def __init__(
         self,
