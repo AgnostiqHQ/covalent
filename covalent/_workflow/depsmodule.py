@@ -47,7 +47,7 @@ def _client_side_pickle_module(module: Union[str, ModuleType]):
     pickled_module = pickle.dumps(module)
 
     # Unregister the module with cloudpickle
-    # pickle.unregister_pickle_by_value(module)
+    pickle.unregister_pickle_by_value(module)
 
     return pickled_module
 
@@ -65,13 +65,19 @@ def _server_side_import_module(module_name: str, module_pickle: bytes):
         The imported module.
     """
 
+    import importlib
     import sys
+
+    pkg_name = module_name.split(".")[0]
+    rel_module_name = module_name[len(pkg_name) + 1 :]
 
     # Unpickle the module
     module = pickle.loads(module_pickle)
 
     # Add the module to the server side's sys.modules
     sys.modules[module_name] = module
+
+    importlib.import_module(rel_module_name, package=pkg_name)
 
 
 class DepsModule(DepsCall):
@@ -87,6 +93,8 @@ class DepsModule(DepsCall):
 
     def __init__(self, module: Union[str, ModuleType]):
         module_name = module if isinstance(module, str) else module.__name__
+
+        print("module_name:", module_name)
 
         # Pickle the module by value on the client side
         module_pickle = _client_side_pickle_module(module)
