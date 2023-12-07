@@ -1,4 +1,4 @@
-<div align="center"> 
+<div align="center">
   <img src="./doc/source/_static/readme_hero.svg" alt="hero" />
  </div>
 </br>
@@ -13,12 +13,12 @@
 
 <div align="center">Serverless high-performance computing from your laptop to the cloud, all through a single line of Python</div>
 </br>
- <div align="center"> 
-<a href="https://docs.covalent.xyz/docs/get-started/quick-start"><img src="./doc/source/_static/getting_started.svg" width="150" alt="divider"></a> 
+ <div align="center">
+<a href="https://docs.covalent.xyz/docs/get-started/quick-start"><img src="./doc/source/_static/getting_started.svg" width="150" alt="divider"></a>
 &nbsp&nbsp
-<a href="https://docs.covalent.xyz/docs/"><img src="./doc/source/_static/documentation.svg" alt="divider" width="150"></a> 
+<a href="https://docs.covalent.xyz/docs/"><img src="./doc/source/_static/documentation.svg" alt="divider" width="150"></a>
 &nbsp&nbsp
-<a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/"><img src="./doc/source/_static/examples.svg" alt="divider" width="105"></a> 
+<a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/"><img src="./doc/source/_static/examples.svg" alt="divider" width="105"></a>
 &nbsp&nbsp
 <a href="https://covalentworkflows.slack.com/join/shared_invite/zt-1ew7f2rfk-dKSXVQmRniu5mQW4Z_eQuw#/shared-invite/email"><img src="./doc/source/_static/slack.svg" alt="divider" width="70"></a>
 </div>
@@ -28,7 +28,7 @@
  </div>
 </br>
 
-Covalent is a Pythonic framework designed for AI/ML practitioners, computational scientists, and developers, offering abstracted and easy access to a wide array of high-performance computing resources. It facilitates integration with advanced computing platforms, from quantum computers and HPC clusters to GPU arrays and diverse cloud services, providing serverless access to all of them. Check out the [quick start guide](https://docs.covalent.xyz/docs/get-started/quick-start/) to get started and install it with 
+Covalent is a Pythonic framework designed for AI/ML practitioners, computational scientists, and developers, offering abstracted and easy access to a wide array of high-performance computing resources. It facilitates integration with advanced computing platforms, from quantum computers and HPC clusters to GPU arrays and diverse cloud services, providing serverless access to all of them. Check out the [quick start guide](https://docs.covalent.xyz/docs/get-started/quick-start/) to get started and install it with
 ```
 pip install covalent --upgrade
 ```
@@ -61,14 +61,14 @@ https://github.com/AgnostiqHQ/covalent/assets/116076079/87268cc8-4d53-4053-b739-
 
 
 </br>
-  <div align="center"> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/aws-plugins/"><img src="./doc/source/_static/aws.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/azurebatch/"><img src="./doc/source/_static/azure.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/gcp/"><img src="./doc/source/_static/google.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs"><img src="./doc/source/_static/kubernetes.svg" alt="divider"></a> 
+  <div align="center">
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/aws-plugins/"><img src="./doc/source/_static/aws.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/azurebatch/"><img src="./doc/source/_static/azure.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/gcp/"><img src="./doc/source/_static/google.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs"><img src="./doc/source/_static/kubernetes.svg" alt="divider"></a>
 </div>
-<div align="center"><a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/slurm/"><img src="./doc/source/_static/slurm.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/dask/"><img src="./doc/source/_static/dask.svg" alt="divider"></a> 
+<div align="center"><a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/slurm/"><img src="./doc/source/_static/slurm.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/dask/"><img src="./doc/source/_static/dask.svg" alt="divider"></a>
 <a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/ibmq/"><img src="./doc/source/_static/ibmq.svg" alt="divider"></a>
 <a href="https://docs.covalent.xyz/docs/plugin"><img src="./doc/source/_static/many_more.svg" alt="divider"></a></div>
 
@@ -76,7 +76,7 @@ https://github.com/AgnostiqHQ/covalent/assets/116076079/87268cc8-4d53-4053-b739-
   <div align="center">
   <a href="https://docs.covalent.xyz/docs/"><img src="./doc/source/_static/development.svg"  alt="development"></img></a>
  </div>
- 
+
 </br>
 
 ### Getting Started
@@ -92,10 +92,10 @@ For a more in-depth description of Covalent's features and how they work, see th
 
 </br>
 
-<div align="center"> 
-<a href="https://www.covalent.xyz/what-is-covalent/"><img src="./doc/source/_static/what_is_covalent.svg" alt="divider"></a> 
-<a href="https://www.covalent.xyz/navigating-the-modern-hpc-landscape/"><img src="./doc/source/_static/cloud_hpc.svg" alt="divider"></a> 
-<a href="https://docs.covalent.xyz/docs/user-documentation/concepts/covalent-basics/"><img src="./doc/source/_static/concepts_of_covalent.svg" alt="divider"></a> 
+<div align="center">
+<a href="https://www.covalent.xyz/what-is-covalent/"><img src="./doc/source/_static/what_is_covalent.svg" alt="divider"></a>
+<a href="https://www.covalent.xyz/navigating-the-modern-hpc-landscape/"><img src="./doc/source/_static/cloud_hpc.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/concepts/covalent-basics/"><img src="./doc/source/_static/concepts_of_covalent.svg" alt="divider"></a>
 <a href="https://docs.covalent.xyz/docs/user-documentation/concepts/covalent-arch/covalent-architecture"><img src="./doc/source/_static/covalent_work.svg" alt="divider"></a>
 </div>
 
@@ -103,9 +103,9 @@ For a more in-depth description of Covalent's features and how they work, see th
 
 ### Examples
 
-<div mt="1000"> 
+<div mt="1000">
 <a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/generativeai/"><img src="./doc/source/_static/ai_tutorial.svg" alt="divider"></a>
-<a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/mnist/"><img src="./doc/source/_static/mnist_tutorial.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/mnist/"><img src="./doc/source/_static/mnist_tutorial.svg" alt="divider"></a>
 <a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/quantumchemistry/"><img src="./doc/source/_static/quantum_tutorial.svg" alt="divider"></a>
  </div>
 
@@ -123,17 +123,17 @@ pip install covalent --upgrade
 ```
 
 For other methods of installation please [check the docs.](https://docs.covalent.xyz/docs/get-started/install/)
-  
+
 ### Deployments
-<div> 
+<div>
 Covalent offers flexible deployment options, from Docker image/AMIs for self-hosting to pip package for local installations, accommodating various use cases
 </div>
 
 </br>
 
-<div align="center"> 
-  
-<a href="https://docs.covalent.xyz/docs/user-documentation/server-deployment"><img src="./doc/source/_static/cloud_hosted.svg" alt="divider"></a> 
+<div align="center">
+
+<a href="https://docs.covalent.xyz/docs/user-documentation/server-deployment"><img src="./doc/source/_static/cloud_hosted.svg" alt="divider"></a>
 <a href="https://docs.covalent.xyz/docs/user-documentation/server-deployment"><img src="./doc/source/_static/onprem_hosted.svg" alt="divider"></a>
 
 </div>

@@ -4,8 +4,8 @@
         <div xmlns="http://www.w3.org/1999/xhtml">
             <style>
                 .tutorials {
-                color:#F9F9F9; 
-                font-size:24px; 
+                color:#F9F9F9;
+                font-size:24px;
                 font-weight:500;
                 font-family:"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
                 }
@@ -15,7 +15,7 @@
                 cursor:pointer;
                 padding:5px;
                 }
-    
+
                 .item{
                 border:1px solid #5552FF;
                 border-radius:8px;
@@ -23,17 +23,17 @@
                 height:155px;
                 width:46%;
                 }
-    
+
                 .ri{
                  margin-right:5px;
                 }
-    
-                   
-    
+
+
+
                 .heading{
                 color:#FFF;
                 font-size:16px;
-                font-family:"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";  
+                font-family:"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
                 }
 
 
@@ -43,7 +43,6 @@
             </div>
         </div>
     </foreignObject>
-</svg> 
+</svg>
 
 
-  
