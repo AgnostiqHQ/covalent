@@ -28,7 +28,10 @@
  </div>
 </br>
 
-Covalent is a Pythonic framework designed for AI/ML practitioners, computational scientists, and developers, offering abstracted and easy access to a wide array of high-performance computing resources. It facilitates integration with advanced computing platforms, from quantum computers and HPC clusters to GPU arrays and diverse cloud services, providing serverless access to all of them. Check out the [quick start guide](https://docs.covalent.xyz/docs/get-started/quick-start/) to get started.
+Covalent is a Pythonic framework designed for AI/ML practitioners, computational scientists, and developers, offering abstracted and easy access to a wide array of high-performance computing resources. It facilitates integration with advanced computing platforms, from quantum computers and HPC clusters to GPU arrays and diverse cloud services, providing serverless access to all of them. Check out the [quick start guide](https://docs.covalent.xyz/docs/get-started/quick-start/) to get started and install it with 
+```
+pip install covalent --upgrade
+```
 
 
 </br>
@@ -49,6 +52,8 @@ Covalent serves as a robust compute backend framework, enabling seamless, cloud-
 </td>
  </tr>
 </table>
+
+
 
 </br>
 
@@ -73,16 +78,6 @@ https://github.com/AgnostiqHQ/covalent/assets/116076079/87268cc8-4d53-4053-b739-
  </div>
  
 </br>
-
-### Installation
-
-Covalent is developed using Python version 3.8 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager.
-
-```
-pip install covalent --upgrade
-```
-
-For other methods of installation please [check the docs.](https://docs.covalent.xyz/docs/get-started/install/)
 
 ### Getting Started
 
@@ -117,6 +112,17 @@ For a more in-depth description of Covalent's features and how they work, see th
 ---
 
 <div >
+
+
+### Installation
+
+Covalent is developed using Python version 3.8 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager.
+
+```
+pip install covalent --upgrade
+```
+
+For other methods of installation please [check the docs.](https://docs.covalent.xyz/docs/get-started/install/)
   
 ### Deployments
 <div> 
