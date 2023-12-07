@@ -14,30 +14,46 @@
 <div align="center">Serverless high-performance computing from your laptop to the cloud, all through a single line of Python</div>
 </br>
  <div align="center"> 
-<a href="https://docs.covalent.xyz/docs/get-started/quick-start"><img src="./doc/source/_static/getting_started.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/get-started/quick-start"><img src="./doc/source/_static/getting_started.svg" width="150" alt="divider"></a> 
 &nbsp&nbsp
-<a href="https://docs.covalent.xyz/docs/"><img src="./doc/source/_static/documentation.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/"><img src="./doc/source/_static/documentation.svg" alt="divider" width="150"></a> 
 &nbsp&nbsp
-<a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/"><img src="./doc/source/_static/examples.svg" alt="divider"></a> 
+<a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/"><img src="./doc/source/_static/examples.svg" alt="divider" width="105"></a> 
 &nbsp&nbsp
-<a href="https://covalentworkflows.slack.com/join/shared_invite/zt-1ew7f2rfk-dKSXVQmRniu5mQW4Z_eQuw#/shared-invite/email"><img src="./doc/source/_static/slack.svg" alt="divider"></a>
+<a href="https://covalentworkflows.slack.com/join/shared_invite/zt-1ew7f2rfk-dKSXVQmRniu5mQW4Z_eQuw#/shared-invite/email"><img src="./doc/source/_static/slack.svg" alt="divider" width="70"></a>
 </div>
 </br>
  <div align="center">
   <img src="./doc/source/_static/executor.gif"  alt="hero" />
  </div>
 </br>
-Covalent is a Pythonic framework designed for AI/ML practitioners, computational scientists, and developers, offering abstracted and easy access to a wide array of high-performance computing resources. It facilitates integration with advanced computing platforms, from quantum computers and HPC clusters to GPU arrays and diverse cloud services, providing serverless access to all of them.
+
+Covalent is a Pythonic framework designed for AI/ML practitioners, computational scientists, and developers, offering abstracted and easy access to a wide array of high-performance computing resources. It facilitates integration with advanced computing platforms, from quantum computers and HPC clusters to GPU arrays and diverse cloud services, providing serverless access to all of them. Check out the [quick start guide](https://docs.covalent.xyz/docs/get-started/quick-start/) to get started.
+
 
 </br>
 
-- **For AI/ML Practitioners and Developers:** Covalent serves as a robust compute backend framework, enabling seamless, cloud-agnostic execution of high-compute tasks. Ideal solution for powering AI/ML applications, Large Language Models (LLMs), Generative AI, and other compute-intensive processes, all without the hassle of infrastructure management.
+<table border="0">
+ <tr>
+    <td><b style="font-size:30px">For AI/ML Practitioners and Developers&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></td>
+    <td><b style="font-size:30px">For Researchers&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></td>
+ </tr>
+ <tr>
+    <td>
 
-- **For Researchers:** Covalent empowers researchers to directly tap into advanced computing resources from their laptops or Jupyter notebooks. Whether the need is for cloud platforms or HPC systems like SLURM, PBS, or LSF, [Covalent plugins](https://docs.covalent.xyz/docs/plugin) offers instant connectivity and unparalleled ease of use.
+Covalent serves as a robust compute backend framework, enabling seamless, cloud-agnostic execution of high-compute tasks. Ideal solution for powering AI/ML applications, Large Language Models (LLMs), Generative AI, and other compute-intensive processes, all without the hassle of infrastructure management.
+</td>
+    <td>
 
-Check out the [quick start guide](https://docs.covalent.xyz/docs/get-started/quick-start/) to get started.
+ Covalent empowers researchers to directly tap into advanced computing resources from their laptops or Jupyter notebooks. Whether the need is for cloud platforms or HPC systems like SLURM, PBS, or LSF, [Covalent plugins](https://docs.covalent.xyz/docs/plugin) offers instant connectivity and unparalleled ease of use.
+</td>
+ </tr>
+</table>
+
+</br>
 
 https://github.com/AgnostiqHQ/covalent/assets/116076079/87268cc8-4d53-4053-b739-1d03f2eafa7c
+
 
 </br>
   <div align="center"> 
@@ -53,7 +69,7 @@ https://github.com/AgnostiqHQ/covalent/assets/116076079/87268cc8-4d53-4053-b739-
 
 </br>
   <div align="center">
-  <img src="./doc/source/_static/development.svg"  alt="development"></img>
+  <a href="https://docs.covalent.xyz/docs/"><img src="./doc/source/_static/development.svg"  alt="development"></img></a>
  </div>
  
 </br>
@@ -68,14 +84,10 @@ pip install covalent --upgrade
 
 For other methods of installation please [check the docs.](https://docs.covalent.xyz/docs/get-started/install/)
 
-</br>
-
 ### Getting Started
 
-Ready to try it?\
-Refer to the [Quick Start](https://docs.covalent.xyz/docs/get-started/quick-start/) guide for quick setup instructions, or to the [First Experiment](https://docs.covalent.xyz/docs/get-started/first-experiment/) guide for a more thorough approach. For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/) page in the documentation.
+Ready to try it? - Refer to the [Quick Start](https://docs.covalent.xyz/docs/get-started/quick-start/) guide for quick setup instructions, or to the [First Experiment](https://docs.covalent.xyz/docs/get-started/first-experiment/) guide for a more thorough approach. For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/) page in the documentation.
 
-</br>
 
 ---
 
@@ -92,11 +104,9 @@ For a more in-depth description of Covalent's features and how they work, see th
 <a href="https://docs.covalent.xyz/docs/user-documentation/concepts/covalent-arch/covalent-architecture"><img src="./doc/source/_static/covalent_work.svg" alt="divider"></a>
 </div>
 
-</br>
-
 ---
 
-### Tutorials
+### Examples
 
 <div mt="1000"> 
 <a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/generativeai/"><img src="./doc/source/_static/ai_tutorial.svg" alt="divider"></a>
@@ -107,10 +117,10 @@ For a more in-depth description of Covalent's features and how they work, see th
 ---
 
 <div >
-</br>
-
-<div align="center"> 
-Covalent’s serverless HPC architecture allows you to easily scale jobs from your laptop to your HPC/Cloud
+  
+### Deployments
+<div> 
+Covalent offers flexible deployment options, from Docker image/AMIs for self-hosting to pip package for local installations, accommodating various use cases
 </div>
 
 </br>
@@ -140,8 +150,6 @@ To contribute to Covalent, refer to the [Contribution Guidelines](https://github
 Please use the following citation in any publications
 
 [https://doi.org/10.5281/zenodo.5903364](https://zenodo.org/records/8369670)
-
-</br>
 
 ### License
 
