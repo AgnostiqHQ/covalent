@@ -51,7 +51,7 @@ from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
 
-from covalent._shared_files.config import ConfigManager, get_config, set_config
+from covalent._shared_files.config import ConfigManager, get_config, reload_config, set_config
 
 from .._db.datastore import DataStore
 from .migrate import migrate_pickled_result_object
@@ -240,6 +240,11 @@ def _graceful_start(
             up = True
         except requests.exceptions.ConnectionError:
             time.sleep(1)
+
+    # Since the dispatcher process might update the config file with the Dask cluster's state,
+    # we need to sync those changes with the CLI's ConfigManager instance. Otherwise the next
+    # call to `set_config()` from this module would obliterate the Dask cluster state.
+    reload_config()
 
     Path(get_config("dispatcher.cache_dir")).mkdir(parents=True, exist_ok=True)
     Path(get_config("dispatcher.results_dir")).mkdir(parents=True, exist_ok=True)
@@ -592,6 +597,7 @@ def status() -> None:
     """
     Display local server status
     """
+
     console = Console()
     print_header(console)
 
@@ -618,6 +624,7 @@ def status() -> None:
     elif not exists or psutil.Process(pid).status() == psutil.STATUS_STOPPED:
         _rm_pid_file(UI_PIDFILE)
         status_table.add_row("Covalent Server", "[red]Stopped[/red]")
+
     if exists and pid != -1:
         if Path(get_config("dispatcher.heartbeat_file")).is_file():
             with open(get_config("dispatcher.heartbeat_file")) as f:
@@ -628,11 +635,13 @@ def status() -> None:
         )
         running_workflows = response.json()["total_count"]
         status_table.add_row("", f"There are {running_workflows} workflows currently running.")
+
     admin_address = _get_cluster_admin_address()
     loop = asyncio.get_event_loop()
     cluster_status = (
         loop.run_until_complete(_get_cluster_status(admin_address)) if admin_address else None
     )
+
     if _is_server_running() and cluster_status:
         status_table.add_row("Dask Cluster", f"[green]Running[/green] at {admin_address}")
         client = Client(get_config("dask.scheduler_address"))
@@ -640,6 +649,7 @@ def status() -> None:
         status_table.add_row("", f"There are {running_tasks} tasks currently running.")
     else:
         status_table.add_row("Dask Cluster", "[red]Stopped[/red]")
+
     try:
         response = requests.get(f"http://localhost:{port}/api/triggers/status", timeout=1)
         trigger_status = response.json()["status"]
@@ -650,6 +660,7 @@ def status() -> None:
         status_table.add_row("Triggers Server", "[green]Running[/green]")
     else:
         status_table.add_row("Triggers Server", "[red]Stopped[/red]")
+
     try:
         db = DataStore.factory()
 

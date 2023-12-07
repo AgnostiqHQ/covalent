@@ -18,7 +18,7 @@
 
 from fastapi import APIRouter
 
-from covalent_dispatcher._service import app
+from covalent_dispatcher._service import app, assets, runnersvc
 from covalent_dispatcher._triggers_app.app import router as tr_router
 from covalent_ui.api.v1.routes.end_points import (
     electron_routes,
@@ -39,6 +39,7 @@ routes.include_router(graph_route.routes, prefix=dispatch_prefix, tags=["Graph"]
 routes.include_router(electron_routes.routes, prefix=dispatch_prefix, tags=["Electrons"])
 routes.include_router(settings_routes.routes, prefix="/api/v1", tags=["Settings"])
 routes.include_router(logs_route.routes, prefix="/api/v1/logs", tags=["Logs"])
-routes.include_router(app.router, prefix="/api", tags=["dispatcher"])
-routes.include_router(app.router, prefix="/api", tags=["dispatcher"])
 routes.include_router(tr_router, prefix="/api", tags=["Triggers"])
+routes.include_router(app.router, prefix="/api/v2", tags=["Dispatcher"])
+routes.include_router(assets.router, prefix="/api/v2", tags=["Assets"])
+routes.include_router(runnersvc.router, prefix="/api/v2", tags=["Runner"])

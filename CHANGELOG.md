@@ -7,12 +7,104 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Allow `cloudpickle` >= 3.0.0
+- Remove `boto3` dependency from `tests/requirements.txt`
+
+## [0.232.0-rc.0] - 2023-12-01
+
+### Authors
+
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+
+### Operations
+
+- Ignore custom executor plugin in how-to's when running `test_deploy_status` CLI test.
+
+### Changed
+
+- Terraform output to use scrolling buffer.
+- Terraform output handling to show errors.
+- Bumped up babel/traverse version to 7.23.2
+
+## [0.231.0-rc.0] - 2023-11-28
+
+### Authors
+
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+
+### Added
+
+- check for `/bin/bash` AND `/bin/sh` (in that order) to execute bash leptons
+
+### Changed
+
+- Changed the axios version on the webapp side.
+
+### Operations
+
+- Change the strict version pin on `pennylane` from `==0.33.1` to `>=0.31.1,<0.33.0`
+
+## [0.230.0-rc.0] - 2023-11-24
+
+### Authors
+
+- Andrew S. Rosen <asrosen93@gmail.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@users.noreply.github.com>
+- Co-authored-by: Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- Kevin Taylor <tkdtaylor@gmail.com>
+- FilipBolt <filipbolt@gmail.com>
+- Co-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>
+- Co-authored-by: Will Cunningham <wjcunningham7@gmail.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+- Co-authored-by: Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+- Aviral Katiyar <123640350+maskboyAvi@users.noreply.github.com>
+- Co-authored-by: ArunPsiog <arun.mukesh@psiog.com>
+- Casey Jao <casey@agnostiq.ai>
+- Arnav Kohli <95236897+THEGAMECHANGER416@users.noreply.github.com>
+- Kirill Pushkarev <71515921+kirill-push@users.noreply.github.com>
+- Aditya Raj Kashyap <95625520+AdityaRaj23@users.noreply.github.com>
+- ArunPsiog <106462226+ArunPsiog@users.noreply.github.com>
+- mpvgithub <107603631+mpvgithub@users.noreply.github.com>
+- Aravind <100823292+Aravind-psiog@users.noreply.github.com>
+- Faiyaz Hasan <faiyaz@agnostiq.ai>
+- Co-authored-by: Venkat Bala <balavk89@gmail.com>
+- Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
+- Co-authored-by: Aravind-psiog <aravind.prabaharan@psiog.com>
+- Co-authored-by: Manjunath PV <manjunath.poilath@psiog.com>
+- Co-authored-by: Ara Ghukasyan <ara@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+
+
+
+### Added
+
+- Programmatic equivalents of CLI commands `covalent start` and `covalent stop`
+
+### Changed
+
+- Changed the azurebatch.rst banner from default covalent jpg to azure batch's svg file
+
 ### Fixed
 
+- Lattice-default metadata attributes are now applied correctly
+- Sublattices are built using `workflow_executor`
 - Added covalent version attribute to Remote Executors
 - Removed unassigned variable names
 - Contributing guidelines steps for installing for the first time
 - Updated gitignore to ignore yarn files and folders for latest version of yarn
+- Fixed the bug that caused ValueError error when using KEYWORD_ONLY parameter in electron func
+- Changed code at line 218 in covalent/_shared_files/utils.py
+- Fixed usage of deprecated pydantic validation methods
+- Fixed qelectron_db retrieval in result object
+- Fixed editability of Qelectron on settings page - UI changes
+- Certain pydantic v2 related updates
+- Fixed lattice's metadata propagation to electron's metadata in case no metadata was provided to the electron
 
 ### Operations
 
@@ -23,19 +115,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added rich support to cli for better printing statements.
 - Changed semver from 5.7.1 to 5.7.2 in package.json
 - Updated word-wrap to 1.2.4 version
+- Updated the nightly workflow's schedule
+- Temporarily making the nightly workflow more frequent to test the fix for the failing tests
+- Fixed failing tests
 
 ### Changed
 
+- [Significant Changes] Improving memory management part 1/3
 - Removed strict version pins on `lmdbm`, `mpire`, `orjson`, and `pennylane`
 - Changed license to Apache
+- Improved error handling in generate_docs.py
+- [Significant Changes] Migrated core server-side code to new data access layer.
+- Changed the way UI was accessing the qelectron database to access it directly from the mdb file in object store
+- Update version of browserverify-sign
+- Limiting cloudpickle version to less than 3.0 for now
 
-### Added 
+### Added
 
-- Documentation and test cases for database triggers. 
+- Documentation and test cases for database triggers.
+- Added the `__pow__` method to the `Electron` class
+- New Runner and executor API to bypass server-side memory when running tasks.
+- Added qelectron_db as an asset to be transferred from executor's machine to covalent server
+- New methods to qelectron_utils, replacing the old ones
+- Covalent deploy CLI tool added - allows provisioning infras directly from covalent
 
 ### Docs
 
 - Added federated learning showcase code
+- Updated tutorial for redispatching workflows with Streamlit
+
+### Tests
+
+- Temporarily skipping the sqlite and database trigger functional tests
+- Updated tests to accommodate the new qelectron fixes
+- Added new tests for the Database class and qelectron_utils
+- Covalent deploy CLI tool tests.
+
+### Removed
+
+- Removed no longer needed methods in qelectron_utils
+- Removed `dispatch-id` from generate_node_result method
 
 ## [0.229.0-rc.0] - 2023-09-22
 
@@ -65,6 +184,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rsync command fixed to recursively copy files when using SSH
 - Removed accidentally added migrations build files
 - Updated migration script to add a default value for `qelectron_data_exists` in the `electrons` table since it cannot be nullable
+- Reduced server memory consumption during workflow processing
 
 ### Changed
 
@@ -141,6 +261,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - File transfer strategy for GCP storage
 - Add CLI status for zombie, stopped process.
 - Fix for double locking file in configurations.
+- Introduced new data access layer
+- Introduced Shutil file transfer strategy for local file transfers
 
 ### Docs
 

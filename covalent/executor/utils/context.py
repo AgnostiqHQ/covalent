@@ -20,8 +20,8 @@ from pydantic import BaseModel
 
 
 class Context(BaseModel):
-    node_id: int = None
     dispatch_id: str = None
+    task_id: int = None
 
 
 def get_context():
@@ -29,10 +29,10 @@ def get_context():
 
 
 @contextmanager
-def set_context(node_id: int, dispatch_id: str):
+def set_context(dispatch_id: int, task_id: str):
     global current_context
     global unset_context
-    current_context = Context(node_id=node_id, dispatch_id=dispatch_id)
+    current_context = Context(dispatch_id=dispatch_id, task_id=task_id)
     yield
     current_context = unset_context
 

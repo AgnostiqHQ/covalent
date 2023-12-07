@@ -19,7 +19,8 @@
 
 import pytest
 
-from covalent._shared_files.utils import filter_null_metadata
+from covalent._shared_files.config import get_config
+from covalent._shared_files.utils import filter_null_metadata, format_server_url, get_named_params
 
 
 @pytest.mark.parametrize(
@@ -34,3 +35,26 @@ def test_filter_null_metadata(meta_dict, expected):
     """Test the filter null metadata function."""
     filtered = filter_null_metadata(meta_dict)
     assert filtered == expected
+
+
+def test_get_named_params():
+    """Tests the changes I made in covalent/covalent/_shared_files/utils.py for fixing ValueError in when using KEYWORD_ONLU parameter in electron func"""
+
+    def test_func(a, *, b):
+        return a + b
+
+    named_args, named_kwargs = get_named_params(test_func, [1], {"b": 2})
+
+    assert named_args == {"a": 1}
+    assert named_kwargs == {"b": 2}
+
+
+def test_format_server_url():
+    """Test the convenience function to format server urls."""
+
+    base_url = format_server_url()
+
+    addr = get_config("dispatcher.address")
+    port = int(get_config("dispatcher.port"))
+
+    assert base_url == f"http://{addr}:{port}"

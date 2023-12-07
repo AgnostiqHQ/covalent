@@ -16,6 +16,7 @@
 
 """Class corresponding to computation workflow."""
 
+import importlib.metadata
 import json
 import os
 import warnings
@@ -25,7 +26,7 @@ from contextlib import redirect_stdout
 from copy import deepcopy
 from dataclasses import asdict
 from functools import wraps
-from typing import TYPE_CHECKING, Any, Callable, List, Optional, Union
+from typing import TYPE_CHECKING, Any, Callable, Dict, List, Optional, Union
 
 from .._shared_files import logger
 from .._shared_files.config import get_config
@@ -76,18 +77,19 @@ class Lattice:
         self.__name__ = self.workflow_function.__name__
         self.__doc__ = self.workflow_function.__doc__
         self.post_processing = False
-        self.args = []
-        self.kwargs = {}
-        self.named_args = {}
-        self.named_kwargs = {}
+        self.inputs = None
+        self.named_args = None
+        self.named_kwargs = None
         self.electron_outputs = {}
         self.lattice_imports, self.cova_imports = get_imports(self.workflow_function)
-        self.cova_imports.update({"electron"})
 
         self.workflow_function = TransportableObject.make_transportable(self.workflow_function)
 
         # Bound electrons are defined as electrons with a valid node_id, since it means they are bound to a TransportGraph.
         self._bound_electrons = {}  # Clear before serializing
+
+        self.python_version = self.workflow_function.python_version
+        self.covalent_version = importlib.metadata.version("covalent")
 
     # To be called after build_graph
     def serialize_to_json(self) -> str:
@@ -99,45 +101,26 @@ class Lattice:
         if self.transport_graph:
             attributes["transport_graph"] = self.transport_graph.serialize_to_json()
 
-        attributes["args"] = []
-        attributes["kwargs"] = {}
-
-        for arg in self.args:
-            attributes["args"].append(arg.to_dict())
-        for k, v in self.kwargs.items():
-            attributes["kwargs"][k] = v.to_dict()
-
-        for k, v in self.named_args.items():
-            attributes["named_args"][k] = v.to_dict()
-        for k, v in self.named_kwargs.items():
-            attributes["named_kwargs"][k] = v.to_dict()
+        attributes["inputs"] = self.inputs.to_dict()
+        attributes["named_args"] = self.named_args.to_dict()
+        attributes["named_kwargs"] = self.named_kwargs.to_dict()
 
         attributes["electron_outputs"] = {}
         for node_name, output in self.electron_outputs.items():
             attributes["electron_outputs"][node_name] = output.to_dict()
 
-        attributes["cova_imports"] = list(self.cova_imports)
         return json.dumps(attributes)
 
     @staticmethod
     def deserialize_from_json(json_data: str) -> None:
         attributes = json.loads(json_data)
-        attributes["cova_imports"] = set(attributes["cova_imports"])
 
         for node_name, object_dict in attributes["electron_outputs"].items():
             attributes["electron_outputs"][node_name] = TransportableObject.from_dict(object_dict)
 
-        for k, v in attributes["named_kwargs"].items():
-            attributes["named_kwargs"][k] = TransportableObject.from_dict(v)
-
-        for k, v in attributes["named_args"].items():
-            attributes["named_args"][k] = TransportableObject.from_dict(v)
-
-        for k, v in attributes["kwargs"].items():
-            attributes["kwargs"][k] = TransportableObject.from_dict(v)
-
-        for i, arg in enumerate(attributes["args"]):
-            attributes["args"][i] = TransportableObject.from_dict(arg)
+        attributes["named_kwargs"] = TransportableObject.from_dict(attributes["named_kwargs"])
+        attributes["named_args"] = TransportableObject.from_dict(attributes["named_args"])
+        attributes["inputs"] = TransportableObject.from_dict(attributes["inputs"])
 
         if attributes["transport_graph"]:
             tg = _TransportGraph()
@@ -186,6 +169,14 @@ class Lattice:
 
         return self.metadata.get(name, None)
 
+    @property
+    def replace_electrons(self) -> Dict[str, Callable]:
+        return self.__dict__.get("_replace_electrons", {})
+
+    @property
+    def task_packing(self) -> bool:
+        return self.__dict__.get("_task_packing", False)
+
     def build_graph(self, *args, **kwargs) -> None:
         """
         Builds the transport graph for the lattice by executing the workflow
@@ -205,31 +196,34 @@ class Lattice:
             None
 
         """
-        self.args = [TransportableObject.make_transportable(arg) for arg in args]
-        self.kwargs = {k: TransportableObject.make_transportable(v) for k, v in kwargs.items()}
 
         self.transport_graph.reset()
 
         workflow_function = self.workflow_function.get_deserialized()
 
-        named_args, named_kwargs = get_named_params(workflow_function, self.args, self.kwargs)
-        self.named_args = named_args
-        self.named_kwargs = named_kwargs
+        named_args, named_kwargs = get_named_params(workflow_function, args, kwargs)
+        new_args = [v for _, v in named_args.items()]
+        new_kwargs = dict(named_kwargs.items())
 
-        new_args = [v.get_deserialized() for _, v in named_args.items()]
-        new_kwargs = {k: v.get_deserialized() for k, v in named_kwargs.items()}
+        self.inputs = TransportableObject({"args": args, "kwargs": kwargs})
+        self.named_args = TransportableObject(named_args)
+        self.named_kwargs = TransportableObject(named_kwargs)
+        self.lattice_imports, self.cova_imports = get_imports(workflow_function)
 
         # Set any lattice metadata not explicitly set by the user
         constraint_names = {"executor", "workflow_executor", "deps", "call_before", "call_after"}
         new_metadata = {
             name: DEFAULT_METADATA_VALUES[name]
             for name in constraint_names
-            if not self.metadata[name]
+            if self.metadata[name] is None
         }
         new_metadata = encode_metadata(new_metadata)
 
         for k, v in new_metadata.items():
             self.metadata[k] = v
+
+        # Check whether task packing is enabled
+        self._task_packing = get_config("sdk.task_packing") == "true"
 
         with redirect_stdout(open(os.devnull, "w")):
             with active_lattice_manager.claim(self):
@@ -249,6 +243,9 @@ class Lattice:
             pp.add_reconstruct_postprocess_node(retval, self._bound_electrons.copy())
 
         self._bound_electrons = {}  # Reset bound electrons
+
+        # Clear this temporary attribute
+        del self.__dict__["_task_packing"]
 
     def draw(self, *args, **kwargs) -> None:
         """
@@ -333,8 +330,8 @@ def lattice(
     # Add custom metadata fields here
     deps_bash: Union[DepsBash, list, str] = None,
     deps_pip: Union[DepsPip, list] = None,
-    call_before: Union[List[DepsCall], DepsCall] = [],
-    call_after: Union[List[DepsCall], DepsCall] = [],
+    call_before: Union[List[DepsCall], DepsCall] = None,
+    call_after: Union[List[DepsCall], DepsCall] = None,
     triggers: Union["BaseTrigger", List["BaseTrigger"]] = None,
     # e.g. schedule: True, whether to use a custom scheduling logic or not
 ) -> Lattice:

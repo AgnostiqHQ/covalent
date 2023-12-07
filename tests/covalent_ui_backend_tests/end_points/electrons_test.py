@@ -21,10 +21,11 @@ import pytest
 from numpy import array
 
 from covalent_dispatcher._db.datastore import DataStore
-from tests.covalent_ui_backend_tests import fastapi_app
-from tests.covalent_ui_backend_tests.utils.assert_data.electrons import seed_electron_data
-from tests.covalent_ui_backend_tests.utils.client_template import MethodType, TestClientTemplate
-from tests.covalent_ui_backend_tests.utils.trigger_events import shutdown_event, startup_event
+
+from .. import fastapi_app
+from ..utils.assert_data.electrons import seed_electron_data
+from ..utils.client_template import MethodType, TestClientTemplate
+from ..utils.trigger_events import shutdown_event, startup_event
 
 object_test_template = TestClientTemplate()
 output_data = seed_electron_data()
@@ -394,7 +395,7 @@ mock_input_data_jobs = {
 def qelectron_mocked_data_for_jobs(mocker):
     from covalent.quantum.qserver.database import Database
 
-    return mocker.patch.object(Database, "get_db", return_value=mock_input_data_jobs)
+    return mocker.patch.object(Database, "get_db_dict", return_value=mock_input_data_jobs)
 
 
 def test_get_qelectrons_jobs(qelectron_mocked_data_for_jobs):

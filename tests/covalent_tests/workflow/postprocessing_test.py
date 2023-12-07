@@ -25,11 +25,14 @@ import covalent as ct
 from covalent._shared_files.defaults import postprocess_prefix
 from covalent._workflow.electron import Electron
 from covalent._workflow.postprocessing import Postprocessor
+from covalent.executor import LocalExecutor
 
 
 @pytest.fixture
 def postprocessor():
     """Get postprocessor object."""
+
+    le = LocalExecutor()
 
     @ct.electron(executor="local")
     def task_1(x):
@@ -39,7 +42,7 @@ def postprocessor():
     def task_2(x):
         return [x * 2]
 
-    @ct.lattice(executor="local")
+    @ct.lattice(executor=le, workflow_executor="dask")
     def workflow(x):
         res_1 = task_1(x)
         res_2 = task_2(x)
@@ -90,20 +93,17 @@ def test_postprocess():
     mock_kwarg = Mock()
     mock_workflow = Mock()
     mock_workflow.get_deserialized.__call__().return_value = "mock_result"
-    mock_lattice.args.__iter__.return_value = [mock_arg]
-    mock_lattice.kwargs = {"mock_key": mock_kwarg}
+    mock_lattice.inputs = MagicMock()
+    mock_lattice.inputs.get_deserialized = MagicMock(
+        return_value={"args": (mock_arg,), "kwargs": {"mock_key": mock_kwarg}}
+    )
     mock_lattice.workflow_function = mock_workflow
 
     pp = Postprocessor(mock_lattice)
     res = pp._postprocess(["mock_output_1", "mock_output_2"])
 
     assert mock_lattice.electron_outputs == [["mock_output_1", "mock_output_2"]]
-
-    mock_arg.get_deserialized.assert_called_once_with()
-    mock_kwarg.get_deserialized.assert_called_once_with()
-    mock_workflow.get_deserialized().assert_called_once_with(
-        mock_arg.get_deserialized(), mock_key=mock_kwarg.get_deserialized()
-    )
+    mock_workflow.get_deserialized().assert_called_once_with(mock_arg, mock_key=mock_kwarg)
 
     assert res == "mock_result"
 
@@ -133,23 +133,10 @@ def test_get_node_ids_from_retval(postprocessor, retval, node_ids):
 
 def test_get_electron_metadata(postprocessor):
     """Test method that retrieves the postprocessing electron metadata."""
-    assert postprocessor._get_electron_metadata() == {
-        "executor": None,
-        "deps": {},
-        "call_before": [],
-        "call_after": [],
-        "workflow_executor": "local",
-        "executor_data": {},
-        "workflow_executor_data": {},
-    } or {
-        "executor": None,
-        "deps": {},
-        "call_before": [],
-        "call_after": [],
-        "workflow_executor": "dask",
-        "executor_data": {},
-        "workflow_executor_data": {},
-    }
+    metadata_copy = postprocessor.lattice.metadata.copy()
+    metadata_copy["executor"] = metadata_copy.pop("workflow_executor")
+    metadata_copy["executor_data"] = metadata_copy.pop("workflow_executor_data")
+    assert postprocessor._get_electron_metadata() == metadata_copy
 
 
 def test_add_exhaustive_postprocess_node(postprocessor):

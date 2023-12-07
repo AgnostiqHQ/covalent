@@ -13,4 +13,5 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-from .db import db
+from .db_group import db
+from .deploy_group import deploy

@@ -19,10 +19,7 @@
 import os
 from datetime import datetime as dt
 from datetime import timezone
-from pathlib import Path
-from typing import Any
 
-import cloudpickle
 import networkx as nx
 from sqlalchemy import update
 from sqlalchemy.orm import Session
@@ -43,7 +40,7 @@ from covalent._shared_files.exceptions import MissingLatticeRecordError
 from covalent._workflow.lattice import Lattice as LatticeClass
 
 from .datastore import workflow_db
-from .models import Electron, ElectronDependency, Job, Lattice
+from .models import Asset, Electron, ElectronAsset, ElectronDependency, Job, Lattice, LatticeAsset
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
@@ -93,15 +90,14 @@ def transaction_insert_lattices_data(
     function_filename: str,
     function_string_filename: str,
     executor: str,
-    executor_data_filename: str,
+    executor_data: str,
     workflow_executor: str,
-    workflow_executor_data_filename: str,
+    workflow_executor_data: str,
     error_filename: str,
     inputs_filename: str,
     named_args_filename: str,
     named_kwargs_filename: str,
     results_filename: str,
-    transport_graph_filename: str,
     deps_filename: str,
     call_before_filename: str,
     call_after_filename: str,
@@ -134,15 +130,14 @@ def transaction_insert_lattices_data(
         function_filename=function_filename,
         function_string_filename=function_string_filename,
         executor=executor,
-        executor_data_filename=executor_data_filename,
+        executor_data=executor_data,
         workflow_executor=workflow_executor,
-        workflow_executor_data_filename=workflow_executor_data_filename,
+        workflow_executor_data=workflow_executor_data,
         error_filename=error_filename,
         inputs_filename=inputs_filename,
         named_args_filename=named_args_filename,
         named_kwargs_filename=named_kwargs_filename,
         results_filename=results_filename,
-        transport_graph_filename=transport_graph_filename,
         deps_filename=deps_filename,
         call_before_filename=call_before_filename,
         call_after_filename=call_after_filename,
@@ -158,6 +153,7 @@ def transaction_insert_lattices_data(
     )
 
     session.add(lattice_row)
+    session.flush()
     lattice_id = lattice_row.id
 
     app_log.debug(f"returning lattice id {lattice_id}")
@@ -176,10 +172,68 @@ def insert_lattices_data(*args, **kwargs):
     app_log.debug(f"Added lattice record {locals()} to DB")
 
 
+def transaction_insert_job_record(session: Session, cancel_requested: bool):
+    job_row = Job(cancel_requested=cancel_requested)
+    session.add(job_row)
+    session.flush()
+    return job_row
+
+
+def transaction_insert_electron_asset_record(
+    session: Session,
+    electron_id: int,
+    asset_id: int,
+    key: str,
+) -> ElectronAsset:
+    electron_asset = ElectronAsset(
+        meta_record_id=electron_id,
+        asset_id=asset_id,
+        key=key,
+    )
+    session.add(electron_asset)
+    return electron_asset
+
+
+def transaction_insert_lattice_asset_record(
+    session: Session,
+    lattice_id: int,
+    asset_id: int,
+    key: str,
+) -> LatticeAsset:
+    lattice_asset = LatticeAsset(
+        meta_record_id=lattice_id,
+        asset_id=asset_id,
+        key=key,
+    )
+    session.add(lattice_asset)
+    return lattice_asset
+
+
+def transaction_insert_asset_record(
+    session: Session,
+    storage_type: str,
+    storage_path: str,
+    object_key: str,
+    digest_alg: str,
+    digest: str,
+) -> Asset:
+    asset_row = Asset(
+        storage_type=storage_type,
+        storage_path=storage_path,
+        object_key=object_key,
+        digest_alg=digest_alg,
+        digest=digest,
+    )
+    session.add(asset_row)
+    session.flush()
+    return asset_row
+
+
 def transaction_insert_electrons_data(
     session: Session,
     parent_dispatch_id: str,
     transport_graph_node_id: int,
+    task_group_id: int,
     type: str,
     name: str,
     status: str,
@@ -188,7 +242,7 @@ def transaction_insert_electrons_data(
     function_filename: str,
     function_string_filename: str,
     executor: str,
-    executor_data_filename: str,
+    executor_data: str,
     results_filename: str,
     value_filename: str,
     stdout_filename: str,
@@ -197,8 +251,8 @@ def transaction_insert_electrons_data(
     deps_filename: str,
     call_before_filename: str,
     call_after_filename: str,
+    job_id: int,
     qelectron_data_exists: bool,
-    cancel_requested: bool,
     created_at: dt,
     updated_at: dt,
     started_at: dt,
@@ -219,13 +273,10 @@ def transaction_insert_electrons_data(
 
     parent_lattice_id = row[0].id
 
-    job_row = Job(cancel_requested=cancel_requested)
-    session.add(job_row)
-    session.flush()
-
     electron_row = Electron(
         parent_lattice_id=parent_lattice_id,
         transport_graph_node_id=transport_graph_node_id,
+        task_group_id=task_group_id,
         type=type,
         name=name,
         status=status,
@@ -234,7 +285,7 @@ def transaction_insert_electrons_data(
         function_filename=function_filename,
         function_string_filename=function_string_filename,
         executor=executor,
-        executor_data_filename=executor_data_filename,
+        executor_data=executor_data,
         results_filename=results_filename,
         value_filename=value_filename,
         stdout_filename=stdout_filename,
@@ -245,7 +296,7 @@ def transaction_insert_electrons_data(
         call_after_filename=call_after_filename,
         qelectron_data_exists=qelectron_data_exists,
         is_active=True,
-        job_id=job_row.id,
+        job_id=job_id,
         created_at=created_at,
         updated_at=updated_at,
         started_at=started_at,
@@ -254,7 +305,9 @@ def transaction_insert_electrons_data(
 
     session.add(electron_row)
     session.flush()
-    return electron_row.id
+    electron_id = electron_row.id
+
+    return electron_id
 
 
 def insert_electrons_data(*args, **kwargs):
@@ -279,7 +332,7 @@ def transaction_insert_electron_dependency_data(
         dependency information of an electron
     """
 
-    # TODO - Update how we access the transport graph edges directly in favor of using some interface provided by the TransportGraph class.
+    # TODO - Update how we access the transport graph edges directly in favor of using some interface provied by the TransportGraph class.
     node_links = nx.readwrite.node_link_data(lattice.transport_graph._graph)["links"]
 
     electron_dependency_ids = []
@@ -348,6 +401,7 @@ def transaction_upsert_electron_dependency_data(
         .first()
         is not None
     )
+    app_log.debug(f"electron_dependencies_exist is {electron_dependencies_exist}")
     if not electron_dependencies_exist:
         transaction_insert_electron_dependency_data(
             session=session, dispatch_id=dispatch_id, lattice=lattice
@@ -513,38 +567,3 @@ def write_lattice_error(dispatch_id: str, error: str) -> None:
 
         with open(os.path.join(valid_update.storage_path, valid_update.error_filename), "w") as f:
             f.write(error)
-
-
-def store_file(storage_path: str, filename: str, data: Any = None) -> None:
-    """This function writes data corresponding to the filepaths in the DB."""
-
-    if filename.endswith(".pkl"):
-        with open(Path(storage_path) / filename, "wb") as f:
-            cloudpickle.dump(data, f)
-
-    elif filename.endswith(".log") or filename.endswith(".txt"):
-        if data is None:
-            data = ""
-
-        if not isinstance(data, str):
-            raise InvalidFileExtension("Data must be string type.")
-
-        with open(Path(storage_path) / filename, "w+") as f:
-            f.write(data)
-
-    else:
-        raise InvalidFileExtension("The file extension is not supported.")
-
-
-def load_file(storage_path: str, filename: str) -> Any:
-    """This function loads data for the filenames in the DB."""
-
-    if filename.endswith(".pkl"):
-        with open(Path(storage_path) / filename, "rb") as f:
-            data = cloudpickle.load(f)
-
-    elif filename.endswith(".log") or filename.endswith(".txt"):
-        with open(Path(storage_path) / filename, "r") as f:
-            data = f.read()
-
-    return data

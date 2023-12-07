@@ -21,19 +21,26 @@ and waits for execution to finish then returns the result.
 This is a plugin executor module; it is loaded if found and properly structured.
 """
 
+import asyncio
+import json
 import os
-from typing import Callable, Dict, List, Literal, Optional
+from enum import Enum
+from typing import Any, Callable, Dict, List, Literal, Optional
 
 from dask.distributed import CancelledError, Client, Future
+from pydantic import BaseModel
 
 from covalent._shared_files import TaskRuntimeError, logger
 
 # Relative imports are not allowed in executor plugins
 from covalent._shared_files.config import get_config
 from covalent._shared_files.exceptions import TaskCancelledError
-from covalent._shared_files.utils import _address_client_mapper
+from covalent._shared_files.util_classes import RESULT_STATUS, Status
+from covalent._shared_files.utils import format_server_url
 from covalent.executor.base import AsyncBaseExecutor
+from covalent.executor.schemas import ResourceMap, TaskSpec, TaskUpdate
 from covalent.executor.utils.wrappers import io_wrapper as dask_wrapper
+from covalent.executor.utils.wrappers import run_task_from_uris_alt
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "DaskExecutor"
@@ -55,11 +62,37 @@ _EXECUTOR_PLUGIN_DEFAULTS = {
     "create_unique_workdir": False,
 }
 
+# See https://github.com/dask/distributed/issues/5667
+_clients = {}
+
+# See
+# https://stackoverflow.com/questions/62164283/why-do-my-dask-futures-get-stuck-in-pending-and-never-finish
+_futures = {}
+
+MANAGED_EXECUTION = os.environ.get("COVALENT_USE_OLD_DASK") != "1"
+
+# Dictionary to map Dask clients to their scheduler addresses
+_address_client_map = {}
+
+
+# Valid terminal statuses
+class StatusEnum(str, Enum):
+    CANCELLED = str(RESULT_STATUS.CANCELLED)
+    COMPLETED = str(RESULT_STATUS.COMPLETED)
+    FAILED = str(RESULT_STATUS.FAILED)
+    READY = "READY"
+
+
+class ReceiveModel(BaseModel):
+    status: StatusEnum
+
 
 class DaskExecutor(AsyncBaseExecutor):
     """
-    Dask executor class that submits the input function to a running dask cluster.
+    Dask executor class that submits the input function to a running LOCAL dask cluster.
     """
+
+    SUPPORTS_MANAGED_EXECUTION = MANAGED_EXECUTION
 
     def __init__(
         self,
@@ -109,7 +142,7 @@ class DaskExecutor(AsyncBaseExecutor):
         if not self.scheduler_address:
             try:
                 self.scheduler_address = get_config("dask.scheduler_address")
-            except KeyError as ex:
+            except KeyError:
                 app_log.debug(
                     "No dask scheduler address found in config. Address must be set manually."
                 )
@@ -121,11 +154,11 @@ class DaskExecutor(AsyncBaseExecutor):
         dispatch_id = task_metadata["dispatch_id"]
         node_id = task_metadata["node_id"]
 
-        dask_client = _address_client_mapper.get(self.scheduler_address)
+        dask_client = _address_client_map.get(self.scheduler_address)
 
         if not dask_client:
             dask_client = Client(address=self.scheduler_address, asynchronous=True)
-            _address_client_mapper[self.scheduler_address] = dask_client
+            _address_client_map[self.scheduler_address] = dask_client
             await dask_client
 
         if self.create_unique_workdir:
@@ -139,8 +172,8 @@ class DaskExecutor(AsyncBaseExecutor):
 
         try:
             result, worker_stdout, worker_stderr, tb = await future
-        except CancelledError:
-            raise TaskCancelledError()
+        except CancelledError as e:
+            raise TaskCancelledError() from e
 
         print(worker_stdout, end="", file=self.task_stdout)
         print(worker_stderr, end="", file=self.task_stderr)
@@ -163,14 +196,164 @@ class DaskExecutor(AsyncBaseExecutor):
         Return(s)
             True by default
         """
-        dask_client = _address_client_mapper.get(self.scheduler_address)
+
+        if not self.scheduler_address:
+            try:
+                self.scheduler_address = get_config("dask.scheduler_address")
+            except KeyError:
+                app_log.debug(
+                    "No dask scheduler address found in config. Address must be set manually."
+                )
+
+        dask_client = _address_client_map.get(self.scheduler_address)
 
         if not dask_client:
             dask_client = Client(address=self.scheduler_address, asynchronous=True)
-            _address_client_mapper[self.scheduler_address] = dask_client
-            await dask_client
+            await asyncio.wait_for(dask_client, timeout=5)
 
         fut: Future = Future(key=job_handle, client=dask_client)
-        await fut.cancel()
+
+        # https://stackoverflow.com/questions/46278692/dask-distributed-how-to-cancel-tasks-submitted-with-fire-and-forget
+        await dask_client.cancel([fut], asynchronous=True, force=True)
         app_log.debug(f"Cancelled future with key {job_handle}")
         return True
+
+    async def send(
+        self,
+        task_specs: List[TaskSpec],
+        resources: ResourceMap,
+        task_group_metadata: dict,
+    ):
+        # Assets are assumed to be accessible by the compute backend
+        # at the provided URIs
+
+        # The Asset Manager is responsible for uploading all assets
+        # Returns a job handle (should be JSONable)
+
+        if not self.scheduler_address:
+            try:
+                self.scheduler_address = get_config("dask.scheduler_address")
+            except KeyError:
+                app_log.debug(
+                    "No dask scheduler address found in config. Address must be set manually."
+                )
+
+        dask_client = Client(address=self.scheduler_address, asynchronous=True)
+        await asyncio.wait_for(dask_client, timeout=5)
+
+        dispatch_id = task_group_metadata["dispatch_id"]
+        task_ids = task_group_metadata["node_ids"]
+        gid = task_group_metadata["task_group_id"]
+        output_uris = []
+        for node_id in task_ids:
+            result_uri = os.path.join(self.cache_dir, f"result_{dispatch_id}-{node_id}.pkl")
+            stdout_uri = os.path.join(self.cache_dir, f"stdout_{dispatch_id}-{node_id}.txt")
+            stderr_uri = os.path.join(self.cache_dir, f"stderr_{dispatch_id}-{node_id}.txt")
+            qelectron_db_uri = os.path.join(
+                self.cache_dir, f"qelectron_db_{dispatch_id}-{node_id}.mdb"
+            )
+            output_uris.append((result_uri, stdout_uri, stderr_uri, qelectron_db_uri))
+
+        server_url = format_server_url()
+
+        key = f"dask_job_{dispatch_id}:{gid}"
+
+        await self.set_job_handle(key)
+
+        future = dask_client.submit(
+            run_task_from_uris_alt,
+            list(map(lambda t: t.model_dump(), task_specs)),
+            resources.model_dump(),
+            output_uris,
+            self.cache_dir,
+            task_group_metadata,
+            server_url,
+            key=key,
+        )
+
+        _clients[key] = dask_client
+        _futures[key] = future
+
+        return future.key
+
+    async def poll(self, task_group_metadata: Dict, poll_data: Any):
+        fut = _futures.pop(poll_data)
+        app_log.debug(f"Future {fut}")
+        try:
+            await fut
+        except CancelledError as e:
+            raise TaskCancelledError() from e
+
+        _clients.pop(poll_data)
+
+        return {"status": StatusEnum.READY.value}
+
+    async def receive(self, task_group_metadata: Dict, data: Any) -> List[TaskUpdate]:
+        # Job should have reached a terminal state by the time this is invoked.
+        dispatch_id = task_group_metadata["dispatch_id"]
+        task_ids = task_group_metadata["node_ids"]
+
+        task_results = []
+
+        if not data:
+            terminal_status = RESULT_STATUS.CANCELLED
+        else:
+            received = ReceiveModel.model_validate(data)
+            terminal_status = Status(received.status.value)
+
+        for task_id in task_ids:
+            # TODO: Handle the case where the job was cancelled before the task started running
+            app_log.debug(f"Receive called for task {dispatch_id}:{task_id} with data {data}")
+
+            if terminal_status == RESULT_STATUS.CANCELLED:
+                output_uri = ""
+                stdout_uri = ""
+                stderr_uri = ""
+                qelectron_db_uri = ""
+
+            else:
+                result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
+                with open(result_path, "r") as f:
+                    result_summary = json.load(f)
+                    node_id = result_summary["node_id"]
+                    output_uri = result_summary["output_uri"]
+                    stdout_uri = result_summary["stdout_uri"]
+                    stderr_uri = result_summary["stderr_uri"]
+                    qelectron_db_uri = result_summary["qelectron_db_uri"]
+                    exception_raised = result_summary["exception_occurred"]
+
+                terminal_status = (
+                    RESULT_STATUS.FAILED if exception_raised else RESULT_STATUS.COMPLETED
+                )
+
+            task_result = {
+                "dispatch_id": dispatch_id,
+                "node_id": task_id,
+                "status": terminal_status,
+                "assets": {
+                    "output": {
+                        "remote_uri": output_uri,
+                    },
+                    "stdout": {
+                        "remote_uri": stdout_uri,
+                    },
+                    "stderr": {
+                        "remote_uri": stderr_uri,
+                    },
+                    "qelectron_db": {
+                        "remote_uri": qelectron_db_uri,
+                    },
+                },
+            }
+
+            task_results.append(TaskUpdate(**task_result))
+
+        app_log.debug(f"Returning results for tasks {dispatch_id}:{task_ids}")
+        return task_results
+
+    def get_upload_uri(self, task_group_metadata: Dict, object_key: str):
+        dispatch_id = task_group_metadata["dispatch_id"]
+        task_group_id = task_group_metadata["task_group_id"]
+
+        filename = f"asset_{dispatch_id}-{task_group_id}_{object_key}.pkl"
+        return os.path.join("file://", self.cache_dir, filename)

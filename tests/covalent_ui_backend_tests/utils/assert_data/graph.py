@@ -109,6 +109,13 @@ def seed_graph_data():
                         ],
                         "links": [
                             {
+                                "edge_name": "name",
+                                "parameter_type": "arg",
+                                "target": 2,
+                                "source": 3,
+                                "arg_index": 0,
+                            },
+                            {
                                 "edge_name": "arg[0]",
                                 "parameter_type": "arg",
                                 "target": 4,
@@ -121,13 +128,6 @@ def seed_graph_data():
                                 "target": 4,
                                 "source": 2,
                                 "arg_index": 1,
-                            },
-                            {
-                                "edge_name": "name",
-                                "parameter_type": "arg",
-                                "target": 2,
-                                "source": 3,
-                                "arg_index": 0,
                             },
                             {
                                 "edge_name": "arg_1",

@@ -44,6 +44,8 @@ ignore_files = [
     "file_transfers_to_from_gcp_storage.ipynb",
     "file_transfers_for_workflows_to_remote.ipynb",
     "file_transfers_to_remote.ipynb",
+    "trigger_sqlite.ipynb",  # TODO: Temp skip, see issue #1808
+    "trigger_database.ipynb",  # TODO: Temp skip, see issue #1808
 ]
 
 

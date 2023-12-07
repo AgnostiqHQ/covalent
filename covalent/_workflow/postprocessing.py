@@ -28,7 +28,7 @@ from .._shared_files.defaults import (
     prefix_separator,
     sublattice_prefix,
 )
-from .transport import _TransportGraph, encode_metadata
+from .transport import _TransportGraph
 
 if TYPE_CHECKING:
     from .electron import Electron
@@ -97,8 +97,9 @@ class Postprocessor:
         with active_lattice_manager.claim(self.lattice):
             self.lattice.post_processing = True
             self.lattice.electron_outputs = list(ordered_node_outputs)
-            args = [arg.get_deserialized() for arg in self.lattice.args]
-            kwargs = {k: v.get_deserialized() for k, v in self.lattice.kwargs.items()}
+            inputs = self.lattice.inputs.get_deserialized()
+            args = inputs["args"]
+            kwargs = inputs["kwargs"]
             workflow_function = self.lattice.workflow_function.get_deserialized()
             result = workflow_function(*args, **kwargs)
             self.lattice.post_processing = False
@@ -141,12 +142,13 @@ class Postprocessor:
             Dictionary of metadata for the postprocess electron.
 
         """
-        executor = self.lattice.get_metadata("workflow_executor")
-        executor_data = self.lattice.get_metadata("workflow_executor_data")
-        pp_metadata = encode_metadata(DEFAULT_METADATA_VALUES.copy())
-        pp_metadata["executor"] = executor
-        pp_metadata["executor_data"] = executor_data
-        pp_metadata = encode_metadata(pp_metadata)
+
+        # This is already initialized and JSON-encoded at the
+        # beginning of Lattice.build_graph
+        pp_metadata = self.lattice.metadata.copy()
+
+        pp_metadata["executor"] = pp_metadata.pop("workflow_executor")
+        pp_metadata["executor_data"] = pp_metadata.pop("workflow_executor_data")
         return pp_metadata
 
     def add_exhaustive_postprocess_node(self, bound_electrons: Dict) -> None:

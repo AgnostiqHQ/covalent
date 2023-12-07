@@ -18,9 +18,10 @@
 
 import importlib
 import inspect
+import shutil
 import socket
 from datetime import timedelta
-from typing import Any, Callable, Dict, Set, Tuple
+from typing import Any, Callable, Dict, List, Tuple
 
 import cloudpickle
 from pennylane._device import Device
@@ -35,9 +36,6 @@ log_stack_info = logger.log_stack_info
 DEFAULT_UI_ADDRESS = get_config("user_interface.address")
 DEFAULT_UI_PORT = get_config("user_interface.port")
 
-
-# Dictionary to map Dask clients to their scheduler addresses
-_address_client_mapper = {}
 
 _IMPORT_PATH_SEPARATOR = ":"
 
@@ -140,7 +138,7 @@ def get_serialized_function_str(function):
     return function_str + "\n\n"
 
 
-def get_imports(func: Callable) -> Tuple[str, Set[str]]:
+def get_imports(func: Callable) -> Tuple[str, List[str]]:
     """
     Given an input workflow function, find the imports that were used, and determine
         which ones are Covalent-related.
@@ -154,7 +152,7 @@ def get_imports(func: Callable) -> Tuple[str, Set[str]]:
     """
 
     imports_str = ""
-    cova_imports = set()
+    cova_imports = []
     for i, j in func.__globals__.items():
         if inspect.ismodule(j) or (
             inspect.isfunction(j) and j.__name__ in ["lattice", "electron"]
@@ -166,7 +164,7 @@ def get_imports(func: Callable) -> Tuple[str, Set[str]]:
 
             if j.__name__ in ["covalent", "lattice", "electron"]:
                 import_line = f"# {import_line}"
-                cova_imports.add(i)
+                cova_imports.append(i)
 
             imports_str += import_line
 
@@ -211,10 +209,13 @@ def get_named_params(func, args, kwargs):
         elif param.kind == param.VAR_POSITIONAL:
             for i in range(ind, len(args)):
                 named_args[f"arg[{i}]"] = args[i]
-        elif param.kind in [param.KEYWORD_ONLY, param.VAR_KEYWORD]:
+        elif param.kind == param.VAR_KEYWORD:
             for key, value in kwargs.items():
                 if key != param_name:
                     named_kwargs[key] = value
+        elif param.kind == param.KEYWORD_ONLY:
+            if param_name in kwargs:
+                named_kwargs[param_name] = kwargs[param_name]
 
     if len(args) > len(named_args):
         raise ValueError(
@@ -226,6 +227,41 @@ def get_named_params(func, args, kwargs):
         raise ValueError(f"Unexpected keyword arguments: {extra_supplied_kwargs}")
 
     return (named_args, named_kwargs)
+
+
+def format_server_url(hostname: str = None, port: int = None) -> str:
+    if hostname is None:
+        hostname = get_config("dispatcher.address")
+    if port is None:
+        port = int(get_config("dispatcher.port"))
+
+    url = hostname
+    if not url.startswith("http"):
+        url = f"https://{url}" if port == 443 else f"http://{url}"
+
+    # Inject port
+    if port not in [80, 443]:
+        parts = url.split("/")
+        url = "".join(["/".join(parts[:3])] + [f":{port}/"] + ["/".join(parts[3:])])
+
+    return url.strip("/")
+
+
+# For use by LocalDispatcher and ResultsManager when running Covalent
+# server locally
+def copy_file_locally(src_uri, dest_uri):
+    scheme_prefix = "file://"
+    if src_uri.startswith(scheme_prefix):
+        src_path = src_uri[len(scheme_prefix) :]
+    else:
+        raise TypeError(f"{src_uri} is not a valid URI")
+        # src_path = src_uri
+    if dest_uri.startswith(scheme_prefix):
+        dest_path = dest_uri[len(scheme_prefix) :]
+    else:
+        raise TypeError(f"{dest_uri} is not a valid URI")
+
+    shutil.copyfile(src_path, dest_path)
 
 
 @_qml_mods_pickle

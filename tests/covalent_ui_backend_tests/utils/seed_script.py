@@ -24,7 +24,8 @@ from sqlalchemy.orm import Session
 from covalent_ui.api.v1.database.schema.electron import Electron
 from covalent_ui.api.v1.database.schema.electron_dependency import ElectronDependency
 from covalent_ui.api.v1.database.schema.lattices import Lattice
-from tests.covalent_ui_backend_tests.utils.data.mock_files import mock_files_data
+
+from ..utils.data.mock_files import mock_files_data
 
 log_output_data = mock_files_data()
 
@@ -60,15 +61,14 @@ def seed(engine):
                     function_filename=item["function_filename"],
                     function_string_filename=item["function_string_filename"],
                     executor=item["executor"],
-                    executor_data_filename=item["executor_data_filename"],
+                    executor_data=json.dumps(item["executor_data"]),
                     workflow_executor=item["workflow_executor"],
-                    workflow_executor_data_filename=item["workflow_executor_data_filename"],
+                    workflow_executor_data=json.dumps(item["workflow_executor_data"]),
                     error_filename=item["error_filename"],
                     inputs_filename=item["inputs_filename"],
                     named_args_filename=item["named_args_filename"],
                     named_kwargs_filename=item["named_kwargs_filename"],
                     results_filename=item["results_filename"],
-                    transport_graph_filename=item["transport_graph_filename"],
                     root_dispatch_id=item["root_dispatch_id"],
                     is_active=item["is_active"],
                     created_at=convert_to_date(item["created_at"]),
@@ -88,6 +88,7 @@ def seed(engine):
                     id=item["id"],
                     parent_lattice_id=item["parent_lattice_id"],
                     transport_graph_node_id=item["transport_graph_node_id"],
+                    task_group_id=item["task_group_id"],
                     type=item["type"],
                     name=item["name"],
                     status=item["status"],
@@ -101,7 +102,7 @@ def seed(engine):
                     function_filename=item["function_filename"],
                     function_string_filename=item["function_string_filename"],
                     executor=item["executor"],
-                    executor_data_filename=item["executor_data_filename"],
+                    executor_data=json.dumps(item["executor_data"]),
                     results_filename=item["results_filename"],
                     value_filename=item["value_filename"],
                     stdout_filename=item["stdout_filename"],

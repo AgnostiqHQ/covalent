@@ -108,7 +108,7 @@ def seed_lattice_data():
                     "dispatch_id": VALID_DISPATCH_ID,
                     "name": "executor",
                 },
-                "response_data": {"executor_name": "dask", "executor_details": None},
+                "response_data": {"executor_name": "dask", "executor_details": {}},
             },
             "case_workflow_executor_1": {
                 "status_code": 200,
@@ -118,7 +118,7 @@ def seed_lattice_data():
                 },
                 "response_data": {
                     "workflow_executor_name": "dask",
-                    "workflow_executor_details": None,
+                    "workflow_executor_details": {},
                 },
             },
             "case_transport_graph_1": {

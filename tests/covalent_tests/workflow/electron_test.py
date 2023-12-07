@@ -17,10 +17,15 @@
 """Unit tests for electron"""
 
 import json
+from unittest.mock import ANY, MagicMock
+
+import pytest
 
 import covalent as ct
 from covalent._shared_files.context_managers import active_lattice_manager
-from covalent._shared_files.defaults import sublattice_prefix
+from covalent._shared_files.defaults import WAIT_EDGE_NAME, sublattice_prefix
+from covalent._shared_files.schemas.result import ResultSchema
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.electron import (
     Electron,
     _build_sublattice_graph,
@@ -70,10 +75,11 @@ def workflow_2():
     return res_3
 
 
-def test_build_sublattice_graph():
+def test_build_sublattice_graph(mocker):
     """
     Test building a sublattice graph
     """
+    dispatch_id = "test_build_sublattice_graph"
 
     @ct.electron
     def task(x):
@@ -92,11 +98,93 @@ def test_build_sublattice_graph():
         "call_before": [],
         "call_after": [],
         "triggers": "mock-trigger",
+        "qelectron_data_exists": False,
+        "results_dir": None,
+    }
+    mock_environ = {
+        "COVALENT_DISPATCH_ID": dispatch_id,
+        "COVALENT_DISPATCHER_URL": "http://localhost:48008",
+    }
+
+    mock_manifest = MagicMock()
+    mock_manifest.json = MagicMock(return_value=dispatch_id)
+
+    def mock_register(manifest, *args, **kwargs):
+        return manifest
+
+    mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.register_manifest",
+        mock_register,
+    )
+
+    mock_upload_assets = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.upload_assets",
+    )
+
+    mocker.patch("os.environ", mock_environ)
+
+    json_manifest = _build_sublattice_graph(workflow, json.dumps(parent_metadata), 1)
+
+    manifest = ResultSchema.parse_raw(json_manifest)
+
+    mock_upload_assets.assert_called()
+
+    assert len(manifest.lattice.transport_graph.nodes) == 3
+
+    lat = manifest.lattice
+    assert lat.metadata.executor == parent_metadata["executor"]
+    assert lat.metadata.executor_data == parent_metadata["executor_data"]
+
+    assert lat.metadata.workflow_executor == parent_metadata["workflow_executor"]
+    assert lat.metadata.workflow_executor_data == parent_metadata["workflow_executor_data"]
+
+
+def test_build_sublattice_graph_fallback(mocker):
+    """
+    Test falling back to monolithic sublattice dispatch
+    """
+    dispatch_id = "test_build_sublattice_graph"
+
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    parent_metadata = {
+        "executor": "parent_executor",
+        "executor_data": {},
+        "workflow_executor": "my_postprocessor",
+        "workflow_executor_data": {},
+        "deps": {"bash": None, "pip": None},
+        "call_before": [],
+        "call_after": [],
+        "triggers": "mock-trigger",
+        "qelectron_data_exists": False,
         "results_dir": None,
     }
 
+    # Omit the required environment variables
+    mock_environ = {}
+
+    mock_reg = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.register_manifest",
+    )
+
+    mock_upload_assets = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.upload_assets",
+    )
+
+    mocker.patch("os.environ", mock_environ)
+
     json_lattice = _build_sublattice_graph(workflow, json.dumps(parent_metadata), 1)
+
     lattice = Lattice.deserialize_from_json(json_lattice)
+
+    mock_reg.assert_not_called()
+    mock_upload_assets.assert_not_called()
 
     assert list(lattice.transport_graph._graph.nodes) == list(range(3))
     for k in lattice.metadata.keys():
@@ -111,8 +199,7 @@ def test_wait_for_building():
     """Test to check whether the graph is built correctly with `wait_for`."""
 
     workflow.build_graph()
-    assert workflow.transport_graph.get_edge_data(0, 4)[0]["wait_for"]
-    assert workflow.transport_graph.get_edge_data(0, 4)[0]["edge_name"] == "!waiting_edge"
+    assert workflow.transport_graph.get_edge_data(0, 4)[0]["edge_name"] == WAIT_EDGE_NAME
 
 
 def test_wait_for_post_processing():
@@ -122,12 +209,12 @@ def test_wait_for_post_processing():
     with active_lattice_manager.claim(workflow):
         workflow.post_processing = True
         workflow.electron_outputs = [
-            (0, TransportableObject(4)),
-            (2, TransportableObject(12)),
-            (4, TransportableObject(125)),
-            (6, TransportableObject(1500)),
+            4,
+            12,
+            125,
+            1500,
         ]
-        assert workflow.workflow_function.get_deserialized()()[1].get_deserialized() == 1500
+        assert workflow.workflow_function.get_deserialized()() == 1500
 
 
 def test_wait_for_post_processing_when_returning_waiting_electron():
@@ -138,11 +225,11 @@ def test_wait_for_post_processing_when_returning_waiting_electron():
     with active_lattice_manager.claim(workflow_2):
         workflow_2.post_processing = True
         workflow_2.electron_outputs = [
-            (0, TransportableObject(4)),
-            (2, TransportableObject(12)),
-            (4, TransportableObject(64)),
+            4,
+            12,
+            64,
         ]
-        assert workflow_2.workflow_function.get_deserialized()()[1].get_deserialized() == 64
+        assert workflow_2.workflow_function.get_deserialized()() == 64
 
 
 def test_collection_node_helper_electron():
@@ -198,8 +285,9 @@ def test_injected_inputs_are_not_in_tg():
     workflow.build_graph(2)
     g = workflow.transport_graph._graph
 
-    assert list(g.nodes) == list(range(3))
-    assert list(g.edges) == [(0, 2, 0), (1, 0, 0)]
+    # Account for postprocessing node
+    assert list(g.nodes) == [0, 1, 2]
+    assert set(g.edges) == {(1, 0, 0), (0, 2, 0), (0, 2, 1)}
 
 
 def test_metadata_in_electron_list():
@@ -223,8 +311,8 @@ def test_metadata_in_electron_list():
     task_metadata = workflow.transport_graph.get_node_value(0, "metadata")
     e_list_metadata = workflow.transport_graph.get_node_value(1, "metadata")
 
-    assert list(e_list_metadata["call_before"]) == []
-    assert list(e_list_metadata["call_after"]) == []
+    assert not list(e_list_metadata["call_before"])
+    assert not list(e_list_metadata["call_after"])
 
     assert e_list_metadata["executor"] == task_metadata["executor"]
 
@@ -271,13 +359,21 @@ def test_autogen_list_electrons():
 
     g = workflow.transport_graph._graph
 
-    assert list(g.nodes) == list(range(5))
+    # Account for postprocessing node
+    assert list(g.nodes) == [0, 1, 2, 3, 4]
     fn = g.nodes[1]["function"].get_deserialized()
     assert fn(2, 5, 7) == [2, 5, 7]
 
     assert g.nodes[2]["value"].get_deserialized() == 5
     assert g.nodes[3]["value"].get_deserialized() == 7
-    assert set(g.edges) == {(1, 0, 0), (3, 1, 0), (2, 1, 0), (0, 4, 0)}
+    assert set(g.edges) == {
+        (1, 0, 0),
+        (2, 1, 0),
+        (3, 1, 0),
+        (0, 4, 0),
+        (0, 4, 1),
+        (1, 4, 0),
+    }
 
 
 def test_autogen_dict_electrons():
@@ -293,12 +389,20 @@ def test_autogen_dict_electrons():
 
     g = workflow.transport_graph._graph
 
-    assert list(g.nodes) == list(range(5))
+    # Account for postprocessing node
+    assert list(g.nodes) == [0, 1, 2, 3, 4]
     fn = g.nodes[1]["function"].get_deserialized()
     assert fn(x=2, y=5, z=7) == {"x": 2, "y": 5, "z": 7}
     assert g.nodes[2]["value"].get_deserialized() == 5
     assert g.nodes[3]["value"].get_deserialized() == 7
-    assert set(g.edges) == {(1, 0, 0), (3, 1, 0), (2, 1, 0), (0, 4, 0)}
+    assert set(g.edges) == {
+        (1, 0, 0),
+        (2, 1, 0),
+        (3, 1, 0),
+        (0, 4, 0),
+        (0, 4, 1),
+        (1, 4, 0),
+    }
 
 
 def test_as_transportable_dict():
@@ -322,7 +426,10 @@ def test_as_transportable_dict():
 def test_call_sublattice():
     """Test the sublattice logic when the __call__ method is invoked."""
 
-    @ct.lattice(executor="mock")
+    le = LocalExecutor()
+    bash_dep = ct.DepsBash("apt install rustc cargo")
+
+    @ct.lattice(executor=le, workflow_executor="dask", deps_bash=bash_dep)
     def mock_workflow(x):
         return sublattice(x)
 
@@ -337,7 +444,9 @@ def test_call_sublattice():
 
     with active_lattice_manager.claim(mock_workflow):
         bound_electron = sublattice()
-        assert bound_electron.metadata["executor"] == "mock"
+        assert bound_electron.metadata["executor"] == "dask"
+        assert bound_electron.metadata["executor_data"] == {}
+        assert bound_electron.metadata["deps"]["bash"] == bash_dep.to_dict()
         for _, node_data in mock_workflow.transport_graph._graph.nodes(data=True):
             if node_data["name"].startswith(sublattice_prefix):
                 assert "mock_task" in node_data["function_string"]
@@ -347,7 +456,8 @@ def test_call_sublattice():
                 )
 
 
-def test_electron_auto_task_groups():
+@pytest.mark.parametrize("task_packing", ["true", "false"])
+def test_electron_auto_task_groups(task_packing):
     @ct.electron
     def task(arr: list):
         return sum(arr)
@@ -361,13 +471,19 @@ def test_electron_auto_task_groups():
     def workflow(x):
         return sublattice(x)
 
+    ct.set_config("sdk.task_packing", task_packing)
     workflow.build_graph([[1, 2], 3])
     tg = workflow.transport_graph
-    assert all(tg.get_node_value(i, "task_group_id") == 0 for i in [0, 3, 4])
-    assert all(tg.get_node_value(i, "task_group_id") == i for i in [1, 2, 5, 6, 7, 8])
+
+    if task_packing == "true":
+        assert all(tg.get_node_value(i, "task_group_id") == 0 for i in [0, 3, 4])
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in [1, 2, 5, 6, 7, 8])
+    else:
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in range(9))
 
 
-def test_electron_get_attr():
+@pytest.mark.parametrize("task_packing", ["true", "false"])
+def test_electron_get_attr(task_packing):
     class Point:
         def __init__(self, x, y):
             self.x = x
@@ -386,6 +502,7 @@ def test_electron_get_attr():
         point = create_point()
         return add(point.x, point.y)
 
+    ct.set_config("sdk.task_packing", task_packing)
     workflow.build_graph()
     tg = workflow.transport_graph
 
@@ -398,16 +515,20 @@ def test_electron_get_attr():
     # 5: add
     # 6: "postprocess"
 
-    point_electron_gid = tg.get_node_value(0, "task_group_id")
-    getitem_x_gid = tg.get_node_value(1, "task_group_id")
-    getitem_y_gid = tg.get_node_value(3, "task_group_id")
-    assert point_electron_gid == 0
-    assert getitem_x_gid == point_electron_gid
-    assert getitem_y_gid == point_electron_gid
-    assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
+    if task_packing == "true":
+        point_electron_gid = tg.get_node_value(0, "task_group_id")
+        getitem_x_gid = tg.get_node_value(1, "task_group_id")
+        getitem_y_gid = tg.get_node_value(3, "task_group_id")
+        assert point_electron_gid == 0
+        assert getitem_x_gid == point_electron_gid
+        assert getitem_y_gid == point_electron_gid
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
+    else:
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in range(7))
 
 
-def test_electron_auto_task_groups_getitem():
+@pytest.mark.parametrize("task_packing", ["true", "false"])
+def test_electron_auto_task_groups_getitem(task_packing):
     """Test task packing with __getitem__"""
 
     @ct.electron
@@ -423,6 +544,7 @@ def test_electron_auto_task_groups_getitem():
         arr = create_array()
         return add(arr[0], arr[1])
 
+    ct.set_config("sdk.task_packing", task_packing)
     workflow.build_graph()
     tg = workflow.transport_graph
 
@@ -435,16 +557,20 @@ def test_electron_auto_task_groups_getitem():
     # 5: add
     # 6: "postprocess"
 
-    arr_electron_gid = tg.get_node_value(0, "task_group_id")
-    getitem_x_gid = tg.get_node_value(1, "task_group_id")
-    getitem_y_gid = tg.get_node_value(3, "task_group_id")
-    assert arr_electron_gid == 0
-    assert getitem_x_gid == arr_electron_gid
-    assert getitem_y_gid == arr_electron_gid
-    assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
+    if task_packing == "true":
+        arr_electron_gid = tg.get_node_value(0, "task_group_id")
+        getitem_x_gid = tg.get_node_value(1, "task_group_id")
+        getitem_y_gid = tg.get_node_value(3, "task_group_id")
+        assert arr_electron_gid == 0
+        assert getitem_x_gid == arr_electron_gid
+        assert getitem_y_gid == arr_electron_gid
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
+    else:
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in range(7))
 
 
-def test_electron_auto_task_groups_iter():
+@pytest.mark.parametrize("task_packing", ["true", "false"])
+def test_electron_auto_task_groups_iter(task_packing):
     """Test task packing with __iter__"""
 
     @ct.electron
@@ -461,6 +587,7 @@ def test_electron_auto_task_groups_iter():
         x, y = tup
         return add(x, y)
 
+    ct.set_config("sdk.task_packing", task_packing)
     workflow.build_graph()
     tg = workflow.transport_graph
 
@@ -473,13 +600,16 @@ def test_electron_auto_task_groups_iter():
     # 5: add
     # 6: "postprocess"
 
-    tup_electron_gid = tg.get_node_value(0, "task_group_id")
-    getitem_x_gid = tg.get_node_value(1, "task_group_id")
-    getitem_y_gid = tg.get_node_value(3, "task_group_id")
-    assert tup_electron_gid == 0
-    assert getitem_x_gid == tup_electron_gid
-    assert getitem_y_gid == tup_electron_gid
-    assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
+    if task_packing == "true":
+        tup_electron_gid = tg.get_node_value(0, "task_group_id")
+        getitem_x_gid = tg.get_node_value(1, "task_group_id")
+        getitem_y_gid = tg.get_node_value(3, "task_group_id")
+        assert tup_electron_gid == 0
+        assert getitem_x_gid == tup_electron_gid
+        assert getitem_y_gid == tup_electron_gid
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in [2, 4, 5, 6])
+    else:
+        assert all(tg.get_node_value(i, "task_group_id") == i for i in range(7))
 
 
 def test_electron_executor_property():
@@ -504,3 +634,48 @@ def test_electron_executor_property():
     mock_task_electron.executor = LocalExecutor()
     assert mock_task_electron.metadata["executor"] == mock_encoded_metadata["executor"]
     assert mock_task_electron.metadata["executor_data"] == mock_encoded_metadata["executor_data"]
+
+
+def test_replace_electrons():
+    """Test the logic in __call__ to replace electrons."""
+
+    @ct.electron
+    def task(x):
+        return x**2
+
+    @ct.electron
+    def replacement_task(x):
+        return x**3
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    workflow._replace_electrons = {"task": replacement_task}
+    workflow.build_graph(3)
+    del workflow.__dict__["_replace_electrons"]
+
+    func = workflow.transport_graph.get_node_value(0, "function")
+    assert func.get_deserialized()(3) == 27
+    assert (
+        workflow.transport_graph.get_node_value(0, "status") == RESULT_STATUS.PENDING_REPLACEMENT
+    )
+
+
+def test_electron_pow_method(mocker):
+    mock_electron_get_op_function = mocker.patch.object(
+        Electron, "get_op_function", return_value=Electron
+    )
+
+    @ct.electron
+    def g(x):
+        return 42 * x
+
+    @ct.lattice
+    def workflow(x):
+        res = g(x)
+        return res**2
+
+    workflow.build_graph(2)
+
+    mock_electron_get_op_function.assert_called_with(ANY, 2, "**")

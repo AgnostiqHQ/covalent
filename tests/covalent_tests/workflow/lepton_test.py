@@ -131,7 +131,7 @@ def test_lepton_init(
 
         electron_init_mock.assert_called_once_with("wrapper function")
         wrap_mock.assert_called_once_with()
-        assert set_metadata_mock.call_count == 5
+        assert set_metadata_mock.call_count == 6
 
         assert lepton.language == language
         assert lepton.function_name == function_name
@@ -503,6 +503,22 @@ def test_shell_wrapper(
         return
 
     assert result == expected_return
+
+
+def test_shell_wrapper_no_shell_exception(mocker):
+    """
+    Test that an exception is raised if no shell is available.
+    """
+    from collections import namedtuple
+
+    lepton = Lepton(language="bash", command="hostname")
+    task = lepton.wrap_task()
+
+    fake_proc = namedtuple("FakeProc", ["returncode"])(1)
+    mocker.patch("subprocess.run", return_value=fake_proc)
+
+    with pytest.raises(Exception, match="Could not find a shell on remote."):
+        task()
 
 
 def test_lepton_constructor_serializes_metadata():

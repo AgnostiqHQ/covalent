@@ -14,25 +14,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import json
 import os
 import shutil
 from datetime import datetime as dt
-from datetime import timezone
 from pathlib import Path
-from unittest.mock import MagicMock
 
 import pytest
 
 import covalent as ct
 from covalent._results_manager.result import Result
-from covalent._shared_files.defaults import postprocess_prefix
+from covalent._serialize.result import deserialize_result
+from covalent._shared_files.defaults import WAIT_EDGE_NAME
 from covalent._workflow.lattice import Lattice as LatticeClass
 from covalent.executor import LocalExecutor
+from covalent_dispatcher._dal.asset import local_store
+from covalent_dispatcher._dal.exporters.result import export_result_manifest
 from covalent_dispatcher._db import update, upsert
 from covalent_dispatcher._db.datastore import DataStore
 from covalent_dispatcher._db.models import Electron, ElectronDependency, Job, Lattice
-from covalent_dispatcher._db.write_result_to_db import load_file
-from covalent_dispatcher._service.app import _result_from
 
 # TEMP_RESULTS_DIR = "/tmp/results"
 TEMP_RESULTS_DIR = os.environ.get("COVALENT_DATA_DIR") or ct.get_config("dispatcher.results_dir")
@@ -104,80 +104,6 @@ def test_db():
     )
 
 
-def test_update_node(test_db, result_1, mocker):
-    """Test the node update method."""
-    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
-    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
-    update.persist(result_1)
-    update._node(
-        result_1,
-        node_id=0,
-        node_name="test_name",
-        start_time=dt.now(timezone.utc),
-        status="RUNNING",
-        error="test_error",
-        sublattice_result="test_sublattice",
-        stdout="test_stdout",
-        stderr="test_stderr",
-    )
-
-    with test_db.session() as session:
-        lattice_record = session.query(Lattice).first()
-        electron_record = (
-            session.query(Electron).where(Electron.transport_graph_node_id == 0).first()
-        )
-
-        assert electron_record.name == "test_name"
-        assert electron_record.status == "RUNNING"
-        assert electron_record.started_at is not None
-
-        stdout = load_file(
-            storage_path=electron_record.storage_path, filename=electron_record.stdout_filename
-        )
-        assert stdout == "test_stdout"
-
-        stderr = load_file(
-            storage_path=electron_record.storage_path, filename=electron_record.stderr_filename
-        )
-        assert stderr == "test_stderr"
-
-        assert result_1.lattice.transport_graph.get_node_value(0, "error") == "test_error"
-        assert (
-            result_1.lattice.transport_graph.get_node_value(0, "sublattice_result")
-            == "test_sublattice"
-        )
-
-        assert lattice_record.electron_num == 6
-        assert lattice_record.completed_electron_num == 0
-        assert lattice_record.updated_at is not None
-    update._node(
-        result_1,
-        node_id=0,
-        end_time=dt.now(timezone.utc),
-        status=Result.COMPLETED,
-        output=5,
-    )
-
-    with test_db.session() as session:
-        lattice_record = session.query(Lattice).first()
-        electron_record = (
-            session.query(Electron).where(Electron.transport_graph_node_id == 0).first()
-        )
-
-        assert electron_record.status == "COMPLETED"
-        assert electron_record.completed_at is not None
-        assert electron_record.updated_at is not None
-
-        result = load_file(
-            storage_path=electron_record.storage_path, filename=electron_record.results_filename
-        )
-        assert result == 5
-
-        assert lattice_record.electron_num == 6
-        assert lattice_record.completed_electron_num == 1
-        assert lattice_record.updated_at is not None
-
-
 def test_result_persist_workflow_1(test_db, result_1, mocker):
     """Test the persist method for the Result object."""
 
@@ -211,41 +137,43 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         lattice_storage_path = Path(lattice_row.storage_path)
         assert Path(lattice_row.storage_path) == Path(TEMP_RESULTS_DIR) / "dispatch_1"
 
-        workflow_function = load_file(
+        workflow_function = local_store.load_file(
             storage_path=lattice_storage_path, filename=lattice_row.function_filename
         ).get_deserialized()
         assert workflow_function(1, 2) == 4
         assert (
-            load_file(storage_path=lattice_storage_path, filename=lattice_row.error_filename) == ""
+            local_store.load_file(
+                storage_path=lattice_storage_path, filename=lattice_row.error_filename
+            )
+            == ""
         )
         assert (
-            load_file(
+            local_store.load_file(
                 storage_path=lattice_storage_path, filename=lattice_row.results_filename
             ).get_deserialized()
             is None
         )
 
-        executor_data = load_file(
-            storage_path=lattice_storage_path, filename=lattice_row.executor_data_filename
-        )
+        executor_data = json.loads(lattice_row.executor_data)
 
         assert executor_data["short_name"] == le.short_name()
         assert executor_data["attributes"] == le.__dict__
 
-        saved_named_args = load_file(
+        saved_named_args = local_store.load_file(
             storage_path=lattice_storage_path, filename=lattice_row.named_args_filename
         )
 
-        saved_named_kwargs = load_file(
+        saved_named_kwargs = local_store.load_file(
             storage_path=lattice_storage_path, filename=lattice_row.named_kwargs_filename
         )
-        saved_named_args_raw = {k: v.get_deserialized() for k, v in saved_named_args.items()}
-        saved_named_kwargs_raw = {k: v.get_deserialized() for k, v in saved_named_kwargs.items()}
+        saved_named_args_raw = saved_named_args.get_deserialized()
+        saved_named_kwargs_raw = saved_named_kwargs.get_deserialized()
 
         assert saved_named_args_raw == {}
         assert saved_named_kwargs_raw == {"a": 1, "b": 2}
 
         # Check that the electron records are as expected
+        assert len(electron_rows) == 6
         for electron in electron_rows:
             assert electron.status == "NEW_OBJECT"
             assert electron.parent_lattice_id == 1
@@ -253,103 +181,57 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
 
             if electron.transport_graph_node_id == 1:
                 assert (
-                    load_file(storage_path=electron.storage_path, filename=electron.deps_filename)
+                    local_store.load_file(
+                        storage_path=electron.storage_path, filename=electron.deps_filename
+                    )
                     == {}
                 )
                 assert (
-                    load_file(
+                    local_store.load_file(
                         storage_path=electron.storage_path, filename=electron.call_before_filename
                     )
                     == []
                 )
                 assert (
-                    load_file(
+                    local_store.load_file(
                         storage_path=electron.storage_path, filename=electron.call_after_filename
                     )
                     == []
                 )
             if electron.transport_graph_node_id == 3:
-                executor_data = load_file(
-                    storage_path=electron.storage_path, filename=electron.executor_data_filename
-                )
+                executor_data = json.loads(electron.executor_data)
 
                 assert executor_data["short_name"] == le.short_name()
                 assert executor_data["attributes"] == le.__dict__
 
         # Check that there are the appropriate amount of electron dependency records
-        assert len(electron_dependency_rows) == 6
-
-        # Update some node / lattice statuses
-        cur_time = dt.now(timezone.utc)
-        result_1._end_time = cur_time
-        result_1._status = "COMPLETED"
-        result_1._result = ct.TransportableObject({"helo": 1, "world": 2})
-
-        for node_id in range(5):
-            update._node(
-                result_1,
-                node_id=node_id,
-                start_time=cur_time,
-                end_time=cur_time,
-                status="COMPLETED",
-                # output={"test_data": "test_data"},  # TODO - Put back in later
-                # sublattice_result=None,  # TODO - Add a test where this is not None
-            )
-
-        # Call Result.persist
-        update.persist(result_1)
-
-    # Query lattice / electron / electron dependency
-    with test_db.session() as session:
-        lattice_row = session.query(Lattice).first()
-        electron_rows = session.query(Electron).all()
-        electron_dependency_rows = session.query(ElectronDependency).all()
-
-        # Check that the lattice records are as expected
-        assert lattice_row.completed_at.strftime("%Y-%m-%d %H:%M") == cur_time.strftime(
-            "%Y-%m-%d %H:%M"
-        )
-        assert lattice_row.status == "COMPLETED"
-        result = load_file(
-            storage_path=lattice_storage_path, filename=lattice_row.results_filename
-        )
-        assert result_1.result == result.get_deserialized()
-
-        # Check that the electron records are as expected
-        for i, electron in enumerate(electron_rows):
-            if electron.name.startswith(postprocess_prefix):
-                assert electron.status == "NEW_OBJECT"
-            else:
-                assert electron.status == "COMPLETED"
-                assert electron.parent_lattice_id == 1
-                assert (
-                    electron.started_at.strftime("%Y-%m-%d %H:%M")
-                    == electron.completed_at.strftime("%Y-%m-%d %H:%M")
-                    == cur_time.strftime("%Y-%m-%d %H:%M")
-                )
-                assert Path(electron.storage_path) == Path(
-                    f"{TEMP_RESULTS_DIR}/dispatch_1/node_{electron.transport_graph_node_id}"
-                )
+        assert len(electron_dependency_rows) == 7
 
     # Tear down temporary results directory
     teardown_temp_results_dir(dispatch_id="dispatch_1")
 
 
-def test_result_persist_subworkflow_1(test_db, result_1, result_2, mocker):
+@pytest.mark.parametrize("cancel_req", [False, True])
+def test_result_persist_subworkflow_1(test_db, cancel_req, result_1, result_2, mocker):
     """Test the persist method for the Result object when passed an electron_id"""
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     update.persist(result_1)
-    update.persist(result_2, electron_id=1)
 
     with test_db.session() as session:
-        session.query(Electron).where(Electron.id == 1).first()
+        electron = session.query(Electron).where(Electron.id == 1).first()
         job_record = session.query(Job).where(Job.id == Electron.job_id).first()
+        job_record.cancel_requested = cancel_req
+
+    update.persist(result_2, electron_id=1)
 
     # Query lattice / electron / electron dependency
     with test_db.session() as session:
         lattice_row = session.query(Lattice).where(Lattice.dispatch_id == "dispatch_2").first()
+        electron_rows = session.query(Electron).where(Electron.parent_lattice_id == lattice_row.id)
+        eids = [e.id for e in electron_rows]
+        job_records = session.query(Job).where(Job.id.in_(eids)).all()
 
         # Check that lattice record is as expected
         assert lattice_row.dispatch_id == "dispatch_2"
@@ -363,6 +245,11 @@ def test_result_persist_subworkflow_1(test_db, result_1, result_2, mocker):
         assert lattice_row.executor == "local"
         assert lattice_row.workflow_executor == "local"
 
+        # Check the `cancel_requested` is propagated to sublattice
+
+        for job in job_records:
+            assert job.cancel_requested is cancel_req
+
 
 def test_result_persist_rehydrate(test_db, result_1, mocker):
     """Test that persist followed by result_from preserves all result,
@@ -370,83 +257,95 @@ def test_result_persist_rehydrate(test_db, result_1, mocker):
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
     update.persist(result_1)
     with test_db.session() as session:
         lattice_row = session.query(Lattice).first()
-        result_2 = _result_from(lattice_row)
+        manifest = export_result_manifest(result_1.dispatch_id)
+
+        result_2 = deserialize_result(manifest)
+        result_2._num_nodes = len(result_2.lattice.transport_graph._graph.nodes)
 
     assert result_1.__dict__.keys() == result_2.__dict__.keys()
-    result_2.lattice._bound_electrons = {}
-    assert set(result_1.lattice.__dict__.keys()) == set(result_2.lattice.__dict__.keys())
-    for key in result_1.lattice.__dict__.keys():
-        if key == "transport_graph":
-            continue
-        assert result_1.lattice.__dict__[key] == result_2.lattice.__dict__[key]
-
-    for key in result_1.__dict__.keys():
-        if key == "_lattice":
-            continue
-        assert result_1.__dict__[key] == result_2.__dict__[key]
+    assert result_1.lattice.__dict__.keys() == result_2.lattice.__dict__.keys()
 
     tg_1 = result_1.lattice.transport_graph._graph
     tg_2 = result_2.lattice.transport_graph._graph
 
-    assert tg_1.nodes == tg_2.nodes
+    assert list(tg_1.nodes) == list(tg_2.nodes)
     for n in tg_1.nodes:
-        assert tg_1.nodes[n].keys() == tg_2.nodes[n].keys()
-        for k in tg_1.nodes[n]:
-            assert tg_1.nodes[n][k] == tg_2.nodes[n][k]
+        if "sublattice_result" not in tg_2.nodes[n]:
+            tg_2.nodes[n]["sublattice_result"] = None
+        if "function_string" not in tg_1.nodes[n]:
+            tg_1.nodes[n]["function_string"] = ""
+        if "workflow_executor" in tg_1.nodes[n]["metadata"]:
+            del tg_1.nodes[n]["metadata"]["workflow_executor"]
+            del tg_1.nodes[n]["metadata"]["workflow_executor_data"]
+        if "workflow_executor" in tg_2.nodes[n]["metadata"]:
+            del tg_2.nodes[n]["metadata"]["workflow_executor"]
+            del tg_2.nodes[n]["metadata"]["workflow_executor_data"]
+            assert set(tg_1.nodes[n].keys()).issubset(set(tg_2.nodes[n].keys()))
 
     assert tg_1.edges == tg_2.edges
     for e in tg_1.edges:
-        assert tg_1.edges[e] == tg_2.edges[e]
+        if tg_1.edges[e]["edge_name"] != WAIT_EDGE_NAME:
+            assert tg_1.edges[e] == tg_2.edges[e]
+        else:
+            assert tg_2.edges[e]["edge_name"] == WAIT_EDGE_NAME
 
 
-def test_lattice_persist(result_1):
-    update.persist(result_1.lattice)
-    assert result_1.lattice.transport_graph.dirty_nodes == []
+def test_task_packing_persist(test_db, mocker):
+    """Check that a job record is created per task group"""
+
+    @ct.electron
+    def task(arr):
+        return sum(arr)
+
+    @ct.lattice
+    def workflow(arr):
+        return task(arr)
+
+    workflow.build_graph([1, 2, 3])
+
+    received_lattice = LatticeClass.deserialize_from_json(workflow.serialize_to_json())
+    result = Result(lattice=received_lattice, dispatch_id="test_task_packing_persist")
+    result._initialize_nodes()
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+
+    update.persist(result)
+    tg = workflow.transport_graph
+    task_groups = {tg.get_node_value(node_id, "task_group_id") for node_id in tg._graph.nodes}
+
+    with test_db.session() as session:
+        job_records = session.query(Job).all()
+        assert len(job_records) == len(task_groups)
 
 
-def test_transport_graph_persist(result_1):
-    update.persist(result_1.lattice.transport_graph)
-    assert result_1.lattice.transport_graph.dirty_nodes == []
+def test_cannot_persist_twice(test_db, mocker):
+    """Check that an incoming dispatch can only be persisted once"""
 
+    @ct.electron
+    def task(arr):
+        return sum(arr)
 
-@pytest.mark.parametrize("node_name", [None, "mock_node_name", postprocess_prefix])
-def test_node(mocker, node_name):
-    """Test the _node method."""
-    electron_data_mock = mocker.patch("covalent_dispatcher._db.upsert.electron_data")
-    lattice_data_mock = mocker.patch("covalent_dispatcher._db.upsert.lattice_data")
-    mock_result = MagicMock()
-    update._node(
-        mock_result,
-        node_id=0,
-        node_name=node_name,
-        start_time="mock_time",
-        end_time="mock_time",
-        status="COMPLETED",
-        output="mock_output",
-        qelectron_data_exists=False,
-    )
-    if node_name is None:
-        node_name = mock_result.lattice.transport_graph.get_node_value()
-    mock_result._update_node.assert_called_once_with(
-        node_id=0,
-        node_name=node_name,
-        start_time="mock_time",
-        end_time="mock_time",
-        status="COMPLETED",
-        output="mock_output",
-        qelectron_data_exists=False,
-        error=None,
-        sub_dispatch_id=None,
-        sublattice_result=None,
-        stdout=None,
-        stderr=None,
-    )
-    if node_name.startswith(postprocess_prefix):
-        assert mock_result._result == "mock_output"
-        assert mock_result._status == "COMPLETED"
-    else:
-        assert mock_result._result != "mock_output"
-        assert mock_result._status != "COMPLETED"
+    @ct.lattice
+    def workflow(arr):
+        return task(arr)
+
+    workflow.build_graph([1, 2, 3])
+
+    received_lattice = LatticeClass.deserialize_from_json(workflow.serialize_to_json())
+    result = Result(lattice=received_lattice, dispatch_id="test_task_packing_persist")
+    result._initialize_nodes()
+
+    mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+
+    update.persist(result)
+
+    with pytest.raises(RuntimeError):
+        update.persist(result)

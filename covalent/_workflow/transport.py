@@ -16,6 +16,7 @@
 
 """Class implementation of the transport graph in the workflow graph."""
 
+import datetime
 import json
 from copy import deepcopy
 from typing import Any, Callable, Dict
@@ -24,7 +25,7 @@ import cloudpickle
 import networkx as nx
 
 from .._shared_files.defaults import parameter_prefix
-from .._shared_files.util_classes import RESULT_STATUS
+from .._shared_files.util_classes import RESULT_STATUS, Status
 from .transportable_object import TransportableObject
 
 
@@ -36,7 +37,7 @@ def encode_metadata(metadata: dict) -> dict:
     encoded_metadata = deepcopy(metadata)
     if "executor" in metadata:
         if "executor_data" not in metadata:
-            encoded_metadata["executor_data"] = {}
+            encoded_metadata["executor_data"] = None if metadata["executor"] is None else {}
         if metadata["executor"] is not None and not isinstance(metadata["executor"], str):
             encoded_executor = metadata["executor"].to_dict()
             encoded_metadata["executor"] = encoded_executor["short_name"]
@@ -44,7 +45,9 @@ def encode_metadata(metadata: dict) -> dict:
 
     if "workflow_executor" in metadata:
         if "workflow_executor_data" not in metadata:
-            encoded_metadata["workflow_executor_data"] = {}
+            encoded_metadata["workflow_executor_data"] = (
+                None if metadata["workflow_executor"] is None else {}
+            )
         if metadata["workflow_executor"] is not None and not isinstance(
             metadata["workflow_executor"], str
         ):
@@ -81,6 +84,9 @@ def encode_metadata(metadata: dict) -> dict:
         else:
             encoded_metadata["triggers"] = metadata["triggers"]
 
+    # qelectron_data_exists
+    encoded_metadata["qelectron_data_exists"] = False
+
     return encoded_metadata
 
 
@@ -108,12 +114,12 @@ class _TransportGraph:
             "start_time": None,
             "end_time": None,
             "status": RESULT_STATUS.NEW_OBJECT,
-            "output": None,
-            "error": None,
+            "output": TransportableObject(None),
+            "error": "",
             "sub_dispatch_id": None,
             "sublattice_result": None,
-            "stdout": None,
-            "stderr": None,
+            "stdout": "",
+            "stderr": "",
         }
 
     def add_node(
@@ -134,14 +140,21 @@ class _TransportGraph:
 
         """
         node_id = len(self._graph.nodes)
+
+        if task_group_id is None:
+            task_group_id = node_id
+
+        # Default to gid=node_id
+
         self._graph.add_node(
             node_id,
-            task_group_id=task_group_id if task_group_id is not None else node_id,
+            task_group_id=task_group_id,
             name=name,
             function=TransportableObject(function),
             metadata=metadata,
             **attr,
         )
+
         return node_id
 
     def add_edge(self, x: int, y: int, edge_name: Any, **attr) -> None:
@@ -261,37 +274,14 @@ class _TransportGraph:
 
     def reset_node(self, node_id: int) -> None:
         """Reset node values to starting state."""
+        node_name = self.get_node_value(node_id, "name")
+
         for node_attr, default_val in self._default_node_attrs.items():
+            # Don't clear precomputed parameter outputs.
+            if node_attr == "output" and node_name.startswith(parameter_prefix):
+                continue
+
             self.set_node_value(node_id, node_attr, default_val)
-
-    def _replace_node(self, node_id: int, new_attrs: Dict[str, Any]) -> None:
-        """Replace node data with new attribute values and flag descendants (used in re-dispatching)."""
-        metadata = self.get_node_value(node_id, "metadata")
-        metadata.update(new_attrs["metadata"])
-
-        serialized_callable = TransportableObject.from_dict(new_attrs["function"])
-        self.set_node_value(node_id, "function", serialized_callable)
-        self.set_node_value(node_id, "function_string", new_attrs["function_string"])
-        self.set_node_value(node_id, "name", new_attrs["name"])
-        self._reset_descendants(node_id)
-
-    def _reset_descendants(self, node_id: int) -> None:
-        """Reset node and all its descendants to starting state."""
-        try:
-            if self.get_node_value(node_id, "status") == RESULT_STATUS.NEW_OBJECT:
-                return
-        except Exception:
-            return
-        self.reset_node(node_id)
-        for successor in self._graph.neighbors(node_id):
-            self._reset_descendants(successor)
-
-    def apply_electron_updates(self, electron_updates: Dict[str, Callable]) -> None:
-        """Replace transport graph node data based on the electrons that need to be updated during re-dispatching."""
-        for n in self._graph.nodes:
-            name = self.get_node_value(n, "name")
-            if name in electron_updates:
-                self._replace_node(n, electron_updates[name])
 
     def serialize(self, metadata_only: bool = False) -> bytes:
         """
@@ -366,8 +356,18 @@ class _TransportGraph:
             data["nodes"][idx]["function"] = data["nodes"][idx].pop("function").to_dict()
             if "value" in node:
                 node["value"] = node["value"].to_dict()
+            if "output" in node:
+                node["output"] = node["output"].to_dict()
             if "metadata" in node:
                 node["metadata"] = encode_metadata(node["metadata"])
+            if "start_time" in node:
+                if node["start_time"]:
+                    node["start_time"] = node["start_time"].isoformat()
+            if "end_time" in node:
+                if node["end_time"]:
+                    node["end_time"] = node["end_time"].isoformat()
+            if "status" in node:
+                node["status"] = str(node["status"])
 
         if metadata_only:
             parameter_node_id = [
@@ -445,5 +445,15 @@ class _TransportGraph:
             node_link_data["nodes"][idx]["function"] = TransportableObject.from_dict(function_ser)
             if "value" in node:
                 node["value"] = TransportableObject.from_dict(node["value"])
+            if "output" in node:
+                node["output"] = TransportableObject.from_dict(node["output"])
+            if "start_time" in node:
+                if node["start_time"]:
+                    node["start_time"] = datetime.datetime.fromisoformat(node["start_time"])
+            if "end_time" in node:
+                if node["end_time"]:
+                    node["end_time"] = datetime.datetime.fromisoformat(node["end_time"])
+            if "status" in node:
+                node["status"] = Status(node["status"])
 
         self._graph = nx.readwrite.node_link_graph(node_link_data)
