@@ -18,8 +18,9 @@
 
 import datetime
 import json
+from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, List, Union
 
 import cloudpickle
 import networkx as nx
@@ -90,6 +91,40 @@ def encode_metadata(metadata: dict) -> dict:
     return encoded_metadata
 
 
+@contextmanager
+def context_pickle_modules_by_value(call_before: Union[List[Dict[str, Any]], None]):
+    """
+    Pickle modules in a context manager by value.
+
+    Args:
+        call_before: List of serialized call deps.
+
+    Returns:
+        None
+    """
+
+    if call_before is None:
+        yield
+        return
+
+    list_of_modules = []
+
+    for dep in call_before:
+        pickled_module = dep["attributes"].get("pickled_module")
+        if pickled_module:
+            list_of_modules.append(
+                TransportableObject.from_dict(pickled_module).get_deserialized()
+            )
+
+    for module in list_of_modules:
+        cloudpickle.register_pickle_by_value(module)
+
+    yield
+
+    for module in list_of_modules:
+        cloudpickle.unregister_pickle_by_value(module)
+
+
 class _TransportGraph:
     """
     A TransportGraph is the most essential part of the whole workflow. This contains
@@ -144,13 +179,16 @@ class _TransportGraph:
         if task_group_id is None:
             task_group_id = node_id
 
+        with context_pickle_modules_by_value(metadata.get("call_before")):
+            serialized_function = TransportableObject(function)
+
         # Default to gid=node_id
 
         self._graph.add_node(
             node_id,
             task_group_id=task_group_id,
             name=name,
-            function=TransportableObject(function),
+            function=serialized_function,
             metadata=metadata,
             **attr,
         )
