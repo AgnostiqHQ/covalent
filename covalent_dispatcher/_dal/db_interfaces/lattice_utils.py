@@ -74,9 +74,7 @@ _asset_record_map = {
     "lattice_imports": "lattice_imports_filename",
     "executor_data": "executor_data_filename",
     "workflow_executor_data": "workflow_executor_data_filename",
-    "deps": "deps_filename",
-    "call_before": "call_before_filename",
-    "call_after": "call_after_filename",
+    "hooks": "hooks_filename",
 }
 
 

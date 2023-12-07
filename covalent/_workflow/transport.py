@@ -56,21 +56,25 @@ def encode_metadata(metadata: dict) -> dict:
             encoded_metadata["workflow_executor_data"] = encoded_wf_executor
 
     # Bash Deps, Pip Deps, Env Deps, etc
-    if "deps" in metadata and metadata["deps"] is not None:
-        for dep_type, dep_object in metadata["deps"].items():
-            if dep_object and not isinstance(dep_object, dict):
-                encoded_metadata["deps"][dep_type] = dep_object.to_dict()
 
-    # call_before/after
-    if "call_before" in metadata and metadata["call_before"] is not None:
-        for i, dep in enumerate(metadata["call_before"]):
-            if not isinstance(dep, dict):
-                encoded_metadata["call_before"][i] = dep.to_dict()
+    if "hooks" in metadata and metadata["hooks"] is not None:
+        hooks = metadata["hooks"]
 
-    if "call_after" in metadata and metadata["call_after"] is not None:
-        for i, dep in enumerate(metadata["call_after"]):
-            if not isinstance(dep, dict):
-                encoded_metadata["call_after"][i] = dep.to_dict()
+        if "deps" in hooks and hooks["deps"] is not None:
+            for dep_type, dep_object in hooks["deps"].items():
+                if dep_object and not isinstance(dep_object, dict):
+                    encoded_metadata["hooks"]["deps"][dep_type] = dep_object.to_dict()
+
+        # call_before/after
+        if "call_before" in hooks and hooks["call_before"] is not None:
+            for i, dep in enumerate(hooks["call_before"]):
+                if not isinstance(dep, dict):
+                    encoded_metadata["hooks"]["call_before"][i] = dep.to_dict()
+
+        if "call_after" in hooks and hooks["call_after"] is not None:
+            for i, dep in enumerate(hooks["call_after"]):
+                if not isinstance(dep, dict):
+                    encoded_metadata["hooks"]["call_after"][i] = dep.to_dict()
 
     # triggers
     if "triggers" in metadata:

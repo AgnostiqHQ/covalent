@@ -40,7 +40,7 @@ from covalent._shared_files.utils import format_server_url
 from covalent.executor.base import AsyncBaseExecutor
 from covalent.executor.schemas import ResourceMap, TaskSpec, TaskUpdate
 from covalent.executor.utils.wrappers import io_wrapper as dask_wrapper
-from covalent.executor.utils.wrappers import run_task_from_uris_alt
+from covalent.executor.utils.wrappers import run_task_group_alt
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "DaskExecutor"
@@ -261,7 +261,7 @@ class DaskExecutor(AsyncBaseExecutor):
         await self.set_job_handle(key)
 
         future = dask_client.submit(
-            run_task_from_uris_alt,
+            run_task_group_alt,
             list(map(lambda t: t.model_dump(), task_specs)),
             resources.model_dump(),
             output_uris,

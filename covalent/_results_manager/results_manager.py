@@ -51,9 +51,7 @@ log_stack_info = logger.log_stack_info
 SDK_NODE_META_KEYS = {
     "executor",
     "executor_data",
-    "deps",
-    "call_before",
-    "call_after",
+    "hooks",
 }
 
 SDK_LAT_META_KEYS = {
@@ -61,9 +59,7 @@ SDK_LAT_META_KEYS = {
     "executor_data",
     "workflow_executor",
     "workflow_executor_data",
-    "deps",
-    "call_before",
-    "call_after",
+    "hooks",
 }
 
 DEFERRED_KEYS = {

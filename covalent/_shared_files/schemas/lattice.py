@@ -44,9 +44,7 @@ LATTICE_ASSET_KEYS = {
     "cova_imports",
     "lattice_imports",
     # user dependent assets
-    "deps",
-    "call_before",
-    "call_after",
+    "hooks",
 }
 
 LATTICE_FUNCTION_FILENAME = "function.tobj"
@@ -59,7 +57,7 @@ LATTICE_INPUTS_FILENAME = "inputs.tobj"
 LATTICE_NAMED_ARGS_FILENAME = "named_args.tobj"
 LATTICE_NAMED_KWARGS_FILENAME = "named_kwargs.tobj"
 LATTICE_RESULTS_FILENAME = "results.tobj"
-LATTICE_DEPS_FILENAME = "deps.json"
+LATTICE_HOOKS_FILENAME = "hooks.json"
 LATTICE_CALL_BEFORE_FILENAME = "call_before.json"
 LATTICE_CALL_AFTER_FILENAME = "call_after.json"
 LATTICE_COVA_IMPORTS_FILENAME = "cova_imports.json"
@@ -76,9 +74,7 @@ ASSET_FILENAME_MAP = {
     "named_kwargs": LATTICE_NAMED_KWARGS_FILENAME,
     "cova_imports": LATTICE_COVA_IMPORTS_FILENAME,
     "lattice_imports": LATTICE_LATTICE_IMPORTS_FILENAME,
-    "deps": LATTICE_DEPS_FILENAME,
-    "call_before": LATTICE_CALL_BEFORE_FILENAME,
-    "call_after": LATTICE_CALL_AFTER_FILENAME,
+    "hooks": LATTICE_HOOKS_FILENAME,
 }
 
 
@@ -93,9 +89,7 @@ class LatticeAssets(BaseModel):
     lattice_imports: AssetSchema
 
     # lattice.metadata
-    deps: AssetSchema
-    call_before: AssetSchema
-    call_after: AssetSchema
+    hooks: AssetSchema
 
 
 class LatticeMetadata(BaseModel):

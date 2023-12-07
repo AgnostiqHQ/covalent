@@ -1,12 +1,10 @@
 [
   {
-    "call_after_filename": "call_after.pkl",
-    "call_before_filename": "call_before.pkl",
     "completed_at": "2022-09-23 10:01:11.717064",
     "completed_electron_num": 6,
     "cova_imports_filename": "cova_imports.json",
     "created_at": "2022-09-23 10:01:11.044857",
-    "deps_filename": "deps.pkl",
+    "hooks_filename": "hooks.pkl",
     "dispatch_id": "78525234-72ec-42dc-94a0-f4751707f9cd",
     "docstring_filename": "function_docstring.txt",
     "electron_id": null,
@@ -37,13 +35,11 @@
     "workflow_executor_data": {}
   },
   {
-    "call_after_filename": "call_after.pkl",
-    "call_before_filename": "call_before.pkl",
     "completed_at": "2022-10-27 10:08:43.991108",
     "completed_electron_num": 4,
     "cova_imports_filename": "cova_imports.json",
     "created_at": "2022-10-27 10:08:33.702548",
-    "deps_filename": "deps.pkl",
+    "hooks_filename": "hooks.pkl",
     "dispatch_id": "a95d84ad-c441-446d-83ae-46380dcdf38e",
     "docstring_filename": "function_docstring.txt",
     "electron_id": null,
@@ -74,13 +70,11 @@
     "workflow_executor_data": {}
   },
   {
-    "call_after_filename": "call_after.pkl",
-    "call_before_filename": "call_before.pkl",
     "completed_at": "2022-10-27 10:08:35.997225",
     "completed_electron_num": 20,
     "cova_imports_filename": "cova_imports.json",
     "created_at": "2022-10-27 10:08:34.103977",
-    "deps_filename": "deps.pkl",
+    "hooks_filename": "hooks.pkl",
     "dispatch_id": "89be0bcf-95dd-40a6-947e-6af6c56f147d",
     "docstring_filename": "function_docstring.txt",
     "electron_id": 9,
@@ -111,13 +105,11 @@
     "workflow_executor_data": {}
   },
   {
-    "call_after_filename": "call_after.pkl",
-    "call_before_filename": "call_before.pkl",
     "completed_at": "2022-10-27 10:08:43.877056",
     "completed_electron_num": 120,
     "cova_imports_filename": "cova_imports.json",
     "created_at": "2022-10-27 10:08:36.287047",
-    "deps_filename": "deps.pkl",
+    "hooks_filename": "hooks.pkl",
     "dispatch_id": "69dec597-79d9-4c99-96de-8d5f06f3d4dd",
     "docstring_filename": "function_docstring.txt",
     "electron_id": 10,
@@ -148,13 +140,11 @@
     "workflow_executor_data": {}
   },
   {
-    "call_after_filename": "call_after.pkl",
-    "call_before_filename": "call_before.pkl",
     "completed_at": "2023-08-10 10:08:55.902257",
     "completed_electron_num": 2,
     "cova_imports_filename": "cova_imports.json",
     "created_at": "2023-08-10 10:08:55.387554",
-    "deps_filename": "deps.pkl",
+    "hooks_filename": "hooks.pkl",
     "dispatch_id": "e8fd09c9-1406-4686-9e77-c8d4d64a76ee",
     "docstring_filename": "function_docstring.txt",
     "electron_id": null,

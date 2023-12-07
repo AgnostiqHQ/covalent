@@ -166,37 +166,9 @@ def test_electrons_details_stdout():
         assert response.json() == test_data["response_data"]
 
 
-def test_electrons_details_deps():
-    """Test electrons for deps details"""
-    test_data = output_data["test_electrons_details"]["case_deps_1"]
-    response = object_test_template(
-        api_path=output_data["test_electrons_details"]["api_path"],
-        app=fastapi_app,
-        method_type=MethodType.GET,
-        path=test_data["path"],
-    )
-    assert response.status_code == test_data["status_code"]
-    if "response_data" in test_data:
-        assert response.json() == test_data["response_data"]
-
-
-def test_electrons_details_call_before():
-    """Test electrons for call_before details"""
-    test_data = output_data["test_electrons_details"]["case_call_before_1"]
-    response = object_test_template(
-        api_path=output_data["test_electrons_details"]["api_path"],
-        app=fastapi_app,
-        method_type=MethodType.GET,
-        path=test_data["path"],
-    )
-    assert response.status_code == test_data["status_code"]
-    if "response_data" in test_data:
-        assert response.json() == test_data["response_data"]
-
-
-def test_electrons_details_call_after():
-    """Test electrons for call_after details"""
-    test_data = output_data["test_electrons_details"]["case_call_after_1"]
+def test_electrons_details_hooks():
+    """Test electrons for hooks details"""
+    test_data = output_data["test_electrons_details"]["case_hooks_1"]
     response = object_test_template(
         api_path=output_data["test_electrons_details"]["api_path"],
         app=fastapi_app,
