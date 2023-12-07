@@ -40,7 +40,7 @@ from covalent.executor.schemas import ResourceMap, TaskSpec, TaskUpdate
 
 # Store the wrapper function in an external module to avoid module
 # import errors during pickling
-from covalent.executor.utils.wrappers import io_wrapper, run_task_from_uris
+from covalent.executor.utils.wrappers import io_wrapper, run_task_group
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "LocalExecutor"
@@ -178,9 +178,8 @@ class LocalExecutor(BaseExecutor):
 
         app_log.debug(f"Running task group {dispatch_id}:{task_ids}")
         future = proc_pool.submit(
-            run_task_from_uris,
+            run_task_group,
             list(map(lambda t: t.model_dump(), task_specs)),
-            resources.model_dump(),
             output_uris,
             self.cache_dir,
             task_group_metadata,

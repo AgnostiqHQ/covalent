@@ -16,12 +16,12 @@
 
 """Class corresponding to computation nodes."""
 
-
 import inspect
 import json
 import operator
 import tempfile
 from builtins import list
+from copy import deepcopy
 from dataclasses import asdict
 from functools import wraps
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
@@ -306,13 +306,16 @@ class Electron:
 
                 get_item.__name__ = node_name
 
-                iterable_metadata = self.metadata.copy()
+                # Perform a deep copy so as to not modify the parent
+                # electron's hooks
+                iterable_metadata = deepcopy(self.metadata)
 
                 filtered_call_before = []
-                for elem in iterable_metadata["call_before"]:
-                    if elem["attributes"]["retval_keyword"] != "files":
-                        filtered_call_before.append(elem)
-                iterable_metadata["call_before"] = filtered_call_before
+                if "call_before" in iterable_metadata["hooks"]:
+                    for elem in iterable_metadata["hooks"]["call_before"]:
+                        if elem["attributes"]["retval_keyword"] != "files":
+                            filtered_call_before.append(elem)
+                    iterable_metadata["hooks"]["call_before"] = filtered_call_before
 
                 # Pack with main electron unless it is a sublattice.
                 name = active_lattice.transport_graph.get_node_value(self.node_id, "name")
@@ -452,6 +455,7 @@ class Electron:
 
         # Add a node to the transport graph of the active lattice. Electrons bound to nodes will never be packed with the
         # 'master' Electron. # Add non-sublattice node to the transport graph of the active lattice.
+
         self.node_id = active_lattice.transport_graph.add_node(
             name=self.function.__name__,
             function=self.function,
@@ -474,15 +478,20 @@ class Electron:
 
             # For keyword arguments
             # Filter out kwargs to be injected by call_before call_deps during execution.
-            call_before = self.metadata["call_before"]
-            retval_keywords = {item["attributes"]["retval_keyword"]: None for item in call_before}
+
+            retval_keywords = {}
+            if "call_before" in self.metadata["hooks"]:
+                call_before = self.metadata["hooks"]["call_before"]
+                retval_keywords = {
+                    item["attributes"]["retval_keyword"]: None for item in call_before
+                }
+
             for key, value in named_kwargs.items():
                 if key in retval_keywords:
                     app_log.debug(
                         f"kwarg {key} for function {self.function.__name__} to be injected at runtime"
                     )
                     continue
-
                 self.connect_node_with_others(
                     self.node_id, key, value, "kwarg", None, active_lattice.transport_graph
                 )
@@ -771,13 +780,21 @@ def electron(
     if call_after:
         call_after_final.extend(call_after)
 
+    if deps is None and call_before_final is None and call_after_final is None:
+        hooks = None
+    else:
+        hooks = {}
+        if deps is not None:
+            hooks["deps"] = deps
+        if call_before_final is not None:
+            hooks["call_before"] = call_before_final
+        if call_after_final is not None:
+            hooks["call_after"] = call_after_final
+
     constraints = {
         "executor": executor,
-        "deps": deps,
-        "call_before": call_before_final,
-        "call_after": call_after_final,
+        "hooks": hooks,
     }
-
     constraints = encode_metadata(constraints)
 
     def decorator_electron(func=None):

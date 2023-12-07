@@ -425,11 +425,15 @@ def test_encode_metadata():
     le = LocalExecutor()
     bt = BaseTrigger()
 
-    metadata = {"executor": le, "workflow_executor": "local", "deps": {}}
-    metadata["deps"]["bash"] = ct.DepsBash("yum install gcc")
-    metadata["deps"]["pip"] = ct.DepsPip(["sklearn"])
-    metadata["call_before"] = []
-    metadata["call_after"] = []
+    hooks = {
+        "deps": {
+            "bash": ct.DepsBash("yum install gcc"),
+            "pip": ct.DepsPip(["sklearn"]),
+        },
+        "call_before": [],
+        "call_after": [],
+    }
+    metadata = {"executor": le, "workflow_executor": "local", "hooks": hooks}
     metadata["triggers"] = [bt]
 
     json_metadata = json.dumps(encode_metadata(metadata))
@@ -442,8 +446,8 @@ def test_encode_metadata():
     assert new_metadata["workflow_executor_data"] == {}
     assert new_metadata["triggers"] == [bt.to_dict()]
 
-    assert ct.DepsBash("yum install gcc").to_dict() == new_metadata["deps"]["bash"]
-    assert ct.DepsPip(["sklearn"]).to_dict() == new_metadata["deps"]["pip"]
+    assert ct.DepsBash("yum install gcc").to_dict() == new_metadata["hooks"]["deps"]["bash"]
+    assert ct.DepsPip(["sklearn"]).to_dict() == new_metadata["hooks"]["deps"]["pip"]
 
     # Check idempotence
     assert encode_metadata(metadata) == encode_metadata(encode_metadata(metadata))

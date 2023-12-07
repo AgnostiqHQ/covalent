@@ -85,35 +85,20 @@ async def _submit_abstract_task_group(
         if not type(executor).SUPPORTS_MANAGED_EXECUTION:
             raise NotImplementedError("Executor does not support managed execution")
 
-        resources = {"functions": {}, "inputs": {}, "deps": {}}
+        resources = {"functions": {}, "inputs": {}, "hooks": {}}
 
         # Get upload URIs
         for task_spec in task_seq:
             task_id = task_spec["function_id"]
 
             function_uri = executor.get_upload_uri(task_group_metadata, f"function-{task_id}")
-            deps_uri = executor.get_upload_uri(task_group_metadata, f"deps-{task_id}")
-            call_before_uri = executor.get_upload_uri(
-                task_group_metadata, f"call_before-{task_id}"
-            )
-            call_after_uri = executor.get_upload_uri(task_group_metadata, f"call_after-{task_id}")
+            hooks_uri = executor.get_upload_uri(task_group_metadata, f"hooks-{task_id}")
 
             await am.upload_asset_for_nodes(dispatch_id, "function", {task_id: function_uri})
-            await am.upload_asset_for_nodes(dispatch_id, "deps", {task_id: deps_uri})
-            await am.upload_asset_for_nodes(dispatch_id, "call_before", {task_id: call_before_uri})
-            await am.upload_asset_for_nodes(dispatch_id, "call_after", {task_id: call_after_uri})
-
-            deps_id = f"deps-{task_id}"
-            call_before_id = f"call_before-{task_id}"
-            call_after_id = f"call_after-{task_id}"
-            task_spec["deps_id"] = deps_id
-            task_spec["call_before_id"] = call_before_id
-            task_spec["call_after_id"] = call_after_id
+            await am.upload_asset_for_nodes(dispatch_id, "hooks", {task_id: hooks_uri})
 
             resources["functions"][task_id] = function_uri
-            resources["deps"][deps_id] = deps_uri
-            resources["deps"][call_before_id] = call_before_uri
-            resources["deps"][call_after_id] = call_after_uri
+            resources["hooks"][task_id] = hooks_uri
 
             task_specs.append(TaskSpec(**task_spec))
 

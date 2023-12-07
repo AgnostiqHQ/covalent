@@ -17,6 +17,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   asset metadata. Although the exact numerical value is not yet
   important, whether the size is reported to be zero or positive does
   have consequences.
+- Pack deps, call_before, and call_after assets into one file.
+
+### Fixed
+
+- Reduced number of assets to upload when submitting a dispatch.
 
 ### Operations
 

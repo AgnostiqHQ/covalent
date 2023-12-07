@@ -158,14 +158,10 @@ async def test_submit_abstract_task_group(mocker, task_cancelled):
     }
 
     mock_function_uri_0 = me.get_upload_uri(task_group_metadata, "function-0")
-    mock_deps_uri_0 = me.get_upload_uri(task_group_metadata, "deps-0")
-    mock_cb_uri_0 = me.get_upload_uri(task_group_metadata, "call_before-0")
-    mock_ca_uri_0 = me.get_upload_uri(task_group_metadata, "call_after-0")
+    mock_hooks_uri_0 = me.get_upload_uri(task_group_metadata, "hooks-0")
 
     mock_function_uri_3 = me.get_upload_uri(task_group_metadata, "function-3")
-    mock_deps_uri_3 = me.get_upload_uri(task_group_metadata, "deps-3")
-    mock_cb_uri_3 = me.get_upload_uri(task_group_metadata, "call_before-3")
-    mock_ca_uri_3 = me.get_upload_uri(task_group_metadata, "call_after-3")
+    mock_hooks_uri_3 = me.get_upload_uri(task_group_metadata, "hooks-3")
 
     mock_node_upload_uri_1 = me.get_upload_uri(task_group_metadata, "node_1")
     mock_node_upload_uri_2 = me.get_upload_uri(task_group_metadata, "node_2")
@@ -173,14 +169,8 @@ async def test_submit_abstract_task_group(mocker, task_cancelled):
     mock_function_id_0 = 0
     mock_args_ids = abstract_inputs["args"]
     mock_kwargs_ids = abstract_inputs["kwargs"]
-    mock_deps_id_0 = "deps-0"
-    mock_cb_id_0 = "call_before-0"
-    mock_ca_id_0 = "call_after-0"
 
     mock_function_id_3 = 3
-    mock_deps_id_3 = "deps-3"
-    mock_cb_id_3 = "call_before-3"
-    mock_ca_id_3 = "call_after-3"
 
     resources = {
         "functions": {
@@ -191,32 +181,19 @@ async def test_submit_abstract_task_group(mocker, task_cancelled):
             1: mock_node_upload_uri_1,
             2: mock_node_upload_uri_2,
         },
-        "deps": {
-            mock_deps_id_0: mock_deps_uri_0,
-            mock_cb_id_0: mock_cb_uri_0,
-            mock_ca_id_0: mock_ca_uri_0,
-            mock_deps_id_3: mock_deps_uri_3,
-            mock_cb_id_3: mock_cb_uri_3,
-            mock_ca_id_3: mock_ca_uri_3,
-        },
+        "hooks": {0: mock_hooks_uri_0, 3: mock_hooks_uri_3},
     }
 
     mock_task_spec_0 = {
         "function_id": mock_function_id_0,
         "args_ids": mock_args_ids,
         "kwargs_ids": mock_kwargs_ids,
-        "deps_id": mock_deps_id_0,
-        "call_before_id": mock_cb_id_0,
-        "call_after_id": mock_ca_id_0,
     }
 
     mock_task_spec_3 = {
         "function_id": mock_function_id_3,
         "args_ids": mock_args_ids,
         "kwargs_ids": mock_kwargs_ids,
-        "deps_id": mock_deps_id_3,
-        "call_before_id": mock_cb_id_3,
-        "call_after_id": mock_ca_id_3,
     }
 
     mock_task_0 = {

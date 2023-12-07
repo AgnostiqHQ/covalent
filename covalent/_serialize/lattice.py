@@ -44,9 +44,7 @@ ASSET_TYPES = {
     "named_kwargs": AssetType.TRANSPORTABLE,
     "cova_imports": AssetType.JSONABLE,
     "lattice_imports": AssetType.TEXT,
-    "deps": AssetType.JSONABLE,
-    "call_before": AssetType.JSONABLE,
-    "call_after": AssetType.JSONABLE,
+    "hooks": AssetType.JSONABLE,
 }
 
 
@@ -141,23 +139,11 @@ def _serialize_lattice_assets(lat, storage_path: str) -> LatticeAssets:
     )
 
     # NOTE: these are actually JSONable
-    deps_asset = save_asset(
-        lat.metadata["deps"],
-        ASSET_TYPES["deps"],
+    hooks_asset = save_asset(
+        lat.metadata["hooks"],
+        ASSET_TYPES["hooks"],
         storage_path,
-        ASSET_FILENAME_MAP["deps"],
-    )
-    call_before_asset = save_asset(
-        lat.metadata["call_before"],
-        ASSET_TYPES["call_before"],
-        storage_path,
-        ASSET_FILENAME_MAP["call_before"],
-    )
-    call_after_asset = save_asset(
-        lat.metadata["call_after"],
-        ASSET_TYPES["call_after"],
-        storage_path,
-        ASSET_FILENAME_MAP["call_after"],
+        ASSET_FILENAME_MAP["hooks"],
     )
 
     return LatticeAssets(
@@ -169,9 +155,7 @@ def _serialize_lattice_assets(lat, storage_path: str) -> LatticeAssets:
         named_kwargs=named_kwargs_asset,
         cova_imports=cova_imports_asset,
         lattice_imports=lattice_imports_asset,
-        deps=deps_asset,
-        call_before=call_before_asset,
-        call_after=call_after_asset,
+        hooks=hooks_asset,
     )
 
 
@@ -186,9 +170,7 @@ def _deserialize_lattice_assets(assets: LatticeAssets) -> dict:
     named_kwargs = load_asset(assets.named_kwargs, ASSET_TYPES["named_kwargs"])
     cova_imports = load_asset(assets.cova_imports, ASSET_TYPES["cova_imports"])
     lattice_imports = load_asset(assets.lattice_imports, ASSET_TYPES["lattice_imports"])
-    deps = load_asset(assets.deps, ASSET_TYPES["deps"])
-    call_before = load_asset(assets.call_before, ASSET_TYPES["call_before"])
-    call_after = load_asset(assets.call_after, ASSET_TYPES["call_after"])
+    hooks = load_asset(assets.hooks, ASSET_TYPES["hooks"])
     return {
         "workflow_function": workflow_function,
         "workflow_function_string": workflow_function_string,
@@ -199,9 +181,7 @@ def _deserialize_lattice_assets(assets: LatticeAssets) -> dict:
         "cova_imports": cova_imports,
         "lattice_imports": lattice_imports,
         "metadata": {
-            "deps": deps,
-            "call_before": call_before,
-            "call_after": call_after,
+            "hooks": hooks,
         },
     }
 
