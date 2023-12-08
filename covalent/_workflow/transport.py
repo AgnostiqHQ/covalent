@@ -20,7 +20,7 @@ import datetime
 import json
 from contextlib import contextmanager
 from copy import deepcopy
-from typing import Any, Callable, Dict, List, Union
+from typing import Any, Callable, Dict
 
 import cloudpickle
 import networkx as nx
@@ -92,24 +92,25 @@ def encode_metadata(metadata: dict) -> dict:
 
 
 @contextmanager
-def pickle_modules_by_value(metadata: Dict[str, Any]):
+def pickle_modules_by_value(metadata):
     """
     Pickle modules in a context manager by value.
-    Also updates the metadata dictionary in-place
-    to remove the temporary pickled module.
 
     Args:
-        metadata: The metadata of the node.
+        call_before: The call before metadata.
 
     Returns:
         None
     """
 
-    call_before: Union[List[Dict[str, Any]], None] = metadata.get("call_before")
+    call_before = metadata.get("call_before")
 
-    if call_before is None:
-        yield
+    if not call_before:
+        yield metadata
         return
+
+    new_metadata = deepcopy(metadata)
+    call_before = new_metadata.get("call_before")
 
     list_of_modules = []
 
@@ -121,20 +122,41 @@ def pickle_modules_by_value(metadata: Dict[str, Any]):
                 TransportableObject.from_dict(pickled_module).get_deserialized()
             )
 
-            # Delete the DepsModule from the metadata
-            # as it need not be sent to the server
-            del call_before[i]
+            # Delete the DepsModule from new_metadata
+            new_metadata["call_before"][i] = None
+
+    new_metadata["call_before"] = [x for x in new_metadata["call_before"] if x is not None]
 
     for module in list_of_modules:
         cloudpickle.register_pickle_by_value(module)
 
-    # Updating the metadata to exclude the 'DepsModule's
-    metadata["call_before"] = call_before
+    yield new_metadata
+
+    for module in list_of_modules:
+        try:
+            cloudpickle.unregister_pickle_by_value(module)
+        except ValueError:
+            continue
+
+
+@contextmanager
+def add_module_deps_to_lattice_metadata(pp, bound_electrons: Dict[int, Any]):
+    old_lattice_metadata = deepcopy(pp.lattice.metadata)
+
+    # Add the module dependencies to the lattice metadata
+    for electron in bound_electrons.values():
+        call_before = electron.metadata.get("call_before")
+        if call_before:
+            for i in range(len(call_before)):
+                if call_before[i]["short_name"] == "depsmodule":
+                    pp.lattice.metadata["call_before"].append(call_before[i])
+
+                    del electron.metadata["call_before"][i]
 
     yield
 
-    for module in list_of_modules:
-        cloudpickle.unregister_pickle_by_value(module)
+    # Restore the old lattice metadata
+    pp.lattice.metadata = old_lattice_metadata
 
 
 class _TransportGraph:
@@ -174,6 +196,7 @@ class _TransportGraph:
     ) -> int:
         """
         Adds a node to the graph.
+        Also serializes the function, value, and output.
 
         Args:
             name: The name of the node.
@@ -191,10 +214,15 @@ class _TransportGraph:
         if task_group_id is None:
             task_group_id = node_id
 
-        # Also updates the metdata dictionary in-place
-        # to remove the temp pickled module
-        with pickle_modules_by_value(metadata):
+        with pickle_modules_by_value(metadata) as new_metadata:
             serialized_function = TransportableObject(function)
+
+            value = attr.get("value")
+            output = attr.get("output")
+            if value is not None:
+                attr["value"] = TransportableObject.make_transportable(value)
+            if output is not None:
+                attr["output"] = TransportableObject.make_transportable(output)
 
         # Default to gid=node_id
 
@@ -203,7 +231,7 @@ class _TransportGraph:
             task_group_id=task_group_id,
             name=name,
             function=serialized_function,
-            metadata=metadata,
+            metadata=new_metadata,  # Save the new metadata without the DepsModules in it
             **attr,
         )
 

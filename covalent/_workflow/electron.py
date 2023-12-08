@@ -209,6 +209,13 @@ class Electron:
         metadata = encode_metadata(DEFAULT_METADATA_VALUES.copy())
         executor = metadata["workflow_executor"]
         executor_data = metadata["workflow_executor_data"]
+
+        if "call_before" in self.metadata:
+            call_before = self.metadata["call_before"]
+            for dep in call_before:
+                if dep["short_name"] == "depsmodule":
+                    metadata["call_before"].append(dep)
+
         op_electron = Electron(func_for_op, metadata=metadata)
 
         if active_lattice := active_lattice_manager.get_active_lattice():
@@ -529,6 +536,12 @@ class Electron:
             collection_metadata["executor"] = self.metadata["executor"]
             collection_metadata["executor_data"] = self.metadata["executor_data"]
 
+        if "call_before" in self.metadata:
+            call_before = self.metadata["call_before"]
+            for dep in call_before:
+                if dep["short_name"] == "depsmodule":
+                    collection_metadata["call_before"].append(dep)
+
         if isinstance(param_value, Electron):
             transport_graph.add_edge(
                 param_value.node_id,
@@ -581,13 +594,20 @@ class Electron:
             )
 
         else:
-            encoded_param_value = TransportableObject.make_transportable(param_value)
+            metadata = encode_metadata(DEFAULT_METADATA_VALUES.copy())
+
+            if "call_before" in self.metadata:
+                call_before = self.metadata["call_before"]
+                for dep in call_before:
+                    if dep["short_name"] == "depsmodule":
+                        metadata["call_before"].append(dep)
+
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),
                 function=None,
-                metadata=encode_metadata(DEFAULT_METADATA_VALUES.copy()),
-                value=encoded_param_value,
-                output=encoded_param_value,
+                metadata=metadata,
+                value=param_value,
+                output=param_value,
             )
             transport_graph.add_edge(
                 parameter_node,
@@ -615,6 +635,12 @@ class Electron:
         if "executor" in self.metadata:
             new_metadata["executor"] = self.metadata["executor"]
             new_metadata["executor_data"] = self.metadata["executor_data"]
+
+        if "call_before" in self.metadata:
+            call_before = self.metadata["call_before"]
+            for dep in call_before:
+                if dep["short_name"] == "depsmodule":
+                    new_metadata["call_before"].append(dep)
 
         node_id = graph.add_node(
             name=prefix,

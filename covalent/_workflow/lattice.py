@@ -18,11 +18,9 @@
 
 import importlib.metadata
 import json
-import os
 import warnings
 import webbrowser
 from builtins import list
-from contextlib import redirect_stdout
 from copy import deepcopy
 from dataclasses import asdict
 from functools import wraps
@@ -37,7 +35,12 @@ from .depsbash import DepsBash
 from .depscall import DepsCall
 from .depspip import DepsPip
 from .postprocessing import Postprocessor
-from .transport import TransportableObject, _TransportGraph, encode_metadata
+from .transport import (
+    TransportableObject,
+    _TransportGraph,
+    add_module_deps_to_lattice_metadata,
+    encode_metadata,
+)
 
 if TYPE_CHECKING:
     from .._results_manager.result import Result
@@ -225,31 +228,31 @@ class Lattice:
         # Check whether task packing is enabled
         self._task_packing = get_config("sdk.task_packing") == "true"
 
-        with redirect_stdout(open(os.devnull, "w")):
-            with active_lattice_manager.claim(self):
-                try:
-                    retval = workflow_function(*new_args, **new_kwargs)
-                except Exception:
-                    warnings.warn(
-                        "Please make sure you are not manipulating an object inside the lattice."
-                    )
-                    raise
-
-        import sys
-
-        print("Size of transport graph:", sys.getsizeof(self.transport_graph.serialize_to_json()))
+        # with redirect_stdout(open(os.devnull, "w")):
+        with active_lattice_manager.claim(self):
+            try:
+                retval = workflow_function(*new_args, **new_kwargs)
+            except Exception:
+                warnings.warn(
+                    "Please make sure you are not manipulating an object inside the lattice."
+                )
+                raise
 
         pp = Postprocessor(lattice=self)
 
-        if get_config("sdk.exhaustive_postprocess") == "true":
-            pp.add_exhaustive_postprocess_node(self._bound_electrons.copy())
-        else:
-            pp.add_reconstruct_postprocess_node(retval, self._bound_electrons.copy())
+        with add_module_deps_to_lattice_metadata(pp, self._bound_electrons):
+            if get_config("sdk.exhaustive_postprocess") == "true":
+                pp.add_exhaustive_postprocess_node(self._bound_electrons.copy())
+            else:
+                pp.add_reconstruct_postprocess_node(retval, self._bound_electrons.copy())
 
         self._bound_electrons = {}  # Reset bound electrons
 
         # Clear this temporary attribute
         del self.__dict__["_task_packing"]
+
+        # import sys
+        # print("Size of transport graph: ", sys.getsizeof(self.transport_graph.serialize_to_json()))
 
     def draw(self, *args, **kwargs) -> None:
         """
