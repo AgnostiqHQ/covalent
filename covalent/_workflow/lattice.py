@@ -235,6 +235,10 @@ class Lattice:
                     )
                     raise
 
+        import sys
+
+        print("Size of transport graph:", sys.getsizeof(self.transport_graph.serialize_to_json()))
+
         pp = Postprocessor(lattice=self)
 
         if get_config("sdk.exhaustive_postprocess") == "true":

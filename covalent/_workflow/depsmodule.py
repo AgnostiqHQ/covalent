@@ -22,13 +22,12 @@ from .depscall import DepsCall
 from .transportable_object import TransportableObject
 
 
-def identity(*args, **kwargs):
-    pass
-
-
 class DepsModule(DepsCall):
     """
-    Python modules to be imported in an electron's execution environment
+    Python modules to be imported in an electron's execution environment.
+
+    This is only used as a vehicle to send the module by reference to the
+    to the right place of serialization where it will instead be pickled by value.
 
     Deps class to encapsulate python modules to be
     imported in the same execution environment as the electron.
@@ -45,6 +44,13 @@ class DepsModule(DepsCall):
             # Import the module on the client side
             module = importlib.import_module(module)
 
+        # Temporarily pickling the module by reference
+        # so that it can be pickled by value when serializing
+        # the transport graph.
         self.pickled_module = TransportableObject(module)
 
-        super().__init__(func=identity)
+        super().__init__()
+
+    def short_name(self):
+        """Returns the short name of this class."""
+        return "depsmodule"

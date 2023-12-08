@@ -92,16 +92,20 @@ def encode_metadata(metadata: dict) -> dict:
 
 
 @contextmanager
-def context_pickle_modules_by_value(call_before: Union[List[Dict[str, Any]], None]):
+def pickle_modules_by_value(metadata: Dict[str, Any]):
     """
     Pickle modules in a context manager by value.
+    Also updates the metadata dictionary in-place
+    to remove the temporary pickled module.
 
     Args:
-        call_before: List of serialized call deps.
+        metadata: The metadata of the node.
 
     Returns:
         None
     """
+
+    call_before: Union[List[Dict[str, Any]], None] = metadata.get("call_before")
 
     if call_before is None:
         yield
@@ -109,15 +113,23 @@ def context_pickle_modules_by_value(call_before: Union[List[Dict[str, Any]], Non
 
     list_of_modules = []
 
-    for dep in call_before:
-        pickled_module = dep["attributes"].get("pickled_module")
-        if pickled_module:
+    for i in range(len(call_before)):
+        # Extract the pickled module if the call before is a DepsModule
+        if call_before[i]["short_name"] == "depsmodule":
+            pickled_module = call_before[i]["attributes"]["pickled_module"]
             list_of_modules.append(
                 TransportableObject.from_dict(pickled_module).get_deserialized()
             )
 
+            # Delete the DepsModule from the metadata
+            # as it need not be sent to the server
+            del call_before[i]
+
     for module in list_of_modules:
         cloudpickle.register_pickle_by_value(module)
+
+    # Updating the metadata to exclude the 'DepsModule's
+    metadata["call_before"] = call_before
 
     yield
 
@@ -179,7 +191,9 @@ class _TransportGraph:
         if task_group_id is None:
             task_group_id = node_id
 
-        with context_pickle_modules_by_value(metadata.get("call_before")):
+        # Also updates the metdata dictionary in-place
+        # to remove the temp pickled module
+        with pickle_modules_by_value(metadata):
             serialized_function = TransportableObject(function)
 
         # Default to gid=node_id
