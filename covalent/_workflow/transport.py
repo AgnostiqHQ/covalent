@@ -125,7 +125,7 @@ def pickle_modules_by_value(metadata):
             # Delete the DepsModule from new_metadata
             new_metadata["call_before"][i] = None
 
-    new_metadata["call_before"] = [x for x in new_metadata["call_before"] if x is not None]
+    new_metadata["call_before"] = list(filter(None, new_metadata["call_before"]))
 
     for module in list_of_modules:
         cloudpickle.register_pickle_by_value(module)
@@ -151,7 +151,9 @@ def add_module_deps_to_lattice_metadata(pp, bound_electrons: Dict[int, Any]):
                 if call_before[i]["short_name"] == "depsmodule":
                     pp.lattice.metadata["call_before"].append(call_before[i])
 
-                    del electron.metadata["call_before"][i]
+                    electron.metadata["call_before"][i] = None
+
+        electron.metadata["call_before"] = list(filter(None, electron.metadata["call_before"]))
 
     yield
 
