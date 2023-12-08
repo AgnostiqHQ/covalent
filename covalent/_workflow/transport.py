@@ -198,7 +198,7 @@ class _TransportGraph:
     ) -> int:
         """
         Adds a node to the graph.
-        Also serializes the function, value, and output.
+        Also serializes the received function.
 
         Args:
             name: The name of the node.

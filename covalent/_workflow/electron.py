@@ -582,15 +582,14 @@ class Electron:
             )
 
         else:
-            encoded_param = TransportableObject.make_transportable(param_value)
-            metadata = encode_metadata(DEFAULT_METADATA_VALUES.copy())
+            encoded_param_value = TransportableObject.make_transportable(param_value)
 
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),
                 function=None,
-                metadata=metadata,
-                value=encoded_param,
-                output=encoded_param,
+                metadata=encode_metadata(DEFAULT_METADATA_VALUES.copy()),
+                value=encoded_param_value,
+                output=encoded_param_value,
             )
             transport_graph.add_edge(
                 parameter_node,
