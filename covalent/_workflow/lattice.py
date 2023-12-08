@@ -251,8 +251,9 @@ class Lattice:
         # Clear this temporary attribute
         del self.__dict__["_task_packing"]
 
-        # import sys
-        # print("Size of transport graph: ", sys.getsizeof(self.transport_graph.serialize_to_json()))
+        import sys
+
+        print("Size of transport graph: ", sys.getsizeof(self.transport_graph.serialize_to_json()))
 
     def draw(self, *args, **kwargs) -> None:
         """

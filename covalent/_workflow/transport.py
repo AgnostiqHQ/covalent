@@ -217,13 +217,6 @@ class _TransportGraph:
         with pickle_modules_by_value(metadata) as new_metadata:
             serialized_function = TransportableObject(function)
 
-            value = attr.get("value")
-            output = attr.get("output")
-            if value is not None:
-                attr["value"] = TransportableObject.make_transportable(value)
-            if output is not None:
-                attr["output"] = TransportableObject.make_transportable(output)
-
         # Default to gid=node_id
 
         self._graph.add_node(
