@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+- Changed in-memory format of TransportableObject to reduce serialization overhead
+
 ## [0.236.0-rc.0] - 2025-01-21
 
 ### Authors
