@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   important, whether the size is reported to be zero or positive does
   have consequences.
 - Pack deps, call_before, and call_after assets into one file.
+- `qelectron_db`, `qelectron_data_exists`, `python_version`, and `covalent_version`
+   are now optional in the pydantic model definitions.
 
 ### Fixed
 
