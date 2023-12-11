@@ -39,9 +39,7 @@ ASSET_TYPES = {
     "function_string": AssetType.TEXT,
     "value": AssetType.TRANSPORTABLE,
     "output": AssetType.TRANSPORTABLE,
-    "deps": AssetType.JSONABLE,
-    "call_before": AssetType.JSONABLE,
-    "call_after": AssetType.JSONABLE,
+    "hooks": AssetType.JSONABLE,
     "qelectron_db": AssetType.BYTES,
     "stdout": AssetType.TEXT,
     "stderr": AssetType.TEXT,
@@ -160,27 +158,10 @@ def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> Electron
         ASSET_FILENAME_MAP["error"],
     )
 
-    deps = node_attrs["metadata"]["deps"]
-    deps_asset = save_asset(
-        deps, ASSET_TYPES["deps"], node_storage_path, ASSET_FILENAME_MAP["deps"]
+    hooks = node_attrs["metadata"]["hooks"]
+    hooks_asset = save_asset(
+        hooks, ASSET_TYPES["hooks"], node_storage_path, ASSET_FILENAME_MAP["hooks"]
     )
-
-    call_before = node_attrs["metadata"]["call_before"]
-    call_before_asset = save_asset(
-        call_before,
-        ASSET_TYPES["call_before"],
-        node_storage_path,
-        ASSET_FILENAME_MAP["call_before"],
-    )
-
-    call_after = node_attrs["metadata"]["call_after"]
-    call_after_asset = save_asset(
-        call_after,
-        ASSET_TYPES["call_after"],
-        node_storage_path,
-        ASSET_FILENAME_MAP["call_after"],
-    )
-
     return ElectronAssets(
         function=function_asset,
         function_string=function_string_asset,
@@ -190,9 +171,7 @@ def _serialize_node_assets(node_attrs: dict, node_storage_path: str) -> Electron
         stderr=stderr_asset,
         qelectron_db=qelectron_db_asset,
         error=error_asset,
-        deps=deps_asset,
-        call_before=call_before_asset,
-        call_after=call_after_asset,
+        hooks=hooks_asset,
     )
 
 
@@ -206,9 +185,7 @@ def _deserialize_node_assets(ea: ElectronAssets) -> dict:
     qelectron_db = load_asset(ea.qelectron_db, ASSET_TYPES["qelectron_db"])
     error = load_asset(ea.error, ASSET_TYPES["error"])
 
-    deps = load_asset(ea.deps, ASSET_TYPES["deps"])
-    call_before = load_asset(ea.call_before, ASSET_TYPES["call_before"])
-    call_after = load_asset(ea.call_after, ASSET_TYPES["call_after"])
+    hooks = load_asset(ea.hooks, ASSET_TYPES["hooks"])
 
     return {
         "function": function,
@@ -220,9 +197,7 @@ def _deserialize_node_assets(ea: ElectronAssets) -> dict:
         "qelectron_db": qelectron_db,
         "error": error,
         "metadata": {
-            "deps": deps,
-            "call_before": call_before,
-            "call_after": call_after,
+            "hooks": hooks,
         },
     }
 

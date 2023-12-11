@@ -18,11 +18,9 @@
 
 import importlib.metadata
 import json
-import os
 import warnings
 import webbrowser
 from builtins import list
-from contextlib import redirect_stdout
 from copy import deepcopy
 from dataclasses import asdict
 from functools import wraps
@@ -211,7 +209,7 @@ class Lattice:
         self.lattice_imports, self.cova_imports = get_imports(workflow_function)
 
         # Set any lattice metadata not explicitly set by the user
-        constraint_names = {"executor", "workflow_executor", "deps", "call_before", "call_after"}
+        constraint_names = {"executor", "workflow_executor", "hooks"}
         new_metadata = {
             name: DEFAULT_METADATA_VALUES[name]
             for name in constraint_names
@@ -225,15 +223,14 @@ class Lattice:
         # Check whether task packing is enabled
         self._task_packing = get_config("sdk.task_packing") == "true"
 
-        with redirect_stdout(open(os.devnull, "w")):
-            with active_lattice_manager.claim(self):
-                try:
-                    retval = workflow_function(*new_args, **new_kwargs)
-                except Exception:
-                    warnings.warn(
-                        "Please make sure you are not manipulating an object inside the lattice."
-                    )
-                    raise
+        with active_lattice_manager.claim(self):
+            try:
+                retval = workflow_function(*new_args, **new_kwargs)
+            except Exception:
+                warnings.warn(
+                    "Please make sure you are not manipulating an object inside the lattice."
+                )
+                raise
 
         pp = Postprocessor(lattice=self)
 
@@ -364,7 +361,7 @@ def lattice(
         )
         executor = backend
 
-    deps = {}
+    deps = {} if deps_bash or deps_pip else None
 
     if isinstance(deps_bash, DepsBash):
         deps["bash"] = deps_bash
@@ -387,12 +384,21 @@ def lattice(
     if isinstance(triggers, BaseTrigger):
         triggers = [triggers]
 
+    if deps is None and call_before is None and call_after is None:
+        hooks = None
+    else:
+        hooks = {}
+        if deps is not None:
+            hooks["deps"] = deps
+        if call_before is not None:
+            hooks["call_before"] = call_before
+        if call_after is not None:
+            hooks["call_after"] = call_after
+
     constraints = {
         "executor": executor,
         "workflow_executor": workflow_executor,
-        "deps": deps,
-        "call_before": call_before,
-        "call_after": call_after,
+        "hooks": hooks,
         "triggers": triggers,
     }
 

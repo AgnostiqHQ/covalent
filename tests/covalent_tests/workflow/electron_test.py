@@ -94,9 +94,11 @@ def test_build_sublattice_graph(mocker):
         "executor_data": {},
         "workflow_executor": "my_postprocessor",
         "workflow_executor_data": {},
-        "deps": {"bash": None, "pip": None},
-        "call_before": [],
-        "call_after": [],
+        "hooks": {
+            "deps": {"bash": None, "pip": None},
+            "call_before": [],
+            "call_after": [],
+        },
         "triggers": "mock-trigger",
         "qelectron_data_exists": False,
         "results_dir": None,
@@ -158,9 +160,11 @@ def test_build_sublattice_graph_fallback(mocker):
         "executor_data": {},
         "workflow_executor": "my_postprocessor",
         "workflow_executor_data": {},
-        "deps": {"bash": None, "pip": None},
-        "call_before": [],
-        "call_after": [],
+        "hooks": {
+            "deps": {"bash": None, "pip": None},
+            "call_before": [],
+            "call_after": [],
+        },
         "triggers": "mock-trigger",
         "qelectron_data_exists": False,
         "results_dir": None,
@@ -311,8 +315,8 @@ def test_metadata_in_electron_list():
     task_metadata = workflow.transport_graph.get_node_value(0, "metadata")
     e_list_metadata = workflow.transport_graph.get_node_value(1, "metadata")
 
-    assert not list(e_list_metadata["call_before"])
-    assert not list(e_list_metadata["call_after"])
+    assert "call_before" not in e_list_metadata["hooks"]
+    assert "call_after" not in e_list_metadata["hooks"]
 
     assert e_list_metadata["executor"] == task_metadata["executor"]
 
@@ -446,7 +450,7 @@ def test_call_sublattice():
         bound_electron = sublattice()
         assert bound_electron.metadata["executor"] == "dask"
         assert bound_electron.metadata["executor_data"] == {}
-        assert bound_electron.metadata["deps"]["bash"] == bash_dep.to_dict()
+        assert bound_electron.metadata["hooks"]["deps"]["bash"] == bash_dep.to_dict()
         for _, node_data in mock_workflow.transport_graph._graph.nodes(data=True):
             if node_data["name"].startswith(sublattice_prefix):
                 assert "mock_task" in node_data["function_string"]
