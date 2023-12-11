@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   have consequences.
 - Pack deps, call_before, and call_after assets into one file.
 - Changed handling of tuples and sets when building the transport graph - they will be converted to electron lists as well for now
+- `qelectron_db`, `qelectron_data_exists`, `python_version`, and `covalent_version`
+   are now optional in the pydantic model definitions.
 
 ### Fixed
 

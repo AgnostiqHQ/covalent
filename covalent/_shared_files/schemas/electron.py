@@ -86,7 +86,7 @@ class ElectronAssets(BaseModel):
     error: Optional[AssetSchema] = None
     stdout: Optional[AssetSchema] = None
     stderr: Optional[AssetSchema] = None
-    qelectron_db: AssetSchema
+    qelectron_db: Optional[AssetSchema] = None
 
     # user dependent assets
     hooks: AssetSchema
@@ -97,7 +97,7 @@ class ElectronMetadata(BaseModel):
     name: str
     executor: str
     executor_data: dict
-    qelectron_data_exists: bool
+    qelectron_data_exists: Optional[bool] = None
     sub_dispatch_id: Optional[str] = None
     status: StatusEnum
     start_time: Optional[datetime] = None

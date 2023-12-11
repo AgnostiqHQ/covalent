@@ -299,7 +299,7 @@ class _TransportGraph:
         """
         return self._graph.nodes[node_key][value_key]
 
-    def set_node_value(self, node_key: int, value_key: int, value: Any) -> None:
+    def set_node_value(self, node_key: str, value_key: int, value: Any) -> None:
         """
         Set a certain value of a node. This allows for saving custom data
         in the graph nodes.
