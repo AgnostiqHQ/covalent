@@ -19,6 +19,8 @@
 import json
 from unittest.mock import ANY, MagicMock
 
+import flake8
+import isort
 import pytest
 
 import covalent as ct
@@ -679,3 +681,28 @@ def test_electron_pow_method(mocker):
     workflow.build_graph(2)
 
     mock_electron_get_op_function.assert_called_with(ANY, 2, "**")
+
+
+@pytest.mark.parametrize(
+    "module_inputs",
+    [
+        "isort",
+        isort,
+        ct.DepsModule("isort"),
+        ["isort", "flake8"],
+        [isort, flake8],
+        [ct.DepsModule("isort"), ct.DepsModule("flake8")],
+    ],
+)
+def test_deps_modules_are_added(module_inputs):
+    """Test that deps modules are added to the lattice metadata."""
+
+    @ct.electron(deps_module=module_inputs)
+    def task(x):
+        return x
+
+    # Making sure all kinds of inputs are converted to DepsModule
+    # and then to its transportable form of a dictionary
+    for cb in task.electron_object.metadata["call_before"]:
+        assert cb["short_name"] == "depsmodule"
+        assert cb["attributes"]["pickled_module"]["type"] == "TransportableObject"

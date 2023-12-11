@@ -504,7 +504,7 @@ def test_pickle_modules_by_value(mocker, call_before, metadata, expected_metadat
 def test_add_module_deps_to_lattice_metadata(mocker):
     """
     Test that the modules mentioned in
-    DepsModules are added to the lattice metadata.
+    DepsModules are added to the lattice metadata temporarily.
     """
 
     pp = mocker.Mock()

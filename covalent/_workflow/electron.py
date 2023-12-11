@@ -768,9 +768,6 @@ def electron(
         elif type(deps_module) in [str, ModuleType]:
             deps_module = [DepsModule(deps_module)]
 
-        elif isinstance(deps_module, ModuleType):
-            deps_module = [DepsModule(deps_module)]
-
         elif isinstance(deps_module, DepsModule):
             deps_module = [deps_module]
 
