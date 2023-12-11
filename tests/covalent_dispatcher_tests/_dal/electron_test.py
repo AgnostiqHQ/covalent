@@ -265,7 +265,7 @@ def test_electron_update_assets(test_db, mocker):
 
         updates = {"output": {"size": 2048}}
 
-        e.update_assets(updates)
+        e.update_assets(updates, session)
 
         output = e.get_asset("output", session)
         output.refresh(session, fields={"size"}, for_update=False)

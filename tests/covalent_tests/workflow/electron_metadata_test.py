@@ -54,9 +54,7 @@ def test_electrons_get_lattice_metadata_1():
             assert metadata["executor"] == get_default_executor()
         elif "parameter" not in node_name:
             assert metadata["executor"] == "electron_executor"
-            assert metadata["deps"]["bash"] == electron_bash_dep.to_dict()
-            assert len(metadata["call_before"]) == 2
-            assert len(metadata["call_after"]) == 0
+            assert metadata["hooks"]["deps"]["bash"] == electron_bash_dep.to_dict()
 
 
 def test_electrons_get_lattice_metadata_2():
@@ -65,12 +63,9 @@ def test_electrons_get_lattice_metadata_2():
 
     electron_bash_dep = ct.DepsBash(["yum install rustc"])
     lattice_bash_dep = ct.DepsBash(["yum install kernel"])
-    ft_after = ct.fs.FileTransfer(
-        "/home/ubuntu/src_file", "/home/ubuntu/dest_file", order=ct.fs.Order.AFTER
-    )
 
     # Construct tasks as "electrons"
-    @ct.electron(files=[ft_after])
+    @ct.electron
     def task(x):
         return x
 
@@ -89,9 +84,7 @@ def test_electrons_get_lattice_metadata_2():
     tg.deserialize_from_json(data)
     metadata = tg.get_node_value(0, "metadata")
     assert metadata["executor"] == "lattice_executor"
-    assert metadata["deps"]["bash"] == lattice_bash_dep.to_dict()
-    assert len(metadata["call_before"]) == 1
-    assert len(metadata["call_after"]) == 1
+    assert metadata["hooks"]["deps"]["bash"] == lattice_bash_dep.to_dict()
 
 
 def test_electrons_get_lattice_metadata_3():

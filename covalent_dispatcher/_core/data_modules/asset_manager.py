@@ -26,7 +26,6 @@ from covalent._shared_files import logger
 from covalent._shared_files.schemas.asset import AssetUpdate
 
 from ..._dal.result import get_result_object as get_result_object
-from .utils import run_in_executor
 
 app_log = logger.app_log
 am_pool = ThreadPoolExecutor()
@@ -36,18 +35,32 @@ am_pool = ThreadPoolExecutor()
 async def upload_asset_for_nodes(dispatch_id: str, key: str, dest_uris: dict):
     """Typical keys: "output", "deps", "call_before", "call_after", "function"""
 
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(
+        am_pool,
+        upload_asset_for_nodes_sync,
+        dispatch_id,
+        key,
+        dest_uris,
+    )
+
+
+def upload_asset_for_nodes_sync(dispatch_id: str, key: str, dest_uris: dict):
     result_object = get_result_object(dispatch_id, bare=True)
     tg = result_object.lattice.transport_graph
-    loop = asyncio.get_running_loop()
 
-    futs = []
-    for node_id, dest_uri in dest_uris.items():
-        if dest_uri:
-            node = tg.get_node(node_id)
-            asset = node.get_asset(key, session=None)
-            futs.append(loop.run_in_executor(am_pool, asset.upload, dest_uri))
+    uploads_by_node = {}
 
-    await asyncio.gather(*futs)
+    with result_object.session() as session:
+        for node_id, dest_uri in dest_uris.items():
+            if dest_uri:
+                node = tg.get_node(node_id, session)
+                asset = node.get_asset(key, session)
+                uploads_by_node[node_id] = (asset, dest_uri)
+
+    for _, pending_upload in uploads_by_node.items():
+        asset, dest_uri = pending_upload
+        asset.upload(dest_uri)
 
 
 async def download_assets_for_node(
@@ -55,35 +68,40 @@ async def download_assets_for_node(
 ):
     # Keys for src_uris: "output", "stdout", "stderr"
 
+    loop = asyncio.get_running_loop()
+    await loop.run_in_executor(
+        am_pool,
+        download_assets_for_node_sync,
+        dispatch_id,
+        node_id,
+        asset_updates,
+    )
+
+
+def download_assets_for_node_sync(
+    dispatch_id: str, node_id: int, asset_updates: Dict[str, AssetUpdate]
+):
     result_object = get_result_object(dispatch_id, bare=True)
     tg = result_object.lattice.transport_graph
     node = tg.get_node(node_id)
-    loop = asyncio.get_running_loop()
 
-    futs = []
     db_updates = {}
 
-    # Mapping from asset key to (non-empty) remote uri
+    # Mapping from asset key to (Asset, remote uri)
     assets_to_download = {}
 
     # Prepare asset metadata update; prune empty fields
-    for key in asset_updates:
-        update = {}
-        asset = asset_updates[key].dict()
-        if asset["remote_uri"]:
-            assets_to_download[key] = asset["remote_uri"]
-        # Prune empty fields
-        for attr, val in asset.items():
-            if val is not None:
-                update[attr] = val
-        if update:
-            db_updates[key] = update
+    with result_object.session() as session:
+        for key in asset_updates:
+            asset_update = asset_updates[key]
+            if asset_update.remote_uri:
+                asset = node.get_asset(key, session)
+                assets_to_download[key] = (asset, asset_update.remote_uri)
+            # Prune unset fields
+            db_updates[key] = {attr: val for attr, val in asset_update if val is not None}
 
-    # Update metadata using the designated DB worker thread
-    await run_in_executor(node.update_assets, db_updates)
+        node.update_assets(db_updates, session)
 
-    for key, remote_uri in assets_to_download.items():
-        asset = node.get_asset(key, session=None)
-        # Download assets concurrently.
-        futs.append(loop.run_in_executor(am_pool, asset.download, remote_uri))
-    await asyncio.gather(*futs)
+    for key, pending_download in assets_to_download.items():
+        asset, remote_uri = pending_download
+        asset.download(remote_uri)

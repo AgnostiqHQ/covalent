@@ -36,7 +36,7 @@ def test_db():
     )
 
 
-def get_asset_record(storage_path, object_key, digest_alg="", digest="", size=0):
+def get_asset_record(storage_path, object_key, digest_alg="", digest="", size=1024):
     return models.Asset(
         storage_type=StorageType.LOCAL.value,
         storage_path=storage_path,
@@ -61,7 +61,7 @@ def test_asset_load_data():
     os.unlink(temppath)
 
 
-def test_asset_store_data():
+def test_asset_store_data(test_db):
     with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
         temppath = temp.name
         key = os.path.basename(temppath)
@@ -70,7 +70,8 @@ def test_asset_store_data():
 
     rec = get_asset_record(storage_path, key)
     a = Asset(None, rec)
-    a.store_data("Hello\n")
+    with test_db.session() as session:
+        a.store_data("Hello\n", session)
 
     with open(temppath, "r") as f:
         assert f.read() == "Hello\n"
@@ -78,7 +79,7 @@ def test_asset_store_data():
     os.unlink(temppath)
 
 
-def test_upload_asset():
+def test_upload_asset(test_db):
     with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
         src_path = temp.name
         src_key = os.path.basename(src_path)
@@ -87,7 +88,8 @@ def test_upload_asset():
 
     rec = get_asset_record(storage_path, src_key)
     a = Asset(None, rec)
-    a.store_data("Hello\n")
+    with test_db.session() as session:
+        a.store_data("Hello\n", session)
 
     with tempfile.NamedTemporaryFile("w", delete=True, suffix=".txt") as temp:
         dest_path = temp.name

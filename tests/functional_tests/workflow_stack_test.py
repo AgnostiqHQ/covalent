@@ -25,7 +25,6 @@ import covalent as ct
 import covalent._dispatcher_plugins.local as local
 import covalent._results_manager.results_manager as rm
 from covalent._results_manager.result import Result
-from covalent.executor import LocalExecutor
 
 
 def construct_temp_cache_dir():
@@ -118,7 +117,7 @@ def test_sublatticing():
     dispatch_id = ct.dispatch(workflow)(a=1, b=2)
     workflow_result = rm.get_result(dispatch_id, wait=True)
 
-    assert workflow_result.error == ""
+    assert workflow_result.error is None
     assert workflow_result.status == Result.COMPLETED
     assert workflow_result.result == 3
     assert workflow_result.get_node_result(node_id=0)["sublattice_result"].result == 3
@@ -140,7 +139,7 @@ def test_lattice_electron_metadata_propagation():
     def task_2():
         pass
 
-    @ct.lattice(executor=LocalExecutor(), deps_bash=l_bash_dep)
+    @ct.lattice(deps_bash=l_bash_dep)
     def workflow():
         task_1()
         task_2()
@@ -149,8 +148,8 @@ def test_lattice_electron_metadata_propagation():
     res = ct.get_result(dispatch_id, wait=True)
     tg = res.lattice.transport_graph
 
-    dep_0 = ct.DepsBash().from_dict(tg.get_node_value(0, "metadata")["deps"]["bash"])
-    dep_1 = ct.DepsBash().from_dict(tg.get_node_value(1, "metadata")["deps"]["bash"])
+    dep_0 = ct.DepsBash().from_dict(tg.get_node_value(0, "metadata")["hooks"]["deps"]["bash"])
+    dep_1 = ct.DepsBash().from_dict(tg.get_node_value(1, "metadata")["hooks"]["deps"]["bash"])
 
     assert dep_0.commands == ["ls"]
     assert dep_1.commands == ["ls -l"]
@@ -261,7 +260,7 @@ def test_electron_deps_call_before():
     dispatch_id = ct.dispatch(workflow)(file_path=tmp_path)
     res = ct.get_result(dispatch_id, wait=True)
 
-    assert res.error == ""
+    assert res.error is None
 
     assert res.result == (True, "Hello")
 

@@ -67,9 +67,7 @@ STDOUT_FILENAME = "stdout.log"
 STDERR_FILENAME = "stderr.log"
 ERROR_FILENAME = "error.log"
 TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
-DEPS_FILENAME = "deps.pkl"
-CALL_BEFORE_FILENAME = "call_before.pkl"
-CALL_AFTER_FILENAME = "call_after.pkl"
+HOOKS_FILENAME = "hooks.pkl"
 COVA_IMPORTS_FILENAME = "cova_imports.json"
 LATTICE_IMPORTS_FILENAME = "lattice_imports.txt"
 RESULTS_DIR = "/tmp/results"
@@ -131,9 +129,7 @@ def get_lattice_kwargs(
     named_args_filename=NAMED_ARGS_FILENAME,
     named_kwargs_filename=NAMED_KWARGS_FILENAME,
     results_filename=RESULTS_FILENAME,
-    deps_filename=DEPS_FILENAME,
-    call_before_filename=CALL_BEFORE_FILENAME,
-    call_after_filename=CALL_AFTER_FILENAME,
+    hooks_filename=HOOKS_FILENAME,
     cova_imports_filename=COVA_IMPORTS_FILENAME,
     lattice_imports_filename=LATTICE_IMPORTS_FILENAME,
     results_dir=RESULTS_DIR,
@@ -166,9 +162,7 @@ def get_lattice_kwargs(
         "named_args_filename": named_args_filename,
         "named_kwargs_filename": named_kwargs_filename,
         "results_filename": results_filename,
-        "deps_filename": deps_filename,
-        "call_before_filename": call_before_filename,
-        "call_after_filename": call_after_filename,
+        "hooks_filename": hooks_filename,
         "cova_imports_filename": cova_imports_filename,
         "lattice_imports_filename": lattice_imports_filename,
         "results_dir": results_dir,
@@ -198,9 +192,7 @@ def get_electron_kwargs(
     stdout_filename=STDOUT_FILENAME,
     stderr_filename=STDERR_FILENAME,
     error_filename=ERROR_FILENAME,
-    deps_filename=DEPS_FILENAME,
-    call_before_filename=CALL_BEFORE_FILENAME,
-    call_after_filename=CALL_AFTER_FILENAME,
+    hooks_filename=HOOKS_FILENAME,
     job_id=1,
     qelectron_data_exists=False,
     created_at=None,
@@ -228,9 +220,7 @@ def get_electron_kwargs(
         "stdout_filename": stdout_filename,
         "stderr_filename": stderr_filename,
         "error_filename": error_filename,
-        "deps_filename": deps_filename,
-        "call_before_filename": call_before_filename,
-        "call_after_filename": call_after_filename,
+        "hooks_filename": hooks_filename,
         "job_id": job_id,
         "qelectron_data_exists": qelectron_data_exists,
         "created_at": created_at,
@@ -299,9 +289,7 @@ def test_insert_lattices_data(test_db, mocker):
             assert lattice.named_args_filename == NAMED_ARGS_FILENAME
             assert lattice.named_kwargs_filename == NAMED_KWARGS_FILENAME
             assert lattice.results_filename == RESULTS_FILENAME
-            assert lattice.deps_filename == DEPS_FILENAME
-            assert lattice.call_before_filename == CALL_BEFORE_FILENAME
-            assert lattice.call_after_filename == CALL_AFTER_FILENAME
+            assert lattice.hooks_filename == HOOKS_FILENAME
             assert lattice.cova_imports_filename == COVA_IMPORTS_FILENAME
             assert lattice.lattice_imports_filename == LATTICE_IMPORTS_FILENAME
             assert lattice.results_dir == RESULTS_DIR

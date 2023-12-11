@@ -40,7 +40,7 @@ from covalent.executor.schemas import ResourceMap, TaskSpec, TaskUpdate
 
 # Store the wrapper function in an external module to avoid module
 # import errors during pickling
-from covalent.executor.utils.wrappers import io_wrapper, run_task_from_uris
+from covalent.executor.utils.wrappers import io_wrapper, run_task_group
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "LocalExecutor"
@@ -178,9 +178,8 @@ class LocalExecutor(BaseExecutor):
 
         app_log.debug(f"Running task group {dispatch_id}:{task_ids}")
         future = proc_pool.submit(
-            run_task_from_uris,
+            run_task_group,
             list(map(lambda t: t.model_dump(), task_specs)),
-            resources.model_dump(),
             output_uris,
             self.cache_dir,
             task_group_metadata,
@@ -216,24 +215,13 @@ class LocalExecutor(BaseExecutor):
                 received = ReceiveModel.model_validate(data)
                 terminal_status = Status(received.status.value)
 
+            # Don't update any asset metadata since all assets will be
+            # pushed from the executor
             task_result = {
                 "dispatch_id": dispatch_id,
                 "node_id": task_id,
                 "status": terminal_status,
-                "assets": {
-                    "output": {
-                        "remote_uri": "",
-                    },
-                    "stdout": {
-                        "remote_uri": "",
-                    },
-                    "stderr": {
-                        "remote_uri": "",
-                    },
-                    "qelectron_db": {
-                        "remote_uri": "",
-                    },
-                },
+                "assets": {},
             }
 
             task_results.append(TaskUpdate(**task_result))

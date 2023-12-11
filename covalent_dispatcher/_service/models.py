@@ -24,45 +24,6 @@ from pydantic import BaseModel
 
 from covalent._shared_files.schemas.result import ResultSchema
 
-# # Copied from _dal
-# RESULT_ASSET_KEYS = {
-#     "inputs",
-#     "result",
-#     "error",
-# }
-
-# # Copied from _dal
-# LATTICE_ASSET_KEYS = {
-#     "workflow_function",
-#     "workflow_function_string",
-#     "__doc__",
-#     "named_args",
-#     "named_kwargs",
-#     "cova_imports",
-#     "lattice_imports",
-#     # metadata
-#     "executor_data",
-#     "workflow_executor_data",
-#     "deps",
-#     "call_before",
-#     "call_after",
-# }
-
-# # Copied from _dal
-# ELECTRON_ASSET_KEYS = {
-#     "function",
-#     "function_string",
-#     "output",
-#     "value",
-#     "error",
-#     "stdout",
-#     "stderr",
-#     # electron metadata
-#     "deps",
-#     "call_before",
-#     "call_after",
-# }
-
 range_regex = "bytes=([0-9]+)-([0-9]*)"
 range_pattern = re.compile(range_regex)
 
@@ -82,9 +43,7 @@ class LatticeAssetKey(str, Enum):
     inputs = "inputs"
     named_args = "named_args"
     named_kwargs = "named_kwargs"
-    deps = "deps"
-    call_before = "call_before"
-    call_after = "call_after"
+    hooks = "hooks"
     cova_imports = "cova_imports"
     lattice_imports = "lattice_imports"
 
@@ -94,13 +53,11 @@ class ElectronAssetKey(str, Enum):
     function_string = "function_string"
     output = "output"
     value = "value"
-    deps = "deps"
+    hooks = "hooks"
     error = "error"
     stdout = "stdout"
     stderr = "stderr"
     qelectron_db = "qelectron_db"
-    call_before = "call_before"
-    call_after = "call_after"
 
 
 class ExportResponseSchema(BaseModel):
