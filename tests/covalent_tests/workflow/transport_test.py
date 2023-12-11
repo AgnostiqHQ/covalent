@@ -483,8 +483,8 @@ def test_reset_node(workflow_transport_graph, mocker):
         ([], {}, {}),
         (
             [ct.DepsModule("isort").to_dict()],
-            {"call_before": [ct.DepsModule("isort").to_dict()]},
-            {"call_before": []},
+            {"hooks": {"call_before": [ct.DepsModule("isort").to_dict()]}},
+            {"hooks": {"call_before": []}},
         ),
     ],
 )
@@ -512,16 +512,16 @@ def test_add_module_deps_to_lattice_metadata(mocker):
     """
 
     pp = mocker.Mock()
-    pp.lattice.metadata = {"call_before": []}
+    pp.lattice.metadata = {"hooks": {"call_before": []}}
 
     mock_call_before = [ct.DepsModule("isort").to_dict()]
 
     mock_electron = mocker.Mock()
-    mock_electron.metadata = {"call_before": mock_call_before.copy()}
+    mock_electron.metadata = {"hooks": {"call_before": mock_call_before.copy()}}
 
     mock_bound_electrons = {0: mock_electron}
 
     with add_module_deps_to_lattice_metadata(pp, mock_bound_electrons):
-        assert pp.lattice.metadata["call_before"] == mock_call_before
+        assert pp.lattice.metadata["hooks"]["call_before"] == mock_call_before
 
-    assert pp.lattice.metadata["call_before"] == []
+    assert pp.lattice.metadata["hooks"]["call_before"] == []

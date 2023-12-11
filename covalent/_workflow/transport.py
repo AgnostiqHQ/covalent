@@ -107,14 +107,14 @@ def pickle_modules_by_value(metadata):
         None
     """
 
-    call_before = metadata.get("call_before")
+    call_before = metadata.get("hooks", {}).get("call_before")
 
     if not call_before:
         yield metadata
         return
 
     new_metadata = deepcopy(metadata)
-    call_before = new_metadata.get("call_before")
+    call_before = new_metadata.get("hooks", {}).get("call_before")
 
     list_of_modules = []
 
@@ -126,10 +126,11 @@ def pickle_modules_by_value(metadata):
                 TransportableObject.from_dict(pickled_module).get_deserialized()
             )
 
-            # Delete the DepsModule from new_metadata
-            new_metadata["call_before"][i] = None
+            # Delete the DepsModule from new_metadata of the electron
+            new_metadata["hooks"]["call_before"][i] = None
 
-    new_metadata["call_before"] = list(filter(None, new_metadata["call_before"]))
+    # Remove the None values from the call_before list of this electron
+    new_metadata["hooks"]["call_before"] = list(filter(None, new_metadata["hooks"]["call_before"]))
 
     for module in list_of_modules:
         cloudpickle.register_pickle_by_value(module)
@@ -149,15 +150,26 @@ def add_module_deps_to_lattice_metadata(pp, bound_electrons: Dict[int, Any]):
 
     # Add the module dependencies to the lattice metadata
     for electron in bound_electrons.values():
-        call_before = electron.metadata.get("call_before")
+        call_before = electron.metadata.get("hooks", {}).get("call_before")
         if call_before:
             for i in range(len(call_before)):
                 if call_before[i]["short_name"] == "depsmodule":
-                    pp.lattice.metadata["call_before"].append(call_before[i])
+                    if "hooks" not in pp.lattice.metadata:
+                        pp.lattice.metadata["hooks"] = {}
 
-                    electron.metadata["call_before"][i] = None
+                    if "call_before" not in pp.lattice.metadata["hooks"]:
+                        pp.lattice.metadata["hooks"]["call_before"] = []
 
-        electron.metadata["call_before"] = list(filter(None, electron.metadata["call_before"]))
+                    # Temporarily add the module metadat to the lattice metadata for postprocessing
+                    pp.lattice.metadata["hooks"]["call_before"].append(call_before[i])
+
+                    # Delete the DepsModule from the electron metadata
+                    electron.metadata["hooks"]["call_before"][i] = None
+
+            # Remove the None values from the call_before list of this electron
+            electron.metadata["hooks"]["call_before"] = list(
+                filter(None, electron.metadata["hooks"]["call_before"])
+            )
 
     yield
 
