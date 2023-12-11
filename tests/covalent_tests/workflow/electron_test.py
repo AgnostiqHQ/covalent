@@ -707,6 +707,6 @@ def test_deps_modules_are_added(module_inputs):
 
     # Making sure all kinds of inputs are converted to DepsModule
     # and then to its transportable form of a dictionary
-    for cb in task.electron_object.metadata["call_before"]:
+    for cb in task.electron_object.metadata["hooks"]["call_before"]:
         assert cb["short_name"] == "depsmodule"
         assert cb["attributes"]["pickled_module"]["type"] == "TransportableObject"
