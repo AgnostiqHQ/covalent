@@ -35,7 +35,7 @@ from covalent.executor.executor_plugins.local import (
     LocalExecutor,
     StatusEnum,
     TaskSpec,
-    run_task_from_uris,
+    run_task_group,
 )
 from covalent.executor.schemas import ResourceMap
 from covalent.executor.utils.serialize import serialize_node_asset
@@ -239,7 +239,7 @@ def test_local_executor_get_cancel_requested(mocker):
         assert mock_app_log.call_count == 2
 
 
-def test_run_task_from_uris(mocker):
+def test_run_task_group(mocker):
     """Test the wrapper submitted to local"""
 
     def task(x, y):
@@ -264,11 +264,14 @@ def test_run_task_from_uris(mocker):
 
     call_before = []
     call_after = []
+    hooks = {
+        "deps": deps,
+        "call_before": call_before,
+        "call_after": call_after,
+    }
 
     ser_task = serialize_node_asset(TransportableObject(task), "function")
-    ser_deps = serialize_node_asset(deps, "deps")
-    ser_cb = serialize_node_asset(call_before, "call_before")
-    ser_ca = serialize_node_asset(call_after, "call_after")
+    ser_hooks = serialize_node_asset(hooks, "hooks")
     ser_x = serialize_node_asset(x, "output")
     ser_y = serialize_node_asset(y, "output")
 
@@ -279,20 +282,10 @@ def test_run_task_from_uris(mocker):
         f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/function"
     )
 
-    deps_file = tempfile.NamedTemporaryFile("wb")
-    deps_file.write(ser_deps)
-    deps_file.flush()
-    deps_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/deps"
-
-    cb_file = tempfile.NamedTemporaryFile("wb")
-    cb_file.write(ser_cb)
-    cb_file.flush()
-    cb_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/call_before"
-
-    ca_file = tempfile.NamedTemporaryFile("wb")
-    ca_file.write(ser_ca)
-    ca_file.flush()
-    ca_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/call_after"
+    hooks_file = tempfile.NamedTemporaryFile("wb")
+    hooks_file.write(ser_hooks)
+    hooks_file.flush()
+    hooks_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/hooks"
 
     node_1_file = tempfile.NamedTemporaryFile("wb")
     node_1_file.write(ser_x)
@@ -308,18 +301,13 @@ def test_run_task_from_uris(mocker):
         function_id=0,
         args_ids=[1, 2],
         kwargs_ids={},
-        deps_id="deps",
-        call_before_id="call_before",
-        call_after_id="call_after",
     )
 
     resources = {
         node_0_function_url: ser_task,
         node_1_output_url: ser_x,
         node_2_output_url: ser_y,
-        deps_url: ser_deps,
-        cb_url: ser_cb,
-        ca_url: ser_ca,
+        hooks_url: ser_hooks,
     }
 
     def mock_req_get(url, stream):
@@ -347,9 +335,8 @@ def test_run_task_from_uris(mocker):
 
     results_dir = tempfile.TemporaryDirectory()
 
-    run_task_from_uris(
+    run_task_group(
         task_specs=[task_spec.dict()],
-        resources={},
         output_uris=[
             (result_file.name, stdout_file.name, stderr_file.name, qelectron_db_file.name)
         ],
@@ -371,7 +358,7 @@ def test_run_task_from_uris(mocker):
     mock_put.assert_called()
 
 
-def test_run_task_from_uris_exception(mocker):
+def test_run_task_group_exception(mocker):
     """Test the wrapper submitted to local"""
 
     def task(x, y):
@@ -397,10 +384,14 @@ def test_run_task_from_uris_exception(mocker):
     call_before = []
     call_after = []
 
+    hooks = {
+        "deps": deps,
+        "call_before": call_before,
+        "call_after": call_after,
+    }
+
     ser_task = serialize_node_asset(TransportableObject(task), "function")
-    ser_deps = serialize_node_asset(deps, "deps")
-    ser_cb = serialize_node_asset(call_before, "call_before")
-    ser_ca = serialize_node_asset(call_after, "call_after")
+    ser_hooks = serialize_node_asset(hooks, "hooks")
     ser_x = serialize_node_asset(x, "output")
     ser_y = serialize_node_asset(y, "output")
 
@@ -411,20 +402,10 @@ def test_run_task_from_uris_exception(mocker):
         f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/function"
     )
 
-    deps_file = tempfile.NamedTemporaryFile("wb")
-    deps_file.write(ser_deps)
-    deps_file.flush()
-    deps_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/deps"
-
-    cb_file = tempfile.NamedTemporaryFile("wb")
-    cb_file.write(ser_cb)
-    cb_file.flush()
-    cb_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/call_before"
-
-    ca_file = tempfile.NamedTemporaryFile("wb")
-    ca_file.write(ser_ca)
-    ca_file.flush()
-    ca_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/call_after"
+    hooks_file = tempfile.NamedTemporaryFile("wb")
+    hooks_file.write(ser_hooks)
+    hooks_file.flush()
+    hooks_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/0/assets/hooks"
 
     node_1_file = tempfile.NamedTemporaryFile("wb")
     node_1_file.write(ser_x)
@@ -440,18 +421,13 @@ def test_run_task_from_uris_exception(mocker):
         function_id=0,
         args_ids=[1],
         kwargs_ids={"y": 2},
-        deps_id="deps",
-        call_before_id="call_before",
-        call_after_id="call_after",
     )
 
     resources = {
         node_0_function_url: ser_task,
         node_1_output_url: ser_x,
         node_2_output_url: ser_y,
-        deps_url: ser_deps,
-        cb_url: ser_cb,
-        ca_url: ser_ca,
+        hooks_url: ser_hooks,
     }
 
     def mock_req_get(url, stream):
@@ -479,9 +455,8 @@ def test_run_task_from_uris_exception(mocker):
 
     results_dir = tempfile.TemporaryDirectory()
 
-    run_task_from_uris(
+    run_task_group(
         task_specs=[task_spec.dict()],
-        resources={},
         output_uris=[
             (result_file.name, stdout_file.name, stderr_file.name, qelectron_db_file.name)
         ],
@@ -538,15 +513,12 @@ test_cases = [
                 function_id=0,
                 args_ids=[1],
                 kwargs_ids={"y": 2},
-                deps_id="deps",
-                call_before_id="call_before",
-                call_after_id="call_after",
             )
         ],
         "resources": ResourceMap(
             functions={0: "mock_function_uri"},
             inputs={1: "mock_input_uri"},
-            deps={"deps": "mock_deps_uri"},
+            hooks={0: "mock_hooks_uri"},
         ),
         "task_group_metadata": {"dispatch_id": "1", "node_ids": ["1"], "task_group_id": "1"},
         "expected_output_uris": [("mock_path", "mock_path", "mock_path", "mock_path")],
@@ -560,15 +532,12 @@ test_cases = [
                 function_id=0,
                 args_ids=[1],
                 kwargs_ids={"y": 2},
-                deps_id="deps",
-                call_before_id="call_before",
-                call_after_id="call_after",
             )
         ],
         "resources": ResourceMap(
             functions={0: "mock_function_uri"},
             inputs={1: "mock_input_uri"},
-            deps={"deps": "mock_deps_uri"},
+            hooks={0: "mock_hooks_uri"},
         ),
         "task_group_metadata": {"dispatch_id": "1", "node_ids": ["1"], "task_group_id": "1"},
         "expected_output_uris": [("mock_path", "mock_path", "mock_path", "mock_path")],
@@ -605,9 +574,8 @@ def test_send_internal(
     mock_os_path_join.assert_called()
     mock_format_server_url.assert_called_once_with()
     mock_proc_pool_submit.assert_called_once_with(
-        run_task_from_uris,
+        run_task_group,
         list(map(lambda t: t.dict(), test_case["task_specs"])),
-        test_case["resources"].dict(),
         test_case["expected_output_uris"],
         "mock_cache_dir",
         test_case["task_group_metadata"],
@@ -627,14 +595,11 @@ async def test_send(mocker):
         function_id=0,
         args_ids=[1],
         kwargs_ids={"y": 2},
-        deps_id="deps",
-        call_before_id="call_before",
-        call_after_id="call_after",
     )
     resource = ResourceMap(
         functions={0: "mock_function_uri"},
         inputs={1: "mock_input_uri"},
-        deps={"deps": "mock_deps_uri"},
+        hooks={0: "mock_hooks_uri"},
     )
 
     mock_loop = mocker.Mock()

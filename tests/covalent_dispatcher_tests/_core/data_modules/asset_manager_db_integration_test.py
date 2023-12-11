@@ -72,8 +72,7 @@ def get_mock_srvresult(sdkres, test_db) -> Result:
     return get_result_object(sdkres.dispatch_id)
 
 
-@pytest.mark.asyncio
-async def test_upload_asset_for_nodes(test_db, mocker):
+def test_upload_asset_for_nodes(test_db, mocker):
     sdkres = get_mock_result()
     sdkres._initialize_nodes()
 
@@ -95,7 +94,7 @@ async def test_upload_asset_for_nodes(test_db, mocker):
     dest_uri_0 = os.path.join("file://", dest_path_0)
     dest_uri_2 = os.path.join("file://", dest_path_2)
 
-    await am.upload_asset_for_nodes(srvres.dispatch_id, "stdout", {0: dest_uri_0, 2: dest_uri_2})
+    am.upload_asset_for_nodes_sync(srvres.dispatch_id, "stdout", {0: dest_uri_0, 2: dest_uri_2})
 
     with open(dest_path_0, "r") as f:
         assert f.read() == "Hello!\n"
@@ -108,15 +107,28 @@ async def test_upload_asset_for_nodes(test_db, mocker):
 
 
 @pytest.mark.asyncio
-async def test_download_assets_for_node(test_db, mocker):
+async def test_async_upload(mocker):
+    mock_sync_upload = mocker.patch(
+        "covalent_dispatcher._core.data_modules.asset_manager.upload_asset_for_nodes_sync"
+    )
+    dispatch_id = "dispatch_id"
+    asset_name = "stdout"
+    uris = {}
+    await am.upload_asset_for_nodes(
+        dispatch_id,
+        asset_name,
+        uris,
+    )
+    mock_sync_upload.assert_called_with(dispatch_id, asset_name, uris)
+
+
+def test_download_assets_for_node(test_db, mocker):
     sdkres = get_mock_result()
     sdkres._initialize_nodes()
 
     mocker.patch("covalent_dispatcher._db.write_result_to_db.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._db.upsert.workflow_db", test_db)
     mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
-
-    mock_update_assets = mocker.patch("covalent_dispatcher._dal.electron.Electron.update_assets")
 
     srvres = get_mock_srvresult(sdkres, test_db)
 
@@ -134,10 +146,14 @@ async def test_download_assets_for_node(test_db, mocker):
     assets = {
         "output": {
             "remote_uri": "",
+            "digest": "",
+            "size": 0,
         },
-        "stdout": {"remote_uri": src_uri_stdout, "size": None, "digest": "0af23"},
+        "stdout": {"remote_uri": src_uri_stdout, "size": 5, "digest": "0af23"},
         "stderr": {
             "remote_uri": src_uri_stderr,
+            "digest": "",
+            "size": 0,
         },
     }
     assets = {k: AssetUpdate(**v) for k, v in assets.items()}
@@ -145,21 +161,50 @@ async def test_download_assets_for_node(test_db, mocker):
     expected_update = {
         "output": {
             "remote_uri": "",
+            "digest": "",
+            "size": 0,
         },
         "stdout": {
             "remote_uri": src_uri_stdout,
             "digest": "0af23",
+            "size": 5,
         },
         "stderr": {
             "remote_uri": src_uri_stderr,
+            "digest": "",
+            "size": 0,
         },
     }
-    await am.download_assets_for_node(
+    am.download_assets_for_node_sync(
         srvres.dispatch_id,
         0,
         assets,
     )
 
-    mock_update_assets.assert_called_with(expected_update)
     assert srvres.lattice.transport_graph.get_node_value(0, "stdout") == "Hello!\n"
     assert srvres.lattice.transport_graph.get_node_value(0, "stderr") == "Bye!\n"
+
+    # CHeck metadata
+    with test_db.session() as session:
+        node = srvres.lattice.transport_graph.get_node(0, session)
+        for key, attrs in expected_update.items():
+            asset = node.get_asset(key, session)
+            assert asset.size == attrs["size"]
+            assert asset.remote_uri == attrs["remote_uri"]
+            assert asset.digest == attrs["digest"]
+
+
+@pytest.mark.asyncio
+async def test_async_download(mocker):
+    mock_sync_download = mocker.patch(
+        "covalent_dispatcher._core.data_modules.asset_manager.download_assets_for_node_sync"
+    )
+    dispatch_id = "mock_dispatch_id"
+    node_id = 0
+    updates = {}
+    await am.download_assets_for_node(
+        dispatch_id,
+        node_id,
+        updates,
+    )
+    mock_sync_download.asset_called_with(dispatch_id, node_id, updates)

@@ -7,6 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- SDK no longer uploads empty assets when submitting a dispatch.
+- Results Manager avoids downloading assets with size 0.
+- Local and Dask executor plugins now return accurate sizes of task
+  artifacts.
+- Size (number of bytes) is now a required attribute whenever updating
+  asset metadata. Although the exact numerical value is not yet
+  important, whether the size is reported to be zero or positive does
+  have consequences.
+- Pack deps, call_before, and call_after assets into one file.
+
+### Fixed
+
+- Reduced number of assets to upload when submitting a dispatch.
+
+### Operations
+
+- Allow `cloudpickle` >= 3.0.0
+- Remove `boto3` dependency from `tests/requirements.txt`
+
 ## [0.232.0-rc.0] - 2023-12-01
 
 ### Authors

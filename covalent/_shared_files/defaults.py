@@ -17,9 +17,8 @@
 """Create custom sentinels and defaults for Covalent"""
 
 import os
-from builtins import list
 from dataclasses import dataclass, field
-from typing import Dict, List
+from typing import Dict
 
 import dask.system
 
@@ -216,8 +215,6 @@ class DefaultConfig:
 class DefaultMetadataValues:
     executor: str = field(default_factory=get_default_executor)
     executor_data: Dict = field(default_factory=dict)
-    deps: Dict = field(default_factory=dict)
-    call_before: List = field(default_factory=list)
-    call_after: List = field(default_factory=list)
+    hooks: Dict = field(default_factory=dict)
     workflow_executor: str = field(default_factory=get_default_executor)
     workflow_executor_data: Dict = field(default_factory=dict)

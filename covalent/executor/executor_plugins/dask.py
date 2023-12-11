@@ -40,7 +40,7 @@ from covalent._shared_files.utils import format_server_url
 from covalent.executor.base import AsyncBaseExecutor
 from covalent.executor.schemas import ResourceMap, TaskSpec, TaskUpdate
 from covalent.executor.utils.wrappers import io_wrapper as dask_wrapper
-from covalent.executor.utils.wrappers import run_task_from_uris_alt
+from covalent.executor.utils.wrappers import run_task_group_alt
 
 # The plugin class name must be given by the executor_plugin_name attribute:
 EXECUTOR_PLUGIN_NAME = "DaskExecutor"
@@ -261,7 +261,7 @@ class DaskExecutor(AsyncBaseExecutor):
         await self.set_job_handle(key)
 
         future = dask_client.submit(
-            run_task_from_uris_alt,
+            run_task_group_alt,
             list(map(lambda t: t.model_dump(), task_specs)),
             resources.model_dump(),
             output_uris,
@@ -307,19 +307,27 @@ class DaskExecutor(AsyncBaseExecutor):
 
             if terminal_status == RESULT_STATUS.CANCELLED:
                 output_uri = ""
+                output_size = 0
                 stdout_uri = ""
+                stdout_size = 0
                 stderr_uri = ""
+                stderr_size = 0
                 qelectron_db_uri = ""
+                qelectron_db_size = 0
 
             else:
                 result_path = os.path.join(self.cache_dir, f"result-{dispatch_id}:{task_id}.json")
                 with open(result_path, "r") as f:
                     result_summary = json.load(f)
                     node_id = result_summary["node_id"]
-                    output_uri = result_summary["output_uri"]
-                    stdout_uri = result_summary["stdout_uri"]
-                    stderr_uri = result_summary["stderr_uri"]
-                    qelectron_db_uri = result_summary["qelectron_db_uri"]
+                    output_uri = result_summary["output"]["uri"]
+                    output_size = result_summary["output"]["size"]
+                    stdout_uri = result_summary["stdout"]["uri"]
+                    stdout_size = result_summary["stdout"]["size"]
+                    stderr_uri = result_summary["stderr"]["uri"]
+                    stderr_size = result_summary["stderr"]["size"]
+                    qelectron_db_uri = result_summary["qelectron_db"]["uri"]
+                    qelectron_db_size = result_summary["qelectron_db"]["size"]
                     exception_raised = result_summary["exception_occurred"]
 
                 terminal_status = (
@@ -333,15 +341,19 @@ class DaskExecutor(AsyncBaseExecutor):
                 "assets": {
                     "output": {
                         "remote_uri": output_uri,
+                        "size": output_size,
                     },
                     "stdout": {
                         "remote_uri": stdout_uri,
+                        "size": stdout_size,
                     },
                     "stderr": {
                         "remote_uri": stderr_uri,
+                        "size": stderr_size,
                     },
                     "qelectron_db": {
                         "remote_uri": qelectron_db_uri,
+                        "size": qelectron_db_size,
                     },
                 },
             }

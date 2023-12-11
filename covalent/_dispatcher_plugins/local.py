@@ -593,15 +593,19 @@ class LocalDispatcher(BaseDispatcher):
     def _upload(assets: List[AssetSchema]):
         local_scheme_prefix = "file://"
         total = len(assets)
+        number_uploaded = 0
         for i, asset in enumerate(assets):
-            if not asset.remote_uri:
+            if not asset.remote_uri or not asset.uri:
                 app_log.debug(f"Skipping asset {i+1} out of {total}")
                 continue
             if asset.remote_uri.startswith(local_scheme_prefix):
                 copy_file_locally(asset.uri, asset.remote_uri)
+                number_uploaded += 1
             else:
                 _upload_asset(asset.uri, asset.remote_uri)
-            app_log.debug(f"uploaded {i+1} out of {total} assets.")
+                number_uploaded += 1
+            app_log.debug(f"Uploaded asset {i+1} out of {total}.")
+        app_log.debug(f"uploaded {number_uploaded} assets.")
 
 
 def _upload_asset(local_uri, remote_uri):

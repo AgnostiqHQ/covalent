@@ -136,6 +136,9 @@ def save_asset(data: Any, data_type: AssetType, storage_path: str, filename: str
 
     scheme = "file"
 
+    if data is None:
+        return AssetSchema(size=0)
+
     serialized = serialize_asset(data, data_type)
     digest = _sha1_asset(serialized)
     path = Path(storage_path) / filename

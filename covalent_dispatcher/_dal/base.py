@@ -126,15 +126,13 @@ class DispatchedObject(Generic[MetaType, AssetLinkType]):
         attr = type(self).meta_record_map(key)
         self.metadata.incr(session, increments={attr: delta})
 
-    def get_asset(self, key: str, session: Session) -> Asset:
-        if key not in self.assets:
-            if session:
-                asset_id = self.get_asset_ids(session, [key])[key]
-                self.assets[key] = Asset.from_id(asset_id, session)
-            else:
-                with self.session() as session:
-                    asset_id = self.get_asset_ids(session, [key])[key]
-                    self.assets[key] = Asset.from_id(asset_id, session)
+    def get_asset(self, key: str, session: Session, refresh: bool = True) -> Asset:
+        if key in self.assets:
+            if refresh:
+                self.assets[key].refresh(session, fields=FIELDS)
+        else:
+            asset_id = self.get_asset_ids(session, [key])[key]
+            self.assets[key] = Asset.from_id(asset_id, session)
 
         return self.assets[key]
 
@@ -144,17 +142,11 @@ class DispatchedObject(Generic[MetaType, AssetLinkType]):
         for key, asset_id in asset_links.items():
             self.assets[key] = Asset.from_id(asset_id, session)
 
-    def update_assets(self, updates: Dict[str, Dict], session: Session = None):
+    def update_assets(self, updates: Dict[str, Dict], session: Session):
         """Bulk update associated assets"""
-        if session:
-            for key, values in updates.items():
-                asset = self.get_asset(key, session)
-                asset.update(session, values=values)
-        else:
-            with self.session() as session:
-                for key, values in updates.items():
-                    asset = self.get_asset(key, session)
-                    asset.update(session, values=values)
+        for key, values in updates.items():
+            asset = self.get_asset(key, session)
+            asset.update(session, values=values)
 
     def _get_value(self, key: str, session: Session, refresh: bool = True) -> Any:
         if key in self.computed_fields:
@@ -176,7 +168,7 @@ class DispatchedObject(Generic[MetaType, AssetLinkType]):
         if key in type(self).metadata_keys:
             self.set_metadata(key, val, session)
         else:
-            self.get_asset(key, session).store_data(val)
+            self.get_asset(key, session).store_data(val, session)
 
     def set_value(self, key: str, val: Any, session: Session = None) -> None:
         if session is not None:
