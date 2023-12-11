@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow `cloudpickle` >= 3.0.0
 - Remove `boto3` dependency from `tests/requirements.txt`
 
+### Changed
+
+- Changed handling of tuples and sets when building the transport graph - they will be converted to electron lists as well for now
+
 ## [0.232.0-rc.0] - 2023-12-01
 
 ### Authors
