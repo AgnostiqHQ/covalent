@@ -216,24 +216,13 @@ class LocalExecutor(BaseExecutor):
                 received = ReceiveModel.model_validate(data)
                 terminal_status = Status(received.status.value)
 
+            # Don't update any asset metadata since all assets will be
+            # pushed from the executor
             task_result = {
                 "dispatch_id": dispatch_id,
                 "node_id": task_id,
                 "status": terminal_status,
-                "assets": {
-                    "output": {
-                        "remote_uri": "",
-                    },
-                    "stdout": {
-                        "remote_uri": "",
-                    },
-                    "stderr": {
-                        "remote_uri": "",
-                    },
-                    "qelectron_db": {
-                        "remote_uri": "",
-                    },
-                },
+                "assets": {},
             }
 
             task_results.append(TaskUpdate(**task_result))

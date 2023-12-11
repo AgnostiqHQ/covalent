@@ -102,7 +102,7 @@ def _serialize_lattice_assets(lat, storage_path: str) -> LatticeAssets:
         ASSET_FILENAME_MAP["workflow_function_string"],
     )
 
-    docstring = "" if lat.__doc__ is None else lat.__doc__
+    docstring = lat.__doc__
     docstring_asset = save_asset(
         docstring,
         ASSET_TYPES["doc"],
@@ -208,7 +208,7 @@ def _deserialize_lattice_assets(assets: LatticeAssets) -> dict:
 
 def _get_lattice_custom_assets(lat: Lattice) -> Dict[str, AssetSchema]:
     if "custom_asset_keys" in lat.metadata:
-        return {key: AssetSchema() for key in lat.metadata["custom_asset_keys"]}
+        return {key: AssetSchema(size=0) for key in lat.metadata["custom_asset_keys"]}
 
 
 def serialize_lattice(lat, storage_path: str) -> LatticeSchema:

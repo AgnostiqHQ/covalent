@@ -230,9 +230,9 @@ def test_import_result_with_custom_assets(mocker, test_db):
         prefix="covalent-"
     ) as srv_dir:
         manifest = get_mock_result(dispatch_id, sdk_dir)
-        manifest.lattice.custom_assets = {"custom_lattice_asset": AssetSchema()}
+        manifest.lattice.custom_assets = {"custom_lattice_asset": AssetSchema(size=0)}
         manifest.lattice.transport_graph.nodes[0].custom_assets = {
-            "custom_electron_asset": AssetSchema()
+            "custom_electron_asset": AssetSchema(size=0)
         }
         filtered_res = import_result(manifest, srv_dir, None)
 

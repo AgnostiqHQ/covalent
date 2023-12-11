@@ -256,7 +256,7 @@ async def upload_node_asset(
         content_length: (header)
         digest: (header)
     """
-    app_log.debug(f"Requested asset {key} for node {dispatch_id}:{node_id}")
+    app_log.debug(f"Uploading node asset {dispatch_id}:{node_id}:{key} ({content_length} bytes) ")
 
     try:
         metadata = {"size": content_length, "digest_alg": digest_alg, "digest": digest}
@@ -294,6 +294,7 @@ async def upload_dispatch_asset(
         content_length: (header)
         digest: (header)
     """
+    app_log.debug(f"Uploading dispatch asset {dispatch_id}:{key} ({content_length} bytes) ")
     try:
         metadata = {"size": content_length, "digest_alg": digest_alg, "digest": digest}
         internal_uri = await _run_in_executor(
@@ -329,6 +330,7 @@ async def upload_lattice_asset(
         digest: (header)
     """
     try:
+        app_log.debug(f"Uploading lattice asset {dispatch_id}:{key} ({content_length} bytes) ")
         metadata = {"size": content_length, "digest_alg": digest_alg, "digest": digest}
         internal_uri = await _run_in_executor(
             _update_lattice_asset_metadata,
@@ -513,6 +515,7 @@ async def _transfer_data(req: Request, destination_url: str):
     # Stream data to a temporary file, then replace the destination
     # file atomically
     tmp_path = f"{dest_path}.tmp"
+    app_log.debug(f"Streaming file upload to {tmp_path}")
 
     async with aiofiles.open(tmp_path, "wb") as f:
         async for chunk in req.stream():

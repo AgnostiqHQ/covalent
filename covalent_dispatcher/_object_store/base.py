@@ -35,6 +35,9 @@ class BaseProvider:
     def digest(self, bucket_name: str, object_key: str) -> Digest:
         raise NotImplementedError
 
+    def size(self, bucket_name: str, object_key: str) -> int:
+        raise NotImplementedError
+
     def get_uri_components(
         self, dispatch_id: str, node_id: Optional[int], asset_key: str
     ) -> Tuple[str, str]:

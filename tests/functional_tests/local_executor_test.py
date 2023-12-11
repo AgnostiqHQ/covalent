@@ -69,7 +69,7 @@ def test_local_executor_build_sublattice_graph():
     dispatch_id = ct.dispatch(workflow)(a=1, b=2)
     workflow_result = rm.get_result(dispatch_id, wait=True)
 
-    assert workflow_result.error == ""
+    assert workflow_result.error is None
     assert workflow_result.status == Result.COMPLETED
     assert workflow_result.result == 3
     assert workflow_result.get_node_result(node_id=0)["sublattice_result"].result == 3

@@ -248,26 +248,35 @@ def download_asset(remote_uri: str, local_path: str, chunk_size: int = 1024 * 10
 
 def _download_result_asset(manifest: dict, results_dir: str, key: str):
     remote_uri = manifest["assets"][key]["remote_uri"]
-    local_path = get_result_asset_path(results_dir, key)
-    download_asset(remote_uri, local_path)
-    manifest["assets"][key]["uri"] = f"file://{local_path}"
+    size = manifest["assets"][key]["size"]
+
+    if size > 0:
+        local_path = get_result_asset_path(results_dir, key)
+        download_asset(remote_uri, local_path)
+        manifest["assets"][key]["uri"] = f"file://{local_path}"
 
 
 def _download_lattice_asset(manifest: dict, results_dir: str, key: str):
     lattice_assets = manifest["lattice"]["assets"]
     remote_uri = lattice_assets[key]["remote_uri"]
-    local_path = get_lattice_asset_path(results_dir, key)
-    download_asset(remote_uri, local_path)
-    lattice_assets[key]["uri"] = f"file://{local_path}"
+    size = lattice_assets[key]["size"]
+
+    if size > 0:
+        local_path = get_lattice_asset_path(results_dir, key)
+        download_asset(remote_uri, local_path)
+        lattice_assets[key]["uri"] = f"file://{local_path}"
 
 
 def _download_node_asset(manifest: dict, results_dir: str, node_id: int, key: str):
     node = manifest["lattice"]["transport_graph"]["nodes"][node_id]
     node_assets = node["assets"]
     remote_uri = node_assets[key]["remote_uri"]
-    local_path = get_node_asset_path(results_dir, node_id, key)
-    download_asset(remote_uri, local_path)
-    node_assets[key]["uri"] = f"file://{local_path}"
+    size = node_assets[key]["size"]
+
+    if size > 0:
+        local_path = get_node_asset_path(results_dir, node_id, key)
+        download_asset(remote_uri, local_path)
+        node_assets[key]["uri"] = f"file://{local_path}"
 
 
 def _load_result_asset(manifest: dict, key: str):

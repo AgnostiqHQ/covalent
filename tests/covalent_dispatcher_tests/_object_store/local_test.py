@@ -59,9 +59,11 @@ def test_store_and_load_file():
         local_store.store_file(storage_path=temp_dir, filename="pickle.pkl", data=data)
         assert local_store.load_file(storage_path=temp_dir, filename="pickle.pkl") == data
 
+        # No file should be created in this case
         data = None
         local_store.store_file(storage_path=temp_dir, filename="pickle.txt", data=data)
-        assert local_store.load_file(storage_path=temp_dir, filename="pickle.txt") == ""
+        with pytest.raises(FileNotFoundError):
+            assert local_store.load_file(storage_path=temp_dir, filename="pickle.txt")
 
         data = b"test"
         local_store.store_file(storage_path=temp_dir, filename="pickle.mdb", data=data)

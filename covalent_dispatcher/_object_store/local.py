@@ -69,7 +69,7 @@ class LocalProvider(BaseProvider):
         path = os.path.join(bucket_name, object_key)
 
         try:
-            return os.path.size(path)
+            return os.path.getsize(path)
         except OSError:
             return 0
 
@@ -104,8 +104,11 @@ class LocalProvider(BaseProvider):
 
         return storage_path, object_key
 
-    def store_file(self, storage_path: str, filename: str, data: Any = None) -> Digest:
+    def store_file(self, storage_path: str, filename: str, data: Any = None) -> Tuple[Digest, int]:
         """This function writes data corresponding to the filepaths in the DB."""
+
+        if data is None:
+            return Digest(algorithm="sha1", hexdigest=""), 0
 
         if filename.endswith(".pkl"):
             with open(Path(storage_path) / filename, "wb") as f:
@@ -136,7 +139,8 @@ class LocalProvider(BaseProvider):
             raise InvalidFileExtension("The file extension is not supported.")
 
         digest = self.digest(bucket_name=storage_path, object_key=filename)
-        return digest
+        size = self.size(bucket_name=storage_path, object_key=filename)
+        return digest, size
 
     def load_file(self, storage_path: str, filename: str) -> Any:
         """This function loads data for the filenames in the DB."""
