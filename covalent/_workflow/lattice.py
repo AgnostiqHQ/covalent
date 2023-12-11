@@ -35,7 +35,12 @@ from .depsbash import DepsBash
 from .depscall import DepsCall
 from .depspip import DepsPip
 from .postprocessing import Postprocessor
-from .transport import TransportableObject, _TransportGraph, encode_metadata
+from .transport import (
+    TransportableObject,
+    _TransportGraph,
+    add_module_deps_to_lattice_metadata,
+    encode_metadata,
+)
 
 if TYPE_CHECKING:
     from .._results_manager.result import Result
@@ -234,10 +239,11 @@ class Lattice:
 
         pp = Postprocessor(lattice=self)
 
-        if get_config("sdk.exhaustive_postprocess") == "true":
-            pp.add_exhaustive_postprocess_node(self._bound_electrons.copy())
-        else:
-            pp.add_reconstruct_postprocess_node(retval, self._bound_electrons.copy())
+        with add_module_deps_to_lattice_metadata(pp, self._bound_electrons):
+            if get_config("sdk.exhaustive_postprocess") == "true":
+                pp.add_exhaustive_postprocess_node(self._bound_electrons.copy())
+            else:
+                pp.add_reconstruct_postprocess_node(retval, self._bound_electrons.copy())
 
         self._bound_electrons = {}  # Reset bound electrons
 
