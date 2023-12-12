@@ -41,6 +41,11 @@ log_stack_info = logger.log_stack_info
 
 # TODO: Review exceptions/errors
 
+DEFAULT_HOOKS = DEFAULT_METADATA_VALUES["hooks"]
+DEFAULT_DEPS = DEFAULT_HOOKS.get("deps", {})
+DEFAULT_CALL_BEFORE = DEFAULT_HOOKS.get("call_before", [])
+DEFAULT_CALL_AFTER = DEFAULT_HOOKS.get("call_after", [])
+
 
 class Lepton(Electron):
     """
@@ -86,10 +91,10 @@ class Lepton(Electron):
             List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]
         ] = DEFAULT_METADATA_VALUES["executor"],
         files: List[FileTransfer] = [],
-        deps_bash: Union[DepsBash, List, str] = DEFAULT_METADATA_VALUES["deps"].get("bash", []),
-        deps_pip: Union[DepsPip, list] = DEFAULT_METADATA_VALUES["deps"].get("pip", None),
-        call_before: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_before"],
-        call_after: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_after"],
+        deps_bash: Union[DepsBash, List, str] = DEFAULT_DEPS.get("bash"),
+        deps_pip: Union[DepsPip, list] = DEFAULT_DEPS.get("pip"),
+        call_before: Union[List[DepsCall], DepsCall] = DEFAULT_CALL_BEFORE,
+        call_after: Union[List[DepsCall], DepsCall] = DEFAULT_CALL_AFTER,
     ) -> None:
         self.language = language
         self.library_name = library_name
@@ -174,12 +179,15 @@ class Lepton(Electron):
                     "DepsCall retval_keyword(s) are not currently supported for Leptons, please remove the retval_keyword arg from DepsCall for the workflow to be constructed successfully."
                 )
 
-        # Should be synced with electron
-        constraints = {
-            "executor": executor,
+        hooks = {
             "deps": deps,
             "call_before": call_before,
             "call_after": call_after,
+        }
+        # Should be synced with electron
+        constraints = {
+            "executor": executor,
+            "hooks": hooks,
         }
 
         constraints = encode_metadata(constraints)
@@ -424,10 +432,10 @@ def bash(
         Union[List[Union[str, "BaseExecutor"]], Union[str, "BaseExecutor"]]
     ] = DEFAULT_METADATA_VALUES["executor"],
     files: List[FileTransfer] = [],
-    deps_bash: Union[DepsBash, List, str] = DEFAULT_METADATA_VALUES["deps"].get("bash", []),
-    deps_pip: Union[DepsPip, list] = DEFAULT_METADATA_VALUES["deps"].get("pip", None),
-    call_before: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_before"],
-    call_after: Union[List[DepsCall], DepsCall] = DEFAULT_METADATA_VALUES["call_after"],
+    deps_bash: Union[DepsBash, List, str] = DEFAULT_DEPS.get("bash", []),
+    deps_pip: Union[DepsPip, list] = DEFAULT_DEPS.get("pip", []),
+    call_before: Union[List[DepsCall], DepsCall] = DEFAULT_CALL_BEFORE,
+    call_after: Union[List[DepsCall], DepsCall] = DEFAULT_CALL_AFTER,
 ) -> Callable:
     """Bash decorator which wraps a Python function as a Bash Lepton."""
 

@@ -109,8 +109,16 @@ class Asset(Record[AssetRecord]):
     def set_remote(self, session: Session, uri: str):
         self.update(session, values={"remote_uri": uri})
 
-    def store_data(self, data: Any) -> None:
-        self.object_store.store_file(self.storage_path, self.object_key, data)
+    def store_data(self, data: Any, session: Session) -> None:
+        digest, size = self.object_store.store_file(self.storage_path, self.object_key, data)
+        self.update(
+            session,
+            values={
+                "digest_alg": digest.algorithm,
+                "digest": digest.hexdigest,
+                "size": size,
+            },
+        )
 
     def load_data(self) -> Any:
         return self.object_store.load_file(self.storage_path, self.object_key)
@@ -146,9 +154,12 @@ def copy_asset(src: Asset, dest: Asset):
         dest The destination asset
     """
 
-    scheme = dest.storage_type.value
-    dest_uri = scheme + "://" + os.path.join(dest.storage_path, dest.object_key)
-    src.upload(dest_uri)
+    if src.size > 0:
+        scheme = dest.storage_type.value
+        dest_uri = scheme + "://" + os.path.join(dest.storage_path, dest.object_key)
+        src.upload(dest_uri)
+    else:
+        app_log.debug(f"Refusing to copy zero-sized asset {src.internal_uri}")
 
 
 def copy_asset_meta(session: Session, src: Asset, dest: Asset):

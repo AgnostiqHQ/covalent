@@ -218,16 +218,14 @@ async def _run_task(
 async def _gather_deps(dispatch_id: str, node_id: int) -> Tuple[List, List]:
     """Assemble deps for a node into the final call_before and call_after"""
 
-    deps_attrs = await datasvc.electron.get(
-        dispatch_id, node_id, ["deps", "call_before", "call_after"]
-    )
+    resp = await datasvc.electron.get(dispatch_id, node_id, ["hooks"])
 
-    deps = deps_attrs["deps"]
+    hooks = resp["hooks"]
 
     # Assemble call_before and call_after from all the deps
-
-    call_before_objs_json = deps_attrs["call_before"]
-    call_after_objs_json = deps_attrs["call_after"]
+    deps = hooks.get("deps", {})
+    call_before_objs_json = hooks.get("call_before", [])
+    call_after_objs_json = hooks.get("call_after", [])
 
     call_before = []
     call_after = []

@@ -46,9 +46,7 @@ ELECTRON_ASSET_KEYS = {
     "stderr",
     "qelectron_db",
     # user dependent assets
-    "deps",
-    "call_before",
-    "call_after",
+    "hooks",
 }
 
 ELECTRON_FUNCTION_FILENAME = "function.tobj"
@@ -61,7 +59,7 @@ ELECTRON_QELECTRON_DB_FILENAME = (
 )
 ELECTRON_ERROR_FILENAME = "error.log"
 ELECTRON_RESULTS_FILENAME = "results.tobj"
-ELECTRON_DEPS_FILENAME = "deps.json"
+ELECTRON_HOOKS_FILENAME = "hooks.json"
 ELECTRON_CALL_BEFORE_FILENAME = "call_before.json"
 ELECTRON_CALL_AFTER_FILENAME = "call_after.json"
 ELECTRON_STORAGE_TYPE = "file"
@@ -76,9 +74,7 @@ ASSET_FILENAME_MAP = {
     "stderr": ELECTRON_STDERR_FILENAME,
     "qelectron_db": ELECTRON_QELECTRON_DB_FILENAME,
     "error": ELECTRON_ERROR_FILENAME,
-    "deps": ELECTRON_DEPS_FILENAME,
-    "call_before": ELECTRON_CALL_BEFORE_FILENAME,
-    "call_after": ELECTRON_CALL_AFTER_FILENAME,
+    "hooks": ELECTRON_HOOKS_FILENAME,
 }
 
 
@@ -90,12 +86,10 @@ class ElectronAssets(BaseModel):
     error: Optional[AssetSchema] = None
     stdout: Optional[AssetSchema] = None
     stderr: Optional[AssetSchema] = None
-    qelectron_db: AssetSchema
+    qelectron_db: Optional[AssetSchema] = None
 
     # user dependent assets
-    deps: AssetSchema
-    call_before: AssetSchema
-    call_after: AssetSchema
+    hooks: AssetSchema
 
 
 class ElectronMetadata(BaseModel):
@@ -103,7 +97,7 @@ class ElectronMetadata(BaseModel):
     name: str
     executor: str
     executor_data: dict
-    qelectron_data_exists: bool
+    qelectron_data_exists: Optional[bool] = None
     sub_dispatch_id: Optional[str] = None
     status: StatusEnum
     start_time: Optional[datetime] = None

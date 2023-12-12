@@ -25,7 +25,13 @@ import pytest
 
 import covalent as ct
 from covalent._shared_files.defaults import parameter_prefix
-from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
+from covalent._workflow.transport import (
+    TransportableObject,
+    _TransportGraph,
+    add_module_deps_to_lattice_metadata,
+    encode_metadata,
+    pickle_modules_by_value,
+)
 from covalent.executor import LocalExecutor
 from covalent.triggers import BaseTrigger
 
@@ -425,11 +431,15 @@ def test_encode_metadata():
     le = LocalExecutor()
     bt = BaseTrigger()
 
-    metadata = {"executor": le, "workflow_executor": "local", "deps": {}}
-    metadata["deps"]["bash"] = ct.DepsBash("yum install gcc")
-    metadata["deps"]["pip"] = ct.DepsPip(["sklearn"])
-    metadata["call_before"] = []
-    metadata["call_after"] = []
+    hooks = {
+        "deps": {
+            "bash": ct.DepsBash("yum install gcc"),
+            "pip": ct.DepsPip(["sklearn"]),
+        },
+        "call_before": [],
+        "call_after": [],
+    }
+    metadata = {"executor": le, "workflow_executor": "local", "hooks": hooks}
     metadata["triggers"] = [bt]
 
     json_metadata = json.dumps(encode_metadata(metadata))
@@ -442,8 +452,8 @@ def test_encode_metadata():
     assert new_metadata["workflow_executor_data"] == {}
     assert new_metadata["triggers"] == [bt.to_dict()]
 
-    assert ct.DepsBash("yum install gcc").to_dict() == new_metadata["deps"]["bash"]
-    assert ct.DepsPip(["sklearn"]).to_dict() == new_metadata["deps"]["pip"]
+    assert ct.DepsBash("yum install gcc").to_dict() == new_metadata["hooks"]["deps"]["bash"]
+    assert ct.DepsPip(["sklearn"]).to_dict() == new_metadata["hooks"]["deps"]["pip"]
 
     # Check idempotence
     assert encode_metadata(metadata) == encode_metadata(encode_metadata(metadata))
@@ -465,3 +475,53 @@ def test_reset_node(workflow_transport_graph, mocker):
 
     for mock_call in expected_mock_calls:
         assert mock_call in actual_mock_calls
+
+
+@pytest.mark.parametrize(
+    ["call_before", "metadata", "expected_metadata"],
+    [
+        ([], {}, {}),
+        (
+            [ct.DepsModule("isort").to_dict()],
+            {"hooks": {"call_before": [ct.DepsModule("isort").to_dict()]}},
+            {"hooks": {"call_before": []}},
+        ),
+    ],
+)
+def test_pickle_modules_by_value(mocker, call_before, metadata, expected_metadata):
+    """
+    Test that the modules mentioned in
+    DepsModules are pickled by value.
+    """
+    import isort
+
+    mock_cloudpickle = mocker.patch("covalent._workflow.transport.cloudpickle")
+
+    with pickle_modules_by_value(metadata) as received_metadata:
+        assert received_metadata == expected_metadata
+
+    if call_before:
+        mock_cloudpickle.register_pickle_by_value.assert_called_once_with(isort)
+        mock_cloudpickle.unregister_pickle_by_value.assert_called_once_with(isort)
+
+
+def test_add_module_deps_to_lattice_metadata(mocker):
+    """
+    Test that the modules mentioned in
+    DepsModules are added to the lattice metadata temporarily.
+    """
+
+    pp = mocker.Mock()
+    pp.lattice.metadata = {"hooks": {"call_before": []}}
+
+    mock_call_before = [ct.DepsModule("isort").to_dict()]
+
+    mock_electron = mocker.Mock()
+    mock_electron.metadata = {"hooks": {"call_before": mock_call_before.copy()}}
+
+    mock_bound_electrons = {0: mock_electron}
+
+    with add_module_deps_to_lattice_metadata(pp, mock_bound_electrons):
+        assert pp.lattice.metadata["hooks"]["call_before"] == mock_call_before
+
+    assert pp.lattice.metadata["hooks"]["call_before"] == []
