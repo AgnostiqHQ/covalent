@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Fixed inaccuracies in task packing exposed by no longer uploading null attributes upon dispatch.
+
 ### Operations
 
 - Added qelectron tests to the `tests` workflow
@@ -60,6 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added feature to use custom python files as modules to be used in the electron function
+- Automatic file transfer strategy selection for various (source, destination) pairings
+- Framework for building sublattices in new-style executors
 
 ### Changed
 
@@ -81,7 +87,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reduced number of assets to upload when submitting a dispatch.
 - Handled RecursionError on get results for a long running workflow.
 - Fixed functional tests.
-- Fixed inaccuracies in task packing exposed by no longer uploading null attributes upon dispatch.
 
 ### Operations
 
