@@ -86,20 +86,21 @@ jobs:
       - name: Format prerelease ref
         if: inputs.prerelease
         run: |
-          re='^[0-9]+$'
-          IFS='.' read -ra version <<< "${{ github.event.inputs.prerelease_version }}"
-          if [[ ${version[0]} =~ $re ]] ; then
-            echo "PRERELEASE=v$version" >> $GITHUB_ENV
-          else
-            echo "PRERELEASE=$version" >> $GITHUB_ENV
-          fi
+          # re='^[0-9]+$'
+          # IFS='.' read -ra version <<< "${{ github.event.inputs.prerelease_version }}"
+          # if [[ ${version[0]} =~ $re ]] ; then
+          #   echo "PRERELEASE=v$version" >> $GITHUB_ENV
+          # else
+          #   echo "PRERELEASE=$version" >> $GITHUB_ENV
+          # fi
+          echo "PRERELEASE=${{ github.event.inputs.prerelease_version }}" >> $GITHUB_ENV
       - name: Check out prerelease tag
         uses: actions/checkout@v4
         if: inputs.prerelease
         with:
           persist-credentials: false
           fetch-depth: 0
-          ref: "${{ env.PRERELEASE }}"
+          ref: "updating-nightly-workflow"
       - name: Generate stable release message
         if: >
           github.event.inputs.stable_version
