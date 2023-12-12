@@ -66,10 +66,10 @@ env:
   AWS_PLUGINS_VERSION_URL: "https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/VERSION?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}"
 
 jobs:
-  version_assigner:
-    name: Assign Version
-    uses: AgnostiqHQ/covalent/.github/workflows/changelog.yml@develop
-    secrets: inherit # pragma: allowlist secret
+  # version_assigner:
+  #   name: Assign Version
+  #   uses: AgnostiqHQ/covalent/.github/workflows/changelog.yml@develop
+  #   secrets: inherit # pragma: allowlist secret
 
   github:
     runs-on: ubuntu-latest
