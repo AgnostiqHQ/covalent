@@ -75,7 +75,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       release: ${{ env.RELEASE }}
-    needs: version_assigner
     steps:
       - name: Check out stable release tag
         uses: actions/checkout@v4
