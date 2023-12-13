@@ -116,7 +116,7 @@ For a more in-depth description of Covalent's features and how they work, see th
 
 ### Installation
 
-Covalent is developed using Python version 3.8 on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager.
+Covalent is developed using Python on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager.
 
 ```
 pip install covalent --upgrade
