@@ -377,18 +377,30 @@ def test_autogen_dict_electrons():
     g = workflow.transport_graph._graph
 
     # Account for postprocessing node
-    assert list(g.nodes) == [0, 1, 2, 3, 4]
+    assert list(g.nodes) == [0, 1, 2, 3, 4, 5, 6, 7, 8]
     fn = g.nodes[1]["function"].get_deserialized()
-    assert fn(x=2, y=5, z=7) == {"x": 2, "y": 5, "z": 7}
-    assert g.nodes[2]["value"].get_deserialized() == 5
-    assert g.nodes[3]["value"].get_deserialized() == 7
+    assert fn(["x", "y", "z"], [2, 5, 7]) == {"x": 2, "y": 5, "z": 7}
+    fn = g.nodes[2]["function"].get_deserialized()
+    assert fn("x", "y") == ["x", "y"]
+    keys = [g.nodes[3]["value"].get_deserialized(), g.nodes[4]["value"].get_deserialized()]
+    fn = g.nodes[5]["function"].get_deserialized()
+    assert fn(2, 3) == [2, 3]
+    vals = [g.nodes[6]["value"].get_deserialized(), g.nodes[7]["value"].get_deserialized()]
+    assert keys == ["x", "y"]
+    assert vals == [5, 7]
     assert set(g.edges) == {
         (1, 0, 0),
         (2, 1, 0),
-        (3, 1, 0),
-        (0, 4, 0),
-        (0, 4, 1),
-        (1, 4, 0),
+        (3, 2, 0),
+        (4, 2, 0),
+        (5, 1, 0),
+        (6, 5, 0),
+        (7, 5, 0),
+        (0, 8, 0),
+        (0, 8, 1),
+        (1, 8, 0),
+        (2, 8, 0),
+        (5, 8, 0),
     }
 
 
