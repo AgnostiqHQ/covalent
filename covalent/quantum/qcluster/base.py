@@ -19,7 +19,6 @@ from abc import ABC, abstractmethod
 from concurrent.futures import Future
 from typing import Callable, List, Sequence, Union
 
-from mpire.async_result import AsyncResult
 from pydantic import BaseModel, ConfigDict
 
 from ...executor.qbase import AsyncBaseQExecutor, BaseQExecutor, QCResult
@@ -66,6 +65,9 @@ class AsyncBaseQCluster(AsyncBaseQExecutor):
         Override the base method to handle the case where the `futures_list`
         contains a mix of object types from various executors.
         """
+
+        from mpire.async_result import AsyncResult
+
         results_and_times = []
         for fut in futures_list:
             if isinstance(fut, asyncio.Task):

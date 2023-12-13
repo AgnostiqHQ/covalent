@@ -24,7 +24,6 @@ from typing import Any, Dict, List, Optional, Sequence, Union
 
 import orjson
 import pennylane as qml
-from mpire import WorkerPool
 from pydantic import (  # pylint: disable=no-name-in-module
     BaseModel,
     ConfigDict,
@@ -50,6 +49,8 @@ def orjson_dumps(v, *, default):
 
 @lru_cache
 def get_process_pool(num_processes=None):
+    from mpire import WorkerPool
+
     return WorkerPool(n_jobs=num_processes)
 
 

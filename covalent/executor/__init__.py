@@ -377,7 +377,7 @@ for name in _executor_manager.executor_plugins_map:
     globals()[plugin_class.__name__] = plugin_class
 
 
-with contextlib.suppress(ImportError):
+with contextlib.suppress(Exception):
     # Suppress import error if PennyLane is not installed, i.e. SDK-only mode
     _qexecutor_manager = _QExecutorManager()
     for qexecutor_cls in _qexecutor_manager.executor_plugins_map.values():
