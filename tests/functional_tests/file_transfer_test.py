@@ -180,7 +180,9 @@ def test_local_file_transfer_collected_nodes(tmp_path: Path):
     rm._delete_result(dispatch_id)
 
     assert len(workflow_result.result) == 2
-    assert workflow_result.result == (MOCK_CONTENTS, MOCK_CONTENTS)
+    assert workflow_result.result[0] == MOCK_CONTENTS
+    assert workflow_result.result[1] == MOCK_CONTENTS
+
     for f in [source_file_1, dest_file_1, source_file_2, dest_file_2]:
         f.unlink()
 
