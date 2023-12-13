@@ -183,6 +183,7 @@ async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_gro
         app_log.debug("8A: Update node success (run_planned_workflow).")
 
     else:
+        # Nodes whose values have already been resolved
         known_nodes = []
 
         # Skip the group if all task outputs can be reused from a
@@ -195,6 +196,8 @@ async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_gro
         if incomplete:
             # Gather inputs for each task and send the task spec sequence to the runner
             task_specs = []
+
+            sorted_nodes_set = set(sorted_nodes)
 
             for node_id in sorted_nodes:
                 app_log.debug(f"Gathering inputs for task {node_id} (run_planned_workflow).")
@@ -214,8 +217,16 @@ async def _submit_task_group(dispatch_id: str, sorted_nodes: List[int], task_gro
                     "args_ids": abs_task_input["args"],
                     "kwargs_ids": abs_task_input["kwargs"],
                 }
-                known_nodes += abs_task_input["args"]
-                known_nodes += list(abs_task_input["kwargs"].values())
+                # Task inputs that don't belong to the task group have already beeen resolved
+                external_task_args = filter(
+                    lambda x: x not in sorted_nodes_set, abs_task_input["args"]
+                )
+                known_nodes.extend(external_task_args)
+                external_task_kwargs = filter(
+                    lambda x: x not in sorted_nodes_set, abs_task_input["kwargs"].values()
+                )
+                known_nodes.extend(external_task_kwargs)
+
                 task_specs.append(task_spec)
 
             app_log.debug(
