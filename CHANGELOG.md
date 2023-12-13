@@ -116,6 +116,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Handled RecursionError on get results for a long running workflow.
 - Fixed functional tests.
 - Fixed inaccuracies in task packing exposed by no longer uploading null attributes upon dispatch.
+- The keys of dictionary inputs to electrons no longer need be strings.
 
 ### Operations
 

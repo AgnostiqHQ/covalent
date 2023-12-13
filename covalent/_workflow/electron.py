@@ -572,8 +572,8 @@ class Electron:
 
         elif isinstance(param_value, dict):
 
-            def _auto_dict_node(*args, **kwargs):
-                return dict(kwargs)
+            def _auto_dict_node(keys, values):
+                return {keys[i]: values[i] for i in range(len(keys))}
 
             dict_electron = Electron(
                 function=_auto_dict_node,
@@ -581,7 +581,7 @@ class Electron:
                 task_group_id=self.task_group_id,
                 packing_tasks=True and active_lattice.task_packing,
             )  # Group the auto-generated node with the main node.
-            bound_electron = dict_electron(**param_value)
+            bound_electron = dict_electron(list(param_value.keys()), list(param_value.values()))
             transport_graph.set_node_value(bound_electron.node_id, "name", electron_dict_prefix)
             transport_graph.add_edge(
                 dict_electron.node_id,
