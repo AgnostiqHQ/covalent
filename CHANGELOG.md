@@ -81,6 +81,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reduced number of assets to upload when submitting a dispatch.
 - Handled RecursionError on get results for a long running workflow.
 - Fixed functional tests.
+- Fixed inaccuracies in task packing exposed by no longer uploading null attributes upon dispatch.
 
 ### Operations
 
