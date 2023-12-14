@@ -97,10 +97,7 @@ def deserialize_asset(data: bytes, data_type: AssetType) -> Any:
     elif data_type == AssetType.JSONABLE:
         return json.loads(data.decode("utf-8"))
     elif data_type == AssetType.TEXT:
-        try:
-            return data.decode("utf-8")
-        except UnicodeDecodeError:
-            return cloudpickle.loads(data)
+        return data.decode("utf-8")
     elif data_type == AssetType.BYTES:
         return data
     else:
@@ -173,9 +170,6 @@ def load_asset(asset_meta: AssetSchema, data_type: AssetType) -> Any:
 
     path = uri[len(scheme_prefix) :] if uri.startswith(scheme_prefix) else uri
 
-    try:
-        with open(path, "rb") as f:
-            data = f.read()
-    except FileNotFoundError:
-        data = "".encode("utf-8")
+    with open(path, "rb") as f:
+        data = f.read()
     return deserialize_asset(data, data_type)
