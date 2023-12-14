@@ -37,7 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Reduced number of assets to upload when submitting a dispatch.
-- Fixed the loading of text based assets.
+- Fixed the loading of text based assets - with a try except.
+- Improved the fix of text based assets.
 
 ### Operations
 
