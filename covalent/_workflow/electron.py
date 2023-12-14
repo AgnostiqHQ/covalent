@@ -24,6 +24,7 @@ from builtins import list
 from copy import deepcopy
 from dataclasses import asdict
 from functools import wraps
+from types import ModuleType
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
 
 from covalent._dispatcher_plugins.local import LocalDispatcher
@@ -49,6 +50,7 @@ from .._shared_files.utils import (
 )
 from .depsbash import DepsBash
 from .depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
+from .depsmodule import DepsModule
 from .depspip import DepsPip
 from .lattice import Lattice
 from .transport import TransportableObject, encode_metadata
@@ -207,6 +209,7 @@ class Electron:
         metadata = encode_metadata(DEFAULT_METADATA_VALUES.copy())
         executor = metadata["workflow_executor"]
         executor_data = metadata["workflow_executor_data"]
+
         op_electron = Electron(func_for_op, metadata=metadata)
 
         if active_lattice := active_lattice_manager.get_active_lattice():
@@ -545,8 +548,8 @@ class Electron:
                 arg_index=arg_index,
             )
 
-        elif isinstance(param_value, list):
-
+        elif isinstance(param_value, (list, tuple, set)):
+            # Tuples and sets will also be converted to lists
             def _auto_list_node(*args, **kwargs):
                 return list(args)
 
@@ -589,6 +592,7 @@ class Electron:
 
         else:
             encoded_param_value = TransportableObject.make_transportable(param_value)
+
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),
                 function=None,
@@ -698,6 +702,7 @@ def electron(
     files: List[FileTransfer] = [],
     deps_bash: Union[DepsBash, List, str] = None,
     deps_pip: Union[DepsPip, list] = None,
+    deps_module: Union[DepsModule, List[DepsModule], str, List[str]] = None,
     call_before: Union[List[DepsCall], DepsCall] = None,
     call_after: Union[List[DepsCall], DepsCall] = None,
 ) -> Callable:  # sourcery skip: assign-if-exp
@@ -713,6 +718,7 @@ def electron(
             executor is used by default.
         deps_bash: An optional DepsBash object specifying a list of shell commands to run before `_func`
         deps_pip: An optional DepsPip object specifying a list of PyPI packages to install before running `_func`
+        deps_module: An optional DepsModule (or similar) object specifying which user modules to load before running `_func`
         call_before: An optional list of DepsCall objects specifying python functions to invoke before the electron
         call_after: An optional list of DepsCall objects specifying python functions to invoke after the electron
         files: An optional list of FileTransfer objects which copy files to/from remote or local filesystems.
@@ -756,6 +762,25 @@ def electron(
                 internal_call_after_deps.append(DepsCall(_file_transfer_call_dep_))
             else:
                 internal_call_before_deps.append(DepsCall(_file_transfer_call_dep_))
+
+    if deps_module:
+        if isinstance(deps_module, list):
+            # Convert to DepsModule objects
+            converted_deps = []
+            for dep in deps_module:
+                if type(dep) in [str, ModuleType]:
+                    converted_deps.append(DepsModule(dep))
+                else:
+                    converted_deps.append(dep)
+            deps_module = converted_deps
+
+        elif type(deps_module) in [str, ModuleType]:
+            deps_module = [DepsModule(deps_module)]
+
+        elif isinstance(deps_module, DepsModule):
+            deps_module = [deps_module]
+
+        internal_call_before_deps.extend(deps_module)
 
     if isinstance(deps_pip, DepsPip):
         deps["pip"] = deps_pip
@@ -887,7 +912,7 @@ def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kw
             )
             LocalDispatcher.upload_assets(recv_manifest)
 
-        return recv_manifest.json()
+        return recv_manifest.model_dump_json()
 
     except Exception as ex:
         # Fall back to legacy sublattice handling

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Added feature to use custom python files as modules to be used in the electron function
+
 ### Changed
 
 - SDK no longer uploads empty assets when submitting a dispatch.
@@ -18,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   important, whether the size is reported to be zero or positive does
   have consequences.
 - Pack deps, call_before, and call_after assets into one file.
+- Changed handling of tuples and sets when building the transport graph - they will be converted to electron lists as well for now
 - `qelectron_db`, `qelectron_data_exists`, `python_version`, and `covalent_version`
    are now optional in the pydantic model definitions.
 

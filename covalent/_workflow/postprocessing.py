@@ -149,6 +149,7 @@ class Postprocessor:
 
         pp_metadata["executor"] = pp_metadata.pop("workflow_executor")
         pp_metadata["executor_data"] = pp_metadata.pop("workflow_executor_data")
+
         return pp_metadata
 
     def add_exhaustive_postprocess_node(self, bound_electrons: Dict) -> None:

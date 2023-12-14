@@ -18,6 +18,7 @@
 
 import datetime
 import json
+from contextlib import contextmanager
 from copy import deepcopy
 from typing import Any, Callable, Dict
 
@@ -94,6 +95,88 @@ def encode_metadata(metadata: dict) -> dict:
     return encoded_metadata
 
 
+@contextmanager
+def pickle_modules_by_value(metadata):
+    """
+    Pickle modules in a context manager by value.
+
+    Args:
+        call_before: The call before metadata.
+
+    Returns:
+        None
+    """
+
+    call_before = metadata.get("hooks", {}).get("call_before")
+
+    if not call_before:
+        yield metadata
+        return
+
+    new_metadata = deepcopy(metadata)
+    call_before = new_metadata.get("hooks", {}).get("call_before")
+
+    list_of_modules = []
+
+    for i in range(len(call_before)):
+        # Extract the pickled module if the call before is a DepsModule
+        if call_before[i]["short_name"] == "depsmodule":
+            pickled_module = call_before[i]["attributes"]["pickled_module"]
+            list_of_modules.append(
+                TransportableObject.from_dict(pickled_module).get_deserialized()
+            )
+
+            # Delete the DepsModule from new_metadata of the electron
+            new_metadata["hooks"]["call_before"][i] = None
+
+    # Remove the None values from the call_before list of this electron
+    new_metadata["hooks"]["call_before"] = list(filter(None, new_metadata["hooks"]["call_before"]))
+
+    for module in list_of_modules:
+        cloudpickle.register_pickle_by_value(module)
+
+    yield new_metadata
+
+    for module in list_of_modules:
+        try:
+            cloudpickle.unregister_pickle_by_value(module)
+        except ValueError:
+            continue
+
+
+@contextmanager
+def add_module_deps_to_lattice_metadata(pp, bound_electrons: Dict[int, Any]):
+    old_lattice_metadata = deepcopy(pp.lattice.metadata)
+
+    # Add the module dependencies to the lattice metadata
+    for electron in bound_electrons.values():
+        call_before = electron.metadata.get("hooks", {}).get("call_before")
+        if call_before:
+            for i in range(len(call_before)):
+                if call_before[i]["short_name"] == "depsmodule":
+                    if "hooks" not in pp.lattice.metadata:
+                        pp.lattice.metadata["hooks"] = {}
+
+                    if "call_before" not in pp.lattice.metadata["hooks"]:
+                        pp.lattice.metadata["hooks"]["call_before"] = []
+
+                    # Temporarily add the module metadat to the lattice metadata for postprocessing
+                    pp.lattice.metadata["hooks"]["call_before"].append(call_before[i])
+
+                    # Delete the DepsModule from the electron metadata
+                    electron.metadata["hooks"]["call_before"][i] = None
+
+            # Remove the None values from the call_before list of this electron
+            electron.metadata["hooks"]["call_before"] = list(
+                filter(None, electron.metadata["hooks"]["call_before"])
+            )
+
+    yield
+
+    # Restore the old lattice metadata
+    pp.lattice.metadata = old_lattice_metadata
+
+
 class _TransportGraph:
     """
     A TransportGraph is the most essential part of the whole workflow. This contains
@@ -131,6 +214,7 @@ class _TransportGraph:
     ) -> int:
         """
         Adds a node to the graph.
+        Also serializes the received function.
 
         Args:
             name: The name of the node.
@@ -148,14 +232,17 @@ class _TransportGraph:
         if task_group_id is None:
             task_group_id = node_id
 
+        with pickle_modules_by_value(metadata) as new_metadata:
+            serialized_function = TransportableObject(function)
+
         # Default to gid=node_id
 
         self._graph.add_node(
             node_id,
             task_group_id=task_group_id,
             name=name,
-            function=TransportableObject(function),
-            metadata=metadata,
+            function=serialized_function,
+            metadata=new_metadata,  # Save the new metadata without the DepsModules in it
             **attr,
         )
 
