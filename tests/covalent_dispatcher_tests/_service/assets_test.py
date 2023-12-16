@@ -179,9 +179,20 @@ def test_get_node_asset_byte_range(mocker, client, test_db, mock_result_object):
     assert (INTERNAL_URI, 0, 6, 65536) == mock_generator.calls[0]
 
 
-@pytest.mark.parametrize("rep,start_byte,end_byte", [("string", 0, 6), ("object", 6, 12)])
+@pytest.mark.parametrize(
+    "rep,start_offset,start_byte_req,end_offset,end_byte_req,",
+    [("string", 0, 0, 6, 3), ("string", 0, 2, 6, ""), ("object", 6, 0, 12, 3)],
+)
 def test_get_node_asset_rep(
-    mocker, client, test_db, mock_result_object, rep, start_byte, end_byte
+    mocker,
+    client,
+    test_db,
+    mock_result_object,
+    rep,
+    start_offset,
+    start_byte_req,
+    end_offset,
+    end_byte_req,
 ):
     """
     Test get node asset
@@ -221,14 +232,37 @@ def test_get_node_asset_rep(
     )
 
     params = {"representation": rep}
+    headers = {"Range": f"bytes={start_byte_req}-{end_byte_req}"}
     mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
     resp = client.get(
-        f"/api/v2/dispatches/{dispatch_id}/electrons/{node_id}/assets/{key}", params=params
+        f"/api/v2/dispatches/{dispatch_id}/electrons/{node_id}/assets/{key}",
+        headers=headers,
+        params=params,
     )
+    start_byte = min(start_offset + start_byte_req, end_offset)
+    end_byte = end_offset if not end_byte_req else min(start_offset + end_byte_req, end_offset)
 
     assert resp.text == test_str[start_byte:end_byte]
     assert (INTERNAL_URI, start_byte, end_byte, 65536) == mock_generator.calls[0]
+
+
+def test_get_node_asset_rep_nontransportable(mocker, mock_result_object, client, test_db):
+    """Test alt representations of assets other than TransportableObject"""
+
+    mocker.patch("covalent_dispatcher._service.assets.workflow_db", test_db)
+    mocker.patch(
+        "covalent_dispatcher._service.assets.get_cached_result_object",
+        return_value=mock_result_object,
+    )
+    node_id = 0
+    dispatch_id = "test_get_node_asset_rep_nontransportable"
+    key = "stdout"
+    params = {"representation": "string"}
+    resp = client.get(
+        f"/api/v2/dispatches/{dispatch_id}/electrons/{node_id}/assets/{key}", params=params
+    )
+    assert resp.status_code == 400
 
 
 def test_get_node_asset_bad_dispatch_id(mocker, client):
@@ -319,9 +353,20 @@ def test_get_lattice_asset_byte_range(mocker, client, test_db, mock_result_objec
     assert (INTERNAL_URI, 0, 6, 65536) == mock_generator.calls[0]
 
 
-@pytest.mark.parametrize("rep,start_byte,end_byte", [("string", 0, 6), ("object", 6, 12)])
+@pytest.mark.parametrize(
+    "rep,start_offset,start_byte_req,end_offset,end_byte_req,",
+    [("string", 0, 0, 6, 3), ("string", 0, 2, 6, ""), ("object", 6, 0, 12, 3)],
+)
 def test_get_lattice_asset_rep(
-    mocker, client, test_db, mock_result_object, rep, start_byte, end_byte
+    mocker,
+    client,
+    test_db,
+    mock_result_object,
+    rep,
+    start_offset,
+    start_byte_req,
+    end_offset,
+    end_byte_req,
 ):
     """
     Test get lattice asset
@@ -361,11 +406,32 @@ def test_get_lattice_asset_rep(
     mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
     params = {"representation": rep}
+    headers = {"Range": f"bytes={start_byte_req}-{end_byte_req}"}
 
-    resp = client.get(f"/api/v2/dispatches/{dispatch_id}/lattice/assets/{key}", params=params)
+    resp = client.get(
+        f"/api/v2/dispatches/{dispatch_id}/lattice/assets/{key}", headers=headers, params=params
+    )
+
+    start_byte = min(start_offset + start_byte_req, end_offset)
+    end_byte = end_offset if not end_byte_req else min(start_offset + end_byte_req, end_offset)
 
     assert resp.text == test_str[start_byte:end_byte]
     assert (INTERNAL_URI, start_byte, end_byte, 65536) == mock_generator.calls[0]
+
+
+def test_get_lattice_asset_rep_nontransportable(mocker, mock_result_object, client, test_db):
+    """Test alt representations of assets other than TransportableObject"""
+
+    mocker.patch("covalent_dispatcher._service.assets.workflow_db", test_db)
+    mocker.patch(
+        "covalent_dispatcher._service.assets.get_cached_result_object",
+        return_value=mock_result_object,
+    )
+    dispatch_id = "test_get_node_asset_rep_nontransportable"
+    key = "workflow_function_string"
+    params = {"representation": "string"}
+    resp = client.get(f"/api/v2/dispatches/{dispatch_id}/lattice/assets/{key}", params=params)
+    assert resp.status_code == 400
 
 
 def test_get_lattice_asset_bad_dispatch_id(mocker, client):
@@ -458,9 +524,20 @@ def test_get_dispatch_asset_byte_range(mocker, client, test_db, mock_result_obje
     assert (INTERNAL_URI, 0, 6, 65536) == mock_generator.calls[0]
 
 
-@pytest.mark.parametrize("rep,start_byte,end_byte", [("string", 0, 6), ("object", 6, 12)])
+@pytest.mark.parametrize(
+    "rep,start_offset,start_byte_req,end_offset,end_byte_req,",
+    [("string", 0, 0, 6, 3), ("string", 0, 2, 6, ""), ("object", 6, 0, 12, 3)],
+)
 def test_get_dispatch_asset_rep(
-    mocker, client, test_db, mock_result_object, rep, start_byte, end_byte
+    mocker,
+    client,
+    test_db,
+    mock_result_object,
+    rep,
+    start_offset,
+    start_byte_req,
+    end_offset,
+    end_byte_req,
 ):
     """
     Test get dispatch asset
@@ -500,11 +577,31 @@ def test_get_dispatch_asset_rep(
     mocker.patch("covalent_dispatcher._service.app.cancel_all_with_status")
 
     params = {"representation": rep}
+    headers = {"Range": f"bytes={start_byte_req}-{end_byte_req}"}
 
-    resp = client.get(f"/api/v2/dispatches/{dispatch_id}/assets/{key}", params=params)
+    resp = client.get(
+        f"/api/v2/dispatches/{dispatch_id}/assets/{key}", headers=headers, params=params
+    )
+    start_byte = min(start_offset + start_byte_req, end_offset)
+    end_byte = end_offset if not end_byte_req else min(start_offset + end_byte_req, end_offset)
 
     assert resp.text == test_str[start_byte:end_byte]
     assert (INTERNAL_URI, start_byte, end_byte, 65536) == mock_generator.calls[0]
+
+
+def test_get_dispatch_asset_rep_nontransportable(mocker, mock_result_object, client, test_db):
+    """Test alt representations of assets other than TransportableObject"""
+
+    mocker.patch("covalent_dispatcher._service.assets.workflow_db", test_db)
+    mocker.patch(
+        "covalent_dispatcher._service.assets.get_cached_result_object",
+        return_value=mock_result_object,
+    )
+    dispatch_id = "test_get_node_asset_rep_nontransportable"
+    key = "error"
+    params = {"representation": "string"}
+    resp = client.get(f"/api/v2/dispatches/{dispatch_id}/assets/{key}", params=params)
+    assert resp.status_code == 400
 
 
 def test_get_dispatch_asset_bad_dispatch_id(mocker, client):

@@ -68,7 +68,7 @@ def get_node_asset(
     node_id: int,
     key: ElectronAssetKey,
     representation: Union[AssetRepresentation, None] = None,
-    Range: Union[str, None] = Header(default=None, regex=range_regex),
+    Range: Union[str, None] = Header(default=None, pattern=range_regex),
 ):
     """Returns an asset for an electron.
 
@@ -105,14 +105,20 @@ def get_node_asset(
         with workflow_db.session() as session:
             asset = node.get_asset(key=key.value, session=session)
 
-        # Explicit representation overrides the byte range
-        if representation is None or ELECTRON_ASSET_TYPES[key.value] != AssetType.TRANSPORTABLE:
-            start_byte = start_byte
-            end_byte = end_byte
-        elif representation == AssetRepresentation.string:
-            start_byte, end_byte = _get_tobj_string_offsets(asset.internal_uri)
-        else:
-            start_byte, end_byte = _get_tobj_pickle_offsets(asset.internal_uri)
+        # Handle requests for alt representations. Only assets of type
+        # TRANSPORTABLE admit dual representations. Translate the byte
+        # range request to the byte range containing the
+        # represnetation.
+        if representation is not None:
+            if ELECTRON_ASSET_TYPES[key.value] != AssetType.TRANSPORTABLE:
+                raise HTTPException(400, "Asset does not admit alt representations")
+            elif representation == AssetRepresentation.string:
+                start_offset, end_offset = _get_tobj_string_offsets(asset.internal_uri)
+            else:
+                start_offset, end_offset = _get_tobj_pickle_offsets(asset.internal_uri)
+
+            start_byte = min(end_offset, start_offset + start_byte)
+            end_byte = end_offset if end_byte < 0 else min(end_offset, start_offset + end_byte)
 
         app_log.debug(f"Serving byte range {start_byte}:{end_byte} of {asset.internal_uri}")
         generator = _generate_file_slice(asset.internal_uri, start_byte, end_byte)
@@ -128,7 +134,7 @@ def get_dispatch_asset(
     dispatch_id: str,
     key: DispatchAssetKey,
     representation: Union[AssetRepresentation, None] = None,
-    Range: Union[str, None] = Header(default=None, regex=range_regex),
+    Range: Union[str, None] = Header(default=None, pattern=range_regex),
 ):
     """Returns a dynamic asset for a workflow
 
@@ -162,14 +168,20 @@ def get_dispatch_asset(
         with workflow_db.session() as session:
             asset = result_object.get_asset(key=key.value, session=session)
 
-        # Explicit representation overrides the byte range
-        if representation is None or RESULT_ASSET_TYPES[key.value] != AssetType.TRANSPORTABLE:
-            start_byte = start_byte
-            end_byte = end_byte
-        elif representation == AssetRepresentation.string:
-            start_byte, end_byte = _get_tobj_string_offsets(asset.internal_uri)
-        else:
-            start_byte, end_byte = _get_tobj_pickle_offsets(asset.internal_uri)
+        # Handle requests for alt representations. Only assets of type
+        # TRANSPORTABLE admit dual representations. Translate the byte
+        # range request to the byte range containing the
+        # represnetation.
+        if representation is not None:
+            if RESULT_ASSET_TYPES[key.value] != AssetType.TRANSPORTABLE:
+                raise HTTPException(400, "Asset does not admit alt representations")
+            elif representation == AssetRepresentation.string:
+                start_offset, end_offset = _get_tobj_string_offsets(asset.internal_uri)
+            else:
+                start_offset, end_offset = _get_tobj_pickle_offsets(asset.internal_uri)
+
+            start_byte = min(end_offset, start_offset + start_byte)
+            end_byte = end_offset if end_byte < 0 else min(end_offset, start_offset + end_byte)
 
         app_log.debug(f"Serving byte range {start_byte}:{end_byte} of {asset.internal_uri}")
         generator = _generate_file_slice(asset.internal_uri, start_byte, end_byte)
@@ -184,7 +196,7 @@ def get_lattice_asset(
     dispatch_id: str,
     key: LatticeAssetKey,
     representation: Union[AssetRepresentation, None] = None,
-    Range: Union[str, None] = Header(default=None, regex=range_regex),
+    Range: Union[str, None] = Header(default=None, pattern=range_regex),
 ):
     """Returns a static asset for a workflow
 
@@ -193,8 +205,6 @@ def get_lattice_asset(
         key: The name of the asset
         representation: (optional) the representation ("string" or "pickle") of a `TransportableObject`
         range: (optional) range request header
-
-    If `representation` is specified, it will override the range request.
     """
     start_byte = 0
     end_byte = -1
@@ -218,14 +228,20 @@ def get_lattice_asset(
         with workflow_db.session() as session:
             asset = result_object.lattice.get_asset(key=key.value, session=session)
 
-        # Explicit representation overrides the byte range
-        if representation is None or LATTICE_ASSET_TYPES[key.value] != AssetType.TRANSPORTABLE:
-            start_byte = start_byte
-            end_byte = end_byte
-        elif representation == AssetRepresentation.string:
-            start_byte, end_byte = _get_tobj_string_offsets(asset.internal_uri)
-        else:
-            start_byte, end_byte = _get_tobj_pickle_offsets(asset.internal_uri)
+        # Handle requests for alt representations. Only assets of type
+        # TRANSPORTABLE admit dual representations. Translate the byte
+        # range request to the byte range containing the
+        # represnetation.
+        if representation is not None:
+            if LATTICE_ASSET_TYPES[key.value] != AssetType.TRANSPORTABLE:
+                raise HTTPException(400, "Asset does not admit alt representations")
+            elif representation == AssetRepresentation.string:
+                start_offset, end_offset = _get_tobj_string_offsets(asset.internal_uri)
+            else:
+                start_offset, end_offset = _get_tobj_pickle_offsets(asset.internal_uri)
+
+            start_byte = min(end_offset, start_offset + start_byte)
+            end_byte = end_offset if end_byte < 0 else min(end_offset, start_offset + end_byte)
 
         app_log.debug(f"Serving byte range {start_byte}:{end_byte} of {asset.internal_uri}")
         generator = _generate_file_slice(asset.internal_uri, start_byte, end_byte)
