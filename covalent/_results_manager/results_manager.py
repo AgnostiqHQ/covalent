@@ -496,15 +496,23 @@ def get_result(
         The Result object from the Covalent server
 
     """
+    max_attempts = int(os.getenv("COVALENT_GET_RESULT_RETRIES", 10))
+    num_attempts = 0
+    while num_attempts < max_attempts:
+        try:
+            return _get_result_multistage(
+                dispatch_id=dispatch_id,
+                wait=wait,
+                dispatcher_addr=dispatcher_addr,
+                status_only=status_only,
+                results_dir=results_dir,
+                workflow_output=workflow_output,
+                intermediate_outputs=intermediate_outputs,
+                sublattice_results=sublattice_results,
+                qelectron_db=qelectron_db,
+            )
 
-    return _get_result_multistage(
-        dispatch_id=dispatch_id,
-        wait=wait,
-        dispatcher_addr=dispatcher_addr,
-        status_only=status_only,
-        results_dir=results_dir,
-        workflow_output=workflow_output,
-        intermediate_outputs=intermediate_outputs,
-        sublattice_results=sublattice_results,
-        qelectron_db=qelectron_db,
-    )
+        except RecursionError as re:
+            app_log.error(re)
+            num_attempts += 1
+    raise RuntimeError("Timed out waiting for result. Please retry or check dispatch.")
