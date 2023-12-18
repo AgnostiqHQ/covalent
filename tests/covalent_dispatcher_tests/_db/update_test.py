@@ -128,9 +128,7 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
         assert lattice_row.electron_id is None
         assert lattice_row.executor == "local"
         assert lattice_row.workflow_executor == "local"
-        assert lattice_row.deps_filename == upsert.LATTICE_DEPS_FILENAME
-        assert lattice_row.call_before_filename == upsert.LATTICE_CALL_BEFORE_FILENAME
-        assert lattice_row.call_after_filename == upsert.LATTICE_CALL_AFTER_FILENAME
+        assert lattice_row.hooks_filename == upsert.LATTICE_HOOKS_FILENAME
         assert lattice_row.root_dispatch_id == "dispatch_1"
         assert lattice_row.results_dir == result_1.results_dir
 
@@ -141,18 +139,15 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
             storage_path=lattice_storage_path, filename=lattice_row.function_filename
         ).get_deserialized()
         assert workflow_function(1, 2) == 4
-        assert (
+        with pytest.raises(FileNotFoundError):
             local_store.load_file(
                 storage_path=lattice_storage_path, filename=lattice_row.error_filename
             )
-            == ""
-        )
-        assert (
+
+        with pytest.raises(FileNotFoundError):
             local_store.load_file(
                 storage_path=lattice_storage_path, filename=lattice_row.results_filename
-            ).get_deserialized()
-            is None
-        )
+            )
 
         executor_data = json.loads(lattice_row.executor_data)
 
@@ -182,21 +177,9 @@ def test_result_persist_workflow_1(test_db, result_1, mocker):
             if electron.transport_graph_node_id == 1:
                 assert (
                     local_store.load_file(
-                        storage_path=electron.storage_path, filename=electron.deps_filename
+                        storage_path=electron.storage_path, filename=electron.hooks_filename
                     )
                     == {}
-                )
-                assert (
-                    local_store.load_file(
-                        storage_path=electron.storage_path, filename=electron.call_before_filename
-                    )
-                    == []
-                )
-                assert (
-                    local_store.load_file(
-                        storage_path=electron.storage_path, filename=electron.call_after_filename
-                    )
-                    == []
                 )
             if electron.transport_graph_node_id == 3:
                 executor_data = json.loads(electron.executor_data)

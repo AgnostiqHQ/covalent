@@ -26,12 +26,10 @@ from sqlalchemy.orm import Session
 from covalent._shared_files import logger
 from covalent._shared_files.schemas.electron import (
     ASSET_FILENAME_MAP,
-    ELECTRON_CALL_AFTER_FILENAME,
-    ELECTRON_CALL_BEFORE_FILENAME,
-    ELECTRON_DEPS_FILENAME,
     ELECTRON_ERROR_FILENAME,
     ELECTRON_FUNCTION_FILENAME,
     ELECTRON_FUNCTION_STRING_FILENAME,
+    ELECTRON_HOOKS_FILENAME,
     ELECTRON_RESULTS_FILENAME,
     ELECTRON_STDERR_FILENAME,
     ELECTRON_STDOUT_FILENAME,
@@ -111,9 +109,7 @@ def _get_electron_meta(
         "stdout_filename": ELECTRON_STDOUT_FILENAME,
         "stderr_filename": ELECTRON_STDERR_FILENAME,
         "error_filename": ELECTRON_ERROR_FILENAME,
-        "deps_filename": ELECTRON_DEPS_FILENAME,
-        "call_before_filename": ELECTRON_CALL_BEFORE_FILENAME,
-        "call_after_filename": ELECTRON_CALL_AFTER_FILENAME,
+        "hooks_filename": ELECTRON_HOOKS_FILENAME,
     }
     kwargs.update(legacy_kwargs)
     return kwargs

@@ -107,13 +107,7 @@ class Lattice(Base):
     results_filename = Column(Text)
 
     # Name of the file containing the default electron dependencies
-    deps_filename = Column(Text)
-
-    # Name of the file containing the default list of callables before electrons are executed
-    call_before_filename = Column(Text)
-
-    # Name of the file containing the default list of callables after electrons are executed
-    call_after_filename = Column(Text)
+    hooks_filename = Column(Text)
 
     # Name of the file containing the set of cova imports
     cova_imports_filename = Column(Text)

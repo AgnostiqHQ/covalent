@@ -28,11 +28,13 @@ class AssetSchema(BaseModel):
     remote_uri: Optional[str] = None
 
     # Size of the asset in bytes
-    size: Optional[int] = 0
+    size: int
 
 
 class AssetUpdate(BaseModel):
     remote_uri: Optional[str] = None
-    size: Optional[int] = None
     digest_alg: Optional[str] = None
     digest: Optional[str] = None
+
+    # Size of the asset in bytes
+    size: int

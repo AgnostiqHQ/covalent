@@ -30,6 +30,7 @@ from dask.distributed import LocalCluster
 import covalent as ct
 from covalent._shared_files import TaskRuntimeError
 from covalent._shared_files.exceptions import TaskCancelledError
+from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent._workflow.transportable_object import TransportableObject
 from covalent.executor.executor_plugins.dask import (
     _EXECUTOR_PLUGIN_DEFAULTS,
@@ -37,7 +38,7 @@ from covalent.executor.executor_plugins.dask import (
     ResourceMap,
     TaskSpec,
     dask_wrapper,
-    run_task_from_uris_alt,
+    run_task_group_alt,
 )
 from covalent.executor.utils.serialize import serialize_node_asset
 
@@ -291,11 +292,14 @@ def test_dask_send_poll_receive(mocker):
     deps = {}
     call_before = []
     call_after = []
+    hooks = {
+        "deps": deps,
+        "call_before": call_before,
+        "call_after": call_after,
+    }
 
     ser_task = serialize_node_asset(TransportableObject(task), "function")
-    ser_deps = serialize_node_asset(deps, "deps")
-    ser_cb = serialize_node_asset(deps, "call_before")
-    ser_ca = serialize_node_asset(deps, "call_after")
+    ser_hooks = serialize_node_asset(deps, "hooks")
     ser_x = serialize_node_asset(x, "output")
     ser_y = serialize_node_asset(y, "output")
 
@@ -303,17 +307,9 @@ def test_dask_send_poll_receive(mocker):
     node_0_file.write(ser_task)
     node_0_file.flush()
 
-    deps_file = tempfile.NamedTemporaryFile("wb")
-    deps_file.write(ser_deps)
-    deps_file.flush()
-
-    cb_file = tempfile.NamedTemporaryFile("wb")
-    cb_file.write(ser_cb)
-    cb_file.flush()
-
-    ca_file = tempfile.NamedTemporaryFile("wb")
-    ca_file.write(ser_ca)
-    ca_file.flush()
+    hooks_file = tempfile.NamedTemporaryFile("wb")
+    hooks_file.write(ser_hooks)
+    hooks_file.flush()
 
     node_1_file = tempfile.NamedTemporaryFile("wb")
     node_1_file.write(ser_x)
@@ -327,9 +323,6 @@ def test_dask_send_poll_receive(mocker):
         function_id=0,
         args_ids=[1, 2],
         kwargs_ids={},
-        deps_id="deps",
-        call_before_id="call_before",
-        call_after_id="call_after",
     )
 
     resources = ResourceMap(
@@ -340,10 +333,8 @@ def test_dask_send_poll_receive(mocker):
             1: node_1_file.name,
             2: node_2_file.name,
         },
-        deps={
-            "deps": deps_file.name,
-            "call_before": cb_file.name,
-            "call_after": ca_file.name,
+        hooks={
+            0: hooks_file.name,
         },
     )
 
@@ -375,8 +366,10 @@ def test_dask_send_poll_receive(mocker):
         output = TransportableObject.deserialize(f.read())
     assert output.get_deserialized() == 3
 
+    assert task_update.assets["output"].size == os.path.getsize(output_uri)
 
-def test_run_task_from_uris_alt():
+
+def test_run_task_group_alt():
     """Test the wrapper submitted to dask"""
 
     def task(x, y):
@@ -396,10 +389,14 @@ def test_run_task_from_uris_alt():
     call_before = [ct.DepsBash([f"echo Hello > {cb_tmpfile.name}"]).to_dict()]
     call_after = [ct.DepsBash(f"echo Bye > {ca_tmpfile.name}").to_dict()]
 
+    hooks = {
+        "deps": deps,
+        "call_before": call_before,
+        "call_after": call_after,
+    }
+
     ser_task = serialize_node_asset(TransportableObject(task), "function")
-    ser_deps = serialize_node_asset(deps, "deps")
-    ser_cb = serialize_node_asset(call_before, "call_before")
-    ser_ca = serialize_node_asset(call_after, "call_after")
+    ser_hooks = serialize_node_asset(hooks, "hooks")
     ser_x = serialize_node_asset(x, "output")
     ser_y = serialize_node_asset(y, "output")
 
@@ -407,17 +404,9 @@ def test_run_task_from_uris_alt():
     node_0_file.write(ser_task)
     node_0_file.flush()
 
-    deps_file = tempfile.NamedTemporaryFile("wb")
-    deps_file.write(ser_deps)
-    deps_file.flush()
-
-    cb_file = tempfile.NamedTemporaryFile("wb")
-    cb_file.write(ser_cb)
-    cb_file.flush()
-
-    ca_file = tempfile.NamedTemporaryFile("wb")
-    ca_file.write(ser_ca)
-    ca_file.flush()
+    hooks_file = tempfile.NamedTemporaryFile("wb")
+    hooks_file.write(ser_hooks)
+    hooks_file.flush()
 
     node_1_file = tempfile.NamedTemporaryFile("wb")
     node_1_file.write(ser_x)
@@ -431,9 +420,6 @@ def test_run_task_from_uris_alt():
         function_id=0,
         args_ids=[1, 2],
         kwargs_ids={},
-        deps_id="deps",
-        call_before_id="call_before",
-        call_after_id="call_after",
     )
 
     resources = ResourceMap(
@@ -444,10 +430,8 @@ def test_run_task_from_uris_alt():
             1: node_1_file.name,
             2: node_2_file.name,
         },
-        deps={
-            "deps": deps_file.name,
-            "call_before": cb_file.name,
-            "call_after": ca_file.name,
+        hooks={
+            0: hooks_file.name,
         },
     )
 
@@ -464,7 +448,7 @@ def test_run_task_from_uris_alt():
 
     results_dir = tempfile.TemporaryDirectory()
 
-    run_task_from_uris_alt(
+    run_task_group_alt(
         task_specs=[task_spec.dict()],
         resources=resources.dict(),
         output_uris=[
@@ -486,7 +470,7 @@ def test_run_task_from_uris_alt():
         assert f.read() == "Bye\n"
 
 
-def test_run_task_from_uris_alt_exception():
+def test_run_task_group_alt_exception():
     """Test the wrapper submitted to dask"""
 
     def task(x, y):
@@ -506,10 +490,14 @@ def test_run_task_from_uris_alt_exception():
     call_before = [ct.DepsBash([f"echo Hello > {cb_tmpfile.name}"]).to_dict()]
     call_after = [ct.DepsBash(f"echo Bye > {ca_tmpfile.name}").to_dict()]
 
+    hooks = {
+        "deps": deps,
+        "call_before": call_before,
+        "call_after": call_after,
+    }
+
     ser_task = serialize_node_asset(TransportableObject(task), "function")
-    ser_deps = serialize_node_asset(deps, "deps")
-    ser_cb = serialize_node_asset(call_before, "call_before")
-    ser_ca = serialize_node_asset(call_after, "call_after")
+    ser_hooks = serialize_node_asset(hooks, "hooks")
     ser_x = serialize_node_asset(x, "output")
     ser_y = serialize_node_asset(y, "output")
 
@@ -517,17 +505,9 @@ def test_run_task_from_uris_alt_exception():
     node_0_file.write(ser_task)
     node_0_file.flush()
 
-    deps_file = tempfile.NamedTemporaryFile("wb")
-    deps_file.write(ser_deps)
-    deps_file.flush()
-
-    cb_file = tempfile.NamedTemporaryFile("wb")
-    cb_file.write(ser_cb)
-    cb_file.flush()
-
-    ca_file = tempfile.NamedTemporaryFile("wb")
-    ca_file.write(ser_ca)
-    ca_file.flush()
+    hooks_file = tempfile.NamedTemporaryFile("wb")
+    hooks_file.write(ser_hooks)
+    hooks_file.flush()
 
     node_1_file = tempfile.NamedTemporaryFile("wb")
     node_1_file.write(ser_x)
@@ -541,9 +521,6 @@ def test_run_task_from_uris_alt_exception():
         function_id=0,
         args_ids=[1],
         kwargs_ids={"y": 2},
-        deps_id="deps",
-        call_before_id="call_before",
-        call_after_id="call_after",
     )
 
     resources = ResourceMap(
@@ -554,10 +531,8 @@ def test_run_task_from_uris_alt_exception():
             1: f"file://{node_1_file.name}",
             2: f"file://{node_2_file.name}",
         },
-        deps={
-            "deps": f"file://{deps_file.name}",
-            "call_before": f"file://{cb_file.name}",
-            "call_after": f"file://{ca_file.name}",
+        hooks={
+            0: f"file://{hooks_file.name}",
         },
     )
 
@@ -574,7 +549,7 @@ def test_run_task_from_uris_alt_exception():
 
     results_dir = tempfile.TemporaryDirectory()
 
-    run_task_from_uris_alt(
+    run_task_group_alt(
         task_specs=[task_spec.model_dump()],
         resources=resources.model_dump(),
         output_uris=[
@@ -615,3 +590,17 @@ def test_get_upload_uri():
     assert dispatch_id in path_string
     assert str(task_group_id) in path_string
     assert object_key in path_string
+
+
+@pytest.mark.asyncio
+async def test_dask_receive_cancelled_tasks():
+    dispatch_id = "mock_dispatch"
+    task_group_metadata = {"dispatch_id": dispatch_id, "node_ids": [0, 1], "task_group_id": 0}
+    dask_exec = DaskExecutor()
+    updates = await dask_exec.receive(task_group_metadata, None)
+    for task_update in updates:
+        assert task_update.status == RESULT_STATUS.CANCELLED
+
+        for _, asset in task_update.assets.items():
+            assert asset.remote_uri == ""
+            assert asset.size == 0
