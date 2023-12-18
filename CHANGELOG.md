@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Reduced number of assets to upload when submitting a dispatch.
+- Handled RecursionError on get results for a long running workflow
 
 ### Operations
 
@@ -128,7 +129,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed editability of Qelectron on settings page - UI changes
 - Certain pydantic v2 related updates
 - Fixed lattice's metadata propagation to electron's metadata in case no metadata was provided to the electron
-- Handled RecursionError on get results for a long running workflow
 
 ### Operations
 
