@@ -41,7 +41,7 @@ Covalent is a Pythonic framework crafted for AI/ML engineers, developers, and re
 
 If you find Covalent useful or interesting, feel free to give us a ⭐ on GitHub! Your support helps us to continue developing and improving this framework.
 
-### Covalent at work 
+### Covalent at work
 
 <div align="center">
   <img src="./doc/source/_static/executor.gif"  alt="hero" />
