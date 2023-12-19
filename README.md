@@ -23,42 +23,81 @@
 <a href="https://covalentworkflows.slack.com/join/shared_invite/zt-1ew7f2rfk-dKSXVQmRniu5mQW4Z_eQuw#/shared-invite/email"><img src="./doc/source/_static/slack.svg" alt="divider" width="70"></a>
 </div>
 </br>
- <div align="center">
+
+
+```bash
+pip install covalent --upgrade
+```
+Check our [Quick Start Guide](https://docs.covalent.xyz/docs/get-started/quick-start/) for setup instructions or dive into your [First Experiment](https://docs.covalent.xyz/docs/get-started/first-experiment/). Learn more on the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/).
+
+## Why Covalent?
+
+Covalent is a Pythonic framework crafted for AI/ML engineers, developers, and researchers. It simplifies the connection to a broad spectrum of high-performance computing resources, catering to a variety of computational needs in AI, LLMs, Generative AI, and research.
+
+- **Pythonic Framework:** Tailored for AI/ML practitioners, computational scientists, and developers.
+- **Abstracted Access to Computing Resources:** Seamlessly integrates with quantum computers, HPC clusters, GPU arrays, and diverse cloud services.
+- **Serverless Computing:** No need to manage infrastructure, makes any platform serverless right out of the box.
+- **Extensible Plugin System:** Choose from [existing plugins](https://docs.covalent.xyz/docs/plugin) or [create custom ones](https://github.com/AgnostiqHQ/covalent-executor-template) for tailored interactions with any infrastructure - modular for all computational needs.
+
+If you find Covalent useful or interesting, feel free to give us a ⭐ on GitHub! Your support helps us to continue developing and improving this framework.
+
+### Covalent at work 
+
+<div align="center">
   <img src="./doc/source/_static/executor.gif"  alt="hero" />
  </div>
 </br>
 
-Covalent is a Pythonic framework designed for AI/ML practitioners, computational scientists, and developers, offering abstracted and easy access to a wide array of high-performance computing resources. It facilitates integration with advanced computing platforms, from quantum computers and HPC clusters to GPU arrays and diverse cloud services, providing serverless access to all of them. Check out the [quick start guide](https://docs.covalent.xyz/docs/get-started/quick-start/) to get started and install it with
-```
-pip install covalent --upgrade
-```
-
-
 </br>
-
 <table border="0">
  <tr>
-    <td><b style="font-size:30px">For AI/ML Practitioners and Developers&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></td>
-    <td><b style="font-size:30px">For Researchers&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</b></td>
+    <td><b style="font-size:24px; padding-right: 20px;">For AI/ML Practitioners and Developers</b></td>
+    <td><b style="font-size:24px; padding-left: 20px;">For Researchers</b></td>
  </tr>
  <tr>
-    <td>
-
-Covalent serves as a robust compute backend framework, enabling seamless, cloud-agnostic execution of high-compute tasks. Ideal solution for powering AI/ML applications, Large Language Models (LLMs), Generative AI, and other compute-intensive processes, all without the hassle of infrastructure management.
-</td>
-    <td>
-
- Covalent empowers researchers to directly tap into advanced computing resources from their laptops or Jupyter notebooks. Whether the need is for cloud platforms or HPC systems like SLURM, PBS, or LSF, [Covalent plugins](https://docs.covalent.xyz/docs/plugin) offers instant connectivity and unparalleled ease of use.
-</td>
+    <td valign="top">
+        <ul style="font-size:16px; list-style-type: circle; padding-right: 20px;">
+            <li><b>Robust Compute Backend:</b> Ideal for AI/ML applications, Large Language Models (LLMs), Generative AI, and more.</li>
+            <li><b>Cloud-Agnostic Execution:</b> Execute high-compute tasks seamlessly across different cloud environments.</li>
+            <li><b>Infrastructure Abstraction:</b> Decouple business code from infrastructure/resource definitions.</li>
+        </ul>
+    </td>
+    <td valign="top">
+        <ul style="font-size:16px; list-style-type: circle; padding-left: 20px;">
+            <li><b>Local-Like Access:</b> Effortlessly connect to compute resources from your laptop, eliminating the need for SSH or complex scripts.</li>
+            <li><b>Unified Interface Across Environments:</b> Consistent experience with on-prem HPC clusters and cloud platforms like SLURM, PBS, LSF, AWS, GCP, Azure.</li>
+            <li><b>Real-Time Monitoring Monitoring:</b> <a href="http://demo.covalent.xyz/"> User-friendly UI </a> for real-time monitoring, facilitating cost-effective and iterative R&D.</li>
+        </ul>
+    </td>
  </tr>
 </table>
 
 
-
-</br>
+### Out-of-box observability - [Try out the demo](http://demo.covalent.xyz/)
 
 https://github.com/AgnostiqHQ/covalent/assets/116076079/87268cc8-4d53-4053-b739-1d03f2eafa7c
 
+
+### Explore Covalent Through Examples
+
+Jump right into practical examples to see Covalent in action. These tutorials cover a range of applications, giving you a hands-on experience:
+
+<div align="center">
+  <a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/generativeai/">
+    <img src="./doc/source/_static/ai_tutorial.svg" alt="AI Tutorial">
+  </a>
+  <a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/mnist/">
+    <img src="./doc/source/_static/mnist_tutorial.svg" alt="MNIST Tutorial">
+  </a>
+  <a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/quantumchemistry/">
+    <img src="./doc/source/_static/quantum_tutorial.svg" alt="Quantum Tutorial">
+  </a>
+</div>
+
+
+### Explore Our Extensive Plugin Ecosystem
+
+Covalent integrates seamlessly with a variety of platforms. Discover our range of plugins to enhance your Covalent experience:
 
 </br>
   <div align="center">
@@ -72,6 +111,10 @@ https://github.com/AgnostiqHQ/covalent/assets/116076079/87268cc8-4d53-4053-b739-
 <a href="https://docs.covalent.xyz/docs/user-documentation/api-reference/executors/ibmq/"><img src="./doc/source/_static/ibmq.svg" alt="divider"></a>
 <a href="https://docs.covalent.xyz/docs/plugin"><img src="./doc/source/_static/many_more.svg" alt="divider"></a></div>
 
+### Key Features at a Glance
+
+Get a quick overview of what Covalent offers. Our infographic summarizes the main features, providing you with a snapshot of our capabilities:
+
 </br>
   <div align="center">
   <a href="https://docs.covalent.xyz/docs/"><img src="./doc/source/_static/development.svg"  alt="development"></img></a>
@@ -79,14 +122,11 @@ https://github.com/AgnostiqHQ/covalent/assets/116076079/87268cc8-4d53-4053-b739-
 
 </br>
 
-### Getting Started
-
-Ready to try it? - Refer to the [Quick Start](https://docs.covalent.xyz/docs/get-started/quick-start/) guide for quick setup instructions, or to the [First Experiment](https://docs.covalent.xyz/docs/get-started/first-experiment/) guide for a more thorough approach. For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/) page in the documentation.
 
 
 ---
 
-### Know More
+### Know More About Covalent
 
 For a more in-depth description of Covalent's features and how they work, see the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/) page in the documentation.
 
@@ -99,17 +139,6 @@ For a more in-depth description of Covalent's features and how they work, see th
 <a href="https://docs.covalent.xyz/docs/user-documentation/concepts/covalent-arch/covalent-architecture"><img src="./doc/source/_static/covalent_work.svg" alt="divider"></a>
 </div>
 
----
-
-### Examples
-
-<div mt="1000">
-<a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/generativeai/"><img src="./doc/source/_static/ai_tutorial.svg" alt="divider"></a>
-<a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/mnist/"><img src="./doc/source/_static/mnist_tutorial.svg" alt="divider"></a>
-<a href="https://docs.covalent.xyz/docs/user-documentation/tutorials/quantumchemistry/"><img src="./doc/source/_static/quantum_tutorial.svg" alt="divider"></a>
- </div>
-
----
 
 <div >
 
@@ -124,7 +153,8 @@ pip install covalent --upgrade
 
 For other methods of installation please [check the docs.](https://docs.covalent.xyz/docs/get-started/install/)
 
-### Deployments
+**Deployments**
+
 <div>
 Covalent offers flexible deployment options, from Docker image/AMIs for self-hosting to pip package for local installations, accommodating various use cases
 </div>
@@ -141,15 +171,11 @@ Covalent offers flexible deployment options, from Docker image/AMIs for self-hos
 </br>
 </div>
 
----
-
 ### Contributing
 
  <!-- <div><img src="./contributing_heading.svg" alt="divider"></div> -->
 
 To contribute to Covalent, refer to the [Contribution Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/CONTRIBUTING.md). We use GitHub's [issue tracking](https://github.com/AgnostiqHQ/covalent/issues) to manage known issues, bugs, and pull requests. Get started by forking the develop branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. For more information on adding tutorials, check the [Tutorial Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/doc/TUTORIAL_GUIDELINES.md). Participation in the Covalent community is governed by the [Code of Conduct](https://github.com/AgnostiqHQ/covalent/blob/master/CODE_OF_CONDUCT.md).
-
----
 
 ### Citation
 
