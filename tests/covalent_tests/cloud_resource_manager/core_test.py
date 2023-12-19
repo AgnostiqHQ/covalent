@@ -399,12 +399,10 @@ def test_log_error_msg(mocker, crm, cmd):
 @pytest.mark.parametrize(
     "mock_exist, indicator",
     [
-        # ([True,None], [True,None], [False, True], [False, False]),
-        # (["On deploy", "On destroy", None, None]),
-        ([True, None, None], "On deploy"),
-        ([True, None, None], "On destroy"),
-        ([False, True, True], None),
-        ([False, True, False], None),
+        ([True, None], "On deploy"),
+        ([True, None], "On destroy"),
+        ([False, True], None),
+        ([False, False], None),
     ],
 )
 def test_terraform_error_validator(mocker, crm, mock_exist, indicator):
@@ -414,7 +412,7 @@ def test_terraform_error_validator(mocker, crm, mock_exist, indicator):
     )
     mocker.patch(
         "covalent.cloud_resource_manager.core.os.path.exists",
-        return_value=mock_exist,
+        side_effect=mock_exist,
     )
     mocker.patch("covalent.cloud_resource_manager.core.os.path.getsize", return_value=2)
     mocker.patch(
