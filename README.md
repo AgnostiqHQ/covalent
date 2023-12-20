@@ -24,10 +24,10 @@
 </div>
 </br>
 
-
 ```bash
 pip install covalent --upgrade
 ```
+
 Check our [Quick Start Guide](https://docs.covalent.xyz/docs/get-started/quick-start/) for setup instructions or dive into your [First Experiment](https://docs.covalent.xyz/docs/get-started/first-experiment/). Learn more on the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/).
 
 ## Why Covalent?
@@ -72,11 +72,9 @@ If you find Covalent useful or interesting, feel free to give us a ⭐ on GitHub
  </tr>
 </table>
 
-
 ### Out-of-box observability - [Try out the demo](http://demo.covalent.xyz/)
 
 https://github.com/AgnostiqHQ/covalent/assets/116076079/87268cc8-4d53-4053-b739-1d03f2eafa7c
-
 
 ### Explore Covalent Through Examples
 
@@ -93,7 +91,6 @@ Jump right into practical examples to see Covalent in action. These tutorials co
     <img src="./doc/source/_static/quantum_tutorial.svg" alt="Quantum Tutorial">
   </a>
 </div>
-
 
 ### Explore Our Extensive Plugin Ecosystem
 
@@ -122,8 +119,6 @@ Get a quick overview of what Covalent offers. Our infographic summarizes the mai
 
 </br>
 
-
-
 ---
 
 ### Know More About Covalent
@@ -139,9 +134,7 @@ For a more in-depth description of Covalent's features and how they work, see th
 <a href="https://docs.covalent.xyz/docs/user-documentation/concepts/covalent-arch/covalent-architecture"><img src="./doc/source/_static/covalent_work.svg" alt="divider"></a>
 </div>
 
-
 <div >
-
 
 ### Installation
 
@@ -163,8 +156,9 @@ Covalent offers flexible deployment options, from Docker image/AMIs for self-hos
 
 <div align="center">
 
-<a href="https://docs.covalent.xyz/docs/user-documentation/server-deployment"><img src="./doc/source/_static/cloud_hosted.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/server-deployment"><img src="./doc/source/_static/local-laptop.svg" alt="divider"></a>
 <a href="https://docs.covalent.xyz/docs/user-documentation/server-deployment"><img src="./doc/source/_static/onprem_hosted.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/server-deployment"><img src="./doc/source/_static/cloud_hosted.svg" alt="divider"></a>
 
 </div>
 
