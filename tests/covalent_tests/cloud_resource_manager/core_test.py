@@ -254,7 +254,6 @@ def test_run_in_subprocess(mocker, test_retcode, crm):
 
     if test_retcode != 0:
         exception = subprocess.CalledProcessError(returncode=test_retcode, cmd=test_cmd)
-        # print("some exception ", exception)
         with pytest.raises(subprocess.CalledProcessError) as excinfo:
             crm._run_in_subprocess(
                 cmd=test_cmd,
