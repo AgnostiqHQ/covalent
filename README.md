@@ -1,6 +1,6 @@
 <div align="center">
   <img src="./doc/source/_static/readme_hero.svg" alt="hero" />
- </div>
+</div>
 </br>
 <div align="center">
 
@@ -11,7 +11,7 @@
 [![Static Badge](https://img.shields.io/badge/codecov-88%25-%235552FF?logo=codecov)](https://codecov.io/gh/AgnostiqHQ/covalent)
 [![apache](https://img.shields.io/badge/License-Apache_License_2.0-blue?color=%235552FF)](https://www.apache.org/licenses/LICENSE-2.0)</div>
 
-<div align="center">Serverless high-performance computing from your laptop to the cloud, all through a single line of Python</div>
+<div align="center"><b>Run AI, ML, and Scientific Research Code on Any Cloud or On-Prem Cluster with a Single Line</b></div>
 </br>
  <div align="center">
 <a href="https://docs.covalent.xyz/docs/get-started/quick-start"><img src="./doc/source/_static/getting_started.svg" width="150" alt="divider"></a>
@@ -24,20 +24,86 @@
 </div>
 </br>
 
+<table>
+<tr>
+<td>
+
+### What is Covalent?
+
+Covalent is a Python library built for AI/ML engineers, developers, and researchers. It provides a straightforward approach to run compute jobs, like LLMs, generative AI, and scientific research, on various cloud platforms or on-prem clusters.
+
+</td>
+<td>
+
+### Install
+
 ```bash
 pip install covalent --upgrade
 ```
-
 Check our [Quick Start Guide](https://docs.covalent.xyz/docs/get-started/quick-start/) for setup instructions or dive into your [First Experiment](https://docs.covalent.xyz/docs/get-started/first-experiment/). Learn more on the [Concepts](https://docs.covalent.xyz/docs/user-documentation/concepts/concepts-index/).
 
-## Why Covalent?
+</td>
+</tr>
+</table>
 
-Covalent is a Pythonic framework crafted for AI/ML engineers, developers, and researchers. It simplifies the connection to a broad spectrum of high-performance computing resources, catering to a variety of computational needs in AI, LLMs, Generative AI, and research.
+<details>
+<summary><b>Run Code Anywhere:</b> Execute Python functions in any cloud or on-prem cluster by changing just a single line of code.</summary>
+<br>
 
-- **Pythonic Framework:** Tailored for AI/ML practitioners, computational scientists, and developers.
-- **Abstracted Access to Computing Resources:** Seamlessly integrates with quantum computers, HPC clusters, GPU arrays, and diverse cloud services.
-- **Serverless Computing:** No need to manage infrastructure, makes any platform serverless right out of the box.
-- **Extensible Plugin System:** Choose from [existing plugins](https://docs.covalent.xyz/docs/plugin) or [create custom ones](https://github.com/AgnostiqHQ/covalent-executor-template) for tailored interactions with any infrastructure - modular for all computational needs.
+Its as simple as swapping the decorator with our executor plugins. Choose from [existing plugins](https://docs.covalent.xyz/docs/plugin) or [create custom ones](https://github.com/AgnostiqHQ/covalent-executor-template) for tailored interactions with any infrastructure.
+
+
+```python
+import covalent as ct
+
+# To execute on Azure, replace the executor line with:
+# @ct.electron(executor="azurebatch")
+
+# To execute on Google Cloud Platform, replace the executor line with, you can even use a custom configuration:
+# @ct.electron(executor=ct.executor.GCPBatchExecutor(region='us-east1', vcpus=2, memory=512))
+
+# Define your function
+@ct.electron(executor="awsbatch")  # Execute on AWS
+def fine_tune_llm(params):
+    # Your compute logic here
+```
+</details>
+
+<details>
+<summary><b>Abstraction of Infrastructure Management:</b> Lets developers focus on their code, abstracting the complexities of cloud consoles, terraform, or IaC in the background.</summary>
+<br>
+
+Using cloud compute is no more than two steps, without the need to write any infrastructure code or even containers for your code. Covalent handles the rest.
+
+```shell
+
+1. Deploy your infrastructure with ease:
+
+```shell
+covalent deploy up awsbatch --vcpus=12 --num_gpus=2
+```
+
+2. Ship your code :
+
+```python
+import covalent as ct
+
+@ct.electron(executor="awsbatch")  # Run on AWS with default configuration; can override with executor-specific parameters
+def fine_tune_llm(params):
+    # Your compute logic here
+```
+To learn more, check out the docs
+
+</details>
+
+
+<details>
+<summary><b>Serverless Infrastructure:</b> Automatically converts any infrastructure, including on-prem SLURM clusters or cloud compute, into a serverless setup.</summary>
+<br>
+Covalent simplifies infrastructure management, making it serverless and scalable. This feature allows you to leverage the full potential of cloud computing or on-premises clusters without the overhead of manual configuration.
+
+<!-- Insert image or additional information here if needed -->
+</details>
 
 If you find Covalent useful or interesting, feel free to give us a ⭐ on GitHub! Your support helps us to continue developing and improving this framework.
 
@@ -51,8 +117,8 @@ If you find Covalent useful or interesting, feel free to give us a ⭐ on GitHub
 </br>
 <table border="0">
  <tr>
-    <td><b style="font-size:24px; padding-right: 20px;">For AI/ML Practitioners and Developers</b></td>
-    <td><b style="font-size:24px; padding-left: 20px;">For Researchers</b></td>
+    <td><b style="font-size:18px; padding-right: 20px;">For AI/ML Practitioners and Developers</b></td>
+    <td><b style="font-size:18px; padding-left: 20px;">For Researchers</b></td>
  </tr>
  <tr>
     <td valign="top">
