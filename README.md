@@ -97,9 +97,8 @@ Covalent simplifies infrastructure management, making it serverless and scalable
 </details>
 
 
-> ** Drop a ⭐ **
-> 
-> If you find Covalent useful or interesting, feel free to give us a ⭐ on GitHub! Your support helps us to continue developing and improving this framework.
+
+If you find Covalent useful or interesting, feel free to give us a ⭐ on GitHub! Your support helps us to continue developing and improving this framework.
 
 
 
