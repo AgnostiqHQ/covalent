@@ -29,6 +29,7 @@
 <td>
 
 ### What is Covalent?
+---
 
 Covalent is a Python library built for AI/ML engineers, developers, and researchers. It provides a straightforward approach to run compute jobs, like LLMs, generative AI, and scientific research, on various cloud platforms or on-prem clusters.
 
@@ -36,6 +37,7 @@ Covalent is a Python library built for AI/ML engineers, developers, and research
 <td>
 
 ### Install
+---
 
 ```bash
 pip install covalent --upgrade
