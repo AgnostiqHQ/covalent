@@ -48,7 +48,7 @@ import covalent as ct
 # To execute on Azure, replace the executor line with:
 # @ct.electron(executor="azurebatch")
 
-# To execute on Google Cloud Platform, replace the executor line with, 
+# To execute on Google Cloud Platform, replace the executor line with,
 # you can even use a custom configuration:
 #gcp=ct.executor.GCPBatchExecutor(region='us-east1', vcpus=2, memory=512
 # @ct.electron(executor=gcp))
