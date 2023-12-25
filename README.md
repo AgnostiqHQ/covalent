@@ -34,6 +34,7 @@ Check our [Quick Start Guide](https://docs.covalent.xyz/docs/get-started/quick-s
 
 Covalent is a Python library built for AI/ML engineers, developers, and researchers. It provides a straightforward approach to run compute jobs, like LLMs, generative AI, and scientific research, on various cloud platforms or on-prem clusters.
 
+<br>
 
 <details>
 <summary><b>Run Code Anywhere:</b> Execute Python functions in any cloud or on-prem cluster by changing just a single line of code.</summary>
@@ -60,13 +61,13 @@ def fine_tune_llm(params):
 ```
 </details>
 
+<br>
+
 <details>
 <summary><b>Abstraction of Infrastructure Management:</b> Lets developers focus on their code, abstracting the complexities of cloud consoles, terraform, or IaC in the background.</summary>
 <br>
 
 Using cloud compute is no more than two steps, without the need to write any infrastructure code or even containers for your code. Covalent handles the rest.
-
-```shell
 
 1. Deploy your infrastructure with ease:
 
@@ -87,6 +88,7 @@ To learn more, check out the docs
 
 </details>
 
+<br>
 
 <details>
 <summary><b>Serverless Infrastructure:</b> Automatically converts any infrastructure, including on-prem SLURM clusters or cloud compute, into a serverless setup.</summary>
