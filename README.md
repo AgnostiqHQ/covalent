@@ -93,7 +93,7 @@ To learn more, check out the docs
 <br>
 Covalent simplifies infrastructure management, making it serverless and scalable. This feature allows you to leverage the full potential of cloud computing or on-premises clusters without the overhead of manual configuration.
 
-<!-- Insert image or additional information here if needed -->
+<!-- Insert image or additional information here if needed
 </details> -->
 
 
