@@ -38,6 +38,13 @@ Covalent is a Python library built for AI/ML engineers, developers, and research
 - **Abstraction of Infrastructure Management:** Lets developers focus on their code, abstracting the complexities of cloud consoles, terraform, or IaC in the background.
 - **Serverless Infrastructure:** Automatically converts any infrastructure, including on-prem SLURM clusters or cloud compute, into a serverless setup.
 
+
+<details>
+<summary><b>Abstraction of Infrastructure Management:</b> Lets developers focus on their code, abstracting the complexities of cloud consoles, terraform, or IaC in the background.</summary>
+<br>
+<div align="center"><img src="./doc/source/_static/abstract_infra.png"  width="700"></div>
+</details>
+
 <!-- <details>
 <summary><b>Run Code Anywhere:</b> Execute Python functions in any cloud or on-prem cluster by changing just a single line of code.</summary>
 <br>
