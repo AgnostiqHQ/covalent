@@ -40,7 +40,14 @@ Covalent is a Python library built for AI/ML engineers, developers, and research
 
 
 <details>
-<summary><b>Abstraction of Infrastructure Management:</b> Lets developers focus on their code, abstracting the complexities of cloud consoles, terraform, or IaC in the background.</summary>
+<summary><b>Run Code Anywhere:</b> Execute Python functions in any cloud or on-prem cluster by changing just a single line of code.</summary>
+<br>
+Its as simple as swapping the decorator with our executor plugins. Choose from [existing plugins](https://docs.covalent.xyz/docs/plugin) or [create custom ones](https://github.com/AgnostiqHQ/covalent-executor-template) for tailored interactions with any infrastructure.
+<div align="center"><img src="./doc/source/_static/executors_ship.png"  width="700"></div>
+</details>
+
+<details>
+<summary><b>Abstraction of Infrastructure Management:</b> Abstract the complexities of cloud consoles, terraform, or IaC in the background.</summary>
 <br>
 <div align="center"><img src="./doc/source/_static/abstract_infra.png"  width="700"></div>
 </details>
