@@ -34,14 +34,11 @@ Check our [Quick Start Guide](https://docs.covalent.xyz/docs/get-started/quick-s
 
 Covalent is a Python library built for AI/ML engineers, developers, and researchers. It provides a straightforward approach to run compute jobs, like LLMs, generative AI, and scientific research, on various cloud platforms or on-prem clusters.
 
-- **Run Code Anywhere:** Execute Python functions in any cloud or on-prem cluster by changing just a single line of code.
-- **Abstraction of Infrastructure Management:** Lets developers focus on their code, abstracting the complexities of cloud consoles, terraform, or IaC in the background.
-- **Serverless Infrastructure:** Automatically converts any infrastructure, including on-prem SLURM clusters or cloud compute, into a serverless setup.
-
 
 <details>
 <summary><b>Run Code Anywhere:</b> Execute Python functions in any cloud or on-prem cluster by changing just a single line of code.</summary>
 <br>
+
 Its as simple as swapping the decorator with our executor plugins. Choose from [existing plugins](https://docs.covalent.xyz/docs/plugin) or [create custom ones](https://github.com/AgnostiqHQ/covalent-executor-template) for tailored interactions with any infrastructure.
 <div align="center"><img src="./doc/source/_static/executors_ship.png"  width="700"></div>
 </details>
@@ -51,6 +48,14 @@ Its as simple as swapping the decorator with our executor plugins. Choose from [
 <br>
 <div align="center"><img src="./doc/source/_static/abstract_infra.png"  width="700"></div>
 </details>
+
+<details>
+<summary><b>Serverless Infrastructure:</b> Automatically converts any infrastructure, including on-prem SLURM clusters or cloud compute, into a serverless setup.</summary>
+<br>
+<div align="center"><img src="./doc/source/_static/abstract_infra.png"  width="700"></div>
+</details>
+
+
 
 <!-- <details>
 <summary><b>Run Code Anywhere:</b> Execute Python functions in any cloud or on-prem cluster by changing just a single line of code.</summary>
