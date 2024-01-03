@@ -36,7 +36,7 @@ Covalent is a Python library built for AI/ML engineers, developers, and research
 
 
 <details>
-<summary><b>Run Code Anywhere:</b> Execute Python functions in any cloud or on-prem cluster by changing just a single line of code.</summary>
+<summary><i><b>Run Code Anywhere:</b> Execute Python functions in any cloud or on-prem cluster by changing just a single line of code.</i></summary>
 <br>
 
 Its as simple as swapping the decorator with our executor plugins. Choose from [existing plugins](https://docs.covalent.xyz/docs/plugin) or [create custom ones](https://github.com/AgnostiqHQ/covalent-executor-template) for tailored interactions with any infrastructure.
@@ -44,13 +44,13 @@ Its as simple as swapping the decorator with our executor plugins. Choose from [
 </details>
 
 <details>
-<summary><b>Abstraction of Infrastructure Management:</b> Abstract the complexities of cloud consoles, terraform, or IaC in the background.</summary>
+<summary><i><b>Abstraction of Infrastructure Management:</b> Abstract the complexities of cloud consoles, terraform, or IaC in the background.</i> </summary>
 <br>
 <div align="center"><img src="./doc/source/_static/abstract_infra.png"  width="700"></div>
 </details>
 
 <details>
-<summary><b>Serverless Infrastructure:</b> Automatically converts any infrastructure, including on-prem SLURM clusters or cloud compute, into a serverless setup.</summary>
+<summary><i><b>Serverless Infrastructure:</b> Automatically converts any infrastructure, including on-prem SLURM clusters or cloud compute, into a serverless setup.</i></summary>
 <br>
 <div align="center"><img src="./doc/source/_static/abstract_infra.png"  width="700"></div>
 </details>
@@ -115,11 +115,6 @@ Covalent simplifies infrastructure management, making it serverless and scalable
 <!-- Insert image or additional information here if needed
 </details> -->
 
-
-If you find Covalent useful or interesting, feel free to give us a ⭐ on GitHub! Your support helps us to continue developing and improving this framework.
-
-
-
 ### Covalent at work
 
 <div align="center">
@@ -153,7 +148,10 @@ If you find Covalent useful or interesting, feel free to give us a ⭐ on GitHub
 
 ### Out-of-box observability - [Try out the demo](http://demo.covalent.xyz/)
 
+If you find Covalent useful or interesting, feel free to give us a ⭐ on GitHub! Your support helps us to continue developing and improving this framework.
+
 https://github.com/AgnostiqHQ/covalent/assets/116076079/87268cc8-4d53-4053-b739-1d03f2eafa7c
+
 
 ### Explore Covalent Through Examples
 
