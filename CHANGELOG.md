@@ -10,7 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added feature to use custom python files as modules to be used in the electron function
-- Added test coverage for executor resource deployment.
 
 ### Changed
 
@@ -36,6 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Allow `cloudpickle` >= 3.0.0
 - Remove `boto3` dependency from `tests/requirements.txt`
+
+### Tests
+
+- Added test coverage for executor resource deployment.
 
 ## [0.232.0-rc.0] - 2023-12-01
 

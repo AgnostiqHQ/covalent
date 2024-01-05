@@ -385,9 +385,6 @@ def test_docker(mocker, crm, caplog):
     ["mock-terraform init", "mock-terraform destroy"],
 )
 def test_log_error_msg(mocker, crm, cmd):
-    # mocker.patch(
-    #     "covalent.cloud_resource_manager.core.CloudResourceManager._log_error_msg",
-    # )
     mocker.patch(
         "covalent.cloud_resource_manager.core.open",
         new=mock.mock_open(read_data="test data"),
@@ -649,11 +646,6 @@ def test_down(mocker, crm):
         "covalent.cloud_resource_manager.core.os.path.getsize",
         return_value=0,
     )
-
-    # mock_path_unlink = mocker.patch(
-    #     "covalent.cloud_resource_manager.core.get_plugin_settings",
-    #     # return_value={"test": "default"},
-    # )
 
     crm.down(print_callback=None)
 
