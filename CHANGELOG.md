@@ -29,7 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Reduced number of assets to upload when submitting a dispatch.
-- Handled RecursionError on get results for a long running workflow
+- Handled RecursionError on get results for a long running workflow.
+- Fixed functional tests.
 
 ### Operations
 
