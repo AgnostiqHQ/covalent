@@ -530,8 +530,8 @@ def get_all_results(dispatch_id_lst: list[str] = [],
     qelectron_db: bool = False,
     completed_check : Optional[bool]  = False,
     started_before : Optional[datetime] = None,
-    started_after : Optional[datetime] = None, 
-    completed_before : Optional[datetime] = None, 
+    started_after : Optional[datetime] = None,
+    completed_before : Optional[datetime] = None,
     completed_after: Optional[datetime] = None
 ) -> list(Result):
     """
@@ -539,25 +539,25 @@ def get_all_results(dispatch_id_lst: list[str] = [],
 
     Args:
         dispatch_id_lst: A list of dispatch ids.
-        wait: Controls how long the method waits for the server to return a 
-            result. If False, the method will not wait and will return the 
-            current status of the workflow. If True, the method will wait for 
+        wait: Controls how long the method waits for the server to return a
+            result. If False, the method will not wait and will return the
+            current status of the workflow. If True, the method will wait for
             the result to finish and keep retrying for sys.maxsize.
-        dispatcher_addr: Dispatcher server address. Defaults to the address set 
+        dispatcher_addr: Dispatcher server address. Defaults to the address set
             in Covalent's config.
-        status_only: If true, only returns result status, not the full result 
+        status_only: If true, only returns result status, not the full result
             object. Default is False.
 
     Kwargs:
-        results_dir: The directory where the results are stored in dispatch 
+        results_dir: The directory where the results are stored in dispatch
             id named folders.
-        workflow_output: Whether to return the workflow output. 
+        workflow_output: Whether to return the workflow output.
             Defaults to True.
-        intermediate_outputs: Whether to return all intermediate outputs in the 
+        intermediate_outputs: Whether to return all intermediate outputs in the
             compute graph. Defaults to True.
-        sublattice_results: Whether to recursively retrieve sublattice results. 
+        sublattice_results: Whether to recursively retrieve sublattice results.
             Default is True.
-        qelectron_db: Whether to load the bytes data of qelectron_db. Default 
+        qelectron_db: Whether to load the bytes data of qelectron_db. Default
             is False.
         completed_check : Whether to only include completed results.
         started_before: Only return results that started before this time.
@@ -588,12 +588,12 @@ def get_all_results(dispatch_id_lst: list[str] = [],
     for _id in dispatch_id_lst:
         try:
             # Depends on get_result method, works as normal
-            result = get_result(_id, wait, dispatcher_addr, status_only, 
-                                results_dir, workflow_output, 
-                                intermediate_outputs, sublattice_results, 
+            result = get_result(_id, wait, dispatcher_addr, status_only,
+                                results_dir, workflow_output,
+                                intermediate_outputs, sublattice_results,
                                 qelectron_db)
-            
-            # Does not follow PEP8 for better readability of conditional logic. 
+
+            # Does not follow PEP8 for better readability of conditional logic.
             # The logic could be simplified. This is it currently as follows:
             # If the result does not meet the query, then exclude it from the
             # list. started_before and started_after are datetime objects that
@@ -602,7 +602,7 @@ def get_all_results(dispatch_id_lst: list[str] = [],
             # for the end time. If the result does not meet the query, then
             # it is excluded from the list.
 
-            # Check if result has been completed to avoid errors (if not 
+            # Check if result has been completed to avoid errors (if not
             # completed, there is no end time)
             if result.status != "COMPLETED":
                 if (not (
@@ -610,7 +610,7 @@ def get_all_results(dispatch_id_lst: list[str] = [],
                     (started_after is not None and result.start_time < started_after)
                     )) and (not completed_check):
                     result_lst.append({"dispatch_id": _id, "result": result})
-            else: 
+            else:
                 if not ((started_before is not None and result.start_time > started_before) or \
                     (started_after is not None and result.start_time < started_after) or \
                     (completed_before is not None and result.end_time > completed_before) or \
@@ -618,10 +618,10 @@ def get_all_results(dispatch_id_lst: list[str] = [],
 
                     result_lst.append({"dispatch_id": _id, "result": result})
 
-        
+
         # If the record does not exist, a MissingLatticeRecordError is raised,
         # which is caught and ignored
         except MissingLatticeRecordError:
             continue
-    
+
     return result_lst
