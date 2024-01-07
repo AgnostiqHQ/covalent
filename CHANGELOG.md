@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Updated RTD notebooks to fix their behavior
+
+### Removed
+
+- Removed unused file transfer how to guides
+
 ## [0.233.0-rc.0] - 2024-01-07
 
 ### Authors
@@ -43,7 +51,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Reduced number of assets to upload when submitting a dispatch.
 - Handled RecursionError on get results for a long running workflow.
 - Fixed functional tests.
-- Fixed file transfer how to guides.
 
 ### Operations
 
