@@ -65,7 +65,6 @@ def extract_graph_node(node):
 
 
 def extract_metadata(metadata: dict):
-
     # TODO: This is an outdated method
 
     try:
