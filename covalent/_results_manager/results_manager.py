@@ -19,13 +19,13 @@ from __future__ import annotations
 
 import contextlib
 import os
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
 
 from furl import furl
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
-from datetime import datetime
 
 from .._api.apiclient import CovalentAPIClient
 from .._serialize.common import load_asset
