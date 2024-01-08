@@ -65,6 +65,8 @@ def extract_graph_node(node):
 
 
 def extract_metadata(metadata: dict):
+    # TODO: This is an outdated method
+
     try:
         # avoid mutating original metadata
         metadata = copy.deepcopy(metadata)
@@ -81,20 +83,20 @@ def extract_metadata(metadata: dict):
             else:
                 metadata["executor_name"] = f"<{executor.__class__.__name__}>"
 
-        metadata["deps"] = encode_dict(metadata["deps"])
-        call_before = metadata["call_before"]
-        call_after = metadata["call_after"]
+        metadata["hooks"]["deps"] = encode_dict(metadata["hooks"]["deps"])
+        call_before = metadata["hooks"]["call_before"]
+        call_after = metadata["hooks"]["call_after"]
         for i, dep in enumerate(call_before):
             call_before[i] = str(dep)
 
         for i, dep in enumerate(call_after):
             call_after[i] = str(dep)
 
-        metadata["call_before"] = call_before
-        metadata["call_after"] = call_after
+        metadata["hooks"]["call_before"] = call_before
+        metadata["hooks"]["call_after"] = call_after
 
     except (KeyError, AttributeError) as ex:
-        app_log.error(f"Exception when trying to extract metadata: {ex}")
+        app_log.debug(f"Exception when trying to extract metadata: {ex}")
 
     return metadata
 
