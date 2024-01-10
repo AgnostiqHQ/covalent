@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./doc/source/_static/readme_hero.svg" alt="hero" />
+  <img src="./doc/source/_static/banner_executor.gif" alt="hero" />
 </div>
 </br>
 <div align="center">
@@ -120,12 +120,12 @@ If you find Covalent useful or interesting, feel free to give us a ⭐ on GitHub
 
 
 
-### Covalent at work
+<!-- ### Covalent at work
 
 <div align="center">
   <img src="./doc/source/_static/executor.gif"  alt="hero" />
  </div>
-</br>
+</br> -->
 
 </br>
 <table border="0">
