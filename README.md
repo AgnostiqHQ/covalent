@@ -87,7 +87,11 @@ If you find Covalent useful or interesting, feel free to give us a ⭐ on GitHub
 
 If you find Covalent useful or interesting, feel free to give us a ⭐ on GitHub! Your support helps us to continue developing and improving this framework.
 
-https://github.com/AgnostiqHQ/covalent/assets/116076079/87268cc8-4d53-4053-b739-1d03f2eafa7c
+<!-- https://github.com/AgnostiqHQ/covalent/assets/116076079/87268cc8-4d53-4053-b739-1d03f2eafa7c -->
+<div align="center">
+  <img src="./doc/source/_static/readmeVid-gif.gif" alt="video" />
+</div>
+
 
 
 ### Explore Covalent Through Examples
