@@ -56,80 +56,8 @@ Its as simple as swapping the decorator with our executor plugins. Choose from [
 </details>
 
 
-
-<!-- <details>
-<summary><b>Run Code Anywhere:</b> Execute Python functions in any cloud or on-prem cluster by changing just a single line of code.</summary>
-<br>
-
-Its as simple as swapping the decorator with our executor plugins. Choose from [existing plugins](https://docs.covalent.xyz/docs/plugin) or [create custom ones](https://github.com/AgnostiqHQ/covalent-executor-template) for tailored interactions with any infrastructure.
-
-
-```python
-import covalent as ct
-
-# To execute on Azure, replace the executor line with:
-# @ct.electron(executor="azurebatch")
-
-# To execute on Google Cloud Platform, replace the executor line with,
-# you can even use a custom configuration:
-#gcp=ct.executor.GCPBatchExecutor(region='us-east1', vcpus=2, memory=512
-# @ct.electron(executor=gcp))
-
-# Define your function
-@ct.electron(executor="awsbatch")  # Execute on AWS
-def fine_tune_llm(params):
-    # Your compute logic here
-```
-</details>
-
-<details>
-<summary><b>Abstraction of Infrastructure Management:</b> Lets developers focus on their code, abstracting the complexities of cloud consoles, terraform, or IaC in the background.</summary>
-<br>
-
-Using cloud compute is no more than two steps, without the need to write any infrastructure code or even containers for your code. Covalent handles the rest.
-
-1. Deploy your infrastructure with ease:
-
-```shell
-covalent deploy up awsbatch --vcpus=12 --num_gpus=2
-```
-
-2. Ship your code :
-
-```python
-import covalent as ct
-
-@ct.electron(executor="awsbatch")  # Run on AWS with default configuration; can override with executor-specific parameters
-def fine_tune_llm(params):
-    # Your compute logic here
-```
-To learn more, check out the docs
-
-</details>
-
-<details>
-<summary><b>Serverless Infrastructure:</b> Automatically converts any infrastructure, including on-prem SLURM clusters or cloud compute, into a serverless setup.</summary>
-<br>
-Covalent simplifies infrastructure management, making it serverless and scalable. This feature allows you to leverage the full potential of cloud computing or on-premises clusters without the overhead of manual configuration.
-
-<!-- Insert image or additional information here if needed
-</details> -->
-
-<<<<<<< HEAD
-
 If you find Covalent useful or interesting, feel free to give us a ⭐ on GitHub! Your support helps us to continue developing and improving this framework.
 
-
-
-<!-- ### Covalent at work
-=======
-### Covalent at work
->>>>>>> 43229b3475aee55cfb6660299d75840df7af9320
-
-<div align="center">
-  <img src="./doc/source/_static/executor.gif"  alt="hero" />
- </div>
-</br> -->
 
 </br>
 <table border="0">
