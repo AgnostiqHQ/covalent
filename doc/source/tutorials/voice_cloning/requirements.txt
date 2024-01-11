@@ -1,0 +1,12 @@
+covalent==0.229.0rc0
+covalent-gcpbatch-plugin==0.11.0
+librosa==0.10.0
+pydub==0.25.1
+pytube==15.0.0
+scipy==1.11.3
+soundfile==0.12.1
+streamlit==1.28.1
+torch==2.1.0
+torchaudio==2.1.0
+transformers==4.33.3
+TTS==0.19.1
