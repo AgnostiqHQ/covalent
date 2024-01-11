@@ -68,16 +68,16 @@ If you find Covalent useful or interesting, feel free to give us a ⭐ on GitHub
  <tr>
     <td valign="top">
         <ul style="font-size:16px; list-style-type: circle; padding-right: 20px;">
-            <li><b>Robust Compute Backend:</b> Ideal for AI/ML applications, Large Language Models (LLMs), Generative AI, and more.</li>
+            <li><b>Robust Compute Backend:</b> Ideal as a backend compute framework for AI/ML applications, Large Language Models (LLMs), Generative AI, and more.</li>
             <li><b>Cloud-Agnostic Execution:</b> Execute high-compute tasks seamlessly across different cloud environments.</li>
-            <li><b>Infrastructure Abstraction:</b> Decouple business code from infrastructure/resource definitions.</li>
+            <li><b>Infrastructure Abstraction:</b> Directly use computing resources while keeping your business code independent from the infrastructure/resource definitions.</li>
         </ul>
     </td>
     <td valign="top">
         <ul style="font-size:16px; list-style-type: circle; padding-left: 20px;">
             <li><b>Local-Like Access:</b> Effortlessly connect to compute resources from your laptop, eliminating the need for SSH or complex scripts.</li>
             <li><b>Unified Interface Across Environments:</b> Consistent experience with on-prem HPC clusters and cloud platforms like SLURM, PBS, LSF, AWS, GCP, Azure.</li>
-            <li><b>Real-Time Monitoring Monitoring:</b> <a href="http://demo.covalent.xyz/"> User-friendly UI </a> for real-time monitoring, facilitating cost-effective and iterative R&D.</li>
+            <li><b>Real-Time Monitoring Monitoring:</b> <a href="http://demo.covalent.xyz/"> User-friendly UI </a> for real-time monitoring, enabling cost-effective and iterative R&D.</li>
         </ul>
     </td>
  </tr>
