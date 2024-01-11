@@ -52,7 +52,7 @@ Its as simple as swapping the decorator with our executor plugins. Choose from [
 <details>
 <summary><i><b>Serverless Infrastructure:</b> Automatically converts any infrastructure, including on-prem SLURM clusters or cloud compute, into a serverless setup.</i></summary>
 <br>
-<div align="center"><img src="./doc/source/_static/abstract_infra.png"  width="700"></div>
+<div align="center"><img src="./doc/source/_static/serverless-illustration.png"  width="700"></div>
 </details>
 
 
