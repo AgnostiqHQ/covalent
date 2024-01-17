@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Updated RTD notebooks to fix their behavior
+- Changed the error being shown when drawing the transport graph of a lattice to a debug message instead
+
+### Removed
+
+- Removed unused file transfer how to guides
+- Removed `pennylane` as a requirement from notebooks' requirements.txt as it comes with `covalent`
+
+### Docs
+
+- Added voice cloning tutorial
+
+## [0.233.0-rc.0] - 2024-01-07
+
+### Authors
+
+- Andrew S. Rosen <asrosen93@gmail.com>
+- Casey Jao <casey@agnostiq.ai>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- ArunPsiog <106462226+ArunPsiog@users.noreply.github.com>
+- Co-authored-by: Ara Ghukasyan <ara@agnostiq.ai>
+
+
 ### Added
 
 - Added feature to use custom python files as modules to be used in the electron function
@@ -29,6 +55,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Reduced number of assets to upload when submitting a dispatch.
+- Handled RecursionError on get results for a long running workflow.
+- Fixed functional tests.
 
 ### Operations
 
