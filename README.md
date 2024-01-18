@@ -175,8 +175,8 @@ Covalent offers flexible deployment options, from Docker image/AMIs for self-hos
 <div align="center">
 
 <a href="https://docs.covalent.xyz/docs/user-documentation/server-deployment"><img src="./doc/source/_static/local-laptop.svg" alt="divider"></a>
-<a href="https://docs.covalent.xyz/docs/user-documentation/server-deployment"><img src="./doc/source/_static/onprem_hosted.svg" alt="divider"></a>
-<a href="https://docs.covalent.xyz/docs/user-documentation/server-deployment"><img src="./doc/source/_static/cloud_hosted.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/sd-docker"><img src="./doc/source/_static/onprem_hosted.svg" alt="divider"></a>
+<a href="https://docs.covalent.xyz/docs/user-documentation/sd-systemd"><img src="./doc/source/_static/cloud_hosted.svg" alt="divider"></a>
 
 </div>
 
