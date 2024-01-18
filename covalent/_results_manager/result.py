@@ -90,11 +90,11 @@ class Result:
         self._task_failed = False
         self._task_cancelled = False
 
-        self._result = TransportableObject(None)
+        self._result = None
 
         self._num_nodes = -1
 
-        self._error = ""
+        self._error = None
 
     def __str__(self):
         """String representation of the result object"""

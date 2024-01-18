@@ -155,17 +155,15 @@ def _gather_deps(deps, call_before_objs_json, call_after_objs_json) -> Tuple[Lis
 # for `AsyncBaseExecutor.send()`.
 
 
-# URIs are just file paths
-def run_task_from_uris(
+def run_task_group(
     task_specs: List[Dict],
-    resources: dict,
     output_uris: List[Tuple[str, str, str]],
     results_dir: str,
     task_group_metadata: dict,
     server_url: str,
 ):
     """
-    Run the task from URIs.
+    Run a task group.
 
     This is appropriate for executors which can access the Covalent
     server url directly. Exampl: LocalExecutor.
@@ -220,21 +218,14 @@ def run_task_from_uris(
                         resp.raise_for_status()
                         ser_kwargs[k] = deserialize_node_asset(resp.content, "output")
 
-                    # Download deps
-                    deps_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/assets/deps"
-                    resp = requests.get(deps_url, stream=True)
+                    # Download deps, call_before, and call_after
+                    hooks_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/assets/hooks"
+                    resp = requests.get(hooks_url, stream=True)
                     resp.raise_for_status()
-                    deps_json = deserialize_node_asset(resp.content, "deps")
-
-                    cb_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/assets/call_before"
-                    resp = requests.get(cb_url, stream=True)
-                    resp.raise_for_status()
-                    call_before_json = deserialize_node_asset(resp.content, "call_before")
-
-                    ca_url = f"{server_url}/api/v2/dispatches/{dispatch_id}/electrons/{task_id}/assets/call_after"
-                    resp = requests.get(ca_url, stream=True)
-                    resp.raise_for_status()
-                    call_after_json = deserialize_node_asset(resp.content, "call_after")
+                    hooks_json = deserialize_node_asset(resp.content, "hooks")
+                    deps_json = hooks_json.get("deps", {})
+                    call_before_json = hooks_json.get("call_before", [])
+                    call_after_json = hooks_json.get("call_after", [])
 
                     # Assemble and run the task
                     call_before, call_after = _gather_deps(
@@ -345,8 +336,7 @@ def run_task_from_uris(
             requests.put(url)
 
 
-# URIs are just file paths
-def run_task_from_uris_alt(
+def run_task_group_alt(
     task_specs: List[Dict],
     resources: dict,
     output_uris: List[Tuple[str, str, str]],
@@ -355,7 +345,7 @@ def run_task_from_uris_alt(
     server_url: str,
 ):
     """
-    Alternate form of run_task_from_uris for sync executors.
+    Alternate form of run_task_group.
 
     This is appropriate for backends that cannot reach the Covalent
     server. Covalent will push input assets to the executor's
@@ -417,27 +407,15 @@ def run_task_from_uris_alt(
                         with open(uri, "rb") as f:
                             ser_kwargs[key] = deserialize_node_asset(f.read(), "output")
 
-                    # Load deps
-                    deps_id = task["deps_id"]
-                    deps_uri = resources["deps"][deps_id]
-                    if deps_uri.startswith(prefix):
-                        deps_uri = deps_uri[prefix_len:]
-                    with open(deps_uri, "rb") as f:
-                        deps_json = deserialize_node_asset(f.read(), "deps")
-
-                    call_before_id = task["call_before_id"]
-                    call_before_uri = resources["deps"][call_before_id]
-                    if call_before_uri.startswith(prefix):
-                        call_before_uri = call_before_uri[prefix_len:]
-                    with open(call_before_uri, "rb") as f:
-                        call_before_json = deserialize_node_asset(f.read(), "call_before")
-
-                    call_after_id = task["call_after_id"]
-                    call_after_uri = resources["deps"][call_after_id]
-                    if call_after_uri.startswith(prefix):
-                        call_after_uri = call_after_uri[prefix_len:]
-                    with open(call_after_uri, "rb") as f:
-                        call_after_json = deserialize_node_asset(f.read(), "call_after")
+                    # Load deps, call_before, and call_after
+                    hooks_uri = resources["hooks"][task_id]
+                    if hooks_uri.startswith(prefix):
+                        hooks_uri = hooks_uri[prefix_len:]
+                    with open(hooks_uri, "rb") as f:
+                        hooks_json = deserialize_node_asset(f.read(), "hooks")
+                    deps_json = hooks_json.get("deps", {})
+                    call_before_json = hooks_json.get("call_before", [])
+                    call_after_json = hooks_json.get("call_after", [])
 
                     # Assemble and invoke the task
                     call_before, call_after = _gather_deps(
@@ -469,12 +447,30 @@ def run_task_from_uris_alt(
 
                     resources["inputs"][task_id] = result_uri
 
+                    output_size = len(ser_output)
+                    qelectron_db_size = len(qelectron_db_bytes)
+                    stdout.flush()
+                    stderr.flush()
+                    stdout_size = os.path.getsize(stdout_uri)
+                    stderr_size = os.path.getsize(stderr_uri)
                     result_summary = {
                         "node_id": task_id,
-                        "output_uri": result_uri,
-                        "stdout_uri": stdout_uri,
-                        "stderr_uri": stderr_uri,
-                        "qelectron_db_uri": qelectron_db_uri,
+                        "output": {
+                            "uri": result_uri,
+                            "size": output_size,
+                        },
+                        "stdout": {
+                            "uri": stdout_uri,
+                            "size": stdout_size,
+                        },
+                        "stderr": {
+                            "uri": stderr_uri,
+                            "size": stderr_size,
+                        },
+                        "qelectron_db": {
+                            "uri": qelectron_db_uri,
+                            "size": qelectron_db_size,
+                        },
                         "exception_occurred": exception_occurred,
                     }
 
@@ -482,13 +478,28 @@ def run_task_from_uris_alt(
                     exception_occurred = True
                     tb = "".join(traceback.TracebackException.from_exception(ex).format())
                     print(tb, file=sys.stderr)
-                    result_uri = None
+                    stdout.flush()
+                    stderr.flush()
+                    stdout_size = os.path.getsize(stdout_uri)
+                    stderr_size = os.path.getsize(stderr_uri)
                     result_summary = {
                         "node_id": task_id,
-                        "output_uri": result_uri,
-                        "stdout_uri": stdout_uri,
-                        "stderr_uri": stderr_uri,
-                        "qelectron_db_uri": qelectron_db_uri,
+                        "output": {
+                            "uri": "",
+                            "size": 0,
+                        },
+                        "stdout": {
+                            "uri": stdout_uri,
+                            "size": stdout_size,
+                        },
+                        "stderr": {
+                            "uri": stderr_uri,
+                            "size": stderr_size,
+                        },
+                        "qelectron_db": {
+                            "uri": "",
+                            "size": 0,
+                        },
                         "exception_occurred": exception_occurred,
                     }
 
@@ -508,11 +519,23 @@ def run_task_from_uris_alt(
     if n < len(task_ids):
         for i in range(n, len(task_ids)):
             result_summary = {
-                "node_id": task_ids[i],
-                "output_uri": "",
-                "stdout_uri": "",
-                "stderr_uri": "",
-                "qelectron_db_uri": "",
+                "node_id": task_id,
+                "output": {
+                    "uri": "",
+                    "size": 0,
+                },
+                "stdout": {
+                    "uri": "",
+                    "size": 0,
+                },
+                "stderr": {
+                    "uri": "",
+                    "size": 0,
+                },
+                "qelectron_db": {
+                    "uri": "",
+                    "size": 0,
+                },
                 "exception_occurred": True,
             }
 

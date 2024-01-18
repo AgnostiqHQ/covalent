@@ -51,9 +51,7 @@ log_stack_info = logger.log_stack_info
 SDK_NODE_META_KEYS = {
     "executor",
     "executor_data",
-    "deps",
-    "call_before",
-    "call_after",
+    "hooks",
 }
 
 SDK_LAT_META_KEYS = {
@@ -61,9 +59,7 @@ SDK_LAT_META_KEYS = {
     "executor_data",
     "workflow_executor",
     "workflow_executor_data",
-    "deps",
-    "call_before",
-    "call_after",
+    "hooks",
 }
 
 DEFERRED_KEYS = {
@@ -248,26 +244,35 @@ def download_asset(remote_uri: str, local_path: str, chunk_size: int = 1024 * 10
 
 def _download_result_asset(manifest: dict, results_dir: str, key: str):
     remote_uri = manifest["assets"][key]["remote_uri"]
-    local_path = get_result_asset_path(results_dir, key)
-    download_asset(remote_uri, local_path)
-    manifest["assets"][key]["uri"] = f"file://{local_path}"
+    size = manifest["assets"][key]["size"]
+
+    if size > 0:
+        local_path = get_result_asset_path(results_dir, key)
+        download_asset(remote_uri, local_path)
+        manifest["assets"][key]["uri"] = f"file://{local_path}"
 
 
 def _download_lattice_asset(manifest: dict, results_dir: str, key: str):
     lattice_assets = manifest["lattice"]["assets"]
     remote_uri = lattice_assets[key]["remote_uri"]
-    local_path = get_lattice_asset_path(results_dir, key)
-    download_asset(remote_uri, local_path)
-    lattice_assets[key]["uri"] = f"file://{local_path}"
+    size = lattice_assets[key]["size"]
+
+    if size > 0:
+        local_path = get_lattice_asset_path(results_dir, key)
+        download_asset(remote_uri, local_path)
+        lattice_assets[key]["uri"] = f"file://{local_path}"
 
 
 def _download_node_asset(manifest: dict, results_dir: str, node_id: int, key: str):
     node = manifest["lattice"]["transport_graph"]["nodes"][node_id]
     node_assets = node["assets"]
     remote_uri = node_assets[key]["remote_uri"]
-    local_path = get_node_asset_path(results_dir, node_id, key)
-    download_asset(remote_uri, local_path)
-    node_assets[key]["uri"] = f"file://{local_path}"
+    size = node_assets[key]["size"]
+
+    if size > 0:
+        local_path = get_node_asset_path(results_dir, node_id, key)
+        download_asset(remote_uri, local_path)
+        node_assets[key]["uri"] = f"file://{local_path}"
 
 
 def _load_result_asset(manifest: dict, key: str):
@@ -491,15 +496,23 @@ def get_result(
         The Result object from the Covalent server
 
     """
+    max_attempts = int(os.getenv("COVALENT_GET_RESULT_RETRIES", 10))
+    num_attempts = 0
+    while num_attempts < max_attempts:
+        try:
+            return _get_result_multistage(
+                dispatch_id=dispatch_id,
+                wait=wait,
+                dispatcher_addr=dispatcher_addr,
+                status_only=status_only,
+                results_dir=results_dir,
+                workflow_output=workflow_output,
+                intermediate_outputs=intermediate_outputs,
+                sublattice_results=sublattice_results,
+                qelectron_db=qelectron_db,
+            )
 
-    return _get_result_multistage(
-        dispatch_id=dispatch_id,
-        wait=wait,
-        dispatcher_addr=dispatcher_addr,
-        status_only=status_only,
-        results_dir=results_dir,
-        workflow_output=workflow_output,
-        intermediate_outputs=intermediate_outputs,
-        sublattice_results=sublattice_results,
-        qelectron_db=qelectron_db,
-    )
+        except RecursionError as re:
+            app_log.error(re)
+            num_attempts += 1
+    raise RuntimeError("Timed out waiting for result. Please retry or check dispatch.")

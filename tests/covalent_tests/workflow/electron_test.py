@@ -19,6 +19,8 @@
 import json
 from unittest.mock import ANY, MagicMock
 
+import flake8
+import isort
 import pytest
 
 import covalent as ct
@@ -94,9 +96,11 @@ def test_build_sublattice_graph(mocker):
         "executor_data": {},
         "workflow_executor": "my_postprocessor",
         "workflow_executor_data": {},
-        "deps": {"bash": None, "pip": None},
-        "call_before": [],
-        "call_after": [],
+        "hooks": {
+            "deps": {"bash": None, "pip": None},
+            "call_before": [],
+            "call_after": [],
+        },
         "triggers": "mock-trigger",
         "qelectron_data_exists": False,
         "results_dir": None,
@@ -158,9 +162,11 @@ def test_build_sublattice_graph_fallback(mocker):
         "executor_data": {},
         "workflow_executor": "my_postprocessor",
         "workflow_executor_data": {},
-        "deps": {"bash": None, "pip": None},
-        "call_before": [],
-        "call_after": [],
+        "hooks": {
+            "deps": {"bash": None, "pip": None},
+            "call_before": [],
+            "call_after": [],
+        },
         "triggers": "mock-trigger",
         "qelectron_data_exists": False,
         "results_dir": None,
@@ -311,8 +317,8 @@ def test_metadata_in_electron_list():
     task_metadata = workflow.transport_graph.get_node_value(0, "metadata")
     e_list_metadata = workflow.transport_graph.get_node_value(1, "metadata")
 
-    assert not list(e_list_metadata["call_before"])
-    assert not list(e_list_metadata["call_after"])
+    assert "call_before" not in e_list_metadata["hooks"]
+    assert "call_after" not in e_list_metadata["hooks"]
 
     assert e_list_metadata["executor"] == task_metadata["executor"]
 
@@ -446,7 +452,7 @@ def test_call_sublattice():
         bound_electron = sublattice()
         assert bound_electron.metadata["executor"] == "dask"
         assert bound_electron.metadata["executor_data"] == {}
-        assert bound_electron.metadata["deps"]["bash"] == bash_dep.to_dict()
+        assert bound_electron.metadata["hooks"]["deps"]["bash"] == bash_dep.to_dict()
         for _, node_data in mock_workflow.transport_graph._graph.nodes(data=True):
             if node_data["name"].startswith(sublattice_prefix):
                 assert "mock_task" in node_data["function_string"]
@@ -679,3 +685,28 @@ def test_electron_pow_method(mocker):
     workflow.build_graph(2)
 
     mock_electron_get_op_function.assert_called_with(ANY, 2, "**")
+
+
+@pytest.mark.parametrize(
+    "module_inputs",
+    [
+        "isort",
+        isort,
+        ct.DepsModule("isort"),
+        ["isort", "flake8"],
+        [isort, flake8],
+        [ct.DepsModule("isort"), ct.DepsModule("flake8")],
+    ],
+)
+def test_deps_modules_are_added(module_inputs):
+    """Test that deps modules are added to the lattice metadata."""
+
+    @ct.electron(deps_module=module_inputs)
+    def task(x):
+        return x
+
+    # Making sure all kinds of inputs are converted to DepsModule
+    # and then to its transportable form of a dictionary
+    for cb in task.electron_object.metadata["hooks"]["call_before"]:
+        assert cb["short_name"] == "depsmodule"
+        assert cb["attributes"]["pickled_module"]["type"] == "TransportableObject"

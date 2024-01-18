@@ -131,7 +131,7 @@ def test_lepton_init(
 
         electron_init_mock.assert_called_once_with("wrapper function")
         wrap_mock.assert_called_once_with()
-        assert set_metadata_mock.call_count == 6
+        assert set_metadata_mock.call_count == 4
 
         assert lepton.language == language
         assert lepton.function_name == function_name
@@ -179,8 +179,8 @@ def test_local_file_transfer_support(is_from_file_remote, is_to_file_remote, ord
 
     mock_file_transfer = FileTransfer(from_file=mock_from_file, to_file=mock_to_file, order=order)
     mock_lepton_with_files = Lepton("python", command="mockcmd", files=[mock_file_transfer])
-    call_before_deps = mock_lepton_with_files.get_metadata("call_before")
-    call_after_deps = mock_lepton_with_files.get_metadata("call_after")
+    call_before_deps = mock_lepton_with_files.get_metadata("hooks")["call_before"]
+    call_after_deps = mock_lepton_with_files.get_metadata("hooks")["call_after"]
 
     pre_hook_call_dep, file_transfer_call_dep = mock_file_transfer.cp()
 
@@ -236,11 +236,11 @@ def test_http_file_transfer(order):
             files=[FileTransfer(from_file=mock_to_file, to_file=mock_from_file, strategy=HTTP())],
         )
 
-    deps = mock_lepton_with_files.get_metadata("deps")
-    assert deps["bash"]["attributes"]["commands"] == []
+    deps = mock_lepton_with_files.get_metadata("hooks")["deps"]
+    assert deps.get("bash") is None
     assert deps.get("pip") is None
-    call_before = mock_lepton_with_files.get_metadata("call_before")
-    call_after = mock_lepton_with_files.get_metadata("call_after")
+    call_before = mock_lepton_with_files.get_metadata("hooks")["call_before"]
+    call_after = mock_lepton_with_files.get_metadata("hooks")["call_after"]
 
     pre_hook_call_dep, file_transfer_call_dep = mock_file_download.cp()
 

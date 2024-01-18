@@ -56,9 +56,7 @@ class TaskSpec(BaseModel):
         function_id: The `node_id` of the function.
         args_ids: The `node_id`s of the function's args
         kwargs_ids: The `node_id`s of the function's kwargs {key: node_id}
-        deps_id: An opaque string representing the task's deps.
-        call_before_id: An opaque string representing the task's call_before.
-        call_after_id: An opaque string representing the task's call_before.
+        hooks_id: An opaque string representing the task's hooks.
 
     The attribute values can be used in conjunction with a
     `ResourceMap` to locate the actual resources in the compute
@@ -68,9 +66,6 @@ class TaskSpec(BaseModel):
     function_id: int
     args_ids: List[int]
     kwargs_ids: Dict[str, int]
-    deps_id: str
-    call_before_id: str
-    call_after_id: str
 
 
 class ResourceMap(BaseModel):
@@ -101,7 +96,7 @@ class ResourceMap(BaseModel):
     inputs: Dict[int, str]
 
     # Includes deps, call_before, call_after
-    deps: Dict[str, str]
+    hooks: Dict[int, str]
 
 
 class TaskGroup(BaseModel):

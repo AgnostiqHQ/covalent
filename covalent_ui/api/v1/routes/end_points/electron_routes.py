@@ -175,7 +175,7 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
         dispatch_id: Dispatch id of lattice/sublattice
         electron_id: Transport graph node id of a electron
         name: refers file type, like inputs, function_string, function, executor, result, value, key,
-        stdout, deps, call_before, call_after, error, info
+        stdout, hooks, error, info
     Returns:
         Returns electron details based on the given name
     """
@@ -221,20 +221,18 @@ def get_electron_file(dispatch_id: uuid.UUID, electron_id: int, name: ElectronFi
         elif name == "stdout":
             response = handler.read_from_text(result["stdout_filename"])
             return ElectronFileResponse(data=response)
-        elif name == "deps":
-            response = handler.read_from_serialized(result["deps_filename"])
-            return ElectronFileResponse(data=response)
-        elif name == "call_before":
-            response = handler.read_from_serialized(result["call_before_filename"])
-            return ElectronFileResponse(data=response)
-        elif name == "call_after":
-            response = handler.read_from_serialized(result["call_after_filename"])
+        elif name == "hooks":
+            response = handler.read_from_serialized(result["hooks_filename"])
             return ElectronFileResponse(data=response)
         elif name == "error":
             # Error and stderr won't be both populated if `error`
             # is only used for fatal dispatcher-executor interaction errors
             error_response = handler.read_from_text(result["error_filename"])
             stderr_response = handler.read_from_text(result["stderr_filename"])
+            if error_response is None:
+                error_response = ""
+            if stderr_response is None:
+                stderr_response = ""
             response = stderr_response + error_response
             return ElectronFileResponse(data=response)
         elif name == "qelectron_db":

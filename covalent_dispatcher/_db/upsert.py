@@ -50,9 +50,7 @@ ELECTRON_STDERR_FILENAME = ELECTRON_FILENAMES["stderr"]
 ELECTRON_QELECTRON_DB_FILENAME = ELECTRON_FILENAMES["qelectron_db"]
 ELECTRON_ERROR_FILENAME = ELECTRON_FILENAMES["error"]
 ELECTRON_RESULTS_FILENAME = ELECTRON_FILENAMES["output"]
-ELECTRON_DEPS_FILENAME = ELECTRON_FILENAMES["deps"]
-ELECTRON_CALL_BEFORE_FILENAME = ELECTRON_FILENAMES["call_before"]
-ELECTRON_CALL_AFTER_FILENAME = ELECTRON_FILENAMES["call_after"]
+ELECTRON_HOOKS_FILENAME = ELECTRON_FILENAMES["hooks"]
 ELECTRON_STORAGE_TYPE = "file"
 LATTICE_FUNCTION_FILENAME = LATTICE_FILENAMES["workflow_function"]
 LATTICE_FUNCTION_STRING_FILENAME = LATTICE_FILENAMES["workflow_function_string"]
@@ -62,9 +60,7 @@ LATTICE_INPUTS_FILENAME = LATTICE_FILENAMES["inputs"]
 LATTICE_NAMED_ARGS_FILENAME = LATTICE_FILENAMES["named_args"]
 LATTICE_NAMED_KWARGS_FILENAME = LATTICE_FILENAMES["named_kwargs"]
 LATTICE_RESULTS_FILENAME = LATTICE_FILENAMES["result"]
-LATTICE_DEPS_FILENAME = LATTICE_FILENAMES["deps"]
-LATTICE_CALL_BEFORE_FILENAME = LATTICE_FILENAMES["call_before"]
-LATTICE_CALL_AFTER_FILENAME = LATTICE_FILENAMES["call_after"]
+LATTICE_HOOKS_FILENAME = LATTICE_FILENAMES["hooks"]
 LATTICE_COVA_IMPORTS_FILENAME = LATTICE_FILENAMES["cova_imports"]
 LATTICE_LATTICE_IMPORTS_FILENAME = LATTICE_FILENAMES["lattice_imports"]
 LATTICE_STORAGE_TYPE = "file"
@@ -115,19 +111,18 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         ("named_args", LATTICE_NAMED_ARGS_FILENAME, result.lattice.named_args),
         ("named_kwargs", LATTICE_NAMED_KWARGS_FILENAME, result.lattice.named_kwargs),
         ("result", LATTICE_RESULTS_FILENAME, result._result),
-        ("deps", LATTICE_DEPS_FILENAME, result.lattice.metadata["deps"]),
-        ("call_before", LATTICE_CALL_BEFORE_FILENAME, result.lattice.metadata["call_before"]),
-        ("call_after", LATTICE_CALL_AFTER_FILENAME, result.lattice.metadata["call_after"]),
+        ("hooks", LATTICE_HOOKS_FILENAME, result.lattice.metadata["hooks"]),
         ("cova_imports", LATTICE_COVA_IMPORTS_FILENAME, result.lattice.cova_imports),
         ("lattice_imports", LATTICE_LATTICE_IMPORTS_FILENAME, result.lattice.lattice_imports),
     ]:
-        digest = local_store.store_file(data_storage_path, filename, data)
+        digest, size = local_store.store_file(data_storage_path, filename, data)
         asset_record_kwargs = {
             "storage_type": LATTICE_STORAGE_TYPE,
             "storage_path": str(data_storage_path),
             "object_key": filename,
             "digest_alg": digest.algorithm,
             "digest": digest.hexdigest,
+            "size": size,
         }
 
         assets[key] = Asset.create(session, insert_kwargs=asset_record_kwargs, flush=True)
@@ -169,9 +164,7 @@ def _lattice_data(session: Session, result: Result, electron_id: int = None) -> 
         "named_args_filename": LATTICE_NAMED_ARGS_FILENAME,
         "named_kwargs_filename": LATTICE_NAMED_KWARGS_FILENAME,
         "results_filename": LATTICE_RESULTS_FILENAME,
-        "deps_filename": LATTICE_DEPS_FILENAME,
-        "call_before_filename": LATTICE_CALL_BEFORE_FILENAME,
-        "call_after_filename": LATTICE_CALL_AFTER_FILENAME,
+        "hooks_filename": LATTICE_HOOKS_FILENAME,
         "cova_imports_filename": LATTICE_COVA_IMPORTS_FILENAME,
         "lattice_imports_filename": LATTICE_LATTICE_IMPORTS_FILENAME,
         "results_dir": results_dir,
@@ -293,16 +286,10 @@ def _electron_data(
                 ("function", ELECTRON_FUNCTION_FILENAME, tg.get_node_value(node_id, "function")),
                 ("function_string", ELECTRON_FUNCTION_STRING_FILENAME, function_string),
                 ("value", ELECTRON_VALUE_FILENAME, node_value),
-                ("deps", ELECTRON_DEPS_FILENAME, tg.get_node_value(node_id, "metadata")["deps"]),
                 (
-                    "call_before",
-                    ELECTRON_CALL_BEFORE_FILENAME,
-                    tg.get_node_value(node_id, "metadata")["call_before"],
-                ),
-                (
-                    "call_after",
-                    ELECTRON_CALL_AFTER_FILENAME,
-                    tg.get_node_value(node_id, "metadata")["call_after"],
+                    "hooks",
+                    ELECTRON_HOOKS_FILENAME,
+                    tg.get_node_value(node_id, "metadata")["hooks"],
                 ),
                 ("stdout", ELECTRON_STDOUT_FILENAME, node_stdout),
                 ("stderr", ELECTRON_STDERR_FILENAME, node_stderr),
@@ -310,13 +297,14 @@ def _electron_data(
                 ("error", ELECTRON_ERROR_FILENAME, node_error),
                 ("output", ELECTRON_RESULTS_FILENAME, node_output),
             ]:
-                digest = local_store.store_file(node_path, filename, data)
+                digest, size = local_store.store_file(node_path, filename, data)
                 asset_record_kwargs = {
                     "storage_type": ELECTRON_STORAGE_TYPE,
                     "storage_path": str(node_path),
                     "object_key": filename,
                     "digest_alg": digest.algorithm,
                     "digest": digest.hexdigest,
+                    "size": size,
                 }
 
                 assets[key] = Asset.create(session, insert_kwargs=asset_record_kwargs, flush=True)
@@ -357,9 +345,7 @@ def _electron_data(
                 "stdout_filename": ELECTRON_STDOUT_FILENAME,
                 "stderr_filename": ELECTRON_STDERR_FILENAME,
                 "error_filename": ELECTRON_ERROR_FILENAME,
-                "deps_filename": ELECTRON_DEPS_FILENAME,
-                "call_before_filename": ELECTRON_CALL_BEFORE_FILENAME,
-                "call_after_filename": ELECTRON_CALL_AFTER_FILENAME,
+                "hooks_filename": ELECTRON_HOOKS_FILENAME,
                 "qelectron_data_exists": node_qelectron_data_exists,
                 "job_id": job_row.id,
                 "created_at": timestamp,

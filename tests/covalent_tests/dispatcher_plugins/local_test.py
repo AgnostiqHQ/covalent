@@ -412,6 +412,8 @@ def test_upload_assets(mocker):
         num_assets = 0
         # Populate the lattice asset schemas with dummy URLs
         for key, asset in manifest.lattice.assets:
+            if asset.size == 0:
+                continue
             num_assets += 1
             asset.remote_uri = (
                 f"http://localhost:48008/api/v2/dispatches/{dispatch_id}/lattice/assets/dummy"
@@ -420,11 +422,11 @@ def test_upload_assets(mocker):
         endpoint = f"/api/v2/dispatches/{dispatch_id}/lattice/assets/dummy"
         r = Response()
         r.status_code = 200
-        mock_post = mocker.patch("covalent._api.apiclient.requests.Session.put", return_value=r)
+        mock_put = mocker.patch("covalent._api.apiclient.requests.Session.put", return_value=r)
 
         LocalDispatcher.upload_assets(manifest)
 
-        assert mock_post.call_count == num_assets
+        assert mock_put.call_count == num_assets
 
 
 def test_get_redispatch_request_body_norebuild(mocker):

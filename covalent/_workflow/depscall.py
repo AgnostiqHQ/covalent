@@ -51,14 +51,18 @@ class DepsCall(Deps):
     def __init__(
         self,
         func=None,
-        args=[],
-        kwargs={},
+        args=None,
+        kwargs=None,
         *,
         retval_keyword="",
         override_reserved_retval_keys=False,
     ):
+        if args is None:
+            args = []
+        if kwargs is None:
+            kwargs = {}
         if not override_reserved_retval_keys and retval_keyword in [RESERVED_RETVAL_KEY__FILES]:
-            raise Exception(
+            raise RuntimeError(
                 f"The retval_keyword for the specified DepsCall uses the reserved value '{retval_keyword}' please re-name to use another return value keyword."
             )
 
@@ -70,10 +74,7 @@ class DepsCall(Deps):
         """Return a JSON-serializable dictionary representation of self"""
         attributes = self.__dict__.copy()
         for k, v in attributes.items():
-            if isinstance(v, TransportableObject):
-                attributes[k] = v.to_dict()
-            else:
-                attributes[k] = v
+            attributes[k] = v.to_dict() if isinstance(v, TransportableObject) else v
         return {"type": "DepsCall", "short_name": self.short_name(), "attributes": attributes}
 
     def from_dict(self, object_dict) -> "DepsCall":

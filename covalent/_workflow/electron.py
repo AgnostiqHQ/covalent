@@ -16,14 +16,15 @@
 
 """Class corresponding to computation nodes."""
 
-
 import inspect
 import json
 import operator
 import tempfile
 from builtins import list
+from copy import deepcopy
 from dataclasses import asdict
 from functools import wraps
+from types import ModuleType
 from typing import TYPE_CHECKING, Any, Callable, Dict, Iterable, List, Optional, Union
 
 from covalent._dispatcher_plugins.local import LocalDispatcher
@@ -49,6 +50,7 @@ from .._shared_files.utils import (
 )
 from .depsbash import DepsBash
 from .depscall import RESERVED_RETVAL_KEY__FILES, DepsCall
+from .depsmodule import DepsModule
 from .depspip import DepsPip
 from .lattice import Lattice
 from .transport import TransportableObject, encode_metadata
@@ -207,6 +209,7 @@ class Electron:
         metadata = encode_metadata(DEFAULT_METADATA_VALUES.copy())
         executor = metadata["workflow_executor"]
         executor_data = metadata["workflow_executor_data"]
+
         op_electron = Electron(func_for_op, metadata=metadata)
 
         if active_lattice := active_lattice_manager.get_active_lattice():
@@ -306,13 +309,16 @@ class Electron:
 
                 get_item.__name__ = node_name
 
-                iterable_metadata = self.metadata.copy()
+                # Perform a deep copy so as to not modify the parent
+                # electron's hooks
+                iterable_metadata = deepcopy(self.metadata)
 
                 filtered_call_before = []
-                for elem in iterable_metadata["call_before"]:
-                    if elem["attributes"]["retval_keyword"] != "files":
-                        filtered_call_before.append(elem)
-                iterable_metadata["call_before"] = filtered_call_before
+                if "call_before" in iterable_metadata["hooks"]:
+                    for elem in iterable_metadata["hooks"]["call_before"]:
+                        if elem["attributes"]["retval_keyword"] != "files":
+                            filtered_call_before.append(elem)
+                    iterable_metadata["hooks"]["call_before"] = filtered_call_before
 
                 # Pack with main electron unless it is a sublattice.
                 name = active_lattice.transport_graph.get_node_value(self.node_id, "name")
@@ -452,6 +458,7 @@ class Electron:
 
         # Add a node to the transport graph of the active lattice. Electrons bound to nodes will never be packed with the
         # 'master' Electron. # Add non-sublattice node to the transport graph of the active lattice.
+
         self.node_id = active_lattice.transport_graph.add_node(
             name=self.function.__name__,
             function=self.function,
@@ -474,15 +481,20 @@ class Electron:
 
             # For keyword arguments
             # Filter out kwargs to be injected by call_before call_deps during execution.
-            call_before = self.metadata["call_before"]
-            retval_keywords = {item["attributes"]["retval_keyword"]: None for item in call_before}
+
+            retval_keywords = {}
+            if "call_before" in self.metadata["hooks"]:
+                call_before = self.metadata["hooks"]["call_before"]
+                retval_keywords = {
+                    item["attributes"]["retval_keyword"]: None for item in call_before
+                }
+
             for key, value in named_kwargs.items():
                 if key in retval_keywords:
                     app_log.debug(
                         f"kwarg {key} for function {self.function.__name__} to be injected at runtime"
                     )
                     continue
-
                 self.connect_node_with_others(
                     self.node_id, key, value, "kwarg", None, active_lattice.transport_graph
                 )
@@ -536,8 +548,8 @@ class Electron:
                 arg_index=arg_index,
             )
 
-        elif isinstance(param_value, list):
-
+        elif isinstance(param_value, (list, tuple, set)):
+            # Tuples and sets will also be converted to lists
             def _auto_list_node(*args, **kwargs):
                 return list(args)
 
@@ -580,6 +592,7 @@ class Electron:
 
         else:
             encoded_param_value = TransportableObject.make_transportable(param_value)
+
             parameter_node = transport_graph.add_node(
                 name=parameter_prefix + str(param_value),
                 function=None,
@@ -689,6 +702,7 @@ def electron(
     files: List[FileTransfer] = [],
     deps_bash: Union[DepsBash, List, str] = None,
     deps_pip: Union[DepsPip, list] = None,
+    deps_module: Union[DepsModule, List[DepsModule], str, List[str]] = None,
     call_before: Union[List[DepsCall], DepsCall] = None,
     call_after: Union[List[DepsCall], DepsCall] = None,
 ) -> Callable:  # sourcery skip: assign-if-exp
@@ -704,6 +718,7 @@ def electron(
             executor is used by default.
         deps_bash: An optional DepsBash object specifying a list of shell commands to run before `_func`
         deps_pip: An optional DepsPip object specifying a list of PyPI packages to install before running `_func`
+        deps_module: An optional DepsModule (or similar) object specifying which user modules to load before running `_func`
         call_before: An optional list of DepsCall objects specifying python functions to invoke before the electron
         call_after: An optional list of DepsCall objects specifying python functions to invoke after the electron
         files: An optional list of FileTransfer objects which copy files to/from remote or local filesystems.
@@ -748,6 +763,25 @@ def electron(
             else:
                 internal_call_before_deps.append(DepsCall(_file_transfer_call_dep_))
 
+    if deps_module:
+        if isinstance(deps_module, list):
+            # Convert to DepsModule objects
+            converted_deps = []
+            for dep in deps_module:
+                if type(dep) in [str, ModuleType]:
+                    converted_deps.append(DepsModule(dep))
+                else:
+                    converted_deps.append(dep)
+            deps_module = converted_deps
+
+        elif type(deps_module) in [str, ModuleType]:
+            deps_module = [DepsModule(deps_module)]
+
+        elif isinstance(deps_module, DepsModule):
+            deps_module = [deps_module]
+
+        internal_call_before_deps.extend(deps_module)
+
     if isinstance(deps_pip, DepsPip):
         deps["pip"] = deps_pip
     if isinstance(deps_pip, list):
@@ -771,13 +805,21 @@ def electron(
     if call_after:
         call_after_final.extend(call_after)
 
+    if deps is None and call_before_final is None and call_after_final is None:
+        hooks = None
+    else:
+        hooks = {}
+        if deps is not None:
+            hooks["deps"] = deps
+        if call_before_final is not None:
+            hooks["call_before"] = call_before_final
+        if call_after_final is not None:
+            hooks["call_after"] = call_after_final
+
     constraints = {
         "executor": executor,
-        "deps": deps,
-        "call_before": call_before_final,
-        "call_after": call_after_final,
+        "hooks": hooks,
     }
-
     constraints = encode_metadata(constraints)
 
     def decorator_electron(func=None):
@@ -870,7 +912,7 @@ def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kw
             )
             LocalDispatcher.upload_assets(recv_manifest)
 
-        return recv_manifest.json()
+        return recv_manifest.model_dump_json()
 
     except Exception as ex:
         # Fall back to legacy sublattice handling

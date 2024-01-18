@@ -130,32 +130,14 @@ def seed_electron_data():
                     "python_object": None,
                 },
             },
-            "case_deps_1": {
+            "case_hooks_1": {
                 "status_code": 200,
                 "path": {
                     "dispatch_id": VALID_DISPATCH_ID,
                     "electron_id": VALID_NODE_ID,
-                    "name": "deps",
+                    "name": "hooks",
                 },
                 "response_data": {"data": None, "python_object": None},
-            },
-            "case_call_before_1": {
-                "status_code": 200,
-                "path": {
-                    "dispatch_id": VALID_DISPATCH_ID,
-                    "electron_id": VALID_NODE_ID,
-                    "name": "call_before",
-                },
-                "response_data": {"data": "", "python_object": None},
-            },
-            "case_call_after_1": {
-                "status_code": 200,
-                "path": {
-                    "dispatch_id": VALID_DISPATCH_ID,
-                    "electron_id": VALID_NODE_ID,
-                    "name": "call_after",
-                },
-                "response_data": {"data": "", "python_object": None},
             },
             "case_error_1": {
                 "status_code": 200,
@@ -211,7 +193,7 @@ def seed_electron_data():
                     "electron_id": VALID_NODE_ID,
                     "name": "results",
                 },
-                "response_message": "value is not a valid enumeration member; permitted: 'function_string', 'function', 'executor', 'result', 'value', 'stdout', 'deps', 'call_before', 'call_after', 'error', 'info', 'inputs'",
+                "response_message": "value is not a valid enumeration member; permitted: 'function_string', 'function', 'executor', 'result', 'value', 'stdout', 'hooks', 'error', 'info', 'inputs'",
             },
             "case_invalid": {
                 "status_code": 400,
