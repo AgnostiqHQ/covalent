@@ -32,14 +32,14 @@ Check our [Quick Start Guide](https://docs.covalent.xyz/docs/get-started/quick-s
 
 ### What is Covalent?
 
-Covalent is a Python library built for AI/ML engineers, developers, and researchers. It provides a straightforward approach to run compute jobs, like LLMs, generative AI, and scientific research, on various cloud platforms or on-prem clusters.
+Covalent is a Python library for AI/ML engineers, developers, and researchers. It provides a straightforward approach to running compute jobs, like LLMs, generative AI, and scientific research, on various cloud platforms or on-prem clusters.
 
 
 <details>
 <summary><i><b>Run Code Anywhere:</b> Execute Python functions in any cloud or on-prem cluster by changing just a single line of code.</i></summary>
 <br>
 
-Its as simple as swapping the decorator with our executor plugins. Choose from [existing plugins](https://docs.covalent.xyz/docs/plugin) or [create custom ones](https://github.com/AgnostiqHQ/covalent-executor-template) for tailored interactions with any infrastructure.
+It is as simple as swapping the decorator with our executor plugins. Choose from [existing plugins](https://docs.covalent.xyz/docs/plugin) or [create custom ones](https://github.com/AgnostiqHQ/covalent-executor-template) for tailored interactions with any infrastructure.
 <div align="center"><img src="./doc/source/_static/executors_ship.png"  width="700"></div>
 </details>
 
@@ -156,13 +156,13 @@ For a more in-depth description of Covalent's features and how they work, see th
 
 ### Installation
 
-Covalent is developed using Python on Linux and macOS. The easiest way to install Covalent is using the PyPI package manager.
+Covalent is developed using Python on Linux and macOS. The easiest way to install Covalent is by using the PyPI package manager.
 
 ```
 pip install covalent --upgrade
 ```
 
-For other methods of installation please [check the docs.](https://docs.covalent.xyz/docs/get-started/install/)
+For other methods of installation, please [check the docs.](https://docs.covalent.xyz/docs/get-started/install/)
 
 **Deployments**
 
@@ -187,11 +187,11 @@ Covalent offers flexible deployment options, from Docker image/AMIs for self-hos
 
  <!-- <div><img src="./contributing_heading.svg" alt="divider"></div> -->
 
-To contribute to Covalent, refer to the [Contribution Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/CONTRIBUTING.md). We use GitHub's [issue tracking](https://github.com/AgnostiqHQ/covalent/issues) to manage known issues, bugs, and pull requests. Get started by forking the develop branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. For more information on adding tutorials, check the [Tutorial Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/doc/TUTORIAL_GUIDELINES.md). Participation in the Covalent community is governed by the [Code of Conduct](https://github.com/AgnostiqHQ/covalent/blob/master/CODE_OF_CONDUCT.md).
+To contribute to Covalent, refer to the [Contribution Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/CONTRIBUTING.md). We use GitHub's [issue tracking](https://github.com/AgnostiqHQ/covalent/issues) to manage known issues, bugs, and pull requests. Get started by forking the `develop` branch and submitting a pull request with your contributions. Improvements to the documentation, including tutorials and how-to guides, are also welcome from the community. For more information on adding tutorials, check the [Tutorial Guidelines](https://github.com/AgnostiqHQ/covalent/blob/master/doc/TUTORIAL_GUIDELINES.md). Participation in the Covalent community is governed by the [Code of Conduct](https://github.com/AgnostiqHQ/covalent/blob/master/CODE_OF_CONDUCT.md).
 
 ### Citation
 
-Please use the following citation in any publications
+Please use the following citation in any publications.
 
 [https://doi.org/10.5281/zenodo.5903364](https://zenodo.org/records/8369670)
 
