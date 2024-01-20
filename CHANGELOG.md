@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed unused file transfer how to guides
 - Removed `pennylane` as a requirement from notebooks' requirements.txt as it comes with `covalent`
+- Removed `validate_args` and `validate_region` method from `deploy_group` CLI as they were specific to AWS
 
 ### Docs
 

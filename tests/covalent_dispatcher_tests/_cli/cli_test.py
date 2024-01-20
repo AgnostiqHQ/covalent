@@ -184,6 +184,13 @@ def test_deploy_up(mocker):
         "covalent_dispatcher._cli.groups.deploy_group._run_command_and_show_output",
     )
 
+    # Fail with invalid executor name
+    with pytest.raises(SystemExit) as exc_info:
+        ctx = click.Context(up)
+        ctx.invoke(up, executor_name="invalid")
+
+    assert exc_info.value.code == 1
+
     # Succeed but exit after help message.
     mocker.patch(
         "covalent_dispatcher._cli.groups.deploy_group.get_crm_object",
@@ -212,6 +219,15 @@ def test_deploy_down(mocker):
     mock_run_command_and_show_output = mocker.patch(
         "covalent_dispatcher._cli.groups.deploy_group._run_command_and_show_output",
     )
+
+    # Fail with invalid executor name
+    with pytest.raises(SystemExit) as exc_info:
+        ctx = click.Context(down)
+        ctx.invoke(down, executor_name="invalid")
+
+    assert exc_info.value.code == 1
+
+    # Succeed with valid command options.
     mocker.patch(
         "covalent_dispatcher._cli.groups.deploy_group.get_crm_object",
     )
