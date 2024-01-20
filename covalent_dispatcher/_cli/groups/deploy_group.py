@@ -176,12 +176,20 @@ def up(executor_name: str, vars: Dict, help: bool, dry_run: bool, verbose: bool)
         $ covalent deploy up awslambda --verbose --region=us-east-1 --instance-type=t2.micro
 
     """
+
     cmd_options = {key[2:]: value for key, value in (var.split("=") for var in vars)}
-    if msg := validate_args(cmd_options):
-        # Message is not None, so there was an error.
-        click.echo(msg)
+
+    try:
+        crm = get_crm_object(executor_name, cmd_options)
+    except (KeyError, AttributeError):
+        click.echo(
+            click.style(
+                f"Warning: '{executor_name}' is not a valid executor for deployment.",
+                fg="yellow",
+            )
+        )
         sys.exit(1)
-    crm = get_crm_object(executor_name, cmd_options)
+
     if help:
         click.echo(Console().print(get_up_help_table(crm)))
         sys.exit(0)
@@ -212,7 +220,18 @@ def down(executor_name: str, verbose: bool) -> None:
         $ covalent deploy down ecs --verbose
 
     """
-    crm = get_crm_object(executor_name)
+
+    try:
+        crm = get_crm_object(executor_name)
+    except (KeyError, AttributeError):
+        click.echo(
+            click.style(
+                f"Warning: '{executor_name}' is not a valid executor for deployment.",
+                fg="yellow",
+            )
+        )
+        sys.exit(1)
+
     _command = partial(crm.down)
     _run_command_and_show_output(_command, "Destroying resources...", verbose=verbose)
 
@@ -247,7 +266,7 @@ def status(executor_names: Tuple[str]) -> None:
             for name in _executor_manager.executor_plugins_map
             if name not in ["dask", "local", "remote_executor"]
         ]
-        click.echo(f"Executors: {', '.join(executor_names)}")
+        click.echo(f"Installed executors: {', '.join(executor_names)}")
 
     table = Table()
     table.add_column("Executor", justify="center")
@@ -260,7 +279,9 @@ def status(executor_names: Tuple[str]) -> None:
             crm = get_crm_object(executor_name)
             crm_status = crm.status()
             table.add_row(executor_name, crm_status, description[crm_status])
-        except KeyError:
+        except (KeyError, AttributeError):
+            # Added the AttributeError here as well in case the executor does not
+            # have the ExecutorPluginDefaults or ExecutorInfraDefaults classes.
             invalid_executor_names.append(executor_name)
 
     click.echo(Console().print(table))
@@ -268,23 +289,7 @@ def status(executor_names: Tuple[str]) -> None:
     if invalid_executor_names:
         click.echo(
             click.style(
-                f"Warning: {', '.join(invalid_executor_names)} are not valid executors.",
+                f"Warning: Invalid executors for deployment -> '{', '.join(invalid_executor_names)}'",
                 fg="yellow",
             )
         )
-
-
-def validate_args(args: dict):
-    message = None
-    if len(args) == 0:
-        return message
-    if "region" in args and args["region"] != "":
-        if not validate_region(args["region"]):
-            return f"Unable to find the provided region: {args['region']}"
-
-
-def validate_region(region_name: str):
-    ec2_client = boto3.client("ec2")
-    response = ec2_client.describe_regions()
-    exists = region_name in [item["RegionName"] for item in response["Regions"]]
-    return exists
