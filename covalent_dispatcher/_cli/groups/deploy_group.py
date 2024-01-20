@@ -24,7 +24,6 @@ from importlib import import_module
 from pathlib import Path
 from typing import Callable, Dict, Tuple
 
-import boto3
 import click
 from rich.console import Console
 from rich.table import Table
