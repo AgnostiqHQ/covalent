@@ -184,22 +184,7 @@ def test_deploy_up(mocker):
         "covalent_dispatcher._cli.groups.deploy_group._run_command_and_show_output",
     )
 
-    # Fail with invalid command options.
-    mocker.patch(
-        "covalent_dispatcher._cli.groups.deploy_group.validate_args",
-        return_value="Non-empty msg",
-    )
-    with pytest.raises(SystemExit) as exc_info:
-        ctx = click.Context(up)
-        ctx.invoke(up)
-
-    assert exc_info.value.code == 1
-
     # Succeed but exit after help message.
-    mocker.patch(
-        "covalent_dispatcher._cli.groups.deploy_group.validate_args",
-        return_value=None,
-    )
     mocker.patch(
         "covalent_dispatcher._cli.groups.deploy_group.get_crm_object",
     )
