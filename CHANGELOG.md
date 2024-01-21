@@ -17,10 +17,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Removed unused file transfer how to guides
 - Removed `pennylane` as a requirement from notebooks' requirements.txt as it comes with `covalent`
+- Removed `validate_args` and `validate_region` method from `deploy_group` CLI as they were specific to AWS
 
 ### Docs
 
 - Added voice cloning tutorial
+
+### Fixed
+
+- Fixed the scenario where any deploy commands would fail if the user had a non deploy compatible plugin installed
 
 ## [0.233.0-rc.0] - 2024-01-07
 
