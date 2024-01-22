@@ -50,9 +50,9 @@ jobs:
           --ignore-module=pkg_resources
           --ignore-module=covalent/_dispatcher_plugins
           --ignore-module=covalent/_shared_files
-          --ignore-module=pennylane.*
-          --ignore-module=mpire.*
-          --ignore-module=lmdbm.*
+          --ignore-module=covalent/quantum/**
+          --ignore-file=covalent/**/q*/**
+          --ignore-file=covalent/_shared_files/pickling.py
           --ignore-file=covalent/executor/**
           --ignore-file=covalent/triggers/**
           --ignore-file=covalent/cloud_resource_manager/**

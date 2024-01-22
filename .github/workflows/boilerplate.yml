@@ -104,7 +104,7 @@ jobs:
 
         run: |
           for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
-            if [[ ! $( cat $file | tr -d '\r' ) =~ "$boilerplate2021" && ! $( cat $file | tr -d '\r' ) =~ "$boilerplate2022" && ! $( cat $file | tr -d '\r' ) =~ "$boilerplate2023" && ! $( cat $file | tr -d '\r' ) =~ "$boilerplate2024 ]] ; then
+            if [[ ! $( cat $file | tr -d '\r' ) =~ "$boilerplate2021" && ! $( cat $file | tr -d '\r' ) =~ "$boilerplate2022" && ! $( cat $file | tr -d '\r' ) =~ "$boilerplate2023" && ! $( cat $file | tr -d '\r' ) =~ "$boilerplate2024" ]] ; then
               printf "Boilerplate is missing from $file.\n"
               printf "The first 15 lines of $file are\n\n"
               cat $file | tr -d '\r' | cat -ET | head -n 15
