@@ -261,11 +261,11 @@ jobs:
       - name: Run Qelectron tests and measure coverage
         id: qelectron-tests
         if: >
-          steps.modified-files.outputs.qelectron == 'true' && env.COVALENT_DISABLE_QELECTRON != 'true'
-          || env.BUILD_AND_RUN_ALL
+          (steps.modified-files.outputs.qelectron == 'true'
+          || env.BUILD_AND_RUN_ALL) && env.COVALENT_DISABLE_QELECTRON != 'true'
         run: PYTHONPATH=$PWD/ pytest -vvs  --reruns=5 tests/qelectron_tests/core_tests --cov=covalent_qelectron --cov-config=.coveragerc
 
-      - name: Generate SDK coverage report
+      - name: Generate Qelectron coverage report
         id: qelectron-coverage
         if: steps.qelectron-tests.outcome == 'success' && env.COVALENT_DISABLE_QELECTRON != 'true'
         run: coverage xml -o qelectron_coverage.xml
