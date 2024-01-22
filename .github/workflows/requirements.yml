@@ -50,7 +50,7 @@ jobs:
           --ignore-module=pkg_resources
           --ignore-module=covalent/_dispatcher_plugins
           --ignore-module=covalent/_shared_files
-          --ignore-module=covalent/quantum/**
+          --ignore-module=covalent/quantum
           --ignore-file=covalent/_workflow/q*
           --ignore-file=covalent/_shared_files/q*
           --ignore-file=covalent/_results_manager/q*
