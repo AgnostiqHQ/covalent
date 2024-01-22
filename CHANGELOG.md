@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated RTD notebooks to fix their behavior
 - Changed the error being shown when drawing the transport graph of a lattice to a debug message instead
 - Revamped README
+- Reorganized `qelectron` tests
+- Made qelectron a feature that can be opted-out of
 
 ### Removed
 
@@ -26,6 +28,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed the scenario where any deploy commands would fail if the user had a non deploy compatible plugin installed
+- Fixed the SQLAlchemy warning that used to show up at every fresh server start
+
+### Operations
+
+- Added qelectron tests to the `tests` workflow
 
 ## [0.233.0-rc.0] - 2024-01-07
 

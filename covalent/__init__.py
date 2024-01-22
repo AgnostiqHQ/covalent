@@ -16,10 +16,11 @@
 
 """Main Covalent public functionality."""
 
+import contextlib
 from importlib import metadata
 
 from . import _file_transfer as fs  # nopycln: import
-from . import executor, leptons  # nopycln: import
+from . import leptons  # nopycln: import
 from ._dispatcher_plugins import local_dispatch as dispatch  # nopycln: import
 from ._dispatcher_plugins import local_dispatch_sync as dispatch_sync  # nopycln: import
 from ._dispatcher_plugins import local_redispatch as redispatch  # nopycln: import
@@ -48,9 +49,11 @@ from ._workflow import (  # nopycln: import
     lattice,
 )
 from ._workflow.electron import wait  # nopycln: import
-from ._workflow.qelectron import qelectron  # nopycln: import
 from .executor.utils import get_context  # nopycln: import
-from .quantum import QCluster  # nopycln: import
+
+with contextlib.suppress(ImportError):
+    from ._workflow.qelectron import qelectron  # nopycln: import
+    from .quantum import QCluster  # nopycln: import
 
 __all__ = [s for s in dir() if not s.startswith("_")]
 

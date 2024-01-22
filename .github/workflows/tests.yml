@@ -139,7 +139,7 @@ jobs:
           echo "NEED_PYTHON=$NEED_PYTHON" >> $GITHUB_ENV
           echo "NEED_FRONTEND=$NEED_FRONTEND" >> $GITHUB_ENV
           echo "BUILD_AND_RUN_ALL=$BUILD_AND_RUN_ALL" >> $GITHUB_ENV
-          echo "DISABLE_QELECTRON=true" >> $GITHUB_ENV
+          echo "COVALENT_DISABLE_QELECTRON=true" >> $GITHUB_ENV
 
       - name: Set up Python
         if: >
@@ -261,13 +261,13 @@ jobs:
       - name: Run Qelectron tests and measure coverage
         id: qelectron-tests
         if: >
-          steps.modified-files.outputs.qelectron == 'true' && env.DISABLE_QELECTRON != 'true'
+          steps.modified-files.outputs.qelectron == 'true' && env.COVALENT_DISABLE_QELECTRON != 'true'
           || env.BUILD_AND_RUN_ALL
         run: PYTHONPATH=$PWD/ pytest -vvs  --reruns=5 tests/qelectron_tests/core_tests --cov=covalent_qelectron --cov-config=.coveragerc
 
       - name: Generate SDK coverage report
         id: qelectron-coverage
-        if: steps.qelectron-tests.outcome == 'success' && env.DISABLE_QELECTRON != 'true'
+        if: steps.qelectron-tests.outcome == 'success' && env.COVALENT_DISABLE_QELECTRON != 'true'
         run: coverage xml -o qelectron_coverage.xml
 
       - name: Run dispatcher tests and measure coverage
