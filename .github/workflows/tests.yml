@@ -90,6 +90,11 @@ jobs:
             sdk:
             - 'covalent/**'
             - 'tests/covalent_tests/**'
+            qelectron:
+            - 'covalent/executor/quantum_plugins/**'
+            - 'covalent/executor/qbase.py'
+            - 'covalent/quantum/**'
+            - 'tests/qelectron_tests/**'
             dispatcher:
             - 'covalent_dispatcher/**'
             - 'tests/covalent_dispatcher_tests/**'
@@ -251,6 +256,18 @@ jobs:
         id: sdk-coverage
         if: steps.sdk-tests.outcome == 'success'
         run: coverage xml -o sdk_coverage.xml
+
+      - name: Run Qelectron tests and measure coverage
+        id: qelectron-tests
+        if: >
+          steps.modified-files.outputs.qelectron == 'true'
+          || env.BUILD_AND_RUN_ALL
+        run: PYTHONPATH=$PWD/ pytest -vvs  --reruns=5 tests/qelectron_tests/core_tests --cov=covalent_qelectron --cov-config=.coveragerc
+
+      - name: Generate SDK coverage report
+        id: qelectron-coverage
+        if: steps.qelectron-tests.outcome == 'success'
+        run: coverage xml -o qelectron_coverage.xml
 
       - name: Run dispatcher tests and measure coverage
         id: dispatcher-tests
