@@ -263,9 +263,9 @@ def get_qelectron_db_path(dispatch_id: str, task_id: int):
     This is a proxy to qelectron_utils.get_qelectron_db_path() for removing qelectron dependency.
     """
 
-    from .qelectron_utils import get_qelectron_db_path
-
     try:
+        from .qelectron_utils import get_qelectron_db_path
+
         return get_qelectron_db_path(dispatch_id, task_id)
     except ImportError:
         return None
