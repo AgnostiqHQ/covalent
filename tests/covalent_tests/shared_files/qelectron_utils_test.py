@@ -30,7 +30,7 @@ from covalent._shared_files.qelectron_utils import get_qelectron_db_path
 def test_get_qelectron_db_path(mocker, db_exists):
     """Test the get_qelectron_db_path function."""
 
-    mock_database = mocker.patch("covalent._shared_files.qelectron_utils.Database")
+    mock_database = mocker.patch("covalent.quantum.qserver.database.Database")
     mock_database.return_value.get_db_path.return_value.exists.return_value = db_exists
 
     dispatch_id = "mock_dispatch_id"
