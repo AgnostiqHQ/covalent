@@ -75,6 +75,8 @@ Advanced
      - :doc:`Scalable API backends for LLM and generative AI <./0_ClassicalMachineLearning/genai/source>`
    * - Federated learning
      - :doc:`Federated learning <./federated_learning/source>`
+   * - Voice cloning
+     - :doc:`Voice cloning <./voice_cloning/source>`
 
 ---------------------------------
 

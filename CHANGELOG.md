@@ -11,11 +11,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated RTD notebooks to fix their behavior
 - Changed the error being shown when drawing the transport graph of a lattice to a debug message instead
+- Revamped README
 
 ### Removed
 
 - Removed unused file transfer how to guides
 - Removed `pennylane` as a requirement from notebooks' requirements.txt as it comes with `covalent`
+- Removed `validate_args` and `validate_region` method from `deploy_group` CLI as they were specific to AWS
+
+### Docs
+
+- Added voice cloning tutorial
+
+### Fixed
+
+- Fixed the scenario where any deploy commands would fail if the user had a non deploy compatible plugin installed
+- Fixed deploy commands' default value of plugins not being propagated to the tfvars file
 
 ## [0.233.0-rc.0] - 2024-01-07
 
