@@ -50,6 +50,7 @@ env:
     '"AlejandroEsquivel",'
     '"FyzHsn",'
     '"wjcunningham7",'
+    '"kessler-frost",'
     '"santoshkumarradha"]'
   EXECUTOR_BASE_DOCKERFILE_URL: "https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/Dockerfile?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}"
   AWS_PLUGINS_VERSION_URL: "https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/VERSION?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}"
