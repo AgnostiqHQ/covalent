@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed the scenario where any deploy commands would fail if the user had a non deploy compatible plugin installed
 - Fixed the SQLAlchemy warning that used to show up at every fresh server start
+- Fixed deploy commands' default value of plugins not being propagated to the tfvars file
 
 ### Operations
 
