@@ -165,6 +165,7 @@ jobs:
         run: |
           pip install --no-cache-dir -r ./requirements.txt
           pip install --no-cache-dir -r ./tests/requirements.txt
+          pip install --no-cache-dir -r ./requirements-quantum.txt
 
       - name: Set up Node
         if: env.NEED_FRONTEND || env.BUILD_AND_RUN_ALL
