@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Updated Slurm plugin docs to note possible SSH limitation
 - Updated RTD notebooks to fix their behavior
 - Changed the error being shown when drawing the transport graph of a lattice to a debug message instead
 - Revamped README
