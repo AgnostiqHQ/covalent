@@ -375,7 +375,7 @@ for name in _executor_manager.executor_plugins_map:
     plugin_class = _executor_manager.executor_plugins_map[name]
     globals()[plugin_class.__name__] = plugin_class
 
-# Only creating the qexecutor manager if PennyLane is installed
+# Only creating the qexecutor manager if its requirements are installed
 with contextlib.suppress(ImportError):
     _qexecutor_manager = _QExecutorManager()
     for qexecutor_cls in _qexecutor_manager.executor_plugins_map.values():

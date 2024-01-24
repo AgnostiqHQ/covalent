@@ -7,13 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Added `pennylane` as a requirement in tests due to the tutorials using it
+
 ### Changed
 
 - Updated RTD notebooks to fix their behavior
 - Changed the error being shown when drawing the transport graph of a lattice to a debug message instead
 - Revamped README
 - Reorganized `qelectron` tests
-- Made qelectron a feature that can be opted-out of
+- Made qelectron an opt-in feature using `covalent[quantum]` extra
 
 ### Removed
 
