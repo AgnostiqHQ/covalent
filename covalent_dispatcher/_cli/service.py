@@ -27,6 +27,7 @@ import socket
 import sys
 import time
 import traceback
+import warnings
 from pathlib import Path
 from subprocess import DEVNULL, Popen
 from typing import Optional
@@ -50,6 +51,7 @@ from rich.status import Status
 from rich.syntax import Syntax
 from rich.table import Table
 from rich.text import Text
+from sqlalchemy import exc as sa_exc
 
 from covalent._shared_files.config import ConfigManager, get_config, reload_config, set_config
 
@@ -66,6 +68,9 @@ MIGRATION_COMMAND_MSG = (
 )
 ZOMBIE_PROCESS_STATUS_MSG = "Covalent server is unhealthy: Process is in zombie status"
 STOPPED_PROCESS_STATUS_MSG = "Covalent server is unhealthy: Process is in stopped status"
+
+# Ignore SQLAlchemy warnings
+warnings.simplefilter("ignore", category=sa_exc.SAWarning)
 
 
 def print_header(console):

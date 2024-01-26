@@ -25,7 +25,7 @@ from numpy import isclose
 import covalent as ct
 
 EXECUTORS = [
-    ct.executor.QiskitExecutor(device="local_sampler", shots=10_000),
+    ct.executor.Simulator(),
 ]
 
 

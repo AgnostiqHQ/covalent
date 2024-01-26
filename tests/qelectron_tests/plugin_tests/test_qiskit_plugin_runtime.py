@@ -25,7 +25,7 @@ from pennylane import numpy as np
 import covalent as ct
 from covalent._shared_files.config import get_config
 
-from .utils import arg_vector, cyclic_selector, get_hamiltonian_circuit, weight_vector
+from ..utils import arg_vector, cyclic_selector, get_hamiltonian_circuit, weight_vector
 
 EXECUTOR_CLASSES = [
     ct.executor.QiskitExecutor,

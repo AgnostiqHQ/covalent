@@ -17,7 +17,7 @@
 import base64
 from typing import Callable, Union
 
-from ..._shared_files.utils import cloudpickle_deserialize, cloudpickle_serialize
+from ..._shared_files.qelectron_utils import cloudpickle_deserialize, cloudpickle_serialize
 from .base import AsyncBaseQCluster, BaseQExecutor
 from .default_selectors import selector_map
 

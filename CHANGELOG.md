@@ -7,11 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Added `pennylane` as a requirement in tests due to the tutorials using it
+
 ### Changed
 
 - Updated RTD notebooks to fix their behavior
 - Changed the error being shown when drawing the transport graph of a lattice to a debug message instead
 - Revamped README
+- Reorganized `qelectron` tests
+- Made qelectron an opt-in feature using `covalent[quantum]` extra
 
 ### Removed
 
@@ -26,7 +32,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fixed the scenario where any deploy commands would fail if the user had a non deploy compatible plugin installed
+- Fixed the SQLAlchemy warning that used to show up at every fresh server start
 - Fixed deploy commands' default value of plugins not being propagated to the tfvars file
+
+### Operations
+
+- Added qelectron tests to the `tests` workflow
 
 ## [0.233.0-rc.0] - 2024-01-07
 
