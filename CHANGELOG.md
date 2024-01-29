@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added config manager method to handle Python to TF value conversion (e.g. None->null, True->true, False->false).
 - Added `pennylane` as a requirement in tests due to the tutorials using it
 
 ### Changed
