@@ -16,28 +16,20 @@
 
 """General utils for Covalent."""
 
-import importlib
 import inspect
 import shutil
 import socket
 from datetime import timedelta
-from typing import Any, Callable, Dict, List, Tuple
-
-import cloudpickle
-from pennylane._device import Device
+from typing import Callable, Dict, List, Tuple
 
 from . import logger
 from .config import get_config
-from .pickling import _qml_mods_pickle
 
 app_log = logger.app_log
 log_stack_info = logger.log_stack_info
 
 DEFAULT_UI_ADDRESS = get_config("user_interface.address")
 DEFAULT_UI_PORT = get_config("user_interface.port")
-
-
-_IMPORT_PATH_SEPARATOR = ":"
 
 
 def get_ui_url(path):
@@ -264,49 +256,16 @@ def copy_file_locally(src_uri, dest_uri):
     shutil.copyfile(src_path, dest_path)
 
 
-@_qml_mods_pickle
-def cloudpickle_serialize(obj):
-    return cloudpickle.dumps(obj)
-
-
-def cloudpickle_deserialize(obj):
-    return cloudpickle.loads(obj)
-
-
-def select_first_executor(qnode, executors):
-    """Selects the first executor to run the qnode"""
-    return executors[0]
-
-
-def get_import_path(obj) -> Tuple[str, str]:
+def get_qelectron_db_path(dispatch_id: str, task_id: int):
     """
-    Determine the import path of an object.
-    """
-    module = inspect.getmodule(obj)
-    if module:
-        module_path = module.__name__
-        class_name = obj.__name__
-        return f"{module_path}{_IMPORT_PATH_SEPARATOR}{class_name}"
-    raise RuntimeError(f"Unable to determine import path for {obj}.")
+    Return the path to the Qelectron database for a given dispatch_id and task_id.
 
-
-def import_from_path(path: str) -> Any:
+    This is a proxy to qelectron_utils.get_qelectron_db_path() for removing qelectron dependency.
     """
-    Import a class from a path.
-    """
-    module_path, class_name = path.split(_IMPORT_PATH_SEPARATOR)
-    module = importlib.import_module(module_path)
-    return getattr(module, class_name)
 
+    try:
+        from .qelectron_utils import get_qelectron_db_path
 
-def get_original_shots(dev: Device):
-    """
-    Recreate vector of shots if device has a shot vector.
-    """
-    if not dev.shot_vector:
-        return dev.shots
-
-    shot_sequence = []
-    for shots in dev.shot_vector:
-        shot_sequence.extend([shots.shots] * shots.copies)
-    return type(dev.shot_vector)(shot_sequence)
+        return get_qelectron_db_path(dispatch_id, task_id)
+    except ImportError:
+        return None

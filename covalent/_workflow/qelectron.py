@@ -19,7 +19,7 @@ from typing import Callable, List, Optional, Union
 
 import pennylane as qml
 
-from .._shared_files.utils import get_import_path, get_original_shots
+from .._shared_files.qelectron_utils import get_import_path, get_original_shots
 from ..quantum.qcluster import QCluster
 from ..quantum.qcluster.base import AsyncBaseQCluster, BaseQExecutor
 from ..quantum.qcluster.simulator import Simulator

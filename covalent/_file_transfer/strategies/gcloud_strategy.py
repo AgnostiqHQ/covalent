@@ -41,7 +41,7 @@ class GCloud(FileTransferStrategy):
 
     def __init__(self, credentials: str = None, project_id: str = None):
         if credentials is not None:
-            credentials_json = Path(credentials).resolve()
+            credentials_json = Path(credentials).expanduser().resolve()
 
             if not credentials_json.is_file():
                 raise ValueError("Cloud not locate credentials for GCloud file transfers.")

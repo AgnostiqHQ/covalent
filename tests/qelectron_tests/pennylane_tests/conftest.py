@@ -33,7 +33,7 @@ import pennylane as qml
 import pytest
 
 import covalent as ct
-from covalent._shared_files.utils import get_original_shots
+from covalent._shared_files.qelectron_utils import get_original_shots
 from covalent.quantum.qcluster.simulator import SIMULATOR_DEVICES
 
 SKIP_RETURN_TYPES = ["qml.apply", "qml.vn_entropy", "qml.mutual_info"]
