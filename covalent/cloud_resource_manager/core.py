@@ -24,7 +24,7 @@ import sys
 from configparser import ConfigParser
 from pathlib import Path
 from types import ModuleType
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 from covalent._shared_files.config import set_config
 from covalent.executor import _executor_manager
@@ -391,6 +391,30 @@ class CloudResourceManager:
         # Saving in a directory which doesn't get deleted on purge
         return str(Path(self.executor_tf_path) / "terraform.tfstate")
 
+    def _convert_to_tfvar(self, value: Any) -> Any:
+        """
+        Convert the value to a string that can be parsed as a terraform variable.
+
+        Args:
+            value: Value to convert
+
+        Returns:
+            Converted value
+
+        """
+        if value is True:
+            return "true"
+        if value is False:
+            return "false"
+        if value is None:
+            return "null"
+        if isinstance(value, str):
+            return f'"{value}"'
+        if isinstance(value, Sequence):
+            return str(list(value))
+
+        return str(value)
+
     def up(self, print_callback: Callable, dry_run: bool = True) -> None:
         """
         Spin up executor resources with terraform
@@ -432,8 +456,8 @@ class CloudResourceManager:
                 if "default" in value:
                     tf_vars_env_dict[f"TF_VAR_{key}"] = value["default"]
 
-                    if value["default"] != "":
-                        f.write(f'{key}="{value["default"]}"\n')
+                    if value["default"]:
+                        f.write(f'{key}={self._convert_to_tfvar(value["default"])}\n')
 
         # Overwrite the default values with the user passed values
         if self.executor_options:
