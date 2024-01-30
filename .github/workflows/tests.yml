@@ -393,7 +393,10 @@ jobs:
           echo "::set-output name=local_codecov::${local_codecov}"
 
       - name: Alert Slack
-        if: failure()
+        if: >
+          (github.event_name == 'schedule'
+          || github.event_name == 'workflow_dispatch')
+          && failure()
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: "covalent-ci"
