@@ -391,30 +391,6 @@ class CloudResourceManager:
         # Saving in a directory which doesn't get deleted on purge
         return str(Path(self.executor_tf_path) / "terraform.tfstate")
 
-    def _convert_to_tfvar(self, value: Any) -> Any:
-        """
-        Convert the value to a string that can be parsed as a terraform variable.
-
-        Args:
-            value: Value to convert
-
-        Returns:
-            Converted value
-
-        """
-        if value is True:
-            return "true"
-        if value is False:
-            return "false"
-        if value is None:
-            return "null"
-        if isinstance(value, str):
-            return f'"{value}"'
-        if isinstance(value, Sequence):
-            return str(list(value))
-
-        return str(value)
-
     def up(self, print_callback: Callable, dry_run: bool = True) -> None:
         """
         Spin up executor resources with terraform
@@ -561,3 +537,29 @@ class CloudResourceManager:
 
         # Run `terraform state list`
         return self._run_in_subprocess(cmd=tf_state, env_vars=self._terraform_log_env_vars)
+
+    @staticmethod
+    def _convert_to_tfvar(value: Any) -> Any:
+        """
+        Convert the value to a string that can be parsed as a terraform variable.
+
+        Args:
+            value: Value to convert
+
+        Returns:
+            Converted value
+
+        """
+        if value is True:
+            return "true"
+        if value is False:
+            return "false"
+        if value is None:
+            return "null"
+        if isinstance(value, str):
+            return f'"{value}"'
+        if isinstance(value, Sequence):
+            values = [CloudResourceManager._convert_to_tfvar(v) for v in value]
+            return f"[{', '.join(values)}]"
+
+        return str(value)
