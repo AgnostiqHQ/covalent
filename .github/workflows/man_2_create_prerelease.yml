@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-name: man_2_create_release
+name: man_2_create_prerelease
 
 on:
   workflow_dispatch:
@@ -25,11 +25,6 @@ on:
         default: true
         description: "WARNING: Make sure the `man_1_push_to_master` workflow has passed successfully before running this workflow.
         Uncheck this box if it has."
-      branch_name:
-        type: string
-        required: true
-        default: "master"
-        description: "The name of the branch to create a release from, defaults to master."
 
 permissions:
   id-token: write
@@ -43,7 +38,6 @@ jobs:
       !github.event.inputs.push_to_master_failed
     with:
       prerelease: true
-      prerelease_name: github.event.inputs.branch_name
     secrets: inherit # pragma: allowlist secret
 
   notify_slack:
@@ -55,7 +49,7 @@ jobs:
       - name: Checkout master
         uses: actions/checkout@v4
         with:
-          ref: "master"
+          ref: ${{ github.event.inputs.branch_name }}
 
       - name: Format Slack message
         run: |

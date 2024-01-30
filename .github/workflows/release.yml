@@ -20,36 +20,20 @@ on:
   workflow_dispatch:
     inputs:
       stable_version:
-        description: "Stable version number, e.g. 0.32.3"
+        description: "Stable version number, e.g. 0.32.3. Mandatory if a stable release is being created."
         type: string
       test_release:
         description: "Test the workflow but don't create the release. Uncheck this box to create a release."
         required: true
         type: boolean
         default: true
-      prerelease:
-        description: "true: Create a prerelease. false: Create a stable release"
-        required: true
-        type: boolean
-        default: true
-      prerelease_version:
-        description: "The prerelease version to release"
-        required: false
-        type: string
-        default: "develop"
-
   workflow_call:
     inputs:
       prerelease:
-        description: "true: Create a prerelease. false: Create a stable release"
+        description: "true: Create a prerelease. false: Create a stable release."
         required: true
         type: boolean
         default: true
-      prerelease_version:
-        description: "The prerelease version to release"
-        required: false
-        type: string
-        default: "master"
 
 permissions:
   id-token: write
@@ -61,16 +45,10 @@ env:
     '"AlejandroEsquivel",'
     '"FyzHsn",'
     '"wjcunningham7",'
+    '"kessler-frost",'
     '"santoshkumarradha"]'
-  EXECUTOR_BASE_DOCKERFILE_URL: "https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/Dockerfile?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}"
-  AWS_PLUGINS_VERSION_URL: "https://raw.githubusercontent.com/AgnostiqHQ/covalent-aws-plugins/develop/VERSION?token=${{ secrets.COVALENT_OPS_BOT_TOKEN }}"
 
 jobs:
-  # version_assigner:
-  #   name: Assign Version
-  #   uses: AgnostiqHQ/covalent/.github/workflows/changelog.yml@develop
-  #   secrets: inherit # pragma: allowlist secret
-
   github:
     runs-on: ubuntu-latest
     outputs:
@@ -83,33 +61,14 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
           ref: "v${{ github.event.inputs.stable_version }}"
-      - name: Format prerelease ref
-        if: inputs.prerelease
-        run: |
-          # re='^[0-9]+$'
-          # IFS='.' read -ra version <<< "${{ github.event.inputs.prerelease_version }}"
-          # if [[ ${version[0]} =~ $re ]] ; then
-          #   echo "PRERELEASE=v$version" >> $GITHUB_ENV
-          # else
-          #   echo "PRERELEASE=$version" >> $GITHUB_ENV
-          # fi
-          echo "PRERELEASE=${{ github.event.inputs.prerelease_version }}" >> $GITHUB_ENV
-      - name: Check out prerelease tag
+
+      - name: Check out master branch for prerelease
         uses: actions/checkout@v4
         if: inputs.prerelease
         with:
           persist-credentials: false
           fetch-depth: 0
-          ref: "updating-nightly-workflow"
-      - name: Generate stable release message
-        if: >
-          github.event.inputs.stable_version
-          && contains(env.PAUL_BLART, github.actor)
-        id: stable-changelog
-        uses: AgnostiqHQ/covalent/.github/actions/stable-changelog@develop
-        with:
-          changelog-path: CHANGELOG.md
-          version-path: VERSION
+          ref: "master"
 
       - name: Read version
         run: |
@@ -121,6 +80,27 @@ jobs:
           VERSION="$(cat ./VERSION)"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "RELEASE=v$VERSION" >> $GITHUB_ENV
+
+      - name: Tag commit for prerelease
+        if: inputs.prerelease
+        id: push
+        run: |
+          git config user.name "CovalentOpsBot"
+          git config user.email "covalentopsbot@users.noreply.github.com"
+          git tag -a $RELEASE -m "Release $RELEASE"
+          git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
+          git push origin $RELEASE
+
+      - name: Generate stable release message
+        if: >
+          github.event.inputs.stable_version
+          && contains(env.PAUL_BLART, github.actor)
+        id: stable-changelog
+        uses: AgnostiqHQ/covalent/.github/actions/stable-changelog@develop
+        with:
+          changelog-path: CHANGELOG.md
+          version-path: VERSION
+
       - name: Generate prerelease message
         if: inputs.prerelease
         id: message
@@ -131,47 +111,42 @@ jobs:
           echo 'MESSAGE<<EOF' >> $GITHUB_ENV
           tail +$begin ./CHANGELOG.md | head -$end >> $GITHUB_ENV
           echo 'EOF' >> $GITHUB_ENV
-      - name: Tag commit
-        id: push
-        continue-on-error: true
-        run: |
-          git config user.name "CovalentOpsBot"
-          git config user.email "covalentopsbot@users.noreply.github.com"
-          git tag -a $RELEASE -m "Release $RELEASE"
-          git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
-          git push origin $RELEASE
+
       - name: Create prerelease
         if: >-
           inputs.prerelease
+          && ${{ steps.push.outcome == 'success'
           && steps.message.outcome == 'success'
-          && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false')
+          && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false') }}
         uses: ncipollo/release-action@v1
         with:
           body: ${{ env.MESSAGE }}
           token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
           tag: ${{ env.RELEASE }}
-          prerelease: true
-      # - name: Create stable release
-      #   if: >-
-      #     github.event.inputs.stable_version
-      #     && contains(env.PAUL_BLART, github.actor)
-      #     && steps.stable-changelog.outcome == 'success'
-      #     && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false')
-      #   uses: ncipollo/release-action@v1
-      #   with:
-      #     body: ${{ steps.stable-changelog.outputs.message }}
-      #     token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
-      #     tag: ${{ env.RELEASE }}
-      # - name: Alert Slack
-      #   if: failure()
-      #   uses: rtCamp/action-slack-notify@v2
-      #   env:
-      #     SLACK_CHANNEL: "covalent-ci"
-      #     SLACK_USERNAME: "CovalentOpsBot"
-      #     SLACK_MESSAGE: "The release.yml workflow is failing in ${{ github.ref }}!"
-      #     SLACK_COLOR: ${{ job.status }}
-      #     SLACK_TITLE: ":warning:  Attention Required  :warning:"
-      #     SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
+          prerelease: ${{ inputs.prerelease }}
+
+      - name: Create stable release
+        if: >-
+          github.event.inputs.stable_version
+          && contains(env.PAUL_BLART, github.actor)
+          && steps.stable-changelog.outcome == 'success'
+          && (!github.event.inputs.test_release || github.event.inputs.test_release == 'false')
+        uses: ncipollo/release-action@v1
+        with:
+          body: ${{ steps.stable-changelog.outputs.message }}
+          token: ${{ secrets.COVALENT_OPS_BOT_TOKEN }}
+          tag: ${{ env.RELEASE }}
+
+      - name: Alert Slack
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_CHANNEL: "covalent-ci"
+          SLACK_USERNAME: "CovalentOpsBot"
+          SLACK_MESSAGE: "The release.yml workflow is failing in ${{ github.ref }}!"
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: ":warning:  Attention Required  :warning:"
+          SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
 
   pypi:
     runs-on: ubuntu-latest
@@ -185,31 +160,38 @@ jobs:
           persist-credentials: false
           fetch-depth: 0
           ref: ${{ needs.github.outputs.release }}
+
       - name: Set up Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.8
+
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           pip install twine
+
       - name: Set up Node
         uses: actions/setup-node@v2
         with:
           node-version: 16
+
       - name: Build Webapp
         run: |
           cd ./covalent_ui/webapp
           yarn install
           yarn build
+
       - name: Build Stable or Pre-Release Distribution
         id: pre-or-stable-build
         run: python setup.py sdist
+
       - name: Transform semver version to pep440
         id: version-transform
         uses: ./.github/actions/version-transform
         with:
           version-path: VERSION
+
       - name: Validate Distribution
         id: validate
         run: |
@@ -228,6 +210,7 @@ jobs:
           diff -r covalent-${VERSION}/covalent_ui/webapp/build ../covalent_ui/webapp/build
           rm -rf covalent-${VERSION}/
           echo "::set-output name=version::$VERSION"
+
       - name: Upload Distribution
         if: >
           steps.pre-or-stable-build.outcome == 'success'
@@ -237,6 +220,7 @@ jobs:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
         run: twine upload dist/*
+
       - name: Alert Slack
         if: failure()
         uses: rtCamp/action-slack-notify@v2
@@ -247,128 +231,3 @@ jobs:
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
-
-  # docker:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Check out release tag
-  #       uses: actions/checkout@v4
-  #       if: inputs.stable_version
-  #       with:
-  #         persist-credentials: false
-  #         fetch-depth: 0
-  #         ref: "v${{ github.event.inputs.stable_version }}"
-
-  #     - name: Check out master
-  #       uses: actions/checkout@v4
-  #       if: inputs.prerelease
-  #       with:
-  #         persist-credentials: false
-  #         fetch-depth: 0
-
-  #     - name: Set up QEMU
-  #       uses: docker/setup-qemu-action@master
-  #       with:
-  #         platforms: "linux/amd64,linux/arm64"
-
-  #     - name: Set up Docker Buildx
-  #       uses: docker/setup-buildx-action@master
-
-  #     - name: Configure AWS credentials
-  #       uses: aws-actions/configure-aws-credentials@v1
-  #       with:
-  #         role-to-assume: ${{ secrets.ECR_PUBLIC_UPLOAD_ROLE }}
-  #         aws-region: us-east-1
-
-  #     - name: Generate metadata
-  #       run: |
-  #         aws --version
-  #         docker info
-  #         TAG="$(cat ./VERSION)"
-  #         echo "TAG: $TAG"
-  #         echo "TAG=$TAG" >> $GITHUB_ENV
-  #         BUILD_DATE=`date -u +%Y-%m-%d`
-  #         echo "BUILD_DATE=$BUILD_DATE" >> $GITHUB_ENV
-  #         BUILD_VERSION=${{ github.sha }}
-  #         echo "BUILD_VERSION=$BUILD_VERSION" >> $GITHUB_ENV
-
-  #     - name: Login to Public Registry
-  #       run: |
-  #         aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
-
-  #     - name: Build and push pre-release
-  #       if: >
-  #         inputs.prerelease
-  #         && !inputs.stable_version
-  #         && github.event_name == 'schedule'
-  #       uses: docker/build-push-action@v2
-  #       with:
-  #         builder: ${{ steps.buildx.outputs.name }}
-  #         context: .
-  #         file: Dockerfile
-  #         platforms: linux/amd64
-  #         cache-from: type=gha
-  #         cache-to: type=gha,mode=max
-  #         build-args: |
-  #           BUILD_DATE=${{ env.BUILD_DATE }}
-  #           BUILD_VERSION=${{ env.BUILD_VERSION }}
-  #         push: true
-  #         tags: |
-  #           public.ecr.aws/covalent/covalent:latest
-  #           public.ecr.aws/covalent/covalent:${{ env.TAG }}
-
-  #     - name: Build and push stable release
-  #       if: >
-  #         github.event_name == 'workflow_dispatch'
-  #         && inputs.stable_version
-  #         && !inputs.prerelease
-  #         && !github.events.inputs.test_release
-  #         && contains(env.PAUL_BLART, github.actor)
-  #       uses: docker/build-push-action@v2
-  #       with:
-  #         builder: ${{ steps.buildx.outputs.name }}
-  #         context: .
-  #         file: Dockerfile
-  #         platforms: linux/amd64
-  #         cache-from: type=gha
-  #         cache-to: type=gha,mode=max
-  #         build-args: |
-  #           BUILD_DATE=${{ env.BUILD_DATE }}
-  #           BUILD_VERSION=${{ env.BUILD_VERSION }}
-  #         push: true
-  #         tags: |
-  #           public.ecr.aws/covalent/covalent:${{ inputs.stable_version }}
-  #           public.ecr.aws/covalent/covalent:stable
-
-  # docker_aws_plugins:
-  #   name: Trigger AWS Plugins Base Executor Image Pre-Release
-  #   needs: pypi
-  #   if: >
-  #     inputs.prerelease
-  #     && !inputs.stable_version
-  #     && github.event_name == 'schedule'
-  #   uses: AgnostiqHQ/covalent-aws-plugins/.github/workflows/docker.yml@develop
-  #   with:
-  #     prerelease: true
-
-  # docker_aws_lambda:
-  #   name: Trigger AWS Lambda Base Executor Image Pre-Release
-  #   needs: pypi
-  #   if: >
-  #     inputs.prerelease
-  #     && !inputs.stable_version
-  #     && github.event_name == 'schedule'
-  #   uses: AgnostiqHQ/covalent-awslambda-plugin/.github/workflows/docker.yml@develop
-  #   with:
-  #     prerelease: true
-
-  # docker_aws_braket:
-  #   name: Trigger AWS Braket Base Executor Image Pre-Release
-  #   needs: pypi
-  #   if: >
-  #     inputs.prerelease
-  #     && !inputs.stable_version
-  #     && github.event_name == 'schedule'
-  #   uses: AgnostiqHQ/covalent-braket-plugin/.github/workflows/docker.yml@develop
-  #   with:
-  #     prerelease: true
