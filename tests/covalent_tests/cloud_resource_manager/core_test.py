@@ -652,6 +652,27 @@ def test_crm_get_resource_status(mocker, crm):
     mock_terraform_error_validator.assert_called_once()
 
 
+def test_crm_convert_to_tfvar(mocker, crm):
+    """
+    Unit test for CloudResourceManager._convert_to_tfvar() method.
+
+    Test conversion outcomes.
+    """
+    _values_map = {
+        # Convenient test case (not valid Terraform):
+        (1, False, None, "covalent321"): '[1, false, null, "covalent321"]',
+        # Usual test cases:
+        True: "true",
+        False: "false",
+        None: "null",
+        "covalent123": '"covalent123"',  # must include quotes
+        16: "16",
+    }
+
+    for _value, _expected in _values_map.items():
+        assert crm._convert_to_tfvar(_value) == _expected
+
+
 def test_no_git(crm, mocker):
     """
     Test for exit with status 1 if `git` is not available.
