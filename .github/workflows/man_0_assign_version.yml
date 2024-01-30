@@ -23,7 +23,7 @@ on:
         type: boolean
         required: true
         default: true
-        description: "WARNING: Make sure the `nightly-tests` workflow has passed successfully before running this workflow.
+        description: "WARNING: Make sure the `nightly-tests` or the most recent `tests` workflow has passed successfully in develop before running this workflow.
         Uncheck this box if it has."
 
 permissions:
