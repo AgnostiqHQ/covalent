@@ -50,10 +50,14 @@ jobs:
           --ignore-module=pkg_resources
           --ignore-module=covalent/_dispatcher_plugins
           --ignore-module=covalent/_shared_files
+          --ignore-file=covalent/quantum/**
+          --ignore-file=covalent/_workflow/q*
+          --ignore-file=covalent/_shared_files/q*
+          --ignore-file=covalent/_results_manager/q*
+          --ignore-file=covalent/_shared_files/pickling.py
           --ignore-file=covalent/executor/**
           --ignore-file=covalent/triggers/**
           --ignore-file=covalent/cloud_resource_manager/**
-          --ignore-file=covalent/quantum/qserver/**
           --ignore-file=covalent/_programmatic/**
           covalent
 

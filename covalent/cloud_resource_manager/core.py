@@ -425,6 +425,17 @@ class CloudResourceManager:
         # Setup terraform infra variables as passed by the user
         tf_vars_env_dict = os.environ.copy()
 
+        # Write the default values to the terraform.tfvars file
+        infra_settings = self.ExecutorInfraDefaults.schema()["properties"]
+        with open(tfvars_file, "w", encoding="utf-8") as f:
+            for key, value in infra_settings.items():
+                if "default" in value:
+                    tf_vars_env_dict[f"TF_VAR_{key}"] = value["default"]
+
+                    if value["default"] != "":
+                        f.write(f'{key}="{value["default"]}"\n')
+
+        # Overwrite the default values with the user passed values
         if self.executor_options:
             with open(tfvars_file, "w", encoding="utf-8") as f:
                 for key, value in self.executor_options.items():

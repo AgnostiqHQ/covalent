@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from ..._shared_files.utils import cloudpickle_deserialize, cloudpickle_serialize
+from ..._shared_files.qelectron_utils import cloudpickle_deserialize, cloudpickle_serialize
 from ..qserver import LocalQServer
 from .base_client import BaseQClient
 

@@ -17,6 +17,50 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Added `pennylane` as a requirement in tests due to the tutorials using it
+
+### Changed
+
+- Updated RTD notebooks to fix their behavior
+- Changed the error being shown when drawing the transport graph of a lattice to a debug message instead
+- Revamped README
+- Reorganized `qelectron` tests
+- Made qelectron an opt-in feature using `covalent[quantum]` extra
+
+### Removed
+
+- Removed unused file transfer how to guides
+- Removed `pennylane` as a requirement from notebooks' requirements.txt as it comes with `covalent`
+- Removed `validate_args` and `validate_region` method from `deploy_group` CLI as they were specific to AWS
+
+### Docs
+
+- Added voice cloning tutorial
+
+### Fixed
+
+- Fixed the scenario where any deploy commands would fail if the user had a non deploy compatible plugin installed
+- Fixed the SQLAlchemy warning that used to show up at every fresh server start
+- Fixed deploy commands' default value of plugins not being propagated to the tfvars file
+
+### Operations
+
+- Added qelectron tests to the `tests` workflow
+
+## [0.233.0-rc.0] - 2024-01-07
+
+### Authors
+
+- Andrew S. Rosen <asrosen93@gmail.com>
+- Casey Jao <casey@agnostiq.ai>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- ArunPsiog <106462226+ArunPsiog@users.noreply.github.com>
+- Co-authored-by: Ara Ghukasyan <ara@agnostiq.ai>
+
+
+### Added
+
 - Added feature to use custom python files as modules to be used in the electron function
 
 ### Changed
@@ -37,8 +81,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Reduced number of assets to upload when submitting a dispatch.
-- Fixed the loading of text based assets - with a try except.
-- Improved the fix of text based assets.
+- Handled RecursionError on get results for a long running workflow.
+- Fixed functional tests.
 
 ### Operations
 

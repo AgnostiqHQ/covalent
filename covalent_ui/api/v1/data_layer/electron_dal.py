@@ -28,7 +28,6 @@ from sqlalchemy.sql import func
 from covalent._results_manager.results_manager import get_result
 from covalent._shared_files import logger
 from covalent._shared_files.config import get_config
-from covalent.quantum.qserver.database import Database
 from covalent_dispatcher._core.execution import _get_task_inputs as get_task_inputs
 from covalent_ui.api.v1.data_layer.lattice_dal import Lattices
 from covalent_ui.api.v1.database.schema.electron import Electron
@@ -322,11 +321,17 @@ class Electrons:
     def _get_qelectron_db_dict(self, dispatch_id: str, node_id: int) -> dict:
         """Return the QElectron DB for a given node."""
 
-        electron = self.get_electrons_id(dispatch_id, node_id)
+        try:
+            from covalent.quantum.qserver.database import Database
 
-        database = Database(electron.storage_path)
-        qelectron_db_dict = database.get_db_dict(
-            dispatch_id=dispatch_id, node_id=node_id, direct_path=True
-        )
+            electron = self.get_electrons_id(dispatch_id, node_id)
 
-        return qelectron_db_dict
+            database = Database(electron.storage_path)
+            qelectron_db_dict = database.get_db_dict(
+                dispatch_id=dispatch_id, node_id=node_id, direct_path=True
+            )
+
+            return qelectron_db_dict
+        except ImportError:
+            app_log.debug("QElectron not installed.")
+            return {}

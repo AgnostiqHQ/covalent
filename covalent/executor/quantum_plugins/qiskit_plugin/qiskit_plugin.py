@@ -25,7 +25,7 @@ from pydantic import Field
 from runtime_sampler import QiskitRuntimeSampler
 
 from covalent._shared_files.config import get_config
-from covalent._shared_files.utils import import_from_path
+from covalent._shared_files.qelectron_utils import import_from_path
 from covalent.executor.qbase import (
     AsyncBaseQExecutor,
     BaseThreadPoolQExecutor,
