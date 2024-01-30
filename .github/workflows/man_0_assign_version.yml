@@ -1,4 +1,4 @@
-# Copyright 2023 Agnostiq Inc.
+# Copyright 2024 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -19,7 +19,7 @@ name: man_0_assign_version
 on:
   workflow_dispatch:
     inputs:
-      check_tests:
+      nightly_tests_failed:
         type: boolean
         required: true
         default: true
@@ -33,13 +33,13 @@ permissions:
 jobs:
   license:
     name: License Scanner
-    uses: AgnostiqHQ/covalent/.github/workflows/license.yml@develop
+    uses: ./.github/workflows/license.yml
 
   version_assigner:
     name: Assign Version
     needs:
       - license
     if: >
-      !github.event.inputs.check_tests
-    uses: AgnostiqHQ/covalent/.github/workflows/changelog.yml@develop
+      !github.event.inputs.nightly_tests_failed
+    uses: ./.github/workflows/changelog.yml
     secrets: inherit # pragma: allowlist secret

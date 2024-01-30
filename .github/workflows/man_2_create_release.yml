@@ -1,4 +1,4 @@
-# Copyright 2023 Agnostiq Inc.
+# Copyright 2024 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -19,7 +19,7 @@ name: man_2_create_release
 on:
   workflow_dispatch:
     inputs:
-      check_push_to_master:
+      push_to_master_failed:
         type: boolean
         required: true
         default: true
@@ -38,9 +38,9 @@ permissions:
 jobs:
   create_release:
     name: Create a Prerelease
-    uses: AgnostiqHQ/covalent/.github/workflows/release.yml@develop
+    uses: ./.github/workflows/release.yml
     if: >
-      !github.event.inputs.check_push_to_master
+      !github.event.inputs.push_to_master_failed
     with:
       prerelease: true
       prerelease_name: github.event.inputs.branch_name

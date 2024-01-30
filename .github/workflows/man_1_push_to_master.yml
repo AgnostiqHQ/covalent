@@ -1,4 +1,4 @@
-# Copyright 2023 Agnostiq Inc.
+# Copyright 2024 Agnostiq Inc.
 #
 # This file is part of Covalent.
 #
@@ -19,7 +19,7 @@ name: man_1_push_to_master
 on:
   workflow_dispatch:
     inputs:
-      check_assign_version:
+      assign_version_failed:
         type: boolean
         required: true
         default: true
@@ -53,7 +53,7 @@ jobs:
       - name: Perform the push to master
         id: push
         if: >
-          !github.event.inputs.check_assign_version
+          !github.event.inputs.assign_version_failed
         run: |
           DEVELOP_VERSION="${{ steps.get-versions.outputs.develop_version }}"
           MASTER_VERSION="${{ steps.get-versions.outputs.master_version }}"
