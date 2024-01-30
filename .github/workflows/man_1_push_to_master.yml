@@ -38,19 +38,21 @@ jobs:
       release: ${{ steps.push.outputs.release }}
 
     steps:
-      - name: Get versions of develop and master
-        id: get-versions
+      - name: Checkout develop
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0
           persist-credentials: false
+          fetch-depth: 0
+
+      - name: Get versions of develop and master
+        id: get-versions
         run: |
           develop_version="$(cat ./VERSION)"
           master_version="$(git show origin/master:VERSION)"
           echo "::set-output name=develop_version::${develop_version}"
           echo "::set-output name=master_version::${master_version}"
 
-      - name: Perform the push to master
+      - name: Perform the push to master if develop is ahead
         id: push
         if: >
           !github.event.inputs.assign_version_failed
