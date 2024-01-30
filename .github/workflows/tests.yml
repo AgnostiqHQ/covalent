@@ -30,6 +30,7 @@ on:
       commit_sha:
         description: "Commit SHA used for testing. If left blank, the default branch will be used."
         type: string
+        default: ""
         required: false
 
 jobs:
@@ -67,7 +68,7 @@ jobs:
       codecov: ${{ steps.local-codecov.outputs.local_codecov }}
     steps:
       - name: Check out the default branch
-        if: github.event_name != 'workflow_dispatch' || github.event.inputs.commit_sha == ''
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.commit_sha == ""
         uses: actions/checkout@v4
         with:
           persist-credentials: false
@@ -305,19 +306,16 @@ jobs:
           npm test -- --coverage --watchAll=false --maxWorkers=50%
 
       - name: Dump Covalent logs
-        if: >
-          steps.covalent_start.outcome == 'success'
-          && failure()
         run: covalent logs
 
       - name: Upload SDK report to Codecov
         id: upload-sdk-report
         if: >
           env.RECOMMENDED_PLATFORM
-          && github.event_name != 'workflow_dispatch'
           && (github.event_name == 'schedule'
+          || github.event_name == 'workflow_dispatch'
           || steps.sdk-coverage.outcome == 'success')
-        uses: AgnostiqHQ/covalent/.github/workflows/upload_to_codecov_with_retry.yml@develop
+        uses: ./.github/workflows/upload_to_codecov_with_retry.yml
         with:
           files: ./sdk_coverage.xml
           flags: SDK
@@ -328,10 +326,10 @@ jobs:
         id: upload-dispatcher-report
         if: >
           env.RECOMMENDED_PLATFORM
-          && github.event_name != 'workflow_dispatch'
           && (github.event_name == 'schedule'
+          || github.event_name == 'workflow_dispatch'
           || steps.dispatcher-coverage.outcome == 'success')
-        uses: AgnostiqHQ/covalent/.github/workflows/upload_to_codecov_with_retry.yml@develop
+        uses: ./.github/workflows/upload_to_codecov_with_retry.yml
         with:
           files: ./dispatcher_coverage.xml
           flags: Dispatcher
@@ -342,9 +340,8 @@ jobs:
         id: upload-functional-report
         if: >
           env.RECOMMENDED_PLATFORM
-          && github.event_name != 'workflow_dispatch'
           && steps.functional-coverage.outcome == 'success'
-        uses: AgnostiqHQ/covalent/.github/workflows/upload_to_codecov_with_retry.yml@develop
+        uses: ./.github/workflows/upload_to_codecov_with_retry.yml
         with:
           files: ./functional_tests_coverage.xml
           flags: Functional_Tests
@@ -355,10 +352,10 @@ jobs:
         id: upload-ui-backend-report
         if: >
           env.RECOMMENDED_PLATFORM
-          && github.event_name != 'workflow_dispatch'
           && (github.event_name == 'schedule'
+          || github.event_name == 'workflow_dispatch'
           || steps.ui-backend-coverage.outcome == 'success')
-        uses: AgnostiqHQ/covalent/.github/workflows/upload_to_codecov_with_retry.yml@develop
+        uses: ./.github/workflows/upload_to_codecov_with_retry.yml
         with:
           files: ./ui_backend_coverage.xml
           flags: UI_Backend
@@ -369,10 +366,10 @@ jobs:
         id: upload-ui-frontend-report
         if: >
           env.RECOMMENDED_PLATFORM
-          && github.event_name != 'workflow_dispatch'
           && (github.event_name == 'schedule'
+          || github.event_name == 'workflow_dispatch'
           || steps.ui-frontend-tests.outcome == 'success')
-        uses: AgnostiqHQ/covalent/.github/workflows/upload_to_codecov_with_retry.yml@develop
+        uses: ./.github/workflows/upload_to_codecov_with_retry.yml
         with:
           files: ./covalent_ui/webapp/coverage/clover.xml
           flags: UI_Frontend
@@ -396,14 +393,12 @@ jobs:
           echo "::set-output name=local_codecov::${local_codecov}"
 
       - name: Alert Slack
-        if: >
-          github.event_name == 'schedule'
-          && failure()
+        if: failure()
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: "covalent-ci"
           SLACK_USERNAME: "CovalentOpsBot"
-          SLACK_MESSAGE: "The tests.yml workflow is failing in develop!"
+          SLACK_MESSAGE: "The tests.yml workflow is failing in the last '${{github.event_name}}' event run!"
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
