@@ -30,7 +30,7 @@ on:
       commit_sha:
         description: "Commit SHA used for testing. If left blank, the default branch will be used."
         type: string
-        default: ""
+        default: ''
         required: false
 
 jobs:
@@ -68,7 +68,7 @@ jobs:
       codecov: ${{ steps.local-codecov.outputs.local_codecov }}
     steps:
       - name: Check out the default branch
-        if: github.event_name != 'workflow_dispatch' || github.event.inputs.commit_sha == ""
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.commit_sha == ''
         uses: actions/checkout@v4
         with:
           persist-credentials: false
