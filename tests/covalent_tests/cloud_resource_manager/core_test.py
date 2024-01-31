@@ -401,10 +401,6 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
         "covalent.cloud_resource_manager.core.get_executor_module",
     )
 
-    mocker.patch(
-        "covalent.cloud_resource_manager.core.getattr",
-    )
-
     # Mocking as we are instantiating with executor options
     mocker.patch(
         "covalent.cloud_resource_manager.core.validate_options",
@@ -422,6 +418,10 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
 
     mock_update_config = mocker.patch(
         "covalent.cloud_resource_manager.core.CloudResourceManager._update_config",
+    )
+
+    mock_convert_to_tfvar = mocker.patch(
+        "covalent.cloud_resource_manager.core.CloudResourceManager._convert_to_tfvar",
     )
 
     if executor_options:
@@ -470,6 +470,8 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
             mock_update_config.assert_called_once_with(
                 f"{crm.executor_tf_path}/{executor_name}.conf",
             )
+
+            mock_convert_to_tfvar.assert_any_call()
 
 
 def test_up_executor_options(mocker, executor_name, executor_module_path):
