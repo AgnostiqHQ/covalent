@@ -42,6 +42,18 @@ def executor_module_path():
 
 
 @pytest.fixture
+def executor_infra_defaults():
+    from pydantic import BaseModel
+
+    class FakeExecutorInfraDefaults(BaseModel):
+        string_param: str = "fake_address_123"
+        number_param: int = 123
+        sequence_param: tuple = (1, 2, 3)
+
+    return FakeExecutorInfraDefaults
+
+
+@pytest.fixture
 def crm(mocker, executor_name, executor_module_path):
     mocker.patch(
         "covalent.cloud_resource_manager.core.get_executor_module",
@@ -377,7 +389,9 @@ def test_get_tf_statefile_path(mocker, crm, executor_name):
         (False, {"test_key": "test_value"}),
     ],
 )
-def test_up(mocker, dry_run, executor_options, executor_name, executor_module_path):
+def test_up(
+    mocker, dry_run, executor_options, executor_name, executor_module_path, executor_infra_defaults
+):
     """
     Unit test for CloudResourceManager.up() method
     """
@@ -399,10 +413,6 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
 
     mocker.patch(
         "covalent.cloud_resource_manager.core.get_executor_module",
-    )
-
-    mocker.patch(
-        "covalent.cloud_resource_manager.core.getattr",
     )
 
     # Mocking as we are instantiating with executor options
@@ -437,6 +447,9 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
             executor_module_path=executor_module_path,
             options=executor_options,
         )
+
+        # Override infra defaults with dummy values.
+        crm.ExecutorInfraDefaults = executor_infra_defaults
 
         with mock.patch(
             "covalent.cloud_resource_manager.core.open",
@@ -650,6 +663,27 @@ def test_crm_get_resource_status(mocker, crm):
     crm._get_resource_status(proc=_FakeProc(1), cmd="fake command")
     mock_print.assert_called_once()
     mock_terraform_error_validator.assert_called_once()
+
+
+def test_crm_convert_to_tfvar(mocker, crm):
+    """
+    Unit test for CloudResourceManager._convert_to_tfvar() method.
+
+    Test conversion outcomes.
+    """
+    _values_map = {
+        # Convenient test case (not valid Terraform):
+        (1, False, None, "covalent321"): '[1, false, null, "covalent321"]',
+        # Usual test cases:
+        True: "true",
+        False: "false",
+        None: "null",
+        "covalent123": '"covalent123"',  # must include quotes
+        16: "16",
+    }
+
+    for _value, _expected in _values_map.items():
+        assert crm._convert_to_tfvar(_value) == _expected
 
 
 def test_no_git(crm, mocker):

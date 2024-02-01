@@ -24,7 +24,7 @@ import sys
 from configparser import ConfigParser
 from pathlib import Path
 from types import ModuleType
-from typing import Callable, Dict, List, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union
 
 from covalent._shared_files.config import set_config
 from covalent.executor import _executor_manager
@@ -432,8 +432,8 @@ class CloudResourceManager:
                 if "default" in value:
                     tf_vars_env_dict[f"TF_VAR_{key}"] = value["default"]
 
-                    if value["default"] != "":
-                        f.write(f'{key}="{value["default"]}"\n')
+                    if value["default"]:
+                        f.write(f'{key}={self._convert_to_tfvar(value["default"])}\n')
 
         # Overwrite the default values with the user passed values
         if self.executor_options:
@@ -537,3 +537,29 @@ class CloudResourceManager:
 
         # Run `terraform state list`
         return self._run_in_subprocess(cmd=tf_state, env_vars=self._terraform_log_env_vars)
+
+    @staticmethod
+    def _convert_to_tfvar(value: Any) -> Any:
+        """
+        Convert the value to a string that can be parsed as a terraform variable.
+
+        Args:
+            value: Value to convert
+
+        Returns:
+            Converted value
+
+        """
+        if value is True:
+            return "true"
+        if value is False:
+            return "false"
+        if value is None:
+            return "null"
+        if isinstance(value, str):
+            return f'"{value}"'
+        if isinstance(value, Sequence):
+            values = [CloudResourceManager._convert_to_tfvar(v) for v in value]
+            return f"[{', '.join(values)}]"
+
+        return str(value)
