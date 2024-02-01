@@ -310,6 +310,9 @@ class CloudResourceManager:
 
         if returncode != 0:
             self._log_error_msg(cmd=cmd)
+            if "terraform apply" in cmd:
+                logger.error("Deployment interrupted. Rolling back the deployed resources...")
+                self.down(print_callback=print_callback)
 
             _, stderr = proc.communicate()
             raise subprocess.CalledProcessError(
@@ -430,7 +433,16 @@ class CloudResourceManager:
         tf_executor_config_file = Path(self.executor_tf_path) / f"{self.executor_name}.conf"
 
         tf_init = " ".join([terraform, "init"])
-        tf_plan = " ".join([terraform, "plan", "-out", f"{self.executor_tfstate_path}/tf.plan"])
+        tf_plan = " ".join(
+            [
+                terraform,
+                "plan",
+                "--var-file",
+                f"{tfvars_file}",
+                "-out",
+                f"{self.executor_tfstate_path}/tf.plan",
+            ]
+        )
         tf_apply = " ".join(
             [
                 terraform,
@@ -461,7 +473,6 @@ class CloudResourceManager:
             for key, value in infra_settings.items():
                 if "default" in value:
                     tf_vars_env_dict[f"TF_VAR_{key}"] = value["default"]
-
                     if value["default"]:
                         f.write(f'{key}={self._convert_to_tfvar(value["default"])}\n')
 
@@ -537,9 +548,6 @@ class CloudResourceManager:
 
         if Path(tfvars_file).exists():
             Path(tfvars_file).unlink()
-
-        if Path(terraform_log_file).exists() and os.path.getsize(terraform_log_file) == 0:
-            Path(terraform_log_file).unlink()
 
         if Path(tf_state_file).exists():
             Path(tf_state_file).unlink()
