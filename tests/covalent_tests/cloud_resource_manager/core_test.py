@@ -42,6 +42,18 @@ def executor_module_path():
 
 
 @pytest.fixture
+def executor_infra_defaults():
+    from pydantic import BaseModel
+
+    class FakeExecutorInfraDefaults(BaseModel):
+        string_param: str = "fake_address_123"
+        number_param: int = 123
+        sequence_param: tuple = (1, 2, 3)
+
+    return FakeExecutorInfraDefaults
+
+
+@pytest.fixture
 def crm(mocker, executor_name, executor_module_path):
     mocker.patch(
         "covalent.cloud_resource_manager.core.get_executor_module",
@@ -377,7 +389,9 @@ def test_get_tf_statefile_path(mocker, crm, executor_name):
         (False, {"test_key": "test_value"}),
     ],
 )
-def test_up(mocker, dry_run, executor_options, executor_name, executor_module_path):
+def test_up(
+    mocker, dry_run, executor_options, executor_name, executor_module_path, executor_infra_defaults
+):
     """
     Unit test for CloudResourceManager.up() method
     """
@@ -420,10 +434,6 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
         "covalent.cloud_resource_manager.core.CloudResourceManager._update_config",
     )
 
-    mock_convert_to_tfvar = mocker.patch(
-        "covalent.cloud_resource_manager.core.CloudResourceManager._convert_to_tfvar",
-    )
-
     if executor_options:
         with pytest.raises(SystemExit):
             CloudResourceManager(
@@ -437,6 +447,9 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
             executor_module_path=executor_module_path,
             options=executor_options,
         )
+
+        # Override infra defaults with dummy values.
+        crm.ExecutorInfraDefaults = executor_infra_defaults
 
         with mock.patch(
             "covalent.cloud_resource_manager.core.open",
@@ -470,8 +483,6 @@ def test_up(mocker, dry_run, executor_options, executor_name, executor_module_pa
             mock_update_config.assert_called_once_with(
                 f"{crm.executor_tf_path}/{executor_name}.conf",
             )
-
-            mock_convert_to_tfvar.assert_any_call()
 
 
 def test_up_executor_options(mocker, executor_name, executor_module_path):
