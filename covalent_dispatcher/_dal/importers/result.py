@@ -143,6 +143,7 @@ def _connect_result_to_electron(
         fields={"id", "cancel_requested"},
         equality_filters={"id": parent_electron_record.job_id},
         membership_filters={},
+        for_update=True,
     )[0]
     cancel_requested = parent_job_record.cancel_requested
 
