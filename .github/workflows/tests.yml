@@ -28,9 +28,10 @@ on:
   workflow_dispatch:
     inputs:
       commit_sha:
-        description: "Commit SHA used for testing"
+        description: "Commit SHA used for testing. If left blank, the default branch will be used."
         type: string
-        required: true
+        default: ''
+        required: false
 
 jobs:
   build_test_matrix:
@@ -66,8 +67,8 @@ jobs:
     outputs:
       codecov: ${{ steps.local-codecov.outputs.local_codecov }}
     steps:
-      - name: Check out head
-        if: github.event_name != 'workflow_dispatch'
+      - name: Check out the default branch
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.commit_sha == ''
         uses: actions/checkout@v4
         with:
           persist-credentials: false
@@ -305,86 +306,97 @@ jobs:
           npm test -- --coverage --watchAll=false --maxWorkers=50%
 
       - name: Dump Covalent logs
-        if: >
-          steps.covalent_start.outcome == 'success'
-          && failure()
         run: covalent logs
 
-      - name: Upload SDK report to Codecov
+      - name: Upload SDK report to Codecov with retry
         id: upload-sdk-report
         if: >
           env.RECOMMENDED_PLATFORM
-          && github.event_name != 'workflow_dispatch'
-          && (github.event_name == 'schedule'
+          && (github.event_name == 'workflow_call'
           || steps.sdk-coverage.outcome == 'success')
-        uses: codecov/codecov-action@v3
+        uses: Wandalen/wretry.action@master
         with:
-          files: ./sdk_coverage.xml
-          flags: SDK
-          name: "SDK Unit Tests"
-          fail_ci_if_error: true
+          action: codecov/codecov-action@v3
+          with: |
+            files: ./sdk_coverage.xml
+            flags: SDK
+            name: "SDK Unit Tests"
+            fail_ci_if_error: true
+          attempt_limit: 5
+          attempt_delay: 5000
 
-      - name: Upload Dispatcher report to Codecov
+      - name: Upload Dispatcher report to Codecov with retry
         id: upload-dispatcher-report
         if: >
           env.RECOMMENDED_PLATFORM
-          && github.event_name != 'workflow_dispatch'
-          && (github.event_name == 'schedule'
+          && (github.event_name == 'workflow_call'
           || steps.dispatcher-coverage.outcome == 'success')
-        uses: codecov/codecov-action@v3
+        uses: Wandalen/wretry.action@master
         with:
-          files: ./dispatcher_coverage.xml
-          flags: Dispatcher
-          name: "Dispatcher Unit Tests"
-          fail_ci_if_error: true
+          action: codecov/codecov-action@v3
+          with: |
+            files: ./dispatcher_coverage.xml
+            flags: Dispatcher
+            name: "Dispatcher Unit Tests"
+            fail_ci_if_error: true
+          attempt_limit: 5
+          attempt_delay: 5000
 
-      - name: Upload Functional report to Codecov
+      - name: Upload Functional report to Codecov with retry
         id: upload-functional-report
         if: >
           env.RECOMMENDED_PLATFORM
-          && github.event_name != 'workflow_dispatch'
           && steps.functional-coverage.outcome == 'success'
-        uses: codecov/codecov-action@v3
+        uses: Wandalen/wretry.action@master
         with:
-          files: ./functional_tests_coverage.xml
-          flags: Functional_Tests
-          name: "Functional Tests"
-          fail_ci_if_error: true
+          action: codecov/codecov-action@v3
+          with: |
+            files: ./functional_tests_coverage.xml
+            flags: Functional_Tests
+            name: "Functional Tests"
+            fail_ci_if_error: true
+          attempt_limit: 5
+          attempt_delay: 5000
 
-      - name: Upload UI backend report to Codecov
+      - name: Upload UI backend report to Codecov with retry
         id: upload-ui-backend-report
         if: >
           env.RECOMMENDED_PLATFORM
-          && github.event_name != 'workflow_dispatch'
-          && (github.event_name == 'schedule'
+          && (github.event_name == 'workflow_call'
           || steps.ui-backend-coverage.outcome == 'success')
-        uses: codecov/codecov-action@v3
+        uses: Wandalen/wretry.action@master
         with:
-          files: ./ui_backend_coverage.xml
-          flags: UI_Backend
-          name: "UI Backend Unit Tests"
-          fail_ci_if_error: true
+          action: codecov/codecov-action@v3
+          with: |
+            files: ./ui_backend_coverage.xml
+            flags: UI_Backend
+            name: "UI Backend Unit Tests"
+            fail_ci_if_error: true
+          attempt_limit: 5
+          attempt_delay: 5000
 
-      - name: Upload UI frontend report to Codecov
+      - name: Upload UI frontend report to Codecov with retry
         id: upload-ui-frontend-report
         if: >
           env.RECOMMENDED_PLATFORM
-          && github.event_name != 'workflow_dispatch'
-          && (github.event_name == 'schedule'
+          && (github.event_name == 'workflow_call'
           || steps.ui-frontend-tests.outcome == 'success')
-        uses: codecov/codecov-action@v3
+        uses: Wandalen/wretry.action@master
         with:
-          files: ./covalent_ui/webapp/coverage/clover.xml
-          flags: UI_Frontend
-          name: "UI Frontend Unit Tests"
-          fail_ci_if_error: true
+          action: codecov/codecov-action@v3
+          with: |
+            files: ./covalent_ui/webapp/coverage/clover.xml
+            flags: UI_Frontend
+            name: "UI Frontend Unit Tests"
+            fail_ci_if_error: true
+          attempt_limit: 5
+          attempt_delay: 5000
 
       - name: Local Codecov
         id: local-codecov
         if: >
           env.RECOMMENDED_PLATFORM
-          && github.event_name != 'workflow_dispatch'
-          && github.event_name != 'schedule'
+          && github.event_name == 'workflow_call'
         run: |
           if ${{ steps.upload-sdk-report.outcome == 'skipped'
             && steps.upload-dispatcher-report.outcome == 'skipped'
@@ -397,13 +409,13 @@ jobs:
 
       - name: Alert Slack
         if: >
-          github.event_name == 'schedule'
+          github.event_name == 'workflow_call'
           && failure()
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: "covalent-ci"
           SLACK_USERNAME: "CovalentOpsBot"
-          SLACK_MESSAGE: "The tests.yml workflow is failing in develop!"
+          SLACK_MESSAGE: "The tests.yml workflow is failing in the last '${{github.event_name}}' event run!"
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}

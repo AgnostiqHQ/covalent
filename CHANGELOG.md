@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Added qelectron tests to the `tests` workflow
+- Split the `nightly` workflow into 4 manually triggerable workflows, `nightly-tests`, `man_0_assign_version`, `man_1_push_to_master`, and `man_2_create_prerelease` to be run in this order.
+- Now only the `nightly-tests` workflow will be run on a daily basis, and the other 3 workflows will be run manually.
+- Removed `conda` releases from `release.yml`.
+- When pushing to `master`, now the version numbers of `develop` and `master` will be compared in `man_1_push_to_master`.
+- Upgraded checkout action to v4 in `release.yml`.
+
 ### Added
 
 - Added CRM method to handle Python to TF value conversion (e.g. None->null, True->true, False->false).
@@ -35,10 +44,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed the scenario where any deploy commands would fail if the user had a non deploy compatible plugin installed
 - Fixed the SQLAlchemy warning that used to show up at every fresh server start
 - Fixed deploy commands' default value of plugins not being propagated to the tfvars file
-
-### Operations
-
-- Added qelectron tests to the `tests` workflow
 
 ## [0.233.0-rc.0] - 2024-01-07
 

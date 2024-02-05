@@ -1,0 +1,80 @@
+# Copyright 2024 Agnostiq Inc.
+#
+# This file is part of Covalent.
+#
+# Licensed under the Apache License 2.0 (the "License"). A copy of the
+# License may be obtained with this software package or at
+#
+#     https://www.apache.org/licenses/LICENSE-2.0
+#
+# Use of this file is prohibited except in compliance with the License.
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: man_1_push_to_master
+
+on:
+  workflow_dispatch:
+    inputs:
+      assign_version_failed:
+        type: boolean
+        required: true
+        default: true
+        description: "WARNING: Make sure the `man_0_assign_version` workflow has passed successfully before running this workflow.
+        Uncheck this box if it has."
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  push_to_master:
+    name: Push develop to master
+    runs-on: ubuntu-latest
+    outputs:
+      release: ${{ steps.push.outputs.release }}
+
+    steps:
+      - name: Checkout develop
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Get versions of develop and master
+        id: get-versions
+        run: |
+          develop_version="$(cat ./VERSION)"
+          master_version="$(git show origin/master:VERSION)"
+          echo "::set-output name=develop_version::${develop_version}"
+          echo "::set-output name=master_version::${master_version}"
+
+      - name: Perform the push to master if develop is ahead
+        id: push
+        if: >
+          !github.event.inputs.assign_version_failed
+        run: |
+          DEVELOP_VERSION="${{ steps.get-versions.outputs.develop_version }}"
+          MASTER_VERSION="${{ steps.get-versions.outputs.master_version }}"
+          release=false
+          echo "Develop version: ${DEVELOP_VERSION}"
+          echo "Master version: ${MASTER_VERSION}"
+          if [[ "${DEVELOP_VERSION}" == "${MASTER_VERSION}" ]]; then
+            echo "No new version detected. Exiting."
+            exit 1
+          elif dpkg --compare-versions $DEVELOP_VERSION 'gt' $MASTER_VERSION ; then
+            echo "Pushing to master."
+            git config user.name "CovalentOpsBot"
+            git config user.email "covalentopsbot@users.noreply.github.com"
+            git remote set-url origin https://${{ secrets.COVALENT_OPS_BOT_TOKEN }}@github.com/AgnostiqHQ/covalent.git
+            git push origin HEAD:master
+            release=true
+          else
+            echo "This means the version on develop is lower than the version on master or something is wrong."
+            exit 1
+          fi
+          echo "Ready to release: ${release}"
+          echo "::set-output name=release::$release"
