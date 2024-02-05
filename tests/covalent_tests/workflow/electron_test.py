@@ -36,7 +36,7 @@ from covalent._workflow.electron import (
     to_decoded_electron_collection,
 )
 from covalent._workflow.lattice import Lattice
-from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
+from covalent._workflow.transport import TransportableObject, encode_metadata
 from covalent.executor.executor_plugins.local import LocalExecutor
 
 
@@ -250,25 +250,6 @@ def test_collection_node_helper_electron():
     assert to_decoded_electron_collection(x=list_collection) == [1, 2]
 
     assert to_decoded_electron_collection(x=dict_collection) == {"a": 1, "b": 2}
-
-
-def test_electron_add_collection_node():
-    """Test `to_decoded_electron_collection` in `Electron.add_collection_node`"""
-
-    def f(x):
-        return x
-
-    e = Electron(f)
-    tg = _TransportGraph()
-    node_id = e.add_collection_node_to_graph(tg, prefix=":")
-    collection_fn = tg.get_node_value(node_id, "function").get_deserialized()
-
-    collection = [
-        TransportableObject.make_transportable(1),
-        TransportableObject.make_transportable(2),
-    ]
-
-    assert collection_fn(x=collection) == [1, 2]
 
 
 def test_injected_inputs_are_not_in_tg():
