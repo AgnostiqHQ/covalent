@@ -27,6 +27,7 @@ from covalent._serialize.result import serialize_result
 from covalent._shared_files.schemas.result import AssetSchema, ResultSchema
 from covalent._shared_files.util_classes import RESULT_STATUS
 from covalent_dispatcher._dal.importers.result import SERVER_URL, handle_redispatch, import_result
+from covalent_dispatcher._dal.job import Job
 from covalent_dispatcher._dal.result import get_result_object
 from covalent_dispatcher._db.datastore import DataStore
 
@@ -140,6 +141,7 @@ def test_import_previously_imported_result(mocker, test_db):
         prefix="covalent-"
     ) as srv_dir:
         sub_res = get_mock_result(sub_dispatch_id, sdk_dir)
+        sub_res.metadata.root_dispatch_id = dispatch_id
         import_result(sub_res, srv_dir, None)
         srv_res = get_result_object(dispatch_id, bare=True)
         parent_node = srv_res.lattice.transport_graph.get_node(0)
@@ -150,6 +152,49 @@ def test_import_previously_imported_result(mocker, test_db):
     sub_srv_res = get_result_object(sub_dispatch_id, bare=True)
     assert mock_filter_uris.call_count == 2
     assert sub_srv_res._electron_id == parent_node._electron_id
+
+
+def test_import_subdispatch_cancel_req(mocker, test_db):
+    """Test that Job.cancel_requested is propagated to sublattices"""
+
+    dispatch_id = "test_propagate_cancel_requested"
+    sub_dispatch_id = "test_propagate_cancel_requested_sub"
+
+    mocker.patch("covalent_dispatcher._dal.base.workflow_db", test_db)
+
+    mock_filter_uris = mocker.patch(
+        "covalent_dispatcher._dal.importers.result._filter_remote_uris"
+    )
+
+    with tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir, tempfile.TemporaryDirectory(
+        prefix="covalent-"
+    ) as srv_dir:
+        res = get_mock_result(dispatch_id, sdk_dir)
+        import_result(res, srv_dir, None)
+
+    with test_db.Session() as session:
+        Job.update_bulk(
+            session, values={"cancel_requested": True}, equality_filters={}, membership_filters={}
+        )
+        session.commit()
+
+    with tempfile.TemporaryDirectory(prefix="covalent-") as sdk_dir, tempfile.TemporaryDirectory(
+        prefix="covalent-"
+    ) as srv_dir:
+        sub_res = get_mock_result(sub_dispatch_id, sdk_dir)
+        sub_res.metadata.root_dispatch_id = dispatch_id
+        srv_res = get_result_object(dispatch_id, bare=True)
+        parent_node = srv_res.lattice.transport_graph.get_node(0)
+        import_result(sub_res, srv_dir, parent_node._electron_id)
+
+    with tempfile.TemporaryDirectory(prefix="covalent-") as srv_dir:
+        import_result(sub_res, srv_dir, parent_node._electron_id)
+
+    with test_db.Session() as session:
+        uncancelled = Job.get(
+            session, fields=[], equality_filters={"cancel_requested": False}, membership_filters={}
+        )
+        assert len(uncancelled) == 0
 
 
 @pytest.mark.parametrize(
