@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Fixed
+
+- Sublattice electron function strings are now parsed correctly
+
 ### Operations
 
 - Added qelectron tests to the `tests` workflow
