@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.234.0-rc.0] - 2024-02-07
+
+### Authors
+
+- Andrew S. Rosen <asrosen93@gmail.com>
+- Casey Jao <casey@agnostiq.ai>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- ArunPsiog <106462226+ArunPsiog@users.noreply.github.com>
+- Co-authored-by: Ara Ghukasyan <ara@agnostiq.ai>
+- FilipBolt <filipbolt@gmail.com>
+- sriranjanivenkatesan <116076079+sriranjanivenkatesan@users.noreply.github.com>
+- Co-authored-by: batchumanish <manish.batchu@psiog.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+- Co-authored-by: batchumanish <“manish.batchu@psiog.com”>
+- Co-authored-by: batchumanish <126003896+batchumanish@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+
+
 ### Operations
 
 - Added qelectron tests to the `tests` workflow
