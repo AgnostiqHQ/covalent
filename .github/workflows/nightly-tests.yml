@@ -17,9 +17,6 @@
 name: nightly-tests
 
 on:
-  push:
-    branches:
-      - develop
   schedule:
     - cron: "0 0 * * *"
 

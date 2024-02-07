@@ -40,6 +40,6 @@ jobs:
     needs:
       - license
     if: >
-      !github.event.inputs.nightly_tests_failed
+      !inputs.nightly_tests_failed
     uses: ./.github/workflows/changelog.yml
     secrets: inherit # pragma: allowlist secret

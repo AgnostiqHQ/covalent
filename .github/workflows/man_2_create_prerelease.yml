@@ -35,7 +35,7 @@ jobs:
     name: Create a Prerelease
     uses: ./.github/workflows/release.yml
     if: >
-      !github.event.inputs.push_to_master_failed
+      !inputs.push_to_master_failed
     with:
       prerelease: true
     secrets: inherit # pragma: allowlist secret
@@ -49,7 +49,7 @@ jobs:
       - name: Checkout master
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch_name }}
+          ref: ${{ inputs.branch_name }}
 
       - name: Format Slack message
         run: |

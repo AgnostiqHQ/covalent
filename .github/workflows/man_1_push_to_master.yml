@@ -55,7 +55,7 @@ jobs:
       - name: Perform the push to master if develop is ahead
         id: push
         if: >
-          !github.event.inputs.assign_version_failed
+          !inputs.assign_version_failed
         run: |
           DEVELOP_VERSION="${{ steps.get-versions.outputs.develop_version }}"
           MASTER_VERSION="${{ steps.get-versions.outputs.master_version }}"
