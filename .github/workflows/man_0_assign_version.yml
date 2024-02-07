@@ -26,6 +26,13 @@ on:
         description: "WARNING: Make sure the `nightly-tests` or the most recent `tests` workflow has passed successfully in develop before running this workflow.
         Uncheck this box if it has."
 
+  workflow_call:
+    inputs:
+      nightly_tests_failed:
+        type: boolean
+        required: true
+        default: false
+
 permissions:
   id-token: write
   contents: read
@@ -40,6 +47,6 @@ jobs:
     needs:
       - license
     if: >
-      !github.event.inputs.nightly_tests_failed
+      !inputs.nightly_tests_failed
     uses: ./.github/workflows/changelog.yml
     secrets: inherit # pragma: allowlist secret

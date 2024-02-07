@@ -308,89 +308,69 @@ jobs:
       - name: Dump Covalent logs
         run: covalent logs
 
-      - name: Upload SDK report to Codecov with retry
+      - name: Upload SDK report to Codecov
         id: upload-sdk-report
         if: >
           env.RECOMMENDED_PLATFORM
           && (github.event_name == 'workflow_call'
           || steps.sdk-coverage.outcome == 'success')
-        uses: Wandalen/wretry.action@master
+        uses: codecov/codecov-action@v3
         with:
-          action: codecov/codecov-action@v3
-          with: |
-            files: ./sdk_coverage.xml
-            flags: SDK
-            name: "SDK Unit Tests"
-            fail_ci_if_error: true
-          attempt_limit: 5
-          attempt_delay: 5000
+          files: ./sdk_coverage.xml
+          flags: SDK
+          name: "SDK Unit Tests"
+          fail_ci_if_error: true
 
-      - name: Upload Dispatcher report to Codecov with retry
+      - name: Upload Dispatcher report to Codecov
         id: upload-dispatcher-report
         if: >
           env.RECOMMENDED_PLATFORM
           && (github.event_name == 'workflow_call'
           || steps.dispatcher-coverage.outcome == 'success')
-        uses: Wandalen/wretry.action@master
+        uses: codecov/codecov-action@v3
         with:
-          action: codecov/codecov-action@v3
-          with: |
-            files: ./dispatcher_coverage.xml
-            flags: Dispatcher
-            name: "Dispatcher Unit Tests"
-            fail_ci_if_error: true
-          attempt_limit: 5
-          attempt_delay: 5000
+          files: ./dispatcher_coverage.xml
+          flags: Dispatcher
+          name: "Dispatcher Unit Tests"
+          fail_ci_if_error: true
 
-      - name: Upload Functional report to Codecov with retry
+      - name: Upload Functional report to Codecov
         id: upload-functional-report
         if: >
           env.RECOMMENDED_PLATFORM
           && steps.functional-coverage.outcome == 'success'
-        uses: Wandalen/wretry.action@master
+        uses: codecov/codecov-action@v3
         with:
-          action: codecov/codecov-action@v3
-          with: |
-            files: ./functional_tests_coverage.xml
-            flags: Functional_Tests
-            name: "Functional Tests"
-            fail_ci_if_error: true
-          attempt_limit: 5
-          attempt_delay: 5000
+          files: ./functional_tests_coverage.xml
+          flags: Functional_Tests
+          name: "Functional Tests"
+          fail_ci_if_error: true
 
-      - name: Upload UI backend report to Codecov with retry
+      - name: Upload UI backend report to Codecov
         id: upload-ui-backend-report
         if: >
           env.RECOMMENDED_PLATFORM
           && (github.event_name == 'workflow_call'
           || steps.ui-backend-coverage.outcome == 'success')
-        uses: Wandalen/wretry.action@master
+        uses: codecov/codecov-action@v3
         with:
-          action: codecov/codecov-action@v3
-          with: |
-            files: ./ui_backend_coverage.xml
-            flags: UI_Backend
-            name: "UI Backend Unit Tests"
-            fail_ci_if_error: true
-          attempt_limit: 5
-          attempt_delay: 5000
+          files: ./ui_backend_coverage.xml
+          flags: UI_Backend
+          name: "UI Backend Unit Tests"
+          fail_ci_if_error: true
 
-      - name: Upload UI frontend report to Codecov with retry
+      - name: Upload UI frontend report to Codecov
         id: upload-ui-frontend-report
         if: >
           env.RECOMMENDED_PLATFORM
           && (github.event_name == 'workflow_call'
           || steps.ui-frontend-tests.outcome == 'success')
-        uses: Wandalen/wretry.action@master
+        uses: codecov/codecov-action@v3
         with:
-          action: codecov/codecov-action@v3
-          with: |
-            files: ./covalent_ui/webapp/coverage/clover.xml
-            flags: UI_Frontend
-            name: "UI Frontend Unit Tests"
-            fail_ci_if_error: true
-          attempt_limit: 5
-          attempt_delay: 5000
+          files: ./covalent_ui/webapp/coverage/clover.xml
+          flags: UI_Frontend
+          name: "UI Frontend Unit Tests"
+          fail_ci_if_error: true
 
       - name: Local Codecov
         id: local-codecov

@@ -17,9 +17,6 @@
 name: nightly-tests
 
 on:
-  push:
-    branches:
-      - develop
   schedule:
     - cron: "0 0 * * *"
 
@@ -36,5 +33,28 @@ jobs:
 
   tests:
     name: Unit and Functional Tests
+    needs:
+      - license
     uses: ./.github/workflows/tests.yml
+    secrets: inherit # pragma: allowlist secret
+
+  assign_version:
+    name: Assign Version
+    needs:
+      - tests
+    uses: ./.github/workflows/assign_version.yml
+    secrets: inherit # pragma: allowlist secret
+
+  push_to_master:
+    name: Push to Master
+    needs:
+      - assign_version
+    uses: ./.github/workflows/push_to_master.yml
+    secrets: inherit # pragma: allowlist secret
+
+  create_prerelease:
+    name: Create a Prerelease
+    needs:
+      - push_to_master
+    uses: ./.github/workflows/create_prerelease.yml
     secrets: inherit # pragma: allowlist secret

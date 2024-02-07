@@ -26,6 +26,13 @@ on:
         description: "WARNING: Make sure the `man_1_push_to_master` workflow has passed successfully before running this workflow.
         Uncheck this box if it has."
 
+  workflow_call:
+    inputs:
+      push_to_master_failed:
+        type: boolean
+        required: true
+        default: false
+
 permissions:
   id-token: write
   contents: read
@@ -35,7 +42,7 @@ jobs:
     name: Create a Prerelease
     uses: ./.github/workflows/release.yml
     if: >
-      !github.event.inputs.push_to_master_failed
+      !inputs.push_to_master_failed
     with:
       prerelease: true
     secrets: inherit # pragma: allowlist secret
@@ -49,7 +56,7 @@ jobs:
       - name: Checkout master
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.inputs.branch_name }}
+          ref: ${{ inputs.branch_name }}
 
       - name: Format Slack message
         run: |
