@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed `conda` releases from `release.yml`.
 - When pushing to `master`, now the version numbers of `develop` and `master` will be compared in `man_1_push_to_master`.
 - Upgraded checkout action to v4 in `release.yml`.
+- Fixing the if condition for the manual workflows.
 
 ### Added
 
