@@ -26,6 +26,13 @@ on:
         description: "WARNING: Make sure the `man_0_assign_version` workflow has passed successfully before running this workflow.
         Uncheck this box if it has."
 
+  workflow_call:
+    inputs:
+      assign_version_failed:
+        type: boolean
+        required: true
+        default: false
+
 permissions:
   id-token: write
   contents: read

@@ -26,6 +26,13 @@ on:
         description: "WARNING: Make sure the `man_1_push_to_master` workflow has passed successfully before running this workflow.
         Uncheck this box if it has."
 
+  workflow_call:
+    inputs:
+      push_to_master_failed:
+        type: boolean
+        required: true
+        default: false
+
 permissions:
   id-token: write
   contents: read
