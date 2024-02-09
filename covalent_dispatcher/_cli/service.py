@@ -725,7 +725,7 @@ def purge(ctx, hard: bool, yes: bool, hell_yeah: bool) -> None:
         yes = True
 
     if hard:
-        removal_list.add(get_config("dispatcher.db_path"))
+        removal_list.add(Path(get_config("dispatcher.db_path")).parent)
 
     if not yes:
         warning_text = Text("WARNING", style="bold yellow")
