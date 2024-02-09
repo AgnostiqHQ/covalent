@@ -725,7 +725,9 @@ def purge(ctx, hard: bool, yes: bool, hell_yeah: bool) -> None:
         yes = True
 
     if hard:
-        removal_list.add(Path(get_config("dispatcher.db_path")).parent)
+        removal_list.add(get_config("dispatcher.db_path"))
+        removal_list.add(get_config("dispatcher.results_dir"))
+        removal_list.add(get_config("dispatcher.qelectron_db_path"))
 
     if not yes:
         warning_text = Text("WARNING", style="bold yellow")
@@ -744,7 +746,7 @@ def purge(ctx, hard: bool, yes: bool, hell_yeah: bool) -> None:
                 console.print(f"{i}. {rem_path} file will be deleted", style="red")
 
         if hard:
-            console.print("WARNING: All user data will be deleted", style="bold red")
+            console.print("WARNING: All covalent user data will be deleted", style="bold red")
 
         ans = Prompt.ask(  # Use Prompt.ask instead of console.Prompt.ask
             "\nAre you sure you want to continue?", choices=["y", "n"], default="n"
