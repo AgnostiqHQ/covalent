@@ -13,7 +13,7 @@ const check_author = (author, authors) => {
     typeof author === "string" &&
     !authors.includes(author.split(/[<>]/)[1])
   ) {
-    return "- " + author + "\n";
+    return "- " + author.split(/[<>]/)[1].trim() + "\n";
   } else {
     return "";
   }
