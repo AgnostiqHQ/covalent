@@ -60,7 +60,7 @@ from .migrate import migrate_pickled_result_object
 
 UI_PIDFILE = get_config("dispatcher.cache_dir") + "/ui.pid"
 UI_LOGFILE = get_config("user_interface.log_dir") + "/covalent_ui.log"
-UI_SRVDIR = f"{os.path.dirname(os.path.abspath(__file__))}/../../covalent_ui"
+UI_SRVDIR = (Path(__file__).parent.parent.parent / "covalent_ui").resolve().absolute()
 
 MIGRATION_WARNING_MSG = "Covalent not started. The database needs to be upgraded."
 MIGRATION_COMMAND_MSG = (
@@ -117,7 +117,7 @@ def _rm_pid_file(filename: str) -> None:
         None
     """
 
-    if os.path.isfile(filename):
+    if Path(filename).is_file():
         os.remove(filename)
 
 
@@ -158,7 +158,7 @@ def _next_available_port(requested_port: int) -> int:
         try:
             sock.bind(("localhost", try_port))
             avail_port_found = True
-        except:
+        except Exception:
             try_port += 1
 
     sock.close()
@@ -546,7 +546,9 @@ def stop(no_header: bool, no_footer: bool) -> None:
     type=int,
     help="Restart local server on given port",
 )
-@click.option("-d", "--develop", is_flag=True, help="Start local server in developer mode")
+@click.option(
+    "-d", "--develop", is_flag=True, default=False, help="Start local server in developer mode"
+)
 @click.option(
     "--no-cluster",
     is_flag=True,
@@ -569,12 +571,12 @@ def restart(ctx, port: bool, develop: bool, no_cluster: bool, with_cluster: bool
     Restart a local server
     """
 
-    if no_cluster and with_cluster:
-        raise ValueError(
-            "Options '--no-cluster' and '--with-cluster' are mutually exclusive, please choose one at most."
-        )
-
     if no_cluster:
+        if with_cluster:
+            raise ValueError(
+                "Options '--no-cluster' and '--with-cluster' are mutually exclusive, please choose one at most."
+            )
+
         set_config("sdk.no_cluster", "true")
 
     if with_cluster:
@@ -583,7 +585,7 @@ def restart(ctx, port: bool, develop: bool, no_cluster: bool, with_cluster: bool
     no_cluster_map = {"true": True, "false": False}
     configuration = {
         "port": port or get_config("dispatcher.port"),
-        "develop": develop or (get_config("sdk.log_level") == "debug"),
+        "develop": develop or (get_config("sdk.log_level").lower() == "debug"),
         "no_cluster": no_cluster_map[get_config("sdk.no_cluster")],
         "mem_per_worker": get_config("dask.mem_per_worker"),
         "threads_per_worker": get_config("dask.threads_per_worker"),
@@ -715,7 +717,7 @@ def purge(ctx, hard: bool, yes: bool, hell_yeah: bool) -> None:
         get_config("dispatcher.cache_dir"),
         get_config("dispatcher.log_dir"),
         get_config("user_interface.log_dir"),
-        os.path.dirname(cm.config_file),
+        Path(cm.config_file).parent,
     }
 
     if hell_yeah:
@@ -736,7 +738,7 @@ def purge(ctx, hard: bool, yes: bool, hell_yeah: bool) -> None:
         console.print("1. Stop all services")
 
         for i, rem_path in enumerate(removal_list, start=2):
-            if os.path.isdir(rem_path):
+            if Path(rem_path).is_dir():
                 console.print(f"{i}. {rem_path} directory will be deleted", style="red")
             else:
                 console.print(f"{i}. {rem_path} file will be deleted", style="red")
@@ -758,7 +760,7 @@ def purge(ctx, hard: bool, yes: bool, hell_yeah: bool) -> None:
 
     # Remove all directories and files
     for rem_path in removal_list:
-        if os.path.isdir(rem_path):
+        if Path(rem_path).is_dir():
             shutil.rmtree(rem_path, ignore_errors=True)
         else:
             with contextlib.suppress(FileNotFoundError):
@@ -775,7 +777,7 @@ def logs() -> None:
     Display local server logs
     """
     console = Console()
-    if os.path.exists(UI_LOGFILE):
+    if Path(UI_LOGFILE).exists():
         with open(UI_LOGFILE, "r") as logfile:
             log_content = logfile.read()
             syntax = Syntax(log_content, "log", theme="monokai", line_numbers=True, word_wrap=True)
@@ -808,7 +810,7 @@ async def _get_cluster_status(uri: str):
     try:
         async with rpc(uri, timeout=2) as r:
             cluster_status = await r.cluster_status()
-    except (ConnectionRefusedError, CommClosedError, asyncio.exceptions.TimeoutError, OSError):
+    except (CommClosedError, asyncio.exceptions.TimeoutError, OSError):
         return False
     return cluster_status
 
