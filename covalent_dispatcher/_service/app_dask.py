@@ -78,8 +78,7 @@ class DaskAdminWorker(Thread):
         """
         cluster_logs = []
         async with rpc(self.cluster.scheduler_address) as r:
-            cluster_logs.append(await r.get_logs())
-            cluster_logs.append(await r.worker_logs())
+            cluster_logs.extend((await r.get_logs(), await r.worker_logs()))
         return cluster_logs
 
     async def _restart_worker(self, worker_id, worker_nanny_addr):
@@ -132,12 +131,10 @@ class DaskAdminWorker(Thread):
         """
         Retrieve the scheduler and worker addresses that are part of the cluster
         """
-        addresses = {}
         async with rpc(self.cluster.scheduler_address) as r:
             cinfo = await r.identity()
 
-        addresses["scheduler"] = cinfo["address"]
-        addresses["workers"] = {}
+        addresses = {"scheduler": cinfo["address"], "workers": {}}
         for addr, worker_info in cinfo["workers"].items():
             worker_id = worker_info["id"]
             addresses["workers"][f"{worker_id}"] = addr
@@ -148,9 +145,7 @@ class DaskAdminWorker(Thread):
         """
         Return the number of active workers in the cluster
         """
-        if self.cluster:
-            return len(self.cluster.workers)
-        return 0
+        return len(self.cluster.workers) if self.cluster else 0
 
     def run(self):
         loop = asyncio.new_event_loop()
