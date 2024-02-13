@@ -44,6 +44,8 @@ jobs:
       - tests
     uses: ./.github/workflows/man_0_assign_version.yml
     secrets: inherit # pragma: allowlist secret
+    with:
+      nightly_tests_failed: false
 
   push_to_master:
     name: Push to Master
@@ -51,6 +53,8 @@ jobs:
       - assign_version
     uses: ./.github/workflows/man_1_push_to_master.yml
     secrets: inherit # pragma: allowlist secret
+    with:
+      assign_version_failed: false
 
   create_prerelease:
     name: Create a Prerelease
@@ -58,3 +62,5 @@ jobs:
       - push_to_master
     uses: ./.github/workflows/man_2_create_prerelease.yml
     secrets: inherit # pragma: allowlist secret
+    with:
+      push_to_master_failed: false
