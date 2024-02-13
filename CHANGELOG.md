@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
-- Fixed nightly worfkflow's calling of other workflows.
+- Fixed nightly workflow's calling of other workflows.
+- Fixed input values for other workflows in `nightly-tests` workflow.
 
 ## [0.234.0-rc.0] - 2024-02-07
 
