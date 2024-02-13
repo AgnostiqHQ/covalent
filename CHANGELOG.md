@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
+- Fixed nightly workflow's calling of other workflows.
+- Fixed input values for other workflows in `nightly-tests` workflow.
+
+### Operations
+
 - Removing author email from changelog action
 - Fixed nightly worfkflow's calling of other workflows.
 
