@@ -41,21 +41,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed the SQLAlchemy warning that used to show up at every fresh server start
 - Fixed deploy commands' default value of plugins not being propagated to the tfvars file
 
-### Operations
-
-- Added qelectron tests to the `tests` workflow
-
 ## [0.233.0-rc.0] - 2024-01-07
 
 ### Authors
 
-- Andrew S. Rosen <asrosen93@gmail.com>
+- Andrew S. Rosen (@Andrew_S_Rosen)
 - Casey Jao <casey@agnostiq.ai>
 - Sankalp Sanand <sankalp@agnostiq.ai>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - ArunPsiog <106462226+ArunPsiog@users.noreply.github.com>
 - Co-authored-by: Ara Ghukasyan <ara@agnostiq.ai>
-
 
 ### Added
 
@@ -74,7 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Pack deps, call_before, and call_after assets into one file.
 - Changed handling of tuples and sets when building the transport graph - they will be converted to electron lists as well for now
 - `qelectron_db`, `qelectron_data_exists`, `python_version`, and `covalent_version`
-   are now optional in the pydantic model definitions.
+  are now optional in the pydantic model definitions.
 
 ### Fixed
 
@@ -93,7 +88,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
-
 
 ### Operations
 
@@ -128,7 +122,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Authors
 
-- Andrew S. Rosen <asrosen93@gmail.com>
+- Andrew S. Rosen (@Andrew_S_Rosen)
 - Co-authored-by: Will Cunningham <wjcunningham7@users.noreply.github.com>
 - Co-authored-by: Sankalp Sanand <sankalp@agnostiq.ai>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
@@ -155,8 +149,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Co-authored-by: Ara Ghukasyan <ara@agnostiq.ai>
 - Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
 
-
-
 ### Added
 
 - Programmatic equivalents of CLI commands `covalent start` and `covalent stop`
@@ -174,7 +166,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Contributing guidelines steps for installing for the first time
 - Updated gitignore to ignore yarn files and folders for latest version of yarn
 - Fixed the bug that caused ValueError error when using KEYWORD_ONLY parameter in electron func
-- Changed code at line 218 in covalent/_shared_files/utils.py
+- Changed code at line 218 in covalent/\_shared_files/utils.py
 - Fixed usage of deprecated pydantic validation methods
 - Fixed qelectron_db retrieval in result object
 - Fixed editability of Qelectron on settings page - UI changes
@@ -235,7 +227,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Authors
 
-- Andrew S. Rosen <asrosen93@gmail.com>
+- Andrew S. Rosen (@Andrew_S_Rosen)
 - Alejandro Esquivel <ae@alejandro.ltd>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: mpvgithub <107603631+mpvgithub@users.noreply.github.com>
@@ -294,7 +286,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Authors
 
-- Andrew S. Rosen <asrosen93@gmail.com>
+- Andrew S. Rosen (@Andrew_S_Rosen)
 - Co-authored-by: Sankalp Sanand <sankalp@agnostiq.ai>
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
@@ -384,7 +376,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Authors
 
-- Andrew S. Rosen <asrosen93@gmail.com>
+- Andrew S. Rosen (@Andrew_S_Rosen)
 - Co-authored-by: Sankalp Sanand <sankalp@agnostiq.ai>
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
@@ -426,7 +418,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
 - Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
-- Co-authored-by: Andrew S. Rosen <asrosen93@gmail.com>
+- Co-authored-by: Andrew S. Rosen (@Andrew_S_Rosen)
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Co-authored-by: sriranjani venkatesan <sriranjani.venkatesan@psiog.com>
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
@@ -447,7 +439,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Prasanna Venkatesh <54540812+Prasy12@users.noreply.github.com>
 - Co-authored-by: kamalesh.suresh <kamalesh.suresh@psiog.com>
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
-- Co-authored-by: Andrew S. Rosen <asrosen93@gmail.com>
+- Co-authored-by: Andrew S. Rosen (@Andrew_S_Rosen)
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
 - Co-authored-by: sriranjani venkatesan <sriranjani.venkatesan@psiog.com>
 - Will Cunningham <wjcunningham7@users.noreply.github.com>
@@ -509,7 +501,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sankalp Sanand <sankalp@agnostiq.ai>
 - Co-authored-by: kessler-frost <ssanand@hawk.iit.edu>
 - Faiyaz Hasan <faiyaz@agnostiq.ai>
-- Andrew S. Rosen <asrosen93@gmail.com>
+- Andrew S. Rosen (@Andrew_S_Rosen)
 - Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
 - Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
 

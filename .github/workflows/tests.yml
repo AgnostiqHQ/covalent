@@ -28,9 +28,10 @@ on:
   workflow_dispatch:
     inputs:
       commit_sha:
-        description: "Commit SHA used for testing"
+        description: "Commit SHA used for testing. If left blank, the default branch will be used."
         type: string
-        required: true
+        default: ''
+        required: false
 
 jobs:
   build_test_matrix:
@@ -66,8 +67,8 @@ jobs:
     outputs:
       codecov: ${{ steps.local-codecov.outputs.local_codecov }}
     steps:
-      - name: Check out head
-        if: github.event_name != 'workflow_dispatch'
+      - name: Check out the default branch
+        if: github.event_name != 'workflow_dispatch' || github.event.inputs.commit_sha == ''
         uses: actions/checkout@v4
         with:
           persist-credentials: false
@@ -305,17 +306,13 @@ jobs:
           npm test -- --coverage --watchAll=false --maxWorkers=50%
 
       - name: Dump Covalent logs
-        if: >
-          steps.covalent_start.outcome == 'success'
-          && failure()
         run: covalent logs
 
       - name: Upload SDK report to Codecov
         id: upload-sdk-report
         if: >
           env.RECOMMENDED_PLATFORM
-          && github.event_name != 'workflow_dispatch'
-          && (github.event_name == 'schedule'
+          && (github.event_name == 'workflow_call'
           || steps.sdk-coverage.outcome == 'success')
         uses: codecov/codecov-action@v3
         with:
@@ -328,8 +325,7 @@ jobs:
         id: upload-dispatcher-report
         if: >
           env.RECOMMENDED_PLATFORM
-          && github.event_name != 'workflow_dispatch'
-          && (github.event_name == 'schedule'
+          && (github.event_name == 'workflow_call'
           || steps.dispatcher-coverage.outcome == 'success')
         uses: codecov/codecov-action@v3
         with:
@@ -342,7 +338,6 @@ jobs:
         id: upload-functional-report
         if: >
           env.RECOMMENDED_PLATFORM
-          && github.event_name != 'workflow_dispatch'
           && steps.functional-coverage.outcome == 'success'
         uses: codecov/codecov-action@v3
         with:
@@ -355,8 +350,7 @@ jobs:
         id: upload-ui-backend-report
         if: >
           env.RECOMMENDED_PLATFORM
-          && github.event_name != 'workflow_dispatch'
-          && (github.event_name == 'schedule'
+          && (github.event_name == 'workflow_call'
           || steps.ui-backend-coverage.outcome == 'success')
         uses: codecov/codecov-action@v3
         with:
@@ -369,8 +363,7 @@ jobs:
         id: upload-ui-frontend-report
         if: >
           env.RECOMMENDED_PLATFORM
-          && github.event_name != 'workflow_dispatch'
-          && (github.event_name == 'schedule'
+          && (github.event_name == 'workflow_call'
           || steps.ui-frontend-tests.outcome == 'success')
         uses: codecov/codecov-action@v3
         with:
@@ -383,8 +376,7 @@ jobs:
         id: local-codecov
         if: >
           env.RECOMMENDED_PLATFORM
-          && github.event_name != 'workflow_dispatch'
-          && github.event_name != 'schedule'
+          && github.event_name == 'workflow_call'
         run: |
           if ${{ steps.upload-sdk-report.outcome == 'skipped'
             && steps.upload-dispatcher-report.outcome == 'skipped'
@@ -397,13 +389,13 @@ jobs:
 
       - name: Alert Slack
         if: >
-          github.event_name == 'schedule'
+          github.event_name == 'workflow_call'
           && failure()
         uses: rtCamp/action-slack-notify@v2
         env:
           SLACK_CHANNEL: "covalent-ci"
           SLACK_USERNAME: "CovalentOpsBot"
-          SLACK_MESSAGE: "The tests.yml workflow is failing in develop!"
+          SLACK_MESSAGE: "The tests.yml workflow is failing in the last '${{github.event_name}}' event run!"
           SLACK_COLOR: ${{ job.status }}
           SLACK_TITLE: ":warning:  Attention Required  :warning:"
           SLACK_WEBHOOK: ${{ secrets.SLACK_ALERT_WEBHOOK }}
