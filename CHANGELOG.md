@@ -12,6 +12,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Modified the executor core to change the file path for terraform state files to store and read from **.config/executor_plugins** folder
 - Clean up any half-done/dirty deployed resources post **deploy up**
 
+### Operations
+
+- Fixed nightly workflow's calling of other workflows.
+- Fixed input values for other workflows in `nightly-tests` workflow.
+
+### Operations
+
+- Removing author email from changelog action
+- Fixed nightly worfkflow's calling of other workflows.
+
+## [0.234.0-rc.0] - 2024-02-07
+
+### Authors
+
+- Andrew S. Rosen (@Andrew_S_Rosen)
+- Casey Jao <casey@agnostiq.ai>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: pre-commit-ci[bot] <66853113+pre-commit-ci[bot]@users.noreply.github.com>
+- ArunPsiog <106462226+ArunPsiog@users.noreply.github.com>
+- Co-authored-by: Ara Ghukasyan <ara@agnostiq.ai>
+- FilipBolt <filipbolt@gmail.com>
+- sriranjanivenkatesan <116076079+sriranjanivenkatesan@users.noreply.github.com>
+- Co-authored-by: batchumanish <manish.batchu@psiog.com>
+- Co-authored-by: Prasy12 <prasanna.venkatesh@psiog.com>
+- Co-authored-by: batchumanish <“manish.batchu@psiog.com”>
+- Co-authored-by: batchumanish <126003896+batchumanish@users.noreply.github.com>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+- Ara Ghukasyan <38226926+araghukas@users.noreply.github.com>
+
+### Operations
+
+- Added qelectron tests to the `tests` workflow
+- Split the `nightly` workflow into 4 manually triggerable workflows, `nightly-tests`, `man_0_assign_version`, `man_1_push_to_master`, and `man_2_create_prerelease` to be run in this order.
+- Now only the `nightly-tests` workflow will be run on a daily basis, and the other 3 workflows will be run manually.
+- Removed `conda` releases from `release.yml`.
+- When pushing to `master`, now the version numbers of `develop` and `master` will be compared in `man_1_push_to_master`.
+- Upgraded checkout action to v4 in `release.yml`.
+- Fixing the if condition for the manual workflows.
+- Added pre-release creation as part of `nightly-tests` workflow.
+
 ### Added
 
 - Added CRM method to handle Python to TF value conversion (e.g. None->null, True->true, False->false).
@@ -314,7 +354,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
-- Respecting node version as specified in `.nvmrc` file for tests workflow
+- Respecting node version as specified in `.nvmrc` file for tests workflow
 - Bumped versions in pre-commit config
 - Added prettier for markdown files.
 - Reduce the number of pinned version numbers in the `setup.py`, `requirements.txt`, and `requirements-client.txt`
