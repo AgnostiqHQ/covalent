@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Modified the executor core to change the file path for terraform state files to store and read from **.config/executor_plugins** folder
+- Clean up any half-done/dirty deployed resources post **deploy up**
+
 ### Operations
 
 - Fixed nightly workflow's calling of other workflows.
@@ -349,7 +354,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Operations
 
-- Respecting node version as specified in `.nvmrc` file for tests workflow
+- Respecting node version as specified in `.nvmrc` file for tests workflow
 - Bumped versions in pre-commit config
 - Added prettier for markdown files.
 - Reduce the number of pinned version numbers in the `setup.py`, `requirements.txt`, and `requirements-client.txt`
