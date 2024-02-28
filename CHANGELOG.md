@@ -10,6 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Sublattice electron function strings are now parsed correctly
+- The keys of dictionary inputs to electrons no longer need be strings.
+- Fixed inaccuracies in task packing exposed by no longer uploading null attributes upon dispatch.
 
 ### Operations
 
