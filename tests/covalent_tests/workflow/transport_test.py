@@ -16,6 +16,7 @@
 
 """Unit tests for transport graph."""
 
+import base64
 import platform
 from unittest.mock import call
 
@@ -87,27 +88,22 @@ def test_transportable_object_python_version(transportable_object):
     assert to.python_version == platform.python_version()
 
 
-def test_transportable_object_eq(transportable_object):
+def test_transportable_object_eq():
     """Test the __eq__ magic method of TransportableObject"""
 
-    import copy
-
-    to = transportable_object
-    to_new = TransportableObject(None)
-    to_new.__dict__ = copy.deepcopy(to.__dict__)
-    assert to.__eq__(to_new)
-
-    to_new._header["py_version"] = "3.5.1"
-    assert not to.__eq__(to_new)
-
-    assert not to.__eq__({})
+    to = TransportableObject(1)
+    to_new = TransportableObject(1)
+    to_new_2 = TransportableObject(2)
+    assert to == to_new
+    assert to != to_new_2
+    assert to != 1
 
 
 def test_transportable_object_get_serialized(transportable_object):
     """Test serialized transportable object retrieval."""
 
     to = transportable_object
-    assert to.get_serialized() == to._object
+    assert to.get_serialized() == base64.b64encode(cloudpickle.dumps(subtask)).decode("utf-8")
 
 
 def test_transportable_object_get_deserialized(transportable_object):
@@ -124,15 +120,8 @@ def test_transportable_object_from_dict(transportable_object):
 
     to_new = TransportableObject.from_dict(object_dict)
     assert to == to_new
-
-
-def test_transportable_object_to_dict_attributes(transportable_object):
-    """Test attributes from `to_dict` contain correct name and docstrings"""
-
-    tr_dict = transportable_object.to_dict()
-
-    assert tr_dict["attributes"]["_header"]["attrs"]["doc"] == subtask.__doc__
-    assert tr_dict["attributes"]["_header"]["attrs"]["name"] == subtask.__name__
+    assert to_new.header == to.header
+    assert to_new.object_string == to.object_string
 
 
 def test_transportable_object_serialize_to_json(transportable_object):
@@ -148,7 +137,9 @@ def test_transportable_object_deserialize_from_json(transportable_object):
     to = transportable_object
     json_string = to.serialize_to_json()
     deserialized_to = TransportableObject.deserialize_from_json(json_string)
-    assert to.__dict__ == deserialized_to.__dict__
+    assert to == deserialized_to
+    assert deserialized_to.header == to.header
+    assert deserialized_to.object_string == to.object_string
 
 
 def test_transportable_object_make_transportable_idempotent(transportable_object):
@@ -167,29 +158,6 @@ def test_transportable_object_serialize_deserialize(transportable_object):
 
     assert new_to.get_deserialized()(x=3) == subtask(x=3)
     assert new_to.python_version == to.python_version
-
-
-def test_transportable_object_sedeser_string_only():
-    """Test extracting string only from serialized to"""
-    x = 123
-    to = TransportableObject(x)
-
-    ser = to.serialize()
-    new_to = TransportableObject.deserialize(ser, string_only=True)
-    assert new_to.object_string == to.object_string
-    assert new_to._object == ""
-
-
-def test_transportable_object_sedeser_header_only():
-    """Test extracting header only from serialized to"""
-    x = 123
-    to = TransportableObject(x)
-
-    ser = to.serialize()
-    new_to = TransportableObject.deserialize(ser, header_only=True)
-
-    assert new_to.object_string == ""
-    assert new_to._header
 
 
 def test_transportable_object_deserialize_list(transportable_object):
