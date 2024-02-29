@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Automatic file transfer strategy selection for various (source, destination) pairings
+- Framework for building sublattices in new-style executors
+
 ### Fixed
 
 - Sublattice electron function strings are now parsed correctly
