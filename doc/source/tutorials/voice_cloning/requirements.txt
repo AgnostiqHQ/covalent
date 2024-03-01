@@ -8,5 +8,5 @@ soundfile==0.12.1
 streamlit==1.28.1
 torch==2.1.0
 torchaudio==2.1.0
-transformers==4.33.3
+transformers==4.36.0
 TTS==0.19.1
