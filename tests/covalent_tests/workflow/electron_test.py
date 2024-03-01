@@ -201,6 +201,52 @@ def test_build_sublattice_graph_fallback(mocker):
             assert parent_metadata[k] == lattice.metadata[k]
 
 
+def test_build_sublattice_graph_prevent_fallback(mocker):
+    """
+    Test preventing falling back to monolithic sublattice dispatch.
+    """
+    dispatch_id = "test_build_sublattice_graph_prevent_fallback"
+
+    @ct.electron
+    def task(x):
+        return x
+
+    @ct.lattice
+    def workflow(x):
+        return task(x)
+
+    parent_metadata = {
+        "executor": "parent_executor",
+        "executor_data": {},
+        "workflow_executor": "my_postprocessor",
+        "workflow_executor_data": {},
+        "hooks": {
+            "deps": {"bash": None, "pip": None},
+            "call_before": [],
+            "call_after": [],
+        },
+        "triggers": "mock-trigger",
+        "qelectron_data_exists": False,
+        "results_dir": None,
+    }
+
+    # Omit the required environment variables
+    mock_environ = {"COVALENT_DISABLE_LEGACY_SUBLATTICES": "1"}
+
+    mock_reg = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.register_manifest",
+    )
+
+    mock_upload_assets = mocker.patch(
+        "covalent._dispatcher_plugins.local.LocalDispatcher.upload_assets",
+    )
+
+    mocker.patch("os.environ", mock_environ)
+
+    with pytest.raises(Exception):
+        json_lattice = _build_sublattice_graph(workflow, json.dumps(parent_metadata), 1)
+
+
 def test_wait_for_building():
     """Test to check whether the graph is built correctly with `wait_for`."""
 

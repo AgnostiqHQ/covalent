@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import tempfile
 from copy import deepcopy
 from functools import wraps
@@ -616,14 +617,16 @@ def _upload_asset(local_uri, remote_uri):
         local_path = local_uri
 
     with open(local_path, "rb") as reader:
-        app_log.debug(f"uploading to {remote_uri}")
+        content_length = os.path.getsize(local_path)
         f = furl(remote_uri)
         scheme = f.scheme
         host = f.host
         port = f.port
         dispatcher_addr = f"{scheme}://{host}:{port}"
-        endpoint = str(f.path)
+        endpoint = f"{str(f.path)}?{str(f.query)}"
         api_client = APIClient(dispatcher_addr)
-
-        r = api_client.put(endpoint, data=reader)
+        if content_length == 0:
+            r = api_client.put(endpoint, headers={"Content-Length": "0"}, data=reader.read())
+        else:
+            r = api_client.put(endpoint, data=reader)
         r.raise_for_status()
