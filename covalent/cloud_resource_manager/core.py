@@ -98,13 +98,15 @@ def get_plugin_settings(
     infra_settings = ExecutorInfraDefaults.schema()["properties"]
 
     settings_dict = {
-        key: {
-            "required": "No",
-            "default": value["default"],
-            "value": value["default"],
-        }
-        if "default" in value
-        else {"required": "Yes", "default": None, "value": None}
+        key: (
+            {
+                "required": "No",
+                "default": value["default"],
+                "value": value["default"],
+            }
+            if "default" in value
+            else {"required": "Yes", "default": None, "value": None}
+        )
         for key, value in plugin_settings.items()
     }
     for key, value in infra_settings.items():

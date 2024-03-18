@@ -56,7 +56,6 @@ FIELDS = {
 
 
 class Asset(Record[AssetRecord]):
-
     """Metadata for an object in blob storage"""
 
     model = AssetRecord
