@@ -32,7 +32,6 @@ BYTE_ORDER = "big"
 
 
 class _TOArchive:
-
     """Archived transportable object."""
 
     def __init__(self, header: bytes, object_string: bytes, data: bytes):

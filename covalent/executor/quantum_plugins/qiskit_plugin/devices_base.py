@@ -131,7 +131,6 @@ class _PennylaneQiskitDevice(QiskitDevice, ABC):
 
 
 class QiskitSamplerDevice(_PennylaneQiskitDevice):
-
     """
     A base class for devices that use the Sampler primitive.
     """

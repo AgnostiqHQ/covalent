@@ -348,9 +348,9 @@ class QServer:
                         {
                             "execution_time": sub_result_obj.execution_time,
                             "result": sub_result_obj.results if executor.persist_data else None,
-                            "result_metadata": sub_result_obj.metadata
-                            if executor.persist_data
-                            else None,
+                            "result_metadata": (
+                                sub_result_obj.metadata if executor.persist_data else None
+                            ),
                         }
                     )
 
