@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Added
+
+- Added support for doing `pip install covalent[cloud]`
+
 ### Fixed
 
 - Sublattice electron function strings are now parsed correctly
