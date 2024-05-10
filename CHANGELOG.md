@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+## [0.234.1-rc.0] - 2024-05-10
+
+### Authors
+
+- Andrew S. Rosen <asrosen93@gmail.com>
+- Sankalp Sanand <sankalp@agnostiq.ai>
+- Co-authored-by: Alejandro Esquivel <ae@alejandro.ltd>
+- Casey Jao <casey@agnostiq.ai>
+- Co-authored-by: Santosh kumar <29346072+santoshkumarradha@users.noreply.github.com>
+
+
 ### Fixed
 
 - Sublattice electron function strings are now parsed correctly
