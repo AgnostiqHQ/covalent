@@ -36,7 +36,7 @@ from covalent._workflow.electron import (
     to_decoded_electron_collection,
 )
 from covalent._workflow.lattice import Lattice
-from covalent._workflow.transport import TransportableObject, _TransportGraph, encode_metadata
+from covalent._workflow.transport import TransportableObject, encode_metadata
 from covalent.executor.executor_plugins.local import LocalExecutor
 
 
@@ -252,25 +252,6 @@ def test_collection_node_helper_electron():
     assert to_decoded_electron_collection(x=dict_collection) == {"a": 1, "b": 2}
 
 
-def test_electron_add_collection_node():
-    """Test `to_decoded_electron_collection` in `Electron.add_collection_node`"""
-
-    def f(x):
-        return x
-
-    e = Electron(f)
-    tg = _TransportGraph()
-    node_id = e.add_collection_node_to_graph(tg, prefix=":")
-    collection_fn = tg.get_node_value(node_id, "function").get_deserialized()
-
-    collection = [
-        TransportableObject.make_transportable(1),
-        TransportableObject.make_transportable(2),
-    ]
-
-    assert collection_fn(x=collection) == [1, 2]
-
-
 def test_injected_inputs_are_not_in_tg():
     """Test that arguments to electrons injected by calldeps aren't
     added to the transport graph"""
@@ -396,18 +377,30 @@ def test_autogen_dict_electrons():
     g = workflow.transport_graph._graph
 
     # Account for postprocessing node
-    assert list(g.nodes) == [0, 1, 2, 3, 4]
+    assert list(g.nodes) == [0, 1, 2, 3, 4, 5, 6, 7, 8]
     fn = g.nodes[1]["function"].get_deserialized()
-    assert fn(x=2, y=5, z=7) == {"x": 2, "y": 5, "z": 7}
-    assert g.nodes[2]["value"].get_deserialized() == 5
-    assert g.nodes[3]["value"].get_deserialized() == 7
+    assert fn(["x", "y", "z"], [2, 5, 7]) == {"x": 2, "y": 5, "z": 7}
+    fn = g.nodes[2]["function"].get_deserialized()
+    assert fn("x", "y") == ["x", "y"]
+    keys = [g.nodes[3]["value"].get_deserialized(), g.nodes[4]["value"].get_deserialized()]
+    fn = g.nodes[5]["function"].get_deserialized()
+    assert fn(2, 3) == [2, 3]
+    vals = [g.nodes[6]["value"].get_deserialized(), g.nodes[7]["value"].get_deserialized()]
+    assert keys == ["x", "y"]
+    assert vals == [5, 7]
     assert set(g.edges) == {
         (1, 0, 0),
         (2, 1, 0),
-        (3, 1, 0),
-        (0, 4, 0),
-        (0, 4, 1),
-        (1, 4, 0),
+        (3, 2, 0),
+        (4, 2, 0),
+        (5, 1, 0),
+        (6, 5, 0),
+        (7, 5, 0),
+        (0, 8, 0),
+        (0, 8, 1),
+        (1, 8, 0),
+        (2, 8, 0),
+        (5, 8, 0),
     }
 
 

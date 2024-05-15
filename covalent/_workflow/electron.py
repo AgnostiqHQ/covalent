@@ -96,6 +96,7 @@ class Electron:
         self.metadata = metadata
         self.task_group_id = task_group_id
         self._packing_tasks = packing_tasks
+        self._function_string = get_serialized_function_str(function)
 
     @property
     def packing_tasks(self) -> bool:
@@ -442,7 +443,7 @@ class Electron:
             )
 
             name = sublattice_prefix + self.function.__name__
-            function_string = get_serialized_function_str(self.function)
+            function_string = self._function_string
             bound_electron = sub_electron(
                 self.function, json.dumps(parent_metadata), *args, **kwargs
             )
@@ -463,7 +464,7 @@ class Electron:
             name=self.function.__name__,
             function=self.function,
             metadata=self.metadata.copy(),
-            function_string=get_serialized_function_str(self.function),
+            function_string=self._function_string,
             task_group_id=self.task_group_id if self.packing_tasks else None,
         )
         self.task_group_id = self.task_group_id if self.packing_tasks else self.node_id
@@ -571,8 +572,8 @@ class Electron:
 
         elif isinstance(param_value, dict):
 
-            def _auto_dict_node(*args, **kwargs):
-                return dict(kwargs)
+            def _auto_dict_node(keys, values):
+                return {keys[i]: values[i] for i in range(len(keys))}
 
             dict_electron = Electron(
                 function=_auto_dict_node,
@@ -580,7 +581,7 @@ class Electron:
                 task_group_id=self.task_group_id,
                 packing_tasks=True and active_lattice.task_packing,
             )  # Group the auto-generated node with the main node.
-            bound_electron = dict_electron(**param_value)
+            bound_electron = dict_electron(list(param_value.keys()), list(param_value.values()))
             transport_graph.set_node_value(bound_electron.node_id, "name", electron_dict_prefix)
             transport_graph.add_edge(
                 dict_electron.node_id,
@@ -607,32 +608,6 @@ class Electron:
                 param_type=param_type,
                 arg_index=arg_index,
             )
-
-    def add_collection_node_to_graph(self, graph: "_TransportGraph", prefix: str) -> int:
-        """
-        Adds the node to lattice's transport graph in the case
-        where a collection of electrons is passed as an argument
-        to another electron.
-
-        Args:
-            graph: Transport graph of the lattice
-            prefix: Prefix of the node
-
-        Returns:
-            node_id: Node id of the added node
-        """
-
-        new_metadata = encode_metadata(DEFAULT_METADATA_VALUES.copy())
-        if "executor" in self.metadata:
-            new_metadata["executor"] = self.metadata["executor"]
-            new_metadata["executor_data"] = self.metadata["executor_data"]
-
-        node_id = graph.add_node(
-            name=prefix,
-            function=to_decoded_electron_collection,
-            metadata=new_metadata,
-            function_string=get_serialized_function_str(to_decoded_electron_collection),
-        )
 
         return node_id
 

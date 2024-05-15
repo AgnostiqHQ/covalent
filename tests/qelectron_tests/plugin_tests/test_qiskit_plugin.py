@@ -23,7 +23,7 @@ import pytest
 import covalent as ct
 from covalent._shared_files.config import get_config
 
-from .utils import arg_vector, simple_circuit, weight_vector
+from ..utils import arg_vector, simple_circuit, weight_vector
 
 EXECUTOR_CLASSES = [
     ct.executor.QiskitExecutor,

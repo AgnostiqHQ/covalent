@@ -59,6 +59,7 @@
 !pyproject.toml
 !requirements.txt
 !requirements-client.txt
+!requirements-qelectron.txt
 !setup.py
 
 # Allow markdown etc

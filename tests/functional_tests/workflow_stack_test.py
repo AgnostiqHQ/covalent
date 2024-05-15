@@ -800,7 +800,8 @@ def test_workflows_with_dict_nodes():
         res_1 = sum_values(x)
         return square(res_1)
 
-    dispatch_id = ct.dispatch(workflow)({"x": 1, "y": 2, "z": 3})
+    # Check that non-string keys are allowed
+    dispatch_id = ct.dispatch(workflow)({"x": 1, "y": 2, 3: 3})
 
     res_obj = rm.get_result(dispatch_id, wait=True)
 

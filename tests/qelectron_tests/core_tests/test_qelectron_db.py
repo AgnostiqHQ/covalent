@@ -25,7 +25,7 @@ def test_db_exposed_in_result():
     """
 
     # Define a QElectron circuit.
-    qexecutor = ct.executor.QiskitExecutor(device="local_sampler")  # pylint: disable=no-member
+    qexecutor = ct.executor.Simulator()  # pylint: disable=no-member
 
     @ct.qelectron(executors=qexecutor)
     @qml.qnode(qml.device("default.qubit", wires=1))
