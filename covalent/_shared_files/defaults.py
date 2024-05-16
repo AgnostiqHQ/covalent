@@ -67,9 +67,6 @@ def get_default_sdk_config():
             + "/covalent/dispatches"
         ),
         "task_packing": "true" if os.environ.get("COVALENT_ENABLE_TASK_PACKING") else "false",
-        "multistage_dispatch": (
-            "false" if os.environ.get("COVALENT_DISABLE_MULTISTAGE_DISPATCH") == "1" else "true"
-        ),
         "results_dir": os.environ.get(
             "COVALENT_RESULTS_DIR"
         )  # COVALENT_RESULTS_DIR is where the client downloads workflow artifacts during get_result() which is different from COVALENT_DATA_DIR

@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Operations
+
+- Disabled codecov in CI
+
+### Fixed
+
+- `get_result(wait=True)` no longer times out
+
 ### Changed
 
 - Added support for Python 3.11 and 3.12
