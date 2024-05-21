@@ -596,7 +596,7 @@ class LocalDispatcher(BaseDispatcher):
         number_uploaded = 0
         for i, asset in enumerate(assets):
             if not asset.remote_uri or not asset.uri:
-                app_log.debug(f"Skipping asset {i+1} out of {total}")
+                app_log.debug(f"Skipping asset {i + 1} out of {total}")
                 continue
             if asset.remote_uri.startswith(local_scheme_prefix):
                 copy_file_locally(asset.uri, asset.remote_uri)
@@ -604,7 +604,7 @@ class LocalDispatcher(BaseDispatcher):
             else:
                 _upload_asset(asset.uri, asset.remote_uri)
                 number_uploaded += 1
-            app_log.debug(f"Uploaded asset {i+1} out of {total}.")
+            app_log.debug(f"Uploaded asset {i + 1} out of {total}.")
         app_log.debug(f"uploaded {number_uploaded} assets.")
 
 
