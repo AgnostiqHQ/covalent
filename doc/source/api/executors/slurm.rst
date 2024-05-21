@@ -135,4 +135,4 @@ Here the corresponding submit script contains the following commands:
 
 .. note::
 
-The number of concurrent Slurm electrons may be limited by the client and/or server's SSH configurations.
+Each electron that uses the Slurm executor opens a separate SSH connection to the remote system. When executing 10 or more concurrent electrons, be mindful of client and/or server-side limitations on the total number of SSH connections.
