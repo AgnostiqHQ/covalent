@@ -14,6 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 import tempfile
 from copy import deepcopy
 from functools import wraps
@@ -45,6 +46,9 @@ log_stack_info = logger.log_stack_info
 
 dispatch_cache_dir = Path(get_config("sdk.dispatch_cache_dir"))
 dispatch_cache_dir.mkdir(parents=True, exist_ok=True)
+
+
+BASE_ENDPOINT = os.getenv("COVALENT_DISPATCH_BASE_ENDPOINT", "/api/v2/dispatches")
 
 
 def get_redispatch_request_body_v2(
@@ -540,10 +544,10 @@ class LocalDispatcher(BaseDispatcher):
             dispatcher_addr = format_server_url()
 
         stripped = strip_local_uris(manifest) if push_assets else manifest
-        endpoint = "/api/v2/dispatches"
+        endpoint = BASE_ENDPOINT
 
         if parent_dispatch_id:
-            endpoint = f"{endpoint}/{parent_dispatch_id}/subdispatches"
+            endpoint = f"{BASE_ENDPOINT}/{parent_dispatch_id}/sublattices"
 
         r = APIClient(dispatcher_addr).post(endpoint, data=stripped.model_dump_json())
         r.raise_for_status()
