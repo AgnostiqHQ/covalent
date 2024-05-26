@@ -194,12 +194,10 @@ def _get_lattice_custom_assets(lat: Lattice) -> Dict[str, AssetSchema]:
 def serialize_lattice(lat, storage_path: str) -> LatticeSchema:
     meta = _serialize_lattice_metadata(lat)
     assets = _serialize_lattice_assets(lat, storage_path)
-    custom_assets = _get_lattice_custom_assets(lat)
+    assets._custom = _get_lattice_custom_assets(lat)
     tg = serialize_transport_graph(lat.transport_graph, storage_path)
 
-    return LatticeSchema(
-        metadata=meta, assets=assets, custom_assets=custom_assets, transport_graph=tg
-    )
+    return LatticeSchema(metadata=meta, assets=assets, transport_graph=tg)
 
 
 def deserialize_lattice(model: LatticeSchema) -> Lattice:

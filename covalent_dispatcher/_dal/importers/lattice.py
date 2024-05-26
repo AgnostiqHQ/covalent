@@ -94,6 +94,10 @@ def import_lattice_assets(
 
     # Register built-in assets
     for asset_key, asset in lat.assets:
+        # Deal with these later
+        if asset_key == "_custom":
+            continue
+
         storage_path, object_key = object_store.get_uri_components(
             dispatch_id=dispatch_id,
             node_id=None,
@@ -118,8 +122,8 @@ def import_lattice_assets(
         asset.remote_uri = f"file://{local_uri}"
 
     # Register custom assets
-    if lat.custom_assets:
-        for asset_key, asset in lat.custom_assets.items():
+    if lat.assets._custom:
+        for asset_key, asset in lat.assets._custom.items():
             object_key = f"{asset_key}.data"
             local_uri = os.path.join(storage_path, object_key)
 
