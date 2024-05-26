@@ -429,6 +429,11 @@ class Electron:
             active_lattice.replace_electrons[name] = replacement_electron
             return bound_electron
 
+        # Avoid direct attribute access since that might trigger
+        # Electron.__getattr__ when executors build sublattices
+        # constructed with older versions of Covalent
+        function_string = self.__dict__.get("_function_string")
+
         # Handle sublattices by injecting _build_sublattice_graph node
         if isinstance(self.function, Lattice):
             parent_metadata = active_lattice.metadata.copy()
@@ -443,7 +448,6 @@ class Electron:
             )
 
             name = sublattice_prefix + self.function.__name__
-            function_string = self._function_string
             bound_electron = sub_electron(
                 self.function, json.dumps(parent_metadata), *args, **kwargs
             )
@@ -464,7 +468,7 @@ class Electron:
             name=self.function.__name__,
             function=self.function,
             metadata=self.metadata.copy(),
-            function_string=self._function_string,
+            function_string=function_string,
             task_group_id=self.task_group_id if self.packing_tasks else None,
         )
         self.task_group_id = self.task_group_id if self.packing_tasks else self.node_id
