@@ -872,6 +872,8 @@ def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kw
 
     sub.build_graph(*args, **kwargs)
 
+    DISABLE_LEGACY_SUBLATTICES = os.environ.get("COVALENT_DISABLE_LEGACY_SUBLATTICES") == "1"
+
     try:
         # Attempt multistage sublattice dispatch. For now we require
         # the executor to reach the Covalent server
@@ -895,5 +897,7 @@ def _build_sublattice_graph(sub: Lattice, json_parent_metadata: str, *args, **kw
 
     except Exception as ex:
         # Fall back to legacy sublattice handling
+        if DISABLE_LEGACY_SUBLATTICES:
+            raise
         print("Falling back to legacy sublattice handling")
         return sub.serialize_to_json()
