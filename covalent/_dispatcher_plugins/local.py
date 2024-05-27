@@ -619,6 +619,7 @@ def _upload_asset(local_uri, remote_uri):
     else:
         local_path = local_uri
 
+    filesize = os.path.getsize(local_path)
     with open(local_path, "rb") as reader:
         app_log.debug(f"uploading to {remote_uri}")
         f = furl(remote_uri)
@@ -628,6 +629,11 @@ def _upload_asset(local_uri, remote_uri):
         dispatcher_addr = f"{scheme}://{host}:{port}"
         endpoint = str(f.path)
         api_client = APIClient(dispatcher_addr)
+        if f.query:
+            endpoint = f"{endpoint}?{f.query}"
 
-        r = api_client.put(endpoint, data=reader)
+        # Workaround for Requests bug when streaming from empty files
+        data = reader.read() if filesize < 50 else reader
+
+        r = api_client.put(endpoint, headers={"Content-Length": str(filesize)}, data=data)
         r.raise_for_status()
