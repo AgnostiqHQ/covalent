@@ -16,11 +16,9 @@ python-multipart>=0.0.6
 python-socketio>=5.7.1
 requests>=2.24.0
 rich>=12.0.0,<=13.3.5
-simplejson>=3.17.6
 sqlalchemy>=1.4.37,<2.0.0
 sqlalchemy_utils>=0.38.3
 toml>=0.10.2
 typing-extensions>=4.8.0
-uvicorn[standard]==0.18.3
+uvicorn[standard]
 watchdog>=2.2.1
-werkzeug>=2.0.3
