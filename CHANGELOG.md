@@ -11,6 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Updated Slurm plugin docs to note possible SSH limitation
 - Updated Slurm plugin docs to remove `sshproxy` section
+- API base endpoint is now configurable from an environment variable
+- Removed unused lattice attributes to reduce asset uploads
+
+### Fixed
+
+- Improved handling of Covalent version mismatches between client and
+  executor environments
+
+### Operations
+
+- Allow installing a specific commit sha to ease testing
 
 ## [0.234.1-rc.0] - 2024-05-10
 
