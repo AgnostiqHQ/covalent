@@ -257,8 +257,8 @@ def test_insert_lattices_data(test_db, mocker):
         lattice_args = get_lattice_kwargs(
             dispatch_id=f"dispatch_{i + 1}",
             name=f"workflow_{i + 1}",
-            docstring_filename=f"docstring_{i+1}.txt",
-            storage_path=f"results/dispatch_{i+1}/",
+            docstring_filename=f"docstring_{i + 1}.txt",
+            storage_path=f"results/dispatch_{i + 1}/",
             executor="dask",
             workflow_executor="dask",
             created_at=cur_time,
@@ -276,10 +276,10 @@ def test_insert_lattices_data(test_db, mocker):
             assert lattice.dispatch_id == f"dispatch_{i + 1}"
             assert lattice.electron_id is None
             assert lattice.name == f"workflow_{i + 1}"
-            assert lattice.docstring_filename == f"docstring_{i+1}.txt"
+            assert lattice.docstring_filename == f"docstring_{i + 1}.txt"
             assert lattice.status == "RUNNING"
             assert lattice.storage_type == STORAGE_TYPE
-            assert lattice.storage_path == f"results/dispatch_{i+1}/"
+            assert lattice.storage_path == f"results/dispatch_{i + 1}/"
             assert lattice.function_filename == FUNCTION_FILENAME
             assert lattice.function_string_filename == FUNCTION_STRING_FILENAME
             assert lattice.executor == "dask"

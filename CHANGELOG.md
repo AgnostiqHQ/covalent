@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [UNRELEASED]
 
+### Changed
+
+- Updated Slurm plugin docs to note possible SSH limitation
+- Updated Slurm plugin docs to remove `sshproxy` section
+
 ## [0.234.1-rc.0] - 2024-05-10
 
 ### Authors
