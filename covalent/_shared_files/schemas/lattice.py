@@ -39,10 +39,6 @@ LATTICE_ASSET_KEYS = {
     "workflow_function_string",
     "__doc__",
     "inputs",
-    "named_args",
-    "named_kwargs",
-    "cova_imports",
-    "lattice_imports",
     # user dependent assets
     "hooks",
 }
@@ -83,10 +79,12 @@ class LatticeAssets(BaseModel):
     workflow_function_string: AssetSchema
     doc: AssetSchema  # __doc__
     inputs: AssetSchema
-    named_args: AssetSchema
-    named_kwargs: AssetSchema
-    cova_imports: AssetSchema
-    lattice_imports: AssetSchema
+
+    # Deprecated
+    named_args: AssetSchema = AssetSchema(size=0)
+    named_kwargs: AssetSchema = AssetSchema(size=0)
+    cova_imports: AssetSchema = AssetSchema(size=0)
+    lattice_imports: AssetSchema = AssetSchema(size=0)
 
     # lattice.metadata
     hooks: AssetSchema

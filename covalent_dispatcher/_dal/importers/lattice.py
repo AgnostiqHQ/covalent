@@ -24,16 +24,12 @@ from sqlalchemy.orm import Session
 
 from covalent._shared_files.config import get_config
 from covalent._shared_files.schemas.lattice import (
-    LATTICE_COVA_IMPORTS_FILENAME,
     LATTICE_DOCSTRING_FILENAME,
     LATTICE_ERROR_FILENAME,
     LATTICE_FUNCTION_FILENAME,
     LATTICE_FUNCTION_STRING_FILENAME,
     LATTICE_HOOKS_FILENAME,
     LATTICE_INPUTS_FILENAME,
-    LATTICE_LATTICE_IMPORTS_FILENAME,
-    LATTICE_NAMED_ARGS_FILENAME,
-    LATTICE_NAMED_KWARGS_FILENAME,
     LATTICE_RESULTS_FILENAME,
     LATTICE_STORAGE_TYPE,
     LatticeAssets,
@@ -71,12 +67,8 @@ def _get_lattice_meta(lat: LatticeSchema, storage_path) -> dict:
         "function_string_filename": LATTICE_FUNCTION_STRING_FILENAME,
         "error_filename": LATTICE_ERROR_FILENAME,
         "inputs_filename": LATTICE_INPUTS_FILENAME,
-        "named_args_filename": LATTICE_NAMED_ARGS_FILENAME,
-        "named_kwargs_filename": LATTICE_NAMED_KWARGS_FILENAME,
         "results_filename": LATTICE_RESULTS_FILENAME,
         "hooks_filename": LATTICE_HOOKS_FILENAME,
-        "cova_imports_filename": LATTICE_COVA_IMPORTS_FILENAME,
-        "lattice_imports_filename": LATTICE_LATTICE_IMPORTS_FILENAME,
     }
     kwargs.update(legacy_kwargs)
     return kwargs

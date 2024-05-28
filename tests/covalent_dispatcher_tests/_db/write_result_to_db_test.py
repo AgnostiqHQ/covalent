@@ -59,8 +59,6 @@ EXECUTOR_DATA_FILENAME = "executor_data.pkl"
 WORKFLOW_EXECUTOR_DATA_FILENAME = "workflow_executor_data.pkl"
 ERROR_FILENAME = "error.txt"
 INPUTS_FILENAME = "inputs.pkl"
-NAMED_ARGS_FILENAME = "named_args.pkl"
-NAMED_KWARGS_FILENAME = "named_kwargs.pkl"
 RESULTS_FILENAME = "results.pkl"
 VALUE_FILENAME = "value.pkl"
 STDOUT_FILENAME = "stdout.log"
@@ -68,8 +66,6 @@ STDERR_FILENAME = "stderr.log"
 ERROR_FILENAME = "error.log"
 TRANSPORT_GRAPH_FILENAME = "transport_graph.pkl"
 HOOKS_FILENAME = "hooks.pkl"
-COVA_IMPORTS_FILENAME = "cova_imports.json"
-LATTICE_IMPORTS_FILENAME = "lattice_imports.txt"
 RESULTS_DIR = "/tmp/results"
 
 
@@ -126,12 +122,8 @@ def get_lattice_kwargs(
     workflow_executor_data=json.dumps({}),
     error_filename=ERROR_FILENAME,
     inputs_filename=INPUTS_FILENAME,
-    named_args_filename=NAMED_ARGS_FILENAME,
-    named_kwargs_filename=NAMED_KWARGS_FILENAME,
     results_filename=RESULTS_FILENAME,
     hooks_filename=HOOKS_FILENAME,
-    cova_imports_filename=COVA_IMPORTS_FILENAME,
-    lattice_imports_filename=LATTICE_IMPORTS_FILENAME,
     results_dir=RESULTS_DIR,
     root_dispatch_id="dispatch_1",
     created_at=None,
@@ -159,12 +151,8 @@ def get_lattice_kwargs(
         "workflow_executor_data": workflow_executor_data,
         "error_filename": error_filename,
         "inputs_filename": inputs_filename,
-        "named_args_filename": named_args_filename,
-        "named_kwargs_filename": named_kwargs_filename,
         "results_filename": results_filename,
         "hooks_filename": hooks_filename,
-        "cova_imports_filename": cova_imports_filename,
-        "lattice_imports_filename": lattice_imports_filename,
         "results_dir": results_dir,
         "root_dispatch_id": root_dispatch_id,
         "created_at": created_at,
@@ -286,12 +274,8 @@ def test_insert_lattices_data(test_db, mocker):
             assert lattice.workflow_executor == "dask"
             assert lattice.error_filename == ERROR_FILENAME
             assert lattice.inputs_filename == INPUTS_FILENAME
-            assert lattice.named_args_filename == NAMED_ARGS_FILENAME
-            assert lattice.named_kwargs_filename == NAMED_KWARGS_FILENAME
             assert lattice.results_filename == RESULTS_FILENAME
             assert lattice.hooks_filename == HOOKS_FILENAME
-            assert lattice.cova_imports_filename == COVA_IMPORTS_FILENAME
-            assert lattice.lattice_imports_filename == LATTICE_IMPORTS_FILENAME
             assert lattice.results_dir == RESULTS_DIR
             assert lattice.root_dispatch_id == f"dispatch_{i + 1}"
             assert (
